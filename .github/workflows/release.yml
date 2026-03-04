@@ -499,6 +499,41 @@ jobs:
         working-directory: npm/vite-plugin-musea
         run: pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
+  # Build and publish Rspack plugin (using Trusted Publishing / OIDC)
+  release-npm-rspack-plugin:
+    name: Release @vizejs/rspack-plugin to npm
+    runs-on: ubuntu-latest
+    needs: release-npm-native
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build rspack-vize-plugin
+        run: pnpm -C npm/rspack-vize-plugin build
+
+      - name: Install npm with OIDC support
+        run: npm install -g npm@latest
+
+      - name: Publish @vizejs/rspack-plugin
+        working-directory: npm/rspack-vize-plugin
+        run: pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+
   # Build and publish Musea Nuxt (using Trusted Publishing / OIDC)
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
@@ -649,7 +684,7 @@ jobs:
   create-github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-cli, release-npm-native, release-npm-fresco-native, release-npm-fresco, release-npm-wasm, release-npm-vite-plugin, release-npm-musea-mcp-server, release-npm-vite-plugin-musea, release-npm-musea-nuxt, release-npm-nuxt, release-crates]
+    needs: [build-cli, release-npm-native, release-npm-fresco-native, release-npm-fresco, release-npm-wasm, release-npm-vite-plugin, release-npm-rspack-plugin, release-npm-musea-mcp-server, release-npm-vite-plugin-musea, release-npm-musea-nuxt, release-npm-nuxt, release-crates]
     steps:
       - uses: actions/checkout@v4
 

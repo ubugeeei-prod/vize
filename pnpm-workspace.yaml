@@ -2,6 +2,7 @@ packages:
   - 'playground'
   - 'npm/*'
   - 'npm/vite-plugin-vize/example'
+  - 'npm/rspack-vize-plugin/example'
   - 'npm/fresco/examples/*'
   - 'examples/vite-musea'
   - 'docs'
