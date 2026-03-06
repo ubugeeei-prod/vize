@@ -21,7 +21,7 @@ use vize_canon::TsgoBridge;
 
 use super::{helpers, script, template, IdeContext};
 use crate::ide::is_component_tag;
-use crate::virtual_code::BlockType;
+use crate::virtual_code::{ArtCursorPosition, BlockType};
 
 impl super::DefinitionService {
     /// Get definition for the symbol at the current position.
@@ -30,6 +30,9 @@ impl super::DefinitionService {
             BlockType::Template => template::definition_in_template(ctx),
             BlockType::Script | BlockType::ScriptSetup => script::definition_in_script(ctx),
             BlockType::Style(_) => script::definition_in_style(ctx),
+            BlockType::Art(ArtCursorPosition::VariantTemplate(_)) => {
+                template::definition_in_template(ctx)
+            }
             BlockType::Art(_) => None,
         }
     }
@@ -46,8 +49,70 @@ impl super::DefinitionService {
                 Self::definition_in_script_with_tsgo(ctx, tsgo_bridge).await
             }
             BlockType::Style(_) => script::definition_in_style(ctx),
+            BlockType::Art(ArtCursorPosition::VariantTemplate(ref info)) => {
+                Self::definition_in_art_variant_with_tsgo(ctx, info, tsgo_bridge).await
+            }
             BlockType::Art(_) => None,
         }
+    }
+
+    /// Find definition in art variant template with tsgo.
+    #[cfg(feature = "native")]
+    async fn definition_in_art_variant_with_tsgo(
+        ctx: &IdeContext<'_>,
+        info: &crate::virtual_code::ArtVariantInfo,
+        tsgo_bridge: Option<Arc<TsgoBridge>>,
+    ) -> Option<GotoDefinitionResponse> {
+        let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
+
+        if word.is_empty() {
+            return None;
+        }
+
+        // Check if this is a component tag
+        if let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset) {
+            if is_component_tag(&tag_name) {
+                if let Some(def) = template::find_component_definition(ctx, &tag_name) {
+                    return Some(def);
+                }
+            }
+        }
+
+        // Try tsgo definition
+        if let Some(bridge) = tsgo_bridge {
+            if let Some(ref virtual_docs) = ctx.virtual_docs {
+                if let Some(ref tmpl) = virtual_docs.template {
+                    let relative_offset = info.relative_offset as u32;
+                    let vts_offset = tmpl
+                        .source_map
+                        .to_generated(relative_offset)
+                        .map(|o| o as usize)
+                        .unwrap_or(relative_offset as usize);
+
+                    let (line, character) =
+                        crate::ide::offset_to_position(&tmpl.content, vts_offset);
+                    #[allow(clippy::disallowed_macros)]
+                    let uri = format!("vize-virtual://{}.template.ts", ctx.uri.path());
+
+                    if bridge.is_initialized() {
+                        #[allow(clippy::disallowed_macros)]
+                        let vdoc_uri = format!("{}.template.ts", ctx.uri.path());
+                        let _ = bridge
+                            .open_or_update_virtual_document(&vdoc_uri, &tmpl.content)
+                            .await;
+
+                        if let Ok(locations) = bridge.definition(&uri, line, character).await {
+                            if !locations.is_empty() {
+                                return Some(Self::convert_lsp_locations(locations, ctx));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fall back to synchronous definition
+        template::definition_in_template(ctx)
     }
 
     /// Find definition in template with tsgo and component jump support.

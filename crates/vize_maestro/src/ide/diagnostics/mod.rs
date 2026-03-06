@@ -90,8 +90,9 @@ impl DiagnosticService {
         // Check if this is an Art file (*.art.vue)
         let path = uri.path();
         if path.ends_with(".art.vue") {
-            // Use Musea-specific diagnostics for Art files
+            // Musea-specific diagnostics for Art files
             diagnostics.extend(Self::collect_musea_diagnostics(uri, &content));
+            // Don't return early - continue to collect tsgo diagnostics in collect_async()
             return diagnostics;
         }
 

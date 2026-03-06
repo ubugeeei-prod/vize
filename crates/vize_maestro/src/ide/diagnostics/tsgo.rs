@@ -41,7 +41,13 @@ impl DiagnosticService {
         tracing::info!("tsgo bridge acquired");
 
         // Generate virtual TypeScript
-        let Some(virtual_result) = Self::generate_virtual_ts(uri, &content) else {
+        let is_art_file = uri.path().ends_with(".art.vue");
+        let virtual_result = if is_art_file {
+            Self::generate_virtual_ts_for_art(uri, &content)
+        } else {
+            Self::generate_virtual_ts(uri, &content)
+        };
+        let Some(virtual_result) = virtual_result else {
             tracing::warn!("failed to generate virtual ts for {}", uri);
             return vec![];
         };
@@ -420,5 +426,105 @@ impl DiagnosticService {
 
         tracing::info!("parse_vize_map_comments: found {} mappings", found_count);
         mappings
+    }
+
+    /// Generate virtual TypeScript for an art file (*.art.vue).
+    ///
+    /// Uses the default variant's template as the synthetic template,
+    /// and the script_setup block from the SFC parse.
+    pub(super) fn generate_virtual_ts_for_art(uri: &Url, content: &str) -> Option<VirtualTsResult> {
+        use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
+        use vize_canon::virtual_ts::generate_virtual_ts;
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        // Parse as art file to get variant templates
+        let art_allocator = vize_carton::Bump::new();
+        let art_desc = vize_musea::parse_art(
+            &art_allocator,
+            content,
+            vize_musea::ArtParseOptions::default(),
+        )
+        .ok()?;
+
+        // Get default variant's template
+        let variant = art_desc.default_variant()?;
+        let template_content = variant.template;
+        if template_content.trim().is_empty() {
+            return None;
+        }
+
+        // Calculate template offset in the original art file
+        let template_ptr = template_content.as_ptr() as usize;
+        let source_ptr = content.as_ptr() as usize;
+        let template_offset = (template_ptr - source_ptr) as u32;
+
+        // Parse SFC for script blocks
+        let sfc_options = SfcParseOptions {
+            filename: uri.path().to_string().into(),
+            ..Default::default()
+        };
+        let descriptor = parse_sfc(content, sfc_options).ok()?;
+
+        // Get script block info
+        let (script_content, sfc_script_start_line) = descriptor
+            .script_setup
+            .as_ref()
+            .map(|s| (s.content.as_ref(), s.loc.start_line as u32))
+            .or_else(|| {
+                descriptor
+                    .script
+                    .as_ref()
+                    .map(|s| (s.content.as_ref(), s.loc.start_line as u32))
+            })?;
+
+        // Parse template AST
+        let template_allocator = vize_carton::Bump::new();
+        let (template_ast, _) = vize_armature::parse(&template_allocator, template_content);
+
+        // Analyze script + template
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script(script_content);
+        analyzer.analyze_template(&template_ast);
+
+        let summary = analyzer.finish();
+        let output = generate_virtual_ts(
+            &summary,
+            Some(script_content),
+            Some(&template_ast),
+            template_offset,
+        );
+        let code = output.code;
+
+        // Count import lines
+        let skipped_import_lines = Self::count_import_lines(script_content);
+
+        // Find where user code starts
+        let user_code_start_line = code
+            .lines()
+            .enumerate()
+            .find(|(_, line)| line.contains("// User setup code"))
+            .map(|(i, _)| i as u32 + 1)
+            .unwrap_or(0);
+
+        // Find where template scope starts
+        let template_scope_start_line = code
+            .lines()
+            .enumerate()
+            .find(|(_, line)| line.contains("Template Scope"))
+            .map(|(i, _)| i as u32)
+            .unwrap_or(u32::MAX);
+
+        // Parse @vize-map comments
+        let line_mappings = Self::parse_vize_map_comments(&code);
+
+        Some(VirtualTsResult {
+            #[allow(clippy::disallowed_methods)]
+            code: code.to_string(),
+            user_code_start_line,
+            sfc_script_start_line,
+            template_scope_start_line,
+            line_mappings,
+            skipped_import_lines,
+        })
     }
 }

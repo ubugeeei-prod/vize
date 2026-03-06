@@ -28,7 +28,7 @@ use vize_relief::BindingType;
 use vize_canon::TsgoBridge;
 
 use super::IdeContext;
-use crate::virtual_code::BlockType;
+use crate::virtual_code::{ArtCursorPosition, BlockType};
 
 /// Hover service for providing contextual information.
 pub struct HoverService;
@@ -41,6 +41,7 @@ impl HoverService {
             BlockType::Script => Self::hover_script(ctx, false),
             BlockType::ScriptSetup => Self::hover_script(ctx, true),
             BlockType::Style(index) => Self::hover_style(ctx, index),
+            BlockType::Art(ArtCursorPosition::VariantTemplate(_)) => Self::hover_template(ctx),
             BlockType::Art(_) => None,
         }
     }
@@ -59,6 +60,9 @@ impl HoverService {
             BlockType::Script => Self::hover_script_with_tsgo(ctx, false, tsgo_bridge).await,
             BlockType::ScriptSetup => Self::hover_script_with_tsgo(ctx, true, tsgo_bridge).await,
             BlockType::Style(index) => Self::hover_style(ctx, index),
+            BlockType::Art(ArtCursorPosition::VariantTemplate(ref info)) => {
+                Self::hover_art_variant_with_tsgo(ctx, info, tsgo_bridge).await
+            }
             BlockType::Art(_) => None,
         }
     }

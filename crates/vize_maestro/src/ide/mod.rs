@@ -45,7 +45,9 @@ pub use workspace_symbols::WorkspaceSymbolsService;
 use tower_lsp::lsp_types::Url;
 
 use crate::server::ServerState;
-use crate::virtual_code::{find_block_at_offset, BlockType, VirtualDocuments};
+use crate::virtual_code::{
+    find_art_block_at_offset, find_block_at_offset, ArtCursorPosition, BlockType, VirtualDocuments,
+};
 
 // =============================================================================
 // Position conversion utilities
@@ -181,16 +183,21 @@ impl<'a> IdeContext<'a> {
         let doc = state.documents.get(uri)?;
         let content = doc.text();
 
-        // Parse SFC to determine block type
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let block_type = if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
-            find_block_at_offset(&descriptor, offset)
+        // Determine block type
+        let block_type = if uri.path().ends_with(".art.vue") {
+            // For art files, use art-specific block detection
+            find_art_block_at_offset(&content, offset)
         } else {
-            None
+            // Parse SFC to determine block type
+            let options = vize_atelier_sfc::SfcParseOptions {
+                filename: uri.path().to_string().into(),
+                ..Default::default()
+            };
+            if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&content, options) {
+                find_block_at_offset(&descriptor, offset)
+            } else {
+                None
+            }
         };
 
         let virtual_docs = state.get_virtual_docs(uri);
@@ -230,6 +237,15 @@ impl<'a> IdeContext<'a> {
     #[inline]
     pub fn is_in_art(&self) -> bool {
         matches!(self.block_type, Some(BlockType::Art(_)))
+    }
+
+    /// Check if cursor is in an art variant template.
+    #[inline]
+    pub fn is_in_art_variant_template(&self) -> bool {
+        matches!(
+            self.block_type,
+            Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
+        )
     }
 }
 

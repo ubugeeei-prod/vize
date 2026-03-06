@@ -45,6 +45,7 @@ vize_glyph = { workspace = true, optional = true }
 vize_patina.workspace = true
 vize_canon = { workspace = true }
 vize_croquis.workspace = true
+vize_musea.workspace = true
 vize_vitrine = { workspace = true, default-features = false }
 
 [dev-dependencies]

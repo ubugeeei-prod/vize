@@ -17,15 +17,42 @@ use vize_canon::{LspCompletionItem, LspDocumentation, TsgoBridge};
 
 use super::{is_inside_html_comment, script, style, template};
 use crate::ide::IdeContext;
-use crate::virtual_code::BlockType;
+use crate::virtual_code::{ArtCursorPosition, BlockType};
 use vize_carton::cstr;
 
 impl super::CompletionService {
     /// Get completions for the given context.
     pub fn complete(ctx: &IdeContext) -> Option<CompletionResponse> {
-        // Check if this is an Art file
+        // Art file: route by cursor position within art structure
         if ctx.uri.path().ends_with(".art.vue") {
-            return template::complete_art(ctx);
+            return match ctx.block_type {
+                Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_))) => {
+                    // Inside variant template: provide template completions
+                    let items = template::complete_template(ctx);
+                    if items.is_empty() {
+                        template::complete_art(ctx)
+                    } else {
+                        Some(CompletionResponse::Array(items))
+                    }
+                }
+                Some(BlockType::ScriptSetup) => {
+                    let items = script::complete_script(ctx, true);
+                    if items.is_empty() {
+                        None
+                    } else {
+                        Some(CompletionResponse::Array(items))
+                    }
+                }
+                Some(BlockType::Script) => {
+                    let items = script::complete_script(ctx, false);
+                    if items.is_empty() {
+                        None
+                    } else {
+                        Some(CompletionResponse::Array(items))
+                    }
+                }
+                _ => template::complete_art(ctx),
+            };
         }
 
         // Check if cursor is inside <art> block in a regular .vue file
@@ -54,9 +81,49 @@ impl super::CompletionService {
         ctx: &IdeContext<'_>,
         tsgo_bridge: Option<Arc<TsgoBridge>>,
     ) -> Option<CompletionResponse> {
-        // Check if this is an Art file
+        // Art file: route by cursor position within art structure
         if ctx.uri.path().ends_with(".art.vue") {
-            return template::complete_art(ctx);
+            return match ctx.block_type {
+                Some(BlockType::Art(ArtCursorPosition::VariantTemplate(ref info))) => {
+                    // Try tsgo template completion for variant template
+                    if let Some(ref bridge) = tsgo_bridge {
+                        let items = Self::complete_art_variant_with_tsgo(ctx, info, bridge).await;
+                        if !items.is_empty() {
+                            let mut all = items;
+                            all.extend(template::directive_completions());
+                            return Some(CompletionResponse::Array(all));
+                        }
+                    }
+                    // Fallback to structural completions
+                    Self::complete(ctx)
+                }
+                Some(BlockType::ScriptSetup) => {
+                    // Script setup in art file: use normal script completion with tsgo
+                    if let Some(ref bridge) = tsgo_bridge {
+                        let items = Self::complete_script_with_tsgo(ctx, true, bridge).await;
+                        if !items.is_empty() {
+                            let mut all = items;
+                            let mut v = script::composition_api_completions();
+                            v.extend(script::macro_completions());
+                            all.extend(v);
+                            return Some(CompletionResponse::Array(all));
+                        }
+                    }
+                    Self::complete(ctx)
+                }
+                Some(BlockType::Script) => {
+                    if let Some(ref bridge) = tsgo_bridge {
+                        let items = Self::complete_script_with_tsgo(ctx, false, bridge).await;
+                        if !items.is_empty() {
+                            let mut all = items;
+                            all.extend(script::composition_api_completions());
+                            return Some(CompletionResponse::Array(all));
+                        }
+                    }
+                    Self::complete(ctx)
+                }
+                _ => Self::complete(ctx),
+            };
         }
 
         // Check if cursor is inside <art> block in a regular .vue file
@@ -85,7 +152,7 @@ impl super::CompletionService {
                 BlockType::Script => Self::complete_script_with_tsgo(ctx, false, &bridge).await,
                 BlockType::ScriptSetup => Self::complete_script_with_tsgo(ctx, true, &bridge).await,
                 BlockType::Style(_) => vec![],
-                BlockType::Art(_) => unreachable!(),
+                BlockType::Art(_) => vec![],
             };
 
             if !tsgo_items.is_empty() {
@@ -99,7 +166,7 @@ impl super::CompletionService {
                         v
                     }
                     BlockType::Style(_) => style::vue_css_completions(),
-                    BlockType::Art(_) => unreachable!(),
+                    BlockType::Art(_) => vec![],
                 });
 
                 return Some(CompletionResponse::Array(items));
@@ -108,6 +175,47 @@ impl super::CompletionService {
 
         // Fall back to synchronous completions
         Self::complete(ctx)
+    }
+
+    /// Get completions for an art variant template with tsgo.
+    #[cfg(feature = "native")]
+    async fn complete_art_variant_with_tsgo(
+        ctx: &IdeContext<'_>,
+        info: &crate::virtual_code::ArtVariantInfo,
+        bridge: &TsgoBridge,
+    ) -> Vec<CompletionItem> {
+        if let Some(ref virtual_docs) = ctx.virtual_docs {
+            if let Some(ref tmpl) = virtual_docs.template {
+                // Convert the art variant relative offset through the template source map
+                let relative_offset = info.relative_offset as u32;
+                let vts_offset = tmpl
+                    .source_map
+                    .to_generated(relative_offset)
+                    .map(|o| o as usize)
+                    .unwrap_or(relative_offset as usize);
+
+                let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
+                let uri = cstr!("vize-virtual://{}.template.ts", ctx.uri.path());
+
+                if bridge.is_initialized() {
+                    let _ = bridge
+                        .open_or_update_virtual_document(
+                            &cstr!("{}.template.ts", ctx.uri.path()),
+                            &tmpl.content,
+                        )
+                        .await;
+
+                    if let Ok(items) = bridge.completion(&uri, line, character).await {
+                        return items
+                            .into_iter()
+                            .map(Self::convert_lsp_completion)
+                            .collect();
+                    }
+                }
+            }
+        }
+
+        vec![]
     }
 
     /// Get completions for template with tsgo.

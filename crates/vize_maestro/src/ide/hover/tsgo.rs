@@ -8,11 +8,14 @@
     clippy::disallowed_macros
 )]
 
+use std::sync::Arc;
+
 use tower_lsp::lsp_types::{Hover, HoverContents, MarkupContent, MarkupKind, Range};
-use vize_canon::{LspHover, LspHoverContents, LspMarkedString};
+use vize_canon::{LspHover, LspHoverContents, LspMarkedString, TsgoBridge};
 
 use super::HoverService;
 use crate::ide::IdeContext;
+use crate::virtual_code::ArtVariantInfo;
 
 impl HoverService {
     /// Convert SFC offset to virtual TS template offset.
@@ -94,6 +97,63 @@ impl HoverService {
         }
 
         None
+    }
+
+    /// Get hover for an art variant template with tsgo.
+    ///
+    /// Maps the art variant offset to the virtual TS offset and requests hover from tsgo.
+    pub(super) async fn hover_art_variant_with_tsgo(
+        ctx: &IdeContext<'_>,
+        info: &ArtVariantInfo,
+        tsgo_bridge: Option<Arc<TsgoBridge>>,
+    ) -> Option<Hover> {
+        let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
+
+        if word.is_empty() {
+            return None;
+        }
+
+        // Check for Vue directives first (these don't need tsgo)
+        if let Some(hover) = Self::hover_directive(&word) {
+            return Some(hover);
+        }
+
+        // Try to get type information from tsgo via virtual TypeScript
+        if let Some(bridge) = tsgo_bridge {
+            if let Some(ref virtual_docs) = ctx.virtual_docs {
+                if let Some(ref template) = virtual_docs.template {
+                    // Convert the art variant relative offset through the template source map
+                    let relative_offset = info.relative_offset as u32;
+                    let vts_offset = template
+                        .source_map
+                        .to_generated(relative_offset)
+                        .map(|o| o as usize)
+                        .unwrap_or(relative_offset as usize);
+
+                    let (line, character) =
+                        crate::ide::offset_to_position(&template.content, vts_offset);
+                    #[allow(clippy::disallowed_macros)]
+                    let uri = format!("vize-virtual://{}.template.ts", ctx.uri.path());
+
+                    // Open/update virtual document
+                    if bridge.is_initialized() {
+                        #[allow(clippy::disallowed_macros)]
+                        let vdoc_uri = format!("{}.template.ts", ctx.uri.path());
+                        let _ = bridge
+                            .open_or_update_virtual_document(&vdoc_uri, &template.content)
+                            .await;
+
+                        // Request hover from tsgo
+                        if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
+                            return Some(Self::convert_lsp_hover(hover));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Fall back to template hover (croquis analysis)
+        Self::hover_template(ctx)
     }
 
     /// Convert tsgo LspHover to tower-lsp Hover.

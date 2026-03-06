@@ -278,6 +278,11 @@ impl ServerState {
 
     /// Generate and cache virtual documents for a document.
     pub fn update_virtual_docs(&self, uri: &Url, content: &str) {
+        if uri.path().ends_with(".art.vue") {
+            self.update_art_virtual_docs(uri, content);
+            return;
+        }
+
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: uri.path().to_string().into(),
             ..Default::default()
@@ -288,6 +293,67 @@ impl ServerState {
             let virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
             self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
         }
+    }
+
+    /// Generate and cache virtual documents for an art file (*.art.vue).
+    ///
+    /// Uses the default variant's template as the synthetic template block,
+    /// and generates virtual docs for script_setup if present.
+    fn update_art_virtual_docs(&self, uri: &Url, content: &str) {
+        use crate::virtual_code::{ScriptCodeGenerator, TemplateCodeGenerator, VirtualDocuments};
+
+        let allocator = vize_carton::Bump::new();
+        let Ok(art_desc) =
+            vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default())
+        else {
+            return;
+        };
+
+        let base_uri = uri.path();
+        let mut docs = VirtualDocuments::new();
+
+        // Generate template virtual doc from default variant's template
+        if let Some(variant) = art_desc.default_variant() {
+            let template_content = variant.template;
+            if !template_content.trim().is_empty() {
+                let template_allocator = vize_carton::Bump::new();
+                let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
+
+                // Calculate template offset in the original art file
+                let template_ptr = template_content.as_ptr() as usize;
+                let source_ptr = content.as_ptr() as usize;
+                let block_offset = (template_ptr - source_ptr) as u32;
+
+                let mut template_gen = TemplateCodeGenerator::new();
+                template_gen.set_block_offset(block_offset);
+                let mut template_doc = template_gen.generate(&ast, template_content);
+                template_doc.uri = vize_carton::cstr!("{base_uri}.__template.ts").to_string();
+                docs.template = Some(template_doc);
+            }
+        }
+
+        // Generate script_setup virtual doc using SFC parser
+        // (SFC parser handles script blocks even in art files)
+        let sfc_options = vize_atelier_sfc::SfcParseOptions {
+            filename: uri.path().to_string().into(),
+            ..Default::default()
+        };
+        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, sfc_options) {
+            if let Some(ref script_setup) = descriptor.script_setup {
+                let mut script_gen = ScriptCodeGenerator::new();
+                let mut script_doc = script_gen.generate(script_setup, true);
+                script_doc.uri = vize_carton::cstr!("{base_uri}.__script_setup.ts").to_string();
+                docs.script_setup = Some(script_doc);
+            }
+            if let Some(ref script) = descriptor.script {
+                let mut script_gen = ScriptCodeGenerator::new();
+                let mut script_doc = script_gen.generate(script, false);
+                script_doc.uri = vize_carton::cstr!("{base_uri}.__script.ts").to_string();
+                docs.script = Some(script_doc);
+            }
+        }
+
+        self.virtual_docs_cache.insert(uri.clone(), docs);
     }
 
     /// Get cached virtual documents for a document.

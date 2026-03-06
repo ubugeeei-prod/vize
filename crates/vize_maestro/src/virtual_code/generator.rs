@@ -247,6 +247,32 @@ impl Default for BatchVirtualCodeGenerator {
     }
 }
 
+/// Information about cursor position within an art variant template.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ArtVariantInfo {
+    /// Index of the variant in the art descriptor
+    pub variant_index: usize,
+    /// Byte offset where the variant template content starts in the art file
+    pub template_start: usize,
+    /// Byte offset where the variant template content ends in the art file
+    pub template_end: usize,
+    /// Cursor offset relative to the start of the variant template content
+    pub relative_offset: usize,
+}
+
+/// Where the cursor is within an art block.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ArtCursorPosition {
+    /// In `<art ...>` tag attributes
+    ArtTag,
+    /// In `<variant ...>` tag attributes (variant index)
+    VariantTag(usize),
+    /// Inside variant template content
+    VariantTemplate(ArtVariantInfo),
+    /// Between variants (art content area)
+    ArtContent,
+}
+
 /// Helper to determine the virtual language from a block position.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlockType {
@@ -254,7 +280,7 @@ pub enum BlockType {
     Script,
     ScriptSetup,
     Style(usize),
-    Art(usize),
+    Art(ArtCursorPosition),
 }
 
 impl BlockType {
@@ -302,20 +328,88 @@ pub fn find_block_at_offset(descriptor: &SfcDescriptor, offset: usize) -> Option
     }
 
     // Check custom blocks (art, i18n, etc.)
-    for (i, custom) in descriptor.custom_blocks.iter().enumerate() {
+    for custom in descriptor.custom_blocks.iter() {
         if custom.block_type == "art" && offset >= custom.loc.start && offset < custom.loc.end {
-            return Some(BlockType::Art(i));
+            return Some(BlockType::Art(ArtCursorPosition::ArtContent));
         }
     }
 
     None
 }
 
+/// Find which block contains the given offset in an art file (*.art.vue).
+///
+/// Uses `vize_musea::parse_art()` to determine cursor position within art variant templates.
+pub fn find_art_block_at_offset(source: &str, offset: usize) -> Option<BlockType> {
+    // First check SFC blocks (script, style)
+    let options = vize_atelier_sfc::SfcParseOptions {
+        filename: Default::default(),
+        ..Default::default()
+    };
+
+    if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, options) {
+        // Check script/script_setup/style blocks
+        if let Some(ref script) = descriptor.script {
+            if offset >= script.loc.start && offset < script.loc.end {
+                return Some(BlockType::Script);
+            }
+        }
+        if let Some(ref script_setup) = descriptor.script_setup {
+            if offset >= script_setup.loc.start && offset < script_setup.loc.end {
+                return Some(BlockType::ScriptSetup);
+            }
+        }
+        for (i, style) in descriptor.styles.iter().enumerate() {
+            if offset >= style.loc.start && offset < style.loc.end {
+                return Some(BlockType::Style(i));
+            }
+        }
+    }
+
+    // Parse as art file to determine variant position
+    let allocator = vize_carton::Bump::new();
+    let Ok(art_desc) =
+        vize_musea::parse_art(&allocator, source, vize_musea::ArtParseOptions::default())
+    else {
+        return None;
+    };
+
+    for (i, variant) in art_desc.variants.iter().enumerate() {
+        if let Some(ref loc) = variant.loc {
+            let variant_start = loc.start as usize;
+            let variant_end = loc.end as usize;
+
+            if offset >= variant_start && offset < variant_end {
+                // Determine template content position using pointer arithmetic
+                let template_ptr = variant.template.as_ptr() as usize;
+                let source_ptr = source.as_ptr() as usize;
+                let template_start = template_ptr - source_ptr;
+                let template_end = template_start + variant.template.len();
+
+                if offset >= template_start && offset < template_end {
+                    return Some(BlockType::Art(ArtCursorPosition::VariantTemplate(
+                        ArtVariantInfo {
+                            variant_index: i,
+                            template_start,
+                            template_end,
+                            relative_offset: offset - template_start,
+                        },
+                    )));
+                }
+
+                return Some(BlockType::Art(ArtCursorPosition::VariantTag(i)));
+            }
+        }
+    }
+
+    Some(BlockType::Art(ArtCursorPosition::ArtContent))
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        find_block_at_offset, BatchVirtualCodeGenerator, BlockType, VirtualCodeGenerator,
-        VirtualLanguage,
+        find_art_block_at_offset, find_block_at_offset, ArtCursorPosition,
+        BatchVirtualCodeGenerator, BlockType, VirtualCodeGenerator, VirtualLanguage,
     };
 
     #[test]
@@ -414,7 +508,7 @@ const x = 1
         let art_content_start = descriptor.custom_blocks[0].loc.start;
         assert_eq!(
             find_block_at_offset(&descriptor, art_content_start + 5),
-            Some(BlockType::Art(0))
+            Some(BlockType::Art(ArtCursorPosition::ArtContent))
         );
 
         // In template - should still be Template
@@ -429,6 +523,46 @@ const x = 1
 
     #[test]
     fn test_block_type_art_language() {
-        assert_eq!(BlockType::Art(0).language(), VirtualLanguage::Template);
+        assert_eq!(
+            BlockType::Art(ArtCursorPosition::ArtContent).language(),
+            VirtualLanguage::Template
+        );
+    }
+
+    #[test]
+    fn test_find_art_block_at_offset() {
+        let source = r#"<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <Button>Click me</Button>
+  </variant>
+</art>
+
+<script setup lang="ts">
+import Button from './Button.vue'
+</script>"#;
+
+        // In script setup
+        let script_offset = source.find("import Button").unwrap();
+        assert_eq!(
+            find_art_block_at_offset(source, script_offset),
+            Some(BlockType::ScriptSetup)
+        );
+
+        // In variant template content
+        let template_offset = source.find("<Button>Click me</Button>").unwrap();
+        let result = find_art_block_at_offset(source, template_offset);
+        assert!(matches!(
+            result,
+            Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
+        ));
+
+        // In art content (between variants)
+        let art_content_offset = source.find("\n  <variant").unwrap() + 1;
+        // This offset is just before <variant, which is inside the <art> but before variant tag starts
+        // It should be ArtContent
+        assert!(matches!(
+            find_art_block_at_offset(source, 1),
+            Some(BlockType::Art(_))
+        ));
     }
 }
