@@ -40,10 +40,15 @@ export type { VizeLoaderOptions, VizeStyleLoaderOptions } from "./types/index.js
 export {
   generateScopeId,
   extractStyleBlocks,
+  extractCustomBlocks,
+  extractSrcInfo,
+  inlineSrcBlocks,
   addScopeToCssFallback,
   matchesPattern,
   createLogger,
 } from "./shared/utils.js";
+
+export { genHotReloadCode } from "./shared/hotReload.js";
 
 export { compileFile, generateOutput, clearCompilationCache } from "./shared/compiler.js";
 
@@ -54,6 +59,8 @@ export { createVizeVueRules } from "./preset/rules.js";
 export type {
   CompiledModule,
   StyleBlockInfo,
+  CustomBlockInfo,
+  SfcSrcInfo,
   SfcCompileOptionsNapi,
   SfcCompileResultNapi,
   LoaderEntry,

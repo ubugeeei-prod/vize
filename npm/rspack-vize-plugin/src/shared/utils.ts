@@ -4,14 +4,37 @@
  */
 
 import { createHash } from "node:crypto";
-import type { StyleBlockInfo } from "../types/index.js";
+import path from "node:path";
+import type { StyleBlockInfo, CustomBlockInfo, SfcSrcInfo } from "../types/index.js";
 
 /**
  * Generate a unique scope ID for scoped CSS based on file path.
  * Uses SHA256 hash and takes the first 8 characters.
+ *
+ * Uses relative path (when rootContext is provided) for cross-environment
+ * consistency (e.g. SSR hydration).  In production, mixes source content
+ * into the hash to avoid collisions across packages with identically-named files.
  */
-export function generateScopeId(filename: string): string {
-  const hash = createHash("sha256").update(filename).digest("hex");
+export function generateScopeId(
+  filename: string,
+  rootContext?: string,
+  isProduction?: boolean,
+  source?: string,
+): string {
+  let input: string;
+  if (rootContext) {
+    const relative = path
+      .relative(rootContext, filename)
+      .replace(/^(\.\.[\/\\])+/, "")
+      .replace(/\\/g, "/");
+    input =
+      isProduction && source
+        ? relative + "\n" + source.replace(/\r\n/g, "\n")
+        : relative;
+  } else {
+    input = filename;
+  }
+  const hash = createHash("sha256").update(input).digest("hex");
   return hash.slice(0, 8);
 }
 
@@ -125,6 +148,103 @@ function scopeSelectors(group: string, scopeAttr: string): string {
       return `${leadingWs}${s}${scopeAttr}`;
     })
     .join(",");
+}
+
+/**
+ * Extract custom block metadata from a Vue SFC source string.
+ * Parses root-level tags that are not <script>, <template>, or <style>.
+ */
+export function extractCustomBlocks(source: string): CustomBlockInfo[] {
+  // First, strip the content of <script>, <template>, and <style> blocks
+  // so the regex only matches truly root-level custom blocks (not inner HTML).
+  const stripped = source
+    .replace(/<(script|template|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+
+  const blocks: CustomBlockInfo[] = [];
+  const blockRegex = /<([a-z][a-z0-9-]*)([^>]*)>([\s\S]*?)<\/\1>/gi;
+  let match;
+  let index = 0;
+
+  while ((match = blockRegex.exec(stripped)) !== null) {
+    const type = match[1];
+    const attrsStr = match[2];
+    const content = match[3];
+    const src = attrsStr.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null;
+    const attrs = parseAttributes(attrsStr);
+
+    blocks.push({ type, content, src, attrs, index });
+    index++;
+  }
+
+  return blocks;
+}
+
+/**
+ * Parse HTML-like attributes from a tag's attribute string.
+ * Returns a map of attribute name → value (or `true` for boolean attributes).
+ */
+function parseAttributes(attrsStr: string): Record<string, string | true> {
+  const attrs: Record<string, string | true> = {};
+  const attrRegex = /\b([a-z][a-z0-9-]*)(?:=["']([^"']*)["'])?/gi;
+  let match;
+
+  while ((match = attrRegex.exec(attrsStr)) !== null) {
+    attrs[match[1]] = match[2] ?? true;
+  }
+
+  return attrs;
+}
+
+/**
+ * Extract <script src> and <template src> references from an SFC source.
+ * Returns null for each if no src attribute is present.
+ */
+export function extractSrcInfo(source: string): SfcSrcInfo {
+  const scriptMatch = source.match(/<script([^>]*)>/i);
+  const templateMatch = source.match(/<template([^>]*)>/i);
+
+  const scriptSrc = scriptMatch?.[1]?.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null;
+  const templateSrc = templateMatch?.[1]?.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null;
+
+  return { scriptSrc, templateSrc };
+}
+
+/**
+ * Replace <script src="..."> or <template src="..."> with inline content
+ * read from external files. This produces a self-contained SFC string
+ * that can be passed to compileSfc.
+ */
+export function inlineSrcBlocks(
+  source: string,
+  scriptContent: string | null,
+  templateContent: string | null,
+): string {
+  let result = source;
+
+  if (scriptContent !== null) {
+    // Replace <script ... src="..."> ... </script> with <script ...>content</script>
+    result = result.replace(
+      /(<script)([^>]*)\bsrc=["'][^"']+["']([^>]*>)[\s\S]*?(<\/script>)/i,
+      (_, open, beforeSrc, afterSrc, close) => {
+        // Remove src attribute remnants and rebuild
+        const attrs = (beforeSrc + afterSrc).replace(/\bsrc=["'][^"']+["']\s*/g, "");
+        return `${open}${attrs}\n${scriptContent}\n${close}`;
+      },
+    );
+  }
+
+  if (templateContent !== null) {
+    // Replace <template ... src="..."> ... </template> with <template ...>content</template>
+    result = result.replace(
+      /(<template)([^>]*)\bsrc=["'][^"']+["']([^>]*>)[\s\S]*?(<\/template>)/i,
+      (_, open, beforeSrc, afterSrc, close) => {
+        const attrs = (beforeSrc + afterSrc).replace(/\bsrc=["'][^"']+["']\s*/g, "");
+        return `${open}${attrs}\n${templateContent}\n${close}`;
+      },
+    );
+  }
+
+  return result;
 }
 
 /**

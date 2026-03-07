@@ -4,17 +4,24 @@
  * Responsibilities:
  * 1. Compile SFC to JavaScript using @vizejs/native
  * 2. Inject style import statements (with query parameters)
- * 3. Output JS module code
+ * 3. Inject custom block import statements
+ * 4. Handle <script src="..."> and <template src="..."> external references
+ * 5. Detect custom element files (.ce.vue) and adjust output accordingly
+ * 6. Output JS module code
  *
  * Note: Must be used with `oneOf` in Rspack config to ensure mutual exclusion
  * with the style-loader rule.
  */
 
 import type { LoaderContext } from "@rspack/core";
+import fs from "node:fs";
 import path from "node:path";
 import { compileFile, generateOutput } from "../shared/compiler.js";
-import { matchesPattern } from "../shared/utils.js";
+import { matchesPattern, extractSrcInfo, inlineSrcBlocks } from "../shared/utils.js";
 import type { VizeLoaderOptions } from "../types/index.js";
+
+/** Default pattern: files ending with .ce.vue are custom elements */
+const DEFAULT_CE_PATTERN = /\.ce\.vue$/;
 
 export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, source: string): void {
   const callback = this.async();
@@ -22,6 +29,10 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
   const resourcePath = this.resourcePath;
   const resourceQuery = this.resourceQuery;
   const requestPath = normalizeRequestPath(this, resourcePath);
+
+  const isProduction = this.mode === "production" || process.env.NODE_ENV === "production";
+  const isSsr = options.ssr ?? false;
+  const needsHotReload = !isSsr && !isProduction && options.hotReload !== false;
 
   // Add dependency to trigger recompilation on file change
   this.addDependency(resourcePath);
@@ -48,11 +59,53 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
   }
 
   try {
-    // 1. Compile SFC
-    const compiled = compileFile(resourcePath, source, {
+    // 0. Determine custom element mode
+    const isCustomElement = resolveCustomElement(resourcePath, options.customElement);
+
+    // 1. Resolve <script src="..."> and <template src="..."> external files
+    const srcInfo = extractSrcInfo(source);
+    let resolvedSource = source;
+
+    if (srcInfo.scriptSrc) {
+      const scriptPath = path.resolve(path.dirname(resourcePath), srcInfo.scriptSrc);
+      this.addDependency(scriptPath);
+      try {
+        const scriptContent = fs.readFileSync(scriptPath, "utf-8");
+        resolvedSource = inlineSrcBlocks(resolvedSource, scriptContent, null);
+      } catch {
+        callback(
+          new Error(
+            `[vize] <script src="${srcInfo.scriptSrc}"> not found (resolved: ${scriptPath}) in ${resourcePath}`,
+          ),
+        );
+        return;
+      }
+    }
+
+    if (srcInfo.templateSrc) {
+      const templatePath = path.resolve(path.dirname(resourcePath), srcInfo.templateSrc);
+      this.addDependency(templatePath);
+      try {
+        const templateContent = fs.readFileSync(templatePath, "utf-8");
+        resolvedSource = inlineSrcBlocks(resolvedSource, null, templateContent);
+      } catch {
+        callback(
+          new Error(
+            `[vize] <template src="${srcInfo.templateSrc}"> not found (resolved: ${templatePath}) in ${resourcePath}`,
+          ),
+        );
+        return;
+      }
+    }
+
+    // 2. Compile SFC
+    const compiled = compileFile(resourcePath, resolvedSource, {
       sourceMap: options.sourceMap ?? this.sourceMap ?? true,
       ssr: options.ssr ?? false,
       compilerOptions: options.compilerOptions,
+      isCustomElement,
+      rootContext: this.rootContext,
+      isProduction,
     });
 
     for (const warning of compiled.warnings) {
@@ -66,20 +119,20 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
         this.emitError(new Error(`[vize] ${error}`));
       }
       const errorSummary = compiled.errors.join("\\n");
-      callback(
-        new Error(
-          `[vize] Compilation failed for ${resourcePath}:\n${errorSummary}`,
-        ),
-      );
+      callback(new Error(`[vize] Compilation failed for ${resourcePath}:\n${errorSummary}`));
       return;
     }
 
-    // 2. Generate output code (with style imports)
+    // 3. Generate output code (with style imports + custom block imports + HMR)
     const output = generateOutput(compiled, {
       requestPath,
+      hmr: needsHotReload,
+      filePath: resourcePath,
+      isProduction,
+      rootContext: this.rootContext,
     });
 
-    // 3. Return the compiled JavaScript
+    // 4. Return the compiled JavaScript
     // TODO: @vizejs/native compileSfc does not yet return a `map` field in
     // SfcCompileResultNapi. Once the Rust side adds source map output, pass
     // it here as: callback(null, output, map)
@@ -99,6 +152,22 @@ function shouldCompileFile(file: string, options: VizeLoaderOptions): boolean {
   }
 
   return true;
+}
+
+/**
+ * Determine if the file should be compiled in custom element mode.
+ */
+function resolveCustomElement(
+  resourcePath: string,
+  customElement: boolean | RegExp | undefined,
+): boolean {
+  if (customElement === true) return true;
+  if (customElement === false || customElement === undefined) {
+    // Default: detect .ce.vue pattern
+    return DEFAULT_CE_PATTERN.test(resourcePath);
+  }
+  // RegExp provided
+  return customElement.test(resourcePath);
 }
 
 /**

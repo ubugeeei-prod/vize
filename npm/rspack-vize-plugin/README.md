@@ -5,12 +5,14 @@ High-performance Rspack plugin for Vue SFC compilation powered by [Vize](https:/
 ## Features
 
 - ⚡ **Blazing Fast** - Powered by Rust-based `@vizejs/native` compiler
-- 🔄 **HMR Support** - Automatic hot module replacement via Rspack watch mode
+- 🔄 **HMR Support** - Script/template hot reload via `module.hot` + `__VUE_HMR_RUNTIME__`, CSS Modules HMR with targeted rerender
 - 🎨 **CSS Processing** - Support for both native CSS (`experiments.css`) and CssExtractRspackPlugin
-- 📦 **CSS Modules** - First-class CSS Modules support
+- 📦 **CSS Modules** - First-class CSS Modules support with per-module HMR
 - 🔗 **`<style src>` Support** - Resolves external style files with watch dependency tracking
 - 🔧 **TypeScript** - Full TypeScript support with auto-detection and optional built-in TS stripping
 - 🗄️ **Compilation Cache** - Content-hash based caching to skip re-compilation of unchanged files
+- 🛠️ **Vue DevTools** - Exposes `__file` for component file path in development mode
+- 🧩 **Custom Elements** - Auto-detect `.ce.vue` or configure via `customElement` option
 
 ## Installation
 
@@ -295,15 +297,18 @@ export default {
 import { VizePlugin } from "@vizejs/rspack-plugin";
 
 new VizePlugin({
-  // Options
   isProduction: boolean;    // Auto-detected from Rspack mode
   include: string | RegExp | (string | RegExp)[]; // Filter watched .vue files
   exclude: string | RegExp | (string | RegExp)[]; // Exclude watched .vue files
   ssr: boolean;             // Enable SSR mode (default: false)
   sourceMap: boolean;       // Enable source maps (default: true in dev)
+  vapor: boolean;           // Enable Vapor mode (default: false, SFC-level not yet supported)
+  root: string;             // Root directory (default: Rspack's root)
   css: {
     native: boolean;        // Use experiments.css (default: false), warns if config mismatch
   };
+  compilerOptions: {};      // Extra @vizejs/native compileSfc options
+  debug: boolean;           // Enable debug logging (default: false)
 });
 // Debug logging uses Rspack's infrastructure logger.
 // Control verbosity via `infrastructureLogging.level` in your rspack config.
@@ -320,6 +325,8 @@ new VizePlugin({
     exclude: string | RegExp | (string | RegExp)[]; // Safe compile denylist
     sourceMap: boolean;     // Enable source maps (default: true)
     ssr: boolean;           // Enable SSR mode (default: false)
+    customElement: boolean | RegExp; // Custom element mode (default: /\.ce\.vue$/)
+    hotReload: boolean;     // Enable HMR (default: true in dev, false in prod/SSR)
     compilerOptions: {      // Extra @vizejs/native compileSfc options
       filename?: string;
       sourceMap?: boolean;
@@ -386,6 +393,10 @@ const rules = createVizeVueRules({
 
 ## Known Limitations
 
+### HMR
+
+Script and template changes trigger a component-level hot reload via `module.hot.accept()` + `__VUE_HMR_RUNTIME__.reload()`. CSS Module changes trigger a targeted rerender without full reload. Plain `<style>` HMR is handled natively by Rspack's CSS pipeline.
+
 ### Path Resolution
 
 Style imports injected by the main loader are normalized to resolver-friendly request paths.
@@ -397,10 +408,15 @@ Compiler diagnostics are emitted via loader APIs:
 
 - Compile errors: `callback(error)` — fails the build immediately
 - Compile warnings: `this.emitWarning(...)`
-- Missing `<style src>` files: warning + empty CSS fallback for that block
+- Missing `<style src>` files: build error (fail fast, no silent style loss)
 - Scoped CSS fallback: warning emitted once per file (deduplicated in watch mode)
 
+Scoped preprocessor blocks such as `<style scoped lang="scss">` are currently rejected.
+The fallback transformer only understands plain CSS selectors, so allowing SCSS/Less/Stylus here would silently produce incorrect scoped output.
+
 ### Scoped CSS
+
+Scoped CSS scope IDs are derived from the file's **relative path** (relative to Rspack's `rootContext`). In production builds, the file content is also mixed into the hash to prevent collisions across packages with identically-named files. This ensures consistent scope IDs across different machines for SSR hydration.
 
 The current scoped CSS implementation uses a fallback regex transformer with the following limitations:
 

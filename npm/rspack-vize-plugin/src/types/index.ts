@@ -46,6 +46,34 @@ export interface StyleBlockInfo {
 }
 
 // ============================================================================
+// Custom Block Types
+// ============================================================================
+
+export interface CustomBlockInfo {
+  /** Tag name of the custom block (e.g., "i18n", "docs") */
+  type: string;
+  /** Raw content of the custom block */
+  content: string;
+  /** External source path from `<block src="...">` */
+  src?: string | null;
+  /** All attributes on the custom block tag */
+  attrs: Record<string, string | true>;
+  /** Index of this custom block in the SFC */
+  index: number;
+}
+
+// ============================================================================
+// SFC Block Src Info
+// ============================================================================
+
+export interface SfcSrcInfo {
+  /** Whether <script> has a src attribute */
+  scriptSrc?: string | null;
+  /** Whether <template> has a src attribute */
+  templateSrc?: string | null;
+}
+
+// ============================================================================
 // Compiled Module Types
 // ============================================================================
 
@@ -58,6 +86,10 @@ export interface CompiledModule {
   hasScoped: boolean;
   /** Per-block style metadata extracted from the source SFC */
   styles: StyleBlockInfo[];
+  /** Custom blocks extracted from the source SFC */
+  customBlocks: CustomBlockInfo[];
+  /** Whether this is a custom element SFC (e.g., .ce.vue) */
+  isCustomElement: boolean;
 }
 
 // ============================================================================
@@ -96,6 +128,23 @@ export interface VizeLoaderOptions {
    * Additional low-level compiler options passed to @vizejs/native compileSfc
    */
   compilerOptions?: SfcCompileOptionsNapi;
+
+  /**
+   * Transform Vue SFCs into custom elements.
+   * - `true`: all `*.vue` imports are converted into custom elements
+   * - `RegExp`: matched files are converted into custom elements
+   *
+   * @default /\.ce\.vue$/
+   */
+  customElement?: boolean | RegExp;
+
+  /**
+   * Enable HMR (Hot Module Replacement) for Vue SFCs.
+   * Set to `false` to explicitly disable HMR even in development mode.
+   *
+   * @default true (enabled in development, disabled in production/SSR)
+   */
+  hotReload?: boolean;
 }
 
 export interface VizeStyleLoaderOptions {
