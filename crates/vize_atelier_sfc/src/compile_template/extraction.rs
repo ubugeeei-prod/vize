@@ -8,6 +8,7 @@ use super::string_tracking::{
 
 /// Extract imports, hoisted consts, and render function from compiled template code
 /// Returns (imports, hoisted, render_function) where render_function is the full function definition
+#[cfg(test)]
 pub(crate) fn extract_template_parts_full(template_code: &str) -> (String, String, String) {
     let mut imports = String::default();
     let mut hoisted = String::default();

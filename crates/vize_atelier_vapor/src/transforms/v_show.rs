@@ -21,6 +21,8 @@ pub fn transform_v_show<'a>(
         dir: Box::new_in(new_dir, allocator),
         name: String::new("show"),
         builtin: true,
+        tag: String::new(""),
+        input_type: String::new(""),
     };
 
     OperationNode::Directive(dir_ir)

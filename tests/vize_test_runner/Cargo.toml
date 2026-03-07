@@ -8,6 +8,10 @@ license.workspace = true
 name = "coverage"
 path = "src/coverage.rs"
 
+[[bin]]
+name = "dump_patches"
+path = "src/dump_patches.rs"
+
 [dependencies]
 vize_atelier_core.workspace = true
 vize_atelier_vapor.workspace = true

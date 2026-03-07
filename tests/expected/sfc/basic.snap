@@ -121,7 +121,7 @@ const _sfc_main = {
   }
 }
 
-_sfc_main.render = _sfc_render
+_sfc_main.render = render
 export default _sfc_main
 ===
 name: template only
@@ -150,7 +150,7 @@ export default { name: 'MyComponent' }
 --- OUTPUT ---
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-export function render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, "Component"))
 }
 

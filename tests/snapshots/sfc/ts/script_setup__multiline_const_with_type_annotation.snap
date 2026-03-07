@@ -1,10 +1,9 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
 
 
 interface LayoutConfig {
@@ -26,7 +25,7 @@ const secondLayout: LayoutConfig = {
 };
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(defaultLayout).name) + " " + _toDisplayString(_unref(secondLayout).columns), 1 /* TEXT */))
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(defaultLayout.name) + " " + _toDisplayString(secondLayout.columns), 1 /* TEXT */))
 }
 }
 

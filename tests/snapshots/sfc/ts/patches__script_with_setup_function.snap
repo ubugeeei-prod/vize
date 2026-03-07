@@ -1,9 +1,12 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.count), 1 /* TEXT */))
+}
 
 import { ref } from 'vue'
 
@@ -13,10 +16,6 @@ const _sfc_main = {
     const count = ref(0)
     return { count }
   }
-}
-
-export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.count), 1 /* TEXT */))
 }
 
 _sfc_main.render = render

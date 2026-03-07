@@ -1,6 +1,7 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: js_output
+assertion_line: 221
+expression: js_output.as_str()
 ---
 import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, mergeProps as _mergeProps, withCtx as _withCtx } from "vue"
 
@@ -24,7 +25,7 @@ return (_ctx, _cache) => {
           _createTextVNode("\n    Click me\n  ")
         ]),
         _: 1 /* STABLE */
-      }))
+      }, 16 /* FULL_PROPS */))
       : _createCommentVNode("v-if", true)
 }
 }

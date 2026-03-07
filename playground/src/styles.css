@@ -657,6 +657,10 @@
   padding: 2px;
 }
 
+.code-view-toggle {
+  min-width: 90px;
+}
+
 .toggle-btn {
   background: none;
   border: none;
@@ -676,6 +680,16 @@
 .toggle-btn.active {
   background: var(--text-primary);
   color: var(--bg-primary);
+}
+
+.toggle-btn:disabled {
+  cursor: default;
+  color: var(--text-muted);
+  opacity: 0.45;
+}
+
+.toggle-btn:disabled:hover {
+  color: var(--text-muted);
 }
 
 .render-function {
@@ -706,6 +720,13 @@
 .css-compiled h5,
 .css-vars h5,
 .css-errors h5 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.section-label {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);

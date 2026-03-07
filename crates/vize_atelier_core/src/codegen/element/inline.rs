@@ -15,17 +15,28 @@ use super::{
         expression::generate_expression,
         helpers::is_builtin_component,
         node::generate_node,
-        patch_flag::{calculate_element_patch_info, patch_flag_name},
+        patch_flag::{
+            calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
+        },
         props::generate_props,
-        slots::{generate_slots, has_slot_children},
+        slots::{generate_slots, has_dynamic_slots_flag, has_slot_children},
     },
     directives::{generate_vmodel_closing, generate_vshow_closing},
-    helpers::{has_vmodel_directive, has_vshow_directive, is_is_prop, is_renderable_prop},
+    helpers::{
+        has_renderable_props, has_vmodel_directive, has_vshow_directive, is_is_prop,
+        is_renderable_prop, is_whitespace_or_comment,
+    },
 };
 use vize_carton::ToCompactString;
 
 /// Generate element code (non-block)
 pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    // Check for v-once directive - handle it specially with cache
+    if super::helpers::has_v_once(el) {
+        super::v_once::generate_v_once_element(ctx, el);
+        return;
+    }
+
     // Check for v-memo directive - wrap with memoization
     let memo_cache_index = if has_v_memo(el) {
         if let Some(memo_exp) = get_memo_exp(el) {
@@ -205,13 +216,46 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(&el.tag.replace('-', "_"));
             }
 
+            // Calculate patch flag and dynamic props for component
+            // For dynamic components, skip the :is binding from patch flag calculation
+            let (mut patch_flag, dynamic_props) = if is_dynamic_component {
+                calculate_element_patch_info_skip_is(
+                    el,
+                    ctx.options.binding_metadata.as_ref(),
+                    ctx.options.cache_handlers,
+                )
+            } else {
+                calculate_element_patch_info(
+                    el,
+                    ctx.options.binding_metadata.as_ref(),
+                    ctx.options.cache_handlers,
+                )
+            };
+
+            // Slot content is patched through the slot object, so the component vnode
+            // itself should not keep the TEXT flag.
+            if has_slot_children(el) {
+                if let Some(flag) = patch_flag {
+                    let new_flag = flag & !1;
+                    patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
+                }
+            }
+
+            // KeepAlive always needs DYNAMIC_SLOTS. Other components need it when
+            // slot structure is dynamic.
+            if el.tag == "KeepAlive" || el.tag == "keep-alive" || has_dynamic_slots_flag(el) {
+                patch_flag = Some(patch_flag.unwrap_or(0) | 1024);
+            }
+
+            let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
+
             // Generate props -- for dynamic components, filter out the `is` prop
             let effective_has_props = if is_dynamic_component {
                 el.props
                     .iter()
                     .any(|p| !is_is_prop(p) && is_renderable_prop(p))
             } else {
-                !el.props.is_empty()
+                has_renderable_props(el)
             };
             if effective_has_props {
                 ctx.push(", ");
@@ -224,7 +268,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 generate_props(ctx, &el.props);
                 ctx.skip_scope_id = prev_skip_scope_id;
                 ctx.skip_is_prop = false;
-            } else if !el.children.is_empty() {
+            } else if !el.children.is_empty() || has_patch_info {
                 ctx.push(", null");
             }
 
@@ -232,6 +276,59 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             if has_slot_children(el) {
                 ctx.push(", ");
                 generate_slots(ctx, el);
+            } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
+                let is_keep_alive = matches!(el.tag.as_str(), "KeepAlive" | "keep-alive");
+                ctx.push(", [");
+                ctx.indent();
+                let filtered: Vec<_> = el
+                    .children
+                    .iter()
+                    .filter(|c| !is_directive_comment(c))
+                    .collect();
+                for (i, child) in filtered.iter().enumerate() {
+                    if i > 0 {
+                        ctx.push(",");
+                    }
+                    ctx.newline();
+                    if is_keep_alive {
+                        if let TemplateChildNode::Element(child_el) = child {
+                            if child_el.tag_type == ElementType::Component
+                                && child_el.tag == "component"
+                            {
+                                super::block::generate_element_block(ctx, child_el);
+                                continue;
+                            }
+                        }
+                    }
+                    generate_node(ctx, child);
+                }
+                ctx.deindent();
+                ctx.newline();
+                ctx.push("]");
+            } else if has_patch_info {
+                ctx.push(", null");
+            }
+
+            if let Some(flag) = patch_flag {
+                ctx.push(", ");
+                ctx.push(&flag.to_compact_string());
+                ctx.push(" /* ");
+                let flag_name = patch_flag_name(flag);
+                ctx.push(&flag_name);
+                ctx.push(" */");
+            }
+
+            if let Some(props) = dynamic_props {
+                ctx.push(", [");
+                for (i, prop) in props.iter().enumerate() {
+                    if i > 0 {
+                        ctx.push(", ");
+                    }
+                    ctx.push("\"");
+                    ctx.push(prop);
+                    ctx.push("\"");
+                }
+                ctx.push("]");
             }
 
             ctx.push(")");

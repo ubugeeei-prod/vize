@@ -16,7 +16,9 @@ pub struct SimpleExpressionContent {
     pub loc: SourceLocation,
 }
 
-/// Check if element has a structural directive
+/// Check if element has a structural directive.
+/// In Vue 3, v-if has higher priority than v-for when both are on the same element.
+/// So we check for v-if/v-else-if/v-else first, then v-for.
 pub fn check_structural_directive<'a>(
     el: &ElementNode<'a>,
 ) -> Option<(
@@ -24,10 +26,11 @@ pub fn check_structural_directive<'a>(
     Option<SimpleExpressionContent>,
     Option<SourceLocation>,
 )> {
+    // First pass: check for v-if/v-else-if/v-else (higher priority)
     for prop in el.props.iter() {
         if let PropNode::Directive(dir) = prop {
             match dir.name.as_str() {
-                "if" | "else-if" | "else" | "for" => {
+                "if" | "else-if" | "else" => {
                     let exp_content = dir.exp.as_ref().map(|e| match e {
                         ExpressionNode::Simple(s) => SimpleExpressionContent {
                             content: s.content.clone(),
@@ -44,6 +47,27 @@ pub fn check_structural_directive<'a>(
                     return Some((dir.name.clone(), exp_content, exp_loc));
                 }
                 _ => {}
+            }
+        }
+    }
+    // Second pass: check for v-for (lower priority)
+    for prop in el.props.iter() {
+        if let PropNode::Directive(dir) = prop {
+            if dir.name.as_str() == "for" {
+                let exp_content = dir.exp.as_ref().map(|e| match e {
+                    ExpressionNode::Simple(s) => SimpleExpressionContent {
+                        content: s.content.clone(),
+                        is_static: s.is_static,
+                        loc: s.loc.clone(),
+                    },
+                    ExpressionNode::Compound(c) => SimpleExpressionContent {
+                        content: c.loc.source.clone(),
+                        is_static: false,
+                        loc: c.loc.clone(),
+                    },
+                });
+                let exp_loc = dir.exp.as_ref().map(|e| e.loc().clone());
+                return Some((dir.name.clone(), exp_content, exp_loc));
             }
         }
     }
@@ -137,11 +161,18 @@ pub fn transform_v_if<'a>(
             }
         });
 
-        // Extract user key from the element if present
+        // Extract user key from the element if present,
+        // but NOT if the element also has v-for (the key belongs to v-for in that case)
         let mut user_key = None;
         let taken_node = match taken_node {
             TemplateChildNode::Element(mut el) => {
-                user_key = extract_key_prop(&mut el);
+                let has_v_for = el
+                    .props
+                    .iter()
+                    .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "for"));
+                if !has_v_for {
+                    user_key = extract_key_prop(&mut el);
+                }
                 TemplateChildNode::Element(el)
             }
             other => other,

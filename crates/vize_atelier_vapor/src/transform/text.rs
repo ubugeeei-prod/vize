@@ -20,7 +20,7 @@ pub(crate) fn transform_text<'a>(
 ) {
     let element_id = ctx.next_id();
     let template: vize_carton::String = text.content.clone();
-    ctx.templates.push(template);
+    ctx.add_template(element_id, template);
     block.returns.push(element_id);
 }
 
@@ -31,6 +31,11 @@ pub(crate) fn transform_interpolation<'a>(
     block: &mut BlockIRNode<'a>,
 ) {
     let element_id = ctx.next_id();
+
+    // Register a space placeholder template for standalone interpolations
+    // (when not inside a parent element that already provides the template)
+    ctx.add_template(element_id, vize_carton::String::from(" "));
+    ctx.standalone_text_elements.insert(element_id);
 
     // Create SetText operation
     let values = match &interp.content {

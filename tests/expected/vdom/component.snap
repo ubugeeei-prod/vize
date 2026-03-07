@@ -248,6 +248,93 @@ export function render(_ctx, _cache) {
 }
 
 ===
+name: keep-alive kebab-case
+options: default
+--- INPUT ---
+<keep-alive><Component /></keep-alive>
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, createVNode as _createVNode, KeepAlive as _KeepAlive, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_Component = _resolveComponent("Component")
+
+  return (_openBlock(), _createBlock(_KeepAlive, null, [
+    _createVNode(_component_Component)
+  ], 1024 /* DYNAMIC_SLOTS */))
+}
+
+===
+name: transition kebab-case
+options: default
+--- INPUT ---
+<transition name="fade"><div v-if="show">content</div></transition>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, Transition as _Transition, withCtx as _withCtx, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_Transition, { name: "fade" }, {
+    default: _withCtx(() => [
+      (_ctx.show)
+        ? (_openBlock(), _createElementBlock("div", { key: 0 }, "content"))
+        : _createCommentVNode("v-if", true)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+===
+name: transition-group kebab-case
+options: default
+--- INPUT ---
+<transition-group tag="ul"><li v-for="item in items" :key="item">{{ item }}</li></transition-group>
+--- OUTPUT ---
+import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, TransitionGroup as _TransitionGroup, withCtx as _withCtx, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_TransitionGroup, { tag: "ul" }, {
+    default: _withCtx(() => [
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item) => {
+        return (_openBlock(), _createElementBlock("li", { key: item }, _toDisplayString(item), 1 /* TEXT */))
+      }), 128 /* KEYED_FRAGMENT */))
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+===
+name: teleport kebab-case
+options: default
+--- INPUT ---
+<teleport to="body"><div>content</div></teleport>
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, Teleport as _Teleport, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_Teleport, { to: "body" }, [
+    _createElementVNode("div", null, "content")
+  ]))
+}
+
+===
+name: suspense kebab-case
+options: default
+--- INPUT ---
+<suspense><Component /></suspense>
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, createVNode as _createVNode, Suspense as _Suspense, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_Component = _resolveComponent("Component")
+
+  return (_openBlock(), _createBlock(_Suspense, null, {
+    default: _withCtx(() => [
+      _createVNode(_component_Component)
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+
+===
 name: dynamic component
 options: default
 --- INPUT ---

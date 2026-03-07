@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
@@ -8,6 +8,7 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
+  emits: ["change", "submit", "update"],
   setup(__props, { emit: __emit }) {
 
 const emit = __emit

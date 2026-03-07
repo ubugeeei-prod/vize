@@ -1,7 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 219
-expression: js_output
+expression: js_output.as_str()
 ---
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
 

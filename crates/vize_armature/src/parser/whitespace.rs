@@ -8,6 +8,29 @@ use vize_relief::ast::TemplateChildNode;
 
 /// Condense whitespace in children
 pub(super) fn condense_whitespace<'a>(children: &mut Vec<'a, TemplateChildNode<'a>>) {
+    // First pass: remove leading whitespace-only text nodes
+    while !children.is_empty() {
+        if let TemplateChildNode::Text(ref text) = children[0] {
+            if text.content.chars().all(char::is_whitespace) {
+                children.remove(0);
+                continue;
+            }
+        }
+        break;
+    }
+
+    // Remove trailing whitespace-only text nodes
+    while !children.is_empty() {
+        let last = children.len() - 1;
+        if let TemplateChildNode::Text(ref text) = children[last] {
+            if text.content.chars().all(char::is_whitespace) {
+                children.remove(last);
+                continue;
+            }
+        }
+        break;
+    }
+
     let mut i = 0;
     while i < children.len() {
         // Determine what action to take for whitespace-only text nodes

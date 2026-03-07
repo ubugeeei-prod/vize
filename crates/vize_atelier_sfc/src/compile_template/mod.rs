@@ -11,7 +11,7 @@ mod vapor;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use extraction::{extract_template_parts, extract_template_parts_full};
+pub(crate) use extraction::extract_template_parts;
 pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_carton::Bump;

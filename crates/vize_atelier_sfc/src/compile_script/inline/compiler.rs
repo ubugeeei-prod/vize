@@ -56,8 +56,16 @@ pub fn compile_script_setup_inline(
         .map(|s| s.to_compact_string());
 
     // Check if we need mergeDefaults import (props destructure with defaults)
+    // For type-based props (defineProps<{...}>()), defaults are inlined into the prop definitions
+    // so mergeDefaults is NOT needed. Only runtime-based props (defineProps([...])) need it.
     let has_props_destructure = ctx.macros.props_destructure.is_some();
+    let has_type_based_props = ctx
+        .macros
+        .define_props
+        .as_ref()
+        .is_some_and(|p| p.type_args.is_some());
     let needs_merge_defaults = has_props_destructure
+        && !has_type_based_props
         && ctx
             .macros
             .props_destructure
@@ -68,9 +76,35 @@ pub fn compile_script_setup_inline(
     // Check if defineModel was used
     let has_define_model = !ctx.macros.define_models.is_empty();
 
+    // Check if defineSlots was used
+    let has_define_slots = ctx.macros.define_slots.is_some();
+
+    // withAsyncContext import comes first if needed
+    let setup_code_for_await = {
+        let (_, slines, _) = parse_script_content(content, is_ts);
+        slines.join("\n")
+    };
+    let is_async = contains_top_level_await(&setup_code_for_await, source_is_ts);
+    if is_async {
+        if is_ts {
+            output.extend_from_slice(
+                b"import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'\n",
+            );
+        } else {
+            output.extend_from_slice(
+                b"import { withAsyncContext as _withAsyncContext } from 'vue'\n",
+            );
+        }
+    }
+
     // mergeDefaults import comes first if needed
     if needs_merge_defaults {
         output.extend_from_slice(b"import { mergeDefaults as _mergeDefaults } from 'vue'\n");
+    }
+
+    // useSlots import if defineSlots was used
+    if has_define_slots {
+        output.extend_from_slice(b"import { useSlots as _useSlots } from 'vue'\n");
     }
 
     // useModel import if defineModel was used
@@ -86,24 +120,13 @@ pub fn compile_script_setup_inline(
         );
     }
 
-    // Check if we need PropType import (type-based defineProps in TS mode)
-    let needs_prop_type = is_ts
-        && ctx
-            .macros
-            .define_props
-            .as_ref()
-            .is_some_and(|p| p.type_args.is_some());
+    // Vue's compiler-sfc does not use PropType in output - props are defined with
+    // runtime type constructors (String, Number, etc.) and optional/required flags.
+    let needs_prop_type = false;
 
-    // defineComponent import for TypeScript
-    if is_ts {
-        if needs_prop_type {
-            output.extend_from_slice(
-                b"import { defineComponent as _defineComponent, type PropType } from 'vue'\n",
-            );
-        } else {
-            output
-                .extend_from_slice(b"import { defineComponent as _defineComponent } from 'vue'\n");
-        }
+    // defineComponent import for TypeScript (skip if already emitted with withAsyncContext)
+    if is_ts && !is_async {
+        output.extend_from_slice(b"import { defineComponent as _defineComponent } from 'vue'\n");
     }
 
     // Template imports (Vue helpers)
@@ -248,10 +271,6 @@ pub fn compile_script_setup_inline(
         "__props"
     };
 
-    // Detect top-level await to generate async setup()
-    let setup_code_for_await_check = setup_lines.join("\n");
-    let is_async = contains_top_level_await(&setup_code_for_await_check, source_is_ts);
-
     let async_prefix = if is_async {
         "  async setup("
     } else {
@@ -271,6 +290,15 @@ pub fn compile_script_setup_inline(
 
     // Always add a blank line after setup signature
     output.push(b'\n');
+
+    // Add __temp/__restore declarations for async setup
+    if is_async {
+        if is_ts {
+            output.extend_from_slice(b"let __temp: any, __restore: any\n\n");
+        } else {
+            output.extend_from_slice(b"let __temp, __restore\n\n");
+        }
+    }
 
     // Emit binding: const emit = __emit
     if let Some(ref emits_macro) = ctx.macros.define_emits {
@@ -301,10 +329,27 @@ pub fn compile_script_setup_inline(
         }
     }
 
-    // Output setup code lines (non-hoisted)
-    for line in &setup_body_lines {
-        output.extend_from_slice(line.as_bytes());
-        output.push(b'\n');
+    // Slots binding: const slots = _useSlots()
+    if let Some(ref slots_macro) = ctx.macros.define_slots {
+        if let Some(ref binding_name) = slots_macro.binding_name {
+            output.extend_from_slice(b"const ");
+            output.extend_from_slice(binding_name.as_bytes());
+            output.extend_from_slice(b" = _useSlots()\n");
+        }
+    }
+
+    // Output setup code lines (non-hoisted), transforming await expressions for async setup
+    if is_async {
+        let transformed_async = transform_await_expressions(&setup_body_lines);
+        for line in &transformed_async {
+            output.extend_from_slice(line.as_bytes());
+            output.push(b'\n');
+        }
+    } else {
+        for line in &setup_body_lines {
+            output.extend_from_slice(line.as_bytes());
+            output.push(b'\n');
+        }
     }
 
     // defineExpose: transform to __expose(...)
@@ -1009,13 +1054,28 @@ fn build_props_emits(
                 let mut item_idx = 0;
                 for (name, prop_type) in &prop_types {
                     item_idx += 1;
+                    // Try to resolve type references for props that resolved to `null`
+                    let resolved_js_type = if prop_type.js_type == "null" {
+                        if let Some(ref ts_type) = prop_type.ts_type {
+                            super::super::props::resolve_prop_js_type(
+                                ts_type,
+                                &ctx.interfaces,
+                                &ctx.type_aliases,
+                            )
+                            .unwrap_or_else(|| prop_type.js_type.clone())
+                        } else {
+                            prop_type.js_type.clone()
+                        }
+                    } else {
+                        prop_type.js_type.clone()
+                    };
                     props_emits_buf.extend_from_slice(b"    ");
                     props_emits_buf.extend_from_slice(name.as_bytes());
                     props_emits_buf.extend_from_slice(b": { type: ");
-                    props_emits_buf.extend_from_slice(prop_type.js_type.as_bytes());
+                    props_emits_buf.extend_from_slice(resolved_js_type.as_bytes());
                     if needs_prop_type {
                         if let Some(ref ts_type) = prop_type.ts_type {
-                            if prop_type.js_type == "null" {
+                            if resolved_js_type == "null" {
                                 props_emits_buf.extend_from_slice(b" as unknown as PropType<");
                             } else {
                                 props_emits_buf.extend_from_slice(b" as PropType<");
@@ -1142,12 +1202,6 @@ fn build_model_props_emits(
                 buf.extend_from_slice(b"Modifiers");
             }
             buf.extend_from_slice(b"\": {},\n");
-        }
-        // Remove trailing comma from last prop
-        if buf.ends_with(b",\n") {
-            let len = buf.len();
-            buf[len - 2] = b'\n';
-            buf.truncate(len - 1);
         }
         buf.extend_from_slice(b"  },\n");
     }
@@ -1322,4 +1376,81 @@ fn separate_hoisted_consts(
     }
 
     (hoisted_lines, setup_body_lines)
+}
+
+/// Transform top-level await expressions to use `_withAsyncContext`.
+///
+/// Handles two patterns:
+/// 1. `const x = await expr` → `const x = (\n  ([__temp,__restore] = _withAsyncContext(() => expr)),\n  __temp = await __temp,\n  __restore(),\n  __temp\n)`
+/// 2. `await expr` (statement) → `;(\n  ([__temp,__restore] = _withAsyncContext(() => expr)),\n  await __temp,\n  __restore()\n)`
+fn transform_await_expressions(lines: &[String]) -> Vec<String> {
+    let mut result = Vec::new();
+    for line in lines {
+        let trimmed = line.trim();
+
+        // Check for `const/let/var ... = await ...` pattern
+        if let Some(await_assign) = try_extract_await_assignment(trimmed) {
+            // Pattern: const x = await expr
+            let mut out = String::default();
+            out.push_str(&await_assign.prefix);
+            out.push_str(" (\n");
+            out.push_str("  ([__temp,__restore] = _withAsyncContext(() => ");
+            out.push_str(&await_assign.expr);
+            out.push_str(")),\n");
+            out.push_str("  __temp = await __temp,\n");
+            out.push_str("  __restore(),\n");
+            out.push_str("  __temp\n");
+            out.push(')');
+            result.push(out);
+        } else if let Some(expr) = try_extract_standalone_await(trimmed) {
+            // Pattern: await expr (standalone statement)
+            let mut out = String::default();
+            out.push_str(";(\n");
+            out.push_str("  ([__temp,__restore] = _withAsyncContext(() => ");
+            out.push_str(&expr);
+            out.push_str(")),\n");
+            out.push_str("  await __temp,\n");
+            out.push_str("  __restore()\n");
+            out.push(')');
+            result.push(out);
+        } else {
+            result.push(line.clone());
+        }
+    }
+    result
+}
+
+struct AwaitAssignment {
+    prefix: String,
+    expr: String,
+}
+
+/// Try to extract an await assignment: `const x = await expr` or `const { x, y } = await expr`
+fn try_extract_await_assignment(line: &str) -> Option<AwaitAssignment> {
+    // Match patterns like:
+    // `const x = await expr`
+    // `const { x, y } = await expr`
+    // `let x = await expr`
+    let trimmed = line.trim_end_matches(';').trim();
+    let eq_pos = trimmed.find(" = await ")?;
+    let prefix = &trimmed[..eq_pos + 3]; // "const x = "
+    let after_eq = &trimmed[eq_pos + 3..]; // " await expr"
+    let expr = after_eq.strip_prefix(" await ")?.trim();
+    if expr.is_empty() {
+        return None;
+    }
+    Some(AwaitAssignment {
+        prefix: prefix.to_compact_string(),
+        expr: expr.to_compact_string(),
+    })
+}
+
+/// Try to extract a standalone await expression: `await expr`
+fn try_extract_standalone_await(line: &str) -> Option<String> {
+    let trimmed = line.trim_end_matches(';').trim();
+    let expr = trimmed.strip_prefix("await ")?.trim();
+    if expr.is_empty() {
+        return None;
+    }
+    Some(expr.to_compact_string())
 }

@@ -9,7 +9,7 @@ use crate::{
 };
 
 use super::super::{
-    children::generate_children,
+    children::{generate_children, generate_children_force_array},
     context::CodegenContext,
     element::{generate_vshow_closing, has_vshow_directive},
     expression::generate_expression,
@@ -30,8 +30,8 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             let is_component = el.tag_type == ElementType::Component;
             let prev_skip_scope_id = ctx.skip_scope_id;
 
-            // Check for v-memo directive on for item
-            let memo_exp = if has_v_memo(el) {
+            // Check for v-memo directive on for item (skip if already handled by v-for)
+            let memo_exp = if !ctx.skip_v_memo && has_v_memo(el) {
                 get_memo_exp(el)
             } else {
                 None
@@ -221,6 +221,9 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         ctx.deindent();
                         ctx.newline();
                         ctx.push("]");
+                    } else if ctx.skip_v_memo {
+                        // v-for + v-memo: force array form for children
+                        generate_children_force_array(ctx, &children_el.children);
                     } else {
                         generate_children(ctx, &children_el.children);
                     }
@@ -239,6 +242,11 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                             let new_flag = flag & !1;
                             patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
                         }
+                    }
+                    // Inside v-for, component slots are always dynamic
+                    if ctx.in_v_for && has_slot_children(el) {
+                        let dynamic_slots_flag = 1024;
+                        patch_flag = Some(patch_flag.unwrap_or(0) | dynamic_slots_flag);
                     }
                     if el.children.is_empty() && (patch_flag.is_some() || dynamic_props.is_some()) {
                         ctx.push(", null");
@@ -264,7 +272,8 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     }
                 } else if gen_is_template {
                     ctx.push(", 64 /* STABLE_FRAGMENT */");
-                } else {
+                } else if !ctx.skip_v_memo {
+                    // Skip patch flags for v-memo elements (memo handles reactivity)
                     let flag_el = unwrapped_child.unwrap_or(el);
                     let (patch_flag, dynamic_props) = calculate_element_patch_info(
                         flag_el,

@@ -38,16 +38,35 @@ pub fn transform_to_ir<'a>(allocator: &'a Bump, root: &RootNode<'a>) -> RootIRNo
         has_deferred_v_show: false,
         templates: ctx.templates,
         element_template_map: ctx.element_template_map,
+        standalone_text_elements: ctx.standalone_text_elements,
     }
 }
 
 /// Transform children nodes
-fn transform_children<'a>(
+pub(crate) fn transform_children<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],
 ) -> BlockIRNode<'a> {
     let mut block = BlockIRNode::new(ctx.allocator);
     // Note: Don't consume an ID for the block itself - element IDs should start from 0
+
+    // Check if ALL children are text/interpolation (combined text case)
+    let all_text_or_interp = children.len() > 1
+        && children.iter().all(|c| {
+            matches!(
+                c,
+                TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
+            )
+        })
+        && children
+            .iter()
+            .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
+
+    if all_text_or_interp {
+        // Combined text/interpolation: create a single text element with space template
+        transform_combined_block_text(ctx, children, &mut block);
+        return block;
+    }
 
     for child in children {
         match child {
@@ -74,6 +93,65 @@ fn transform_children<'a>(
     }
 
     block
+}
+
+/// Transform combined text/interpolation children at block level.
+/// Creates a single text node with a space template and a SetText effect
+/// that combines all text parts and interpolations.
+fn transform_combined_block_text<'a>(
+    ctx: &mut TransformContext<'a>,
+    children: &[TemplateChildNode<'a>],
+    block: &mut BlockIRNode<'a>,
+) {
+    use crate::ir::{IREffect, OperationNode, SetTextIRNode};
+    use vize_atelier_core::{ExpressionNode, SimpleExpressionNode, SourceLocation};
+    use vize_carton::{Box, Vec};
+
+    let element_id = ctx.next_id();
+
+    // Consume IDs for remaining children (they won't be used, but keeps ID
+    // allocation consistent with the expected output format)
+    for _ in 1..children.len() {
+        ctx.next_id();
+    }
+
+    // Register a space placeholder template
+    ctx.add_template(element_id, vize_carton::String::from(" "));
+    ctx.standalone_text_elements.insert(element_id);
+
+    // Collect all text values
+    let mut values = Vec::new_in(ctx.allocator);
+    for child in children.iter() {
+        match child {
+            TemplateChildNode::Text(text) => {
+                let exp =
+                    SimpleExpressionNode::new(text.content.clone(), true, SourceLocation::STUB);
+                values.push(Box::new_in(exp, ctx.allocator));
+            }
+            TemplateChildNode::Interpolation(interp) => {
+                if let ExpressionNode::Simple(simple) = &interp.content {
+                    let exp = SimpleExpressionNode::new(
+                        simple.content.clone(),
+                        simple.is_static,
+                        simple.loc.clone(),
+                    );
+                    values.push(Box::new_in(exp, ctx.allocator));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let set_text = SetTextIRNode {
+        element: element_id,
+        values,
+    };
+    let mut effect_ops = Vec::new_in(ctx.allocator);
+    effect_ops.push(OperationNode::SetText(set_text));
+    block.effect.push(IREffect {
+        operations: effect_ops,
+    });
+    block.returns.push(element_id);
 }
 
 #[cfg(test)]

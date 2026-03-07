@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, unref as _unref } from "vue"

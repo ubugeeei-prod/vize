@@ -1,18 +1,18 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
-import { defineComponent as _defineComponent, type PropType } from 'vue'
+import { defineComponent as _defineComponent } from 'vue'
 import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    value: { type: null as unknown as PropType<T>, required: true },
-    options: { type: Array as PropType<T[]>, required: true }
+    value: { type: null, required: true },
+    options: { type: Array, required: true }
   },
-  setup(__props) {
+  setup(__props: any) {
 
 
 return (_ctx: any,_cache: any) => {

@@ -21,7 +21,6 @@ pub fn transform_element<'a>(
             ctx.helper(RuntimeHelper::CreateElementVNode);
         }
         ElementType::Component => {
-            ctx.helper(RuntimeHelper::CreateVNode);
             // Only add ResolveComponent if component is not in binding metadata
             let is_in_bindings = ctx
                 .options
@@ -32,7 +31,11 @@ pub fn transform_element<'a>(
             if !is_in_bindings {
                 ctx.helper(RuntimeHelper::ResolveComponent);
             }
-            ctx.add_component(el.tag.clone());
+            // Defer add_component to exit phase so inner components resolve before outer ones
+            let tag = el.tag.clone();
+            return Some(vec![std::boxed::Box::new(move |ctx| {
+                ctx.add_component(tag);
+            })]);
         }
         ElementType::Slot => {
             ctx.helper(RuntimeHelper::RenderSlot);
@@ -114,12 +117,12 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
         process_directive_expressions(ctx, el);
     }
 
-    // Collect indices of v-model directives to process
+    // Collect indices of v-model directives to process (skip in vapor mode)
     let mut model_indices: std::vec::Vec<usize> = std::vec::Vec::new();
     for (i, prop) in el.props.iter().enumerate() {
         if let PropNode::Directive(dir) = prop {
             match dir.name.as_str() {
-                "model" => {
+                "model" if !ctx.options.vapor => {
                     model_indices.push(i);
                 }
                 "slot" => {

@@ -2,13 +2,18 @@
 
 export interface CompilerOptions {
   mode?: "function" | "module";
+  prefixIdentifiers?: boolean;
+  hoistStatic?: boolean;
+  cacheHandlers?: boolean;
   ssr?: boolean;
   scopeId?: string | null;
   filename?: string;
   // Internal mock-only property for vapor mode detection
   outputMode?: "vdom" | "vapor";
+  isTs?: boolean;
   // Script extension: 'preserve' keeps TypeScript, 'downcompile' (default) transpiles to JS
   scriptExt?: "preserve" | "downcompile";
+  bindingMetadata?: SfcBindingMetadata;
 }
 
 export interface CompileResult {
@@ -52,12 +57,18 @@ export interface SfcCompileResult {
   template?: CompileResult;
   script?: {
     code: string;
-    bindings?: object;
+    bindings?: SfcBindingMetadata;
   };
   css?: string;
   errors?: string[];
   warnings?: string[];
-  bindingMetadata?: object;
+  bindingMetadata?: Record<string, string | number>;
+}
+
+export interface SfcBindingMetadata {
+  bindings: Record<string, string | number>;
+  propsAliases?: Record<string, string>;
+  isScriptSetup?: boolean;
 }
 
 export interface CssCompileOptions {

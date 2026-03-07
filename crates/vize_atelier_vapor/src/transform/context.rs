@@ -1,6 +1,6 @@
 //! Transform context for tracking state during AST-to-IR transformation.
 
-use vize_carton::{Bump, FxHashMap, String, Vec};
+use vize_carton::{Bump, FxHashMap, FxHashSet, String, Vec};
 
 /// Transform context
 pub(crate) struct TransformContext<'a> {
@@ -8,6 +8,7 @@ pub(crate) struct TransformContext<'a> {
     temp_id: usize,
     pub(crate) templates: Vec<'a, String>,
     pub(crate) element_template_map: FxHashMap<usize, usize>,
+    pub(crate) standalone_text_elements: FxHashSet<usize>,
 }
 
 impl<'a> TransformContext<'a> {
@@ -17,6 +18,7 @@ impl<'a> TransformContext<'a> {
             temp_id: 0,
             templates: Vec::new_in(allocator),
             element_template_map: FxHashMap::default(),
+            standalone_text_elements: FxHashSet::default(),
         }
     }
 

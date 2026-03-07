@@ -1,8 +1,8 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
+import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
 
 import { ref } from 'vue'
@@ -11,8 +11,14 @@ export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   async setup(__props) {
 
+let __temp: any, __restore: any
+
 const count = ref(0)
-await new Promise(r => setTimeout(r, 100))
+;(
+  ([__temp,__restore] = _withAsyncContext(() => new Promise(r => setTimeout(r, 100)))),
+  await __temp,
+  __restore()
+)
 count.value = 1
 
 return (_ctx: any,_cache: any) => {

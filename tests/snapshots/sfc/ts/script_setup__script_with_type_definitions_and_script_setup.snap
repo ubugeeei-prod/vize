@@ -1,8 +1,8 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
-import { defineComponent as _defineComponent, type PropType } from 'vue'
+import { defineComponent as _defineComponent } from 'vue'
 import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 
@@ -18,14 +18,14 @@ export type { TabItem };
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    items: { type: Array as PropType<Array<TabItem>>, required: true }
+    items: { type: Array, required: true }
   },
-  setup(__props) {
+  setup(__props: any) {
 
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.items, (item) => {
-      return (_openBlock(), _createElementBlock("div", { key: item.name }, "\n    " + _toDisplayString(item.label) + "\n  ", 1 /* TEXT */))
+      return (_openBlock(), _createElementBlock("div", { key: item.name }, _toDisplayString(item.label), 1 /* TEXT */))
     }), 128 /* KEYED_FRAGMENT */))
 }
 }

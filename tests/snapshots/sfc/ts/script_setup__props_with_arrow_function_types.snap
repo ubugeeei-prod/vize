@@ -1,19 +1,19 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
-import { defineComponent as _defineComponent, type PropType } from 'vue'
+import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    onSuccess: { type: Function as PropType<() => void>, required: true },
-    onError: { type: Function as PropType<(error: Error) => void>, required: true },
-    transform: { type: Function as PropType<(value: string) => number>, required: true }
+    onSuccess: { type: Function, required: true },
+    onError: { type: Function, required: true },
+    transform: { type: Function, required: true }
   },
-  setup(__props) {
+  setup(__props: any) {
 
 
 return (_ctx: any,_cache: any) => {

@@ -1,15 +1,11 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-const _hoisted_1 = { class: "a b", "data-v-a6e04d40": "" }
+const _hoisted_1 = { class: "a b" }
 
-function render(_ctx, _cache) {
+export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _hoisted_1, "Test"))
 }
-
-const _sfc_main = {};
-_sfc_main.render = render;
-export default _sfc_main;

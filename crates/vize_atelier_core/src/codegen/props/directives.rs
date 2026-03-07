@@ -5,10 +5,25 @@ use crate::ast::{DirectiveNode, ExpressionNode, RuntimeHelper};
 use super::super::{
     context::CodegenContext,
     expression::{generate_event_handler, generate_expression, generate_simple_expression},
-    helpers::{camelize, capitalize_first, escape_js_string, is_valid_js_identifier},
+    helpers::{
+        camelize, capitalize_first, escape_js_string, is_constant_simple_expression,
+        is_valid_js_identifier,
+    },
 };
 use vize_carton::String;
 use vize_carton::ToCompactString;
+
+/// Check if an expression is a static literal (no runtime identifiers).
+/// Returns true for: object literals, array literals, string literals, numbers
+/// that don't reference any runtime variables (no `_ctx.` after processing).
+fn is_static_expression(exp: &ExpressionNode<'_>, ctx: &CodegenContext) -> bool {
+    match exp {
+        ExpressionNode::Simple(simple) => {
+            is_constant_simple_expression(simple, ctx.options.binding_metadata.as_ref())
+        }
+        ExpressionNode::Compound(_) => false,
+    }
+}
 
 /// Check if a directive will produce valid output
 pub fn is_supported_directive(dir: &DirectiveNode<'_>) -> bool {
@@ -151,6 +166,9 @@ fn generate_vbind_prop(
         }
     }
     if let Some(exp) = &dir.exp {
+        // Check if expression is a static literal (no runtime references)
+        let is_static_literal = is_static_expression(exp, ctx);
+
         if is_class {
             if !ctx.skip_normalize {
                 ctx.use_helper(RuntimeHelper::NormalizeClass);
@@ -170,7 +188,9 @@ fn generate_vbind_prop(
                 ctx.push(")");
             }
         } else if is_style {
-            if !ctx.skip_normalize {
+            // Skip normalizeStyle for static literal expressions (e.g., { color: 'red' })
+            let needs_normalize = !ctx.skip_normalize && !is_static_literal;
+            if needs_normalize {
                 ctx.use_helper(RuntimeHelper::NormalizeStyle);
                 ctx.push("_normalizeStyle(");
             }
@@ -203,7 +223,7 @@ fn generate_vbind_prop(
             } else {
                 generate_expression(ctx, exp);
             }
-            if !ctx.skip_normalize {
+            if needs_normalize {
                 ctx.push(")");
             }
         } else {

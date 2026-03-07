@@ -1,6 +1,7 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: js_output
+assertion_line: 221
+expression: js_output.as_str()
 ---
 import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode } from "vue"
 
@@ -20,7 +21,7 @@ return (_ctx, _cache) => {
         key: 0,
         modelValue: value.value,
         "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((value).value = $event))
-      }))
+      }, null, 8 /* PROPS */, ["modelValue"]))
       : _createCommentVNode("v-if", true)
 }
 }

@@ -73,10 +73,14 @@ pub(super) fn infer_binding_type(
         return BindingType::LiteralConst;
     }
 
-    // Arrow functions and function expressions are SetupConst (they never change)
+    // Arrow functions, function expressions, object literals, and array literals
+    // are SetupConst when declared with const (they are never refs)
     if matches!(
         init,
-        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
+        Expression::ArrowFunctionExpression(_)
+            | Expression::FunctionExpression(_)
+            | Expression::ObjectExpression(_)
+            | Expression::ArrayExpression(_)
     ) && kind == VariableDeclarationKind::Const
     {
         return BindingType::SetupConst;

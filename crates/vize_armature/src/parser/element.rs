@@ -91,6 +91,61 @@ impl<'a> Parser<'a> {
                 .iter()
                 .any(|p| matches!(p, PropNode::Directive(d) if d.name == "pre"));
 
+            // When v-pre is on this element, convert all directives (except v-pre itself)
+            // back to raw attribute nodes, since v-pre means "skip compilation"
+            if has_v_pre {
+                let allocator = self.allocator;
+                let mut i = 0;
+                while i < element.props.len() {
+                    if let PropNode::Directive(dir) = &element.props[i] {
+                        if dir.name == "pre" {
+                            // Remove v-pre directive itself
+                            element.props.remove(i);
+                            continue;
+                        }
+                        // Convert directive back to attribute using its raw_name + arg
+                        // to reconstruct the original attribute name (e.g., ":id", "@click")
+                        let attr_name = {
+                            let prefix = dir.raw_name.as_deref().unwrap_or(&dir.name);
+                            let arg_str = dir.arg.as_ref().map(|a| match a {
+                                ExpressionNode::Simple(s) => s.content.as_str(),
+                                ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                            });
+                            if let Some(arg) = arg_str {
+                                let mut name =
+                                    vize_carton::String::with_capacity(prefix.len() + arg.len());
+                                name.push_str(prefix);
+                                name.push_str(arg);
+                                name
+                            } else {
+                                vize_carton::String::from(prefix)
+                            }
+                        };
+                        let attr_value = dir.exp.as_ref().map(|e| {
+                            let content = match e {
+                                ExpressionNode::Simple(s) => s.loc.source.clone(),
+                                ExpressionNode::Compound(c) => c.loc.source.clone(),
+                            };
+                            TextNode {
+                                content,
+                                loc: dir.loc.clone(),
+                            }
+                        });
+                        let attr = PropNode::Attribute(Box::new_in(
+                            AttributeNode {
+                                name: attr_name,
+                                name_loc: dir.loc.clone(),
+                                value: attr_value,
+                                loc: dir.loc.clone(),
+                            },
+                            allocator,
+                        ));
+                        element.props[i] = attr;
+                    }
+                    i += 1;
+                }
+            }
+
             if current.is_self_closing || (self.options.is_void_tag)(element.tag.as_str()) {
                 // Self-closing or void tag, add directly
                 let boxed = Box::new_in(element, self.allocator);

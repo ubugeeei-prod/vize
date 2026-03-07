@@ -1,14 +1,16 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
+import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   async setup(__props) {
+
+let __temp: any, __restore: any
 
 const data = await fetch('/api').then(r => r.json())
 

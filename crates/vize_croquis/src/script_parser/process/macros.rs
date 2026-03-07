@@ -185,7 +185,12 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 if let Some(init) = &declarator.init {
                     if is_literal_expression(init) {
                         BindingType::LiteralConst
-                    } else if is_function_expression(init) {
+                    } else if is_function_expression(init)
+                        || matches!(
+                            init,
+                            Expression::ObjectExpression(_) | Expression::ArrayExpression(_)
+                        )
+                    {
                         BindingType::SetupConst
                     } else {
                         BindingType::SetupMaybeRef

@@ -3,7 +3,9 @@
 //! Generates elements that open a new block scope using `openBlock()` and
 //! `createElementBlock()` / `createBlock()` for efficient patching.
 
-use crate::ast::{ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper};
+use crate::ast::{
+    ElementNode, ElementType, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
+};
 use crate::transforms::v_memo::{get_memo_exp, has_v_memo};
 
 use super::{
@@ -136,13 +138,18 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         return;
     }
 
-    // Track helpers for preamble
-    ctx.use_helper(RuntimeHelper::OpenBlock);
+    // v-memo on components: use createVNode without block wrapper
+    let is_memo_component = memo_cache_index.is_some() && el.tag_type == ElementType::Component;
 
-    // Open block wrapper
-    ctx.push("(");
-    ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
-    ctx.push("(), ");
+    if !is_memo_component {
+        // Track helpers for preamble
+        ctx.use_helper(RuntimeHelper::OpenBlock);
+
+        // Open block wrapper
+        ctx.push("(");
+        ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+        ctx.push("(), ");
+    }
 
     match el.tag_type {
         ElementType::Element => {
@@ -175,7 +182,10 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             // Generate children
             // When props are hoisted and only TEXT flag is set, omit the patch flag
             // (Vue optimizes block elements with hoisted static props)
-            let should_emit_patch_flag = if let Some(flag) = patch_flag {
+            // v-memo elements don't need patch flags (memo handles change detection)
+            let should_emit_patch_flag = if memo_cache_index.is_some() {
+                false
+            } else if let Some(flag) = patch_flag {
                 !(el.hoisted_props_index.is_some() && flag == 1)
             } else {
                 false
@@ -183,8 +193,8 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             let effective_has_patch_info = has_patch_info && should_emit_patch_flag;
             if !el.children.is_empty() {
                 ctx.push(", ");
-                // Custom directives require array children with createTextVNode
-                if has_custom_dirs {
+                // Custom directives and v-memo require array children with createTextVNode
+                if has_custom_dirs || memo_cache_index.is_some() {
                     generate_children_force_array(ctx, &el.children);
                 } else {
                     generate_children(ctx, &el.children);
@@ -237,12 +247,17 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             }
         }
         ElementType::Component => {
-            ctx.use_helper(RuntimeHelper::CreateBlock);
-            ctx.push(ctx.helper(RuntimeHelper::CreateBlock));
+            if is_memo_component {
+                ctx.use_helper(RuntimeHelper::CreateVNode);
+                ctx.push(ctx.helper(RuntimeHelper::CreateVNode));
+            } else {
+                ctx.use_helper(RuntimeHelper::CreateBlock);
+                ctx.push(ctx.helper(RuntimeHelper::CreateBlock));
+            }
             ctx.push("(");
 
             // Check for dynamic component (<component :is="..."> or <Component is="...">)
-            let is_dynamic_component = el.tag == "component" || el.tag == "Component";
+            let is_dynamic_component = el.tag == "component";
             let (dynamic_is, static_is) = if is_dynamic_component {
                 // Check for :is="..." (dynamic binding)
                 let dynamic = el.props.iter().find_map(|p| {
@@ -327,7 +342,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
             // Add DYNAMIC_SLOTS flag (1024) if component has dynamic slots
             // KeepAlive always gets DYNAMIC_SLOTS
-            if el.tag == "KeepAlive" || has_dynamic_slots_flag(el) {
+            if el.tag == "KeepAlive" || el.tag == "keep-alive" || has_dynamic_slots_flag(el) {
                 let dynamic_slots_flag = 1024;
                 patch_flag = Some(patch_flag.unwrap_or(0) | dynamic_slots_flag);
             }
@@ -366,6 +381,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             } else if el.children.iter().any(|c| !is_whitespace_or_comment(c)) {
                 // Teleport, KeepAlive: pass children as array, not slot object
                 // (whitespace-only children are skipped to match Vue's behavior)
+                let is_keep_alive = matches!(el.tag.as_str(), "KeepAlive" | "keep-alive");
                 ctx.push(", [");
                 ctx.indent();
                 let filtered: Vec<_> = el
@@ -378,6 +394,18 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                         ctx.push(",");
                     }
                     ctx.newline();
+                    // KeepAlive: dynamic components (<component :is="...">) are
+                    // rendered as blocks so KeepAlive can track their identity
+                    if is_keep_alive {
+                        if let TemplateChildNode::Element(child_el) = child {
+                            if child_el.tag_type == ElementType::Component
+                                && child_el.tag == "component"
+                            {
+                                generate_element_block(ctx, child_el);
+                                continue;
+                            }
+                        }
+                    }
                     generate_node(ctx, child);
                 }
                 ctx.deindent();
@@ -411,7 +439,11 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push("]");
             }
 
-            ctx.push("))");
+            if is_memo_component {
+                ctx.push(")");
+            } else {
+                ctx.push("))");
+            }
 
             // Close withDirectives for custom directives on component
             if has_custom_dirs {

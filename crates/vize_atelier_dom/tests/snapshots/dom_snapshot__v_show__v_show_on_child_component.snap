@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_dom/tests/dom_snapshot.rs
+assertion_line: 182
 expression: "get_compiled(r#\"<div><MyComponent v-show=\"visible\" /></div>\"#)"
 ---
 const { openBlock: _openBlock, createElementBlock: _createElementBlock, createVNode: _createVNode, resolveComponent: _resolveComponent, withDirectives: _withDirectives, vShow: _vShow } = Vue
@@ -8,7 +9,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_MyComponent = _resolveComponent("MyComponent")
   
   return (_openBlock(), _createElementBlock("div", null, [
-    _withDirectives(_createVNode(_component_MyComponent, {  }), [
+    _withDirectives(_createVNode(_component_MyComponent, null, null, 512 /* NEED_PATCH */), [
       [_vShow, visible]
     ])
   ]))

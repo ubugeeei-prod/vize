@@ -39,6 +39,10 @@ pub struct CodegenContext {
     pub(super) skip_scope_id: bool,
     /// When true, skip normalizeClass/normalizeStyle wrappers (inside mergeProps)
     pub(super) skip_normalize: bool,
+    /// When true, we are inside a v-for loop (affects slot stability flags)
+    pub(super) in_v_for: bool,
+    /// When true, skip v-memo wrapping (already handled by v-for + v-memo)
+    pub(super) skip_v_memo: bool,
 }
 
 /// Code generation result
@@ -69,6 +73,8 @@ impl CodegenContext {
             skip_is_prop: false,
             skip_scope_id: false,
             skip_normalize: false,
+            in_v_for: false,
+            skip_v_memo: false,
         }
     }
 

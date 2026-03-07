@@ -8,7 +8,8 @@ import type {
   CssCompileOptions,
   WasmModule,
 } from "../../wasm/index";
-import { formatCode, formatCss, transpileToJs } from "./formatters";
+import { formatCss } from "./formatters";
+import { compileCodeOutputs, createEmptyCodeOutputs, type CodeOutputTarget } from "./codeOutputs";
 import { mapToObject, filterAstProperties } from "./astHelpers";
 import { useClipboard } from "../../utils/useClipboard";
 
@@ -37,10 +38,12 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
     scopeId: "data-v-12345678",
     minify: false,
   });
-  const formattedCode = ref<string>("");
   const formattedCss = ref<string>("");
-  const formattedJsCode = ref<string>("");
   const codeViewMode = ref<"ts" | "js">("ts");
+  const codeOutputTarget = ref<CodeOutputTarget>("dom");
+  const codeOutputs = ref(createEmptyCodeOutputs());
+  const codeOutputVersion = ref(0);
+  const activeCodeOutput = computed(() => codeOutputs.value[codeOutputTarget.value]);
   const astHideLoc = ref(true);
   const astHideSource = ref(true);
   const astCollapsed = ref(false);
@@ -52,14 +55,6 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
     const ast = mapToObject(output.value.ast);
     const filtered = filterAstProperties(ast, astHideLoc.value, astHideSource.value);
     return JSON.stringify(filtered, null, astCollapsed.value ? 0 : 2);
-  });
-
-  const isTypeScript = computed(() => {
-    if (!sfcResult.value?.descriptor) return false;
-    const scriptSetup = sfcResult.value.descriptor.scriptSetup;
-    const script = sfcResult.value.descriptor.script;
-    const lang = scriptSetup?.lang || script?.lang;
-    return lang === "ts" || lang === "tsx";
   });
 
   const bindingsSummary = computed(() => {
@@ -83,6 +78,25 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
     return groups;
   });
 
+  async function compileCssFromSfcResult(compiler: WasmModule, result: SfcCompileResult | null) {
+    if (!result?.descriptor?.styles?.length) {
+      cssResult.value = null;
+      formattedCss.value = "";
+      return;
+    }
+
+    const allCss = result.descriptor.styles
+      .map((style: { content: string }) => style.content)
+      .join("\n");
+    const hasScoped = result.descriptor.styles.some((style: { scoped?: boolean }) => style.scoped);
+    const css = compiler.compileCss(allCss, {
+      ...cssOptions.value,
+      scoped: hasScoped || cssOptions.value.scoped,
+    });
+    cssResult.value = css;
+    formattedCss.value = await formatCss(css.code);
+  }
+
   async function compile() {
     const compiler = getCompiler();
     if (!compiler) return;
@@ -96,24 +110,8 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
       if (inputMode.value === "sfc") {
         try {
           const result = compiler.compileSfc(source.value, options.value);
-          compileTime.value = performance.now() - startTime;
           sfcResult.value = result;
-
-          if (result?.descriptor?.styles?.length > 0) {
-            const allCss = result.descriptor.styles
-              .map((s: { content: string }) => s.content)
-              .join("\n");
-            const hasScoped = result.descriptor.styles.some((s: { scoped?: boolean }) => s.scoped);
-            const css = compiler.compileCss(allCss, {
-              ...cssOptions.value,
-              scoped: hasScoped || cssOptions.value.scoped,
-            });
-            cssResult.value = css;
-            formattedCss.value = await formatCss(css.code);
-          } else {
-            cssResult.value = null;
-            formattedCss.value = "";
-          }
+          await compileCssFromSfcResult(compiler, result);
 
           if (result?.script?.code) {
             output.value = {
@@ -122,42 +120,46 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
               ast: result.template?.ast || {},
               helpers: result.template?.helpers || [],
             };
-            const scriptLang =
-              result.descriptor.scriptSetup?.lang || result.descriptor.script?.lang;
-            const usesTs = scriptLang === "ts" || scriptLang === "tsx";
-            formattedCode.value = await formatCode(
-              result.script.code,
-              usesTs ? "typescript" : "babel",
-            );
-            if (usesTs) {
-              const jsCode = transpileToJs(result.script.code);
-              formattedJsCode.value = await formatCode(jsCode, "babel");
-            } else {
-              formattedJsCode.value = "";
-            }
           } else if (result?.template) {
             output.value = result.template;
-            formattedCode.value = await formatCode(result.template.code, "babel");
-            formattedJsCode.value = "";
           } else {
             output.value = null;
-            formattedCode.value = "";
-            formattedJsCode.value = "";
           }
+
+          codeOutputs.value = await compileCodeOutputs({
+            compiler,
+            inputMode: inputMode.value,
+            source: source.value,
+            options: options.value,
+            baseOutput: output.value,
+            baseSfcResult: sfcResult.value,
+          });
+          codeOutputVersion.value += 1;
+          compileTime.value = performance.now() - startTime;
         } catch (sfcError) {
           console.error("SFC compile error:", sfcError);
           throw sfcError;
         }
       } else {
         const result = compiler.compile(source.value, options.value);
-        compileTime.value = performance.now() - startTime;
         output.value = result;
         sfcResult.value = null;
-        formattedCode.value = await formatCode(result.code, "babel");
+        cssResult.value = null;
         formattedCss.value = "";
+        codeOutputs.value = await compileCodeOutputs({
+          compiler,
+          inputMode: inputMode.value,
+          source: source.value,
+          options: options.value,
+          baseOutput: result,
+          baseSfcResult: null,
+        });
+        codeOutputVersion.value += 1;
+        compileTime.value = performance.now() - startTime;
       }
     } catch (e) {
       error.value = e instanceof Error ? e.message : String(e);
+      codeOutputs.value = createEmptyCodeOutputs();
     } finally {
       isCompiling.value = false;
     }
@@ -174,16 +176,20 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
   }
 
   function copyFullOutput() {
-    if (!output.value) return;
+    const currentOutput = activeCodeOutput.value;
+    if (!currentOutput.code && !currentOutput.error) return;
     const fullOutput = `
 === COMPILER OUTPUT ===
 Compile Time: ${compileTime?.value?.toFixed(4) ?? "N/A"}ms
 
+=== TARGET ===
+${codeOutputTarget.value}
+
 === CODE ===
-${output.value.code}
+${currentOutput.error || currentOutput.code}
 
 === HELPERS ===
-${output.value.helpers?.join("\n") || "None"}`.trim();
+${output.value?.helpers?.join("\n") || "None"}`.trim();
     copyToClipboard(fullOutput);
   }
 
@@ -202,8 +208,9 @@ ${output.value.helpers?.join("\n") || "None"}`.trim();
   watch(
     cssOptions,
     () => {
-      if (sfcResult.value?.descriptor?.styles?.length) {
-        void compile();
+      const compiler = getCompiler();
+      if (compiler && sfcResult.value?.descriptor?.styles?.length) {
+        void compileCssFromSfcResult(compiler, sfcResult.value);
       }
     },
     { deep: true },
@@ -222,16 +229,17 @@ ${output.value.helpers?.join("\n") || "None"}`.trim();
     compileTime,
     cssResult,
     cssOptions,
-    formattedCode,
     formattedCss,
-    formattedJsCode,
     codeViewMode,
+    codeOutputTarget,
+    codeOutputs,
+    codeOutputVersion,
+    activeCodeOutput,
     astHideLoc,
     astHideSource,
     astCollapsed,
     editorLanguage,
     astJson,
-    isTypeScript,
     bindingsSummary,
     groupedBindings,
     compile,

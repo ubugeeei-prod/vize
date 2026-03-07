@@ -1,10 +1,9 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
 
 
 type Combined =
@@ -18,7 +17,7 @@ export default /*@__PURE__*/_defineComponent({
 const data: Combined = { name: 'test', age: 10 };
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data).name) + " - " + _toDisplayString(_unref(data).age), 1 /* TEXT */))
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(data.name) + " - " + _toDisplayString(data.age), 1 /* TEXT */))
 }
 }
 

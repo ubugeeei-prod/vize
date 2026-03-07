@@ -104,9 +104,9 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
             continue;
         }
 
-        // Skip dynamic component (<component :is="..."> / <Component :is="...">) -
+        // Skip dynamic component (<component :is="...">) -
         // it uses resolveDynamicComponent
-        if component == "component" || component == "Component" {
+        if component == "component" {
             continue;
         }
 

@@ -1,8 +1,8 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
-import { defineComponent as _defineComponent, type PropType } from 'vue'
+import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withModifiers as _withModifiers } from "vue"
 
 import { computed } from 'vue'
@@ -21,11 +21,11 @@ interface Props {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    guidanceProgress: { type: null as unknown as PropType<GuidanceProgressFormInput>, required: true },
-    disabled: { type: Boolean as PropType<boolean>, required: false },
-    readonly: { type: Boolean as PropType<boolean>, required: false }
+    guidanceProgress: { type: Object, required: true },
+    disabled: { type: Boolean, required: false },
+    readonly: { type: Boolean, required: false }
   },
-  setup(__props) {
+  setup(__props: any) {
 
 const props = __props
 const lapClass = computed(() => `lap-${props.guidanceProgress.progressLap}`);
@@ -38,7 +38,7 @@ return (_ctx: any,_cache: any) => {
       class: _normalizeClass([{ disabled: __props.disabled }, lapClass.value]),
       disabled: __props.disabled,
       onClick: _withModifiers(() => {}, ["prevent"])
-    }, "\n    " + _toDisplayString(__props.guidanceProgress.progressUnit.value) + "\n  ", 11 /* TEXT, CLASS, PROPS */, ["disabled", "onClick"]))
+    }, _toDisplayString(__props.guidanceProgress.progressUnit.value), 11 /* TEXT, CLASS, PROPS */, ["disabled", "onClick"]))
 }
 }
 

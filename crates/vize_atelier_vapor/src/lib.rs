@@ -29,11 +29,11 @@ pub use generators::{
     GenerateContext,
 };
 pub use ir::{
-    BlockIRNode, CreateComponentIRNode, DirectiveIRNode, DynamicFlag, EventModifiers, EventOptions,
-    ForIRNode, GetTextChildIRNode, IRDynamicInfo, IREffect, IRNodeType, IRProp, IRSlot, IfIRNode,
-    InsertNodeIRNode, NegativeBranch, OperationNode, PrependNodeIRNode, RootIRNode,
-    SetDynamicPropsIRNode, SetEventIRNode, SetHtmlIRNode, SetPropIRNode, SetTemplateRefIRNode,
-    SetTextIRNode, SlotOutletIRNode,
+    BlockIRNode, ComponentKind, CreateComponentIRNode, DirectiveIRNode, DynamicFlag,
+    EventModifiers, EventOptions, ForIRNode, GetTextChildIRNode, IRDynamicInfo, IREffect,
+    IRNodeType, IRProp, IRSlot, IfIRNode, InsertNodeIRNode, NegativeBranch, OperationNode,
+    PrependNodeIRNode, RootIRNode, SetDynamicPropsIRNode, SetEventIRNode, SetHtmlIRNode,
+    SetPropIRNode, SetTemplateRefIRNode, SetTextIRNode, SlotOutletIRNode,
 };
 pub use transform::transform_to_ir;
 pub use transforms::{
@@ -103,6 +103,7 @@ pub fn compile_vapor<'a>(
         ssr: options.ssr,
         binding_metadata: options.binding_metadata,
         inline: options.inline,
+        vapor: true,
         ..Default::default()
     };
     transform(allocator, &mut root, transform_opts, None);

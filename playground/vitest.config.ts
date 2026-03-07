@@ -8,7 +8,7 @@ export default defineConfig({
     dedupe: ["vue"],
   },
   optimizeDeps: {
-    include: ["vue", "@vue/test-utils"],
+    include: ["vue", "@vue/test-utils", "monaco-editor", "shiki", "prettier/plugins/html"],
   },
   test: {
     browser: {

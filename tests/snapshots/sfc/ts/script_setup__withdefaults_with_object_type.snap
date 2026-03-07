@@ -1,8 +1,8 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
-import { defineComponent as _defineComponent, type PropType } from 'vue'
+import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
@@ -17,13 +17,13 @@ interface Props {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    outlined: { type: Boolean as PropType<boolean>, required: false, default: false },
-    disabled: { type: Boolean as PropType<boolean>, required: false, default: false },
-    on: { type: Object as PropType<Object>, required: false, default: undefined },
-    height: { type: [Number, String] as PropType<number | string>, required: false, default: '2rem' },
-    color: { type: String as PropType<string>, required: false, default: 'primary' }
+    outlined: { type: Boolean, required: false, default: false },
+    disabled: { type: Boolean, required: false, default: false },
+    on: { type: Object, required: false, default: undefined },
+    height: { type: [Number, String], required: false, default: '2rem' },
+    color: { type: String, required: false, default: 'primary' }
   },
-  setup(__props) {
+  setup(__props: any) {
 
 
 return (_ctx: any,_cache: any) => {

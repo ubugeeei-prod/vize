@@ -27,6 +27,8 @@ pub fn transform_v_model<'a>(
         dir: Box::new_in(new_dir, allocator),
         name: String::new("model"),
         builtin: true,
+        tag: String::new(""),
+        input_type: String::new(""),
     };
 
     operations.push(OperationNode::Directive(dir_ir));

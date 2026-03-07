@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted } from "vue";
+import { computed, watch, onMounted, onUnmounted } from "vue";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import CodeHighlight from "../../shared/CodeHighlight.vue";
 import { useTheme } from "../../utils/useTheme";
 import { useClipboard } from "../../utils/useClipboard";
 import { useAtelierCompiler } from "./useAtelierCompiler";
+import { CODE_OUTPUT_LABELS } from "./codeOutputs";
 import {
   useTokenAnalysis,
   getTokenTypeIcon,
@@ -33,24 +34,35 @@ const {
   compileTime,
   cssResult,
   cssOptions,
-  formattedCode,
   formattedCss,
-  formattedJsCode,
   codeViewMode,
+  codeOutputTarget,
+  codeOutputVersion,
+  activeCodeOutput,
   astHideLoc,
   astHideSource,
   astCollapsed,
   editorLanguage,
   astJson,
-  isTypeScript,
   bindingsSummary,
   groupedBindings,
   compile,
   handlePresetChange,
-  copyFullOutput,
 } = useAtelierCompiler(() => props.compiler ?? getWasm());
 
 const { lexicalTokens, tokensByType, tokenStats } = useTokenAnalysis(source);
+
+const activeCodeOutputText = computed(() => {
+  const code =
+    activeCodeOutput.value.isTypeScript && codeViewMode.value === "js"
+      ? activeCodeOutput.value.formattedJsCode
+      : activeCodeOutput.value.formattedCode || activeCodeOutput.value.code;
+  return activeCodeOutput.value.error || code;
+});
+
+const activeCodeHighlightKey = computed(
+  () => `${codeOutputVersion.value}:${codeOutputTarget.value}:${codeViewMode.value}`,
+);
 
 watch(
   () => props.compiler,
@@ -166,50 +178,87 @@ onUnmounted(() => {
         <!-- Code Tab -->
         <div v-if="activeTab === 'code'" class="code-output">
           <div class="code-header">
-            <h4>Compiled Code</h4>
+            <h4>{{ CODE_OUTPUT_LABELS[codeOutputTarget] }} Output</h4>
             <div class="code-header-actions">
-              <div v-if="isTypeScript" class="code-mode-toggle">
+              <div class="code-mode-toggle">
+                <button
+                  :class="['toggle-btn', { active: codeOutputTarget === 'dom' }]"
+                  @click="codeOutputTarget = 'dom'"
+                >
+                  VDOM
+                </button>
+                <button
+                  :class="['toggle-btn', { active: codeOutputTarget === 'ssr' }]"
+                  @click="codeOutputTarget = 'ssr'"
+                >
+                  SSR
+                </button>
+                <button
+                  :class="['toggle-btn', { active: codeOutputTarget === 'vapor' }]"
+                  @click="codeOutputTarget = 'vapor'"
+                >
+                  Vapor
+                </button>
+              </div>
+              <div class="code-mode-toggle code-view-toggle">
                 <button
                   :class="['toggle-btn', { active: codeViewMode === 'ts' }]"
-                  @click="codeViewMode = 'ts'"
+                  :disabled="!activeCodeOutput.isTypeScript"
+                  @click="activeCodeOutput.isTypeScript && (codeViewMode = 'ts')"
                 >
                   TS
                 </button>
                 <button
                   :class="['toggle-btn', { active: codeViewMode === 'js' }]"
-                  @click="codeViewMode = 'js'"
+                  :disabled="!activeCodeOutput.isTypeScript"
+                  @click="activeCodeOutput.isTypeScript && (codeViewMode = 'js')"
                 >
                   JS
                 </button>
               </div>
-              <button
-                class="btn-ghost"
-                @click="
-                  copyToClipboard(
-                    isTypeScript && codeViewMode === 'js'
-                      ? formattedJsCode
-                      : formattedCode || output.code,
-                  )
-                "
-              >
-                Copy
-              </button>
+              <button class="btn-ghost" @click="copyToClipboard(activeCodeOutputText)">Copy</button>
             </div>
           </div>
-          <CodeHighlight
-            v-if="isTypeScript && codeViewMode === 'js'"
-            :code="formattedJsCode"
-            language="javascript"
-            :theme
-            show-line-numbers
-          />
-          <CodeHighlight
-            v-else
-            :code="formattedCode || output.code"
-            :language="isTypeScript ? 'typescript' : 'javascript'"
-            :theme
-            show-line-numbers
-          />
+          <div v-if="activeCodeOutput.error" class="wasm-error">
+            <h3>{{ CODE_OUTPUT_LABELS[codeOutputTarget] }} Compilation Error</h3>
+            <pre>{{ activeCodeOutput.error }}</pre>
+          </div>
+          <template v-else>
+            <CodeHighlight
+              v-if="activeCodeOutput.isTypeScript && codeViewMode === 'js'"
+              :key="`${activeCodeHighlightKey}-js`"
+              :code="activeCodeOutput.formattedJsCode"
+              language="javascript"
+              :theme
+              show-line-numbers
+            />
+            <CodeHighlight
+              v-else
+              :key="`${activeCodeHighlightKey}-main`"
+              :code="activeCodeOutput.formattedCode || activeCodeOutput.code"
+              :language="activeCodeOutput.isTypeScript ? 'typescript' : 'javascript'"
+              :theme
+              show-line-numbers
+            />
+            <div
+              v-if="activeCodeOutput.templates.length > 0 && codeOutputTarget !== 'vapor'"
+              class="sfc-block"
+            >
+              <p class="section-label">
+                Template Fragments ({{ activeCodeOutput.templates.length }})
+              </p>
+              <div
+                v-for="(template, index) in activeCodeOutput.templates"
+                :key="`${codeOutputTarget}-${index}`"
+                class="style-block"
+              >
+                <span class="style-meta">
+                  <span class="badge">template {{ index + 1 }}</span>
+                </span>
+                <CodeHighlight :code="template" language="javascript" :theme show-line-numbers />
+              </div>
+            </div>
+          </template>
         </div>
 
         <!-- AST Tab -->

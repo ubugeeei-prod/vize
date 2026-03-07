@@ -7,6 +7,7 @@ mod generate;
 pub(crate) mod helpers;
 
 use crate::ast::{ForNode, RuntimeHelper, TemplateChildNode};
+use crate::transforms::v_memo::{get_memo_exp, has_v_memo};
 
 use super::{
     children::generate_children, context::CodegenContext, expression::generate_expression,
@@ -24,6 +25,10 @@ pub(crate) use helpers::{
 
 /// Generate for node
 pub fn generate_for(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
+    generate_for_inner(ctx, for_node)
+}
+
+fn generate_for_inner(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
     ctx.use_helper(RuntimeHelper::OpenBlock);
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.use_helper(RuntimeHelper::Fragment);
@@ -94,35 +99,141 @@ pub fn generate_for(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
     // Register callback params so they don't get _ctx. prefix
     ctx.add_slot_params(&callback_params);
 
-    ctx.push(") => {");
-    ctx.indent();
-    ctx.newline();
-    ctx.push("return ");
-
-    // Generate child as block (not regular node)
-    if for_node.children.len() == 1 {
-        generate_for_item(ctx, &for_node.children[0], is_stable);
+    // Check if the single child has v-memo (v-for + v-memo optimization)
+    let child_memo_exp = if for_node.children.len() == 1 {
+        if let TemplateChildNode::Element(el) = &for_node.children[0] {
+            if has_v_memo(el) {
+                get_memo_exp(el)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     } else {
-        generate_children(ctx, &for_node.children);
-    }
-
-    // Unregister callback params
-    ctx.remove_slot_params(&callback_params);
-
-    ctx.deindent();
-    ctx.newline();
-    // Close with fragment flag
-    let flag_name = match fragment_flag {
-        64 => "STABLE_FRAGMENT",
-        128 => "KEYED_FRAGMENT",
-        256 => "UNKEYED_FRAGMENT",
-        _ => "FRAGMENT",
+        None
     };
-    ctx.push("}), ");
-    ctx.push(&fragment_flag.to_compact_string());
-    ctx.push(" /* ");
-    ctx.push(flag_name);
-    ctx.push(" */))");
+
+    if let Some(memo_exp) = child_memo_exp {
+        // v-for + v-memo: special optimized pattern
+        // Register withMemo helper (needed by Vue runtime even though we don't call it directly)
+        ctx.use_helper(RuntimeHelper::WithMemo);
+
+        // Extra parameters: __, ___, _cached
+        // Add placeholder parameters to reach _cached position
+        if for_node.key_alias.is_none() {
+            ctx.push(", __");
+        }
+        if for_node.object_index_alias.is_none() {
+            ctx.push(", ___");
+        }
+        ctx.push(", _cached) => {");
+        ctx.indent();
+        ctx.newline();
+
+        // const _memo = ([deps])
+        ctx.push("const _memo = (");
+        generate_expression(ctx, memo_exp);
+        ctx.push(")");
+        ctx.newline();
+
+        // if (_cached && _cached.key === key && _isMemoSame(_cached, _memo)) return _cached
+        ctx.use_helper(RuntimeHelper::IsMemoSame);
+        let key_exp = if let TemplateChildNode::Element(el) = &for_node.children[0] {
+            get_element_key(el)
+        } else {
+            None
+        };
+        ctx.push("if (_cached && _cached.key === ");
+        if let Some(key) = key_exp {
+            generate_expression(ctx, key);
+        } else {
+            ctx.push("undefined");
+        }
+        ctx.push(" && ");
+        ctx.push(ctx.helper(RuntimeHelper::IsMemoSame));
+        ctx.push("(_cached, _memo)) return _cached");
+        ctx.newline();
+
+        // const _item = (element generation)
+        ctx.push("const _item = ");
+
+        // Set in_v_for flag
+        let prev_in_v_for = ctx.in_v_for;
+        ctx.in_v_for = true;
+
+        // Skip v-memo in generate_for_item since we handle it here
+        ctx.skip_v_memo = true;
+        generate_for_item(ctx, &for_node.children[0], is_stable);
+        ctx.skip_v_memo = false;
+
+        ctx.in_v_for = prev_in_v_for;
+
+        ctx.newline();
+        ctx.push("_item.memo = _memo");
+        ctx.newline();
+        ctx.push("return _item");
+
+        // Unregister callback params
+        ctx.remove_slot_params(&callback_params);
+
+        ctx.deindent();
+        ctx.newline();
+
+        // Close callback, add _cache and index args
+        let cache_index = ctx.next_cache_index();
+        let flag_name = match fragment_flag {
+            64 => "STABLE_FRAGMENT",
+            128 => "KEYED_FRAGMENT",
+            256 => "UNKEYED_FRAGMENT",
+            _ => "FRAGMENT",
+        };
+        ctx.push("}, _cache, ");
+        ctx.push(&cache_index.to_compact_string());
+        ctx.push("), ");
+        ctx.push(&fragment_flag.to_compact_string());
+        ctx.push(" /* ");
+        ctx.push(flag_name);
+        ctx.push(" */))");
+    } else {
+        // Standard v-for (no v-memo)
+        ctx.push(") => {");
+        ctx.indent();
+        ctx.newline();
+        ctx.push("return ");
+
+        // Set in_v_for flag so slot stability is DYNAMIC inside v-for
+        let prev_in_v_for = ctx.in_v_for;
+        ctx.in_v_for = true;
+
+        // Generate child as block (not regular node)
+        if for_node.children.len() == 1 {
+            generate_for_item(ctx, &for_node.children[0], is_stable);
+        } else {
+            generate_children(ctx, &for_node.children);
+        }
+
+        // Restore in_v_for flag
+        ctx.in_v_for = prev_in_v_for;
+
+        // Unregister callback params
+        ctx.remove_slot_params(&callback_params);
+
+        ctx.deindent();
+        ctx.newline();
+        // Close with fragment flag
+        let flag_name = match fragment_flag {
+            64 => "STABLE_FRAGMENT",
+            128 => "KEYED_FRAGMENT",
+            256 => "UNKEYED_FRAGMENT",
+            _ => "FRAGMENT",
+        };
+        ctx.push("}), ");
+        ctx.push(&fragment_flag.to_compact_string());
+        ctx.push(" /* ");
+        ctx.push(flag_name);
+        ctx.push(" */))");
+    }
 }
 
 // Note: Directive skipping behavior (v-for with custom directives, :key handling)

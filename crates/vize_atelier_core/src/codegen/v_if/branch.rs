@@ -7,6 +7,7 @@ use crate::ast::{
     ElementNode, ElementType, ExpressionNode, IfBranchNode, PropNode, RuntimeHelper,
     TemplateChildNode,
 };
+use vize_carton::ToCompactString;
 
 use super::{
     super::{
@@ -16,7 +17,10 @@ use super::{
         expression::generate_expression,
         helpers::{escape_js_string, is_builtin_component},
         node::generate_node,
-        slots::{generate_slots, has_slot_children},
+        patch_flag::{
+            calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
+        },
+        slots::{generate_slots, has_dynamic_slots_flag, has_slot_children},
     },
     generate::{
         extract_static_class_style, generate_if_branch_props_object, has_dynamic_class,
@@ -77,6 +81,8 @@ fn generate_if_branch_component(
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
+    let is_dynamic_component = el.tag == "component" || el.tag == "Component";
+
     // Components: skip scope_id in props -- Vue runtime applies it via __scopeId
     let prev_skip_scope_id = ctx.skip_scope_id;
     ctx.skip_scope_id = true;
@@ -88,7 +94,7 @@ fn generate_if_branch_component(
     ctx.push("(");
     // Generate component name
     // Handle dynamic component (<component :is="..."> / <Component :is="...">)
-    if el.tag == "component" || el.tag == "Component" {
+    if is_dynamic_component {
         let dynamic_is = el.props.iter().find_map(|p| {
             if let PropNode::Directive(dir) = p {
                 if dir.name == "bind" {
@@ -138,6 +144,33 @@ fn generate_if_branch_component(
         ctx.push("_component_");
         ctx.push(&el.tag.replace('-', "_"));
     }
+
+    let (mut patch_flag, dynamic_props) = if is_dynamic_component {
+        calculate_element_patch_info_skip_is(
+            el,
+            ctx.options.binding_metadata.as_ref(),
+            ctx.options.cache_handlers,
+        )
+    } else {
+        calculate_element_patch_info(
+            el,
+            ctx.options.binding_metadata.as_ref(),
+            ctx.options.cache_handlers,
+        )
+    };
+
+    if has_slot_children(el) {
+        if let Some(flag) = patch_flag {
+            let new_flag = flag & !1;
+            patch_flag = if new_flag > 0 { Some(new_flag) } else { None };
+        }
+    }
+
+    if el.tag == "KeepAlive" || el.tag == "keep-alive" || has_dynamic_slots_flag(el) {
+        patch_flag = Some(patch_flag.unwrap_or(0) | 1024);
+    }
+
+    let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
 
     // Extract static class/style for merging with dynamic bindings
     let (static_class, static_style) = extract_static_class_style(el);
@@ -235,6 +268,30 @@ fn generate_if_branch_component(
                 ctx.push(",");
             }
             generate_node(ctx, child);
+        }
+        ctx.push("]");
+    } else if has_patch_info {
+        ctx.push(", null");
+    }
+
+    if let Some(flag) = patch_flag {
+        ctx.push(", ");
+        ctx.push(&flag.to_compact_string());
+        ctx.push(" /* ");
+        let flag_name = patch_flag_name(flag);
+        ctx.push(&flag_name);
+        ctx.push(" */");
+    }
+
+    if let Some(props) = dynamic_props {
+        ctx.push(", [");
+        for (i, prop) in props.iter().enumerate() {
+            if i > 0 {
+                ctx.push(", ");
+            }
+            ctx.push("\"");
+            ctx.push(prop);
+            ctx.push("\"");
         }
         ctx.push("]");
     }

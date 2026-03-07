@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { useModel as _useModel } from 'vue'
 import { defineComponent as _defineComponent } from 'vue'
@@ -11,7 +11,7 @@ export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
     "modelValue": { type: Number, default: 0 },
-    "modelModifiers": {}
+    "modelModifiers": {},
   },
   emits: ["update:modelValue"],
   setup(__props) {

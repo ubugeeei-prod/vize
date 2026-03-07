@@ -1,9 +1,10 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+assertion_line: 198
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, unref as _unref } from "vue"
+import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode } from "vue"
 
 import PatinaPlayground from './PatinaPlayground.vue'
 const show = true
@@ -18,8 +19,8 @@ return (_ctx: any,_cache: any) => {
   return (show)
       ? (_openBlock(), _createBlock(PatinaPlayground, {
         key: 0,
-        compiler: _unref(compiler)
-      }))
+        compiler: compiler
+      }, null, 8 /* PROPS */, ["compiler"]))
       : _createCommentVNode("v-if", true)
 }
 }

@@ -108,6 +108,8 @@ pub struct TransformOptions {
     pub inline: bool,
     /// Whether is TypeScript
     pub is_ts: bool,
+    /// Whether in Vapor mode (skip v-model expansion)
+    pub vapor: bool,
 }
 
 impl Default for TransformOptions {
@@ -123,6 +125,7 @@ impl Default for TransformOptions {
             binding_metadata: None,
             inline: false,
             is_ts: false,
+            vapor: false,
         }
     }
 }

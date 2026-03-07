@@ -306,6 +306,120 @@ function processData(data: Record<string, unknown>): void {
 }
 
 #[test]
+fn test_inline_template_keeps_patch_flags_for_ref_class_bindings() {
+    let source = r#"<script setup lang="ts">
+import { ref } from 'vue';
+
+const activeTab = ref<'a' | 'b'>('a');
+</script>
+
+<template>
+  <div class="tabs">
+    <button :class="['tab', { active: activeTab === 'a' }]" @click="activeTab = 'a'">A</button>
+    <button :class="['tab', { active: activeTab === 'b' }]" @click="activeTab = 'b'">B</button>
+  </div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("2 /* CLASS */"),
+        "Expected inline SFC output to preserve CLASS patch flags. Got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("activeTab.value === 'a'"),
+        "Expected ref access to stay reactive in class binding. Got:\n{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_inline_component_dynamic_prop_keeps_props_patch_flag() {
+    let source = r#"<script setup lang="ts">
+import { ref } from 'vue';
+import CodeHighlight from './CodeHighlight.vue';
+
+const currentCode = ref('dom');
+</script>
+
+<template>
+  <div class="wrapper">
+    <CodeHighlight :code="currentCode" language="javascript" />
+  </div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("_createVNode(CodeHighlight"),
+        "Expected inline component vnode output. Got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("code: currentCode.value"),
+        "Expected inline component prop to stay reactive. Got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("8 /* PROPS */"),
+        "Expected inline component output to preserve PROPS patch flag for dynamic prop. Got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("[\"code\"]"),
+        "Expected inline component dynamic props list to include code. Got:\n{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_v_if_branch_component_dynamic_prop_keeps_props_patch_flag() {
+    let source = r#"<script setup lang="ts">
+import { ref } from 'vue';
+import CodeHighlight from './CodeHighlight.vue';
+
+const show = ref(true);
+const currentCode = ref('dom');
+</script>
+
+<template>
+  <div class="wrapper">
+    <CodeHighlight v-if="show" :code="currentCode" language="javascript" />
+  </div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("_createBlock(CodeHighlight"),
+        "Expected v-if branch component block output. Got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("code: currentCode.value"),
+        "Expected v-if branch component prop to stay reactive. Got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("8 /* PROPS */"),
+        "Expected v-if branch component output to preserve PROPS patch flag. Got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("[\"code\"]"),
+        "Expected v-if branch component dynamic props list to include code. Got:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_full_sfc_props_destructure() {
     let input = r#"<script setup lang="ts">
 import { computed } from 'vue'

@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: js_output
+expression: js_output.as_str()
 ---
 import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
@@ -21,7 +21,7 @@ return (_ctx, _cache) => {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {
       return (_openBlock(), _createElementBlock("div", {
         key: item.id
-      }, "\n    " + _toDisplayString(item.name) + "\n  ", 1 /* TEXT */))
+      }, _toDisplayString(item.name), 1 /* TEXT */))
     }), 128 /* KEYED_FRAGMENT */))
 }
 }

@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
@@ -14,7 +14,7 @@ export default /*@__PURE__*/_defineComponent({
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("button", {
-      onClick: _cache[0] || (_cache[0] = ($event: any) => (_ctx.$emit('update')))
+      onClick: _cache[0] || (_cache[0] = ($event: any) => ($emit('update')))
     }, "Click"))
 }
 }

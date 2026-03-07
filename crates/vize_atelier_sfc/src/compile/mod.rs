@@ -14,7 +14,6 @@ mod tests;
 use crate::compile_script::{compile_script_setup_inline, TemplateParts};
 use crate::compile_template::{
     compile_template_block, compile_template_block_vapor, extract_template_parts,
-    extract_template_parts_full,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
@@ -96,11 +95,14 @@ pub fn compile_sfc(
         let mut dom_opts = template_opts.compiler_options.take().unwrap_or_default();
         dom_opts.hoist_static = true;
         template_opts.compiler_options = Some(dom_opts);
+        // Don't pass scope IDs to template compiler - scoped CSS is handled by
+        // runtime __scopeId and CSS transformation, not by adding attributes
+        // to template elements during compilation.
         let template_result = compile_template_block(
             template,
             &template_opts,
             &scope_id,
-            has_scoped,
+            false,
             is_ts,
             None,
             None,
@@ -108,15 +110,9 @@ pub fn compile_sfc(
 
         match template_result {
             Ok(template_code) => {
-                // Wrap template-only SFC in a proper component with export default.
-                // Convert "export function render(" to "function render(" and add component wrapper.
-                let wrapped = template_code.replace("export function render(", "function render(");
-                let mut output = String::with_capacity(wrapped.len() + 128);
-                output.push_str(&wrapped);
-                output.push_str("\nconst _sfc_main = {};\n");
-                output.push_str("_sfc_main.render = render;\n");
-                output.push_str("export default _sfc_main;\n");
-                code = output;
+                // Template-only SFC: output just the render function with export.
+                // The template compiler already generates `export function render(...)`.
+                code = template_code;
             }
             Err(e) => errors.push(e),
         }
@@ -167,11 +163,13 @@ pub fn compile_sfc(
             dom_opts.hoist_static = true;
             template_opts.compiler_options = Some(dom_opts);
 
+            // Don't pass scope IDs to template compiler - scoped CSS is handled by
+            // runtime __scopeId and CSS transformation.
             let template_result = compile_template_block(
                 template,
                 &template_opts,
                 &scope_id,
-                has_scoped,
+                false,
                 is_ts,
                 None, // No bindings for normal scripts
                 None, // No Croquis for normal scripts
@@ -179,26 +177,13 @@ pub fn compile_sfc(
 
             match template_result {
                 Ok(template_code) => {
-                    // Extract template parts (imports, hoisted, render function)
-                    let (template_imports, template_hoisted, render_fn) =
-                        extract_template_parts_full(&template_code);
-
-                    // Build output: imports + script + hoisted + render + export
-                    code.push_str(&template_imports);
-                    if !template_imports.is_empty() {
-                        code.push('\n');
-                    }
+                    // Build output matching Vue's compiler-sfc:
+                    // 1. Full template output (imports + hoisted + export function render(...))
+                    // 2. Rewritten script
+                    // 3. _sfc_main.render = render
+                    // 4. export default _sfc_main
+                    code.push_str(&template_code);
                     code.push_str(&final_script);
-                    code.push('\n');
-
-                    // Add hoisted declarations
-                    if !template_hoisted.is_empty() {
-                        code.push_str(&template_hoisted);
-                        code.push('\n');
-                    }
-
-                    // Add render function (without imports - they're already at top)
-                    code.push_str(&render_fn);
                     code.push('\n');
 
                     // Export the component with render attached
@@ -292,6 +277,24 @@ pub fn compile_sfc(
         }
     }
 
+    // Register $emit or __emit binding when defineEmits is used, so the template
+    // compiler knows not to prefix it with _ctx.
+    if let Some(ref emits_macro) = ctx.macros.define_emits {
+        if let Some(ref binding_name) = emits_macro.binding_name {
+            // e.g., const emit = defineEmits([...]) -> emit is setup const
+            script_bindings
+                .bindings
+                .entry(binding_name.clone())
+                .or_insert(BindingType::SetupConst);
+        } else {
+            // defineEmits([...]) without assignment -> $emit is exposed in setup args
+            script_bindings
+                .bindings
+                .entry("$emit".to_compact_string())
+                .or_insert(BindingType::SetupConst);
+        }
+    }
+
     // Register bindings from normal <script> block.
     // When both <script> and <script setup> exist, all imports and exported
     // variables from the normal script are accessible in the template.
@@ -309,11 +312,13 @@ pub fn compile_sfc(
                 template, &scope_id, has_scoped,
             ))
         } else {
+            // Don't pass scope IDs to template compiler - scoped CSS is handled by
+            // runtime __scopeId and CSS transformation.
             Some(compile_template_block(
                 template,
                 &options.template,
                 &scope_id,
-                has_scoped,
+                false,
                 is_ts,
                 Some(&script_bindings), // Pass bindings for proper ref handling
                 Some(croquis),          // Pass Croquis for enhanced transforms

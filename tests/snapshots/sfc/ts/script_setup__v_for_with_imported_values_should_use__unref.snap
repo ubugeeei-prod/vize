@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, toDisplayString as _toDisplayString, unref as _unref } from "vue"
@@ -14,7 +14,7 @@ export default /*@__PURE__*/_defineComponent({
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_unref(PRESETS), (preset) => {
-      return (_openBlock(), _createElementBlock("div", { key: preset.name }, "\n    " + _toDisplayString(preset.label) + "\n  ", 1 /* TEXT */))
+      return (_openBlock(), _createElementBlock("div", { key: preset.name }, _toDisplayString(preset.label), 1 /* TEXT */))
     }), 128 /* KEYED_FRAGMENT */))
 }
 }
