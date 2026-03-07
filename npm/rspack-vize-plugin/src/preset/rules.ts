@@ -123,7 +123,11 @@ export function createVizeVueRules(
       ? [
           {
             test: /\.vue$/,
-            resourceQuery: { not: [/type=style/] },
+            // Exclude ALL sub-requests (style, custom blocks, etc.) — only
+            // the main SFC compilation output contains TypeScript that needs
+            // to be transpiled.  Custom block content may be JSON, YAML, or
+            // other non-JS formats that would break the TS parser.
+            resourceQuery: { not: [/type=/] },
             enforce: "post" as const,
             ...(typescript === true
               ? {

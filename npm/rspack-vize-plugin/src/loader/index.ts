@@ -17,7 +17,12 @@ import type { LoaderContext } from "@rspack/core";
 import fs from "node:fs";
 import path from "node:path";
 import { compileFile, generateOutput } from "../shared/compiler.js";
-import { matchesPattern, extractSrcInfo, inlineSrcBlocks } from "../shared/utils.js";
+import {
+  matchesPattern,
+  extractSrcInfo,
+  inlineSrcBlocks,
+  extractCustomBlocks,
+} from "../shared/utils.js";
 import type { VizeLoaderOptions } from "../types/index.js";
 
 /** Default pattern: files ending with .ce.vue are custom elements */
@@ -45,6 +50,46 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       ),
     );
     return;
+  }
+
+  // Handle custom block sub-requests (e.g. ?vue&type=i18n&index=0).
+  // Without this guard, custom block imports would re-enter the main loader
+  // and trigger a full SFC compilation, leading to recursive imports.
+  if (
+    resourceQuery &&
+    resourceQuery.includes("vue") &&
+    resourceQuery.includes("type=") &&
+    !resourceQuery.includes("type=style")
+  ) {
+    const params = new URLSearchParams(resourceQuery.slice(1));
+    const blockType = params.get("type");
+    if (blockType && blockType !== "style") {
+      const blockIndex = parseInt(params.get("index") || "0", 10);
+      const customBlocks = extractCustomBlocks(source);
+      const block = customBlocks[blockIndex];
+      if (block) {
+        // If the block has an external src, read the external file
+        if (block.src) {
+          const blockPath = path.resolve(path.dirname(resourcePath), block.src);
+          this.addDependency(blockPath);
+          try {
+            const blockContent = fs.readFileSync(blockPath, "utf-8");
+            callback(null, blockContent);
+          } catch {
+            callback(
+              new Error(
+                `[vize] Custom block <${blockType} src="${block.src}"> not found (resolved: ${blockPath}) in ${resourcePath}`,
+              ),
+            );
+          }
+          return;
+        }
+        callback(null, block.content);
+      } else {
+        callback(null, "");
+      }
+      return;
+    }
   }
 
   if (!shouldCompileFile(resourcePath, options)) {

@@ -27,10 +27,7 @@ export function generateScopeId(
       .relative(rootContext, filename)
       .replace(/^(\.\.[/\\])+/, "")
       .replace(/\\/g, "/");
-    input =
-      isProduction && source
-        ? relative + "\n" + source.replace(/\r\n/g, "\n")
-        : relative;
+    input = isProduction && source ? relative + "\n" + source.replace(/\r\n/g, "\n") : relative;
   } else {
     input = filename;
   }
@@ -157,8 +154,7 @@ function scopeSelectors(group: string, scopeAttr: string): string {
 export function extractCustomBlocks(source: string): CustomBlockInfo[] {
   // First, strip the content of <script>, <template>, and <style> blocks
   // so the regex only matches truly root-level custom blocks (not inner HTML).
-  const stripped = source
-    .replace(/<(script|template|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+  const stripped = source.replace(/<(script|template|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
 
   const blocks: CustomBlockInfo[] = [];
   const blockRegex = /<([a-z][a-z0-9-]*)([^>]*)>([\s\S]*?)<\/\1>/gi;

@@ -68,7 +68,10 @@ export function compileFile(
   // would return a stale cached result (e.g. client build reusing SSR output).
   const ssr = options.ssr ?? options.compilerOptions?.ssr ?? false;
   const sourceMap = options.sourceMap ?? options.compilerOptions?.sourceMap ?? true;
-  const cacheKey = `${filePath}:ssr=${ssr}:ts=${autoIsTs}:map=${sourceMap}`;
+  const isCustomElement = options.isCustomElement ?? false;
+  const rootCtx = options.rootContext ?? "";
+  const isProd = options.isProduction ?? false;
+  const cacheKey = `${filePath}:ssr=${ssr}:ts=${autoIsTs}:map=${sourceMap}:ce=${isCustomElement}:root=${rootCtx}:prod=${isProd}`;
 
   // Check content-hash cache to skip re-compilation of unchanged files
   const contentHash = computeContentHash(source);
@@ -103,7 +106,7 @@ export function compileFile(
     hasScoped,
     styles,
     customBlocks,
-    isCustomElement: options.isCustomElement ?? false,
+    isCustomElement,
   };
 
   // Only cache successful compilations (no errors)
@@ -184,11 +187,11 @@ export function generateOutput(
     }
 
     // Filter out empty style blocks that have no content and no external src
-    const activeStyles = compiled.styles.filter(
-      (style) => style.src || /\S/.test(style.content),
-    );
+    const activeStyles = compiled.styles.filter((style) => style.src || /\S/.test(style.content));
 
-    // Track CSS Module requests for HMR
+    // Track CSS Module requests for HMR and __cssModules binding.
+    // varName: safe JS identifier used in import statement (e.g. _cssModule_0)
+    // bindingName: original module name from <style module="..."> (may not be a valid identifier)
     const cssModuleHmrEntries: { request: string; varName: string; bindingName: string }[] = [];
 
     const styleImports = activeStyles
@@ -212,8 +215,13 @@ export function generateOutput(
         }
 
         if (style.module) {
-          const varName = typeof style.module === "string" ? style.module : "$style";
-          cssModuleHmrEntries.push({ request, varName, bindingName: varName });
+          const bindingName = typeof style.module === "string" ? style.module : "$style";
+          // Always use a safe internal variable name for the import binding.
+          // The original module name (e.g. "foo-bar") may not be a valid JS
+          // identifier, so we use _cssModule_<index> and map it back via
+          // __cssModules[bindingName] below.
+          const varName = `_cssModule_${style.index}`;
+          cssModuleHmrEntries.push({ request, varName, bindingName });
           return `import ${varName} from ${JSON.stringify(request)};`;
         }
         return `import ${JSON.stringify(request)};`;
@@ -302,7 +310,11 @@ export function generateOutput(
         }
 
         const queryStr = queryParts.join("&");
-        const request = block.src || options.requestPath;
+        // Always use the .vue file itself as the request path, even for
+        // external-src blocks.  This ensures the import matches the .vue
+        // test rule and enters the vize loader, where the custom block
+        // handler reads the external file via block.src at loader time.
+        const request = options.requestPath;
         return (
           `import block${index} from ${JSON.stringify(`${request}?${queryStr}`)};\n` +
           `if (typeof block${index} === 'function') block${index}(_sfc_main);`
