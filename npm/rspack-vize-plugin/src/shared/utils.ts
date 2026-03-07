@@ -25,7 +25,7 @@ export function generateScopeId(
   if (rootContext) {
     const relative = path
       .relative(rootContext, filename)
-      .replace(/^(\.\.[\/\\])+/, "")
+      .replace(/^(\.\.[/\\])+/, "")
       .replace(/\\/g, "/");
     input =
       isProduction && source
