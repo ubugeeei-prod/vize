@@ -21,6 +21,16 @@ pub(crate) fn extract_for_params(expr: &ExpressionNode<'_>, params: &mut Vec<Str
 
 /// Recursively extract parameter names from a destructuring pattern string.
 pub(crate) fn extract_destructure_params(trimmed: &str, params: &mut Vec<String>) {
+    if trimmed.contains(',') && !trimmed.starts_with('{') && !trimmed.starts_with('[') {
+        for part in split_top_level(trimmed) {
+            let part = part.trim();
+            if !part.is_empty() {
+                extract_destructure_params(part, params);
+            }
+        }
+        return;
+    }
+
     if trimmed.starts_with('{') && trimmed.ends_with('}') {
         let inner = &trimmed[1..trimmed.len() - 1];
         // Split by commas at the top level (respecting nested braces/brackets)

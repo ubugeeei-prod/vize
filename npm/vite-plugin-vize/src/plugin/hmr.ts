@@ -1,9 +1,11 @@
 import type { HmrContext } from "vite";
+import fs from "node:fs";
 import path from "node:path";
 
 import type { VizePluginState } from "./state.js";
 import { compileFile } from "../compiler.js";
-import { detectHmrUpdateType, type HmrUpdateType } from "../hmr.js";
+import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.js";
+import { hasDelegatedStyles } from "../utils/index.js";
 import { toVirtualId } from "../virtual.js";
 import { resolveCssImports } from "../utils/css.js";
 
@@ -30,6 +32,21 @@ export async function handleHotUpdateHook(
       );
 
       const newCompiled = state.cache.get(file)!;
+      try {
+        const stat = fs.statSync(file);
+        state.precompileMetadata.set(file, {
+          mtimeMs: stat.mtimeMs,
+          size: stat.size,
+        });
+      } catch {
+        state.precompileMetadata.delete(file);
+      }
+
+      if (!hasHmrChanges(prevCompiled, newCompiled)) {
+        state.pendingHmrUpdateTypes.delete(file);
+        state.logger.log(`Re-compiled: ${path.relative(state.root, file)} (no-op)`);
+        return [];
+      }
 
       const updateType: HmrUpdateType = detectHmrUpdateType(prevCompiled, newCompiled);
 
@@ -39,11 +56,7 @@ export async function handleHotUpdateHook(
       const modules =
         server.moduleGraph.getModulesByFile(virtualId) ?? server.moduleGraph.getModulesByFile(file);
 
-      const hasDelegated = newCompiled.styles?.some(
-        (s) =>
-          (s.lang !== null && ["scss", "sass", "less", "stylus", "styl"].includes(s.lang)) ||
-          s.module !== false,
-      );
+      const hasDelegated = hasDelegatedStyles(newCompiled);
 
       if (hasDelegated && updateType === "style-only") {
         const affectedModules: Set<import("vite").ModuleNode> = new Set();
@@ -65,17 +78,17 @@ export async function handleHotUpdateHook(
             }
           }
         }
-        if (modules) {
-          for (const mod of modules) {
-            affectedModules.add(mod);
-          }
-        }
         if (affectedModules.size > 0) {
           return [...affectedModules];
         }
+        if (modules) {
+          return [...modules];
+        }
+        return [];
       }
 
       if (updateType === "style-only" && newCompiled.css && !hasDelegated) {
+        state.pendingHmrUpdateTypes.delete(file);
         server.ws.send({
           type: "custom",
           event: "vize:update",
@@ -95,8 +108,11 @@ export async function handleHotUpdateHook(
       }
 
       if (modules) {
+        state.pendingHmrUpdateTypes.set(file, updateType);
         return [...modules];
       }
+
+      state.pendingHmrUpdateTypes.delete(file);
     } catch (e) {
       state.logger.error(`Re-compilation failed for ${file}:`, e);
     }

@@ -561,7 +561,7 @@ import Button from './Button.vue'
         // This offset is just before <variant, which is inside the <art> but before variant tag starts
         // It should be ArtContent
         assert!(matches!(
-            find_art_block_at_offset(source, 1),
+            find_art_block_at_offset(source, art_content_offset),
             Some(BlockType::Art(_))
         ));
     }

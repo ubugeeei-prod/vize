@@ -2,6 +2,10 @@
 //!
 //! Transforms v-slot (# shorthand) directives for slot content.
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::BindingPattern;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::String;
 
 use crate::ast::*;
@@ -40,6 +44,70 @@ pub fn get_slot_props_string(dir: &DirectiveNode<'_>) -> Option<String> {
         ExpressionNode::Simple(s) => s.content.clone(),
         ExpressionNode::Compound(c) => c.loc.source.clone(),
     })
+}
+
+/// Extract slot prop names from a v-slot expression.
+pub fn get_slot_prop_names(dir: &DirectiveNode<'_>) -> Vec<String> {
+    get_slot_props_string(dir)
+        .map(|pattern| extract_slot_prop_names(pattern.as_str()))
+        .unwrap_or_default()
+}
+
+/// Extract binding names from a slot props pattern.
+pub fn extract_slot_prop_names(pattern: &str) -> Vec<String> {
+    let trimmed = pattern.trim();
+    if trimmed.is_empty() {
+        return Vec::new();
+    }
+
+    let mut source = String::with_capacity(trimmed.len() + 18);
+    source.push_str("let ");
+    source.push_str(trimmed);
+    source.push_str(" = __slotProps");
+
+    let allocator = Allocator::default();
+    let source_type = SourceType::default().with_typescript(true);
+    let parsed = Parser::new(&allocator, source.as_str(), source_type).parse();
+
+    let Some(oxc_ast::ast::Statement::VariableDeclaration(var_decl)) = parsed.program.body.first()
+    else {
+        return Vec::new();
+    };
+
+    let Some(declarator) = var_decl.declarations.first() else {
+        return Vec::new();
+    };
+
+    let mut names = Vec::new();
+    collect_slot_binding_names(&declarator.id, &mut names);
+    names
+}
+
+fn collect_slot_binding_names(pattern: &BindingPattern<'_>, names: &mut Vec<String>) {
+    match pattern {
+        BindingPattern::BindingIdentifier(id) => {
+            names.push(String::new(id.name.as_str()));
+        }
+        BindingPattern::ObjectPattern(obj) => {
+            for prop in obj.properties.iter() {
+                collect_slot_binding_names(&prop.value, names);
+            }
+            if let Some(rest) = &obj.rest {
+                collect_slot_binding_names(&rest.argument, names);
+            }
+        }
+        BindingPattern::ArrayPattern(arr) => {
+            for elem in arr.elements.iter().flatten() {
+                collect_slot_binding_names(elem, names);
+            }
+            if let Some(rest) = &arr.rest {
+                collect_slot_binding_names(&rest.argument, names);
+            }
+        }
+        BindingPattern::AssignmentPattern(assign) => {
+            collect_slot_binding_names(&assign.left, names);
+        }
+    }
 }
 
 /// Check if slot is dynamic (has dynamic name)
@@ -162,7 +230,8 @@ pub fn has_dynamic_slots<'a>(el: &ElementNode<'a>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{
-        collect_slots, get_slot_name, has_v_slot, DirectiveNode, SourceLocation, TemplateChildNode,
+        collect_slots, extract_slot_prop_names, get_slot_name, get_slot_prop_names, has_v_slot,
+        DirectiveNode, SourceLocation, TemplateChildNode,
     };
     use crate::parser::parse;
     use bumpalo::Bump;
@@ -197,6 +266,49 @@ mod tests {
             assert_eq!(slots.len(), 2);
             assert!(slots.iter().any(|s| s.name == "header"));
             assert!(slots.iter().any(|s| s.name == "footer"));
+        }
+    }
+
+    #[test]
+    fn test_extract_slot_prop_names_simple_destructure() {
+        let names = extract_slot_prop_names("{ item, index }");
+        let names: Vec<_> = names.iter().map(|name| name.as_str()).collect();
+        assert_eq!(names, vec!["item", "index"]);
+    }
+
+    #[test]
+    fn test_extract_slot_prop_names_nested_defaults_and_rest() {
+        let names = extract_slot_prop_names("{ item: { id }, index = 0, ...rest }");
+        let names: Vec<_> = names.iter().map(|name| name.as_str()).collect();
+        assert_eq!(names, vec!["id", "index", "rest"]);
+    }
+
+    #[test]
+    fn test_get_slot_prop_names_from_directive() {
+        let allocator = Bump::new();
+        let (root, _) = parse(
+            &allocator,
+            r#"<Comp><template #default="{ item, active }">{{ item.id }}{{ active }}</template></Comp>"#,
+        );
+
+        if let TemplateChildNode::Element(el) = &root.children[0] {
+            if let TemplateChildNode::Element(slot_template) = &el.children[0] {
+                let dir = slot_template
+                    .props
+                    .iter()
+                    .find_map(|prop| match prop {
+                        crate::ast::PropNode::Directive(dir) if dir.name == "slot" => Some(dir),
+                        _ => None,
+                    })
+                    .expect("expected v-slot directive");
+                let names = get_slot_prop_names(dir);
+                let names: Vec<_> = names.iter().map(|name| name.as_str()).collect();
+                assert_eq!(names, vec!["item", "active"]);
+            } else {
+                panic!("expected slot template element");
+            }
+        } else {
+            panic!("expected component root element");
         }
     }
 }

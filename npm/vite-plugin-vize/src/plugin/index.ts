@@ -30,6 +30,8 @@ export function vize(options: VizeOptions = {}): Plugin[] {
   const state: VizePluginState = {
     cache: new Map(),
     collectedCss: new Map(),
+    precompileMetadata: new Map(),
+    pendingHmrUpdateTypes: new Map(),
     isProduction: false,
     root: "",
     clientViteBase: "/",

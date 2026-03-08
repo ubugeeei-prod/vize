@@ -5,6 +5,10 @@
 
 use std::borrow::Cow;
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Expression, Statement};
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
 use vize_carton::{String, ToCompactString};
 
 use crate::script::{transform_destructured_props, ScriptCompileContext};
@@ -33,9 +37,9 @@ pub fn compile_script_setup_inline(
     normal_script_content: Option<&str>,
     css_vars: &[Cow<'_, str>],
     scope_id: &str,
+    filename: Option<&str>,
 ) -> Result<ScriptCompileResult, SfcError> {
     let mut ctx = ScriptCompileContext::new(content);
-    ctx.analyze();
 
     // Merge type definitions from normal <script> block so that
     // defineProps<TypeRef>() can resolve types defined there.
@@ -44,6 +48,15 @@ pub fn compile_script_setup_inline(
             ctx.collect_types_from(normal_src);
         }
     }
+    if let Some(path) = filename {
+        ctx.collect_imported_types_from_path(content, path);
+        if let Some(normal_src) = normal_script_content {
+            if !normal_src.is_empty() {
+                ctx.collect_imported_types_from_path(normal_src, path);
+            }
+        }
+    }
+    ctx.analyze();
 
     // Use arena-allocated Vec for better performance
     let bump = vize_carton::Bump::new();
@@ -340,7 +353,7 @@ pub fn compile_script_setup_inline(
 
     // Output setup code lines (non-hoisted), transforming await expressions for async setup
     if is_async {
-        let transformed_async = transform_await_expressions(&setup_body_lines);
+        let transformed_async = transform_await_expressions(&setup_body_lines, source_is_ts);
         for line in &transformed_async {
             output.extend_from_slice(line.as_bytes());
             output.push(b'\n');
@@ -1383,74 +1396,177 @@ fn separate_hoisted_consts(
 /// Handles two patterns:
 /// 1. `const x = await expr` → `const x = (\n  ([__temp,__restore] = _withAsyncContext(() => expr)),\n  __temp = await __temp,\n  __restore(),\n  __temp\n)`
 /// 2. `await expr` (statement) → `;(\n  ([__temp,__restore] = _withAsyncContext(() => expr)),\n  await __temp,\n  __restore()\n)`
-fn transform_await_expressions(lines: &[String]) -> Vec<String> {
-    let mut result = Vec::new();
-    for line in lines {
-        let trimmed = line.trim();
-
-        // Check for `const/let/var ... = await ...` pattern
-        if let Some(await_assign) = try_extract_await_assignment(trimmed) {
-            // Pattern: const x = await expr
-            let mut out = String::default();
-            out.push_str(&await_assign.prefix);
-            out.push_str(" (\n");
-            out.push_str("  ([__temp,__restore] = _withAsyncContext(() => ");
-            out.push_str(&await_assign.expr);
-            out.push_str(")),\n");
-            out.push_str("  __temp = await __temp,\n");
-            out.push_str("  __restore(),\n");
-            out.push_str("  __temp\n");
-            out.push(')');
-            result.push(out);
-        } else if let Some(expr) = try_extract_standalone_await(trimmed) {
-            // Pattern: await expr (standalone statement)
-            let mut out = String::default();
-            out.push_str(";(\n");
-            out.push_str("  ([__temp,__restore] = _withAsyncContext(() => ");
-            out.push_str(&expr);
-            out.push_str(")),\n");
-            out.push_str("  await __temp,\n");
-            out.push_str("  __restore()\n");
-            out.push(')');
-            result.push(out);
-        } else {
-            result.push(line.clone());
+fn transform_await_expressions(lines: &[String], is_ts: bool) -> Vec<String> {
+    let mut source = String::default();
+    for (idx, line) in lines.iter().enumerate() {
+        if idx > 0 {
+            source.push('\n');
         }
+        source.push_str(line);
     }
-    result
+
+    transform_await_source(&source, is_ts)
+        .lines()
+        .map(|line| line.to_compact_string())
+        .collect()
 }
 
-struct AwaitAssignment {
-    prefix: String,
-    expr: String,
+const AWAIT_WRAP_PREFIX: &str = "async function __vize_async_setup__() {\n";
+const AWAIT_WRAP_SUFFIX: &str = "\n}";
+
+fn transform_await_source(source: &str, is_ts: bool) -> String {
+    if source.trim().is_empty() {
+        return source.to_compact_string();
+    }
+
+    let mut wrapped =
+        String::with_capacity(AWAIT_WRAP_PREFIX.len() + source.len() + AWAIT_WRAP_SUFFIX.len());
+    wrapped.push_str(AWAIT_WRAP_PREFIX);
+    wrapped.push_str(source);
+    wrapped.push_str(AWAIT_WRAP_SUFFIX);
+
+    let allocator = Allocator::default();
+    let source_type = SourceType::default().with_typescript(is_ts);
+    let parse_result = Parser::new(&allocator, &wrapped, source_type).parse();
+    if !parse_result.errors.is_empty() {
+        return source.to_compact_string();
+    }
+
+    let Some(Statement::FunctionDeclaration(func)) = parse_result.program.body.first() else {
+        return source.to_compact_string();
+    };
+    let Some(body) = &func.body else {
+        return source.to_compact_string();
+    };
+
+    let offset = AWAIT_WRAP_PREFIX.len();
+    let mut cursor = 0usize;
+    let mut transformed = String::with_capacity(source.len() + 128);
+
+    for stmt in body.statements.iter() {
+        let stmt_span = stmt.span();
+        let Some(stmt_start) = stmt_span.start.try_into().ok().and_then(|start: usize| {
+            start
+                .checked_sub(offset)
+                .filter(|start| *start <= source.len())
+        }) else {
+            return source.to_compact_string();
+        };
+        let Some(stmt_end) = stmt_span
+            .end
+            .try_into()
+            .ok()
+            .and_then(|end: usize| end.checked_sub(offset).filter(|end| *end <= source.len()))
+        else {
+            return source.to_compact_string();
+        };
+
+        if stmt_start < cursor || stmt_start > stmt_end {
+            return source.to_compact_string();
+        }
+
+        transformed.push_str(&source[cursor..stmt_start]);
+
+        if let Some(replacement) = transform_await_statement(source, stmt, offset) {
+            transformed.push_str(&replacement);
+        } else {
+            transformed.push_str(&source[stmt_start..stmt_end]);
+        }
+
+        cursor = stmt_end;
+    }
+
+    transformed.push_str(&source[cursor..]);
+    transformed
 }
 
-/// Try to extract an await assignment: `const x = await expr` or `const { x, y } = await expr`
-fn try_extract_await_assignment(line: &str) -> Option<AwaitAssignment> {
-    // Match patterns like:
-    // `const x = await expr`
-    // `const { x, y } = await expr`
-    // `let x = await expr`
-    let trimmed = line.trim_end_matches(';').trim();
-    let eq_pos = trimmed.find(" = await ")?;
-    let prefix = &trimmed[..eq_pos + 3]; // "const x = "
-    let after_eq = &trimmed[eq_pos + 3..]; // " await expr"
-    let expr = after_eq.strip_prefix(" await ")?.trim();
+fn transform_await_statement(source: &str, stmt: &Statement<'_>, offset: usize) -> Option<String> {
+    match stmt {
+        Statement::ExpressionStatement(expr_stmt) => {
+            let Expression::AwaitExpression(await_expr) = &expr_stmt.expression else {
+                return None;
+            };
+            build_standalone_await_replacement(source, stmt.span(), await_expr.span(), offset)
+        }
+        Statement::VariableDeclaration(var_decl) => {
+            if var_decl.declarations.len() != 1 {
+                return None;
+            }
+            let declarator = var_decl.declarations.first()?;
+            let init = declarator.init.as_ref()?;
+            let Expression::AwaitExpression(await_expr) = init else {
+                return None;
+            };
+            build_await_assignment_replacement(source, stmt.span(), await_expr.span(), offset)
+        }
+        _ => None,
+    }
+}
+
+fn build_await_assignment_replacement(
+    source: &str,
+    stmt_span: oxc_span::Span,
+    await_span: oxc_span::Span,
+    offset: usize,
+) -> Option<String> {
+    let stmt_start = stmt_span.start as usize - offset;
+    let stmt_end = stmt_span.end as usize - offset;
+    let await_start = await_span.start as usize - offset;
+    let await_end = await_span.end as usize - offset;
+
+    let prefix = source.get(stmt_start..await_start)?;
+    let expr = await_expression_source(source, await_start, await_end)?;
+    let suffix = source.get(await_end..stmt_end)?;
+
+    let mut out = String::with_capacity(prefix.len() + expr.len() + suffix.len() + 96);
+    out.push_str(prefix);
+    out.push_str(" (\n");
+    out.push_str("  ([__temp,__restore] = _withAsyncContext(() => ");
+    out.push_str(expr);
+    out.push_str(")),\n");
+    out.push_str("  __temp = await __temp,\n");
+    out.push_str("  __restore(),\n");
+    out.push_str("  __temp\n");
+    out.push(')');
+    out.push_str(suffix);
+    Some(out)
+}
+
+fn build_standalone_await_replacement(
+    source: &str,
+    stmt_span: oxc_span::Span,
+    await_span: oxc_span::Span,
+    offset: usize,
+) -> Option<String> {
+    let stmt_start = stmt_span.start as usize - offset;
+    let stmt_end = stmt_span.end as usize - offset;
+    let await_start = await_span.start as usize - offset;
+    let await_end = await_span.end as usize - offset;
+
+    if stmt_start != await_start {
+        return None;
+    }
+
+    let expr = await_expression_source(source, await_start, await_end)?;
+    let suffix = source.get(await_end..stmt_end)?;
+
+    let mut out = String::with_capacity(expr.len() + suffix.len() + 72);
+    out.push_str(";(\n");
+    out.push_str("  ([__temp,__restore] = _withAsyncContext(() => ");
+    out.push_str(expr);
+    out.push_str(")),\n");
+    out.push_str("  await __temp,\n");
+    out.push_str("  __restore()\n");
+    out.push(')');
+    out.push_str(suffix);
+    Some(out)
+}
+
+fn await_expression_source(source: &str, start: usize, end: usize) -> Option<&str> {
+    let await_source = source.get(start..end)?;
+    let expr = await_source.strip_prefix("await")?.trim_start();
     if expr.is_empty() {
         return None;
     }
-    Some(AwaitAssignment {
-        prefix: prefix.to_compact_string(),
-        expr: expr.to_compact_string(),
-    })
-}
-
-/// Try to extract a standalone await expression: `await expr`
-fn try_extract_standalone_await(line: &str) -> Option<String> {
-    let trimmed = line.trim_end_matches(';').trim();
-    let expr = trimmed.strip_prefix("await ")?.trim();
-    if expr.is_empty() {
-        return None;
-    }
-    Some(expr.to_compact_string())
+    Some(expr)
 }

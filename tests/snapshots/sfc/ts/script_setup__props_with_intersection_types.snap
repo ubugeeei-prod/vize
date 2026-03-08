@@ -25,7 +25,7 @@ export default /*@__PURE__*/_defineComponent({
 
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.id) + " " + _toDisplayString(_ctx.name), 1 /* TEXT */))
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(__props.id) + " " + _toDisplayString(__props.name), 1 /* TEXT */))
 }
 }
 

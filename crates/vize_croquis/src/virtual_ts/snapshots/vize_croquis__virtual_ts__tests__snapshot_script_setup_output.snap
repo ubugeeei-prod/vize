@@ -13,15 +13,20 @@ import { ref, computed } from 'vue'
 // Setup scope (function)
 function __setup() {
   // Compiler macros (setup-scope only, actual functions not declare)
+  type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);
   function defineProps<T>(): T { return undefined as unknown as T; }
-  function defineEmits<T>(): T { return undefined as unknown as T; }
+  function defineEmits<T>(): __EmitFn<T> { return undefined as unknown as __EmitFn<T>; }
+  function defineEmits<T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }
+  function defineEmits<T extends Record<string, any>>(events: T): (event: keyof T, ...args: any[]) => void { return (() => {}) as any; }
   function defineExpose<T>(exposed?: T): void { }
   function defineOptions<T>(options: T): void { }
   function defineSlots<T>(): T { return undefined as unknown as T; }
-  function defineModel<T>(name?: string, options?: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }
+  function defineModel<T>(): $Vue['ModelRef']<T | undefined> { return undefined as unknown as $Vue['ModelRef']<T | undefined>; }
+  function defineModel<T>(options: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }
+  function defineModel<T>(name: string, options?: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }
   function withDefaults<T, D extends Partial<T>>(props: T, defaults: D): T & D { return undefined as unknown as T & D; }
   const $event: Event = undefined as unknown as Event;
-  function useTemplateRef<T extends Element | $Vue['ComponentPublicInstance'] = Element>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }
+  function useTemplateRef<T = any>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }
   type __Props = <{
   title: string
   count?: number

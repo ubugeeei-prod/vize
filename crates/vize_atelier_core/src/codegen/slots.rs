@@ -446,9 +446,14 @@ fn generate_conditional_slot(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {
             ctx.deindent();
         }
     }
-    // Final else: undefined
-    ctx.newline();
-    ctx.push(": undefined");
+    if if_node
+        .branches
+        .last()
+        .is_none_or(|branch| branch.condition.is_some())
+    {
+        ctx.newline();
+        ctx.push(": undefined");
+    }
 }
 
 /// Generate a looped slot entry (v-for on slot template)

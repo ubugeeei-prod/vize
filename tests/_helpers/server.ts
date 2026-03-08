@@ -3,6 +3,86 @@ import { createConnection } from "node:net";
 import type { AppConfig } from "./apps.ts";
 
 const VITE_PLUS_BIN = `${process.env.HOME ?? ""}/.vite-plus/bin`;
+const PROCESS_LOGS = new WeakMap<ChildProcess, string[]>();
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function waitSync(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function isPortOpen(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = createConnection({ port, host: "127.0.0.1" }, () => {
+      socket.destroy();
+      resolve(true);
+    });
+    socket.on("error", () => {
+      socket.destroy();
+      resolve(false);
+    });
+  });
+}
+
+function getListeningPids(port: number): number[] {
+  try {
+    const output = execSync(`lsof -tiTCP:${port} -sTCP:LISTEN`, {
+      encoding: "utf-8",
+      timeout: 5000,
+    }).trim();
+    if (!output) {
+      return [];
+    }
+    return output
+      .split("\n")
+      .map((pid) => Number(pid.trim()))
+      .filter((pid) => Number.isInteger(pid) && pid > 0);
+  } catch {
+    return [];
+  }
+}
+
+function killPid(pid: number, signal: NodeJS.Signals): void {
+  try {
+    process.kill(pid, signal);
+  } catch {
+    // already gone
+  }
+}
+
+function recordProcessLines(
+  proc: ChildProcess,
+  appName: string,
+  stream: "stdout" | "stderr",
+  data: Buffer,
+): void {
+  const lines = data
+    .toString()
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    return;
+  }
+
+  let logs = PROCESS_LOGS.get(proc);
+  if (!logs) {
+    logs = [];
+    PROCESS_LOGS.set(proc, logs);
+  }
+
+  for (const line of lines) {
+    logs.push(line);
+    console.log(`[${appName}:${stream}] ${line}`);
+  }
+}
+
+export function getProcessLogs(proc: ChildProcess): readonly string[] {
+  return PROCESS_LOGS.get(proc) ?? [];
+}
 
 export function waitForServerReady(
   proc: ChildProcess,
@@ -80,13 +160,11 @@ export function startDevServer(app: AppConfig): ChildProcess {
   });
 
   proc.stdout?.on("data", (data: Buffer) => {
-    const line = data.toString().trim();
-    if (line) console.log(`[${app.name}:stdout] ${line}`);
+    recordProcessLines(proc, app.name, "stdout", data);
   });
 
   proc.stderr?.on("data", (data: Buffer) => {
-    const line = data.toString().trim();
-    if (line) console.log(`[${app.name}:stderr] ${line}`);
+    recordProcessLines(proc, app.name, "stderr", data);
   });
 
   return proc;
@@ -110,35 +188,54 @@ export function startPreviewServer(app: AppConfig): ChildProcess {
   });
 
   proc.stdout?.on("data", (data: Buffer) => {
-    const line = data.toString().trim();
-    if (line) console.log(`[${app.name}:preview:stdout] ${line}`);
+    recordProcessLines(proc, `${app.name}:preview`, "stdout", data);
   });
 
   proc.stderr?.on("data", (data: Buffer) => {
-    const line = data.toString().trim();
-    if (line) console.log(`[${app.name}:preview:stderr] ${line}`);
+    recordProcessLines(proc, `${app.name}:preview`, "stderr", data);
   });
 
   return proc;
 }
 
-export function ensurePortFree(port: number): Promise<void> {
-  return new Promise((resolve) => {
-    const socket = createConnection({ port, host: "127.0.0.1" }, () => {
-      socket.destroy();
-      console.log(`[warn] Port ${port} is in use, attempting to free it...`);
-      try {
-        execSync(`lsof -ti:${port} | xargs kill -9 2>/dev/null || true`, { timeout: 5000 });
-      } catch {
-        // ignore
+export async function ensurePortFree(port: number): Promise<void> {
+  if (!(await isPortOpen(port))) {
+    return;
+  }
+
+  console.log(`[warn] Port ${port} is in use, attempting to free it...`);
+  const deadline = Date.now() + 15_000;
+
+  while (Date.now() < deadline) {
+    const pids = getListeningPids(port);
+    if (pids.length === 0) {
+      if (!(await isPortOpen(port))) {
+        return;
       }
-      setTimeout(resolve, 2000);
-    });
-    socket.on("error", () => {
-      socket.destroy();
-      resolve();
-    });
-  });
+      await sleep(500);
+      continue;
+    }
+
+    for (const pid of pids) {
+      killPid(pid, "SIGTERM");
+    }
+    await sleep(1000);
+
+    if (!(await isPortOpen(port))) {
+      return;
+    }
+
+    for (const pid of pids) {
+      killPid(pid, "SIGKILL");
+    }
+    await sleep(1000);
+
+    if (!(await isPortOpen(port))) {
+      return;
+    }
+  }
+
+  throw new Error(`Port ${port} is still in use after cleanup attempts`);
 }
 
 export async function waitForHttpReady(url: string, _port: number, maxRetries = 30): Promise<void> {
@@ -170,6 +267,26 @@ export function killProcess(proc: ChildProcess | undefined): void {
     } catch {
       try {
         proc.kill("SIGTERM");
+      } catch {
+        // already dead
+      }
+    }
+
+    const deadline = Date.now() + 5000;
+    while (Date.now() < deadline) {
+      try {
+        process.kill(-proc.pid, 0);
+        waitSync(200);
+      } catch {
+        return;
+      }
+    }
+
+    try {
+      process.kill(-proc.pid, "SIGKILL");
+    } catch {
+      try {
+        proc.kill("SIGKILL");
       } catch {
         // already dead
       }

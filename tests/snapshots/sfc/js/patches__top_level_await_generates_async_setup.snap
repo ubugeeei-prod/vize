@@ -12,8 +12,18 @@ export default {
 
 let __temp, __restore
 
-const response = await fetch('/api/data')
-const data = await response.json()
+const response =  (
+  ([__temp,__restore] = _withAsyncContext(() => fetch('/api/data'))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
+const data =  (
+  ([__temp,__restore] = _withAsyncContext(() => response.json())),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data)), 1 /* TEXT */))

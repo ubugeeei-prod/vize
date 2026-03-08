@@ -16,6 +16,7 @@ mod define_props;
 mod define_props_destructure;
 mod define_slots;
 mod import_usage_check;
+pub(crate) mod type_resolution;
 mod utils;
 
 // Re-export main types
@@ -31,6 +32,9 @@ pub use define_props_destructure::{
 pub use import_usage_check::{
     is_used_in_template, resolve_template_used_identifiers, resolve_template_v_model_identifiers,
     TemplateUsedIdentifiers,
+};
+pub(crate) use type_resolution::{
+    build_interface_type_source, resolve_type_args, resolve_type_to_object_body,
 };
 pub use utils::{
     get_escaped_prop_name, is_compiler_macro_line, is_valid_identifier, MacroCall,

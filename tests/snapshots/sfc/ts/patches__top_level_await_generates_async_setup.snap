@@ -12,8 +12,18 @@ export default /*@__PURE__*/_defineComponent({
 
 let __temp: any, __restore: any
 
-const response = await fetch('/api/data')
-const data = await response.json()
+const response =  (
+  ([__temp,__restore] = _withAsyncContext(() => fetch('/api/data'))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
+const data =  (
+  ([__temp,__restore] = _withAsyncContext(() => response.json())),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data)), 1 /* TEXT */))

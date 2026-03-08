@@ -12,8 +12,18 @@ export default /*@__PURE__*/_defineComponent({
 
 let __temp: any, __restore: any
 
-const user = await fetchUser()
-const posts = await fetchPosts(user.id)
+const user =  (
+  ([__temp,__restore] = _withAsyncContext(() => fetchUser())),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
+const posts =  (
+  ([__temp,__restore] = _withAsyncContext(() => fetchPosts(user.id))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(user).name) + " has " + _toDisplayString(_unref(posts).length) + " posts", 1 /* TEXT */))

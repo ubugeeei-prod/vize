@@ -1,0 +1,213 @@
+import { defineComponent as _defineComponent } from 'vue'
+import { Fragment as _Fragment, Transition as _Transition, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx } from "vue"
+
+
+const _hoisted_1 = { id: "playgrounds-heading", class: "text-xs font-mono text-fg uppercase tracking-wider mb-3" }
+const _hoisted_2 = { class: "truncate text-fg-muted" }
+const _hoisted_3 = /*#__PURE__*/ _createElementVNode("span", { class: "i-lucide:play w-4 h-4 shrink-0 text-fg-muted", "aria-hidden": "true" })
+const _hoisted_4 = { class: "text-fg-muted" }
+const _hoisted_5 = { class: "truncate" }
+import type { PlaygroundLink } from '#shared/types'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'Playgrounds',
+  props: {
+    links: { type: Array, required: true }
+  },
+  setup(__props: any) {
+
+const props = __props
+// Map provider id to icon class
+const providerIcons: Record<string, string> = {
+  'stackblitz': 'i-simple-icons:stackblitz',
+  'codesandbox': 'i-simple-icons:codesandbox',
+  'codepen': 'i-simple-icons:codepen',
+  'replit': 'i-simple-icons:replit',
+  'gitpod': 'i-simple-icons:gitpod',
+  'vue-playground': 'i-simple-icons:vuedotjs',
+  'nuxt-new': 'i-simple-icons:nuxtdotjs',
+  'vite-new': 'i-simple-icons:vite',
+  'jsfiddle': 'i-lucide:code',
+  'typescript-playground': 'i-simple-icons:typescript',
+  'solid-playground': 'i-simple-icons:solid',
+  'svelte-playground': 'i-simple-icons:svelte',
+  'tailwind-playground': 'i-simple-icons:tailwindcss',
+  'storybook': 'i-simple-icons:storybook',
+}
+// Map provider id to color class
+const providerColors: Record<string, string> = {
+  'stackblitz': 'text-provider-stackblitz',
+  'codesandbox': 'text-provider-codesandbox',
+  'codepen': 'text-provider-codepen',
+  'replit': 'text-provider-replit',
+  'gitpod': 'text-provider-gitpod',
+  'vue-playground': 'text-provider-vue',
+  'nuxt-new': 'text-provider-nuxt',
+  'vite-new': 'text-provider-vite',
+  'jsfiddle': 'text-provider-jsfiddle',
+  'typescript-playground': 'text-provider-typescript',
+  'solid-playground': 'text-provider-solid',
+  'svelte-playground': 'text-provider-svelte',
+  'tailwind-playground': 'text-provider-tailwind',
+  'storybook': 'text-provider-storybook',
+}
+function getIcon(provider: string): string {
+  return providerIcons[provider] || 'i-lucide:play'
+}
+function getColor(provider: string): string {
+  return providerColors[provider] || 'text-fg-muted'
+}
+// Dropdown state
+const isOpen = shallowRef(false)
+const dropdownRef = useTemplateRef('dropdownRef')
+const menuRef = useTemplateRef('menuRef')
+const focusedIndex = shallowRef(-1)
+onClickOutside(dropdownRef, () => {
+  isOpen.value = false
+})
+// Single vs multiple
+const hasSingleLink = computed(() => props.links.length === 1)
+const hasMultipleLinks = computed(() => props.links.length > 1)
+const firstLink = computed(() => props.links[0])
+function closeDropdown() {
+  isOpen.value = false
+  focusedIndex.value = -1
+}
+function handleKeydown(event: KeyboardEvent) {
+  if (!isOpen.value) {
+    if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      isOpen.value = true
+      focusedIndex.value = 0
+      nextTick(() => focusMenuItem(0))
+    }
+    return
+  }
+  switch (event.key) {
+    case 'Escape':
+      event.preventDefault()
+      closeDropdown()
+      break
+    case 'ArrowDown':
+      event.preventDefault()
+      focusedIndex.value = (focusedIndex.value + 1) % props.links.length
+      focusMenuItem(focusedIndex.value)
+      break
+    case 'ArrowUp':
+      event.preventDefault()
+      focusedIndex.value = focusedIndex.value <= 0 ? props.links.length - 1 : focusedIndex.value - 1
+      focusMenuItem(focusedIndex.value)
+      break
+    case 'Home':
+      event.preventDefault()
+      focusedIndex.value = 0
+      focusMenuItem(0)
+      break
+    case 'End':
+      event.preventDefault()
+      focusedIndex.value = props.links.length - 1
+      focusMenuItem(props.links.length - 1)
+      break
+    case 'Tab':
+      closeDropdown()
+      break
+  }
+}
+function focusMenuItem(index: number) {
+  const items = menuRef.value?.querySelectorAll<HTMLElement>('[role="menuitem"]')
+  items?.[index]?.focus()
+}
+
+return (_ctx: any,_cache: any) => {
+  const _component_TooltipApp = _resolveComponent("TooltipApp")
+
+  return (__props.links.length > 0)
+      ? (_openBlock(), _createElementBlock("section", {
+        key: 0,
+        class: "px-1"
+      }, [ _createElementVNode("h2", _hoisted_1, _toDisplayString(_ctx.$t('package.playgrounds.title')), 1 /* TEXT */), _createElementVNode("div", {
+          ref_key: "dropdownRef", ref: dropdownRef,
+          class: "relative"
+        }, [ (hasSingleLink.value && firstLink.value) ? (_openBlock(), _createBlock(_component_TooltipApp, {
+              key: 0,
+              text: firstLink.value.providerName,
+              class: "w-full"
+            }, {
+              default: _withCtx(() => [
+                _createElementVNode("a", {
+                  href: firstLink.value.url,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  class: "w-full flex items-center gap-2 px-3 py-2 text-sm font-mono bg-bg-muted border border-border rounded-md hover:border-border-hover hover:bg-bg-elevated focus-visible:outline-accent/70 transition-colors duration-200"
+                }, [
+                  _createElementVNode("span", {
+                    class: _normalizeClass([getIcon(firstLink.value.provider), getColor(firstLink.value.provider), 'w-4 h-4 shrink-0']),
+                    "aria-hidden": "true"
+                  }, null, 2 /* CLASS */),
+                  _createElementVNode("span", _hoisted_2, _toDisplayString(firstLink.value.label), 1 /* TEXT */)
+                ], 8 /* PROPS */, ["href"])
+              ]),
+              _: 1 /* STABLE */
+            }, 8 /* PROPS */, ["text"])) : _createCommentVNode("v-if", true), _createTextVNode("\n\n      " + "\n      "), (hasMultipleLinks.value) ? (_openBlock(), _createElementBlock("button", {
+              key: 0,
+              type: "button",
+              "aria-haspopup": "true",
+              "aria-expanded": isOpen.value,
+              class: "w-full flex items-center justify-between gap-2 px-3 py-2 text-sm font-mono bg-bg-muted border border-border rounded-md hover:border-border-hover hover:bg-bg-elevated focus-visible:outline-accent/70 transition-colors duration-200",
+              onClick: _cache[0] || (_cache[0] = ($event: any) => (isOpen.value = !isOpen.value)),
+              onKeydown: handleKeydown
+            }, [ _createElementVNode("span", { class: "flex items-center gap-2" }, [ _hoisted_3, _createElementVNode("span", _hoisted_4, _toDisplayString(_ctx.$t('package.playgrounds.choose')) + " (" + _toDisplayString(__props.links.length) + ")", 1 /* TEXT */) ]), _createElementVNode("span", {
+                class: _normalizeClass(["i-lucide:chevron-down w-3 h-3 text-fg-subtle transition-transform duration-200 motion-reduce:transition-none", { 'rotate-180': isOpen.value }]),
+                "aria-hidden": "true"
+              }, null, 2 /* CLASS */) ])) : _createCommentVNode("v-if", true), _createTextVNode("\n\n      " + "\n      "), _createVNode(_Transition, {
+            "enter-active-class": "transition duration-150 ease-out motion-reduce:transition-none",
+            "enter-from-class": "opacity-0 scale-95 motion-reduce:scale-100",
+            "enter-to-class": "opacity-100 scale-100",
+            "leave-active-class": "transition duration-100 ease-in motion-reduce:transition-none",
+            "leave-from-class": "opacity-100 scale-100",
+            "leave-to-class": "opacity-0 scale-95 motion-reduce:scale-100"
+          }, {
+            default: _withCtx(() => [
+              (isOpen.value && hasMultipleLinks.value)
+                ? (_openBlock(), _createElementBlock("div", {
+                  key: 0,
+                  ref: "menuRef",
+                  role: "menu",
+                  class: "absolute top-full inset-is-0 inset-ie-0 mt-1 bg-bg-elevated border border-border rounded-lg shadow-lg z-50 py-1 overflow-visible",
+                  onKeydown: handleKeydown
+                }, [
+                  (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.links, (link) => {
+                    return (_openBlock(), _createBlock(_component_TooltipApp, {
+                      key: link.url,
+                      text: link.providerName,
+                      class: "block"
+                    }, {
+                      default: _withCtx(() => [
+                        _createElementVNode("a", {
+                          href: link.url,
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                          role: "menuitem",
+                          class: "flex items-center gap-2 px-3 py-2 text-sm font-mono text-fg-muted hover:text-fg hover:bg-bg-muted focus-visible:outline-accent/70 focus-visible:text-fg focus-visible:bg-bg-muted transition-colors duration-150",
+                          onClick: closeDropdown
+                        }, [
+                          _createElementVNode("span", {
+                            class: _normalizeClass([getIcon(link.provider), getColor(link.provider), 'w-4 h-4 shrink-0']),
+                            "aria-hidden": "true"
+                          }, null, 2 /* CLASS */),
+                          _createElementVNode("span", _hoisted_5, _toDisplayString(link.label), 1 /* TEXT */)
+                        ], 8 /* PROPS */, ["href"])
+                      ]),
+                      _: 2 /* DYNAMIC */
+                    }, 1032 /* PROPS, DYNAMIC_SLOTS */, ["text"]))
+                  }), 128 /* KEYED_FRAGMENT */))
+                ]))
+                : _createCommentVNode("v-if", true)
+            ]),
+            _: 1 /* STABLE */
+          }) ], 512 /* NEED_PATCH */) ]))
+      : _createCommentVNode("v-if", true)
+}
+}
+
+})

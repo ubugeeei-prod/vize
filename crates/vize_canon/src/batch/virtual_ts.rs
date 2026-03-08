@@ -23,12 +23,17 @@ pub struct VirtualTsResult {
 /// Vue compiler macros - defined with parameters marked as used.
 const VUE_SETUP_COMPILER_MACROS: &str = r#"// Compiler macros (transformed at compile time by Vue)
 function defineProps<T>(): T { return undefined as unknown as T; }
-function defineEmits<T>(): (event: string, ...args: any[]) => void { return (() => {}) as any; }
+type __BatchEmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);
+function defineEmits<T>(): __BatchEmitFn<T> { return (() => {}) as any; }
+function defineEmits<T extends readonly string[]>(_events: T): (event: T[number], ...args: any[]) => void { void _events; return (() => {}) as any; }
+function defineEmits<T extends Record<string, any>>(_events: T): (event: keyof T, ...args: any[]) => void { void _events; return (() => {}) as any; }
 function defineExpose<T>(_exposed?: T): void { void _exposed; }
-function defineModel<T>(_name?: string, _options?: any): any { void _name; void _options; return undefined as unknown as any; }
+function defineModel<T>(): $Vue['Ref']<T | undefined> { return undefined as unknown as $Vue['Ref']<T | undefined>; }
+function defineModel<T>(_options: any): $Vue['Ref']<T> { void _options; return undefined as unknown as $Vue['Ref']<T>; }
+function defineModel<T>(_name: string, _options?: any): $Vue['Ref']<T> { void _name; void _options; return undefined as unknown as $Vue['Ref']<T>; }
 function defineSlots<T>(): T { return undefined as unknown as T; }
 function withDefaults<T, D>(_props: T, _defaults: D): T & D { void _props; void _defaults; return undefined as unknown as T & D; }
-function useTemplateRef<T extends Element | $Vue['ComponentPublicInstance'] = Element>(_key: string): $Vue['ShallowRef']<T | null> { void _key; return undefined as unknown as $Vue['ShallowRef']<T | null>; }
+function useTemplateRef<T = any>(_key: string): $Vue['ShallowRef']<T | null> { void _key; return undefined as unknown as $Vue['ShallowRef']<T | null>; }
 // Mark compiler macros as used
 void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 "#;

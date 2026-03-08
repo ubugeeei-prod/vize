@@ -165,6 +165,8 @@ pub struct ComponentUsage {
     pub has_spread_attrs: bool,
     /// The scope this component usage is in (for v-for prop checking)
     pub scope_id: crate::scope::ScopeId,
+    /// Combined v-if / v-else-if guard active for this component usage.
+    pub vif_guard: Option<CompactString>,
 }
 
 /// A prop passed to a component in template.

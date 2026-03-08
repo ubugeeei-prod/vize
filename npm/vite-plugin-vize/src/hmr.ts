@@ -9,6 +9,22 @@ import type { CompiledModule } from "./types.js";
  */
 export type HmrUpdateType = "template-only" | "style-only" | "full-reload";
 
+function didHashChange(prevHash: string | undefined, nextHash: string | undefined): boolean {
+  return prevHash !== nextHash;
+}
+
+export function hasHmrChanges(prev: CompiledModule | undefined, next: CompiledModule): boolean {
+  if (!prev) {
+    return true;
+  }
+
+  return (
+    didHashChange(prev.scriptHash, next.scriptHash) ||
+    didHashChange(prev.templateHash, next.templateHash) ||
+    didHashChange(prev.styleHash, next.styleHash)
+  );
+}
+
 /**
  * Detect the type of HMR update needed based on content hash changes.
  *
@@ -26,16 +42,16 @@ export function detectHmrUpdateType(
   }
 
   // Check for script changes (requires full reload)
-  const scriptChanged = prev.scriptHash !== next.scriptHash;
+  const scriptChanged = didHashChange(prev.scriptHash, next.scriptHash);
   if (scriptChanged) {
     return "full-reload";
   }
 
   // Check for template changes (can use rerender)
-  const templateChanged = prev.templateHash !== next.templateHash;
+  const templateChanged = didHashChange(prev.templateHash, next.templateHash);
 
   // Check for style changes
-  const styleChanged = prev.styleHash !== next.styleHash;
+  const styleChanged = didHashChange(prev.styleHash, next.styleHash);
 
   // If only style changed, we can do style-only update
   if (styleChanged && !templateChanged) {

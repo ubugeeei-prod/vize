@@ -260,7 +260,6 @@ pub fn compile_sfc(
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
     let mut ctx = ScriptCompileContext::new(&script_setup.content);
-    ctx.analyze();
 
     // Merge type definitions from normal <script> block so that
     // defineProps<TypeRef>() can resolve types defined there.
@@ -268,6 +267,12 @@ pub fn compile_sfc(
         let script = descriptor.script.as_ref().unwrap();
         ctx.collect_types_from(&script.content);
     }
+    ctx.collect_imported_types_from_path(&script_setup.content, filename);
+    if has_script {
+        let script = descriptor.script.as_ref().unwrap();
+        ctx.collect_imported_types_from_path(&script.content, filename);
+    }
+    ctx.analyze();
 
     // 3. Merge Props bindings from ScriptCompileContext (type resolution fallback)
     //    Croquis can't resolve interface references, so we take Props from the legacy analyzer
@@ -374,6 +379,7 @@ pub fn compile_sfc(
         normal_script_content.as_deref(),
         &descriptor.css_vars,
         &scope_id,
+        Some(filename),
     )?;
 
     // The inline mode compile_script_setup_inline generates a complete output

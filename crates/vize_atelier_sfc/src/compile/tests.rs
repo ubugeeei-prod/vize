@@ -1,7 +1,22 @@
 use super::{compile_sfc, helpers, normal_script};
 use crate::types::{BindingType, ScriptCompileOptions, SfcCompileOptions, TemplateCompileOptions};
 use crate::{parse_sfc, SfcParseOptions};
+use std::fs;
+use std::path::PathBuf;
 use vize_carton::ToCompactString;
+
+fn fixtures_path() -> PathBuf {
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    PathBuf::from(manifest_dir)
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("tests")
+        .join("fixtures")
+        .join("sfc")
+        .join("imported_types")
+}
 
 #[test]
 fn test_generate_scope_id() {
@@ -802,6 +817,67 @@ export default {
     assert!(
         result.code.contains("interface Props") || result.code.contains("as Props"),
         "Should preserve TypeScript when is_ts = true. Got:\n{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_define_props_imported_type_alias_is_exposed_to_template() {
+    let fixture_path = fixtures_path().join("ImportedSelectBase.vue");
+    let source = fs::read_to_string(&fixture_path).expect("fixture should load");
+    let descriptor = parse_sfc(&source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some(fixture_path.to_string_lossy().as_ref().to_compact_string());
+
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("disabled: { type: Boolean")
+            || result.code.contains("disabled: { type: null"),
+        "Imported disabled prop should exist in runtime props. Got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("size: {"),
+        "Imported size prop should exist in runtime props. Got:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("_ctx.disabled"),
+        "Imported disabled prop should not fall back to _ctx. Got:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("_ctx.size"),
+        "Imported size prop should not fall back to _ctx. Got:\n{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_define_props_interface_extends_imported_type_alias() {
+    let fixture_path = fixtures_path().join("ImportedSelectField.vue");
+    let source = fs::read_to_string(&fixture_path).expect("fixture should load");
+    let descriptor = parse_sfc(&source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some(fixture_path.to_string_lossy().as_ref().to_compact_string());
+
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("disabled: { type: Boolean")
+            || result.code.contains("disabled: { type: null"),
+        "Extended imported disabled prop should exist in runtime props. Got:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("size: {"),
+        "Extended imported size prop should exist in runtime props. Got:\n{}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("_ctx.disabled"),
+        "Extended imported disabled prop should not fall back to _ctx. Got:\n{}",
         result.code
     );
 }

@@ -3,6 +3,7 @@
 //! Holds all state during script compilation.
 //! Uses OXC for proper AST-based parsing instead of regex.
 
+mod external_types;
 mod helpers;
 mod parse;
 mod props;

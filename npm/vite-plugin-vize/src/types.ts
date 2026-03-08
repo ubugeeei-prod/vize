@@ -17,6 +17,9 @@ export interface SfcCompileResultNapi {
   css?: string;
   errors: string[];
   warnings: string[];
+  templateHash?: string;
+  styleHash?: string;
+  scriptHash?: string;
 }
 
 export type CompileSfcFn = (

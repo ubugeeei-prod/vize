@@ -18,7 +18,7 @@ pub static HTML_TAGS: phf::Set<&'static str> = phf_set! {
     "caption", "col", "colgroup", "table", "thead", "tbody", "td", "th", "tr",
     "button", "datalist", "fieldset", "form", "input", "label", "legend",
     "meter", "optgroup", "option", "output", "progress", "select", "textarea",
-    "details", "dialog", "menu", "summary", "template", "blockquote",
+    "details", "dialog", "menu", "search", "summary", "template", "blockquote",
     "iframe", "tfoot"
 };
 
@@ -118,6 +118,7 @@ mod tests {
     #[test]
     fn test_html_tags() {
         assert!(is_html_tag("div"));
+        assert!(is_html_tag("search"));
         assert!(is_html_tag("span"));
         assert!(is_html_tag("template"));
         assert!(!is_html_tag("custom-element"));

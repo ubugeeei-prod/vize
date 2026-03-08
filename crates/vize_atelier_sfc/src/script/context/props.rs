@@ -5,6 +5,7 @@
 
 use vize_carton::ToCompactString;
 
+use crate::script::resolve_type_to_object_body;
 use crate::types::BindingType;
 
 use super::super::MacroCall;
@@ -79,37 +80,10 @@ impl ScriptCompileContext {
     fn extract_props_from_type_args(&mut self, type_args: &str) {
         let content = type_args.trim();
 
-        // If it's a type reference (not an inline object type), resolve it
-        let resolved_content = if content.starts_with('{') {
-            // Inline object type - use as is (strip the braces)
-            if content.ends_with('}') {
-                vize_carton::String::from(&content[1..content.len() - 1])
-            } else {
-                content.to_compact_string()
-            }
-        } else {
-            // Type reference - look up in interfaces or type_aliases
-            let type_name = content.trim();
-            if let Some(body) = self.interfaces.get(type_name) {
-                // Interface body includes { }, strip them
-                let body = body.trim();
-                if body.starts_with('{') && body.ends_with('}') {
-                    vize_carton::String::from(&body[1..body.len() - 1])
-                } else {
-                    body.to_compact_string()
-                }
-            } else if let Some(body) = self.type_aliases.get(type_name) {
-                // Type alias body might be { } or something else
-                let body = body.trim();
-                if body.starts_with('{') && body.ends_with('}') {
-                    vize_carton::String::from(&body[1..body.len() - 1])
-                } else {
-                    body.to_compact_string()
-                }
-            } else {
-                // Unknown type reference - can't extract props
-                return;
-            }
+        let Some(resolved_content) =
+            resolve_type_to_object_body(content, &self.interfaces, &self.type_aliases)
+        else {
+            return;
         };
 
         // Split by commas/semicolons/newlines (but not inside nested braces)

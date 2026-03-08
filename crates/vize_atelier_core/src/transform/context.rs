@@ -2,7 +2,7 @@
 
 use vize_carton::{Box, Bump, CompactString, String};
 use vize_croquis::reactivity::ReactiveKind;
-use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData};
+use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
 
 use crate::ast::*;
 use crate::errors::{CompilerError, ErrorCode};
@@ -254,6 +254,29 @@ impl<'a> TransformContext<'a> {
             },
             0,
             0,
+        );
+    }
+
+    /// Enter a v-slot scope with the given slot params
+    pub fn enter_v_slot_scope(
+        &mut self,
+        name: &str,
+        props_pattern: Option<&str>,
+        prop_names: &[String],
+        start: u32,
+        end: u32,
+    ) {
+        self.scope_chain.enter_v_slot_scope(
+            VSlotScopeData {
+                name: CompactString::new(name),
+                props_pattern: props_pattern.map(CompactString::new),
+                prop_names: prop_names
+                    .iter()
+                    .map(|name| CompactString::new(name.as_str()))
+                    .collect(),
+            },
+            start,
+            end,
         );
     }
 
