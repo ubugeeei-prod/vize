@@ -9,10 +9,10 @@ const count = ref(0);
     <p>
       Count: {{ count }}
     </p>
-    <button @click="count++">
+    <button type="button" @click="count++">
       +
     </button>
-    <button @click="count--">
+    <button type="button" @click="count--">
       -
     </button>
   </div>
