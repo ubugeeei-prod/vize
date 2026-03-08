@@ -7,6 +7,7 @@
  */
 
 import assert from "node:assert";
+import { generateOutput } from "./utils/index.js";
 
 // =============================================================================
 // Test: Non-script-setup SFC _sfc_main duplication fix
@@ -69,6 +70,77 @@ assert.strictEqual(
   true,
   "Should detect _sfc_main with various whitespace",
 );
+
+// Test 3b: Template-only SFCs need a default export shim
+const templateOnlyCode = `
+export function render() {
+  return null
+}
+const _sfc_main = {}
+_sfc_main.render = render
+export default _sfc_main
+`;
+assert.strictEqual(
+  hasExportDefault(templateOnlyCode),
+  true,
+  "Template-only components should still expose a default export",
+);
+
+// Test 3c: Inline-template script setup must not claim template-only HMR
+{
+  const output = generateOutput(
+    {
+      code: `
+export default {
+  __name: "InlineOnly",
+  setup() {
+    return (_ctx, _cache) => null
+  }
+}
+`,
+      scopeId: "inlinehmr",
+      hasScoped: false,
+      styles: [],
+    },
+    {
+      isProduction: false,
+      isDev: true,
+      hmrUpdateType: "template-only",
+    },
+  );
+  assert.ok(
+    output.includes('__hmrUpdateType = "full-reload"'),
+    "Inline-template output must downgrade unsupported template-only HMR",
+  );
+}
+
+// Test 3d: Components with standalone render may keep template-only HMR
+{
+  const output = generateOutput(
+    {
+      code: `
+export function render() {
+  return null
+}
+const _sfc_main = {}
+_sfc_main.render = render
+export default _sfc_main
+`,
+      scopeId: "separatehmr",
+      hasScoped: false,
+      styles: [],
+    },
+    {
+      isProduction: false,
+      isDev: true,
+      hmrUpdateType: "template-only",
+    },
+  );
+  assert.ok(
+    output.includes('__hmrUpdateType = "template-only"'),
+    "Standalone render output should preserve template-only HMR",
+  );
+}
 
 // =============================================================================
 // Test: Query parameter preservation in relative imports

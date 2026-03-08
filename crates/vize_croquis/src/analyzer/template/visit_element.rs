@@ -44,6 +44,7 @@ impl Analyzer {
                 slots: SmallVec::new(),
                 has_spread_attrs: false,
                 scope_id: crate::scope::ScopeId::ROOT,
+                vif_guard: None,
             })
         } else {
             None
@@ -120,7 +121,7 @@ impl Analyzer {
                     }
                 }
                 // Handle v-if (extract condition for type narrowing)
-                else if dir.name == "if" {
+                else if dir.name == "if" || dir.name == "else-if" {
                     if let Some(ref exp) = dir.exp {
                         let content = match exp {
                             ExpressionNode::Simple(s) => s.content.as_str(),
@@ -226,6 +227,19 @@ impl Analyzer {
             usage.scope_id = self.summary.scopes.current_id();
         }
 
+        // Push v-if / v-else-if guard before processing same-element directives
+        // so bindings and handlers on the same element are narrowed too.
+        let vif_guard_pushed = if let Some(ref cond) = vif_condition {
+            self.vif_guard_stack.push(cond.clone());
+            true
+        } else {
+            false
+        };
+
+        if let Some(ref mut usage) = component_usage {
+            usage.vif_guard = self.current_vif_guard();
+        }
+
         // Second pass: process other directives AFTER entering v-for/v-slot scopes
         // This ensures expressions like `:todo="todo"` in v-for are in the correct scope
         for prop in &el.props {
@@ -327,14 +341,6 @@ impl Analyzer {
                 }
             }
         }
-
-        // Push v-if guard for type narrowing (before visiting children)
-        let vif_guard_pushed = if let Some(ref cond) = vif_condition {
-            self.vif_guard_stack.push(cond.clone());
-            true
-        } else {
-            false
-        };
 
         // Visit children
         for child in el.children.iter() {

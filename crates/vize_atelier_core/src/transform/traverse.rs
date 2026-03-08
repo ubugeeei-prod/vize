@@ -1,12 +1,41 @@
 //! AST traversal functions for template transformation.
 
 use crate::ast::*;
+use crate::transforms::v_slot::{get_slot_name, get_slot_prop_names, get_slot_props_string};
 
 use super::element::{transform_element, transform_interpolation};
 use super::structural::{
     check_structural_directive, remove_structural_directive, transform_v_for, transform_v_if,
 };
 use super::{ExitFn, ParentNode, TransformContext};
+
+fn enter_v_slot_scope_if_needed<'a>(ctx: &mut TransformContext<'a>, el: &ElementNode<'a>) -> bool {
+    for prop in el.props.iter() {
+        if let PropNode::Directive(dir) = prop {
+            if dir.name != "slot" {
+                continue;
+            }
+
+            let prop_names = get_slot_prop_names(dir);
+            if prop_names.is_empty() {
+                return false;
+            }
+
+            let slot_name = get_slot_name(dir);
+            let props_pattern = get_slot_props_string(dir);
+            ctx.enter_v_slot_scope(
+                slot_name.as_str(),
+                props_pattern.as_ref().map(|pattern| pattern.as_str()),
+                &prop_names,
+                dir.loc.start.offset,
+                el.loc.end.offset,
+            );
+            return true;
+        }
+    }
+
+    false
+}
 
 /// Traverse children of a parent node
 pub fn traverse_children<'a>(ctx: &mut TransformContext<'a>, parent: ParentNode<'a>) {
@@ -208,8 +237,12 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
 
     // Traverse children for element nodes
     if let TemplateChildNode::Element(el) = node {
+        let entered_slot_scope = enter_v_slot_scope_if_needed(ctx, el);
         let el_ptr = el.as_mut() as *mut ElementNode<'a>;
         traverse_children(ctx, ParentNode::Element(el_ptr));
+        if entered_slot_scope {
+            ctx.exit_scope();
+        }
     }
 
     // Call exit functions in reverse order

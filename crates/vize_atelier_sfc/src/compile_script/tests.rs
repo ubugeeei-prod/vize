@@ -69,6 +69,14 @@ mod compile_script_tests {
             defaults3.get("color"),
             Some(&r#""primary""#.to_compact_string())
         );
+
+        // Strings containing commas/markdown markers must stay intact
+        let input4 = r#"withDefaults(defineProps<{ description?: string }>(), { description: 'a fast, modern browser for the **npm registry**' })"#;
+        let defaults4 = extract_with_defaults_defaults(input4);
+        assert_eq!(
+            defaults4.get("description"),
+            Some(&"'a fast, modern browser for the **npm registry**'".to_compact_string())
+        );
     }
 
     #[test]

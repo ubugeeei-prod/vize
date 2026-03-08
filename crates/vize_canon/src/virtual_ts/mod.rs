@@ -22,7 +22,9 @@ mod tests {
     use super::helpers::{
         generate_template_context, get_dom_event_type, VUE_SETUP_COMPILER_MACROS,
     };
-    use super::{generate_virtual_ts, TemplateGlobal, VirtualTsOptions};
+    use super::{
+        generate_virtual_ts, generate_virtual_ts_with_offsets, TemplateGlobal, VirtualTsOptions,
+    };
 
     #[test]
     fn test_vue_setup_compiler_macros_are_actual_functions() {
@@ -73,6 +75,32 @@ mod tests {
         let ctx = generate_template_context(&options);
         assert!(ctx.contains("$t"));
         assert!(ctx.contains("$route"));
+    }
+
+    #[test]
+    fn test_const_auto_import_stubs_skip_imported_names() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import { currentUser } from './users'
+const count = 1
+"#;
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        let summary = analyzer.finish();
+
+        let options = VirtualTsOptions {
+            auto_import_stubs: vec![
+                "declare const currentUser: any;".into(),
+                "declare const useHydratedHead: any;".into(),
+            ],
+            ..Default::default()
+        };
+
+        let output = generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &options);
+
+        assert!(!output.code.contains("declare const currentUser: any;"));
+        assert!(output.code.contains("declare const useHydratedHead: any;"));
     }
 
     #[test]
@@ -338,6 +366,35 @@ const todos = ref([{ id: 1, text: 'Hello' }])
         assert!(
             output.code.contains("(todo) as __TodoItem_"),
             "Should check prop value `todo` inside forEach scope"
+        );
+    }
+
+    #[test]
+    fn test_component_prop_checks_respect_same_element_vif_guard() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import { ref } from 'vue'
+import LinkComp from './LinkComp.vue'
+
+const item = ref<{ name: string } | undefined>()
+"#;
+        let template = r#"<LinkComp v-if="item" :to="item.name" />"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(
+            output
+                .code
+                .contains("if (item) {\n    (item.name) as __LinkComp_0_prop_to;"),
+            "Component prop checks should be wrapped by the same-element v-if guard",
         );
     }
 }

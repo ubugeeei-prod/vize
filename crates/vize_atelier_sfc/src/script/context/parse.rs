@@ -19,6 +19,7 @@ use super::helpers::{
     infer_binding_type, is_call_of, is_import_type_only,
 };
 use super::ScriptCompileContext;
+use crate::script::build_interface_type_source;
 
 impl ScriptCompileContext {
     /// Parse the source with OXC and extract information
@@ -40,9 +41,12 @@ impl ScriptCompileContext {
             match stmt {
                 Statement::TSInterfaceDeclaration(iface) => {
                     let name = iface.id.name.to_compact_string();
-                    let body_start = iface.body.span.start as usize;
-                    let body_end = iface.body.span.end as usize;
-                    let body = String::from(&source[body_start..body_end]);
+                    let body = build_interface_type_source(
+                        source,
+                        iface.id.span.end as usize,
+                        iface.body.span.start as usize,
+                        iface.body.span.end as usize,
+                    );
                     self.interfaces.insert(name, body);
                 }
                 Statement::TSTypeAliasDeclaration(type_alias) => {
@@ -58,9 +62,12 @@ impl ScriptCompileContext {
                         match decl {
                             oxc_ast::ast::Declaration::TSInterfaceDeclaration(iface) => {
                                 let name = iface.id.name.to_compact_string();
-                                let body_start = iface.body.span.start as usize;
-                                let body_end = iface.body.span.end as usize;
-                                let body = String::from(&source[body_start..body_end]);
+                                let body = build_interface_type_source(
+                                    source,
+                                    iface.id.span.end as usize,
+                                    iface.body.span.start as usize,
+                                    iface.body.span.end as usize,
+                                );
                                 self.interfaces.insert(name, body);
                             }
                             oxc_ast::ast::Declaration::TSTypeAliasDeclaration(type_alias) => {
@@ -106,9 +113,12 @@ impl ScriptCompileContext {
             match stmt {
                 Statement::TSInterfaceDeclaration(iface) => {
                     let name = iface.id.name.to_compact_string();
-                    let body_start = iface.body.span.start as usize;
-                    let body_end = iface.body.span.end as usize;
-                    let body = String::from(&source[body_start..body_end]);
+                    let body = build_interface_type_source(
+                        source,
+                        iface.id.span.end as usize,
+                        iface.body.span.start as usize,
+                        iface.body.span.end as usize,
+                    );
                     self.interfaces.entry(name).or_insert(body);
                 }
                 Statement::TSTypeAliasDeclaration(type_alias) => {
@@ -123,9 +133,12 @@ impl ScriptCompileContext {
                         match decl {
                             oxc_ast::ast::Declaration::TSInterfaceDeclaration(iface) => {
                                 let name = iface.id.name.to_compact_string();
-                                let body_start = iface.body.span.start as usize;
-                                let body_end = iface.body.span.end as usize;
-                                let body = String::from(&source[body_start..body_end]);
+                                let body = build_interface_type_source(
+                                    source,
+                                    iface.id.span.end as usize,
+                                    iface.body.span.start as usize,
+                                    iface.body.span.end as usize,
+                                );
                                 self.interfaces.entry(name).or_insert(body);
                             }
                             oxc_ast::ast::Declaration::TSTypeAliasDeclaration(type_alias) => {

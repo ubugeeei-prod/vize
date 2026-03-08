@@ -202,21 +202,24 @@ impl VirtualTsGenerator {
 
         // Define as actual functions - they throw to indicate they're compile-time only
         // The important thing is they're scoped to __setup, not global
+        self.emit_line("type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);");
         self.emit_line("function defineProps<T>(): T { return undefined as unknown as T; }");
-        self.emit_line("function defineEmits<T>(): T { return undefined as unknown as T; }");
+        self.emit_line("function defineEmits<T>(): __EmitFn<T> { return undefined as unknown as __EmitFn<T>; }");
+        self.emit_line("function defineEmits<T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }");
+        self.emit_line("function defineEmits<T extends Record<string, any>>(events: T): (event: keyof T, ...args: any[]) => void { return (() => {}) as any; }");
         self.emit_line("function defineExpose<T>(exposed?: T): void { }");
         self.emit_line("function defineOptions<T>(options: T): void { }");
         self.emit_line("function defineSlots<T>(): T { return undefined as unknown as T; }");
-        self.emit_line(
-            "function defineModel<T>(name?: string, options?: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }",
-        );
+        self.emit_line("function defineModel<T>(): $Vue['ModelRef']<T | undefined> { return undefined as unknown as $Vue['ModelRef']<T | undefined>; }");
+        self.emit_line("function defineModel<T>(options: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }");
+        self.emit_line("function defineModel<T>(name: string, options?: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }");
         self.emit_line("function withDefaults<T, D extends Partial<T>>(props: T, defaults: D): T & D { return undefined as unknown as T & D; }");
 
         // $event for event handlers
         self.emit_line("const $event: Event = undefined as unknown as Event;");
 
         // useTemplateRef (Vue 3.5+)
-        self.emit_line("function useTemplateRef<T extends Element | $Vue['ComponentPublicInstance'] = Element>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }");
+        self.emit_line("function useTemplateRef<T = any>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }");
 
         // If macros were actually used, emit type aliases based on their type arguments
         if let Some(props) = macros.define_props() {
@@ -254,17 +257,20 @@ impl VirtualTsGenerator {
     /// Emit default compiler macro definitions (legacy mode).
     pub(crate) fn emit_default_compiler_macro_definitions(&mut self) {
         self.emit_line("// Compiler macros (setup-scope only, actual functions not declare)");
+        self.emit_line("type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);");
         self.emit_line("function defineProps<T>(): T { return undefined as unknown as T; }");
-        self.emit_line("function defineEmits<T>(): T { return undefined as unknown as T; }");
+        self.emit_line("function defineEmits<T>(): __EmitFn<T> { return undefined as unknown as __EmitFn<T>; }");
+        self.emit_line("function defineEmits<T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }");
+        self.emit_line("function defineEmits<T extends Record<string, any>>(events: T): (event: keyof T, ...args: any[]) => void { return (() => {}) as any; }");
         self.emit_line("function defineExpose<T>(exposed?: T): void { }");
         self.emit_line("function defineOptions<T>(options: T): void { }");
         self.emit_line("function defineSlots<T>(): T { return undefined as unknown as T; }");
-        self.emit_line(
-            "function defineModel<T>(name?: string, options?: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }",
-        );
+        self.emit_line("function defineModel<T>(): $Vue['ModelRef']<T | undefined> { return undefined as unknown as $Vue['ModelRef']<T | undefined>; }");
+        self.emit_line("function defineModel<T>(options: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }");
+        self.emit_line("function defineModel<T>(name: string, options?: { required?: boolean, default?: T }): $Vue['ModelRef']<T> { return undefined as unknown as $Vue['ModelRef']<T>; }");
         self.emit_line("function withDefaults<T, D extends Partial<T>>(props: T, defaults: D): T & D { return undefined as unknown as T & D; }");
         self.emit_line("const $event: Event = undefined as unknown as Event;");
-        self.emit_line("function useTemplateRef<T extends Element | $Vue['ComponentPublicInstance'] = Element>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }");
+        self.emit_line("function useTemplateRef<T = any>(key: string): $Vue['ShallowRef']<T | null> { return undefined as unknown as $Vue['ShallowRef']<T | null>; }");
         self.emit_line("");
     }
 

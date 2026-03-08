@@ -3,6 +3,10 @@
 //! This module handles extracting prop types from TypeScript type definitions
 //! and processing withDefaults defaults.
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Argument, Expression, ObjectPropertyKind, PropertyKey, Statement};
+use oxc_parser::Parser;
+use oxc_span::{GetSpan, SourceType};
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
 
@@ -564,146 +568,74 @@ pub fn extract_emit_names_from_type(type_args: &str) -> Vec<String> {
 /// Returns: HashMap of prop name to default value string
 pub fn extract_with_defaults_defaults(with_defaults_args: &str) -> FxHashMap<String, String> {
     let mut defaults = FxHashMap::default();
-
-    // Find the second argument (the defaults object)
-    // withDefaults(defineProps<...>(), { ... })
-    // We need to find the { after "defineProps<...>()"
-
-    let content = with_defaults_args.trim();
-    let chars: Vec<char> = content.chars().collect();
-
-    // First, find "defineProps" and then its closing parenthesis
-    let define_props_pos = content.find("defineProps");
-    if define_props_pos.is_none() {
+    let trimmed = with_defaults_args.trim();
+    if trimmed.is_empty() {
         return defaults;
     }
 
-    let start_search = define_props_pos.unwrap();
-    let mut paren_depth = 0;
-    let mut in_define_props_call = false;
-    let mut found_define_props_end = false;
-    let mut defaults_start = None;
+    const WRAP_PREFIX: &str = "const __vize_defaults__ = ";
+    let mut wrapped = String::with_capacity(WRAP_PREFIX.len() + trimmed.len() + 1);
+    wrapped.push_str(WRAP_PREFIX);
+    wrapped.push_str(trimmed);
+    wrapped.push(';');
 
-    let mut i = start_search;
-    while i < chars.len() {
-        let c = chars[i];
-
-        if !in_define_props_call {
-            // Looking for the opening paren of defineProps()
-            if c == '(' {
-                in_define_props_call = true;
-                paren_depth = 1;
-            }
-        } else if !found_define_props_end {
-            match c {
-                '(' => paren_depth += 1,
-                ')' => {
-                    paren_depth -= 1;
-                    if paren_depth == 0 {
-                        found_define_props_end = true;
-                    }
-                }
-                _ => {}
-            }
-        } else {
-            // Looking for the defaults object start
-            if c == '{' {
-                defaults_start = Some(i);
-                break;
-            }
-        }
-        i += 1;
+    let allocator = Allocator::default();
+    let parse_result = Parser::new(
+        &allocator,
+        &wrapped,
+        SourceType::default().with_typescript(true),
+    )
+    .parse();
+    if !parse_result.errors.is_empty() {
+        return defaults;
     }
 
-    if let Some(start) = defaults_start {
-        // Find matching closing brace
-        let mut brace_depth = 0;
-        let mut end = start;
+    let Some(Statement::VariableDeclaration(var_decl)) = parse_result.program.body.first() else {
+        return defaults;
+    };
+    let Some(declarator) = var_decl.declarations.first() else {
+        return defaults;
+    };
+    let Some(Expression::CallExpression(call)) = declarator.init.as_ref() else {
+        return defaults;
+    };
+    let Expression::Identifier(callee) = &call.callee else {
+        return defaults;
+    };
+    if callee.name.as_str() != "withDefaults" {
+        return defaults;
+    }
 
-        for (j, &c) in chars.iter().enumerate().skip(start) {
-            match c {
-                '{' => brace_depth += 1,
-                '}' => {
-                    brace_depth -= 1;
-                    if brace_depth == 0 {
-                        end = j;
-                        break;
-                    }
-                }
-                _ => {}
-            }
+    let Some(Argument::ObjectExpression(obj)) = call.arguments.get(1) else {
+        return defaults;
+    };
+
+    for property in obj.properties.iter() {
+        let ObjectPropertyKind::ObjectProperty(prop) = property else {
+            continue;
+        };
+
+        let key = match &prop.key {
+            PropertyKey::StaticIdentifier(id) => id.name.to_compact_string(),
+            PropertyKey::StringLiteral(lit) => lit.value.to_compact_string(),
+            PropertyKey::NumericLiteral(lit) => lit.value.to_compact_string(),
+            _ => continue,
+        };
+
+        let Some(value_start) = (prop.value.span().start as usize).checked_sub(WRAP_PREFIX.len())
+        else {
+            continue;
+        };
+        let Some(value_end) = (prop.value.span().end as usize).checked_sub(WRAP_PREFIX.len())
+        else {
+            continue;
+        };
+        if let Some(value_src) = trimmed.get(value_start..value_end) {
+            defaults.insert(key, value_src.to_compact_string());
         }
-
-        // Extract the defaults object content (without braces)
-        let defaults_content: String = chars[start + 1..end].iter().collect();
-        parse_defaults_object(&defaults_content, &mut defaults);
     }
 
     defaults
-}
-
-/// Parse a JavaScript object literal to extract key-value pairs
-fn parse_defaults_object(content: &str, defaults: &mut FxHashMap<String, String>) {
-    let content = content.trim();
-    if content.is_empty() {
-        return;
-    }
-
-    // Split by commas, but respect nested braces/parens/brackets
-    let mut depth = 0;
-    let mut current = String::default();
-
-    for c in content.chars() {
-        match c {
-            '{' | '(' | '[' => {
-                depth += 1;
-                current.push(c);
-            }
-            '}' | ')' | ']' => {
-                depth -= 1;
-                current.push(c);
-            }
-            ',' if depth == 0 => {
-                extract_default_pair(&current, defaults);
-                current.clear();
-            }
-            _ => current.push(c),
-        }
-    }
-    extract_default_pair(&current, defaults);
-}
-
-/// Extract a single key: value pair from a default definition
-fn extract_default_pair(pair: &str, defaults: &mut FxHashMap<String, String>) {
-    let trimmed = pair.trim();
-    if trimmed.is_empty() {
-        return;
-    }
-
-    // Find the first : that's not inside a nested structure
-    let mut depth = 0;
-    let mut colon_pos = None;
-
-    for (i, c) in trimmed.chars().enumerate() {
-        match c {
-            '{' | '(' | '[' | '<' => depth += 1,
-            '}' | ')' | ']' | '>' => depth -= 1,
-            ':' if depth == 0 => {
-                colon_pos = Some(i);
-                break;
-            }
-            _ => {}
-        }
-    }
-
-    if let Some(pos) = colon_pos {
-        let key = trimmed[..pos].trim();
-        let value = trimmed[pos + 1..].trim();
-
-        if !key.is_empty() && !value.is_empty() {
-            defaults.insert(key.to_compact_string(), value.to_compact_string());
-        }
-    }
 }
 
 /// Check if a string is a valid JS identifier

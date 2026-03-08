@@ -1,0 +1,258 @@
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, withDirectives as _withDirectives, normalizeClass as _normalizeClass, vShow as _vShow } from "vue"
+
+import { onMounted, useTemplateRef, ref } from 'vue'
+import { Chart } from 'chart.js'
+import gradient from 'chartjs-plugin-gradient'
+import isChromatic from 'chromatic'
+import { misskeyApi } from '@/utility/misskey-api.js'
+import { useChartTooltip } from '@/composables/use-chart-tooltip.js'
+import { chartVLine } from '@/utility/chart-vline.js'
+import { store } from '@/store.js'
+import { alpha } from '@/utility/color.js'
+import { initChart } from '@/utility/init-chart.js'
+const chartLimit = 50;
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'overview.ap-requests',
+  setup(__props) {
+
+initChart();
+const chartEl = useTemplateRef('chartEl');
+const chartEl2 = useTemplateRef('chartEl2');
+const fetching = ref(true);
+const { handler: externalTooltipHandler } = useChartTooltip();
+const { handler: externalTooltipHandler2 } = useChartTooltip();
+onMounted(async () => {
+	if (chartEl.value == null) return;
+	if (chartEl2.value == null) return;
+	const now = isChromatic() ? new Date('2024-08-31T10:00:00Z') : new Date();
+	const getDate = (ago: number) => {
+		const y = now.getFullYear();
+		const m = now.getMonth();
+		const d = now.getDate();
+
+		return new Date(y, m, d - ago);
+	};
+	const format = (arr: number[]) => {
+		return arr.map((v, i) => ({
+			x: getDate(i).getTime(),
+			y: v,
+		}));
+	};
+	const formatMinus = (arr: number[]) => {
+		return arr.map((v, i) => ({
+			x: getDate(i).getTime(),
+			y: -v,
+		}));
+	};
+	const raw = await misskeyApi('charts/ap-request', { limit: chartLimit, span: 'day' });
+	const vLineColor = store.s.darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+	const succColor = '#87e000';
+	const failColor = '#ff4400';
+	const succMax = Math.max(...raw.deliverSucceeded);
+	const failMax = Math.max(...raw.deliverFailed);
+	new Chart(chartEl.value, {
+		type: 'line',
+		data: {
+			datasets: [{
+				parsing: false,
+				label: 'Out: Succ',
+				data: format(raw.deliverSucceeded).slice().reverse(),
+				tension: 0.3,
+				pointRadius: 0,
+				borderWidth: 2,
+				borderColor: succColor,
+				borderJoinStyle: 'round',
+				borderRadius: 4,
+				backgroundColor: alpha(succColor, 0.35),
+				fill: true,
+				clip: 8,
+			}, {
+				parsing: false,
+				label: 'Out: Fail',
+				data: formatMinus(raw.deliverFailed).slice().reverse(),
+				tension: 0.3,
+				pointRadius: 0,
+				borderWidth: 2,
+				borderColor: failColor,
+				borderJoinStyle: 'round',
+				borderRadius: 4,
+				backgroundColor: alpha(failColor, 0.35),
+				fill: true,
+				clip: 8,
+			}],
+		},
+		options: {
+			aspectRatio: 2.5,
+			layout: {
+				padding: {
+					left: 0,
+					right: 8,
+					top: 0,
+					bottom: 0,
+				},
+			},
+			scales: {
+				x: {
+					type: 'time',
+					stacked: true,
+					offset: false,
+					time: {
+						unit: 'day',
+					},
+					grid: {
+						display: true,
+					},
+					ticks: {
+						display: true,
+						maxRotation: 0,
+						autoSkipPadding: 16,
+					},
+					min: getDate(chartLimit).getTime(),
+				},
+				y: {
+					position: 'left',
+					suggestedMax: 10,
+					grid: {
+						display: true,
+					},
+					ticks: {
+						display: true,
+						//mirror: true,
+						callback: (value, index, values) => (value as number) < 0 ? -value : value,
+					},
+				},
+			},
+			interaction: {
+				intersect: false,
+				mode: 'index',
+			},
+			elements: {
+				point: {
+					hoverRadius: 5,
+					hoverBorderWidth: 2,
+				},
+			},
+			plugins: {
+				legend: {
+					display: false,
+				},
+				tooltip: {
+					enabled: false,
+					mode: 'index',
+					animation: {
+						duration: 0,
+					},
+					external: externalTooltipHandler,
+					callbacks: {
+						label: context => `${context.dataset.label}: ${Math.abs(context.parsed.y)}`,
+					},
+				},
+				...({ // TSを黙らすため
+					gradient,
+				}),
+			},
+		},
+		plugins: [chartVLine(vLineColor)],
+	});
+	new Chart(chartEl2.value, {
+		type: 'bar',
+		data: {
+			datasets: [{
+				parsing: false,
+				label: 'In',
+				data: format(raw.inboxReceived).slice().reverse(),
+				tension: 0.3,
+				pointRadius: 0,
+				borderWidth: 0,
+				borderJoinStyle: 'round',
+				borderRadius: 4,
+				backgroundColor: '#0cc2d6',
+				barPercentage: 0.8,
+				categoryPercentage: 0.9,
+				fill: true,
+				clip: 8,
+			}],
+		},
+		options: {
+			aspectRatio: 5,
+			layout: {
+				padding: {
+					left: 0,
+					right: 8,
+					top: 0,
+					bottom: 0,
+				},
+			},
+			scales: {
+				x: {
+					type: 'time',
+					offset: false,
+					time: {
+						unit: 'day',
+						displayFormats: {
+							day: 'M/d',
+							month: 'Y/M',
+						},
+					},
+					grid: {
+						display: false,
+					},
+					ticks: {
+						display: false,
+						maxRotation: 0,
+						autoSkipPadding: 16,
+					},
+					min: getDate(chartLimit).getTime(),
+				},
+				y: {
+					position: 'left',
+					suggestedMax: 10,
+					grid: {
+						display: true,
+					},
+				},
+			},
+			interaction: {
+				intersect: false,
+				mode: 'index',
+			},
+			elements: {
+				point: {
+					hoverRadius: 5,
+					hoverBorderWidth: 2,
+				},
+			},
+			plugins: {
+				legend: {
+					display: false,
+				},
+				tooltip: {
+					enabled: false,
+					mode: 'index',
+					animation: {
+						duration: 0,
+					},
+					external: externalTooltipHandler2,
+				},
+				...({ // TSを黙らすため
+					gradient,
+				}),
+			},
+		},
+		plugins: [chartVLine(vLineColor)],
+	});
+	fetching.value = false;
+});
+
+return (_ctx: any,_cache: any) => {
+  const _component_MkLoading = _resolveComponent("MkLoading")
+
+  return (_openBlock(), _createElementBlock("div", null, [ (fetching.value) ? (_openBlock(), _createBlock(_component_MkLoading, { key: 0 })) : _createCommentVNode("v-if", true), _withDirectives(_createElementVNode("div", {
+        class: _normalizeClass(_ctx.$style.root)
+      }, [ _createElementVNode("div", { class: "charts _panel" }, [ _createElementVNode("div", { class: "chart" }, [ _createElementVNode("canvas", { ref_key: "chartEl2", ref: chartEl2 }, null, 512 /* NEED_PATCH */) ]), _createElementVNode("div", { class: "chart" }, [ _createElementVNode("canvas", { ref_key: "chartEl", ref: chartEl }, null, 512 /* NEED_PATCH */) ]) ]) ], 512 /* NEED_PATCH */), [ [_vShow, !fetching.value] ]) ]))
+}
+}
+
+})

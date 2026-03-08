@@ -12,17 +12,21 @@ use vize_carton::String;
 /// Parameters and type parameters are prefixed with _ to avoid "unused" warnings.
 pub(crate) const VUE_SETUP_COMPILER_MACROS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
   // Emit type helper: converts { event: [args] } to callable emit function
-  type __EmitFn<T> = <K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void;
+  type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);
   // Vue ref type aliases (resolved from node_modules/vue)
   type __Ref<T> = import('vue').Ref<T>;
   type __ShallowRef<T> = import('vue').ShallowRef<T>;
   function defineProps<_T = unknown>(_props?: any): _T { void _props; return undefined as unknown as _T; }
   function defineEmits<_T = unknown>(): __EmitFn<_T> { return (() => {}) as any; }
+  function defineEmits<_T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void { void _events; return (() => {}) as any; }
+  function defineEmits<_T extends Record<string, any>>(_events: _T): (event: keyof _T, ...args: any[]) => void { void _events; return (() => {}) as any; }
   function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  function defineModel<_T = unknown>(_name?: string, _options?: any): __Ref<_T> { void _name; void _options; return undefined as unknown as __Ref<_T>; }
+  function defineModel<_T = unknown>(): __Ref<_T | undefined> { return undefined as unknown as __Ref<_T | undefined>; }
+  function defineModel<_T = unknown>(_options: any): __Ref<_T> { void _options; return undefined as unknown as __Ref<_T>; }
+  function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T> { void _name; void _options; return undefined as unknown as __Ref<_T>; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T = unknown, _D = unknown>(_props: _T, _defaults: _D): _T & _D { void _props; void _defaults; return undefined as unknown as _T & _D; }
-  function useTemplateRef<_T = Element>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
+  function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
   // Mark compiler macros as used
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#;
 

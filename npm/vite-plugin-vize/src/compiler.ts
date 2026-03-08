@@ -67,6 +67,9 @@ export function compileFile(
     css: result.css,
     scopeId,
     hasScoped,
+    templateHash: result.templateHash,
+    styleHash: result.styleHash,
+    scriptHash: result.scriptHash,
     styles,
   };
 

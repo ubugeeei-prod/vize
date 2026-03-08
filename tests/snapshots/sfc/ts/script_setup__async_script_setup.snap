@@ -12,7 +12,12 @@ export default /*@__PURE__*/_defineComponent({
 
 let __temp: any, __restore: any
 
-const data = await fetch('/api').then(r => r.json())
+const data =  (
+  ([__temp,__restore] = _withAsyncContext(() => fetch('/api').then(r => r.json()))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data)), 1 /* TEXT */))

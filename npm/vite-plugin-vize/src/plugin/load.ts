@@ -6,7 +6,7 @@ import { transformWithOxc } from "vite";
 
 import type { VizePluginState } from "./state.js";
 import { compileFile } from "../compiler.js";
-import { generateOutput } from "../utils/index.js";
+import { generateOutput, hasDelegatedStyles } from "../utils/index.js";
 import { resolveCssImports } from "../utils/css.js";
 import {
   isVizeVirtual,
@@ -16,6 +16,31 @@ import {
   rewriteDynamicTemplateImports,
 } from "../virtual.js";
 import { rewriteStaticAssetUrls, applyDefineReplacements } from "../transform.js";
+
+const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
+export default defineComponent({
+  name: "ServerPlaceholder",
+  render() {
+    return createElementBlock("div");
+  }
+});
+`;
+
+export function getBoundaryPlaceholderCode(realPath: string, ssr: boolean): string | null {
+  if (ssr && realPath.endsWith(".client.vue")) {
+    return SERVER_PLACEHOLDER_CODE;
+  }
+  if (!ssr && realPath.endsWith(".server.vue")) {
+    return SERVER_PLACEHOLDER_CODE;
+  }
+  return null;
+}
+
+function getOxcDumpPath(root: string, realPath: string): string {
+  const dumpDir = path.resolve(root || process.cwd(), "__agent_only", "oxc-dumps");
+  fs.mkdirSync(dumpDir, { recursive: true });
+  return path.join(dumpDir, `vize-oxc-error-${path.basename(realPath)}.ts`);
+}
 
 export function loadHook(
   state: VizePluginState,
@@ -122,6 +147,15 @@ export function loadHook(
       return null;
     }
 
+    const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
+    if (placeholderCode) {
+      state.logger.log(`load: using boundary placeholder for ${realPath}`);
+      return {
+        code: placeholderCode,
+        map: null,
+      };
+    }
+
     let compiled = state.cache.get(realPath);
 
     // On-demand compile if not cached
@@ -134,11 +168,10 @@ export function loadHook(
     }
 
     if (compiled) {
-      const hasDelegated = compiled.styles?.some(
-        (s) =>
-          (s.lang !== null && ["scss", "sass", "less", "stylus", "styl"].includes(s.lang)) ||
-          s.module !== false,
-      );
+      const hasDelegated = hasDelegatedStyles(compiled);
+      const pendingHmrUpdateType = loadOptions?.ssr
+        ? undefined
+        : state.pendingHmrUpdateTypes.get(realPath);
       if (compiled.css && !hasDelegated) {
         compiled = {
           ...compiled,
@@ -156,6 +189,7 @@ export function loadHook(
           generateOutput(compiled, {
             isProduction: state.isProduction,
             isDev: state.server !== null,
+            hmrUpdateType: pendingHmrUpdateType,
             extractCss: state.extractCss,
             filePath: realPath,
           }),
@@ -163,6 +197,9 @@ export function loadHook(
         ),
         state.dynamicImportAliasRules,
       );
+      if (!loadOptions?.ssr) {
+        state.pendingHmrUpdateTypes.delete(realPath);
+      }
       return {
         code: output,
         map: null,
@@ -217,7 +254,7 @@ export async function transformHook(
       return { code: transformed, map: result.map as TransformResult["map"] };
     } catch (e: unknown) {
       state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
-      const dumpPath = `/tmp/vize-oxc-error-${path.basename(realPath)}.ts`;
+      const dumpPath = getOxcDumpPath(state.root, realPath);
       fs.writeFileSync(dumpPath, code, "utf-8");
       state.logger.error(`Dumped failing code to ${dumpPath}`);
       return { code: "export default {}", map: null };

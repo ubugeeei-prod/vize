@@ -189,7 +189,10 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     use vize_carton::Bump;
     use vize_croquis::{Analyzer, AnalyzerOptions, ImportStatementInfo, ReExportInfo, TypeExport};
 
-    use super::reporting::{has_source_mapping, map_diagnostic_position};
+    use super::{
+        nuxt,
+        reporting::{has_source_mapping, map_diagnostic_position},
+    };
 
     let start = Instant::now();
 
@@ -218,7 +221,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
 
     // Detect Nuxt project and add auto-import stubs
-    detect_nuxt_auto_imports(&mut vts_options);
+    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    nuxt::detect_nuxt_auto_imports(&mut vts_options, &cwd);
 
     // Collect .vue files
     let collect_start = Instant::now();
@@ -848,257 +852,17 @@ pub(crate) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf
 fn parse_dts_globals(
     path: &std::path::Path,
 ) -> Result<Vec<vize_canon::virtual_ts::TemplateGlobal>, std::io::Error> {
+    use super::dts::parse_interface_members;
     use vize_canon::virtual_ts::TemplateGlobal;
 
-    let content = fs::read_to_string(path)?;
-    let mut globals = Vec::new();
-
-    // Find the ComponentCustomProperties interface block
-    let lines = content.lines();
-    let mut in_interface = false;
-    let mut brace_depth: i32 = 0;
-    let mut current_name: Option<vize_carton::String> = None;
-    let mut current_type = vize_carton::String::default();
-
-    for line in lines {
-        let trimmed = line.trim();
-
-        if !in_interface {
-            if trimmed.contains("interface ComponentCustomProperties") {
-                in_interface = true;
-                // Account for opening brace on same line or next
-                for ch in trimmed.chars() {
-                    if ch == '{' {
-                        brace_depth += 1;
-                    }
-                }
-            }
-            continue;
-        }
-
-        // Inside the interface — track brace depth
-        for ch in trimmed.chars() {
-            if ch == '{' {
-                brace_depth += 1;
-            } else if ch == '}' {
-                brace_depth -= 1;
-            }
-        }
-
-        // Interface closed
-        if brace_depth <= 0 {
-            // Flush any pending member
-            if let Some(name) = current_name.take() {
-                let type_ann = current_type
-                    .split_whitespace()
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                globals.push(TemplateGlobal {
-                    name,
-                    type_annotation: type_ann.into(),
-                    default_value: "{} as any".into(),
-                });
-            }
-            break;
-        }
-
-        // Skip empty lines or brace-only lines
-        if trimmed.is_empty() || trimmed == "{" || trimmed == "}" {
-            continue;
-        }
-
-        // Inside the interface body (brace_depth >= 1)
-        // Either continuing a multi-line type or starting a new member
-        if current_name.is_some() {
-            // Continuing multi-line type — append
-            current_type.push(' ');
-            current_type.push_str(trimmed.trim_end_matches(';'));
-
-            if is_type_complete(&current_type) {
-                let name = current_name.take().unwrap();
-                let type_ann = current_type
-                    .split_whitespace()
-                    .collect::<Vec<_>>()
-                    .join(" ");
-                globals.push(TemplateGlobal {
-                    name,
-                    type_annotation: type_ann.into(),
-                    default_value: "{} as any".into(),
-                });
-                current_type = vize_carton::String::default();
-            }
-            continue;
-        }
-
-        // New member: "name: type" or "name?: type"
-        if let Some((name_part, type_part)) = trimmed.split_once(':') {
-            let name = name_part.trim().trim_end_matches('?').trim();
-            if name.is_empty() {
-                continue;
-            }
-            let type_str = type_part.trim().trim_end_matches(';');
-
-            if is_type_complete(type_str) {
-                let type_ann = type_str.split_whitespace().collect::<Vec<_>>().join(" ");
-                globals.push(TemplateGlobal {
-                    name: name.into(),
-                    type_annotation: type_ann.into(),
-                    default_value: "{} as any".into(),
-                });
-            } else {
-                current_name = Some(name.into());
-                current_type = vize_carton::String::from(type_str);
-            }
-        }
-    }
-
-    Ok(globals)
-}
-
-/// Check if a type annotation string has balanced delimiters.
-fn is_type_complete(s: &str) -> bool {
-    let mut paren = 0i32;
-    let mut angle = 0i32;
-    let mut brace = 0i32;
-    for ch in s.chars() {
-        match ch {
-            '(' => paren += 1,
-            ')' => paren -= 1,
-            '<' => angle += 1,
-            '>' => angle -= 1,
-            '{' => brace += 1,
-            '}' => brace -= 1,
-            _ => {}
-        }
-    }
-    paren <= 0 && angle <= 0 && brace <= 0
-}
-
-/// Detect Nuxt project and add auto-import stubs to VirtualTsOptions.
-/// Checks for `nuxt.config.ts` or `nuxt.config.js` in the current directory.
-fn detect_nuxt_auto_imports(options: &mut vize_canon::virtual_ts::VirtualTsOptions) {
-    let is_nuxt = std::path::Path::new("nuxt.config.ts").exists()
-        || std::path::Path::new("nuxt.config.js").exists()
-        || std::path::Path::new("nuxt.config.mts").exists();
-
-    if !is_nuxt {
-        return;
-    }
-
-    let stubs = &mut options.auto_import_stubs;
-
-    // Vue core composables (with type-preserving signatures)
-    stubs.push("declare function ref<T>(value: T): $Vue['Ref']<$Vue['UnwrapRef']<T>>;".into());
-    stubs.push("declare function ref<T = any>(): $Vue['Ref']<T | undefined>;".into());
-    stubs.push("declare function computed<T>(getter: () => T): $Vue['ComputedRef']<T>;".into());
-    stubs.push("declare function computed<T>(options: { get: () => T; set: (value: T) => void }): $Vue['WritableComputedRef']<T>;".into());
-    stubs.push(
-        "declare function reactive<T extends object>(target: T): $Vue['UnwrapNestedRefs']<T>;"
-            .into(),
-    );
-    stubs.push("declare function readonly<T extends object>(target: T): Readonly<T>;".into());
-    stubs.push(
-        "declare function watch(source: any, cb: (...args: any[]) => any, options?: any): any;"
-            .into(),
-    );
-    stubs.push("declare function watchEffect(effect: () => void, options?: any): any;".into());
-    stubs.push("declare function watchPostEffect(effect: () => void): any;".into());
-    stubs.push("declare function watchSyncEffect(effect: () => void): any;".into());
-    stubs.push("declare function onMounted(hook: () => any): void;".into());
-    stubs.push("declare function onUnmounted(hook: () => any): void;".into());
-    stubs.push("declare function onBeforeMount(hook: () => any): void;".into());
-    stubs.push("declare function onBeforeUnmount(hook: () => any): void;".into());
-    stubs.push("declare function onBeforeUpdate(hook: () => any): void;".into());
-    stubs.push("declare function onUpdated(hook: () => any): void;".into());
-    stubs.push("declare function onActivated(hook: () => any): void;".into());
-    stubs.push("declare function onDeactivated(hook: () => any): void;".into());
-    stubs.push("declare function onErrorCaptured(hook: (...args: any[]) => any): void;".into());
-    stubs.push("declare function nextTick(fn?: () => void): Promise<void>;".into());
-    stubs.push("declare function toRef<T extends object, K extends keyof T>(object: T, key: K): $Vue['Ref']<T[K]>;".into());
-    stubs.push("declare function toRefs<T extends object>(object: T): { [K in keyof T]: $Vue['Ref']<T[K]> };".into());
-    stubs.push("declare function unref<T>(ref: T | $Vue['Ref']<T>): T;".into());
-    stubs.push("declare function isRef(value: any): value is $Vue['Ref'];".into());
-    stubs.push("declare function shallowRef<T>(value: T): $Vue['ShallowRef']<T>;".into());
-    stubs.push("declare function triggerRef(ref: $Vue['ShallowRef']): void;".into());
-    stubs.push("declare function provide<T>(key: string | symbol, value: T): void;".into());
-    stubs.push("declare function inject<T>(key: string | symbol, defaultValue?: T): T;".into());
-    stubs.push("declare function defineAsyncComponent(source: any): any;".into());
-    stubs.push("declare function h(type: any, ...args: any[]): any;".into());
-    stubs.push("declare function useAttrs(): Record<string, unknown>;".into());
-    stubs.push("declare function useSlots(): Record<string, (...args: any[]) => any>;".into());
-    stubs.push("declare function toRaw<T>(observed: T): T;".into());
-    stubs.push("declare function markRaw<T extends object>(value: T): T;".into());
-    stubs.push("declare function effectScope(detached?: boolean): any;".into());
-    stubs.push("declare function getCurrentScope(): any;".into());
-    stubs.push("declare function onScopeDispose(fn: () => void): void;".into());
-    stubs.push("declare function shallowReactive<T extends object>(target: T): T;".into());
-    stubs
-        .push("declare function shallowReadonly<T extends object>(target: T): Readonly<T>;".into());
-    stubs.push("declare function customRef<T>(factory: any): $Vue['Ref']<T>;".into());
-
-    // Vue Router
-    stubs.push("declare function useRouter(): any;".into());
-    stubs.push("declare function useRoute(): any;".into());
-
-    // Nuxt core composables
-    stubs.push("declare function definePageMeta(meta: any): void;".into());
-    stubs.push("declare function useSeoMeta(meta: any): void;".into());
-    stubs.push(
-        "declare function useFetch<T = any>(url: string | (() => string), options?: any): any;"
-            .into(),
-    );
-    stubs.push("declare function useAsyncData<T = any>(key: string, handler: () => Promise<T>, options?: any): any;".into());
-    stubs.push(
-        "declare function useLazyFetch<T = any>(url: string | (() => string), options?: any): any;"
-            .into(),
-    );
-    stubs.push("declare function useLazyAsyncData<T = any>(key: string, handler: () => Promise<T>, options?: any): any;".into());
-    stubs.push("declare function navigateTo(to: string | any, options?: any): any;".into());
-    stubs.push("declare function createError(input: string | { statusCode?: number; statusMessage?: string; message?: string; data?: any; fatal?: boolean }): any;".into());
-    stubs.push("declare function showError(error: any): any;".into());
-    stubs.push(
-        "declare function clearError(options?: { redirect?: string }): Promise<void>;".into(),
-    );
-    stubs.push("declare function useNuxtApp(): any;".into());
-    stubs.push("declare function useRuntimeConfig(): any;".into());
-    stubs.push("declare function useAppConfig(): any;".into());
-    stubs.push(
-        "declare function useState<T = any>(key: string, init?: () => T): $Vue['Ref']<T>;".into(),
-    );
-    stubs.push(
-        "declare function useCookie<T = any>(name: string, options?: any): $Vue['Ref']<T>;".into(),
-    );
-    stubs.push("declare function useHead(input: any): void;".into());
-    stubs.push(
-        "declare function useRequestHeaders(headers?: string[]): Record<string, string>;".into(),
-    );
-    stubs.push("declare function useRequestURL(): URL;".into());
-    stubs.push("declare function defineNuxtComponent(options: any): any;".into());
-    stubs.push("declare function defineNuxtRouteMiddleware(middleware: any): any;".into());
-    stubs.push("declare function useError(): any;".into());
-    stubs.push("declare function abortNavigation(err?: any): any;".into());
-    stubs.push(
-        "declare function addRouteMiddleware(name: string, middleware: any, options?: any): void;"
-            .into(),
-    );
-    stubs.push("declare function defineNuxtPlugin(plugin: any): any;".into());
-    stubs.push("declare function setPageLayout(layout: string): void;".into());
-    stubs.push("declare function setResponseStatus(code: number, message?: string): void;".into());
-    stubs.push("declare function prerenderRoutes(routes: string | string[]): void;".into());
-    stubs.push("declare function refreshNuxtData(keys?: string | string[]): Promise<void>;".into());
-    stubs.push("declare function clearNuxtData(keys?: string | string[]): void;".into());
-    stubs.push("declare function reloadNuxtApp(options?: any): void;".into());
-    stubs.push("declare function callOnce(key: string, fn: () => any): Promise<void>;".into());
-    stubs.push("declare function callOnce(fn: () => any): Promise<void>;".into());
-    stubs.push("declare function onNuxtReady(callback: () => any): void;".into());
-    stubs.push(
-        "declare function preloadComponents(components: string | string[]): Promise<void>;".into(),
-    );
-    stubs.push(
-        "declare function prefetchComponents(components: string | string[]): Promise<void>;".into(),
-    );
-    stubs.push("declare function useRequestEvent(): any;".into());
-    stubs.push("declare function useRequestFetch(): typeof globalThis.fetch;".into());
-    stubs
-        .push("declare function useResponseHeaders(headers?: Record<string, string>): any;".into());
+    Ok(
+        parse_interface_members(path, "interface ComponentCustomProperties")?
+            .into_iter()
+            .map(|(name, type_annotation)| TemplateGlobal {
+                name,
+                type_annotation,
+                default_value: "{} as any".into(),
+            })
+            .collect(),
+    )
 }

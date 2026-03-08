@@ -5,8 +5,10 @@
 
 use super::types::VizeMapping;
 use vize_carton::append;
+use vize_carton::cstr;
 use vize_carton::String;
 use vize_croquis::analysis::ComponentUsage;
+use vize_croquis::analyzer::strip_js_comments;
 
 /// Generate a template expression with optional v-if narrowing.
 ///
@@ -26,6 +28,7 @@ pub(crate) fn generate_expression(
 ) {
     let src_start = (template_offset + expr.start) as usize;
     let src_end = (template_offset + expr.end) as usize;
+    let expression = strip_js_comments(expr.content.as_str());
 
     if let Some(ref guard) = expr.vif_guard {
         // Wrap in if block for type narrowing
@@ -34,7 +37,7 @@ pub(crate) fn generate_expression(
         append!(
             *ts,
             "{indent}  void ({}); // {}\n",
-            expr.content,
+            expression.as_ref(),
             expr.kind.as_str()
         );
         let gen_expr_end = ts.len();
@@ -52,7 +55,7 @@ pub(crate) fn generate_expression(
         append!(
             *ts,
             "{indent}void ({}); // {}\n",
-            expr.content,
+            expression.as_ref(),
             expr.kind.as_str()
         );
         let gen_expr_end = ts.len();
@@ -82,23 +85,38 @@ pub(crate) fn generate_component_prop_checks(
             if prop.is_dynamic {
                 let prop_src_start = (template_offset + prop.start) as usize;
                 let prop_src_end = (template_offset + prop.end) as usize;
+                let value = strip_js_comments(value.as_str());
                 append!(
                     *ts,
                     "{indent}// @vize-map: prop -> {prop_src_start}:{prop_src_end}\n",
                 );
 
                 let safe_prop_name = prop.name.replace('-', "_");
+                let expr_indent = if usage.vif_guard.is_some() {
+                    cstr!("{indent}  ")
+                } else {
+                    indent.into()
+                };
+
+                if let Some(ref guard) = usage.vif_guard {
+                    append!(*ts, "{indent}if ({guard}) {{\n");
+                }
 
                 let gen_prop_start = ts.len();
                 append!(
                     *ts,
-                    "{indent}({value}) as __{component_name}_{idx}_prop_{safe_prop_name};\n",
+                    "{expr_indent}({}) as __{component_name}_{idx}_prop_{safe_prop_name};\n",
+                    value.as_ref(),
                 );
                 let gen_prop_end = ts.len();
                 mappings.push(VizeMapping {
                     gen_range: gen_prop_start..gen_prop_end,
                     src_range: prop_src_start..prop_src_end,
                 });
+
+                if usage.vif_guard.is_some() {
+                    append!(*ts, "{indent}}}\n");
+                }
             }
         }
     }

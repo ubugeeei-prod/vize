@@ -57,6 +57,7 @@ serde_json = { workspace = true }
 
 # TypeScript/JSX transpilation
 oxc_allocator = { workspace = true }
+oxc_ast = { workspace = true }
 oxc_parser = { workspace = true }
 oxc_codegen = { workspace = true }
 oxc_semantic = { workspace = true }

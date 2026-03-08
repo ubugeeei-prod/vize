@@ -51,6 +51,12 @@ pub struct SfcCompileResultNapi {
     pub errors: Vec<String>,
     /// Compilation warnings
     pub warnings: Vec<String>,
+    /// Hash of template content (for HMR)
+    pub template_hash: Option<String>,
+    /// Hash of style content (for HMR)
+    pub style_hash: Option<String>,
+    /// Hash of script content (for HMR)
+    pub script_hash: Option<String>,
 }
 
 /// Batch compile options for NAPI
@@ -238,9 +244,16 @@ pub fn compile_sfc(
                 css: None,
                 errors: vec![e.message.into()],
                 warnings: vec![],
+                template_hash: None,
+                style_hash: None,
+                script_hash: None,
             });
         }
     };
+
+    let template_hash: Option<String> = descriptor.template_hash().map(Into::into);
+    let style_hash: Option<String> = descriptor.style_hash().map(Into::into);
+    let script_hash: Option<String> = descriptor.script_hash().map(Into::into);
 
     // Compile
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
@@ -304,12 +317,18 @@ pub fn compile_sfc(
                 .into_iter()
                 .map(|e| e.message.into())
                 .collect(),
+            template_hash: template_hash.clone(),
+            style_hash: style_hash.clone(),
+            script_hash: script_hash.clone(),
         }),
         Err(e) => Ok(SfcCompileResultNapi {
             code: String::new(),
             css: None,
             errors: vec![e.message.into()],
             warnings: vec![],
+            template_hash,
+            style_hash,
+            script_hash,
         }),
     }
 }
@@ -376,11 +395,7 @@ pub fn compile_sfc_batch(
 
         input_bytes.fetch_add(source.len(), Ordering::Relaxed);
 
-        let filename: vize_carton::CompactString = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("anonymous.vue")
-            .into();
+        let filename: vize_carton::CompactString = path.to_string_lossy().as_ref().into();
 
         // Parse
         let parse_opts = SfcParseOptions {

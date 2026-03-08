@@ -55,6 +55,11 @@ const VIZE_SYMLINK_TARGETS: Record<string, string> = {
   "vite-plugin-musea": path.join(NPM_DIR, "vite-plugin-musea"),
   "musea-nuxt": path.join(NPM_DIR, "musea-nuxt"),
 };
+const MISSKEY_FLUENT_EMOJI_RE = /\/fluent-emoji(?:s)?\/([0-9a-z-]+\.png)\b/g;
+const TRANSPARENT_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
+  "base64",
+);
 
 function ensureSymlink(link: string, target: string): void {
   try {
@@ -83,15 +88,15 @@ function createVizeSymlinks(nodeModulesDir: string): void {
   }
 }
 
-function patchNuxtConfig(configPath: string, opts?: { removeModules?: string[] }): void {
+function patchNuxtConfig(
+  configPath: string,
+  opts?: { removeModules?: string[] },
+): void {
   let config = fs.readFileSync(configPath, "utf-8");
   let changed = false;
 
   if (!config.includes("@vizejs/nuxt")) {
-    config = config.replace(
-      "modules: [",
-      "modules: [\n    '@vizejs/nuxt',",
-    );
+    config = config.replace("modules: [", "modules: [\n    '@vizejs/nuxt',");
     config = config.replace(
       "compatibilityDate:",
       "vize: {\n    musea: false,\n  },\n\n  compatibilityDate:",
@@ -102,7 +107,9 @@ function patchNuxtConfig(configPath: string, opts?: { removeModules?: string[] }
   // Remove modules that cause issues in the e2e environment
   if (opts?.removeModules) {
     for (const mod of opts.removeModules) {
-      const re = new RegExp(`\\s*'${mod.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}',?\\n?`);
+      const re = new RegExp(
+        `\\s*'${mod.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}',?\\n?`,
+      );
       if (re.test(config)) {
         config = config.replace(re, "\n");
         changed = true;
@@ -135,8 +142,9 @@ function hoistPnpmPackage(nodeModulesDir: string, packageName: string): void {
   }
   const pnpmDir = path.join(nodeModulesDir, ".pnpm");
   if (!fs.existsSync(pnpmDir)) return;
-  const candidates = fs.readdirSync(pnpmDir)
-    .filter(d => d.startsWith(`${packageName}@`));
+  const candidates = fs
+    .readdirSync(pnpmDir)
+    .filter((d) => d.startsWith(`${packageName}@`));
   for (const candidate of candidates) {
     const target = path.join(pnpmDir, candidate, "node_modules", packageName);
     if (fs.existsSync(target)) {
@@ -146,7 +154,10 @@ function hoistPnpmPackage(nodeModulesDir: string, packageName: string): void {
   }
 }
 
-function addPnpmOverrides(packageJsonPath: string, overrides: Record<string, string>): void {
+function addPnpmOverrides(
+  packageJsonPath: string,
+  overrides: Record<string, string>,
+): void {
   const pkg = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
   if (!pkg.pnpm) pkg.pnpm = {};
   if (!pkg.pnpm.overrides) pkg.pnpm.overrides = {};
@@ -162,17 +173,77 @@ function addPnpmOverrides(packageJsonPath: string, overrides: Record<string, str
   }
 }
 
+function ensureMisskeyFluentEmojiAssets(misskeyDir: string): void {
+  const sourceRoot = path.join(misskeyDir, "packages", "frontend", "src");
+  const distDir = path.join(misskeyDir, "fluent-emojis", "dist");
+  const assetNames = new Set<string>();
+
+  function visit(dir: string): void {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        visit(entryPath);
+        continue;
+      }
+
+      if (!/\.(vue|ts|tsx|js|jsx)$/.test(entry.name)) {
+        continue;
+      }
+
+      const source = fs.readFileSync(entryPath, "utf-8");
+      for (const match of source.matchAll(MISSKEY_FLUENT_EMOJI_RE)) {
+        const assetName = match[1];
+        if (assetName) {
+          assetNames.add(assetName);
+        }
+      }
+    }
+  }
+
+  if (fs.existsSync(sourceRoot)) {
+    visit(sourceRoot);
+  }
+
+  fs.mkdirSync(distDir, { recursive: true });
+  for (const assetName of assetNames) {
+    const assetPath = path.join(distDir, assetName);
+    if (!fs.existsSync(assetPath)) {
+      fs.writeFileSync(assetPath, TRANSPARENT_PNG);
+    }
+  }
+}
+
+function removeManualChunksObject(viteConfigPath: string): void {
+  let viteConfig = fs.readFileSync(viteConfigPath, "utf-8");
+  const nextConfig = viteConfig.replace(
+    /\n\s*manualChunks:\s*\{[\s\S]*?\n\s*\},\n(?=\s*entryFileNames:)/,
+    "\n",
+  );
+  if (nextConfig !== viteConfig) {
+    fs.writeFileSync(viteConfigPath, nextConfig);
+  }
+}
+
 // --- App configurations ---
 
 export const elkApp: AppConfig = {
   name: "elk",
   cwd: path.join(GIT_DIR, "elk"),
   command: "npx",
-  args: ["pnpm@10", "dev"],
+  args: [
+    "pnpm@10",
+    "exec",
+    "nuxt",
+    "dev",
+    "--port",
+    "5314",
+    "--host",
+    "0.0.0.0",
+  ],
   port: 5314,
-  url: "http://localhost:5314",
+  url: "http://127.0.0.1:5314",
   mountSelector: "#__nuxt",
-  readyPattern: /Local:\s+http:\/\/localhost:5314/,
+  readyPattern: /Local:\s+http:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0):5314/,
   allowNon200: true,
   waitUntil: "load",
   readyDelay: 15_000,
@@ -270,8 +341,17 @@ export const misskeyApp: AppConfig = {
       timeout: 300_000,
     });
 
+    ensureMisskeyFluentEmojiAssets(misskeyDir);
+
     // Build workspace packages needed by frontend
-    for (const pkg of ["i18n", "icons-subsetter", "misskey-js", "frontend-shared"]) {
+    for (const pkg of [
+      "i18n",
+      "icons-subsetter",
+      "misskey-js",
+      "misskey-bubble-game",
+      "misskey-reversi",
+      "frontend-shared",
+    ]) {
       console.log(`[misskey:setup] building ${pkg} package...`);
       execSync(`npx pnpm@10 --filter ${pkg} build`, {
         cwd: misskeyDir,
@@ -292,6 +372,9 @@ export const misskeyApp: AppConfig = {
       );
       fs.writeFileSync(viteConfigPath, viteConfig);
     }
+
+    removeManualChunksObject(viteConfigPath);
+    removeManualChunksObject(path.join(misskeyDir, "packages", "frontend-embed", "vite.config.ts"));
   },
   async setupPage(page) {
     await page.addInitScript(() => {
@@ -339,68 +422,75 @@ export const misskeyApp: AppConfig = {
         }
         if (url.includes("/assets/locales/")) {
           return Promise.resolve(
-            new Response(JSON.stringify({
-              _lang_: "English",
-              headlineMisskey: "A network connected by notes",
-              introMisskey: "Welcome! Misskey is an open source, decentralized microblogging platform.",
-              monthAndDay: "{month}/{day}",
-              search: "Search",
-              notifications: "Notifications",
-              username: "Username",
-              password: "Password",
-              forgotPassword: "Forgot password",
-              fetchingAsAp498: "Fetching...",
-              login: "Sign In",
-              loggingIn: "Signing In",
-              signup: "Sign Up",
-              uploading: "Uploading...",
-              save: "Save",
-              users: "Users",
-              notes: "Notes",
-              following: "Following",
-              followers: "Followers",
-              ok: "OK",
-              gotIt: "Got it!",
-              cancel: "Cancel",
-              enterUsername: "Enter username",
-              renotedBy: "Boosted by {user}",
-              noNotes: "No notes",
-              noNotifications: "No notifications",
-              instance: "Instance",
-              settings: "Settings",
-              basicSettings: "General",
-              otherSettings: "Other Settings",
-              openInWindow: "Open in window",
-              profile: "Profile",
-              timeline: "Timeline",
-              noAccountDescription: "No description",
-              loginFailed: "Sign in failed",
-              showMore: "Show More",
-              youGotNewFollower: "followed you",
-              explore: "Explore",
-              favorited: "Favorited",
-              unfavorite: "Unfavorite",
-              pinnedNote: "Pinned note",
-              somethingHappened: "Something went wrong",
-              retry: "Retry",
-              pageLoadError: "An error occurred while loading the page.",
-              pageLoadErrorDescription: "This is usually caused by a network error or the browser's cache.",
-              serverIsDead: "Server is not responding. Please wait a moment and try again.",
-              youShouldUpgradeClient: "Please refresh the page to use the updated client.",
-              enterListName: "Enter list name",
-              privacy: "Privacy",
-              makeFollowManuallyApprove: "Follow requests require approval",
-              defaultNavigationBehaviour: "Default navigation behavior",
-              editProfile: "Edit profile",
-              noteOfThisUser: "Notes by this user",
-              joinThisServer: "Sign up at this instance",
-              exploreOtherServers: "Look for another instance",
-              letsLookAtTimeline: "Have a look at the timeline",
-              invitationRequiredToRegister: "This instance is invite-only.",
-            }), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            }),
+            new Response(
+              JSON.stringify({
+                _lang_: "English",
+                headlineMisskey: "A network connected by notes",
+                introMisskey:
+                  "Welcome! Misskey is an open source, decentralized microblogging platform.",
+                monthAndDay: "{month}/{day}",
+                search: "Search",
+                notifications: "Notifications",
+                username: "Username",
+                password: "Password",
+                forgotPassword: "Forgot password",
+                fetchingAsAp498: "Fetching...",
+                login: "Sign In",
+                loggingIn: "Signing In",
+                signup: "Sign Up",
+                uploading: "Uploading...",
+                save: "Save",
+                users: "Users",
+                notes: "Notes",
+                following: "Following",
+                followers: "Followers",
+                ok: "OK",
+                gotIt: "Got it!",
+                cancel: "Cancel",
+                enterUsername: "Enter username",
+                renotedBy: "Boosted by {user}",
+                noNotes: "No notes",
+                noNotifications: "No notifications",
+                instance: "Instance",
+                settings: "Settings",
+                basicSettings: "General",
+                otherSettings: "Other Settings",
+                openInWindow: "Open in window",
+                profile: "Profile",
+                timeline: "Timeline",
+                noAccountDescription: "No description",
+                loginFailed: "Sign in failed",
+                showMore: "Show More",
+                youGotNewFollower: "followed you",
+                explore: "Explore",
+                favorited: "Favorited",
+                unfavorite: "Unfavorite",
+                pinnedNote: "Pinned note",
+                somethingHappened: "Something went wrong",
+                retry: "Retry",
+                pageLoadError: "An error occurred while loading the page.",
+                pageLoadErrorDescription:
+                  "This is usually caused by a network error or the browser's cache.",
+                serverIsDead:
+                  "Server is not responding. Please wait a moment and try again.",
+                youShouldUpgradeClient:
+                  "Please refresh the page to use the updated client.",
+                enterListName: "Enter list name",
+                privacy: "Privacy",
+                makeFollowManuallyApprove: "Follow requests require approval",
+                defaultNavigationBehaviour: "Default navigation behavior",
+                editProfile: "Edit profile",
+                noteOfThisUser: "Notes by this user",
+                joinThisServer: "Sign up at this instance",
+                exploreOtherServers: "Look for another instance",
+                letsLookAtTimeline: "Have a look at the timeline",
+                invitationRequiredToRegister: "This instance is invite-only.",
+              }),
+              {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+              },
+            ),
           );
         }
         return _origFetch.call(window, input, init);
@@ -433,7 +523,16 @@ export const npmxApp: AppConfig = {
   name: "npmx.dev",
   cwd: path.join(GIT_DIR, "npmx.dev"),
   command: "npx",
-  args: ["pnpm@10", "exec", "nuxt", "dev", "--port", "3001", "--host", "0.0.0.0"],
+  args: [
+    "pnpm@10",
+    "exec",
+    "nuxt",
+    "dev",
+    "--port",
+    "3001",
+    "--host",
+    "0.0.0.0",
+  ],
   port: 3001,
   url: "http://127.0.0.1:3001",
   mountSelector: "#__nuxt",
@@ -448,10 +547,28 @@ export const npmxApp: AppConfig = {
   setup() {
     const npmxDir = path.join(GIT_DIR, "npmx.dev");
     const nmDir = path.join(npmxDir, "node_modules");
+
+    console.log("[npmx.dev:setup] pnpm install...");
+    execSync("npx pnpm@10 install --no-frozen-lockfile", {
+      cwd: npmxDir,
+      stdio: "inherit",
+      timeout: 300_000,
+      env: {
+        ...process.env,
+        NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+      },
+    });
+
     createVizeSymlinks(nmDir);
     patchNuxtConfig(path.join(npmxDir, "nuxt.config.ts"), {
-      removeModules: ["@vite-pwa/nuxt"],
+      removeModules: ["@nuxtjs/html-validator"],
     });
+    const npmxAppPath = path.join(npmxDir, "app", "app.vue");
+    const npmxAppSource = fs.readFileSync(npmxAppPath, "utf-8");
+    const nextNpmxAppSource = npmxAppSource.replace(/\n\s*<NuxtPwaAssets\s*\/>\s*/g, "\n");
+    if (nextNpmxAppSource !== npmxAppSource) {
+      fs.writeFileSync(npmxAppPath, nextNpmxAppSource);
+    }
     hoistPnpmPackage(nmDir, "vue-i18n");
 
     // Ensure .nuxt/tsconfig.server.json exists (vite 8 needs it at startup)
@@ -492,7 +609,16 @@ export const vuefesApp: AppConfig = {
   name: "vuefes-2025",
   cwd: path.join(GIT_DIR, "vuefes-2025"),
   command: "npx",
-  args: ["pnpm@10", "exec", "nuxt", "dev", "--port", "3003", "--host", "0.0.0.0"],
+  args: [
+    "pnpm@10",
+    "exec",
+    "nuxt",
+    "dev",
+    "--port",
+    "3003",
+    "--host",
+    "0.0.0.0",
+  ],
   port: 3003,
   url: "http://127.0.0.1:3003",
   mountSelector: "#__nuxt",
@@ -523,7 +649,10 @@ export const vuefesApp: AppConfig = {
       changed = true;
     }
     if (changed) {
-      fs.writeFileSync(vuefesPackageJson, JSON.stringify(pkg, null, "\t") + "\n");
+      fs.writeFileSync(
+        vuefesPackageJson,
+        JSON.stringify(pkg, null, "\t") + "\n",
+      );
     }
 
     addPnpmOverrides(vuefesPackageJson, {

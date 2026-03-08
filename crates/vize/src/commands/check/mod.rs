@@ -3,6 +3,8 @@
 //! Generates Virtual TypeScript from Vue SFCs and uses tsgo LSP for type checking.
 //! Can connect to a running check-server via Unix socket for faster repeated checks.
 
+mod dts;
+mod nuxt;
 mod reporting;
 mod runner;
 

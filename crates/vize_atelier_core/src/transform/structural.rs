@@ -1,6 +1,6 @@
 //! Structural directive transforms (v-if, v-for).
 
-use vize_carton::{Box, Bump, String, Vec};
+use vize_carton::{Box, String, Vec};
 
 use crate::ast::*;
 use crate::errors::ErrorCode;
@@ -405,9 +405,11 @@ pub fn transform_v_for<'a>(
         _ => return None,
     };
 
-    // Parse v-for expression: "item in items" or "(item, index) in items"
-    let (mut source, value_alias, key_alias, index_alias) =
-        parse_v_for_expression(allocator, &exp.content, &exp.loc);
+    let parse_result = crate::transforms::parse_for_expression(allocator, &exp.content, &exp.loc);
+    let mut source = parse_result.source;
+    let value_alias = parse_result.value;
+    let key_alias = parse_result.key;
+    let index_alias = parse_result.index;
 
     // Process source expression with binding-aware identifier prefixing
     // This ensures imports and refs are correctly handled (e.g., _unref(PRESETS) instead of _ctx.PRESETS)
@@ -453,145 +455,6 @@ pub fn transform_v_for<'a>(
     ctx.helper(RuntimeHelper::Fragment);
 
     None
-}
-
-/// Parse v-for expression
-fn parse_v_for_expression<'a>(
-    allocator: &'a Bump,
-    content: &str,
-    loc: &SourceLocation,
-) -> (
-    ExpressionNode<'a>,
-    Option<ExpressionNode<'a>>,
-    Option<ExpressionNode<'a>>,
-    Option<ExpressionNode<'a>>,
-) {
-    // Match patterns like "item in items" or "(item, index) in items"
-    let (alias_part, source_part) = if let Some(idx) = content.find(" in ") {
-        (&content[..idx], &content[idx + 4..])
-    } else if let Some(idx) = content.find(" of ") {
-        (&content[..idx], &content[idx + 4..])
-    } else {
-        // Return source as-is
-        let source = ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode {
-                content: String::new(content),
-                is_static: false,
-                const_type: ConstantType::NotConstant,
-                loc: loc.clone(),
-                js_ast: None,
-                hoisted: None,
-                identifiers: None,
-                is_handler_key: false,
-                is_ref_transformed: false,
-            },
-            allocator,
-        ));
-        return (source, None, None, None);
-    };
-
-    let source_str = source_part.trim();
-    let alias_str = alias_part.trim();
-
-    // Parse source expression
-    let source = ExpressionNode::Simple(Box::new_in(
-        SimpleExpressionNode {
-            content: String::new(source_str),
-            is_static: false,
-            const_type: ConstantType::NotConstant,
-            loc: SourceLocation::default(),
-            js_ast: None,
-            hoisted: None,
-            identifiers: None,
-            is_handler_key: false,
-            is_ref_transformed: false,
-        },
-        allocator,
-    ));
-
-    // Parse aliases
-    let (value, key, index) = if alias_str.starts_with('(') && alias_str.ends_with(')') {
-        let inner = &alias_str[1..alias_str.len() - 1];
-        let aliases: std::vec::Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
-
-        let value = if !aliases.is_empty() && !aliases[0].is_empty() {
-            Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode {
-                    content: String::new(aliases[0]),
-                    is_static: false,
-                    const_type: ConstantType::NotConstant,
-                    loc: SourceLocation::default(),
-                    js_ast: None,
-                    hoisted: None,
-                    identifiers: None,
-                    is_handler_key: false,
-                    is_ref_transformed: false,
-                },
-                allocator,
-            )))
-        } else {
-            None
-        };
-
-        let key = if aliases.len() > 1 && !aliases[1].is_empty() {
-            Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode {
-                    content: String::new(aliases[1]),
-                    is_static: false,
-                    const_type: ConstantType::NotConstant,
-                    loc: SourceLocation::default(),
-                    js_ast: None,
-                    hoisted: None,
-                    identifiers: None,
-                    is_handler_key: false,
-                    is_ref_transformed: false,
-                },
-                allocator,
-            )))
-        } else {
-            None
-        };
-
-        let index = if aliases.len() > 2 && !aliases[2].is_empty() {
-            Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode {
-                    content: String::new(aliases[2]),
-                    is_static: false,
-                    const_type: ConstantType::NotConstant,
-                    loc: SourceLocation::default(),
-                    js_ast: None,
-                    hoisted: None,
-                    identifiers: None,
-                    is_handler_key: false,
-                    is_ref_transformed: false,
-                },
-                allocator,
-            )))
-        } else {
-            None
-        };
-
-        (value, key, index)
-    } else {
-        // Simple alias
-        let value = Some(ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode {
-                content: String::new(alias_str),
-                is_static: false,
-                const_type: ConstantType::NotConstant,
-                loc: SourceLocation::default(),
-                js_ast: None,
-                hoisted: None,
-                identifiers: None,
-                is_handler_key: false,
-                is_ref_transformed: false,
-            },
-            allocator,
-        )));
-        (value, None, None)
-    };
-
-    (source, value, key, index)
 }
 
 /// Extract key value string from a PropNode for comparison

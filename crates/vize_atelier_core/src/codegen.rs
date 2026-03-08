@@ -268,6 +268,155 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_conditional_slot_with_else_does_not_append_undefined() {
+        let result = compile!(
+            r#"<MyDialog>
+  <template v-if="step === 1" #header>First</template>
+  <template v-else #header>Second</template>
+</MyDialog>"#
+        );
+        assert!(
+            result.code.contains("_createSlots"),
+            "conditional slots should use createSlots. Got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains(": undefined ])")
+                && !result.code.contains(": undefined ]")
+                && !result.code.contains(": undefined ],"),
+            "final else branch should not emit an extra undefined arm. Got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn test_codegen_v_for_aliases_without_parentheses_stay_local() {
+        use crate::options::{CodegenOptions, TransformOptions};
+        use crate::parser::parse;
+        use crate::transform::transform;
+        use bumpalo::Bump;
+
+        let allocator = Bump::new();
+        let (mut root, _) = parse(
+            &allocator,
+            r#"<div><template v-for="item, index of items" :key="index"><UserCard :user="item" :data-index="index" /></template></div>"#,
+        );
+
+        transform(
+            &allocator,
+            &mut root,
+            TransformOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+            None,
+        );
+
+        let result = super::generate(
+            &root,
+            CodegenOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+
+        assert!(
+            result
+                .code
+                .contains("_renderList(_ctx.items, (item, index) => {"),
+            "expected split aliases in renderList callback, got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("_ctx.item.")
+                && !result.code.contains("_ctx.item,")
+                && !result.code.contains("_ctx.item)")
+                && !result.code.contains("_ctx.item]"),
+            "v-for value alias should stay local, got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("_ctx.index.")
+                && !result.code.contains("_ctx.index,")
+                && !result.code.contains("_ctx.index)")
+                && !result.code.contains("_ctx.index]"),
+            "v-for key/index alias should stay local, got:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("user: item"),
+            "component prop should reference local alias, got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn test_codegen_scoped_slot_params_stay_local_in_handlers() {
+        use crate::options::{CodegenOptions, TransformOptions};
+        use crate::parser::parse;
+        use crate::transform::transform;
+        use bumpalo::Bump;
+
+        let allocator = Bump::new();
+        let (mut root, _) = parse(
+            &allocator,
+            r#"<CommonPaginator>
+  <template #default="{ item, index }">
+    <button @click="showHistory(item)">{{ index }}</button>
+    <button @click="() => edit(item.id)">{{ item.id }}</button>
+  </template>
+</CommonPaginator>"#,
+        );
+
+        transform(
+            &allocator,
+            &mut root,
+            TransformOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+            None,
+        );
+
+        let result = super::generate(
+            &root,
+            CodegenOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+
+        assert!(
+            result.code.contains("_ctx.showHistory(item)")
+                || result.code.contains("_ctx.showHistory(item))"),
+            "scoped slot item should stay local in direct handler, got:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("() => _ctx.edit(item.id)")
+                || result.code.contains("() => _ctx.edit(item.id))"),
+            "scoped slot item should stay local in arrow handler, got:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("_toDisplayString(index)")
+                || result.code.contains("toDisplayString(index)"),
+            "scoped slot index should stay local in interpolation, got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("_ctx.item."),
+            "scoped slot item should not be prefixed with _ctx, got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("_ctx.index"),
+            "scoped slot index should not be prefixed with _ctx, got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_codegen_escape_newline_in_attribute() {
         // Attribute values containing newlines should be properly escaped
         let result = compile!(

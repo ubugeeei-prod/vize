@@ -22,9 +22,13 @@ function isCssModule(block: StyleBlockInfo): boolean {
  * Check if any style blocks in the compiled module require delegation to
  * Vite's CSS pipeline (preprocessor or CSS Modules).
  */
-function hasDelegatedStyles(compiled: CompiledModule): boolean {
+export function hasDelegatedStyles(compiled: CompiledModule): boolean {
   if (!compiled.styles) return false;
   return compiled.styles.some((s) => needsPreprocessor(s) || isCssModule(s));
+}
+
+function supportsTemplateOnlyHmr(output: string): boolean {
+  return /(?:^|\n)(?:_sfc_main|__sfc__)\.render\s*=\s*render\b/m.test(output);
 }
 
 export function generateScopeId(filename: string): string {
@@ -75,6 +79,7 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
   // Use regex to match only line-start "export default" (not inside strings)
   const exportDefaultRegex = /^export default /m;
   const hasExportDefault = exportDefaultRegex.test(output);
+  const hasNamedRenderExport = /^export function render\b/m.test(output);
 
   // Check if _sfc_main is already defined (Case 2: non-script-setup SFCs)
   // In this case, the compiler already outputs: const _sfc_main = ...; export default _sfc_main
@@ -96,6 +101,13 @@ export function generateOutput(compiled: CompiledModule, options: GenerateOutput
         `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";\nexport default _sfc_main`,
       );
     }
+  } else if (!hasExportDefault && !hasSfcMainDefined && hasNamedRenderExport) {
+    output += "\nconst _sfc_main = {};";
+    if (compiled.hasScoped && compiled.scopeId) {
+      output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;
+    }
+    output += "\n_sfc_main.render = render;";
+    output += "\nexport default _sfc_main;";
   }
 
   // Determine whether to use delegated style imports or inline CSS injection
@@ -186,7 +198,11 @@ ${output}`;
 
   // Add HMR support in development (skip in production)
   if (!isProduction && isDev && hasExportDefault) {
-    output += generateHmrCode(compiled.scopeId, hmrUpdateType ?? "full-reload");
+    const effectiveHmrUpdateType =
+      hmrUpdateType === "template-only" && !supportsTemplateOnlyHmr(output)
+        ? "full-reload"
+        : (hmrUpdateType ?? "full-reload");
+    output += generateHmrCode(compiled.scopeId, effectiveHmrUpdateType);
   }
 
   return output;

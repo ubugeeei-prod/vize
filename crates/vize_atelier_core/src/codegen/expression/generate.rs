@@ -6,8 +6,9 @@
 use crate::ast::{CompoundExpressionChild, ExpressionNode};
 
 use super::{
-    super::context::CodegenContext, generate_simple_expression,
-    helpers::prefix_identifiers_with_context,
+    super::context::CodegenContext,
+    generate_simple_expression,
+    helpers::{prefix_identifiers_with_context, strip_ctx_for_slot_params},
 };
 use vize_carton::String;
 
@@ -94,6 +95,11 @@ pub fn generate_event_handler(
                 prefix_identifiers_with_context(&ts_stripped, ctx)
             } else {
                 ts_stripped
+            };
+            let processed = if ctx.has_slot_params() && processed.contains("_ctx.") {
+                strip_ctx_for_slot_params(ctx, &processed)
+            } else {
+                processed
             };
 
             // Check if it's already an arrow function or function expression

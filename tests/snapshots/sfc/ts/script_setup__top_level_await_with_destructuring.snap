@@ -12,7 +12,12 @@ export default /*@__PURE__*/_defineComponent({
 
 let __temp: any, __restore: any
 
-const { data, error } = await useFetch('/api/data')
+const { data, error } =  (
+  ([__temp,__restore] = _withAsyncContext(() => useFetch('/api/data'))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
 
 return (_ctx: any,_cache: any) => {
   return (_unref(error))

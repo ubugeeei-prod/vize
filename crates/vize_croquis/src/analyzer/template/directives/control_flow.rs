@@ -6,9 +6,42 @@
 use crate::analyzer::Analyzer;
 use crate::scope::VForScopeData;
 use crate::ScopeBinding;
-use vize_carton::CompactString;
+use vize_carton::{CompactString, SmallVec, String};
 use vize_relief::ast::{ExpressionNode, ForNode, IfNode, PropNode};
 use vize_relief::BindingType;
+
+fn build_if_branch_guard(
+    previous_conditions: &[CompactString],
+    current_condition: Option<&str>,
+) -> Option<CompactString> {
+    if previous_conditions.is_empty() && current_condition.is_none() {
+        return None;
+    }
+
+    let mut guard = String::default();
+    let mut has_part = false;
+
+    for previous in previous_conditions {
+        if has_part {
+            guard.push_str(" && ");
+        }
+        guard.push_str("!(");
+        guard.push_str(previous.as_str());
+        guard.push(')');
+        has_part = true;
+    }
+
+    if let Some(condition) = current_condition {
+        if has_part {
+            guard.push_str(" && ");
+        }
+        guard.push('(');
+        guard.push_str(condition);
+        guard.push(')');
+    }
+
+    Some(CompactString::new(guard.as_str()))
+}
 
 impl Analyzer {
     /// Visit if node.
@@ -17,6 +50,8 @@ impl Analyzer {
         if_node: &IfNode<'_>,
         scope_vars: &mut Vec<CompactString>,
     ) {
+        let mut previous_conditions = SmallVec::<[CompactString; 4]>::new();
+
         for branch in if_node.branches.iter() {
             if self.options.detect_undefined && self.script_analyzed {
                 if let Some(ref cond) = branch.condition {
@@ -32,13 +67,15 @@ impl Analyzer {
                 }
             }
 
-            // Push v-if guard for type narrowing
-            let guard_pushed = if let Some(ref cond) = branch.condition {
-                let cond_str = match cond {
-                    ExpressionNode::Simple(s) => s.content.as_str(),
-                    ExpressionNode::Compound(c) => c.loc.source.as_str(),
-                };
-                self.vif_guard_stack.push(CompactString::new(cond_str));
+            let current_condition = branch.condition.as_ref().map(|cond| match cond {
+                ExpressionNode::Simple(s) => s.content.as_str(),
+                ExpressionNode::Compound(c) => c.loc.source.as_str(),
+            });
+
+            let branch_guard =
+                build_if_branch_guard(previous_conditions.as_slice(), current_condition);
+            let guard_pushed = if let Some(ref guard) = branch_guard {
+                self.vif_guard_stack.push(guard.clone());
                 true
             } else {
                 false
@@ -51,6 +88,10 @@ impl Analyzer {
             // Pop v-if guard
             if guard_pushed {
                 self.vif_guard_stack.pop();
+            }
+
+            if let Some(condition) = current_condition {
+                previous_conditions.push(CompactString::new(condition));
             }
         }
     }

@@ -167,11 +167,7 @@ pub fn generate_virtual_ts_with_offsets(
     if !options.auto_import_stubs.is_empty() {
         let mut has_header = false;
         for stub in &options.auto_import_stubs {
-            // Extract function name from "declare function NAME<..." or "declare function NAME(..."
-            let name = stub.strip_prefix("declare function ").map(|rest| {
-                let end = rest.find(['<', '(']).unwrap_or(rest.len());
-                &rest[..end]
-            });
+            let name = extract_declared_name(stub);
             if let Some(name) = name {
                 // Skip if already imported or declared in script bindings
                 if summary.bindings.bindings.contains_key(name) || imported_names.contains(&name) {
@@ -533,6 +529,28 @@ pub fn generate_virtual_ts_with_offsets(
 /// Extract imported identifier names from an import statement string.
 /// Handles `import { a, b as c } from "..."` and `import D from "..."`.
 /// Returns the local names (e.g., `["a", "c", "D"]`).
+fn extract_declared_name(stub: &str) -> Option<&str> {
+    for prefix in [
+        "declare function ",
+        "declare const ",
+        "declare let ",
+        "declare var ",
+    ] {
+        let Some(rest) = stub.strip_prefix(prefix) else {
+            continue;
+        };
+        let end = rest
+            .find(['<', '(', ':', '=', ';', ' '])
+            .unwrap_or(rest.len());
+        let name = rest[..end].trim();
+        if !name.is_empty() {
+            return Some(name);
+        }
+    }
+
+    None
+}
+
 fn extract_import_names(import_text: &str) -> Vec<&str> {
     let mut names = Vec::new();
 
