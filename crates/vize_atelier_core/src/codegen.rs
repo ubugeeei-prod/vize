@@ -349,6 +349,24 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_if_branch_mixed_children_wraps_interpolation_in_text_vnode() {
+        let result = compile!(
+            r#"<div><label v-if="show">{{ msg }}<span v-if="required">*</span></label></div>"#
+        );
+
+        assert!(
+            result.code.contains("_createTextVNode(_toDisplayString(msg), 1 /* TEXT */)"),
+            "mixed children inside v-if branch should wrap interpolation in createTextVNode. Got:\n{}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("[_toDisplayString(msg),"),
+            "v-if branch should not emit raw string children inside arrays. Got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_codegen_v_for_aliases_without_parentheses_stay_local() {
         use crate::options::{CodegenOptions, TransformOptions};
         use crate::parser::parse;

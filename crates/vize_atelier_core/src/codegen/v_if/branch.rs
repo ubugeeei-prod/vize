@@ -620,8 +620,8 @@ fn generate_if_branch_children(ctx: &mut CodegenContext, children: &[TemplateChi
             }
         }
     } else {
-        // Complex branch children need the same text/interpolation grouping as
-        // regular element children to avoid raw string array entries.
+        // Mixed children in block-optimized branches must emit text as createTextVNode,
+        // otherwise Vue skips child normalization and raw strings become invalid VNodes.
         generate_children_force_array(ctx, children);
     }
 }

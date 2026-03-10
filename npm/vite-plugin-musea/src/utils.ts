@@ -128,11 +128,21 @@ export async function generateStorybookFiles(
 }
 
 export function toPascalCase(str: string): string {
-  return str
-    .split(/[\s\-_]+/)
+  const normalized = str
+    .normalize("NFKD")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+  const pascal = normalized
+    .split(/\s+/)
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join("");
+
+  if (!pascal) {
+    return "Variant";
+  }
+
+  return /^[\p{L}_$]/u.test(pascal) ? pascal : `Variant${pascal}`;
 }
 
 export function escapeTemplate(str: string): string {

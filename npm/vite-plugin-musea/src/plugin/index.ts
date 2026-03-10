@@ -13,6 +13,7 @@
  */
 
 import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
+import { transformWithEsbuild } from "vite";
 import fs from "node:fs";
 import path from "node:path";
 import { vizeConfigStore } from "@vizejs/vite-plugin";
@@ -278,6 +279,28 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
     resolveId,
     load,
+    async transform(code, id) {
+      if (!id.includes("?musea-virtual")) {
+        return null;
+      }
+
+      if (!id.includes("musea-art:") && !id.includes("\0musea:")) {
+        return null;
+      }
+
+      const safeId = id
+        .replaceAll("\0", "")
+        .replace(/[^\w./-]+/g, "_")
+        .replace(/_+/g, "_");
+      const loaderId = path.join(config.root, `.musea-${safeId}.ts`);
+
+      return transformWithEsbuild(code, loaderId, {
+        loader: "ts",
+        format: "esm",
+        sourcemap: config.command === "serve",
+        target: "esnext",
+      });
+    },
     handleHotUpdate,
   };
 
