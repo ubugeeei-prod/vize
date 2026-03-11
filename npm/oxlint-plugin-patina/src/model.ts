@@ -46,6 +46,7 @@ export interface PatinaBinding {
 
 export interface PatinaSettings {
   locale?: string;
+  showHelp?: boolean;
 }
 
 export interface LineColumn {

@@ -1,0 +1,8 @@
+/Users/ubugeeei/projects/personal/oss/ubugeeei/vize/__agent_only/oxlint-plugin-patina-test/App.vue
+  2:1  error  Elements in iteration expect to have 'v-bind[:]key' directives.
+    Details:
+      Elements in iteration expect to have 'v-bind[:]key' directives. Element[:] <li>
+    Location:
+      Vue template line 6, column 9  patina(vue/require-v-for-key)
+
+✖ 1 problem (1 error, 0 warnings)

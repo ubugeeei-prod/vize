@@ -214,6 +214,12 @@ To turn the long Patina `Help:` block back on:
 vp run --filter './examples/oxlint-vize' lint:with-help
 ```
 
+To turn the long Patina `Help:` block back on:
+
+```bash
+pnpm -C examples/oxlint-patina lint:with-help
+```
+
 To probe `no-unused-vars` on a Vue SFC:
 
 ```bash

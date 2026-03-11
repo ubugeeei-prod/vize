@@ -23,6 +23,8 @@ It mixes:
 
 - Oxlint core diagnostics from `no-console`
 - Patina diagnostics from the JS plugin bridge
+- The `stylish` formatter so the default code frame does not dominate the output
+- `settings.patina.showHelp: false` so the long Patina remediation block stays hidden by default
 
 If you want to check `no-unused-vars` specifically:
 
@@ -44,17 +46,24 @@ If you want JSON output from the same command:
 pnpm -C examples/oxlint-patina lint:json
 ```
 
+If you want the long Patina `Help:` block as well:
+
+```bash
+pnpm -C examples/oxlint-patina lint:with-help
+```
+
 If you want the raw direct CLI path, that also works once the plugin has been built:
 
 ```bash
-cd examples/oxlint-patina
-pnpm exec oxlint -c .oxlintrc.json src
+pnpm -C examples/oxlint-patina exec oxlint -c .oxlintrc.json -f stylish src
 ```
 
 ## Notes
 
 - Oxlint's built-in `vue` plugin is enabled through `"plugins": ["vue"]`.
 - Oxlint's built-in `no-console` rule is enabled so the example shows native Oxlint output mixed with Patina output in one run.
+- The default example commands use `-f stylish` because Oxlint's default formatter prints a large code frame for every finding, while `stylish` keeps the Patina message body intact.
+- `settings.patina.showHelp` toggles the long Patina remediation block. The example keeps it `false` by default and exposes `lint:with-help` for the verbose view.
 - A dedicated `lint:unused-vars-probe` command is included because `no-unused-vars` currently does not emit on the example `.vue` SFC, even without the Patina plugin.
 - The Patina JS plugin is loaded from `../../npm/oxlint-plugin-patina/dist/index.js`.
 - The plugin starts with a single-rule native Patina run and only upgrades to a shared full-file pass when multiple Patina rules are enabled for the same file.

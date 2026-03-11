@@ -9,7 +9,6 @@ import { getCacheKey, getPatinaSettings } from "./settings.js";
 
 export interface FileState {
   source: string;
-  sourceLines: readonly string[];
   extractedScript: string;
   scriptMap: SingleScriptMap | null | undefined;
   allDiagnosticsByRule: Map<string, PatinaDiagnostic[]> | null;
@@ -31,7 +30,6 @@ export function getFileState(context: Context): FileState {
   const source = fs.readFileSync(context.physicalFilename, "utf8");
   const state: FileState = {
     source,
-    sourceLines: source.split(/\r\n?|\n/gu),
     extractedScript: context.sourceCode.text,
     scriptMap: undefined,
     allDiagnosticsByRule: null,

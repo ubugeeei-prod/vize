@@ -5,16 +5,38 @@ const helpTextCache = new Map<string, string>();
 export function formatPatinaMessage(
   diagnostic: PatinaDiagnostic,
   useMappedLocation: boolean,
-  sourceSnippet: string | null,
+  showHelp: boolean,
 ): string {
-  const locationPrefix = useMappedLocation
-    ? ""
-    : `Actual Vue location: line ${diagnostic.location.start.line}, column ${diagnostic.location.start.column}\n`;
-  const snippetSection = sourceSnippet ? `Source:\n${indentBlock(sourceSnippet, "  ")}\n` : "";
-  const helpSuffix = diagnostic.help
-    ? `\nHelp:\n${indentBlock(formatHelpText(diagnostic.help), "  ")}`
-    : "";
-  return `${locationPrefix}${snippetSection}${diagnostic.message}${helpSuffix}`;
+  const sections: string[] = [];
+  const summary = sanitizeSummaryLine(createSummaryLine(diagnostic.message));
+  const fullMessage = sanitizeSummaryLine(diagnostic.message);
+
+  if (fullMessage !== summary) {
+    sections.push(formatSection("Details", fullMessage));
+  }
+
+  if (!useMappedLocation) {
+    sections.push(
+      formatSection(
+        "Location",
+        `Vue template line ${diagnostic.location.start.line}, column ${diagnostic.location.start.column}`,
+      ),
+    );
+  }
+
+  if (showHelp && diagnostic.help) {
+    sections.push(formatSection("Help", formatHelpText(diagnostic.help)));
+  }
+
+  if (sections.length === 0) {
+    return summary;
+  }
+
+  return `${summary}\n${sections.join("\n")}`;
+}
+
+function formatSection(title: string, body: string): string {
+  return `    ${title}:\n${indentBlock(body, "      ")}`;
 }
 
 function formatHelpText(help: string): string {
@@ -42,4 +64,17 @@ function indentBlock(text: string, indent: string): string {
     .split("\n")
     .map((line) => `${indent}${line}`)
     .join("\n");
+}
+
+function sanitizeSummaryLine(text: string): string {
+  return text.replace(/:/gu, "[:]");
+}
+
+function createSummaryLine(message: string): string {
+  const firstSentenceEnd = message.indexOf(". ");
+  if (firstSentenceEnd === -1) {
+    return message;
+  }
+
+  return message.slice(0, firstSentenceEnd + 1);
 }

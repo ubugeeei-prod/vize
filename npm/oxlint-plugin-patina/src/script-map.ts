@@ -41,29 +41,6 @@ export function mapToScriptLoc(
   };
 }
 
-export function createSourceSnippet(
-  sourceLines: readonly string[],
-  diagnostic: PatinaDiagnostic,
-): string | null {
-  const line = sourceLines[diagnostic.location.start.line - 1];
-  if (line === undefined) {
-    return null;
-  }
-
-  const startColumn = Math.max(1, diagnostic.location.start.column);
-  const endColumn =
-    diagnostic.location.start.line === diagnostic.location.end.line
-      ? Math.max(startColumn + 1, diagnostic.location.end.column)
-      : startColumn + 1;
-  const caretWidth = Math.max(1, endColumn - startColumn);
-  const lineNumber = String(diagnostic.location.start.line);
-  const sourceGutter = `${lineNumber} | `;
-  const caretGutter = `${" ".repeat(lineNumber.length)} | `;
-  const caretIndent = " ".repeat(startColumn - 1);
-
-  return `${sourceGutter}${line}\n${caretGutter}${caretIndent}${"^".repeat(caretWidth)}`;
-}
-
 function createLineStartOffsets(source: string): number[] {
   const lineStarts = [0];
 

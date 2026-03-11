@@ -4,24 +4,23 @@ import { getPatinaRules } from "./binding.js";
 import { getFileState, getDiagnosticsForRule, getScriptMap, type FileState } from "./file-state.js";
 import { formatPatinaMessage } from "./format.js";
 import type { PatinaDiagnostic, PatinaRuleMeta } from "./model.js";
-import { createSourceSnippet, mapToScriptLoc } from "./script-map.js";
-import { isVueLikeFile } from "./settings.js";
+import { mapToScriptLoc } from "./script-map.js";
+import { getPatinaSettings, isVueLikeFile } from "./settings.js";
 
-function createOxlintDiagnostic(diagnostic: PatinaDiagnostic, state: FileState): Diagnostic {
+function createOxlintDiagnostic(
+  diagnostic: PatinaDiagnostic,
+  state: FileState,
+  showHelp: boolean,
+): Diagnostic {
   const scriptMap = getScriptMap(state);
   const loc = mapToScriptLoc(diagnostic, scriptMap);
-  const message = formatPatinaMessage(
-    diagnostic,
-    loc !== null,
-    loc ? null : createSourceSnippet(state.sourceLines, diagnostic),
-  );
 
   return {
     loc: loc ?? {
       start: { line: 1, column: 1 },
       end: { line: 1, column: 1 },
     },
-    message,
+    message: formatPatinaMessage(diagnostic, loc !== null, showHelp),
   };
 }
 
@@ -40,6 +39,7 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
             return;
           }
 
+          const showHelp = getPatinaSettings(context).showHelp ?? true;
           const state = getFileState(context);
           const diagnostics = getDiagnosticsForRule(context, state, ruleMeta.name);
           if (diagnostics.length === 0) {
@@ -47,7 +47,7 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
           }
 
           for (const diagnostic of diagnostics) {
-            context.report(createOxlintDiagnostic(diagnostic, state));
+            context.report(createOxlintDiagnostic(diagnostic, state, showHelp));
           }
         },
       };

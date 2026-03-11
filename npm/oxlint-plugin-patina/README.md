@@ -39,13 +39,16 @@ You can pass Patina settings through `settings.patina`:
 {
   "settings": {
     "patina": {
-      "locale": "ja"
+      "locale": "ja",
+      "showHelp": false
     }
   }
 }
 ```
 
+`showHelp` defaults to `true`. Set it to `false` when you want a denser terminal view without the long remediation block.
+
 ## Current limitations
 
 - Oxlint JS plugins currently rely on the extracted Vue script program. Files without `<script>` or `<script setup>` do not invoke the plugin yet.
-- Oxlint does not expose custom Vue template/style ranges to JS plugins. When a Patina diagnostic cannot be mapped onto the extracted script range, the plugin prefixes the true `line/column` in the message and anchors the report to the current script program.
+- Oxlint JS plugins only accept ranges inside the extracted Vue script program. For template diagnostics, the real SFC `line/column` is surfaced in the message, while the fallback formatter anchor still points at the script block.
