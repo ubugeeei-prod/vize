@@ -64,7 +64,7 @@ assert.notEqual(exitCode, 0, "oxlint should fail when Patina reports an error");
 assert.match(output, /patina\(vue\/require-v-for-key\)/, "Patina rule name should be surfaced");
 assert.match(
   output,
-  /\[line 6, column \d+\]/,
+  /Actual Vue location: line 6, column \d+/,
   "Template diagnostics should preserve their true file location in the message",
 );
 assert.doesNotMatch(output, /\*\*|```/, "Terminal output should not contain raw Markdown markers");

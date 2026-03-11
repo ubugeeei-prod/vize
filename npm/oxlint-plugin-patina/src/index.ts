@@ -74,6 +74,7 @@ interface SingleScriptMap {
 
 interface FileState {
   source: string;
+  sourceLines: readonly string[];
   extractedScript: string;
   scriptMap: SingleScriptMap | null | undefined;
   allDiagnosticsByRule: Map<string, PatinaDiagnostic[]> | null;
@@ -135,12 +136,14 @@ function getFileState(context: Context): FileState {
 
   const state: FileState = {
     source: fs.readFileSync(context.physicalFilename, "utf8"),
+    sourceLines: [],
     extractedScript: context.sourceCode.text,
     scriptMap: undefined,
     allDiagnosticsByRule: null,
     partialDiagnosticsByRule: new Map(),
     requestedRules: new Set(),
   };
+  state.sourceLines = state.source.split(/\r\n?|\n/gu);
   fileStateCache.set(cacheKey, state);
   return state;
 }
@@ -335,14 +338,19 @@ function mapToScriptLoc(
   };
 }
 
-function formatPatinaMessage(diagnostic: PatinaDiagnostic, useMappedLocation: boolean): string {
+function formatPatinaMessage(
+  diagnostic: PatinaDiagnostic,
+  useMappedLocation: boolean,
+  sourceSnippet: string | null,
+): string {
   const locationPrefix = useMappedLocation
     ? ""
-    : `[line ${diagnostic.location.start.line}, column ${diagnostic.location.start.column}] `;
+    : `Actual Vue location: line ${diagnostic.location.start.line}, column ${diagnostic.location.start.column}\n`;
+  const snippetSection = sourceSnippet ? `Source:\n${indentBlock(sourceSnippet, "  ")}\n` : "";
   const helpSuffix = diagnostic.help
     ? `\nHelp:\n${indentBlock(formatHelpText(diagnostic.help), "  ")}`
     : "";
-  return `${locationPrefix}${diagnostic.message}${helpSuffix}`;
+  return `${locationPrefix}${snippetSection}${diagnostic.message}${helpSuffix}`;
 }
 
 function formatHelpText(help: string): string {
@@ -372,15 +380,47 @@ function indentBlock(text: string, indent: string): string {
     .join("\n");
 }
 
-function createOxlintDiagnostic(
-  node: ESTree.Program,
+function createSourceSnippet(
+  sourceLines: readonly string[],
   diagnostic: PatinaDiagnostic,
-  scriptMap: SingleScriptMap | null,
-): Diagnostic {
-  const loc = mapToScriptLoc(diagnostic, scriptMap);
-  const message = formatPatinaMessage(diagnostic, loc !== null);
+): string | null {
+  const line = sourceLines[diagnostic.location.start.line - 1];
+  if (line === undefined) {
+    return null;
+  }
 
-  return loc ? { loc, message } : { node, message };
+  const startColumn = Math.max(1, diagnostic.location.start.column);
+  const endColumn = diagnostic.location.start.line === diagnostic.location.end.line
+    ? Math.max(startColumn + 1, diagnostic.location.end.column)
+    : startColumn + 1;
+  const caretWidth = Math.max(1, endColumn - startColumn);
+  const lineNumber = String(diagnostic.location.start.line);
+  const gutter = `${lineNumber} | `;
+  const caretIndent = " ".repeat(gutter.length + startColumn - 1);
+
+  return `${gutter}${line}\n${caretIndent}${"^".repeat(caretWidth)}`;
+}
+
+function createOxlintDiagnostic(
+  _node: ESTree.Program,
+  diagnostic: PatinaDiagnostic,
+  state: FileState,
+): Diagnostic {
+  const scriptMap = getScriptMap(state);
+  const loc = mapToScriptLoc(diagnostic, scriptMap);
+  const message = formatPatinaMessage(
+    diagnostic,
+    loc !== null,
+    loc ? null : createSourceSnippet(state.sourceLines, diagnostic),
+  );
+
+  return {
+    loc: loc ?? {
+      start: { line: 1, column: 1 },
+      end: { line: 1, column: 1 },
+    },
+    message,
+  };
 }
 
 function createPatinaRule(ruleMeta: PatinaRuleMeta) {
@@ -406,7 +446,8 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
 
           const scriptMap = getScriptMap(state);
           for (const diagnostic of diagnostics) {
-            context.report(createOxlintDiagnostic(node, diagnostic, scriptMap));
+            void scriptMap;
+            context.report(createOxlintDiagnostic(node, diagnostic, state));
           }
         },
       };
