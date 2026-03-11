@@ -24,6 +24,8 @@ It mixes:
 - Oxlint core diagnostics from `no-console`
 - Patina diagnostics from the JS plugin bridge
 
+`pnpm lint` uses a small JSON-based formatter so the terminal output shows meaningful Vue source snippets instead of Oxlint's misleading fallback script frame for unmappable template diagnostics.
+
 If you want to check `no-unused-vars` specifically:
 
 ```bash
@@ -44,12 +46,19 @@ If you want JSON output:
 pnpm -C examples/oxlint-patina lint:json
 ```
 
+If you want the raw Oxlint text formatter for comparison:
+
+```bash
+pnpm -C examples/oxlint-patina lint:raw
+```
+
 ## Notes
 
 - Oxlint's built-in `vue` plugin is enabled through `"plugins": ["vue"]`.
 - Oxlint's built-in `no-console` rule is enabled so the example shows native Oxlint output mixed with Patina output in one run.
 - A dedicated `lint:unused-vars-probe` command is included because `no-unused-vars` currently does not emit on the example `.vue` SFC, even without the Patina plugin.
 - The Patina JS plugin is loaded directly from `../../npm/oxlint-plugin-patina/dist/index.js`.
+- `pnpm lint` renders from Oxlint JSON to avoid the confusing fallback code frame that Oxlint JS plugins produce for Vue template/style diagnostics outside the extracted script range.
 - The plugin starts with a single-rule native Patina run and only upgrades to a shared full-file pass when multiple Patina rules are enabled for the same file.
 - Patina help text is normalized to plain text so terminal output stays readable even without Markdown rendering.
 - The helper script only builds dependencies when the native binary or plugin bundle is missing, so repeat example runs stay fast.

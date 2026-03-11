@@ -176,50 +176,62 @@ import Button from "./Button.vue";
 
 ---
 
-## Oxlint + Patina Example
+## Oxlint + Vize Example
 
-`examples/oxlint-patina/` contains the smallest runnable setup for executing Patina from Oxlint through `@vizejs/oxlint-plugin-patina`.
+`examples/oxlint-vize/` contains the smallest runnable setup for executing Patina from Oxlint through `oxlint-plugin-vize`.
 
 ### Setup
 
 Run this from the repository root:
 
 ```bash
-pnpm install
-pnpm -C npm/vize-native build
-pnpm -C npm/oxlint-plugin-patina build
+vp install
+vp run --filter './npm/vize-native' build
+vp run --filter './npm/oxlint-plugin-vize' build
 ```
 
 ### Run
 
 ```bash
-pnpm -C examples/oxlint-patina lint
+vp run --filter './examples/oxlint-vize' lint
 ```
 
-This command intentionally exits non-zero because it includes `src/HasPatinaErrors.vue`. It mixes Oxlint core output with Patina output. If you only want the success path:
+This command intentionally exits non-zero because it includes `src/HasPatinaErrors.vue`. It mixes Oxlint core output with Patina output and uses the `stylish` formatter so the default code frame does not dominate the output. If you only want the success path:
 
 ```bash
-pnpm -C examples/oxlint-patina lint:clean
+vp run --filter './examples/oxlint-vize' lint:clean
+```
+
+If you want JSON output:
+
+```bash
+vp run --filter './examples/oxlint-vize' lint:json
+```
+
+To turn the long Patina `Help:` block back on:
+
+```bash
+vp run --filter './examples/oxlint-vize' lint:with-help
 ```
 
 To probe `no-unused-vars` on a Vue SFC:
 
 ```bash
-pnpm -C examples/oxlint-patina lint:unused-vars-probe
+vp run --filter './examples/oxlint-vize' lint:unused-vars-probe
 ```
 
 Current observed behavior in this repository: that probe reports `0` findings on `.vue`, even though the sample file contains an unused binding.
 
 ### Files
 
-| File                         | Description                                                    |
-| ---------------------------- | -------------------------------------------------------------- |
-| `.oxlintrc.json`             | Oxlint config enabling `vue` and the Patina JS plugin          |
-| `.oxlintrc.unused-vars.json` | Dedicated probe config for `no-unused-vars` on a Vue SFC       |
-| `src/HasPatinaErrors.vue`    | Sample SFC that intentionally triggers Patina diagnostics      |
-| `src/Clean.vue`              | Clean success-case sample                                      |
-| `src/UnusedVarProbe.vue`     | Probe file for current `no-unused-vars` behavior on `.vue`     |
-| `README.md`                  | Run instructions and current limitations                       |
+| File                         | Description                                                  |
+| ---------------------------- | ------------------------------------------------------------ |
+| `.oxlintrc.json`             | Oxlint config enabling `vue` and `oxlint-plugin-vize`        |
+| `.oxlintrc.unused-vars.json` | Dedicated probe config for `no-unused-vars` on a Vue SFC     |
+| `src/HasPatinaErrors.vue`    | Sample SFC that intentionally triggers Patina diagnostics    |
+| `src/Clean.vue`              | Clean success-case sample                                    |
+| `src/UnusedVarProbe.vue`     | Probe file for current `no-unused-vars` behavior on `.vue`   |
+| `README.md`                  | Run instructions and current limitations                     |
 
 ---
 

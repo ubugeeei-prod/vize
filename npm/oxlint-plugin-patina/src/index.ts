@@ -390,9 +390,10 @@ function createSourceSnippet(
   }
 
   const startColumn = Math.max(1, diagnostic.location.start.column);
-  const endColumn = diagnostic.location.start.line === diagnostic.location.end.line
-    ? Math.max(startColumn + 1, diagnostic.location.end.column)
-    : startColumn + 1;
+  const endColumn =
+    diagnostic.location.start.line === diagnostic.location.end.line
+      ? Math.max(startColumn + 1, diagnostic.location.end.column)
+      : startColumn + 1;
   const caretWidth = Math.max(1, endColumn - startColumn);
   const lineNumber = String(diagnostic.location.start.line);
   const gutter = `${lineNumber} | `;

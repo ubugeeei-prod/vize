@@ -6,9 +6,11 @@
     "ensure:deps": "node ./scripts/ensure-built.mjs",
     "prelint": "pnpm run ensure:deps",
     "prelint:clean": "pnpm run ensure:deps",
+    "prelint:raw": "pnpm run ensure:deps",
     "prelint:json": "pnpm run ensure:deps",
-    "lint": "oxlint -c .oxlintrc.json src",
-    "lint:clean": "oxlint -c .oxlintrc.json src/Clean.vue",
+    "lint": "node ./scripts/run-lint.mjs src",
+    "lint:clean": "node ./scripts/run-lint.mjs src/Clean.vue",
+    "lint:raw": "oxlint -c .oxlintrc.json src",
     "lint:json": "oxlint -c .oxlintrc.json -f json src",
     "lint:unused-vars-probe": "oxlint -c .oxlintrc.unused-vars.json src/UnusedVarProbe.vue"
   },
