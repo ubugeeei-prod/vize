@@ -396,10 +396,11 @@ function createSourceSnippet(
       : startColumn + 1;
   const caretWidth = Math.max(1, endColumn - startColumn);
   const lineNumber = String(diagnostic.location.start.line);
-  const gutter = `${lineNumber} | `;
-  const caretIndent = " ".repeat(gutter.length + startColumn - 1);
+  const sourceGutter = `${lineNumber} | `;
+  const caretGutter = `${" ".repeat(lineNumber.length)} | `;
+  const caretIndent = " ".repeat(startColumn - 1);
 
-  return `${gutter}${line}\n${caretIndent}${"^".repeat(caretWidth)}`;
+  return `${sourceGutter}${line}\n${caretGutter}${caretIndent}${"^".repeat(caretWidth)}`;
 }
 
 function createOxlintDiagnostic(

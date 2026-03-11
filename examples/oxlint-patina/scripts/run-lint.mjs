@@ -127,18 +127,13 @@ function createSnippetFromLabel(filename, label) {
     return null;
   }
 
-  const gutter = `${line} | `;
+  const lineNumber = String(line);
+  const sourceGutter = `${lineNumber} | `;
+  const caretGutter = `${" ".repeat(lineNumber.length)} | `;
   const maxWidth = Math.max(1, sourceLine.length - column + 1);
   const caretWidth = Math.max(1, Math.min(length || 1, maxWidth));
-  const caretIndent = " ".repeat(gutter.length + column - 1);
-  return `${gutter}${sourceLine}\n${caretIndent}${"^".repeat(caretWidth)}`;
-}
-
-function indentBlock(text, indent = "  ") {
-  return text
-    .split("\n")
-    .map((line) => `${indent}${line}`)
-    .join("\n");
+  const caretIndent = " ".repeat(column - 1);
+  return `${sourceGutter}${sourceLine}\n${caretGutter}${caretIndent}${"^".repeat(caretWidth)}`;
 }
 
 function colorSnippet(snippet, severity) {
@@ -152,9 +147,9 @@ function colorSnippet(snippet, severity) {
         return `${color(sourceMatch[1], ANSI.gray)}${sourceMatch[2]}`;
       }
 
-      const caretMatch = /^(\s*)(\^+)$/u.exec(line);
+      const caretMatch = /^(\s*\|\s*)(\^+)$/u.exec(line);
       if (caretMatch) {
-        return `${caretMatch[1]}${color(caretMatch[2], ANSI.bold, caretColor)}`;
+        return `${color(caretMatch[1], ANSI.gray)}${color(caretMatch[2], ANSI.bold, caretColor)}`;
       }
 
       return line;
@@ -178,10 +173,10 @@ function colorBody(text, severity) {
         return `${color(sourceMatch[1], ANSI.gray)}${sourceMatch[2]}`;
       }
 
-      const caretMatch = /^(\s*)(\^+)$/u.exec(line);
+      const caretMatch = /^(\s*\|\s*)(\^+)$/u.exec(line);
       if (caretMatch) {
         const caretColor = severity === "error" ? ANSI.red : ANSI.yellow;
-        return `${caretMatch[1]}${color(caretMatch[2], ANSI.bold, caretColor)}`;
+        return `${color(caretMatch[1], ANSI.gray)}${color(caretMatch[2], ANSI.bold, caretColor)}`;
       }
 
       return line;
@@ -206,15 +201,15 @@ function renderDiagnostic(diagnostic) {
   const header = `${severityTag} ${color(code, ANSI.bold)} ${color(`${filename}${locationSuffix}`, ANSI.cyan)}`;
   const body = colorBody(extracted ? extracted.body : diagnostic.message, severity);
 
-  const lines = [header, indentBlock(body)];
+  const lines = [header, body];
 
   if (!extracted) {
     const snippet = createSnippetFromLabel(filename, diagnostic.labels?.[0]);
     if (snippet) {
-      lines.push(indentBlock(`${color("Source:", ANSI.bold, ANSI.blue)}\n${indentBlock(colorSnippet(snippet, severity))}`));
+      lines.push(`${color("Source:", ANSI.bold, ANSI.blue)}\n${colorSnippet(snippet, severity)}`);
     }
     if (diagnostic.help) {
-      lines.push(indentBlock(`${color("Help:", ANSI.bold, ANSI.magenta)} ${diagnostic.help}`));
+      lines.push(`${color("Help:", ANSI.bold, ANSI.magenta)} ${diagnostic.help}`);
     }
   }
 
