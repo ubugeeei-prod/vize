@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "plugins": ["vue"],
+  "jsPlugins": ["../../npm/oxlint-plugin-patina/dist/index.js"],
+  "settings": {
+    "patina": {
+      "locale": "en"
+    }
+  },
+  "rules": {
+    "no-console": "warn",
+    "patina/vue/require-v-for-key": "error",
+    "patina/vue/no-v-html": "warn",
+    "patina/vue/no-duplicate-attributes": "error"
+  }
+}

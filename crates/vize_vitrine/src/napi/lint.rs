@@ -11,7 +11,10 @@
 )]
 
 use glob::glob;
-use napi::bindgen_prelude::Result;
+use napi::{
+    bindgen_prelude::{Error, Object, Result, Status},
+    Env,
+};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use std::{
@@ -51,6 +54,158 @@ pub struct LintResultNapi {
     pub file_count: u32,
     /// Time in milliseconds
     pub time_ms: f64,
+}
+
+/// Single-file Patina lint options for NAPI
+#[napi(object)]
+#[derive(Default)]
+pub struct PatinaLintOptionsNapi {
+    /// Filename used for diagnostics
+    pub filename: Option<String>,
+    /// Locale code: "en", "ja", or "zh"
+    pub locale: Option<String>,
+    /// Optional list of Patina rule names to enable
+    pub enabled_rules: Option<Vec<String>>,
+}
+
+fn patina_locale_from_option(locale: Option<&str>) -> vize_patina::Locale {
+    locale
+        .and_then(vize_patina::Locale::parse)
+        .unwrap_or_default()
+}
+
+fn create_position_object(env: Env, line: u32, column: u32, offset: u32) -> Result<Object> {
+    let mut obj = env.create_object()?;
+    obj.set("line", line)?;
+    obj.set("column", column)?;
+    obj.set("offset", offset)?;
+    Ok(obj)
+}
+
+fn create_location_object(
+    env: Env,
+    start_line: u32,
+    start_column: u32,
+    start_offset: u32,
+    end_line: u32,
+    end_column: u32,
+    end_offset: u32,
+) -> Result<Object> {
+    let mut obj = env.create_object()?;
+    obj.set(
+        "start",
+        create_position_object(env, start_line, start_column, start_offset)?,
+    )?;
+    obj.set(
+        "end",
+        create_position_object(env, end_line, end_column, end_offset)?,
+    )?;
+    Ok(obj)
+}
+
+/// Lint a single Vue SFC with Patina and return structured diagnostics.
+#[napi(js_name = "lintPatinaSfc")]
+pub fn lint_patina_sfc(
+    env: Env,
+    source: String,
+    options: Option<PatinaLintOptionsNapi>,
+) -> Result<Object> {
+    use vize_patina::{Linter, LspEmitter, Severity};
+
+    let opts = options.unwrap_or_default();
+    let filename = opts.filename.unwrap_or_else(|| "anonymous.vue".to_string());
+    let locale = patina_locale_from_option(opts.locale.as_deref());
+    let enabled_rules = opts
+        .enabled_rules
+        .map(|rules| rules.into_iter().map(Into::into).collect());
+    let linter = Linter::new()
+        .with_locale(locale)
+        .with_enabled_rules(enabled_rules);
+    let result = linter.lint_sfc(&source, &filename);
+    let lsp_diagnostics = LspEmitter::to_lsp_diagnostics_with_source(&result, &source);
+
+    if result.diagnostics.len() != lsp_diagnostics.len() {
+        return Err(Error::new(
+            Status::GenericFailure,
+            "Patina diagnostic conversion produced mismatched location metadata".to_string(),
+        ));
+    }
+
+    let mut output = env.create_object()?;
+    let result_filename: &str = result.filename.as_ref();
+    output.set("filename", result_filename)?;
+    output.set("errorCount", result.error_count as u32)?;
+    output.set("warningCount", result.warning_count as u32)?;
+
+    let mut diagnostics = env.create_array(result.diagnostics.len() as u32)?;
+    for (index, (diagnostic, lsp)) in result
+        .diagnostics
+        .iter()
+        .zip(lsp_diagnostics.iter())
+        .enumerate()
+    {
+        let mut obj = env.create_object()?;
+        obj.set("rule", diagnostic.rule_name)?;
+        obj.set(
+            "severity",
+            match diagnostic.severity {
+                Severity::Error => "error",
+                Severity::Warning => "warning",
+            },
+        )?;
+        let message: &str = diagnostic.message.as_ref();
+        obj.set("message", message)?;
+        obj.set(
+            "location",
+            create_location_object(
+                env,
+                lsp.range.start.line + 1,
+                lsp.range.start.character + 1,
+                diagnostic.start,
+                lsp.range.end.line + 1,
+                lsp.range.end.character + 1,
+                diagnostic.end,
+            )?,
+        )?;
+        if let Some(help) = diagnostic.help.as_ref() {
+            let help_text: &str = help.as_ref();
+            obj.set("help", help_text)?;
+        } else {
+            obj.set("help", env.get_null()?)?;
+        }
+        diagnostics.set(index as u32, obj)?;
+    }
+
+    output.set("diagnostics", diagnostics)?;
+    Ok(output)
+}
+
+/// Get Patina's currently registered rule metadata.
+#[napi(js_name = "getPatinaRules")]
+pub fn get_patina_rules(env: Env) -> Result<napi::bindgen_prelude::Array> {
+    use vize_patina::{Linter, Severity};
+
+    let linter = Linter::new();
+    let mut rules = env.create_array(linter.rules().len() as u32)?;
+
+    for (index, rule) in linter.rules().iter().enumerate() {
+        let meta = rule.meta();
+        let mut obj = env.create_object()?;
+        obj.set("name", meta.name)?;
+        obj.set("description", meta.description)?;
+        obj.set("category", format!("{:?}", meta.category))?;
+        obj.set("fixable", meta.fixable)?;
+        obj.set(
+            "defaultSeverity",
+            match meta.default_severity {
+                Severity::Error => "error",
+                Severity::Warning => "warning",
+            },
+        )?;
+        rules.set(index as u32, obj)?;
+    }
+
+    Ok(rules)
 }
 
 /// Lint Vue SFC files matching patterns (native multithreading, .gitignore-aware)

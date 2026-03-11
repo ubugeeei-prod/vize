@@ -176,6 +176,53 @@ import Button from "./Button.vue";
 
 ---
 
+## Oxlint + Patina Example
+
+`examples/oxlint-patina/` contains the smallest runnable setup for executing Patina from Oxlint through `@vizejs/oxlint-plugin-patina`.
+
+### Setup
+
+Run this from the repository root:
+
+```bash
+pnpm install
+pnpm -C npm/vize-native build
+pnpm -C npm/oxlint-plugin-patina build
+```
+
+### Run
+
+```bash
+pnpm -C examples/oxlint-patina lint
+```
+
+This command intentionally exits non-zero because it includes `src/HasPatinaErrors.vue`. It mixes Oxlint core output with Patina output. If you only want the success path:
+
+```bash
+pnpm -C examples/oxlint-patina lint:clean
+```
+
+To probe `no-unused-vars` on a Vue SFC:
+
+```bash
+pnpm -C examples/oxlint-patina lint:unused-vars-probe
+```
+
+Current observed behavior in this repository: that probe reports `0` findings on `.vue`, even though the sample file contains an unused binding.
+
+### Files
+
+| File                         | Description                                                    |
+| ---------------------------- | -------------------------------------------------------------- |
+| `.oxlintrc.json`             | Oxlint config enabling `vue` and the Patina JS plugin          |
+| `.oxlintrc.unused-vars.json` | Dedicated probe config for `no-unused-vars` on a Vue SFC       |
+| `src/HasPatinaErrors.vue`    | Sample SFC that intentionally triggers Patina diagnostics      |
+| `src/Clean.vue`              | Clean success-case sample                                      |
+| `src/UnusedVarProbe.vue`     | Probe file for current `no-unused-vars` behavior on `.vue`     |
+| `README.md`                  | Run instructions and current limitations                       |
+
+---
+
 ## Troubleshooting
 
 ### `vize` Command Not Found

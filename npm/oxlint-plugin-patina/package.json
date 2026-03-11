@@ -1,0 +1,55 @@
+{
+  "name": "@vizejs/oxlint-plugin-patina",
+  "version": "0.26.0",
+  "description": "Oxlint JS Plugin bridge for Vize Patina",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "test": "pnpm run build && node --import tsx src/test.ts",
+    "lint": "oxlint --deny-warnings --type-aware --tsconfig tsconfig.json",
+    "lint:fix": "oxlint --type-aware --tsconfig tsconfig.json --fix",
+    "fmt": "oxfmt --write src tsdown.config.ts",
+    "fmt:check": "oxfmt src tsdown.config.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei/vize",
+    "directory": "npm/oxlint-plugin-patina"
+  },
+  "keywords": [
+    "oxlint",
+    "plugin",
+    "vue",
+    "vize",
+    "patina",
+    "lint"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "^1.53.0",
+    "@vizejs/native": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsdown": "^0.9.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.6.0"
+  }
+}
