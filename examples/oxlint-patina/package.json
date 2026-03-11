@@ -3,16 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "ensure:deps": "node ./scripts/ensure-built.mjs",
-    "prelint": "pnpm run ensure:deps",
-    "prelint:clean": "pnpm run ensure:deps",
-    "prelint:raw": "pnpm run ensure:deps",
-    "prelint:json": "pnpm run ensure:deps",
-    "lint": "node ./scripts/run-lint.mjs src",
-    "lint:clean": "node ./scripts/run-lint.mjs src/Clean.vue",
-    "lint:raw": "oxlint -c .oxlintrc.json src",
-    "lint:json": "oxlint -c .oxlintrc.json -f json src",
-    "lint:unused-vars-probe": "oxlint -c .oxlintrc.unused-vars.json src/UnusedVarProbe.vue"
+    "build:deps": "pnpm --filter @vizejs/native build && pnpm --filter @vizejs/oxlint-plugin-patina build",
+    "prelint": "pnpm run build:deps",
+    "prelint:clean": "pnpm run build:deps",
+    "prelint:json": "pnpm run build:deps",
+    "prelint:unused-vars-probe": "pnpm run build:deps",
+    "lint": "pnpm exec oxlint -c .oxlintrc.json src",
+    "lint:clean": "pnpm exec oxlint -c .oxlintrc.json src/Clean.vue",
+    "lint:json": "pnpm exec oxlint -c .oxlintrc.json -f json src",
+    "lint:unused-vars-probe": "pnpm exec oxlint -c .oxlintrc.unused-vars.json src/UnusedVarProbe.vue"
   },
   "devDependencies": {
     "oxlint": "^1.42.0"

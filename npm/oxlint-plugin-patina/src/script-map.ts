@@ -1,11 +1,6 @@
 import type { Diagnostic } from "@oxlint/plugins";
 
-import type {
-  LineColumn,
-  PatinaDiagnostic,
-  ScriptBlock,
-  SingleScriptMap,
-} from "./model.js";
+import type { LineColumn, PatinaDiagnostic, ScriptBlock, SingleScriptMap } from "./model.js";
 
 export function createSingleScriptMap(
   source: string,

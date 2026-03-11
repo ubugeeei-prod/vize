@@ -1,21 +1,13 @@
 import { definePlugin, defineRule, type Diagnostic } from "@oxlint/plugins";
 
 import { getPatinaRules } from "./binding.js";
-import {
-  getFileState,
-  getDiagnosticsForRule,
-  getScriptMap,
-  type FileState,
-} from "./file-state.js";
+import { getFileState, getDiagnosticsForRule, getScriptMap, type FileState } from "./file-state.js";
 import { formatPatinaMessage } from "./format.js";
 import type { PatinaDiagnostic, PatinaRuleMeta } from "./model.js";
 import { createSourceSnippet, mapToScriptLoc } from "./script-map.js";
 import { isVueLikeFile } from "./settings.js";
 
-function createOxlintDiagnostic(
-  diagnostic: PatinaDiagnostic,
-  state: FileState,
-): Diagnostic {
+function createOxlintDiagnostic(diagnostic: PatinaDiagnostic, state: FileState): Diagnostic {
   const scriptMap = getScriptMap(state);
   const loc = mapToScriptLoc(diagnostic, scriptMap);
   const message = formatPatinaMessage(

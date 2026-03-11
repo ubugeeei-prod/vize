@@ -1,11 +1,6 @@
 import { createRequire } from "node:module";
 
-import type {
-  PatinaBinding,
-  PatinaLintResult,
-  PatinaRuleMeta,
-  PatinaSettings,
-} from "./model.js";
+import type { PatinaBinding, PatinaLintResult, PatinaRuleMeta, PatinaSettings } from "./model.js";
 
 const require = createRequire(import.meta.url);
 
