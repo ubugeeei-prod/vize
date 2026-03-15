@@ -1,0 +1,4 @@
+<workspaceRoot>/__agent_only/oxlint-plugin-vize-test/DualScript.vue
+  2:1  error  Options API component declarations are not supported (at <script>:2:16)  vize(script/no-options-api)
+
+✖ 1 problem (1 error, 0 warnings)

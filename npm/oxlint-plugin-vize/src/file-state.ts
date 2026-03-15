@@ -3,13 +3,19 @@ import fs from "node:fs";
 import type { Context } from "@oxlint/plugins";
 
 import { lintPatina } from "./binding.js";
-import type { PatinaDiagnostic, SingleScriptMap } from "./model.js";
+import type { PatinaDiagnostic, SfcBlock, SingleScriptMap } from "./model.js";
+import { extractSfcBlocks } from "./sfc-blocks.js";
 import { createSingleScriptMap } from "./script-map.js";
-import { getCacheKey, getPatinaSettings } from "./settings.js";
+import { getCacheKey, getVizeSettings, isIncrementalPreset } from "./settings.js";
+import { resolveWorkaroundSource } from "./workaround.js";
 
 export interface FileState {
+  filename: string;
   source: string;
   extractedScript: string;
+  usesOriginalLocations: boolean;
+  reportedRules: Set<string>;
+  sfcBlocks: readonly SfcBlock[] | undefined;
   scriptMap: SingleScriptMap | null | undefined;
   allDiagnosticsByRule: Map<string, PatinaDiagnostic[]> | null;
   partialDiagnosticsByRule: Map<string, readonly PatinaDiagnostic[]>;
@@ -20,17 +26,22 @@ const fileStateCache = new Map<string, FileState>();
 const EMPTY_DIAGNOSTICS: readonly PatinaDiagnostic[] = [];
 
 export function getFileState(context: Context): FileState {
-  const settings = getPatinaSettings(context);
-  const cacheKey = getCacheKey(context.physicalFilename, settings);
+  const settings = getVizeSettings(context);
+  const physicalSource = fs.readFileSync(context.physicalFilename, "utf8");
+  const resolvedSource = resolveWorkaroundSource(physicalSource, context.physicalFilename);
+  const cacheKey = getCacheKey(resolvedSource.filename, settings);
   const cached = fileStateCache.get(cacheKey);
   if (cached) {
     return cached;
   }
 
-  const source = fs.readFileSync(context.physicalFilename, "utf8");
   const state: FileState = {
-    source,
+    filename: resolvedSource.filename,
+    source: resolvedSource.source,
     extractedScript: context.sourceCode.text,
+    usesOriginalLocations: resolvedSource.usesOriginalLocations,
+    reportedRules: new Set(),
+    sfcBlocks: undefined,
     scriptMap: undefined,
     allDiagnosticsByRule: null,
     partialDiagnosticsByRule: new Map(),
@@ -54,13 +65,18 @@ export function getDiagnosticsForRule(
     return cached;
   }
 
-  const settings = getPatinaSettings(context);
+  const settings = getVizeSettings(context);
+  if (isIncrementalPreset(settings)) {
+    const diagnostics = lintPatina(state.source, state.filename, settings, [ruleName]).diagnostics;
+    const indexedDiagnostics = indexDiagnosticsByRule(diagnostics);
+    const ruleDiagnostics = indexedDiagnostics.get(ruleName) ?? EMPTY_DIAGNOSTICS;
+    state.partialDiagnosticsByRule.set(ruleName, ruleDiagnostics);
+    return ruleDiagnostics;
+  }
 
   if (state.requestedRules.size === 0) {
     state.requestedRules.add(ruleName);
-    const diagnostics = lintPatina(state.source, context.physicalFilename, settings, [
-      ruleName,
-    ]).diagnostics;
+    const diagnostics = lintPatina(state.source, state.filename, settings, [ruleName]).diagnostics;
     const indexedDiagnostics = indexDiagnosticsByRule(diagnostics);
     const ruleDiagnostics = indexedDiagnostics.get(ruleName) ?? EMPTY_DIAGNOSTICS;
     state.partialDiagnosticsByRule.set(ruleName, ruleDiagnostics);
@@ -68,9 +84,8 @@ export function getDiagnosticsForRule(
   }
 
   state.requestedRules.add(ruleName);
-  state.allDiagnosticsByRule = indexDiagnosticsByRule(
-    lintPatina(state.source, context.physicalFilename, settings).diagnostics,
-  );
+  const allDiagnostics = lintPatina(state.source, state.filename, settings).diagnostics;
+  state.allDiagnosticsByRule = indexDiagnosticsByRule(allDiagnostics);
   state.partialDiagnosticsByRule.clear();
   return state.allDiagnosticsByRule.get(ruleName) ?? EMPTY_DIAGNOSTICS;
 }
@@ -82,6 +97,24 @@ export function getScriptMap(state: FileState): SingleScriptMap | null {
 
   state.scriptMap = createSingleScriptMap(state.source, state.extractedScript);
   return state.scriptMap;
+}
+
+export function getSfcBlocks(state: FileState): readonly SfcBlock[] {
+  if (state.sfcBlocks !== undefined) {
+    return state.sfcBlocks;
+  }
+
+  state.sfcBlocks = extractSfcBlocks(state.source);
+  return state.sfcBlocks;
+}
+
+export function markRuleAsReported(state: FileState, ruleName: string): boolean {
+  if (state.reportedRules.has(ruleName)) {
+    return false;
+  }
+
+  state.reportedRules.add(ruleName);
+  return true;
 }
 
 function indexDiagnosticsByRule(

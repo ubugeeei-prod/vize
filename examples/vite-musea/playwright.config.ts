@@ -29,7 +29,7 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: "pnpm dev",
+    command: "vp dev --config vite.app.config.ts",
     url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

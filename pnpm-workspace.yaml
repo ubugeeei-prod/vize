@@ -7,7 +7,7 @@ packages:
   - "npm/rspack-vize-plugin/example"
   - "npm/fresco/examples/*"
   - "examples/vite-musea"
-  - "examples/oxlint-patina"
+  - "examples/oxlint-vize"
   - "docs"
   - "tests"
   - "bench"

@@ -1,0 +1,5 @@
+<workspaceRoot>/__agent_only/oxlint-plugin-vize-test/IncrementalCombo.vue
+  2:1   error  Style block should use `scoped` or `module` attribute to prevent CSS leaking (at SFC:13:1)  vize(vue/require-scoped-style)
+  2:17  error  Options API component declarations are not supported  vize(script/no-options-api)
+
+✖ 2 problems (2 errors, 0 warnings)

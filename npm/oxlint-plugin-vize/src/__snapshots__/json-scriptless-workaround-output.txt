@@ -1,0 +1,6 @@
+{ "diagnostics": [{"message": "Elements in iteration expect to have 'v-bind:key' directives.\n    Details:\n      Element: <li>","code": "vize(vue/require-v-for-key)","severity": "error","causes": [],"filename": "Scriptless.vue","labels": [{"span": {"offset": 220,"length": 21,"line": 3,"column": 9}}],"related": []}],
+              "number_of_files": 1,
+              "number_of_rules": 63,
+              "threads_count": 12,
+              "start_time": 0
+            }

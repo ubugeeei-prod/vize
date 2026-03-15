@@ -3,6 +3,7 @@ import { defineConfig } from "vite-plus";
 const checkedPackages = [
   "./npm/vize",
   "./npm/vite-plugin-vize",
+  "./npm/oxlint-plugin-vize",
   "./npm/vite-plugin-musea",
   "./npm/unplugin-vize",
   "./npm/rspack-vize-plugin",
@@ -13,12 +14,15 @@ const checkedPackages = [
   "./npm/vite-plugin-vize/example",
   "./npm/rspack-vize-plugin/example",
   "./examples/vite-musea",
+  "./examples/oxlint-vize",
   "./playground",
 ];
+const ciCheckedPackages = checkedPackages.filter((pkg) => pkg !== "./examples/oxlint-vize");
 
 const packedPackages = [
   "./npm/vize",
   "./npm/vite-plugin-vize",
+  "./npm/oxlint-plugin-vize",
   "./npm/vite-plugin-musea",
   "./npm/unplugin-vize",
   "./npm/rspack-vize-plugin",
@@ -30,6 +34,7 @@ const packedPackages = [
 
 const testedPackages = [
   "./npm/vite-plugin-vize",
+  "./npm/oxlint-plugin-vize",
   "./npm/unplugin-vize",
   "./npm/rspack-vize-plugin",
 ];
@@ -116,6 +121,9 @@ const devApp = (target?: string) =>
 
 const publishWithVersionTag = (cwd: string, publishCommand: string) =>
   `sh -c 'cd ${cwd} && VERSION=$(node -p "require(\\\"./package.json\\\").version") && case "$VERSION" in *-alpha*) ${publishCommand} --tag alpha ;; *-beta*) ${publishCommand} --tag beta ;; *-rc*) ${publishCommand} --tag rc ;; *) ${publishCommand} ;; esac'`;
+
+const injectNativeOptionalDependencyVersions = (cwd: string) =>
+  `node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('${cwd}/package.json', 'utf8')); const version = pkg.version; if (pkg.optionalDependencies) { for (const dep of Object.keys(pkg.optionalDependencies)) { if (dep.startsWith('@vizejs/native-')) { pkg.optionalDependencies[dep] = version; } } } fs.writeFileSync('${cwd}/package.json', JSON.stringify(pkg, null, 2) + '\\n');"`;
 
 const setupTasks = {
   setup: noCacheTask("vp install"),
@@ -213,6 +221,11 @@ const checkTasks = {
   check: task(runInPackages("check", checkedPackages, { concurrencyLimit: 1 }), {
     input: cacheInputs.jsChecks,
   }),
+  // The oxlint example intentionally exits non-zero for its default lint script,
+  // so CI checks every package except that runnable failure-case fixture.
+  "check:ci": task(runInPackages("check", ciCheckedPackages, { concurrencyLimit: 1 }), {
+    input: cacheInputs.jsChecks,
+  }),
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
   "check:rust": task("cargo check --workspace", { input: cacheInputs.rust }),
   clippy: task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
@@ -240,7 +253,12 @@ const releaseTasks = {
   "publish:vite-plugin": noCacheTask(
     `${runTask("build:vite-plugin")} && ${publishWithVersionTag("npm/vite-plugin-vize", "pnpm publish --access public --no-git-checks")}`,
   ),
-  "publish:npm": noCacheTask(runTasks("publish:wasm", "publish:native", "publish:vite-plugin")),
+  "publish:oxlint-plugin": noCacheTask(
+    `${runInPackages("build", ["./npm/oxlint-plugin-vize"])} && ${injectNativeOptionalDependencyVersions("npm/oxlint-plugin-vize")} && ${publishWithVersionTag("npm/oxlint-plugin-vize", "pnpm publish --access public --no-git-checks")}`,
+  ),
+  "publish:npm": noCacheTask(
+    runTasks("publish:wasm", "publish:native", "publish:vite-plugin", "publish:oxlint-plugin"),
+  ),
   "publish:crates": noCacheTask("bash ./scripts/publish-crates.sh"),
   publish: noCacheTask(runTasks("publish:npm", "publish:crates")),
 };

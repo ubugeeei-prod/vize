@@ -1,0 +1,4 @@
+<workspaceRoot>/__agent_only/oxlint-plugin-vize-test/OptionsApi.vue
+  2:17  error  Options API component declarations are not supported  vize(script/no-options-api)
+
+✖ 1 problem (1 error, 0 warnings)
