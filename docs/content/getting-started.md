@@ -21,14 +21,19 @@ Vize (_/viːz/_) is an unofficial, high-performance Vue.js toolchain written ent
 
 All of these share a single parser, a single AST representation, and a single configuration surface — eliminating the overhead and inconsistencies of maintaining separate tools.
 
+> **Editor support note:** For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
+> `vize lsp` is available, but it should still be treated as experimental until the LSP and type-checking behavior stabilizes.
+
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 20+
-- [pnpm](https://pnpm.io/) 9+ (recommended) or npm
+- [Node.js](https://nodejs.org/) 24+
+- [pnpm](https://pnpm.io/) 10+ (recommended) or npm
 
 For building from source:
 
 - [Rust](https://rustup.rs/) 1.80+
+
+For local development in this repository, Node is pinned in `.node-version`, and `vp` / Vite+ reads it automatically.
 
 ## Installation
 
@@ -50,36 +55,45 @@ Vize is distributed as multiple npm packages, each serving a specific integratio
 
 ```bash
 # Main package (includes CLI)
-npm install vize
+pnpm add vize
 
-# Native bindings (Node.js) — used by the Vite plugin
-npm install @vizejs/native
+# Native bindings (Node.js) — direct NAPI access from Node
+pnpm add @vizejs/native
 
 # WASM bindings (Browser) — for playgrounds and in-browser compilation
-npm install @vizejs/wasm
+pnpm add @vizejs/wasm
 
 # Vite plugin — drop-in replacement for @vitejs/plugin-vue
-npm install @vizejs/vite-plugin vize
+pnpm add @vizejs/vite-plugin vize
+
+# Oxlint bridge — planned alpha release
+# Once the alpha is published:
+pnpm add -D oxlint oxlint-plugin-vize@alpha
 
 # Experimental unplugin integration — rollup / webpack / esbuild
-npm install @vizejs/unplugin
+pnpm add @vizejs/unplugin
 
 # Experimental Rspack integration — dedicated path
-npm install @vizejs/rspack-plugin @rspack/core
+pnpm add @vizejs/rspack-plugin @rspack/core
 
 # Nuxt module — first-class Nuxt integration
-npm install @vizejs/nuxt
+pnpm add @vizejs/nuxt
 
 # Musea (component gallery)
-npm install @vizejs/vite-plugin-musea
+pnpm add @vizejs/vite-plugin-musea
 
 # MCP server (AI assistant integration)
-npm install @vizejs/musea-mcp-server
+pnpm add @vizejs/musea-mcp-server
 ```
+
+`@vizejs/native` is useful when you want to call Vize directly from Node. Packages like `@vizejs/vite-plugin` and `oxlint-plugin-vize` resolve their native bindings for you.
 
 > **Bundler status:** `@vizejs/vite-plugin` is the recommended integration today.
 > `@vizejs/unplugin` and `@vizejs/rspack-plugin` are available for non-Vite build systems, but they are still unstable.
 > Rspack intentionally uses the dedicated `@vizejs/rspack-plugin` path because its loader and CSS integration are Rspack-specific.
+>
+> **Oxlint plugin status:** `oxlint-plugin-vize` is targeting an alpha npm release first.
+> As of March 21, 2026 it is not yet published, and until [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465) is fixed, `oxlint-vize -f stylish` is the recommended human-readable workflow.
 
 ## Quick Start
 
@@ -186,6 +200,37 @@ Vite remains the recommended path if you need the most complete and best-tested 
 
 See [Experimental Bundler Integrations](./guide/unplugin.md) for setup details and caveats.
 
+### Using with Oxlint
+
+Run Vize's Vue diagnostics inside Oxlint's JS plugin system:
+
+```bash
+# Once the alpha is published:
+pnpm add -D oxlint oxlint-plugin-vize@alpha
+```
+
+```json
+{
+  "plugins": ["vue"],
+  "jsPlugins": ["oxlint-plugin-vize"],
+  "rules": {
+    "eqeqeq": "error",
+    "vize/vue/require-v-for-key": "error",
+    "vize/vue/no-v-html": "warn",
+    "no-console": "warn"
+  },
+  "settings": {
+    "vize": {
+      "locale": "ja",
+      "preset": "general-recommended",
+      "helpLevel": "short"
+    }
+  }
+}
+```
+
+This keeps Oxlint's built-in JavaScript and TypeScript rules running normally, including checks like `eqeqeq` and `no-console`, while adding Vize's Vue-specific diagnostics through the same run. `preset` defaults to `"general-recommended"`, but you can switch it to `"essential"` for the narrowest correctness-focused pass, `"opinionated"` when you want stricter built-in script checks too, or `"incremental"` when you want to enable Vize rules one by one from your Oxlint config. For now, prefer `pnpm exec oxlint-vize -f stylish` for terminal usage, and treat machine-readable output as best-effort until Oxlint's JS plugin range reporting improves upstream. See [Oxlint Plugin](./guide/oxlint.md) for details and current limitations.
+
 ### Using with Nuxt
 
 Vize provides a dedicated Nuxt module with first-class support:
@@ -235,7 +280,6 @@ vp run --workspace-root dev:playground  # Start playground
 ```bash
 git clone https://github.com/ubugeeei/vize.git
 cd vize
-vp env install
 vp install
 
 # Build CLI
@@ -273,6 +317,7 @@ vize/
 - [Philosophy](./philosophy.md) — Design principles and vision
 - [CLI Reference](./guide/cli.md) — Full command documentation
 - [Vite Plugin](./guide/vite-plugin.md) — Configuration options
+- [Oxlint Plugin](./guide/oxlint.md) — Oxlint bridge for Vize diagnostics
 - [Experimental Bundler Integrations](./guide/unplugin.md) — rollup / webpack / esbuild / Rspack status
 - [Musea](./guide/musea.md) — Component gallery guide
 - [Architecture](./architecture/overview.md) — How Vize works internally

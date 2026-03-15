@@ -197,6 +197,9 @@ Both targets expose the same compilation pipeline, ensuring consistent output.
 | `@vizejs/native`            | `vize_vitrine` (napi) | Node.js NAPI bindings                                      |
 | `@vizejs/wasm`              | `vize_vitrine` (wasm) | WASM bindings for browser                                  |
 | `@vizejs/vite-plugin`       | —                     | Vite plugin (drop-in replacement for `@vitejs/plugin-vue`) |
+| `oxlint-plugin-vize`        | —                     | Oxlint JS plugin bridge for Vize Patina diagnostics        |
 | `@vizejs/nuxt`              | —                     | Nuxt module (first-class Nuxt integration)                 |
 | `@vizejs/vite-plugin-musea` | —                     | Musea Vite plugin                                          |
 | `@vizejs/musea-mcp-server`  | —                     | MCP server for AI assistant integration                    |
+
+`oxlint-plugin-vize` is being prepared for an alpha npm release. When published, it will pull platform-specific optional dependencies on `@vizejs/native-*`, so `pnpm add -D oxlint oxlint-plugin-vize@alpha` will be enough for most consumers.

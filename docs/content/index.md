@@ -26,6 +26,9 @@ features:
   - title: Vite Plugin
     details: Drop-in replacement for @vitejs/plugin-vue with native compilation speed. No code changes required.
     link: guide/vite-plugin.md
+  - title: Oxlint Plugin
+    details: Run Vize's Vue diagnostics inside Oxlint and combine them with OXC's JS and TS rules in one pass.
+    link: guide/oxlint.md
   - title: Experimental Bundler Integrations
     details: rollup, webpack, esbuild, and a dedicated Rspack path exist, but Vite remains the recommended and most stable integration.
     link: guide/unplugin.md

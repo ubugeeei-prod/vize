@@ -187,6 +187,8 @@ Patina focuses on Vue-specific template rules. For broader JavaScript/TypeScript
 - **Patina** — Vue template directives, accessibility, component best practices
 - **oxlint** — JavaScript/TypeScript rules (no-unused-vars, no-console, etc.)
 
+If you want both in one Oxlint run, use [`oxlint-plugin-vize`](./oxlint.md). It bridges Vize's Vue diagnostics into Oxlint's JS plugin system so Oxlint core rules and Vize rules can report together.
+
 ## Type Check
 
 Type check Vue SFC files using the built-in checker (Canon). Canon performs TypeScript-aware type inference for template expressions, props, and emits.

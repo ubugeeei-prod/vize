@@ -28,6 +28,10 @@
 > This project is under active development and is not yet ready for production use.
 > APIs and features may change without notice.
 
+> [!IMPORTANT]
+> For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
+> Treat `vize lsp` and the VS Code extension as experimental until the LSP and type-checking behavior stabilizes.
+
 > [!NOTE]
 > `@vizejs/vite-plugin` is the recommended bundler integration today.
 > `@vizejs/unplugin` (rollup / webpack / esbuild) and `@vizejs/rspack-plugin` are available, but non-Vite integrations are still unstable and should be tested carefully before adoption.
@@ -81,6 +85,24 @@ export default defineConfig({
 ```
 
 See the [documentation](https://vizejs.dev) for detailed usage, Vite plugin setup, experimental bundler integrations, WASM bindings, and more.
+
+## Oxlint Integration
+
+`oxlint-plugin-vize` is being prepared for a first alpha npm release. As of March 21, 2026, it is not published yet.
+
+Until the upstream Oxlint JS plugin reporting issue ([oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465)) is resolved, the recommended workflow is terminal-first and formatter-light:
+
+- prefer `oxlint-vize -f stylish` for mixed Oxlint + Vize output
+- treat machine-readable / full-fidelity original-SFC reporting as best-effort
+- use the local runnable example in `examples/oxlint-vize` if you want to try it from this repository today
+
+Once the alpha is published, install it with:
+
+```bash
+pnpm add -D oxlint oxlint-plugin-vize@alpha
+```
+
+`oxlint-plugin-vize` resolves the matching Vize native binding through platform-specific optional dependencies, so consumers do not need a separate `@vizejs/native` install.
 
 ## Nix Flake
 
