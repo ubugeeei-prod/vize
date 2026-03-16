@@ -722,9 +722,25 @@ fn parse_script_content(content: &str, is_ts: bool) -> (Vec<String>, Vec<String>
     let mut ts_type_pending_end = false; // True when type may have ended on `}` but need to check next line
                                          // Track template literals (backtick strings) to skip content inside them
     let mut in_template_literal = false;
+    // Track when previous line was `const/let/var xxx =` (assignment LHS on its own line).
+    // If the next line turns out to be a macro call, we remove the pending line from setup_lines.
+    let mut pending_assignment_lhs = false;
 
     for line in content.lines() {
         let trimmed = line.trim();
+
+        // If the previous line was a bare assignment LHS (`const x =`) and this line
+        // starts a macro call, remove the dangling LHS from setup_lines.
+        if pending_assignment_lhs {
+            pending_assignment_lhs = false;
+            if is_macro_call_line(trimmed)
+                || is_multiline_macro_start(trimmed)
+                || is_paren_macro_start(trimmed)
+            {
+                setup_lines.pop();
+            }
+        }
+
 
         // Handle multi-line macro calls
         if in_macro_call {
@@ -1204,6 +1220,17 @@ fn parse_script_content(content: &str, is_ts: bool) -> (Vec<String>, Vec<String>
             // Hoisting user-defined consts is problematic without proper AST-based scope tracking
             // Template-generated _hoisted_X consts are handled separately by template.hoisted
             setup_lines.push(line.to_compact_string());
+
+
+            // If this line is `const/let/var xxx =` (ends with `=`), the macro call
+            // might be on the next line. Mark it so we can remove it if needed.
+            if (trimmed.starts_with("const ")
+                || trimmed.starts_with("let ")
+                || trimmed.starts_with("var "))
+                && trimmed.ends_with('=')
+            {
+                pending_assignment_lhs = true;
+            }
         }
     }
 

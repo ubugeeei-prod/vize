@@ -1329,3 +1329,101 @@ export default {
         result.code
     );
 }
+
+
+#[test]
+fn test_multiline_define_props_no_duplicate_binding() {
+    // When `const props =` is on its own line followed by `defineProps<...>()`,
+    // the compiled output should NOT contain a dangling `const props =` line.
+    let source = r#"<script setup lang="ts">
+
+const props =
+  defineProps<{
+    name: string
+  }>()
+</script>
+
+<template>
+  <div>{{ name }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    // Count occurrences of `const props` — should appear exactly once
+    let count = result.code.matches("const props").count();
+    assert_eq!(
+        count, 1,
+        "Should have exactly one `const props` declaration, but found {}. Got:\n{}",
+        count, result.code
+    );
+
+    // The single occurrence should be `const props = __props`
+    assert!(
+        result.code.contains("const props = __props"),
+        "Should contain `const props = __props`. Got:\n{}",
+        result.code
+    );
+
+    // Should NOT contain a dangling `const props =` (with nothing after `=`)
+    let has_dangling = result.code.lines().any(|l| {
+        let t = l.trim();
+        t == "const props ="
+    });
+    assert!(
+        !has_dangling,
+        "Should not contain dangling `const props =` line. Got:\n{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_multiline_define_slots_no_duplicate_binding() {
+    let source = r#"<script setup lang="ts">
+import type { Slot } from 'vue'
+const slots =
+  defineSlots<{
+    default?: () => ReturnType<Slot>
+  }>()
+</script>
+
+<template>
+  <div>hello</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    // Count occurrences of `const slots` — should appear exactly once
+    let count = result.code.matches("const slots").count();
+    assert_eq!(
+        count, 1,
+        "Should have exactly one `const slots` declaration, but found {}. Got:\n{}",
+        count, result.code
+    );
+
+    // Should NOT contain a dangling `const slots =` line
+    let has_dangling = result.code.lines().any(|l| {
+        let t = l.trim();
+        t == "const slots ="
+    });
+    assert!(
+        !has_dangling,
+        "Should not contain dangling `const slots =` line. Got:\n{}",
+        result.code
+    );
+}
