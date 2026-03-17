@@ -3,9 +3,11 @@
 //! Handles parsing, minification, and printing of CSS using the LightningCSS engine.
 //! This module is only available when the `native` feature is enabled.
 
+use lightningcss::bundler::{Bundler, FileProvider};
 use lightningcss::printer::PrinterOptions;
-use lightningcss::stylesheet::{ParserFlags, ParserOptions, StyleSheet};
+use lightningcss::stylesheet::{MinifyOptions, ParserFlags, ParserOptions, StyleSheet};
 use lightningcss::targets::Targets;
+use std::path::Path;
 use vize_carton::{FxHashMap, String, ToCompactString};
 
 /// Convert major version to LightningCSS format (major << 16)
@@ -123,6 +125,103 @@ pub(crate) fn compile_css_internal(
             CssInternalResult {
                 code: css.to_compact_string(),
                 errors,
+                exports: None,
+            }
+        }
+    }
+}
+
+/// Bundle a CSS file and all its @import dependencies into a single stylesheet.
+pub(crate) fn bundle_css_internal(
+    entry_path: &str,
+    minify: bool,
+    targets: Targets,
+    css_modules: bool,
+    custom_media: bool,
+) -> CssInternalResult {
+    let mut flags = ParserFlags::NESTING | ParserFlags::DEEP_SELECTOR_COMBINATOR;
+    if custom_media {
+        flags |= ParserFlags::CUSTOM_MEDIA;
+    }
+
+    let css_modules_config = if css_modules {
+        Some(lightningcss::css_modules::Config {
+            pattern: lightningcss::css_modules::Pattern::default(),
+            ..Default::default()
+        })
+    } else {
+        None
+    };
+
+    let parser_options = ParserOptions {
+        flags,
+        css_modules: css_modules_config,
+        ..Default::default()
+    };
+
+    let fs = FileProvider::new();
+    let mut bundler = Bundler::new(&fs, None, parser_options);
+
+    let mut stylesheet = match bundler.bundle(Path::new(entry_path)) {
+        Ok(ss) => ss,
+        Err(e) => {
+            let message = format!("CSS bundle error: {:?}", e).to_compact_string();
+            return CssInternalResult {
+                code: String::from(""),
+                errors: vec![message],
+                exports: None,
+            };
+        }
+    };
+
+    if minify {
+        if let Err(e) = stylesheet.minify(MinifyOptions {
+            targets,
+            ..Default::default()
+        }) {
+            let message = format!("CSS minify error: {:?}", e).to_compact_string();
+            return CssInternalResult {
+                code: String::from(""),
+                errors: vec![message],
+                exports: None,
+            };
+        }
+    }
+
+    let printer_options = PrinterOptions {
+        minify,
+        targets,
+        ..Default::default()
+    };
+
+    match stylesheet.to_css(printer_options) {
+        Ok(result) => {
+            let exports = result.exports.map(|export_map| {
+                export_map
+                    .into_iter()
+                    .map(|(original, export)| {
+                        (
+                            original.to_compact_string(),
+                            VizeCssModuleExport {
+                                name: export.name.to_compact_string(),
+                                is_referenced: export.is_referenced,
+                            },
+                        )
+                    })
+                    .collect()
+            });
+
+            CssInternalResult {
+                code: result.code.into(),
+                errors: vec![],
+                exports,
+            }
+        }
+        Err(e) => {
+            let message = format!("CSS print error: {:?}", e).to_compact_string();
+            CssInternalResult {
+                code: String::from(""),
+                errors: vec![message],
                 exports: None,
             }
         }

@@ -50,7 +50,7 @@ pub mod types;
 
 // Re-exports for public API
 pub use compile::{compile_sfc, ScriptCompileResult};
-pub use css::{compile_css, compile_style_block, CssCompileOptions, CssCompileResult, CssTargets};
+pub use css::{bundle_css, compile_css, compile_style_block, CssCompileOptions, CssCompileResult, CssTargets};
 pub use parse::parse_sfc;
 pub use types::{
     BindingMetadata, BindingType, BlockLocation, PadOption, PropsDestructure, ScriptCompileOptions,
