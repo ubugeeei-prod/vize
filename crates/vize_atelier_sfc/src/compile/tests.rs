@@ -1336,7 +1336,6 @@ fn test_multiline_define_props_no_duplicate_binding() {
     // When `const props =` is on its own line followed by `defineProps<...>()`,
     // the compiled output should NOT contain a dangling `const props =` line.
     let source = r#"<script setup lang="ts">
-
 const props =
   defineProps<{
     name: string
