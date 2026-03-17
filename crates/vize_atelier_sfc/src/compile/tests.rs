@@ -1330,7 +1330,6 @@ export default {
     );
 }
 
-
 #[test]
 fn test_multiline_define_props_no_duplicate_binding() {
     // When `const props =` is on its own line followed by `defineProps<...>()`,

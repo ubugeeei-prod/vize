@@ -741,7 +741,6 @@ fn parse_script_content(content: &str, is_ts: bool) -> (Vec<String>, Vec<String>
             }
         }
 
-
         // Handle multi-line macro calls
         if in_macro_call {
             // Count angle brackets but ignore => (arrow functions) and comments
@@ -1220,7 +1219,6 @@ fn parse_script_content(content: &str, is_ts: bool) -> (Vec<String>, Vec<String>
             // Hoisting user-defined consts is problematic without proper AST-based scope tracking
             // Template-generated _hoisted_X consts are handled separately by template.hoisted
             setup_lines.push(line.to_compact_string());
-
 
             // If this line is `const/let/var xxx =` (ends with `=`), the macro call
             // might be on the next line. Mark it so we can remove it if needed.
