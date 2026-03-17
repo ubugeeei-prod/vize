@@ -83,7 +83,7 @@ void test("rspack builds a Vue SFC with auto-inject mode", async (t) => {
           test: /\.vue$/,
           use: [
             {
-              loader: path.join(packageRoot, "dist", "loader", "index.js"),
+              loader: path.join(packageRoot, "dist", "loader", "index.mjs"),
             },
           ],
         },

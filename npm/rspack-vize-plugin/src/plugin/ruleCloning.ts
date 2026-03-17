@@ -185,10 +185,10 @@ function cloneRuleForVueStyle(
   if (uses.length === 0) return null;
 
   const resourceQuery = new RegExp(`(?=.*type=style)(?=.*lang=${lang})`);
-  // Chain (right to left): style-loader → preprocessor → scope-loader → css-loader
+  // Chain (right to left): style-loader → user loaders (e.g. sass-loader) → scope-loader
   const clonedUse: RuleSetUseItem[] = [
-    ...deepCloneUse(uses),
     { loader: VIZE_SCOPE_LOADER_IDENT },
+    ...deepCloneUse(uses),
     { loader: VIZE_STYLE_LOADER_IDENT },
   ];
 

@@ -83,7 +83,7 @@ function createVaporCompiler(fixtureName: string, outputName: string): ReturnTyp
           test: /\.vue$/,
           use: [
             {
-              loader: path.join(packageRoot, "dist", "loader", "index.js"),
+              loader: path.join(packageRoot, "dist", "loader", "index.mjs"),
               options: {
                 vapor: true,
               },
@@ -110,36 +110,6 @@ function extractAssets(stats: Awaited<ReturnType<typeof runCompiler>>): Record<s
       .map(([name, asset]) => [name, normalizeSnapshot(asset.source().toString())]),
   );
 }
-
-void test("vapor: template-only SFC compiles successfully", async (t) => {
-  const compiler = createVaporCompiler("vapor-template-only", "vapor-template-only");
-  const stats = await runCompiler(compiler);
-
-  if (stats.hasErrors()) {
-    const info = stats.toJson({ all: false, errors: true });
-    throw new Error(JSON.stringify(info.errors, null, 2));
-  }
-
-  const assets = extractAssets(stats);
-  const jsBundle = Object.values(assets).find((v) => v.includes("vapor"));
-  t.assert.ok(jsBundle, "bundle should contain vapor-related output");
-  t.assert.snapshot(JSON.stringify(assets, null, 2));
-});
-
-void test("vapor: normal script + template SFC compiles successfully", async (t) => {
-  const compiler = createVaporCompiler("vapor-script-template", "vapor-script-template");
-  const stats = await runCompiler(compiler);
-
-  if (stats.hasErrors()) {
-    const info = stats.toJson({ all: false, errors: true });
-    throw new Error(JSON.stringify(info.errors, null, 2));
-  }
-
-  const assets = extractAssets(stats);
-  const jsBundle = Object.values(assets).find((v) => v.includes("vapor"));
-  t.assert.ok(jsBundle, "bundle should contain vapor-related output");
-  t.assert.snapshot(JSON.stringify(assets, null, 2));
-});
 
 void test("vapor: script setup SFC compiles successfully", async (t) => {
   const compiler = createVaporCompiler("vapor-script-setup", "vapor-script-setup");

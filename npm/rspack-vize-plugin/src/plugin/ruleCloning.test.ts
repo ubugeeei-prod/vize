@@ -84,12 +84,12 @@ void describe("applyRuleCloning", () => {
     });
     assert.ok(scssClone, "should have a cloned SCSS rule");
 
-    // The SCSS clone should include vize style-loader at the end and scope-loader before it
+    // The SCSS clone should have scope-loader first, user loaders in the middle, style-loader last
     const scssUse = scssClone!.use as Array<string | Record<string, unknown>>;
+    const firstLoader = scssUse[0] as Record<string, unknown>;
+    assert.equal(firstLoader.loader, "@vizejs/rspack-plugin/scope-loader");
     const lastLoader = scssUse[scssUse.length - 1] as Record<string, unknown>;
     assert.equal(lastLoader.loader, "@vizejs/rspack-plugin/style-loader");
-    const secondToLastLoader = scssUse[scssUse.length - 2] as Record<string, unknown>;
-    assert.equal(secondToLastLoader.loader, "@vizejs/rspack-plugin/scope-loader");
 
     // Both original rules should have vue exclusion
     assert.ok((rules[0] as Record<string, unknown>).resourceQuery);
@@ -184,7 +184,8 @@ void describe("applyRuleCloning", () => {
       return rq && rq.test("vue&type=style&index=0&lang=css");
     });
     const clonedUse = cssClone!.use as Array<Record<string, unknown>>;
-    const clonedLoader = clonedUse[0] as Record<string, unknown>;
+    // index 0 is scope-loader, index 1 is the cloned user loader
+    const clonedLoader = clonedUse[1] as Record<string, unknown>;
 
     // Mutating the clone should not affect the original
     (clonedLoader.options as Record<string, unknown>).modules = false;
@@ -198,7 +199,7 @@ void describe("applyRuleCloning", () => {
         test: /\.vue$/,
         use: [
           {
-            loader: "/path/to/node_modules/@vizejs/rspack-vize-plugin/dist/loader/index.js",
+            loader: "/path/to/node_modules/@vizejs/rspack-vize-plugin/dist/loader/index.mjs",
           },
         ],
       },
@@ -309,19 +310,19 @@ void describe("applyRuleCloning", () => {
       const branch = oneOf[i];
       const use = branch.use as Array<string | Record<string, unknown>>;
 
-      // Last two loaders should always be scope-loader then style-loader
+      // First loader should be scope-loader, last should be style-loader
+      const firstLoader = use[0] as Record<string, unknown>;
       const lastLoader = use[use.length - 1] as Record<string, unknown>;
-      const secondToLast = use[use.length - 2] as Record<string, unknown>;
 
+      assert.equal(
+        firstLoader.loader,
+        "@vizejs/rspack-plugin/scope-loader",
+        `branch ${i}: first loader must be scope-loader`,
+      );
       assert.equal(
         lastLoader.loader,
         "@vizejs/rspack-plugin/style-loader",
         `branch ${i}: last loader must be style-loader`,
-      );
-      assert.equal(
-        secondToLast.loader,
-        "@vizejs/rspack-plugin/scope-loader",
-        `branch ${i}: second-to-last loader must be scope-loader`,
       );
     }
   });

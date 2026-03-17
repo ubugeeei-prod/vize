@@ -80,7 +80,7 @@ function createScopedCompiler(fixtureName: string, outputName: string): ReturnTy
           test: /\.vue$/,
           use: [
             {
-              loader: path.join(packageRoot, "dist", "loader", "index.js"),
+              loader: path.join(packageRoot, "dist", "loader", "index.mjs"),
             },
           ],
         },

@@ -22,28 +22,28 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     },
     "./loader": {
-      "types": "./dist/loader/index.d.ts",
-      "import": "./dist/loader/index.js",
-      "default": "./dist/loader/index.js"
+      "types": "./dist/loader/index.d.mts",
+      "import": "./dist/loader/index.mjs",
+      "default": "./dist/loader/index.mjs"
     },
     "./style-loader": {
-      "types": "./dist/loader/style-loader.d.ts",
-      "import": "./dist/loader/style-loader.js",
-      "default": "./dist/loader/style-loader.js"
+      "types": "./dist/loader/style-loader.d.mts",
+      "import": "./dist/loader/style-loader.mjs",
+      "default": "./dist/loader/style-loader.mjs"
     },
     "./scope-loader": {
-      "types": "./dist/loader/scope-loader.d.ts",
-      "import": "./dist/loader/scope-loader.js",
-      "default": "./dist/loader/scope-loader.js"
+      "types": "./dist/loader/scope-loader.d.mts",
+      "import": "./dist/loader/scope-loader.mjs",
+      "default": "./dist/loader/scope-loader.mjs"
     }
   },
   "publishConfig": {
