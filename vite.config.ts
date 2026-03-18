@@ -35,7 +35,13 @@ const testedPackages = [
 ];
 
 const cacheInputs = {
-  workspace: [".node-version", "package.json", "vite.config.ts", "pnpm-lock.yaml", "pnpm-workspace.yaml"],
+  workspace: [
+    ".node-version",
+    "package.json",
+    "vite.config.ts",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+  ],
   jsChecks: [
     ".node-version",
     "package.json",

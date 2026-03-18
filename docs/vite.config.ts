@@ -1,7 +1,43 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { defineConfig } from "vite-plus";
 import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
+
+const require = createRequire(import.meta.url);
+
+function resolvePuppeteerExecutablePath(): string | undefined {
+  const configuredPath = process.env.PUPPETEER_EXECUTABLE_PATH;
+  if (configuredPath && existsSync(configuredPath)) {
+    return configuredPath;
+  }
+
+  try {
+    const { chromium } = require("playwright");
+    const executablePath = chromium?.executablePath?.();
+    if (executablePath && existsSync(executablePath)) {
+      return executablePath;
+    }
+  } catch {
+    // Fall through to common system browser paths.
+  }
+
+  const candidates = [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium-browser",
+    "/usr/bin/chromium",
+  ];
+
+  return candidates.find((candidate) => existsSync(candidate));
+}
+
+const puppeteerExecutablePath = resolvePuppeteerExecutablePath();
+if (puppeteerExecutablePath) {
+  process.env.PUPPETEER_EXECUTABLE_PATH = puppeteerExecutablePath;
+}
 
 const artVueGrammar = {
   ...JSON.parse(

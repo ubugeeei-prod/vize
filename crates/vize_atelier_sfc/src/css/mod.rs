@@ -59,6 +59,11 @@ pub struct CssCompileOptions {
     /// Whether to enable custom media query resolution
     #[serde(default)]
     pub custom_media: bool,
+
+    /// Enable CSS Modules — scopes class names, IDs, and keyframes.
+    /// When enabled, the result includes an `exports` map of original → hashed names.
+    #[serde(default)]
+    pub css_modules: bool,
 }
 
 /// Browser targets for CSS autoprefixing
@@ -77,6 +82,16 @@ pub struct CssTargets {
     pub ios: Option<u32>,
     #[serde(default)]
     pub android: Option<u32>,
+}
+
+/// A single CSS Modules export entry
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CssModuleExport {
+    /// The compiled (hashed) name
+    pub name: String,
+    /// Whether this export is actually referenced in the CSS
+    pub is_referenced: bool,
 }
 
 /// CSS compilation result
@@ -101,6 +116,11 @@ pub struct CssCompileResult {
     /// Warnings during compilation
     #[serde(default)]
     pub warnings: Vec<String>,
+
+    /// CSS Modules exports — original name → compiled name.
+    /// Only populated when `css_modules: true`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exports: Option<std::collections::HashMap<String, CssModuleExport>>,
 }
 
 /// Compile CSS using LightningCSS (native feature enabled)
@@ -131,20 +151,22 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         .unwrap_or_default();
 
     // Parse and process CSS
-    let (code, errors) = parser::compile_css_internal(
+    let result = parser::compile_css_internal(
         scoped_css,
         filename,
         options.minify,
         targets,
         options.custom_media,
+        options.css_modules,
     );
 
     CssCompileResult {
-        code,
+        code: result.code,
         map: None,
         css_vars,
-        errors,
+        errors: result.errors,
         warnings: vec![],
+        exports: result.exports,
     }
 }
 
@@ -173,6 +195,7 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         css_vars,
         errors: vec![],
         warnings: vec![],
+        exports: None,
     }
 }
 
