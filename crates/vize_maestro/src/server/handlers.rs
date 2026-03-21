@@ -48,6 +48,7 @@ impl LanguageServer for MaestroServer {
         // Load format config from workspace root (always, regardless of feature)
         if let Some(ref path) = workspace_path {
             self.state.load_format_config(path);
+            self.state.load_lsp_config(path);
         }
 
         // Set workspace root for native features (Corsa, batch checker)

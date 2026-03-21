@@ -8,6 +8,10 @@
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
+const fn default_true() -> bool {
+    true
+}
+
 /// Top-level vize configuration.
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct VizeConfig {
@@ -18,6 +22,10 @@ pub struct VizeConfig {
     /// Type checking configuration.
     #[serde(default)]
     pub check: CheckConfig,
+
+    /// LSP configuration.
+    #[serde(default)]
+    pub lsp: LspConfig,
 
     /// Formatting configuration.
     #[cfg(feature = "glyph")]
@@ -47,6 +55,20 @@ pub struct CheckConfig {
     /// Override the number of parallel Corsa servers used by `vize check`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub servers: Option<usize>,
+}
+
+/// Configuration for the LSP server.
+#[derive(Debug, Deserialize, Serialize)]
+pub struct LspConfig {
+    /// Enable type-checking diagnostics and tsgo-backed type-aware features in `vize lsp`.
+    #[serde(default = "default_true")]
+    pub typecheck: bool,
+}
+
+impl Default for LspConfig {
+    fn default() -> Self {
+        Self { typecheck: true }
+    }
 }
 
 /// Load configuration from `vize.config.pkl` (preferred) or `vize.config.json`.
@@ -127,6 +149,18 @@ pub const VIZE_CONFIG_SCHEMA: &str = r#"{
           "type": "integer",
           "minimum": 1,
           "description": "Override the number of parallel Corsa language servers used by `vize check`."
+        }
+      },
+      "additionalProperties": false
+    },
+    "lsp": {
+      "type": "object",
+      "description": "Language Server Protocol configuration",
+      "properties": {
+        "typecheck": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable type checking diagnostics and tsgo-backed type-aware features in `vize lsp`."
         }
       },
       "additionalProperties": false
@@ -259,14 +293,35 @@ mod tests {
     }
 
     #[test]
+    fn load_config_with_lsp_typecheck() {
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join("vize.config.json");
+        std::fs::write(
+            &config_path,
+            r#"{
+                "lsp": { "typecheck": false }
+            }"#,
+        )
+        .unwrap();
+
+        let config = load_config(Some(dir.path()));
+        assert!(!config.lsp.typecheck);
+    }
+
+    #[test]
     #[ignore = "requires pkl runtime installed"]
     fn load_config_parses_pkl() {
         let dir = tempfile::tempdir().unwrap();
         let pkl_path = dir.path().join("vize.config.pkl");
-        std::fs::write(&pkl_path, "check {\n    globals = \"globals.d.ts\"\n}\n").unwrap();
+        std::fs::write(
+            &pkl_path,
+            "check {\n    globals = \"globals.d.ts\"\n}\n\nlsp {\n    typecheck = false\n}\n",
+        )
+        .unwrap();
 
         let config = load_config(Some(dir.path()));
         assert_eq!(config.check.globals.as_deref(), Some("globals.d.ts"));
+        assert!(!config.lsp.typecheck);
     }
 }
 

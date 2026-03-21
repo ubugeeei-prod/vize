@@ -2,10 +2,12 @@
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use dashmap::DashMap;
 use parking_lot::RwLock;
+use serde::Deserialize;
 use tokio::sync::OnceCell;
 use tower_lsp::lsp_types::Url;
 
@@ -17,6 +19,28 @@ use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, CorsaBridge, CorsaBrid
 
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
+
+const fn default_true() -> bool {
+    true
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct LspConfigFile {
+    #[serde(default)]
+    lsp: LspConfigSection,
+}
+
+#[derive(Debug, Deserialize)]
+struct LspConfigSection {
+    #[serde(default = "default_true")]
+    typecheck: bool,
+}
+
+impl Default for LspConfigSection {
+    fn default() -> Self {
+        Self { typecheck: true }
+    }
+}
 
 /// Batch type check result cache.
 #[cfg(feature = "native")]
@@ -82,6 +106,8 @@ pub struct ServerState {
     virtual_gen: RwLock<VirtualCodeGenerator>,
     /// Cached virtual documents per file
     virtual_docs_cache: DashMap<Url, VirtualDocuments>,
+    /// Whether type checking is enabled for LSP features.
+    lsp_typecheck_enabled: AtomicBool,
     /// Formatting options (loaded from vize.config.json)
     #[cfg(feature = "glyph")]
     format_options: RwLock<vize_glyph::FormatOptions>,
@@ -115,6 +141,7 @@ impl ServerState {
             documents: DocumentStore::new(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
+            lsp_typecheck_enabled: AtomicBool::new(true),
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),
             #[cfg(feature = "native")]
@@ -138,6 +165,71 @@ impl ServerState {
         self.batch_cache.invalidate();
     }
 
+    /// Check whether LSP type checking is enabled.
+    #[inline]
+    pub fn is_lsp_typecheck_enabled(&self) -> bool {
+        self.lsp_typecheck_enabled.load(Ordering::SeqCst)
+    }
+
+    /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
+    pub fn load_lsp_config(&self, dir: &std::path::Path) {
+        let pkl_path = dir.join("vize.config.pkl");
+        if pkl_path.exists() {
+            match rpkl::from_config::<LspConfigFile>(&pkl_path) {
+                Ok(config) => {
+                    self.lsp_typecheck_enabled
+                        .store(config.lsp.typecheck, Ordering::SeqCst);
+                    tracing::info!(
+                        "Loaded LSP config from {} (typecheck={})",
+                        pkl_path.display(),
+                        config.lsp.typecheck
+                    );
+                }
+                Err(error) => {
+                    tracing::warn!(
+                        "Failed to parse {}: {}. Keeping default LSP options.",
+                        pkl_path.display(),
+                        error
+                    );
+                }
+            }
+            return;
+        }
+
+        let json_path = dir.join("vize.config.json");
+        if !json_path.exists() {
+            return;
+        }
+
+        match std::fs::read_to_string(&json_path) {
+            Ok(content) => match serde_json::from_str::<LspConfigFile>(&content) {
+                Ok(config) => {
+                    self.lsp_typecheck_enabled
+                        .store(config.lsp.typecheck, Ordering::SeqCst);
+                    tracing::info!(
+                        "Loaded LSP config from {} (typecheck={})",
+                        json_path.display(),
+                        config.lsp.typecheck
+                    );
+                }
+                Err(error) => {
+                    tracing::warn!(
+                        "Failed to parse {}: {}. Keeping default LSP options.",
+                        json_path.display(),
+                        error
+                    );
+                }
+            },
+            Err(error) => {
+                tracing::warn!(
+                    "Failed to read {}: {}. Keeping default LSP options.",
+                    json_path.display(),
+                    error
+                );
+            }
+        }
+    }
+
     /// Get the workspace root path.
     #[cfg(feature = "native")]
     pub fn get_workspace_root(&self) -> Option<PathBuf> {
@@ -147,6 +239,10 @@ impl ServerState {
     /// Get or initialize the batch type checker.
     #[cfg(feature = "native")]
     pub fn get_batch_checker(&self) -> Option<Arc<RwLock<BatchTypeChecker>>> {
+        if !self.is_lsp_typecheck_enabled() {
+            return None;
+        }
+
         let workspace_root = self.get_workspace_root()?;
 
         // Try to get existing value first
@@ -168,7 +264,7 @@ impl ServerState {
     /// Check if batch type checker is available.
     #[cfg(feature = "native")]
     pub fn has_batch_checker(&self) -> bool {
-        self.batch_checker.get().is_some()
+        self.is_lsp_typecheck_enabled() && self.batch_checker.get().is_some()
     }
 
     /// Get the batch type check cache.
@@ -180,6 +276,10 @@ impl ServerState {
     /// Run batch type checking and update the cache.
     #[cfg(feature = "native")]
     pub fn run_batch_type_check(&self) -> Option<vize_canon::BatchTypeCheckResult> {
+        if !self.is_lsp_typecheck_enabled() {
+            return None;
+        }
+
         let checker = self.get_batch_checker()?;
         let mut checker_guard = checker.write();
 
@@ -216,7 +316,12 @@ impl ServerState {
     /// Returns `None` if Corsa is not available or failed to initialize.
     #[cfg(feature = "native")]
     pub async fn get_corsa_bridge(&self) -> Option<Arc<CorsaBridge>> {
-        use std::sync::atomic::Ordering;
+        if !self.is_lsp_typecheck_enabled() {
+            tracing::info!(
+                "Skipping Corsa bridge initialization because LSP typecheck is disabled"
+            );
+            return None;
+        }
 
         // If already initialized successfully, return it
         if let Some(bridge) = self.corsa_bridge.get() {
@@ -273,7 +378,7 @@ impl ServerState {
     /// Check if the Corsa bridge is available (without initializing).
     #[cfg(feature = "native")]
     pub fn has_corsa_bridge(&self) -> bool {
-        self.corsa_bridge.initialized()
+        self.is_lsp_typecheck_enabled() && self.corsa_bridge.initialized()
     }
 
     /// Generate and cache virtual documents for a document.
@@ -502,5 +607,50 @@ mod tests {
         // options remain default
         let opts = state.get_format_options();
         assert_eq!(opts.print_width, 100);
+    }
+
+    #[test]
+    fn lsp_typecheck_enabled_by_default() {
+        let state = ServerState::new();
+        assert!(state.is_lsp_typecheck_enabled());
+    }
+
+    #[test]
+    fn load_lsp_config_from_json() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{ "lsp": { "typecheck": false } }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+        assert!(!state.is_lsp_typecheck_enabled());
+    }
+
+    #[test]
+    fn load_lsp_config_invalid_json_keeps_default() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("vize.config.json"), "not valid json").unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+        assert!(state.is_lsp_typecheck_enabled());
+    }
+
+    #[test]
+    #[ignore = "requires pkl runtime installed"]
+    fn load_lsp_config_from_pkl() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.pkl"),
+            "lsp {\n    typecheck = false\n}\n",
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+        assert!(!state.is_lsp_typecheck_enabled());
     }
 }

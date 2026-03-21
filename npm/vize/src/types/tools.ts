@@ -176,6 +176,12 @@ export interface LspConfig {
   codeActions?: boolean;
 
   /**
+   * Enable type checking diagnostics and type-aware LSP features
+   * @default true
+   */
+  typecheck?: boolean;
+
+  /**
    * Use Corsa for type checking in LSP
    * @default false
    */

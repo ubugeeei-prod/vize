@@ -3619,6 +3619,7 @@ dependencies = [
  "oxc_span",
  "parking_lot",
  "ropey",
+ "rpkl",
  "serde",
  "serde_json",
  "tempfile",

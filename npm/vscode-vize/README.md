@@ -2,6 +2,9 @@
 
 Vue Language Support powered by Vize - A high-performance language server for Vue SFC.
 
+> For day-to-day Vue editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
+> This extension is still experimental and should be evaluated separately from your primary editor setup.
+
 ## Features
 
 - **Diagnostics** - Real-time error detection

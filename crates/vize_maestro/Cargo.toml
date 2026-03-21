@@ -27,6 +27,7 @@ ropey = "1.6"
 # Serialization
 serde.workspace = true
 serde_json.workspace = true
+rpkl = "0.7"
 
 # Logging
 tracing = "0.1"

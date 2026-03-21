@@ -6,6 +6,9 @@ title: VS Code
 
 > **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. Extension features may be incomplete or change without notice.
 
+> **Important:** For day-to-day Vue editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
+> The Vize VS Code extension and `vize lsp` are still experimental and may not yet match the stability or coverage of the official toolchain.
+
 Vize provides two VS Code extensions for an enhanced development experience. Together, they provide language intelligence for `.vue` files and syntax support for `.art.vue` story files.
 
 ## Vize — Vue Language Support
@@ -38,7 +41,8 @@ vize lsp (vize_maestro)
   → vize_canon (type checking)
 ```
 
-Because the LSP uses the same parser and analysis pipeline as the CLI, diagnostics are consistent across editor and CI — what the editor shows is exactly what `vize lint` and `vize check` report.
+The LSP uses the same Rust-native crates as the CLI, but the editor experience is still catching up.
+For now, treat editor diagnostics and type-aware features as experimental rather than as a strict mirror of `vize lint` and `vize check`.
 
 ### Configuration
 
@@ -94,6 +98,8 @@ Search for "Vize" in the VS Code extensions marketplace to find both extensions:
 
 - **Vize** — Language support (LSP)
 - **Vize Art** — Story file syntax highlighting
+
+If you need the most stable Vue editing experience today, prefer the official Vue language tools (`vuejs/language-tools`) and evaluate Vize's extension separately.
 
 ### Building from Source
 

@@ -115,10 +115,14 @@ impl DiagnosticService {
         tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
         diagnostics.extend(lint_diags);
 
-        // Collect type checker diagnostics (vize_canon)
-        let type_diags = super::TypeService::collect_diagnostics(state, uri);
-        tracing::info!("collect: type checker diagnostics: {}", type_diags.len());
-        diagnostics.extend(type_diags);
+        if state.is_lsp_typecheck_enabled() {
+            // Collect type checker diagnostics (vize_canon)
+            let type_diags = super::TypeService::collect_diagnostics(state, uri);
+            tracing::info!("collect: type checker diagnostics: {}", type_diags.len());
+            diagnostics.extend(type_diags);
+        } else {
+            tracing::info!("collect: type checker diagnostics skipped (disabled by config)");
+        }
 
         // Also lint inline <art> blocks in regular .vue files
         let inline_art_diags = Self::collect_inline_art_diagnostics(uri, &content);
@@ -140,17 +144,21 @@ impl DiagnosticService {
         let mut diagnostics = Self::collect(state, uri);
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
 
-        // Try to get Corsa diagnostics (with timeout, skip on failure).
-        // Use 10s timeout - polling for diagnostics internally uses 5s
-        let corsa_future = Self::collect_corsa_diagnostics(state, uri);
-        match tokio::time::timeout(std::time::Duration::from_secs(10), corsa_future).await {
-            Ok(corsa_diags) => {
-                tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
-                diagnostics.extend(corsa_diags);
+        if state.is_lsp_typecheck_enabled() {
+            // Try to get Corsa diagnostics (with timeout, skip on failure).
+            // Use 10s timeout - polling for diagnostics internally uses 5s
+            let corsa_future = Self::collect_corsa_diagnostics(state, uri);
+            match tokio::time::timeout(std::time::Duration::from_secs(10), corsa_future).await {
+                Ok(corsa_diags) => {
+                    tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
+                    diagnostics.extend(corsa_diags);
+                }
+                Err(_) => {
+                    tracing::warn!("corsa diagnostics timed out for {}", uri);
+                }
             }
-            Err(_) => {
-                tracing::warn!("corsa diagnostics timed out for {}", uri);
-            }
+        } else {
+            tracing::info!("collect_async: Corsa diagnostics skipped (disabled by config)");
         }
 
         diagnostics
