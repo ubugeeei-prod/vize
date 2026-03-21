@@ -44,11 +44,16 @@ export interface CsfOutput {
 }
 
 // Patina (Linter) types
-export type LintPreset = "happy-path" | "opinionated" | "essential" | "nuxt";
+export type LintPreset =
+  | "general-recommended"
+  | "essential"
+  | "incremental"
+  | "opinionated"
+  | "nuxt";
 
 export interface LintOptions {
   filename?: string;
-  /** Built-in lint preset (default: 'happy-path') */
+  /** Built-in lint preset (default: 'general-recommended') */
   preset?: LintPreset;
   /** Rules to enable (if not set, all rules are enabled) */
   enabledRules?: string[];

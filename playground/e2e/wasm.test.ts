@@ -56,21 +56,21 @@ const msg = 'Hello'
     const rules = wasm.getLintRules();
     expect(rules.length).toBeGreaterThan(0);
 
-    const happyPathRule = rules.find((rule) => rule.name === "vue/require-v-for-key");
-    expect(happyPathRule).toBeDefined();
-    expect(happyPathRule?.presets).toContain("happy-path");
-    expect(happyPathRule?.presets).toContain("opinionated");
+    const generalRecommendedRule = rules.find((rule) => rule.name === "vue/require-v-for-key");
+    expect(generalRecommendedRule).toBeDefined();
+    expect(generalRecommendedRule?.presets).toContain("general-recommended");
+    expect(generalRecommendedRule?.presets).toContain("opinionated");
 
     const opinionatedRule = rules.find((rule) => rule.name === "vue/no-inline-style");
     expect(opinionatedRule).toBeDefined();
     expect(opinionatedRule?.presets).toContain("opinionated");
-    expect(opinionatedRule?.presets).not.toContain("happy-path");
+    expect(opinionatedRule?.presets).not.toContain("general-recommended");
 
     const scriptRule = rules.find((rule) => rule.name === "script/no-options-api");
     expect(scriptRule).toBeDefined();
     expect(scriptRule?.presets).toContain("opinionated");
     expect(scriptRule?.presets).toContain("nuxt");
-    expect(scriptRule?.presets).not.toContain("happy-path");
+    expect(scriptRule?.presets).not.toContain("general-recommended");
 
     const noGetCurrentInstanceRule = rules.find(
       (rule) => rule.name === "script/no-get-current-instance",
@@ -78,13 +78,13 @@ const msg = 'Hello'
     expect(noGetCurrentInstanceRule).toBeDefined();
     expect(noGetCurrentInstanceRule?.presets).toContain("opinionated");
     expect(noGetCurrentInstanceRule?.presets).toContain("nuxt");
-    expect(noGetCurrentInstanceRule?.presets).not.toContain("happy-path");
+    expect(noGetCurrentInstanceRule?.presets).not.toContain("general-recommended");
 
     const noNextTickRule = rules.find((rule) => rule.name === "script/no-next-tick");
     expect(noNextTickRule).toBeDefined();
     expect(noNextTickRule?.presets).toContain("opinionated");
     expect(noNextTickRule?.presets).toContain("nuxt");
-    expect(noNextTickRule?.presets).not.toContain("happy-path");
+    expect(noNextTickRule?.presets).not.toContain("general-recommended");
   });
 
   it("should lint with different built-in presets", () => {
@@ -100,20 +100,20 @@ const msg = 'Hello'
 </template>
 `;
 
-    const happyPath = wasm.lintSfc(sfc, {
+    const generalRecommended = wasm.lintSfc(sfc, {
       filename: "PresetExample.vue",
-      preset: "happy-path",
+      preset: "general-recommended",
     });
     const opinionated = wasm.lintSfc(sfc, {
       filename: "PresetExample.vue",
       preset: "opinionated",
     });
 
-    expect(happyPath.diagnostics).toHaveLength(0);
+    expect(generalRecommended.diagnostics).toHaveLength(0);
     expect(
       opinionated.diagnostics.some((diagnostic) => diagnostic.rule === "vue/no-inline-style"),
     ).toBe(true);
-    expect(opinionated.diagnostics.length).toBeGreaterThan(happyPath.diagnostics.length);
+    expect(opinionated.diagnostics.length).toBeGreaterThan(generalRecommended.diagnostics.length);
   });
 
   it("should report no-options-api for opinionated preset", () => {
@@ -133,9 +133,9 @@ export default {
 </script>
 `;
 
-    const happyPath = wasm.lintSfc(sfc, {
+    const generalRecommended = wasm.lintSfc(sfc, {
       filename: "OptionsApi.vue",
-      preset: "happy-path",
+      preset: "general-recommended",
     });
     const opinionated = wasm.lintSfc(sfc, {
       filename: "OptionsApi.vue",
@@ -143,7 +143,9 @@ export default {
     });
 
     expect(
-      happyPath.diagnostics.some((diagnostic) => diagnostic.rule === "script/no-options-api"),
+      generalRecommended.diagnostics.some(
+        (diagnostic) => diagnostic.rule === "script/no-options-api",
+      ),
     ).toBe(false);
     expect(
       opinionated.diagnostics.some((diagnostic) => diagnostic.rule === "script/no-options-api"),
@@ -165,9 +167,9 @@ await nextTick()
 </script>
 `;
 
-    const happyPath = wasm.lintSfc(sfc, {
+    const generalRecommended = wasm.lintSfc(sfc, {
       filename: "NextTick.vue",
-      preset: "happy-path",
+      preset: "general-recommended",
     });
     const opinionated = wasm.lintSfc(sfc, {
       filename: "NextTick.vue",
@@ -175,7 +177,9 @@ await nextTick()
     });
 
     expect(
-      happyPath.diagnostics.some((diagnostic) => diagnostic.rule === "script/no-next-tick"),
+      generalRecommended.diagnostics.some(
+        (diagnostic) => diagnostic.rule === "script/no-next-tick",
+      ),
     ).toBe(false);
     expect(
       opinionated.diagnostics.some((diagnostic) => diagnostic.rule === "script/no-next-tick"),
@@ -197,9 +201,9 @@ const instance = getCurrentInstance()
 </script>
 `;
 
-    const happyPath = wasm.lintSfc(sfc, {
+    const generalRecommended = wasm.lintSfc(sfc, {
       filename: "GetCurrentInstance.vue",
-      preset: "happy-path",
+      preset: "general-recommended",
     });
     const opinionated = wasm.lintSfc(sfc, {
       filename: "GetCurrentInstance.vue",
@@ -207,7 +211,7 @@ const instance = getCurrentInstance()
     });
 
     expect(
-      happyPath.diagnostics.some(
+      generalRecommended.diagnostics.some(
         (diagnostic) => diagnostic.rule === "script/no-get-current-instance",
       ),
     ).toBe(false);

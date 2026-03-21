@@ -254,11 +254,11 @@ onUnmounted(() => {
                     :class="[
                       'btn-action',
                       'btn-preset',
-                      { active: selectedPreset === 'happy-path' },
+                      { active: selectedPreset === 'general-recommended' },
                     ]"
-                    @click="applyPreset('happy-path')"
+                    @click="applyPreset('general-recommended')"
                   >
-                    Happy Path
+                    General Recommended
                   </button>
                   <button
                     :class="[
