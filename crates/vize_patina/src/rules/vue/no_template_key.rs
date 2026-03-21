@@ -9,15 +9,15 @@
 //!
 //! ### Invalid
 //! ```vue
-//! <template v-for="item in items" :key="item.id">
+//! <template :key="section">
 //!   <div>{{ item }}</div>
 //! </template>
 //! ```
 //!
 //! ### Valid
 //! ```vue
-//! <template v-for="item in items">
-//!   <div :key="item.id">{{ item }}</div>
+//! <template v-for="item in items" :key="item.id">
+//!   <div>{{ item }}</div>
 //! </template>
 //! ```
 
@@ -50,11 +50,16 @@ impl Rule for NoTemplateKey {
             return;
         }
 
+        let has_v_for = element.props.iter().any(|prop| match prop {
+            PropNode::Directive(dir) => dir.name.as_str() == "for",
+            _ => false,
+        });
+
         // Check for key attribute or :key directive
         for prop in element.props.iter() {
             match prop {
                 PropNode::Attribute(attr) => {
-                    if attr.name.as_str() == "key" {
+                    if attr.name.as_str() == "key" && !has_v_for {
                         ctx.error_with_help(
                             ctx.t("vue/no-template-key.message"),
                             &attr.loc,
@@ -65,7 +70,7 @@ impl Rule for NoTemplateKey {
                 PropNode::Directive(dir) => {
                     if dir.name.as_str() == "bind" {
                         if let Some(ref arg) = dir.arg {
-                            if get_expression_content(arg) == "key" {
+                            if get_expression_content(arg) == "key" && !has_v_for {
                                 ctx.error_with_help(
                                     ctx.t("vue/no-template-key.message"),
                                     &dir.loc,
@@ -114,10 +119,20 @@ mod tests {
     fn test_invalid_key_on_template() {
         let linter = create_linter();
         let result = linter.lint_template(
-            r#"<template v-for="item in items" :key="item.id"><div>{{ item }}</div></template>"#,
+            r#"<template :key="section"><div>{{ item }}</div></template>"#,
             "test.vue",
         );
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_key_on_template_v_for() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<template v-for="item in items" :key="item.id"><div>{{ item }}</div></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]

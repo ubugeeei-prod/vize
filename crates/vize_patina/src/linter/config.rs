@@ -48,6 +48,8 @@ impl LintResult {
 /// - Pre-allocates vectors with expected capacity
 /// - Minimizes allocations during traversal
 pub struct Linter {
+    /// Preset used to seed the rule registry, when applicable.
+    pub(crate) preset: Option<LintPreset>,
     pub(crate) registry: RuleRegistry,
     /// Estimated initial allocator capacity (in bytes).
     pub(crate) initial_capacity: usize,
@@ -73,6 +75,7 @@ impl Linter {
     pub fn new() -> Self {
         let preset = LintPreset::default();
         Self {
+            preset: Some(preset),
             registry: RuleRegistry::with_preset(preset),
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
@@ -88,6 +91,7 @@ impl Linter {
     #[inline]
     pub fn with_preset(preset: LintPreset) -> Self {
         Self {
+            preset: Some(preset),
             registry: RuleRegistry::with_preset(preset),
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
@@ -103,6 +107,7 @@ impl Linter {
     #[inline]
     pub fn with_registry(registry: RuleRegistry) -> Self {
         Self {
+            preset: None,
             registry,
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
@@ -134,6 +139,10 @@ impl Linter {
     /// Rules not in the list will be skipped during linting.
     #[inline]
     pub fn with_enabled_rules(mut self, rules: Option<Vec<String>>) -> Self {
+        if rules.is_some() && matches!(self.preset, Some(LintPreset::Incremental)) {
+            self.registry = RuleRegistry::with_preset(LintPreset::Opinionated);
+            self.script_rules = builtin_script_rule_names(LintPreset::Opinionated);
+        }
         self.enabled_rules = rules.map(|r| r.into_iter().collect());
         self
     }

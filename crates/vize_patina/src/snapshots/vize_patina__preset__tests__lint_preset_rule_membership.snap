@@ -113,6 +113,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "type/require-typed-props",
     "type/require-typed-emits"
   ],
+  "incremental": [],
   "nuxt": [
     "vue/require-v-for-key",
     "vue/valid-v-for",

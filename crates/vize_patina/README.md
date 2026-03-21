@@ -32,7 +32,7 @@ Similarly, `vize_patina` provides:
 - **Configurable** - Enable/disable rules, set severity
 - **Fixable** - Auto-fix support for many rules
 - **Vue 3 focused** - Composition API, `<script setup>` support
-- **Preset-based** - Default `happy-path` rules with optional `opinionated` mode
+- **Preset-based** - Default `happy-path` rules with optional `opinionated` mode and `incremental` opt-in adoption
 
 ## Usage
 
@@ -53,6 +53,7 @@ for diagnostic in result.diagnostics {
 - `happy-path` - Default preset focused on common Vue correctness, security, and accessibility checks
 - `opinionated` - Enables stronger stylistic and structural rules in one shot
 - `essential` - Minimal correctness-focused rule set
+- `incremental` - Starts empty so a host can opt in rule-by-rule
 - `nuxt` - Opinionated preset tuned for Nuxt auto-import conventions
 
 ## Rule Categories

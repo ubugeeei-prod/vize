@@ -10,15 +10,18 @@ pub enum LintPreset {
     Opinionated,
     /// Error-focused correctness checks.
     Essential,
+    /// Starts with no built-in bundle so hosts can opt in rule-by-rule.
+    Incremental,
     /// Opinionated rules adjusted for Nuxt auto-import conventions.
     Nuxt,
 }
 
 impl LintPreset {
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 5] = [
         Self::HappyPath,
         Self::Opinionated,
         Self::Essential,
+        Self::Incremental,
         Self::Nuxt,
     ];
 
@@ -28,6 +31,7 @@ impl LintPreset {
             Self::HappyPath => "happy-path",
             Self::Opinionated => "opinionated",
             Self::Essential => "essential",
+            Self::Incremental => "incremental",
             Self::Nuxt => "nuxt",
         }
     }
@@ -40,6 +44,7 @@ impl LintPreset {
             }
             "opinionated" | "strict" | "all" => Some(Self::Opinionated),
             "essential" => Some(Self::Essential),
+            "incremental" => Some(Self::Incremental),
             "nuxt" => Some(Self::Nuxt),
             _ => None,
         }
@@ -48,7 +53,7 @@ impl LintPreset {
 
 pub(crate) const fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
     match preset {
-        LintPreset::HappyPath | LintPreset::Essential => &[],
+        LintPreset::HappyPath | LintPreset::Essential | LintPreset::Incremental => &[],
         LintPreset::Opinionated | LintPreset::Nuxt => &[
             "script/no-options-api",
             "script/no-get-current-instance",
@@ -71,6 +76,10 @@ mod tests {
         );
         assert_eq!(LintPreset::parse("all"), Some(LintPreset::Opinionated));
         assert_eq!(LintPreset::parse("strict"), Some(LintPreset::Opinionated));
+        assert_eq!(
+            LintPreset::parse("incremental"),
+            Some(LintPreset::Incremental)
+        );
         assert_eq!(LintPreset::parse("nuxt"), Some(LintPreset::Nuxt));
         assert_eq!(LintPreset::parse("unknown"), None);
     }
@@ -81,6 +90,7 @@ mod tests {
             "happy_path": rule_names(LintPreset::HappyPath),
             "opinionated": rule_names(LintPreset::Opinionated),
             "essential": rule_names(LintPreset::Essential),
+            "incremental": rule_names(LintPreset::Incremental),
             "nuxt": rule_names(LintPreset::Nuxt),
         });
 
@@ -143,6 +153,14 @@ mod tests {
             .contains(&"script/no-get-current-instance"));
         assert!(super::builtin_script_rule_names(LintPreset::Opinionated)
             .contains(&"script/no-next-tick"));
+    }
+
+    #[test]
+    fn incremental_starts_empty() {
+        let incremental = RuleRegistry::with_preset(LintPreset::Incremental);
+
+        assert!(!incremental.has_rule("vue/require-v-for-key"));
+        assert!(super::builtin_script_rule_names(LintPreset::Incremental).is_empty());
     }
 
     fn rule_names(preset: LintPreset) -> Vec<&'static str> {

@@ -138,8 +138,14 @@ impl RuleRegistry {
             LintPreset::HappyPath => Self::with_happy_path(),
             LintPreset::Opinionated => Self::with_opinionated(),
             LintPreset::Essential => Self::with_essential(),
+            LintPreset::Incremental => Self::with_incremental(),
             LintPreset::Nuxt => Self::with_nuxt(),
         }
+    }
+
+    /// Create an empty registry for host-driven, rule-by-rule adoption.
+    pub fn with_incremental() -> Self {
+        Self::with_capacity(0)
     }
 
     /// Create the default happy-path registry.
