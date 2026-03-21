@@ -57,7 +57,7 @@ jobs:
       - name: Build JS packages
         run: vp run --workspace-root build:packages
       - name: Check JS/TS
-        run: vp run --workspace-root check
+        run: vp run --workspace-root check:ci
 
   clippy-and-test:
     runs-on: ubuntu-latest
