@@ -50,8 +50,45 @@ fn parse_lint_preset(options: &JsValue) -> LintPreset {
         .ok()
         .and_then(|v| v.as_string())
         .as_deref()
-        .and_then(LintPreset::parse)
+        .and_then(|value| match value {
+            "general-recommended" | "GeneralRecommended" | "generalRecommended" => {
+                Some(LintPreset::HappyPath)
+            }
+            "essential" | "Essential" => Some(LintPreset::Essential),
+            "incremental" | "Incremental" => Some(LintPreset::Incremental),
+            "opinionated" | "Opinionated" | "Opnionated" | "opnionated" => {
+                Some(LintPreset::Opinionated)
+            }
+            "nuxt" | "Nuxt" => Some(LintPreset::Nuxt),
+            _ => LintPreset::parse(value),
+        })
         .unwrap_or_default()
+}
+
+#[inline]
+const fn plugin_preset_name(preset: LintPreset) -> &'static str {
+    match preset {
+        LintPreset::HappyPath => "general-recommended",
+        LintPreset::Opinionated => "opinionated",
+        LintPreset::Essential => "essential",
+        LintPreset::Incremental => "incremental",
+        LintPreset::Nuxt => "nuxt",
+    }
+}
+
+#[inline]
+fn plugin_preset_name_from_raw(preset: &'static str) -> &'static str {
+    match preset {
+        "general-recommended" | "GeneralRecommended" | "generalRecommended" => {
+            "general-recommended"
+        }
+        "happy-path" | "happy_path" | "happy" | "default" | "recommended" => "general-recommended",
+        "essential" | "Essential" => "essential",
+        "incremental" | "Incremental" => "incremental",
+        "opinionated" | "Opinionated" | "strict" | "all" | "opnionated" => "opinionated",
+        "nuxt" | "Nuxt" => "nuxt",
+        _ => preset,
+    }
 }
 
 fn parse_enabled_rules(options: &JsValue) -> Option<Vec<vize_carton::CompactString>> {
@@ -252,15 +289,15 @@ pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
             let meta = r.meta();
             let mut presets = Vec::with_capacity(4);
             if essential_rules.contains(meta.name) {
-                presets.push(LintPreset::Essential.as_str());
+                presets.push(plugin_preset_name(LintPreset::Essential));
             }
             if happy_path_rules.contains(meta.name) {
-                presets.push(LintPreset::HappyPath.as_str());
+                presets.push(plugin_preset_name(LintPreset::HappyPath));
             }
             if nuxt_rules.contains(meta.name) {
-                presets.push(LintPreset::Nuxt.as_str());
+                presets.push(plugin_preset_name(LintPreset::Nuxt));
             }
-            presets.push(LintPreset::Opinionated.as_str());
+            presets.push(plugin_preset_name(LintPreset::Opinionated));
 
             LintRuleWasm {
                 name: meta.name,
@@ -281,7 +318,11 @@ pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
             category: script_rule.category,
             fixable: script_rule.fixable,
             default_severity: severity_name(script_rule.default_severity),
-            presets: script_rule.presets.to_vec(),
+            presets: script_rule
+                .presets
+                .iter()
+                .map(|preset| plugin_preset_name_from_raw(preset))
+                .collect(),
         });
     }
 
