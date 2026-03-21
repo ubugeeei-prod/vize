@@ -1,0 +1,4 @@
+<workspaceRoot>/__agent_only/oxlint-plugin-vize-test/ScopedStyle.vue
+  2:1  error  Style block should use `scoped` or `module` attribute to prevent CSS leaking (at SFC:7:1)  vize(vue/require-scoped-style)
+
+✖ 1 problem (1 error, 0 warnings)
