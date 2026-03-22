@@ -141,6 +141,32 @@ const analysisResult = ref<AnalysisResult | null>(null)
     }
 
     #[test]
+    fn test_import_used_only_in_ts_positions_not_returned() {
+        let content = r#"
+import { BadgeType } from './types'
+
+interface Props {
+  badges: BadgeType[]
+}
+
+const props = defineProps<Props>()
+"#;
+        let result = compile_script_setup(content, "Test", false, true, None).unwrap();
+
+        let code = &result.code;
+        let returned_start = code.find("__returned__").expect("Should have __returned__");
+        let returned_block = &code[returned_start..];
+        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
+        let returned_content = &returned_block[..block_end];
+
+        assert!(
+            !returned_content.contains("BadgeType"),
+            "Type-only import usage should not be in __returned__. Got: {}",
+            returned_content
+        );
+    }
+
+    #[test]
     fn test_compile_script_setup_with_define_emits() {
         let content = r#"
 const emit = defineEmits(['click', 'update'])

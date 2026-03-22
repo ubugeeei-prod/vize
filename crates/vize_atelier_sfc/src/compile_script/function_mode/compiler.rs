@@ -19,7 +19,10 @@ use super::super::macros::{
 use super::super::props::{extract_emit_names_from_type, extract_prop_types_from_type};
 use super::super::typescript::transform_typescript_to_js;
 use super::super::ScriptCompileResult;
-use super::helpers::{count_unescaped_backticks, is_reserved_word, is_typescript_type_alias};
+use super::helpers::{
+    collect_runtime_identifier_references, count_unescaped_backticks, is_reserved_word,
+    is_typescript_type_alias,
+};
 use super::imports::dedupe_imports;
 
 /// Compile script setup content following Vue.js core format
@@ -532,6 +535,8 @@ pub fn compile_script_setup(
         output.push(b'\n');
     }
 
+    let runtime_used_identifiers = collect_runtime_identifier_references(&transformed_setup);
+
     // Generate __returned__ object
     let returned_bindings = build_returned_bindings(
         &mut ctx,
@@ -540,6 +545,7 @@ pub fn compile_script_setup(
         &emit_binding_name,
         &imports,
         template_content,
+        &runtime_used_identifiers,
         &model_binding_names,
     );
 
@@ -852,6 +858,7 @@ fn build_returned_bindings(
     emit_binding_name: &Option<String>,
     imports: &[String],
     template_content: Option<&str>,
+    runtime_used_identifiers: &FxHashSet<String>,
     _model_binding_names: &[String],
 ) -> Vec<String> {
     // Compiler macros preset - these are compile-time only and should not be in __returned__
@@ -894,6 +901,12 @@ fn build_returned_bindings(
         })
         .unwrap_or_default();
 
+    let imported_identifier_set: FxHashSet<String> = imports
+        .iter()
+        .flat_map(|import| extract_import_identifiers(import).into_iter())
+        .filter(|name| !compiler_macros.contains(name.as_str()))
+        .collect();
+
     // Generate __returned__ object
     let mut returned_bindings: Vec<String> = ctx
         .bindings
@@ -905,6 +918,8 @@ fn build_returned_bindings(
                 && !destructured_prop_locals.contains(*name)
                 && !props_binding_names.contains(*name)
                 && !typed_prop_names.contains(*name)
+                && (!imported_identifier_set.contains(*name)
+                    || runtime_used_identifiers.contains(*name))
         })
         .cloned()
         .collect();
@@ -927,24 +942,10 @@ fn build_returned_bindings(
         TemplateUsedIdentifiers::default()
     };
 
-    // Extract all imported identifiers (both named and default imports)
-    let mut imported_identifiers: Vec<String> = Vec::new();
-    for import in imports {
-        // Extract names using OXC parser for accuracy
-        let extracted = extract_import_identifiers(import);
-        for name in extracted {
-            // Exclude compiler macros from imports
-            if !compiler_macros.contains(name.as_str()) {
-                imported_identifiers.push(name);
-            }
-        }
-    }
-
     // Include imported identifiers that are used in template
     let mut all_bindings = returned_bindings.clone();
-    for name in &imported_identifiers {
-        // Include if used in template OR if no template (include all for safety)
-        if template_content.is_none() || template_used_ids.used_ids.contains(name.as_str()) {
+    for name in &imported_identifier_set {
+        if runtime_used_identifiers.contains(name) || template_used_ids.used_ids.contains(name.as_str()) {
             if !all_bindings.contains(name) {
                 all_bindings.push(name.clone());
             }

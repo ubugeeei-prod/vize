@@ -32,6 +32,14 @@ function runCompiler(compiler: ReturnType<typeof rspack>) {
   );
 }
 
+function resolveDistLoaderPath(): string {
+  return path.join(packageRoot, "dist", "loader", "index.mjs");
+}
+
+function resolvePackageLoaderPath(name: "scope-loader" | "style-loader"): string {
+  return path.join(packageRoot, "dist", "loader", `${name}.mjs`);
+}
+
 void test("rspack builds a Vue SFC with auto-inject mode", async (t) => {
   const compiler = rspack({
     mode: "development",
@@ -56,6 +64,12 @@ void test("rspack builds a Vue SFC with auto-inject mode", async (t) => {
     },
     resolve: {
       extensions: ["...", ".ts", ".js", ".vue"],
+    },
+    resolveLoader: {
+      alias: {
+        "@vizejs/rspack-plugin/scope-loader": resolvePackageLoaderPath("scope-loader"),
+        "@vizejs/rspack-plugin/style-loader": resolvePackageLoaderPath("style-loader"),
+      },
     },
     module: {
       rules: [
@@ -83,7 +97,7 @@ void test("rspack builds a Vue SFC with auto-inject mode", async (t) => {
           test: /\.vue$/,
           use: [
             {
-              loader: path.join(packageRoot, "dist", "loader", "index.mjs"),
+              loader: resolveDistLoaderPath(),
             },
           ],
         },
@@ -116,4 +130,91 @@ void test("rspack builds a Vue SFC with auto-inject mode", async (t) => {
   );
 
   t.assert.snapshot(JSON.stringify(assets, null, 2));
+});
+
+void test("rspack omits script setup imports used only in TypeScript positions", async (t) => {
+  const compiler = rspack({
+    mode: "development",
+    devtool: false,
+    context: resolveFixturePath("type-only-import-runtime", "."),
+    entry: {
+      main: resolveFixturePath("type-only-import-runtime", "entry.ts"),
+    },
+    output: {
+      path: prepareOutputDir("type-only-import-runtime"),
+      filename: "bundle.js",
+      clean: true,
+    },
+    externals: {
+      vue: "vue",
+    },
+    experiments: {
+      css: true,
+    },
+    infrastructureLogging: {
+      level: "error",
+    },
+    resolve: {
+      extensions: ["...", ".ts", ".js", ".vue"],
+    },
+    resolveLoader: {
+      alias: {
+        "@vizejs/rspack-plugin/scope-loader": resolvePackageLoaderPath("scope-loader"),
+        "@vizejs/rspack-plugin/style-loader": resolvePackageLoaderPath("style-loader"),
+      },
+    },
+    module: {
+      rules: [
+        {
+          test: /\.ts$/,
+          loader: "builtin:swc-loader",
+          options: {
+            jsc: { parser: { syntax: "typescript" } },
+          },
+        },
+        {
+          test: /\.vue$/,
+          resourceQuery: { not: [/type=/] },
+          enforce: "post" as const,
+          loader: "builtin:swc-loader",
+          options: {
+            jsc: { parser: { syntax: "typescript" } },
+          },
+          type: "javascript/auto",
+        },
+        {
+          test: /\.vue$/,
+          use: [
+            {
+              loader: resolveDistLoaderPath(),
+            },
+          ],
+        },
+      ],
+    },
+    plugins: [
+      new VizePlugin({
+        css: {
+          native: true,
+        },
+      }),
+    ],
+  });
+
+  const stats = await runCompiler(compiler);
+  const info = stats.toJson({
+    all: false,
+    errors: true,
+    assets: true,
+  });
+
+  if (stats.hasErrors()) {
+    throw new Error(JSON.stringify(info.errors, null, 2));
+  }
+
+  const bundle = Object.values(stats.compilation.assets)
+    .map((asset) => normalizeSnapshot(asset.source().toString()))
+    .join("\n");
+
+  t.assert.ok(!bundle.includes("BadgeType"), bundle);
 });
