@@ -2,6 +2,7 @@ export type {
   MaybePromise,
   ConfigEnv,
   UserConfigExport,
+  LintPreset,
   RuleSeverity,
   RuleCategory,
   VizeConfig,

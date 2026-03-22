@@ -6,21 +6,20 @@
 use lightningcss::printer::PrinterOptions;
 use lightningcss::stylesheet::{ParserFlags, ParserOptions, StyleSheet};
 use lightningcss::targets::Targets;
-use vize_carton::{String, ToCompactString};
+use vize_carton::{FxHashMap, String, ToCompactString};
 
 /// Convert major version to LightningCSS format (major << 16)
 pub(crate) fn version_to_u32(major: u32) -> u32 {
     major << 16
 }
 
-use std::collections::HashMap;
 use super::CssModuleExport as VizeCssModuleExport;
 
 /// CSS Modules compilation result
 pub(crate) struct CssInternalResult {
     pub code: String,
     pub errors: Vec<String>,
-    pub exports: Option<HashMap<String, VizeCssModuleExport>>,
+    pub exports: Option<FxHashMap<String, VizeCssModuleExport>>,
 }
 
 /// Internal CSS compilation with owned strings to avoid borrow issues

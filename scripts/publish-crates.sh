@@ -69,8 +69,8 @@ publish_crate vize_atelier_sfc
 # vize_glyph, vize_vitrine, vize_maestro, vize are skipped:
 # vize_glyph depends on oxc_formatter which is not yet on crates.io,
 # and the others depend on vize_glyph (even as optional, crates.io still resolves it)
-publish_crate vize_patina
 publish_crate vize_canon
+publish_crate vize_patina
 publish_crate vize_musea
 publish_crate vize_fresco
 

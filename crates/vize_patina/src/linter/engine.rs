@@ -12,6 +12,53 @@ use vize_carton::ToCompactString;
 use super::config::{LintResult, Linter};
 
 impl Linter {
+    fn lint_sfc_level(&self, source: &str, filename: &str) -> LintResult {
+        let capacity = (source.len() * 2).max(self.initial_capacity);
+        let allocator = Allocator::with_capacity(capacity);
+        let mut ctx = LintContext::with_locale(&allocator, source, filename, self.locale);
+        ctx.set_enabled_rules(self.enabled_rules.clone());
+        ctx.set_help_level(self.help_level);
+
+        for rule in self.registry.rules() {
+            ctx.current_rule = rule.meta().name;
+            rule.run_on_sfc(&mut ctx);
+        }
+
+        let error_count = ctx.error_count();
+        let warning_count = ctx.warning_count();
+        let diagnostics = ctx.into_diagnostics();
+
+        LintResult {
+            filename: filename.to_compact_string(),
+            diagnostics,
+            error_count,
+            warning_count,
+        }
+    }
+
+    fn merge_lint_results(
+        mut template_result: LintResult,
+        mut sfc_result: LintResult,
+    ) -> LintResult {
+        if sfc_result.diagnostics.is_empty() {
+            return template_result;
+        }
+
+        if template_result.diagnostics.is_empty() {
+            return sfc_result;
+        }
+
+        template_result.error_count += sfc_result.error_count;
+        template_result.warning_count += sfc_result.warning_count;
+        template_result
+            .diagnostics
+            .append(&mut sfc_result.diagnostics);
+        template_result
+            .diagnostics
+            .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
+        template_result
+    }
+
     /// Lint a Vue template source.
     #[inline]
     pub fn lint_template(&self, source: &str, filename: &str) -> LintResult {
@@ -82,10 +129,54 @@ impl Linter {
     /// Uses ultra-fast template extraction optimized for linting.
     #[inline]
     pub fn lint_sfc(&self, source: &str, filename: &str) -> LintResult {
+        let sfc_result = self.lint_sfc_level(source, filename);
+
+        #[cfg(not(target_arch = "wasm32"))]
+        if super::native_type_aware::has_active_type_aware_rules(self) {
+            let template_result =
+                super::native_type_aware::lint_sfc_with_tsgo(self, source, filename);
+            return Self::merge_lint_results(template_result, sfc_result);
+        }
+
+        if super::script_rules::has_active_builtin_script_rules(self) {
+            let template_result = match super::script_rules::parse_sfc_for_lint(source, filename) {
+                Ok(descriptor) => {
+                    super::script_rules::lint_with_descriptor(self, filename, &descriptor)
+                }
+                Err(_) => {
+                    if let Some((content, byte_offset)) = extract_template_fast(source) {
+                        let mut fallback = self.lint_template(&content, filename);
+                        if byte_offset > 0 {
+                            for diag in &mut fallback.diagnostics {
+                                diag.start += byte_offset;
+                                diag.end += byte_offset;
+                                for label in &mut diag.labels {
+                                    label.start += byte_offset;
+                                    label.end += byte_offset;
+                                }
+                            }
+                        }
+                        fallback
+                    } else {
+                        LintResult {
+                            filename: filename.to_compact_string(),
+                            diagnostics: Vec::new(),
+                            error_count: 0,
+                            warning_count: 0,
+                        }
+                    }
+                }
+            };
+            return Self::merge_lint_results(template_result, sfc_result);
+        }
+
         // Fast template extraction using memchr
         let (content, byte_offset) = match extract_template_fast(source) {
             Some(r) => r,
             None => {
+                if sfc_result.has_diagnostics() {
+                    return sfc_result;
+                }
                 return LintResult {
                     filename: filename.to_compact_string(),
                     diagnostics: Vec::new(),
@@ -109,13 +200,13 @@ impl Linter {
             }
         }
 
-        result
+        Self::merge_lint_results(result, sfc_result)
     }
 }
 
 /// Ultra-fast template extraction using memchr for SIMD-accelerated search.
 #[inline]
-fn extract_template_fast(source: &str) -> Option<(String, u32)> {
+pub(crate) fn extract_template_fast(source: &str) -> Option<(String, u32)> {
     let bytes = source.as_bytes();
 
     // Find <template using memchr (SIMD accelerated)

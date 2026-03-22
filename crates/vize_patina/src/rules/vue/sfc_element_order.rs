@@ -2,20 +2,12 @@
 //!
 //! Enforce a consistent order of top-level elements in SFC.
 //!
-//! Single-File Components should have a consistent order of their
-//! top-level tags. The recommended order is:
+//! Single-File Components should keep their top-level blocks in a
+//! predictable order:
 //!
-//! 1. `<script>` (optional, if using both script and script setup)
-//! 2. `<script setup>`
-//! 3. `<template>`
-//! 4. `<style>`
-//!
-//! Or alternatively:
-//! 1. `<template>`
-//! 2. `<script>`
+//! 1. `<script>` / `<script setup>`
+//! 2. `<template>`
 //! 3. `<style>`
-//!
-//! This rule enforces script(s) -> template -> style order.
 //!
 //! ## Examples
 //!
@@ -30,15 +22,13 @@
 //! ```vue
 //! <script setup>...</script>
 //! <template>...</template>
-//! <style>...</style>
+//! <style></style>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, RootNode};
+use vize_atelier_sfc::{parse_sfc, BlockLocation, SfcParseOptions};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/sfc-element-order",
@@ -48,36 +38,46 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// SFC element types
+static HELP_ORDER: &str = "Recommended order: <script> -> <template> -> <style>";
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 enum SfcElementType {
-    Script,   // <script> or <script setup>
-    Template, // <template>
-    Style,    // <style>
-    Other,    // custom blocks
+    Script,
+    Template,
+    Style,
 }
 
 impl SfcElementType {
-    fn from_tag(tag: &str) -> Self {
-        match tag {
-            "script" => SfcElementType::Script,
-            "template" => SfcElementType::Template,
-            "style" => SfcElementType::Style,
-            _ => SfcElementType::Other,
-        }
-    }
-
-    fn name(&self) -> &'static str {
-        match self {
-            SfcElementType::Script => "<script>",
-            SfcElementType::Template => "<template>",
-            SfcElementType::Style => "<style>",
-            SfcElementType::Other => "custom block",
+    #[inline]
+    fn order_message(self, previous: Self) -> &'static str {
+        match (self, previous) {
+            (Self::Script, Self::Template) => "<script> should come before <template>",
+            (Self::Script, Self::Style) => "<script> should come before <style>",
+            (Self::Template, Self::Style) => "<template> should come before <style>",
+            _ => "SFC top-level blocks are out of order",
         }
     }
 }
 
-/// Enforce SFC element order
+#[derive(Debug, Clone, Copy)]
+struct OrderedBlock {
+    kind: SfcElementType,
+    start: u32,
+    end: u32,
+}
+
+impl OrderedBlock {
+    #[inline]
+    fn new(kind: SfcElementType, loc: &BlockLocation) -> Self {
+        Self {
+            kind,
+            start: loc.tag_start as u32,
+            end: loc.tag_end as u32,
+        }
+    }
+}
+
+/// Enforce SFC element order.
 pub struct SfcElementOrder;
 
 impl Rule for SfcElementOrder {
@@ -85,36 +85,48 @@ impl Rule for SfcElementOrder {
         &META
     }
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
-        // This rule checks the root-level elements
-        // In an SFC, the root contains script, template, and style blocks
-        let mut found_elements: Vec<(SfcElementType, &ElementNode)> = Vec::new();
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        let descriptor = match parse_sfc(
+            ctx.source,
+            SfcParseOptions {
+                filename: ctx.filename.into(),
+                ..Default::default()
+            },
+        ) {
+            Ok(descriptor) => descriptor,
+            Err(_) => return,
+        };
 
-        for child in root.children.iter() {
-            if let vize_relief::ast::TemplateChildNode::Element(element) = child {
-                let element_type = SfcElementType::from_tag(element.tag.as_str());
-                if element_type != SfcElementType::Other {
-                    found_elements.push((element_type, element));
-                }
-            }
+        let mut blocks = Vec::with_capacity(2 + descriptor.styles.len());
+
+        if let Some(script) = descriptor.script.as_ref() {
+            blocks.push(OrderedBlock::new(SfcElementType::Script, &script.loc));
+        }
+        if let Some(script_setup) = descriptor.script_setup.as_ref() {
+            blocks.push(OrderedBlock::new(SfcElementType::Script, &script_setup.loc));
+        }
+        if let Some(template) = descriptor.template.as_ref() {
+            blocks.push(OrderedBlock::new(SfcElementType::Template, &template.loc));
+        }
+        for style in &descriptor.styles {
+            blocks.push(OrderedBlock::new(SfcElementType::Style, &style.loc));
         }
 
-        // Check order
-        for i in 1..found_elements.len() {
-            let (curr_type, curr_element) = found_elements[i];
-            let (prev_type, _) = found_elements[i - 1];
+        blocks.sort_unstable_by_key(|block| block.start);
 
-            // Script should always come before template and style
-            // Template should always come before style
-            if curr_type < prev_type {
-                ctx.warn_with_help(
-                    format!(
-                        "{} should come before {}",
-                        curr_type.name(),
-                        prev_type.name()
-                    ),
-                    &curr_element.loc,
-                    "Recommended order: <script> -> <template> -> <style>",
+        for index in 1..blocks.len() {
+            let current = blocks[index];
+            let previous = blocks[index - 1];
+
+            if current.kind < previous.kind {
+                ctx.report(
+                    LintDiagnostic::warn(
+                        META.name,
+                        current.kind.order_message(previous.kind),
+                        current.start,
+                        current.end,
+                    )
+                    .with_help(HELP_ORDER),
                 );
             }
         }
@@ -136,8 +148,10 @@ mod tests {
     #[test]
     fn test_valid_order_script_template_style() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<script setup></script><template><div></div></template><style></style>"#,
+        let result = linter.lint_sfc(
+            r#"<script setup></script>
+<template><div></div></template>
+<style></style>"#,
             "test.vue",
         );
         assert_eq!(result.warning_count, 0);
@@ -146,21 +160,39 @@ mod tests {
     #[test]
     fn test_invalid_template_before_script() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<template><div></div></template><script setup></script>"#,
+        let result = linter.lint_sfc(
+            r#"<template><div></div></template>
+<script setup></script>"#,
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+        assert_eq!(result.diagnostics[0].rule_name, "vue/sfc-element-order");
         assert!(result.diagnostics[0].message.contains("<script>"));
     }
 
     #[test]
     fn test_invalid_style_before_template() {
         let linter = create_linter();
-        let result = linter.lint_template(
-            r#"<script setup></script><style></style><template><div></div></template>"#,
+        let result = linter.lint_sfc(
+            r#"<script setup></script>
+<style></style>
+<template><div></div></template>"#,
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
+        assert_eq!(result.diagnostics[0].rule_name, "vue/sfc-element-order");
+    }
+
+    #[test]
+    fn test_custom_blocks_are_ignored_for_ordering() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            r#"<docs>hello</docs>
+<script setup></script>
+<template><div></div></template>
+<style></style>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 }

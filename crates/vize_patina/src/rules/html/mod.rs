@@ -3,7 +3,7 @@
 //! These rules check whether HTML in Vue templates conforms to
 //! the WHATWG HTML Living Standard. Based on markuplint.
 
-pub mod helpers;
+pub(crate) mod helpers;
 
 mod deprecated_attr;
 mod deprecated_element;

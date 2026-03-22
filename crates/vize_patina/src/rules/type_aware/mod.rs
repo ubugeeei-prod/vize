@@ -13,10 +13,14 @@
 //! ### Template Rules
 //! - `type/no-unsafe-template-binding` - Disallow type-unsafe template bindings
 
-mod no_floating_promises;
+#[cfg(not(target_arch = "wasm32"))]
 mod require_typed_emits;
+#[cfg(not(target_arch = "wasm32"))]
 mod require_typed_props;
 
-pub use no_floating_promises::NoFloatingPromises;
+#[cfg(not(target_arch = "wasm32"))]
+pub use crate::rules::opinionated::type_aware::NoFloatingPromises;
+#[cfg(not(target_arch = "wasm32"))]
 pub use require_typed_emits::RequireTypedEmits;
+#[cfg(not(target_arch = "wasm32"))]
 pub use require_typed_props::RequireTypedProps;

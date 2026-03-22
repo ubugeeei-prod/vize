@@ -26,6 +26,8 @@ export type RuleSeverity = "off" | "warn" | "error";
 
 export type RuleCategory = "correctness" | "suspicious" | "style" | "perf" | "a11y" | "security";
 
+export type LintPreset = "happy-path" | "opinionated" | "essential" | "nuxt";
+
 // ============================================================================
 // VizeConfig
 // ============================================================================

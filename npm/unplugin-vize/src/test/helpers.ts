@@ -7,6 +7,9 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 export const packageRoot = path.resolve(currentDir, "..", "..");
 export const workspaceRoot = path.resolve(packageRoot, "..", "..");
 const outputRoot = path.join(workspaceRoot, "__agent_only", "test-output", "unplugin-vize");
+const snapshotRoots = Array.from(new Set([workspaceRoot, fs.realpathSync(workspaceRoot)])).map(
+  (root) => root.replaceAll("\\", "/"),
+);
 
 export function resolveFixturePath(name: string, file: string): string {
   return path.join(packageRoot, "src", "test", "fixtures", name, file);
@@ -20,5 +23,10 @@ export function prepareOutputDir(name: string): string {
 }
 
 export function normalizeSnapshot(value: string): string {
-  return value.replaceAll(workspaceRoot, "<WORKSPACE>").replaceAll("\\", "/");
+  let normalized = value.replaceAll("\\", "/");
+  for (const root of snapshotRoots) {
+    normalized = normalized.replaceAll(root, "<WORKSPACE>");
+    normalized = normalized.replaceAll(encodeURIComponent(root), "<WORKSPACE>");
+  }
+  return normalized;
 }

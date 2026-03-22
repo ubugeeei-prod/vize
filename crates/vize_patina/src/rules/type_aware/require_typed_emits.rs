@@ -126,14 +126,17 @@ impl Rule for RequireTypedEmits {
 
             // Get position from the defineEmits call if available
             if let Some(call) = define_emits_call {
-                ctx.report(crate::diagnostic::LintDiagnostic::warn(
-                    ctx.current_rule,
-                    "Emit should have a type definition",
-                    call.start,
-                    call.end,
-                ).with_help(
-                    "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()"
-                ));
+                ctx.report(
+                    crate::diagnostic::LintDiagnostic::warn(
+                        ctx.current_rule,
+                        "Emit should have a type definition",
+                        call.start,
+                        call.end,
+                    )
+                    .with_help(
+                        "Use TypeScript type parameter: defineEmits<{ click: [value: MouseEvent] }>()",
+                    ),
+                );
                 // Only report once per defineEmits call
                 return;
             }

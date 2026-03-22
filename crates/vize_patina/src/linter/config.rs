@@ -5,8 +5,11 @@
 
 use crate::{
     diagnostic::{HelpLevel, LintDiagnostic},
+    preset::{builtin_script_rule_names, LintPreset},
     rule::RuleRegistry,
 };
+#[cfg(not(target_arch = "wasm32"))]
+use std::sync::Mutex;
 use vize_carton::{i18n::Locale, FxHashSet, String};
 
 /// Lint result for a single file.
@@ -52,21 +55,45 @@ pub struct Linter {
     pub(crate) enabled_rules: Option<FxHashSet<String>>,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
+    /// Built-in script rules enabled for this linter.
+    pub(crate) script_rules: &'static [&'static str],
+    /// Lazily initialized native tsgo client for type-aware lint.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) native_tsgo: Mutex<Option<vize_canon::lsp_client::TsgoLspClient>>,
 }
 
 impl Linter {
     /// Default initial capacity for the arena (64KB).
     pub(crate) const DEFAULT_INITIAL_CAPACITY: usize = 64 * 1024;
 
-    /// Create a new linter with recommended rules.
+    /// Create a new linter with the default happy-path preset.
     #[inline]
     pub fn new() -> Self {
+        let preset = LintPreset::default();
         Self {
-            registry: RuleRegistry::with_recommended(),
+            registry: RuleRegistry::with_preset(preset),
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
             help_level: HelpLevel::default(),
+            script_rules: builtin_script_rule_names(preset),
+            #[cfg(not(target_arch = "wasm32"))]
+            native_tsgo: Mutex::new(None),
+        }
+    }
+
+    /// Create a new linter with a named preset.
+    #[inline]
+    pub fn with_preset(preset: LintPreset) -> Self {
+        Self {
+            registry: RuleRegistry::with_preset(preset),
+            initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
+            locale: Locale::default(),
+            enabled_rules: None,
+            help_level: HelpLevel::default(),
+            script_rules: builtin_script_rule_names(preset),
+            #[cfg(not(target_arch = "wasm32"))]
+            native_tsgo: Mutex::new(None),
         }
     }
 
@@ -79,6 +106,9 @@ impl Linter {
             locale: Locale::default(),
             enabled_rules: None,
             help_level: HelpLevel::default(),
+            script_rules: &[],
+            #[cfg(not(target_arch = "wasm32"))]
+            native_tsgo: Mutex::new(None),
         }
     }
 

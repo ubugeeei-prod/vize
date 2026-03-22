@@ -34,6 +34,11 @@ jobs:
         with:
           node-version-file: ".node-version"
           cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --workspace-root --force --frozen-lockfile
+      - name: Test release scripts
+        run: vp run --workspace-root test:scripts
       - name: Build JS packages
         run: vp run --workspace-root build:packages
       - name: Check JS/TS

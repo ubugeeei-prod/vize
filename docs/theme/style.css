@@ -14,7 +14,7 @@
 }
 
 /* Canvas */
-#marble-canvas {
+#vein-canvas {
   position: fixed;
   top: 0;
   left: 0;
@@ -25,7 +25,7 @@
 }
 
 /* Reduce shader on content pages for readability */
-body:not(.entry-page) #marble-canvas {
+body:not(.entry-page) #vein-canvas {
   opacity: 0.25;
 }
 

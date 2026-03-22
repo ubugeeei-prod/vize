@@ -26,9 +26,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::html::helpers::{has_palpable_content, PALPABLE_CONTENT_ELEMENTS};
 use vize_relief::ast::{ElementNode, ElementType, PropNode};
-
-use super::helpers::{has_palpable_content, PALPABLE_CONTENT_ELEMENTS};
 
 static META: RuleMeta = RuleMeta {
     name: "html/no-empty-palpable-content",

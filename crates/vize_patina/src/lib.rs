@@ -67,9 +67,10 @@
 //! - `vapor/prefer-static-class` - Prefer static class over dynamic binding
 //! - `vapor/no-inline-template` - Disallow deprecated inline-template
 //!
-//! Script rules (opt-in):
+//! Script rules (enabled by opinionated / nuxt presets, or opt-in manually):
 //! - `script/no-options-api` - Disallow Options API patterns (Vapor is Composition-only)
 //! - `script/no-get-current-instance` - Disallow getCurrentInstance() (returns null in Vapor)
+//! - `script/no-next-tick` - Disallow nextTick() scheduling in Vapor-oriented code
 //!
 //! ### Musea Rules (for *.art.vue files)
 //! - `musea/require-title` - Require title attribute in `<art>` block
@@ -79,7 +80,7 @@
 //! - `musea/unique-variant-names` - Require unique variant names
 //! - `musea/prefer-design-tokens` - Prefer design token CSS variables over hardcoded primitive values
 //!
-//! ### Script Rules (opt-in, default off)
+//! ### Script Rules (manual opt-in, default off unless a built-in preset enables them)
 //! - `script/prefer-import-from-vue` - Prefer importing from 'vue' instead of internal packages
 //! - `script/no-internal-imports` - Disallow importing from Vue internal modules
 
@@ -87,6 +88,7 @@ mod context;
 mod diagnostic;
 mod linter;
 pub mod output;
+mod preset;
 mod rule;
 pub mod rules;
 pub mod telegraph;
@@ -96,8 +98,10 @@ pub use context::LintContext;
 pub use diagnostic::{
     render_help, Fix, HelpLevel, HelpRenderTarget, LintDiagnostic, LintSummary, Severity, TextEdit,
 };
+pub use linter::script_rules::{builtin_script_rules, BuiltinScriptRuleMeta};
 pub use linter::{LintResult, Linter};
 pub use output::{format_results, format_summary, OutputFormat};
+pub use preset::LintPreset;
 pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
 pub use telegraph::{Emitter, JsonEmitter, LspDiagnostic, LspEmitter, Telegraph, TextEmitter};
 pub use vize_carton::i18n::Locale;

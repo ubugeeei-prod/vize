@@ -1,9 +1,12 @@
 import { ref, computed, type Ref } from "vue";
-import type { LintRule } from "../../wasm/index";
+import type { LintPreset, LintRule } from "../../wasm/index";
 
 const STORAGE_KEY = "vize-patina-rules-config";
+const DEFAULT_PRESET: LintPreset = "happy-path";
+const KNOWN_PRESETS = new Set<LintPreset>(["happy-path", "opinionated", "essential", "nuxt"]);
 
 export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
+  const selectedPreset = ref<LintPreset>(DEFAULT_PRESET);
   const enabledRules = ref<Set<string>>(new Set());
   const severityOverrides = ref<Map<string, "error" | "warning" | "off">>(new Map());
 
@@ -28,12 +31,19 @@ export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
     });
   });
 
+  function normalizePreset(value: unknown): LintPreset {
+    return typeof value === "string" && KNOWN_PRESETS.has(value as LintPreset)
+      ? (value as LintPreset)
+      : DEFAULT_PRESET;
+  }
+
   /** Load saved rule configuration from localStorage */
   function loadRuleConfig() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const config = JSON.parse(saved);
+        selectedPreset.value = normalizePreset(config.selectedPreset);
         enabledRules.value = new Set(config.enabledRules || []);
         severityOverrides.value = new Map(Object.entries(config.severityOverrides || {}));
       }
@@ -46,6 +56,7 @@ export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
   function saveRuleConfig() {
     try {
       const config = {
+        selectedPreset: selectedPreset.value,
         enabledRules: Array.from(enabledRules.value),
         severityOverrides: Object.fromEntries(severityOverrides.value),
       };
@@ -57,11 +68,32 @@ export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
 
   /** Initialize all rules as enabled when rules are loaded */
   function initializeRuleState() {
-    if (enabledRules.value.size === 0 && rules.value.length > 0) {
-      rules.value.forEach((rule) => {
-        enabledRules.value.add(rule.name);
-      });
-      saveRuleConfig();
+    if (rules.value.length === 0) {
+      return;
+    }
+
+    if (enabledRules.value.size === 0) {
+      applyPreset(selectedPreset.value, false);
+      return;
+    }
+
+    enabledRules.value = new Set(
+      Array.from(enabledRules.value).filter((name) =>
+        rules.value.some((rule) => rule.name === name),
+      ),
+    );
+    saveRuleConfig();
+  }
+
+  /** Apply a built-in rule preset */
+  function applyPreset(preset: LintPreset, shouldLint = true) {
+    selectedPreset.value = preset;
+    enabledRules.value = new Set(
+      rules.value.filter((rule) => rule.presets.includes(preset)).map((rule) => rule.name),
+    );
+    saveRuleConfig();
+    if (shouldLint) {
+      lint();
     }
   }
 
@@ -92,6 +124,7 @@ export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
 
   /** Enable all rules */
   function enableAllRules() {
+    selectedPreset.value = "opinionated";
     rules.value.forEach((rule) => {
       enabledRules.value.add(rule.name);
     });
@@ -120,6 +153,7 @@ export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
   }
 
   return {
+    selectedPreset,
     enabledRules,
     severityOverrides,
     selectedCategory,
@@ -129,6 +163,7 @@ export function useRuleManagement(rules: Ref<LintRule[]>, lint: () => void) {
     loadRuleConfig,
     saveRuleConfig,
     initializeRuleState,
+    applyPreset,
     toggleRule,
     toggleCategory,
     enableAllRules,

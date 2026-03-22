@@ -2,6 +2,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::preset::LintPreset;
 use vize_relief::ast::{DirectiveNode, ElementNode, ForNode, IfNode, InterpolationNode, RootNode};
 
 /// Rule category for organization
@@ -46,6 +47,10 @@ pub struct RuleMeta {
 pub trait Rule: Send + Sync {
     /// Get rule metadata
     fn meta(&self) -> &'static RuleMeta;
+
+    /// Run on the full SFC source before template extraction.
+    #[allow(unused_variables)]
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {}
 
     /// Run on template root node (called once per template)
     #[allow(unused_variables)]
@@ -93,9 +98,18 @@ pub struct RuleRegistry {
 }
 
 impl RuleRegistry {
+    const ESSENTIAL_CAPACITY: usize = 32;
+    const HAPPY_PATH_CAPACITY: usize = 90;
     /// Create a new empty registry
     pub fn new() -> Self {
         Self { rules: Vec::new() }
+    }
+
+    #[inline]
+    fn with_capacity(capacity: usize) -> Self {
+        Self {
+            rules: Vec::with_capacity(capacity),
+        }
     }
 
     /// Register a rule
@@ -113,21 +127,29 @@ impl RuleRegistry {
         &self.rules
     }
 
-    /// Create registry with all built-in rules enabled
+    /// Check whether a rule with the given name is registered.
+    pub fn has_rule(&self, name: &str) -> bool {
+        self.rules.iter().any(|rule| rule.meta().name == name)
+    }
+
+    /// Create a registry for a named preset.
+    pub fn with_preset(preset: LintPreset) -> Self {
+        match preset {
+            LintPreset::HappyPath => Self::with_happy_path(),
+            LintPreset::Opinionated => Self::with_opinionated(),
+            LintPreset::Essential => Self::with_essential(),
+            LintPreset::Nuxt => Self::with_nuxt(),
+        }
+    }
+
+    /// Create the default happy-path registry.
     ///
-    /// This includes:
-    /// - **Essential rules** (severity: Error) - Prevent errors
-    /// - **Strongly recommended rules** (severity: Warning) - Improve readability
-    /// - **Recommended rules** (severity: Warning) - Ensure consistency
-    /// - **Vapor mode rules** - Vue 3.6+ Vapor compatibility
-    pub fn with_recommended() -> Self {
-        let mut registry = Self::new();
+    /// This focuses on broad correctness, security, and accessibility checks
+    /// without enforcing stronger stylistic or framework-specific conventions.
+    pub fn with_happy_path() -> Self {
+        let mut registry = Self::with_capacity(Self::HAPPY_PATH_CAPACITY);
 
-        // ============================================
-        // Vue Essential Rules (Error)
-        // ============================================
-        // These rules help prevent errors and should be followed at all costs.
-
+        // Vue correctness rules.
         registry.register(Box::new(crate::rules::vue::RequireVForKey));
         registry.register(Box::new(crate::rules::vue::ValidVFor));
         registry.register(Box::new(crate::rules::vue::NoUseVIfWithVFor));
@@ -145,80 +167,41 @@ impl RuleRegistry {
         registry.register(Box::new(
             crate::rules::vue::NoReservedComponentNames::default(),
         ));
-        registry.register(Box::new(crate::rules::vue::ValidVSlot));
-        registry.register(Box::new(
-            crate::rules::vue::MultiWordComponentNames::default(),
-        ));
-        registry.register(Box::new(crate::rules::vue::NoChildContent));
-        registry.register(Box::new(crate::rules::vue::ValidAttributeName));
-        registry.register(Box::new(crate::rules::vue::NoVTextVHtmlOnComponent));
-        registry.register(Box::new(crate::rules::vue::RequireComponentIs));
-        registry.register(Box::new(crate::rules::vue::NoUselessTemplateAttributes));
-        registry.register(Box::new(crate::rules::vue::ValidVMemo));
-        registry.register(Box::new(crate::rules::vue::UseVOnExact));
-
-        // ============================================
-        // Security Rules (Warning)
-        // ============================================
-        // These rules help prevent security vulnerabilities.
-
-        registry.register(Box::new(crate::rules::vue::NoVHtml));
-        registry.register(Box::new(crate::rules::vue::NoUnsafeUrl));
-
-        // ============================================
-        // Vue Strongly Recommended Rules (Warning)
-        // ============================================
-        // These rules improve readability and developer experience.
-
-        registry.register(Box::new(crate::rules::vue::NoTemplateShadow));
-        registry.register(Box::new(crate::rules::vue::VBindStyle::default()));
-        registry.register(Box::new(crate::rules::vue::VOnStyle::default()));
-        registry.register(Box::new(crate::rules::vue::HtmlSelfClosing));
+        registry.register(Box::new(crate::rules::vue::ComponentDefinitionNameCasing));
+        registry.register(Box::new(crate::rules::vue::HtmlQuotes::default()));
         registry.register(Box::new(
             crate::rules::vue::MustacheInterpolationSpacing::default(),
         ));
-        registry.register(Box::new(crate::rules::vue::AttributeHyphenation::default()));
-        registry.register(Box::new(crate::rules::vue::VSlotStyle::default()));
-        registry.register(Box::new(crate::rules::vue::PropNameCasing));
-        registry.register(Box::new(crate::rules::vue::HtmlQuotes::default()));
-        registry.register(Box::new(crate::rules::vue::ComponentDefinitionNameCasing));
-        // NoMultiSpaces is opt-in only
-
-        // ============================================
-        // Vue Recommended Rules (Warning)
-        // ============================================
-        // These rules ensure consistency across the codebase.
-
         registry.register(Box::new(crate::rules::vue::NoLoneTemplate));
+        registry.register(Box::new(crate::rules::vue::NoMultiSpaces::default()));
+        registry.register(Box::new(crate::rules::vue::PropNameCasing));
+        registry.register(Box::new(crate::rules::vue::VOnStyle::default()));
+        registry.register(Box::new(crate::rules::vue::VSlotStyle::default()));
+        registry.register(Box::new(crate::rules::vue::ValidVSlot));
+        registry.register(Box::new(crate::rules::vue::NoChildContent));
+        registry.register(Box::new(crate::rules::vue::ValidAttributeName));
+        registry.register(Box::new(crate::rules::vue::AttributeHyphenation::default()));
         registry.register(Box::new(crate::rules::vue::AttributeOrder));
+        registry.register(Box::new(crate::rules::vue::NoVTextVHtmlOnComponent));
+        registry.register(Box::new(crate::rules::vue::RequireComponentIs));
+        registry.register(Box::new(crate::rules::vue::RequireScopedStyle));
         registry.register(Box::new(crate::rules::vue::SfcElementOrder));
-        registry.register(Box::new(crate::rules::vue::ScopedEventNames));
-        registry.register(Box::new(crate::rules::vue::PreferPropsShorthand));
-
-        // ============================================
-        // Vapor Mode Rules (Warning)
-        // ============================================
-        // These rules help with Vue 3.6+ Vapor mode compatibility.
-
-        registry.register(Box::new(crate::rules::vapor::NoSuspense));
-        registry.register(Box::new(crate::rules::vapor::NoInlineTemplate));
+        registry.register(Box::new(crate::rules::vue::SingleStyleBlock));
+        registry.register(Box::new(crate::rules::vue::NoUselessTemplateAttributes));
+        registry.register(Box::new(crate::rules::vue::ValidVMemo));
         registry.register(Box::new(crate::rules::vapor::NoVueLifecycleEvents));
-        registry.register(Box::new(crate::rules::vapor::PreferStaticClass));
-        registry.register(Box::new(
-            crate::rules::vapor::RequireVaporAttribute::default(),
-        ));
 
-        // ============================================
-        // Accessibility Rules (Warning)
-        // ============================================
-        // These rules help ensure Vue templates are accessible to all users.
-        // Based on eslint-plugin-vuejs-accessibility.
+        // Security rules.
+        registry.register(Box::new(crate::rules::vue::NoVHtml));
+        registry.register(Box::new(crate::rules::vue::NoUnsafeUrl));
 
+        // Accessibility rules with broadly applicable guidance.
         registry.register(Box::new(crate::rules::a11y::ImgAlt));
         registry.register(Box::new(crate::rules::a11y::AnchorHasContent));
         registry.register(Box::new(crate::rules::a11y::HeadingHasContent));
         registry.register(Box::new(crate::rules::a11y::IframeHasTitle));
         registry.register(Box::new(crate::rules::a11y::NoDistractingElements));
+        registry.register(Box::new(crate::rules::a11y::NoIForIcon));
         registry.register(Box::new(crate::rules::a11y::TabindexNoPositive));
         registry.register(Box::new(crate::rules::a11y::ClickEventsHaveKeyEvents));
         registry.register(Box::new(crate::rules::a11y::FormControlHasLabel));
@@ -238,51 +221,48 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::a11y::RoleHasRequiredAriaProps));
         registry.register(Box::new(crate::rules::a11y::MediaHasCaption));
         registry.register(Box::new(crate::rules::a11y::NoStaticElementInteractions));
-        registry.register(Box::new(crate::rules::a11y::NoIForIcon));
         registry.register(Box::new(crate::rules::a11y::NoReferToNonExistentId));
-        registry.register(Box::new(crate::rules::vue::UseUniqueElementIds::default()));
         registry.register(Box::new(crate::rules::vue::PermittedContents));
-        registry.register(Box::new(crate::rules::a11y::HeadingLevels));
-        registry.register(Box::new(crate::rules::a11y::LandmarkRoles));
-        registry.register(Box::new(crate::rules::a11y::PlaceholderLabelOption));
 
-        // ============================================
-        // HTML Conformance Rules (Warning/Error)
-        // ============================================
-        // Based on markuplint. Enforce HTML Living Standard conformance.
-
+        // HTML conformance rules.
         registry.register(Box::new(crate::rules::html::DeprecatedElement));
         registry.register(Box::new(crate::rules::html::DeprecatedAttr));
         registry.register(Box::new(crate::rules::html::NoConsecutiveBr));
         registry.register(Box::new(crate::rules::html::IdDuplication));
         registry.register(Box::new(crate::rules::html::NoDuplicateDt));
+        registry.register(Box::new(crate::rules::html::NoEmptyPalpableContent));
         registry.register(Box::new(crate::rules::html::RequireDatetime));
 
-        // ============================================
-        // SSR Rules (Warning)
-        // ============================================
-        // These rules help detect SSR-unfriendly code patterns.
-
+        // SSR rules.
         registry.register(Box::new(crate::rules::ssr::NoBrowserGlobalsInSsr));
         registry.register(Box::new(crate::rules::ssr::NoHydrationMismatch));
 
-        // ============================================
-        // Semantic Analysis Rules (require croquis)
-        // ============================================
-        // These rules use croquis Croquis for accurate detection.
-
+        // Semantic analysis rules.
         registry.register(Box::new(crate::rules::vue::NoUnusedComponents::default()));
-        registry.register(Box::new(crate::rules::vue::NoUnusedProperties::default()));
         registry.register(Box::new(crate::rules::vue::NoMutatingProps));
+        registry.register(Box::new(crate::rules::vue::NoUnusedProperties::default()));
+        #[cfg(not(target_arch = "wasm32"))]
+        registry.register(Box::new(
+            crate::rules::type_aware::RequireTypedProps::default(),
+        ));
+        #[cfg(not(target_arch = "wasm32"))]
+        registry.register(Box::new(
+            crate::rules::type_aware::RequireTypedEmits::default(),
+        ));
 
         registry
+    }
+
+    /// Backward-compatible alias for the default preset.
+    pub fn with_recommended() -> Self {
+        Self::with_happy_path()
     }
 
     /// Create registry with only essential rules (errors only)
     ///
     /// Use this for minimal checking that only catches definite errors.
     pub fn with_essential() -> Self {
-        let mut registry = Self::new();
+        let mut registry = Self::with_capacity(Self::ESSENTIAL_CAPACITY);
 
         // Vue Essential Rules only
         registry.register(Box::new(crate::rules::vue::RequireVForKey));
@@ -324,63 +304,23 @@ impl RuleRegistry {
         registry
     }
 
-    /// Create registry with all available rules (including opt-in)
-    pub fn with_all() -> Self {
-        let mut registry = Self::with_recommended();
-
-        // Opt-in rules
-        registry.register(Box::new(crate::rules::vue::NoMultiSpaces::default()));
-        registry.register(Box::new(
-            crate::rules::vue::ComponentNameInTemplateCasing::default(),
-        ));
-
-        // Style/SFC structure rules (opt-in)
-        registry.register(Box::new(crate::rules::vue::NoPreprocessorLang));
-        registry.register(Box::new(crate::rules::vue::NoScriptNonStandardLang));
-        registry.register(Box::new(crate::rules::vue::NoTemplateLang));
-        registry.register(Box::new(crate::rules::vue::NoSrcAttribute));
-        registry.register(Box::new(crate::rules::vue::SingleStyleBlock));
-
-        // Component registration (opt-in)
-        registry.register(Box::new(
-            crate::rules::vue::RequireComponentRegistration::default(),
-        ));
-
-        // Additional opt-in rules
-        registry.register(Box::new(crate::rules::vue::NoInlineStyle));
-        registry.register(Box::new(crate::rules::vue::RequireScopedStyle));
-
-        // Warning/informational rules (opt-in)
-        registry.register(Box::new(crate::rules::vue::WarnCustomBlock));
-        registry.register(Box::new(crate::rules::vue::WarnCustomDirective));
-
-        // Opt-in accessibility / HTML conformance rules
-        registry.register(Box::new(crate::rules::a11y::UseList));
-        registry.register(Box::new(crate::rules::vue::NoBooleanAttrValue));
-        registry.register(Box::new(crate::rules::html::NoEmptyPalpableContent));
+    /// Create registry with the strongest built-in preset enabled.
+    pub fn with_opinionated() -> Self {
+        let mut registry = Self::with_happy_path();
+        crate::rules::opinionated::register(&mut registry);
 
         registry
     }
 
-    /// Create registry with Nuxt-friendly rules (auto-imports enabled)
+    /// Create registry with all available rules (including opt-in).
+    pub fn with_all() -> Self {
+        Self::with_opinionated()
+    }
+
+    /// Create registry with Nuxt-friendly rules (auto-imports enabled).
     pub fn with_nuxt() -> Self {
-        let mut registry = Self::with_recommended();
-
-        // Opt-in rules except component registration (Nuxt auto-imports)
-        registry.register(Box::new(crate::rules::vue::NoMultiSpaces::default()));
-        registry.register(Box::new(
-            crate::rules::vue::ComponentNameInTemplateCasing::default(),
-        ));
-
-        // Style/SFC structure rules (opt-in)
-        registry.register(Box::new(crate::rules::vue::NoPreprocessorLang));
-        registry.register(Box::new(crate::rules::vue::NoScriptNonStandardLang));
-        registry.register(Box::new(crate::rules::vue::NoTemplateLang));
-        registry.register(Box::new(crate::rules::vue::NoSrcAttribute));
-        registry.register(Box::new(crate::rules::vue::SingleStyleBlock));
-
-        // Nuxt mode: skip component registration warnings (auto-imported)
-        // RequireComponentRegistration is not added here
+        let mut registry = Self::with_happy_path();
+        crate::rules::opinionated::register_nuxt(&mut registry);
 
         registry
     }
@@ -388,6 +328,6 @@ impl RuleRegistry {
 
 impl Default for RuleRegistry {
     fn default() -> Self {
-        Self::with_recommended()
+        Self::with_preset(LintPreset::default())
     }
 }

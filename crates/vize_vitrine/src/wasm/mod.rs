@@ -136,6 +136,16 @@ pub(crate) fn parse_css_options(options: JsValue) -> CssCompileOptions {
         .and_then(|v| v.as_bool())
         .unwrap_or(false);
 
+    let css_modules = js_sys::Reflect::get(&options, &JsValue::from_str("cssModules"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let custom_media = js_sys::Reflect::get(&options, &JsValue::from_str("customMedia"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
     let filename = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
         .ok()
         .and_then(|v| v.as_string())
@@ -183,7 +193,8 @@ pub(crate) fn parse_css_options(options: JsValue) -> CssCompileOptions {
         source_map,
         targets,
         filename,
-        custom_media: false,
+        custom_media,
+        css_modules,
     }
 }
 

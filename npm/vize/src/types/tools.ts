@@ -1,4 +1,4 @@
-import type { RuleSeverity, RuleCategory } from "./core.js";
+import type { LintPreset, RuleSeverity, RuleCategory } from "./core.js";
 
 // ============================================================================
 // LinterConfig
@@ -12,6 +12,12 @@ export interface LinterConfig {
    * Enable linting
    */
   enabled?: boolean;
+
+  /**
+   * Built-in lint preset
+   * @default 'happy-path'
+   */
+  preset?: LintPreset;
 
   /**
    * Rules to enable/disable

@@ -1,5 +1,6 @@
 ---
 source: crates/vize_croquis/src/virtual_ts/mod.rs
+assertion_line: 280
 expression: output.content
 ---
 // Virtual TypeScript for Vue SFC type checking
@@ -14,10 +15,15 @@ import { ref, computed } from 'vue'
 function __setup() {
   // Compiler macros (setup-scope only, actual functions not declare)
   type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);
+  type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
+  type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends { required: true } ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
+  type __RuntimeEmitShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; };
   function defineProps<T>(): T { return undefined as unknown as T; }
+  function defineProps<T extends readonly string[]>(props: T): { [K in T[number]]?: any } { return undefined as unknown as { [K in T[number]]?: any }; }
+  function defineProps<T extends Record<string, any>>(props: T): __RuntimePropShape<T> { return undefined as unknown as __RuntimePropShape<T>; }
   function defineEmits<T>(): __EmitFn<T> { return undefined as unknown as __EmitFn<T>; }
   function defineEmits<T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }
-  function defineEmits<T extends Record<string, any>>(events: T): (event: keyof T, ...args: any[]) => void { return (() => {}) as any; }
+  function defineEmits<T extends Record<string, any>>(events: T): __EmitFn<__RuntimeEmitShape<T>> { return undefined as unknown as __EmitFn<__RuntimeEmitShape<T>>; }
   function defineExpose<T>(exposed?: T): void { }
   function defineOptions<T>(options: T): void { }
   function defineSlots<T>(): T { return undefined as unknown as T; }

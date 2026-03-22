@@ -146,9 +146,12 @@ const cliTasks = {
 };
 
 const testTasks = {
-  test: noCacheTask(runTasks("test:rust", "test:js")),
+  test: noCacheTask(runTasks("test:rust", "test:js", "test:scripts")),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
-  "test:js": task(runInPackages("test", testedPackages), { input: cacheInputs.jsChecks }),
+  "test:js": noCacheTask(`${runTask("build:native")} && ${runInPackages("test", testedPackages)}`),
+  "test:scripts": task("node --experimental-strip-types --test scripts/*.test.ts", {
+    input: cacheInputs.rust,
+  }),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),
@@ -207,7 +210,9 @@ const checkTasks = {
 };
 
 const releaseTasks = {
-  release: noCacheTask("sh -c './scripts/release.sh \"${usage_type:-$1}\"' --"),
+  release: noCacheTask(
+    "sh -c 'if [ -n \"${usage_type:-}\" ] && { [ $# -eq 0 ] || [ \"$1\" != \"$usage_type\" ]; }; then set -- \"$usage_type\" \"$@\"; fi; ./scripts/release.sh \"$@\"' --",
+  ),
   "publish:wasm": noCacheTask(
     'sh -c \'cd npm/vize-wasm && cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown && wasm-bindgen ../../target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir . --target web && VERSION=$(node -p "require(\\"./package.json\\").version") && case "$VERSION" in *-alpha*) npm publish --access public --tag alpha ;; *-beta*) npm publish --access public --tag beta ;; *-rc*) npm publish --access public --tag rc ;; *) npm publish --access public ;; esac\'',
   ),

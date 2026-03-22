@@ -944,12 +944,7 @@ impl TsgoBridge {
             .collect();
 
         let result = self
-            .send_request(
-                "workspace/willRenameFiles",
-                Some(json!({
-                    "files": files
-                })),
-            )
+            .send_request("workspace/willRenameFiles", Some(json!({ "files": files })))
             .await?;
 
         if result.is_null() {

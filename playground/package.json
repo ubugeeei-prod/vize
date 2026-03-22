@@ -15,7 +15,7 @@
     "check": "vp check src e2e vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && vize lint",
     "check:fix": "vp check --fix src e2e vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts",
     "fmt": "vp fmt --write src",
-    "build:wasm": "cd .. && cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown && wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir playground/src/wasm --target web"
+    "build:wasm": "ROOT=\"$(cd .. && pwd -P)\" && cargo build --manifest-path \"$ROOT/Cargo.toml\" --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown && wasm-bindgen \"$ROOT/target/wasm32-unknown-unknown/release/vize_vitrine.wasm\" --out-dir \"$ROOT/playground/src/wasm\" --target web"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",

@@ -203,10 +203,15 @@ impl VirtualTsGenerator {
         // Define as actual functions - they throw to indicate they're compile-time only
         // The important thing is they're scoped to __setup, not global
         self.emit_line("type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);");
+        self.emit_line("type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;");
+        self.emit_line("type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends { required: true } ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };");
+        self.emit_line("type __RuntimeEmitShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; };");
         self.emit_line("function defineProps<T>(): T { return undefined as unknown as T; }");
+        self.emit_line("function defineProps<T extends readonly string[]>(props: T): { [K in T[number]]?: any } { return undefined as unknown as { [K in T[number]]?: any }; }");
+        self.emit_line("function defineProps<T extends Record<string, any>>(props: T): __RuntimePropShape<T> { return undefined as unknown as __RuntimePropShape<T>; }");
         self.emit_line("function defineEmits<T>(): __EmitFn<T> { return undefined as unknown as __EmitFn<T>; }");
         self.emit_line("function defineEmits<T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }");
-        self.emit_line("function defineEmits<T extends Record<string, any>>(events: T): (event: keyof T, ...args: any[]) => void { return (() => {}) as any; }");
+        self.emit_line("function defineEmits<T extends Record<string, any>>(events: T): __EmitFn<__RuntimeEmitShape<T>> { return undefined as unknown as __EmitFn<__RuntimeEmitShape<T>>; }");
         self.emit_line("function defineExpose<T>(exposed?: T): void { }");
         self.emit_line("function defineOptions<T>(options: T): void { }");
         self.emit_line("function defineSlots<T>(): T { return undefined as unknown as T; }");
@@ -258,10 +263,15 @@ impl VirtualTsGenerator {
     pub(crate) fn emit_default_compiler_macro_definitions(&mut self) {
         self.emit_line("// Compiler macros (setup-scope only, actual functions not declare)");
         self.emit_line("type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);");
+        self.emit_line("type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;");
+        self.emit_line("type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends { required: true } ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };");
+        self.emit_line("type __RuntimeEmitShape<T extends Record<string, any>> = { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; };");
         self.emit_line("function defineProps<T>(): T { return undefined as unknown as T; }");
+        self.emit_line("function defineProps<T extends readonly string[]>(props: T): { [K in T[number]]?: any } { return undefined as unknown as { [K in T[number]]?: any }; }");
+        self.emit_line("function defineProps<T extends Record<string, any>>(props: T): __RuntimePropShape<T> { return undefined as unknown as __RuntimePropShape<T>; }");
         self.emit_line("function defineEmits<T>(): __EmitFn<T> { return undefined as unknown as __EmitFn<T>; }");
         self.emit_line("function defineEmits<T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void { return (() => {}) as any; }");
-        self.emit_line("function defineEmits<T extends Record<string, any>>(events: T): (event: keyof T, ...args: any[]) => void { return (() => {}) as any; }");
+        self.emit_line("function defineEmits<T extends Record<string, any>>(events: T): __EmitFn<__RuntimeEmitShape<T>> { return undefined as unknown as __EmitFn<__RuntimeEmitShape<T>>; }");
         self.emit_line("function defineExpose<T>(exposed?: T): void { }");
         self.emit_line("function defineOptions<T>(options: T): void { }");
         self.emit_line("function defineSlots<T>(): T { return undefined as unknown as T; }");

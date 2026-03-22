@@ -3,6 +3,10 @@ import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { defineConfig } from "vite-plus";
 import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
+import {
+  buildDocsBackgroundScript,
+  createDocsBackgroundHtml,
+} from "./theme/background";
 
 const require = createRequire(import.meta.url);
 
@@ -42,7 +46,10 @@ if (puppeteerExecutablePath) {
 const artVueGrammar = {
   ...JSON.parse(
     readFileSync(
-      resolve(import.meta.dirname, "../npm/vscode-art/syntaxes/art.tmLanguage.json"),
+      resolve(
+        import.meta.dirname,
+        "../npm/vscode-art/syntaxes/art.tmLanguage.json",
+      ),
       "utf-8",
     ),
   ),
@@ -51,13 +58,7 @@ const artVueGrammar = {
 
 const themeDir = resolve(import.meta.dirname, "theme");
 const themeCss = readFileSync(resolve(themeDir, "style.css"), "utf-8");
-
-const shaderDir = resolve(themeDir, "shaders");
-const vertSrc = readFileSync(resolve(shaderDir, "marble.vert"), "utf-8");
-const fragSrc = readFileSync(resolve(shaderDir, "marble.frag"), "utf-8");
-const themeJs = readFileSync(resolve(themeDir, "marble.js"), "utf-8")
-  .replace("__VERT_SRC__", vertSrc.replace(/`/g, "\\`"))
-  .replace("__FRAG_SRC__", fragSrc.replace(/`/g, "\\`"));
+const themeJs = buildDocsBackgroundScript(themeDir);
 
 export default defineConfig({
   plugins: [
@@ -134,8 +135,7 @@ export default defineConfig({
               '<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"><\/script>',
               "<script>if(!localStorage.getItem('theme')){localStorage.setItem('theme','light')}<\/script>",
             ].join("\n"),
-            headerAfter:
-              '<canvas id="marble-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>',
+            headerAfter: createDocsBackgroundHtml(),
           },
 
           css: themeCss,

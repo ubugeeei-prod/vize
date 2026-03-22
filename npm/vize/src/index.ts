@@ -25,6 +25,7 @@ export type {
   ConfigEnv,
   UserConfigExport,
   MaybePromise,
+  LintPreset,
   RuleSeverity,
   RuleCategory,
 } from "./types/index.js";

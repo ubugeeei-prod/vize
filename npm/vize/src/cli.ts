@@ -66,6 +66,7 @@ interface NativeBinding {
       quiet?: boolean;
       fix?: boolean;
       help_level?: string;
+      preset?: string;
     },
   ) => LintResult;
 }
@@ -91,6 +92,7 @@ interface LintOptions {
   quiet?: boolean;
   fix?: boolean;
   helpLevel?: string;
+  preset?: string;
 }
 
 interface LintResult {
@@ -117,6 +119,8 @@ function runLint(args: string[]): void {
       options.fix = true;
     } else if (arg === "--help-level") {
       options.helpLevel = args[++i];
+    } else if (arg === "--preset") {
+      options.preset = args[++i];
     } else if (!arg.startsWith("-")) {
       patterns.push(arg);
     }
@@ -133,6 +137,7 @@ function runLint(args: string[]): void {
     quiet: options.quiet,
     fix: options.fix,
     help_level: options.helpLevel,
+    preset: options.preset,
   });
 
   if (result.output) {

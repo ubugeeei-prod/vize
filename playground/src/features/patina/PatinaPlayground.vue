@@ -32,6 +32,7 @@ let lintFn: () => void = () => {};
 const { locales, currentLocale, loadLocaleConfig, setLocale } = useLocale(() => lintFn());
 
 const {
+  selectedPreset,
   enabledRules,
   severityOverrides,
   selectedCategory,
@@ -40,6 +41,7 @@ const {
   filteredRules,
   loadRuleConfig,
   initializeRuleState,
+  applyPreset,
   toggleRule,
   toggleCategory,
   enableAllRules,
@@ -51,6 +53,7 @@ const {
 const { lint, loadRules, registerHoverProvider, disposeHoverProvider, getSeverityIcon } =
   useLinting({
     source,
+    selectedPreset,
     enabledRules,
     severityOverrides,
     currentLocale,
@@ -246,6 +249,28 @@ onUnmounted(() => {
             <div class="output-header-bar">
               <span class="output-title">Rule Configuration</span>
               <div class="rules-actions">
+                <div class="preset-actions" role="group" aria-label="Lint preset">
+                  <button
+                    :class="[
+                      'btn-action',
+                      'btn-preset',
+                      { active: selectedPreset === 'happy-path' },
+                    ]"
+                    @click="applyPreset('happy-path')"
+                  >
+                    Happy Path
+                  </button>
+                  <button
+                    :class="[
+                      'btn-action',
+                      'btn-preset',
+                      { active: selectedPreset === 'opinionated' },
+                    ]"
+                    @click="applyPreset('opinionated')"
+                  >
+                    Opinionated
+                  </button>
+                </div>
                 <button class="btn-action" @click="enableAllRules">Enable All</button>
                 <button class="btn-action" @click="disableAllRules">Disable All</button>
               </div>

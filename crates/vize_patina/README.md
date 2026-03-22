@@ -32,22 +32,28 @@ Similarly, `vize_patina` provides:
 - **Configurable** - Enable/disable rules, set severity
 - **Fixable** - Auto-fix support for many rules
 - **Vue 3 focused** - Composition API, `<script setup>` support
+- **Preset-based** - Default `happy-path` rules with optional `opinionated` mode
 
 ## Usage
 
 ```rust
-use vize_patina::{Linter, LintConfig, RuleSet};
-use vize_atelier_sfc::parse_sfc;
+use vize_patina::{LintPreset, Linter};
 
-let sfc = parse_sfc(source, Default::default())?;
-let config = LintConfig::default();
-let linter = Linter::new(config);
+let happy_path = Linter::new();
+let opinionated = Linter::with_preset(LintPreset::Opinionated);
 
-let diagnostics = linter.lint(&sfc);
-for diag in diagnostics {
-    println!("{}: {}", diag.rule_id, diag.message);
+let result = opinionated.lint_sfc(source, "App.vue");
+for diagnostic in result.diagnostics {
+    println!("{}: {}", diagnostic.rule_name, diagnostic.message);
 }
 ```
+
+## Presets
+
+- `happy-path` - Default preset focused on common Vue correctness, security, and accessibility checks
+- `opinionated` - Enables stronger stylistic and structural rules in one shot
+- `essential` - Minimal correctness-focused rule set
+- `nuxt` - Opinionated preset tuned for Nuxt auto-import conventions
 
 ## Rule Categories
 

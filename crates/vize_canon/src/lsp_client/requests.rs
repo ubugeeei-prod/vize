@@ -13,6 +13,7 @@ use std::{
 };
 
 use super::{LspDiagnostic, TsgoLspClient};
+use crate::LspHover;
 use vize_carton::cstr;
 use vize_carton::FxHashMap;
 use vize_carton::String;
@@ -92,6 +93,33 @@ impl TsgoLspClient {
                 Ok(self.diagnostics.get(uri).cloned().unwrap_or_default())
             }
         }
+    }
+
+    /// Get hover information at a position.
+    pub fn hover(
+        &mut self,
+        uri: &str,
+        line: u32,
+        character: u32,
+    ) -> Result<Option<LspHover>, String> {
+        let params = serde_json::json!({
+            "textDocument": {
+                "uri": uri
+            },
+            "position": {
+                "line": line,
+                "character": character
+            }
+        });
+
+        let result = self.send_request("textDocument/hover", params)?;
+        if result.is_null() {
+            return Ok(None);
+        }
+
+        serde_json::from_value(result)
+            .map(Some)
+            .map_err(|err| cstr!("Failed to parse hover response: {err}"))
     }
 
     /// Request diagnostics for multiple URIs in batch (pipelined)

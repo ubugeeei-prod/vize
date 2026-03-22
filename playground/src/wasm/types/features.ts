@@ -44,8 +44,12 @@ export interface CsfOutput {
 }
 
 // Patina (Linter) types
+export type LintPreset = "happy-path" | "opinionated" | "essential" | "nuxt";
+
 export interface LintOptions {
   filename?: string;
+  /** Built-in lint preset (default: 'happy-path') */
+  preset?: LintPreset;
   /** Rules to enable (if not set, all rules are enabled) */
   enabledRules?: string[];
   /** Override severity for specific rules */
@@ -83,6 +87,7 @@ export interface LintRule {
   category: string;
   fixable: boolean;
   defaultSeverity: "error" | "warning";
+  presets: LintPreset[];
 }
 
 // Glyph (Formatter) types

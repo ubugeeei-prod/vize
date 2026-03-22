@@ -34,6 +34,8 @@ pub struct LintOptionsNapi {
     pub fix: Option<bool>,
     /// Help display level: "full", "short", "none"
     pub help_level: Option<String>,
+    /// Lint preset: "happy-path", "opinionated", "essential", or "nuxt"
+    pub preset: Option<String>,
 }
 
 /// Lint result for NAPI
@@ -56,7 +58,9 @@ pub struct LintResultNapi {
 pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<LintResultNapi> {
     use ignore::Walk;
     use std::time::Instant;
-    use vize_patina::{format_results, format_summary, HelpLevel, Linter, OutputFormat};
+    use vize_patina::{
+        format_results, format_summary, HelpLevel, LintPreset, Linter, OutputFormat,
+    };
 
     let opts = options.unwrap_or_default();
     let start = Instant::now();
@@ -103,7 +107,12 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
         Some("short") => HelpLevel::Short,
         _ => HelpLevel::Full,
     };
-    let linter = Linter::new().with_help_level(help_level);
+    let preset = opts
+        .preset
+        .as_deref()
+        .and_then(LintPreset::parse)
+        .unwrap_or_default();
+    let linter = Linter::with_preset(preset).with_help_level(help_level);
     let error_count = AtomicUsize::new(0);
     let warning_count = AtomicUsize::new(0);
 

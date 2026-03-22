@@ -9,7 +9,7 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 use vize_carton::ToCompactString;
-use vize_patina::{format_results, format_summary, HelpLevel, Linter, OutputFormat};
+use vize_patina::{format_results, format_summary, HelpLevel, LintPreset, Linter, OutputFormat};
 
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
@@ -41,6 +41,10 @@ pub struct LintArgs {
     /// Help display level: full (default), short, none
     #[arg(long, default_value = "full")]
     pub help_level: String,
+
+    /// Lint preset: happy-path (default), opinionated, essential, nuxt
+    #[arg(long, default_value = "happy-path")]
+    pub preset: String,
 }
 
 pub fn run(args: LintArgs) {
@@ -85,7 +89,8 @@ pub fn run(args: LintArgs) {
         "short" => HelpLevel::Short,
         _ => HelpLevel::Full,
     };
-    let linter = Linter::new().with_help_level(help_level);
+    let preset = LintPreset::parse(&args.preset).unwrap_or_default();
+    let linter = Linter::with_preset(preset).with_help_level(help_level);
     let error_count = AtomicUsize::new(0);
     let warning_count = AtomicUsize::new(0);
 

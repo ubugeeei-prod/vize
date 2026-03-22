@@ -52,12 +52,10 @@ impl Rule for NoVueLifecycleEvents {
         _element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        // Check if this is a v-on directive
         if directive.name.as_str() != "on" {
             return;
         }
 
-        // Check if the event name starts with "vue:"
         let event_name = match &directive.arg {
             Some(ExpressionNode::Simple(s)) => s.content.as_str(),
             _ => return,

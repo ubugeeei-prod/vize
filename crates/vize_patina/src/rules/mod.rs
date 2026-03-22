@@ -4,6 +4,7 @@ pub mod a11y;
 pub mod css;
 pub mod html;
 pub mod musea;
+pub mod opinionated;
 pub mod script;
 pub mod ssr;
 pub mod type_aware;

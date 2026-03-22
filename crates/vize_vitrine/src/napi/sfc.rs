@@ -662,6 +662,8 @@ pub struct CssCompileOptionsNapi {
     pub source_map: Option<bool>,
     /// Whether to minify the output
     pub minify: Option<bool>,
+    /// Whether to enable CSS Modules transforms
+    pub css_modules: Option<bool>,
     /// Whether to enable custom media query resolution
     pub custom_media: Option<bool>,
     /// Browser targets for autoprefixing
@@ -722,6 +724,7 @@ pub fn compile_css_napi(
         scope_id: opts.scope_id.map(Into::into),
         source_map: opts.source_map.unwrap_or(false),
         minify: opts.minify.unwrap_or(false),
+        css_modules: opts.css_modules.unwrap_or(false),
         custom_media: opts.custom_media.unwrap_or(false),
         targets,
     };

@@ -19,12 +19,14 @@
 //!
 //! - `script/no-options-api` - Disallow Options API patterns
 //! - `script/no-get-current-instance` - Disallow getCurrentInstance() calls
+//! - `script/no-next-tick` - Disallow nextTick() scheduling
 
 mod no_async_in_computed;
 mod no_deep_destructure_in_props;
 mod no_get_current_instance;
 mod no_import_compiler_macros;
 mod no_internal_imports;
+mod no_next_tick;
 mod no_options_api;
 mod no_reactive_destructure;
 mod no_reserved_identifiers;
@@ -49,6 +51,7 @@ pub use no_deep_destructure_in_props::NoDeepDestructureInProps;
 pub use no_get_current_instance::NoGetCurrentInstance;
 pub use no_import_compiler_macros::NoImportCompilerMacros;
 pub use no_internal_imports::NoInternalImports;
+pub use no_next_tick::NoNextTick;
 pub use no_options_api::NoOptionsApi;
 pub use no_reactive_destructure::NoReactiveDestructure;
 pub use no_reserved_identifiers::NoReservedIdentifiers;
@@ -132,6 +135,7 @@ impl ScriptLinter {
                 Box::new(NoInternalImports),
                 Box::new(NoOptionsApi),
                 Box::new(NoGetCurrentInstance),
+                Box::new(NoNextTick),
             ],
         }
     }
@@ -141,9 +145,14 @@ impl ScriptLinter {
     /// Includes rules that check for patterns not supported in Vapor mode:
     /// - `no-options-api` - Options API is not supported
     /// - `no-get-current-instance` - getCurrentInstance() returns null
+    /// - `no-next-tick` - nextTick() should not be relied on
     pub fn with_vapor_rules() -> Self {
         Self {
-            rules: vec![Box::new(NoOptionsApi), Box::new(NoGetCurrentInstance)],
+            rules: vec![
+                Box::new(NoOptionsApi),
+                Box::new(NoGetCurrentInstance),
+                Box::new(NoNextTick),
+            ],
         }
     }
 

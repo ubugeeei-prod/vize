@@ -1,6 +1,6 @@
 import { type Ref } from "vue";
 import * as monaco from "monaco-editor";
-import type { LintResult, LintDiagnostic, LintRule } from "../../wasm/index";
+import type { LintResult, LintDiagnostic, LintRule, LintPreset } from "../../wasm/index";
 import { getWasm } from "../../wasm/index";
 import { mdiAlert, mdiCloseCircle } from "@mdi/js";
 import type { LocaleCode } from "./useLocale";
@@ -21,6 +21,7 @@ interface EditorRef {
 
 export interface UseLintingOptions {
   source: Ref<string>;
+  selectedPreset: Ref<LintPreset>;
   enabledRules: Ref<Set<string>>;
   severityOverrides: Ref<Map<string, "error" | "warning" | "off">>;
   currentLocale: Ref<LocaleCode>;
@@ -35,6 +36,7 @@ export interface UseLintingOptions {
 export function useLinting(options: UseLintingOptions) {
   const {
     source,
+    selectedPreset,
     enabledRules,
     severityOverrides,
     currentLocale,
@@ -60,6 +62,7 @@ export function useLinting(options: UseLintingOptions) {
     try {
       const result = compiler.lintSfc(source.value, {
         filename: "example.vue",
+        preset: selectedPreset.value,
         enabledRules: Array.from(enabledRules.value),
         severityOverrides: Object.fromEntries(severityOverrides.value),
         locale: currentLocale.value,

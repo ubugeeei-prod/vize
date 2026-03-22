@@ -12,11 +12,13 @@ vize_relief.workspace = true
 vize_armature.workspace = true
 vize_carton.workspace = true
 vize_croquis.workspace = true
+vize_atelier_sfc.workspace = true
 
 # OXC for JS/TS parsing and diagnostics
 oxc_allocator.workspace = true
 oxc_parser.workspace = true
 oxc_ast.workspace = true
+oxc_ast_visit.workspace = true
 oxc_diagnostics.workspace = true
 oxc_span.workspace = true
 oxc_syntax.workspace = true
@@ -33,6 +35,9 @@ serde_json.workspace = true
 
 # Utilities
 memchr.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+vize_canon = { workspace = true, features = ["native"] }
 
 [dev-dependencies]
 insta.workspace = true

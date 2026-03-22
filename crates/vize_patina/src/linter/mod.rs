@@ -7,12 +7,16 @@
 
 mod config;
 mod engine;
+#[cfg(not(target_arch = "wasm32"))]
+mod native_type_aware;
+pub(crate) mod script_rules;
 
 pub use config::{LintResult, Linter};
 
 #[cfg(test)]
 mod tests {
     use super::Linter;
+    use crate::LintPreset;
     use vize_carton::{Allocator, ToCompactString};
 
     #[test]
@@ -180,6 +184,87 @@ const foo = 'bar';
         let result = linter.lint_sfc(sfc, "test.vue");
         assert_eq!(result.error_count, 0);
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_lint_sfc_opinionated_reports_no_options_api() {
+        let linter = Linter::with_preset(LintPreset::Opinionated);
+        let sfc = r#"<script>
+export default {
+  methods: {
+    increment() {}
+  }
+}
+</script>
+"#;
+        let result = linter.lint_sfc(sfc, "test.vue");
+        assert_eq!(result.error_count, 1);
+        assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
+    }
+
+    #[test]
+    fn test_lint_sfc_happy_path_skips_no_options_api() {
+        let linter = Linter::new();
+        let sfc = r#"<script>
+export default {
+  methods: {
+    increment() {}
+  }
+}
+</script>
+"#;
+        let result = linter.lint_sfc(sfc, "test.vue");
+        assert_eq!(result.error_count, 0);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_lint_sfc_explicit_script_rule_enablement_works() {
+        let linter = Linter::with_preset(LintPreset::Opinionated)
+            .with_enabled_rules(Some(vec!["script/no-options-api".into()]));
+        let sfc = r#"<script>
+export default {
+  props: {
+    count: Number
+  }
+}
+</script>
+"#;
+        let result = linter.lint_sfc(sfc, "test.vue");
+        assert_eq!(result.error_count, 1);
+        assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
+    }
+
+    #[test]
+    fn test_lint_sfc_opinionated_reports_no_next_tick() {
+        let linter = Linter::with_preset(LintPreset::Opinionated);
+        let sfc = r#"<script setup lang="ts">
+import { nextTick } from 'vue'
+
+await nextTick()
+</script>
+"#;
+        let result = linter.lint_sfc(sfc, "test.vue");
+        assert!(result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "script/no-next-tick"));
+    }
+
+    #[test]
+    fn test_lint_sfc_opinionated_reports_no_get_current_instance() {
+        let linter = Linter::with_preset(LintPreset::Opinionated);
+        let sfc = r#"<script setup lang="ts">
+import { getCurrentInstance } from 'vue'
+
+const instance = getCurrentInstance()
+</script>
+"#;
+        let result = linter.lint_sfc(sfc, "test.vue");
+        assert!(result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule_name == "script/no-get-current-instance"));
     }
 
     #[test]
