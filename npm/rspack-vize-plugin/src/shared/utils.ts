@@ -43,7 +43,7 @@ export function extractStyleBlocks(source: string): StyleBlockInfo[] {
     const src = attrs.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null;
     const lang = attrs.match(/\blang=["']([^"']+)["']/)?.[1] ?? null;
     const scoped = /\bscoped\b/.test(attrs);
-    const moduleMatch = attrs.match(/\bmodule(?:=["']([^"']+)["'])?\b/);
+    const moduleMatch = attrs.match(/\bmodule(?:=["']([^"']+)["'])?/);
     const isModule = moduleMatch ? moduleMatch[1] || true : false;
 
     blocks.push({ content, src, lang, scoped, module: isModule, index });
