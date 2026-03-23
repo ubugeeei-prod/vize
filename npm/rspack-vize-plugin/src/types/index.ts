@@ -216,6 +216,14 @@ export interface VizeRspackPluginOptions {
 
   /** Auto-clone CSS rules for Vue style sub-requests (like VueLoaderPlugin). @default true */
   autoRules?: boolean;
+
+  /**
+   * Auto-inject a `builtin:swc-loader` post-processing rule to strip TypeScript
+   * annotations from compiled `.vue` output. Safe for non-TS SFCs (SWC passes
+   * plain JS through unchanged). Set to `false` to handle TS stripping yourself.
+   * @default true
+   */
+  typescript?: boolean;
 }
 
 // Utility Types

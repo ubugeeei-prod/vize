@@ -49,7 +49,41 @@ export class VizePlugin {
       }
     }
 
-    // 2. Inject Vue feature flags (skip already-defined)
+    // 2. Auto-inject TypeScript post-processing for .vue files
+    const autoTs = this.options.typescript ?? true;
+    if (autoTs) {
+      const rules = compiler.options.module?.rules;
+      if (rules) {
+        const alreadyHasPostRule = rules.some((r) => {
+          if (r === "..." || typeof r !== "object" || r === null) return false;
+          const rule = r as RuleSetRule;
+          if (rule.enforce !== "post") return false;
+          const t = rule.test;
+          if (t instanceof RegExp) return t.test("App.vue");
+          if (typeof t === "string") return t.includes(".vue");
+          return false;
+        });
+        if (!alreadyHasPostRule) {
+          rules.push({
+            test: /\.vue$/,
+            resourceQuery: { not: [/type=/] },
+            enforce: "post" as const,
+            loader: "builtin:swc-loader",
+            options: {
+              jsc: {
+                parser: {
+                  syntax: "typescript",
+                },
+              },
+            },
+            type: "javascript/auto",
+          });
+          logger.debug("Auto-injected TypeScript post-processing rule for .vue files.");
+        }
+      }
+    }
+
+    // 3. Inject Vue feature flags (skip already-defined)
     const { DefinePlugin } = compiler.webpack;
     const existingDefines = new Set<string>();
     for (const plugin of compiler.options.plugins ?? []) {
@@ -76,7 +110,7 @@ export class VizePlugin {
       new DefinePlugin(vueDefines).apply(compiler);
     }
 
-    // 3. Dev mode file-change logging
+    // 4. Dev mode file-change logging
     if (!isProduction) {
       compiler.hooks.watchRun.tap(VizePlugin.name, (comp) => {
         const changed = comp.modifiedFiles;

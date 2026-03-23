@@ -16,7 +16,7 @@ High-performance Rspack plugin for Vue SFC compilation powered by [Vize](https:/
 - 🎨 **CSS Processing** - Support for both native CSS (`experiments.css`) and CssExtractRspackPlugin
 - 📦 **CSS Modules** - First-class CSS Modules support with per-module HMR
 - 🔗 **`<style src>` Support** - Resolves external style files with watch dependency tracking
-- 🔧 **TypeScript** - Full TypeScript support with auto-detection and optional built-in TS stripping
+- 🔧 **TypeScript** - Full TypeScript support with auto-detection and built-in SWC stripping by default
 - 🗄️ **Compilation Cache** - Content-hash based caching to skip re-compilation of unchanged files
 - 🛠️ **Vue DevTools** - Exposes `__file` for component file path in development mode
 - 🧩 **Custom Elements** - Auto-detect `.ce.vue` or configure via `customElement` option
@@ -31,7 +31,7 @@ pnpm add -D @vizejs/rspack-plugin @rspack/core
 
 ### Simple Mode (Recommended)
 
-Write a single `.vue` rule and your normal CSS rules. `VizePlugin` automatically clones your CSS rules for Vue style sub-requests.
+Write a single `.vue` rule and your normal CSS rules. `VizePlugin` automatically clones your CSS rules for Vue style sub-requests and injects Rspack's built-in SWC post-processing for `.vue` TypeScript output.
 
 ```javascript
 // rspack.config.mjs
@@ -131,7 +131,10 @@ export default {
       {
         test: /\.css$/,
         type: "javascript/auto",
-        use: [isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader", "css-loader"],
+        use: [
+          isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
+          "css-loader",
+        ],
       },
       {
         test: /\.scss$/,
@@ -318,7 +321,9 @@ export default {
             resourceQuery: /vue&type=style.*lang=scss/,
             type: "javascript/auto",
             use: [
-              isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
+              isProduction
+                ? rspack.CssExtractRspackPlugin.loader
+                : "style-loader",
               "css-loader",
               { loader: "@vizejs/rspack-plugin/scope-loader" },
               "sass-loader",
@@ -331,13 +336,16 @@ export default {
             resourceQuery: /vue&type=style/,
             type: "javascript/auto",
             use: [
-              isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
+              isProduction
+                ? rspack.CssExtractRspackPlugin.loader
+                : "style-loader",
               {
                 loader: "css-loader",
                 options: {
                   modules: {
                     auto: (_resourcePath, resourceQuery) =>
-                      typeof resourceQuery === "string" && resourceQuery.includes("module="),
+                      typeof resourceQuery === "string" &&
+                      resourceQuery.includes("module="),
                   },
                 },
               },
@@ -361,7 +369,10 @@ export default {
       {
         test: /\.css$/,
         type: "javascript/auto",
-        use: [isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader", "css-loader"],
+        use: [
+          isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
+          "css-loader",
+        ],
       },
 
       // Regular SCSS files (non-Vue)
@@ -424,6 +435,7 @@ new VizePlugin({
   compilerOptions: {};      // Extra @vizejs/native compileSfc options
   debug: boolean;           // Enable debug logging (default: false)
   autoRules: boolean;       // Auto-clone CSS rules for Vue style sub-requests (default: true)
+  typescript: boolean;      // Auto-inject builtin:swc-loader for .vue post-processing (default: true)
 });
 // Debug logging uses Rspack's infrastructure logger.
 // Control verbosity via `infrastructureLogging.level` in your rspack config.
@@ -463,11 +475,92 @@ Compilation errors cause the loader to fail immediately (`callback(error)`) inst
 
 #### TypeScript
 
-`@vizejs/native compileSfc` preserves TypeScript syntax in its output (same behavior as `@vue/compiler-sfc`). A downstream transpiler is needed to strip type annotations:
+`@vizejs/native compileSfc` preserves TypeScript syntax in its output (same behavior as `@vue/compiler-sfc`). By default, `VizePlugin` injects a `.vue` `enforce: "post"` rule using Rspack's built-in `builtin:swc-loader` to strip those type annotations for main SFC requests.
 
-- **Recommended**: Add a `builtin:swc-loader` post-processing rule for `.vue` files
-- **Custom loader**: Use `esbuild-loader` or any other TS transpiler
-- **Manual**: Add your own `enforce: "post"` rule for `.vue` files (exclude `type=style` requests)
+- **Default behavior**: No extra config is required. `new VizePlugin()` automatically injects the SWC post-processing rule.
+- **Opt out**: Set `new VizePlugin({ typescript: false })` if you want to manage `.vue` TypeScript stripping yourself.
+- **Custom loader**: When opting out, use `esbuild-loader`, `builtin:swc-loader`, or any other TS transpiler as your own `enforce: "post"` rule for `.vue` files (excluding `type=style` requests).
+
+<details>
+<summary>Advanced: builtin:swc-loader</summary>
+
+```javascript
+// rspack.config.mjs
+import { defineConfig } from "@rspack/cli";
+import { VizePlugin } from "@vizejs/rspack-plugin";
+
+export default defineConfig({
+  module: {
+    rules: [
+      {
+        test: /\.vue$/,
+        loader: "@vizejs/rspack-plugin/loader",
+      },
+      {
+        test: /\.vue$/,
+        resourceQuery: { not: [/type=/] },
+        enforce: "post",
+        loader: "builtin:swc-loader",
+        options: {
+          jsc: {
+            parser: {
+              syntax: "typescript",
+            },
+          },
+        },
+        type: "javascript/auto",
+      },
+    ],
+  },
+  plugins: [
+    new VizePlugin({
+      typescript: false,
+    }),
+  ],
+});
+```
+
+</details>
+
+<details>
+<summary>Advanced: esbuild-loader</summary>
+
+```javascript
+// rspack.config.mjs
+import { defineConfig } from "@rspack/cli";
+import { VizePlugin } from "@vizejs/rspack-plugin";
+
+export default defineConfig({
+  module: {
+    rules: [
+      {
+        test: /\.vue$/,
+        loader: "@vizejs/rspack-plugin/loader",
+      },
+      {
+        test: /\.vue$/,
+        resourceQuery: { not: [/type=/] },
+        enforce: "post",
+        loader: "esbuild-loader",
+        options: {
+          loader: "ts",
+          target: "es2020",
+        },
+        type: "javascript/auto",
+      },
+    ],
+  },
+  plugins: [
+    new VizePlugin({
+      typescript: false,
+    }),
+  ],
+});
+```
+
+> Requires `esbuild-loader` and `esbuild` to be installed in your project.
+
+</details>
 
 The `isTs` option is auto-detected from `<script lang="ts">` and passed to the native compiler for correct parsing.
 
