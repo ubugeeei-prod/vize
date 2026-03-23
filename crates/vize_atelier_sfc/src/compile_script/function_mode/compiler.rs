@@ -919,7 +919,8 @@ fn build_returned_bindings(
                 && !props_binding_names.contains(*name)
                 && !typed_prop_names.contains(*name)
                 && (!imported_identifier_set.contains(*name)
-                    || runtime_used_identifiers.contains(*name))
+                    || runtime_used_identifiers.contains(*name)
+                    || template_content.is_none())
         })
         .cloned()
         .collect();
@@ -945,7 +946,10 @@ fn build_returned_bindings(
     // Include imported identifiers that are used in template
     let mut all_bindings = returned_bindings.clone();
     for name in &imported_identifier_set {
-        if runtime_used_identifiers.contains(name) || template_used_ids.used_ids.contains(name.as_str()) {
+        if template_content.is_none()
+            || runtime_used_identifiers.contains(name)
+            || template_used_ids.used_ids.contains(name.as_str())
+        {
             if !all_bindings.contains(name) {
                 all_bindings.push(name.clone());
             }

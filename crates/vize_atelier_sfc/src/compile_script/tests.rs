@@ -142,11 +142,47 @@ const analysisResult = ref<AnalysisResult | null>(null)
 
     #[test]
     fn test_import_used_only_in_ts_positions_not_returned() {
+        // With template: type-only import should NOT be in __returned__
         let content = r#"
-import { BadgeType } from './types'
+import { SomeType } from './types'
 
 interface Props {
-  badges: BadgeType[]
+  items: SomeType[]
+}
+
+const props = defineProps<Props>()
+"#;
+        let result = compile_script_setup(
+            content,
+            "Test",
+            false,
+            true,
+            Some("<div>{{ props.items.length }}</div>"),
+        )
+        .unwrap();
+
+        let code = &result.code;
+        let returned_start = code.find("__returned__").expect("Should have __returned__");
+        let returned_block = &code[returned_start..];
+        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
+        let returned_content = &returned_block[..block_end];
+
+        assert!(
+            !returned_content.contains("SomeType"),
+            "Type-only import usage should not be in __returned__ when template exists. Got: {}",
+            returned_content
+        );
+    }
+
+    #[test]
+    fn test_no_template_preserves_all_imports_in_returned() {
+        // Without template: all imports should be conservatively included in __returned__
+        // to match @vue/compiler-sfc behavior
+        let content = r#"
+import { SomeType } from './types'
+
+interface Props {
+  items: SomeType[]
 }
 
 const props = defineProps<Props>()
@@ -160,8 +196,181 @@ const props = defineProps<Props>()
         let returned_content = &returned_block[..block_end];
 
         assert!(
-            !returned_content.contains("BadgeType"),
-            "Type-only import usage should not be in __returned__. Got: {}",
+            returned_content.contains("SomeType"),
+            "Without template, all imports should be in __returned__ for safety. Got: {}",
+            returned_content
+        );
+    }
+
+    #[test]
+    fn test_mixed_import_type_and_runtime_with_template() {
+        // Mixed import: SomeType used only in type positions, someHelper used at runtime.
+        // With template, only runtime-used and template-used imports should be in __returned__.
+        let content = r#"
+import { SomeType, someHelper } from './mod'
+
+interface Props {
+  items: SomeType[]
+}
+
+const props = defineProps<Props>()
+const result = someHelper()
+"#;
+        let result = compile_script_setup(
+            content,
+            "Test",
+            false,
+            true,
+            Some("<div>{{ result }}</div>"),
+        )
+        .unwrap();
+
+        let code = &result.code;
+        let returned_start = code.find("__returned__").expect("Should have __returned__");
+        let returned_block = &code[returned_start..];
+        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
+        let returned_content = &returned_block[..block_end];
+
+        assert!(
+            !returned_content.contains("SomeType"),
+            "Type-only import should not be in __returned__. Got: {}",
+            returned_content
+        );
+        assert!(
+            returned_content.contains("someHelper"),
+            "Runtime-used import should be in __returned__. Got: {}",
+            returned_content
+        );
+        assert!(
+            returned_content.contains("result"),
+            "Runtime binding should be in __returned__. Got: {}",
+            returned_content
+        );
+    }
+
+    #[test]
+    fn test_import_used_both_type_and_runtime() {
+        // Same symbol used in both type annotation and runtime (e.g., new SomeClass()).
+        // Should be kept in __returned__.
+        let content = r#"
+import { SomeClass } from './mod'
+
+const instance: SomeClass = new SomeClass()
+"#;
+        let result = compile_script_setup(
+            content,
+            "Test",
+            false,
+            true,
+            Some("<div>{{ instance }}</div>"),
+        )
+        .unwrap();
+
+        let code = &result.code;
+        let returned_start = code.find("__returned__").expect("Should have __returned__");
+        let returned_block = &code[returned_start..];
+        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
+        let returned_content = &returned_block[..block_end];
+
+        assert!(
+            returned_content.contains("SomeClass"),
+            "Import used at runtime should be in __returned__. Got: {}",
+            returned_content
+        );
+    }
+
+    #[test]
+    fn test_default_import_type_only_with_template() {
+        // Default import used only in type position, with template present.
+        let content = r#"
+import Foo from './foo'
+
+interface Props {
+  value: Foo
+}
+
+const props = defineProps<Props>()
+"#;
+        let result = compile_script_setup(
+            content,
+            "Test",
+            false,
+            true,
+            Some("<div>{{ props.value }}</div>"),
+        )
+        .unwrap();
+
+        let code = &result.code;
+        let returned_start = code.find("__returned__").expect("Should have __returned__");
+        let returned_block = &code[returned_start..];
+        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
+        let returned_content = &returned_block[..block_end];
+
+        assert!(
+            !returned_content.contains("Foo"),
+            "Default import used only for types should not be in __returned__. Got: {}",
+            returned_content
+        );
+    }
+
+    #[test]
+    fn test_import_used_in_template_included() {
+        // Import not used in setup runtime code, but used in template.
+        // Should be included in __returned__.
+        let content = r#"
+import { formatter } from './utils'
+
+const today = new Date()
+"#;
+        let result = compile_script_setup(
+            content,
+            "Test",
+            false,
+            false,
+            Some("<div>{{ formatter }}</div>"),
+        )
+        .unwrap();
+
+        let code = &result.code;
+        let returned_start = code.find("__returned__").expect("Should have __returned__");
+        let returned_block = &code[returned_start..];
+        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
+        let returned_content = &returned_block[..block_end];
+
+        assert!(
+            returned_content.contains("formatter"),
+            "Import used in template should be in __returned__. Got: {}",
+            returned_content
+        );
+    }
+
+    #[test]
+    fn test_import_type_syntax_always_excluded() {
+        // Explicit `import type` syntax should never be in __returned__,
+        // regardless of template presence.
+        let content = r#"
+import type { MyType } from './types'
+import { ref } from 'vue'
+
+const value = ref<MyType | null>(null)
+"#;
+        // Without template
+        let result = compile_script_setup(content, "Test", false, true, None).unwrap();
+
+        let code = &result.code;
+        let returned_start = code.find("__returned__").expect("Should have __returned__");
+        let returned_block = &code[returned_start..];
+        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
+        let returned_content = &returned_block[..block_end];
+
+        assert!(
+            !returned_content.contains("MyType"),
+            "`import type` should never be in __returned__. Got: {}",
+            returned_content
+        );
+        assert!(
+            returned_content.contains("ref"),
+            "Runtime import should be in __returned__. Got: {}",
             returned_content
         );
     }
