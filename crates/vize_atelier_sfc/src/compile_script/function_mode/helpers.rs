@@ -135,7 +135,8 @@ pub(crate) fn collect_runtime_identifier_references(code: &str) -> FxHashSet<Str
 
     impl<'a> Visit<'a> for RuntimeIdentifierVisitor {
         fn visit_identifier_reference(&mut self, ident: &oxc_ast::ast::IdentifierReference<'a>) {
-            self.identifiers.insert(ident.name.as_str().to_compact_string());
+            self.identifiers
+                .insert(ident.name.as_str().to_compact_string());
         }
     }
 

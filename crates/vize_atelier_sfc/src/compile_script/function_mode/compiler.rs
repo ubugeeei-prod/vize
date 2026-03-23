@@ -851,6 +851,7 @@ fn emit_model_bindings(
 ///
 /// Filters out compiler macros, destructured props, props bindings, and typed props.
 /// Includes imported identifiers used in the template.
+#[allow(clippy::too_many_arguments)]
 fn build_returned_bindings(
     ctx: &mut ScriptCompileContext,
     _has_props_destructure: bool,
