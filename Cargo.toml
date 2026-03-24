@@ -91,6 +91,7 @@ smallvec = { version = "1.13", features = ["union"] }
 dashmap = "6.1"
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
 sha2 = "0.10"
+htmlize = { version = "1.0.6", features = ["unescape"] }
 
 # CSS
 lightningcss = "1.0.0-alpha.68"

@@ -1010,6 +1010,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc0fef456e4baa96da950455cd02c081ca953b141298e41db3fc7e36b1da849c"
 
 [[package]]
+name = "htmlize"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d347c0de239be20ba0982e4822de3124404281e119ae3e11f5d7425a414e1935"
+dependencies = [
+ "memchr",
+ "pastey",
+ "phf 0.11.3",
+ "phf_codegen",
+ "serde_json",
+]
+
+[[package]]
 name = "httparse"
 version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3242,6 +3255,7 @@ name = "vize_armature"
 version = "0.37.0"
 dependencies = [
  "compact_str 0.8.1",
+ "htmlize",
  "serde",
  "thiserror 2.0.18",
  "vize_carton",

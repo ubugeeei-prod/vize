@@ -1,5 +1,7 @@
 use vize_relief::ErrorCode;
 
+use crate::char_codes::AMP;
+
 use super::{
     char_codes::{
         AT, COLON, DASH, DOT, DOUBLE_QUOTE, EQ, EXCLAMATION_MARK, GT, LEFT_SQUARE, LOWER_V, LT,
@@ -8,6 +10,9 @@ use super::{
     types::{is_end_of_tag_section, is_tag_start_char, is_whitespace, Callbacks, QuoteType, State},
     Tokenizer,
 };
+
+use super::entity_decode::try_decode_entity;
+use htmlize::Context;
 
 impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub(super) fn cleanup(&mut self) {
@@ -51,6 +56,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             }
             self.state = State::BeforeTagName;
             self.section_start = self.index;
+        } else if c == AMP {
+            self.start_entity();
         } else if !self.callbacks.is_in_v_pre() && c == self.delimiter_open[0] {
             self.state = State::InterpolationOpen;
             self.delimiter_index = 0;
@@ -311,16 +318,20 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         }
     }
 
-    pub(super) fn state_in_attr_value_dq(&mut self, c: u8) {
-        if c == DOUBLE_QUOTE {
-            self.emit_attr_value(QuoteType::Double);
+    fn handle_in_attr_value(&mut self, c: u8, quote: u8, quote_type: QuoteType) {
+        if c == quote {
+            self.emit_attr_value(quote_type);
+        } else if c == AMP {
+            self.start_entity();
         }
     }
 
+    pub(super) fn state_in_attr_value_dq(&mut self, c: u8) {
+        self.handle_in_attr_value(c, DOUBLE_QUOTE, QuoteType::Double);
+    }
+
     pub(super) fn state_in_attr_value_sq(&mut self, c: u8) {
-        if c == SINGLE_QUOTE {
-            self.emit_attr_value(QuoteType::Single);
-        }
+        self.handle_in_attr_value(c, SINGLE_QUOTE, QuoteType::Single);
     }
 
     pub(super) fn state_in_attr_value_nq(&mut self, c: u8) {
@@ -329,6 +340,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state_before_attr_name(c);
         } else if c == SLASH {
             self.emit_attr_value(QuoteType::Unquoted);
+        } else if c == AMP {
+            self.start_entity();
         }
     }
 
@@ -425,9 +438,50 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         }
     }
 
-    pub(super) fn state_in_entity(&mut self, _c: u8) {
-        // TODO: Implement entity decoding
-        self.state = State::Text;
+    pub(super) fn start_entity(&mut self) {
+        self.base_state = self.state;
+        self.state = State::InEntity;
+        self.entity_start = self.index;
+    }
+
+    /// Vue `stateInEntity` (non-browser): `entityDecoder.write` uses signed length (`>0` done,
+    /// `0` rewind, `<0` wait for more buffer). Here: `Some` → `emit_entity_char`; `None` → rewind
+    /// (like `0`); no `<0` path. `Context` follows `base_state` for htmlize attribute rules.
+    pub(super) fn state_in_entity(&mut self) {
+        let raw = &self.input[self.entity_start..];
+        let context = match self.base_state {
+            State::Text | State::InRCDATA => Context::General,
+            _ => Context::Attribute,
+        };
+
+        if let Some((ch, consumed)) = try_decode_entity(raw, context) {
+            self.emit_entity_char(ch, consumed);
+        } else {
+            self.index = self.entity_start;
+        }
+        self.state = self.base_state;
+    }
+
+    pub(super) fn emit_entity_char(&mut self, ch: char, consumed: usize) {
+        if self.base_state != State::Text && self.base_state != State::InRCDATA {
+            if self.section_start < self.entity_start {
+                self.callbacks
+                    .on_attrib_data(self.section_start, self.entity_start);
+            }
+            self.section_start = self.entity_start + consumed;
+            self.index = self.section_start - 1;
+            self.callbacks
+                .on_attrib_entity(ch, self.entity_start, self.section_start);
+        } else {
+            if self.section_start < self.entity_start {
+                self.callbacks
+                    .on_text(self.section_start, self.entity_start);
+            }
+            self.section_start = self.entity_start + consumed;
+            self.index = self.section_start - 1;
+            self.callbacks
+                .on_text_entity(ch, self.entity_start, self.section_start);
+        }
     }
 
     pub(super) fn state_in_sfc_root_tag_name(&mut self, c: u8) {
