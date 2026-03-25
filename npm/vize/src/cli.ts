@@ -1,8 +1,10 @@
-import { createRequire } from "module";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { createRequire } from "node:module";
 import { loadConfig } from "./config.js";
 
 const require = createRequire(import.meta.url);
+const WORKSPACE_BINDING_PATH = "../../vize-native";
 
 // ============================================================================
 // Native binding loader (oxlint pattern)
@@ -73,14 +75,54 @@ interface NativeBinding {
 }
 
 function loadNative(): NativeBinding {
-  const pkg = getBindingPackageName();
-  try {
-    return require(pkg);
-  } catch (e) {
-    console.error(`Failed to load native binding: ${pkg}`);
-    console.error("Try reinstalling: npm install vize");
-    throw e;
+  const attemptedPackages = getAttemptedPackages();
+  let lastError: unknown = null;
+
+  for (const packageName of attemptedPackages) {
+    try {
+      const binding = require(packageName) as Partial<NativeBinding>;
+      if (typeof binding.lint !== "function") {
+        throw new Error(`${packageName} does not expose the lint binding.`);
+      }
+      return binding as NativeBinding;
+    } catch (error) {
+      lastError = error;
+    }
   }
+
+  console.error(`Failed to load native binding. Tried: ${attemptedPackages.join(", ")}`);
+  console.error("Try reinstalling: npm install vize");
+  throw lastError instanceof Error ? lastError : new Error("Failed to load native binding");
+}
+
+function getAttemptedPackages(): readonly string[] {
+  const platformBindingPackage = getBindingPackageName();
+  return shouldPreferWorkspaceBinding(resolveWorkspaceBindingPath())
+    ? [WORKSPACE_BINDING_PATH, platformBindingPackage]
+    : [platformBindingPackage, WORKSPACE_BINDING_PATH];
+}
+
+function resolveWorkspaceBindingPath(): string | null {
+  try {
+    return require.resolve(WORKSPACE_BINDING_PATH);
+  } catch {
+    return null;
+  }
+}
+
+function shouldPreferWorkspaceBinding(resolvedPath: string | null): boolean {
+  const override = process.env.VIZE_PREFER_WORKSPACE_BINDING;
+  if (override === "1" || override === "true") {
+    return true;
+  }
+  if (override === "0" || override === "false") {
+    return false;
+  }
+  if (resolvedPath == null) {
+    return false;
+  }
+
+  return resolvedPath.includes(`${path.sep}npm${path.sep}vize-native${path.sep}`);
 }
 
 // ============================================================================
@@ -243,7 +285,35 @@ async function main(): Promise<void> {
   }
 }
 
-void main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+if (!import.meta.vitest) {
+  void main().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+}
+
+if (import.meta.vitest) {
+  const { describe, expect, it } = import.meta.vitest;
+
+  describe("shouldPreferWorkspaceBinding", () => {
+    it("detects the local workspace native package", () => {
+      expect(
+        shouldPreferWorkspaceBinding(
+          `${path.sep}Users${path.sep}example${path.sep}repo${path.sep}npm${path.sep}vize-native${path.sep}index.js`,
+        ),
+      ).toBe(true);
+    });
+
+    it("ignores published platform packages", () => {
+      expect(
+        shouldPreferWorkspaceBinding(
+          `${path.sep}repo${path.sep}node_modules${path.sep}.pnpm${path.sep}@vizejs+native-darwin-arm64${path.sep}node_modules${path.sep}@vizejs${path.sep}native-darwin-arm64${path.sep}index.js`,
+        ),
+      ).toBe(false);
+    });
+
+    it("returns false when the fallback package cannot be resolved", () => {
+      expect(shouldPreferWorkspaceBinding(null)).toBe(false);
+    });
+  });
+}

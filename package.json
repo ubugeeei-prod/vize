@@ -10,6 +10,8 @@
     "@iarna/toml": "^2.2.5",
     "@typescript/native-preview": "7.0.0-dev.20260124.1",
     "glob": "^13.0.0",
+    "oxfmt": "^0.40.0",
+    "oxlint": "^1.55.0",
     "vite": "catalog:",
     "vite-plus": "catalog:",
     "vue": "3.6.0-beta.1"
