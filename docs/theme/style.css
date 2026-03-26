@@ -592,3 +592,54 @@ body::after {
     letter-spacing: 0.07em !important;
   }
 }
+
+/* ================================================
+   BLOG
+   ================================================ */
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.blog-card {
+  display: block;
+  padding: 1.25rem;
+  border: 1px solid var(--octc-color-border);
+  background: color-mix(in srgb, var(--octc-color-bg) 82%, transparent);
+  color: var(--octc-color-text) !important;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+.blog-card:hover {
+  border-color: var(--octc-color-text-muted);
+  background: color-mix(in srgb, var(--octc-color-bg) 92%, transparent);
+  transform: translateY(-2px);
+}
+
+.blog-card strong {
+  display: block;
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.blog-card p {
+  margin: 0;
+  color: var(--octc-color-text-muted);
+}
+
+.blog-card-kicker {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-family: var(--octc-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--octc-color-text-muted);
+}
