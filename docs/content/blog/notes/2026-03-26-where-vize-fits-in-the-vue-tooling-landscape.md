@@ -1,9 +1,9 @@
 ---
-title: What Makes Vize Different from Vue Language Tools, Golar, Verter, Vite+, and Oxlint?
+title: Where Vize Fits in the Vue Tooling Landscape
 description: A map of where Vize sits in the current Vue tooling landscape, and how it differs from adjacent projects.
 ---
 
-# What Makes Vize Different from Vue Language Tools, Golar, Verter, Vite+, and Oxlint?
+# Where Vize Fits in the Vue Tooling Landscape
 
 <div class="blog-post-meta">
   <div class="blog-meta-chip">
@@ -59,6 +59,8 @@ Its ambition is broad:
 
 That breadth is what makes Vize different from most of the projects in this comparison. It is not just an editor integration, not just a type checker, and not just a bundler plugin. It is trying to be a coherent Vue-native toolchain with one architectural center.
 
+That is also why the recent type-check direction matters. Vize is not only trying to "make `vue-tsc` faster." The current direction is to keep Vue-aware virtual file generation, diagnostics mapping, and editor-facing type information inside `vize_canon`, with native project sessions powered by [`corsa-bind`](https://github.com/ubugeeei/corsa-bind).
+
 ## Vize vs Vue Language Tools
 
 The official [Vue Language Tools](https://github.com/vuejs/language-tools) project is the production-ready Vue editor and type-checking stack. It includes:
@@ -108,6 +110,8 @@ Vize is trying to own a much larger slice of the Vue toolchain: compiler, linter
 
 Golar deliberately reuses official Vue tooling for Vue code generation.
 Vize is trying to build more of the Vue-specific stack itself in Rust.
+
+There is also a practical execution-layer difference starting to show up. Golar is closely identified with `typescript-go` integration for embedded languages. Vize's current native type-check path is being shaped around `vize_canon` plus `corsa-bind`, which makes the question less "how do we reuse the official stack with a faster TS engine?" and more "how much of the Vue toolchain can live inside one native architecture?"
 
 So Golar is closer to "make `tsgo` work well for embedded languages," while Vize is closer to "build a native Vue toolchain end-to-end."
 
