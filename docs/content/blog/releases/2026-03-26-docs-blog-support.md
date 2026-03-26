@@ -5,7 +5,22 @@ description: The Vize docs can now host both release notes and irregular notes.
 
 # Docs Now Have a Blog
 
-**Published:** 2026-03-26
+<div class="blog-post-meta">
+  <div class="blog-meta-chip">
+    <div>
+      <span class="blog-meta-label">Published</span>
+      <span class="blog-meta-value">2026-03-26</span>
+    </div>
+  </div>
+
+  <a class="blog-author-card" href="https://github.com/ubugeeei">
+    <img src="https://github.com/ubugeeei.png" alt="ubugeeei" />
+    <span class="blog-author-text">
+      <span class="blog-meta-label">Author</span>
+      <span class="blog-meta-value">ubugeeei</span>
+    </span>
+  </a>
+</div>
 
 The Vize docs can now host two kinds of posts directly inside `docs/content/blog/`:
 

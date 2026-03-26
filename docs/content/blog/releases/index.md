@@ -16,4 +16,5 @@ Use this section for shipped changes: new versions, notable fixes, migrations, d
 
 ## Posts
 
+- [2026-03-26 - Announcing the `oxlint-plugin-vize` alpha](./2026-03-26-oxlint-plugin-vize-alpha.md)
 - [2026-03-26 - Docs now have a blog](./2026-03-26-docs-blog-support.md)

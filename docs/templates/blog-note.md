@@ -5,7 +5,22 @@ description: One-sentence summary of the idea, experiment, or project update.
 
 # Note Title
 
-**Published:** YYYY-MM-DD
+<div class="blog-post-meta">
+  <div class="blog-meta-chip">
+    <div>
+      <span class="blog-meta-label">Published</span>
+      <span class="blog-meta-value">YYYY-MM-DD</span>
+    </div>
+  </div>
+
+  <a class="blog-author-card" href="https://github.com/ubugeeei">
+    <img src="https://github.com/ubugeeei.png" alt="ubugeeei" />
+    <span class="blog-author-text">
+      <span class="blog-meta-label">Author</span>
+      <span class="blog-meta-value">ubugeeei</span>
+    </span>
+  </a>
+</div>
 
 ## Context
 

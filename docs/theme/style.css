@@ -643,3 +643,57 @@ body::after {
   text-transform: uppercase;
   color: var(--octc-color-text-muted);
 }
+
+.blog-post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  align-items: stretch;
+  margin: 0 0 1.75rem;
+}
+
+.blog-meta-chip,
+.blog-author-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 56px;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--octc-color-border);
+  background: color-mix(in srgb, var(--octc-color-bg) 86%, transparent);
+  text-decoration: none;
+  color: var(--octc-color-text) !important;
+}
+
+.blog-author-card:hover {
+  border-color: var(--octc-color-text-muted);
+  background: color-mix(in srgb, var(--octc-color-bg) 94%, transparent);
+}
+
+.blog-meta-label {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-family: var(--octc-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--octc-color-text-muted);
+}
+
+.blog-meta-value {
+  display: block;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.blog-author-card img {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  flex: none;
+}
+
+.blog-author-text {
+  display: block;
+  line-height: 1.2;
+}

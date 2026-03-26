@@ -5,7 +5,22 @@ description: Some project updates need room for context, not just a changelog en
 
 # Why Vize Now Has a Notes Lane
 
-**Published:** 2026-03-26
+<div class="blog-post-meta">
+  <div class="blog-meta-chip">
+    <div>
+      <span class="blog-meta-label">Published</span>
+      <span class="blog-meta-value">2026-03-26</span>
+    </div>
+  </div>
+
+  <a class="blog-author-card" href="https://github.com/ubugeeei">
+    <img src="https://github.com/ubugeeei.png" alt="ubugeeei" />
+    <span class="blog-author-text">
+      <span class="blog-meta-label">Author</span>
+      <span class="blog-meta-value">ubugeeei</span>
+    </span>
+  </a>
+</div>
 
 Reference docs are great at answering "how do I use this?" They are much worse at answering questions like:
 
