@@ -11,12 +11,12 @@
   },
   "homepage": "https://github.com/ubugeeei/vize",
   "files": [
-    "vize_bindings_bg.wasm",
-    "vize_bindings.js",
-    "vize_bindings.d.ts"
+    "vize_vitrine_bg.wasm",
+    "vize_vitrine.js",
+    "vize_vitrine.d.ts"
   ],
-  "main": "vize_bindings.js",
-  "types": "vize_bindings.d.ts",
+  "main": "vize_vitrine.js",
+  "types": "vize_vitrine.d.ts",
   "sideEffects": [
     "./snippets/*"
   ]
