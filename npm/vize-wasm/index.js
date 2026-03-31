@@ -12,7 +12,7 @@ import initWasm, {
   parseSfc as wasmParseSfc,
   compileSfc as wasmCompileSfc,
   compileCss as wasmCompileCss,
-} from "./vize_bindings.js";
+} from "./vize_vitrine.js";
 
 let initialized = false;
 let initPromise = null;

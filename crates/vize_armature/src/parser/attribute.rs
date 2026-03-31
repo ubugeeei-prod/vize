@@ -79,6 +79,12 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Attribute entities still belong to the raw value span, even when the
+    /// tokenizer emits them as a separate event.
+    pub(super) fn on_attrib_entity_impl(&mut self, start: usize, end: usize) {
+        self.on_attrib_data_impl(start, end);
+    }
+
     /// Process attribute end
     pub(super) fn on_attrib_end_impl(&mut self, quote: QuoteType, end: usize) {
         // Handle regular attribute

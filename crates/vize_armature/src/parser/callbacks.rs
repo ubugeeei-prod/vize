@@ -40,8 +40,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
     }
 
     fn on_text_entity(&mut self, char: char, start: usize, end: usize) {
-        // For now, treat entities as regular text
-        let _ = (char, start, end);
+        let _ = char;
+        self.parser.on_text_impl(start, end);
     }
 
     fn on_interpolation(&mut self, start: usize, end: usize) {
@@ -69,8 +69,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_attrib_data_impl(start, end);
     }
 
-    fn on_attrib_entity(&mut self, _char: char, _start: usize, _end: usize) {
-        // For now, ignore entity in attributes
+    fn on_attrib_entity(&mut self, _char: char, start: usize, end: usize) {
+        self.parser.on_attrib_entity_impl(start, end);
     }
 
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {

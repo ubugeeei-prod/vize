@@ -40,6 +40,24 @@ fn test_parse_text() {
 }
 
 #[test]
+fn test_parse_text_with_entities_preserves_raw_source() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "&lt;foo&gt;");
+
+    assert!(errors.is_empty());
+    let combined = root
+        .children
+        .iter()
+        .filter_map(|child| match child {
+            TemplateChildNode::Text(text) => Some(text.content.as_str()),
+            _ => None,
+        })
+        .collect::<std::vec::Vec<_>>()
+        .join("");
+    assert_eq!(combined, "&lt;foo&gt;");
+}
+
+#[test]
 fn test_parse_interpolation() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, "{{ msg }}");
@@ -205,6 +223,41 @@ fn test_parse_attribute_with_value() {
         if let PropNode::Attribute(attr) = &el.props[0] {
             assert_eq!(attr.name.as_str(), "id");
             assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "foo");
+        } else {
+            panic!("Expected attribute");
+        }
+    }
+}
+
+#[test]
+fn test_parse_attribute_with_trailing_entity() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div title="Hello &quot;World&quot;"></div>"#);
+    assert!(errors.is_empty());
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.props.len(), 1);
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "title");
+            assert_eq!(
+                attr.value.as_ref().unwrap().content.as_str(),
+                "Hello &quot;World&quot;"
+            );
+        } else {
+            panic!("Expected attribute");
+        }
+    }
+}
+
+#[test]
+fn test_parse_attribute_value_with_only_entity() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div title="&quot;"></div>"#);
+    assert!(errors.is_empty());
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.props.len(), 1);
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "title");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "&quot;");
         } else {
             panic!("Expected attribute");
         }

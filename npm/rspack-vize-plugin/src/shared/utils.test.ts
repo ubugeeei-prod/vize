@@ -196,6 +196,18 @@ void describe("extractStyleBlocks", () => {
     assert.equal(blocks[1].module, false);
     assert.equal(blocks[1].scoped, true);
   });
+
+  void test("extracts named module style blocks", () => {
+    const source = `
+<template><div>hello</div></template>
+<style module="$styleCrit">.root { color: blue; }</style>
+<style module="tokens">.note { color: red; }</style>
+`;
+    const blocks = extractStyleBlocks(source);
+    assert.equal(blocks.length, 2);
+    assert.equal(blocks[0].module, "$styleCrit");
+    assert.equal(blocks[1].module, "tokens");
+  });
 });
 
 void describe("stripCssCommentsForScoped", () => {
