@@ -54,7 +54,7 @@ fn test_parse_text_with_entities_preserves_raw_source() {
         })
         .collect::<std::vec::Vec<_>>()
         .join("");
-    assert_eq!(combined, "&lt;foo&gt;");
+    assert_eq!(combined, "<foo>");
 }
 
 #[test]
@@ -240,7 +240,7 @@ fn test_parse_attribute_with_trailing_entity() {
             assert_eq!(attr.name.as_str(), "title");
             assert_eq!(
                 attr.value.as_ref().unwrap().content.as_str(),
-                "Hello &quot;World&quot;"
+                "Hello \"World\""
             );
         } else {
             panic!("Expected attribute");
@@ -257,7 +257,7 @@ fn test_parse_attribute_value_with_only_entity() {
         assert_eq!(el.props.len(), 1);
         if let PropNode::Attribute(attr) = &el.props[0] {
             assert_eq!(attr.name.as_str(), "title");
-            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "&quot;");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "\"");
         } else {
             panic!("Expected attribute");
         }
@@ -556,6 +556,137 @@ fn test_boolean_attribute_no_value() {
             );
         } else {
             panic!("Expected attribute prop");
+        }
+    }
+}
+
+// ====================================================================
+// HTML entity: consecutive text + entity merge into one Text node
+// ====================================================================
+
+#[test]
+fn test_parse_text_entity_named_amp_between_literals() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div>a&amp;b</div>");
+    assert!(errors.is_empty());
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.children.len(), 1);
+        if let TemplateChildNode::Text(t) = &el.children[0] {
+            assert_eq!(t.content.as_str(), "a&b");
+            assert_eq!(t.loc.source.as_str(), "a&amp;b");
+        } else {
+            panic!("expected text");
+        }
+    } else {
+        panic!("expected element");
+    }
+}
+
+#[test]
+fn test_parse_text_entity_lt_only() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div>&lt;</div>");
+    assert!(errors.is_empty());
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.children.len(), 1);
+        if let TemplateChildNode::Text(t) = &el.children[0] {
+            assert_eq!(t.content.as_str(), "<");
+        } else {
+            panic!("expected text");
+        }
+    }
+}
+
+#[test]
+fn test_parse_text_entity_numeric_dec() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div>&#38;x</div>");
+    assert!(errors.is_empty());
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.children.len(), 1);
+        if let TemplateChildNode::Text(t) = &el.children[0] {
+            assert_eq!(t.content.as_str(), "&x");
+            assert_eq!(t.loc.source.as_str(), "&#38;x");
+        } else {
+            panic!("expected text");
+        }
+    }
+}
+
+#[test]
+fn test_parse_text_entity_1_lt_2() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div>1&lt;2</div>");
+    assert!(errors.is_empty());
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.children.len(), 1);
+        if let TemplateChildNode::Text(t) = &el.children[0] {
+            assert_eq!(t.content.as_str(), "1<2");
+            assert_eq!(t.loc.source.as_str(), "1&lt;2");
+        } else {
+            panic!("expected text");
+        }
+    }
+}
+
+#[test]
+fn test_parse_attribute_entity_single_quoted_numeric() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div a='&#38;'></div>");
+    assert!(errors.is_empty());
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "&");
+        } else {
+            panic!("Expected attribute");
+        }
+    }
+}
+
+#[test]
+fn test_parse_attribute_entity_quot_in_double_quotes() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div class="a &quot; b"></div>"#);
+    assert!(errors.is_empty());
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "class");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "a \" b");
+        } else {
+            panic!("Expected attribute");
+        }
+    }
+}
+
+#[test]
+fn test_parse_attribute_entity_lt_gt() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div title="&lt;tag&gt;"></div>"#);
+    assert!(errors.is_empty());
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "<tag>");
+        } else {
+            panic!("Expected attribute");
+        }
+    }
+}
+
+#[test]
+fn test_parse_directive_value_entity_is_decoded() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div v-if="a&amp;&amp;b"></div>"#);
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Directive(dir) = &el.props[0] {
+            if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
+                assert_eq!(exp.content.as_str(), "a&&b");
+            } else {
+                panic!("Expected simple expression");
+            }
+        } else {
+            panic!("Expected directive");
         }
     }
 }

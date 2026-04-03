@@ -39,9 +39,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_text_impl(start, end);
     }
 
-    fn on_text_entity(&mut self, char: char, start: usize, end: usize) {
-        let _ = char;
-        self.parser.on_text_impl(start, end);
+    fn on_text_entity(&mut self, ch: char, start: usize, end: usize) {
+        self.parser.on_text_entity_impl(ch, start, end);
     }
 
     fn on_interpolation(&mut self, start: usize, end: usize) {
@@ -69,8 +68,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_attrib_data_impl(start, end);
     }
 
-    fn on_attrib_entity(&mut self, _char: char, start: usize, end: usize) {
-        self.parser.on_attrib_entity_impl(start, end);
+    fn on_attrib_entity(&mut self, ch: char, start: usize, end: usize) {
+        self.parser.on_attrib_entity_impl(ch, start, end);
     }
 
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
