@@ -32,7 +32,7 @@ pub fn parse_sfc<'a>(
     let mut pos = 0;
     let mut line = 1;
     let mut column = 1;
-    let comment_end_finder: Finder = memmem::Finder::new(b"-->");
+    let comment_end_finder = Finder::new(b"-->");
 
     while pos < len {
         // Skip whitespace using byte comparison
