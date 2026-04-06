@@ -2,9 +2,9 @@ use memchr::memchr;
 use std::borrow::Cow;
 use vize_carton::{cstr, FxHashMap, String};
 
-// Static closing tag prefixes without '>' for fast comparison (avoid format!)
-const CLOSING_SCRIPT: &[u8] = b"</script";
-const CLOSING_STYLE: &[u8] = b"</style";
+// Static closing tags for fast comparison (avoid format!)
+const CLOSING_SCRIPT: &[u8] = b"</script>";
+const CLOSING_STYLE: &[u8] = b"</style>";
 
 // Tag name bytes for fast comparison
 const TAG_TEMPLATE: &[u8] = b"template";
@@ -486,33 +486,27 @@ pub(super) fn parse_block_fast<'a>(
 
         // Check for closing tag
         if b == b'<' && starts_with_bytes(&bytes[pos..], closing_tag) {
-            let after = pos + closing_tag.len();
-            if after < len && bytes[after] == b'>' {
-                let content_end = pos;
-                let end_pos = after + 1;
-                let col = pos - last_newline + closing_tag.len() + 1;
-                let content = Cow::Borrowed(&source[content_start..content_end]);
-                return Ok(Some((
-                    tag_name,
-                    attrs,
-                    content,
-                    content_start,
-                    content_end,
-                    end_pos,
-                    line,
-                    col,
-                )));
-            }
-            return Err(build_malformed_error(
+            let content_end = pos;
+            let end_pos = pos + closing_tag.len();
+            let col = pos - last_newline + closing_tag.len();
+            let content = Cow::Borrowed(&source[content_start..content_end]);
+            return Ok(Some((
                 tag_name,
-                "the closing tag is incomplete",
-            ));
+                attrs,
+                content,
+                content_start,
+                content_end,
+                end_pos,
+                line,
+                col,
+            )));
         }
 
         prev_significant_char = b;
         pos += 1;
     }
 
+    // Exhausted input without finding the closing tag.
     Err(build_malformed_error(
         tag_name,
         "the closing tag is missing",
