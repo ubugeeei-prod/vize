@@ -2,10 +2,7 @@ use crate::types::{
     BlockLocation, SfcCustomBlock, SfcDescriptor, SfcError, SfcParseOptions, SfcScriptBlock,
     SfcStyleBlock, SfcTemplateBlock,
 };
-use memchr::{
-    memchr,
-    memmem::{self, Finder},
-};
+use memchr::{memchr, memmem::Finder};
 use std::borrow::Cow;
 
 use super::block::{parse_block_fast, tag_name_eq};
