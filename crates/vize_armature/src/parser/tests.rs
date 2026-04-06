@@ -542,6 +542,17 @@ fn test_empty_quoted_attribute_disabled() {
 }
 
 #[test]
+fn test_parse_open_tag_at_eof_does_not_panic() {
+    // Regression: a tag that is still open at EOF used to panic with
+    // "byte index N is out of bounds" because on_error was called with
+    // index == source.len(), and create_loc(index, index+1) sliced past the end.
+    let allocator = Bump::new();
+    let (_root, errors) = parse(&allocator, "<template>\n  <div>\n  <div\n");
+    // Should return errors (EofInTag / MissingEndTag), not panic.
+    assert!(!errors.is_empty());
+}
+
+#[test]
 fn test_boolean_attribute_no_value() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, "<input disabled />");
