@@ -304,7 +304,10 @@ impl<'a> Parser<'a> {
 
     /// Handle error
     pub(super) fn on_error_impl(&mut self, code: ErrorCode, index: usize) {
-        let loc = self.create_loc(index, index + 1);
+        let len = self.source.len();
+        let start = index.min(len);
+        let end = (index + 1).min(len);
+        let loc = self.create_loc(start, end);
         self.errors.push(CompilerError::new(code, Some(loc)));
     }
 }
