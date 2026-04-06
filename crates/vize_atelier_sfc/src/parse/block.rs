@@ -11,6 +11,20 @@ const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
 const TAG_STYLE: &[u8] = b"style";
 
+/// Error codes and messages for malformed known blocks.
+const MALFORMED_TEMPLATE: (&str, &str) = (
+    "MALFORMED_TEMPLATE",
+    "Malformed <template> block: opening tag or closing tag is incomplete.",
+);
+const MALFORMED_SCRIPT: (&str, &str) = (
+    "MALFORMED_SCRIPT",
+    "Malformed <script> block: missing valid closing tag.",
+);
+const MALFORMED_STYLE: (&str, &str) = (
+    "MALFORMED_STYLE",
+    "Malformed <style> block: missing valid closing tag.",
+);
+
 /// Fast tag name comparison using byte slices
 #[inline(always)]
 pub(super) fn tag_name_eq(name: &[u8], expected: &[u8]) -> bool {
@@ -37,27 +51,34 @@ fn is_whitespace_fast(b: u8) -> bool {
 
 /// Parse a single block from the source using byte operations
 /// Returns borrowed strings using Cow for zero-copy
+///
+/// - `Ok(Some(...))` — successfully parsed block.
+/// - `Ok(None)`      — can't find a block at this position (stray `<`, comment, etc.)
+/// - `Err((code, message))` — position starts a known invalid block (`<template>`, `<script>`, `<style>`)
 pub(super) fn parse_block_fast<'a>(
     bytes: &[u8],
     source: &'a str,
     start: usize,
     start_line: usize,
-) -> Option<(
-    &'a [u8],                              // tag name as bytes
-    FxHashMap<Cow<'a, str>, Cow<'a, str>>, // attrs with borrowed strings
-    Cow<'a, str>,                          // content as borrowed string
-    usize,                                 // content start
-    usize,                                 // content end
-    usize,                                 // end position
-    usize,                                 // end line
-    usize,                                 // end column
-)> {
+) -> Result<
+    Option<(
+        &'a [u8],                              // tag name as bytes
+        FxHashMap<Cow<'a, str>, Cow<'a, str>>, // attrs with borrowed strings
+        Cow<'a, str>,                          // content as borrowed string
+        usize,                                 // content start
+        usize,                                 // content end
+        usize,                                 // end position
+        usize,                                 // end line
+        usize,                                 // end column
+    )>,
+    (&'static str, &'static str), // (error_code, error_message)
+> {
     let len = bytes.len();
 
     // Skip '<'
     let mut pos = start + 1;
     if pos >= len {
-        return None;
+        return Ok(None);
     }
 
     // Parse tag name - find end of tag name
@@ -67,10 +88,22 @@ pub(super) fn parse_block_fast<'a>(
     }
 
     if pos == tag_start {
-        return None;
+        return Ok(None);
     }
 
     let tag_name = &source.as_bytes()[tag_start..pos];
+
+    // Determine if this is a known block so we can return a structured error on failure.
+    let known_block_error: Option<(&'static str, &'static str)> =
+        if tag_name.eq_ignore_ascii_case(TAG_TEMPLATE) {
+            Some(MALFORMED_TEMPLATE)
+        } else if tag_name.eq_ignore_ascii_case(TAG_SCRIPT) {
+            Some(MALFORMED_SCRIPT)
+        } else if tag_name.eq_ignore_ascii_case(TAG_STYLE) {
+            Some(MALFORMED_STYLE)
+        } else {
+            None
+        };
 
     // Parse attributes with zero-copy
     let mut attrs: FxHashMap<Cow<'a, str>, Cow<'a, str>> = FxHashMap::default();
@@ -174,7 +207,7 @@ pub(super) fn parse_block_fast<'a>(
         if pos < len && bytes[pos] == b'>' {
             pos += 1;
         }
-        return Some((
+        return Ok(Some((
             tag_name,
             attrs,
             Cow::Borrowed(""),
@@ -183,14 +216,18 @@ pub(super) fn parse_block_fast<'a>(
             pos,
             start_line,
             pos - start,
-        ));
+        )));
     }
 
     // Skip '>'
     if pos < len && bytes[pos] == b'>' {
         pos += 1;
     } else {
-        return None;
+        // Opening tag is not closed — error for known blocks, skip for others.
+        return match known_block_error {
+            Some(err) => Err(err),
+            None => Ok(None),
+        };
     }
 
     let content_start = pos;
@@ -245,7 +282,7 @@ pub(super) fn parse_block_fast<'a>(
                         let end_pos = end_tag_pos;
                         let col = pos - last_newline + (end_pos - pos);
                         let content = Cow::Borrowed(&source[content_start..content_end]);
-                        return Some((
+                        return Ok(Some((
                             tag_name,
                             attrs,
                             content,
@@ -254,7 +291,7 @@ pub(super) fn parse_block_fast<'a>(
                             end_pos,
                             line,
                             col,
-                        ));
+                        )));
                     }
                     pos = end_tag_pos;
                     continue;
@@ -294,14 +331,15 @@ pub(super) fn parse_block_fast<'a>(
 
             pos += 1;
         }
-        return None;
+        // Exhausted input without finding </template>
+        return Err(MALFORMED_TEMPLATE);
     }
 
     // Script/style blocks: use static closing tags
-    let closing_tag = if tag_name.eq_ignore_ascii_case(TAG_SCRIPT) {
-        CLOSING_SCRIPT
+    let (closing_tag, block_error) = if tag_name.eq_ignore_ascii_case(TAG_SCRIPT) {
+        (CLOSING_SCRIPT, MALFORMED_SCRIPT)
     } else if tag_name.eq_ignore_ascii_case(TAG_STYLE) {
-        CLOSING_STYLE
+        (CLOSING_STYLE, MALFORMED_STYLE)
     } else {
         // Custom block: need to find closing tag dynamically
         return find_custom_block_end(
@@ -466,7 +504,7 @@ pub(super) fn parse_block_fast<'a>(
             let end_pos = pos + closing_tag.len();
             let col = pos - last_newline + closing_tag.len();
             let content = Cow::Borrowed(&source[content_start..content_end]);
-            return Some((
+            return Ok(Some((
                 tag_name,
                 attrs,
                 content,
@@ -475,14 +513,15 @@ pub(super) fn parse_block_fast<'a>(
                 end_pos,
                 line,
                 col,
-            ));
+            )));
         }
 
         prev_significant_char = b;
         pos += 1;
     }
 
-    None
+    // Exhausted input without finding the closing tag for a known block.
+    Err(block_error)
 }
 
 /// Find the end of a custom block (non-template/script/style)
@@ -494,16 +533,19 @@ fn find_custom_block_end<'a>(
     content_start: usize,
     start_line: usize,
     attrs: FxHashMap<Cow<'a, str>, Cow<'a, str>>,
-) -> Option<(
-    &'a [u8],
-    FxHashMap<Cow<'a, str>, Cow<'a, str>>,
-    Cow<'a, str>,
-    usize,
-    usize,
-    usize,
-    usize,
-    usize,
-)> {
+) -> Result<
+    Option<(
+        &'a [u8],
+        FxHashMap<Cow<'a, str>, Cow<'a, str>>,
+        Cow<'a, str>,
+        usize,
+        usize,
+        usize,
+        usize,
+        usize,
+    )>,
+    (&'static str, &'static str),
+> {
     let len = bytes.len();
     let mut line = start_line;
     let mut last_newline = content_start;
@@ -534,7 +576,7 @@ fn find_custom_block_end<'a>(
                         let end_pos = after_name + 1;
                         let col = pos - last_newline + (end_pos - pos);
                         let content = Cow::Borrowed(&source[content_start..content_end]);
-                        return Some((
+                        return Ok(Some((
                             tag_name,
                             attrs,
                             content,
@@ -543,7 +585,7 @@ fn find_custom_block_end<'a>(
                             end_pos,
                             line,
                             col,
-                        ));
+                        )));
                     }
                 }
             }
@@ -553,5 +595,5 @@ fn find_custom_block_end<'a>(
         }
     }
 
-    None
+    Ok(None)
 }
