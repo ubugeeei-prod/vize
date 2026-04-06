@@ -468,3 +468,12 @@ fn test_incomplete_closing_tags() {
     let err = parse_sfc(source, Default::default()).unwrap_err();
     assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
 }
+
+#[test]
+fn test_closing_script_tag_with_whitespace() {
+    // </script   > and </style   > with trailing whitespace before '>' should be valid
+    let source = "<script>console.log(1)</script   >";
+    let result = parse_sfc(source, Default::default()).unwrap();
+    let script = result.script.unwrap();
+    assert!(script.content.contains("console.log(1)"));
+}
