@@ -11,19 +11,14 @@ const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
 const TAG_STYLE: &[u8] = b"style";
 
-/// Error codes and messages for malformed known blocks.
-const MALFORMED_TEMPLATE: (&str, &str) = (
-    "MALFORMED_TEMPLATE",
-    "Malformed <template> block: opening tag or closing tag is incomplete.",
-);
-const MALFORMED_SCRIPT: (&str, &str) = (
-    "MALFORMED_SCRIPT",
-    "Malformed <script> block: missing valid closing tag.",
-);
-const MALFORMED_STYLE: (&str, &str) = (
-    "MALFORMED_STYLE",
-    "Malformed <style> block: missing valid closing tag.",
-);
+/// Build a uniform `(code, message)` error for any malformed block.
+fn build_malformed_error(tag_name: &[u8], reason: &str) -> (&'static str, String) {
+    let tag_str = std::str::from_utf8(tag_name).unwrap_or("unknown");
+    (
+        "MALFORMED_BLOCK",
+        format!("Malformed <{tag_str}> block: {reason}."),
+    )
+}
 
 /// Fast tag name comparison using byte slices
 #[inline(always)]
@@ -54,7 +49,7 @@ fn is_whitespace_fast(b: u8) -> bool {
 ///
 /// - `Ok(Some(...))` — successfully parsed block.
 /// - `Ok(None)`      — can't find a block at this position (stray `<`, comment, etc.)
-/// - `Err((code, message))` — position starts a known invalid block (`<template>`, `<script>`, `<style>`)
+/// - `Err((code, message))` — position starts an invalid/incomplete block
 pub(super) fn parse_block_fast<'a>(
     bytes: &[u8],
     source: &'a str,
@@ -71,7 +66,7 @@ pub(super) fn parse_block_fast<'a>(
         usize,                                 // end line
         usize,                                 // end column
     )>,
-    (&'static str, &'static str), // (error_code, error_message)
+    (&'static str, String), // (error_code, error_message)
 > {
     let len = bytes.len();
 
@@ -92,18 +87,6 @@ pub(super) fn parse_block_fast<'a>(
     }
 
     let tag_name = &source.as_bytes()[tag_start..pos];
-
-    // Determine if this is a known block so we can return a structured error on failure.
-    let known_block_error: Option<(&'static str, &'static str)> =
-        if tag_name.eq_ignore_ascii_case(TAG_TEMPLATE) {
-            Some(MALFORMED_TEMPLATE)
-        } else if tag_name.eq_ignore_ascii_case(TAG_SCRIPT) {
-            Some(MALFORMED_SCRIPT)
-        } else if tag_name.eq_ignore_ascii_case(TAG_STYLE) {
-            Some(MALFORMED_STYLE)
-        } else {
-            None
-        };
 
     // Parse attributes with zero-copy
     let mut attrs: FxHashMap<Cow<'a, str>, Cow<'a, str>> = FxHashMap::default();
@@ -223,11 +206,11 @@ pub(super) fn parse_block_fast<'a>(
     if pos < len && bytes[pos] == b'>' {
         pos += 1;
     } else {
-        // Opening tag is not closed — error for known blocks, skip for others.
-        return match known_block_error {
-            Some(err) => Err(err),
-            None => Ok(None),
-        };
+        // Opening tag is not closed — error for any tag.
+        return Err(build_malformed_error(
+            tag_name,
+            "the opening tag is incomplete",
+        ));
     }
 
     let content_start = pos;
@@ -332,14 +315,17 @@ pub(super) fn parse_block_fast<'a>(
             pos += 1;
         }
         // Exhausted input without finding </template>
-        return Err(MALFORMED_TEMPLATE);
+        return Err(build_malformed_error(
+            tag_name,
+            "the closing tag is missing",
+        ));
     }
 
     // Script/style blocks: use static closing tags
-    let (closing_tag, block_error) = if tag_name.eq_ignore_ascii_case(TAG_SCRIPT) {
-        (CLOSING_SCRIPT, MALFORMED_SCRIPT)
+    let closing_tag = if tag_name.eq_ignore_ascii_case(TAG_SCRIPT) {
+        CLOSING_SCRIPT
     } else if tag_name.eq_ignore_ascii_case(TAG_STYLE) {
-        (CLOSING_STYLE, MALFORMED_STYLE)
+        CLOSING_STYLE
     } else {
         // Custom block: need to find closing tag dynamically
         return find_custom_block_end(
@@ -520,8 +506,11 @@ pub(super) fn parse_block_fast<'a>(
         pos += 1;
     }
 
-    // Exhausted input without finding the closing tag for a known block.
-    Err(block_error)
+    // Exhausted input without finding the closing tag.
+    Err(build_malformed_error(
+        tag_name,
+        "the closing tag is missing",
+    ))
 }
 
 /// Find the end of a custom block (non-template/script/style)
@@ -544,7 +533,7 @@ fn find_custom_block_end<'a>(
         usize,
         usize,
     )>,
-    (&'static str, &'static str),
+    (&'static str, String),
 > {
     let len = bytes.len();
     let mut line = start_line;
@@ -595,5 +584,9 @@ fn find_custom_block_end<'a>(
         }
     }
 
-    Ok(None)
+    // Exhausted input without finding the closing tag.
+    Err(build_malformed_error(
+        tag_name,
+        "the closing tag is missing",
+    ))
 }

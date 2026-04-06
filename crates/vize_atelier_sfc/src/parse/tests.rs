@@ -447,7 +447,7 @@ fn test_unclosed_tags() {
     // <template> block that never has </template>
     let source = "<template><div></div>";
     let err = parse_sfc(source, Default::default()).unwrap_err();
-    assert_eq!(err.code.as_deref(), Some("MALFORMED_TEMPLATE"));
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
     assert!(err.message.contains("<template>"));
     // Location should point to the start of the malformed block
     let loc = err.loc.unwrap();
@@ -459,12 +459,12 @@ fn test_incomplete_opening_tags() {
     // <script but no closing '>' on the opening tag
     let source = r#"<script lang="ts""#;
     let err = parse_sfc(source, Default::default()).unwrap_err();
-    assert_eq!(err.code.as_deref(), Some("MALFORMED_SCRIPT"));
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
 }
 
 #[test]
 fn test_incomplete_closing_tags() {
     let source = r#"<script lang="ts"></script"#;
     let err = parse_sfc(source, Default::default()).unwrap_err();
-    assert_eq!(err.code.as_deref(), Some("MALFORMED_SCRIPT"));
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
 }
