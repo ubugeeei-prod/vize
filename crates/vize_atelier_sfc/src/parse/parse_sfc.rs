@@ -2,7 +2,7 @@ use crate::types::{
     BlockLocation, SfcCustomBlock, SfcDescriptor, SfcError, SfcParseOptions, SfcScriptBlock,
     SfcStyleBlock, SfcTemplateBlock,
 };
-use memchr::memchr;
+use memchr::{memchr, memmem};
 use std::borrow::Cow;
 
 use super::block::{parse_block_fast, tag_name_eq};
@@ -70,6 +70,27 @@ pub fn parse_sfc<'a>(
 
         if pos >= len {
             break;
+        }
+
+        // Skip HTML comments <!-- ... --> before attempting block parsing.
+        // Without this, pseudo-tags inside comments (e.g. <!-- <script> -->) would
+        // be mistakenly parsed as real SFC blocks.
+        if bytes[pos..].starts_with(b"<!--") {
+            let comment_body = &bytes[pos + 4..];
+            let end = memmem::find(comment_body, b"-->")
+                .map(|off| pos + 4 + off + 3) // position after '-->'
+                .unwrap_or(len); // unclosed comment: skip to EOF
+            // Update line/column for the skipped comment
+            for &b in &bytes[pos..end] {
+                if b == b'\n' {
+                    line += 1;
+                    column = 1;
+                } else {
+                    column += 1;
+                }
+            }
+            pos = end;
+            continue;
         }
 
         // Parse block starting at '<'
