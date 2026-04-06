@@ -420,3 +420,24 @@ const z = 3
     assert!(script.content.contains(r#"`<li>${x}</li>`"#));
     assert!(script.content.contains("const z = 3"));
 }
+
+#[test]
+fn test_tags_in_code_comments() {
+    // HTML comments containing pseudo-tags must not be parsed as SFC blocks
+    let source = r#" <!-- <script> </script> -->
+<!-- <script>
+console.log("HI")
+</script> -->
+<script setup>
+const x = 1
+</script>
+<template><div>{{ x }}</div></template>"#;
+
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    // The comment must not create a spurious script block
+    assert!(result.script.is_none());
+    assert!(result.template.is_some());
+    assert!(result.script_setup.is_some());
+    assert!(result.script_setup.unwrap().content.contains("const x = 1"));
+}
