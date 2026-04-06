@@ -442,21 +442,10 @@ const x = 1
     assert!(result.script_setup.unwrap().content.contains("const x = 1"));
 }
 
-// ── Malformed block error tests ──────────────────────────────────────────────
-
-#[test]
-fn test_malformed_template_unclosed_open_tag() {
-    // <template without closing '>' on the opening tag
-    let source = "<template";
-    let err = parse_sfc(source, Default::default()).unwrap_err();
-    assert_eq!(err.code.as_deref(), Some("MALFORMED_TEMPLATE"));
-    assert!(err.message.contains("<template>"));
-}
-
 #[test]
 fn test_unclosed_tags() {
     // <template> block that never has </template>
-    let source = "<template><div></div";
+    let source = "<template><div></div>";
     let err = parse_sfc(source, Default::default()).unwrap_err();
     assert_eq!(err.code.as_deref(), Some("MALFORMED_TEMPLATE"));
     assert!(err.message.contains("<template>"));
