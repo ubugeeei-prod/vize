@@ -210,7 +210,7 @@ pub fn parse_sfc<'a>(
             }
             Err((code, message)) => {
                 return Err(SfcError {
-                    message: message.into(),
+                    message,
                     code: Some(code.into()),
                     loc: Some(BlockLocation {
                         start: pos,

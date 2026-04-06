@@ -1,6 +1,6 @@
 use memchr::memchr;
 use std::borrow::Cow;
-use vize_carton::FxHashMap;
+use vize_carton::{cstr, FxHashMap, String};
 
 // Static closing tags for fast comparison (avoid format!)
 const CLOSING_SCRIPT: &[u8] = b"</script>";
@@ -16,7 +16,7 @@ fn build_malformed_error(tag_name: &[u8], reason: &str) -> (&'static str, String
     let tag_str = std::str::from_utf8(tag_name).unwrap_or("unknown");
     (
         "MALFORMED_BLOCK",
-        format!("Malformed <{tag_str}> block: {reason}."),
+        cstr!("Malformed <{tag_str}> block: {reason}."),
     )
 }
 
