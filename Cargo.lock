@@ -3350,6 +3350,7 @@ dependencies = [
  "futures",
  "glob",
  "ignore",
+ "insta",
  "oxc_allocator",
  "oxc_ast",
  "oxc_codegen",

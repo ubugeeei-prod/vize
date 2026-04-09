@@ -15,7 +15,10 @@ use vize_croquis::{
 
 use super::{
     expressions::{generate_component_prop_checks, generate_expression},
-    helpers::{get_dom_event_type, strip_as_assertion, to_camel_case, to_safe_identifier},
+    helpers::{
+        generated_text_range, get_dom_event_type, strip_as_assertion, to_camel_case,
+        to_safe_identifier,
+    },
     types::VizeMapping,
 };
 use vize_carton::append;
@@ -505,15 +508,19 @@ fn generate_event_handler_expressions(
             let src_start = (template_offset + expr.start) as usize;
             let src_end = (template_offset + expr.end) as usize;
 
-            let gen_start = ts.len();
+            let gen_stmt_start = ts.len();
             if data.has_implicit_event && is_simple_identifier && !content.is_empty() {
                 append!(*ts, "{indent}({content} as (...args: any[]) => any)($event);  // handler expression\n",);
             } else {
                 append!(*ts, "{indent}{content};  // handler expression\n");
             }
-            let gen_end = ts.len();
+            let gen_stmt_end = ts.len();
             mappings.push(VizeMapping {
-                gen_range: gen_start..gen_end,
+                gen_range: generated_text_range(
+                    &ts[gen_stmt_start..gen_stmt_end],
+                    content,
+                    gen_stmt_start,
+                ),
                 src_range: src_start..src_end,
             });
             append!(

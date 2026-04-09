@@ -61,16 +61,7 @@ function __setup() {
   // @vize-map: 2863:2902 -> 0:70
 
   // ========== Template Scope (inherits from setup) ==========
-  // Ref type captures (before template scope shadows them)
-  type __Ref_useMouse = typeof useMouse;
-  type __Ref_x = typeof x;
-  type __Ref_y = typeof y;
   ;(function __template() {
-    // Auto-unwrap refs (Vue template behavior)
-    type __UnwrapRef<T> = import('vue').UnwrapRef<T>;
-    var useMouse: __UnwrapRef<__Ref_useMouse> = undefined as any;
-    var x: __UnwrapRef<__Ref_x> = undefined as any;
-    var y: __UnwrapRef<__Ref_y> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = $Vue['ComponentPublicInstance'];
     const __ctx = undefined as unknown as __Ctx;

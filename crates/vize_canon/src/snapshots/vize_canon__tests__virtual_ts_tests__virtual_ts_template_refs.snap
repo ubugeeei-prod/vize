@@ -65,17 +65,13 @@ function __setup() {
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
-  type __Ref_buttonEl = typeof buttonEl;
-  type __Ref_ref = typeof ref;
-  type __Ref_inputRef = typeof inputRef;
-  type __Ref_useTemplateRef = typeof useTemplateRef;
+  type __R_buttonEl = typeof buttonEl;
+  type __R_inputRef = typeof inputRef;
   ;(function __template() {
-    // Auto-unwrap refs (Vue template behavior)
-    type __UnwrapRef<T> = import('vue').UnwrapRef<T>;
-    var buttonEl: __UnwrapRef<__Ref_buttonEl> = undefined as any;
-    var ref: __UnwrapRef<__Ref_ref> = undefined as any;
-    var inputRef: __UnwrapRef<__Ref_inputRef> = undefined as any;
-    var useTemplateRef: __UnwrapRef<__Ref_useTemplateRef> = undefined as any;
+    // Auto-unwrap Vue refs in template scope
+    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;
+    var buttonEl: __U<__R_buttonEl> = undefined as any;
+    var inputRef: __U<__R_inputRef> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = $Vue['ComponentPublicInstance'];
     const __ctx = undefined as unknown as __Ctx;

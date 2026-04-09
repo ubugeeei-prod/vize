@@ -10,7 +10,8 @@ use super::error::{CorsaError, CorsaNotFoundError, CorsaResult};
 use super::type_checker::TypeCheckResult;
 use super::virtual_project::VirtualProject;
 use crate::{
-    corsa_client::CorsaProjectClient, lsp_client::paths::find_corsa_in_local_node_modules,
+    corsa_client::CorsaProjectClient,
+    lsp_client::paths::{corsa_search_roots, find_corsa_in_search_roots},
 };
 use vize_carton::{cstr, String};
 
@@ -27,12 +28,9 @@ pub struct CorsaExecutor {
 impl CorsaExecutor {
     /// Create a new executor by finding a local or global Corsa executable.
     pub fn new(project_root: &Path) -> Result<Self, CorsaNotFoundError> {
-        let project_root_str = project_root.to_string_lossy();
-        if let Some(local_corsa) = find_corsa_in_local_node_modules(Some(project_root_str.as_ref()))
-        {
-            if let Some(corsa_path) =
-                normalize_corsa_path(PathBuf::from(local_corsa.as_str().to_owned()))
-            {
+        let search_roots = corsa_search_roots(Some(project_root));
+        if let Some(local_corsa) = find_corsa_in_search_roots(&search_roots) {
+            if let Some(corsa_path) = normalize_corsa_path(PathBuf::from(local_corsa.as_str())) {
                 return Ok(Self { corsa_path });
             }
         }
@@ -64,7 +62,12 @@ impl CorsaExecutor {
         )
         .map_err(map_corsa_error)?;
         let uris = collect_virtual_file_uris(project.virtual_root())?;
-        let diagnostics = map_batch_diagnostics(client.request_diagnostics_batch(&uris), project);
+        let diagnostics = map_batch_diagnostics(
+            client
+                .request_diagnostics_batch(&uris)
+                .map_err(map_corsa_error)?,
+            project,
+        );
         let success = diagnostics
             .iter()
             .all(|diagnostic| diagnostic.severity != 1);
@@ -95,9 +98,8 @@ fn normalize_corsa_path(path: PathBuf) -> Option<PathBuf> {
     let Some(project_root) = node_modules_dir.parent() else {
         return Some(path);
     };
-    let project_root_str = project_root.to_string_lossy();
-    find_corsa_in_local_node_modules(Some(project_root_str.as_ref()))
-        .map(|resolved| PathBuf::from(resolved.as_str().to_owned()))
+    find_corsa_in_search_roots(&corsa_search_roots(Some(project_root)))
+        .map(|resolved| PathBuf::from(resolved.as_str()))
         .filter(|resolved| resolved != &path)
 }
 

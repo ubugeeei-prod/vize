@@ -1,5 +1,5 @@
 use super::{
-    paths::{find_corsa_in_local_node_modules, resolve_temp_dir_base},
+    paths::{find_corsa_in_local_node_modules, find_corsa_in_search_roots, resolve_temp_dir_base},
     utils::convert_diagnostics,
 };
 use lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
@@ -172,5 +172,27 @@ fn converts_lsp_diagnostics_to_legacy_shape() {
     assert_eq!(
         converted[0].code,
         Some(serde_json::Value::String("TS2322".into()))
+    );
+}
+
+#[test]
+fn resolves_corsa_from_secondary_search_root() {
+    let temp_dir = tempfile::TempDir::new().unwrap();
+    let case_dir = temp_dir.path();
+    let project_root = case_dir.join("project");
+    let fallback_root = case_dir.join("fallback");
+    let fallback_cache = fallback_root.join(".cache").join("tsgo");
+
+    fs::create_dir_all(&project_root).unwrap();
+    fs::create_dir_all(fallback_cache.parent().unwrap()).unwrap();
+    fs::write(&fallback_cache, "").unwrap();
+
+    let search_roots = vec![project_root.clone(), fallback_root.clone()];
+
+    let resolved = find_corsa_in_search_roots(&search_roots);
+
+    assert_eq!(
+        resolved,
+        Some(fallback_cache.to_string_lossy().into_owned().into())
     );
 }

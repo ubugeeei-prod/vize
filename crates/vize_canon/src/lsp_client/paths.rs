@@ -29,6 +29,35 @@ pub(super) fn resolve_temp_dir_base(project_root: Option<&Path>) -> PathBuf {
         .join("vize-corsa")
 }
 
+/// Resolve the directories we should search when looking for a Corsa executable.
+pub(crate) fn corsa_search_roots(working_dir: Option<&Path>) -> Vec<PathBuf> {
+    let mut roots = Vec::new();
+
+    if let Some(working_dir) = working_dir {
+        push_unique_root(&mut roots, working_dir.to_path_buf());
+    }
+
+    if let Ok(current_dir) = std::env::current_dir() {
+        push_unique_root(&mut roots, current_dir);
+    }
+
+    if let Some(workspace_root) = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+    {
+        push_unique_root(&mut roots, workspace_root.to_path_buf());
+    }
+
+    roots
+}
+
+/// Resolve a Corsa executable from a list of candidate project roots.
+pub(crate) fn find_corsa_in_search_roots(search_roots: &[PathBuf]) -> Option<String> {
+    search_roots
+        .iter()
+        .find_map(|root| find_corsa_in_local_node_modules(Some(root.to_string_lossy().as_ref())))
+}
+
 /// Resolve a project-local Corsa executable from the current directory or ancestors.
 pub(crate) fn find_corsa_in_local_node_modules(working_dir: Option<&str>) -> Option<String> {
     let base_dir = working_dir
@@ -99,6 +128,12 @@ pub(super) fn find_corsa_in_common_locations() -> Option<String> {
     }
 
     None
+}
+
+fn push_unique_root(roots: &mut Vec<PathBuf>, candidate: PathBuf) {
+    if !roots.iter().any(|existing| existing == &candidate) {
+        roots.push(candidate);
+    }
 }
 
 /// Resolve a `corsa` executable from `PATH`, with `tsgo` as a legacy fallback.

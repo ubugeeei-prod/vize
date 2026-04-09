@@ -67,15 +67,13 @@ function __setup() {
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
-  type __Ref_ref = typeof ref;
-  type __Ref_count = typeof count;
-  type __Ref_message = typeof message;
+  type __R_count = typeof count;
+  type __R_message = typeof message;
   ;(function __template() {
-    // Auto-unwrap refs (Vue template behavior)
-    type __UnwrapRef<T> = import('vue').UnwrapRef<T>;
-    var ref: __UnwrapRef<__Ref_ref> = undefined as any;
-    var count: __UnwrapRef<__Ref_count> = undefined as any;
-    var message: __UnwrapRef<__Ref_message> = undefined as any;
+    // Auto-unwrap Vue refs in template scope
+    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;
+    var count: __U<__R_count> = undefined as any;
+    var message: __U<__R_message> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = $Vue['ComponentPublicInstance'];
     const __ctx = undefined as unknown as __Ctx;

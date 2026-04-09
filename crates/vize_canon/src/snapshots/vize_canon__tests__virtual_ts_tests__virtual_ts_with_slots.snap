@@ -61,14 +61,7 @@ function __setup() {
   // @vize-map: 2854:2890 -> 0:58
 
   // ========== Template Scope (inherits from setup) ==========
-  // Ref type captures (before template scope shadows them)
-  type __Ref_slots = typeof slots;
-  type __Ref_useSlots = typeof useSlots;
   ;(function __template() {
-    // Auto-unwrap refs (Vue template behavior)
-    type __UnwrapRef<T> = import('vue').UnwrapRef<T>;
-    var slots: __UnwrapRef<__Ref_slots> = undefined as any;
-    var useSlots: __UnwrapRef<__Ref_useSlots> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = $Vue['ComponentPublicInstance'];
     const __ctx = undefined as unknown as __Ctx;

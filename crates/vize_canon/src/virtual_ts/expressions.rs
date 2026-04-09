@@ -3,7 +3,7 @@
 //! Handles generating TypeScript code for template expressions (with optional
 //! v-if narrowing) and component prop value type assertions.
 
-use super::types::VizeMapping;
+use super::{helpers::generated_text_range, types::VizeMapping};
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::String;
@@ -33,16 +33,20 @@ pub(crate) fn generate_expression(
     if let Some(ref guard) = expr.vif_guard {
         // Wrap in if block for type narrowing
         append!(*ts, "{indent}if ({guard}) {{\n");
-        let gen_expr_start = ts.len();
+        let gen_stmt_start = ts.len();
         append!(
             *ts,
             "{indent}  void ({}); // {}\n",
             expression.as_ref(),
             expr.kind.as_str()
         );
-        let gen_expr_end = ts.len();
+        let gen_stmt_end = ts.len();
         mappings.push(VizeMapping {
-            gen_range: gen_expr_start..gen_expr_end,
+            gen_range: generated_text_range(
+                &ts[gen_stmt_start..gen_stmt_end],
+                expression.as_ref(),
+                gen_stmt_start,
+            ),
             src_range: src_start..src_end,
         });
         append!(
@@ -51,16 +55,20 @@ pub(crate) fn generate_expression(
         );
         append!(*ts, "{indent}}}\n");
     } else {
-        let gen_expr_start = ts.len();
+        let gen_stmt_start = ts.len();
         append!(
             *ts,
             "{indent}void ({}); // {}\n",
             expression.as_ref(),
             expr.kind.as_str()
         );
-        let gen_expr_end = ts.len();
+        let gen_stmt_end = ts.len();
         mappings.push(VizeMapping {
-            gen_range: gen_expr_start..gen_expr_end,
+            gen_range: generated_text_range(
+                &ts[gen_stmt_start..gen_stmt_end],
+                expression.as_ref(),
+                gen_stmt_start,
+            ),
             src_range: src_start..src_end,
         });
         append!(*ts, "{indent}// @vize-map: expr -> {src_start}:{src_end}\n",);
@@ -102,15 +110,19 @@ pub(crate) fn generate_component_prop_checks(
                     append!(*ts, "{indent}if ({guard}) {{\n");
                 }
 
-                let gen_prop_start = ts.len();
+                let gen_stmt_start = ts.len();
                 append!(
                     *ts,
                     "{expr_indent}({}) as __{component_name}_{idx}_prop_{safe_prop_name};\n",
                     value.as_ref(),
                 );
-                let gen_prop_end = ts.len();
+                let gen_stmt_end = ts.len();
                 mappings.push(VizeMapping {
-                    gen_range: gen_prop_start..gen_prop_end,
+                    gen_range: generated_text_range(
+                        &ts[gen_stmt_start..gen_stmt_end],
+                        value.as_ref(),
+                        gen_stmt_start,
+                    ),
                     src_range: prop_src_start..prop_src_end,
                 });
 

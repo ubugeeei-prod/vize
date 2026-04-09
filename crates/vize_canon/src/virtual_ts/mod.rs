@@ -333,6 +333,64 @@ const msg = ref('Hello')
     }
 
     #[test]
+    fn test_source_mappings_target_expression_text() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import { useTemplateRef } from 'vue'
+const inputRef = useTemplateRef<HTMLInputElement>('input')
+"#;
+        let template = r#"<div :data-active="inputRef && inputRef.focus()"></div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        let expression = "inputRef && inputRef.focus()";
+        let source_start = template.find(expression).unwrap();
+        let source_end = source_start + expression.len();
+        let mapping = output
+            .mappings
+            .iter()
+            .find(|mapping| mapping.src_range == (source_start..source_end))
+            .expect("should map the template expression");
+
+        assert_eq!(&output.code[mapping.gen_range.clone()], expression);
+    }
+
+    #[test]
+    fn test_template_shadow_bindings_only_unwrap_vue_refs() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import { ref, useTemplateRef } from 'vue'
+const users = ref([{ id: 1 }])
+const inputRef = useTemplateRef<HTMLInputElement>('input')
+"#;
+        let template = r#"<div>{{ users.length }} {{ inputRef && inputRef.focus() }}</div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        insta::with_settings!({
+            snapshot_path => "../snapshots"
+        }, {
+            insta::assert_snapshot!("virtual_ts_template_binding_unwraps", output.code);
+        });
+    }
+
+    #[test]
     fn test_vfor_component_props_in_scope() {
         // Component inside v-for should have prop checks inside the forEach closure
         use vize_croquis::{Analyzer, AnalyzerOptions};

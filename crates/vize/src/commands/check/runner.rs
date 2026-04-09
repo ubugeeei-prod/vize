@@ -8,10 +8,12 @@
 use std::{fs, path::PathBuf, time::Instant};
 
 use ignore::WalkBuilder;
+use vize_canon::corsa_client::CorsaProjectClient;
 use vize_carton::cstr;
 use vize_carton::ToCompactString;
 
 use super::{
+    reporting::{has_source_mapping, map_diagnostic_position},
     reporting::{JsonFileResult, JsonOutput},
     CheckArgs, GeneratedFile,
 };
@@ -182,17 +184,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
     use vize_atelier_core::parser::parse;
     use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
-    use vize_canon::{
-        corsa_client::CorsaProjectClient,
-        virtual_ts::{generate_virtual_ts_with_offsets, VirtualTsOptions},
-    };
+    use vize_canon::virtual_ts::{generate_virtual_ts_with_offsets, VirtualTsOptions};
     use vize_carton::Bump;
     use vize_croquis::{Analyzer, AnalyzerOptions, ImportStatementInfo, ReExportInfo, TypeExport};
 
-    use super::{
-        nuxt,
-        reporting::{has_source_mapping, map_diagnostic_position},
-    };
+    use super::nuxt;
 
     let start = Instant::now();
 
@@ -512,193 +508,20 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .map(|c| c.to_vec())
         .collect();
 
-    // Run type checking in parallel across multiple LSP servers
-    use std::sync::{
-        atomic::{AtomicUsize, Ordering as AtomicOrdering},
-        Mutex,
-    };
-    let total_errors = AtomicUsize::new(0);
-    #[allow(clippy::disallowed_types)]
-    let all_diagnostics: Mutex<Vec<(std::string::String, Vec<std::string::String>)>> =
-        Mutex::new(Vec::new());
-
-    std::thread::scope(|s| {
-        let handles: Vec<_> = index_chunks
-            .into_iter()
-            .map(|indices| {
-                let project_root = project_root.clone();
-                let corsa_path = args.corsa_path.clone();
-                let total_errors = &total_errors;
-                let all_diagnostics = &all_diagnostics;
-                let uri_map = &uri_map;
-                let generated = &generated;
-
-                s.spawn(move || {
-                    // Initialize LSP client for this thread
-                    let mut corsa_client = match CorsaProjectClient::new(
-                        corsa_path.as_deref(),
-                        project_root.as_deref(),
-                    ) {
-                        Ok(client) => client,
-                        Err(e) => {
-                            eprintln!(
-                                "\x1b[31mError:\x1b[0m Failed to start Corsa project session: {}",
-                                e
-                            );
-                            return;
-                        }
-                    };
-
-                    // PHASE 1: Open files
-                    // For single server: open all files
-                    // For multiple servers: only open assigned files (rely on tsconfig for imports)
-                    let files_to_open: Vec<(&str, &str)> = if num_servers == 1 {
-                        uri_map
-                            .iter()
-                            .map(|(uri, content)| (uri.as_str(), content.as_str()))
-                            .collect()
-                    } else {
-                        indices
-                            .iter()
-                            .map(|i| {
-                                let (uri, content) = &uri_map[*i];
-                                (uri.as_str(), content.as_str())
-                            })
-                            .collect()
-                    };
-
-                    let _ = corsa_client.did_open_batch_fast(&files_to_open);
-
-                    // PHASE 2: Request diagnostics in batch (pipelined)
-                    // Corsa does not always publish diagnostics proactively, so request them.
-                    let uris: Vec<vize_carton::String> = indices
-                        .iter()
-                        .map(|i| cstr!("file://{}.mts", generated[*i].original))
-                        .collect();
-
-                    let batch_results = corsa_client.request_diagnostics_batch(&uris);
-
-                    // Build a map from URI to diagnostics
-                    let diag_map: vize_carton::FxHashMap<_, _> =
-                        batch_results.into_iter().collect();
-
-                    #[allow(clippy::disallowed_types)]
-                    let mut chunk_diagnostics: Vec<(
-                        std::string::String,
-                        Vec<std::string::String>,
-                    )> = Vec::new();
-
-                    for idx in &indices {
-                        let g = &generated[*idx];
-                        let virtual_uri = cstr!("file://{}.mts", g.original);
-
-                        // Get diagnostics from batch result
-                        let diagnostics = diag_map
-                            .get(virtual_uri.as_str())
-                            .cloned()
-                            .unwrap_or_default();
-
-                        // Filter and format diagnostics
-                        #[allow(clippy::disallowed_types)]
-                        let mut file_diags: Vec<std::string::String> = Vec::new();
-                        let mut seen_diags = vize_carton::FxHashSet::default();
-                        for diag in &diagnostics {
-                            let code_num = diag.code.as_ref().and_then(|c| match c {
-                                serde_json::Value::Number(n) => n.as_u64(),
-                                serde_json::Value::String(s) => {
-                                    // Handle both "2307" and "TS2307" formats
-                                    let stripped = s.strip_prefix("TS").unwrap_or(s);
-                                    stripped.parse::<u64>().ok()
-                                }
-                                _ => None,
-                            });
-
-                            // Module resolution: fundamental limitation of single-file mode.
-                            // Corsa cannot resolve .vue imports, path aliases, or npm packages
-                            // without a full project context. This is NOT a virtual TS bug.
-                            if matches!(
-                                code_num,
-                                Some(2307)
-                                    | Some(2666)
-                                    | Some(6133)
-                                    | Some(7006)
-                                    | Some(7043)
-                                    | Some(7044)
-                            ) {
-                                continue;
-                            }
-
-                            // Filter diagnostics in generated code (compiler macros, type helpers).
-                            // Only report errors that map back to user source code.
-                            if !has_source_mapping(
-                                &g.virtual_ts,
-                                &g.source_map,
-                                diag.range.start.line,
-                                diag.range.start.character,
-                            ) {
-                                continue;
-                            }
-
-                            let severity = match diag.severity {
-                                Some(1) => "error",
-                                Some(2) => "warning",
-                                _ => "error",
-                            };
-                            #[allow(clippy::disallowed_types)]
-                            let code_str = diag
-                                .code
-                                .as_ref()
-                                .map(|c| match c {
-                                    serde_json::Value::Number(n) => format!(" [TS{}]", n),
-                                    serde_json::Value::String(s) => format!(" [{}]", s),
-                                    _ => std::string::String::new(),
-                                })
-                                .unwrap_or_default();
-                            // Map virtual TS position -> SFC position
-                            let (line, col) = map_diagnostic_position(
-                                &g.virtual_ts,
-                                &g.source_map,
-                                &g.original_content,
-                                diag.range.start.line,
-                                diag.range.start.character,
-                            );
-                            let dedupe_key =
-                                format!("{}:{}{} {}", severity, line, code_str, diag.message);
-                            if !seen_diags.insert(dedupe_key) {
-                                continue;
-                            }
-                            let rendered = format!(
-                                "{}:{}:{}{} {}",
-                                severity, line, col, code_str, diag.message
-                            );
-                            if severity == "error" {
-                                total_errors.fetch_add(1, AtomicOrdering::Relaxed);
-                            }
-                            file_diags.push(rendered);
-                        }
-
-                        if !file_diags.is_empty() {
-                            chunk_diagnostics.push((g.original.clone(), file_diags));
-                        }
-                    }
-
-                    // Merge diagnostics into shared state. The temporary client drops
-                    // after the thread exits, so explicit overlay teardown is redundant.
-                    if let Ok(mut diags) = all_diagnostics.lock() {
-                        diags.extend(chunk_diagnostics);
-                    }
-                })
-            })
-            .collect();
-
-        // Wait for all threads to complete
-        for handle in handles {
-            handle.join().expect("Thread panicked");
+    let (total_errors, all_diagnostics) = match collect_direct_diagnostics(
+        &generated,
+        project_root.as_deref(),
+        args.corsa_path.as_deref(),
+        num_servers,
+        &uri_map,
+        &index_chunks,
+    ) {
+        Ok(results) => results,
+        Err(error) => {
+            eprintln!("\x1b[31mError:\x1b[0m {}", error);
+            std::process::exit(1);
         }
-    });
-
-    let total_errors = total_errors.load(AtomicOrdering::Relaxed);
-    let all_diagnostics = all_diagnostics.into_inner().unwrap();
+    };
 
     let check_time = check_start.elapsed();
     let total_time = start.elapsed();
@@ -727,6 +550,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             file_count: generated.len(),
         };
         println!("{}", serde_json::to_string_pretty(&json_output).unwrap());
+        if total_errors > 0 {
+            std::process::exit(1);
+        }
         return;
     }
 
@@ -848,6 +674,215 @@ fn default_check_server_count(file_count: usize, cpu_count: usize) -> usize {
     requested.min(cpu_count.max(1)).min(file_count)
 }
 
+#[allow(clippy::disallowed_types)]
+fn collect_direct_diagnostics(
+    generated: &[GeneratedFile],
+    project_root: Option<&str>,
+    corsa_path: Option<&str>,
+    num_servers: usize,
+    uri_map: &[(std::string::String, std::string::String)],
+    index_chunks: &[Vec<usize>],
+) -> Result<(usize, Vec<(std::string::String, Vec<std::string::String>)>), std::string::String> {
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering as AtomicOrdering},
+        Mutex,
+    };
+
+    let total_errors = AtomicUsize::new(0);
+    let all_diagnostics: Mutex<Vec<(std::string::String, Vec<std::string::String>)>> =
+        Mutex::new(Vec::new());
+    let worker_errors: Mutex<Vec<std::string::String>> = Mutex::new(Vec::new());
+
+    std::thread::scope(|s| {
+        let handles: Vec<_> = index_chunks
+            .iter()
+            .enumerate()
+            .map(|(chunk_index, indices)| {
+                let project_root = project_root.map(|root| root.to_owned());
+                let corsa_path = corsa_path.map(|path| path.to_owned());
+                let total_errors = &total_errors;
+                let all_diagnostics = &all_diagnostics;
+                let worker_errors = &worker_errors;
+                let uri_map = &uri_map;
+                let generated = &generated;
+                let indices = indices.clone();
+
+                s.spawn(move || {
+                    let push_worker_error = |message: std::string::String| {
+                        if let Ok(mut errors) = worker_errors.lock() {
+                            errors.push(message);
+                        }
+                    };
+
+                    let mut corsa_client = match CorsaProjectClient::new(
+                        corsa_path.as_deref(),
+                        project_root.as_deref(),
+                    ) {
+                        Ok(client) => client,
+                        Err(error) => {
+                            push_worker_error(format!(
+                                "Failed to start Corsa project session for worker {}: {}",
+                                chunk_index + 1,
+                                error
+                            ));
+                            return;
+                        }
+                    };
+
+                    let files_to_open: Vec<(&str, &str)> = if num_servers == 1 {
+                        uri_map
+                            .iter()
+                            .map(|(uri, content)| (uri.as_str(), content.as_str()))
+                            .collect()
+                    } else {
+                        indices
+                            .iter()
+                            .map(|i| {
+                                let (uri, content) = &uri_map[*i];
+                                (uri.as_str(), content.as_str())
+                            })
+                            .collect()
+                    };
+
+                    if let Err(error) = corsa_client.did_open_batch_fast(&files_to_open) {
+                        push_worker_error(format!(
+                            "Failed to open virtual files in Corsa worker {}: {}",
+                            chunk_index + 1,
+                            error
+                        ));
+                        return;
+                    }
+
+                    let uris: Vec<vize_carton::String> = indices
+                        .iter()
+                        .map(|i| cstr!("file://{}.mts", generated[*i].original))
+                        .collect();
+
+                    let batch_results = match corsa_client.request_diagnostics_batch(&uris) {
+                        Ok(results) => results,
+                        Err(error) => {
+                            push_worker_error(format!(
+                                "Failed to request diagnostics from Corsa worker {}: {}",
+                                chunk_index + 1,
+                                error
+                            ));
+                            return;
+                        }
+                    };
+
+                    let diag_map: vize_carton::FxHashMap<_, _> =
+                        batch_results.into_iter().collect();
+
+                    let mut chunk_diagnostics: Vec<(
+                        std::string::String,
+                        Vec<std::string::String>,
+                    )> = Vec::new();
+
+                    for idx in &indices {
+                        let g = &generated[*idx];
+                        let virtual_uri = cstr!("file://{}.mts", g.original);
+                        let diagnostics = diag_map
+                            .get(virtual_uri.as_str())
+                            .cloned()
+                            .unwrap_or_default();
+
+                        let mut file_diags: Vec<std::string::String> = Vec::new();
+                        let mut seen_diags = vize_carton::FxHashSet::default();
+                        for diag in &diagnostics {
+                            let code_num = diag.code.as_ref().and_then(|c| match c {
+                                serde_json::Value::Number(n) => n.as_u64(),
+                                serde_json::Value::String(s) => {
+                                    let stripped = s.strip_prefix("TS").unwrap_or(s.as_str());
+                                    stripped.parse::<u64>().ok()
+                                }
+                                _ => None,
+                            });
+
+                            if matches!(
+                                code_num,
+                                Some(2307)
+                                    | Some(2666)
+                                    | Some(6133)
+                                    | Some(7006)
+                                    | Some(7043)
+                                    | Some(7044)
+                            ) {
+                                continue;
+                            }
+
+                            if !has_source_mapping(
+                                &g.virtual_ts,
+                                &g.source_map,
+                                diag.range.start.line,
+                                diag.range.start.character,
+                            ) {
+                                continue;
+                            }
+
+                            let severity = match diag.severity {
+                                Some(1) => "error",
+                                Some(2) => "warning",
+                                _ => "error",
+                            };
+                            let code_str = diag
+                                .code
+                                .as_ref()
+                                .map(|c| match c {
+                                    serde_json::Value::Number(n) => format!(" [TS{}]", n),
+                                    serde_json::Value::String(s) => format!(" [{}]", s),
+                                    _ => std::string::String::new(),
+                                })
+                                .unwrap_or_default();
+                            let (line, col) = map_diagnostic_position(
+                                &g.virtual_ts,
+                                &g.source_map,
+                                &g.original_content,
+                                diag.range.start.line,
+                                diag.range.start.character,
+                            );
+                            let dedupe_key =
+                                format!("{}:{}{} {}", severity, line, code_str, diag.message);
+                            if !seen_diags.insert(dedupe_key) {
+                                continue;
+                            }
+                            let rendered = format!(
+                                "{}:{}:{}{} {}",
+                                severity, line, col, code_str, diag.message
+                            );
+                            if severity == "error" {
+                                total_errors.fetch_add(1, AtomicOrdering::Relaxed);
+                            }
+                            file_diags.push(rendered);
+                        }
+
+                        if !file_diags.is_empty() {
+                            chunk_diagnostics.push((g.original.clone(), file_diags));
+                        }
+                    }
+
+                    if let Ok(mut diags) = all_diagnostics.lock() {
+                        diags.extend(chunk_diagnostics);
+                    }
+                })
+            })
+            .collect();
+
+        for handle in handles {
+            handle.join().expect("Thread panicked");
+        }
+    });
+
+    let worker_errors = worker_errors.into_inner().unwrap();
+    if !worker_errors.is_empty() {
+        return Err(worker_errors.join("\n"));
+    }
+
+    Ok((
+        total_errors.load(AtomicOrdering::Relaxed),
+        all_diagnostics.into_inner().unwrap(),
+    ))
+}
+
 /// Collect .vue files from patterns.
 #[allow(clippy::disallowed_types)]
 pub(crate) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
@@ -919,7 +954,10 @@ fn parse_dts_globals(
 
 #[cfg(test)]
 mod tests {
-    use super::{default_check_server_count, resolve_check_server_count};
+    use super::{
+        collect_direct_diagnostics, default_check_server_count, resolve_check_server_count,
+    };
+    use crate::commands::check::GeneratedFile;
 
     #[test]
     fn default_server_count_keeps_small_projects_single_threaded() {
@@ -945,5 +983,34 @@ mod tests {
     fn explicit_server_overrides_are_clamped() {
         assert_eq!(resolve_check_server_count(Some(0), None, 8, 16), 1);
         assert_eq!(resolve_check_server_count(Some(32), None, 8, 16), 8);
+    }
+
+    #[test]
+    fn direct_check_returns_error_when_corsa_worker_cannot_start() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let original = temp_dir.path().join("App.vue");
+        let original_str = original.display().to_string();
+        let project_root = temp_dir.path().display().to_string();
+        let virtual_uri = format!("file://{}.mts", original.display());
+        let generated = vec![GeneratedFile {
+            original: original_str.clone(),
+            virtual_ts: "const count: string = 0;\n".into(),
+            source_map: Vec::new(),
+            original_content: "<script setup lang=\"ts\">const count: string = 0;</script>".into(),
+        }];
+        let uri_map = vec![(virtual_uri, "const count: string = 0;\n".into())];
+        let index_chunks = vec![vec![0]];
+
+        let error = collect_direct_diagnostics(
+            &generated,
+            Some(project_root.as_str()),
+            Some("/definitely/missing-corsa"),
+            1,
+            &uri_map,
+            &index_chunks,
+        )
+        .expect_err("worker startup failure should be surfaced");
+
+        assert!(error.contains("Failed to start Corsa project session"));
     }
 }

@@ -3,6 +3,8 @@
 //! Contains utility functions for type declarations, event type mapping,
 //! identifier conversion, and template context generation.
 
+use std::ops::Range;
+
 use super::types::VirtualTsOptions;
 use vize_carton::append;
 use vize_carton::String;
@@ -123,6 +125,24 @@ pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
     }
 
     ctx
+}
+
+/// Get the generated subrange that corresponds to a specific source expression.
+///
+/// This keeps source maps anchored to the actual expression text instead of
+/// any wrapping code we emit around it (`void (...)`, `as Foo`, handler shims).
+pub(crate) fn generated_text_range(
+    generated_segment: &str,
+    mapped_text: &str,
+    generated_start: usize,
+) -> Range<usize> {
+    if mapped_text.is_empty() {
+        return generated_start..generated_start + generated_segment.len();
+    }
+
+    let relative_start = generated_segment.find(mapped_text).unwrap_or(0);
+    let start = generated_start + relative_start;
+    start..start + mapped_text.len()
 }
 
 /// Strip TypeScript `as Type` assertion from a v-for source expression.

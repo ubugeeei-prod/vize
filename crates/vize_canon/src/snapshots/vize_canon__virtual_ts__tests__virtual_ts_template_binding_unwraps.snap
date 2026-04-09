@@ -1,6 +1,6 @@
 ---
-source: crates/vize_canon/src/tests.rs
-expression: virtual_ts
+source: crates/vize_canon/src/virtual_ts/mod.rs
+expression: output.code
 ---
 /// <reference lib="es2022" />
 /// <reference lib="dom" />
@@ -26,11 +26,9 @@ declare global {
 type $Vue = import('vue');
 
 // ========== Module Scope (imports) ==========
-import { ref } from 'vue'
-interface Item {
-  id: number
-  name: string
-}
+import { ref, useTemplateRef } from 'vue'
+// Prevent TS6133 for imports shadowed by setup-scope compiler macros
+void useTemplateRef;
 
 // ========== Exported Types ==========
 export type Props = {};
@@ -58,20 +56,20 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
+  const users = ref([{ id: 1 }])
+  const inputRef = useTemplateRef<HTMLInputElement>('input')
   
-  
-  
-  const items = ref<Item[]>([])
-  
-  // @vize-map: 2896:2940 -> 0:106
+  // @vize-map: 2956:3053 -> 0:132
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
-  type __R_items = typeof items;
+  type __R_inputRef = typeof inputRef;
+  type __R_users = typeof users;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
     type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;
-    var items: __U<__R_items> = undefined as any;
+    var inputRef: __U<__R_inputRef> = undefined as any;
+    var users: __U<__R_users> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = $Vue['ComponentPublicInstance'];
     const __ctx = undefined as unknown as __Ctx;
@@ -81,21 +79,13 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-
-  // v-for scope: id in items
-  (items).forEach((id: typeof items[number], name: number) => {
-    void id;
-    void name;
-    void (id); // VBind
-    // @vize-map: expr -> 203:205
-    void (id); // Interpolation
-    // @vize-map: expr -> 217:219
-    void (name); // Interpolation
-    // @vize-map: expr -> 227:231
-  });
+  void (users.length); // Interpolation
+  // @vize-map: expr -> 8:20
+  void (inputRef && inputRef.focus()); // Interpolation
+  // @vize-map: expr -> 27:55
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void ref; void items;
+  void ref; void inputRef; void useTemplateRef; void users;
   })();
 }
 

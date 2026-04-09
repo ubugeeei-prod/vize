@@ -113,3 +113,108 @@ fn offset_to_line_col(content: &str, offset: usize) -> (u32, u32) {
 
     (line, col)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{map_diagnostic_position, offset_to_line_col};
+    use vize_atelier_core::parser::parse;
+    use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
+    use vize_canon::virtual_ts::{generate_virtual_ts_with_offsets, VirtualTsOptions};
+    use vize_carton::Bump;
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    fn generate_output(
+        source: &str,
+    ) -> (
+        std::string::String,
+        Vec<vize_canon::virtual_ts::VizeMapping>,
+    ) {
+        let descriptor = parse_sfc(
+            source,
+            SfcParseOptions {
+                filename: "test.vue".into(),
+                ..Default::default()
+            },
+        )
+        .expect("SFC should parse");
+
+        let script_setup = descriptor
+            .script_setup
+            .as_ref()
+            .expect("test fixture should have script setup");
+        let template = descriptor
+            .template
+            .as_ref()
+            .expect("test fixture should have template");
+
+        let allocator = Bump::new();
+        let (root, _) = parse(&allocator, &template.content);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(&script_setup.content);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts_with_offsets(
+            &summary,
+            Some(&script_setup.content),
+            Some(&root),
+            script_setup.loc.start as u32,
+            template.loc.start as u32,
+            &VirtualTsOptions::default(),
+        );
+
+        (output.code.into(), output.mappings)
+    }
+
+    #[test]
+    fn test_map_diagnostic_position_for_wrapped_template_expression_start() {
+        let source = r#"<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+const inputRef = useTemplateRef<HTMLInputElement>('input')
+</script>
+
+<template>
+  <div :data-active="inputRef && inputRef.focus()"></div>
+</template>"#;
+
+        let (virtual_ts, source_map) = generate_output(source);
+        let expression = "inputRef && inputRef.focus()";
+
+        let generated_offset = virtual_ts.find(expression).unwrap();
+        let (vline, vcol) = offset_to_line_col(&virtual_ts, generated_offset);
+        let (line, col) = map_diagnostic_position(&virtual_ts, &source_map, source, vline, vcol);
+
+        let source_offset = source.find(expression).unwrap();
+        let (expected_line, expected_col) = offset_to_line_col(source, source_offset);
+
+        assert_eq!((line, col), (expected_line + 1, expected_col + 1));
+    }
+
+    #[test]
+    fn test_map_diagnostic_position_for_inner_identifier_in_wrapped_template_expression() {
+        let source = r#"<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+const inputRef = useTemplateRef<HTMLInputElement>('input')
+</script>
+
+<template>
+  <div :data-active="inputRef && inputRef.focus()"></div>
+</template>"#;
+
+        let (virtual_ts, source_map) = generate_output(source);
+        let expression = "inputRef && inputRef.focus()";
+        let identifier_offset = "inputRef && ".len();
+
+        let generated_offset = virtual_ts.find(expression).unwrap() + identifier_offset;
+        let (vline, vcol) = offset_to_line_col(&virtual_ts, generated_offset);
+        let (line, col) = map_diagnostic_position(&virtual_ts, &source_map, source, vline, vcol);
+
+        let source_offset = source.find(expression).unwrap() + identifier_offset;
+        let (expected_line, expected_col) = offset_to_line_col(source, source_offset);
+
+        assert_eq!((line, col), (expected_line + 1, expected_col + 1));
+    }
+}

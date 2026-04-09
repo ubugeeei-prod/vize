@@ -68,15 +68,11 @@ function __setup() {
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
-  type __Ref_ref = typeof ref;
-  type __Ref_currentComponent = typeof currentComponent;
-  type __Ref_markRaw = typeof markRaw;
+  type __R_currentComponent = typeof currentComponent;
   ;(function __template() {
-    // Auto-unwrap refs (Vue template behavior)
-    type __UnwrapRef<T> = import('vue').UnwrapRef<T>;
-    var ref: __UnwrapRef<__Ref_ref> = undefined as any;
-    var currentComponent: __UnwrapRef<__Ref_currentComponent> = undefined as any;
-    var markRaw: __UnwrapRef<__Ref_markRaw> = undefined as any;
+    // Auto-unwrap Vue refs in template scope
+    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;
+    var currentComponent: __U<__R_currentComponent> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = $Vue['ComponentPublicInstance'];
     const __ctx = undefined as unknown as __Ctx;
