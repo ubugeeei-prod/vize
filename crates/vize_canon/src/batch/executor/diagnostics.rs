@@ -77,7 +77,7 @@ fn parse_severity(severity: Option<i32>) -> u8 {
     }
 }
 
-fn should_skip_diagnostic(code: Option<u32>) -> bool {
+pub(super) fn should_skip_diagnostic(code: Option<u32>) -> bool {
     matches!(
         code,
         Some(2307) | Some(2666) | Some(6133) | Some(7006) | Some(7043) | Some(7044)

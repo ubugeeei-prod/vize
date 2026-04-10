@@ -20,8 +20,10 @@ use crate::{
 use oxc_span::SourceType;
 use vize_carton::{cstr, String};
 
+mod cli;
 mod diagnostics;
 
+use cli::check_with_cli;
 use diagnostics::map_batch_diagnostics;
 
 /// Batch executor backed by `corsa`'s project-session diagnostics API.
@@ -61,11 +63,16 @@ impl CorsaExecutor {
         project.materialize()?;
 
         let corsa_path = self.corsa_path.to_string_lossy();
-        let mut client = CorsaProjectClient::new_for_workspace(
+        let mut client = match CorsaProjectClient::new_for_workspace(
             Some(corsa_path.as_ref()),
             project.virtual_root(),
-        )
-        .map_err(map_corsa_error)?;
+        ) {
+            Ok(client) => client,
+            Err(error) if should_fallback_to_cli(&error) => {
+                return check_with_cli(&self.corsa_path, project);
+            }
+            Err(error) => return Err(map_corsa_error(error)),
+        };
         let uris = collect_virtual_file_uris(project.virtual_root())?;
         let diagnostics = map_batch_diagnostics(
             client
@@ -239,12 +246,37 @@ fn map_corsa_error(message: String) -> CorsaError {
     }
 }
 
+fn should_fallback_to_cli(error: &str) -> bool {
+    error.contains("expected tuple marker")
+        || error.contains("expected uint8 marker")
+        || error.contains("expected bin marker")
+        || error.contains("process is closed: jsonrpc reader")
+}
+
 #[cfg(test)]
 mod tests {
     use super::{collect_declaration_outputs, collect_virtual_file_uris, normalize_corsa_path};
-    use std::fs;
-    use tempfile::TempDir;
+    use std::{
+        fs,
+        path::PathBuf,
+        sync::atomic::{AtomicUsize, Ordering},
+    };
     use vize_carton::cstr;
+
+    use tempfile::TempDir;
+
+    fn unique_case_dir(name: &str) -> PathBuf {
+        static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
+
+        let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("__agent_only")
+            .join("tests")
+            .join(&*cstr!(
+                "corsa-executor-{name}-{}-{case_id}",
+                std::process::id()
+            ))
+    }
 
     #[test]
     fn collects_virtual_type_script_files_only() {
@@ -315,5 +347,39 @@ mod tests {
         assert_eq!(files.len(), 1);
         assert_eq!(files[0].path, out_dir.join("App.vue.d.ts"));
         assert_eq!(files[0].content, "export {};\n");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn checks_with_cli_when_project_session_api_is_unavailable() {
+        use super::CorsaExecutor;
+        use crate::batch::VirtualProject;
+        use std::os::unix::fs::PermissionsExt;
+
+        let case_dir = unique_case_dir("cli-fallback");
+        let _ = fs::remove_dir_all(&case_dir);
+        let cache_dir = case_dir.join(".cache");
+        let source = case_dir.join("src").join("main.ts");
+        fs::create_dir_all(&cache_dir).unwrap();
+        fs::create_dir_all(source.parent().unwrap()).unwrap();
+        fs::write(&source, "const value: number = 1;\n").unwrap();
+
+        let tsgo = cache_dir.join("tsgo");
+        fs::write(
+            &tsgo,
+            "#!/bin/sh\nif [ \"$1\" = \"--api\" ]; then printf 'api unavailable'; exit 0; fi\nexit 0\n",
+        )
+        .unwrap();
+        fs::set_permissions(&tsgo, fs::Permissions::from_mode(0o755)).unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&source).unwrap();
+        let executor = CorsaExecutor::new(&case_dir).unwrap();
+        let result = executor.check(&project).unwrap();
+
+        assert!(result.success);
+        assert!(result.diagnostics.is_empty());
+
+        let _ = fs::remove_dir_all(&case_dir);
     }
 }
