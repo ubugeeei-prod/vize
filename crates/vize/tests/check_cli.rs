@@ -4,10 +4,12 @@ use tempfile::TempDir;
 
 #[test]
 fn check_json_reports_type_errors_via_lsp_fallback() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
     let temp_dir = TempDir::new().unwrap();
     let src_dir = temp_dir.path().join("src");
     std::fs::create_dir_all(&src_dir).unwrap();
-    link_workspace_node_modules(temp_dir.path()).unwrap();
     std::fs::write(
         temp_dir.path().join("tsconfig.json"),
         r#"{
@@ -32,12 +34,10 @@ const count: string = 0;
     )
     .unwrap();
 
-    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(Path::parent)
-        .unwrap();
+    let workspace_root = workspace_root();
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(workspace_root)
+        .env("CORSA_PATH", corsa_path)
         .args(["check", app_vue.to_str().unwrap(), "--format", "json"])
         .output()
         .unwrap();
@@ -61,52 +61,28 @@ const count: string = 0;
     });
 }
 
-fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
-    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+fn workspace_root() -> &'static std::path::Path {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)
-        .ok_or_else(|| std::io::Error::other("workspace root not found"))?;
-    let workspace_node_modules = workspace_root.join("node_modules");
-    if !workspace_node_modules.exists() {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "workspace node_modules not found",
-        ));
-    }
-
-    let target = project_root.join("node_modules");
-    std::fs::create_dir_all(&target)?;
-    for package in ["vue", "vite", "@vue"] {
-        let source = workspace_node_modules.join(package);
-        if source.exists() {
-            symlink_path(&source, &target.join(package))?;
-        }
-    }
-
-    Ok(())
+        .expect("workspace root should exist")
 }
 
-fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
-    if target.is_symlink() || target.is_file() {
-        std::fs::remove_file(target)?;
-    } else if target.exists() {
-        std::fs::remove_dir_all(target)?;
-    }
-    if let Some(parent) = target.parent() {
-        std::fs::create_dir_all(parent)?;
+fn resolve_test_corsa_path() -> Option<String> {
+    let workspace_root = workspace_root();
+    let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
+    if sibling_cache.exists() {
+        return Some(sibling_cache.display().to_string());
     }
 
-    #[cfg(unix)]
-    {
-        std::os::unix::fs::symlink(source, target)
-    }
-    #[cfg(windows)]
-    {
-        let metadata = std::fs::metadata(source)?;
-        if metadata.is_dir() {
-            std::os::windows::fs::symlink_dir(source, target)
-        } else {
-            std::os::windows::fs::symlink_file(source, target)
+    for candidate in [
+        workspace_root.join("node_modules/.bin/tsgo"),
+        workspace_root.join("examples/vite-musea/node_modules/.bin/tsgo"),
+    ] {
+        if candidate.exists() {
+            return Some(candidate.display().to_string());
         }
     }
+
+    None
 }

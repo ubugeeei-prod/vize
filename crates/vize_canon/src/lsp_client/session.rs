@@ -26,7 +26,7 @@ pub(super) fn spawn_project_session(
     let config_path_wire = config_path.to_string_lossy();
     let session = block_on(ProjectSession::spawn(
         ApiSpawnConfig::new(executable)
-            .with_mode(ApiMode::SyncMsgpackStdio)
+            .with_mode(api_mode_for_executable(executable))
             .with_cwd(cwd),
         config_path_wire.as_ref(),
         None,
@@ -35,6 +35,39 @@ pub(super) fn spawn_project_session(
     let capabilities = block_on(session.describe_capabilities())
         .unwrap_or_else(|_| Arc::new(CapabilitiesResponse::default()));
     Ok((session, capabilities))
+}
+
+fn api_mode_for_executable(executable: &str) -> ApiMode {
+    if is_node_wrapper_executable(Path::new(executable)) {
+        ApiMode::AsyncJsonRpcStdio
+    } else {
+        ApiMode::SyncMsgpackStdio
+    }
+}
+
+fn is_node_wrapper_executable(path: &Path) -> bool {
+    if path.extension().and_then(|extension| extension.to_str()) == Some("js") {
+        return true;
+    }
+
+    if path
+        .parent()
+        .and_then(|parent| parent.file_name())
+        .and_then(|name| name.to_str())
+        == Some(".bin")
+    {
+        return true;
+    }
+
+    let Some(parent) = path.parent() else {
+        return false;
+    };
+    let Some(grandparent) = parent.parent() else {
+        return false;
+    };
+
+    parent.file_name().and_then(|name| name.to_str()) == Some("bin")
+        && grandparent.file_name().and_then(|name| name.to_str()) == Some("native-preview")
 }
 
 pub(super) fn uri_document_identifier(uri: &str) -> DocumentIdentifier {
@@ -297,8 +330,34 @@ pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u
 
 #[cfg(test)]
 mod tests {
-    use super::{line_character_to_utf16_offset, uri_document_identifier};
-    use corsa::api::DocumentIdentifier;
+    use super::{api_mode_for_executable, line_character_to_utf16_offset, uri_document_identifier};
+    use corsa::api::{ApiMode, DocumentIdentifier};
+
+    #[test]
+    fn uses_async_json_rpc_for_node_modules_bin_wrappers() {
+        assert_eq!(
+            api_mode_for_executable("/tmp/project/node_modules/.bin/tsgo"),
+            ApiMode::AsyncJsonRpcStdio
+        );
+    }
+
+    #[test]
+    fn uses_async_json_rpc_for_native_preview_js_entrypoints() {
+        assert_eq!(
+            api_mode_for_executable(
+                "/tmp/project/node_modules/@typescript/native-preview/bin/tsgo.js"
+            ),
+            ApiMode::AsyncJsonRpcStdio
+        );
+    }
+
+    #[test]
+    fn keeps_native_binaries_on_sync_msgpack() {
+        assert_eq!(
+            api_mode_for_executable("/tmp/project/corsa-bind/.cache/tsgo"),
+            ApiMode::SyncMsgpackStdio
+        );
+    }
 
     #[test]
     fn utf16_offsets_clamp_to_line_boundaries() {
