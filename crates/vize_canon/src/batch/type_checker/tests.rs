@@ -546,13 +546,7 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
     else {
         return Err(std::io::Error::other("workspace root not found"));
     };
-    let workspace_node_modules = workspace_root.join("node_modules");
-    if !workspace_node_modules.exists() {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "workspace node_modules not found",
-        ));
-    }
+    let workspace_node_modules = resolve_workspace_node_modules(workspace_root);
 
     let target = project_root.join("node_modules");
     if target.is_symlink() || target.is_file() {
@@ -562,11 +556,16 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
     }
     std::fs::create_dir_all(&target)?;
 
-    for package in ["vue", "vite", "@vue"] {
-        let source = workspace_node_modules.join(package);
-        if source.exists() {
-            symlink_path(&source, &target.join(package))?;
+    if let Some(ref workspace_node_modules) = workspace_node_modules {
+        for package in ["vue", "vite", "@vue"] {
+            let source = workspace_node_modules.join(package);
+            if source.exists() {
+                symlink_path(&source, &target.join(package))?;
+            }
         }
+    } else {
+        write_test_vue_stub(&target)?;
+        write_test_vite_stub(&target)?;
     }
 
     if let Some(corsa_path) = crate::lsp_client::paths::find_corsa_in_local_node_modules(Some(
@@ -592,6 +591,68 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
         }
     }
 
+    Ok(())
+}
+
+fn resolve_workspace_node_modules(workspace_root: &Path) -> Option<PathBuf> {
+    let override_path = std::env::var_os("VIZE_TEST_WORKSPACE_NODE_MODULES");
+    if let Some(override_path) = override_path {
+        let override_path = PathBuf::from(override_path);
+        if override_path.as_os_str() == "__none__" {
+            return None;
+        }
+        return override_path.exists().then_some(override_path);
+    }
+
+    let workspace_node_modules = workspace_root.join("node_modules");
+    workspace_node_modules
+        .exists()
+        .then_some(workspace_node_modules)
+}
+
+fn write_test_vue_stub(target: &Path) -> std::io::Result<()> {
+    let vue_dir = target.join("vue");
+    std::fs::create_dir_all(&vue_dir)?;
+    std::fs::write(
+        vue_dir.join("package.json"),
+        r#"{
+  "name": "vue",
+  "types": "index.d.ts"
+}"#,
+    )?;
+    std::fs::write(
+        vue_dir.join("index.d.ts"),
+        r#"export interface Ref<T = any, S = T> {
+  value: T;
+}
+
+export interface ShallowRef<T = any, S = T> extends Ref<T, S> {}
+
+export interface ComponentPublicInstance {
+  $attrs: any;
+  $slots: any;
+  $refs: any;
+  $emit: (...args: any[]) => void;
+}
+
+export declare function ref<T>(value: T): Ref<T>;
+export declare function useTemplateRef<T = any>(key: string): ShallowRef<T | null>;
+"#,
+    )?;
+    Ok(())
+}
+
+fn write_test_vite_stub(target: &Path) -> std::io::Result<()> {
+    let vite_dir = target.join("vite");
+    std::fs::create_dir_all(&vite_dir)?;
+    std::fs::write(
+        vite_dir.join("package.json"),
+        r#"{
+  "name": "vite",
+  "types": "client.d.ts"
+}"#,
+    )?;
+    std::fs::write(vite_dir.join("client.d.ts"), "")?;
     Ok(())
 }
 
