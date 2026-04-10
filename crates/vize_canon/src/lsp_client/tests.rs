@@ -1,4 +1,5 @@
 use super::{
+    bootstrap::resolve_corsa_executable,
     paths::{find_corsa_in_local_node_modules, find_corsa_in_search_roots, resolve_temp_dir_base},
     utils::convert_diagnostics,
 };
@@ -8,6 +9,7 @@ use std::{
     path::PathBuf,
     sync::atomic::{AtomicUsize, Ordering},
 };
+use tempfile::TempDir;
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
@@ -76,7 +78,7 @@ fn prefers_project_local_cache_before_native_preview() {
     let native_preview = workspace_root
         .join("node_modules")
         .join("@typescript")
-        .join("native-preview-darwin-arm64")
+        .join("native-preview")
         .join("lib")
         .join("tsgo");
 
@@ -128,7 +130,7 @@ fn prefers_sibling_cache_before_workspace_native_preview() {
     let native_preview = workspace_root
         .join("node_modules")
         .join("@typescript")
-        .join("native-preview-darwin-arm64")
+        .join("native-preview")
         .join("lib")
         .join("tsgo");
 
@@ -195,4 +197,62 @@ fn resolves_corsa_from_secondary_search_root() {
         resolved,
         Some(fallback_cache.to_string_lossy().into_owned().into())
     );
+}
+
+#[test]
+fn prefers_workspace_native_preview_over_nested_wrapper() {
+    let temp_dir = TempDir::new().unwrap();
+    let workspace_root = temp_dir.path().join("workspace");
+    let source_dir = workspace_root.join("packages").join("demo").join("src");
+    let wrapper = workspace_root
+        .join("packages")
+        .join("demo")
+        .join("node_modules/.bin/tsgo");
+    let native_preview = workspace_root
+        .join("node_modules")
+        .join("@typescript")
+        .join("native-preview")
+        .join("lib")
+        .join("tsgo");
+
+    fs::create_dir_all(&source_dir).unwrap();
+    fs::create_dir_all(wrapper.parent().unwrap()).unwrap();
+    fs::create_dir_all(native_preview.parent().unwrap()).unwrap();
+    fs::write(&wrapper, "").unwrap();
+    fs::write(&native_preview, "").unwrap();
+
+    let resolved = find_corsa_in_local_node_modules(Some(source_dir.to_string_lossy().as_ref()));
+
+    assert_eq!(
+        resolved,
+        Some(native_preview.to_string_lossy().into_owned().into())
+    );
+}
+
+#[test]
+fn normalizes_explicit_wrapper_path_to_native_binary() {
+    let temp_dir = TempDir::new().unwrap();
+    let workspace_root = temp_dir.path().join("workspace");
+    let wrapper = workspace_root
+        .join("packages")
+        .join("demo")
+        .join("node_modules/.bin/tsgo");
+    let native_preview = workspace_root
+        .join("node_modules")
+        .join("@typescript")
+        .join("native-preview")
+        .join("lib")
+        .join("tsgo");
+
+    fs::create_dir_all(wrapper.parent().unwrap()).unwrap();
+    fs::create_dir_all(native_preview.parent().unwrap()).unwrap();
+    fs::write(&wrapper, "").unwrap();
+    fs::write(&native_preview, "").unwrap();
+
+    let resolved = resolve_corsa_executable(
+        Some(wrapper.to_string_lossy().as_ref()),
+        Some(workspace_root.to_string_lossy().as_ref()),
+    );
+
+    assert_eq!(resolved, native_preview.to_string_lossy().into_owned());
 }

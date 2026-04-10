@@ -3,6 +3,17 @@ use vize_carton::{cstr, String};
 
 const EXECUTABLE_NAMES: [&str; 2] = ["corsa", "tsgo"];
 
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum CorsaCandidateKind {
+    Wrapper,
+    Native,
+}
+
+struct CorsaCandidate {
+    path: String,
+    kind: CorsaCandidateKind,
+}
+
 /// Walk upward until a `node_modules/vue` anchor is found.
 pub(super) fn find_node_modules_with_vue(start: &Path) -> Option<PathBuf> {
     let mut dir = start;
@@ -53,13 +64,59 @@ pub(crate) fn corsa_search_roots(working_dir: Option<&Path>) -> Vec<PathBuf> {
 
 /// Resolve a Corsa executable from a list of candidate project roots.
 pub(crate) fn find_corsa_in_search_roots(search_roots: &[PathBuf]) -> Option<String> {
-    search_roots
-        .iter()
-        .find_map(|root| find_corsa_in_local_node_modules(Some(root.to_string_lossy().as_ref())))
+    let mut fallback = None;
+
+    for root in search_roots {
+        let root = root.to_string_lossy();
+        let Some(candidate) = find_corsa_candidate(Some(root.as_ref())) else {
+            continue;
+        };
+
+        if candidate.kind == CorsaCandidateKind::Native {
+            return Some(candidate.path);
+        }
+
+        if fallback.is_none() {
+            fallback = Some(candidate.path);
+        }
+    }
+
+    fallback
 }
 
 /// Resolve a project-local Corsa executable from the current directory or ancestors.
+#[cfg(test)]
 pub(crate) fn find_corsa_in_local_node_modules(working_dir: Option<&str>) -> Option<String> {
+    find_corsa_candidate(working_dir).map(|candidate| candidate.path)
+}
+
+pub(crate) fn normalize_corsa_path(path: &str) -> Option<String> {
+    let path = PathBuf::from(path);
+    let Some(bin_dir) = path.parent() else {
+        return Some(path.to_string_lossy().into());
+    };
+    if bin_dir.file_name().and_then(|name| name.to_str()) != Some(".bin") {
+        return Some(path.to_string_lossy().into());
+    }
+
+    let Some(node_modules_dir) = bin_dir.parent() else {
+        return Some(path.to_string_lossy().into());
+    };
+    if node_modules_dir.file_name().and_then(|name| name.to_str()) != Some("node_modules") {
+        return Some(path.to_string_lossy().into());
+    }
+
+    let Some(project_root) = node_modules_dir.parent() else {
+        return Some(path.to_string_lossy().into());
+    };
+
+    let original = path.to_string_lossy().into_owned();
+    find_corsa_in_search_roots(&corsa_search_roots(Some(project_root)))
+        .filter(|resolved| resolved.as_str() != original.as_str())
+        .or(Some(original.into()))
+}
+
+fn find_corsa_candidate(working_dir: Option<&str>) -> Option<CorsaCandidate> {
     let base_dir = working_dir
         .map(PathBuf::from)
         .or_else(|| std::env::current_dir().ok())?;
@@ -68,15 +125,23 @@ pub(crate) fn find_corsa_in_local_node_modules(working_dir: Option<&str>) -> Opt
     let mut current = Some(base_dir.as_path());
     while let Some(dir) = current {
         if let Some(path) = search_project_cache(dir) {
-            return Some(path);
+            return Some(CorsaCandidate {
+                path,
+                kind: CorsaCandidateKind::Native,
+            });
         }
         if let Some(parent) = dir.parent() {
             if let Some(path) = search_project_cache(&parent.join("corsa-bind")) {
-                return Some(path);
+                return Some(CorsaCandidate {
+                    path,
+                    kind: CorsaCandidateKind::Native,
+                });
             }
         }
-        if fallback.is_none() {
-            fallback = search_local_install(dir);
+        if let Some(candidate) = search_local_install(dir) {
+            if should_replace_candidate(fallback.as_ref(), &candidate) {
+                fallback = Some(candidate);
+            }
         }
         current = dir.parent();
     }
@@ -147,7 +212,17 @@ pub(super) fn find_corsa_in_path() -> Option<String> {
     None
 }
 
-fn search_local_install(dir: &Path) -> Option<String> {
+fn should_replace_candidate(existing: Option<&CorsaCandidate>, candidate: &CorsaCandidate) -> bool {
+    match existing {
+        None => true,
+        Some(existing) => {
+            existing.kind == CorsaCandidateKind::Wrapper
+                && candidate.kind == CorsaCandidateKind::Native
+        }
+    }
+}
+
+fn search_local_install(dir: &Path) -> Option<CorsaCandidate> {
     let platform_suffix = platform_suffix();
     let pnpm_pattern = dir.join("node_modules/.pnpm");
     if pnpm_pattern.exists() {
@@ -165,7 +240,10 @@ fn search_local_install(dir: &Path) -> Option<String> {
                             executable
                         ));
                         if native_path.exists() {
-                            return Some(native_path.to_string_lossy().into());
+                            return Some(CorsaCandidate {
+                                path: native_path.to_string_lossy().into(),
+                                kind: CorsaCandidateKind::Native,
+                            });
                         }
                     }
                 }
@@ -186,7 +264,10 @@ fn search_local_install(dir: &Path) -> Option<String> {
         ];
         for candidate in &native_candidates {
             if candidate.exists() {
-                return Some(candidate.to_string_lossy().into());
+                return Some(CorsaCandidate {
+                    path: candidate.to_string_lossy().into(),
+                    kind: CorsaCandidateKind::Native,
+                });
             }
         }
     }
@@ -199,7 +280,10 @@ fn search_local_install(dir: &Path) -> Option<String> {
         ];
         for candidate in &fallback_candidates {
             if candidate.exists() {
-                return Some(candidate.to_string_lossy().into());
+                return Some(CorsaCandidate {
+                    path: candidate.to_string_lossy().into(),
+                    kind: CorsaCandidateKind::Wrapper,
+                });
             }
         }
     }

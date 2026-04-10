@@ -20,6 +20,8 @@ use std::{
 };
 use vize_carton::{cstr, FxHashMap, String};
 
+type DiagnosticBatch = Vec<(String, Vec<LspDiagnostic>)>;
+
 impl CorsaProjectClient {
     /// Get cached diagnostics for a URI.
     pub fn get_diagnostics(&self, uri: &str) -> Vec<LspDiagnostic> {
@@ -100,10 +102,10 @@ impl CorsaProjectClient {
     fn request_diagnostics_batch_via_project_api(
         &mut self,
         uris: &[String],
-    ) -> Result<Option<Vec<(String, Vec<LspDiagnostic>)>>, String> {
+    ) -> Result<Option<DiagnosticBatch>, String> {
         let report = match block_on(self.session.get_diagnostics_for_project()) {
             Ok(report) => report,
-            Err(error) if diagnostics_api_is_unsupported(&error.to_string()) => return Ok(None),
+            Err(error) if diagnostics_api_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
                 return Err(cstr!(
                     "Failed to request Corsa project diagnostics: {error}"
@@ -136,7 +138,7 @@ impl CorsaProjectClient {
         );
         let response = match response {
             Ok(response) => response,
-            Err(error) if diagnostics_api_is_unsupported(&error.to_string()) => return Ok(None),
+            Err(error) if diagnostics_api_error_is_unsupported(&error) => return Ok(None),
             Err(error) => return Err(cstr!("Failed to request Corsa file diagnostics: {error}")),
         };
         Ok(Some(Ok(self.store_file_diagnostics(
@@ -151,7 +153,7 @@ impl CorsaProjectClient {
     ) -> Result<Option<Result<DiagnosticFetch, String>>, String> {
         let report = match block_on(self.session.get_diagnostics_for_project()) {
             Ok(report) => report,
-            Err(error) if diagnostics_api_is_unsupported(&error.to_string()) => return Ok(None),
+            Err(error) if diagnostics_api_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
                 return Err(cstr!(
                     "Failed to request Corsa project diagnostics: {error}"
@@ -207,7 +209,7 @@ impl CorsaProjectClient {
     fn request_diagnostics_batch_via_materialized_files(
         &mut self,
         uris: &[String],
-    ) -> Result<Option<Vec<(String, Vec<LspDiagnostic>)>>, String> {
+    ) -> Result<Option<DiagnosticBatch>, String> {
         let mut pairs = Vec::with_capacity(uris.len());
         for uri in uris {
             pairs.push((uri.clone(), self.session_document_uri(uri.as_str())));
@@ -245,7 +247,7 @@ impl CorsaProjectClient {
             );
             let response = match response {
                 Ok(response) => response,
-                Err(error) if diagnostics_api_is_unsupported(&error.to_string()) => {
+                Err(error) if diagnostics_api_error_is_unsupported(&error) => {
                     // Fall through to project diagnostics when file diagnostics are unavailable.
                     // Some runtimes expose only one of these endpoints.
                     let _ = error;
@@ -253,7 +255,7 @@ impl CorsaProjectClient {
                     return if self.supports_project_diagnostics_api() {
                         let report = match block_on(self.session.get_diagnostics_for_project()) {
                             Ok(report) => report,
-                            Err(error) if diagnostics_api_is_unsupported(&error.to_string()) => {
+                            Err(error) if diagnostics_api_error_is_unsupported(&error) => {
                                 return Ok(None);
                             }
                             Err(error) => {
@@ -285,7 +287,7 @@ impl CorsaProjectClient {
         if self.supports_project_diagnostics_api() {
             let report = match block_on(self.session.get_diagnostics_for_project()) {
                 Ok(report) => report,
-                Err(error) if diagnostics_api_is_unsupported(&error.to_string()) => {
+                Err(error) if diagnostics_api_error_is_unsupported(&error) => {
                     return Ok(None);
                 }
                 Err(error) => {
@@ -309,10 +311,10 @@ impl CorsaProjectClient {
     fn request_materialized_diagnostics_batch_via_project_api(
         &mut self,
         pairs: &[(String, String)],
-    ) -> Result<Option<Vec<(String, Vec<LspDiagnostic>)>>, String> {
+    ) -> Result<Option<DiagnosticBatch>, String> {
         let report = match block_on(self.session.get_diagnostics_for_project()) {
             Ok(report) => report,
-            Err(error) if diagnostics_api_is_unsupported(&error.to_string()) => return Ok(None),
+            Err(error) if diagnostics_api_error_is_unsupported(&error) => return Ok(None),
             Err(error) => {
                 return Err(cstr!(
                     "Failed to request Corsa project diagnostics: {error}"
@@ -364,7 +366,7 @@ impl CorsaProjectClient {
     fn request_diagnostics_batch_via_lsp(
         &mut self,
         uris: &[String],
-    ) -> Result<Option<Vec<(String, Vec<LspDiagnostic>)>>, String> {
+    ) -> Result<Option<DiagnosticBatch>, String> {
         if uris.is_empty() {
             return Ok(Some(Vec::new()));
         }
@@ -412,7 +414,7 @@ impl CorsaProjectClient {
         for (external_uri, lsp_uri) in &opened_documents {
             let report = match request_lsp_document_diagnostics(&client, lsp_uri) {
                 Ok(report) => report,
-                Err(error) if diagnostics_api_is_unsupported(&error.to_string()) => {
+                Err(error) if diagnostics_api_error_is_unsupported(&error) => {
                     cleanup_lsp_session(&overlay, &opened_documents, stop, responder, &client);
                     return Ok(None);
                 }
@@ -439,6 +441,10 @@ fn diagnostics_api_is_unsupported(error: &str) -> bool {
     error.contains("unknown API method")
         || error.contains("method not found")
         || error.contains("Unsupported")
+}
+
+fn diagnostics_api_error_is_unsupported(error: &impl std::fmt::Display) -> bool {
+    diagnostics_api_is_unsupported(cstr!("{error}").as_str())
 }
 
 fn initialize_lsp_client(client: &LspClient, project_root: &std::path::Path) -> Result<(), String> {
@@ -584,11 +590,11 @@ fn json_code_to_lsp_code(code: serde_json::Value) -> lsp_types::NumberOrString {
             if let Some(value) = number.as_i64() {
                 lsp_types::NumberOrString::Number(value as i32)
             } else {
-                lsp_types::NumberOrString::String(number.to_string())
+                lsp_types::NumberOrString::String(cstr!("{number}").into())
             }
         }
-        serde_json::Value::String(string) => lsp_types::NumberOrString::String(string.into()),
-        other => lsp_types::NumberOrString::String(other.to_string().into()),
+        serde_json::Value::String(string) => lsp_types::NumberOrString::String(string),
+        other => lsp_types::NumberOrString::String(cstr!("{other}").into()),
     }
 }
 

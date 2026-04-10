@@ -675,6 +675,9 @@ fn default_check_server_count(file_count: usize, cpu_count: usize) -> usize {
 }
 
 #[allow(clippy::disallowed_types)]
+type DirectDiagnosticFiles = Vec<(std::string::String, Vec<std::string::String>)>;
+
+#[allow(clippy::disallowed_types)]
 fn collect_direct_diagnostics(
     generated: &[GeneratedFile],
     project_root: Option<&str>,
@@ -682,15 +685,14 @@ fn collect_direct_diagnostics(
     num_servers: usize,
     uri_map: &[(std::string::String, std::string::String)],
     index_chunks: &[Vec<usize>],
-) -> Result<(usize, Vec<(std::string::String, Vec<std::string::String>)>), std::string::String> {
+) -> Result<(usize, DirectDiagnosticFiles), std::string::String> {
     use std::sync::{
         atomic::{AtomicUsize, Ordering as AtomicOrdering},
         Mutex,
     };
 
     let total_errors = AtomicUsize::new(0);
-    let all_diagnostics: Mutex<Vec<(std::string::String, Vec<std::string::String>)>> =
-        Mutex::new(Vec::new());
+    let all_diagnostics: Mutex<DirectDiagnosticFiles> = Mutex::new(Vec::new());
     let worker_errors: Mutex<Vec<std::string::String>> = Mutex::new(Vec::new());
 
     std::thread::scope(|s| {

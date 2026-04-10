@@ -1,7 +1,7 @@
 use super::{
     paths::{
         corsa_search_roots, find_corsa_in_common_locations, find_corsa_in_path,
-        find_corsa_in_search_roots,
+        find_corsa_in_search_roots, normalize_corsa_path,
     },
     session::spawn_project_session,
     CorsaProjectClient,
@@ -16,13 +16,31 @@ pub(super) fn resolve_corsa_executable(
     let search_roots = corsa_search_roots(working_dir.map(Path::new));
 
     corsa_path
-        .map(String::from)
-        .or_else(|| std::env::var("CORSA_PATH").ok().map(String::from))
-        .or_else(|| std::env::var("TSGO_PATH").ok().map(String::from))
-        .or_else(|| find_corsa_in_search_roots(&search_roots))
-        .or_else(find_corsa_in_common_locations)
-        .or_else(find_corsa_in_path)
+        .map(normalize_resolved_corsa_path)
+        .or_else(|| {
+            std::env::var("CORSA_PATH")
+                .ok()
+                .map(|path| normalize_resolved_corsa_path(path.as_str()))
+        })
+        .or_else(|| {
+            std::env::var("TSGO_PATH")
+                .ok()
+                .map(|path| normalize_resolved_corsa_path(path.as_str()))
+        })
+        .or_else(|| {
+            find_corsa_in_search_roots(&search_roots)
+                .map(|path| normalize_resolved_corsa_path(path.as_str()))
+        })
+        .or_else(|| {
+            find_corsa_in_common_locations()
+                .map(|path| normalize_resolved_corsa_path(path.as_str()))
+        })
+        .or_else(|| find_corsa_in_path().map(|path| normalize_resolved_corsa_path(path.as_str())))
         .unwrap_or_else(|| "corsa".into())
+}
+
+fn normalize_resolved_corsa_path(path: &str) -> String {
+    normalize_corsa_path(path).unwrap_or_else(|| path.into())
 }
 
 impl CorsaProjectClient {

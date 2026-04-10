@@ -177,13 +177,17 @@ mod tests {
     }
 
     #[test]
-    fn rejects_node_modules_bin_wrapper_without_native_binary() {
+    fn falls_back_to_project_cache_when_wrapper_lacks_native_binary() {
         let temp_dir = TempDir::new().unwrap();
-        let wrapper = temp_dir.path().join("node_modules/.bin/tsgo");
+        let root = temp_dir.path();
+        let wrapper = root.join("node_modules/.bin/tsgo");
+        let cache = root.join(".cache").join("tsgo");
 
         fs::create_dir_all(wrapper.parent().unwrap()).unwrap();
+        fs::create_dir_all(cache.parent().unwrap()).unwrap();
         fs::write(&wrapper, "").unwrap();
+        fs::write(&cache, "").unwrap();
 
-        assert_eq!(normalize_corsa_path(wrapper), None);
+        assert_eq!(normalize_corsa_path(wrapper), Some(cache));
     }
 }
