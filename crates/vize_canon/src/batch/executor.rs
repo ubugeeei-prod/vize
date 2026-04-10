@@ -5,14 +5,19 @@
 //! back to the original source positions.
 
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use super::error::{CorsaError, CorsaNotFoundError, CorsaResult};
-use super::type_checker::TypeCheckResult;
+use super::import_rewriter::ImportRewriter;
+use super::type_checker::{
+    DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, TypeCheckResult,
+};
 use super::virtual_project::VirtualProject;
 use crate::{
     corsa_client::CorsaProjectClient,
     lsp_client::paths::{corsa_search_roots, find_corsa_in_search_roots},
 };
+use oxc_span::SourceType;
 use vize_carton::{cstr, String};
 
 mod diagnostics;
@@ -78,6 +83,46 @@ impl CorsaExecutor {
             diagnostics,
         })
     }
+
+    /// Emit declaration files from the materialized virtual project.
+    pub fn emit_declarations(
+        &self,
+        project: &VirtualProject,
+        options: &DeclarationEmitOptions,
+    ) -> CorsaResult<DeclarationEmitResult> {
+        project.materialize()?;
+        let config_path = project
+            .write_declaration_tsconfig(options.out_dir.as_path(), options.declaration_map)?;
+        let output = Command::new(&self.corsa_path)
+            .current_dir(project.virtual_root())
+            .arg("--pretty")
+            .arg("false")
+            .arg("--project")
+            .arg(&config_path)
+            .output()?;
+
+        if !output.status.success() {
+            let exit_code = output.status.code().unwrap_or(-1);
+            #[allow(clippy::disallowed_types)]
+            let stderr = std::string::String::from_utf8_lossy(&output.stderr);
+            #[allow(clippy::disallowed_types)]
+            let stdout = std::string::String::from_utf8_lossy(&output.stdout);
+            let message = if stderr.trim().is_empty() {
+                stdout.trim().to_owned().into()
+            } else if stdout.trim().is_empty() {
+                stderr.trim().to_owned().into()
+            } else {
+                cstr!("{}\n{}", stderr.trim(), stdout.trim())
+            };
+            return Err(CorsaError::CorsaExecution { exit_code, message });
+        }
+
+        rewrite_declaration_outputs(options.out_dir.as_path())?;
+
+        Ok(DeclarationEmitResult {
+            files: collect_declaration_outputs(options.out_dir.as_path())?,
+        })
+    }
 }
 
 fn normalize_corsa_path(path: PathBuf) -> Option<PathBuf> {
@@ -121,6 +166,72 @@ fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
     Ok(uris)
 }
 
+fn collect_declaration_outputs(out_dir: &Path) -> CorsaResult<Vec<DeclarationOutput>> {
+    let mut files = Vec::new();
+    let rewriter = ImportRewriter::new();
+    if !out_dir.exists() {
+        return Ok(files);
+    }
+
+    for entry in walkdir::WalkDir::new(out_dir) {
+        let entry = entry?;
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+        if !path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.ends_with(".d.ts"))
+        {
+            continue;
+        }
+
+        let content = std::fs::read_to_string(path)?;
+        files.push(DeclarationOutput {
+            path: path.to_path_buf(),
+            content: rewriter
+                .rewrite_declaration_specifiers(&content, SourceType::ts())
+                .code,
+        });
+    }
+
+    files.sort_by(|left, right| left.path.cmp(&right.path));
+    Ok(files)
+}
+
+fn rewrite_declaration_outputs(out_dir: &Path) -> CorsaResult<()> {
+    let rewriter = ImportRewriter::new();
+    if !out_dir.exists() {
+        return Ok(());
+    }
+
+    for entry in walkdir::WalkDir::new(out_dir) {
+        let entry = entry?;
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+        if !path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.ends_with(".d.ts"))
+        {
+            continue;
+        }
+
+        let content = std::fs::read_to_string(path)?;
+        let rewritten = rewriter
+            .rewrite_declaration_specifiers(&content, SourceType::ts())
+            .code;
+        if rewritten.as_str() != content {
+            std::fs::write(path, rewritten.as_str())?;
+        }
+    }
+
+    Ok(())
+}
+
 fn map_corsa_error(message: String) -> CorsaError {
     CorsaError::CorsaExecution {
         exit_code: -1,
@@ -130,7 +241,7 @@ fn map_corsa_error(message: String) -> CorsaError {
 
 #[cfg(test)]
 mod tests {
-    use super::{collect_virtual_file_uris, normalize_corsa_path};
+    use super::{collect_declaration_outputs, collect_virtual_file_uris, normalize_corsa_path};
     use std::fs;
     use tempfile::TempDir;
     use vize_carton::cstr;
@@ -189,5 +300,20 @@ mod tests {
         fs::write(&cache, "").unwrap();
 
         assert_eq!(normalize_corsa_path(wrapper), Some(cache));
+    }
+
+    #[test]
+    fn collects_emitted_declaration_outputs() {
+        let temp_dir = TempDir::new().unwrap();
+        let out_dir = temp_dir.path().join("dist/types");
+        fs::create_dir_all(&out_dir).unwrap();
+        fs::write(out_dir.join("App.vue.d.ts"), "export {};\n").unwrap();
+        fs::write(out_dir.join("skip.js"), "").unwrap();
+
+        let files = collect_declaration_outputs(&out_dir).unwrap();
+
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].path, out_dir.join("App.vue.d.ts"));
+        assert_eq!(files[0].content, "export {};\n");
     }
 }

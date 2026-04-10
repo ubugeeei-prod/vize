@@ -1,48 +1,31 @@
 use std::{path::Path, process::Command};
 
-use tempfile::TempDir;
+use vize_carton::cstr;
 
 #[test]
-fn check_json_reports_type_errors_via_lsp_fallback() {
+fn check_json_reports_type_errors_via_project_typechecker() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
     };
-    let temp_dir = TempDir::new().unwrap();
-    let src_dir = temp_dir.path().join("src");
-    std::fs::create_dir_all(&src_dir).unwrap();
-    std::fs::write(
-        temp_dir.path().join("tsconfig.json"),
-        r#"{
-  "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true
-  },
-  "include": ["src/**/*.vue", "src/**/*.ts"]
-}"#,
-    )
-    .unwrap();
-    let app_vue = src_dir.join("App.vue");
-    std::fs::write(
-        &app_vue,
-        r#"<script setup lang="ts">
+    let project_root = create_cli_project(
+        "json-type-errors",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
 const count: string = 0;
 </script>
 "#,
-    )
-    .unwrap();
+        )],
+    );
 
-    let workspace_root = workspace_root();
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(workspace_root)
+        .current_dir(&project_root)
         .env("CORSA_PATH", corsa_path)
-        .args(["check", app_vue.to_str().unwrap(), "--format", "json"])
+        .args(["check", ".", "--format", "json"])
         .output()
         .unwrap();
 
-    let stdout = String::from_utf8(output.stdout).unwrap();
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     let snapshot = serde_json::json!({
         "status": output.status.code(),
@@ -55,10 +38,194 @@ const count: string = 0;
         snapshot_path => "snapshots"
     }, {
         insta::assert_snapshot!(
-            "check_json_reports_type_errors_via_lsp_fallback",
+            "check_json_reports_type_errors_via_project_typechecker",
             serde_json::to_string_pretty(&snapshot).unwrap()
         );
     });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_json_reports_ts_importing_vue_errors() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "json-ts-vue-import",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+defineProps<{
+  count: number
+}>()
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/main.ts",
+                r#"import App from './App.vue'
+
+type AppProps = InstanceType<typeof App>['$props']
+
+const props: AppProps = {
+  count: 'oops',
+}
+
+void props
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let snapshot = serde_json::json!({
+        "status": output.status.code(),
+        "errorCount": json["errorCount"],
+        "files": json["files"].as_array().unwrap().iter().map(|file| {
+            serde_json::json!({
+                "file": file["file"],
+                "diagnostics": file["diagnostics"],
+            })
+        }).collect::<Vec<_>>(),
+    });
+
+    insta::with_settings!({
+        snapshot_path => "snapshots"
+    }, {
+        insta::assert_snapshot!(
+            "check_json_reports_ts_importing_vue_errors",
+            serde_json::to_string_pretty(&snapshot).unwrap()
+        );
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_can_emit_declarations() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "emit-declarations",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+export interface PublicProps {
+  count: number
+}
+
+const props = defineProps<PublicProps>()
+</script>
+
+<template>
+  <div>{{ props.count }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/index.ts",
+                r#"export { default as App } from './App.vue'
+"#,
+            ),
+        ],
+    );
+    let declaration_dir = project_root.join("types");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            ".",
+            "--format",
+            "json",
+            "--declaration",
+            "--declaration-dir",
+            "types",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let declarations = collect_declaration_snapshot(&declaration_dir);
+    let snapshot = serde_json::json!({
+        "status": output.status.code(),
+        "errorCount": json["errorCount"],
+        "declarations": json["declarations"],
+        "files": declarations,
+    });
+
+    insta::with_settings!({
+        snapshot_path => "snapshots"
+    }, {
+        insta::assert_snapshot!(
+            "check_can_emit_declarations",
+            serde_json::to_string_pretty(&snapshot).unwrap()
+        );
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+fn collect_declaration_snapshot(
+    declaration_dir: &Path,
+) -> Vec<(std::string::String, std::string::String)> {
+    let mut files = Vec::new();
+    collect_declaration_snapshot_recursive(declaration_dir, declaration_dir, &mut files);
+
+    files.sort();
+    files
+}
+
+fn collect_declaration_snapshot_recursive(
+    root: &Path,
+    current: &Path,
+    files: &mut Vec<(std::string::String, std::string::String)>,
+) {
+    let Ok(entries) = std::fs::read_dir(current) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            collect_declaration_snapshot_recursive(root, &path, files);
+            continue;
+        }
+        if !path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.ends_with(".d.ts"))
+        {
+            continue;
+        }
+        files.push((
+            relative_path(root, &path),
+            std::fs::read_to_string(path).unwrap(),
+        ));
+    }
+}
+
+fn relative_path(root: &Path, file: &Path) -> std::string::String {
+    file.strip_prefix(root)
+        .map(|path| path.display().to_string())
+        .unwrap_or_else(|_| file.display().to_string())
 }
 
 fn workspace_root() -> &'static std::path::Path {
@@ -66,6 +233,46 @@ fn workspace_root() -> &'static std::path::Path {
         .parent()
         .and_then(Path::parent)
         .expect("workspace root should exist")
+}
+
+fn unique_case_dir(name: &str) -> std::path::PathBuf {
+    static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    workspace_root()
+        .join("__agent_only")
+        .join("tests")
+        .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+}
+
+fn create_cli_project(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf {
+    let project_root = unique_case_dir(name);
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).unwrap();
+    link_workspace_node_modules(&project_root).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+
+    for (path, source) in files {
+        let file_path = project_root.join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
+
+    project_root
 }
 
 fn resolve_test_corsa_path() -> Option<String> {
@@ -85,4 +292,77 @@ fn resolve_test_corsa_path() -> Option<String> {
     }
 
     None
+}
+
+fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
+    let workspace_node_modules = workspace_root().join("node_modules");
+    if !workspace_node_modules.exists() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "workspace node_modules not found",
+        ));
+    }
+
+    let target = project_root.join("node_modules");
+    if target.is_symlink() || target.is_file() {
+        std::fs::remove_file(&target)?;
+    } else if target.exists() {
+        std::fs::remove_dir_all(&target)?;
+    }
+    std::fs::create_dir_all(&target)?;
+
+    for package in ["vue", "vite", "@vue"] {
+        let source = workspace_node_modules.join(package);
+        if source.exists() {
+            symlink_path(&source, &target.join(package))?;
+        }
+    }
+
+    if let Some(corsa_path) = resolve_test_corsa_path() {
+        let source = std::path::PathBuf::from(corsa_path);
+        if source.exists() {
+            let file_name = source.file_name().ok_or_else(|| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    "invalid corsa binary path",
+                )
+            })?;
+            symlink_path(
+                &source,
+                &target
+                    .join("@typescript")
+                    .join("native-preview")
+                    .join("lib")
+                    .join(file_name),
+            )?;
+            symlink_path(&source, &target.join(".bin").join(file_name))?;
+        }
+    }
+
+    Ok(())
+}
+
+fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
+    if target.is_symlink() || target.is_file() {
+        std::fs::remove_file(target)?;
+    } else if target.exists() {
+        std::fs::remove_dir_all(target)?;
+    }
+    if let Some(parent) = target.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(source, target)
+    }
+    #[cfg(windows)]
+    {
+        let metadata = std::fs::metadata(source)?;
+        if metadata.is_dir() {
+            std::os::windows::fs::symlink_dir(source, target)
+        } else {
+            std::os::windows::fs::symlink_file(source, target)
+        }
+    }
 }

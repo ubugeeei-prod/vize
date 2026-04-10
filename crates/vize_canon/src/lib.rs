@@ -104,8 +104,9 @@ pub use corsa_bridge::{
 // Re-export batch type checker
 #[cfg(feature = "native")]
 pub use batch::{
-    BatchTypeChecker, CorsaError, CorsaExecutor, CorsaNotFoundError, Diagnostic as BatchDiagnostic,
-    ImportRewriter, ImportSourceMap, PackageManager, SfcBlockType,
+    BatchTypeChecker, BatchTypeCheckerOptions, CorsaError, CorsaExecutor, CorsaNotFoundError,
+    DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
+    Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, PackageManager, SfcBlockType,
     TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait, VirtualFile,
     VirtualProject, VirtualTsGenerator,
 };

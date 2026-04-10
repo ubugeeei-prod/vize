@@ -1,4 +1,4 @@
-use super::{BatchTypeChecker, Diagnostic, TypeCheckResult};
+use super::{BatchTypeChecker, DeclarationEmitOptions, Diagnostic, TypeCheckResult};
 use crate::batch::TypeChecker;
 use crate::sfc_typecheck::{type_check_sfc, SfcTypeCheckOptions};
 use corsa::{
@@ -7,7 +7,6 @@ use corsa::{
 };
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use tempfile::TempDir;
 use vize_carton::{cstr, String};
 
 #[test]
@@ -32,8 +31,9 @@ fn test_type_check_result() {
 
 #[test]
 fn test_batch_type_checker_scan() {
-    let temp_dir = TempDir::new().unwrap();
-    let src_dir = temp_dir.path().join("src");
+    let project_root = unique_case_dir("scan");
+    let _ = std::fs::remove_dir_all(&project_root);
+    let src_dir = project_root.join("src");
     std::fs::create_dir_all(&src_dir).unwrap();
 
     let vue_content = r#"<template>
@@ -47,13 +47,15 @@ const message = 'Hello'
     std::fs::write(src_dir.join("App.vue"), vue_content).unwrap();
     std::fs::write(src_dir.join("utils.ts"), "export const foo = 'bar';").unwrap();
 
-    let mut checker = match BatchTypeChecker::new(temp_dir.path()) {
+    let mut checker = match BatchTypeChecker::new(&project_root) {
         Ok(checker) => checker,
         Err(_) => return,
     };
 
     checker.scan_project().unwrap();
     assert_eq!(checker.file_count(), 2);
+
+    let _ = std::fs::remove_dir_all(&project_root);
 }
 
 #[test]
@@ -104,14 +106,15 @@ const count: string = 0;
 
 #[test]
 fn batch_type_checker_accepts_template_ref_unwrap_and_array_access() {
-    let temp_dir = TempDir::new().unwrap();
-    let src_dir = temp_dir.path().join("src");
+    let project_root = unique_case_dir("template-ref");
+    let _ = std::fs::remove_dir_all(&project_root);
+    let src_dir = project_root.join("src");
     std::fs::create_dir_all(&src_dir).unwrap();
-    if link_workspace_node_modules(temp_dir.path()).is_err() {
+    if link_workspace_node_modules(&project_root).is_err() {
         return;
     }
     std::fs::write(
-        temp_dir.path().join("tsconfig.json"),
+        project_root.join("tsconfig.json"),
         r#"{
   "compilerOptions": {
     "strict": true,
@@ -140,7 +143,7 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
     )
     .unwrap();
 
-    let mut checker = match BatchTypeChecker::new(temp_dir.path()) {
+    let mut checker = match BatchTypeChecker::new(&project_root) {
         Ok(checker) => checker,
         Err(_) => return,
     };
@@ -157,7 +160,7 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
         .filter(|diagnostic| matches!(diagnostic.code, Some(2339) | Some(2349)))
         .map(|diagnostic| {
             (
-                relative_path(temp_dir.path(), &diagnostic.file),
+                relative_path(&project_root, &diagnostic.file),
                 diagnostic.code,
                 diagnostic.line,
                 diagnostic.column,
@@ -171,12 +174,257 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
         relevant.is_empty(),
         "unexpected template unwrap diagnostics: {relevant:#?}"
     );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_snapshots_cross_file_vue_prop_error() {
+    let project_root = create_project_case(
+        "cross-file-vue-props",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineProps<{
+  count: number
+}>()
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child :count="'oops'" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root).unwrap_or_default();
+
+    insta::with_settings!({
+        snapshot_path => "../../snapshots"
+    }, {
+        insta::assert_debug_snapshot!("batch_type_checker_cross_file_vue_prop_error", snapshot);
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_snapshots_ts_imports_vue_component() {
+    let project_root = create_project_case(
+        "ts-imports-vue",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+defineProps<{
+  count: number
+}>()
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/main.ts",
+                r#"import App from './App.vue'
+
+type AppProps = InstanceType<typeof App>['$props']
+
+const props: AppProps = {
+  count: 'oops',
+}
+
+void props
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root).unwrap_or_default();
+
+    insta::with_settings!({
+        snapshot_path => "../../snapshots"
+    }, {
+        insta::assert_debug_snapshot!("batch_type_checker_ts_imports_vue_component", snapshot);
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_snapshots_ambient_dts_global_usage() {
+    let project_root = create_project_case(
+        "ambient-dts",
+        &[
+            ("src/env.d.ts", r#"declare const APP_VERSION: string;"#),
+            (
+                "src/App.vue",
+                r#"<template>
+  <div>{{ APP_VERSION.toFixed(2) }}</div>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let snapshot = snapshot_project_diagnostics(&project_root).unwrap_or_default();
+
+    insta::with_settings!({
+        snapshot_path => "../../snapshots"
+    }, {
+        insta::assert_debug_snapshot!("batch_type_checker_ambient_dts_global_usage", snapshot);
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_snapshots_declaration_emit_outputs() {
+    let project_root = create_project_case(
+        "declaration-emit",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+export interface PublicProps {
+  count: number
+}
+
+const props = defineProps<PublicProps>()
+</script>
+
+<template>
+  <div>{{ props.count }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/index.ts",
+                r#"export { default as App } from './App.vue'
+"#,
+            ),
+        ],
+    );
+
+    let mut checker = match BatchTypeChecker::new(&project_root) {
+        Ok(checker) => checker,
+        Err(_) => return,
+    };
+    checker.scan_project().unwrap();
+    let out_dir = project_root.join("types");
+    let emitted = checker
+        .emit_declarations(&DeclarationEmitOptions::new(out_dir.clone()))
+        .unwrap();
+    let snapshot: Vec<_> = emitted
+        .files
+        .into_iter()
+        .map(|file| (relative_path(&out_dir, &file.path), file.content))
+        .collect();
+
+    insta::with_settings!({
+        snapshot_path => "../../snapshots"
+    }, {
+        insta::assert_debug_snapshot!("batch_type_checker_declaration_emit_outputs", snapshot);
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
 }
 
 fn relative_path(root: &std::path::Path, file: &std::path::Path) -> String {
     file.strip_prefix(root)
         .map(|path| cstr!("{}", path.display()))
         .unwrap_or_else(|_| cstr!("{}", file.display()))
+}
+
+fn unique_case_dir(name: &str) -> PathBuf {
+    static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
+
+    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("workspace root should exist");
+    let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
+    workspace_root
+        .join("__agent_only")
+        .join("tests")
+        .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+}
+
+fn create_project_case(name: &str, files: &[(&str, &str)]) -> PathBuf {
+    let project_root = unique_case_dir(name);
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).unwrap();
+    link_workspace_node_modules(&project_root).unwrap();
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+
+    for (path, source) in files {
+        let file_path = project_root.join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
+
+    project_root
+}
+
+fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {
+    let mut checker = BatchTypeChecker::new(project_root).ok()?;
+    checker.scan_project().ok()?;
+    let result = checker.check_project().ok()?;
+
+    let mut snapshot: Vec<_> = result
+        .diagnostics
+        .into_iter()
+        .map(|diagnostic| {
+            (
+                relative_path(project_root, &diagnostic.file),
+                diagnostic.code,
+                cstr!(
+                    "{}:{}:{} {}",
+                    diagnostic.line + 1,
+                    diagnostic.column + 1,
+                    match diagnostic.severity {
+                        1 => "error",
+                        2 => "warning",
+                        3 => "info",
+                        _ => "hint",
+                    },
+                    diagnostic.message
+                ),
+            )
+        })
+        .collect();
+    snapshot.sort();
+    Some(snapshot)
 }
 
 fn corsa_type_mismatch_snapshot(

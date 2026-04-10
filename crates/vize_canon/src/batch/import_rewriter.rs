@@ -85,6 +85,31 @@ impl ImportRewriter {
 
     /// Rewrite imports in the given source code.
     pub fn rewrite(&self, source: &str, source_type: SourceType) -> RewriteResult {
+        self.rewrite_with(source, source_type, |path| {
+            self.rewrite_module_specifier(path)
+        })
+    }
+
+    /// Rewrite emitted declaration imports back to `.vue` specifiers.
+    pub fn rewrite_declaration_specifiers(
+        &self,
+        source: &str,
+        source_type: SourceType,
+    ) -> RewriteResult {
+        self.rewrite_with(source, source_type, |path| {
+            self.rewrite_declaration_specifier(path)
+        })
+    }
+
+    fn rewrite_with<F>(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        rewrite_specifier: F,
+    ) -> RewriteResult
+    where
+        F: Fn(&str) -> Option<String>,
+    {
         let allocator = Allocator::default();
         let parser = Parser::new(&allocator, source, source_type);
         let result = parser.parse();
@@ -95,7 +120,7 @@ impl ImportRewriter {
         for stmt in &result.program.body {
             match stmt {
                 Statement::ImportDeclaration(decl) => {
-                    if let Some(rewrite) = self.rewrite_module_specifier(&decl.source.value) {
+                    if let Some(rewrite) = rewrite_specifier(&decl.source.value) {
                         rewrites.push((
                             decl.source.span.start + 1, // +1 to skip opening quote
                             decl.source.span.end - 1,   // -1 to skip closing quote
@@ -105,13 +130,13 @@ impl ImportRewriter {
                 }
                 Statement::ExportNamedDeclaration(decl) => {
                     if let Some(source) = &decl.source {
-                        if let Some(rewrite) = self.rewrite_module_specifier(&source.value) {
+                        if let Some(rewrite) = rewrite_specifier(&source.value) {
                             rewrites.push((source.span.start + 1, source.span.end - 1, rewrite));
                         }
                     }
                 }
                 Statement::ExportAllDeclaration(decl) => {
-                    if let Some(rewrite) = self.rewrite_module_specifier(&decl.source.value) {
+                    if let Some(rewrite) = rewrite_specifier(&decl.source.value) {
                         rewrites.push((
                             decl.source.span.start + 1,
                             decl.source.span.end - 1,
@@ -127,7 +152,7 @@ impl ImportRewriter {
         let mut collector = DynamicImportCollector::new();
         collector.visit_program(&result.program);
         for (start, end, path) in collector.imports {
-            if let Some(rewrite) = self.rewrite_module_specifier(&path) {
+            if let Some(rewrite) = rewrite_specifier(&path) {
                 rewrites.push((start, end, rewrite));
             }
         }
@@ -167,6 +192,15 @@ impl ImportRewriter {
         } else {
             None
         }
+    }
+
+    fn rewrite_declaration_specifier(&self, path: &str) -> Option<String> {
+        if path.ends_with(".vue.ts") && (path.starts_with("./") || path.starts_with("../")) {
+            return path
+                .strip_suffix(".ts")
+                .map(|value| value.to_compact_string());
+        }
+        None
     }
 }
 

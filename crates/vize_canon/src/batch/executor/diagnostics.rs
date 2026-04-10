@@ -15,7 +15,9 @@ pub(super) fn map_batch_diagnostics(
     for (uri, lsp_diagnostics) in results {
         let virtual_path = uri_to_path(uri.as_str());
         for diagnostic in lsp_diagnostics {
-            diagnostics.push(map_lsp_diagnostic(&virtual_path, diagnostic, project));
+            if let Some(diagnostic) = map_lsp_diagnostic(&virtual_path, diagnostic, project) {
+                diagnostics.push(diagnostic);
+            }
         }
     }
 
@@ -26,7 +28,11 @@ fn map_lsp_diagnostic(
     virtual_path: &Path,
     diagnostic: LspDiagnostic,
     project: &VirtualProject,
-) -> Diagnostic {
+) -> Option<Diagnostic> {
+    let code = parse_diagnostic_code(diagnostic.code.as_ref());
+    if should_skip_diagnostic(code) {
+        return None;
+    }
     let original = project.map_to_original(
         virtual_path,
         diagnostic.range.start.line,
@@ -34,26 +40,18 @@ fn map_lsp_diagnostic(
     );
 
     if let Some(original) = original {
-        return Diagnostic {
+        return Some(Diagnostic {
             file: original.path,
             line: original.line,
             column: original.column,
             message: diagnostic.message,
-            code: parse_diagnostic_code(diagnostic.code.as_ref()),
+            code,
             severity: parse_severity(diagnostic.severity),
             block_type: original.block_type,
-        };
+        });
     }
 
-    Diagnostic {
-        file: virtual_path.to_path_buf(),
-        line: diagnostic.range.start.line,
-        column: diagnostic.range.start.character,
-        message: diagnostic.message,
-        code: parse_diagnostic_code(diagnostic.code.as_ref()),
-        severity: parse_severity(diagnostic.severity),
-        block_type: None,
-    }
+    None
 }
 
 fn uri_to_path(uri: &str) -> PathBuf {
@@ -77,6 +75,13 @@ fn parse_severity(severity: Option<i32>) -> u8 {
         Some(value) if (1..=4).contains(&value) => value as u8,
         _ => 1,
     }
+}
+
+fn should_skip_diagnostic(code: Option<u32>) -> bool {
+    matches!(
+        code,
+        Some(2307) | Some(2666) | Some(6133) | Some(7006) | Some(7043) | Some(7044)
+    )
 }
 
 #[cfg(test)]

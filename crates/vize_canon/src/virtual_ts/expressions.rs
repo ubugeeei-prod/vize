@@ -111,18 +111,16 @@ pub(crate) fn generate_component_prop_checks(
                 }
 
                 let gen_stmt_start = ts.len();
+                let check_name = cstr!("__vize_prop_check_{idx}_{safe_prop_name}");
                 append!(
                     *ts,
-                    "{expr_indent}({}) as __{component_name}_{idx}_prop_{safe_prop_name};\n",
+                    "{expr_indent}const {check_name}: __{component_name}_{idx}_prop_{safe_prop_name} = {};\n",
                     value.as_ref(),
                 );
                 let gen_stmt_end = ts.len();
+                append!(*ts, "{expr_indent}void {check_name};\n");
                 mappings.push(VizeMapping {
-                    gen_range: generated_text_range(
-                        &ts[gen_stmt_start..gen_stmt_end],
-                        value.as_ref(),
-                        gen_stmt_start,
-                    ),
+                    gen_range: gen_stmt_start..gen_stmt_end,
                     src_range: prop_src_start..prop_src_end,
                 });
 

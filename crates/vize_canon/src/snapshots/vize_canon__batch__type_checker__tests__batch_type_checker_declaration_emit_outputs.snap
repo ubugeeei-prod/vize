@@ -1,0 +1,15 @@
+---
+source: crates/vize_canon/src/batch/type_checker/tests.rs
+assertion_line: 345
+expression: snapshot
+---
+[
+    (
+        "App.vue.d.ts",
+        "declare global {\n    interface ImportMeta {\n        readonly client: boolean;\n        readonly server: boolean;\n        readonly dev: boolean;\n        readonly prod: boolean;\n        readonly ssr: boolean;\n    }\n}\ntype __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);\nexport interface PublicProps {\n    count: number;\n}\nexport type Props = PublicProps;\nexport type Emits = {};\nexport type Slots = {};\ntype __VizeComponentInstance = {\n    $props: Props;\n    $emit: __EmitFn<Emits>;\n    $slots: Slots;\n};\ndeclare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;\nexport default __vize_component__;\n",
+    ),
+    (
+        "index.d.ts",
+        "export { default as App } from './App.vue';\n",
+    ),
+]

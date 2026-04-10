@@ -16,8 +16,11 @@ mod virtual_ts;
 pub use error::{CorsaError, CorsaNotFoundError, CorsaResult, PackageManager};
 pub use executor::CorsaExecutor;
 pub use import_rewriter::{ImportRewriter, ImportSourceMap, OffsetAdjustment, RewriteResult};
-pub use source_map::{CompositeSourceMap, SfcSourceMap};
-pub use type_checker::{BatchTypeChecker, TypeCheckResult, TypeChecker};
+pub use source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
+pub use type_checker::{
+    BatchTypeChecker, BatchTypeCheckerOptions, DeclarationEmitOptions, DeclarationEmitResult,
+    DeclarationOutput, TypeCheckResult, TypeChecker,
+};
 pub use virtual_project::{OriginalPosition, VirtualFile, VirtualProject};
 pub use virtual_ts::VirtualTsGenerator;
 

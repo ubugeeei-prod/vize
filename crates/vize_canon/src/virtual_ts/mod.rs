@@ -422,7 +422,9 @@ const todos = ref([{ id: 1, text: 'Hello' }])
         );
         // The prop type assertion should exist (value cast to prop type)
         assert!(
-            output.code.contains("(todo) as __TodoItem_"),
+            output
+                .code
+                .contains("const __vize_prop_check_0_item: __TodoItem_0_prop_item = todo;"),
             "Should check prop value `todo` inside forEach scope"
         );
     }
@@ -449,9 +451,9 @@ const item = ref<{ name: string } | undefined>()
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
         assert!(
-            output
-                .code
-                .contains("if (item) {\n    (item.name) as __LinkComp_0_prop_to;"),
+            output.code.contains(
+                "if (item) {\n    const __vize_prop_check_0_to: __LinkComp_0_prop_to = item.name;"
+            ),
             "Component prop checks should be wrapped by the same-element v-if guard",
         );
     }

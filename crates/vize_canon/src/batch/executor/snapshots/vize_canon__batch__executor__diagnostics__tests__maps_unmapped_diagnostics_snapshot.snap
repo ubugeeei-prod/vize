@@ -1,17 +1,6 @@
 ---
 source: crates/vize_canon/src/batch/executor/diagnostics.rs
+assertion_line: 147
 expression: diagnostics
 ---
-[
-    Diagnostic {
-        file: "/workspace/src/App.vue.ts",
-        line: 3,
-        column: 5,
-        message: "Type 'string' is not assignable to type 'number'.",
-        code: Some(
-            2322,
-        ),
-        severity: 1,
-        block_type: None,
-    },
-]
+[]

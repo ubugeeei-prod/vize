@@ -94,14 +94,11 @@ pub fn generate_virtual_ts_with_offsets(
     ts.push_str(IMPORT_META_AUGMENTATION);
     ts.push('\n');
 
-    // Vue type alias (shorthand for import('vue') type references).
-    // Requires node_modules/vue to be resolvable (symlinked in temp dir).
-    ts.push_str("type $Vue = import('vue');\n\n");
-
     // Module scope: Extract imports, re-exports, and type declarations to module level.
     // Type declarations (interface, type, enum) must be at module level so they
     // are accessible from `export type Props = ...` outside __setup().
     ts.push_str("// ========== Module Scope (imports) ==========\n");
+    ts.push_str("type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);\n");
 
     // Collect all module-level statement spans from croquis analysis
     let mut module_spans: Vec<(u32, u32)> = Vec::new();
@@ -519,11 +516,14 @@ pub fn generate_virtual_ts_with_offsets(
 
     // Default export
     ts.push_str("// ========== Default Export ==========\n");
-    ts.push_str("declare const __vize_component__: {\n");
-    ts.push_str("  props: Props;\n");
-    ts.push_str("  emits: Emits;\n");
-    ts.push_str("  slots: Slots;\n");
+    ts.push_str("type __VizeComponentInstance = {\n");
+    ts.push_str("  $props: Props;\n");
+    ts.push_str("  $emit: __EmitFn<Emits>;\n");
+    ts.push_str("  $slots: Slots;\n");
     ts.push_str("};\n");
+    ts.push_str(
+        "declare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;\n",
+    );
     ts.push_str("export default __vize_component__;\n");
 
     VirtualTsOutput { code: ts, mappings }
