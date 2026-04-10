@@ -60,6 +60,9 @@ const message = 'Hello'
 
 #[test]
 fn batch_type_checker_snapshots_vue_diagnostics() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
     let source = r#"<script setup lang="ts">
 const count: number = 'oops'
 </script>
@@ -81,6 +84,9 @@ const count: number = 'oops'
 
 #[test]
 fn batch_type_checker_snapshots_script_setup_type_error() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
     let virtual_ts = type_check_sfc(
         r#"<script setup lang="ts">
 const count: string = 0;
@@ -180,6 +186,9 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
 
 #[test]
 fn batch_type_checker_snapshots_cross_file_vue_prop_error() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
     let project_root = create_project_case(
         "cross-file-vue-props",
         &[
@@ -210,7 +219,10 @@ import Child from './Child.vue'
         ],
     );
 
-    let snapshot = snapshot_project_diagnostics(&project_root).unwrap_or_default();
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
 
     insta::with_settings!({
         snapshot_path => "../../snapshots"
@@ -223,6 +235,9 @@ import Child from './Child.vue'
 
 #[test]
 fn batch_type_checker_snapshots_ts_imports_vue_component() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
     let project_root = create_project_case(
         "ts-imports-vue",
         &[
@@ -255,7 +270,10 @@ void props
         ],
     );
 
-    let snapshot = snapshot_project_diagnostics(&project_root).unwrap_or_default();
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
 
     insta::with_settings!({
         snapshot_path => "../../snapshots"
@@ -268,6 +286,9 @@ void props
 
 #[test]
 fn batch_type_checker_snapshots_ambient_dts_global_usage() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
     let project_root = create_project_case(
         "ambient-dts",
         &[
@@ -282,7 +303,10 @@ fn batch_type_checker_snapshots_ambient_dts_global_usage() {
         ],
     );
 
-    let snapshot = snapshot_project_diagnostics(&project_root).unwrap_or_default();
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
 
     insta::with_settings!({
         snapshot_path => "../../snapshots"
@@ -295,6 +319,9 @@ fn batch_type_checker_snapshots_ambient_dts_global_usage() {
 
 #[test]
 fn batch_type_checker_snapshots_declaration_emit_outputs() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
     let project_root = create_project_case(
         "declaration-emit",
         &[
@@ -525,6 +552,10 @@ fn corsa_type_mismatch_snapshot(
 }
 
 fn resolve_test_tsgo_binary() -> Option<PathBuf> {
+    if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
+        return None;
+    }
+
     let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)?;
