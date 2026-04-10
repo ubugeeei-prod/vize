@@ -251,6 +251,8 @@ fn should_fallback_to_cli(error: &str) -> bool {
         || error.contains("expected uint8 marker")
         || error.contains("expected bin marker")
         || error.contains("process is closed: jsonrpc reader")
+        || error.contains("Broken pipe")
+        || error.contains("broken pipe")
 }
 
 #[cfg(test)]
