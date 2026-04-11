@@ -3,7 +3,7 @@
  *
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
- *   2. Build CLI: mise run build:cli
+ *   2. Build CLI: vp run --workspace-root build:cli
  *   3. Run benchmark: node --experimental-strip-types bench/check.ts
  */
 
@@ -15,6 +15,7 @@ import os from "node:os";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const INPUT_DIR = join(__dirname, "__in__");
+const E2E_NPMX_DIR = join(__dirname, "..", "tests", "_fixtures", "_git", "npmx.dev");
 const CPU_COUNT = os.cpus().length;
 const VIZE_BIN = join(__dirname, "..", "target", "release", "vize");
 const FILE_LIMIT = parseInt(process.argv[2] || "0", 10) || Infinity;
@@ -87,22 +88,22 @@ function formatThroughput(fileCount: number, ms: number): string {
   return `${filesPerSec.toFixed(0)} files/s`;
 }
 
-function runCommand(cmd: string): number {
+function runCommand(cmd: string, cwd: string = BENCH_INPUT_DIR): number {
   const start = performance.now();
   try {
-    execSync(cmd, { stdio: "ignore", cwd: BENCH_INPUT_DIR });
+    execSync(cmd, { stdio: "ignore", cwd });
   } catch {
     // vue-tsc may exit non-zero on type errors; still measure time
   }
   return performance.now() - start;
 }
 
-function benchmarkCommand(cmd: string, warmup: number = 0): number {
+function benchmarkCommand(cmd: string, warmup: number = 0, cwd: string = BENCH_INPUT_DIR): number {
   // Warmup
   for (let i = 0; i < warmup; i++) {
-    runCommand(cmd);
+    runCommand(cmd, cwd);
   }
-  return runCommand(cmd);
+  return runCommand(cmd, cwd);
 }
 
 function resolveVueTscBin(): string | null {
@@ -139,6 +140,28 @@ function runVizeCheckSingleThread(): number {
 function runVizeCheckMultiThread(): number {
   return benchmarkCommand(
     `${VIZE_BIN} check '${GLOB_PATTERN}' --quiet --tsconfig ${TSCONFIG_PATH}`,
+  );
+}
+
+function countVueFiles(dir: string): number {
+  if (!existsSync(dir)) return 0;
+
+  let count = 0;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      count += countVueFiles(join(dir, entry.name));
+    } else if (entry.name.endsWith(".vue")) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function runVizeE2eNpmxCheck(): number {
+  return benchmarkCommand(
+    `${VIZE_BIN} check app --quiet --tsconfig tsconfig.json`,
+    1,
+    E2E_NPMX_DIR,
   );
 }
 
@@ -228,6 +251,26 @@ if (vueTscSingle >= 0 && vizeSingle > 0 && vizeMulti > 0) {
   console.log(`   vue-tsc ST vs Vize ST : ${stSpeedup}x`);
   console.log(`   vue-tsc MT vs Vize MT : ${mtSpeedup}x`);
   console.log(`   vue-tsc ST vs Vize MT : ${crossSpeedup}x  (user-facing speedup)`);
+}
+
+if (existsSync(VIZE_BIN) && existsSync(join(E2E_NPMX_DIR, "app"))) {
+  const e2eFileCount = countVueFiles(join(E2E_NPMX_DIR, "app"));
+  const e2eTime = runVizeE2eNpmxCheck();
+  console.log();
+  console.log("-".repeat(65));
+  console.log();
+  console.log(" Diagnostics-heavy e2e fixture:");
+  console.log();
+  console.log(
+    `   npmx.dev app  : ${formatTime(e2eTime).padStart(8)}  (${formatThroughput(e2eFileCount, e2eTime)}, ${e2eFileCount} SFC files, non-zero diagnostics ignored)`,
+  );
+} else {
+  console.log();
+  console.log("-".repeat(65));
+  console.log();
+  console.log(" Diagnostics-heavy e2e fixture:");
+  console.log();
+  console.log("   npmx.dev app  : SKIPPED (fixture or vize CLI not found)");
 }
 
 console.log();

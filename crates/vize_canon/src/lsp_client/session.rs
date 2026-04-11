@@ -1,6 +1,7 @@
 #![allow(clippy::disallowed_types)]
 
 use super::{utils::remap_serialized_uris, CorsaProjectClient};
+use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use corsa::{
     api::{
         ApiMode, ApiSpawnConfig, CapabilitiesResponse, DocumentIdentifier, FileChangeSummary,
@@ -118,8 +119,9 @@ fn is_node_wrapper_executable(path: &Path) -> bool {
 }
 
 pub(super) fn uri_document_identifier(uri: &str) -> DocumentIdentifier {
-    if let Some(path) = uri.strip_prefix("file://") {
-        return DocumentIdentifier::FileName(path.into());
+    if let Some(path) = file_uri_to_path(uri) {
+        let path = path.to_string_lossy();
+        return DocumentIdentifier::FileName(CompactString::from(path.as_ref()));
     }
 
     DocumentIdentifier::Uri {
@@ -268,7 +270,7 @@ fn next_overlay_version(versions: &mut vize_carton::FxHashMap<String, i32>, uri:
 }
 
 fn load_file_text(uri: &str) -> Option<String> {
-    let path = uri.strip_prefix("file://")?;
+    let path = file_uri_to_path(uri)?;
     std::fs::read_to_string(path).ok().map(Into::into)
 }
 
@@ -278,7 +280,7 @@ fn build_session_document_uri(uri: &str, project_root: &Path) -> String {
     };
 
     if external_path.starts_with(project_root) && external_path.exists() {
-        return cstr!("file://{}", external_path.display());
+        return path_to_file_uri(&external_path);
     }
 
     let mut session_path = project_root.join("__agent_only").join("vize-corsa-overlay");
@@ -291,12 +293,12 @@ fn build_session_document_uri(uri: &str, project_root: &Path) -> String {
         }
     }
 
-    cstr!("file://{}", session_path.display())
+    path_to_file_uri(&session_path)
 }
 
 fn external_document_path(uri: &str) -> Option<PathBuf> {
-    if let Some(path) = uri.strip_prefix("file://") {
-        return Some(PathBuf::from(path));
+    if let Some(path) = file_uri_to_path(uri) {
+        return Some(path);
     }
 
     let (scheme, path) = uri.split_once("://")?;
@@ -315,8 +317,8 @@ pub(super) fn materialize_session_document(
         return None;
     }
 
-    let path = document_uri.strip_prefix("file://")?;
-    let path = Path::new(path);
+    let path = file_uri_to_path(document_uri)?;
+    let path = path.as_path();
     let parent = path.parent()?;
     let existed = path.exists();
     let _ = std::fs::create_dir_all(parent);
@@ -342,8 +344,8 @@ fn remove_session_document(external_uri: &str, document_uri: &str) -> Option<Fil
         return None;
     }
 
-    let path = document_uri.strip_prefix("file://")?;
-    let path = Path::new(path);
+    let path = file_uri_to_path(document_uri)?;
+    let path = path.as_path();
     if !path.exists() {
         return None;
     }

@@ -44,36 +44,41 @@ pub fn compile_script_setup_inline(
     scope_id: &str,
     filename: Option<&str>,
 ) -> Result<ScriptCompileResult, SfcError> {
-    let mut ctx = profile!(
-        "atelier.script_inline.context.new",
-        ScriptCompileContext::new(content)
-    );
+    let ctx = build_script_setup_context(content, normal_script_content, filename);
+    compile_script_setup_inline_with_context(
+        ctx,
+        content,
+        component_name,
+        is_ts,
+        source_is_ts,
+        is_vapor,
+        template,
+        normal_script_content,
+        css_vars,
+        scope_id,
+    )
+}
 
-    // Merge type definitions from normal <script> block so that
-    // defineProps<TypeRef>() can resolve types defined there.
-    if let Some(normal_src) = normal_script_content {
-        if !normal_src.is_empty() {
-            profile!(
-                "atelier.script_inline.collect_normal_types",
-                ctx.collect_types_from(normal_src)
-            );
-        }
-    }
-    if let Some(path) = filename {
-        profile!(
-            "atelier.script_inline.collect_setup_import_types",
-            ctx.collect_imported_types_from_path(content, path)
-        );
-        if let Some(normal_src) = normal_script_content {
-            if !normal_src.is_empty() {
-                profile!(
-                    "atelier.script_inline.collect_normal_import_types",
-                    ctx.collect_imported_types_from_path(normal_src, path)
-                );
-            }
-        }
-    }
-    profile!("atelier.script_inline.context.analyze", ctx.analyze());
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn compile_script_setup_inline_with_context(
+    ctx: ScriptCompileContext,
+    content: &str,
+    component_name: &str,
+    is_ts: bool,
+    source_is_ts: bool,
+    is_vapor: bool,
+    template: TemplateParts<'_>,
+    normal_script_content: Option<&str>,
+    css_vars: &[Cow<'_, str>],
+    scope_id: &str,
+) -> Result<ScriptCompileResult, SfcError> {
+    // Extract user imports and setup lines from script content once; await detection
+    // and output assembly share the same split.
+    let (user_imports, setup_lines, ts_declarations) = profile!(
+        "atelier.script_inline.parse_sections",
+        parse_script_content(content, is_ts)
+    );
+    let setup_code: String = setup_lines.join("\n").into();
 
     // Use arena-allocated Vec for better performance
     let bump = vize_carton::Bump::new();
@@ -113,14 +118,7 @@ pub fn compile_script_setup_inline(
         .then(|| build_vapor_render_alias(content, normal_script_content, template.render_fn));
 
     // withAsyncContext import comes first if needed
-    let setup_code_for_await = {
-        let (_, slines, _) = profile!(
-            "atelier.script_inline.parse_for_await",
-            parse_script_content(content, is_ts)
-        );
-        slines.join("\n")
-    };
-    let is_async = contains_top_level_await(&setup_code_for_await, source_is_ts);
+    let is_async = contains_top_level_await(&setup_code, source_is_ts);
     if is_async {
         if is_vapor {
             if needs_vapor_setup_context {
@@ -143,6 +141,89 @@ pub fn compile_script_setup_inline(
         }
     }
 
+    compile_script_setup_inline_body(
+        ctx,
+        component_name,
+        is_ts,
+        source_is_ts,
+        is_vapor,
+        template,
+        css_vars,
+        scope_id,
+        user_imports,
+        ts_declarations,
+        setup_code,
+        output,
+        preserved_normal_script,
+        needs_merge_defaults,
+        has_define_model,
+        has_define_slots,
+        needs_vapor_setup_context,
+        vapor_render_alias,
+        is_async,
+    )
+}
+
+fn build_script_setup_context(
+    content: &str,
+    normal_script_content: Option<&str>,
+    filename: Option<&str>,
+) -> ScriptCompileContext {
+    let mut ctx = profile!(
+        "atelier.script_inline.context.new",
+        ScriptCompileContext::new(content)
+    );
+
+    // Merge type definitions from normal <script> block so that
+    // defineProps<TypeRef>() can resolve types defined there.
+    if let Some(normal_src) = normal_script_content {
+        if !normal_src.is_empty() {
+            profile!(
+                "atelier.script_inline.collect_normal_types",
+                ctx.collect_types_from(normal_src)
+            );
+        }
+    }
+    if let Some(path) = filename {
+        profile!(
+            "atelier.script_inline.collect_setup_import_types",
+            ctx.collect_imported_types_from_path(content, path)
+        );
+        if let Some(normal_src) = normal_script_content {
+            if !normal_src.is_empty() {
+                profile!(
+                    "atelier.script_inline.collect_normal_import_types",
+                    ctx.collect_imported_types_from_path(normal_src, path)
+                );
+            }
+        }
+    }
+    profile!("atelier.script_inline.context.analyze", ctx.analyze());
+    ctx
+}
+
+#[allow(clippy::too_many_arguments)]
+fn compile_script_setup_inline_body(
+    ctx: ScriptCompileContext,
+    component_name: &str,
+    is_ts: bool,
+    source_is_ts: bool,
+    is_vapor: bool,
+    template: TemplateParts<'_>,
+    css_vars: &[Cow<'_, str>],
+    scope_id: &str,
+    user_imports: Vec<String>,
+    ts_declarations: Vec<String>,
+    setup_code: String,
+    mut output: vize_carton::Vec<u8>,
+    preserved_normal_script: Option<String>,
+    needs_merge_defaults: bool,
+    has_define_model: bool,
+    has_define_slots: bool,
+    needs_vapor_setup_context: bool,
+    vapor_render_alias: Option<String>,
+    is_async: bool,
+) -> Result<ScriptCompileResult, SfcError> {
     // mergeDefaults import comes first if needed
     if needs_merge_defaults {
         output.extend_from_slice(b"import { mergeDefaults as _mergeDefaults } from 'vue'\n");
@@ -191,12 +272,6 @@ pub fn compile_script_setup_inline(
         // Blank line after template imports
         output.push(b'\n');
     }
-
-    // Extract user imports and setup lines from script content
-    let (user_imports, setup_lines, ts_declarations) = profile!(
-        "atelier.script_inline.parse_sections",
-        parse_script_content(content, is_ts)
-    );
 
     // Template hoisted consts (e.g., const _hoisted_1 = { class: "..." })
     // Must come BEFORE user imports to match Vue's output order
@@ -269,14 +344,13 @@ pub fn compile_script_setup_inline(
     );
 
     // Setup code body - transform props destructure references and separate hoisted/setup code
-    let setup_code = setup_lines.join("\n");
     let transformed_setup: String = if let Some(ref destructure) = ctx.macros.props_destructure {
         profile!(
             "atelier.script_inline.transform_props_destructure",
             transform_destructured_props(&setup_code, destructure)
         )
     } else {
-        setup_code.into()
+        setup_code
     };
 
     // Separate hoisted consts (literal consts that can be module-level) from setup code

@@ -1,7 +1,9 @@
 use super::{utils::convert_diagnostics, CorsaProjectClient, LspDiagnostic};
+use crate::file_uri::path_to_file_uri;
 use corsa::api::{DocumentIdentifier, FileDiagnosticsResponse, ProjectDiagnosticsResponse};
 use lsp_types::Diagnostic;
-use vize_carton::{cstr, FxHashMap, String};
+use std::path::Path;
+use vize_carton::{FxHashMap, String};
 
 pub(super) fn map_project_diagnostics(
     client: &mut CorsaProjectClient,
@@ -41,7 +43,7 @@ pub(super) fn document_identifier_uri(document: &DocumentIdentifier) -> String {
         DocumentIdentifier::FileName(path) if path.as_str().starts_with("file://") => {
             path.as_str().into()
         }
-        DocumentIdentifier::FileName(path) => cstr!("file://{}", path.as_str()),
+        DocumentIdentifier::FileName(path) => path_to_file_uri(Path::new(path.as_str())),
     }
 }
 
@@ -73,6 +75,14 @@ mod tests {
         assert_eq!(
             document_identifier_uri(&DocumentIdentifier::from("/workspace/App.vue.ts")),
             "file:///workspace/App.vue.ts"
+        );
+    }
+
+    #[test]
+    fn file_names_are_percent_encoded_when_normalized_to_uris() {
+        assert_eq!(
+            document_identifier_uri(&DocumentIdentifier::from("/workspace/pages/[id].vue.ts")),
+            "file:///workspace/pages/%5Bid%5D.vue.ts"
         );
     }
 

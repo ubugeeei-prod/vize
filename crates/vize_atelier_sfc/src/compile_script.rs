@@ -22,6 +22,7 @@ use self::typescript::transform_typescript_to_js;
 pub use self::function_mode::compile_script_setup as compile_script_setup_function_mode;
 pub use self::import_utils::{extract_import_identifiers, process_import_for_types};
 pub use self::inline::compile_script_setup_inline;
+pub(crate) use self::inline::compile_script_setup_inline_with_context;
 pub use self::macros::{
     is_macro_call_line, is_multiline_macro_start, is_paren_macro_start, is_props_destructure_line,
 };

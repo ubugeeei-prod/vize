@@ -4,6 +4,7 @@ use super::{
     utils::convert_diagnostics,
     CorsaProjectClient, DiagnosticFetch, LspDiagnostic,
 };
+use crate::file_uri::{file_uri_to_path, path_to_file_uri};
 use corsa::{
     jsonrpc::InboundEvent,
     lsp::{LspClient, LspSpawnConfig, VirtualDocument},
@@ -463,7 +464,7 @@ fn initialize_lsp_client(client: &LspClient, project_root: &std::path::Path) -> 
         const METHOD: &'static str = "initialized";
     }
 
-    let root_uri = cstr!("file://{}", project_root.display());
+    let root_uri = path_to_file_uri(project_root);
     block_on(client.request::<InitializeRequest>(serde_json::json!({
         "processId": std::process::id(),
         "rootUri": root_uri,
@@ -599,7 +600,7 @@ fn json_code_to_lsp_code(code: serde_json::Value) -> lsp_types::NumberOrString {
 }
 
 fn read_file_uri(uri: &str) -> Option<String> {
-    let path = uri.strip_prefix("file://")?;
+    let path = file_uri_to_path(uri)?;
     std::fs::read_to_string(path).ok().map(Into::into)
 }
 

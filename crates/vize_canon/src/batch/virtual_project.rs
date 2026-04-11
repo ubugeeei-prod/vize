@@ -269,6 +269,11 @@ impl VirtualProject {
             .find(|file| file.original_path == original_path)
     }
 
+    /// Find a virtual file by its materialized path.
+    pub fn find_by_virtual(&self, virtual_path: &Path) -> Option<&VirtualFile> {
+        self.virtual_files.get(virtual_path)
+    }
+
     /// Return virtual files sorted by original path for deterministic output.
     pub fn virtual_files_sorted(&self) -> Vec<&VirtualFile> {
         let mut files: Vec<_> = self.virtual_files.values().collect();

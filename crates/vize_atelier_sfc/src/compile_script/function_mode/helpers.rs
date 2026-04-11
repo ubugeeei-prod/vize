@@ -97,6 +97,10 @@ pub(crate) fn collect_runtime_identifier_references(code: &str) -> FxHashSet<Str
 
 /// Detect top-level await in setup code (ignores awaits inside nested functions).
 pub fn contains_top_level_await(code: &str, is_ts: bool) -> bool {
+    if !code.contains("await") {
+        return false;
+    }
+
     let allocator = Allocator::default();
     let source_type = if is_ts {
         SourceType::ts()

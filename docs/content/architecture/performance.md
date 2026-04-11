@@ -24,22 +24,22 @@ Compiling **15,000 Vue SFC files** (36.9 MB total):
 
 |                                | @vue/compiler-sfc | Vize  | Speedup   |
 | ------------------------------ | ----------------- | ----- | --------- |
-| **Single Thread**              | 10.43s            | 6.06s | **1.7x**  |
-| **Multi Thread**               | 3.45s             | 612ms | **5.6x**  |
-| **compiler-sfc ST vs Vize MT** | 10.43s            | 612ms | **16.7x** |
+| **Single Thread**              | 9.28s             | 3.30s | **2.8x**  |
+| **Multi Thread**               | 3.35s             | 434ms | **7.7x**  |
+| **compiler-sfc ST vs Vize MT** | 9.28s             | 434ms | **20.9x** |
 
 The single-threaded improvement comes from Rust's zero-cost abstractions (no GC, no JIT warmup, cache-friendly memory layout). The multi-threaded improvement comes from Rayon's work-stealing thread pool, which scales near-linearly with CPU core count.
 
-### Scaling Behavior
+### Native Batch Scaling Behavior
 
-| Files  | Vize (1 thread) | Vize (8 threads) | Parallel Speedup |
-| ------ | --------------- | ---------------- | ---------------- |
-| 100    | 44ms            | 12ms             | 3.7x             |
-| 1,000  | 443ms           | 73ms             | 6.1x             |
-| 5,000  | 2.2s            | 198ms            | 11.1x            |
-| 15,000 | 6.65s           | 498ms            | 13.4x            |
+| Files  | Vize batch (1 thread) | Vize batch (12 threads) | Parallel Speedup |
+| ------ | --------------------- | ----------------------- | ---------------- |
+| 100    | 22ms                  | 3ms                     | 7.0x             |
+| 1,000  | 218ms                 | 25ms                    | 8.7x             |
+| 5,000  | 1.09s                 | 125ms                   | 8.7x             |
+| 15,000 | 3.65s                 | 432ms                   | 8.5x             |
 
-The super-linear scaling at higher file counts is due to better amortization of thread pool startup costs and improved CPU cache utilization when all cores are saturated.
+These native batch numbers include file reads. Small batches are dominated by fixed overhead; larger batches settle around 8.5x parallel speedup on this 12-core machine.
 
 ## Why Rust?
 
@@ -121,9 +121,9 @@ Run `vp run --workspace-root bench:lint` to reproduce.
 
 Formatting **15,000 Vue SFC files**:
 
-|          | Prettier (ST) | Vize glyph (ST) | Speedup    | Prettier (MT) | Vize glyph (MT) | Speedup  | **Prettier ST vs Vize MT** |
-| -------- | ------------- | --------------- | ---------- | ------------- | --------------- | -------- | -------------------------- |
-| **Time** | 82.69s        | 36ms            | **2,303x** | 19.66s        | 23ms            | **872x** | **3,666x**                 |
+|          | Prettier (CLI) | Vize glyph (ST) | Speedup   | Vize glyph (MT) | **Prettier CLI vs Vize MT** |
+| -------- | -------------- | --------------- | --------- | --------------- | --------------------------- |
+| **Time** | 104.08s        | 3.44s           | **30.3x** | 1.32s           | **78.9x**                   |
 
 Run `vp run --workspace-root bench:fmt` to reproduce.
 
@@ -138,6 +138,16 @@ Type checking **15,000 Vue SFC files**:
 > **Note:** Vize canon is still in early development and the Corsa-backed diagnostics path is still catching up with vue-tsc fidelity. These measurements reflect the current native project-session implementation with auto-tuned parallel Corsa sessions and will change as diagnostics coverage and parity improve.
 
 Run `vp run --workspace-root bench:check` to reproduce.
+
+### Diagnostics-heavy e2e fixture
+
+`bench/check.ts` also measures the `tests/_fixtures/_git/npmx.dev` app when the fixture is present. This catches the diagnostics mapping path that synthetic no-error SFCs do not stress:
+
+| Fixture      | Source SFC files | Virtual files | Diagnostics | Vize canon |
+| ------------ | ---------------- | ------------- | ----------- | ---------- |
+| npmx.dev app | 134              | 226           | 3,943       | ~2.9s      |
+
+The current profile for this fixture keeps `canon.corsa.map_diagnostics` at ~31ms; most time is now in Corsa project diagnostics.
 
 ## Benchmark: Vite Plugin — @vizejs/vite-plugin vs @vitejs/plugin-vue
 

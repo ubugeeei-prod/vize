@@ -15,6 +15,7 @@ use super::type_checker::{
 use super::virtual_project::VirtualProject;
 use crate::{
     corsa_client::CorsaProjectClient,
+    file_uri::path_to_file_uri,
     lsp_client::paths::{corsa_search_roots, find_corsa_in_search_roots},
 };
 use oxc_span::SourceType;
@@ -189,7 +190,7 @@ fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
             continue;
         }
         if let Some("ts" | "tsx") = path.extension().and_then(|extension| extension.to_str()) {
-            uris.push(cstr!("file://{}", path.display()));
+            uris.push(path_to_file_uri(path));
         }
     }
 
@@ -282,6 +283,7 @@ fn should_fallback_to_cli(error: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{collect_declaration_outputs, collect_virtual_file_uris, normalize_corsa_path};
+    use crate::file_uri::path_to_file_uri;
     use std::{
         fs,
         path::PathBuf,
@@ -319,10 +321,32 @@ mod tests {
         assert_eq!(
             uris,
             vec![
-                cstr!("file://{}", root.join("component.vue.ts").display()),
-                cstr!("file://{}", root.join("index.ts").display()),
+                path_to_file_uri(root.join("component.vue.ts").as_path()),
+                path_to_file_uri(root.join("index.ts").as_path()),
             ]
         );
+    }
+
+    #[test]
+    fn encodes_reserved_characters_in_virtual_file_uris() {
+        let root = unique_case_dir("reserved-uri");
+        let _ = fs::remove_dir_all(&root);
+        let route_dir = root.join("pages").join("[[org]]").join("[packageName]");
+        fs::create_dir_all(&route_dir).unwrap();
+        fs::write(route_dir.join("[versionRange].vue.ts"), "").unwrap();
+
+        let uris = collect_virtual_file_uris(root.as_path()).unwrap();
+        let _ = fs::remove_dir_all(&root);
+
+        assert_eq!(
+            uris,
+            vec![path_to_file_uri(
+                route_dir.join("[versionRange].vue.ts").as_path()
+            )]
+        );
+        assert!(uris[0].contains("%5B%5Borg%5D%5D"));
+        assert!(uris[0].contains("%5BpackageName%5D"));
+        assert!(uris[0].contains("%5BversionRange%5D.vue.ts"));
     }
 
     #[test]

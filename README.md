@@ -132,9 +132,9 @@ Benchmarks with **15,000 Vue SFC files** (36.9 MB). "User-facing speedup" = trad
 
 | Tool             | Traditional (ST)          | Vize (MT)                 | User-facing Speedup |
 | ---------------- | ------------------------- | ------------------------- | ------------------- |
-| **Compiler**     | @vue/compiler-sfc 10.43s  | 612ms                     | **16.7x**           |
+| **Compiler**     | @vue/compiler-sfc 9.28s   | 434ms                     | **20.9x**           |
 | **Linter**       | eslint-plugin-vue 65.30s  | patina 5.48s              | **11.9x**           |
-| **Formatter**    | Prettier 82.69s           | glyph 23ms                | **3,666x**          |
+| **Formatter**    | Prettier 104.08s          | glyph 1.32s               | **78.9x**           |
 | **Type Checker** | vue-tsc 22.13s            | canon 3.33s               | **6.6x** \*         |
 | **Vite Plugin**  | @vitejs/plugin-vue 16.98s | @vizejs/vite-plugin 6.90s | **2.5x** \*\*       |
 
@@ -143,8 +143,8 @@ Benchmarks with **15,000 Vue SFC files** (36.9 MB). "User-facing speedup" = trad
 
 |                   | @vue/compiler-sfc | Vize  | Speedup  |
 | ----------------- | ----------------- | ----- | -------- |
-| **Single Thread** | 10.43s            | 6.06s | **1.7x** |
-| **Multi Thread**  | 3.45s             | 612ms | **5.6x** |
+| **Single Thread** | 9.28s             | 3.30s | **2.8x** |
+| **Multi Thread**  | 3.35s             | 434ms | **7.7x** |
 
 </details>
 
@@ -153,6 +153,8 @@ Benchmarks with **15,000 Vue SFC files** (36.9 MB). "User-facing speedup" = trad
 \*\* Vite Plugin benchmark uses Vite v8.0.0 (Rolldown). The plugin replaces only the SFC compilation step; all other Vite internals are unchanged.
 
 Run `vp run --workspace-root bench:all` to reproduce all benchmarks.
+
+`bench:check` also includes the diagnostics-heavy `npmx.dev` e2e fixture when that fixture is present, so the Corsa diagnostic mapping path stays covered.
 
 ## Contributing
 

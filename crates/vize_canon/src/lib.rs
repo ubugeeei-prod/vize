@@ -45,6 +45,8 @@
 mod checker;
 mod context;
 mod diagnostic;
+#[cfg(feature = "native")]
+mod file_uri;
 pub mod intelligence;
 pub mod sfc_typecheck;
 pub mod source_map;

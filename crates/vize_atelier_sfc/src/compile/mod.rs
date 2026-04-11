@@ -11,7 +11,7 @@ mod styles;
 #[cfg(test)]
 mod tests;
 
-use crate::compile_script::{compile_script_setup_inline, TemplateParts};
+use crate::compile_script::{compile_script_setup_inline_with_context, TemplateParts};
 use crate::compile_template::{
     compile_template_block, compile_template_block_vapor, extract_template_parts,
     extract_template_parts_full,
@@ -41,13 +41,21 @@ pub fn compile_sfc(
 
     let filename = options.script.id.as_deref().unwrap_or("anonymous.vue");
 
+    let has_styles = !descriptor.styles.is_empty();
+    let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     // Use externally-provided scope ID if available, otherwise generate from filename.
     // The external scope ID ensures consistency with JS-side SHA-256 generation.
-    let scope_id = options
-        .scope_id
-        .clone()
-        .unwrap_or_else(|| generate_scope_id(filename));
-    let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
+    // Template/script-only SFCs do not need the hash.
+    let needs_scope_id =
+        has_styles || !descriptor.css_vars.is_empty() || options.scope_id.is_some();
+    let scope_id = if needs_scope_id {
+        options
+            .scope_id
+            .clone()
+            .unwrap_or_else(|| generate_scope_id(filename))
+    } else {
+        String::default()
+    };
 
     // Vapor components currently render on the client. For SSR we fall back to
     // the standard VDOM compiler and let the client hydrate with Vapor output.
@@ -483,7 +491,8 @@ pub fn compile_sfc(
 
     let script_result = profile!(
         "atelier.sfc.script_setup.inline_compile",
-        compile_script_setup_inline(
+        compile_script_setup_inline_with_context(
+            ctx,
             &script_setup.content,
             &component_name,
             is_ts,
@@ -501,7 +510,6 @@ pub fn compile_sfc(
             normal_script_content.as_deref(),
             &descriptor.css_vars,
             &scope_id,
-            Some(filename),
         )
     )?;
 

@@ -13,6 +13,10 @@ pub(super) fn compile_styles(
     base_opts: &StyleCompileOptions,
     warnings: &mut Vec<SfcError>,
 ) -> String {
+    if styles.is_empty() {
+        return String::default();
+    }
+
     let mut all_css = String::default();
     for style in styles {
         let style_opts = StyleCompileOptions {
