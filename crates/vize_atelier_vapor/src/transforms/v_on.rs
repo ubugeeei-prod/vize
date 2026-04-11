@@ -175,7 +175,6 @@ mod tests {
         modifiers.non_keys.push(String::new("stop"));
 
         let result = generate_event_handler("click", Some("handleClick"), &modifiers);
-        assert!(result.contains("_withModifiers"));
-        assert!(result.contains("stop"));
+        insta::assert_snapshot!(result.as_str());
     }
 }

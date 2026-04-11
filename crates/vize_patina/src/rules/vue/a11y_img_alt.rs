@@ -115,6 +115,6 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<img src="/photo.jpg" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("alt"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 }

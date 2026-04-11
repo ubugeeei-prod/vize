@@ -196,14 +196,7 @@ const count = 1
         let (_, setup_lines, ts_declarations) =
             extract_script_sections(content, true).expect("sections should parse");
 
-        assert!(
-            setup_lines
-                .iter()
-                .all(|line| !line.contains("const props =")),
-            "macro assignment prefix should not leak into setup lines: {setup_lines:?}"
-        );
-        assert_eq!(setup_lines, vec!["const count = 1"]);
-        assert!(ts_declarations.is_empty());
+        insta::assert_debug_snapshot!((&setup_lines, &ts_declarations));
     }
 
     #[test]

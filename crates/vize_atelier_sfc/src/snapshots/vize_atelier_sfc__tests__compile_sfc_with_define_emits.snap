@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_sfc/src/lib.rs
+expression: result.code.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+
+import { ref } from 'vue'
+
+export default {
+  __name: 'anonymous',
+  emits: ["update"],
+  setup(__props, { emit: __emit }) {
+
+const emit = __emit
+const count = ref(0)
+function onClick() {
+    emit('update', count.value)
+}
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("button", { onClick: onClick }, _toDisplayString(count.value), 1 /* TEXT */))
+}
+}
+
+}

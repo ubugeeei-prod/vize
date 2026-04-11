@@ -299,6 +299,6 @@ const instance = Vue.getCurrentInstance()
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("getCurrentInstance"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 }

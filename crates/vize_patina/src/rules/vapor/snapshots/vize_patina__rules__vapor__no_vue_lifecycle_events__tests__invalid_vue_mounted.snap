@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vapor/no-vue-lifecycle-events",
+        severity: Error,
+        message: "@vue:mounted lifecycle events are not supported in Vapor",
+        start: 5,
+        end: 28,
+        help: Some(
+            "Use component lifecycle hooks instead",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

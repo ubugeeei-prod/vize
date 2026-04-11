@@ -12,7 +12,7 @@ fn test_vize_todo_emits_warning() {
         "Should emit 1 warning for @vize:todo"
     );
     assert_eq!(result.diagnostics[0].rule_name, "vize/todo");
-    assert!(result.diagnostics[0].message.contains("TODO"));
+    insta::assert_debug_snapshot!(result.diagnostics);
 }
 
 #[test]
@@ -24,7 +24,7 @@ fn test_vize_fixme_emits_error() {
     );
     assert_eq!(result.error_count, 1, "Should emit 1 error for @vize:fixme");
     assert_eq!(result.diagnostics[0].rule_name, "vize/fixme");
-    assert!(result.diagnostics[0].message.contains("FIXME"));
+    insta::assert_debug_snapshot!(result.diagnostics);
 }
 
 #[test]
@@ -39,7 +39,7 @@ fn test_vize_deprecated_emits_warning() {
         "Should emit 1 warning for @vize:deprecated"
     );
     assert_eq!(result.diagnostics[0].rule_name, "vize/deprecated");
-    assert!(result.diagnostics[0].message.contains("Deprecated"));
+    insta::assert_debug_snapshot!(result.diagnostics);
 }
 
 #[test]

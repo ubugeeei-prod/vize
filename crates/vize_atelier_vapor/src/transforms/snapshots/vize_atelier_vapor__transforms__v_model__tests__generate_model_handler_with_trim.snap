@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_vapor/src/transforms/v_model.rs
+expression: result.as_str()
+---
+$event => { text = $event.target.value.trim() }

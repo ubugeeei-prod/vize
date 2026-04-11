@@ -3531,6 +3531,7 @@ dependencies = [
  "bitflags 2.11.0",
  "bumpalo",
  "compact_str 0.8.1",
+ "insta",
  "once_cell",
  "phf 0.11.3",
  "rustc-hash",
@@ -3589,6 +3590,7 @@ name = "vize_glyph"
 version = "0.44.0"
 dependencies = [
  "criterion",
+ "insta",
  "lightningcss",
  "memchr",
  "oxc_allocator",

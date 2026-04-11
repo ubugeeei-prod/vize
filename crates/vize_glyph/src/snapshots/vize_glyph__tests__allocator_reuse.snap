@@ -1,0 +1,7 @@
+---
+source: crates/vize_glyph/src/lib.rs
+expression: result1.code.as_str()
+---
+<script>
+const a = 1;
+</script>

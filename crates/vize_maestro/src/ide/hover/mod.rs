@@ -529,8 +529,7 @@ mod tests {
             .build();
 
         if let HoverContents::Markup(content) = hover.contents {
-            assert!(content.value.contains("**ref**"));
-            assert!(content.value.contains("```typescript"));
+            insta::assert_snapshot!(content.value.as_str());
         } else {
             panic!("Expected Markup content");
         }
@@ -559,11 +558,9 @@ mod tests {
     #[test]
     fn test_binding_type_to_description() {
         let desc = HoverService::binding_type_to_description(BindingType::SetupRef);
-        assert!(desc.contains("ref()"));
-        assert!(desc.contains(".value"));
+        insta::assert_snapshot!(desc);
 
         let desc = HoverService::binding_type_to_description(BindingType::Props);
-        assert!(desc.contains("prop"));
-        assert!(desc.contains("Read-only"));
+        insta::assert_snapshot!(desc);
     }
 }

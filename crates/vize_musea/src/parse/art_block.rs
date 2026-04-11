@@ -141,8 +141,7 @@ mod tests {
         assert!(result.is_ok());
 
         let block = result.unwrap();
-        assert!(block.attrs_str.contains("title"));
-        assert!(block.content.contains("variant"));
+        insta::assert_debug_snapshot!(block);
     }
 
     #[test]

@@ -1,0 +1,10 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { template as _template } from 'vue';
+const t0 = _template("<svg><path d=\"a\"></path><path d=\"b\"></path></svg>", true, 1)
+export function render(_ctx) {
+const n0 = t0()
+return n0
+}

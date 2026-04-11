@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/css/tests.rs
+expression: result
+---
+@media (--mobile){.a[data-v-xyz]{ color: red; }.b[data-v-xyz]{ color: blue; }}

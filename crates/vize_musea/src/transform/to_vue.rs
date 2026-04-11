@@ -332,11 +332,7 @@ mod tests {
         let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
         let output = transform_to_vue(&art);
 
-        assert!(output.code.contains("import { defineComponent"));
-        assert!(output.code.contains("import TargetComponent"));
-        assert!(output.code.contains("export const Primary"));
-        assert!(output.code.contains("export const metadata"));
-        assert!(output.metadata_code.contains("title: 'Button'"));
+        insta::assert_debug_snapshot!(output);
     }
 
     #[test]
@@ -356,9 +352,7 @@ mod tests {
         let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
         let output = transform_to_vue(&art);
 
-        assert!(output.code.contains("export const Primary"));
-        assert!(output.code.contains("export const Secondary"));
-        assert!(output.code.contains("Primary.isDefault = true"));
+        insta::assert_debug_snapshot!(output);
     }
 
     #[test]

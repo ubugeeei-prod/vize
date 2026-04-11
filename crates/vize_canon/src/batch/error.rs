@@ -181,7 +181,7 @@ mod tests {
         };
 
         let msg = error.display_message();
-        assert!(msg.contains("pnpm add -D @typescript/native-preview"));
+        insta::assert_snapshot!(msg.as_str());
     }
 
     #[test]
@@ -189,9 +189,6 @@ mod tests {
         let error = CorsaNotFoundError { detected_pm: None };
 
         let msg = error.display_message();
-        assert!(msg.contains("npm install"));
-        assert!(msg.contains("pnpm add"));
-        assert!(msg.contains("yarn add"));
-        assert!(msg.contains("bun add"));
+        insta::assert_snapshot!(msg.as_str());
     }
 }

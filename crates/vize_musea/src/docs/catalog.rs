@@ -386,11 +386,7 @@ mod tests {
 
         let output = generate_catalog(&entries, &DocOptions::default());
 
-        assert!(output.markdown.contains("# Component Catalog"));
-        assert!(output.markdown.contains("## atoms"));
-        assert!(output.markdown.contains("## molecules"));
-        assert_eq!(output.component_count, 3);
-        assert_eq!(output.categories.len(), 2);
+        insta::assert_debug_snapshot!(output);
     }
 
     #[test]
@@ -402,10 +398,7 @@ mod tests {
 
         let output = generate_tags_index(&entries, &DocOptions::default());
 
-        assert!(output.markdown.contains("# Tags Index"));
-        assert!(output.markdown.contains("`ui`"));
-        assert!(output.markdown.contains("`input`"));
-        assert!(output.markdown.contains("`form`"));
+        insta::assert_debug_snapshot!(output);
     }
 
     #[test]

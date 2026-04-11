@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/require_symbol_provide.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/require-symbol-provide",
+        severity: Warning,
+        message: "Consider using a Symbol key instead of a string literal",
+        start: 0,
+        end: 8,
+        help: Some(
+            "Define an InjectionKey with Symbol: `export const MyKey: InjectionKey<MyType> = Symbol('myKey')`",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

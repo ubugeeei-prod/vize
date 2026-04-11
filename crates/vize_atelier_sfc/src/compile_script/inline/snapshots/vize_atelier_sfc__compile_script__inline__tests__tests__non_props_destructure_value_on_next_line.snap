@@ -1,0 +1,19 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { ref, toRefs } from "vue";
+export default {
+  __name: "TestComponent",
+  setup(__props) {
+    const state = ref({
+      x: 1,
+      y: 2
+    });
+    const { x, y } = toRefs(state.value);
+    const sum = ref(x.value + y.value);
+    return (_ctx, _cache) => {
+      return null;
+    };
+  }
+};

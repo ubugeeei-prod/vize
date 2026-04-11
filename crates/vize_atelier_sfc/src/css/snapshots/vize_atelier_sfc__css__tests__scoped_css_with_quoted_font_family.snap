@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_sfc/src/css/tests.rs
+expression: result
+---
+CssCompileResult {
+    code: ".foo[data-v-123] {\n  font-family: JetBrains Mono, monospace;\n}\n",
+    map: None,
+    css_vars: [],
+    errors: [],
+    warnings: [],
+    exports: None,
+}

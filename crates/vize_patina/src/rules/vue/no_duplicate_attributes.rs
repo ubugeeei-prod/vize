@@ -237,7 +237,7 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div id="foo" id="bar"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("Duplicate"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]
@@ -281,7 +281,7 @@ mod tests {
         let result =
             linter.lint_template(r#"<div @click.stop="a" @click.stop="b"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("click.stop"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

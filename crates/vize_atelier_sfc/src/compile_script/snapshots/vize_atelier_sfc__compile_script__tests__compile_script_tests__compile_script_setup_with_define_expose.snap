@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from "vue";
+import { ref } from "vue";
+const __sfc__ = /* @__PURE__ */ _defineComponent({
+  __name: "Test",
+  setup(__props, { expose: __expose, emit: __emit }) {
+    __expose({
+      count,
+      reset
+    });
+    const count = ref(0);
+    const reset = () => count.value = 0;
+    const __returned__ = {
+      count,
+      ref,
+      reset
+    };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+});

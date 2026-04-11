@@ -1,0 +1,6 @@
+---
+source: crates/vize_glyph/src/lib.rs
+expression: result.as_str()
+---
+const x = 1;
+const y = { a: 1, b: 2 };

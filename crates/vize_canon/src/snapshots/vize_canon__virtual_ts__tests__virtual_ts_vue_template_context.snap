@@ -1,0 +1,12 @@
+---
+source: crates/vize_canon/src/virtual_ts/mod.rs
+expression: value
+---
+    // Vue template context (delegates to ComponentPublicInstance)
+    type __Ctx = import('vue').ComponentPublicInstance;
+    const __ctx = undefined as unknown as __Ctx;
+    const $attrs = __ctx.$attrs;
+    const $slots = __ctx.$slots;
+    const $refs = __ctx.$refs;
+    const $emit = __ctx.$emit;
+    void __ctx; void $attrs; void $slots; void $refs; void $emit;

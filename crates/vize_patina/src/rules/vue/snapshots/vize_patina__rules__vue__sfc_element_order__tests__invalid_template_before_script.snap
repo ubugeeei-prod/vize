@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/sfc_element_order.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/sfc-element-order",
+        severity: Warning,
+        message: "<script> should come before <template>",
+        start: 33,
+        end: 56,
+        help: Some(
+            "Recommended order: <script> -> <template> -> <style>",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

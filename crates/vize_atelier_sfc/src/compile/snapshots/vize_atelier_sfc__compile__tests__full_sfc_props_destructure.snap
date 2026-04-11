@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, toDisplayString as _toDisplayString } from "vue"
+
+import { computed } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  props: {
+    name: { type: String, required: true },
+    count: { type: Number, required: false, default: 0 }
+  },
+  setup(__props: any) {
+
+const doubled = computed(() => __props.count * 2)
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", { class: "card" }, [ _createElementVNode("h2", null, _toDisplayString(__props.name), 1 /* TEXT */), _createElementVNode("p", null, "Count: " + _toDisplayString(__props.count) + " (doubled: " + _toDisplayString(doubled.value) + ")", 1 /* TEXT */) ]))
+}
+}
+
+})

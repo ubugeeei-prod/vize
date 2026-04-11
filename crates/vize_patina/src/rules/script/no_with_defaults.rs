@@ -109,7 +109,7 @@ mod tests {
             0,
         );
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("withDefaults"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/style.rs
+expression: result.as_str()
+---
+/* Mobile responsive */
+@media (max-width: 768px){.glyph-playground[data-v-123]{
+    grid-template-columns: 1fr;
+  }}

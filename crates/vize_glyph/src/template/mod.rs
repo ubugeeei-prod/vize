@@ -52,8 +52,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert!(result.contains("<div>"));
-        assert!(result.contains("</div>"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -62,9 +61,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert!(result.contains("<div>"));
-        assert!(result.contains("  <span>"));
-        assert!(result.contains("</div>"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -73,8 +70,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert!(result.contains(r#"class="container""#));
-        assert!(result.contains(r#"id="main""#));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -83,8 +79,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert!(result.contains("<input"));
-        assert!(result.contains("/>"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -93,8 +88,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert!(result.contains(":class="));
-        assert!(!result.contains("v-bind:class"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -103,8 +97,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert!(result.contains("@click="));
-        assert!(!result.contains("v-on:click"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -113,34 +106,28 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert!(result.contains("#default="));
-        assert!(!result.contains("v-slot:default"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_interpolation_spacing_normalized() {
         let options = FormatOptions::default();
         let result = format_interpolations("{{count}}", &options);
-        assert!(result.contains("{{ "));
-        assert!(result.contains(" }}"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_interpolation_already_spaced() {
         let options = FormatOptions::default();
         let result = format_interpolations("{{ count }}", &options);
-        assert!(result.contains("{{ "));
-        assert!(result.contains(" }}"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_interpolation_in_text() {
         let options = FormatOptions::default();
         let result = format_interpolations("Hello {{name}} world", &options);
-        assert!(result.starts_with("Hello "));
-        assert!(result.contains("{{ "));
-        assert!(result.contains(" }}"));
-        assert!(result.ends_with(" world"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -210,7 +197,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert!(result.contains("v-else"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -219,8 +206,7 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_template_content(source, &options).unwrap();
 
-        assert!(result.contains("<!-- This is a comment -->"));
-        assert!(result.contains("<div>"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -414,15 +400,16 @@ mod tests {
         options.normalize_directive_shorthands = false;
         let result = format_template_content(source, &options).unwrap();
 
-        // Shorthands should NOT be applied
-        assert!(
-            result.contains("v-bind:class"),
-            "v-bind:class should be preserved"
-        );
-        assert!(
-            result.contains("v-on:click"),
-            "v-on:click should be preserved"
-        );
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_dynamic_directive_shorthand_snapshot() {
+        let source = r#"<button v-bind:[name]="value" v-on:[event]="handler">{{label}}</button>"#;
+        let options = FormatOptions::default();
+        let result = format_template_content(source, &options).unwrap();
+
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]

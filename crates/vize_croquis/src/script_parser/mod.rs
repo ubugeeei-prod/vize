@@ -347,12 +347,10 @@ mod tests {
         "#,
         );
 
-        assert!(result.bindings.contains("count"));
-        assert!(result.bindings.contains("doubled"));
-        assert!(result.bindings.contains("state"));
         assert!(result.reactivity.is_reactive("count"));
         assert!(result.reactivity.is_reactive("doubled"));
         assert!(result.reactivity.is_reactive("state"));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]
@@ -364,9 +362,7 @@ mod tests {
         "#,
         );
 
-        assert!(result.bindings.contains("ref"));
-        assert!(result.bindings.contains("computed"));
-        assert!(result.bindings.contains("MyComponent"));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]

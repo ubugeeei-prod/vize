@@ -1,0 +1,28 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'TestComponent',
+  async setup(__props) {
+
+let __temp: any, __restore: any
+
+const client = useClient()
+;(
+  ([__temp,__restore] = _withAsyncContext(() => client.reports.create({
+  accountId: 'acc',
+  message: 'hello',
+}))),
+  await __temp,
+  __restore()
+)
+
+return (_ctx: any,_cache: any) => {
+  return null
+}
+}
+
+})

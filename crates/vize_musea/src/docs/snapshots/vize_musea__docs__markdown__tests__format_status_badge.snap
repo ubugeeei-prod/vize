@@ -1,0 +1,5 @@
+---
+source: crates/vize_musea/src/docs/markdown.rs
+expression: "format_status_badge(ArtStatus::Draft).as_str()"
+---
+> **Status:** 🚧 Draft

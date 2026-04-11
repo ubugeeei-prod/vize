@@ -143,15 +143,15 @@ mod tests {
     fn test_binding_type_to_completion_info() {
         let (kind, detail, _) = items::binding_type_to_completion_info(BindingType::SetupRef);
         assert_eq!(kind, CompletionItemKind::VARIABLE);
-        assert!(detail.contains("ref"));
+        insta::assert_snapshot!(detail);
 
         let (kind, detail, _) = items::binding_type_to_completion_info(BindingType::SetupConst);
         assert_eq!(kind, CompletionItemKind::CONSTANT);
-        assert!(detail.contains("const"));
+        insta::assert_snapshot!(detail);
 
         let (kind, detail, _) = items::binding_type_to_completion_info(BindingType::Props);
         assert_eq!(kind, CompletionItemKind::PROPERTY);
-        assert!(detail.contains("prop"));
+        insta::assert_snapshot!(detail);
     }
 
     #[test]

@@ -1,0 +1,7 @@
+---
+source: crates/vize_canon/src/batch/import_rewriter.rs
+expression: result.code.as_str()
+---
+import App from './App.vue.ts';
+import Child from './Child.vue.ts';
+import { ref } from 'vue';

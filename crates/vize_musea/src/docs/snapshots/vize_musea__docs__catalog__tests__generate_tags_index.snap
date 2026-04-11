@@ -1,0 +1,15 @@
+---
+source: crates/vize_musea/src/docs/catalog.rs
+expression: output
+---
+CatalogOutput {
+    markdown: "# Tags Index\n\n> **3** tags\n\n## All Tags\n\n- [`form`](#form) (1)\n- [`input`](#input) (2)\n- [`ui`](#ui) (2)\n\n## form\n\n| Component | Category | Variants |\n|-----------|----------|----------|\n| [Input](input.md) | atoms | 2 |\n\n## input\n\n| Component | Category | Variants |\n|-----------|----------|----------|\n| [Button](button.md) | atoms | 2 |\n| [Input](input.md) | atoms | 2 |\n\n## ui\n\n| Component | Category | Variants |\n|-----------|----------|----------|\n| [Button](button.md) | atoms | 2 |\n| [Input](input.md) | atoms | 2 |\n\n",
+    filename: "tags.md",
+    component_count: 2,
+    categories: [],
+    tags: [
+        "form",
+        "input",
+        "ui",
+    ],
+}

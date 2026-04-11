@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/prefer-props-shorthand",
+        severity: Warning,
+        message: "Use shorthand syntax for same-name prop binding",
+        start: 13,
+        end: 22,
+        help: Some(
+            "Use shorthand prop syntax",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

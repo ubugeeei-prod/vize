@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/scoped-event-names",
+        severity: Warning,
+        message: "Consider using scoped event name for better organization",
+        start: 8,
+        end: 30,
+        help: Some(
+            "Use scoped event names like 'update:modelValue' instead of generic names",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

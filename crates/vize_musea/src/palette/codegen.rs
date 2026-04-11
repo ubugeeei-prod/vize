@@ -332,10 +332,7 @@ mod tests {
 
         let ts = generate_typescript_interface(&palette);
 
-        assert!(ts.contains("export interface ButtonProps"));
-        assert!(ts.contains("label: string;"));
-        assert!(ts.contains("disabled?: boolean;"));
-        assert!(ts.contains("size?: number;"));
+        insta::assert_snapshot!(ts.as_str());
     }
 
     #[test]
@@ -360,9 +357,7 @@ mod tests {
 
         let argtypes = generate_storybook_argtypes(&palette);
 
-        assert!(argtypes.contains("control: { type: 'select' }"));
-        assert!(argtypes.contains("options: ['sm', 'lg']"));
-        assert!(argtypes.contains("defaultValue: 'sm'"));
+        insta::assert_snapshot!(argtypes.as_str());
     }
 
     #[test]

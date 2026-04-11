@@ -154,12 +154,7 @@ fn test_to_markdown_destructuring() {
 
     let markdown = diag.to_markdown();
 
-    // Check that key information is present
-    assert!(markdown.contains("WARNING"));
-    assert!(markdown.contains("count"));
-    assert!(markdown.contains("name"));
-    assert!(markdown.contains("toRefs"));
-    assert!(markdown.contains("props"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -176,12 +171,7 @@ fn test_to_markdown_circular_dependency() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("Circular"));
-    assert!(markdown.contains("computed"));
-    // Check cycle is displayed
-    assert!(markdown.contains("a"));
-    assert!(markdown.contains("b"));
-    assert!(markdown.contains("c"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -199,10 +189,7 @@ fn test_to_markdown_provide_inject_without_symbol() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("InjectionKey"));
-    assert!(markdown.contains("Symbol"));
-    assert!(markdown.contains("Type-safe")); // Capital T
-    assert!(markdown.contains("user"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -221,11 +208,7 @@ fn test_to_markdown_watch_can_be_computed() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("computed"));
-    assert!(markdown.contains("watch"));
-    assert!(markdown.contains("count"));
-    assert!(markdown.contains("doubled"));
-    assert!(markdown.contains("Declarative"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -243,10 +226,7 @@ fn test_to_markdown_dom_access_without_next_tick() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("nextTick"));
-    assert!(markdown.contains("onMounted"));
-    assert!(markdown.contains("SSR"));
-    assert!(markdown.contains("DOM"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 // ============================================================
@@ -256,13 +236,13 @@ fn test_to_markdown_dom_access_without_next_tick() {
 #[test]
 fn test_severity_badges() {
     let kinds = [
-        (DiagnosticSeverity::Error, "ERROR"),
-        (DiagnosticSeverity::Warning, "WARNING"),
-        (DiagnosticSeverity::Info, "INFO"),
-        (DiagnosticSeverity::Hint, "HINT"),
+        DiagnosticSeverity::Error,
+        DiagnosticSeverity::Warning,
+        DiagnosticSeverity::Info,
+        DiagnosticSeverity::Hint,
     ];
 
-    for (severity, expected_badge) in kinds {
+    for severity in kinds {
         let diag = CrossFileDiagnostic::new(
             CrossFileDiagnosticKind::UnmatchedInject { key: "test".into() },
             severity,
@@ -272,11 +252,7 @@ fn test_severity_badges() {
         );
 
         let markdown = diag.to_markdown();
-        assert!(
-            markdown.contains(expected_badge),
-            "Expected {} in markdown",
-            expected_badge
-        );
+        insta::assert_snapshot!(markdown.as_str());
     }
 }
 
@@ -300,10 +276,7 @@ fn test_reactive_reference_escapes() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("state"));
-    assert!(markdown.contains("escapes"));
-    assert!(markdown.contains("readonly"));
-    assert!(markdown.contains("Rust"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -322,9 +295,7 @@ fn test_reactive_object_mutated_after_escape() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("mutated"));
-    assert!(markdown.contains("borrow"));
-    assert!(markdown.contains("Timeline"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 // ============================================================

@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-duplicate-attributes",
+        severity: Error,
+        message: "Duplicate attribute 'v-on:click.stop'",
+        start: 21,
+        end: 35,
+        help: Some(
+            "Remove the duplicate attribute",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

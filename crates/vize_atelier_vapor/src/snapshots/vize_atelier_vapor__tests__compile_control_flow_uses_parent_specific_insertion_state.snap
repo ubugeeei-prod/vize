@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<span>a</span>", true)
+const t1 = _template("<div><button></button><main></main></div>", true)
+export function render(_ctx) {
+const n2 = t1()
+const n0 = _child(n2)
+const n1 = _next(n0)
+_setInsertionState(n0, null, true)
+const n3 = _createIf(() => (_ctx.dark), () => {
+const n5 = t0()
+return n5
+})
+_setInsertionState(n1, null, true)
+const n6 = _createIf(() => (_ctx.tab), () => {
+_setInsertionState(n1, null, true)
+const _component_MyComp = _resolveComponent("MyComp")
+const n8 = _createComponentWithFallback(_component_MyComp, null, null, true)
+return n8
+})
+return n2
+}

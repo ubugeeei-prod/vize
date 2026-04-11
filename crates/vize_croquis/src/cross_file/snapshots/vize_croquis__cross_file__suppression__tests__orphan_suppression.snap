@@ -1,0 +1,11 @@
+---
+source: crates/vize_croquis/src/cross_file/suppression.rs
+expression: map.errors
+---
+[
+    SuppressionError {
+        message: "@vize forget at end of file - no code to suppress",
+        line: 2,
+        offset: 13,
+    },
+]

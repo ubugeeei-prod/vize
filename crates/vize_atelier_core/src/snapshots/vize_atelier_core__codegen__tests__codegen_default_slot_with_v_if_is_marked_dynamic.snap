@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode, resolveComponent: _resolveComponent, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_PageWithHeader = _resolveComponent("PageWithHeader")
+  
+  return (_openBlock(), _createBlock(_component_PageWithHeader, null, {
+    default: _withCtx(() => [
+      (tab === 'overview')
+        ? (_openBlock(), _createElementBlock("div", { key: 0 }, "Overview"))
+        : (tab === 'emojis')
+          ? (_openBlock(), _createElementBlock("div", { key: 1 }, "Emojis"))
+        : (_openBlock(), _createElementBlock("div", { key: 2 }, "Charts"))
+    ]),
+    _: 2 /* DYNAMIC */
+  }, 1024 /* DYNAMIC_SLOTS */))
+}

@@ -1,0 +1,18 @@
+---
+source: crates/vize_musea/src/docs/catalog.rs
+expression: output
+---
+CatalogOutput {
+    markdown: "# Component Catalog\n\n> **3** components across **2** categories\n\n## Categories\n\n- [atoms](#atoms)\n- [molecules](#molecules)\n\n## atoms\n\n| Component | Description | Variants | Status |\n|-----------|-------------|----------|--------|\n| [Button](button.md) | Button description | 2 | ✅ |\n| [Icon](icon.md) | Icon description | 2 | ✅ |\n\n## molecules\n\n| Component | Description | Variants | Status |\n|-----------|-------------|----------|--------|\n| [Card](card.md) | Card description | 2 | ✅ |\n\n",
+    filename: "README.md",
+    component_count: 3,
+    categories: [
+        "atoms",
+        "molecules",
+    ],
+    tags: [
+        "input",
+        "layout",
+        "ui",
+    ],
+}

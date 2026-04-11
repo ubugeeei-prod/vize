@@ -1,0 +1,16 @@
+---
+source: crates/vize_patina/src/linter/tests/directives.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vize/deprecated",
+        severity: Warning,
+        message: "Deprecated: use NewComp",
+        start: 5,
+        end: 42,
+        help: None,
+        labels: [],
+        fix: None,
+    },
+]

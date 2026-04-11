@@ -247,7 +247,7 @@ mod tests {
         assert_eq!(variants.len(), 1);
         assert_eq!(variants[0].name, "Primary");
         assert!(variants[0].is_default);
-        assert!(variants[0].template.contains("Button"));
+        insta::assert_debug_snapshot!(variants);
     }
 
     #[test]

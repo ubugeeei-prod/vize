@@ -1,0 +1,36 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+
+
+const t0 = _template("<div> </div>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, _toDisplayString(_ctx.count) + " " + _toDisplayString(_ctx.doubled)))
+  return n0
+}
+const __vaporRender = render
+import { computed, ref } from 'vue'
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'anonymous',
+  render: __vaporRender,
+  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+const count = ref(1)
+const doubled = computed(() => count.value * 2)
+
+const __returned__ = { computed, ref, count, doubled }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})

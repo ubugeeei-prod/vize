@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/require_function_return_type.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/require-function-return-type",
+        severity: Warning,
+        message: "Function 'greet' is missing a return type annotation",
+        start: 0,
+        end: 28,
+        help: Some(
+            "Add a return type annotation: `function fn(...): ReturnType { ... }`",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

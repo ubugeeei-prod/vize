@@ -1,0 +1,8 @@
+---
+source: crates/vize_musea/src/lib.rs
+expression: csf
+---
+CsfOutput {
+    code: "import type { Meta, StoryObj } from '@storybook/vue3';\nimport Component from './Button.vue';\nimport Button from './Button.vue'\n\nconst meta: Meta<typeof Component> = {\n  title: 'atoms/Button',\n  component: Component,\n  tags: ['autodocs', 'ui', 'input'],\n  parameters: {\n    docs: {\n      description: {\n        component: 'A versatile button component',\n      },\n    },\n  },\n};\n\nexport default meta;\ntype Story = StoryObj<typeof meta>;\n\nexport const Primary: Story = {\n  render: (args) => ({\n    components: { Component },\n    setup() {\n      return { args };\n    },\n    template: `<Button variant=\"primary\">Primary Button</Button>`,\n  }),\n  parameters: {\n    docs: {\n      canvas: { sourceState: 'shown' },\n    },\n  },\n};\n\nexport const Secondary: Story = {\n  render: (args) => ({\n    components: { Component },\n    setup() {\n      return { args };\n    },\n    template: `<Button variant=\"secondary\">Secondary Button</Button>`,\n  }),\n};\n\nexport const WithIcon: Story = {\n  name: 'With Icon',\n  render: (args) => ({\n    components: { Component },\n    setup() {\n      return { args };\n    },\n    template: `<Button variant=\"primary\" icon=\"plus\">Add Item</Button>`,\n  }),\n};\n\n",
+    filename: "Button.stories.ts",
+}

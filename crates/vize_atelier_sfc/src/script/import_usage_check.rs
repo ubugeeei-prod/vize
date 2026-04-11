@@ -340,100 +340,99 @@ mod tests {
         resolve_template_used_identifiers(&root)
     }
 
+    fn snapshot_identifiers(result: &TemplateUsedIdentifiers) -> (Vec<&str>, Vec<&str>) {
+        let mut used_ids: Vec<_> = result.used_ids.iter().map(|id| id.as_str()).collect();
+        used_ids.sort_unstable();
+
+        let mut v_model_ids: Vec<_> = result.v_model_ids.iter().map(|id| id.as_str()).collect();
+        v_model_ids.sort_unstable();
+
+        (used_ids, v_model_ids)
+    }
+
     #[test]
     fn test_component_usage() {
         let result = analyze_template("<MyComponent />");
-        // camelize("MyComponent") = "MyComponent" (no hyphens to convert)
-        // capitalize("MyComponent") = "MyComponent"
-        assert!(result.used_ids.contains("MyComponent"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_component_usage_kebab() {
         let result = analyze_template("<my-component />");
-        // camelize("my-component") = "myComponent"
-        // capitalize("myComponent") = "MyComponent"
-        assert!(result.used_ids.contains("myComponent"));
-        assert!(result.used_ids.contains("MyComponent"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_component_with_dot() {
         let result = analyze_template("<Foo.Bar />");
-        // Tag is "Foo" (after splitting by dot)
-        // camelize("Foo") = "Foo"
-        // capitalize("Foo") = "Foo"
-        assert!(result.used_ids.contains("Foo"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_interpolation() {
         let result = analyze_template("<div>{{ msg }}</div>");
-        assert!(result.used_ids.contains("msg"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_bind() {
         let result = analyze_template("<div :class=\"classes\"></div>");
-        assert!(result.used_ids.contains("classes"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_on() {
         let result = analyze_template("<div @click=\"handleClick\"></div>");
-        assert!(result.used_ids.contains("handleClick"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_model() {
         let result = analyze_template("<input v-model=\"value\" />");
-        assert!(result.v_model_ids.contains("value"));
-        assert!(result.used_ids.contains("value"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_model_complex() {
         // Complex expressions should not be added to v_model_ids
         let result = analyze_template("<input v-model=\"obj.value\" />");
-        assert!(!result.v_model_ids.contains("obj.value"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_for() {
         let result = analyze_template("<div v-for=\"item in items\">{{ item }}</div>");
-        assert!(result.used_ids.contains("items"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_if() {
         let result = analyze_template("<div v-if=\"show\">content</div>");
-        assert!(result.used_ids.contains("show"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_custom_directive() {
         let result = analyze_template("<div v-focus></div>");
-        assert!(result.used_ids.contains("vFocus"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_ref_attribute() {
         let result = analyze_template("<div ref=\"myRef\"></div>");
-        assert!(result.used_ids.contains("myRef"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_native_tag_not_added() {
         let result = analyze_template("<div></div>");
-        assert!(!result.used_ids.contains("div"));
-        assert!(!result.used_ids.contains("Div"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_builtin_directive_not_added() {
         let result = analyze_template("<div v-if=\"show\" v-show=\"visible\"></div>");
-        assert!(!result.used_ids.contains("vIf"));
-        assert!(!result.used_ids.contains("vShow"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]

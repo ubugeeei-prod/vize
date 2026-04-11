@@ -861,7 +861,7 @@ const count = 1
         project.register_vue_file(&vue_path, vue_content).unwrap();
 
         let virtual_file = project.find_by_original(&vue_path).unwrap();
-        assert!(virtual_file.content.contains("./Child.vue.ts"));
+        insta::assert_snapshot!(virtual_file.content.as_str());
 
         let _ = fs::remove_dir_all(&case_dir);
     }
@@ -924,7 +924,7 @@ const message = 'Hello'
     #[test]
     fn test_strip_json_comments_preserves_strings() {
         let stripped = strip_json_comments(r#"{ "url": "https://example.com" }"#);
-        assert!(stripped.contains("https://example.com"));
+        insta::assert_snapshot!(stripped.as_str());
     }
 
     #[test]

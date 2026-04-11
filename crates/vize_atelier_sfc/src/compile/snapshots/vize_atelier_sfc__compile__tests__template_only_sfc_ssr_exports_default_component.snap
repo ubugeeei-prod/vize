@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div>Hello</div>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

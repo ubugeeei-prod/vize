@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: result.preamble.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"

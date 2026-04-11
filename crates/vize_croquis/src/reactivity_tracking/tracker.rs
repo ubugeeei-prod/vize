@@ -532,7 +532,6 @@ mod tests {
         );
 
         let md = tracker.to_markdown();
-        assert!(md.contains("Reactivity Analysis Report"));
-        assert!(md.contains("state"));
+        insta::assert_snapshot!(md.as_str());
     }
 }

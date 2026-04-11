@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { Fragment: _Fragment, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, resolveDynamicComponent: _resolveDynamicComponent, renderList: _renderList } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items, (item) => {
+    return (_openBlock(), _createBlock(_resolveDynamicComponent(item.component), { key: item.id }))
+  }), 128 /* KEYED_FRAGMENT */))
+}

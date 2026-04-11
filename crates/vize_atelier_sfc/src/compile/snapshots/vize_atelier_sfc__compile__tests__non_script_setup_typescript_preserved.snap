@@ -1,0 +1,29 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.message), 1 /* TEXT */))
+}
+
+interface Props {
+    name: string;
+    count?: number;
+}
+
+const _sfc_main = {
+    name: 'MyComponent',
+    props: {
+        name: String,
+        count: Number
+    } as Props,
+    setup(props: Props) {
+        const message: string = `Hello, ${props.name}!`;
+        return { message };
+    }
+}
+
+_sfc_main.render = render
+export default _sfc_main

@@ -1,0 +1,18 @@
+---
+source: crates/vize_canon/src/checker/mod.rs
+expression: result
+---
+CheckResult {
+    diagnostics: [
+        TypeDiagnostic {
+            code: UnknownIdentifier,
+            message: "Cannot find name 'unknownVar'",
+            severity: Error,
+            start: 7,
+            end: 17,
+            related: [],
+        },
+    ],
+    error_count: 1,
+    warning_count: 0,
+}

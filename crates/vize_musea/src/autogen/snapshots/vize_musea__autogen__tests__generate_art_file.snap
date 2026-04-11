@@ -1,0 +1,58 @@
+---
+source: crates/vize_musea/src/autogen/mod.rs
+expression: output
+---
+AutogenOutput {
+    variants: [
+        GeneratedVariant {
+            name: "Default",
+            is_default: true,
+            props: {
+                "disabled": Bool(false),
+                "label": String("Click me"),
+                "variant": String("primary"),
+            },
+            description: Some(
+                "Button with default props",
+            ),
+        },
+        GeneratedVariant {
+            name: "Primary",
+            is_default: false,
+            props: {
+                "disabled": Bool(false),
+                "label": String("Click me"),
+                "variant": String("primary"),
+            },
+            description: Some(
+                "variant = \"primary\"",
+            ),
+        },
+        GeneratedVariant {
+            name: "Secondary",
+            is_default: false,
+            props: {
+                "disabled": Bool(false),
+                "label": String("Click me"),
+                "variant": String("secondary"),
+            },
+            description: Some(
+                "variant = \"secondary\"",
+            ),
+        },
+        GeneratedVariant {
+            name: "Disabled",
+            is_default: false,
+            props: {
+                "disabled": Bool(true),
+                "label": String("Click me"),
+                "variant": String("primary"),
+            },
+            description: Some(
+                "disabled = true",
+            ),
+        },
+    ],
+    art_file_content: "<art title=\"Button\" component=\"./Button.vue\">\n  <variant name=\"Default\" default>\n    <Button\n      :disabled=\"false\"\n      label=\"Click me\"\n      variant=\"primary\"\n    />\n  </variant>\n\n  <variant name=\"Primary\">\n    <Button\n      :disabled=\"false\"\n      label=\"Click me\"\n      variant=\"primary\"\n    />\n  </variant>\n\n  <variant name=\"Secondary\">\n    <Button\n      :disabled=\"false\"\n      label=\"Click me\"\n      variant=\"secondary\"\n    />\n  </variant>\n\n  <variant name=\"Disabled\">\n    <Button\n      disabled\n      label=\"Click me\"\n      variant=\"primary\"\n    />\n  </variant>\n\n</art>\n\n<script setup lang=\"ts\">\nimport Button from './Button.vue'\n</script>\n",
+    component_name: "Button",
+}

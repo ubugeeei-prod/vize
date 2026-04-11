@@ -123,7 +123,7 @@ fn test_closing_template_tag_with_newline() {
 
     assert!(result.template.is_some());
     let template = result.template.unwrap();
-    assert!(template.content.contains("<div>Content</div>"));
+    insta::assert_debug_snapshot!(template);
 
     assert_eq!(result.styles.len(), 1);
 }
@@ -146,8 +146,7 @@ const code = `<template>
     assert!(result.template.is_some());
 
     let template = result.template.unwrap();
-    // The main template should be the one at depth 0, not the one in the string
-    assert!(template.content.contains("{{ code }}"));
+    insta::assert_debug_snapshot!(template);
 }
 
 #[test]
@@ -163,9 +162,7 @@ fn test_template_with_v_slot_syntax() {
 
     assert!(result.template.is_some());
     let template = result.template.unwrap();
-    // Should contain the nested templates as content
-    assert!(template.content.contains("<template #header>"));
-    assert!(template.content.contains("<template v-slot:footer>"));
+    insta::assert_debug_snapshot!(template);
 }
 
 #[test]
@@ -197,9 +194,7 @@ const x = `</template>`  // embedded in string
     assert!(result.styles[0].scoped);
 
     let template = result.template.unwrap();
-    assert!(template.content.contains("<div class=\"container\">"));
-    assert!(template.content.contains("<template v-if=\"show\">"));
-    assert!(template.content.contains("<template v-else>"));
+    insta::assert_debug_snapshot!(template);
 }
 
 #[test]
@@ -219,10 +214,7 @@ const x = 1
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    // The script content should include everything up to the real </script>
-    assert!(script.content.contains("const code = `<script setup>"));
-    assert!(script.content.contains("</script>`"));
-    assert!(script.content.contains("const x = 1"));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -236,8 +228,7 @@ const y = 2
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script.content.contains("const tag = '</script>'"));
-    assert!(script.content.contains("const y = 2"));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -251,8 +242,7 @@ const z = 3
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script.content.contains(r#"const tag = "</script>""#));
-    assert!(script.content.contains("const z = 3"));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -270,10 +260,7 @@ const b = 2
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script.content.contains("// This is a comment: </script>"));
-    assert!(script.content.contains("const a = 1"));
-    assert!(script.content.contains("</script>"));
-    assert!(script.content.contains("const b = 2"));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -288,10 +275,7 @@ const c = 3
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script
-        .content
-        .contains("const code = `Hello ${name}! </script> ${1 + 2}`"));
-    assert!(script.content.contains("const c = 3"));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -307,7 +291,7 @@ const d = 4
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script.content.contains("const d = 4"));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -333,13 +317,11 @@ const e = 5
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script.content.contains("const tokenizer"));
-    assert!(script.content.contains(r#"[/`[^`]*`/, "string"]"#));
-    assert!(script.content.contains("const e = 5"));
+    insta::assert_debug_snapshot!(script);
 
     assert!(result.template.is_some());
     let template = result.template.unwrap();
-    assert!(template.content.contains("<div>Test</div>"));
+    insta::assert_debug_snapshot!(template);
 }
 
 #[test]
@@ -354,8 +336,7 @@ const z = x / y
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script.content.contains("const x = 10 / 2"));
-    assert!(script.content.contains(r#"const y = "test""#));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -375,9 +356,7 @@ const x = 1
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script.content.contains("html`<span"));
-    assert!(script.content.contains("css`"));
-    assert!(script.content.contains("const x = 1"));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -399,9 +378,7 @@ const y = 2
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script.content.contains("return `<span>"));
-    assert!(script.content.contains("throw `Error: </script>`"));
-    assert!(script.content.contains("const y = 2"));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -416,9 +393,7 @@ const z = 3
 
     assert!(result.script_setup.is_some());
     let script = result.script_setup.unwrap();
-    assert!(script.content.contains(r#"getTemplate()`<div>"#));
-    assert!(script.content.contains(r#"`<li>${x}</li>`"#));
-    assert!(script.content.contains("const z = 3"));
+    insta::assert_debug_snapshot!(script);
 }
 
 #[test]
@@ -439,5 +414,5 @@ const x = 1
     assert!(result.script.is_none());
     assert!(result.template.is_some());
     assert!(result.script_setup.is_some());
-    assert!(result.script_setup.unwrap().content.contains("const x = 1"));
+    insta::assert_debug_snapshot!(result.script_setup.unwrap());
 }

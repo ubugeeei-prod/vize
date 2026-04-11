@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_sfc/src/css/tests.rs
+expression: result
+---
+CssCompileResult {
+    code: ".foo {\n  display: flex;\n}\n",
+    map: None,
+    css_vars: [],
+    errors: [],
+    warnings: [],
+    exports: None,
+}

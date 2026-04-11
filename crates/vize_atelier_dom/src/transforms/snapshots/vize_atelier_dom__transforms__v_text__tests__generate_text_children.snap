@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_dom/src/transforms/v_text.rs
+expression: result.unwrap().as_str()
+---
+_toDisplayString(msg)

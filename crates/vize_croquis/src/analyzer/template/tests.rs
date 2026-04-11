@@ -32,31 +32,5 @@ fn test_vif_guard_in_template() {
         })
         .collect();
 
-    assert_eq!(expressions.len(), 2, "Should have 2 interpolations");
-
-    // First interpolation is inside v-if, should have guard
-    let inside_vif = expressions
-        .iter()
-        .find(|e| e.content.contains("unwrapDescription"))
-        .expect("Should find unwrapDescription interpolation");
-    assert!(
-        inside_vif.vif_guard.is_some(),
-        "Interpolation inside v-if should have vif_guard, got: {:?}",
-        inside_vif.vif_guard
-    );
-    assert_eq!(
-        inside_vif.vif_guard.as_deref(),
-        Some("todo.description"),
-        "vif_guard should be the v-if condition"
-    );
-
-    // Second interpolation is outside v-if, should NOT have guard
-    let outside_vif = expressions
-        .iter()
-        .find(|e| e.content.contains("todo.title"))
-        .expect("Should find todo.title interpolation");
-    assert!(
-        outside_vif.vif_guard.is_none(),
-        "Interpolation outside v-if should NOT have vif_guard"
-    );
+    insta::assert_debug_snapshot!(expressions);
 }

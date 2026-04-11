@@ -169,7 +169,7 @@ mod tests {
     fn test_generate_context() {
         let mut ctx = GenerateContext::new();
         ctx.push_line("const x = 1");
-        assert!(ctx.code.contains("const x = 1"));
+        insta::assert_snapshot!(ctx.code.as_str());
     }
 
     #[test]

@@ -1,0 +1,29 @@
+---
+source: crates/vize_patina/src/rules/musea/prefer_design_tokens.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "musea/prefer-design-tokens",
+        severity: Warning,
+        message: "Hardcoded value '#3b82f6' matches primitive token 'color.primary' — use var(--color-primary)",
+        start: 118,
+        end: 140,
+        help: Some(
+            "Use `var(--color-primary)` for consistent theming and maintainability",
+        ),
+        labels: [],
+        fix: Some(
+            Fix {
+                message: "Replace with var(--color-primary)",
+                edits: [
+                    TextEdit {
+                        start: 118,
+                        end: 140,
+                        new_text: "  background: var(--color-primary);",
+                    },
+                ],
+            },
+        ),
+    },
+]

@@ -336,8 +336,6 @@ import Child from './Child.vue';
 import { ref } from 'vue';"#;
         let result = rewriter.rewrite(source, SourceType::ts());
 
-        assert!(result.code.contains("./App.vue.ts"));
-        assert!(result.code.contains("./Child.vue.ts"));
-        assert!(result.code.contains("from 'vue'"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

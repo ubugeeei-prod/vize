@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_dom/src/lib.rs
+expression: full.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, normalizeClass as _normalizeClass } from "vue"
+
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("button", {
+    class: _normalizeClass(['tab', { active: currentTab.value === 'a' }]),
+    onClick: _cache[0] || (_cache[0] = $event => (currentTab.value = 'b'))
+  }, "A", 2 /* CLASS */))
+}

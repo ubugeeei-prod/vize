@@ -1,0 +1,44 @@
+---
+source: crates/vize_croquis/src/cross_file/diagnostics/diagnostics_tests.rs
+expression: markdown.as_str()
+---
+🟡 **WARNING** `vize:croquis/cf/dom-access-without-next-tick`
+
+### DOM access in setup without nextTick
+
+**Problem**: `document.getElementById('app')` is accessed in `setup` without `nextTick()`.
+
+**Why this is dangerous**:
+
+```
+Timeline of Vue component lifecycle:
+┌─────────────────────────────────────────────────────────┐
+│  1. setup() runs        → DOM does NOT exist yet        │
+│  2. Template renders    → Virtual DOM created           │
+│  3. onMounted() fires   → DOM exists now                │
+│  4. nextTick() resolves → DOM is fully updated          │
+└─────────────────────────────────────────────────────────┘
+```
+
+**SSR considerations**:
+
+- On the server, `document` and `window` don't exist at all.
+- Accessing them throws `ReferenceError: document is not defined`.
+
+**Safe patterns**:
+
+```ts
+// Option 1: Use inside onMounted
+onMounted(() => {
+  document.getElementById('app')  // ✅ Safe - DOM exists
+})
+
+// Option 2: Use nextTick after state change
+await nextTick()
+document.getElementById('app')  // ✅ Safe - DOM updated
+
+// Option 3: Guard for SSR
+if (typeof document !== 'undefined') {
+  document.getElementById('app')  // ✅ Safe - browser only
+}
+```

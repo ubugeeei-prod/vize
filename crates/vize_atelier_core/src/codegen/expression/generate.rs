@@ -181,7 +181,7 @@ mod tests {
 
         let ctx = CodegenContext::new(options);
         let result = generate_simple_expression_with_prefix(&ctx, "{ foo }");
-        assert!(result.contains("foo: $setup.foo"), "Got: {}", result);
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -202,7 +202,7 @@ mod tests {
 
         let ctx = CodegenContext::new(options);
         let result = generate_simple_expression_with_prefix(&ctx, "count = count + 1");
-        assert!(result.contains("count.value"), "Got: {}", result);
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -223,11 +223,7 @@ mod tests {
 
         let ctx = CodegenContext::new(options);
         let result = generate_simple_expression_with_prefix(&ctx, "quoteId = null");
-        assert!(
-            result.contains("quoteId.value"),
-            "SetupRef assignment should add .value. Got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -252,16 +248,7 @@ mod tests {
             &ctx,
             "quoteId = null; renoteTargetNote = null;",
         );
-        assert!(
-            result.contains("quoteId.value"),
-            "SetupRef assignment in inline mode should add .value. Got: {}",
-            result
-        );
-        assert!(
-            result.contains("renoteTargetNote.value"),
-            "SetupRef assignment in inline mode should add .value. Got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -270,15 +257,6 @@ mod tests {
         let exp = SimpleExpressionNode::new("Line 1\nLine 2", true, SourceLocation::STUB);
         generate_simple_expression(&mut ctx, &exp);
         let output = ctx.into_code();
-        assert!(
-            output.contains("\\n"),
-            "Expected newline to be escaped. Got: {}",
-            output
-        );
-        assert!(
-            !output.contains("Line 1\nLine 2"),
-            "Expected raw newline to be escaped. Got: {}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 }

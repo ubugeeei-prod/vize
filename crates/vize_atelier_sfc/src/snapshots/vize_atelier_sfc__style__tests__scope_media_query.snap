@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/style.rs
+expression: result.as_str()
+---
+@media (max-width: 768px){.foo[data-v-123]{ color: red; }}

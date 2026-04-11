@@ -1,0 +1,11 @@
+---
+source: crates/vize_musea/src/palette/codegen.rs
+expression: argtypes.as_str()
+---
+export const argTypes = {
+  size: {
+    control: { type: 'select' },
+    options: ['sm', 'lg'],
+    defaultValue: 'sm',
+  },
+};

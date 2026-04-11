@@ -55,7 +55,7 @@ mod tests {
         let result = checker.check_template(template, &ctx);
         assert!(result.has_errors());
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("unknownVar"));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]

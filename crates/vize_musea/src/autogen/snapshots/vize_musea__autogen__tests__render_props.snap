@@ -1,0 +1,7 @@
+---
+source: crates/vize_musea/src/autogen/mod.rs
+expression: rendered.as_str()
+---
+      :count="42"
+      disabled
+      label="Hello"

@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/a11y_img_alt.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/a11y-img-alt",
+        severity: Warning,
+        message: "<img> elements must have an alt attribute for accessibility",
+        start: 0,
+        end: 24,
+        help: Some(
+            "Add alt=\"description\" for informative images or alt=\"\" for decorative images",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

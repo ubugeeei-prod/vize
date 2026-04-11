@@ -113,7 +113,7 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-focus></div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("v-focus"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

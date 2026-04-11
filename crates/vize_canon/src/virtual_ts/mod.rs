@@ -26,32 +26,27 @@ mod tests {
         generate_virtual_ts, generate_virtual_ts_with_offsets, TemplateGlobal, VirtualTsOptions,
     };
 
+    fn assert_virtual_ts_snapshot(name: &str, value: &str) {
+        insta::with_settings!({
+            snapshot_path => "../snapshots"
+        }, {
+            insta::assert_snapshot!(name, value);
+        });
+    }
+
     #[test]
     fn test_vue_setup_compiler_macros_are_actual_functions() {
-        // Compiler macros should be actual functions (NOT declare)
-        // This ensures they're scoped to setup only
-        // Type parameters use _ prefix to avoid "unused type parameter" warnings
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("function defineProps<_T"));
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("function defineEmits<_T"));
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("function defineExpose"));
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("function defineSlots"));
-        // Should NOT contain declare (would make them global)
-        assert!(!VUE_SETUP_COMPILER_MACROS.contains("declare function"));
-        // Should mark macros as used with void statements
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("void defineProps"));
+        assert_virtual_ts_snapshot(
+            "virtual_ts_vue_setup_compiler_macros",
+            VUE_SETUP_COMPILER_MACROS,
+        );
     }
 
     #[test]
     fn test_vue_template_context() {
         // Template context should contain Vue instance properties
         let ctx = generate_template_context(&VirtualTsOptions::default());
-        assert!(ctx.contains("$attrs"));
-        assert!(ctx.contains("$slots"));
-        assert!(ctx.contains("$refs"));
-        assert!(ctx.contains("$emit"));
-        // Plugin globals should NOT be included by default (configure via vize.config.json)
-        assert!(!ctx.contains("$t"));
-        assert!(!ctx.contains("$route"));
+        assert_virtual_ts_snapshot("virtual_ts_vue_template_context", ctx.as_str());
     }
 
     #[test]
@@ -73,8 +68,7 @@ mod tests {
             ..Default::default()
         };
         let ctx = generate_template_context(&options);
-        assert!(ctx.contains("$t"));
-        assert!(ctx.contains("$route"));
+        assert_virtual_ts_snapshot("virtual_ts_vue_template_context_with_globals", ctx.as_str());
     }
 
     #[test]
@@ -99,8 +93,10 @@ const count = 1
 
         let output = generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &options);
 
-        assert!(!output.code.contains("declare const currentUser: any;"));
-        assert!(output.code.contains("declare const useHydratedHead: any;"));
+        assert_virtual_ts_snapshot(
+            "virtual_ts_auto_import_stubs_skip_imported_names",
+            output.code.as_str(),
+        );
     }
 
     #[test]
@@ -184,11 +180,7 @@ const items = ref([{ id: 1, name: 'Hello' }])
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // v-for with destructuring should have a forEach
-        assert!(
-            output.code.contains(".forEach("),
-            "Should generate forEach for destructured v-for"
-        );
+        assert_virtual_ts_snapshot("virtual_ts_vfor_destructuring_scope", output.code.as_str());
     }
 
     #[test]
@@ -215,15 +207,7 @@ const message = ref('')
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // Should contain expressions for both v-if and v-else-if conditions
-        assert!(
-            output.code.contains("status"),
-            "Should contain status expression"
-        );
-        assert!(
-            output.code.contains("message"),
-            "Should contain message expression"
-        );
+        assert_virtual_ts_snapshot("virtual_ts_nested_vif_velse_chain", output.code.as_str());
     }
 
     #[test]
@@ -249,11 +233,7 @@ const items = ['a', 'b']
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // Should contain a v-slot scope closure
-        assert!(
-            output.code.contains("v-slot scope") || output.code.contains("slot"),
-            "Should generate v-slot scope closure"
-        );
+        assert_virtual_ts_snapshot("virtual_ts_scoped_slot_expressions", output.code.as_str());
     }
 
     #[test]
@@ -279,20 +259,7 @@ function handleHover() {}
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // Both handlers should appear
-        assert!(
-            output.code.contains("handleClick"),
-            "Should contain click handler"
-        );
-        assert!(
-            output.code.contains("handleHover"),
-            "Should contain hover handler"
-        );
-        // Event types should be correct
-        assert!(
-            output.code.contains("MouseEvent"),
-            "Click handler should use MouseEvent type"
-        );
+        assert_virtual_ts_snapshot("virtual_ts_multiple_event_handlers", output.code.as_str());
     }
 
     #[test]
@@ -383,11 +350,7 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        insta::with_settings!({
-            snapshot_path => "../snapshots"
-        }, {
-            insta::assert_snapshot!("virtual_ts_template_binding_unwraps", output.code);
-        });
+        assert_virtual_ts_snapshot("virtual_ts_template_binding_unwraps", output.code.as_str());
     }
 
     #[test]
@@ -414,18 +377,9 @@ const todos = ref([{ id: 1, text: 'Hello' }])
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // The component prop check for `:item="todo"` should be inside a forEach
-        // closure so that `todo` is in scope
-        assert!(
-            output.code.contains(".forEach("),
-            "Should have a forEach for v-for component props"
-        );
-        // The prop type assertion should exist (value cast to prop type)
-        assert!(
-            output
-                .code
-                .contains("const __vize_prop_check_0_item: __TodoItem_0_prop_item = todo;"),
-            "Should check prop value `todo` inside forEach scope"
+        assert_virtual_ts_snapshot(
+            "virtual_ts_vfor_component_props_in_scope",
+            output.code.as_str(),
         );
     }
 
@@ -450,11 +404,9 @@ const item = ref<{ name: string } | undefined>()
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        assert!(
-            output.code.contains(
-                "if (item) {\n    const __vize_prop_check_0_to: __LinkComp_0_prop_to = item.name;"
-            ),
-            "Component prop checks should be wrapped by the same-element v-if guard",
+        assert_virtual_ts_snapshot(
+            "virtual_ts_component_prop_checks_respect_same_element_vif_guard",
+            output.code.as_str(),
         );
     }
 }

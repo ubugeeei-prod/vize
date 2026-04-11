@@ -1,0 +1,14 @@
+---
+source: crates/vize_glyph/src/lib.rs
+expression: result.code.as_str()
+---
+<script setup>
+import { ref } from "vue";
+const count = ref(0);
+</script>
+
+<template>
+  <div>
+    {{ count }}
+  </div>
+</template>

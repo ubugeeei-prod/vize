@@ -1,0 +1,29 @@
+---
+source: crates/vize_patina/src/rules/script/prefer_import_from_vue.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/prefer-import-from-vue",
+        severity: Warning,
+        message: "Import from '@vue/runtime-core' should be replaced with 'vue'",
+        start: 15,
+        end: 39,
+        help: Some(
+            "Import from 'vue' directly for better compatibility",
+        ),
+        labels: [],
+        fix: Some(
+            Fix {
+                message: "Replace with 'vue'",
+                edits: [
+                    TextEdit {
+                        start: 15,
+                        end: 39,
+                        new_text: "from 'vue'",
+                    },
+                ],
+            },
+        ),
+    },
+]

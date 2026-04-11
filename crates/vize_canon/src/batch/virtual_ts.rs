@@ -254,8 +254,6 @@ const message = ref('Hello')
 "#;
 
         let result = generator.generate_from_content(content).unwrap();
-        assert!(result.code.contains("./Child.vue.ts"));
-        assert!(result.code.contains("function defineProps"));
-        assert!(result.code.contains("function __template"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

@@ -1,0 +1,5 @@
+---
+source: crates/vize_canon/src/batch/virtual_project.rs
+expression: stripped.as_str()
+---
+{ "url": "https://example.com" }

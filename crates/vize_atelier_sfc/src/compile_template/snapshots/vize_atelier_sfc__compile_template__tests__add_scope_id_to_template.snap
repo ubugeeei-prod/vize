@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/compile_template/tests.rs
+expression: result.as_str()
+---
+const t0 = _template("<div data-v-abc123 class='container'>Hello</div>")

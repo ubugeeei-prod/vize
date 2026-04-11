@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/no_with_defaults.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-with-defaults",
+        severity: Warning,
+        message: "Prefer destructuring defaults over withDefaults (Vue 3.5+)",
+        start: 14,
+        end: 26,
+        help: Some(
+            "Use destructuring with defaults: `const { count = 0, name = 'default' } = defineProps<Props>()`",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

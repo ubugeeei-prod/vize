@@ -137,12 +137,7 @@ mod tests {
 
         assert!(errors.is_empty());
         assert_eq!(root.children.len(), 1);
-        // SSR output should contain _push and template literal
-        assert!(
-            result.code.contains("_push"),
-            "Expected output to contain _push, got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -151,11 +146,6 @@ mod tests {
         let (_, errors, result) = compile_ssr(&allocator, "<div>{{ msg }}</div>");
 
         assert!(errors.is_empty());
-        // Should use ssrInterpolate for dynamic content
-        assert!(
-            result.code.contains("ssrInterpolate") || result.code.contains("_ssrInterpolate"),
-            "Expected ssrInterpolate, got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

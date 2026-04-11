@@ -111,7 +111,7 @@ mod tests {
         let allocator = Allocator::default();
         let result = format_script_content(source, &options, &allocator).unwrap();
 
-        assert!(result.contains("const x = 1"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -121,9 +121,7 @@ mod tests {
         let allocator = Allocator::default();
         let result = format_script_content(source, &options, &allocator).unwrap();
 
-        assert!(result.contains("ref"));
-        assert!(result.contains("computed"));
-        assert!(result.contains("vue"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -133,8 +131,7 @@ mod tests {
         let allocator = Allocator::default();
         let result = format_script_content(source, &options, &allocator).unwrap();
 
-        assert!(result.contains("a:"));
-        assert!(result.contains("b:"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -163,7 +160,15 @@ mod tests {
         let result = format_js_expression("count+1", &options);
         assert!(result.is_some());
         let expr = result.unwrap();
-        assert_eq!(expr, "count + 1");
+        insta::assert_snapshot!(expr.as_str());
+    }
+
+    #[test]
+    fn test_format_js_expression_with_optional_chaining() {
+        let options = FormatOptions::default();
+        let expr = format_js_expression("user?.profile?.name??'Guest'", &options).unwrap();
+
+        insta::assert_snapshot!(expr.as_str());
     }
 
     #[test]

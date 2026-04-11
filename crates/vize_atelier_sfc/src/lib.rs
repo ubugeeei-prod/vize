@@ -149,23 +149,7 @@ function onClick() {
         let descriptor = parse_sfc(source, Default::default()).unwrap();
         let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
 
-        println!("Full SFC output:\n{}", result.code);
-
-        // defineEmits should NOT be in the output
-        assert!(
-            !result.code.contains("defineEmits"),
-            "defineEmits should be removed"
-        );
-        // emits should be defined at component level
-        assert!(
-            result.code.contains("emits:"),
-            "emits should be at component level"
-        );
-        // emit should be bound to __emit
-        assert!(
-            result.code.contains("const emit = __emit"),
-            "emit should be bound to __emit"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -191,21 +175,6 @@ if (fx == null) {
         let descriptor = parse_sfc(source, Default::default()).unwrap();
         let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
 
-        println!("defineModel output:\n{}", result.code);
-
-        // defineModel should be transformed to _useModel
-        assert!(
-            result.code.contains("_useModel(__props,"),
-            "defineModel should become _useModel"
-        );
-        // Code after defineModel must be preserved
-        assert!(
-            result.code.contains("const fx = layer.value.fxId"),
-            "setup body after defineModel must be preserved"
-        );
-        assert!(
-            result.code.contains("throw new Error"),
-            "throw statement after defineModel must be preserved"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

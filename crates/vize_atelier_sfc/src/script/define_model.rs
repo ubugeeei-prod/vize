@@ -84,6 +84,6 @@ const lastName = defineModel('lastName')
         let content = "const count = defineModel('count', { type: Number, default: 0 })";
         let result = extract_define_model(content);
         assert_eq!(result.len(), 1);
-        assert!(result[0].args.contains("'count'"));
+        insta::assert_debug_snapshot!(result);
     }
 }

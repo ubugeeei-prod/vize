@@ -448,8 +448,7 @@ mod tests {
     fn test_lsp_message_format() {
         let req = JsonRpcRequest::new(1, "test", None);
         let msg = req.to_lsp_message().unwrap();
-        assert!(msg.starts_with("Content-Length: "));
-        assert!(msg.contains("\r\n\r\n"));
+        insta::assert_snapshot!(msg.as_str());
     }
 
     #[test]

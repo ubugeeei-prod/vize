@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/prefer-ref-over-reactive",
+        severity: Warning,
+        message: "Consider using ref() instead of reactive() for simpler state management",
+        start: 14,
+        end: 22,
+        help: Some(
+            "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

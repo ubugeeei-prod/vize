@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_sfc/src/rewrite_default.rs
+expression: result.as_str()
+---
+
+import { ref } from 'vue'
+
+const count = ref(0)
+
+const _sfc_main = {
+  name: 'MyComponent'
+}

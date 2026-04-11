@@ -1,0 +1,7 @@
+---
+source: crates/vize_glyph/src/template/mod.rs
+expression: result.as_str()
+---
+<button :[name]="value" @[event]="handler">
+  {{ label }}
+</button>

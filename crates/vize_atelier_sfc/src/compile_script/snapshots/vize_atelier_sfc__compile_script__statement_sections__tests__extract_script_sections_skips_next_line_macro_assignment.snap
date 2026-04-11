@@ -1,0 +1,10 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/statement_sections.rs
+expression: "(&setup_lines, &ts_declarations)"
+---
+(
+    [
+        "const count = 1",
+    ],
+    [],
+)

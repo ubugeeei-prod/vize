@@ -1,0 +1,42 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { useModel as _useModel } from 'vue'
+import { defineComponent as _defineComponent } from 'vue'
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, vModelSelect as _vModelSelect } from "vue"
+
+import type { SelectBaseProps } from './types'
+
+interface SelectFieldProps extends SelectBaseProps {
+  items: { label: string; value: string }[];
+}
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'ImportedSelectField',
+  props: {
+    disabled: { type: Boolean, required: false },
+    size: { type: null, required: false, default: "md" },
+    items: { type: Array, required: true },
+    "modelValue": { default: undefined }
+  },
+  emits: ["update:modelValue"],
+  setup(__props: any) {
+
+const model = _useModel(__props, "modelValue")
+
+return (_ctx: any,_cache: any) => {
+  return _withDirectives((_openBlock(), _createElementBlock("select", {
+      "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((model).value = $event)),
+      class: _normalizeClass(__props.size),
+      disabled: __props.disabled
+    }, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.items, (item) => {
+        return (_openBlock(), _createElementBlock("option", {
+          key: item.value,
+          value: item.value
+        }, _toDisplayString(item.label), 9 /* TEXT, PROPS */, ["value"]))
+      }), 128 /* KEYED_FRAGMENT */)) ], 10 /* CLASS, PROPS */, ["disabled"])), [ [_vModelSelect, model.value] ])
+}
+}
+
+})

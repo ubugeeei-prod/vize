@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_vapor/src/generators/generate_text.rs
+expression: result.as_str()
+---
+"Hello " + _toDisplayString(name) + "!"

@@ -356,12 +356,18 @@ fn is_call_of(call: &CallExpression<'_>, name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use vize_carton::{FxHashSet, ToCompactString};
+    use vize_carton::{CompactString, FxHashSet, ToCompactString};
 
     use super::{
         extract_event_name_from_function_type, extract_events_from_type_literal, gen_runtime_emits,
         ScriptCompileContext,
     };
+
+    fn snapshot_emits(emits: &FxHashSet<CompactString>) -> Vec<&str> {
+        let mut emits: Vec<_> = emits.iter().map(|event| event.as_str()).collect();
+        emits.sort_unstable();
+        emits
+    }
 
     #[test]
     fn test_extract_event_name_from_function_type() {
@@ -376,15 +382,14 @@ mod tests {
     fn test_extract_events_from_type_literal() {
         let mut emits = FxHashSet::default();
         extract_events_from_type_literal("{ (e: 'click'): void; (e: 'update'): void }", &mut emits);
-        assert!(emits.contains("click"));
-        assert!(emits.contains("update"));
+        insta::assert_debug_snapshot!(snapshot_emits(&emits));
     }
 
     #[test]
     fn test_extract_events_call_signature_with_payload() {
         let mut emits = FxHashSet::default();
         extract_events_from_type_literal("{ (e: 'click', payload: MouseEvent): void }", &mut emits);
-        assert!(emits.contains("click"));
+        insta::assert_debug_snapshot!(snapshot_emits(&emits));
     }
 
     #[test]
@@ -406,7 +411,6 @@ mod tests {
         );
         assert!(result.is_some());
         let emits = result.unwrap();
-        assert!(emits.contains("update:modelValue"));
-        assert!(emits.contains("update:count"));
+        insta::assert_snapshot!(emits.as_str());
     }
 }

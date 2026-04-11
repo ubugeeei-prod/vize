@@ -1,0 +1,8 @@
+---
+source: crates/vize_patina/src/rules/css/mod.rs
+expression: stripped.as_str()
+---
+.foo { color: red; } 
+.bar { color: blue !important; }
+/* regular comment */
+        .baz { color: green; }

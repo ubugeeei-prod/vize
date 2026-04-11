@@ -148,14 +148,7 @@ const count = ref(0);
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_script_setup(script, &bindings, None);
 
-        // Should contain setup function
-        assert!(output.content.contains("function __setup()"));
-        // Compiler macros should be actual functions (NOT declare)
-        assert!(output.content.contains("function defineProps<T>(): T"));
-        assert!(!output.content.contains("declare function defineProps"));
-        // Original code should be present
-        assert!(output.content.contains("msg"));
-        assert!(output.content.contains("count"));
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     #[test]
@@ -176,14 +169,7 @@ const count = ref(0)
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_from_croquis(script, &parse_result, None, &config, None);
 
-        // Should have generics in setup function
-        assert!(output
-            .content
-            .contains("function __setup<T extends string>()"));
-        // Imports should be at module level
-        assert!(output.content.contains("import { ref } from 'vue'"));
-        // Setup content should be inside function
-        assert!(output.content.contains("defineProps"));
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     #[test]
@@ -198,9 +184,8 @@ const count = ref(0)
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_template(&ast, &bindings, 0, true);
 
-        assert!(output.content.contains("__ctx"));
-        assert!(output.content.contains("message"));
         assert!(!output.source_map.is_empty());
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     #[test]
@@ -214,14 +199,7 @@ const props = defineProps<{ msg: string }>()
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_script_setup(script, &bindings, None);
 
-        // defineProps should be an actual function (NOT declare) inside __setup
-        let setup_start = output.content.find("function __setup()").unwrap();
-        let setup_end = output.content.rfind("}").unwrap();
-        let setup_body = &output.content[setup_start..setup_end];
-
-        // Should be actual function, not declare
-        assert!(setup_body.contains("function defineProps<T>(): T"));
-        assert!(!setup_body.contains("declare function defineProps"));
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     #[test]
@@ -240,10 +218,7 @@ const props = defineProps<{ msg: string }>()
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_from_croquis(script, &parse_result, None, &config, None);
 
-        // Should have async and generics
-        assert!(output
-            .content
-            .contains("async function __setup<T, U extends T>()"));
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     // === Snapshot tests ===

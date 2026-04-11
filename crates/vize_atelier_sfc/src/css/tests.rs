@@ -18,8 +18,7 @@ fn test_compile_simple_css() {
     let css = ".foo { color: red; }";
     let result = compile_css(css, &CssCompileOptions::default());
     assert!(result.errors.is_empty());
-    assert!(result.code.contains(".foo"));
-    assert!(result.code.contains("color"));
+    insta::assert_debug_snapshot!(result);
 }
 
 #[test]
@@ -34,7 +33,7 @@ fn test_compile_scoped_css() {
         },
     );
     assert!(result.errors.is_empty());
-    assert!(result.code.contains("[data-v-123]"));
+    insta::assert_debug_snapshot!(result);
 }
 
 #[test]
@@ -49,8 +48,7 @@ fn test_compile_minified_css() {
         },
     );
     assert!(result.errors.is_empty());
-    // Minified should have no newlines in simple case
-    assert!(!result.code.contains('\n') || result.code.lines().count() == 1);
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -61,7 +59,7 @@ fn test_v_bind_extraction() {
     assert_eq!(vars.len(), 2);
     assert!(vars.contains(&"color".to_compact_string()));
     assert!(vars.contains(&"bgColor".to_compact_string()));
-    assert!(transformed.contains("var(--"));
+    insta::assert_snapshot!(transformed);
 }
 
 #[test]
@@ -142,7 +140,7 @@ fn test_compile_with_targets() {
         },
     );
     assert!(result.errors.is_empty());
-    assert!(result.code.contains("flex"));
+    insta::assert_debug_snapshot!(result);
 }
 
 #[test]
@@ -181,9 +179,7 @@ fn test_bundle_css_inlines_imports_recursively() {
         "Unexpected errors: {:?}",
         result.errors
     );
-    assert!(result.code.contains(".theme"));
-    assert!(result.code.contains(".base"));
-    assert!(result.code.contains(".entry"));
+    insta::assert_debug_snapshot!(result);
 
     let _ = fs::remove_dir_all(&case_dir);
 }
@@ -214,13 +210,7 @@ fn test_scoped_css_with_quoted_font_family() {
     );
     println!("Result: {}", result.code);
     assert!(result.errors.is_empty());
-    // Note: LightningCSS may remove quotes from font names
-    assert!(
-        result.code.contains("JetBrains Mono"),
-        "Expected font name in: {}",
-        result.code
-    );
-    assert!(result.code.contains("monospace"));
+    insta::assert_debug_snapshot!(result);
 }
 
 #[test]
@@ -230,18 +220,7 @@ fn test_apply_scoped_css_at_media() {
     let css = ".foo { color: red; }\n@media (max-width: 768px) { .foo { color: blue; } }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
     println!("@media result: {}", result);
-    assert!(
-        result.contains("@media (max-width: 768px)"),
-        "Expected @media query preserved in: {}",
-        result
-    );
-    // Both .foo selectors should be scoped
-    assert_eq!(
-        result.matches("[data-v-123]").count(),
-        2,
-        "Expected 2 scope attributes in: {}",
-        result
-    );
+    insta::assert_snapshot!(result);
 }
 
 #[test]
@@ -251,17 +230,7 @@ fn test_apply_scoped_css_at_media_custom_media() {
     let css = ".a { color: red; }\n@media (--mobile) { .a { font-size: 12px; } }";
     let result = apply_scoped_css(&bump, css, "data-v-abc");
     println!("Custom media result: {}", result);
-    assert!(
-        result.contains("@media (--mobile)"),
-        "Expected @media (--mobile) preserved in: {}",
-        result
-    );
-    assert_eq!(
-        result.matches("[data-v-abc]").count(),
-        2,
-        "Expected 2 scope attributes in: {}",
-        result
-    );
+    insta::assert_snapshot!(result);
 }
 
 #[test]
@@ -271,13 +240,7 @@ fn test_apply_scoped_css_multiple_selectors_in_media() {
     let css = "@media (--mobile) { .a { color: red; } .b { color: blue; } }";
     let result = apply_scoped_css(&bump, css, "data-v-xyz");
     println!("Multi selector result: {}", result);
-    assert!(result.contains("@media (--mobile)"));
-    assert_eq!(
-        result.matches("[data-v-xyz]").count(),
-        2,
-        "Expected 2 scope attributes in: {}",
-        result
-    );
+    insta::assert_snapshot!(result);
 }
 
 #[test]
@@ -287,12 +250,7 @@ fn test_apply_scoped_css_with_quoted_string() {
     let css = ".foo { font-family: 'JetBrains Mono', monospace; }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
     println!("Scoped result: {}", result);
-    assert!(
-        result.contains("'JetBrains Mono'"),
-        "Expected quoted font name in: {}",
-        result
-    );
-    assert!(result.contains("monospace"));
+    insta::assert_snapshot!(result);
 }
 
 #[test]
@@ -302,16 +260,7 @@ fn test_apply_scoped_css_at_import() {
     let css = "@import \"~/assets/styles/custom-media-query.css\";\n\nfooter { width: 100%; }";
     let result = apply_scoped_css(&bump, css, "data-v-123");
     println!("@import result: {}", result);
-    assert!(
-        result.contains("@import \"~/assets/styles/custom-media-query.css\";"),
-        "Expected @import preserved in: {}",
-        result
-    );
-    assert!(
-        result.contains("footer[data-v-123]"),
-        "Expected footer scoped in: {}",
-        result
-    );
+    insta::assert_snapshot!(result);
 }
 
 #[test]
@@ -321,20 +270,5 @@ fn test_apply_scoped_css_at_import_with_nested_css() {
     let css = "@import \"custom.css\";\n\nfooter {\n  width: 100%;\n  @media (--mobile) {\n    padding: 1rem;\n  }\n}";
     let result = apply_scoped_css(&bump, css, "data-v-abc");
     println!("@import + nesting result: {}", result);
-    assert!(
-        result.contains("@import \"custom.css\";"),
-        "Expected @import preserved in: {}",
-        result
-    );
-    assert!(
-        result.contains("footer[data-v-abc]"),
-        "Expected footer scoped in: {}",
-        result
-    );
-    // Nested @media should be inside the scoped footer block
-    assert!(
-        result.contains("@media (--mobile)"),
-        "Expected nested @media preserved in: {}",
-        result
-    );
+    insta::assert_snapshot!(result);
 }

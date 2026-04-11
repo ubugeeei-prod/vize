@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { createTemplateRefSetter as _createTemplateRefSetter, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+export function render(_ctx) {
+const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()
+const n0 = t0()
+_setRef(n0, "el")
+return n0
+}

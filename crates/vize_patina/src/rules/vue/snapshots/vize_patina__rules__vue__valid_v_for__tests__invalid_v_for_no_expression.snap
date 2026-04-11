@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/valid_v_for.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/valid-v-for",
+        severity: Error,
+        message: "v-for directive requires an expression",
+        start: 5,
+        end: 10,
+        help: Some(
+            "**Valid v-for syntax:**\n```vue\n<!-- Array iteration -->\n<li v-for=\"item in items\">{{ item }}</li>\n<li v-for=\"(item, index) in items\">{{ index }}: {{ item }}</li>\n\n<!-- Object iteration -->\n<li v-for=\"(value, key) in object\">{{ key }}: {{ value }}</li>\n<li v-for=\"(value, key, index) in object\">{{ index }}</li>\n\n<!-- Range -->\n<span v-for=\"n in 10\">{{ n }}</span>\n```",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

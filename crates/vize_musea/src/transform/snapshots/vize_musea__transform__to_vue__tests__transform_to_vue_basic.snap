@@ -1,0 +1,8 @@
+---
+source: crates/vize_musea/src/transform/to_vue.rs
+expression: output
+---
+VueOutput {
+    code: "import { defineComponent, h, reactive, markRaw } from 'vue';\nimport TargetComponent from './Button.vue';\n\nexport const metadata = {\n  title: 'Button',\n  component: './Button.vue',\n  status: 'ready',\n  variantCount: 1,\n};\n\nexport const variants = [\n  { name: 'Primary', isDefault: true, args: {}, skipVrt: false },\n];\n\nexport const Primary = defineComponent({\n  name: 'Primary',\n  setup(props, { attrs }) {\n    const defaultArgs = {};\n    const args = reactive({ ...defaultArgs, ...attrs });\n    return () => h('div', { class: 'musea-variant', 'data-variant': 'Primary' }, [\n      h(TargetComponent, args, () => `<Button>Click me</Button>`)\n    ]);\n  }\n});\n\nPrimary.isDefault = true;\n\nPrimary.variantIndex = 0;\n\nexport default defineComponent({\n  name: 'ArtGallery',\n  props: {\n    variant: { type: String, default: null },\n    interactive: { type: Boolean, default: false },\n  },\n  setup(props) {\n    const variantComponents = {\n      'Primary': Primary,\n    };\n\n    return () => {\n      if (props.variant && variantComponents[props.variant]) {\n        return h(variantComponents[props.variant]);\n      }\n      // Render all variants\n      return h('div', { class: 'musea-gallery' },\n        variants.map(v => h(variantComponents[v.name], { key: v.name }))\n      );\n    };\n  }\n});\n",
+    metadata_code: "// Auto-generated metadata module\nexport const metadata = {\n  title: 'Button',\n  component: './Button.vue',\n  status: 'ready',\n  variantCount: 1,\n};\n\nexport const variants = [\n  {\n    name: 'Primary',\n    isDefault: true,\n    skipVrt: false,\n  },\n];\n",
+}

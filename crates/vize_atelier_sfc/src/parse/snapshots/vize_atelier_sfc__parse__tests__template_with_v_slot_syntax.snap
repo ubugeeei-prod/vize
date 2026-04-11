@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_sfc/src/parse/tests.rs
+expression: template
+---
+SfcTemplateBlock {
+    content: "\n  <MyComponent>\n    <template #header>Header</template>\n    <template v-slot:footer>Footer</template>\n  </MyComponent>\n",
+    loc: BlockLocation {
+        start: 10,
+        end: 130,
+        tag_start: 0,
+        tag_end: 141,
+        start_line: 1,
+        start_column: 1,
+        end_line: 6,
+        end_column: 12,
+    },
+    lang: None,
+    src: None,
+    attrs: {},
+}

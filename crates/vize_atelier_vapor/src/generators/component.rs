@@ -155,7 +155,6 @@ mod tests {
     #[test]
     fn test_generate_keep_alive_with_options() {
         let result = generate_keep_alive(Some("\"Component1\""), None, Some(10));
-        assert!(result.contains("include: \"Component1\""));
-        assert!(result.contains("max: 10"));
+        insta::assert_snapshot!(result.as_str());
     }
 }

@@ -33,7 +33,7 @@ mod tests {
         let bindings = make_bindings(&["msg"]);
         let source = "console.log(msg)";
         let result = transform_destructured_props(source, &bindings);
-        assert!(result.contains("__props.msg"), "Got: {}", result);
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -43,8 +43,7 @@ mod tests {
         // msg is shadowed by the arrow function parameter
         let source = "const fn = (msg) => console.log(msg)";
         let result = transform_destructured_props(source, &bindings);
-        // The msg inside the arrow function should NOT be rewritten
-        assert!(!result.contains("__props"), "Got: {}", result);
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -54,11 +53,6 @@ mod tests {
         // count inside computed arrow function should be rewritten
         let source = "const double = computed(() => count * 2)";
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.count"),
-            "Expected __props.count, got: {}",
-            result
-        );
         assert_eq!(result, "const double = computed(() => __props.count * 2)");
     }
 
@@ -68,8 +62,7 @@ mod tests {
 
         let source = "const result = foo + bar";
         let result = transform_destructured_props(source, &bindings);
-        assert!(result.contains("__props.foo"), "Got: {}", result);
-        assert!(result.contains("__props.bar"), "Got: {}", result);
+        insta::assert_snapshot!(result.as_str());
     }
 
     // ==================== New test cases ====================
@@ -83,11 +76,7 @@ mod tests {
     return count * 2
 }"#;
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.count"),
-            "Expected __props.count in function body, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -100,11 +89,7 @@ mod tests {
     return inner()
 }"#;
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.msg"),
-            "Expected __props.msg in nested arrow, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -116,11 +101,7 @@ mod tests {
     getCount: function() { return count }
 }"#;
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.count"),
-            "Expected __props.count in method, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -131,11 +112,7 @@ mod tests {
     console.log(newVal)
 })"#;
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.count"),
-            "Expected __props.count in watch callback, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -147,12 +124,7 @@ mod tests {
     console.log(item)
 }"#;
         let result = transform_destructured_props(source, &bindings);
-        // The item inside the loop should NOT be rewritten
-        assert!(
-            !result.contains("__props.item"),
-            "item should be shadowed in for...of, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -164,12 +136,7 @@ mod tests {
     console.log(key)
 }"#;
         let result = transform_destructured_props(source, &bindings);
-        // The key inside the loop should NOT be rewritten
-        assert!(
-            !result.contains("__props.key"),
-            "key should be shadowed in for...in, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -183,12 +150,7 @@ mod tests {
     console.log(error)
 }"#;
         let result = transform_destructured_props(source, &bindings);
-        // The error inside catch should NOT be rewritten
-        assert!(
-            !result.contains("__props.error"),
-            "error should be shadowed in catch, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -201,11 +163,7 @@ mod tests {
     console.log(doubled)
 }"#;
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.count"),
-            "Expected __props.count in block scope, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -218,12 +176,7 @@ mod tests {
     console.log(count)
 }"#;
         let result = transform_destructured_props(source, &bindings);
-        // The count inside the block should NOT be rewritten because it's shadowed
-        assert!(
-            !result.contains("__props.count"),
-            "count should be shadowed in block, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -232,11 +185,7 @@ mod tests {
 
         let source = "const greeting = `Hello, ${name}!`";
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.name"),
-            "Expected __props.name in template literal, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -245,11 +194,7 @@ mod tests {
 
         let source = "const display = show ? 'visible' : 'hidden'";
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.show"),
-            "Expected __props.show in ternary, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -258,16 +203,7 @@ mod tests {
 
         let source = "const isOn = enabled && active";
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.enabled"),
-            "Expected __props.enabled, got: {}",
-            result
-        );
-        assert!(
-            result.contains("__props.active"),
-            "Expected __props.active, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -276,12 +212,7 @@ mod tests {
 
         let source = "const obj = { foo }";
         let result = transform_destructured_props(source, &bindings);
-        // Should transform { foo } to { foo: __props.foo }
-        assert!(
-            result.contains("__props.foo"),
-            "Expected __props.foo in object shorthand, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -290,11 +221,7 @@ mod tests {
 
         let source = "const first = items[0]";
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.items"),
-            "Expected __props.items in array access, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -303,11 +230,7 @@ mod tests {
 
         let source = "const name = user.name";
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.user"),
-            "Expected __props.user in member expression, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -316,11 +239,7 @@ mod tests {
 
         let source = "const value = data.nested.value";
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.data"),
-            "Expected __props.data in chained member, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -329,11 +248,7 @@ mod tests {
 
         let source = "doSomething(count, 'test')";
         let result = transform_destructured_props(source, &bindings);
-        assert!(
-            result.contains("__props.count"),
-            "Expected __props.count as call argument, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -344,14 +259,7 @@ mod tests {
 const double = count * 2
 return { msg, count }"#;
         let result = transform_destructured_props(source, &bindings);
-        // Count occurrences of __props
-        let props_count = result.matches("__props").count();
-        assert!(
-            props_count >= 4,
-            "Expected at least 4 __props occurrences, got {}: {}",
-            props_count,
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -361,12 +269,7 @@ return { msg, count }"#;
         // msg as property key should NOT be rewritten
         let source = "const obj = { msg: 'hello' }";
         let result = transform_destructured_props(source, &bindings);
-        // The msg as key should stay as is
-        assert!(
-            !result.contains("__props.msg"),
-            "Property key should not be transformed, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -376,12 +279,7 @@ return { msg, count }"#;
         // .name should NOT be rewritten (it's property access, not reference)
         let source = "const userName = user.name";
         let result = transform_destructured_props(source, &bindings);
-        // Only "name" after the dot should stay as is
-        assert!(
-            !result.contains("__props.name"),
-            "Property access should not be transformed, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -398,12 +296,7 @@ return { msg, count }"#;
 
         let source = "console.log(msg)";
         let result = transform_destructured_props(source, &bindings);
-        // Should rewrite msg to __props.message (the original key)
-        assert!(
-            result.contains("__props.message"),
-            "Expected __props.message for aliased prop, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     // ==================== Snapshot tests ====================

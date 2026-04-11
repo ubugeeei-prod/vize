@@ -16,7 +16,7 @@ mod compile_script_tests {
         let descriptor = SfcDescriptor::default();
         let result =
             compile_script(&descriptor, &Default::default(), "Test", false, false).unwrap();
-        assert!(result.code.contains("__sfc__"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -88,39 +88,7 @@ const count = ref(0)
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("Compiled output:\n{}", result.code);
-
-        // Should have __sfc__
-        assert!(
-            result.code.contains("const __sfc__ ="),
-            "Should have __sfc__"
-        );
-        // Should have __name (may use single or double quotes after OXC formatting)
-        assert!(
-            result.code.contains("__name:") && result.code.contains("Test"),
-            "Should have __name. Got:\n{}",
-            result.code
-        );
-        // Should have props definition (may use double quotes after OXC formatting)
-        assert!(
-            result.code.contains("props:") && result.code.contains("msg"),
-            "Should have props definition. Got:\n{}",
-            result.code
-        );
-        // Should have setup function with proper signature
-        assert!(
-            result
-                .code
-                .contains("setup(__props, { expose: __expose, emit: __emit })"),
-            "Should have proper setup signature"
-        );
-        // __expose is only called if defineExpose is used (not in this test)
-        // Should have __returned__
-        assert!(
-            result.code.contains("const __returned__ =")
-                || result.code.contains("__returned__ = {"),
-            "Should have __returned__"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -161,17 +129,7 @@ const props = defineProps<Props>()
         )
         .unwrap();
 
-        let code = &result.code;
-        let returned_start = code.find("__returned__").expect("Should have __returned__");
-        let returned_block = &code[returned_start..];
-        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
-        let returned_content = &returned_block[..block_end];
-
-        assert!(
-            !returned_content.contains("SomeType"),
-            "Type-only import usage should not be in __returned__ when template exists. Got: {}",
-            returned_content
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -189,17 +147,7 @@ const props = defineProps<Props>()
 "#;
         let result = compile_script_setup(content, "Test", false, true, None).unwrap();
 
-        let code = &result.code;
-        let returned_start = code.find("__returned__").expect("Should have __returned__");
-        let returned_block = &code[returned_start..];
-        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
-        let returned_content = &returned_block[..block_end];
-
-        assert!(
-            returned_content.contains("SomeType"),
-            "Without template, all imports should be in __returned__ for safety. Got: {}",
-            returned_content
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -225,27 +173,7 @@ const result = someHelper()
         )
         .unwrap();
 
-        let code = &result.code;
-        let returned_start = code.find("__returned__").expect("Should have __returned__");
-        let returned_block = &code[returned_start..];
-        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
-        let returned_content = &returned_block[..block_end];
-
-        assert!(
-            !returned_content.contains("SomeType"),
-            "Type-only import should not be in __returned__. Got: {}",
-            returned_content
-        );
-        assert!(
-            returned_content.contains("someHelper"),
-            "Runtime-used import should be in __returned__. Got: {}",
-            returned_content
-        );
-        assert!(
-            returned_content.contains("result"),
-            "Runtime binding should be in __returned__. Got: {}",
-            returned_content
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -266,17 +194,7 @@ const instance: SomeClass = new SomeClass()
         )
         .unwrap();
 
-        let code = &result.code;
-        let returned_start = code.find("__returned__").expect("Should have __returned__");
-        let returned_block = &code[returned_start..];
-        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
-        let returned_content = &returned_block[..block_end];
-
-        assert!(
-            returned_content.contains("SomeClass"),
-            "Import used at runtime should be in __returned__. Got: {}",
-            returned_content
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -300,17 +218,7 @@ const props = defineProps<Props>()
         )
         .unwrap();
 
-        let code = &result.code;
-        let returned_start = code.find("__returned__").expect("Should have __returned__");
-        let returned_block = &code[returned_start..];
-        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
-        let returned_content = &returned_block[..block_end];
-
-        assert!(
-            !returned_content.contains("Foo"),
-            "Default import used only for types should not be in __returned__. Got: {}",
-            returned_content
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -331,17 +239,7 @@ const today = new Date()
         )
         .unwrap();
 
-        let code = &result.code;
-        let returned_start = code.find("__returned__").expect("Should have __returned__");
-        let returned_block = &code[returned_start..];
-        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
-        let returned_content = &returned_block[..block_end];
-
-        assert!(
-            returned_content.contains("formatter"),
-            "Import used in template should be in __returned__. Got: {}",
-            returned_content
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -357,22 +255,7 @@ const value = ref<MyType | null>(null)
         // Without template
         let result = compile_script_setup(content, "Test", false, true, None).unwrap();
 
-        let code = &result.code;
-        let returned_start = code.find("__returned__").expect("Should have __returned__");
-        let returned_block = &code[returned_start..];
-        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
-        let returned_content = &returned_block[..block_end];
-
-        assert!(
-            !returned_content.contains("MyType"),
-            "`import type` should never be in __returned__. Got: {}",
-            returned_content
-        );
-        assert!(
-            returned_content.contains("ref"),
-            "Runtime import should be in __returned__. Got: {}",
-            returned_content
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -382,26 +265,7 @@ const emit = defineEmits(['click', 'update'])
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("Full output:\n{}", result.code);
-
-        assert!(
-            result.code.contains("emits:"),
-            "Should contain emits definition"
-        );
-        assert!(
-            result.code.contains("const emit = __emit"),
-            "Should bind emit to __emit"
-        );
-        // emit should be in __returned__ as it's a runtime value used in templates
-        assert!(
-            result.code.contains("emit"),
-            "emit should be accessible in template"
-        );
-        // defineEmits should NOT be in the setup function
-        assert!(
-            !result.code.contains("defineEmits"),
-            "defineEmits should be removed from setup"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -416,31 +280,7 @@ function onClick() {
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("Compiled output:\n{}", result.code);
-
-        // defineEmits call should NOT be in the setup function
-        assert!(
-            !result.code.contains("defineEmits"),
-            "defineEmits call should be removed from setup"
-        );
-        // emit binding should be present
-        assert!(
-            result.code.contains("const emit = __emit"),
-            "Should bind emit to __emit"
-        );
-        // onClick function should be in setup
-        assert!(
-            result.code.contains("function onClick()"),
-            "onClick should be in setup"
-        );
-        // emits definition should be present (may be formatted differently by OXC)
-        assert!(
-            result.code.contains("emits:")
-                && result.code.contains("click")
-                && result.code.contains("update"),
-            "Should have emits definition. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -451,14 +291,7 @@ const msg = ref('hello')
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        // Should have setup
-        assert!(result.code.contains("setup(__props"), "Should have setup");
-        // Should NOT have props or emits definitions
-        assert!(
-            !result.code.contains("  props:"),
-            "Should not contain props"
-        );
-        assert!(!result.code.contains("emits:"), "Should not contain emits");
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -470,28 +303,7 @@ const double = computed(() => count * 2)
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("Compiled output:\n{}", result.code);
-
-        // Should transform count to __props.count inside computed
-        assert!(
-            result.code.contains("__props.count"),
-            "Should transform destructured prop to __props.count"
-        );
-        // The original `count` reference should be replaced
-        assert!(
-            result.code.contains("computed(() => __props.count * 2)"),
-            "Should have transformed computed expression"
-        );
-        // Destructured props should NOT be in __returned__
-        assert!(
-            !result.code.contains("__returned__ = { computed, count,"),
-            "Destructured props should not be in __returned__"
-        );
-        // Should have double and computed in __returned__
-        assert!(
-            result.code.contains("computed") && result.code.contains("double"),
-            "Should have computed and double in __returned__"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -503,27 +315,7 @@ const count = ref(0)
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("Compiled output:\n{}", result.code);
-
-        // Find the __returned__ block (may span multiple lines after OXC formatting)
-        let code = &result.code;
-        let returned_start = code.find("__returned__").expect("Should have __returned__");
-        let returned_block = &code[returned_start..];
-        let block_end = returned_block.find(';').unwrap_or(returned_block.len());
-        let returned_content = &returned_block[..block_end];
-
-        println!("__returned__ block: {}", returned_content);
-
-        // Compiler macros should NOT be in __returned__
-        assert!(
-            !returned_content.contains("defineProps"),
-            "Compiler macros should not be in __returned__"
-        );
-        // But regular imports should be
-        assert!(
-            returned_content.contains("ref"),
-            "Regular imports should be in __returned__"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -551,46 +343,9 @@ const itemCount = computed(() => items.length)
         let mut ctx = crate::script::ScriptCompileContext::new(content);
         ctx.analyze();
 
-        println!("=== Context Analysis ===");
-        println!("props_destructure: {:?}", ctx.macros.props_destructure);
-        println!("bindings: {:?}", ctx.bindings.bindings);
-
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("\n=== Compiled output ===\n{}", result.code);
-
-        // Should NOT contain the destructure statement
-        assert!(
-            !result.code.contains("const {"),
-            "Should not contain destructure statement"
-        );
-        assert!(
-            !result.code.contains("} = defineProps"),
-            "Should not contain defineProps assignment"
-        );
-
-        // Should have props definition with defaults
-        assert!(
-            result.code.contains("props:"),
-            "Should have props definition"
-        );
-
-        // Should transform props to __props
-        assert!(
-            result.code.contains("__props.count"),
-            "Should transform count to __props.count"
-        );
-        assert!(
-            result.code.contains("__props.items"),
-            "Should transform items to __props.items"
-        );
-
-        // Should have the computed expressions transformed
-        assert!(
-            result.code.contains("computed(() => __props.count * 2)"),
-            "Should transform count in computed. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -635,28 +390,7 @@ function handleClick(e: MouseEvent) {
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("Multi-line defineEmits output:\n{}", result.code);
-
-        // defineEmits should NOT be in the setup function
-        assert!(
-            !result.code.contains("defineEmits"),
-            "defineEmits should be removed from setup"
-        );
-        // emit binding should be present
-        assert!(
-            result.code.contains("const emit = __emit"),
-            "Should bind emit to __emit"
-        );
-        // handleClick function should be in setup
-        assert!(
-            result.code.contains("function handleClick"),
-            "handleClick should be in setup"
-        );
-        // emits definition should be present
-        assert!(
-            result.code.contains("emits:"),
-            "Should have emits definition"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -666,18 +400,7 @@ const emit = defineEmits<(e: 'click') => void>()
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("Typed defineEmits output:\n{}", result.code);
-
-        // defineEmits should NOT be in the setup function
-        assert!(
-            !result.code.contains("defineEmits"),
-            "defineEmits should be removed from setup"
-        );
-        // emit binding should be present
-        assert!(
-            result.code.contains("const emit = __emit"),
-            "Should bind emit to __emit"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -696,23 +419,7 @@ const greeting = computed(() => props.name)
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        assert!(
-            result.code.contains("const props = __props"),
-            "Should rewrite defineProps assignment once. Got:\n{}",
-            result.code
-        );
-        assert!(
-            !result.code.contains("const props =\n"),
-            "Should not leave a dangling defineProps assignment. Got:\n{}",
-            result.code
-        );
-        assert!(
-            result
-                .code
-                .contains("const greeting = computed(() => props.name)"),
-            "Code after defineProps should remain intact. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -727,21 +434,7 @@ const hasDefault = !!slots.default
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        assert!(
-            result.code.contains("const slots = _useSlots()"),
-            "Should rewrite defineSlots assignment to useSlots(). Got:\n{}",
-            result.code
-        );
-        assert!(
-            !result.code.contains("const slots =\n"),
-            "Should not leave a dangling defineSlots assignment. Got:\n{}",
-            result.code
-        );
-        assert!(
-            result.code.contains("const hasDefault = !!slots.default"),
-            "Code after defineSlots should remain intact. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -754,26 +447,7 @@ defineExpose({ count, reset })
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("defineExpose output:\n{}", result.code);
-
-        // defineExpose should be transformed to __expose(...)
-        assert!(
-            result.code.contains("__expose({"),
-            "Should have __expose call with arguments"
-        );
-        assert!(
-            result.code.contains("count"),
-            "__expose should include count"
-        );
-        assert!(
-            result.code.contains("reset"),
-            "__expose should include reset"
-        );
-        // defineExpose should NOT be in the setup function
-        assert!(
-            !result.code.contains("defineExpose"),
-            "defineExpose should be removed from setup"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -787,14 +461,7 @@ const count = ref(0)
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("Output without defineExpose:\n{}", result.code);
-
-        // __expose() should always be called for proper Vue runtime initialization
-        assert!(
-            result.code.contains("__expose()"),
-            "Should have __expose() call even without defineExpose. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -807,20 +474,7 @@ defineExpose()
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
 
-        println!("Output with empty defineExpose:\n{}", result.code);
-
-        // Should have __expose() call
-        assert!(
-            result.code.contains("__expose()"),
-            "Should have __expose() call for empty defineExpose. Got:\n{}",
-            result.code
-        );
-
-        // defineExpose should be removed
-        assert!(
-            !result.code.contains("defineExpose"),
-            "defineExpose should be removed from setup"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -830,19 +484,7 @@ defineExpose()
 }
 const foo: string = "bar";"#;
         let result = transform_typescript_to_js(ts_code);
-        eprintln!("TypeScript transform result:\n{}", result);
-
-        // Should NOT contain type annotations
-        assert!(
-            !result.contains(": number"),
-            "Should strip parameter type annotation. Got:\n{}",
-            result
-        );
-        assert!(
-            !result.contains(": string"),
-            "Should strip return type and variable type annotations. Got:\n{}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -856,19 +498,7 @@ const getNumberOfTeachers = (
 "#;
         // is_ts = false means we want JavaScript output (TypeScript should be stripped)
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
-        eprintln!("Compiled TypeScript output:\n{}", result.code);
-
-        // Should NOT contain type annotations
-        assert!(
-            !result.code.contains(": Item[]"),
-            "Should strip parameter type annotation. Got:\n{}",
-            result.code
-        );
-        assert!(
-            !result.code.contains("): string"),
-            "Should strip return type annotation. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -878,11 +508,7 @@ const count: number = 1;
 const items: Array<string> = [];
 "#;
         let result = compile_script_setup(content, "Test", false, true, None).unwrap();
-        assert!(
-            result.code.contains(": number") || result.code.contains("Array<string>"),
-            "Expected TypeScript annotations to be preserved. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -890,52 +516,31 @@ const items: Array<string> = [];
         let content = r#"
 const { color = "primary" } = defineProps<{
   color?: "primary" | "secondary";
-}>();
+        }>();
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
-        assert!(
-            result.code.contains("_mergeDefaults(")
-                && result.code.contains("color")
-                && result.code.contains(": {}"),
-            "Expected mergeDefaults with runtime props. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
     fn test_duplicate_imports_filtered() {
         let content = r#"
 import { ref } from 'vue'
-import { ref } from 'vue'
+        import { ref } from 'vue'
 const count = ref(0)
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
-        let import_ref_lines = result
-            .code
-            .lines()
-            .filter(|line| {
-                line.contains("import {") && line.contains("ref") && line.contains("vue")
-            })
-            .count();
-        assert_eq!(
-            import_ref_lines, 1,
-            "Expected duplicate ref import to be filtered. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
     fn test_async_setup_detection() {
         let content = r#"
 const response = await fetch('/api/data')
-const data = await response.json()
+        const data = await response.json()
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
-        assert!(
-            result.code.contains("async setup("),
-            "Expected async setup when top-level await is present. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -944,11 +549,7 @@ const data = await response.json()
 const msg = "await should not trigger async"
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
-        assert!(
-            !result.code.contains("async setup("),
-            "Did not expect async setup for await in string literal. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -958,12 +559,7 @@ const props = defineProps(['type'])
 const isButton = props.type === 'button'
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
-        assert!(
-            result.code.contains("type === 'button'")
-                || result.code.contains("type === \"button\""),
-            "Expected type comparison to remain. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -972,10 +568,6 @@ const isButton = props.type === 'button'
 const store = useStore<RootState>()
 "#;
         let result = compile_script_setup(content, "Test", false, false, None).unwrap();
-        assert!(
-            !result.code.contains("<RootState>"),
-            "Expected generic type arguments to be stripped. Got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

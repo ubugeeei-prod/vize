@@ -350,12 +350,6 @@ mod tests {
         transform(&allocator, &mut root, TransformOptions::default(), None);
 
         let result = generate(&root, CodegenOptions::default());
-        println!("v-if codegen:\n{}", result.code);
-
-        // Should contain openBlock and createBlock for v-if
-        assert!(
-            result.code.contains("openBlock"),
-            "Should contain openBlock"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 }
