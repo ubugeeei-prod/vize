@@ -15,7 +15,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 use std::sync::Arc;
 
 #[cfg(feature = "native")]
-use vize_canon::TsgoBridge;
+use vize_canon::CorsaBridge;
 
 use super::HoverService;
 use crate::ide::IdeContext;
@@ -88,11 +88,11 @@ impl HoverService {
         })
     }
 
-    /// Get hover for template context with tsgo support.
+    /// Get hover for template context with Corsa support.
     #[cfg(feature = "native")]
-    pub(super) async fn hover_template_with_tsgo(
+    pub(super) async fn hover_template_with_corsa(
         ctx: &IdeContext<'_>,
-        tsgo_bridge: Option<Arc<TsgoBridge>>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Hover> {
         let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
 
@@ -100,13 +100,13 @@ impl HoverService {
             return None;
         }
 
-        // Check for Vue directives first (these don't need tsgo)
+        // Check for Vue directives first; these do not need Corsa.
         if let Some(hover) = Self::hover_directive(&word) {
             return Some(hover);
         }
 
-        // Try to get type information from tsgo via virtual TypeScript
-        if let Some(bridge) = tsgo_bridge {
+        // Try to get type information from Corsa via virtual TypeScript.
+        if let Some(bridge) = corsa_bridge {
             if let Some(ref virtual_docs) = ctx.virtual_docs {
                 if let Some(ref template) = virtual_docs.template {
                     // Calculate position in virtual TS
@@ -125,7 +125,7 @@ impl HoverService {
                                 return Self::hover_template(ctx);
                             };
 
-                            // Request hover from tsgo
+                            // Request hover from Corsa.
                             if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
                                 return Some(Self::convert_lsp_hover(hover));
                             }

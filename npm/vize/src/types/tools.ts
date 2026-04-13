@@ -75,9 +75,9 @@ export interface TypeCheckerConfig {
   tsconfig?: string;
 
   /**
-   * Path to tsgo binary
+   * Path to the Corsa binary
    */
-  tsgoPath?: string;
+  corsaPath?: string;
 }
 
 // ============================================================================
@@ -176,8 +176,8 @@ export interface LspConfig {
   codeActions?: boolean;
 
   /**
-   * Use tsgo for type checking in LSP
+   * Use Corsa for type checking in LSP
    * @default false
    */
-  tsgo?: boolean;
+  corsa?: boolean;
 }

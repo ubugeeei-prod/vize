@@ -305,7 +305,7 @@ mod tests {
         let result = generate_vapor(&ir);
 
         assert!(!result.code.is_empty());
-        assert!(result.code.contains("export function render"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -315,8 +315,7 @@ mod tests {
         let ir = transform_to_ir(&allocator, &root);
         let result = generate_vapor(&ir);
 
-        assert!(result.code.contains("createInvoker"));
-        assert!(result.code.contains("click"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]

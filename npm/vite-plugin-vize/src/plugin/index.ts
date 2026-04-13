@@ -148,14 +148,21 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
       let fileConfig = null;
       if (options.configMode !== false) {
-        fileConfig = await loadConfig(state.root, {
-          mode: options.configMode ?? "root",
-          configFile: options.configFile,
-          env: configEnv,
-        });
-        if (fileConfig) {
-          state.logger.log("Loaded config from vize.config file");
-          vizeConfigStore.set(state.root, fileConfig);
+        try {
+          fileConfig = await loadConfig(state.root, {
+            mode: options.configMode ?? "root",
+            configFile: options.configFile,
+            env: configEnv,
+          });
+          if (fileConfig) {
+            state.logger.log("Loaded config from vize.config file");
+            vizeConfigStore.set(state.root, fileConfig);
+          }
+        } catch (error) {
+          state.logger.warn(
+            `Failed to load vize config from ${options.configFile ?? state.root}:`,
+            error,
+          );
         }
       }
 

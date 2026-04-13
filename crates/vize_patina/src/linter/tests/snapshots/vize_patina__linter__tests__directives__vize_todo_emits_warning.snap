@@ -1,0 +1,16 @@
+---
+source: crates/vize_patina/src/linter/tests/directives.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vize/todo",
+        severity: Warning,
+        message: "TODO: fix this",
+        start: 5,
+        end: 33,
+        help: None,
+        labels: [],
+        fix: None,
+    },
+]

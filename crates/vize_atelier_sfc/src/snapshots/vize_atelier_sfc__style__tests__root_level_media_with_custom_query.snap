@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/style.rs
+expression: result.as_str()
+---
+.foo[data-v-abc]{ color: red; }@media (--mobile){.foo[data-v-abc]{ font-size: 12px; }}

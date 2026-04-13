@@ -29,6 +29,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_atelier_sfc::{parse_sfc, BlockLocation, SfcParseOptions};
+use vize_carton::profile;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/sfc-element-order",
@@ -86,12 +87,15 @@ impl Rule for SfcElementOrder {
     }
 
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
-        let descriptor = match parse_sfc(
-            ctx.source,
-            SfcParseOptions {
-                filename: ctx.filename.into(),
-                ..Default::default()
-            },
+        let descriptor = match profile!(
+            "patina.rule.sfc_element_order.parse_sfc",
+            parse_sfc(
+                ctx.source,
+                SfcParseOptions {
+                    filename: ctx.filename.into(),
+                    ..Default::default()
+                },
+            )
         ) {
             Ok(descriptor) => descriptor,
             Err(_) => return,
@@ -167,7 +171,7 @@ mod tests {
         );
         assert_eq!(result.warning_count, 1);
         assert_eq!(result.diagnostics[0].rule_name, "vue/sfc-element-order");
-        assert!(result.diagnostics[0].message.contains("<script>"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

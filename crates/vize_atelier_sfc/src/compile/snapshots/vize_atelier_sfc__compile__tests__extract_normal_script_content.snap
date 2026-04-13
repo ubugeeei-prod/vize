@@ -1,0 +1,16 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.as_str()
+---
+import type { NuxtRoute } from "@typed-router";
+import { useBreakpoint } from "./_utils";
+import Button from "./Button.vue";
+
+interface TabItem {
+  name: string;
+  label: string;
+}
+
+const __default__ = {
+  name: 'Tab'
+}

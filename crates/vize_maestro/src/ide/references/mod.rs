@@ -15,11 +15,11 @@ use std::sync::Arc;
 use tower_lsp::lsp_types::Location;
 
 #[cfg(feature = "native")]
-use vize_canon::TsgoBridge;
+use vize_canon::CorsaBridge;
 
 use super::IdeContext;
 #[cfg(feature = "native")]
-use crate::ide::tsgo_support;
+use crate::ide::corsa_support;
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 
 /// References service for finding all references to a symbol.
@@ -68,53 +68,53 @@ impl ReferencesService {
         }
     }
 
-    /// Find all references using tsgo when available, with synchronous fallback.
+    /// Find all references using Corsa when available, with synchronous fallback.
     #[cfg(feature = "native")]
-    pub async fn references_with_tsgo(
+    pub async fn references_with_corsa(
         ctx: &IdeContext<'_>,
         include_declaration: bool,
-        tsgo_bridge: Option<Arc<TsgoBridge>>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Vec<Location>> {
         let block_type = ctx.block_type?;
 
-        let tsgo_locations = match block_type {
+        let corsa_locations = match block_type {
             BlockType::Template => {
-                Self::template_references_with_tsgo(
+                Self::template_references_with_corsa(
                     ctx,
                     include_declaration,
-                    tsgo_bridge.as_deref(),
+                    corsa_bridge.as_deref(),
                 )
                 .await
             }
             BlockType::Script | BlockType::ScriptSetup => {
-                Self::script_references_with_tsgo(
+                Self::script_references_with_corsa(
                     ctx,
                     include_declaration,
                     matches!(block_type, BlockType::ScriptSetup),
-                    tsgo_bridge.as_deref(),
+                    corsa_bridge.as_deref(),
                 )
                 .await
             }
             BlockType::Art(ArtCursorPosition::VariantTemplate(ref info)) => {
-                Self::art_variant_references_with_tsgo(
+                Self::art_variant_references_with_corsa(
                     ctx,
                     info,
                     include_declaration,
-                    tsgo_bridge.as_deref(),
+                    corsa_bridge.as_deref(),
                 )
                 .await
             }
             BlockType::Style(_) | BlockType::Art(_) => None,
         };
 
-        tsgo_locations.or_else(|| Self::references(ctx, include_declaration))
+        corsa_locations.or_else(|| Self::references(ctx, include_declaration))
     }
 
     #[cfg(feature = "native")]
-    async fn template_references_with_tsgo(
+    async fn template_references_with_corsa(
         ctx: &IdeContext<'_>,
         include_declaration: bool,
-        bridge: Option<&TsgoBridge>,
+        bridge: Option<&CorsaBridge>,
     ) -> Option<Vec<Location>> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
@@ -122,7 +122,7 @@ impl ReferencesService {
         let vts_offset =
             crate::ide::hover::HoverService::sfc_to_virtual_ts_offset(ctx, ctx.offset)?;
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = tsgo_support::template_request_path(ctx.uri);
+        let request_path = corsa_support::template_request_path(ctx.uri);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await
@@ -132,7 +132,7 @@ impl ReferencesService {
             .references(&uri, line, character, include_declaration)
             .await
             .ok()?;
-        let locations = tsgo_support::map_tsgo_locations(ctx, locations);
+        let locations = corsa_support::map_corsa_locations(ctx, locations);
 
         if locations.is_empty() {
             None
@@ -142,11 +142,11 @@ impl ReferencesService {
     }
 
     #[cfg(feature = "native")]
-    async fn art_variant_references_with_tsgo(
+    async fn art_variant_references_with_corsa(
         ctx: &IdeContext<'_>,
         info: &crate::virtual_code::ArtVariantInfo,
         include_declaration: bool,
-        bridge: Option<&TsgoBridge>,
+        bridge: Option<&CorsaBridge>,
     ) -> Option<Vec<Location>> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
@@ -158,7 +158,7 @@ impl ReferencesService {
             .map(|offset| offset as usize)
             .unwrap_or(relative_offset as usize);
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = tsgo_support::template_request_path(ctx.uri);
+        let request_path = corsa_support::template_request_path(ctx.uri);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await
@@ -168,7 +168,7 @@ impl ReferencesService {
             .references(&uri, line, character, include_declaration)
             .await
             .ok()?;
-        let locations = tsgo_support::map_tsgo_locations(ctx, locations);
+        let locations = corsa_support::map_corsa_locations(ctx, locations);
 
         if locations.is_empty() {
             None
@@ -178,11 +178,11 @@ impl ReferencesService {
     }
 
     #[cfg(feature = "native")]
-    async fn script_references_with_tsgo(
+    async fn script_references_with_corsa(
         ctx: &IdeContext<'_>,
         include_declaration: bool,
         is_setup: bool,
-        bridge: Option<&TsgoBridge>,
+        bridge: Option<&CorsaBridge>,
     ) -> Option<Vec<Location>> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
@@ -194,7 +194,7 @@ impl ReferencesService {
         let vts_offset =
             crate::ide::hover::HoverService::sfc_to_virtual_ts_script_offset(ctx, ctx.offset)?;
         let (line, character) = crate::ide::offset_to_position(&script_doc.content, vts_offset);
-        let request_path = tsgo_support::script_request_path(ctx.uri, is_setup);
+        let request_path = corsa_support::script_request_path(ctx.uri, is_setup);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &script_doc.content)
             .await
@@ -204,7 +204,7 @@ impl ReferencesService {
             .references(&uri, line, character, include_declaration)
             .await
             .ok()?;
-        let locations = tsgo_support::map_tsgo_locations(ctx, locations);
+        let locations = corsa_support::map_corsa_locations(ctx, locations);
 
         if locations.is_empty() {
             None

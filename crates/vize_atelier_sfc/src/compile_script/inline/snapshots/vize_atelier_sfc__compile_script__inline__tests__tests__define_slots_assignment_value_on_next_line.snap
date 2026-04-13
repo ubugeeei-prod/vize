@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { useSlots as _useSlots } from "vue";
+export default {
+  __name: "TestComponent",
+  setup(__props) {
+    const slots = _useSlots();
+    const hasDefault = !!slots.default;
+    return (_ctx, _cache) => {
+      return null;
+    };
+  }
+};

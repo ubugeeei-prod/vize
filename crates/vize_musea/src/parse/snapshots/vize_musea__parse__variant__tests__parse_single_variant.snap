@@ -1,0 +1,22 @@
+---
+source: crates/vize_musea/src/parse/variant.rs
+expression: variants
+---
+[
+    ArtVariant {
+        name: "Primary",
+        template: "<Button variant=\"primary\">Click</Button>",
+        is_default: true,
+        args: {},
+        viewport: None,
+        skip_vrt: false,
+        loc: Some(
+            SourceLocation {
+                start: 3,
+                end: 93,
+                start_line: 2,
+                start_column: 2,
+            },
+        ),
+    },
+]

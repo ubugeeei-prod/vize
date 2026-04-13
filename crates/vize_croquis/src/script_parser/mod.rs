@@ -32,7 +32,7 @@ use crate::scope::{
     VueGlobalScopeData,
 };
 use crate::setup_context::SetupContextTracker;
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_carton::{profile, CompactString, FxHashMap, FxHashSet};
 
 pub use process::process_statement;
 
@@ -200,7 +200,10 @@ pub fn parse_script_setup_with_generic(source: &str, generic: Option<&str>) -> S
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
 
-    let ret = Parser::new(&allocator, source, source_type).parse();
+    let ret = profile!(
+        "croquis.script_setup.oxc_parse",
+        Parser::new(&allocator, source, source_type).parse()
+    );
 
     if ret.panicked {
         return ScriptParseResult::default();
@@ -215,7 +218,10 @@ pub fn parse_script_setup_with_generic(source: &str, generic: Option<&str>) -> S
     };
 
     // Setup global scope hierarchy (universal → mod)
-    setup_global_scopes(&mut result.scopes, source_len);
+    profile!(
+        "croquis.script_setup.global_scopes",
+        setup_global_scopes(&mut result.scopes, source_len)
+    );
 
     // Enter script setup scope (parent: ~mod)
     result.scopes.enter_script_setup_scope(
@@ -229,9 +235,11 @@ pub fn parse_script_setup_with_generic(source: &str, generic: Option<&str>) -> S
     );
 
     // Process all statements
-    for stmt in ret.program.body.iter() {
-        process::process_statement(&mut result, stmt, source);
-    }
+    profile!("croquis.script_setup.walk_statements", {
+        for stmt in ret.program.body.iter() {
+            process::process_statement(&mut result, stmt, source);
+        }
+    });
 
     result
 }
@@ -249,7 +257,10 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
 
-    let ret = Parser::new(&allocator, source, source_type).parse();
+    let ret = profile!(
+        "croquis.script_plain.oxc_parse",
+        Parser::new(&allocator, source, source_type).parse()
+    );
 
     if ret.panicked {
         return ScriptParseResult::default();
@@ -265,7 +276,10 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
     };
 
     // Setup global scope hierarchy (universal → mod)
-    setup_global_scopes(&mut result.scopes, source_len);
+    profile!(
+        "croquis.script_plain.global_scopes",
+        setup_global_scopes(&mut result.scopes, source_len)
+    );
 
     // Enter non-script-setup scope (parent: ~mod)
     result.scopes.enter_non_script_setup_scope(
@@ -278,9 +292,11 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
     );
 
     // Process all statements
-    for stmt in ret.program.body.iter() {
-        process::process_statement(&mut result, stmt, source);
-    }
+    profile!("croquis.script_plain.walk_statements", {
+        for stmt in ret.program.body.iter() {
+            process::process_statement(&mut result, stmt, source);
+        }
+    });
 
     result
 }
@@ -347,12 +363,10 @@ mod tests {
         "#,
         );
 
-        assert!(result.bindings.contains("count"));
-        assert!(result.bindings.contains("doubled"));
-        assert!(result.bindings.contains("state"));
         assert!(result.reactivity.is_reactive("count"));
         assert!(result.reactivity.is_reactive("doubled"));
         assert!(result.reactivity.is_reactive("state"));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]
@@ -364,9 +378,7 @@ mod tests {
         "#,
         );
 
-        assert!(result.bindings.contains("ref"));
-        assert!(result.bindings.contains("computed"));
-        assert!(result.bindings.contains("MyComponent"));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]

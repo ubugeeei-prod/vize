@@ -37,6 +37,11 @@ export type LintPreset = "happy-path" | "opinionated" | "essential" | "nuxt";
  */
 export interface VizeConfig {
   /**
+   * JSON Schema reference for editor autocompletion.
+   */
+  $schema?: string;
+
+  /**
    * Vue compiler options
    */
   compiler?: CompilerConfig;

@@ -45,6 +45,7 @@ mod require_symbol_provide;
 use memchr::memmem;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
+use vize_carton::profile;
 
 pub use no_async_in_computed::NoAsyncInComputed;
 pub use no_deep_destructure_in_props::NoDeepDestructureInProps;
@@ -166,7 +167,9 @@ impl ScriptLinter {
         let mut result = ScriptLintResult::default();
 
         for rule in &self.rules {
-            rule.check(source, offset, &mut result);
+            profile!("patina.script_linter.rule.check", {
+                rule.check(source, offset, &mut result);
+            });
         }
 
         result

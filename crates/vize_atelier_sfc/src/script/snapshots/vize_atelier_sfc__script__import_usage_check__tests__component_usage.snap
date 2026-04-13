@@ -1,0 +1,10 @@
+---
+source: crates/vize_atelier_sfc/src/script/import_usage_check.rs
+expression: snapshot_identifiers(&result)
+---
+(
+    [
+        "MyComponent",
+    ],
+    [],
+)

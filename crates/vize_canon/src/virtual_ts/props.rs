@@ -5,6 +5,7 @@
 
 use vize_carton::append;
 use vize_carton::cstr;
+use vize_carton::profile;
 use vize_carton::String;
 use vize_croquis::Croquis;
 
@@ -109,7 +110,10 @@ pub(crate) fn generate_props_variables(
                 }
             } else if let Some(script) = script_content {
                 // Fallback: extract field names from script text (for local interfaces)
-                let field_names = extract_interface_fields(script, type_name);
+                let field_names = profile!(
+                    "canon.virtual_ts.extract_interface_fields",
+                    extract_interface_fields(script, type_name)
+                );
                 for field in &field_names {
                     append!(*ts, "  const {field} = props[\"{field}\"];\n");
                     append!(*ts, "  void {field};\n");

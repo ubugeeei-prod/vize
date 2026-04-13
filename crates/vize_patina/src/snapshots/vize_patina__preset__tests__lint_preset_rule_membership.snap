@@ -1,6 +1,5 @@
 ---
 source: crates/vize_patina/src/preset.rs
-assertion_line: 87
 expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
 ---
 {
@@ -220,6 +219,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "a11y/placeholder-label-option",
     "a11y/use-list",
     "type/no-floating-promises",
+    "type/no-unsafe-template-binding",
     "script/no-options-api",
     "script/no-get-current-instance",
     "script/no-next-tick"
@@ -331,6 +331,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "a11y/placeholder-label-option",
     "a11y/use-list",
     "type/no-floating-promises",
+    "type/no-unsafe-template-binding",
     "script/no-options-api",
     "script/no-get-current-instance",
     "script/no-next-tick"

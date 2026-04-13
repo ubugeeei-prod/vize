@@ -199,6 +199,50 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
     }
 }
 
+/// Bundle a CSS file and all its `@import` dependencies into a single stylesheet.
+///
+/// Unlike `compile_css` which takes CSS source as a string, this reads the entry
+/// file and all imported files from disk, resolving `@import` rules recursively.
+/// The result is a single merged stylesheet with all imports inlined.
+#[cfg(feature = "native")]
+pub fn bundle_css(entry_path: &str, options: &CssCompileOptions) -> CssCompileResult {
+    let targets = options
+        .targets
+        .as_ref()
+        .map(|t| t.to_lightningcss_targets())
+        .unwrap_or_default();
+
+    let result = parser::bundle_css_internal(
+        entry_path,
+        options.minify,
+        targets,
+        options.css_modules,
+        options.custom_media,
+    );
+
+    CssCompileResult {
+        code: result.code,
+        map: None,
+        css_vars: vec![],
+        errors: result.errors,
+        warnings: vec![],
+        exports: result.exports,
+    }
+}
+
+/// Bundle CSS is only available with the native LightningCSS backend.
+#[cfg(not(feature = "native"))]
+pub fn bundle_css(_entry_path: &str, _options: &CssCompileOptions) -> CssCompileResult {
+    CssCompileResult {
+        code: String::default(),
+        map: None,
+        css_vars: vec![],
+        errors: vec![String::from("CSS bundling requires the `native` feature")],
+        warnings: vec![],
+        exports: None,
+    }
+}
+
 /// Compile a style block
 pub fn compile_style_block(style: &SfcStyleBlock, options: &CssCompileOptions) -> CssCompileResult {
     let mut opts = options.clone();

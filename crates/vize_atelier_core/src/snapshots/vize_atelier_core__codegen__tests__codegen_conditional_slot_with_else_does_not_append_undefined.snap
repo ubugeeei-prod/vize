@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, resolveComponent: _resolveComponent, createSlots: _createSlots, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_MyDialog = _resolveComponent("MyDialog")
+  
+  return (_openBlock(), _createBlock(_component_MyDialog, null, _createSlots({ _: 2 /* DYNAMIC */ }, [
+    (step === 1)
+      ? {
+        name: "header",
+        fn: _withCtx(() => [
+          _createTextVNode("First")
+        ]),
+        key: "0"
+      }
+    : {
+      name: "header",
+      fn: _withCtx(() => [
+        _createTextVNode("Second")
+      ]),
+      key: "1"
+    }
+  ]), 1024 /* DYNAMIC_SLOTS */))
+}

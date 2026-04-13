@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<button>x</button>", true)
+export function render(_ctx) {
+const n0 = t0()
+_renderEffect(() => _setClass(n0, ['main-tab', { active: _ctx.tab === 'atelier' }]))
+return n0
+}

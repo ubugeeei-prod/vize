@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { openBlock: _openBlock, createBlock: _createBlock, createElementVNode: _createElementVNode, resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_CommonPaginator = _resolveComponent("CommonPaginator")
+  
+  return (_openBlock(), _createBlock(_component_CommonPaginator, null, {
+    default: _withCtx(({ item, index }) => [
+      _createElementVNode("button", {
+        onClick: $event => (_ctx.showHistory(item))
+      }, _toDisplayString(index), 9 /* TEXT, PROPS */, ["onClick"]),
+      _createElementVNode("button", {
+        onClick: () => _ctx.edit(item.id)
+      }, _toDisplayString(item.id), 9 /* TEXT, PROPS */, ["onClick"])
+    ]),
+    _: 1 /* STABLE */
+  }))
+}

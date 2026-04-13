@@ -81,6 +81,7 @@ pub(super) struct CurrentAttribute<'a> {
     pub(super) name_end: usize,
     pub(super) value_start: Option<usize>,
     pub(super) value_end: Option<usize>,
+    pub(super) value_content: Option<String>,
     pub(super) _marker: std::marker::PhantomData<&'a ()>,
 }
 
@@ -95,6 +96,7 @@ pub(super) struct CurrentDirective<'a> {
     pub(super) modifiers: Vec<'a, (String, usize, usize)>,
     pub(super) value_start: Option<usize>,
     pub(super) value_end: Option<usize>,
+    pub(super) value_content: Option<String>,
     pub(super) _marker: std::marker::PhantomData<&'a ()>,
 }
 

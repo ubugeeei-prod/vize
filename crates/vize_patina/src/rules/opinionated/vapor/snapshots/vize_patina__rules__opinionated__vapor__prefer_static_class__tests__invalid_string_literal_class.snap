@@ -1,0 +1,27 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vapor/prefer-static-class",
+        severity: Warning,
+        message: "Prefer static class attribute over dynamic :class binding for constant values",
+        start: 6,
+        end: 27,
+        help: None,
+        labels: [],
+        fix: Some(
+            Fix {
+                message: "Replace with static class attribute",
+                edits: [
+                    TextEdit {
+                        start: 5,
+                        end: 28,
+                        new_text: "class=\"static-class\"",
+                    },
+                ],
+            },
+        ),
+    },
+]

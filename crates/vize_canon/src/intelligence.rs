@@ -164,7 +164,7 @@ impl<'a> TypeIntelligence<'a> {
         self
     }
 
-    /// Set virtual TypeScript for tsgo integration.
+    /// Set virtual TypeScript for Corsa-backed integration.
     #[inline]
     pub fn with_virtual_ts(mut self, virtual_ts: &'a str) -> Self {
         self.virtual_ts = Some(virtual_ts);

@@ -75,7 +75,6 @@ mod tests {
     #[test]
     fn test_generate_html_warning() {
         let warning = generate_html_warning();
-        assert!(warning.contains("XSS"));
-        assert!(warning.contains("innerHTML"));
+        insta::assert_snapshot!(warning);
     }
 }

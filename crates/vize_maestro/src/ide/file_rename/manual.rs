@@ -892,7 +892,7 @@ type FooModule = typeof import("./components/Foo.vue");
     }
 
     #[test]
-    fn rewrites_extensionless_ts_imports_without_tsgo() {
+    fn rewrites_extensionless_ts_imports_without_corsa() {
         let dir = test_dir();
         let root = dir.path();
         let src_dir = root.join("src");

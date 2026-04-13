@@ -1,6 +1,6 @@
-//! Definition service entry point and tsgo integration.
+//! Definition service entry point and Corsa integration.
 //!
-//! Provides the main `definition` and `definition_with_tsgo` methods
+//! Provides the main `definition` and `definition_with_corsa` methods
 //! that dispatch to block-specific handlers.
 #![allow(
     clippy::disallowed_types,
@@ -14,12 +14,12 @@ use std::sync::Arc;
 use tower_lsp::lsp_types::GotoDefinitionResponse;
 
 #[cfg(feature = "native")]
-use vize_canon::TsgoBridge;
+use vize_canon::CorsaBridge;
 
 use super::{helpers, script, template, IdeContext};
-use crate::ide::is_component_tag;
 #[cfg(feature = "native")]
-use crate::ide::tsgo_support;
+use crate::ide::corsa_support;
+use crate::ide::is_component_tag;
 use crate::virtual_code::{ArtCursorPosition, BlockType};
 
 impl super::DefinitionService {
@@ -36,31 +36,31 @@ impl super::DefinitionService {
         }
     }
 
-    /// Get definition with tsgo support (async version).
+    /// Get definition with Corsa support (async version).
     #[cfg(feature = "native")]
-    pub async fn definition_with_tsgo(
+    pub async fn definition_with_corsa(
         ctx: &IdeContext<'_>,
-        tsgo_bridge: Option<Arc<TsgoBridge>>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
         match ctx.block_type? {
-            BlockType::Template => Self::definition_in_template_with_tsgo(ctx, tsgo_bridge).await,
+            BlockType::Template => Self::definition_in_template_with_corsa(ctx, corsa_bridge).await,
             BlockType::Script | BlockType::ScriptSetup => {
-                Self::definition_in_script_with_tsgo(ctx, tsgo_bridge).await
+                Self::definition_in_script_with_corsa(ctx, corsa_bridge).await
             }
             BlockType::Style(_) => script::definition_in_style(ctx),
             BlockType::Art(ArtCursorPosition::VariantTemplate(ref info)) => {
-                Self::definition_in_art_variant_with_tsgo(ctx, info, tsgo_bridge).await
+                Self::definition_in_art_variant_with_corsa(ctx, info, corsa_bridge).await
             }
             BlockType::Art(_) => None,
         }
     }
 
-    /// Find definition in art variant template with tsgo.
+    /// Find definition in art variant template with Corsa.
     #[cfg(feature = "native")]
-    async fn definition_in_art_variant_with_tsgo(
+    async fn definition_in_art_variant_with_corsa(
         ctx: &IdeContext<'_>,
         info: &crate::virtual_code::ArtVariantInfo,
-        tsgo_bridge: Option<Arc<TsgoBridge>>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
@@ -77,8 +77,8 @@ impl super::DefinitionService {
             }
         }
 
-        // Try tsgo definition
-        if let Some(bridge) = tsgo_bridge {
+        // Try Corsa definition lookup first.
+        if let Some(bridge) = corsa_bridge {
             if let Some(ref virtual_docs) = ctx.virtual_docs {
                 if let Some(ref tmpl) = virtual_docs.template {
                     let relative_offset = info.relative_offset as u32;
@@ -92,7 +92,7 @@ impl super::DefinitionService {
                         crate::ide::offset_to_position(&tmpl.content, vts_offset);
 
                     if bridge.is_initialized() {
-                        let vdoc_uri = tsgo_support::template_request_path(ctx.uri);
+                        let vdoc_uri = corsa_support::template_request_path(ctx.uri);
                         let Ok(uri) = bridge
                             .open_or_update_virtual_document(&vdoc_uri, &tmpl.content)
                             .await
@@ -114,11 +114,11 @@ impl super::DefinitionService {
         template::definition_in_template(ctx)
     }
 
-    /// Find definition in template with tsgo and component jump support.
+    /// Find definition in template with Corsa and component jump support.
     #[cfg(feature = "native")]
-    async fn definition_in_template_with_tsgo(
+    async fn definition_in_template_with_corsa(
         ctx: &IdeContext<'_>,
-        tsgo_bridge: Option<Arc<TsgoBridge>>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
@@ -158,8 +158,8 @@ impl super::DefinitionService {
             }
         }
 
-        // Try tsgo definition
-        if let Some(bridge) = tsgo_bridge {
+        // Try Corsa definition lookup first.
+        if let Some(bridge) = corsa_bridge {
             if let Some(ref virtual_docs) = ctx.virtual_docs {
                 if let Some(ref tmpl) = virtual_docs.template {
                     if let Some(vts_offset) =
@@ -169,7 +169,7 @@ impl super::DefinitionService {
                             crate::ide::offset_to_position(&tmpl.content, vts_offset);
 
                         if bridge.is_initialized() {
-                            let vdoc_uri = tsgo_support::template_request_path(ctx.uri);
+                            let vdoc_uri = corsa_support::template_request_path(ctx.uri);
                             let Ok(uri) = bridge
                                 .open_or_update_virtual_document(&vdoc_uri, &tmpl.content)
                                 .await
@@ -192,11 +192,11 @@ impl super::DefinitionService {
         template::definition_in_template(ctx)
     }
 
-    /// Find definition in script with tsgo support.
+    /// Find definition in script with Corsa support.
     #[cfg(feature = "native")]
-    async fn definition_in_script_with_tsgo(
+    async fn definition_in_script_with_corsa(
         ctx: &IdeContext<'_>,
-        tsgo_bridge: Option<Arc<TsgoBridge>>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
@@ -206,8 +206,8 @@ impl super::DefinitionService {
 
         let is_setup = matches!(ctx.block_type, Some(BlockType::ScriptSetup));
 
-        // Try tsgo definition
-        if let Some(bridge) = tsgo_bridge {
+        // Try Corsa definition lookup first.
+        if let Some(bridge) = corsa_bridge {
             if let Some(ref virtual_docs) = ctx.virtual_docs {
                 let script_doc = if is_setup {
                     virtual_docs.script_setup.as_ref()
@@ -225,7 +225,7 @@ impl super::DefinitionService {
                             crate::ide::offset_to_position(&s.content, vts_offset);
 
                         if bridge.is_initialized() {
-                            let vdoc_uri = tsgo_support::script_request_path(ctx.uri, is_setup);
+                            let vdoc_uri = corsa_support::script_request_path(ctx.uri, is_setup);
                             let Ok(uri) = bridge
                                 .open_or_update_virtual_document(&vdoc_uri, &s.content)
                                 .await
@@ -248,16 +248,17 @@ impl super::DefinitionService {
         script::definition_in_script(ctx)
     }
 
-    /// Convert tsgo LspLocation to tower-lsp Location.
+    /// Convert a Corsa location to tower-lsp Location.
     #[cfg(feature = "native")]
     fn convert_lsp_locations(
         locations: Vec<vize_canon::LspLocation>,
         ctx: &IdeContext<'_>,
     ) -> Option<GotoDefinitionResponse> {
         if locations.len() == 1 {
-            tsgo_support::map_tsgo_location(ctx, &locations[0]).map(GotoDefinitionResponse::Scalar)
+            corsa_support::map_corsa_location(ctx, &locations[0])
+                .map(GotoDefinitionResponse::Scalar)
         } else {
-            let locs = tsgo_support::map_tsgo_locations(ctx, locations);
+            let locs = corsa_support::map_corsa_locations(ctx, locations);
             if locs.is_empty() {
                 None
             } else {

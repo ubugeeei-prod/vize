@@ -203,7 +203,7 @@ mod tests {
         assert_eq!(props[0].0.as_str(), "value");
         assert_eq!(props[0].1.as_str(), "modelValue");
         assert_eq!(props[1].0.as_str(), "onInput");
-        assert!(props[1].1.contains("$event.target.value"));
+        insta::assert_debug_snapshot!(props);
     }
 
     #[test]

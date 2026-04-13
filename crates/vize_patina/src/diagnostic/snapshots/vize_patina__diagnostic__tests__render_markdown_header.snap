@@ -1,0 +1,5 @@
+---
+source: crates/vize_patina/src/diagnostic/mod.rs
+expression: result.as_str()
+---
+[1m[4mWhy[24m[22m

@@ -21,18 +21,9 @@ export function createDocsBackgroundHtml(): string {
 
 export function buildDocsBackgroundScript(themeDir: string): string {
   const shaderDir = resolve(themeDir, "shaders");
-  const vertSrc = readFileSync(
-    resolve(shaderDir, `${SCRIPT_BASENAME}.vert`),
-    "utf-8",
-  );
-  const fragSrc = readFileSync(
-    resolve(shaderDir, `${SCRIPT_BASENAME}.frag`),
-    "utf-8",
-  );
-  const script = readFileSync(
-    resolve(themeDir, `${SCRIPT_BASENAME}.js`),
-    "utf-8",
-  );
+  const vertSrc = readFileSync(resolve(shaderDir, `${SCRIPT_BASENAME}.vert`), "utf-8");
+  const fragSrc = readFileSync(resolve(shaderDir, `${SCRIPT_BASENAME}.frag`), "utf-8");
+  const script = readFileSync(resolve(themeDir, `${SCRIPT_BASENAME}.js`), "utf-8");
 
   return ensureStatementBoundary(script)
     .replace(VERTEX_SHADER_PLACEHOLDER, escapeTemplateLiteral(vertSrc))

@@ -8,8 +8,7 @@ use super::{
     BindingMetadata, BindingType, CompactString, MacroTracker, Path, RootNode, ScopeChain,
     ScopeData, ScopeKind, ScriptParseResult, VirtualTsConfig, VirtualTsGenerator, VirtualTsOutput,
 };
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_carton::{profile, String, ToCompactString};
 
 impl VirtualTsGenerator {
     /// Extract setup scope info from ScopeChain.
@@ -54,28 +53,46 @@ impl VirtualTsGenerator {
         self.write_line("");
 
         // Extract and emit imports at module scope
-        self.emit_module_imports(script_content, from_file);
+        profile!(
+            "croquis.virtual_ts.emit_module_imports",
+            self.emit_module_imports(script_content, from_file)
+        );
 
         // Open setup function with generics
-        self.emit_setup_function_open(&generic, is_async);
+        profile!(
+            "croquis.virtual_ts.emit_setup_open",
+            self.emit_setup_function_open(&generic, is_async)
+        );
 
         // Define compiler macros as actual functions (NOT declare)
         // This makes them truly scoped to __setup only
-        self.emit_compiler_macro_definitions(&parse_result.macros);
+        profile!(
+            "croquis.virtual_ts.emit_macros",
+            self.emit_compiler_macro_definitions(&parse_result.macros)
+        );
 
         // Emit the user's script content (minus imports which are at module level)
-        self.emit_setup_body(script_content);
+        profile!(
+            "croquis.virtual_ts.emit_setup_body",
+            self.emit_setup_body(script_content)
+        );
 
         // If template exists, emit template scope nested inside setup
         if let Some(ast) = template_ast {
             self.block_offset = config.template_offset;
-            self.emit_template_scope(ast, &parse_result.bindings);
+            profile!(
+                "croquis.virtual_ts.emit_template_scope",
+                self.emit_template_scope(ast, &parse_result.bindings)
+            );
         }
 
         // Close setup function
-        self.emit_setup_function_close();
+        profile!(
+            "croquis.virtual_ts.emit_setup_close",
+            self.emit_setup_function_close()
+        );
 
-        self.create_output()
+        profile!("croquis.virtual_ts.create_output", self.create_output())
     }
 
     /// Generate virtual TypeScript from script setup content (legacy API).
@@ -100,27 +117,48 @@ impl VirtualTsGenerator {
         self.write_line("");
 
         // Extract and emit imports at module scope
-        self.emit_module_imports(script_content, from_file);
+        profile!(
+            "croquis.virtual_ts.emit_module_imports",
+            self.emit_module_imports(script_content, from_file)
+        );
 
         // Open setup function (no generics in legacy mode)
-        self.emit_setup_function_open(&None, false);
+        profile!(
+            "croquis.virtual_ts.emit_setup_open",
+            self.emit_setup_function_open(&None, false)
+        );
 
         // Define compiler macros as actual functions (NOT declare)
-        self.emit_default_compiler_macro_definitions();
+        profile!(
+            "croquis.virtual_ts.emit_default_macros",
+            self.emit_default_compiler_macro_definitions()
+        );
 
         // Emit the user's script content (minus imports)
-        self.emit_setup_body(script_content);
+        profile!(
+            "croquis.virtual_ts.emit_setup_body",
+            self.emit_setup_body(script_content)
+        );
 
         // Generate props/emits types for component signature
         self.emit_line("");
         self.emit_line("// Props/Emits types for component");
-        self.generate_props_type(bindings);
-        self.generate_emits_type(bindings);
+        profile!(
+            "croquis.virtual_ts.generate_props_type",
+            self.generate_props_type(bindings)
+        );
+        profile!(
+            "croquis.virtual_ts.generate_emits_type",
+            self.generate_emits_type(bindings)
+        );
 
         // Close setup function
-        self.emit_setup_function_close();
+        profile!(
+            "croquis.virtual_ts.emit_setup_close",
+            self.emit_setup_function_close()
+        );
 
-        self.create_output()
+        profile!("croquis.virtual_ts.create_output", self.create_output())
     }
 
     /// Extract imports from script content and emit at module level.

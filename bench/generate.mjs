@@ -3,7 +3,7 @@
  * Generate SFC files for benchmarking
  * Usage: node generate.mjs [count]
  */
-import { writeFileSync, mkdirSync, readdirSync, statSync } from "fs";
+import { writeFileSync, mkdirSync, readdirSync, rmSync, statSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -347,6 +347,12 @@ mkdirSync(benchDir, { recursive: true });
 
 console.log(`Generating ${FILE_COUNT} SFC files in ${benchDir}...`);
 
+for (const file of readdirSync(benchDir)) {
+  if (file.startsWith("Component") && file.endsWith(".vue")) {
+    rmSync(join(benchDir, file), { force: true });
+  }
+}
+
 for (let i = 0; i < FILE_COUNT; i++) {
   const template = templates[i % templates.length];
   const filename = `Component${String(i).padStart(4, "0")}.vue`;
@@ -428,7 +434,7 @@ const indexHtml = `<!DOCTYPE html>
 <head><title>Bench</title></head>
 <body>
   <div id="app"></div>
-  <script type="module" src="./main.ts"><\/script>
+  <script type="module" src="./main.ts"></script>
 </body>
 </html>
 `;

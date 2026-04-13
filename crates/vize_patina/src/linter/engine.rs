@@ -5,6 +5,7 @@
 
 use crate::{context::LintContext, diagnostic::LintSummary, visitor::LintVisitor};
 use vize_armature::Parser;
+use vize_carton::profile;
 use vize_carton::Allocator;
 use vize_carton::String;
 use vize_carton::ToCompactString;
@@ -21,7 +22,7 @@ impl Linter {
 
         for rule in self.registry.rules() {
             ctx.current_rule = rule.meta().name;
-            rule.run_on_sfc(&mut ctx);
+            profile!("patina.sfc.rule.run_on_sfc", rule.run_on_sfc(&mut ctx));
         }
 
         let error_count = ctx.error_count();
@@ -78,7 +79,7 @@ impl Linter {
     ) -> LintResult {
         // Parse the template
         let parser = Parser::new(allocator.as_bump(), source);
-        let (root, _parse_errors) = parser.parse();
+        let (root, _parse_errors) = profile!("patina.template.parse", parser.parse());
 
         // Create lint context with locale, help level, and enabled rules filter
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
@@ -87,7 +88,7 @@ impl Linter {
 
         // Run visitor with all rules (filtering happens in context)
         let mut visitor = LintVisitor::new(&mut ctx, self.registry.rules());
-        visitor.visit_root(&root);
+        profile!("patina.template.visit", visitor.visit_root(&root));
 
         // Collect results (error/warning counts are cached)
         let error_count = ctx.error_count();
@@ -129,22 +130,36 @@ impl Linter {
     /// Uses ultra-fast template extraction optimized for linting.
     #[inline]
     pub fn lint_sfc(&self, source: &str, filename: &str) -> LintResult {
-        let sfc_result = self.lint_sfc_level(source, filename);
+        let sfc_result = profile!(
+            "patina.sfc.level_rules",
+            self.lint_sfc_level(source, filename)
+        );
 
         #[cfg(not(target_arch = "wasm32"))]
         if super::native_type_aware::has_active_type_aware_rules(self) {
-            let template_result =
-                super::native_type_aware::lint_sfc_with_tsgo(self, source, filename);
+            let template_result = profile!(
+                "patina.type_aware.lint_sfc_with_corsa",
+                super::native_type_aware::lint_sfc_with_corsa(self, source, filename)
+            );
             return Self::merge_lint_results(template_result, sfc_result);
         }
 
         if super::script_rules::has_active_builtin_script_rules(self) {
-            let template_result = match super::script_rules::parse_sfc_for_lint(source, filename) {
+            let template_result = match profile!(
+                "patina.sfc.parse_for_script_rules",
+                super::script_rules::parse_sfc_for_lint(source, filename)
+            ) {
                 Ok(descriptor) => {
-                    super::script_rules::lint_with_descriptor(self, filename, &descriptor)
+                    profile!(
+                        "patina.sfc.script_rules",
+                        super::script_rules::lint_with_descriptor(self, filename, &descriptor)
+                    )
                 }
                 Err(_) => {
-                    if let Some((content, byte_offset)) = extract_template_fast(source) {
+                    if let Some((content, byte_offset)) = profile!(
+                        "patina.template.extract_fast",
+                        extract_template_fast(source)
+                    ) {
                         let mut fallback = self.lint_template(&content, filename);
                         if byte_offset > 0 {
                             for diag in &mut fallback.diagnostics {
@@ -171,7 +186,10 @@ impl Linter {
         }
 
         // Fast template extraction using memchr
-        let (content, byte_offset) = match extract_template_fast(source) {
+        let (content, byte_offset) = match profile!(
+            "patina.template.extract_fast",
+            extract_template_fast(source)
+        ) {
             Some(r) => r,
             None => {
                 if sfc_result.has_diagnostics() {

@@ -11,7 +11,7 @@ mod styles;
 #[cfg(test)]
 mod tests;
 
-use crate::compile_script::{compile_script_setup_inline, TemplateParts};
+use crate::compile_script::{compile_script_setup_inline_with_context, TemplateParts};
 use crate::compile_template::{
     compile_template_block, compile_template_block_vapor, extract_template_parts,
     extract_template_parts_full,
@@ -27,7 +27,7 @@ use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
-use vize_carton::{String, ToCompactString};
+use vize_carton::{profile, String, ToCompactString};
 
 /// Compile an SFC descriptor into JavaScript and CSS
 pub fn compile_sfc(
@@ -41,13 +41,21 @@ pub fn compile_sfc(
 
     let filename = options.script.id.as_deref().unwrap_or("anonymous.vue");
 
+    let has_styles = !descriptor.styles.is_empty();
+    let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     // Use externally-provided scope ID if available, otherwise generate from filename.
     // The external scope ID ensures consistency with JS-side SHA-256 generation.
-    let scope_id = options
-        .scope_id
-        .clone()
-        .unwrap_or_else(|| generate_scope_id(filename));
-    let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
+    // Template/script-only SFCs do not need the hash.
+    let needs_scope_id =
+        has_styles || !descriptor.css_vars.is_empty() || options.scope_id.is_some();
+    let scope_id = if needs_scope_id {
+        options
+            .scope_id
+            .clone()
+            .unwrap_or_else(|| generate_scope_id(filename))
+    } else {
+        String::default()
+    };
 
     // Vapor components currently render on the client. For SSR we fall back to
     // the standard VDOM compiler and let the client hydrate with Vapor output.
@@ -95,7 +103,10 @@ pub fn compile_sfc(
     if !has_script && !has_script_setup && has_template {
         let template = descriptor.template.as_ref().unwrap();
         let template_result = if is_vapor {
-            compile_template_block_vapor(template, &scope_id, has_scoped, None)
+            profile!(
+                "atelier.sfc.template.vapor",
+                compile_template_block_vapor(template, &scope_id, has_scoped, None)
+            )
         } else {
             // Enable hoisting for template-only SFCs (hoisted consts go at module level)
             let mut template_opts = options.template.clone();
@@ -105,14 +116,17 @@ pub fn compile_sfc(
             // Don't pass scope IDs to template compiler - scoped CSS is handled by
             // runtime __scopeId and CSS transformation, not by adding attributes
             // to template elements during compilation.
-            compile_template_block(
-                template,
-                &template_opts,
-                &scope_id,
-                options.template.ssr && has_scoped,
-                is_ts,
-                None,
-                None,
+            profile!(
+                "atelier.sfc.template.compile",
+                compile_template_block(
+                    template,
+                    &template_opts,
+                    &scope_id,
+                    options.template.ssr && has_scoped,
+                    is_ts,
+                    None,
+                    None,
+                )
             )
         };
 
@@ -133,7 +147,10 @@ pub fn compile_sfc(
         }
 
         // Compile styles
-        let all_css = compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings);
+        let all_css = profile!(
+            "atelier.sfc.styles",
+            compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
+        );
         if !all_css.is_empty() {
             css = Some(all_css);
         }
@@ -160,12 +177,17 @@ pub fn compile_sfc(
 
         // Rewrite `export default` to `const _sfc_main = ...`
         // Parse as TypeScript if source is TypeScript
-        let (rewritten_script, _has_default) =
-            rewrite_default(&script.content, "_sfc_main", source_is_ts);
+        let (rewritten_script, _has_default) = profile!(
+            "atelier.sfc.normal_script.rewrite_default",
+            rewrite_default(&script.content, "_sfc_main", source_is_ts)
+        );
 
         // Transpile TypeScript to JavaScript if needed
         let final_script = if source_is_ts && !is_ts {
-            crate::compile_script::typescript::transform_typescript_to_js(&rewritten_script)
+            profile!(
+                "atelier.sfc.normal_script.ts_to_js",
+                crate::compile_script::typescript::transform_typescript_to_js(&rewritten_script)
+            )
         } else {
             rewritten_script
         };
@@ -174,7 +196,10 @@ pub fn compile_sfc(
         if has_template {
             let template = descriptor.template.as_ref().unwrap();
             let template_result = if is_vapor {
-                compile_template_block_vapor(template, &scope_id, has_scoped, None)
+                profile!(
+                    "atelier.sfc.template.vapor",
+                    compile_template_block_vapor(template, &scope_id, has_scoped, None)
+                )
             } else {
                 let mut template_opts = options.template.clone();
                 let mut dom_opts = template_opts.compiler_options.take().unwrap_or_default();
@@ -183,14 +208,17 @@ pub fn compile_sfc(
 
                 // Don't pass scope IDs to template compiler - scoped CSS is handled by
                 // runtime __scopeId and CSS transformation.
-                compile_template_block(
-                    template,
-                    &template_opts,
-                    &scope_id,
-                    options.template.ssr && has_scoped,
-                    is_ts,
-                    None, // No bindings for normal scripts
-                    None, // No Croquis for normal scripts
+                profile!(
+                    "atelier.sfc.template.compile",
+                    compile_template_block(
+                        template,
+                        &template_opts,
+                        &scope_id,
+                        options.template.ssr && has_scoped,
+                        is_ts,
+                        None, // No bindings for normal scripts
+                        None, // No Croquis for normal scripts
+                    )
                 )
             };
 
@@ -233,7 +261,10 @@ pub fn compile_sfc(
         }
 
         // Compile styles
-        let all_css = compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings);
+        let all_css = profile!(
+            "atelier.sfc.styles",
+            compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
+        );
         if !all_css.is_empty() {
             css = Some(all_css);
         }
@@ -273,35 +304,49 @@ pub fn compile_sfc(
             .lang
             .as_ref()
             .is_some_and(|l| l == "ts" || l == "tsx");
-        Some(extract_normal_script_content(
-            &script.content,
-            source_is_ts,
-            is_ts,
+        Some(profile!(
+            "atelier.sfc.normal_script.extract",
+            extract_normal_script_content(&script.content, source_is_ts, is_ts)
         ))
     } else {
         None
     };
 
     // 1. Croquis parser: rich analysis with ReactivityTracker
-    let croquis = crate::script::analyze_script_setup_to_summary(&script_setup.content);
+    let croquis = profile!(
+        "atelier.sfc.script_setup.croquis",
+        crate::script::analyze_script_setup_to_summary(&script_setup.content)
+    );
     let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings);
 
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
-    let mut ctx = ScriptCompileContext::new(&script_setup.content);
+    let mut ctx = profile!(
+        "atelier.sfc.script_context.new",
+        ScriptCompileContext::new(&script_setup.content)
+    );
 
     // Merge type definitions from normal <script> block so that
     // defineProps<TypeRef>() can resolve types defined there.
     if has_script {
         let script = descriptor.script.as_ref().unwrap();
-        ctx.collect_types_from(&script.content);
+        profile!(
+            "atelier.sfc.script_context.collect_normal_types",
+            ctx.collect_types_from(&script.content)
+        );
     }
-    ctx.collect_imported_types_from_path(&script_setup.content, filename);
+    profile!(
+        "atelier.sfc.script_context.collect_setup_import_types",
+        ctx.collect_imported_types_from_path(&script_setup.content, filename)
+    );
     if has_script {
         let script = descriptor.script.as_ref().unwrap();
-        ctx.collect_imported_types_from_path(&script.content, filename);
+        profile!(
+            "atelier.sfc.script_context.collect_normal_import_types",
+            ctx.collect_imported_types_from_path(&script.content, filename)
+        );
     }
-    ctx.analyze();
+    profile!("atelier.sfc.script_context.analyze", ctx.analyze());
 
     // 3. Merge Props bindings from ScriptCompileContext (type resolution fallback)
     //    Croquis can't resolve interface references, so we take Props from the legacy analyzer
@@ -336,29 +381,38 @@ pub fn compile_sfc(
     // and identifier prefix resolution (avoiding incorrect `_ctx.` prefix).
     if has_script {
         let script = descriptor.script.as_ref().unwrap();
-        register_normal_script_bindings(&script.content, &mut script_bindings);
+        profile!(
+            "atelier.sfc.normal_script.register_bindings",
+            register_normal_script_bindings(&script.content, &mut script_bindings)
+        );
     }
 
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {
         if is_vapor {
-            Some(compile_template_block_vapor(
-                template,
-                &scope_id,
-                has_scoped,
-                Some(&script_bindings),
+            Some(profile!(
+                "atelier.sfc.template.vapor",
+                compile_template_block_vapor(
+                    template,
+                    &scope_id,
+                    has_scoped,
+                    Some(&script_bindings)
+                )
             ))
         } else {
             // Don't pass scope IDs to template compiler - scoped CSS is handled by
             // runtime __scopeId and CSS transformation.
-            Some(compile_template_block(
-                template,
-                &options.template,
-                &scope_id,
-                options.template.ssr && has_scoped,
-                is_ts,
-                Some(&script_bindings), // Pass bindings for proper ref handling
-                Some(croquis),          // Pass Croquis for enhanced transforms
+            Some(profile!(
+                "atelier.sfc.template.compile",
+                compile_template_block(
+                    template,
+                    &options.template,
+                    &scope_id,
+                    options.template.ssr && has_scoped,
+                    is_ts,
+                    Some(&script_bindings), // Pass bindings for proper ref handling
+                    Some(croquis),          // Pass Croquis for enhanced transforms
+                )
             ))
         }
     } else {
@@ -376,8 +430,10 @@ pub fn compile_sfc(
     ) = match &template_result {
         Some(Ok(template_code)) => {
             if is_vapor || options.template.ssr {
-                let (imports, hoisted, render_fn, render_fn_name) =
-                    extract_template_parts_full(template_code);
+                let (imports, hoisted, render_fn, render_fn_name) = profile!(
+                    "atelier.sfc.template.extract_parts_full",
+                    extract_template_parts_full(template_code)
+                );
                 (
                     imports,
                     hoisted,
@@ -387,8 +443,10 @@ pub fn compile_sfc(
                     String::default(),
                 )
             } else {
-                let (imports, hoisted, preamble, body, render_fn_name) =
-                    extract_template_parts(template_code);
+                let (imports, hoisted, preamble, body, render_fn_name) = profile!(
+                    "atelier.sfc.template.extract_parts",
+                    extract_template_parts(template_code)
+                );
                 (
                     imports,
                     hoisted,
@@ -431,25 +489,28 @@ pub fn compile_sfc(
         .as_ref()
         .is_some_and(|l| l == "ts" || l == "tsx");
 
-    let script_result = compile_script_setup_inline(
-        &script_setup.content,
-        &component_name,
-        is_ts,
-        source_is_ts,
-        is_vapor,
-        TemplateParts {
-            imports: &template_imports,
-            hoisted: &template_hoisted,
-            render_fn: &template_render_fn,
-            render_fn_name: template_render_fn_name,
-            preamble: &template_preamble,
-            render_body: &render_body,
-            render_is_block: is_vapor,
-        },
-        normal_script_content.as_deref(),
-        &descriptor.css_vars,
-        &scope_id,
-        Some(filename),
+    let script_result = profile!(
+        "atelier.sfc.script_setup.inline_compile",
+        compile_script_setup_inline_with_context(
+            ctx,
+            &script_setup.content,
+            &component_name,
+            is_ts,
+            source_is_ts,
+            is_vapor,
+            TemplateParts {
+                imports: &template_imports,
+                hoisted: &template_hoisted,
+                render_fn: &template_render_fn,
+                render_fn_name: template_render_fn_name,
+                preamble: &template_preamble,
+                render_body: &render_body,
+                render_is_block: is_vapor,
+            },
+            normal_script_content.as_deref(),
+            &descriptor.css_vars,
+            &scope_id,
+        )
     )?;
 
     // The inline mode compile_script_setup_inline generates a complete output
@@ -457,7 +518,10 @@ pub fn compile_sfc(
     code.push_str(&script_result.code);
 
     // Compile styles
-    let all_css = compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings);
+    let all_css = profile!(
+        "atelier.sfc.styles",
+        compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
+    );
     if !all_css.is_empty() {
         css = Some(all_css);
     }

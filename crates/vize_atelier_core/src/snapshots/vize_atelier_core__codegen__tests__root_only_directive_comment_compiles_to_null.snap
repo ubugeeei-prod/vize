@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return null
+}

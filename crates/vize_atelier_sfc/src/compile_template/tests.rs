@@ -12,7 +12,7 @@ use std::borrow::Cow;
 fn test_add_scope_id_to_template() {
     let input = r#"const t0 = _template("<div class='container'>Hello</div>")"#;
     let result = add_scope_id_to_template(input, "data-v-abc123");
-    assert!(result.contains("data-v-abc123"));
+    insta::assert_snapshot!(result.as_str());
 }
 
 #[test]
@@ -45,15 +45,7 @@ export function render(_ctx) {
     let result = transform_vapor_template_output(vapor_code, None, &template, None)
         .expect("current Vapor output should be transformed");
 
-    assert!(result.contains("from 'vue';"));
-    assert!(result.contains("function render(_ctx, $props, $emit, $attrs, $slots) {"));
-    assert!(result.contains("const n0 = t0()"));
-    assert!(result.contains("return n0"));
-    assert!(
-        !result.contains("export function render(_ctx)"),
-        "inner render function should be removed. Got:\n{}",
-        result
-    );
+    insta::assert_snapshot!(result.as_str());
 }
 
 // --- count_braces_outside_strings tests ---
@@ -96,13 +88,8 @@ export function render(_ctx, _cache) {
 
     let (imports, _hoisted, render_fn, render_fn_name) = extract_template_parts_full(template_code);
 
-    assert!(imports.contains("import"));
     assert_eq!(render_fn_name, "render");
-    assert!(
-        render_fn.contains("_toDisplayString"),
-        "Render function was truncated. Got:\n{}",
-        render_fn
-    );
+    insta::assert_debug_snapshot!((&imports, &render_fn));
     let trimmed = render_fn.trim();
     assert!(
         trimmed.ends_with('}'),
@@ -124,10 +111,8 @@ export function render(_ctx, _cache) {
     let (imports, hoisted, _preamble, render_body, render_fn_name) =
         extract_template_parts(template_code);
 
-    assert!(imports.contains("import"));
-    assert!(hoisted.contains("_hoisted_1"));
     assert_eq!(render_fn_name, "render");
-    assert!(render_body.contains("_createVNode"));
+    insta::assert_debug_snapshot!((&imports, &hoisted, &render_body));
 }
 
 #[test]
@@ -145,10 +130,8 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
     let (_imports, hoisted, _preamble, render_body, render_fn_name) =
         extract_template_parts(template_code);
 
-    assert!(hoisted.contains("const t0 = _template"));
     assert_eq!(render_fn_name, "render");
-    assert!(render_body.contains("const n0 = t0()"));
-    assert!(render_body.contains("_renderEffect"));
+    insta::assert_debug_snapshot!((&hoisted, &render_body));
 }
 
 #[test]
@@ -165,10 +148,8 @@ function render(_ctx, $props, $emit, $attrs, $slots) {
 
     let (_imports, hoisted, render_fn, render_fn_name) = extract_template_parts_full(template_code);
 
-    assert!(hoisted.contains("const t0 = _template"));
-    assert!(hoisted.contains("_delegateEvents(\"click\")"));
     assert_eq!(render_fn_name, "render");
-    assert!(render_fn.contains("const n0 = t0()"));
+    insta::assert_debug_snapshot!((&hoisted, &render_fn));
 }
 
 #[test]
@@ -181,9 +162,8 @@ export function ssrRender(_ctx, _push, _parent, _attrs) {
 
     let (imports, _hoisted, render_fn, render_fn_name) = extract_template_parts_full(template_code);
 
-    assert!(imports.contains("vue/server-renderer"));
     assert_eq!(render_fn_name, "ssrRender");
-    assert!(render_fn.contains("_ssrRenderComponent"));
+    insta::assert_debug_snapshot!((&imports, &render_fn));
 }
 
 #[test]
@@ -259,21 +239,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
     let (_imports, _hoisted, _preamble, render_body, _render_fn_name) =
         extract_template_parts(template_code);
 
-    assert!(
-        render_body.contains("_toDisplayString"),
-        "Should contain the template literal expression. Got:\n{}",
-        render_body
-    );
-    assert!(
-        render_body.contains("_createCommentVNode"),
-        "Should contain the v-if comment node (else branch). Got:\n{}",
-        render_body
-    );
-    assert!(
-        render_body.contains("\"no\""),
-        "Should contain the v-else branch content. Got:\n{}",
-        render_body
-    );
+    insta::assert_snapshot!(render_body.as_str());
 }
 
 #[test]
@@ -289,11 +255,7 @@ export function render(_ctx, _cache) {
     let (_imports, _hoisted, render_fn, _render_fn_name) =
         extract_template_parts_full(template_code);
 
-    assert!(
-        render_fn.contains("_toDisplayString"),
-        "Render function should contain the expression. Got:\n{}",
-        render_fn
-    );
+    insta::assert_snapshot!(render_fn.as_str());
     let trimmed = render_fn.trim();
     assert!(
         trimmed.ends_with('}'),
@@ -426,16 +388,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
     let (_imports, _hoisted, _preamble, render_body, _render_fn_name) =
         extract_template_parts(template_code);
 
-    assert!(
-        render_body.contains("_createCommentVNode"),
-        "Should contain comment node (else branch). Got:\n{}",
-        render_body
-    );
-    assert!(
-        render_body.contains("\"after\""),
-        "Should contain content after template literal. Got:\n{}",
-        render_body
-    );
+    insta::assert_snapshot!(render_body.as_str());
 }
 
 #[test]
@@ -460,9 +413,5 @@ export function render(_ctx, _cache) {
         "Render function should end with closing brace. Got:\n{}",
         render_fn
     );
-    assert!(
-        render_fn.contains("items"),
-        "Render function should contain the full expression. Got:\n{}",
-        render_fn
-    );
+    insta::assert_snapshot!(render_fn.as_str());
 }

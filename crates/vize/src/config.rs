@@ -44,7 +44,7 @@ pub struct CheckConfig {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub globals: Option<String>,
 
-    /// Override the number of parallel tsgo servers used by `vize check`.
+    /// Override the number of parallel Corsa servers used by `vize check`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub servers: Option<usize>,
 }
@@ -126,7 +126,7 @@ pub const VIZE_CONFIG_SCHEMA: &str = r#"{
         "servers": {
           "type": "integer",
           "minimum": 1,
-          "description": "Override the number of parallel tsgo language servers used by `vize check`."
+          "description": "Override the number of parallel Corsa language servers used by `vize check`."
         }
       },
       "additionalProperties": false

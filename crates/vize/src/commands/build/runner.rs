@@ -19,8 +19,14 @@ use vize_atelier_sfc::{
     StyleCompileOptions, TemplateCompileOptions,
 };
 use vize_carton::cstr;
+use vize_carton::profile;
+use vize_carton::profiler::global_profiler;
 use vize_carton::String;
 use vize_carton::ToCompactString;
+
+use crate::commands::profile::{
+    print_profile_report, ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport,
+};
 
 use super::{
     config::{
@@ -52,6 +58,9 @@ pub(crate) fn run(args: BuildArgs) {
     let collect_elapsed = start.elapsed();
 
     if args.profile {
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
         eprintln!(
             "Found {} files in {:.4}s. Compiling using {} threads...",
             files.len(),
@@ -251,6 +260,9 @@ pub(crate) fn run(args: BuildArgs) {
 
     // Profile breakdown
     if args.profile {
+        let profiler = global_profiler();
+        let operation_summary = profiler.summary();
+        profiler.disable();
         let total_parse = stats
             .total_parse_time
             .lock()
@@ -262,62 +274,118 @@ pub(crate) fn run(args: BuildArgs) {
             .map(|d| *d)
             .unwrap_or(Duration::ZERO);
 
-        eprintln!("Timing breakdown:");
-        eprintln!("  File collection: {:.4}s", collect_elapsed.as_secs_f64());
-        eprintln!(
-            "  Compilation:     {:.4}s (wall clock)",
-            compile_elapsed.as_secs_f64()
-        );
-        eprintln!(
-            "    - Parse total: {:.4}s (cumulative across threads)",
-            total_parse.as_secs_f64()
-        );
-        eprintln!(
-            "    - Compile total: {:.4}s (cumulative across threads)",
-            total_compile.as_secs_f64()
-        );
-        eprintln!("  I/O operations:  {:.4}s", io_elapsed.as_secs_f64());
-        eprintln!("  Total:           {:.4}s", total_elapsed.as_secs_f64());
-        eprintln!();
-
-        // Show top 5 slowest files
         let mut all_profiles = profiles.into_inner().unwrap_or_default();
-        if !all_profiles.is_empty() {
-            all_profiles.sort_by(|a, b| b.total_time.cmp(&a.total_time));
-            eprintln!("Top 5 slowest files:");
-            for file in all_profiles.iter().take(5) {
-                eprintln!(
-                    "  {:.2}ms - {} ({} bytes)",
-                    file.total_time.as_secs_f64() * 1000.0,
-                    file.path.display(),
-                    file.file_size,
-                );
-            }
-            eprintln!();
-        }
+        all_profiles.sort_by(|a, b| b.total_time.cmp(&a.total_time));
 
-        // Statistics
+        let phases = [
+            ProfilePhase {
+                name: "collect files",
+                duration: collect_elapsed,
+                kind: ProfilePhaseKind::Wall,
+                note: "ignore-aware walk",
+            },
+            ProfilePhase {
+                name: "compile wall",
+                duration: compile_elapsed,
+                kind: ProfilePhaseKind::Wall,
+                note: "parallel worker elapsed time",
+            },
+            ProfilePhase {
+                name: "parse total",
+                duration: total_parse,
+                kind: ProfilePhaseKind::Cumulative,
+                note: "sum across worker threads",
+            },
+            ProfilePhase {
+                name: "compile total",
+                duration: total_compile,
+                kind: ProfilePhaseKind::Cumulative,
+                note: "sum across worker threads",
+            },
+            ProfilePhase {
+                name: "write outputs",
+                duration: io_elapsed,
+                kind: ProfilePhaseKind::Wall,
+                note: "filesystem writes",
+            },
+        ];
+
+        let file_rows: Vec<_> = all_profiles
+            .iter()
+            .map(|file| ProfileFileRow {
+                path: file.path.clone(),
+                bytes: file.file_size,
+                total: file.total_time,
+                primary_label: "parse",
+                primary: file.parse_time,
+                secondary_label: "compile",
+                secondary: file.compile_time,
+                note: Some(cstr!(
+                    "template {} B, script {} B, styles {}",
+                    file.template_size,
+                    file.script_size,
+                    file.style_count
+                )),
+            })
+            .collect();
+
+        let mut recommendations: Vec<String> = Vec::new();
+        if let Some(entry) = operation_summary.entries.first() {
+            recommendations.push(cstr!(
+                "Deepest hot operation: {} took {:.2}ms total across {} call(s).",
+                entry.name,
+                entry.total.as_secs_f64() * 1000.0,
+                entry.count
+            ));
+        }
+        for file in all_profiles
+            .iter()
+            .filter(|file| file.is_slow(slow_threshold))
+            .take(4)
+        {
+            let suggestions = file.suggestions();
+            if suggestions.is_empty() {
+                recommendations.push(cstr!(
+                    "{} crossed the slow threshold; inspect template/script balance first.",
+                    file.path.display()
+                ));
+            } else {
+                for suggestion in suggestions.into_iter().take(2) {
+                    recommendations.push(cstr!("{}: {}", file.path.display(), suggestion));
+                }
+            }
+        }
         let total_bytes = stats.total_bytes.load(Ordering::Relaxed);
         let output_bytes = stats.output_bytes.load(Ordering::Relaxed);
-        eprintln!("Statistics:");
-        eprintln!("  Files processed: {}/{}", success, stats.total_files);
-        eprintln!(
-            "  Input size:  {} bytes ({:.2} KB)",
-            total_bytes,
-            total_bytes as f64 / 1024.0
-        );
-        eprintln!(
-            "  Output size: {} bytes ({:.2} KB)",
-            output_bytes,
-            output_bytes as f64 / 1024.0
-        );
-        if total_bytes > 0 {
-            eprintln!(
-                "  Throughput:  {:.2} KB/s",
-                (total_bytes as f64 / 1024.0) / compile_elapsed.as_secs_f64()
+        if matches!(args.format, OutputFormat::Js | OutputFormat::Json)
+            && io_elapsed > compile_elapsed
+        {
+            recommendations.push(
+                "Output I/O is larger than compile wall time; use --format stats when profiling compiler cost only."
+                    .into(),
             );
         }
-        eprintln!();
+
+        let summary = cstr!(
+            "{} of {} file(s) compiled, {} failed, {} output byte(s), {} worker thread(s)",
+            success,
+            stats.total_files,
+            failed,
+            output_bytes,
+            rayon::current_num_threads()
+        );
+        let report = ProfileReport {
+            title: "build",
+            summary: summary.as_str(),
+            total: total_elapsed,
+            phases: &phases,
+            files: &file_rows,
+            slow_threshold,
+            throughput_bytes: Some(total_bytes),
+            operations: Some(&operation_summary),
+            recommendations: &recommendations,
+        };
+        print_profile_report(&report);
     }
 
     // Final summary
@@ -469,11 +537,14 @@ fn compile_file_with_profile(
         ..Default::default()
     };
 
-    let descriptor = parse_sfc(&source, parse_opts).map_err(|e| CompileError {
-        path: path.clone(),
-        error: e.message,
-        phase: ErrorPhase::Parse,
-    })?;
+    let descriptor =
+        profile!("atelier.sfc.parse", parse_sfc(&source, parse_opts)).map_err(|e| {
+            CompileError {
+                path: path.clone(),
+                error: e.message,
+                phase: ErrorPhase::Parse,
+            }
+        })?;
     let parse_time = parse_start.elapsed();
     stats.add_parse_time(parse_time);
 
@@ -525,7 +596,11 @@ fn compile_file_with_profile(
         scope_id: None,
     };
 
-    let result = compile_sfc(&descriptor, compile_opts).map_err(|e| CompileError {
+    let result = profile!(
+        "atelier.sfc.compile",
+        compile_sfc(&descriptor, compile_opts)
+    )
+    .map_err(|e| CompileError {
         path: path.clone(),
         error: e.message,
         phase: ErrorPhase::Compile,

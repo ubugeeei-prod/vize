@@ -1,6 +1,6 @@
 {
   "name": "vize",
-  "version": "0.39.0",
+  "version": "0.46.0",
   "description": "Vize - High-performance Vue.js toolchain in Rust",
   "keywords": [
     "cli",
@@ -22,20 +22,24 @@
   "files": [
     "bin",
     "dist",
-    "src"
+    "src",
+    "schemas",
+    "pkl"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
     },
     "./config": {
-      "import": "./dist/config.js",
-      "types": "./dist/config.d.ts"
-    }
+      "import": "./dist/config.mjs",
+      "types": "./dist/config.d.mts"
+    },
+    "./schemas/vize.config.schema.json": "./schemas/vize.config.schema.json",
+    "./pkl/vize.pkl": "./pkl/vize.pkl"
   },
   "publishConfig": {
     "access": "public"

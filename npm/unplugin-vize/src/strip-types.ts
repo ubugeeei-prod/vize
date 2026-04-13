@@ -1,4 +1,3 @@
-import type { SourceMap, TransformResult } from "oxc-transform";
 import { transform } from "oxc-transform";
 
 function formatErrorMessage(error: {
@@ -16,12 +15,8 @@ function formatErrorMessage(error: {
   return parts.join("\n");
 }
 
-export async function stripTypeScript(
-  filePath: string,
-  code: string,
-  sourceMap: boolean,
-): Promise<{ code: string; map: SourceMap | null }> {
-  const result: TransformResult = await transform(filePath, code, {
+export async function stripTypeScript(filePath: string, code: string, sourceMap: boolean) {
+  const result = await transform(filePath, code, {
     lang: "ts",
     sourcemap: sourceMap,
     sourceType: "module",

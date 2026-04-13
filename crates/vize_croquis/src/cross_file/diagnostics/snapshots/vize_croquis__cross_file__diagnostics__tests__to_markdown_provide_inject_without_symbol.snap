@@ -1,0 +1,54 @@
+---
+source: crates/vize_croquis/src/cross_file/diagnostics/diagnostics_tests.rs
+expression: markdown.as_str()
+---
+🟡 **WARNING** `vize:croquis/cf/provide-without-symbol`
+
+### provide() uses string key
+
+**Problem**: `provide('user')` uses a string key instead of Symbol/InjectionKey.
+
+**Why string keys are problematic**:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  String Keys          │  Symbol/InjectionKey           │
+├───────────────────────┼────────────────────────────────┤
+│  ❌ Name collisions    │  ✅ Guaranteed uniqueness       │
+│  ❌ No type safety     │  ✅ Full TypeScript inference   │
+│  ❌ Refactoring breaks │  ✅ IDE rename support          │
+│  ❌ Hard to trace      │  ✅ Go-to-definition works      │
+└───────────────────────┴────────────────────────────────┘
+```
+
+**Name collision example**:
+
+```ts
+// ComponentA.vue
+provide('user', myData)
+
+// LibraryX (unknown to you)
+provide('user', otherData)  // 💥 Collision!
+```
+
+**Type-safe pattern with InjectionKey**:
+
+```ts
+// injection-keys.ts
+import type { InjectionKey, Ref } from 'vue'
+
+export interface UserState {
+  name: string
+  id: number
+}
+
+export const UserKey: InjectionKey<Ref<UserState>> = Symbol('user')
+
+// Provider.vue
+import { UserKey } from './injection-keys'
+provide(UserKey, userData)  // ✅ Type-checked
+
+// Consumer.vue
+import { UserKey } from './injection-keys'
+const user = inject(UserKey)  // ✅ Type: Ref<UserState> | undefined
+```

@@ -7,7 +7,7 @@
     clippy::disallowed_macros
 )]
 
-use super::{to_js_value, utf8_byte_to_char_offset};
+use super::{to_js_value, utf8_byte_to_utf16_offset};
 use vize_carton::Bump;
 use wasm_bindgen::prelude::*;
 
@@ -235,8 +235,8 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                     let utf8_end = d.primary_end_offset + script_offset;
 
                     // Convert to character offsets (handles emojis and multi-byte chars)
-                    let char_start = utf8_byte_to_char_offset(file_content, utf8_start);
-                    let char_end = utf8_byte_to_char_offset(file_content, utf8_end);
+                    let char_start = utf8_byte_to_utf16_offset(file_content, utf8_start);
+                    let char_end = utf8_byte_to_utf16_offset(file_content, utf8_end);
 
                     (char_start, char_end)
                 };
@@ -267,7 +267,7 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                             .map(|s| s.as_str())
                             .unwrap_or("");
                         let adjusted_offset =
-                            utf8_byte_to_char_offset(related_content, utf8_offset);
+                            utf8_byte_to_utf16_offset(related_content, utf8_offset);
 
                         serde_json::json!({
                             "file": file_path,

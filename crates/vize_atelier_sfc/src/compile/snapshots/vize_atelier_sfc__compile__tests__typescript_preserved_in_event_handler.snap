@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode } from "vue"
+
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("option", { value: "a" }, "A")
+
+type PresetKey = 'a' | 'b'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  setup(__props) {
+
+function handlePresetChange(key: PresetKey) {}
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("select", {
+      onChange: _cache[0] || (_cache[0] = ($event: any) => (handlePresetChange(($event.target).value)))
+    }, [ _hoisted_1 ], 32 /* NEED_HYDRATION */))
+}
+}
+
+})

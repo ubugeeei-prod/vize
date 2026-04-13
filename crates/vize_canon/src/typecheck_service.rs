@@ -1,9 +1,9 @@
-//! Type check service using tsgo.
+//! Type check service using Corsa.
 //!
 //! This module provides a high-level API for type checking Vue SFCs
-//! using tsgo as the TypeScript type checker backend.
+//! using Corsa as the TypeScript type checker backend.
 
-use crate::tsgo_bridge::{TsgoBridge, TsgoBridgeError};
+use crate::corsa_bridge::{CorsaBridge, CorsaBridgeError};
 use std::path::Path;
 #[allow(clippy::disallowed_types)]
 use std::sync::Arc;
@@ -14,8 +14,8 @@ use vize_croquis::virtual_ts::{generate_virtual_ts, VirtualTsOutput};
 /// Type check service for Vue SFCs.
 #[allow(clippy::disallowed_types)]
 pub struct TypeCheckService {
-    /// The tsgo bridge.
-    bridge: Arc<TsgoBridge>,
+    /// The Corsa bridge.
+    bridge: Arc<CorsaBridge>,
 }
 
 /// Options for type checking.
@@ -34,7 +34,7 @@ pub struct TypeCheckServiceOptions {
 /// Result of type checking a Vue SFC.
 #[derive(Debug, Clone, Default)]
 pub struct SfcTypeCheckResult {
-    /// Diagnostics from tsgo.
+    /// Diagnostics from Corsa.
     pub diagnostics: Vec<SfcDiagnostic>,
     /// Error count.
     pub error_count: usize,
@@ -92,8 +92,8 @@ pub struct SfcRelatedInfo {
 impl TypeCheckService {
     /// Create a new type check service.
     #[allow(clippy::disallowed_types)]
-    pub async fn new() -> Result<Self, TsgoBridgeError> {
-        let bridge = TsgoBridge::new();
+    pub async fn new() -> Result<Self, CorsaBridgeError> {
+        let bridge = CorsaBridge::new();
         bridge.spawn().await?;
         Ok(Self {
             bridge: Arc::new(bridge),
@@ -106,7 +106,7 @@ impl TypeCheckService {
         source: &str,
         filename: &str,
         options: &TypeCheckServiceOptions,
-    ) -> Result<SfcTypeCheckResult, TsgoBridgeError> {
+    ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
         use std::time::Instant;
         use vize_atelier_core::parser::parse;
         use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
@@ -185,7 +185,7 @@ impl TypeCheckService {
 
         result.virtual_ts = Some(virtual_ts_output.content.clone());
 
-        // Check with tsgo
+        // Check with Corsa
         if !virtual_ts_output.content.is_empty() {
             let virtual_uri = cstr!("vize-virtual://{filename}.ts");
 
@@ -195,10 +195,10 @@ impl TypeCheckService {
                 .await?;
 
             // Get diagnostics
-            let tsgo_result = self.bridge.get_diagnostics(&virtual_uri).await?;
+            let corsa_result = self.bridge.get_diagnostics(&virtual_uri).await?;
 
             // Map diagnostics back to original positions
-            for diag in tsgo_result {
+            for diag in corsa_result {
                 // Map position from virtual TS to original SFC
                 let (start, end) = map_position_to_sfc(
                     &virtual_ts_output,
@@ -264,7 +264,7 @@ impl TypeCheckService {
     }
 
     /// Shutdown the type check service.
-    pub async fn shutdown(&self) -> Result<(), TsgoBridgeError> {
+    pub async fn shutdown(&self) -> Result<(), CorsaBridgeError> {
         self.bridge.shutdown().await
     }
 }

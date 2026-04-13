@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { openBlock: _openBlock, createBlock: _createBlock, resolveComponent: _resolveComponent } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+  
+  return (_openBlock(), _createBlock(_component_MyComponent, {
+    modelValue: msg,
+    "onUpdate:modelValue": $event => ((msg) = $event)
+  }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue"]))
+}

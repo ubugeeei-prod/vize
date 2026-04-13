@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_sfc/src/compile_template/tests.rs
+expression: render_fn.as_str()
+---
+export function render(_ctx, _cache) {
+  return _toDisplayString(`${t("key")}: v${ver.major}.${
+    ver.minor
+  }`)
+}

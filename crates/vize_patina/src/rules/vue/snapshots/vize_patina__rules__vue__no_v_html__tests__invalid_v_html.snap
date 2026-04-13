@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/no_v_html.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-v-html",
+        severity: Warning,
+        message: "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        start: 5,
+        end: 20,
+        help: Some(
+            "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

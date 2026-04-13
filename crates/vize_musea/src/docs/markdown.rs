@@ -231,8 +231,8 @@ mod tests {
 
     #[test]
     fn test_format_status_badge() {
-        assert!(format_status_badge(ArtStatus::Draft).contains("Draft"));
-        assert!(format_status_badge(ArtStatus::Deprecated).contains("Deprecated"));
+        insta::assert_snapshot!(format_status_badge(ArtStatus::Draft).as_str());
+        insta::assert_snapshot!(format_status_badge(ArtStatus::Deprecated).as_str());
         assert!(format_status_badge(ArtStatus::Ready).is_empty());
     }
 }

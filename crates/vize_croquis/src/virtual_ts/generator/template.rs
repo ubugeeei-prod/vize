@@ -9,8 +9,7 @@ use super::{
     InterpolationNode, MappingData, PropNode, RootNode, SourceMapping, SourceRange,
     TemplateChildNode, VirtualTsGenerator, VirtualTsOutput,
 };
-use vize_carton::String;
-use vize_carton::ToCompactString;
+use vize_carton::{append, profile, String, ToCompactString};
 
 impl VirtualTsGenerator {
     /// Generate virtual TypeScript from template AST (legacy API).
@@ -58,9 +57,12 @@ impl VirtualTsGenerator {
 
         // Extract and emit template expressions
         self.write_line("// Template expressions");
-        self.visit_children(&ast.children);
+        profile!(
+            "croquis.virtual_ts.template.visit_children",
+            self.visit_children(&ast.children)
+        );
 
-        self.create_output()
+        profile!("croquis.virtual_ts.create_output", self.create_output())
     }
 
     /// Emit template scope nested inside setup.
@@ -71,11 +73,17 @@ impl VirtualTsGenerator {
         self.indent_level += 1;
 
         // Declare refs for template ref access
-        self.emit_template_ref_declarations(bindings);
+        profile!(
+            "croquis.virtual_ts.template.emit_ref_declarations",
+            self.emit_template_ref_declarations(bindings)
+        );
 
         // Emit template expressions
         self.emit_line("// Template expressions");
-        self.visit_children(&ast.children);
+        profile!(
+            "croquis.virtual_ts.template.visit_children",
+            self.visit_children(&ast.children)
+        );
 
         self.indent_level = self.indent_level.saturating_sub(1);
         self.emit_line("})();");
@@ -102,17 +110,32 @@ impl VirtualTsGenerator {
     /// Visit template children.
     pub(crate) fn visit_children(&mut self, children: &[TemplateChildNode]) {
         for child in children {
-            self.visit_child(child);
+            profile!(
+                "croquis.virtual_ts.template.visit_child",
+                self.visit_child(child)
+            );
         }
     }
 
     /// Visit a single template child.
     fn visit_child(&mut self, node: &TemplateChildNode) {
         match node {
-            TemplateChildNode::Element(el) => self.visit_element(el),
-            TemplateChildNode::Interpolation(interp) => self.visit_interpolation(interp),
-            TemplateChildNode::If(if_node) => self.visit_if(if_node),
-            TemplateChildNode::For(for_node) => self.visit_for(for_node),
+            TemplateChildNode::Element(el) => {
+                profile!(
+                    "croquis.virtual_ts.template.element",
+                    self.visit_element(el)
+                )
+            }
+            TemplateChildNode::Interpolation(interp) => profile!(
+                "croquis.virtual_ts.template.interpolation",
+                self.visit_interpolation(interp)
+            ),
+            TemplateChildNode::If(if_node) => {
+                profile!("croquis.virtual_ts.template.if", self.visit_if(if_node))
+            }
+            TemplateChildNode::For(for_node) => {
+                profile!("croquis.virtual_ts.template.for", self.visit_for(for_node))
+            }
             TemplateChildNode::IfBranch(branch) => {
                 if let Some(ref cond) = branch.condition {
                     self.emit_expression(cond, "v-if");
@@ -141,19 +164,31 @@ impl VirtualTsGenerator {
                 for prop in &element.props {
                     if let PropNode::Directive(dir) = prop {
                         if dir.name != "for" {
-                            this.visit_directive(dir);
+                            profile!(
+                                "croquis.virtual_ts.template.directive",
+                                this.visit_directive(dir)
+                            );
                         }
                     }
                 }
-                this.visit_children(&element.children);
+                profile!(
+                    "croquis.virtual_ts.template.element_children",
+                    this.visit_children(&element.children)
+                );
             });
         } else {
             for prop in &element.props {
                 if let PropNode::Directive(dir) = prop {
-                    self.visit_directive(dir);
+                    profile!(
+                        "croquis.virtual_ts.template.directive",
+                        self.visit_directive(dir)
+                    );
                 }
             }
-            self.visit_children(&element.children);
+            profile!(
+                "croquis.virtual_ts.template.element_children",
+                self.visit_children(&element.children)
+            );
         }
     }
 
@@ -196,7 +231,7 @@ impl VirtualTsGenerator {
             self.expr_counter += 1;
             self.emit_line(&format!("const {} = {};", var_name, source));
 
-            body(self);
+            profile!("croquis.virtual_ts.template.v_for_body", body(self));
 
             self.indent_level = self.indent_level.saturating_sub(1);
             self.emit_line("}");
@@ -307,9 +342,11 @@ impl VirtualTsGenerator {
         match source_expr {
             ExpressionNode::Simple(simple) => {
                 if !simple.content.is_empty() {
-                    let var_name = format!("__expr_{}", self.expr_counter);
+                    let expr_index = self.expr_counter;
                     self.expr_counter += 1;
-                    self.emit_line(&format!("const {} = {};", var_name, simple.content));
+                    self.emit_generated_line(|output| {
+                        append!(*output, "const __expr_{expr_index} = {};", simple.content);
+                    });
                 }
             }
             ExpressionNode::Compound(_) => {
@@ -317,7 +354,10 @@ impl VirtualTsGenerator {
             }
         }
 
-        self.visit_children(&for_node.children);
+        profile!(
+            "croquis.virtual_ts.template.for_children",
+            self.visit_children(&for_node.children)
+        );
 
         self.indent_level = self.indent_level.saturating_sub(1);
         self.emit_line("}");
@@ -325,45 +365,61 @@ impl VirtualTsGenerator {
 
     /// Emit a TypeScript expression with source mapping.
     pub(crate) fn emit_expression(&mut self, expr: &ExpressionNode, context: &str) {
-        match expr {
-            ExpressionNode::Simple(simple) => {
-                if simple.content.is_empty() {
-                    return;
+        profile!("croquis.virtual_ts.emit_expression", {
+            match expr {
+                ExpressionNode::Simple(simple) => {
+                    if simple.content.is_empty() {
+                        return;
+                    }
+
+                    let expr_index = self.expr_counter;
+                    self.expr_counter += 1;
+
+                    // Calculate positions for mapping
+                    let prefix_len = self.indent_level * 2
+                        + "const ".len()
+                        + "__expr_".len()
+                        + decimal_len(expr_index)
+                        + " = ".len();
+                    let expr_start = self.gen_offset + prefix_len as u32;
+                    let expr_end = expr_start + simple.content.len() as u32;
+
+                    let source_start = simple.loc.start.offset + self.block_offset;
+                    let source_end = simple.loc.end.offset + self.block_offset;
+
+                    // Create mapping
+                    self.mappings.push(SourceMapping::with_data(
+                        SourceRange::new(source_start, source_end),
+                        SourceRange::new(expr_start, expr_end),
+                        MappingData::Expression {
+                            text: simple.content.to_compact_string(),
+                        },
+                    ));
+
+                    self.emit_generated_line(|output| {
+                        append!(*output, "const __expr_{expr_index} = {};", simple.content);
+                    });
                 }
-
-                let var_name = format!("__expr_{}", self.expr_counter);
-                self.expr_counter += 1;
-
-                let line = format!("const {} = {};", var_name, simple.content);
-
-                // Calculate positions for mapping
-                let indent = "  ".repeat(self.indent_level);
-                let prefix_len = indent.len() + "const ".len() + var_name.len() + " = ".len();
-                let expr_start = self.gen_offset + prefix_len as u32;
-                let expr_end = expr_start + simple.content.len() as u32;
-
-                let source_start = simple.loc.start.offset + self.block_offset;
-                let source_end = simple.loc.end.offset + self.block_offset;
-
-                // Create mapping
-                self.mappings.push(SourceMapping::with_data(
-                    SourceRange::new(source_start, source_end),
-                    SourceRange::new(expr_start, expr_end),
-                    MappingData::Expression {
-                        text: simple.content.to_compact_string(),
-                    },
-                ));
-
-                self.emit_line(&line);
+                ExpressionNode::Compound(_) => {
+                    let expr_index = self.expr_counter;
+                    self.expr_counter += 1;
+                    self.emit_generated_line(|output| {
+                        append!(
+                            *output,
+                            "const __expr_{expr_index} = void 0 as any; // {context} compound"
+                        );
+                    });
+                }
             }
-            ExpressionNode::Compound(_) => {
-                let var_name = format!("__expr_{}", self.expr_counter);
-                self.expr_counter += 1;
-                self.emit_line(&format!(
-                    "const {} = void 0 as any; // {} compound",
-                    var_name, context
-                ));
-            }
-        }
+        });
     }
+}
+
+fn decimal_len(mut value: u32) -> usize {
+    let mut len = 1;
+    while value >= 10 {
+        value /= 10;
+        len += 1;
+    }
+    len
 }

@@ -2,7 +2,7 @@
 //!
 //! Integrates vize_vitrine's strict type checker with the LSP server.
 //! Uses croquis for semantic analysis and provides comprehensive type diagnostics.
-//! Also supports batch type checking via tsgo CLI.
+//! Also supports batch type checking via the Corsa CLI.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 mod diagnostics;

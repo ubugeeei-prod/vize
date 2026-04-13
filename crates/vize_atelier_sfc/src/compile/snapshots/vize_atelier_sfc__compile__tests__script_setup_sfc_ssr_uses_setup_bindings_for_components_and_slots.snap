@@ -1,0 +1,31 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { withCtx as _withCtx } from "vue"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(_ssrRenderComponent($setup.NuxtLayout, null, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(_ssrRenderComponent($setup.NuxtPage, null, null, _parent))
+      }
+    }),
+  _: 1
+  }, _parent))
+}
+import { NuxtLayout, NuxtPage } from '#components'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+
+return { NuxtPage, NuxtLayout }
+}
+
+})

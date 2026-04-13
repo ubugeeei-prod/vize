@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/fresco",
-  "version": "0.39.0",
+  "version": "0.46.0",
   "description": "Vue TUI framework - Build terminal UIs with Vue.js",
   "keywords": [
     "cli",
@@ -21,20 +21,20 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
     },
     "./components": {
-      "import": "./dist/components/index.js",
-      "types": "./dist/components/index.d.ts"
+      "import": "./dist/components/index.mjs",
+      "types": "./dist/components/index.d.mts"
     },
     "./composables": {
-      "import": "./dist/composables/index.js",
-      "types": "./dist/composables/index.d.ts"
+      "import": "./dist/composables/index.mjs",
+      "types": "./dist/composables/index.d.mts"
     }
   },
   "publishConfig": {

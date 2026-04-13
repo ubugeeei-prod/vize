@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/compile_template/tests.rs
+expression: "(&hoisted, &render_body)"
+---
+(
+    "const t0 = _template(\"<div> </div>\", true)\n",
+    "  const n0 = t0()\n  _renderEffect(() => _setText(n0, _ctx.msg))\n  return n0",
+)

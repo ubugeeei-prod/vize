@@ -1,0 +1,5 @@
+---
+source: crates/vize_maestro/src/ide/completion/mod.rs
+expression: detail
+---
+ (const)

@@ -26,7 +26,7 @@ fn to_js_value<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
 /// Perform type checking on a Vue SFC
 ///
 /// This performs AST-based type analysis without requiring a TypeScript compiler.
-/// For full type checking, use the CLI with tsgo integration.
+/// For full type checking, use the CLI with Corsa integration.
 #[wasm_bindgen(js_name = "typeCheck")]
 pub fn type_check_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
     let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
@@ -127,7 +127,7 @@ pub fn get_type_check_capabilities_wasm() -> Result<JsValue, JsValue> {
             },
         ],
         "notes": [
-            "For full TypeScript type checking, use the CLI with tsgo integration",
+            "For full TypeScript type checking, use the CLI with Corsa integration",
             "AST-based analysis catches common issues without external dependencies",
         ],
     });

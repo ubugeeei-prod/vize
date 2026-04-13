@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/musea/require_title.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "musea/require-title",
+        severity: Error,
+        message: "Missing required 'title' attribute in <art> block",
+        start: 0,
+        end: 29,
+        help: Some(
+            "Add a title attribute: <art title=\"Component Name\">",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

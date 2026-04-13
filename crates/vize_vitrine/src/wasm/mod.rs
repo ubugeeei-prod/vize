@@ -102,16 +102,35 @@ fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions {
     }
 }
 
-/// Convert UTF-8 byte offset to character (code point) offset.
-/// OXC uses UTF-8 byte offsets, but JavaScript strings use UTF-16 code units.
-/// For most cases (ASCII + BMP characters), this converts to character count.
-pub(crate) fn utf8_byte_to_char_offset(content: &str, byte_offset: u32) -> u32 {
+/// Convert a UTF-8 byte offset to a JavaScript string offset (UTF-16 code units).
+/// OXC and the SFC parser report byte offsets, while Monaco/JS consumers expect
+/// UTF-16 offsets.
+pub(crate) fn utf8_byte_to_utf16_offset(content: &str, byte_offset: u32) -> u32 {
     let byte_offset = byte_offset as usize;
     if byte_offset >= content.len() {
-        return content.chars().count() as u32;
+        return content.encode_utf16().count() as u32;
     }
-    // Count characters up to the byte offset
-    content[..byte_offset].chars().count() as u32
+    content[..byte_offset].encode_utf16().count() as u32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::utf8_byte_to_utf16_offset;
+
+    #[test]
+    fn test_utf8_byte_to_utf16_offset_handles_multibyte_and_astral_chars() {
+        let source = "aあ😀b";
+
+        let hiragana_start = source.find('あ').expect("hiragana should exist") as u32;
+        let emoji_start = source.find('😀').expect("emoji should exist") as u32;
+        let latin_b_start = source.find('b').expect("latin b should exist") as u32;
+
+        assert_eq!(utf8_byte_to_utf16_offset(source, 0), 0);
+        assert_eq!(utf8_byte_to_utf16_offset(source, hiragana_start), 1);
+        assert_eq!(utf8_byte_to_utf16_offset(source, emoji_start), 2);
+        assert_eq!(utf8_byte_to_utf16_offset(source, latin_b_start), 4);
+        assert_eq!(utf8_byte_to_utf16_offset(source, source.len() as u32), 5);
+    }
 }
 
 /// Parse CSS options from JsValue

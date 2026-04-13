@@ -1,18 +1,19 @@
 # Vize Examples
 
-Vizeのツールをローカル環境で試すためのサンプル集です。
+Example projects for trying Vize locally.
 
-## 前提条件
+## Prerequisites
 
-プロジェクトルートで以下を実行してビルドしておく必要があります：
+Run the following from the project root before using the examples:
 
 ```bash
+nix develop
 vp env install
 vp install
-vp run --workspace-root cli  # vize CLIコマンドを有効化
+vp run --workspace-root cli  # Enable the vize CLI command
 ```
 
-または Cargo から直接実行：
+Or build directly with Cargo:
 
 ```bash
 cargo build --release
@@ -22,83 +23,83 @@ cargo build --release
 
 ## CLI Examples
 
-`examples/cli/` ディレクトリにはCLIツールを試すためのサンプルVueファイルが含まれています。
+The `examples/cli/` directory contains sample Vue files for trying the CLI tools.
 
-### ファイル構成
+### File Structure
 
-| ファイル              | 説明                                |
-| --------------------- | ----------------------------------- |
-| `src/App.vue`         | 正常にフォーマット済みのVueファイル |
-| `src/Unformatted.vue` | フォーマットが必要なVueファイル     |
-| `src/HasErrors.vue`   | リントエラーを含むVueファイル       |
+| File                  | Description                       |
+| --------------------- | --------------------------------- |
+| `src/App.vue`         | A correctly formatted Vue file    |
+| `src/Unformatted.vue` | A Vue file that needs formatting  |
+| `src/HasErrors.vue`   | A Vue file containing lint errors |
 
-### フォーマッター (vize fmt)
+### Formatter (`vize fmt`)
 
 ```bash
-# フォーマットが必要かどうかをチェック
+# Check whether formatting is needed
 vize fmt examples/cli/src/*.vue --check
 
-# フォーマット結果を表示（ファイルは変更しない）
+# Print the formatted result without changing files
 vize fmt examples/cli/src/Unformatted.vue
 
-# ファイルに書き込み
+# Write changes to the file
 vize fmt examples/cli/src/Unformatted.vue --write
 
-# オプション付き
+# With options
 vize fmt examples/cli/src/*.vue --single-quote --no-semi --print-width 80
 ```
 
-**オプション一覧：**
+**Options:**
 
-| オプション       | 説明                         | デフォルト |
-| ---------------- | ---------------------------- | ---------- |
-| `--check`        | 変更が必要な場合にエラー終了 | -          |
-| `--write`, `-w`  | ファイルに書き込み           | -          |
-| `--single-quote` | シングルクォートを使用       | false      |
-| `--no-semi`      | セミコロンを省略             | false      |
-| `--print-width`  | 行の長さ                     | 100        |
-| `--tab-width`    | インデント幅                 | 2          |
-| `--use-tabs`     | タブを使用                   | false      |
+| Option           | Description                              | Default |
+| ---------------- | ---------------------------------------- | ------- |
+| `--check`        | Exit with an error if changes are needed | -       |
+| `--write`, `-w`  | Write changes to the file                | -       |
+| `--single-quote` | Use single quotes                        | false   |
+| `--no-semi`      | Omit semicolons                          | false   |
+| `--print-width`  | Maximum line length                      | 100     |
+| `--tab-width`    | Indent width                             | 2       |
+| `--use-tabs`     | Use tabs                                 | false   |
 
-### リンター (vize lint)
+### Linter (`vize lint`)
 
 ```bash
-# リントエラーを表示
+# Show lint errors
 vize lint examples/cli/src/*.vue
 
-# JSON形式で出力
+# Output as JSON
 vize lint examples/cli/src/HasErrors.vue --format json
 
-# 警告の上限を設定
+# Set a warning limit
 vize lint examples/cli/src/*.vue --max-warnings 5
 
-# サマリーのみ表示
+# Show only the summary
 vize lint examples/cli/src/*.vue --quiet
 ```
 
-**オプション一覧：**
+**Options:**
 
-| オプション       | 説明                 | デフォルト |
-| ---------------- | -------------------- | ---------- |
-| `--format`, `-f` | 出力形式 (text/json) | text       |
-| `--max-warnings` | 警告数の上限         | -          |
-| `--quiet`, `-q`  | サマリーのみ表示     | false      |
-| `--fix`          | 自動修正（未実装）   | false      |
+| Option           | Description                    | Default |
+| ---------------- | ------------------------------ | ------- |
+| `--format`, `-f` | Output format (`text`/`json`)  | text    |
+| `--max-warnings` | Warning limit                  | -       |
+| `--quiet`, `-q`  | Show only the summary          | false   |
+| `--fix`          | Auto-fix (not implemented yet) | false   |
 
-### LSPサーバー (vize lsp)
+### LSP Server (`vize lsp`)
 
 ```bash
-# stdio で起動（エディタ連携用）
+# Start with stdio (for editor integration)
 vize lsp
 
-# TCPポート指定
+# Specify a TCP port
 vize lsp --port 3000
 
-# デバッグログ有効
+# Enable debug logging
 vize lsp --debug
 ```
 
-**エディタ設定例 (VS Code):**
+**Editor configuration example (VS Code):**
 
 `.vscode/settings.json`:
 
@@ -113,33 +114,33 @@ vize lsp --debug
 
 ## Vite + Musea Example
 
-`examples/vite-musea/` ディレクトリにはVite + Museaを使ったコンポーネントギャラリーのサンプルが含まれています。
+The `examples/vite-musea/` directory contains a sample component gallery built with Vite + Musea.
 
-### セットアップ
+### Setup
 
 ```bash
 cd examples/vite-musea
-pnpm install
-pnpm dev
+vp install
+vp dev
 ```
 
-### 使い方
+### Usage
 
-1. `pnpm dev` で開発サーバーを起動
-2. ブラウザで `http://localhost:5173` を開く
-3. コンポーネントギャラリーは `http://localhost:5173/__musea__` で確認可能
+1. Start the development server with `vp dev`
+2. Open `http://localhost:5173` in your browser
+3. View the component gallery at `http://localhost:5173/__musea__`
 
-### ファイル構成
+### File Structure
 
-| ファイル                        | 説明                                    |
-| ------------------------------- | --------------------------------------- |
-| `src/components/Button.vue`     | Buttonコンポーネント                    |
-| `src/components/Button.art.vue` | Museaのアートファイル（バリアント定義） |
-| `vite.config.ts`                | Vite + Musea設定                        |
+| File                            | Description                          |
+| ------------------------------- | ------------------------------------ |
+| `src/components/Button.vue`     | Button component                     |
+| `src/components/Button.art.vue` | Musea art file (variant definitions) |
+| `vite.config.ts`                | Vite + Musea configuration           |
 
-### Art ファイルの書き方
+### Writing Art Files
 
-`.art.vue` ファイルはコンポーネントのバリアントを定義します：
+`.art.vue` files define component variants:
 
 ```vue
 <art title="Button" component="./Button.vue" category="Components" status="ready">
@@ -156,40 +157,40 @@ import Button from "./Button.vue";
 </script>
 ```
 
-**`<art>` 属性：**
+**`<art>` attributes:**
 
-| 属性        | 説明                                |
-| ----------- | ----------------------------------- |
-| `title`     | コンポーネントのタイトル（必須）    |
-| `component` | 対象コンポーネントへのパス          |
-| `category`  | カテゴリ                            |
-| `status`    | ステータス (draft/ready/deprecated) |
+| Attribute   | Description                               |
+| ----------- | ----------------------------------------- |
+| `title`     | Component title (required)                |
+| `component` | Path to the target component              |
+| `category`  | Category                                  |
+| `status`    | Status (`draft` / `ready` / `deprecated`) |
 
-**`<variant>` 属性：**
+**`<variant>` attributes:**
 
-| 属性       | 説明                                    |
-| ---------- | --------------------------------------- |
-| `name`     | バリアント名（必須）                    |
-| `default`  | デフォルトバリアントとしてマーク        |
-| `skip-vrt` | VRT（Visual Regression Test）をスキップ |
+| Attribute  | Description                          |
+| ---------- | ------------------------------------ |
+| `name`     | Variant name (required)              |
+| `default`  | Mark as the default variant          |
+| `skip-vrt` | Skip VRT (Visual Regression Testing) |
 
 ---
 
-## トラブルシューティング
+## Troubleshooting
 
-### `vize` コマンドが見つからない
+### `vize` Command Not Found
 
 ```bash
-# vp run から CLI を有効化
+# Enable the CLI from vp run
 vp run --workspace-root cli
 
-# または直接 cargo run を使用
+# Or use cargo run directly
 cargo run --release -- fmt examples/cli/src/*.vue
 ```
 
-### ネイティブバインディングのエラー
+### Native Binding Errors
 
-Museaプラグインを使用する場合、`@vizejs/native` がビルドされている必要があります：
+If you use the Musea plugin, `@vizejs/native` must be built:
 
 ```bash
 vp run --workspace-root build:native

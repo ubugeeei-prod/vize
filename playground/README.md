@@ -15,7 +15,9 @@ A modern WASM-powered playground for testing Vize.
 ## Development
 
 ```bash
-# Install dependencies
+# Enter the dev shell and install dependencies (from project root)
+nix develop
+vp env install
 vp install
 
 # Run development server

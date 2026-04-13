@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_core/src/codegen/expression/generate.rs
+expression: output.as_str()
+---
+"Line 1\nLine 2"

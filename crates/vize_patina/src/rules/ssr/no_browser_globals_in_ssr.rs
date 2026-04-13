@@ -395,38 +395,32 @@ mod tests {
     #[test]
     fn test_detects_window_in_interpolation() {
         let result = lint_with_ssr("<div>{{ window.innerWidth }}</div>");
-        assert!(!result.is_empty());
-        assert!(result[0].contains("window"));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]
     fn test_detects_document_in_interpolation() {
         let result = lint_with_ssr("<div>{{ document.title }}</div>");
-        assert!(!result.is_empty());
-        assert!(result[0].contains("document"));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]
     fn test_detects_navigator_in_directive() {
         let result = lint_with_ssr("<div :class=\"navigator.userAgent\"></div>");
-        assert!(!result.is_empty());
-        assert!(result[0].contains("navigator"));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]
     fn test_allows_local_variable() {
         // If 'window' is a local variable (e.g., from v-for), it should be allowed
         let result = lint_with_ssr("<div v-for=\"window in windows\">{{ window }}</div>");
-        // The 'window' in interpolation should NOT trigger because it's a v-for variable
-        // Note: This test depends on the context tracking v-for variables
-        assert!(result.is_empty() || !result.iter().any(|m| m.contains("window")));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]
     fn test_detects_localstorage() {
         let result = lint_with_ssr("<div>{{ localStorage.getItem('key') }}</div>");
-        assert!(!result.is_empty());
-        assert!(result[0].contains("localStorage"));
+        insta::assert_debug_snapshot!(result);
     }
 
     #[test]
@@ -468,7 +462,6 @@ mod tests {
     fn test_detects_actual_global_in_style_value() {
         // { top: window.scrollY } - 'window' is a real global reference
         let result = lint_with_ssr(r#"<div :style="{ top: window.scrollY + 'px' }"></div>"#);
-        assert!(!result.is_empty(), "Should detect window as a global");
-        assert!(result[0].contains("window"));
+        insta::assert_debug_snapshot!(result);
     }
 }

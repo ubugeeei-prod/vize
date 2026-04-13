@@ -12,7 +12,7 @@
 //!
 //! ## Architecture
 //!
-//! ### Batch Type Checking (via tsgo CLI)
+//! ### Batch Type Checking (via corsa-bind)
 //!
 //! ```text
 //! ┌─────────────────────────────────────────────────────────────────┐
@@ -30,8 +30,8 @@
 //! │                                       │                         │
 //! │                                       ▼                         │
 //! │                            ┌──────────────────────────┐        │
-//! │                            │  tsgo (CLI)              │        │
-//! │                            │  Pure TypeScript only    │        │
+//! │                            │  Corsa ProjectSession    │        │
+//! │                            │  sync msgpack stdio      │        │
 //! │                            └──────────┬───────────────┘        │
 //! │                                       │                         │
 //! │                                       ▼                         │
@@ -45,6 +45,8 @@
 mod checker;
 mod context;
 mod diagnostic;
+#[cfg(feature = "native")]
+mod file_uri;
 pub mod intelligence;
 pub mod sfc_typecheck;
 pub mod source_map;
@@ -56,13 +58,16 @@ pub mod virtual_ts;
 pub mod batch;
 
 #[cfg(feature = "native")]
-pub mod tsgo_bridge;
+pub mod corsa_bridge;
 
 #[cfg(feature = "native")]
 pub mod lsp_client;
 
+#[cfg(feature = "native")]
+pub use lsp_client as corsa_client;
+
 #[cfg(all(feature = "native", unix))]
-pub mod tsgo_server;
+pub mod corsa_server;
 
 #[cfg(feature = "native")]
 pub mod typecheck_service;
@@ -91,18 +96,19 @@ pub use types::{CompletionItem, CompletionKind, TypeInfo, TypeKind};
 pub use vize_carton::i18n::Locale;
 
 #[cfg(feature = "native")]
-pub use tsgo_bridge::{
-    LspCompletionItem, LspCompletionList, LspCompletionResponse, LspDefinitionResponse,
-    LspDiagnostic, LspDocumentation, LspHover, LspHoverContents, LspLocation, LspLocationLink,
-    LspMarkedString, LspMarkupContent, LspPosition, LspRange, TsgoBridge, TsgoBridgeConfig,
-    TsgoBridgeError, VIRTUAL_URI_SCHEME,
+pub use corsa_bridge::{
+    CorsaBridge, CorsaBridgeConfig, CorsaBridgeError, LspCompletionItem, LspCompletionList,
+    LspCompletionResponse, LspDefinitionResponse, LspDiagnostic, LspDocumentation, LspHover,
+    LspHoverContents, LspLocation, LspLocationLink, LspMarkedString, LspMarkupContent, LspPosition,
+    LspRange, VIRTUAL_URI_SCHEME,
 };
 
 // Re-export batch type checker
 #[cfg(feature = "native")]
 pub use batch::{
-    BatchTypeChecker, Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap,
-    PackageManager, SfcBlockType, TsgoError, TsgoExecutor, TsgoNotFoundError,
+    BatchTypeChecker, BatchTypeCheckerOptions, CorsaError, CorsaExecutor, CorsaNotFoundError,
+    DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput,
+    Diagnostic as BatchDiagnostic, ImportRewriter, ImportSourceMap, PackageManager, SfcBlockType,
     TypeCheckResult as BatchTypeCheckResult, TypeChecker as BatchTypeCheckerTrait, VirtualFile,
     VirtualProject, VirtualTsGenerator,
 };
@@ -110,13 +116,14 @@ pub use batch::{
 #[cfg(feature = "native")]
 pub use typecheck_service::{
     SfcDiagnostic, SfcDiagnosticSeverity, SfcRelatedInfo,
-    SfcTypeCheckResult as TsgoTypeCheckResult, TypeCheckService, TypeCheckServiceOptions,
+    SfcTypeCheckResult as CorsaTypeCheckResult, TypeCheckService, TypeCheckServiceOptions,
 };
 
 #[cfg(all(feature = "native", unix))]
-pub use tsgo_server::{
-    CheckParams, CheckResult as TsgoServerCheckResult, Diagnostic as TsgoServerDiagnostic,
-    JsonRpcError, JsonRpcRequest, JsonRpcResponse, ServerConfig, TsgoServer,
+pub use corsa_server::{
+    CheckParams, CheckResult as CorsaServerCheckResult, CorsaServer,
+    Diagnostic as CorsaServerDiagnostic, JsonRpcError, JsonRpcRequest, JsonRpcResponse,
+    ServerConfig,
 };
 
 /// Check result from the type checker.

@@ -1,0 +1,19 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+export function render(_ctx) {
+const n1 = t0()
+const _component_CodeHighlight = _resolveComponent("CodeHighlight")
+_setInsertionState(n1, null, true)
+const n0 = _createComponentWithFallback(_component_CodeHighlight, null, null, true)
+_setInsertionState(n1, null, true)
+const n2 = _createIf(() => (_ctx.visible), () => {
+_setInsertionState(n1, null, true)
+const n4 = _createComponentWithFallback(_component_CodeHighlight)
+return n4
+})
+return n1
+}

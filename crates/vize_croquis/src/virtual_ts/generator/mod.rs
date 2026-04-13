@@ -135,6 +135,17 @@ impl VirtualTsGenerator {
         self.output.push('\n');
         self.gen_offset += indent.len() as u32 + s.len() as u32 + 1;
     }
+
+    /// Write a generated line with proper indentation and no intermediate string.
+    fn emit_generated_line(&mut self, f: impl FnOnce(&mut String)) {
+        let start = self.output.len();
+        for _ in 0..self.indent_level {
+            self.output.push_str("  ");
+        }
+        f(&mut self.output);
+        self.output.push('\n');
+        self.gen_offset += (self.output.len() - start) as u32;
+    }
 }
 
 impl Default for VirtualTsGenerator {

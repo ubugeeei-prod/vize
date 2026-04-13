@@ -1,0 +1,352 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unpkg.com/vize/schemas/vize.config.schema.json",
+  "title": "Vize Config",
+  "description": "Configuration file for Vize.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference for editor autocompletion."
+    },
+    "compiler": {
+      "$ref": "#/$defs/compilerConfig"
+    },
+    "vite": {
+      "$ref": "#/$defs/vitePluginConfig"
+    },
+    "linter": {
+      "$ref": "#/$defs/linterConfig"
+    },
+    "typeChecker": {
+      "$ref": "#/$defs/typeCheckerConfig"
+    },
+    "formatter": {
+      "$ref": "#/$defs/formatterConfig"
+    },
+    "lsp": {
+      "$ref": "#/$defs/lspConfig"
+    },
+    "musea": {
+      "$ref": "#/$defs/museaConfig"
+    },
+    "globalTypes": {
+      "$ref": "#/$defs/globalTypesConfig"
+    }
+  },
+  "$defs": {
+    "ruleSeverity": {
+      "type": "string",
+      "enum": ["off", "warn", "error"]
+    },
+    "lintPreset": {
+      "type": "string",
+      "enum": ["happy-path", "opinionated", "essential", "nuxt"]
+    },
+    "patternLike": {
+      "type": "string",
+      "description": "Pattern string used by non-JavaScript configs. JavaScript configs may also use RegExp values."
+    },
+    "compilerConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["module", "function"]
+        },
+        "vapor": {
+          "type": "boolean"
+        },
+        "ssr": {
+          "type": "boolean"
+        },
+        "sourceMap": {
+          "type": "boolean"
+        },
+        "prefixIdentifiers": {
+          "type": "boolean"
+        },
+        "hoistStatic": {
+          "type": "boolean"
+        },
+        "cacheHandlers": {
+          "type": "boolean"
+        },
+        "isTs": {
+          "type": "boolean"
+        },
+        "scriptExt": {
+          "type": "string",
+          "enum": ["ts", "js"]
+        },
+        "runtimeModuleName": {
+          "type": "string"
+        },
+        "runtimeGlobalName": {
+          "type": "string"
+        }
+      }
+    },
+    "vitePluginConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "include": {
+          "oneOf": [
+            { "$ref": "#/$defs/patternLike" },
+            {
+              "type": "array",
+              "items": { "$ref": "#/$defs/patternLike" }
+            }
+          ]
+        },
+        "exclude": {
+          "oneOf": [
+            { "$ref": "#/$defs/patternLike" },
+            {
+              "type": "array",
+              "items": { "$ref": "#/$defs/patternLike" }
+            }
+          ]
+        },
+        "scanPatterns": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "ignorePatterns": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "linterConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "preset": {
+          "$ref": "#/$defs/lintPreset"
+        },
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ruleSeverity"
+          }
+        },
+        "categories": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "correctness": { "$ref": "#/$defs/ruleSeverity" },
+            "suspicious": { "$ref": "#/$defs/ruleSeverity" },
+            "style": { "$ref": "#/$defs/ruleSeverity" },
+            "perf": { "$ref": "#/$defs/ruleSeverity" },
+            "a11y": { "$ref": "#/$defs/ruleSeverity" },
+            "security": { "$ref": "#/$defs/ruleSeverity" }
+          }
+        }
+      }
+    },
+    "typeCheckerConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "strict": {
+          "type": "boolean"
+        },
+        "checkProps": {
+          "type": "boolean"
+        },
+        "checkEmits": {
+          "type": "boolean"
+        },
+        "checkTemplateBindings": {
+          "type": "boolean"
+        },
+        "tsconfig": {
+          "type": "string"
+        },
+        "corsaPath": {
+          "type": "string"
+        }
+      }
+    },
+    "formatterConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "printWidth": {
+          "type": "integer"
+        },
+        "tabWidth": {
+          "type": "integer"
+        },
+        "useTabs": {
+          "type": "boolean"
+        },
+        "semi": {
+          "type": "boolean"
+        },
+        "singleQuote": {
+          "type": "boolean"
+        },
+        "trailingComma": {
+          "type": "string",
+          "enum": ["all", "none", "es5"]
+        }
+      }
+    },
+    "lspConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "boolean"
+        },
+        "completion": {
+          "type": "boolean"
+        },
+        "hover": {
+          "type": "boolean"
+        },
+        "definition": {
+          "type": "boolean"
+        },
+        "formatting": {
+          "type": "boolean"
+        },
+        "codeActions": {
+          "type": "boolean"
+        },
+        "corsa": {
+          "type": "boolean"
+        }
+      }
+    },
+    "museaViewport": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": ["width", "height"]
+    },
+    "museaVrtConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "threshold": {
+          "type": "number"
+        },
+        "outDir": {
+          "type": "string"
+        },
+        "viewports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/museaViewport"
+          }
+        }
+      }
+    },
+    "museaA11yConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "museaAutogenConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "maxVariants": {
+          "type": "integer"
+        }
+      }
+    },
+    "museaConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "include": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "basePath": {
+          "type": "string"
+        },
+        "storybookCompat": {
+          "type": "boolean"
+        },
+        "inlineArt": {
+          "type": "boolean"
+        },
+        "vrt": {
+          "$ref": "#/$defs/museaVrtConfig"
+        },
+        "a11y": {
+          "$ref": "#/$defs/museaA11yConfig"
+        },
+        "autogen": {
+          "$ref": "#/$defs/museaAutogenConfig"
+        }
+      }
+    },
+    "globalTypeDeclaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": "string"
+        }
+      },
+      "required": ["type"]
+    },
+    "globalTypesConfig": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "$ref": "#/$defs/globalTypeDeclaration" }
+        ]
+      }
+    }
+  }
+}

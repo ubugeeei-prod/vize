@@ -16,6 +16,7 @@ use super::{
 };
 use vize_carton::append;
 use vize_carton::cstr;
+use vize_carton::profile;
 use vize_carton::String;
 
 /// Generate virtual TypeScript from Vue SFC analysis.
@@ -94,55 +95,59 @@ pub fn generate_virtual_ts_with_offsets(
     ts.push_str(IMPORT_META_AUGMENTATION);
     ts.push('\n');
 
-    // Vue type alias (shorthand for import('vue') type references).
-    // Requires node_modules/vue to be resolvable (symlinked in temp dir).
-    ts.push_str("type $Vue = import('vue');\n\n");
-
     // Module scope: Extract imports, re-exports, and type declarations to module level.
     // Type declarations (interface, type, enum) must be at module level so they
     // are accessible from `export type Props = ...` outside __setup().
     ts.push_str("// ========== Module Scope (imports) ==========\n");
+    ts.push_str("type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);\n");
 
     // Collect all module-level statement spans from croquis analysis
-    let mut module_spans: Vec<(u32, u32)> = Vec::new();
-    for imp in &summary.import_statements {
-        module_spans.push((imp.start, imp.end));
-    }
-    for re in &summary.re_exports {
-        module_spans.push((re.start, re.end));
-    }
-    for te in &summary.type_exports {
-        module_spans.push((te.start, te.end));
-    }
-    module_spans.sort_by_key(|&(start, _)| start);
+    let module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
+        let mut module_spans = Vec::new();
+        for imp in &summary.import_statements {
+            module_spans.push((imp.start, imp.end));
+        }
+        for re in &summary.re_exports {
+            module_spans.push((re.start, re.end));
+        }
+        for te in &summary.type_exports {
+            module_spans.push((te.start, te.end));
+        }
+        module_spans.sort_by_key(|&(start, _)| start);
+        module_spans
+    });
 
     if let Some(script) = script_content {
-        // Emit each module-level statement with source mapping
-        for &(start, end) in &module_spans {
-            let text = &script[start as usize..end as usize];
-            let gen_start = ts.len();
-            ts.push_str(text);
-            ts.push('\n');
-            let gen_end = ts.len();
-            mappings.push(VizeMapping {
-                gen_range: gen_start..gen_end,
-                src_range: (script_offset as usize + start as usize)
-                    ..(script_offset as usize + end as usize),
-            });
-        }
-
-        // Void-reference imported names that match compiler macro names.
-        // These get shadowed by __setup() declarations, causing TS6133 at module level.
-        let shadowed_imports: Vec<&&str> = COMPILER_MACRO_NAMES
-            .iter()
-            .filter(|&&name| summary.bindings.bindings.contains_key(name))
-            .collect();
-        if !shadowed_imports.is_empty() {
-            ts.push_str("// Prevent TS6133 for imports shadowed by setup-scope compiler macros\n");
-            for name in &shadowed_imports {
-                append!(ts, "void {name};\n");
+        profile!("canon.virtual_ts.emit_module_statements", {
+            // Emit each module-level statement with source mapping
+            for &(start, end) in &module_spans {
+                let text = &script[start as usize..end as usize];
+                let gen_start = ts.len();
+                ts.push_str(text);
+                ts.push('\n');
+                let gen_end = ts.len();
+                mappings.push(VizeMapping {
+                    gen_range: gen_start..gen_end,
+                    src_range: (script_offset as usize + start as usize)
+                        ..(script_offset as usize + end as usize),
+                });
             }
-        }
+
+            // Void-reference imported names that match compiler macro names.
+            // These get shadowed by __setup() declarations, causing TS6133 at module level.
+            let shadowed_imports: Vec<&&str> = COMPILER_MACRO_NAMES
+                .iter()
+                .filter(|&&name| summary.bindings.bindings.contains_key(name))
+                .collect();
+            if !shadowed_imports.is_empty() {
+                ts.push_str(
+                    "// Prevent TS6133 for imports shadowed by setup-scope compiler macros\n",
+                );
+                for name in &shadowed_imports {
+                    append!(ts, "void {name};\n");
+                }
+            }
+        });
     }
 
     // Auto-import stubs (e.g., Nuxt composables)
@@ -150,42 +155,51 @@ pub fn generate_virtual_ts_with_offsets(
     // Collect imported names from all module-level import statements to handle
     // cases where plain <script> imports are not in summary.bindings (which
     // only holds <script setup> bindings when both blocks exist).
-    let imported_names: Vec<&str> = if let Some(script) = script_content {
-        summary
-            .import_statements
-            .iter()
-            .flat_map(|imp| {
-                let text = script
-                    .get(imp.start as usize..imp.end as usize)
-                    .unwrap_or("");
-                extract_import_names(text)
-            })
-            .collect()
-    } else {
-        Vec::new()
-    };
-    if !options.auto_import_stubs.is_empty() {
-        let mut has_header = false;
-        for stub in &options.auto_import_stubs {
-            let name = extract_declared_name(stub);
-            if let Some(name) = name {
-                // Skip if already imported or declared in script bindings
-                if summary.bindings.bindings.contains_key(name) || imported_names.contains(&name) {
-                    continue;
-                }
-            }
-            if !has_header {
-                ts.push_str("\n// Auto-import stubs (framework-provided globals)\n");
-                has_header = true;
-            }
-            ts.push_str(stub);
-            ts.push('\n');
+    let imported_names: Vec<&str> = profile!("canon.virtual_ts.extract_imported_names", {
+        if let Some(script) = script_content {
+            summary
+                .import_statements
+                .iter()
+                .flat_map(|imp| {
+                    let text = script
+                        .get(imp.start as usize..imp.end as usize)
+                        .unwrap_or("");
+                    extract_import_names(text)
+                })
+                .collect()
+        } else {
+            Vec::new()
         }
+    });
+    if !options.auto_import_stubs.is_empty() {
+        profile!("canon.virtual_ts.emit_auto_import_stubs", {
+            let mut has_header = false;
+            for stub in &options.auto_import_stubs {
+                let name = extract_declared_name(stub);
+                if let Some(name) = name {
+                    // Skip if already imported or declared in script bindings
+                    if summary.bindings.bindings.contains_key(name)
+                        || imported_names.contains(&name)
+                    {
+                        continue;
+                    }
+                }
+                if !has_header {
+                    ts.push_str("\n// Auto-import stubs (framework-provided globals)\n");
+                    has_header = true;
+                }
+                ts.push_str(stub);
+                ts.push('\n');
+            }
+        });
     }
     ts.push('\n');
 
     // Props type (defined at module level so it's available inside __setup)
-    generate_props_type(&mut ts, summary, generic_param);
+    profile!(
+        "canon.virtual_ts.generate_props_type",
+        generate_props_type(&mut ts, summary, generic_param)
+    );
 
     // Setup scope: function that contains compiler macros and script content
     ts.push_str("// ========== Setup Scope ==========\n");
@@ -199,231 +213,248 @@ pub fn generate_virtual_ts_with_offsets(
 
     // User's script content (minus imports)
     if let Some(script) = script_content {
-        ts.push_str("  // User setup code\n");
-        let script_gen_start = ts.len();
-        // Use split('\n') to correctly track byte offsets for CRLF files.
-        // Rust's lines() strips \r from CRLF but +1 for \n undercounts,
-        // causing src_byte_offset drift that incorrectly skips user code.
-        let raw_lines: Vec<&str> = script.split('\n').collect();
-        let mut src_byte_offset: usize = 0; // offset within script content
+        profile!("canon.virtual_ts.emit_script_body", {
+            ts.push_str("  // User setup code\n");
+            let script_gen_start = ts.len();
+            // Use split('\n') to correctly track byte offsets for CRLF files.
+            // Rust's lines() strips \r from CRLF but +1 for \n undercounts,
+            // causing src_byte_offset drift that incorrectly skips user code.
+            let raw_lines: Vec<&str> = script.split('\n').collect();
+            let mut src_byte_offset: usize = 0; // offset within script content
 
-        // Check if script uses import.meta and add a polyfill variable.
-        // This avoids TS1343 when module is not set to es2020+.
-        let uses_import_meta = script.contains("import.meta");
-        if uses_import_meta {
-            ts.push_str("  const __import_meta: any = {};\n");
-        }
+            // Check if script uses import.meta and add a polyfill variable.
+            // This avoids TS1343 when module is not set to es2020+.
+            let uses_import_meta = script.contains("import.meta");
+            if uses_import_meta {
+                ts.push_str("  const __import_meta: any = {};\n");
+            }
 
-        for raw_line in raw_lines.iter() {
-            // Strip trailing \r for output (normalize CRLF to LF)
-            let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
-            // raw_line.len() includes \r if present; +1 for the \n from split
-            let raw_byte_len = raw_line.len() + 1;
+            for raw_line in raw_lines.iter() {
+                // Strip trailing \r for output (normalize CRLF to LF)
+                let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
+                // raw_line.len() includes \r if present; +1 for the \n from split
+                let raw_byte_len = raw_line.len() + 1;
 
-            // Skip lines that overlap with module-level spans (imports, re-exports, type decls)
-            let line_start = src_byte_offset;
-            let line_end = line_start + raw_line.len(); // use raw length for span check
-            let is_module_level = module_spans
-                .iter()
-                .any(|&(s, e)| line_start < e as usize && line_end > s as usize);
-            if is_module_level {
+                // Skip lines that overlap with module-level spans (imports, re-exports, type decls)
+                let line_start = src_byte_offset;
+                let line_end = line_start + raw_line.len(); // use raw length for span check
+                let is_module_level = module_spans
+                    .iter()
+                    .any(|&(s, e)| line_start < e as usize && line_end > s as usize);
+                if is_module_level {
+                    src_byte_offset += raw_byte_len;
+                    continue;
+                }
+                let gen_line_start = ts.len();
+                ts.push_str("  "); // indentation (not in source)
+                let gen_content_start = ts.len();
+
+                // Process the line: strip `export` keyword (invalid inside function),
+                // replace import.meta with polyfill variable
+                let mut output_line = std::borrow::Cow::Borrowed(line);
+
+                // Strip `export` from non-import lines inside setup scope
+                let trimmed_line = output_line.trim_start();
+                if trimmed_line.starts_with("export ")
+                    && !trimmed_line.starts_with("export type ")
+                    && !trimmed_line.starts_with("export interface ")
+                {
+                    let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
+                    let rest = trimmed_line.strip_prefix("export ").unwrap();
+                    #[allow(clippy::disallowed_types)]
+                    {
+                        output_line = std::borrow::Cow::Owned(cstr!("{leading_ws}{rest}").into());
+                    }
+                }
+
+                // Replace import.meta with polyfill variable to avoid TS1343
+                if uses_import_meta && output_line.contains("import.meta") {
+                    #[allow(clippy::disallowed_types)]
+                    {
+                        output_line = std::borrow::Cow::Owned(
+                            output_line.replace("import.meta", "__import_meta"),
+                        );
+                    }
+                }
+
+                ts.push_str(&output_line);
+                let gen_content_end = ts.len();
+                ts.push('\n');
+                // Map the line content (excluding the "  " indent prefix)
+                if !line.is_empty() {
+                    let src_line_start = script_offset as usize + src_byte_offset;
+                    let src_line_end = src_line_start + line.len();
+                    mappings.push(VizeMapping {
+                        gen_range: gen_content_start..gen_content_end,
+                        src_range: src_line_start..src_line_end,
+                    });
+                }
+                let _ = gen_line_start; // suppress unused warning
                 src_byte_offset += raw_byte_len;
-                continue;
             }
-            let gen_line_start = ts.len();
-            ts.push_str("  "); // indentation (not in source)
-            let gen_content_start = ts.len();
-
-            // Process the line: strip `export` keyword (invalid inside function),
-            // replace import.meta with polyfill variable
-            let mut output_line = std::borrow::Cow::Borrowed(line);
-
-            // Strip `export` from non-import lines inside setup scope
-            let trimmed_line = output_line.trim_start();
-            if trimmed_line.starts_with("export ")
-                && !trimmed_line.starts_with("export type ")
-                && !trimmed_line.starts_with("export interface ")
-            {
-                let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
-                let rest = trimmed_line.strip_prefix("export ").unwrap();
-                #[allow(clippy::disallowed_types)]
-                {
-                    output_line = std::borrow::Cow::Owned(cstr!("{leading_ws}{rest}").into());
-                }
-            }
-
-            // Replace import.meta with polyfill variable to avoid TS1343
-            if uses_import_meta && output_line.contains("import.meta") {
-                #[allow(clippy::disallowed_types)]
-                {
-                    output_line = std::borrow::Cow::Owned(
-                        output_line.replace("import.meta", "__import_meta"),
-                    );
-                }
-            }
-
-            ts.push_str(&output_line);
-            let gen_content_end = ts.len();
-            ts.push('\n');
-            // Map the line content (excluding the "  " indent prefix)
-            if !line.is_empty() {
-                let src_line_start = script_offset as usize + src_byte_offset;
-                let src_line_end = src_line_start + line.len();
-                mappings.push(VizeMapping {
-                    gen_range: gen_content_start..gen_content_end,
-                    src_range: src_line_start..src_line_end,
-                });
-            }
-            let _ = gen_line_start; // suppress unused warning
-            src_byte_offset += raw_byte_len;
-        }
-        let script_gen_end = ts.len();
-        append!(
-            ts,
-            "  // @vize-map: {script_gen_start}:{script_gen_end} -> 0:{}\n\n",
-            script.len()
-        );
+            let script_gen_end = ts.len();
+            append!(
+                ts,
+                "  // @vize-map: {script_gen_start}:{script_gen_end} -> 0:{}\n\n",
+                script.len()
+            );
+        });
     }
 
     // Template scope (nested inside setup)
     if template_ast.is_some() {
-        ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
+        profile!("canon.virtual_ts.emit_template_scope", {
+            ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
 
-        // Collect ref bindings for auto-unwrapping in template
-        let ref_bindings: Vec<&str> = summary
-            .bindings
-            .bindings
-            .iter()
-            .filter(|(_, bt)| matches!(bt, BindingType::SetupRef | BindingType::SetupMaybeRef))
-            .map(|(name, _)| name.as_str())
-            .collect();
+            // Collect ref bindings for auto-unwrapping in template
+            let ref_bindings: Vec<&str> = summary
+                .bindings
+                .bindings
+                .iter()
+                .filter(|(name, binding_type)| {
+                    summary.reactivity.needs_value_access(name.as_str())
+                        || matches!(binding_type, BindingType::SetupMaybeRef)
+                            && is_use_template_ref_binding(summary, script_content, name.as_str())
+                })
+                .map(|(name, _)| name.as_str())
+                .collect();
 
-        // Capture ref types BEFORE template scope to avoid circular references.
-        // `typeof count` here refers to the setup-scope Ref<number>.
-        if !ref_bindings.is_empty() {
-            ts.push_str("  // Ref type captures (before template scope shadows them)\n");
-            for name in &ref_bindings {
-                append!(ts, "  type __Ref_{name} = typeof {name};\n");
+            // Capture ref types BEFORE template scope to avoid circular references.
+            // `typeof count` here refers to the setup-scope Ref<number>.
+            if !ref_bindings.is_empty() {
+                ts.push_str("  // Ref type captures (before template scope shadows them)\n");
+                for name in &ref_bindings {
+                    append!(ts, "  type __R_{name} = typeof {name};\n");
+                }
             }
-        }
 
-        // Semicolon prevents ASI issues when user script doesn't end with `;`
-        // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
-        ts.push_str("  ;(function __template() {\n");
+            // Semicolon prevents ASI issues when user script doesn't end with `;`
+            // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
+            ts.push_str("  ;(function __template() {\n");
 
-        // Shadow ref bindings with unwrapped types.
-        // `var` allows reassignment (Vue templates can assign to refs).
-        if !ref_bindings.is_empty() {
-            ts.push_str("    // Auto-unwrap refs (Vue template behavior)\n");
-            ts.push_str("    type __UnwrapRef<T> = import('vue').UnwrapRef<T>;\n");
-            for name in &ref_bindings {
-                append!(
-                    ts,
-                    "    var {name}: __UnwrapRef<__Ref_{name}> = undefined as any;\n"
+            // Shadow ref bindings with unwrapped types.
+            // `var` allows reassignment (Vue templates can assign to refs).
+            if !ref_bindings.is_empty() {
+                ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
+                ts.push_str(
+                    "    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;\n",
                 );
-            }
-        }
-
-        // Vue template context (available in template expressions)
-        ts.push_str(&generate_template_context(options));
-        ts.push('\n');
-
-        // Props are available in template as variables
-        generate_props_variables(&mut ts, summary, script_content, generic_param);
-
-        // Generate scope closures
-        generate_scope_closures(&mut ts, &mut mappings, summary, template_offset);
-
-        // Declare unresolved components (auto-imported or built-in) as `any`
-        if !summary.used_components.is_empty() {
-            let mut has_unresolved = false;
-            for component in &summary.used_components {
-                let name = component.as_str();
-                // Skip if already declared via script bindings (import/const)
-                if summary.bindings.bindings.contains_key(name) {
-                    continue;
+                for name in &ref_bindings {
+                    append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
                 }
-                if !has_unresolved {
-                    ts.push_str(
-                        "\n  // Auto-imported/built-in components (not in script bindings)\n",
-                    );
-                    has_unresolved = true;
-                }
-                let safe = to_safe_identifier(name);
-                append!(ts, "  const {safe}: any = undefined as any;\n");
             }
 
-            ts.push_str("\n  // Mark used components as referenced\n");
-            for component in &summary.used_components {
-                let safe = to_safe_identifier(component.as_str());
-                append!(ts, "  void {safe};\n");
-            }
-        }
-
-        // Reference all setup bindings to prevent TS6133 for variables
-        // used only in CSS v-bind() or other non-template contexts
-        if !summary.bindings.bindings.is_empty() {
-            ts.push_str("\n  // Reference setup bindings (used in template/CSS v-bind)\n  ");
-            let mut first = true;
-            for name in summary.bindings.bindings.keys() {
-                // Skip bindings that are JS keywords or would cause syntax errors
-                if matches!(
-                    name.as_str(),
-                    "default"
-                        | "class"
-                        | "new"
-                        | "delete"
-                        | "void"
-                        | "typeof"
-                        | "in"
-                        | "instanceof"
-                        | "return"
-                        | "switch"
-                        | "case"
-                        | "break"
-                        | "continue"
-                        | "throw"
-                        | "try"
-                        | "catch"
-                        | "finally"
-                        | "if"
-                        | "else"
-                        | "for"
-                        | "while"
-                        | "do"
-                        | "with"
-                        | "var"
-                        | "let"
-                        | "const"
-                        | "function"
-                        | "this"
-                        | "super"
-                        | "import"
-                        | "export"
-                        | "yield"
-                        | "await"
-                        | "async"
-                        | "static"
-                        | "enum"
-                        | "implements"
-                        | "interface"
-                        | "package"
-                        | "private"
-                        | "protected"
-                        | "public"
-                ) {
-                    continue;
-                }
-                if !first {
-                    ts.push(' ');
-                }
-                append!(ts, "void {name};");
-                first = false;
-            }
+            // Vue template context (available in template expressions)
+            let template_context = profile!(
+                "canon.virtual_ts.generate_template_context",
+                generate_template_context(options)
+            );
+            ts.push_str(&template_context);
             ts.push('\n');
-        }
 
-        ts.push_str("  })();\n");
+            // Props are available in template as variables
+            profile!(
+                "canon.virtual_ts.generate_props_variables",
+                generate_props_variables(&mut ts, summary, script_content, generic_param)
+            );
+
+            // Generate scope closures
+            profile!(
+                "canon.virtual_ts.generate_scope_closures",
+                generate_scope_closures(&mut ts, &mut mappings, summary, template_offset)
+            );
+
+            // Declare unresolved components (auto-imported or built-in) as `any`
+            if !summary.used_components.is_empty() {
+                let mut has_unresolved = false;
+                for component in &summary.used_components {
+                    let name = component.as_str();
+                    // Skip if already declared via script bindings (import/const)
+                    if summary.bindings.bindings.contains_key(name) {
+                        continue;
+                    }
+                    if !has_unresolved {
+                        ts.push_str(
+                            "\n  // Auto-imported/built-in components (not in script bindings)\n",
+                        );
+                        has_unresolved = true;
+                    }
+                    let safe = to_safe_identifier(name);
+                    append!(ts, "  const {safe}: any = undefined as any;\n");
+                }
+
+                ts.push_str("\n  // Mark used components as referenced\n");
+                for component in &summary.used_components {
+                    let safe = to_safe_identifier(component.as_str());
+                    append!(ts, "  void {safe};\n");
+                }
+            }
+
+            // Reference all setup bindings to prevent TS6133 for variables
+            // used only in CSS v-bind() or other non-template contexts
+            if !summary.bindings.bindings.is_empty() {
+                ts.push_str("\n  // Reference setup bindings (used in template/CSS v-bind)\n  ");
+                let mut first = true;
+                for name in summary.bindings.bindings.keys() {
+                    // Skip bindings that are JS keywords or would cause syntax errors
+                    if matches!(
+                        name.as_str(),
+                        "default"
+                            | "class"
+                            | "new"
+                            | "delete"
+                            | "void"
+                            | "typeof"
+                            | "in"
+                            | "instanceof"
+                            | "return"
+                            | "switch"
+                            | "case"
+                            | "break"
+                            | "continue"
+                            | "throw"
+                            | "try"
+                            | "catch"
+                            | "finally"
+                            | "if"
+                            | "else"
+                            | "for"
+                            | "while"
+                            | "do"
+                            | "with"
+                            | "var"
+                            | "let"
+                            | "const"
+                            | "function"
+                            | "this"
+                            | "super"
+                            | "import"
+                            | "export"
+                            | "yield"
+                            | "await"
+                            | "async"
+                            | "static"
+                            | "enum"
+                            | "implements"
+                            | "interface"
+                            | "package"
+                            | "private"
+                            | "protected"
+                            | "public"
+                    ) {
+                        continue;
+                    }
+                    if !first {
+                        ts.push(' ');
+                    }
+                    append!(ts, "void {name};");
+                    first = false;
+                }
+                ts.push('\n');
+            }
+
+            ts.push_str("  })();\n");
+        });
     }
 
     // Reference props destructure bindings at setup scope level.
@@ -516,11 +547,14 @@ pub fn generate_virtual_ts_with_offsets(
 
     // Default export
     ts.push_str("// ========== Default Export ==========\n");
-    ts.push_str("declare const __vize_component__: {\n");
-    ts.push_str("  props: Props;\n");
-    ts.push_str("  emits: Emits;\n");
-    ts.push_str("  slots: Slots;\n");
+    ts.push_str("type __VizeComponentInstance = {\n");
+    ts.push_str("  $props: Props;\n");
+    ts.push_str("  $emit: __EmitFn<Emits>;\n");
+    ts.push_str("  $slots: Slots;\n");
     ts.push_str("};\n");
+    ts.push_str(
+        "declare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;\n",
+    );
     ts.push_str("export default __vize_component__;\n");
 
     VirtualTsOutput { code: ts, mappings }
@@ -596,4 +630,33 @@ fn extract_import_names(import_text: &str) -> Vec<&str> {
     }
 
     names
+}
+
+fn is_use_template_ref_binding(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    name: &str,
+) -> bool {
+    let Some(script) = script_content else {
+        return false;
+    };
+    let Some(&(start, end)) = summary.binding_spans.get(name) else {
+        return false;
+    };
+
+    if summary
+        .import_statements
+        .iter()
+        .any(|import| start >= import.start && end <= import.end)
+    {
+        return false;
+    }
+
+    let tail_end = (end as usize + 256).min(script.len());
+    let tail = &script[end as usize..tail_end];
+    let Some(eq_pos) = tail.find('=') else {
+        return false;
+    };
+    let rhs = tail[eq_pos + 1..].trim_start();
+    rhs.starts_with("useTemplateRef") || rhs.starts_with("(useTemplateRef")
 }

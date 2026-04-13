@@ -43,6 +43,7 @@ vize lsp --port 9527  # TCP mode (for debugging)
 ```bash
 vize lint src/**/*.vue
 vize lint --fix src/
+vize lint --profile src/  # Show parse, rule hook, Croquis, and type-aware timing
 ```
 
 ### Compile
@@ -51,9 +52,19 @@ vize lint --fix src/
 vize src/**/*.vue     # Compile all .vue files
 vize -o ./build       # Output to custom directory
 vize --ssr            # Enable SSR mode
-vize --profile        # Show compilation profile
+vize --profile        # Show parse, transform, codegen, and I/O profile
 vize -j 4             # Set thread count
 ```
+
+### Type Check and Format Profiles
+
+```bash
+vize check --profile src/       # Show Virtual TS, Croquis, and Corsa timing profile
+vize fmt --check --profile src/ # Show formatter timing profile
+```
+
+Profile reports include hot files plus internal operation timings for compiler phases, linter rule
+hooks, Croquis analysis, Virtual TS generation, and Corsa probes.
 
 ## Part of the Vize Art Collection
 

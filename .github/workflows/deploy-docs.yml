@@ -37,7 +37,10 @@ jobs:
           cache: true
 
       - name: Build @vizejs/vite-plugin
-        run: vp run --filter './npm/vize-native' --filter './npm/vite-plugin-vize' build
+        run: |
+          vp run --filter './npm/vize-native' build
+          vp run --filter './npm/vize' build
+          vp run --filter './npm/vite-plugin-vize' build
 
       - name: Build docs
         run: vp run --filter './docs' build
@@ -82,7 +85,11 @@ jobs:
           cache: true
 
       - name: Build npm packages
-        run: vp run --filter './npm/vize-native' --filter './npm/vite-plugin-vize' --filter './npm/vite-plugin-musea' build
+        run: |
+          vp run --filter './npm/vize-native' build
+          vp run --filter './npm/vize' build
+          vp run --filter './npm/vite-plugin-vize' build
+          vp run --filter './npm/vite-plugin-musea' build
 
       - name: Build playground
         run: vp run --filter './playground' build

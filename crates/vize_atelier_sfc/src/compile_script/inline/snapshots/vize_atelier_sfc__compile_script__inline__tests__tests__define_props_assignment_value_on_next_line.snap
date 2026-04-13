@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { computed } from "vue";
+export default {
+  __name: "TestComponent",
+  props: {
+    msg: {
+      type: String,
+      required: true
+    },
+    count: {
+      type: Number,
+      required: true
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    const doubled = computed(() => props.count * 2);
+    return (_ctx, _cache) => {
+      return null;
+    };
+  }
+};

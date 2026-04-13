@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_options.rs
+expression: call
+---
+MacroCall {
+    start: 0,
+    end: 59,
+    args: "{ name: 'MyComponent', inheritAttrs: false }",
+    type_args: None,
+    binding_name: None,
+}

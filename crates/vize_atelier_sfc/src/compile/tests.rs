@@ -50,23 +50,7 @@ const msg = ref('')
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    // Should NOT contain /* v-model */ comment
-    assert!(
-        !result.code.contains("/* v-model */"),
-        "Should not contain v-model comment. Got:\n{}",
-        result.code
-    );
-    // Should contain modelValue and onUpdate:modelValue
-    assert!(
-        result.code.contains("\"modelValue\":"),
-        "Should have modelValue prop. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("\"onUpdate:modelValue\":"),
-        "Should have onUpdate:modelValue prop. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -92,38 +76,7 @@ function handleChange(val: string) { selectedPreset.value = val; }
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== COMPILED OUTPUT ===\n{}", result.code);
-
-    // In non-inline mode with binding metadata, setup bindings are accessed via $setup
-    // This is the correct Vue 3 behavior when binding metadata is passed to the template compiler
-    assert!(
-        result.code.contains("$setup.selectedPreset"),
-        "selectedPreset should have $setup prefix in non-inline mode with bindings. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("$setup.handleChange"),
-        "handleChange should have $setup prefix in non-inline mode with bindings. Got:\n{}",
-        result.code
-    );
-    // Verify options is in __returned__
-    assert!(
-        result.code.contains("options"),
-        "options should be in __returned__. Got:\n{}",
-        result.code
-    );
-    // Verify options.ssr access has $setup prefix
-    assert!(
-        result.code.contains("$setup.options"),
-        "options.ssr should have $setup prefix. Got:\n{}",
-        result.code
-    );
-    // Verify MonacoEditor is in __returned__ (imported component used in template)
-    assert!(
-        result.code.contains("MonacoEditor"),
-        "MonacoEditor should be in __returned__. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -147,28 +100,7 @@ const output = ref(null);
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== NESTED V-IF OUTPUT ===\n{}", result.code);
-
-    // Should NOT contain double $setup prefix
-    assert!(
-        !result.code.contains("$setup.$setup"),
-        "Should NOT have double $setup prefix. Got:\n{}",
-        result.code
-    );
-
-    // Should contain single $setup prefix for output
-    assert!(
-        result.code.contains("$setup.output"),
-        "Should have single $setup prefix for output. Got:\n{}",
-        result.code
-    );
-
-    // Should contain CodeHighlight component with :code prop
-    assert!(
-        result.code.contains("CodeHighlight"),
-        "Should contain CodeHighlight. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -196,27 +128,7 @@ function handlePresetChange(key: PresetKey) {}
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    // Print output for debugging
-    eprintln!("TypeScript SFC output:\n{}", result.code);
-
-    // TypeScript type alias should be preserved at module level
-    assert!(
-        result.code.contains("type PresetKey"),
-        "Should preserve type alias with lang='ts'. Got:\n{}",
-        result.code
-    );
-    // TypeScript function parameter types should be preserved in setup body
-    assert!(
-        result.code.contains("key: PresetKey"),
-        "Should preserve function parameter type with lang='ts'. Got:\n{}",
-        result.code
-    );
-    // Should have the event handler expression
-    assert!(
-        result.code.contains("handlePresetChange"),
-        "Should have event handler. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -242,22 +154,7 @@ const editDashboard = ref()
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("Multi-statement event handler output:\n{}", result.code);
-
-    // Multi-statement handler should use block body { ... }, not ( ... )
-    // The concise body (editDashboard = 'test'; console.log('done');) is invalid JS
-    assert!(
-        result.code.contains("($event: any) => { "),
-        "Multi-statement handler should use block body ($event: any) => {{ ... }}. Got:\n{}",
-        result.code
-    );
-
-    // SetupRef assignment in template event handler should add .value
-    assert!(
-        result.code.contains("editDashboard.value"),
-        "SetupRef assignment in event handler should add .value. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -298,26 +195,7 @@ function processData(data: Record<string, unknown>): void {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("TypeScript function types output:\n{}", result.code);
-
-    // TypeScript interface should be preserved at module level
-    assert!(
-        result.code.contains("interface Item"),
-        "Should preserve interface with lang='ts'. Got:\n{}",
-        result.code
-    );
-    // TypeScript annotations should be preserved in setup body
-    assert!(
-        result.code.contains(": Item[]"),
-        "Should preserve array type annotation with lang='ts'. Got:\n{}",
-        result.code
-    );
-    // Should contain the runtime logic
-    assert!(
-        result.code.contains("foo"),
-        "Should have variable foo. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -339,16 +217,7 @@ const activeTab = ref<'a' | 'b'>('a');
     let result =
         compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("2 /* CLASS */"),
-        "Expected inline SFC output to preserve CLASS patch flags. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("activeTab.value === 'a'"),
-        "Expected ref access to stay reactive in class binding. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -370,26 +239,7 @@ const currentCode = ref('dom');
     let result =
         compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("_createVNode(CodeHighlight"),
-        "Expected inline component vnode output. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("code: currentCode.value"),
-        "Expected inline component prop to stay reactive. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("8 /* PROPS */"),
-        "Expected inline component output to preserve PROPS patch flag for dynamic prop. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("[\"code\"]"),
-        "Expected inline component dynamic props list to include code. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -412,26 +262,7 @@ const currentCode = ref('dom');
     let result =
         compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("_createBlock(CodeHighlight"),
-        "Expected v-if branch component block output. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("code: currentCode.value"),
-        "Expected v-if branch component prop to stay reactive. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("8 /* PROPS */"),
-        "Expected v-if branch component output to preserve PROPS patch flag. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("[\"code\"]"),
-        "Expected v-if branch component dynamic props list to include code. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -464,14 +295,7 @@ const doubled = computed(() => count * 2)
     compile_opts.script.id = Some("test.vue".to_compact_string());
     let result = compile_sfc(&descriptor, compile_opts).unwrap();
 
-    eprintln!("=== Full SFC props destructure output ===\n{}", result.code);
-
-    // Props should use __props. prefix in template
-    assert!(
-        result.code.contains("__props.name") || result.code.contains("name"),
-        "Should have name access. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -495,14 +319,8 @@ var c = 3
     compile_opts.script.id = Some("test.vue".to_compact_string());
     let result = compile_sfc(&descriptor, compile_opts).unwrap();
 
-    eprintln!("Let/var unref test output:\n{}", result.code);
-
     // Check that bindings are correctly identified
     if let Some(bindings) = &result.bindings {
-        eprintln!("Bindings:");
-        for (name, binding_type) in &bindings.bindings {
-            eprintln!("  {} => {:?}", name, binding_type);
-        }
         assert!(
             matches!(bindings.bindings.get("a"), Some(BindingType::LiteralConst)),
             "a should be LiteralConst"
@@ -517,25 +335,7 @@ var c = 3
         );
     }
 
-    // Check for _unref import
-    assert!(
-        result.code.contains("unref as _unref"),
-        "Should import _unref. Got:\n{}",
-        result.code
-    );
-
-    // Check that let/var variables are wrapped with _unref
-    // In inline mode, setup bindings are accessed directly (no $setup. prefix)
-    assert!(
-        result.code.contains("_unref(b)"),
-        "b should be wrapped with _unref. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_unref(c)"),
-        "c should be wrapped with _unref. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -555,33 +355,7 @@ export default {
 "#;
     // Test preserving TypeScript output
     let result = normal_script::extract_normal_script_content(input, true, true);
-    eprintln!("Extracted normal script content (preserve TS):\n{}", result);
-
-    // Should contain imports
-    assert!(
-        result.contains("import type { NuxtRoute }"),
-        "Should contain type import"
-    );
-    assert!(
-        result.contains("import { useBreakpoint }"),
-        "Should contain named import"
-    );
-    assert!(
-        result.contains("import Button"),
-        "Should contain default import"
-    );
-
-    // Should contain interface
-    assert!(
-        result.contains("interface TabItem"),
-        "Should contain interface"
-    );
-
-    // Should NOT contain export default
-    assert!(
-        !result.contains("export default"),
-        "Should NOT contain export default"
-    );
+    insta::assert_snapshot!(result.as_str());
 }
 
 #[test]
@@ -610,14 +384,6 @@ const { items } = defineProps<{
 </template>"#;
 
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    eprintln!(
-        "Descriptor script: {:?}",
-        descriptor.script.as_ref().map(|s| &s.content)
-    );
-    eprintln!(
-        "Descriptor script_setup: {:?}",
-        descriptor.script_setup.as_ref().map(|s| &s.content)
-    );
 
     // Use is_ts = true to preserve TypeScript output
     let opts = SfcCompileOptions {
@@ -633,14 +399,7 @@ const { items } = defineProps<{
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== COMPILED OUTPUT ===\n{}", result.code);
-
-    // Should contain the type import (when is_ts = true, TypeScript is preserved)
-    assert!(
-        result.code.contains("RouteLocation") || result.code.contains("interface TabItem"),
-        "Should contain type definitions from normal script. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -657,35 +416,7 @@ const model = defineModel()
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== defineModel OUTPUT ===\n{}", result.code);
-
-    // Should have useModel import
-    assert!(
-        result.code.contains("useModel as _useModel"),
-        "Should import useModel. Got:\n{}",
-        result.code
-    );
-
-    // Should have modelValue prop
-    assert!(
-        result.code.contains("modelValue"),
-        "Should have modelValue prop. Got:\n{}",
-        result.code
-    );
-
-    // Should have update:modelValue emit
-    assert!(
-        result.code.contains("update:modelValue"),
-        "Should have update:modelValue emit. Got:\n{}",
-        result.code
-    );
-
-    // Should have _useModel call in setup
-    assert!(
-        result.code.contains("_useModel(__props"),
-        "Should use _useModel in setup. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -702,21 +433,7 @@ const title = defineModel('title')
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== defineModel with name OUTPUT ===\n{}", result.code);
-
-    // Should have title prop
-    assert!(
-        result.code.contains("title:") || result.code.contains("\"title\""),
-        "Should have title prop. Got:\n{}",
-        result.code
-    );
-
-    // Should have update:title emit
-    assert!(
-        result.code.contains("update:title"),
-        "Should have update:title emit. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -757,22 +474,7 @@ export default {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== Non-script-setup TS output ===\n{}", result.code);
-
-    // TypeScript should be preserved when is_ts=true
-    assert!(
-        result.code.contains("interface Props") || result.code.contains(": Props"),
-        "Should preserve TypeScript with is_ts=true. Got:\n{}",
-        result.code
-    );
-
-    // Should still contain the component logic
-    assert!(
-        result.code.contains("name: 'MyComponent'")
-            || result.code.contains("name: \"MyComponent\""),
-        "Should have component name. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -808,17 +510,7 @@ export default {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!(
-        "=== Non-script-setup TS preserved output ===\n{}",
-        result.code
-    );
-
-    // Should still contain TypeScript syntax when is_ts = true
-    assert!(
-        result.code.contains("interface Props") || result.code.contains("as Props"),
-        "Should preserve TypeScript when is_ts = true. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -831,27 +523,7 @@ fn test_define_props_imported_type_alias_is_exposed_to_template() {
 
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("disabled: { type: Boolean")
-            || result.code.contains("disabled: { type: null"),
-        "Imported disabled prop should exist in runtime props. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("size: {"),
-        "Imported size prop should exist in runtime props. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_ctx.disabled"),
-        "Imported disabled prop should not fall back to _ctx. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_ctx.size"),
-        "Imported size prop should not fall back to _ctx. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -864,22 +536,7 @@ fn test_define_props_interface_extends_imported_type_alias() {
 
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("disabled: { type: Boolean")
-            || result.code.contains("disabled: { type: null"),
-        "Extended imported disabled prop should exist in runtime props. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("size: {"),
-        "Extended imported size prop should exist in runtime props. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_ctx.disabled"),
-        "Extended imported disabled prop should not fall back to _ctx. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -893,21 +550,7 @@ fn test_template_only_sfc_vapor_output_mode() {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("const t0 = _template"),
-        "Template-only Vapor output should keep template declarations. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("__vapor: true"),
-        "Template-only Vapor output should mark the component as Vapor. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_sfc_main.render = render"),
-        "Template-only Vapor output should attach render to the component. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -938,49 +581,7 @@ const doubled = computed(() => count.value * 2)
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("_defineVaporComponent"),
-        "Script setup Vapor output should use defineVaporComponent. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("const t0 = _template"),
-        "Script setup Vapor output should include template declarations. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_renderEffect"),
-        "Script setup Vapor output should retain Vapor render effects. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("getCurrentInstance as _getCurrentInstance"),
-        "Script setup Vapor output should import current instance access for production-safe setupState wiring. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("const __ctx = _proxyRefs(__returned__)"),
-        "Script setup Vapor output should build a proxyRefs render context. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("const __vaporRender = render"),
-        "Script setup Vapor output should alias the template render to avoid local binding collisions. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)"),
-        "Script setup Vapor output should return a Vapor block directly from setup. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1009,48 +610,7 @@ const msg = 'hello'
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("_defineComponent"),
-        "SSR output should fall back to the VDOM compiler. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_defineVaporComponent"),
-        "SSR output should not keep Vapor component wrappers. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("__vapor"),
-        "SSR output should not mark the component as Vapor. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("function ssrRender"),
-        "SSR output should keep the compiled ssrRender function. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_ssrInterpolate"),
-        "SSR output should use the server renderer helpers. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("_push(`<div>${_ssrInterpolate($setup.msg)}</div>`)"),
-        "SSR output should generate HTML pushes instead of VDOM returns. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("ssrRender,"),
-        "SSR output should attach ssrRender to the component options. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("render,"),
-        "SSR output should not attach a client render option. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1080,27 +640,7 @@ import { NuxtLayout, NuxtPage } from "#components"
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result
-            .code
-            .contains("_ssrRenderComponent($setup.NuxtLayout, null, {"),
-        "SSR output should use setup bindings for imported components. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("default: _withCtx((_, _push, _parent, _scopeId) => {"),
-        "SSR output should emit SSR-aware slot functions. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("_ssrRenderComponent($setup.NuxtPage, null, null, _parent))"),
-        "SSR slot content should render children through server-renderer helpers. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1130,16 +670,7 @@ export default {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("_sfc_main.ssrRender = ssrRender"),
-        "Normal script SSR output should attach ssrRender. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_sfc_main.render = render"),
-        "Normal script SSR output should not attach the client render function. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1158,16 +689,7 @@ fn test_template_only_sfc_ssr_exports_default_component() {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("function ssrRender"),
-        "Template-only SSR output should keep the ssrRender function. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_sfc_main.ssrRender = ssrRender"),
-        "Template-only SSR output should export a default component with ssrRender. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1197,23 +719,7 @@ function render() {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("const __vaporRender = render"),
-        "Vapor output should create a module-scope render alias. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("render: __vaporRender"),
-        "Vapor component options should use the alias to keep template render stable. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)"),
-        "Vapor setup should call the aliased template render instead of a local binding. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1243,16 +749,7 @@ const count = ref(1)
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("const n0 = t0()"),
-        "Script setup Vapor output should keep render block statements. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("return n0"),
-        "Script setup Vapor output should return the Vapor root node. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1280,18 +777,7 @@ import FooPanel from './FooPanel.vue'
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result
-            .code
-            .contains("const _component_FooPanel = _ctx.FooPanel"),
-        "Imported script setup components should be read from _ctx in Vapor mode. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_resolveComponent(\"FooPanel\")"),
-        "Imported script setup components should not go through resolveComponent. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1313,19 +799,5 @@ export default {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("const t0 = _template"),
-        "Normal script Vapor output should keep template declarations. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_sfc_main.__vapor = true"),
-        "Normal script Vapor output should mark the component as Vapor. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("export default _sfc_main"),
-        "Normal script Vapor output should continue exporting _sfc_main. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }

@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+
+import { ref } from 'vue'
+import CodeHighlight from './CodeHighlight.vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  setup(__props) {
+
+const show = ref(true);
+const currentCode = ref('dom');
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", { class: "wrapper" }, [ (show.value) ? (_openBlock(), _createBlock(CodeHighlight, {
+          key: 0,
+          code: currentCode.value,
+          language: "javascript"
+        }, null, 8 /* PROPS */, ["code"])) : _createCommentVNode("v-if", true) ]))
+}
+}
+
+})

@@ -12,7 +12,7 @@ use vize_carton::FxHashMap;
 use super::collector::collect_identifier_rewrites;
 use super::helpers::{transform_props_text_based, PROPS_REST_SENTINEL};
 use super::PropsDestructuredBindings;
-use vize_carton::{String, ToCompactString};
+use vize_carton::{profile, String, ToCompactString};
 
 /// Transform destructured props references in source code.
 /// Rewrites `foo` to `__props.foo` for destructured props.
@@ -40,14 +40,20 @@ pub fn transform_destructured_props(
     // Try AST-based transformation first
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
-    let ret = Parser::new(&allocator, source, source_type).parse();
+    let ret = profile!(
+        "atelier.props_destructure.parse",
+        Parser::new(&allocator, source, source_type).parse()
+    );
 
     if !ret.panicked {
         // Collect rewrites: (start, end, replacement)
         let mut rewrites: Vec<(usize, usize, String)> = Vec::new();
 
         // Walk the AST to find identifier references
-        collect_identifier_rewrites(&ret.program, source, &local_to_key, &mut rewrites);
+        profile!(
+            "atelier.props_destructure.collect_rewrites",
+            collect_identifier_rewrites(&ret.program, source, &local_to_key, &mut rewrites)
+        );
 
         // Apply rewrites if any found (empty rewrites means all props are shadowed or unused)
         if !rewrites.is_empty() {
@@ -67,5 +73,8 @@ pub fn transform_destructured_props(
 
     // Fallback: Simple text-based transformation
     // This handles cases where AST parsing failed
-    transform_props_text_based(source, &local_to_key)
+    profile!(
+        "atelier.props_destructure.text_fallback",
+        transform_props_text_based(source, &local_to_key)
+    )
 }

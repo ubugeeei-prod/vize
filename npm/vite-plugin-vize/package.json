@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/vite-plugin",
-  "version": "0.39.0",
+  "version": "0.46.0",
   "description": "High-performance native Vite plugin for Vue SFC compilation powered by Vize",
   "keywords": [
     "compiler",
@@ -42,7 +42,8 @@
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "tinyglobby": "^0.2.0"
+    "tinyglobby": "^0.2.0",
+    "vize": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

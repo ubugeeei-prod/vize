@@ -10,6 +10,19 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  nix-flake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+      - name: Cache Nix store
+        uses: nix-community/cache-nix-action@v7
+        with:
+          primary-key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-${{ runner.arch }}-
+      - name: Check flake
+        run: nix flake check
+
   fmt-rust:
     runs-on: ubuntu-latest
     steps:
@@ -26,6 +39,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "native"
       - name: Build vize CLI
         run: cargo build --release -p vize
       - name: Install vize CLI
@@ -52,6 +67,8 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "native"
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings
       - name: Test
@@ -65,6 +82,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "native"
 
       - name: Coverage report
         run: |
@@ -91,6 +110,8 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "wasm"
 
       - name: Cache WASM build
         id: cache-wasm
@@ -118,7 +139,10 @@ jobs:
           cache: true
 
       - name: Build npm packages
-        run: vp run --filter './npm/vize-native' --filter './npm/vite-plugin-vize' build
+        run: |
+          vp run --filter './npm/vize-native' build
+          vp run --filter './npm/vize' build
+          vp run --filter './npm/vite-plugin-vize' build
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4

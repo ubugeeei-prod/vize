@@ -327,11 +327,7 @@ export default {
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
-        assert_eq!(result.diagnostics[0].rule_name, "script/no-options-api");
-        assert!(result.diagnostics[0]
-            .labels
-            .iter()
-            .any(|label| label.message.contains("data()")));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]
@@ -349,10 +345,7 @@ export default defineComponent({
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0]
-            .labels
-            .iter()
-            .any(|label| label.message.contains("defineProps")));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]
@@ -370,10 +363,7 @@ export default component
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0]
-            .labels
-            .iter()
-            .any(|label| label.message.contains("methods")));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]
@@ -388,10 +378,7 @@ export default {
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0]
-            .labels
-            .iter()
-            .any(|label| label.message.contains("component option 'name'")));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

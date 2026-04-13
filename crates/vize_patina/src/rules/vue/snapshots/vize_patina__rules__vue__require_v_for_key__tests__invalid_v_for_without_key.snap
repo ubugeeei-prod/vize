@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/vue/require_v_for_key.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/require-v-for-key",
+        severity: Error,
+        message: "Elements in iteration expect to have 'v-bind:key' directives. Element: <li>",
+        start: 8,
+        end: 28,
+        help: Some(
+            "**Why:** The `:key` attribute helps Vue's virtual DOM efficiently track and update list items.\n\n**Fix:** Add a unique identifier as the key:\n```vue\n<li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n</li>\n```\n\n**Best practices:**\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

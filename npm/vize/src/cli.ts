@@ -1,5 +1,6 @@
 import { createRequire } from "module";
 import { readFileSync } from "fs";
+import { loadConfig } from "./config.js";
 
 const require = createRequire(import.meta.url);
 
@@ -103,9 +104,23 @@ interface LintResult {
   timeMs: number;
 }
 
-function runLint(args: string[]): void {
+interface SharedConfigOptions {
+  configFile?: string;
+  configMode: "root" | "none";
+}
+
+interface ParsedLintCommand {
+  patterns: string[];
+  options: LintOptions;
+  sharedConfig: SharedConfigOptions;
+}
+
+function parseLintCommand(args: string[]): ParsedLintCommand {
   const patterns: string[] = [];
   const options: LintOptions = {};
+  const sharedConfig: SharedConfigOptions = {
+    configMode: "root",
+  };
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -121,10 +136,43 @@ function runLint(args: string[]): void {
       options.helpLevel = args[++i];
     } else if (arg === "--preset") {
       options.preset = args[++i];
+    } else if (arg === "--config" || arg === "-c") {
+      const configFile = args[++i];
+      if (!configFile) {
+        throw new Error("Missing path after --config");
+      }
+      sharedConfig.configFile = configFile;
+    } else if (arg === "--no-config") {
+      sharedConfig.configMode = "none";
     } else if (!arg.startsWith("-")) {
       patterns.push(arg);
     }
   }
+
+  return { patterns, options, sharedConfig };
+}
+
+async function runLint(args: string[]): Promise<void> {
+  const { patterns, options, sharedConfig } = parseLintCommand(args);
+  const config = await loadConfig(process.cwd(), {
+    mode: sharedConfig.configMode,
+    configFile: sharedConfig.configFile,
+    env: {
+      mode: process.env.NODE_ENV ?? "development",
+      command: "lint",
+    },
+  });
+
+  if (sharedConfig.configFile && !config) {
+    throw new Error(`Could not find config file: ${sharedConfig.configFile}`);
+  }
+
+  if (config?.linter?.enabled === false) {
+    process.stderr.write("[vize] Skipping lint because linter.enabled is false in vize.config.\n");
+    return;
+  }
+
+  options.preset ??= config?.linter?.preset;
 
   if (patterns.length === 0) {
     patterns.push(".");
@@ -169,7 +217,7 @@ function runLint(args: string[]): void {
 
 const NAPI_COMMANDS = new Set(["lint"]);
 
-function main(): void {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
 
@@ -183,7 +231,7 @@ function main(): void {
     const commandArgs = args.slice(1);
     switch (command) {
       case "lint":
-        runLint(commandArgs);
+        await runLint(commandArgs);
         break;
     }
   } else {
@@ -195,4 +243,7 @@ function main(): void {
   }
 }
 
-main();
+void main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+});

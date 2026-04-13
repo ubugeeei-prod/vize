@@ -5,8 +5,6 @@ export default defineConfig({
       "dist/**",
       "node_modules/**",
       "src/wasm/**",
-      "__agent_only/**",
-      "../__agent_only/**",
       "playwright-report/**",
       "e2e/vrt/test-results/**",
     ],

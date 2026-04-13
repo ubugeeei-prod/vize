@@ -18,12 +18,40 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let content = self.get_source(start, end);
-        let loc = self.create_loc(start, end);
+        let source = self.source;
+        self.append_or_merge_text(&source[start..end], start, end);
+    }
 
-        let text_node = TextNode::new(content, loc);
-        let boxed = Box::new_in(text_node, self.allocator);
-        self.add_child(TemplateChildNode::Text(boxed));
+    /// Process text entity content
+    pub(super) fn on_text_entity_impl(&mut self, ch: char, start: usize, end: usize) {
+        let mut content = [0_u8; 4];
+        self.append_or_merge_text(ch.encode_utf8(&mut content), start, end);
+    }
+
+    /// Append or merge text node
+    fn append_or_merge_text(&mut self, content: &str, start: usize, end: usize) {
+        let merge_start_off = match self.stack.last().and_then(|e| e.element.children.last()) {
+            Some(TemplateChildNode::Text(t)) => Some(t.loc.start.offset as usize),
+            _ => None,
+        };
+
+        if let Some(merge_start) = merge_start_off {
+            let end_pos = self.get_pos(end);
+            let source_span = self.get_source(merge_start, end).into();
+            if let Some(entry) = self.stack.last_mut() {
+                if let Some(TemplateChildNode::Text(text_node)) = entry.element.children.last_mut()
+                {
+                    text_node.content.push_str(content);
+                    text_node.loc.end = end_pos;
+                    text_node.loc.source = source_span;
+                }
+            }
+        } else {
+            let loc = self.create_loc(start, end);
+            let text_node = TextNode::new(content, loc);
+            let boxed = Box::new_in(text_node, self.allocator);
+            self.add_child(TemplateChildNode::Text(boxed));
+        }
     }
 
     /// Process interpolation
@@ -304,7 +332,10 @@ impl<'a> Parser<'a> {
 
     /// Handle error
     pub(super) fn on_error_impl(&mut self, code: ErrorCode, index: usize) {
-        let loc = self.create_loc(index, index + 1);
+        let len = self.source.len();
+        let start = index.min(len);
+        let end = (index + 1).min(len);
+        let loc = self.create_loc(start, end);
         self.errors.push(CompilerError::new(code, Some(loc)));
     }
 }

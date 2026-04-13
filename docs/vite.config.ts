@@ -3,10 +3,7 @@ import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { defineConfig } from "vite-plus";
 import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
-import {
-  buildDocsBackgroundScript,
-  createDocsBackgroundHtml,
-} from "./theme/background";
+import { buildDocsBackgroundScript, createDocsBackgroundHtml } from "./theme/background";
 
 const require = createRequire(import.meta.url);
 
@@ -46,10 +43,7 @@ if (puppeteerExecutablePath) {
 const artVueGrammar = {
   ...JSON.parse(
     readFileSync(
-      resolve(
-        import.meta.dirname,
-        "../npm/vscode-art/syntaxes/art.tmLanguage.json",
-      ),
+      resolve(import.meta.dirname, "../npm/vscode-art/syntaxes/art.tmLanguage.json"),
       "utf-8",
     ),
   ),

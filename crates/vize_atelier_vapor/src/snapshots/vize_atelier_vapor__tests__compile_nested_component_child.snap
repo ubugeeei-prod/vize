@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+export function render(_ctx) {
+const n1 = t0()
+const _component_MyComp = _resolveComponent("MyComp")
+_setInsertionState(n1, null, true)
+const n0 = _createComponentWithFallback(_component_MyComp, null, null, true)
+return n1
+}

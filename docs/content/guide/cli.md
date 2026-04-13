@@ -26,6 +26,52 @@ vize [COMMAND] [OPTIONS] [FILES...]
 
 When invoked without a command, Vize defaults to `build`.
 
+## Config
+
+`vize` looks for these files in the project root:
+
+- `vize.config.ts`
+- `vize.config.js`
+- `vize.config.mjs`
+- `vize.config.pkl`
+- `vize.config.json`
+
+TypeScript config:
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  linter: {
+    preset: "opinionated",
+  },
+});
+```
+
+PKL config:
+
+```pkl
+amends "node_modules/vize/pkl/vize.pkl"
+
+linter {
+  preset = "opinionated"
+}
+```
+
+JSON config with schema:
+
+```json
+{
+  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
+  "linter": {
+    "preset": "opinionated"
+  }
+}
+```
+
+At the moment, shared config is applied to `vize lint`. You can override discovery with
+`vize lint --config path/to/vize.config.ts` or skip config loading with `vize lint --no-config`.
+
 ## Commands
 
 | Command | Description                           | Crate              |
@@ -162,9 +208,9 @@ vize check src/components/**/*.vue
 | ---------- | ------- | -------------------------------- |
 | `--strict` | `false` | Enable strict type checking mode |
 
-### Future: tsgo Integration
+### Future: Corsa Integration
 
-Vize's type checker is designed with awareness of [tsgo](https://github.com/nicolo-ribaudo/tsgo) (Microsoft's native TypeScript type checker written in Go). As tsgo matures, Vize plans to integrate with it for JavaScript/TypeScript type checking while continuing to provide Vue-specific template type analysis through Canon.
+Vize's type checker is being aligned around [Corsa](https://github.com/ubugeeei/corsa-bind), the native TypeScript execution layer used throughout the workspace. The goal is to keep JavaScript/TypeScript checking native while Canon continues to provide Vue-specific template type analysis.
 
 ## Musea
 

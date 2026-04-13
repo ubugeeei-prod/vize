@@ -12,7 +12,7 @@
     "test:browser": "vp test --config vite.test.config.ts --browser.headless",
     "test:vrt": "playwright test",
     "test:vrt:update": "playwright test --update-snapshots",
-    "check": "vp check src e2e vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && vize lint",
+    "check": "ROOT=\"$(cd .. && pwd -P)\" && vp check src e2e vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && cargo run --quiet --manifest-path \"$ROOT/Cargo.toml\" -p vize -- lint",
     "check:fix": "vp check --fix src e2e vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts",
     "fmt": "vp fmt --write src",
     "build:wasm": "ROOT=\"$(cd .. && pwd -P)\" && cargo build --manifest-path \"$ROOT/Cargo.toml\" --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown && wasm-bindgen \"$ROOT/target/wasm32-unknown-unknown/release/vize_vitrine.wasm\" --out-dir \"$ROOT/playground/src/wasm\" --target web"

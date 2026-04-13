@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/no_async_in_computed.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-async-in-computed",
+        severity: Error,
+        message: "Computed properties cannot be async. They must return a value synchronously.",
+        start: 13,
+        end: 27,
+        help: Some(
+            "Use ref with watchEffect for async operations: `const data = ref(null); watchEffect(async () => { data.value = await fetchData() })`",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

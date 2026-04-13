@@ -13,16 +13,11 @@ use crate::script::{
 use crate::types::{BindingType, SfcError};
 
 use super::super::import_utils::extract_import_identifiers;
-use super::super::macros::{
-    is_macro_call_line, is_multiline_macro_start, is_paren_macro_start, is_props_destructure_line,
-};
 use super::super::props::{extract_emit_names_from_type, extract_prop_types_from_type};
+use super::super::statement_sections::extract_script_sections;
 use super::super::typescript::transform_typescript_to_js;
 use super::super::ScriptCompileResult;
-use super::helpers::{
-    collect_runtime_identifier_references, count_unescaped_backticks, is_reserved_word,
-    is_typescript_type_alias,
-};
+use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
 use super::imports::dedupe_imports;
 
 /// Compile script setup content following Vue.js core format
@@ -44,325 +39,20 @@ pub fn compile_script_setup(
     // Check if we have props destructure
     let has_props_destructure = ctx.macros.props_destructure.is_some();
 
-    // Extract and output imports
-    let mut imports = Vec::new();
-    let mut setup_lines = Vec::new();
-    let mut in_import = false;
-    let mut import_buffer = String::default();
-
-    // For multi-line statement tracking
-    let mut in_destructure = false;
-    let mut destructure_buffer = String::default();
-    let mut brace_depth: i32 = 0;
-    let mut waiting_for_macro_close = false; // After destructure closes, waiting for macro call to complete
-
-    // For multi-line macro call tracking (e.g., defineEmits<{ ... }>())
-    let mut in_macro_call = false;
-    let mut macro_buffer = String::default();
-    let mut macro_angle_depth: i32 = 0;
-
-    // For multi-line paren-based macro call tracking (e.g., defineExpose({ ... }))
-    let mut in_paren_macro_call = false;
-    let mut paren_macro_depth: i32 = 0;
-
-    // Track template literal depth to avoid treating content inside backtick strings as code
-    let mut template_literal_depth: i32 = 0;
-
-    // Track TypeScript-only declarations (interface, type) to skip them
-    let mut in_ts_interface = false;
-    let mut ts_interface_brace_depth: i32 = 0;
-    let mut in_ts_type = false;
-    let mut ts_type_depth: i32 = 0;
-
-    for line in content.lines() {
-        // Update template literal depth by counting unescaped backticks
-        // This is a simplified approach - we count backticks that aren't preceded by backslash
-        // and aren't inside regular strings (approximation)
-        template_literal_depth += count_unescaped_backticks(line);
-        let trimmed = line.trim();
-
-        // Handle multi-line macro call: const emit = defineEmits<{ ... }>()
-        if in_macro_call {
-            macro_buffer.push_str(line);
-            macro_buffer.push('\n');
-            // Track angle brackets but ignore => (arrow functions)
-            let line_no_arrow = trimmed.replace("=>", "");
-            macro_angle_depth += line_no_arrow.matches('<').count() as i32;
-            macro_angle_depth -= line_no_arrow.matches('>').count() as i32;
-
-            // Check if macro call is complete (angle brackets closed and has ())
-            if macro_angle_depth <= 0 && (trimmed.contains("()") || trimmed.ends_with(')')) {
-                // Skip the entire macro call
-                in_macro_call = false;
-                macro_buffer.clear();
-                continue;
-            }
-            continue;
-        }
-
-        // Handle multi-line paren-based macro call: defineExpose({ ... })
-        if in_paren_macro_call {
-            paren_macro_depth += trimmed.matches('(').count() as i32;
-            paren_macro_depth -= trimmed.matches(')').count() as i32;
-
-            // Check if macro call is complete (parentheses balanced)
-            if paren_macro_depth <= 0 {
-                in_paren_macro_call = false;
-                continue;
-            }
-            continue;
-        }
-
-        // Detect start of multi-line paren-based macro call (e.g., defineExpose({)
-        // But not if it's part of a destructure pattern (const { ... } = defineProps)
-        if !in_destructure
-            && is_paren_macro_start(trimmed)
-            && !trimmed.starts_with("const {")
-            && !trimmed.starts_with("let {")
-            && !trimmed.starts_with("var {")
-        {
-            in_paren_macro_call = true;
-            paren_macro_depth =
-                trimmed.matches('(').count() as i32 - trimmed.matches(')').count() as i32;
-            continue;
-        }
-
-        // Detect start of multi-line macro call (e.g., defineEmits<{ or defineProps<{)
-        // But not if it's part of a destructure pattern
-        if !in_destructure
-            && is_multiline_macro_start(trimmed)
-            && !trimmed.starts_with("const {")
-            && !trimmed.starts_with("let {")
-            && !trimmed.starts_with("var {")
-        {
-            in_macro_call = true;
-            macro_buffer.clear();
-            macro_buffer.push_str(line);
-            macro_buffer.push('\n');
-            macro_angle_depth =
-                trimmed.matches('<').count() as i32 - trimmed.matches('>').count() as i32;
-            continue;
-        }
-
-        // Handle waiting for macro close after destructure (e.g., waiting for }>() )
-        if waiting_for_macro_close {
-            destructure_buffer.push_str(line);
-            destructure_buffer.push('\n');
-
-            let open_angles = destructure_buffer.matches('<').count();
-            let close_angles = destructure_buffer.matches('>').count();
-
-            // If angle brackets aren't balanced, keep going
-            if open_angles > close_angles {
-                continue;
-            }
-
-            // Angle brackets are balanced, check for closing ()
-            if trimmed.ends_with("()") || trimmed.ends_with(')') {
-                // Skip the entire destructure + macro call
-                waiting_for_macro_close = false;
-                in_destructure = false;
-                destructure_buffer.clear();
-                continue;
-            }
-            continue;
-        }
-
-        // Handle multi-line destructure pattern: const { ... } = defineProps(...)
-        if in_destructure {
-            destructure_buffer.push_str(line);
-            destructure_buffer.push('\n');
-            brace_depth += trimmed.matches('{').count() as i32;
-            brace_depth -= trimmed.matches('}').count() as i32;
-
-            // Check if the destructure pattern is closing (brace_depth reaches 0)
-            if brace_depth <= 0 {
-                // Now check if it's a defineProps/withDefaults call
-                let is_props_macro = destructure_buffer.contains("defineProps")
-                    || destructure_buffer.contains("withDefaults");
-
-                if is_props_macro {
-                    // Check if there are type args that need to close
-                    let has_unclosed_type_args = destructure_buffer.contains('<')
-                        && destructure_buffer.matches('<').count()
-                            > destructure_buffer.matches('>').count();
-
-                    if has_unclosed_type_args {
-                        // Switch to waiting for macro close
-                        waiting_for_macro_close = true;
-                        continue;
-                    }
-
-                    // Check if we need to wait for ()
-                    if !trimmed.ends_with("()") && !trimmed.ends_with(')') {
-                        // Still waiting for the function call parens
-                        waiting_for_macro_close = true;
-                        continue;
-                    }
-
-                    // Skip the entire destructure - it's a props destructure
-                    in_destructure = false;
-                    destructure_buffer.clear();
-                    continue;
+    let (imports, setup_lines, _) = extract_script_sections(content, is_ts).unwrap_or_else(|| {
+        let setup_lines = content
+            .lines()
+            .filter_map(|line| {
+                let trimmed = line.trim();
+                if trimmed.is_empty() {
+                    None
                 } else {
-                    // Not a props destructure, add to setup lines
-                    for buf_line in destructure_buffer.lines() {
-                        setup_lines.push(buf_line.to_compact_string());
-                    }
-                    in_destructure = false;
-                    destructure_buffer.clear();
-                    continue;
+                    Some(line.to_compact_string())
                 }
-            }
-            continue;
-        }
-
-        // Detect start of destructure pattern
-        if (trimmed.starts_with("const {")
-            || trimmed.starts_with("let {")
-            || trimmed.starts_with("var {"))
-            && !trimmed.contains('}')
-        {
-            in_destructure = true;
-            destructure_buffer.clear();
-            destructure_buffer.push_str(line);
-            destructure_buffer.push('\n');
-            brace_depth = trimmed.matches('{').count() as i32 - trimmed.matches('}').count() as i32;
-            continue;
-        }
-
-        // Handle single-line props destructure (only when outside template literals)
-        if template_literal_depth % 2 == 0 && is_props_destructure_line(trimmed) {
-            continue;
-        }
-
-        // Only process imports when outside template literals (depth is even)
-        // When inside a template literal (depth is odd), treat as regular content
-        let outside_template_literal = template_literal_depth % 2 == 0;
-
-        if outside_template_literal && trimmed.starts_with("import ") {
-            // Handle side-effect imports without semicolons (e.g., import '@/css/reset.scss')
-            // These have no 'from' clause and are always single-line
-            if !trimmed.contains(" from ") && (trimmed.contains('\'') || trimmed.contains('"')) {
-                let mut import = String::with_capacity(line.len() + 1);
-                import.push_str(line);
-                import.push('\n');
-                imports.push(import);
-                continue;
-            }
-            in_import = true;
-            import_buffer.clear();
-        }
-
-        if in_import && outside_template_literal {
-            import_buffer.push_str(line);
-            import_buffer.push('\n');
-
-            if trimmed.ends_with(';') || (trimmed.contains(" from ") && !trimmed.ends_with(',')) {
-                imports.push(import_buffer.clone());
-                in_import = false;
-            }
-            continue;
-        }
-
-        // Handle TypeScript interface declarations (skip them)
-        if in_ts_interface {
-            ts_interface_brace_depth += trimmed.matches('{').count() as i32;
-            ts_interface_brace_depth -= trimmed.matches('}').count() as i32;
-            if ts_interface_brace_depth <= 0 {
-                in_ts_interface = false;
-            }
-            continue;
-        }
-
-        // Detect TypeScript interface start
-        if outside_template_literal
-            && (trimmed.starts_with("interface ") || trimmed.starts_with("export interface "))
-        {
-            in_ts_interface = true;
-            ts_interface_brace_depth =
-                trimmed.matches('{').count() as i32 - trimmed.matches('}').count() as i32;
-            if ts_interface_brace_depth <= 0 {
-                in_ts_interface = false;
-            }
-            continue;
-        }
-
-        // Handle TypeScript type declarations (skip them)
-        if in_ts_type {
-            // Track balanced brackets for complex types like: type X = { a: string } | { b: number }
-            // Strip `=>` before counting angle brackets to avoid misinterpreting arrow functions
-            // e.g., `onClick: () => void` — the `>` in `=>` is NOT a closing angle bracket
-            let line_no_arrow = trimmed.replace("=>", "__");
-            ts_type_depth += trimmed.matches('{').count() as i32;
-            ts_type_depth -= trimmed.matches('}').count() as i32;
-            ts_type_depth += line_no_arrow.matches('<').count() as i32;
-            ts_type_depth -= line_no_arrow.matches('>').count() as i32;
-            ts_type_depth += trimmed.matches('(').count() as i32;
-            ts_type_depth -= trimmed.matches(')').count() as i32;
-            // Type declaration ends when balanced and NOT a continuation line
-            let is_union_continuation = trimmed.starts_with('|') || trimmed.starts_with('&');
-            if ts_type_depth <= 0
-                && !is_union_continuation
-                && (trimmed.ends_with(';')
-                    || (!trimmed.ends_with('|')
-                        && !trimmed.ends_with('&')
-                        && !trimmed.ends_with(',')
-                        && !trimmed.ends_with('{')))
-            {
-                in_ts_type = false;
-            }
-            continue;
-        }
-
-        // Detect TypeScript type alias start
-        if outside_template_literal
-            && (trimmed.starts_with("type ") || trimmed.starts_with("export type "))
-            && is_typescript_type_alias(trimmed)
-        {
-            // Check if it's a single-line type
-            let has_equals = trimmed.contains('=');
-            if has_equals {
-                // Strip `=>` before counting angle brackets (arrow functions are not type delimiters)
-                let line_no_arrow = trimmed.replace("=>", "__");
-                ts_type_depth = trimmed.matches('{').count() as i32
-                    - trimmed.matches('}').count() as i32
-                    + line_no_arrow.matches('<').count() as i32
-                    - line_no_arrow.matches('>').count() as i32
-                    + trimmed.matches('(').count() as i32
-                    - trimmed.matches(')').count() as i32;
-                if ts_type_depth <= 0
-                    && (trimmed.ends_with(';')
-                        || (!trimmed.ends_with('|')
-                            && !trimmed.ends_with('&')
-                            && !trimmed.ends_with(',')
-                            && !trimmed.ends_with('{')
-                            && !trimmed.ends_with('=')))
-                {
-                    // Single line type, just skip
-                    continue;
-                }
-                in_ts_type = true;
-            }
-            continue;
-        }
-
-        if !trimmed.is_empty() {
-            // If we were in an import but now inside a template literal, reset import state
-            if in_import && !outside_template_literal {
-                // We started an import but crossed into a template literal
-                // This shouldn't normally happen, but handle it gracefully
-                setup_lines.push(import_buffer.clone());
-                in_import = false;
-                import_buffer.clear();
-            }
-            // Skip compiler macro calls (only when outside template literals)
-            if outside_template_literal && is_macro_call_line(trimmed) {
-                continue;
-            }
-            setup_lines.push(line.to_compact_string());
-        }
-    }
+            })
+            .collect();
+        (Vec::new(), setup_lines, Vec::new())
+    });
 
     // Check if we need PropType import (type-based defineProps in non-vapor TS mode)
     let needs_prop_type = is_ts
@@ -396,6 +86,12 @@ pub fn compile_script_setup(
             .unwrap_or(false);
     if needs_merge_defaults {
         output.extend_from_slice(b"import { mergeDefaults as _mergeDefaults } from 'vue'\n");
+    }
+
+    // Add useSlots import if defineSlots was used
+    let has_define_slots = ctx.macros.define_slots.is_some();
+    if has_define_slots {
+        output.extend_from_slice(b"import { useSlots as _useSlots } from 'vue'\n");
     }
 
     // Add useModel import if defineModel was used
@@ -494,6 +190,15 @@ pub fn compile_script_setup(
                 output.extend_from_slice(b" = __props\n");
                 props_binding_names.insert(String::from(binding_name.as_str()));
             }
+        }
+    }
+
+    // defineSlots binding: const slots = _useSlots()
+    if let Some(ref slots_macro) = ctx.macros.define_slots {
+        if let Some(ref binding_name) = slots_macro.binding_name {
+            output.extend_from_slice(b"  const ");
+            output.extend_from_slice(binding_name.as_bytes());
+            output.extend_from_slice(b" = _useSlots()\n");
         }
     }
 

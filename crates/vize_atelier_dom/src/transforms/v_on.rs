@@ -241,7 +241,7 @@ mod tests {
     fn test_generate_key_guard() {
         let keys = vec![String::from("enter")];
         let guard = generate_key_guard(&keys);
-        assert!(guard.contains("Enter"));
+        insta::assert_snapshot!(guard.as_str());
     }
 
     #[test]
@@ -266,8 +266,7 @@ mod tests {
         mods.propagation.stop = true;
         mods.propagation.prevent = true;
         let guard = generate_modifier_guard(&mods);
-        assert!(guard.contains("stopPropagation"));
-        assert!(guard.contains("preventDefault"));
+        insta::assert_snapshot!(guard.as_str());
     }
 
     #[test]
@@ -275,7 +274,7 @@ mod tests {
         let mut mods = EventModifiers::default();
         mods.self_only = true;
         let guard = generate_modifier_guard(&mods);
-        assert!(guard.contains("$event.target !== $event.currentTarget"));
+        insta::assert_snapshot!(guard.as_str());
     }
 
     #[test]
@@ -283,10 +282,7 @@ mod tests {
         let mut mods = EventModifiers::default();
         mods.exact = true;
         let guard = generate_modifier_guard(&mods);
-        assert!(guard.contains("ctrlKey"));
-        assert!(guard.contains("altKey"));
-        assert!(guard.contains("shiftKey"));
-        assert!(guard.contains("metaKey"));
+        insta::assert_snapshot!(guard.as_str());
     }
 
     #[test]
@@ -300,7 +296,6 @@ mod tests {
     fn test_generate_key_guard_multiple() {
         let keys = vec![String::from("enter"), String::from("space")];
         let guard = generate_key_guard(&keys);
-        assert!(guard.contains("Enter"));
-        assert!(guard.contains("\" \""));
+        insta::assert_snapshot!(guard.as_str());
     }
 }

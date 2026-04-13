@@ -5,7 +5,7 @@ expression: js_output.as_str()
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
-const _hoisted_1 = { title: "Hello &quot;World&quot;" }
+const _hoisted_1 = { title: "Hello \"World\"" }
 
 export default {
   __name: 'test',

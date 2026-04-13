@@ -1,7 +1,7 @@
 //! Virtual TypeScript code generation for Vue SFC type checking.
 //!
 //! Generates TypeScript code from Vue SFC components that can be fed
-//! to tsgo for type checking. This enables full TypeScript support
+//! to Corsa for type checking. This enables full TypeScript support
 //! for template expressions, props, emits, and other Vue features.
 //!
 //! ## Scope Hierarchy
@@ -46,6 +46,7 @@ mod types;
 
 use std::path::Path;
 
+use vize_carton::profile;
 use vize_relief::ast::RootNode;
 
 use crate::analysis::BindingMetadata;
@@ -73,33 +74,41 @@ pub fn generate_virtual_ts(
     }
 
     // Generate script output first if present
-    let script_output = script_content.map(|s| gen.generate_script_setup(s, bindings, from_file));
+    let script_output = profile!(
+        "croquis.virtual_ts.script",
+        script_content.map(|s| gen.generate_script_setup(s, bindings, from_file))
+    );
     let has_script = script_output.is_some();
 
     // Generate template output
-    let template_output =
-        template_ast.map(|ast| gen.generate_template(ast, bindings, template_offset, !has_script));
+    let template_output = profile!(
+        "croquis.virtual_ts.template",
+        template_ast.map(|ast| gen.generate_template(ast, bindings, template_offset, !has_script))
+    );
 
     // Combine outputs
-    match (script_output, template_output) {
-        (Some(mut script), Some(template)) => {
-            script.content.push('\n');
-            script.content.push_str(&template.content);
+    profile!(
+        "croquis.virtual_ts.combine",
+        match (script_output, template_output) {
+            (Some(mut script), Some(template)) => {
+                script.content.push('\n');
+                script.content.push_str(&template.content);
 
-            let script_len = script.content.len() as u32;
-            for mut mapping in template.source_map.mappings().iter().cloned() {
-                mapping.generated.start += script_len;
-                mapping.generated.end += script_len;
-                script.source_map.add(mapping);
+                let script_len = script.content.len() as u32;
+                for mut mapping in template.source_map.mappings().iter().cloned() {
+                    mapping.generated.start += script_len;
+                    mapping.generated.end += script_len;
+                    script.source_map.add(mapping);
+                }
+
+                script.diagnostics.extend(template.diagnostics);
+                script
             }
-
-            script.diagnostics.extend(template.diagnostics);
-            script
+            (Some(script), None) => script,
+            (None, Some(template)) => template,
+            (None, None) => VirtualTsOutput::default(),
         }
-        (Some(script), None) => script,
-        (None, Some(template)) => template,
-        (None, None) => VirtualTsOutput::default(),
-    }
+    )
 }
 
 /// Generate virtual TypeScript using croquis analysis.
@@ -118,12 +127,15 @@ pub fn generate_virtual_ts_with_croquis(
         gen = gen.with_import_resolver(resolver);
     }
 
-    gen.generate_from_croquis(
-        script_content,
-        parse_result,
-        template_ast,
-        config,
-        from_file,
+    profile!(
+        "croquis.virtual_ts.from_croquis",
+        gen.generate_from_croquis(
+            script_content,
+            parse_result,
+            template_ast,
+            config,
+            from_file,
+        )
     )
 }
 
@@ -148,14 +160,7 @@ const count = ref(0);
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_script_setup(script, &bindings, None);
 
-        // Should contain setup function
-        assert!(output.content.contains("function __setup()"));
-        // Compiler macros should be actual functions (NOT declare)
-        assert!(output.content.contains("function defineProps<T>(): T"));
-        assert!(!output.content.contains("declare function defineProps"));
-        // Original code should be present
-        assert!(output.content.contains("msg"));
-        assert!(output.content.contains("count"));
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     #[test]
@@ -176,14 +181,7 @@ const count = ref(0)
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_from_croquis(script, &parse_result, None, &config, None);
 
-        // Should have generics in setup function
-        assert!(output
-            .content
-            .contains("function __setup<T extends string>()"));
-        // Imports should be at module level
-        assert!(output.content.contains("import { ref } from 'vue'"));
-        // Setup content should be inside function
-        assert!(output.content.contains("defineProps"));
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     #[test]
@@ -198,9 +196,8 @@ const count = ref(0)
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_template(&ast, &bindings, 0, true);
 
-        assert!(output.content.contains("__ctx"));
-        assert!(output.content.contains("message"));
         assert!(!output.source_map.is_empty());
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     #[test]
@@ -214,14 +211,7 @@ const props = defineProps<{ msg: string }>()
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_script_setup(script, &bindings, None);
 
-        // defineProps should be an actual function (NOT declare) inside __setup
-        let setup_start = output.content.find("function __setup()").unwrap();
-        let setup_end = output.content.rfind("}").unwrap();
-        let setup_body = &output.content[setup_start..setup_end];
-
-        // Should be actual function, not declare
-        assert!(setup_body.contains("function defineProps<T>(): T"));
-        assert!(!setup_body.contains("declare function defineProps"));
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     #[test]
@@ -240,10 +230,7 @@ const props = defineProps<{ msg: string }>()
         let mut gen = VirtualTsGenerator::new();
         let output = gen.generate_from_croquis(script, &parse_result, None, &config, None);
 
-        // Should have async and generics
-        assert!(output
-            .content
-            .contains("async function __setup<T, U extends T>()"));
+        insta::assert_snapshot!(output.content.as_str());
     }
 
     // === Snapshot tests ===

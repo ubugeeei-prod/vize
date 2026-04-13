@@ -231,7 +231,7 @@ const { count } = inject('state')
 
         let map = SuppressionMap::parse(source);
         assert_eq!(map.errors.len(), 1);
-        assert!(map.errors[0].message.contains("requires a reason"));
+        insta::assert_debug_snapshot!(map.errors);
     }
 
     #[test]
@@ -243,7 +243,7 @@ const { count } = inject('state')
 
         let map = SuppressionMap::parse(source);
         assert_eq!(map.errors.len(), 1);
-        assert!(map.errors[0].message.contains("requires a colon"));
+        insta::assert_debug_snapshot!(map.errors);
     }
 
     #[test]
@@ -255,7 +255,7 @@ const { count } = inject('state')
 
         let map = SuppressionMap::parse(source);
         assert_eq!(map.errors.len(), 1);
-        assert!(map.errors[0].message.contains("cannot be empty"));
+        insta::assert_debug_snapshot!(map.errors);
     }
 
     #[test]
@@ -267,7 +267,7 @@ const x = 1
 
         let map = SuppressionMap::parse(source);
         assert_eq!(map.errors.len(), 1);
-        assert!(map.errors[0].message.contains("end of file"));
+        insta::assert_debug_snapshot!(map.errors);
     }
 
     #[test]

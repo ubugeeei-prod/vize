@@ -13,7 +13,7 @@ use std::borrow::Cow;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::CompactString;
+use vize_carton::{profile, CompactString};
 
 #[allow(clippy::disallowed_types)]
 /// Strip JS/TS comments while preserving string literals.
@@ -130,11 +130,17 @@ pub fn extract_identifiers_oxc(expr: &str) -> Vec<CompactString> {
     // - Type assertions: as Type
     // - Arrow functions: () =>
     if expr.contains('{') || expr.contains(" as ") || expr.contains("=>") {
-        return extract_identifiers_oxc_slow(expr);
+        return profile!(
+            "croquis.helpers.identifiers.slow",
+            extract_identifiers_oxc_slow(expr)
+        );
     }
 
     // Fast path: simple expressions without complex constructs
-    extract_identifiers_fast(expr)
+    profile!(
+        "croquis.helpers.identifiers.fast",
+        extract_identifiers_fast(expr)
+    )
 }
 
 /// Fast string-based identifier extraction for simple expressions.
@@ -271,7 +277,10 @@ fn extract_identifiers_oxc_slow(expr: &str) -> Vec<CompactString> {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("expr.ts").unwrap_or_default();
 
-    let ret = Parser::new(&allocator, expr, source_type).parse_expression();
+    let ret = profile!(
+        "croquis.helpers.identifiers.oxc_parse",
+        Parser::new(&allocator, expr, source_type).parse_expression()
+    );
     let parsed_expr = match ret {
         Ok(expr) => expr,
         Err(_) => return Vec::new(),
@@ -539,7 +548,10 @@ fn extract_identifiers_oxc_slow(expr: &str) -> Vec<CompactString> {
         }
     }
 
-    walk_expr(&parsed_expr, &mut identifiers);
+    profile!(
+        "croquis.helpers.identifiers.walk_expr",
+        walk_expr(&parsed_expr, &mut identifiers)
+    );
     identifiers
 }
 

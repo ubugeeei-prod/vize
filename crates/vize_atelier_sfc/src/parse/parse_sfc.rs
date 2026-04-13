@@ -2,7 +2,7 @@ use crate::types::{
     BlockLocation, SfcCustomBlock, SfcDescriptor, SfcError, SfcParseOptions, SfcScriptBlock,
     SfcStyleBlock, SfcTemplateBlock,
 };
-use memchr::memchr;
+use memchr::{memchr, memmem::Finder};
 use std::borrow::Cow;
 
 use super::block::{parse_block_fast, tag_name_eq};
@@ -29,6 +29,7 @@ pub fn parse_sfc<'a>(
     let mut pos = 0;
     let mut line = 1;
     let mut column = 1;
+    let comment_end_finder = Finder::new(b"-->");
 
     while pos < len {
         // Skip whitespace using byte comparison
@@ -70,6 +71,27 @@ pub fn parse_sfc<'a>(
 
         if pos >= len {
             break;
+        }
+
+        // Skip HTML comments <!-- ... --> before block parsing.
+        if bytes[pos..].starts_with(b"<!--") {
+            let comment_body = &bytes[pos + 4..];
+            let end = comment_end_finder
+                .find(comment_body)
+                .map(|off| pos + 4 + off + 3) // position after '-->'
+                .unwrap_or(len); // unclosed comment: skip to EOF
+
+            // Update line/column for the skipped comment
+            for &b in &bytes[pos..end] {
+                if b == b'\n' {
+                    line += 1;
+                    column = 1;
+                } else {
+                    column += 1;
+                }
+            }
+            pos = end;
+            continue;
         }
 
         // Parse block starting at '<'

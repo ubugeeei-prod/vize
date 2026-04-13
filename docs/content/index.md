@@ -45,7 +45,7 @@ features:
     details: First-class support for Vue 3.6 Vapor mode — fine-grained reactive compilation without the virtual DOM.
     link: architecture/overview.md
   - title: Philosophy
-    details: "Art-inspired architecture, oxidation ecosystem (OXC, oxlint, tsgo), and a unified toolchain vision."
+    details: "Art-inspired architecture, oxidation ecosystem (OXC, oxlint, corsa), and a unified toolchain vision."
     link: philosophy.md
 ---
 

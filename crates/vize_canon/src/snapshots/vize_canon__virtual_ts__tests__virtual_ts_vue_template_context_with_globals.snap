@@ -1,0 +1,17 @@
+---
+source: crates/vize_canon/src/virtual_ts/mod.rs
+expression: value
+---
+    // Vue template context (delegates to ComponentPublicInstance)
+    type __Ctx = import('vue').ComponentPublicInstance;
+    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? __Ctx[K] : F;
+    const __ctx = undefined as unknown as __Ctx;
+    const $attrs = __ctx.$attrs;
+    const $slots = __ctx.$slots;
+    const $refs = __ctx.$refs;
+    const $emit = __ctx.$emit;
+    // Plugin globals (via ComponentCustomProperties)
+    const $t: __Global<'$t', (...args: any[]) => string> = undefined as any;
+    const $route: __Global<'$route', any> = undefined as any;
+    void __ctx; void $attrs; void $slots; void $refs; void $emit;
+    void $t; void $route;

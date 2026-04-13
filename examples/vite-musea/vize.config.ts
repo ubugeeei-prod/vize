@@ -1,4 +1,4 @@
-import { defineConfig } from "@vizejs/vite-plugin";
+import { defineConfig } from "vize";
 
 export default defineConfig({
   compiler: {

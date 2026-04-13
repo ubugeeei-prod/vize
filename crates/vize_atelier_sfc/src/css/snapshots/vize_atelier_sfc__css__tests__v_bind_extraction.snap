@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/css/tests.rs
+expression: transformed
+---
+.foo { color: var(--05a72f63-color); background: var(--f3ca161e-bgColor); }

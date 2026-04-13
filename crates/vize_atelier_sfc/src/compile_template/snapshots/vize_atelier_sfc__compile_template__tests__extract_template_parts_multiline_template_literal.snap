@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_sfc/src/compile_template/tests.rs
+expression: render_body.as_str()
+---
+(show.value)
+    ? (_openBlock(), _createElementBlock("div", {
+      key: 0,
+      class: "outer"
+    }, [ _createElementVNode("div", { class: "inner" }, [ (ver.value) ? (_openBlock(), _createElementBlock("span", { key: 0 }, "\n        " + _toDisplayString(`${t("key")}: v${ver.value.major}.${
+            ver.value.minor
+          }`) + "\n      ", 1 /* TEXT */)) : (_openBlock(), _createElementBlock("span", { key: 1 }, "no")) ]) ]))
+    : _createCommentVNode("v-if", true)

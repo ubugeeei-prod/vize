@@ -1,6 +1,7 @@
 use super::{LintResult, Linter};
 use crate::rules::script::{NoGetCurrentInstance, NoNextTick, NoOptionsApi, ScriptRule};
 use vize_atelier_sfc::{parse_sfc, SfcDescriptor, SfcParseOptions};
+use vize_carton::profile;
 
 pub(crate) const RULE_NO_OPTIONS_API: &str = "script/no-options-api";
 pub(crate) const RULE_NO_GET_CURRENT_INSTANCE: &str = "script/no-get-current-instance";
@@ -66,7 +67,10 @@ pub(crate) fn parse_sfc_for_lint<'a>(
     source: &'a str,
     filename: &str,
 ) -> Result<SfcDescriptor<'a>, vize_atelier_sfc::SfcError> {
-    parse_sfc(source, sfc_parse_options(filename))
+    profile!(
+        "patina.sfc.parse_for_lint",
+        parse_sfc(source, sfc_parse_options(filename))
+    )
 }
 
 pub(crate) fn lint_with_descriptor<'a>(
@@ -75,7 +79,10 @@ pub(crate) fn lint_with_descriptor<'a>(
     descriptor: &SfcDescriptor<'a>,
 ) -> LintResult {
     let mut result = if let Some(template) = descriptor.template.as_ref() {
-        let mut template_result = linter.lint_template(&template.content, filename);
+        let mut template_result = profile!(
+            "patina.sfc.descriptor.template_lint",
+            linter.lint_template(&template.content, filename)
+        );
         let byte_offset = template.loc.start as u32;
         if byte_offset > 0 {
             for diag in &mut template_result.diagnostics {
@@ -115,6 +122,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         descriptor,
         result,
         RULE_NO_OPTIONS_API,
+        "patina.script_rule.no_options_api",
         NoOptionsApi,
     );
     append_builtin_script_rule(
@@ -122,9 +130,17 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         descriptor,
         result,
         RULE_NO_GET_CURRENT_INSTANCE,
+        "patina.script_rule.no_get_current_instance",
         NoGetCurrentInstance,
     );
-    append_builtin_script_rule(linter, descriptor, result, RULE_NO_NEXT_TICK, NoNextTick);
+    append_builtin_script_rule(
+        linter,
+        descriptor,
+        result,
+        RULE_NO_NEXT_TICK,
+        "patina.script_rule.no_next_tick",
+        NoNextTick,
+    );
 }
 
 fn merge_script_result(
@@ -141,6 +157,7 @@ fn append_builtin_script_rule<'a, R: ScriptRule>(
     descriptor: &SfcDescriptor<'a>,
     result: &mut LintResult,
     rule_name: &str,
+    profile_name: &'static str,
     rule: R,
 ) {
     if !linter.is_rule_enabled(rule_name) || !linter.script_rules.contains(&rule_name) {
@@ -149,15 +166,21 @@ fn append_builtin_script_rule<'a, R: ScriptRule>(
 
     if let Some(script) = descriptor.script.as_ref() {
         let mut lint = crate::rules::script::ScriptLintResult::default();
-        rule.check(script.content.as_ref(), script.loc.start, &mut lint);
+        profile!(
+            profile_name,
+            rule.check(script.content.as_ref(), script.loc.start, &mut lint)
+        );
         merge_script_result(result, lint);
     }
     if let Some(script_setup) = descriptor.script_setup.as_ref() {
         let mut lint = crate::rules::script::ScriptLintResult::default();
-        rule.check(
-            script_setup.content.as_ref(),
-            script_setup.loc.start,
-            &mut lint,
+        profile!(
+            profile_name,
+            rule.check(
+                script_setup.content.as_ref(),
+                script_setup.loc.start,
+                &mut lint,
+            )
         );
         merge_script_result(result, lint);
     }

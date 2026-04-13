@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/tests.rs
+expression: result.as_str()
+---
+const getNumber = (x) => {
+  return x.toString();
+};
+const foo = "bar";

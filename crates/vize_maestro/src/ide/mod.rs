@@ -17,6 +17,7 @@
 pub mod code_action;
 pub mod code_lens;
 pub mod completion;
+mod corsa_support;
 pub mod definition;
 pub mod diagnostics;
 pub mod document_link;
@@ -26,7 +27,6 @@ pub mod inlay_hint;
 pub mod references;
 pub mod rename;
 pub mod semantic_tokens;
-mod tsgo_support;
 pub mod type_service;
 pub mod workspace_symbols;
 

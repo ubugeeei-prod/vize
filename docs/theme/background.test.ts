@@ -14,11 +14,7 @@ const themeDir = fileURLToPath(new URL(".", import.meta.url));
 test("buildDocsBackgroundScript inlines the shared vein bootstrap", () => {
   const script = buildDocsBackgroundScript(themeDir);
   const prefix = `${script.split("\n").slice(0, 8).join("\n")}\n`;
-  const snapshotPath = resolve(
-    themeDir,
-    "__snapshots__",
-    "background-script-prefix.snap",
-  );
+  const snapshotPath = resolve(themeDir, "__snapshots__", "background-script-prefix.snap");
 
   assert.equal(prefix, readFileSync(snapshotPath, "utf-8"));
   assert.doesNotMatch(script, /__VERT_SRC__|__FRAG_SRC__/);

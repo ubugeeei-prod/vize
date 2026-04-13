@@ -3,6 +3,8 @@
 //! Contains utility functions for type declarations, event type mapping,
 //! identifier conversion, and template context generation.
 
+use std::ops::Range;
+
 use super::types::VirtualTsOptions;
 use vize_carton::append;
 use vize_carton::String;
@@ -17,13 +19,15 @@ pub(crate) const VUE_SETUP_COMPILER_MACROS: &str = r#"  // Compiler macros (only
   type __Ref<T> = import('vue').Ref<T>;
   type __ShallowRef<T> = import('vue').ShallowRef<T>;
   function defineProps<_T = unknown>(_props?: any): _T { void _props; return undefined as unknown as _T; }
-  function defineEmits<_T = unknown>(): __EmitFn<_T> { return (() => {}) as any; }
-  function defineEmits<_T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void { void _events; return (() => {}) as any; }
-  function defineEmits<_T extends Record<string, any>>(_events: _T): (event: keyof _T, ...args: any[]) => void { void _events; return (() => {}) as any; }
+  function defineEmits<_T = unknown>(): __EmitFn<_T>;
+  function defineEmits<_T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void;
+  function defineEmits<_T extends Record<string, any>>(_events: _T): (event: keyof _T, ...args: any[]) => void;
+  function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
   function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  function defineModel<_T = unknown>(): __Ref<_T | undefined> { return undefined as unknown as __Ref<_T | undefined>; }
-  function defineModel<_T = unknown>(_options: any): __Ref<_T> { void _options; return undefined as unknown as __Ref<_T>; }
-  function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T> { void _name; void _options; return undefined as unknown as __Ref<_T>; }
+  function defineModel<_T = unknown>(): __Ref<_T | undefined>;
+  function defineModel<_T = unknown>(_options: any): __Ref<_T>;
+  function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T>;
+  function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T = unknown, _D = unknown>(_props: _T, _defaults: _D): _T & _D { void _props; void _defaults; return undefined as unknown as _T & _D; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
@@ -50,7 +54,7 @@ declare global {
 /// Generate Vue template context declarations dynamically.
 ///
 /// Derives `$`-prefixed globals from `ComponentPublicInstance` so that
-/// type resolution is delegated to tsgo via Vue's type system
+/// type resolution is delegated to Corsa via Vue's type system
 /// (including `ComponentCustomProperties` augmentations from plugins).
 pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
     let mut ctx = String::default();
@@ -60,7 +64,7 @@ pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
 
     // Instance type + conditional accessor helper
     ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n");
-    ctx.push_str("    type __Ctx = $Vue['ComponentPublicInstance'];\n");
+    ctx.push_str("    type __Ctx = import('vue').ComponentPublicInstance;\n");
     if needs_global_helper {
         ctx.push_str("    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? __Ctx[K] : F;\n");
     }
@@ -123,6 +127,24 @@ pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
     }
 
     ctx
+}
+
+/// Get the generated subrange that corresponds to a specific source expression.
+///
+/// This keeps source maps anchored to the actual expression text instead of
+/// any wrapping code we emit around it (`void (...)`, `as Foo`, handler shims).
+pub(crate) fn generated_text_range(
+    generated_segment: &str,
+    mapped_text: &str,
+    generated_start: usize,
+) -> Range<usize> {
+    if mapped_text.is_empty() {
+        return generated_start..generated_start + generated_segment.len();
+    }
+
+    let relative_start = generated_segment.find(mapped_text).unwrap_or(0);
+    let start = generated_start + relative_start;
+    start..start + mapped_text.len()
 }
 
 /// Strip TypeScript `as Type` assertion from a v-for source expression.

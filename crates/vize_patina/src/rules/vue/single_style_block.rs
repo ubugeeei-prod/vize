@@ -36,6 +36,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
+use vize_carton::profile;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/single-style-block",
@@ -65,12 +66,15 @@ impl Rule for SingleStyleBlock {
     }
 
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
-        let descriptor = match parse_sfc(
-            ctx.source,
-            SfcParseOptions {
-                filename: ctx.filename.into(),
-                ..Default::default()
-            },
+        let descriptor = match profile!(
+            "patina.rule.single_style_block.parse_sfc",
+            parse_sfc(
+                ctx.source,
+                SfcParseOptions {
+                    filename: ctx.filename.into(),
+                    ..Default::default()
+                },
+            )
         ) {
             Ok(descriptor) => descriptor,
             Err(_) => return,

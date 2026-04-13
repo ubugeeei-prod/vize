@@ -9,7 +9,7 @@
 
 mod collectors;
 #[cfg(feature = "native")]
-mod tsgo;
+mod corsa;
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
 
@@ -92,7 +92,7 @@ impl DiagnosticService {
         if path.ends_with(".art.vue") {
             // Musea-specific diagnostics for Art files
             diagnostics.extend(Self::collect_musea_diagnostics(uri, &content));
-            // Don't return early - continue to collect tsgo diagnostics in collect_async()
+            // Don't return early here; async collection still adds Corsa diagnostics.
             return diagnostics;
         }
 
@@ -131,7 +131,7 @@ impl DiagnosticService {
         diagnostics
     }
 
-    /// Collect diagnostics asynchronously (includes tsgo diagnostics when available).
+    /// Collect diagnostics asynchronously (includes Corsa diagnostics when available).
     #[cfg(feature = "native")]
     pub async fn collect_async(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
         tracing::info!("collect_async: {}", uri);
@@ -140,16 +140,16 @@ impl DiagnosticService {
         let mut diagnostics = Self::collect(state, uri);
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
 
-        // Try to get tsgo diagnostics (with timeout, skip on failure)
+        // Try to get Corsa diagnostics (with timeout, skip on failure).
         // Use 10s timeout - polling for diagnostics internally uses 5s
-        let tsgo_future = Self::collect_tsgo_diagnostics(state, uri);
-        match tokio::time::timeout(std::time::Duration::from_secs(10), tsgo_future).await {
-            Ok(tsgo_diags) => {
-                tracing::info!("tsgo diagnostics count: {}", tsgo_diags.len());
-                diagnostics.extend(tsgo_diags);
+        let corsa_future = Self::collect_corsa_diagnostics(state, uri);
+        match tokio::time::timeout(std::time::Duration::from_secs(10), corsa_future).await {
+            Ok(corsa_diags) => {
+                tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
+                diagnostics.extend(corsa_diags);
             }
             Err(_) => {
-                tracing::warn!("tsgo diagnostics timed out for {}", uri);
+                tracing::warn!("corsa diagnostics timed out for {}", uri);
             }
         }
 

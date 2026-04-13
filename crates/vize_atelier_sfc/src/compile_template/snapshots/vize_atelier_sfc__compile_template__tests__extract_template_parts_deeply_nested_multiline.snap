@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_sfc/src/compile_template/tests.rs
+expression: render_body.as_str()
+---
+(cond.value)
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, [ _createElementVNode("p", null, _toDisplayString(`${items.value.map(x => ({
+          name: x.name,
+          label: `${x.prefix}-${
+            x.suffix
+          }`
+        })).length} items`)), _createElementVNode("span", null, "after") ]))
+    : _createCommentVNode("v-if", true)

@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/no_import_compiler_macros.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-import-compiler-macros",
+        severity: Error,
+        message: "Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
+        start: 9,
+        end: 20,
+        help: Some(
+            "Remove the macro from the import statement. Compiler macros are auto-imported.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

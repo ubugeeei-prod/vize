@@ -89,8 +89,22 @@ const noCacheTask = (command: string) => ({
   command,
 });
 
-const runInPackages = (taskName: string, packages: string[]) =>
-  ["vp", "run", ...packages.map((pkg) => `--filter '${pkg}'`), taskName].join(" ");
+const runInPackages = (
+  taskName: string,
+  packages: string[],
+  options: {
+    concurrencyLimit?: number;
+  } = {},
+) =>
+  [
+    ...(options.concurrencyLimit == null
+      ? []
+      : [`VP_RUN_CONCURRENCY_LIMIT=${options.concurrencyLimit}`]),
+    "vp",
+    "run",
+    ...packages.map((pkg) => `--filter '${pkg}'`),
+    taskName,
+  ].join(" ");
 
 const runTask = (taskName: string) => `vp run --workspace-root ${taskName}`;
 const runTasks = (...taskNames: string[]) => taskNames.map(runTask).join(" && ");
@@ -128,7 +142,9 @@ const buildTasks = {
   "build:wasm-web": task(
     "wasm-pack build crates/vize_vitrine --target web --out-dir ../../playground/src/wasm --features wasm --no-default-features",
   ),
-  "build:vite-plugin": noCacheTask(runInPackages("build", ["./npm/vite-plugin-vize"])),
+  "build:vite-plugin": noCacheTask(
+    `${runInPackages("build", ["./npm/vize"])} && ${runInPackages("build", ["./npm/vite-plugin-vize"])}`,
+  ),
   "build:plugin": noCacheTask(runTask("build:vite-plugin")),
   "build:cli": task("cargo build --release -p vize"),
   "install:plugin": noCacheTask("pnpm -C npm/vite-plugin-vize install"),
@@ -136,7 +152,7 @@ const buildTasks = {
 
 const cliTasks = {
   cli: noCacheTask(
-    'sh -c \'if [ "${usage_debug:-$1}" = "true" ] || [ "$1" = "--debug" ]; then cargo install --path crates/vize --force --debug && echo "Installed vize CLI (debug build)"; else cargo install --path crates/vize --force && echo "Installed vize CLI (release build)"; fi\' --',
+    'sh -c \'if [ "${usage_debug:-$1}" = "true" ] || [ "$1" = "--debug" ]; then cargo install --path crates/vize --force --locked --debug && echo "Installed vize CLI (debug build)"; else cargo install --path crates/vize --force --locked && echo "Installed vize CLI (release build)"; fi\' --',
   ),
   "cli:help": noCacheTask("vize --help"),
   "cli:example": noCacheTask("vize './**/*.vue' -o . -v"),
@@ -194,7 +210,9 @@ const benchmarkTasks = {
 };
 
 const checkTasks = {
-  check: task(runInPackages("check", checkedPackages), { input: cacheInputs.jsChecks }),
+  check: task(runInPackages("check", checkedPackages, { concurrencyLimit: 1 }), {
+    input: cacheInputs.jsChecks,
+  }),
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
   "check:rust": task("cargo check --workspace", { input: cacheInputs.rust }),
   clippy: task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
@@ -211,7 +229,7 @@ const checkTasks = {
 
 const releaseTasks = {
   release: noCacheTask(
-    "sh -c 'if [ -n \"${usage_type:-}\" ] && { [ $# -eq 0 ] || [ \"$1\" != \"$usage_type\" ]; }; then set -- \"$usage_type\" \"$@\"; fi; ./scripts/release.sh \"$@\"' --",
+    'sh -c \'if [ -n "${usage_type:-}" ] && { [ $# -eq 0 ] || [ "$1" != "$usage_type" ]; }; then set -- "$usage_type" "$@"; fi; ./scripts/release.sh "$@"\' --',
   ),
   "publish:wasm": noCacheTask(
     'sh -c \'cd npm/vize-wasm && cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown && wasm-bindgen ../../target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir . --target web && VERSION=$(node -p "require(\\"./package.json\\").version") && case "$VERSION" in *-alpha*) npm publish --access public --tag alpha ;; *-beta*) npm publish --access public --tag beta ;; *-rc*) npm publish --access public --tag rc ;; *) npm publish --access public ;; esac\'',

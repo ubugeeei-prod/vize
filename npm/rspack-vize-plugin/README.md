@@ -131,10 +131,7 @@ export default {
       {
         test: /\.css$/,
         type: "javascript/auto",
-        use: [
-          isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
-          "css-loader",
-        ],
+        use: [isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader", "css-loader"],
       },
       {
         test: /\.scss$/,
@@ -321,9 +318,7 @@ export default {
             resourceQuery: /vue&type=style.*lang=scss/,
             type: "javascript/auto",
             use: [
-              isProduction
-                ? rspack.CssExtractRspackPlugin.loader
-                : "style-loader",
+              isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
               "css-loader",
               { loader: "@vizejs/rspack-plugin/scope-loader" },
               "sass-loader",
@@ -336,16 +331,13 @@ export default {
             resourceQuery: /vue&type=style/,
             type: "javascript/auto",
             use: [
-              isProduction
-                ? rspack.CssExtractRspackPlugin.loader
-                : "style-loader",
+              isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
               {
                 loader: "css-loader",
                 options: {
                   modules: {
                     auto: (_resourcePath, resourceQuery) =>
-                      typeof resourceQuery === "string" &&
-                      resourceQuery.includes("module="),
+                      typeof resourceQuery === "string" && resourceQuery.includes("module="),
                   },
                 },
               },
@@ -369,10 +361,7 @@ export default {
       {
         test: /\.css$/,
         type: "javascript/auto",
-        use: [
-          isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader",
-          "css-loader",
-        ],
+        use: [isProduction ? rspack.CssExtractRspackPlugin.loader : "style-loader", "css-loader"],
       },
 
       // Regular SCSS files (non-Vue)

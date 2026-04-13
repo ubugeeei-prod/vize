@@ -1,0 +1,1308 @@
+---
+source: crates/vize_croquis/src/script_parser/mod.rs
+expression: result
+---
+ScriptParseResult {
+    bindings: BindingMetadata {
+        bindings: {
+            "computed": SetupMaybeRef,
+            "ref": SetupMaybeRef,
+            "MyComponent": SetupConst,
+        },
+        is_script_setup: true,
+        props_aliases: {},
+    },
+    macros: MacroTracker {
+        calls: [],
+        props: [],
+        emits: [],
+        emit_calls: [],
+        models: [],
+        exposes: [],
+        slots: [],
+        props_destructure: None,
+        top_level_awaits: [],
+        next_id: 0,
+        define_props_idx: None,
+        define_emits_idx: None,
+        define_expose_idx: None,
+        define_slots_idx: None,
+    },
+    reactivity: ReactivityTracker {
+        sources: [],
+        by_name: {},
+        reactive_names: {},
+        losses: [],
+        next_id: 0,
+    },
+    type_exports: [],
+    invalid_exports: [],
+    scopes: ScopeChain {
+        scopes: [
+            Scope {
+                id: ScopeId(
+                    0,
+                ),
+                parents: [],
+                kind: JsGlobalUniversal,
+                bindings: {
+                    "AggregateError": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "ArrayBuffer": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "AsyncFunction": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "AsyncGenerator": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "AsyncGeneratorFunction": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "AsyncIterator": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Atomics": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "BigInt": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "BigInt64Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "BigUint64Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Boolean": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "DataView": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Date": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Error": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "EvalError": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Float32Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Float64Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Function": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Generator": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "GeneratorFunction": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Infinity": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Int16Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Int32Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Int8Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Intl": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Iterator": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "JSON": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Map": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Math": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "NaN": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Number": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Object": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Promise": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Proxy": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "RangeError": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "ReferenceError": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Reflect": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "RegExp": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Set": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "SharedArrayBuffer": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "String": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Symbol": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "SyntaxError": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "TypeError": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "URIError": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Uint16Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Uint32Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Uint8Array": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Uint8ClampedArray": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "WeakMap": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "WeakSet": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "arguments": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "console": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "decodeURI": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "decodeURIComponent": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "encodeURI": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "encodeURIComponent": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "eval": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "globalThis": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "isFinite": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "isNaN": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "parseFloat": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "parseInt": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "this": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "undefined": ScopeBinding {
+                        binding_type: JsGlobalUniversal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                },
+                data: None,
+                span: Span {
+                    start: 0,
+                    end: 0,
+                },
+            },
+            Scope {
+                id: ScopeId(
+                    1,
+                ),
+                parents: [
+                    ScopeId(
+                        0,
+                    ),
+                ],
+                kind: JsGlobalBrowser,
+                bindings: {
+                    "Audio": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "CanvasRenderingContext2D": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Document": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "DocumentFragment": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Element": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "FocusEvent": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "HTMLElement": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Image": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "InputEvent": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "IntersectionObserver": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "KeyboardEvent": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "MediaQueryList": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "MouseEvent": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "MutationObserver": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "Node": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "NodeList": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "PerformanceObserver": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "PointerEvent": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "ResizeObserver": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "ShadowRoot": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "TouchEvent": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "WebGL2RenderingContext": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "WebGLRenderingContext": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "WebSocket": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "XMLHttpRequest": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "alert": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "cancelAnimationFrame": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "cancelIdleCallback": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "clearInterval": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "clearTimeout": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "close": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "confirm": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "customElements": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "document": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "getComputedStyle": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "getSelection": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "history": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "indexedDB": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "localStorage": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "location": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "matchMedia": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "navigator": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "open": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "print": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "prompt": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "queueMicrotask": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "requestAnimationFrame": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "requestIdleCallback": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "screen": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "self": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "sessionStorage": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "setInterval": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "setTimeout": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "window": ScopeBinding {
+                        binding_type: JsGlobalBrowser,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                },
+                data: JsGlobal(
+                    JsGlobalScopeData {
+                        runtime: Browser,
+                        globals: [
+                            "alert",
+                            "Audio",
+                            "cancelAnimationFrame",
+                            "cancelIdleCallback",
+                            "CanvasRenderingContext2D",
+                            "clearInterval",
+                            "clearTimeout",
+                            "close",
+                            "confirm",
+                            "customElements",
+                            "document",
+                            "Document",
+                            "DocumentFragment",
+                            "Element",
+                            "FocusEvent",
+                            "getComputedStyle",
+                            "getSelection",
+                            "history",
+                            "HTMLElement",
+                            "Image",
+                            "indexedDB",
+                            "InputEvent",
+                            "IntersectionObserver",
+                            "KeyboardEvent",
+                            "localStorage",
+                            "location",
+                            "matchMedia",
+                            "MediaQueryList",
+                            "MouseEvent",
+                            "MutationObserver",
+                            "navigator",
+                            "Node",
+                            "NodeList",
+                            "open",
+                            "PerformanceObserver",
+                            "PointerEvent",
+                            "print",
+                            "prompt",
+                            "queueMicrotask",
+                            "requestAnimationFrame",
+                            "requestIdleCallback",
+                            "ResizeObserver",
+                            "screen",
+                            "self",
+                            "sessionStorage",
+                            "setInterval",
+                            "setTimeout",
+                            "ShadowRoot",
+                            "TouchEvent",
+                            "WebGL2RenderingContext",
+                            "WebGLRenderingContext",
+                            "WebSocket",
+                            "window",
+                            "XMLHttpRequest",
+                        ],
+                    },
+                ),
+                span: Span {
+                    start: 0,
+                    end: 0,
+                },
+            },
+            Scope {
+                id: ScopeId(
+                    2,
+                ),
+                parents: [
+                    ScopeId(
+                        0,
+                    ),
+                ],
+                kind: JsGlobalNode,
+                bindings: {
+                    "Buffer": ScopeBinding {
+                        binding_type: JsGlobalNode,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "clearImmediate": ScopeBinding {
+                        binding_type: JsGlobalNode,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "process": ScopeBinding {
+                        binding_type: JsGlobalNode,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "setImmediate": ScopeBinding {
+                        binding_type: JsGlobalNode,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                },
+                data: JsGlobal(
+                    JsGlobalScopeData {
+                        runtime: Node,
+                        globals: [
+                            "Buffer",
+                            "clearImmediate",
+                            "process",
+                            "setImmediate",
+                        ],
+                    },
+                ),
+                span: Span {
+                    start: 0,
+                    end: 0,
+                },
+            },
+            Scope {
+                id: ScopeId(
+                    3,
+                ),
+                parents: [
+                    ScopeId(
+                        0,
+                    ),
+                ],
+                kind: VueGlobal,
+                bindings: {
+                    "$attrs": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$data": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$el": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$emit": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$forceUpdate": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$nextTick": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$options": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$parent": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$props": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$refs": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$root": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$slots": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "$watch": ScopeBinding {
+                        binding_type: VueGlobal,
+                        declaration_offset: 0,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                },
+                data: VueGlobal(
+                    VueGlobalScopeData {
+                        globals: [
+                            "$attrs",
+                            "$data",
+                            "$el",
+                            "$emit",
+                            "$forceUpdate",
+                            "$nextTick",
+                            "$options",
+                            "$parent",
+                            "$props",
+                            "$refs",
+                            "$root",
+                            "$slots",
+                            "$watch",
+                        ],
+                    },
+                ),
+                span: Span {
+                    start: 0,
+                    end: 0,
+                },
+            },
+            Scope {
+                id: ScopeId(
+                    4,
+                ),
+                parents: [
+                    ScopeId(
+                        0,
+                    ),
+                ],
+                kind: Module,
+                bindings: {},
+                data: None,
+                span: Span {
+                    start: 0,
+                    end: 113,
+                },
+            },
+            Scope {
+                id: ScopeId(
+                    5,
+                ),
+                parents: [
+                    ScopeId(
+                        4,
+                    ),
+                ],
+                kind: ScriptSetup,
+                bindings: {},
+                data: ScriptSetup(
+                    ScriptSetupScopeData {
+                        is_ts: true,
+                        is_async: false,
+                        generic: None,
+                    },
+                ),
+                span: Span {
+                    start: 0,
+                    end: 113,
+                },
+            },
+            Scope {
+                id: ScopeId(
+                    6,
+                ),
+                parents: [
+                    ScopeId(
+                        5,
+                    ),
+                ],
+                kind: ExternalModule,
+                bindings: {
+                    "computed": ScopeBinding {
+                        binding_type: SetupMaybeRef,
+                        declaration_offset: 13,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                    "ref": ScopeBinding {
+                        binding_type: SetupMaybeRef,
+                        declaration_offset: 13,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                },
+                data: ExternalModule(
+                    ExternalModuleScopeData {
+                        source: "vue",
+                        is_type_only: false,
+                    },
+                ),
+                span: Span {
+                    start: 13,
+                    end: 48,
+                },
+            },
+            Scope {
+                id: ScopeId(
+                    7,
+                ),
+                parents: [
+                    ScopeId(
+                        5,
+                    ),
+                ],
+                kind: ExternalModule,
+                bindings: {
+                    "MyComponent": ScopeBinding {
+                        binding_type: SetupConst,
+                        declaration_offset: 61,
+                        flags: BindingFlags(
+                            0x0,
+                        ),
+                    },
+                },
+                data: ExternalModule(
+                    ExternalModuleScopeData {
+                        source: "./MyComponent.vue",
+                        is_type_only: false,
+                    },
+                ),
+                span: Span {
+                    start: 61,
+                    end: 104,
+                },
+            },
+        ],
+        current: ScopeId(
+            5,
+        ),
+    },
+    provide_inject: ProvideInjectTracker {
+        provides: [],
+        injects: [],
+        composables: [],
+        next_id: 0,
+    },
+    inject_var_names: {},
+    inject_aliases: {},
+    provide_aliases: {},
+    reactivity_aliases: {},
+    setup_context: SetupContextTracker {
+        violations: [],
+    },
+    is_non_setup_script: false,
+    import_statements: [
+        ImportStatementInfo {
+            start: 13,
+            end: 48,
+        },
+        ImportStatementInfo {
+            start: 61,
+            end: 104,
+        },
+    ],
+    re_exports: [],
+    binding_spans: {
+        "computed": (
+            27,
+            35,
+        ),
+        "ref": (
+            22,
+            25,
+        ),
+        "MyComponent": (
+            68,
+            79,
+        ),
+    },
+}

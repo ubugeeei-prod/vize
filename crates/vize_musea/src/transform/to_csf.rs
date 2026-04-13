@@ -242,11 +242,7 @@ mod tests {
         let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
         let csf = transform_to_csf(&art);
 
-        assert!(csf.code.contains("import type { Meta, StoryObj }"));
-        assert!(csf.code.contains("import Component from './Button.vue'"));
-        assert!(csf.code.contains("title: 'Button'"));
-        assert!(csf.code.contains("export const Primary: Story"));
-        assert!(csf.filename.ends_with(".stories.ts"));
+        insta::assert_debug_snapshot!(csf);
     }
 
     #[test]
@@ -263,7 +259,7 @@ mod tests {
         let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
         let csf = transform_to_csf(&art);
 
-        assert!(csf.code.contains("title: 'atoms/Button'"));
+        insta::assert_debug_snapshot!(csf);
     }
 
     #[test]
@@ -283,8 +279,7 @@ mod tests {
         let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
         let csf = transform_to_csf(&art);
 
-        assert!(csf.code.contains("export const Primary: Story"));
-        assert!(csf.code.contains("export const Secondary: Story"));
+        insta::assert_debug_snapshot!(csf);
     }
 
     #[test]

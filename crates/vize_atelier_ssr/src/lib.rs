@@ -39,7 +39,7 @@ use vize_atelier_core::{
     parser::parse_with_options,
     transform::transform as do_transform,
 };
-use vize_carton::{Bump, String};
+use vize_carton::{profile, Bump, String};
 
 /// Compile a Vue template for SSR with default options
 pub fn compile_ssr<'a>(
@@ -68,7 +68,10 @@ pub fn compile_ssr_with_options<'a>(
     };
 
     // Parse
-    let (mut root, errors) = parse_with_options(allocator, source, parser_opts);
+    let (mut root, errors) = profile!(
+        "atelier.ssr.template.parse",
+        parse_with_options(allocator, source, parser_opts)
+    );
 
     if !errors.is_empty() {
         let codegen_result = SsrCodegenResult {
@@ -92,11 +95,14 @@ pub fn compile_ssr_with_options<'a>(
         ..Default::default()
     };
     let analysis = options.croquis.map(|c| &*allocator.alloc(*c));
-    do_transform(allocator, &mut root, transform_opts, analysis);
+    profile!(
+        "atelier.ssr.template.transform",
+        do_transform(allocator, &mut root, transform_opts, analysis)
+    );
 
     // SSR codegen
     let codegen_ctx = SsrCodegenContext::new(allocator, &codegen_options);
-    let codegen_result = codegen_ctx.generate(&root);
+    let codegen_result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
 
     (root, errors.to_vec(), codegen_result)
 }
@@ -137,12 +143,7 @@ mod tests {
 
         assert!(errors.is_empty());
         assert_eq!(root.children.len(), 1);
-        // SSR output should contain _push and template literal
-        assert!(
-            result.code.contains("_push"),
-            "Expected output to contain _push, got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -151,11 +152,6 @@ mod tests {
         let (_, errors, result) = compile_ssr(&allocator, "<div>{{ msg }}</div>");
 
         assert!(errors.is_empty());
-        // Should use ssrInterpolate for dynamic content
-        assert!(
-            result.code.contains("ssrInterpolate") || result.code.contains("_ssrInterpolate"),
-            "Expected ssrInterpolate, got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

@@ -109,7 +109,7 @@ Key dependencies: all `vize_atelier_*` crates + `lightningcss` + full OXC stack
 - **Template type inference** — Infers types for template expressions based on `<script setup>` bindings and prop definitions.
 - **Props type validation** — Verifies that component usage matches declared prop types (required props, type compatibility).
 - **Emits type checking** — Validates that emitted events match `defineEmits` declarations.
-- **tsgo awareness** — Designed with awareness of Microsoft's native TypeScript type checker (tsgo). As tsgo matures, Canon will integrate with it for JavaScript/TypeScript type checking while continuing to provide Vue-specific template analysis.
+- **Corsa-backed native checking** — Canon is designed to integrate with Vize's Corsa stack for JavaScript/TypeScript type checking while continuing to provide Vue-specific template analysis.
 
 Key dependencies: all core crates + OXC + `dashmap` + `tokio` (async, with `native` feature)
 

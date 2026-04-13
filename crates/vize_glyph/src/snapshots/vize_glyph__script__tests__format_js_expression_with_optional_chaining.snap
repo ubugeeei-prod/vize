@@ -1,0 +1,5 @@
+---
+source: crates/vize_glyph/src/script.rs
+expression: expr.as_str()
+---
+user?.profile?.name ?? "Guest"

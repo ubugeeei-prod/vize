@@ -1,0 +1,27 @@
+---
+source: crates/vize/src/commands/profile.rs
+expression: render_profile_report(&report)
+---
+
+[1m[36mVize profile: build[0m
+[90m  1 file on 4 threads[0m
+
+[1mTotal wall time[0m: 50.00ms[90m  throughput 40.00 KiB/s[0m
+
+[1mTiming breakdown[0m
+[90m  phase                         time        share  kind        note[0m
+  collect files                   10.00ms   20.0%  wall        [####..............]  [90mwalked inputs[0m
+  compile total                   42.00ms      n/a  cumulative  [..................]  [90mrayon sum[0m
+
+[1mHot files[0m
+[90m  slow threshold: 30.00ms[0m
+[90m  total       breakdown                 size      file[0m
+  [33m   31.00ms[0m  parse      8.00ms  compile   20.00ms     2.00 KiB  src/App.vue[90m  1 style block[0m
+
+[1mInternal operations[0m
+[90m  operation                         count   total       avg         min         max[0m
+  atelier.sfc.parse                     1      8.00ms      8.00ms      8.00ms      8.00ms
+  atelier.transform.element            24      6.00ms      0.25ms      0.10ms      0.60ms
+
+[1mNotes[0m
+  [36m- [0msrc/App.vue spent most of its time in compile; inspect template complexity.

@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/no_template_shadow.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/no-template-shadow",
+        severity: Warning,
+        message: "Variable 'item' shadows a variable in an outer scope",
+        start: 48,
+        end: 76,
+        help: Some(
+            "Rename the variable to avoid shadowing",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

@@ -1,0 +1,12 @@
+---
+source: crates/vize/tests/check_cli.rs
+expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
+---
+{
+  "diagnostics": [
+    "error:2:7 [TS2322] Type 'number' is not assignable to type 'string'."
+  ],
+  "errorCount": 1,
+  "fileCount": 1,
+  "status": 1
+}

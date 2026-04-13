@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { mergeDefaults as _mergeDefaults } from 'vue'
+import { computed, watch } from 'vue'
+
+// Reactive Props Destructure (Vue 3.5+)
+
+const __sfc__ = /*@__PURE__*/_defineComponent({
+  __name: 'Test',
+  props: /*@__PURE__*/_mergeDefaults({ count: {}, disabled: {}, items: {}, name: {} }, {
+  disabled: false
+  count: 0
+  items: () => []
+}),
+  setup(__props, { expose: __expose, emit: __emit }) {
+  __expose();
+  const doubled = computed(() => __props.count * 2)
+  const itemCount = computed(() => __props.items.length)
+  const __returned__ = { computed, doubled, itemCount, watch }
+  Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+  return __returned__
+  }
+
+});

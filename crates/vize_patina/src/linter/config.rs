@@ -3,6 +3,8 @@
 //! Defines the `LintResult` output type and the `Linter` struct with its
 //! builder-pattern configuration methods.
 
+#[cfg(not(target_arch = "wasm32"))]
+use super::corsa_session::CorsaTypeAwareSession;
 use crate::{
     diagnostic::{HelpLevel, LintDiagnostic},
     preset::{builtin_script_rule_names, LintPreset},
@@ -57,9 +59,9 @@ pub struct Linter {
     pub(crate) help_level: HelpLevel,
     /// Built-in script rules enabled for this linter.
     pub(crate) script_rules: &'static [&'static str],
-    /// Lazily initialized native tsgo client for type-aware lint.
+    /// Lazily initialized native corsa session for type-aware lint.
     #[cfg(not(target_arch = "wasm32"))]
-    pub(crate) native_tsgo: Mutex<Option<vize_canon::lsp_client::TsgoLspClient>>,
+    pub(crate) native_corsa: Mutex<Option<CorsaTypeAwareSession>>,
 }
 
 impl Linter {
@@ -78,7 +80,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
-            native_tsgo: Mutex::new(None),
+            native_corsa: Mutex::new(None),
         }
     }
 
@@ -93,7 +95,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
-            native_tsgo: Mutex::new(None),
+            native_corsa: Mutex::new(None),
         }
     }
 
@@ -108,7 +110,7 @@ impl Linter {
             help_level: HelpLevel::default(),
             script_rules: &[],
             #[cfg(not(target_arch = "wasm32"))]
-            native_tsgo: Mutex::new(None),
+            native_corsa: Mutex::new(None),
         }
     }
 

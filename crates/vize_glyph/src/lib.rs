@@ -113,11 +113,7 @@ const count=ref(0)
         let options = FormatOptions::default();
         let result = format_sfc(source, &options).unwrap();
 
-        // oxc_codegen formats imports with spaces
-        assert!(result.code.contains("ref"));
-        assert!(result.code.contains("vue"));
-        assert!(result.code.contains("count"));
-        assert!(result.code.contains("ref(0)"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -126,11 +122,7 @@ const count=ref(0)
         let options = FormatOptions::default();
         let result = format_script(source, &options).unwrap();
 
-        // Check that the code is formatted (variables are separated)
-        assert!(result.contains("const x"));
-        assert!(result.contains("const y"));
-        assert!(result.contains("a:"));
-        assert!(result.contains("b:"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -150,13 +142,7 @@ const msg = 'hello'
         let options = FormatOptions::default();
         let result = format_sfc(source, &options).unwrap();
 
-        // Check that all blocks are preserved
-        assert!(result.code.contains("<script setup lang=\"ts\">"));
-        assert!(result.code.contains("</script>"));
-        assert!(result.code.contains("<template>"));
-        assert!(result.code.contains("</template>"));
-        assert!(result.code.contains("<style scoped>"));
-        assert!(result.code.contains("</style>"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -170,7 +156,7 @@ const msg = 'hello'
         let result1 = format_sfc_with_allocator(source1, &options, &allocator).unwrap();
         let result2 = format_sfc_with_allocator(source2, &options, &allocator).unwrap();
 
-        assert!(result1.code.contains("const a"));
-        assert!(result2.code.contains("const b"));
+        insta::assert_snapshot!(result1.code.as_str());
+        insta::assert_snapshot!(result2.code.as_str());
     }
 }

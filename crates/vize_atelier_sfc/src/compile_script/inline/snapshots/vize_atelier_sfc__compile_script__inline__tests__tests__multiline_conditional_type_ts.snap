@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { computed } from 'vue'
+
+type KeyOfUnion<T> = T extends T ? keyof T : never;
+type DistributiveOmit<T, K extends KeyOfUnion<T>> = T extends T
+	? Omit<T, K>
+	: never;
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'TestComponent',
+  setup(__props) {
+
+const x = computed(() => 1)
+
+return (_ctx: any,_cache: any) => {
+  return null
+}
+}
+
+})

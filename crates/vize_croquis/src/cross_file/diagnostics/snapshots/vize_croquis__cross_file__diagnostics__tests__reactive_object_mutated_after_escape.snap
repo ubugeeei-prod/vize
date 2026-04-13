@@ -1,0 +1,27 @@
+---
+source: crates/vize_croquis/src/cross_file/diagnostics/diagnostics_tests.rs
+expression: markdown.as_str()
+---
+🟡 **WARNING** `vize:croquis/cf/mutated-after-escape`
+
+### Reactive object mutated after escape
+
+**Problem**: `data` is mutated after escaping its scope.
+
+- Escaped at offset: 100
+- Mutated at offset: 200
+
+**Timeline**:
+
+```
+1. data created in setup()
+2. data passed to external function (escape)
+3. data mutated ← mutations may affect escaped reference!
+```
+
+**This is similar to Rust's borrow checker**:
+
+- In Rust: `cannot mutate while borrowed`
+- In Vue: mutations after escape create implicit coupling
+
+**Consider**: Document the mutation contract or use `readonly()`.

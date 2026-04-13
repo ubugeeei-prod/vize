@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_vapor/src/generators/block.rs
+expression: ctx.code.as_str()
+---
+const x = 1

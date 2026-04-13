@@ -45,7 +45,7 @@ impl Timer {
 }
 
 /// Profiling metrics for a single operation.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Metrics {
     /// Number of times this operation was called
     pub count: u64,
@@ -86,6 +86,12 @@ impl Metrics {
     }
 }
 
+impl Default for Metrics {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Performance profiler for collecting metrics.
 #[derive(Debug, Default)]
 pub struct Profiler {
@@ -110,18 +116,18 @@ impl Profiler {
 
     /// Enable profiling.
     pub fn enable(&self) {
-        self.enabled.store(true, Ordering::SeqCst);
+        self.enabled.store(true, Ordering::Relaxed);
     }
 
     /// Disable profiling.
     pub fn disable(&self) {
-        self.enabled.store(false, Ordering::SeqCst);
+        self.enabled.store(false, Ordering::Relaxed);
     }
 
     /// Check if profiling is enabled.
     #[inline]
     pub fn is_enabled(&self) -> bool {
-        self.enabled.load(Ordering::SeqCst)
+        self.enabled.load(Ordering::Relaxed)
     }
 
     /// Start a timer for the given operation.
@@ -353,6 +359,9 @@ mod tests {
         let metrics = profiler.get("test").unwrap();
         assert_eq!(metrics.count, 2);
         assert_eq!(metrics.total_duration, Duration::from_millis(30));
+        assert_eq!(metrics.min_duration, Duration::from_millis(10));
+        assert_eq!(metrics.max_duration, Duration::from_millis(20));
+        assert_eq!(metrics.average(), Duration::from_millis(15));
     }
 
     #[test]

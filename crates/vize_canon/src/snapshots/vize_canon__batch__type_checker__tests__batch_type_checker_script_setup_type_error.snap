@@ -1,0 +1,14 @@
+---
+source: crates/vize_canon/src/batch/type_checker/tests.rs
+expression: relevant
+---
+[
+    (
+        "declaration",
+        "string",
+    ),
+    (
+        "initializer",
+        "0",
+    ),
+]

@@ -3,7 +3,7 @@
 //! This module handles compilation of `<template>` blocks,
 //! supporting both DOM mode and Vapor mode.
 
-use vize_carton::{String, ToCompactString};
+use vize_carton::{profile, String, ToCompactString};
 mod extraction;
 mod string_tracking;
 mod vapor;
@@ -52,8 +52,10 @@ pub(crate) fn compile_template_block(
             croquis: croquis.map(Box::new),
         };
 
-        let (_, errors, result) =
-            vize_atelier_ssr::compile_ssr_with_options(&allocator, &template.content, ssr_opts);
+        let (_, errors, result) = profile!(
+            "atelier.sfc.template.ssr",
+            vize_atelier_ssr::compile_ssr_with_options(&allocator, &template.content, ssr_opts)
+        );
 
         if !errors.is_empty() {
             let mut message = String::from("Template compilation errors: ");
@@ -100,8 +102,10 @@ pub(crate) fn compile_template_block(
     }
 
     // Compile template
-    let (_, errors, result) =
-        vize_atelier_dom::compile_template_with_options(&allocator, &template.content, dom_opts);
+    let (_, errors, result) = profile!(
+        "atelier.sfc.template.dom",
+        vize_atelier_dom::compile_template_with_options(&allocator, &template.content, dom_opts)
+    );
 
     if !errors.is_empty() {
         let mut message = String::from("Template compilation errors: ");

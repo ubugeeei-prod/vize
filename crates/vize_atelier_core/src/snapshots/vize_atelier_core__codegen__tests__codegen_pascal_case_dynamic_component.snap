@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { openBlock: _openBlock, createBlock: _createBlock, resolveDynamicComponent: _resolveDynamicComponent } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(current), { "active-class": klass }, null, 8 /* PROPS */, ["active-class"]))
+}

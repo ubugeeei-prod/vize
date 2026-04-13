@@ -1,0 +1,28 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, renderSlot as _renderSlot, normalizeClass as _normalizeClass } from "vue"
+
+import type { SelectBaseProps } from './types'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'ImportedSelectBase',
+  props: {
+    disabled: { type: Boolean, required: false },
+    size: { type: null, required: false, default: "md" }
+  },
+  setup(__props: any) {
+
+const props = __props
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("select", {
+      class: _normalizeClass(__props.size),
+      disabled: __props.disabled ? true : undefined
+    }, [ _renderSlot(_ctx.$slots, "default") ], 10 /* CLASS, PROPS */, ["disabled"]))
+}
+}
+
+})

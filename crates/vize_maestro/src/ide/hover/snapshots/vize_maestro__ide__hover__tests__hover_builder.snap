@@ -1,0 +1,13 @@
+---
+source: crates/vize_maestro/src/ide/hover/mod.rs
+expression: content.value.as_str()
+---
+**ref**
+
+```typescript
+function ref<T>(value: T): Ref<T>
+```
+
+Creates a reactive reference.
+
+[Documentation](https://vuejs.org)

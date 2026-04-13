@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/nuxt",
-  "version": "0.39.0",
+  "version": "0.46.0",
   "description": "Nuxt module for Vize - compiler, musea gallery, linter, and type checker",
   "keywords": [
     "compiler",
@@ -24,12 +24,12 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
     }
   },
   "publishConfig": {

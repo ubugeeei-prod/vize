@@ -7,7 +7,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{ExportDefaultDeclarationKind, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_carton::{String, ToCompactString};
+use vize_carton::{profile, String, ToCompactString};
 
 /// Rewrite `export default` to a const declaration with the given name.
 /// Returns (rewritten_code, has_default_export)
@@ -19,7 +19,10 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
     };
 
     let allocator = Allocator::default();
-    let ret = Parser::new(&allocator, input, source_type).parse();
+    let ret = profile!(
+        "atelier.normal_script.rewrite_default.parse",
+        Parser::new(&allocator, input, source_type).parse()
+    );
 
     if !ret.errors.is_empty() {
         // If parsing fails, return original code
@@ -304,8 +307,7 @@ mod tests {
     fn test_rewrite_default_object() {
         let (result, has_default) = rewrite_default("export default {}", "_sfc_main", false);
         assert!(has_default);
-        assert!(result.contains("const _sfc_main = {}"));
-        assert!(!result.contains("export default"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -321,9 +323,7 @@ export default {
 "#;
         let (result, has_default) = rewrite_default(input, "_sfc_main", false);
         assert!(has_default);
-        assert!(result.contains("const _sfc_main = {"));
-        assert!(result.contains("name: 'MyComponent'"));
-        assert!(!result.contains("export default"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -331,15 +331,14 @@ export default {
         let (result, has_default) =
             rewrite_default("export default class Foo {}", "_sfc_main", false);
         assert!(has_default);
-        assert!(result.contains("class Foo {}"));
-        assert!(result.contains("const _sfc_main = Foo"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_no_default_export() {
         let (result, has_default) = rewrite_default("export const a = {}", "_sfc_main", false);
         assert!(!has_default);
-        assert!(result.contains("const _sfc_main = {}"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -347,6 +346,6 @@ export default {
         let input = "const a = 1\nexport { a as default }";
         let (result, has_default) = rewrite_default(input, "_sfc_main", false);
         assert!(has_default);
-        assert!(result.contains("const _sfc_main = a"));
+        insta::assert_snapshot!(result.as_str());
     }
 }

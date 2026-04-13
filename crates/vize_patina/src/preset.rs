@@ -111,6 +111,7 @@ mod tests {
         assert!(happy_path.has_rule("vapor/no-vue-lifecycle-events"));
         assert!(happy_path.has_rule("type/require-typed-props"));
         assert!(happy_path.has_rule("type/require-typed-emits"));
+        assert!(!happy_path.has_rule("type/no-unsafe-template-binding"));
         assert!(happy_path.has_rule("html/no-empty-palpable-content"));
         assert!(!happy_path.has_rule("vue/multi-word-component-names"));
         assert!(!happy_path.has_rule("a11y/use-list"));
@@ -130,6 +131,7 @@ mod tests {
         assert!(opinionated.has_rule("vapor/no-vue-lifecycle-events"));
         assert!(opinionated.has_rule("type/require-typed-props"));
         assert!(opinionated.has_rule("type/require-typed-emits"));
+        assert!(opinionated.has_rule("type/no-unsafe-template-binding"));
         assert!(opinionated.has_rule("html/no-empty-palpable-content"));
         assert!(opinionated.has_rule("vue/multi-word-component-names"));
         assert!(opinionated.has_rule("a11y/use-list"));

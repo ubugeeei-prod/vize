@@ -1,0 +1,6 @@
+---
+source: crates/vize_atelier_sfc/src/style.rs
+expression: result.as_str()
+---
+@import "~/assets/styles/custom-media-query.css";
+footer[data-v-123]{ width: 100%; }

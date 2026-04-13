@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<div> </div>")
+export function render(_ctx) {
+const n0 = _createFor(() => (_ctx.items), (_for_item0) => {
+const n2 = t0()
+const x2 = _txt(n2)
+_renderEffect(() => _setText(x2, _toDisplayString(_for_item0.value)))
+return n2
+})
+return n0
+}

@@ -1,0 +1,9 @@
+---
+source: crates/vize_musea/src/palette/codegen.rs
+expression: ts.as_str()
+---
+export interface ButtonProps {
+  label: string;
+  disabled?: boolean;
+  size?: number;
+}

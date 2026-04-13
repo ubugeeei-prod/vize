@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/tests.rs
+assertion_line: 169
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -23,9 +24,8 @@ declare global {
   }
 }
 
-type $Vue = import('vue');
-
 // ========== Module Scope (imports) ==========
+type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);
 import { ref, computed, watch } from 'vue'
 interface Props {
   initialCount?: number
@@ -46,13 +46,15 @@ function __setup() {
   type __Ref<T> = import('vue').Ref<T>;
   type __ShallowRef<T> = import('vue').ShallowRef<T>;
   function defineProps<_T = unknown>(_props?: any): _T { void _props; return undefined as unknown as _T; }
-  function defineEmits<_T = unknown>(): __EmitFn<_T> { return (() => {}) as any; }
-  function defineEmits<_T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void { void _events; return (() => {}) as any; }
-  function defineEmits<_T extends Record<string, any>>(_events: _T): (event: keyof _T, ...args: any[]) => void { void _events; return (() => {}) as any; }
+  function defineEmits<_T = unknown>(): __EmitFn<_T>;
+  function defineEmits<_T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void;
+  function defineEmits<_T extends Record<string, any>>(_events: _T): (event: keyof _T, ...args: any[]) => void;
+  function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
   function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  function defineModel<_T = unknown>(): __Ref<_T | undefined> { return undefined as unknown as __Ref<_T | undefined>; }
-  function defineModel<_T = unknown>(_options: any): __Ref<_T> { void _options; return undefined as unknown as __Ref<_T>; }
-  function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T> { void _name; void _options; return undefined as unknown as __Ref<_T>; }
+  function defineModel<_T = unknown>(): __Ref<_T | undefined>;
+  function defineModel<_T = unknown>(_options: any): __Ref<_T>;
+  function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T>;
+  function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
   function withDefaults<_T = unknown, _D = unknown>(_props: _T, _defaults: _D): _T & _D { void _props; void _defaults; return undefined as unknown as _T & _D; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
@@ -82,25 +84,19 @@ function __setup() {
     console.log('Count changed:', newVal)
   })
   
-  // @vize-map: 2959:3345 -> 0:501
+  // @vize-map: 2983:3369 -> 0:501
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
-  type __Ref_count = typeof count;
-  type __Ref_doubled = typeof doubled;
-  type __Ref_computed = typeof computed;
-  type __Ref_ref = typeof ref;
-  type __Ref_watch = typeof watch;
+  type __R_count = typeof count;
+  type __R_doubled = typeof doubled;
   ;(function __template() {
-    // Auto-unwrap refs (Vue template behavior)
-    type __UnwrapRef<T> = import('vue').UnwrapRef<T>;
-    var count: __UnwrapRef<__Ref_count> = undefined as any;
-    var doubled: __UnwrapRef<__Ref_doubled> = undefined as any;
-    var computed: __UnwrapRef<__Ref_computed> = undefined as any;
-    var ref: __UnwrapRef<__Ref_ref> = undefined as any;
-    var watch: __UnwrapRef<__Ref_watch> = undefined as any;
+    // Auto-unwrap Vue refs in template scope
+    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;
+    var count: __U<__R_count> = undefined as any;
+    var doubled: __U<__R_doubled> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
-    type __Ctx = $Vue['ComponentPublicInstance'];
+    type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = undefined as unknown as __Ctx;
     const $attrs = __ctx.$attrs;
     const $slots = __ctx.$slots;
@@ -141,9 +137,10 @@ void __setup();
 export type Slots = {};
 
 // ========== Default Export ==========
-declare const __vize_component__: {
-  props: Props;
-  emits: Emits;
-  slots: Slots;
+type __VizeComponentInstance = {
+  $props: Props;
+  $emit: __EmitFn<Emits>;
+  $slots: Slots;
 };
+declare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;
 export default __vize_component__;

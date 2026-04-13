@@ -1,0 +1,42 @@
+---
+source: crates/vize_croquis/src/cross_file/diagnostics/diagnostics_tests.rs
+expression: markdown.as_str()
+---
+🔴 **ERROR** `vize:croquis/cf/circular-reactive-dependency`
+
+### Circular dependency detected
+
+**Problem**: Circular reactive dependency detected.
+
+**Dependency Cycle**:
+
+```
+┌─→ a
+│   ↓
+│   b
+│   ↓
+└── c ───┘
+```
+
+**Why this is dangerous**:
+
+- 💥 **Infinite Update Loops**: Changes propagate endlessly.
+- 📚 **Stack Overflow Risk**: Deep recursion in reactive updates.
+- 🐌 **Performance Degradation**: Wasted computation cycles.
+
+**How to fix**:
+
+```ts
+// Option 1: Use computed() to break the cycle
+const derived = computed(() => {
+  // Read without triggering write
+  return transform(source.value)
+})
+
+// Option 2: Use watchEffect with explicit dependencies
+watchEffect(() => {
+  // One-way data flow only
+})
+
+// Option 3: Restructure to remove bidirectional dependency
+```

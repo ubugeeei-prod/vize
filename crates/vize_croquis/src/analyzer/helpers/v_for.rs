@@ -11,7 +11,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{smallvec, CompactString, SmallVec};
+use vize_carton::{profile, smallvec, CompactString, SmallVec};
 
 use super::is_valid_identifier_fast;
 
@@ -68,7 +68,10 @@ pub fn parse_v_for_expression(expr: &str) -> (SmallVec<[CompactString; 3]>, Comp
     }
 
     // Complex case: use OXC parser
-    parse_v_for_with_oxc(alias_part, source)
+    profile!(
+        "croquis.helpers.v_for.oxc",
+        parse_v_for_with_oxc(alias_part, source)
+    )
 }
 
 /// Parse complex v-for alias using OXC
@@ -91,7 +94,10 @@ fn parse_v_for_with_oxc(
     if total_len > buffer.len() {
         #[allow(clippy::disallowed_macros)]
         let pattern_str = format!("let [{inner}] = x");
-        return parse_v_for_pattern(&pattern_str, source);
+        return profile!(
+            "croquis.helpers.v_for.parse_pattern",
+            parse_v_for_pattern(&pattern_str, source)
+        );
     }
 
     buffer[..prefix.len()].copy_from_slice(prefix);
@@ -100,7 +106,10 @@ fn parse_v_for_with_oxc(
 
     // SAFETY: we only copy ASCII bytes
     let pattern_str = unsafe { std::str::from_utf8_unchecked(&buffer[..total_len]) };
-    parse_v_for_pattern(pattern_str, source)
+    profile!(
+        "croquis.helpers.v_for.parse_pattern",
+        parse_v_for_pattern(pattern_str, source)
+    )
 }
 
 /// Parse v-for pattern using OXC
@@ -110,7 +119,10 @@ fn parse_v_for_pattern(
 ) -> (SmallVec<[CompactString; 3]>, CompactString) {
     let allocator = Allocator::default();
     let source_type = SourceType::default().with_typescript(true);
-    let ret = Parser::new(&allocator, pattern_str, source_type).parse();
+    let ret = profile!(
+        "croquis.helpers.v_for.oxc_parse",
+        Parser::new(&allocator, pattern_str, source_type).parse()
+    );
 
     let mut vars = SmallVec::new();
 

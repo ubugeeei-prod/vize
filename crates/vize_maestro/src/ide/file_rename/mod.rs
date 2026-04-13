@@ -19,11 +19,11 @@ impl FileRenameService {
         state: &ServerState,
         params: &RenameFilesParams,
     ) -> Option<WorkspaceEdit> {
-        let tsgo_edit = Self::tsgo_workspace_edit(state, params).await;
+        let corsa_edit = Self::corsa_workspace_edit(state, params).await;
         let manual_edit =
-            manual::collect_import_rename_edits(state, &params.files, tsgo_edit.is_some());
+            manual::collect_import_rename_edits(state, &params.files, corsa_edit.is_some());
 
-        merge_workspace_edits(tsgo_edit, manual_edit)
+        merge_workspace_edits(corsa_edit, manual_edit)
     }
 
     /// Update in-memory state after files were renamed on disk.
@@ -37,16 +37,16 @@ impl FileRenameService {
         {
             state.invalidate_batch_cache();
 
-            if !renamed.is_empty() && state.has_tsgo_bridge() {
-                if let Some(bridge) = state.get_tsgo_bridge().await {
+            if !renamed.is_empty() && state.has_corsa_bridge() {
+                if let Some(bridge) = state.get_corsa_bridge().await {
                     for (old_uri, _) in &renamed {
                         for request_path in [
-                            crate::ide::tsgo_support::template_request_path(old_uri),
-                            crate::ide::tsgo_support::script_request_path(old_uri, false),
-                            crate::ide::tsgo_support::script_request_path(old_uri, true),
+                            crate::ide::corsa_support::template_request_path(old_uri),
+                            crate::ide::corsa_support::script_request_path(old_uri, false),
+                            crate::ide::corsa_support::script_request_path(old_uri, true),
                         ] {
                             let request_uri =
-                                crate::ide::tsgo_support::request_file_uri(&request_path);
+                                crate::ide::corsa_support::request_file_uri(&request_path);
                             let _ = bridge.close_virtual_document(&request_uri).await;
                         }
                     }
@@ -58,15 +58,15 @@ impl FileRenameService {
     }
 
     #[cfg(feature = "native")]
-    async fn tsgo_workspace_edit(
+    async fn corsa_workspace_edit(
         state: &ServerState,
         params: &RenameFilesParams,
     ) -> Option<WorkspaceEdit> {
-        if !state.has_tsgo_bridge() {
+        if !state.has_corsa_bridge() {
             return None;
         }
 
-        let bridge = state.get_tsgo_bridge().await?;
+        let bridge = state.get_corsa_bridge().await?;
         let renames = params
             .files
             .iter()
@@ -78,7 +78,7 @@ impl FileRenameService {
     }
 
     #[cfg(not(feature = "native"))]
-    async fn tsgo_workspace_edit(
+    async fn corsa_workspace_edit(
         _state: &ServerState,
         _params: &RenameFilesParams,
     ) -> Option<WorkspaceEdit> {
@@ -253,7 +253,7 @@ mod tests {
                         uri: base_uri.clone(),
                         version: None,
                     },
-                    edits: vec![OneOf::Left(text_edit("from-tsgo"))],
+                    edits: vec![OneOf::Left(text_edit("from-corsa"))],
                 }])),
                 change_annotations: None,
             }),

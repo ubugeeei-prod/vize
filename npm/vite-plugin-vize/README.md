@@ -14,13 +14,13 @@ High-performance native Vite plugin for Vue SFC compilation powered by [Vize](ht
 
 ```bash
 # npm
-npm install @vizejs/vite-plugin
+npm install @vizejs/vite-plugin vize
 
 # pnpm
-pnpm add @vizejs/vite-plugin
+pnpm add @vizejs/vite-plugin vize
 
 # yarn
-yarn add @vizejs/vite-plugin
+yarn add @vizejs/vite-plugin vize
 ```
 
 ## Usage
@@ -40,6 +40,43 @@ export default defineConfig({
   ],
 });
 ```
+
+### Shared config
+
+`vize.config.ts`
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
+```
+
+`vize.config.pkl`
+
+```pkl
+amends "node_modules/vize/pkl/vize.pkl"
+
+compiler {
+  sourceMap = true
+}
+
+vite {
+  scanPatterns = new Listing {
+    "src/**/*.vue"
+  }
+}
+```
+
+`@vizejs/vite-plugin` loads the same `vize.config.ts`, `vize.config.js`, `vize.config.mjs`,
+`vize.config.pkl`, and `vize.config.json` files as the `vize` npm CLI. Importing
+`defineConfig` from `@vizejs/vite-plugin` still works, but `vize` is the shared entry point.
 
 ### Nuxt
 
@@ -180,8 +217,8 @@ Vize's native compiler is significantly faster than the official Vue compiler:
 
 | Benchmark (15,000 SFCs) | @vue/compiler-sfc | Vize  | Speedup  |
 | ----------------------- | ----------------- | ----- | -------- |
-| Single-threaded         | 16.21s            | 6.65s | **2.4x** |
-| Multi-threaded          | 4.13s             | 498ms | **8.3x** |
+| Single-threaded         | 10.43s            | 6.06s | **1.7x** |
+| Multi-threaded          | 3.45s             | 612ms | **5.6x** |
 
 ## Comparison with vite-plugin-vize
 

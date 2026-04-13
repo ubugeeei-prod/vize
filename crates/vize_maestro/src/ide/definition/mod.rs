@@ -4,7 +4,7 @@
 //! - Template expressions -> script bindings
 //! - Component usages -> component definitions
 //! - Import statements -> imported files
-//! - Real definitions from tsgo (when available)
+//! - Real definitions from Corsa (when available)
 
 pub mod bindings;
 mod helpers;

@@ -13,7 +13,7 @@ use tower_lsp::lsp_types::Url;
 use std::sync::OnceLock;
 
 #[cfg(feature = "native")]
-use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, TsgoBridge, TsgoBridgeConfig};
+use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, CorsaBridge, CorsaBridgeConfig};
 
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
@@ -85,12 +85,12 @@ pub struct ServerState {
     /// Formatting options (loaded from vize.config.json)
     #[cfg(feature = "glyph")]
     format_options: RwLock<vize_glyph::FormatOptions>,
-    /// tsgo bridge for TypeScript language features (lazy initialized)
+    /// Corsa bridge for native TypeScript language features (lazy initialized)
     #[cfg(feature = "native")]
-    tsgo_bridge: OnceCell<Arc<TsgoBridge>>,
-    /// Flag to track if tsgo initialization has been attempted and failed
+    corsa_bridge: OnceCell<Arc<CorsaBridge>>,
+    /// Flag to track if Corsa initialization has been attempted and failed
     #[cfg(feature = "native")]
-    tsgo_init_failed: std::sync::atomic::AtomicBool,
+    corsa_init_failed: std::sync::atomic::AtomicBool,
     /// Workspace root path
     #[cfg(feature = "native")]
     workspace_root: RwLock<Option<PathBuf>>,
@@ -118,9 +118,9 @@ impl ServerState {
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),
             #[cfg(feature = "native")]
-            tsgo_bridge: OnceCell::new(),
+            corsa_bridge: OnceCell::new(),
             #[cfg(feature = "native")]
-            tsgo_init_failed: std::sync::atomic::AtomicBool::new(false),
+            corsa_init_failed: std::sync::atomic::AtomicBool::new(false),
             #[cfg(feature = "native")]
             workspace_root: RwLock::new(None),
             #[cfg(feature = "native")]
@@ -211,49 +211,49 @@ impl ServerState {
         self.batch_cache.invalidate();
     }
 
-    /// Get or initialize the tsgo bridge.
+    /// Get or initialize the Corsa bridge.
     ///
-    /// Returns None if tsgo is not available or failed to initialize.
+    /// Returns `None` if Corsa is not available or failed to initialize.
     #[cfg(feature = "native")]
-    pub async fn get_tsgo_bridge(&self) -> Option<Arc<TsgoBridge>> {
+    pub async fn get_corsa_bridge(&self) -> Option<Arc<CorsaBridge>> {
         use std::sync::atomic::Ordering;
 
         // If already initialized successfully, return it
-        if let Some(bridge) = self.tsgo_bridge.get() {
+        if let Some(bridge) = self.corsa_bridge.get() {
             return Some(bridge.clone());
         }
 
         // If initialization already failed, don't retry
-        if self.tsgo_init_failed.load(Ordering::SeqCst) {
+        if self.corsa_init_failed.load(Ordering::SeqCst) {
             return None;
         }
 
-        // Get workspace root for tsgo configuration
+        // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
 
         let result = self
-            .tsgo_bridge
+            .corsa_bridge
             .get_or_try_init(|| async {
-                let config = TsgoBridgeConfig {
+                let config = CorsaBridgeConfig {
                     working_dir: workspace_root,
-                    timeout_ms: 30000, // 30 second timeout for requests (tsgo needs time to analyze)
+                    timeout_ms: 30000, // Corsa needs time to build project state on first load.
                     ..Default::default()
                 };
-                let bridge = TsgoBridge::with_config(config);
+                let bridge = CorsaBridge::with_config(config);
 
-                // Add timeout for spawning tsgo (5 seconds)
+                // Add a guardrail timeout around the initial spawn.
                 match tokio::time::timeout(std::time::Duration::from_secs(5), bridge.spawn()).await
                 {
                     Ok(Ok(())) => {
-                        tracing::info!("tsgo bridge initialized successfully");
+                        tracing::info!("corsa bridge initialized successfully");
                         Ok(Arc::new(bridge))
                     }
                     Ok(Err(e)) => {
-                        tracing::warn!("tsgo bridge spawn failed: {}", e);
+                        tracing::warn!("corsa bridge spawn failed: {}", e);
                         Err(())
                     }
                     Err(_) => {
-                        tracing::warn!("tsgo bridge spawn timed out");
+                        tracing::warn!("corsa bridge spawn timed out");
                         Err(())
                     }
                 }
@@ -264,16 +264,16 @@ impl ServerState {
             Ok(bridge) => Some(bridge.clone()),
             Err(()) => {
                 // Mark as failed so we don't retry
-                self.tsgo_init_failed.store(true, Ordering::SeqCst);
+                self.corsa_init_failed.store(true, Ordering::SeqCst);
                 None
             }
         }
     }
 
-    /// Check if tsgo bridge is available (without initializing).
+    /// Check if the Corsa bridge is available (without initializing).
     #[cfg(feature = "native")]
-    pub fn has_tsgo_bridge(&self) -> bool {
-        self.tsgo_bridge.initialized()
+    pub fn has_corsa_bridge(&self) -> bool {
+        self.corsa_bridge.initialized()
     }
 
     /// Generate and cache virtual documents for a document.

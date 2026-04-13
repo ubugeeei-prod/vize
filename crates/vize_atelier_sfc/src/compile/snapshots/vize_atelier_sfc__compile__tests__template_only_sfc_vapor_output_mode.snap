@@ -1,0 +1,16 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div> </div>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  _renderEffect(() => _setText(x0, _toDisplayString(_ctx.msg)))
+  return n0
+}
+const _sfc_main = { __vapor: true }
+_sfc_main.render = render
+export default _sfc_main

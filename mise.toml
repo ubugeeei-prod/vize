@@ -1,7 +1,0 @@
-[tools]
-# Node.js is pinned in .node-version and managed via `vp env`.
-# pnpm is resolved from package.json#packageManager via Vite+.
-rust = "latest"
-
-[env]
-_.path = ["~/.cargo/bin"]

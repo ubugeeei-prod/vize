@@ -23,3 +23,6 @@ xxhash-rust = { workspace = true }
 
 [features]
 default = []
+
+[dev-dependencies]
+insta = { workspace = true }

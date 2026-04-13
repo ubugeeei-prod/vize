@@ -5,7 +5,7 @@
 
 use crate::types::{SfcError, SfcStyleBlock, StyleCompileOptions};
 
-use vize_carton::String;
+use vize_carton::{profile, String};
 /// Helper to compile all style blocks
 pub(super) fn compile_styles(
     styles: &[SfcStyleBlock],
@@ -13,6 +13,10 @@ pub(super) fn compile_styles(
     base_opts: &StyleCompileOptions,
     warnings: &mut Vec<SfcError>,
 ) -> String {
+    if styles.is_empty() {
+        return String::default();
+    }
+
     let mut all_css = String::default();
     for style in styles {
         let style_opts = StyleCompileOptions {
@@ -25,7 +29,10 @@ pub(super) fn compile_styles(
             scoped: style.scoped,
             ..base_opts.clone()
         };
-        match crate::style::compile_style(style, &style_opts) {
+        match profile!(
+            "atelier.sfc.style.block",
+            crate::style::compile_style(style, &style_opts)
+        ) {
             Ok(style_css) => {
                 if !all_css.is_empty() {
                     all_css.push('\n');

@@ -15,7 +15,7 @@ title: Vite Plugin
 ## Installation
 
 ```bash
-npm install @vizejs/vite-plugin
+npm install @vizejs/vite-plugin vize
 ```
 
 ## Basic Usage
@@ -31,6 +31,63 @@ export default defineConfig({
 ```
 
 That's it. Replace `@vitejs/plugin-vue` with `@vizejs/vite-plugin` and your project compiles through Rust.
+
+## Shared Config
+
+The recommended shared entry point is `vize`. A single `vize.config.*` file is read by both the npm CLI and `@vizejs/vite-plugin`.
+
+Supported config files:
+
+- `vize.config.ts`
+- `vize.config.js`
+- `vize.config.mjs`
+- `vize.config.pkl`
+- `vize.config.json`
+
+TypeScript config:
+
+```ts
+// vize.config.ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
+```
+
+PKL config:
+
+```pkl
+amends "node_modules/vize/pkl/vize.pkl"
+
+compiler {
+  sourceMap = true
+}
+
+vite {
+  scanPatterns = new Listing {
+    "src/**/*.vue"
+  }
+}
+```
+
+JSON config with schema:
+
+```json
+{
+  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
+  "vite": {
+    "scanPatterns": ["src/**/*.vue"]
+  }
+}
+```
+
+Importing `defineConfig` from `@vizejs/vite-plugin` still works for backward compatibility, but `import { defineConfig } from "vize"` is the shared path going forward.
 
 ## How It Works
 

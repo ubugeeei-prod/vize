@@ -191,6 +191,7 @@ function ensureBuildCommonVite(): void {
     "wasm",
     "--no-default-features",
   ]);
+  run("pnpm", ["-C", "npm/vize", "build"]);
   run("pnpm", ["-C", "npm/vite-plugin-vize", "build"]);
 }
 

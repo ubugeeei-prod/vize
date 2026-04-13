@@ -51,20 +51,59 @@
 npm install -g vize
 ```
 
+For Vite projects that want one shared config for the plugin and the npm CLI:
+
+```bash
+npm install -D vize @vizejs/vite-plugin
+```
+
 ```bash
 vize build src/**/*.vue    # Compile
 vize fmt --check           # Format check
 vize lint --fix            # Lint & auto-fix
-vize check --strict        # Type check
+vize build --profile       # Profile parse, transform, codegen, and I/O
+vize lint --profile src    # Profile parse, rule hooks, Croquis, and type-aware linting
+vize check --profile src   # Profile Virtual TS, Croquis, and Corsa diagnostics
+```
+
+`--profile` reports wall/cumulative timings, hot files, and internal operation rows so compiler,
+linter, formatter, typecheck, and Croquis costs can be compared from one output.
+
+```ts
+// vize.config.ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+  },
+});
 ```
 
 See the [documentation](https://vizejs.dev) for detailed usage, Vite plugin setup, experimental bundler integrations, WASM bindings, and more.
 
-## Development Environment
-
-Node.js is pinned in `.node-version` and managed with `vp env`.
+## Nix Flake
 
 ```bash
+nix run github:ubugeeei/vize#vp -- --version
+nix run github:ubugeeei/vize#vize -- --help
+nix profile install github:ubugeeei/vize#vize
+```
+
+For local development:
+
+```bash
+nix develop
+vp env install
+vp install
+```
+
+## Development Environment
+
+The primary local setup is `Nix + vp`. Nix provides the Rust / WASM toolchain and the `vp` CLI itself, while Node.js version management stays with `vp` and `.node-version`.
+
+```bash
+nix develop
 vp env install
 vp install
 ```
@@ -93,10 +132,10 @@ Benchmarks with **15,000 Vue SFC files** (36.9 MB). "User-facing speedup" = trad
 
 | Tool             | Traditional (ST)          | Vize (MT)                 | User-facing Speedup |
 | ---------------- | ------------------------- | ------------------------- | ------------------- |
-| **Compiler**     | @vue/compiler-sfc 10.52s  | 380ms                     | **27.7x**           |
+| **Compiler**     | @vue/compiler-sfc 9.28s   | 434ms                     | **20.9x**           |
 | **Linter**       | eslint-plugin-vue 65.30s  | patina 5.48s              | **11.9x**           |
-| **Formatter**    | Prettier 82.69s           | glyph 23ms                | **3,666x**          |
-| **Type Checker** | vue-tsc 35.69s            | canon 472ms               | **75.5x** \*        |
+| **Formatter**    | Prettier 104.08s          | glyph 1.32s               | **78.9x**           |
+| **Type Checker** | vue-tsc 22.13s            | canon 3.33s               | **6.6x** \*         |
 | **Vite Plugin**  | @vitejs/plugin-vue 16.98s | @vizejs/vite-plugin 6.90s | **2.5x** \*\*       |
 
 <details>
@@ -104,16 +143,18 @@ Benchmarks with **15,000 Vue SFC files** (36.9 MB). "User-facing speedup" = trad
 
 |                   | @vue/compiler-sfc | Vize  | Speedup  |
 | ----------------- | ----------------- | ----- | -------- |
-| **Single Thread** | 10.52s            | 3.82s | **2.8x** |
-| **Multi Thread**  | 3.71s             | 380ms | **9.8x** |
+| **Single Thread** | 9.28s             | 3.30s | **2.8x** |
+| **Multi Thread**  | 3.35s             | 434ms | **7.7x** |
 
 </details>
 
-\* canon is still in early development and does not yet cover the full feature set of vue-tsc. The speedup partly reflects the difference in work performed.
+\* canon is still in early development and the Corsa-backed diagnostics path is still catching up with vue-tsc fidelity. These numbers reflect the current native project-session implementation and will keep changing as diagnostics coverage improves.
 
 \*\* Vite Plugin benchmark uses Vite v8.0.0 (Rolldown). The plugin replaces only the SFC compilation step; all other Vite internals are unchanged.
 
 Run `vp run --workspace-root bench:all` to reproduce all benchmarks.
+
+`bench:check` also includes the diagnostics-heavy `npmx.dev` e2e fixture when that fixture is present, so the Corsa diagnostic mapping path stays covered.
 
 ## Contributing
 

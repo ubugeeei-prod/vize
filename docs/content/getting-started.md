@@ -59,7 +59,7 @@ npm install @vizejs/native
 npm install @vizejs/wasm
 
 # Vite plugin — drop-in replacement for @vitejs/plugin-vue
-npm install @vizejs/vite-plugin
+npm install @vizejs/vite-plugin vize
 
 # Experimental unplugin integration — rollup / webpack / esbuild
 npm install @vizejs/unplugin
@@ -123,6 +123,59 @@ export default defineConfig({
 
 The plugin handles SFC compilation, `<script setup>`, scoped CSS, HMR, and SSR — all through Rust-native NAPI bindings. See [Vite Plugin](./guide/vite-plugin.md) for configuration options.
 
+### Shared `vize.config.*`
+
+The npm CLI and `@vizejs/vite-plugin` share the same config discovery. Vize looks for these files in the project root:
+
+- `vize.config.ts`
+- `vize.config.js`
+- `vize.config.mjs`
+- `vize.config.pkl`
+- `vize.config.json`
+
+TypeScript config:
+
+```ts
+// vize.config.ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+  },
+  linter: {
+    preset: "opinionated",
+  },
+});
+```
+
+PKL config:
+
+```pkl
+amends "node_modules/vize/pkl/vize.pkl"
+
+compiler {
+  sourceMap = true
+}
+
+linter {
+  preset = "opinionated"
+}
+```
+
+JSON config with schema:
+
+```json
+{
+  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
+  "linter": {
+    "preset": "opinionated"
+  }
+}
+```
+
+Today the npm CLI applies shared config to `vize lint`, and the Vite plugin reads the same file for compiler and plugin options.
+
 ### Using Other Bundlers (Experimental)
 
 For rollup, webpack, or esbuild, use `@vizejs/unplugin`.
@@ -167,16 +220,17 @@ See [WASM Bindings](./guide/wasm.md) for the full API.
 
 For contributing to Vize itself:
 
-### With Vite+ commands
+### With Nix
 
 ```bash
+nix develop
 vp env install
 vp install
 vp run --workspace-root cli             # Enable vize CLI command
 vp run --workspace-root dev:playground  # Start playground
 ```
 
-### Manual Setup
+### Without Nix
 
 ```bash
 git clone https://github.com/ubugeeei/vize.git

@@ -1,0 +1,51 @@
+---
+source: crates/vize_patina/src/linter/native_type_aware/tests.rs
+expression: diagnostics
+---
+[
+    (
+        "type/require-typed-props",
+        "Prop should have a type definition",
+        25,
+        45,
+        Some(
+            "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
+        ),
+    ),
+    (
+        "type/require-typed-emits",
+        "Emit should have a type definition",
+        46,
+        67,
+        Some(
+            "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
+        ),
+    ),
+    (
+        "type/no-floating-promises",
+        "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
+        202,
+        212,
+        Some(
+            "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
+        ),
+    ),
+    (
+        "type/no-unsafe-template-binding",
+        "Template interpolation resolves to an unsafe `any` or `unknown` type",
+        245,
+        258,
+        Some(
+            "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+        ),
+    ),
+    (
+        "type/no-unsafe-template-binding",
+        "Template event handler calls a value with an unsafe `any` or `unknown` type",
+        286,
+        296,
+        Some(
+            "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+        ),
+    ),
+]

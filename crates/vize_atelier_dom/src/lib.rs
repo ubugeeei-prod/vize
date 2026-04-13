@@ -34,7 +34,7 @@ use vize_atelier_core::{
     parser::parse_with_options,
     transform::transform as do_transform,
 };
-use vize_carton::{Bump, String};
+use vize_carton::{profile, Bump, String};
 use vize_croquis::Croquis;
 
 /// Compile a Vue template for DOM with default options
@@ -62,7 +62,10 @@ pub fn compile_template_with_options<'a>(
     };
 
     // Parse
-    let (mut root, errors) = parse_with_options(allocator, source, parser_opts);
+    let (mut root, errors) = profile!(
+        "atelier.dom.template.parse",
+        parse_with_options(allocator, source, parser_opts)
+    );
 
     if !errors.is_empty() {
         let codegen_result = CodegenResult {
@@ -88,7 +91,10 @@ pub fn compile_template_with_options<'a>(
     };
     // Allocate Croquis in the arena so it shares the allocator lifetime
     let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc(*c));
-    do_transform(allocator, &mut root, transform_opts, analysis);
+    profile!(
+        "atelier.dom.template.transform",
+        do_transform(allocator, &mut root, transform_opts, analysis)
+    );
 
     // Codegen
     let codegen_opts = CodegenOptions {
@@ -102,7 +108,10 @@ pub fn compile_template_with_options<'a>(
         binding_metadata: options.binding_metadata,
         ..Default::default()
     };
-    let codegen_result = generate(&root, codegen_opts);
+    let codegen_result = profile!(
+        "atelier.dom.template.codegen",
+        generate(&root, codegen_opts)
+    );
 
     (root, errors.to_vec(), codegen_result)
 }
@@ -141,6 +150,14 @@ mod tests {
     use vize_atelier_core::options::CodegenMode;
     use vize_carton::Bump;
 
+    fn full_output(preamble: &str, code: &str) -> vize_carton::String {
+        let mut full = vize_carton::String::with_capacity(preamble.len() + code.len() + 1);
+        full.push_str(preamble);
+        full.push('\n');
+        full.push_str(code);
+        full
+    }
+
     #[test]
     fn test_compile_simple_element() {
         let allocator = Bump::new();
@@ -148,13 +165,8 @@ mod tests {
 
         assert!(errors.is_empty());
         assert_eq!(root.children.len(), 1);
-        // Root elements use createElementBlock (blocks for tracking)
-        let full_output = format!("{}\n{}", result.preamble, result.code);
-        assert!(
-            full_output.contains("_createElementBlock"),
-            "Expected output to contain _createElementBlock, got:\n{}",
-            full_output
-        );
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
     }
 
     #[test]
@@ -213,21 +225,8 @@ mod tests {
             result.preamble, result.code
         );
         assert!(errors.is_empty(), "Errors: {:?}", errors);
-        let mut full =
-            vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);
-        full.push_str(&result.preamble);
-        full.push('\n');
-        full.push_str(&result.code);
-        assert!(
-            full.contains("quoteId.value"),
-            "quoteId should have .value in assignment. Got:\n{}",
-            full
-        );
-        assert!(
-            full.contains("renoteTargetNote.value"),
-            "renoteTargetNote should have .value in assignment. Got:\n{}",
-            full
-        );
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
     }
 
     #[test]
@@ -259,21 +258,8 @@ mod tests {
         );
 
         assert!(errors.is_empty(), "Errors: {:?}", errors);
-        let mut full =
-            vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);
-        full.push_str(&result.preamble);
-        full.push('\n');
-        full.push_str(&result.code);
-        assert!(
-            full.contains("currentTab.value === 'a'"),
-            "Expected inline ref access in class binding. Got:\n{}",
-            full
-        );
-        assert!(
-            full.contains("2 /* CLASS */"),
-            "Expected CLASS patch flag for inline ref class binding. Got:\n{}",
-            full
-        );
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
     }
 
     #[test]
@@ -305,31 +291,8 @@ mod tests {
         );
 
         assert!(errors.is_empty(), "Errors: {:?}", errors);
-        let mut full =
-            vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);
-        full.push_str(&result.preamble);
-        full.push('\n');
-        full.push_str(&result.code);
-        assert!(
-            full.contains("_createVNode(_component_MyComponent"),
-            "Expected inline component vnode output. Got:\n{}",
-            full
-        );
-        assert!(
-            full.contains("msg: message.value"),
-            "Expected inline component prop to stay reactive. Got:\n{}",
-            full
-        );
-        assert!(
-            full.contains("8 /* PROPS */"),
-            "Expected inline component to keep PROPS patch flag for dynamic prop. Got:\n{}",
-            full
-        );
-        assert!(
-            full.contains("[\"msg\"]"),
-            "Expected inline component dynamic props list to include msg. Got:\n{}",
-            full
-        );
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
     }
 
     #[test]
@@ -362,30 +325,7 @@ mod tests {
         );
 
         assert!(errors.is_empty(), "Errors: {:?}", errors);
-        let mut full =
-            vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);
-        full.push_str(&result.preamble);
-        full.push('\n');
-        full.push_str(&result.code);
-        assert!(
-            full.contains("_createBlock(_component_MyComponent"),
-            "Expected v-if branch component block output. Got:\n{}",
-            full
-        );
-        assert!(
-            full.contains("msg: message.value"),
-            "Expected v-if branch component prop to stay reactive. Got:\n{}",
-            full
-        );
-        assert!(
-            full.contains("8 /* PROPS */"),
-            "Expected v-if branch component to keep PROPS patch flag. Got:\n{}",
-            full
-        );
-        assert!(
-            full.contains("[\"msg\"]"),
-            "Expected v-if branch component dynamic props list to include msg. Got:\n{}",
-            full
-        );
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
     }
 }

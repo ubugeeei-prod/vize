@@ -81,9 +81,16 @@ mod tests {
         let options = FormatOptions::default();
         let result = format_style_content(source, &options).unwrap();
 
-        assert!(result.contains(".container"));
-        assert!(result.contains("color:"));
-        assert!(result.contains("display:"));
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_format_nested_css_at_rule() {
+        let source = "@media (min-width: 640px){.container{color:red}}";
+        let options = FormatOptions::default();
+        let result = format_style_content(source, &options).unwrap();
+
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]

@@ -1,0 +1,122 @@
+/// Shared schema for `vize.config.pkl`.
+///
+/// Example:
+/// amends "node_modules/vize/pkl/vize.pkl"
+///
+/// compiler {
+///   sourceMap = true
+/// }
+module vize.Config
+
+typealias CompilerMode = "module" | "function"
+typealias ScriptExt = "ts" | "js"
+typealias RuleSeverity = "off" | "warn" | "error"
+typealias LintPreset = "happy-path" | "opinionated" | "essential" | "nuxt"
+typealias TrailingComma = "all" | "none" | "es5"
+typealias FilterPattern = String | Listing<String>
+typealias GlobalTypeValue = String | GlobalTypeDeclaration
+
+class CompilerConfig {
+  mode: CompilerMode? = null
+  vapor: Boolean? = null
+  ssr: Boolean? = null
+  sourceMap: Boolean? = null
+  prefixIdentifiers: Boolean? = null
+  hoistStatic: Boolean? = null
+  cacheHandlers: Boolean? = null
+  isTs: Boolean? = null
+  scriptExt: ScriptExt? = null
+  runtimeModuleName: String? = null
+  runtimeGlobalName: String? = null
+}
+
+class VitePluginConfig {
+  include: FilterPattern? = null
+  exclude: FilterPattern? = null
+  scanPatterns: Listing<String>? = null
+  ignorePatterns: Listing<String>? = null
+}
+
+class LinterConfig {
+  enabled: Boolean? = null
+  preset: LintPreset? = null
+  rules: Mapping<String, RuleSeverity>? = null
+  categories: Mapping<String, RuleSeverity>? = null
+}
+
+class TypeCheckerConfig {
+  enabled: Boolean? = null
+  strict: Boolean? = null
+  checkProps: Boolean? = null
+  checkEmits: Boolean? = null
+  checkTemplateBindings: Boolean? = null
+  tsconfig: String? = null
+  corsaPath: String? = null
+}
+
+class FormatterConfig {
+  printWidth: Int? = null
+  tabWidth: Int? = null
+  useTabs: Boolean? = null
+  semi: Boolean? = null
+  singleQuote: Boolean? = null
+  trailingComma: TrailingComma? = null
+}
+
+class LspConfig {
+  enabled: Boolean? = null
+  diagnostics: Boolean? = null
+  completion: Boolean? = null
+  hover: Boolean? = null
+  definition: Boolean? = null
+  formatting: Boolean? = null
+  codeActions: Boolean? = null
+  corsa: Boolean? = null
+}
+
+class MuseaViewport {
+  width: Number
+  height: Number
+  name: String? = null
+}
+
+class MuseaVrtConfig {
+  threshold: Number? = null
+  outDir: String? = null
+  viewports: Listing<MuseaViewport>? = null
+}
+
+class MuseaA11yConfig {
+  enabled: Boolean? = null
+  rules: Mapping<String, Boolean>? = null
+}
+
+class MuseaAutogenConfig {
+  enabled: Boolean? = null
+  maxVariants: Int? = null
+}
+
+class MuseaConfig {
+  include: Listing<String>? = null
+  exclude: Listing<String>? = null
+  basePath: String? = null
+  storybookCompat: Boolean? = null
+  inlineArt: Boolean? = null
+  vrt: MuseaVrtConfig?
+  a11y: MuseaA11yConfig?
+  autogen: MuseaAutogenConfig?
+}
+
+class GlobalTypeDeclaration {
+  type: String
+  defaultValue: String? = null
+}
+
+compiler: CompilerConfig?
+vite: VitePluginConfig?
+linter: LinterConfig?
+typeChecker: TypeCheckerConfig?
+formatter: FormatterConfig?
+lsp: LspConfig?
+musea: MuseaConfig?
+globalTypes: Mapping<String, GlobalTypeValue>? = null

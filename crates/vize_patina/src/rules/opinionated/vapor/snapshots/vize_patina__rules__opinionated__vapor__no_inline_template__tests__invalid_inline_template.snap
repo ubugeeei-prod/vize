@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vapor/no-inline-template",
+        severity: Error,
+        message: "inline-template is deprecated and not supported in Vapor",
+        start: 13,
+        end: 28,
+        help: Some(
+            "Use slots instead of inline-template",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

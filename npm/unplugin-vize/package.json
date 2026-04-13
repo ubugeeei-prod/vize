@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/unplugin",
-  "version": "0.39.0",
+  "version": "0.46.0",
   "description": "Experimental unplugin-based Vue SFC integration for rollup, webpack, and esbuild powered by Vize",
   "keywords": [
     "compiler",
@@ -23,28 +23,28 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     },
     "./esbuild": {
-      "types": "./dist/esbuild.d.ts",
-      "import": "./dist/esbuild.js",
-      "default": "./dist/esbuild.js"
+      "types": "./dist/esbuild.d.mts",
+      "import": "./dist/esbuild.mjs",
+      "default": "./dist/esbuild.mjs"
     },
     "./rollup": {
-      "types": "./dist/rollup.d.ts",
-      "import": "./dist/rollup.js",
-      "default": "./dist/rollup.js"
+      "types": "./dist/rollup.d.mts",
+      "import": "./dist/rollup.mjs",
+      "default": "./dist/rollup.mjs"
     },
     "./webpack": {
-      "types": "./dist/webpack.d.ts",
-      "import": "./dist/webpack.js",
-      "default": "./dist/webpack.js"
+      "types": "./dist/webpack.d.mts",
+      "import": "./dist/webpack.mjs",
+      "default": "./dist/webpack.mjs"
     }
   },
   "publishConfig": {

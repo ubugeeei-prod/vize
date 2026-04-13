@@ -8,3 +8,4 @@ pub mod ide;
 pub mod lint;
 pub mod lsp;
 pub mod musea;
+pub mod profile;

@@ -1,0 +1,5 @@
+---
+source: crates/vize_maestro/src/ide/hover/mod.rs
+expression: desc
+---
+Reactive reference created with `ref()`. Access `.value` in script, auto-unwrapped in template.

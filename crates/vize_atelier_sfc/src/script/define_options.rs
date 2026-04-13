@@ -44,7 +44,6 @@ mod tests {
         let result = extract_define_options(content);
         assert!(result.is_some());
         let call = result.unwrap();
-        assert!(call.args.contains("name"));
-        assert!(call.args.contains("inheritAttrs"));
+        insta::assert_debug_snapshot!(call);
     }
 }

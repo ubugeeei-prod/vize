@@ -50,7 +50,7 @@ impl LanguageServer for MaestroServer {
             self.state.load_format_config(path);
         }
 
-        // Set workspace root for native features (tsgo, batch checker)
+        // Set workspace root for native features (Corsa, batch checker)
         #[cfg(feature = "native")]
         if let Some(path) = workspace_path {
             tracing::info!("Setting workspace root: {:?}", path);
@@ -143,8 +143,8 @@ impl LanguageServer for MaestroServer {
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
             {
-                let tsgo_bridge = self.state.get_tsgo_bridge().await;
-                hover_result = HoverService::hover_with_tsgo(&ctx, tsgo_bridge).await;
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                hover_result = HoverService::hover_with_corsa(&ctx, corsa_bridge).await;
             }
 
             #[cfg(not(feature = "native"))]
@@ -176,9 +176,9 @@ impl LanguageServer for MaestroServer {
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
             {
-                let tsgo_bridge = self.state.get_tsgo_bridge().await;
+                let corsa_bridge = self.state.get_corsa_bridge().await;
                 if let Some(response) =
-                    CompletionService::complete_with_tsgo(&ctx, tsgo_bridge).await
+                    CompletionService::complete_with_corsa(&ctx, corsa_bridge).await
                 {
                     return Ok(Some(response));
                 }
@@ -222,9 +222,9 @@ impl LanguageServer for MaestroServer {
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
             {
-                let tsgo_bridge = self.state.get_tsgo_bridge().await;
+                let corsa_bridge = self.state.get_corsa_bridge().await;
                 if let Some(response) =
-                    DefinitionService::definition_with_tsgo(&ctx, tsgo_bridge).await
+                    DefinitionService::definition_with_corsa(&ctx, corsa_bridge).await
                 {
                     return Ok(Some(response));
                 }
@@ -255,10 +255,13 @@ impl LanguageServer for MaestroServer {
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
             {
-                let tsgo_bridge = self.state.get_tsgo_bridge().await;
-                if let Some(locations) =
-                    ReferencesService::references_with_tsgo(&ctx, include_declaration, tsgo_bridge)
-                        .await
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                if let Some(locations) = ReferencesService::references_with_corsa(
+                    &ctx,
+                    include_declaration,
+                    corsa_bridge,
+                )
+                .await
                 {
                     return Ok(Some(locations));
                 }
@@ -474,8 +477,8 @@ impl LanguageServer for MaestroServer {
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
             {
-                let tsgo_bridge = self.state.get_tsgo_bridge().await;
-                return Ok(RenameService::prepare_rename_with_tsgo(&ctx, tsgo_bridge).await);
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                return Ok(RenameService::prepare_rename_with_corsa(&ctx, corsa_bridge).await);
             }
 
             #[cfg(not(feature = "native"))]
@@ -503,8 +506,8 @@ impl LanguageServer for MaestroServer {
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
             {
-                let tsgo_bridge = self.state.get_tsgo_bridge().await;
-                return Ok(RenameService::rename_with_tsgo(&ctx, new_name, tsgo_bridge).await);
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                return Ok(RenameService::rename_with_corsa(&ctx, new_name, corsa_bridge).await);
             }
 
             #[cfg(not(feature = "native"))]

@@ -71,30 +71,25 @@ mod tests {
     #[test]
     fn test_render_markdown_bold() {
         let result = formatting::render_markdown_to_ansi("**bold** text");
-        assert!(result.contains("bold"));
-        assert!(result.contains("\x1b[1m"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_render_markdown_inline_code() {
         let result = formatting::render_markdown_to_ansi("Use `v-model` directive");
-        assert!(result.contains("v-model"));
-        assert!(result.contains("\x1b[36m"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_render_markdown_header() {
         let result = formatting::render_markdown_to_ansi("# Why");
-        assert!(result.contains("Why"));
-        assert!(result.contains("\x1b[1m"));
-        assert!(result.contains("\x1b[4m"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_render_markdown_code_block() {
         let result = formatting::render_markdown_to_ansi("```vue\n<li :key=\"id\">\n```");
-        assert!(result.contains("<li :key=\"id\">"));
-        assert!(result.contains("\x1b[2m"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -106,8 +101,7 @@ mod tests {
     #[test]
     fn test_render_markdown_underscore_bold() {
         let result = formatting::render_markdown_to_ansi("__bold__ text");
-        assert!(result.contains("bold"));
-        assert!(result.contains("\x1b[1m"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     // render_help tests
@@ -116,8 +110,7 @@ mod tests {
     fn test_render_help_ansi() {
         let md = "**bold** and `code`";
         let result = render_help(md, HelpRenderTarget::Ansi);
-        assert!(result.contains("bold"));
-        assert!(result.contains("code"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]

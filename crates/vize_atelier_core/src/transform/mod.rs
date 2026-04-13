@@ -7,7 +7,7 @@ pub mod element;
 pub mod structural;
 pub mod traverse;
 
-use vize_carton::{Box, Bump, FxHashSet, String, Vec};
+use vize_carton::{profile, Box, Bump, FxHashSet, String, Vec};
 use vize_croquis::{Croquis, ScopeChain};
 
 use crate::ast::*;
@@ -137,14 +137,23 @@ pub fn transform<'a>(
     ctx.root = Some(root as *mut _);
 
     // Transform the root children
-    traverse_children(&mut ctx, ParentNode::Root(root as *mut _));
+    profile!(
+        "atelier.transform.traverse_children",
+        traverse_children(&mut ctx, ParentNode::Root(root as *mut _))
+    );
 
     // Apply static hoisting after traversal (before codegen)
     use crate::transforms::hoist_static::hoist_static;
-    hoist_static(&mut ctx, &mut root.children);
+    profile!(
+        "atelier.transform.hoist_static",
+        hoist_static(&mut ctx, &mut root.children)
+    );
 
     // Create root codegen node
-    create_root_codegen(&mut ctx, root);
+    profile!(
+        "atelier.transform.create_root_codegen",
+        create_root_codegen(&mut ctx, root)
+    );
 
     // Update root with context results
     for helper in ctx.helpers.into_iter() {
@@ -350,12 +359,6 @@ mod tests {
         transform(&allocator, &mut root, TransformOptions::default(), None);
 
         let result = generate(&root, CodegenOptions::default());
-        println!("v-if codegen:\n{}", result.code);
-
-        // Should contain openBlock and createBlock for v-if
-        assert!(
-            result.code.contains("openBlock"),
-            "Should contain openBlock"
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

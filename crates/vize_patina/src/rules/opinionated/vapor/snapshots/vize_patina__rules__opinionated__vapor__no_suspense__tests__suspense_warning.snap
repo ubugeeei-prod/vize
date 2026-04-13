@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vapor/no_suspense.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vapor/no-suspense",
+        severity: Warning,
+        message: "Suspense is not supported in Vapor-only applications",
+        start: 0,
+        end: 10,
+        help: Some(
+            "Suspense only works when Vapor components render inside a VDOM Suspense boundary. Use createApp with vaporInteropPlugin for Suspense support",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

@@ -37,7 +37,7 @@ serde_json.workspace = true
 memchr.workspace = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-vize_canon = { workspace = true, features = ["native"] }
+corsa.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

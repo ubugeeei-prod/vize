@@ -1,93 +1,116 @@
-//! Source map for mapping virtual TypeScript positions to SFC positions.
+//! Source map for mapping materialized project files back to original sources.
 
 use super::import_rewriter::ImportSourceMap;
 use super::SfcBlockType;
+use crate::virtual_ts::VizeMapping;
 
-/// Source map for SFC to virtual TypeScript mapping.
-#[derive(Debug, Default)]
-pub struct SfcSourceMap {
-    /// Mappings from virtual TS offset to SFC position.
-    mappings: Vec<SfcMapping>,
+/// Original SFC block span in source coordinates.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SfcBlockRange {
+    /// Inclusive start byte offset in the original SFC source.
+    pub start: u32,
+    /// Exclusive end byte offset in the original SFC source.
+    pub end: u32,
+    /// Block kind.
+    pub block_type: SfcBlockType,
 }
 
-/// A single mapping entry.
-#[derive(Debug, Clone)]
-pub struct SfcMapping {
-    /// Start offset in virtual TS.
-    pub virtual_start: u32,
-    /// End offset in virtual TS.
-    pub virtual_end: u32,
-    /// Start offset in SFC.
-    pub sfc_start: u32,
-    /// Block type in SFC.
-    pub block_type: SfcBlockType,
+impl SfcBlockRange {
+    #[inline]
+    pub fn contains(self, offset: u32) -> bool {
+        offset >= self.start && offset < self.end
+    }
+}
+
+/// Precise source map for SFC virtual TypeScript.
+#[derive(Debug, Default)]
+pub struct SfcSourceMap {
+    /// Fine-grained virtual TS mappings emitted by `vize_canon::virtual_ts`.
+    mappings: Vec<VizeMapping>,
+    /// Coarse block ranges used to recover the SFC block type.
+    blocks: Vec<SfcBlockRange>,
 }
 
 impl SfcSourceMap {
     /// Create a new SFC source map.
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(mappings: Vec<VizeMapping>, mut blocks: Vec<SfcBlockRange>) -> Self {
+        blocks.sort_by_key(|block| block.start);
+        Self { mappings, blocks }
     }
 
-    /// Add a mapping.
-    pub fn add_mapping(
-        &mut self,
-        virtual_start: u32,
-        virtual_end: u32,
-        sfc_start: u32,
-        block_type: SfcBlockType,
-    ) {
-        self.mappings.push(SfcMapping {
-            virtual_start,
-            virtual_end,
-            sfc_start,
-            block_type,
-        });
+    /// Create an empty SFC source map.
+    pub fn empty() -> Self {
+        Self::default()
     }
 
     /// Get the original SFC position from a virtual TS offset.
     pub fn get_original_position(&self, virtual_offset: u32) -> Option<(u32, u32, SfcBlockType)> {
-        for mapping in &self.mappings {
-            if virtual_offset >= mapping.virtual_start && virtual_offset < mapping.virtual_end {
-                let delta = virtual_offset - mapping.virtual_start;
-                let sfc_offset = mapping.sfc_start + delta;
-                // For now, return offset as line (we'll convert later)
-                return Some((sfc_offset, 0, mapping.block_type));
-            }
-        }
-        None
+        let virtual_offset = virtual_offset as usize;
+        let mapping = self
+            .mappings
+            .iter()
+            .find(|mapping| mapping.gen_range.contains(&virtual_offset))?;
+        let delta = virtual_offset.saturating_sub(mapping.gen_range.start);
+        let src_offset = mapping.src_range.start.saturating_add(delta);
+        let src_offset = src_offset.min(mapping.src_range.end.saturating_sub(1));
+        let src_offset = u32::try_from(src_offset).ok()?;
+        let block = self
+            .blocks
+            .iter()
+            .find(|block| block.contains(src_offset))
+            .map(|block| block.block_type)
+            .unwrap_or(SfcBlockType::Script);
+        Some((src_offset, 0, block))
     }
 
     /// Get the virtual TS offset from an SFC offset.
     pub fn get_virtual_offset(&self, sfc_offset: u32, block_type: SfcBlockType) -> Option<u32> {
-        for mapping in &self.mappings {
-            if mapping.block_type == block_type {
-                let mapping_sfc_end =
-                    mapping.sfc_start + (mapping.virtual_end - mapping.virtual_start);
-                if sfc_offset >= mapping.sfc_start && sfc_offset < mapping_sfc_end {
-                    let delta = sfc_offset - mapping.sfc_start;
-                    return Some(mapping.virtual_start + delta);
-                }
-            }
+        let sfc_offset = usize::try_from(sfc_offset).ok()?;
+        let block = self
+            .blocks
+            .iter()
+            .find(|block| block.block_type == block_type && block.contains(sfc_offset as u32))?;
+        if !block.contains(sfc_offset as u32) {
+            return None;
         }
-        None
+
+        let mapping = self
+            .mappings
+            .iter()
+            .find(|mapping| mapping.src_range.contains(&sfc_offset))?;
+        let delta = sfc_offset.saturating_sub(mapping.src_range.start);
+        let virtual_offset = mapping.gen_range.start.saturating_add(delta);
+        u32::try_from(virtual_offset).ok()
+    }
+
+    /// Access the raw virtual TS mappings.
+    pub fn mappings(&self) -> &[VizeMapping] {
+        &self.mappings
     }
 }
 
-/// Composite source map combining import rewrites and SFC mapping.
+/// Composite source map combining import rewrites and optional SFC mapping.
 #[derive(Debug, Default)]
 pub struct CompositeSourceMap {
-    /// Source map for SFC blocks (only for .vue files).
+    /// Source map for SFC blocks (only for `.vue` files).
     pub sfc_map: Option<SfcSourceMap>,
     /// Source map for import rewrites.
     pub import_map: ImportSourceMap,
 }
 
 impl CompositeSourceMap {
-    /// Create a new composite source map.
-    pub fn new(sfc_map: Option<SfcSourceMap>, import_map: ImportSourceMap) -> Self {
+    /// Create a new composite source map for a Vue SFC.
+    pub fn new_vue(sfc_map: SfcSourceMap, import_map: ImportSourceMap) -> Self {
         Self {
-            sfc_map,
+            sfc_map: Some(sfc_map),
+            import_map,
+        }
+    }
+
+    /// Create a new composite source map for a plain source file.
+    pub fn new_script(import_map: ImportSourceMap) -> Self {
+        Self {
+            sfc_map: None,
             import_map,
         }
     }
@@ -100,23 +123,18 @@ impl CompositeSourceMap {
     /// Get the original position from a virtual position.
     ///
     /// The mapping order is:
-    /// 1. Import rewrite mapping (virtual TS -> TS with original imports)
-    /// 2. SFC mapping (TS -> SFC position)
+    /// 1. Import rewrite mapping (materialized TS -> original TS with `.vue` specifiers)
+    /// 2. SFC mapping (virtual TS -> SFC source)
     pub fn get_original_position(
         &self,
         virtual_offset: u32,
     ) -> Option<(u32, u32, Option<SfcBlockType>)> {
-        // First, reverse import rewrites
         let after_import = self.import_map.get_original_offset(virtual_offset);
-
-        // Then, map through SFC source map if present
         if let Some(ref sfc_map) = self.sfc_map {
-            if let Some((line, col, block)) = sfc_map.get_original_position(after_import) {
-                return Some((line, col, Some(block)));
+            if let Some((offset, column, block)) = sfc_map.get_original_position(after_import) {
+                return Some((offset, column, Some(block)));
             }
         }
-
-        // For .ts files without SFC map, return the import-adjusted position
         Some((after_import, 0, None))
     }
 }
@@ -182,9 +200,11 @@ pub fn line_col_to_offset(content: &str, line: u32, col: u32) -> Option<u32> {
 #[cfg(test)]
 mod tests {
     use super::{
-        line_col_to_offset, offset_to_line_col, CompositeSourceMap, ImportSourceMap, SfcBlockType,
-        SfcSourceMap,
+        line_col_to_offset, offset_to_line_col, CompositeSourceMap, ImportSourceMap, SfcBlockRange,
+        SfcBlockType, SfcSourceMap,
     };
+    use crate::virtual_ts::VizeMapping;
+    use std::ops::Range;
 
     #[test]
     fn test_offset_to_line_col() {
@@ -206,9 +226,23 @@ mod tests {
 
     #[test]
     fn test_sfc_source_map() {
-        let mut map = SfcSourceMap::new();
-        // Script setup block: virtual 100-200 maps to SFC 50-150
-        map.add_mapping(100, 200, 50, SfcBlockType::ScriptSetup);
+        let map = SfcSourceMap::new(
+            vec![VizeMapping {
+                gen_range: Range {
+                    start: 100,
+                    end: 200,
+                },
+                src_range: Range {
+                    start: 50,
+                    end: 150,
+                },
+            }],
+            vec![SfcBlockRange {
+                start: 50,
+                end: 150,
+                block_type: SfcBlockType::ScriptSetup,
+            }],
+        );
 
         // Virtual offset 150 should map to SFC offset 100
         let result = map.get_original_position(150);
@@ -220,9 +254,9 @@ mod tests {
 
     #[test]
     fn test_composite_source_map() {
-        let sfc_map = SfcSourceMap::new();
+        let sfc_map = SfcSourceMap::empty();
         let import_map = ImportSourceMap::empty();
-        let composite = CompositeSourceMap::new(Some(sfc_map), import_map);
+        let composite = CompositeSourceMap::new_vue(sfc_map, import_map);
 
         // Should return position even without mappings
         let result = composite.get_original_position(50);

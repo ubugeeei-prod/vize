@@ -141,11 +141,7 @@ mod tests {
         let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
         let output = generate_component_doc(&art, &DocOptions::default());
 
-        assert!(output.markdown.contains("# Button"));
-        assert!(output.markdown.contains("A versatile button"));
-        assert!(output.markdown.contains("Primary"));
-        assert!(output.markdown.contains("Secondary"));
-        assert_eq!(output.variant_count, 2);
+        insta::assert_debug_snapshot!(output);
     }
 
     #[test]
@@ -166,9 +162,6 @@ mod tests {
 
         let output = generate_catalog(&entries, &DocOptions::default());
 
-        assert!(output.markdown.contains("# Component Catalog"));
-        assert!(output.markdown.contains("Button"));
-        assert!(output.markdown.contains("Card"));
-        assert_eq!(output.component_count, 2);
+        insta::assert_debug_snapshot!(output);
     }
 }

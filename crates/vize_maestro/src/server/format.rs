@@ -74,7 +74,7 @@ mod tests {
             assert_eq!(edits.len(), 1);
             let edit = &edits[0];
             assert_eq!(edit.range.start, Position::new(0, 0));
-            assert!(edit.new_text.contains("<template>"));
+            insta::assert_debug_snapshot!(edits);
         }
     }
 
@@ -89,10 +89,7 @@ mod tests {
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
-            assert!(
-                !edits[0].new_text.contains("const x = 1;")
-                    || edits[0].new_text.contains("const x = 1\n")
-            );
+            insta::assert_snapshot!(edits[0].new_text.as_str());
         }
     }
 
@@ -122,7 +119,7 @@ mod tests {
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
-            assert!(edits[0].new_text.contains("'hello'"));
+            insta::assert_debug_snapshot!(edits);
         }
     }
 
@@ -145,7 +142,7 @@ mod tests {
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
-            assert!(edits[0].new_text.contains("'hello'"));
+            insta::assert_debug_snapshot!(edits);
         }
     }
 }

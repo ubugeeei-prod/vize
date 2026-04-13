@@ -2,7 +2,7 @@
 //!
 //! Converts vize_vitrine type check results into LSP diagnostics,
 //! including support for the legacy vize_canon type checker and
-//! batch type checking via tsgo.
+//! batch type checking via Corsa.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{
@@ -218,7 +218,7 @@ impl TypeService {
 
     /// Run batch type checking on the entire project.
     ///
-    /// This uses tsgo CLI to perform comprehensive TypeScript type checking
+    /// This uses the Corsa CLI to perform comprehensive TypeScript type checking
     /// on all Vue SFC files in the project. Results are cached for fast access.
     #[cfg(feature = "native")]
     pub fn run_batch_type_check(state: &ServerState) -> Option<super::BatchTypeCheckSummary> {

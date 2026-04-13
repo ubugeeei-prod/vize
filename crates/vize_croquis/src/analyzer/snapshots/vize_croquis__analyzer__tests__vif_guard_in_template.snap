@@ -1,0 +1,28 @@
+---
+source: crates/vize_croquis/src/analyzer/mod.rs
+expression: expressions
+---
+[
+    TemplateExpression {
+        content: "unwrapDescription(todo.description)",
+        kind: Interpolation,
+        start: 48,
+        end: 83,
+        scope_id: ScopeId(
+            0,
+        ),
+        vif_guard: Some(
+            "todo.description",
+        ),
+    },
+    TemplateExpression {
+        content: "todo.title",
+        kind: Interpolation,
+        start: 112,
+        end: 122,
+        scope_id: ScopeId(
+            0,
+        ),
+        vif_guard: None,
+    },
+]

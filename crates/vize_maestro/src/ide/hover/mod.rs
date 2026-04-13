@@ -6,17 +6,17 @@
 //! - Script bindings and imports
 //! - CSS properties and Vue-specific selectors
 //! - TypeScript type information from croquis analysis
-//! - Real type information from tsgo (when available)
+//! - Real type information from Corsa (when available)
 #![allow(
     clippy::disallowed_types,
     clippy::disallowed_methods,
     clippy::disallowed_macros
 )]
 
+#[cfg(feature = "native")]
+mod corsa;
 mod script;
 mod template;
-#[cfg(feature = "native")]
-mod tsgo;
 
 #[cfg(feature = "native")]
 use std::sync::Arc;
@@ -25,7 +25,7 @@ use tower_lsp::lsp_types::{Hover, HoverContents, MarkupContent, MarkupKind, Rang
 use vize_relief::BindingType;
 
 #[cfg(feature = "native")]
-use vize_canon::TsgoBridge;
+use vize_canon::CorsaBridge;
 
 use super::IdeContext;
 use crate::virtual_code::{ArtCursorPosition, BlockType};
@@ -46,22 +46,22 @@ impl HoverService {
         }
     }
 
-    /// Get hover information with tsgo support (async version).
+    /// Get hover information with Corsa support (async version).
     ///
-    /// This method first tries to get type information from tsgo,
+    /// This method first tries to get type information from Corsa,
     /// then falls back to the synchronous analysis.
     #[cfg(feature = "native")]
-    pub async fn hover_with_tsgo(
+    pub async fn hover_with_corsa(
         ctx: &IdeContext<'_>,
-        tsgo_bridge: Option<Arc<TsgoBridge>>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Hover> {
         match ctx.block_type? {
-            BlockType::Template => Self::hover_template_with_tsgo(ctx, tsgo_bridge).await,
-            BlockType::Script => Self::hover_script_with_tsgo(ctx, false, tsgo_bridge).await,
-            BlockType::ScriptSetup => Self::hover_script_with_tsgo(ctx, true, tsgo_bridge).await,
+            BlockType::Template => Self::hover_template_with_corsa(ctx, corsa_bridge).await,
+            BlockType::Script => Self::hover_script_with_corsa(ctx, false, corsa_bridge).await,
+            BlockType::ScriptSetup => Self::hover_script_with_corsa(ctx, true, corsa_bridge).await,
             BlockType::Style(index) => Self::hover_style(ctx, index),
             BlockType::Art(ArtCursorPosition::VariantTemplate(ref info)) => {
-                Self::hover_art_variant_with_tsgo(ctx, info, tsgo_bridge).await
+                Self::hover_art_variant_with_corsa(ctx, info, corsa_bridge).await
             }
             BlockType::Art(_) => None,
         }
@@ -529,8 +529,7 @@ mod tests {
             .build();
 
         if let HoverContents::Markup(content) = hover.contents {
-            assert!(content.value.contains("**ref**"));
-            assert!(content.value.contains("```typescript"));
+            insta::assert_snapshot!(content.value.as_str());
         } else {
             panic!("Expected Markup content");
         }
@@ -559,11 +558,9 @@ mod tests {
     #[test]
     fn test_binding_type_to_description() {
         let desc = HoverService::binding_type_to_description(BindingType::SetupRef);
-        assert!(desc.contains("ref()"));
-        assert!(desc.contains(".value"));
+        insta::assert_snapshot!(desc);
 
         let desc = HoverService::binding_type_to_description(BindingType::Props);
-        assert!(desc.contains("prop"));
-        assert!(desc.contains("Read-only"));
+        insta::assert_snapshot!(desc);
     }
 }

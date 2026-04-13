@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_core/src/transforms/transform_expression/typescript.rs
+expression: result.as_str()
+---
+$event.target.value

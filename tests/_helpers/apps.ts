@@ -1020,4 +1020,6 @@ export const stylePreprocessorsApp: AppConfig = {
 
 export const SCREENSHOT_DIR = path.resolve(TESTS_DIR, "app", "screenshots");
 export const VIZE_BIN = path.resolve(TESTS_DIR, "../target/release/vize");
-export const TSGO_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/tsgo");
+const CORSA_PRIMARY_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/corsa");
+const CORSA_LEGACY_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/tsgo");
+export const CORSA_BIN = fs.existsSync(CORSA_PRIMARY_BIN) ? CORSA_PRIMARY_BIN : CORSA_LEGACY_BIN;

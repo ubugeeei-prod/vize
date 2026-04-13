@@ -35,7 +35,9 @@ test("release script fails clearly when stdin is not interactive", () => {
 });
 
 test("confirm_release skips prompting when -y is set", () => {
-  const result = runBash("source scripts/release.sh; AUTO_CONFIRM=-y; confirm_release; printf 'confirmed\\n'");
+  const result = runBash(
+    "source scripts/release.sh; AUTO_CONFIRM=-y; confirm_release; printf 'confirmed\\n'",
+  );
 
   assert.deepEqual(
     {

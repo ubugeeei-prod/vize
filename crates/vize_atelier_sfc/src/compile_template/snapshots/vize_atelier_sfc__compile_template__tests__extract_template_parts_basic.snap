@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_sfc/src/compile_template/tests.rs
+expression: "(&imports, &hoisted, &render_body)"
+---
+(
+    "import { createVNode as _createVNode } from 'vue'\n",
+    "const _hoisted_1 = { class: \"test\" }\n",
+    "_createVNode(\"div\", _hoisted_1, \"Hello\")",
+)

@@ -75,7 +75,7 @@ fn apply_napi_options(opts: &TypeCheckOptionsNapi, check_opts: &mut TypeCheckOpt
 /// Perform type checking on a Vue SFC
 ///
 /// This performs AST-based type analysis without requiring a TypeScript compiler.
-/// For full type checking, use the CLI with tsgo integration.
+/// For full type checking, use the CLI with Corsa integration.
 #[napi(js_name = "typeCheck")]
 pub fn type_check_napi(
     source: String,
@@ -190,7 +190,7 @@ pub fn get_type_check_capabilities_napi() -> TypeCheckCapabilitiesNapi {
             },
         ],
         notes: vec![
-            "For full TypeScript type checking, use the CLI with tsgo integration".to_string(),
+            "For full TypeScript type checking, use the CLI with Corsa integration".to_string(),
             "AST-based analysis catches common issues without external dependencies".to_string(),
         ],
     }
