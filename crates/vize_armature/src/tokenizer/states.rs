@@ -1,6 +1,7 @@
 use vize_relief::ErrorCode;
 
 use crate::char_codes::AMP;
+use crate::tokenizer::sequences::Sequences;
 
 use super::{
     char_codes::{
@@ -39,8 +40,19 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                     self.callbacks.on_error(ErrorCode::EofInTag, self.index);
                 }
                 State::InCommentLike => {
-                    self.callbacks.on_error(ErrorCode::EofInComment, self.index);
-                    self.callbacks.on_comment(self.section_start, self.index);
+                    let code = match self.current_sequence {
+                        Some(Sequences::CdataEnd) => ErrorCode::EofInCdata,
+                        _ => ErrorCode::EofInComment,
+                    };
+                    self.callbacks.on_error(code, self.index);
+                    match self.current_sequence {
+                        Some(Sequences::CdataEnd) => {
+                            self.callbacks.on_cdata(self.section_start, self.index);
+                        }
+                        _ => {
+                            self.callbacks.on_comment(self.section_start, self.index);
+                        }
+                    }
                 }
                 _ => {}
             }
@@ -360,6 +372,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state = State::BeforeComment;
             self.section_start = self.index + 1;
         } else if c == LEFT_SQUARE {
+            self.sequence_index = 0;
             self.state = State::CDATASequence;
             self.section_start = self.index + 1;
         } else {
@@ -385,16 +398,30 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn state_before_comment(&mut self, c: u8) {
         if c == DASH {
+            self.sequence_index = 2;
             self.state = State::InCommentLike;
+            self.current_sequence = Some(Sequences::CommentEnd);
             self.section_start = self.index + 1;
         } else {
             self.state = State::InDeclaration;
         }
     }
 
-    pub(super) fn state_cdata_sequence(&mut self, _c: u8) {
-        // TODO: Implement CDATA handling
-        self.state = State::InCommentLike;
+    pub(super) fn state_cdata_sequence(&mut self, c: u8) {
+        let prefix = Sequences::Cdata.bytes();
+        if c == prefix[self.sequence_index] {
+            self.sequence_index += 1;
+            if self.sequence_index == prefix.len() {
+                self.state = State::InCommentLike;
+                self.current_sequence = Some(Sequences::CdataEnd);
+                self.sequence_index = 0;
+                self.section_start = self.index + 1;
+            }
+        } else {
+            self.sequence_index = 0;
+            self.state = State::InDeclaration;
+            self.state_in_declaration(c);
+        }
     }
 
     pub(super) fn state_in_special_comment(&mut self, c: u8) {
@@ -405,16 +432,39 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         }
     }
 
+    #[inline]
+    fn finish_comment_like(&mut self, closing: Sequences) {
+        let end = self.index.saturating_sub(2);
+        match closing {
+            Sequences::CdataEnd => self.callbacks.on_cdata(self.section_start, end),
+            Sequences::CommentEnd => self.callbacks.on_comment(self.section_start, end),
+            _ => unreachable!("InCommentLike only closes CommentEnd or CdataEnd"),
+        }
+        self.sequence_index = 0;
+        self.current_sequence = None;
+        self.section_start = self.index + 1;
+        self.state = State::Text;
+    }
+
     pub(super) fn state_in_comment_like(&mut self, c: u8) {
-        if c == DASH
-            && self.index + 2 < self.input.len()
-            && self.input[self.index + 1] == DASH
-            && self.input[self.index + 2] == GT
-        {
-            self.callbacks.on_comment(self.section_start, self.index);
-            self.index += 2;
-            self.state = State::Text;
-            self.section_start = self.index + 1;
+        let Some(sequence) = self.current_sequence else {
+            return;
+        };
+        let sequence_bytes = sequence.bytes();
+
+        if c == sequence_bytes[self.sequence_index] {
+            self.sequence_index += 1;
+            if self.sequence_index == sequence_bytes.len() {
+                self.finish_comment_like(sequence);
+            }
+        } else if self.sequence_index == 0 {
+            // Fast-forward to the first character of the sequence
+            if self.fast_forward_to(sequence_bytes[0]) {
+                self.sequence_index = 1;
+            }
+        } else if c != sequence_bytes[self.sequence_index - 1] {
+            // Allow long sequences, eg. --->, ]]]>
+            self.sequence_index = 0;
         }
     }
 

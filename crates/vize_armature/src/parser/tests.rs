@@ -3,7 +3,7 @@
 use super::{parse, parse_with_options};
 use vize_carton::Bump;
 use vize_relief::{
-    ast::{ElementType, ExpressionNode, PropNode, TemplateChildNode},
+    ast::{ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode},
     errors::ErrorCode,
     options::ParserOptions,
 };
@@ -183,6 +183,70 @@ fn test_parse_comment() {
         assert_eq!(c.content.as_str(), " hello ");
     } else {
         panic!("Expected comment node");
+    }
+}
+
+fn parser_options_svg_subtree() -> ParserOptions {
+    ParserOptions {
+        get_namespace: |tag, parent| {
+            if tag.eq_ignore_ascii_case("svg") {
+                Namespace::Svg
+            } else if parent.is_some_and(|p| p.eq_ignore_ascii_case("svg")) {
+                Namespace::Svg
+            } else {
+                Namespace::Html
+            }
+        },
+        ..ParserOptions::default()
+    }
+}
+
+#[test]
+fn test_parse_cdata_in_html_root_emits_error() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<![CDATA[hi]]>");
+    assert!(root.children.is_empty());
+    assert_eq!(errors.len(), 1);
+    assert_eq!(errors[0].code, ErrorCode::CdataInHtmlContent);
+    assert_eq!(errors[0].loc.as_ref().unwrap().start.offset, 0);
+}
+
+#[test]
+fn test_parse_cdata_in_html_element_emits_error() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div><![CDATA[hi]]></div>");
+    assert_eq!(errors.len(), 1);
+    assert_eq!(errors[0].code, ErrorCode::CdataInHtmlContent);
+    assert!(matches!(&root.children[0], TemplateChildNode::Element(_)));
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert!(
+            el.children.is_empty(),
+            "CDATA must not become text in HTML ns"
+        );
+    }
+}
+
+#[test]
+fn test_parse_cdata_in_svg_as_text() {
+    let allocator = Bump::new();
+    let (root, errors) = parse_with_options(
+        &allocator,
+        "<svg><![CDATA[hi]]></svg>",
+        parser_options_svg_subtree(),
+    );
+    assert!(errors.is_empty());
+    assert_eq!(root.children.len(), 1);
+    if let TemplateChildNode::Element(svg) = &root.children[0] {
+        assert_eq!(svg.tag.as_str(), "svg");
+        assert_eq!(svg.ns, Namespace::Svg);
+        assert_eq!(svg.children.len(), 1);
+        if let TemplateChildNode::Text(t) = &svg.children[0] {
+            assert_eq!(t.content.as_str(), "hi");
+        } else {
+            panic!("expected text node for CDATA body");
+        }
+    } else {
+        panic!("expected svg element");
     }
 }
 
