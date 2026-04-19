@@ -19,7 +19,7 @@ return (_ctx: any,_cache: any) => {
       ? _withDirectives((_openBlock(), _createElementBlock("input", {
         key: 0,
         "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((text).value = $event))
-      })), [ [_vModelText, text.value] ])
+      }, null, 512 /* NEED_PATCH */)), [ [_vModelText, text.value] ])
       : _createCommentVNode("v-if", true)
 }
 }

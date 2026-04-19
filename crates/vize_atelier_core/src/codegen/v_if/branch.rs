@@ -24,7 +24,10 @@ use super::{
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
-        slots::{generate_slots, has_dynamic_slots_flag, has_slot_children},
+        slots::{
+            generate_slot_outlet_name, generate_slot_outlet_props_entries, generate_slots,
+            has_dynamic_slots_flag, has_slot_children, has_slot_outlet_props,
+        },
     },
     generate::{
         extract_static_class_style, generate_if_branch_props_object, has_dynamic_class,
@@ -89,30 +92,21 @@ fn generate_if_branch_slot(
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
+    // Slots don't use blocks in branch output; use renderSlot directly.
     ctx.use_helper(RuntimeHelper::RenderSlot);
     ctx.push(ctx.helper(RuntimeHelper::RenderSlot));
     ctx.push("(_ctx.$slots, ");
-
-    let slot_name = el
-        .props
-        .iter()
-        .find_map(|p| match p {
-            PropNode::Attribute(attr) if attr.name == "name" => {
-                attr.value.as_ref().map(|v| v.content.as_str())
-            }
-            _ => None,
-        })
-        .unwrap_or("default");
-    ctx.push("\"");
-    ctx.push(slot_name);
-    ctx.push("\"");
+    generate_slot_outlet_name(ctx, el);
     ctx.push(", { key: ");
     generate_if_branch_key(ctx, branch, branch_index);
-    ctx.push(" }");
+    if has_slot_outlet_props(el) {
+        ctx.push(", ");
+        generate_slot_outlet_props_entries(ctx, el);
+    }
+    ctx.push("}");
 
     if !el.children.is_empty() {
         ctx.push(", () => [");
-        ctx.indent();
         let filtered: Vec<_> = el
             .children
             .iter()
@@ -122,15 +116,11 @@ fn generate_if_branch_slot(
             if i > 0 {
                 ctx.push(",");
             }
-            ctx.newline();
             generate_node(ctx, child);
         }
-        ctx.deindent();
-        ctx.newline();
-        ctx.push("])");
-    } else {
-        ctx.push(")");
+        ctx.push("]");
     }
+    ctx.push(")");
 }
 
 /// Generate component for if branch.
@@ -386,6 +376,13 @@ fn generate_if_branch_element(
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
+    let (patch_flag, dynamic_props) = calculate_element_patch_info(
+        el,
+        ctx.options.binding_metadata.as_ref(),
+        ctx.cache_handlers_in_current_scope(),
+    );
+    let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
+
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
@@ -507,6 +504,30 @@ fn generate_if_branch_element(
         } else {
             generate_if_branch_children(ctx, &el.children);
         }
+    } else if has_patch_info {
+        ctx.push(", null");
+    }
+
+    if let Some(flag) = patch_flag {
+        ctx.push(", ");
+        ctx.push(&flag.to_compact_string());
+        ctx.push(" /* ");
+        let flag_name = patch_flag_name(flag);
+        ctx.push(&flag_name);
+        ctx.push(" */");
+    }
+
+    if let Some(props) = dynamic_props {
+        ctx.push(", [");
+        for (i, prop) in props.iter().enumerate() {
+            if i > 0 {
+                ctx.push(", ");
+            }
+            ctx.push("\"");
+            ctx.push(prop);
+            ctx.push("\"");
+        }
+        ctx.push("]");
     }
 
     ctx.push("))");
@@ -580,10 +601,6 @@ fn generate_if_branch_children(ctx: &mut CodegenContext, children: &[TemplateChi
     });
 
     if has_only_text_or_interpolation {
-        let has_interpolation = children
-            .iter()
-            .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
-
         // Use string concatenation for text/interpolation mix
         for (i, child) in children.iter().enumerate() {
             if i > 0 {
@@ -604,10 +621,6 @@ fn generate_if_branch_children(ctx: &mut CodegenContext, children: &[TemplateChi
                 }
                 _ => {}
             }
-        }
-
-        if has_interpolation {
-            ctx.push(", 1 /* TEXT */");
         }
     } else {
         // Complex branch children need the same text/interpolation grouping as

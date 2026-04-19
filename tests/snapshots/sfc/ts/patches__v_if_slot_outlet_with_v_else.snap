@@ -14,7 +14,7 @@ export default /*@__PURE__*/_defineComponent({
 const showing = ref(false)
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, [ (showing.value) ? _renderSlot(_ctx.$slots, "default", { key: 0 }) : _renderSlot(_ctx.$slots, "fallback", { key: 1 }) ]))
+  return (_openBlock(), _createElementBlock("div", null, [ (showing.value) ? _renderSlot(_ctx.$slots, "default", { key: 0}) : _renderSlot(_ctx.$slots, "fallback", { key: 1}) ]))
 }
 }
 

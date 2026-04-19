@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: js_output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, normalizeStyle as _normalizeStyle } from "vue"
+
+import { ref } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+const show = ref(true)
+const floatingStyles = ref({ left: '10px', top: '20px' })
+
+return (_ctx: any,_cache: any) => {
+  return (show.value)
+      ? (_openBlock(), _createElementBlock("div", {
+        key: 0,
+        style: _normalizeStyle(floatingStyles.value)
+      }, null, 4 /* STYLE */))
+      : _createCommentVNode("v-if", true)
+}
+}
+
+})

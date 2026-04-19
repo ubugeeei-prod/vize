@@ -239,6 +239,75 @@ const name = 'paper'
 """
 
 [[cases]]
+name = "v if branch keeps maybe ref style patch flag"
+input = """
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const show = ref(true)
+const floatingStyles = ref({ left: '10px', top: '20px' })
+</script>
+
+<template>
+  <div v-if="show" :style="floatingStyles"></div>
+</template>
+"""
+
+[[cases]]
+name = "template ref with dynamic props in v if branch"
+input = """
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+const reference = ref<HTMLElement>()
+const floating = ref<HTMLElement>()
+const isOpen = ref(true)
+const klass = computed(() => 'x')
+const styles = computed(() => ({ left: '0px', top: '0px' }))
+function toggle() {}
+</script>
+
+<template>
+  <button
+    v-if="isOpen"
+    ref="reference"
+    :id="isOpen ? 'open' : undefined"
+    class="base"
+    :class="klass"
+    @click="toggle"
+  >
+    open
+  </button>
+  <div
+    v-if="isOpen"
+    ref="floating"
+    :style="styles"
+  >
+    panel
+  </div>
+</template>
+"""
+
+[[cases]]
+name = "options api dynamic style and class keep patch flags"
+input = """
+<script>
+export default {
+  computed: {
+    knobStyle() {
+      return { transform: 'translate(10px, 20px)' }
+    },
+  },
+}
+</script>
+
+<template>
+  <div class="map">
+    <div :style="knobStyle" :class="{ dragging }"></div>
+  </div>
+</template>
+"""
+
+[[cases]]
 name = "v-if with custom directive on element"
 input = """
 <script setup>
