@@ -127,7 +127,7 @@ impl Fix {
         let mut result = source.to_compact_string();
         // Apply edits in reverse order to preserve offsets
         let mut edits = self.edits.clone();
-        edits.sort_by(|a, b| b.start.cmp(&a.start));
+        edits.sort_by_key(|edit| std::cmp::Reverse(edit.start));
 
         for edit in edits {
             let start = edit.start as usize;

@@ -158,7 +158,7 @@ impl ImportRewriter {
         }
 
         // Sort by offset descending (process from end to start)
-        rewrites.sort_by(|a, b| b.0.cmp(&a.0));
+        rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
         let mut output = source.to_compact_string();
         let mut adjustments = Vec::new();

@@ -177,7 +177,7 @@ pub(crate) fn run(args: BuildArgs) {
         eprintln!();
 
         let mut sorted_slow = slow_files;
-        sorted_slow.sort_by(|a, b| b.total_time.cmp(&a.total_time));
+        sorted_slow.sort_by_key(|file| std::cmp::Reverse(file.total_time));
 
         for file in sorted_slow.iter().take(10) {
             eprintln!(
@@ -275,7 +275,7 @@ pub(crate) fn run(args: BuildArgs) {
             .unwrap_or(Duration::ZERO);
 
         let mut all_profiles = profiles.into_inner().unwrap_or_default();
-        all_profiles.sort_by(|a, b| b.total_time.cmp(&a.total_time));
+        all_profiles.sort_by_key(|profile| std::cmp::Reverse(profile.total_time));
 
         let phases = [
             ProfilePhase {

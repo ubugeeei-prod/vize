@@ -179,70 +179,65 @@ impl ReactivityTracker {
         };
 
         match kind {
-            UseSiteKind::Destructure { extracted_props } => {
-                if binding.loses_reactivity_on_destructure() {
-                    let (violation_kind, suggestion) = match &binding.origin {
-                        ReactiveOrigin::PiniaStore => (
-                            ViolationKind::PiniaDestructure,
-                            Some(CompactString::new(
-                                "Use storeToRefs() for reactive state/getters",
-                            )),
-                        ),
-                        ReactiveOrigin::Props => (
-                            ViolationKind::PropsDestructure,
-                            Some(CompactString::new(
-                                "Use toRefs(props) or toRef(props, 'propName')",
-                            )),
-                        ),
-                        ReactiveOrigin::Inject => (
-                            ViolationKind::InjectDestructure,
-                            Some(CompactString::new(
-                                "Access injected properties directly without destructuring",
-                            )),
-                        ),
-                        _ => (
-                            ViolationKind::DestructuringLoss {
-                                extracted_props: extracted_props.clone(),
-                            },
-                            Some(CompactString::new(
-                                "Use toRefs() to maintain reactivity, or access properties directly",
-                            )),
-                        ),
-                    };
+            UseSiteKind::Destructure { extracted_props }
+                if binding.loses_reactivity_on_destructure() =>
+            {
+                let (violation_kind, suggestion) = match &binding.origin {
+                    ReactiveOrigin::PiniaStore => (
+                        ViolationKind::PiniaDestructure,
+                        Some(CompactString::new(
+                            "Use storeToRefs() for reactive state/getters",
+                        )),
+                    ),
+                    ReactiveOrigin::Props => (
+                        ViolationKind::PropsDestructure,
+                        Some(CompactString::new(
+                            "Use toRefs(props) or toRef(props, 'propName')",
+                        )),
+                    ),
+                    ReactiveOrigin::Inject => (
+                        ViolationKind::InjectDestructure,
+                        Some(CompactString::new(
+                            "Access injected properties directly without destructuring",
+                        )),
+                    ),
+                    _ => (
+                        ViolationKind::DestructuringLoss {
+                            extracted_props: extracted_props.clone(),
+                        },
+                        Some(CompactString::new(
+                            "Use toRefs() to maintain reactivity, or access properties directly",
+                        )),
+                    ),
+                };
 
-                    self.violations.push(ReactivityViolation {
-                        binding_id,
-                        kind: violation_kind,
-                        start,
-                        end,
-                        message: cstr!(
-                            "Destructuring '{}' loses reactivity for: {}",
-                            binding.name,
-                            extracted_props.join(", ")
-                        ),
-                        suggestion,
-                        severity: ViolationSeverity::Error,
-                    });
-                }
+                self.violations.push(ReactivityViolation {
+                    binding_id,
+                    kind: violation_kind,
+                    start,
+                    end,
+                    message: cstr!(
+                        "Destructuring '{}' loses reactivity for: {}",
+                        binding.name,
+                        extracted_props.join(", ")
+                    ),
+                    suggestion,
+                    severity: ViolationSeverity::Error,
+                });
             }
 
-            UseSiteKind::Spread => {
-                if binding.loses_reactivity_on_spread() {
-                    self.violations.push(ReactivityViolation {
-                        binding_id,
-                        kind: ViolationKind::SpreadLoss,
-                        start,
-                        end,
-                        message: cstr!(
-                            "Spreading '{}' creates a non-reactive copy",
-                            binding.name
-                        ),
-                        suggestion: Some(CompactString::new(
-                            "Use Object.assign() to merge into reactive object, or toRaw() for intentional copy",
-                        )),
-                        severity: ViolationSeverity::Error,
-                    });
-                }
+            UseSiteKind::Spread if binding.loses_reactivity_on_spread() => {
+                self.violations.push(ReactivityViolation {
+                    binding_id,
+                    kind: ViolationKind::SpreadLoss,
+                    start,
+                    end,
+                    message: cstr!("Spreading '{}' creates a non-reactive copy", binding.name),
+                    suggestion: Some(CompactString::new(
+                        "Use Object.assign() to merge into reactive object, or toRaw() for intentional copy",
+                    )),
+                    severity: ViolationSeverity::Error,
+                });
             }
 
             UseSiteKind::Reassignment => {
@@ -316,26 +311,27 @@ impl ReactivityTracker {
                 });
             }
 
-            UseSiteKind::Read if binding.is_ref_type() && !self.in_template => {
+            UseSiteKind::Read
+                if binding.is_ref_type() && !self.in_template && !binding.value_accessed =>
+            {
                 // Ref used without .value outside template
                 // This might be intentional (passing to function that handles refs)
                 // so we only emit a hint
-                if !binding.value_accessed {
-                    self.violations.push(ReactivityViolation {
-                        binding_id,
-                        kind: ViolationKind::MissingValueAccess,
-                        start,
-                        end,
-                        message: cstr!(
-                            "Ref '{}' used without .value - did you mean {}.value?",
-                            binding.name, binding.name
-                        ),
-                        suggestion: Some(CompactString::new(
-                            "Access .value to get/set the underlying value, or use unref() for conditional unwrapping",
-                        )),
-                        severity: ViolationSeverity::Hint,
-                    });
-                }
+                self.violations.push(ReactivityViolation {
+                    binding_id,
+                    kind: ViolationKind::MissingValueAccess,
+                    start,
+                    end,
+                    message: cstr!(
+                        "Ref '{}' used without .value - did you mean {}.value?",
+                        binding.name,
+                        binding.name
+                    ),
+                    suggestion: Some(CompactString::new(
+                        "Access .value to get/set the underlying value, or use unref() for conditional unwrapping",
+                    )),
+                    severity: ViolationSeverity::Hint,
+                });
             }
 
             _ => {}

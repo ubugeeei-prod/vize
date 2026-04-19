@@ -188,7 +188,7 @@ pub fn run(args: FmtArgs) {
         let mut profiles = profile_rows
             .and_then(|profile_rows| profile_rows.into_inner().ok())
             .unwrap_or_default();
-        profiles.sort_by(|left, right| right.row.total.cmp(&left.row.total));
+        profiles.sort_by_key(|profile| std::cmp::Reverse(profile.row.total));
 
         let total_read = profiles
             .iter()

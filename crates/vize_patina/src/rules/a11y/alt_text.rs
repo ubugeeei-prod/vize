@@ -69,26 +69,23 @@ impl Rule for AltText {
         }
 
         match element.tag.as_str() {
-            "img" => {
-                if !has_attribute_or_binding(element, "alt") {
-                    ctx.warn_with_help(
-                        ctx.t("a11y/alt-text.message_img"),
-                        &element.loc,
-                        ctx.t("a11y/alt-text.help_img"),
-                    );
-                }
+            "img" if !has_attribute_or_binding(element, "alt") => {
+                ctx.warn_with_help(
+                    ctx.t("a11y/alt-text.message_img"),
+                    &element.loc,
+                    ctx.t("a11y/alt-text.help_img"),
+                );
             }
-            "area" => {
+            "area"
                 if !has_attribute_or_binding(element, "alt")
                     && !has_attribute_or_binding(element, "aria-label")
-                    && !has_attribute_or_binding(element, "aria-labelledby")
-                {
-                    ctx.warn_with_help(
-                        ctx.t("a11y/alt-text.message_area"),
-                        &element.loc,
-                        ctx.t("a11y/alt-text.help_area"),
-                    );
-                }
+                    && !has_attribute_or_binding(element, "aria-labelledby") =>
+            {
+                ctx.warn_with_help(
+                    ctx.t("a11y/alt-text.message_area"),
+                    &element.loc,
+                    ctx.t("a11y/alt-text.help_area"),
+                );
             }
             "input" => {
                 let input_type = get_static_attribute_value(element, "type");
@@ -104,17 +101,16 @@ impl Rule for AltText {
                     );
                 }
             }
-            "object" => {
+            "object"
                 if !has_attribute_or_binding(element, "title")
                     && !has_attribute_or_binding(element, "aria-label")
-                    && !has_attribute_or_binding(element, "aria-labelledby")
-                {
-                    ctx.warn_with_help(
-                        ctx.t("a11y/alt-text.message_object"),
-                        &element.loc,
-                        ctx.t("a11y/alt-text.help_object"),
-                    );
-                }
+                    && !has_attribute_or_binding(element, "aria-labelledby") =>
+            {
+                ctx.warn_with_help(
+                    ctx.t("a11y/alt-text.message_object"),
+                    &element.loc,
+                    ctx.t("a11y/alt-text.help_object"),
+                );
             }
             _ => {}
         }

@@ -593,17 +593,17 @@ fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.newline();
                 generate_looped_slot(ctx, for_node);
             }
-            TemplateChildNode::Element(template_el) => {
-                if template_el.tag.as_str() == "template" && has_v_slot(template_el) {
-                    // Regular named slot (no v-if/v-for)
-                    if !first {
-                        ctx.push(",");
-                    }
-                    first = false;
-                    ctx.newline();
-                    // Generate as static slot entry
-                    generate_static_slot_entry(ctx, template_el);
+            TemplateChildNode::Element(template_el)
+                if template_el.tag.as_str() == "template" && has_v_slot(template_el) =>
+            {
+                // Regular named slot (no v-if/v-for)
+                if !first {
+                    ctx.push(",");
                 }
+                first = false;
+                ctx.newline();
+                // Generate as static slot entry
+                generate_static_slot_entry(ctx, template_el);
             }
             _ => {}
         }

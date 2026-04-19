@@ -17,47 +17,48 @@ use htmlize::Context;
 
 impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub(super) fn cleanup(&mut self) {
-        match self.state {
-            State::Text | State::Interpolation => {
-                if self.section_start < self.index {
+        let has_section = self.section_start < self.index;
+
+        if has_section {
+            match self.state {
+                State::Text | State::Interpolation => {
                     self.callbacks.on_text(self.section_start, self.index);
                 }
-            }
-            State::InTagName
-            | State::InSFCRootTagName
-            | State::BeforeClosingTagName
-            | State::InClosingTagName
-            | State::BeforeAttrName
-            | State::InAttrName
-            | State::InDirName
-            | State::InDirArg
-            | State::InDirDynamicArg
-            | State::InDirModifier
-            | State::AfterAttrName
-            | State::BeforeAttrValue
-            | State::InAttrValueDq
-            | State::InAttrValueSq
-            | State::InAttrValueNq => {
-                if self.section_start < self.index {
+                State::InTagName
+                | State::InSFCRootTagName
+                | State::BeforeClosingTagName
+                | State::InClosingTagName
+                | State::BeforeAttrName
+                | State::InAttrName
+                | State::InDirName
+                | State::InDirArg
+                | State::InDirDynamicArg
+                | State::InDirModifier
+                | State::AfterAttrName
+                | State::BeforeAttrValue
+                | State::InAttrValueDq
+                | State::InAttrValueSq
+                | State::InAttrValueNq => {
                     self.callbacks.on_error(ErrorCode::EofInTag, self.index);
                 }
+                _ => {}
             }
-            State::InCommentLike => {
-                let code = match self.current_sequence {
-                    Some(Sequence::CdataEnd) => ErrorCode::EofInCdata,
-                    _ => ErrorCode::EofInComment,
-                };
-                self.callbacks.on_error(code, self.index);
-                match self.current_sequence {
-                    Some(Sequence::CdataEnd) => {
-                        self.callbacks.on_cdata(self.section_start, self.index);
-                    }
-                    _ => {
-                        self.callbacks.on_comment(self.section_start, self.index);
-                    }
+        }
+
+        if self.state == State::InCommentLike {
+            let code = match self.current_sequence {
+                Some(Sequence::CdataEnd) => ErrorCode::EofInCdata,
+                _ => ErrorCode::EofInComment,
+            };
+            self.callbacks.on_error(code, self.index);
+            match self.current_sequence {
+                Some(Sequence::CdataEnd) => {
+                    self.callbacks.on_cdata(self.section_start, self.index);
+                }
+                _ => {
+                    self.callbacks.on_comment(self.section_start, self.index);
                 }
             }
-            _ => {}
         }
     }
 

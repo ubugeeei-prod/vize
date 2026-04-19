@@ -41,18 +41,14 @@ impl HeadingHasContent {
         // Check for content in children
         for child in &element.children {
             match child {
-                TemplateChildNode::Text(text) => {
-                    if !text.content.trim().is_empty() {
-                        return true;
-                    }
+                TemplateChildNode::Text(text) if !text.content.trim().is_empty() => {
+                    return true;
                 }
                 TemplateChildNode::Interpolation(_) => {
                     return true;
                 }
-                TemplateChildNode::Element(el) => {
-                    if Self::has_accessible_content(el) {
-                        return true;
-                    }
+                TemplateChildNode::Element(el) if Self::has_accessible_content(el) => {
+                    return true;
                 }
                 _ => {}
             }

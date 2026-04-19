@@ -221,7 +221,7 @@ pub fn run(args: LintArgs) {
         let mut file_rows = profile_rows
             .and_then(|profile_rows| profile_rows.into_inner().ok())
             .unwrap_or_default();
-        file_rows.sort_by(|left, right| right.total.cmp(&left.total));
+        file_rows.sort_by_key(|row| std::cmp::Reverse(row.total));
 
         let total_read = file_rows
             .iter()

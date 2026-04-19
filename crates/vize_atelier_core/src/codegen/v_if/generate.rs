@@ -305,10 +305,8 @@ fn get_static_event_key(dir: &DirectiveNode<'_>) -> Option<String> {
             "capture" | "once" | "passive" => {
                 event_option_modifiers.push(mod_name);
             }
-            "left" | "right" => {
-                if !is_keyboard_event {
-                    system_modifiers.push(mod_name);
-                }
+            "left" | "right" if !is_keyboard_event => {
+                system_modifiers.push(mod_name);
             }
             "middle" => {
                 system_modifiers.push(mod_name);

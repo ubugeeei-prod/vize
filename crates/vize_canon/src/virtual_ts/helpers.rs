@@ -165,11 +165,8 @@ pub(crate) fn strip_as_assertion(source: &str) -> (&str, Option<&str>) {
         match bytes[i] {
             b'(' => paren_depth += 1,
             b')' => paren_depth -= 1,
-            b' ' if paren_depth == 0 => {
-                // Check for " as "
-                if i + 4 <= bytes.len() && &bytes[i..i + 4] == b" as " {
-                    last_as_pos = Some(i);
-                }
+            b' ' if paren_depth == 0 && i + 4 <= bytes.len() && &bytes[i..i + 4] == b" as " => {
+                last_as_pos = Some(i);
             }
             _ => {}
         }
