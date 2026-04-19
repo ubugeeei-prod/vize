@@ -25,6 +25,7 @@ enum TokenEvent {
     DirArg(usize, usize),
     DirModifier(usize, usize),
     Comment(usize, usize),
+    Cdata(usize, usize),
     End,
 }
 
@@ -81,7 +82,9 @@ impl Callbacks for TestCallbacks {
     fn on_comment(&mut self, start: usize, end: usize) {
         self.events.push(TokenEvent::Comment(start, end));
     }
-    fn on_cdata(&mut self, _start: usize, _end: usize) {}
+    fn on_cdata(&mut self, start: usize, end: usize) {
+        self.events.push(TokenEvent::Cdata(start, end));
+    }
     fn on_processing_instruction(&mut self, _start: usize, _end: usize) {}
     fn on_end(&mut self) {
         self.events.push(TokenEvent::End);
@@ -311,6 +314,60 @@ fn test_comment() {
 }
 
 // ========================================================================
+// CDATA tests (SVG / XML-style `<![CDATA[ ... ]]>`)
+// ========================================================================
+
+#[test]
+fn test_cdata_basic() {
+    let cb = tokenize("<![CDATA[hi]]>");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 11)));
+}
+
+#[test]
+fn test_cdata_with_angle_brackets() {
+    let cb = tokenize("<![CDATA[<a>]]>");
+    // content `<a>` is [9, 12)
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 12)));
+}
+
+#[test]
+fn test_cdata_empty() {
+    let cb = tokenize("<![CDATA[]]>");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 9)));
+}
+
+#[test]
+fn test_cdata_then_text() {
+    let cb = tokenize("<![CDATA[x]]>after");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 10)));
+    assert!(cb.events.contains(&TokenEvent::Text(13, 18)));
+}
+
+#[test]
+fn test_cdata_then_comment() {
+    let cb = tokenize("<![CDATA[x]]><!-- comment -->");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 10)));
+}
+
+#[test]
+fn test_cdata_partial_close_resets_then_finds_close() {
+    let cb = tokenize("<![CDATA[x]y]]>");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 12)));
+}
+
+#[test]
+fn test_cdata_extra_bracket_before_close() {
+    let cb = tokenize("<![CDATA[a]]]>");
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 11)));
+}
+
+#[test]
+fn test_comment_extra_hyphens_before_close() {
+    let cb = tokenize("<!-- z ---->");
+    assert!(cb.events.contains(&TokenEvent::Comment(4, 9)));
+}
+
+// ========================================================================
 // Error tests
 // ========================================================================
 
@@ -330,6 +387,26 @@ fn test_error_eof_in_comment() {
         .errors
         .iter()
         .any(|(code, _)| *code == ErrorCode::EofInComment));
+}
+
+#[test]
+fn test_error_eof_in_empty_comment() {
+    let cb = tokenize("<!--");
+    assert!(cb
+        .errors
+        .iter()
+        .any(|(code, _)| *code == ErrorCode::EofInComment));
+    assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
+}
+
+#[test]
+fn test_error_eof_in_empty_cdata() {
+    let cb = tokenize("<![CDATA[");
+    assert!(cb
+        .errors
+        .iter()
+        .any(|(code, _)| *code == ErrorCode::EofInCdata));
+    assert!(cb.events.contains(&TokenEvent::Cdata(9, 9)));
 }
 
 // ========================================================================

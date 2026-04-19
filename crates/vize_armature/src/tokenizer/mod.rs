@@ -5,12 +5,14 @@
 
 pub mod char_codes;
 mod entity_decode;
+mod sequences;
 mod states;
 mod types;
 
 pub use types::*;
 
 use char_codes::NEWLINE;
+use sequences::Sequence;
 use vize_relief::Position;
 
 /// HTML tokenizer
@@ -40,6 +42,11 @@ pub struct Tokenizer<'a, C: Callbacks> {
     in_pre: bool,
     /// The start of the last entity.
     entity_start: usize,
+
+    /// Closing sequence currently being matched.
+    current_sequence: Option<Sequence>,
+    /// Index of the next expected byte in that sequence.
+    sequence_index: usize,
 }
 
 impl<'a, C: Callbacks> Tokenizer<'a, C> {
@@ -68,6 +75,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             in_pre: false,
             entity_start: 0,
             base_state: State::Text,
+            current_sequence: None,
+            sequence_index: 0,
         }
     }
 
@@ -90,6 +99,22 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             line: line as u32,
             column: column as u32,
         }
+    }
+
+    /// Skip through the buffer until a target byte is found.
+    fn fast_forward_to(&mut self, c: u8) -> bool {
+        while self.index + 1 < self.input.len() {
+            self.index += 1;
+            let cc = self.input[self.index];
+            if cc == NEWLINE {
+                self.newlines.push(self.index);
+            }
+            if cc == c {
+                return true;
+            }
+        }
+        self.index = self.input.len().saturating_sub(1);
+        false
     }
 
     /// Tokenize the input
