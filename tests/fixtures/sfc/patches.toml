@@ -219,6 +219,26 @@ const tabs = [
 """
 
 [[cases]]
+name = "v for template else interpolation wraps text vnode"
+input = """
+<script setup>
+function splitByQuery(name) {
+  return [{ text: name, match: false }]
+}
+const name = 'paper'
+</script>
+
+<template>
+  <p>
+    <template v-for="(seg, i) in splitByQuery(name)" :key="i">
+      <mark v-if="seg.match">{{ seg.text }}</mark>
+      <template v-else>{{ seg.text }}</template>
+    </template>
+  </p>
+</template>
+"""
+
+[[cases]]
 name = "v-if with custom directive on element"
 input = """
 <script setup>

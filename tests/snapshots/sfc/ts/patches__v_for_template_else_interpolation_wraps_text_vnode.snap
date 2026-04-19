@@ -1,0 +1,31 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: ts_output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
+
+const name = 'paper'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+function splitByQuery(name) {
+  return [{ text: name, match: false }]
+}
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("p", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(splitByQuery(name), (seg, i) => {
+        return (_openBlock(), _createElementBlock(_Fragment, { key: i }, [
+          (seg.match)
+            ? (_openBlock(), _createElementBlock("mark", { key: 0 }, _toDisplayString(seg.text), 1 /* TEXT */))
+            : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [
+              _createTextVNode(_toDisplayString(seg.text), 1 /* TEXT */)
+            ], 64 /* STABLE_FRAGMENT */))
+        ], 64 /* STABLE_FRAGMENT */))
+      }), 128 /* KEYED_FRAGMENT */)) ]))
+}
+}
+
+})
