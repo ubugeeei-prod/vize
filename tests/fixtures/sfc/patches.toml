@@ -148,6 +148,20 @@ import Layout from './Layout.vue'
 </template>
 """
 
+[[cases]]
+name = "dynamic asset URL with import meta url"
+input = """
+<script setup>
+const getBrandLogoUrl = (type, theme) => {
+  return new URL(`../../assets/logos/brand_${type}_${theme}.svg`, import.meta.url).href
+}
+</script>
+
+<template>
+  <img :src="getBrandLogoUrl('alpha', 'light')" alt="brand logo" />
+</template>
+"""
+
 # =============================================================================
 # v-if duplicate event handlers (v_if.rs)
 # Issue: v-model transform generated duplicate event handlers

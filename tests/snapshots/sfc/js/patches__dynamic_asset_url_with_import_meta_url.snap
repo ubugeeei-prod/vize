@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: js_output.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const getBrandLogoUrl = (type, theme) => {
+  return new URL(`../../assets/logos/brand_${type}_${theme}.svg`, import.meta.url).href
+}
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("img", {
+      src: getBrandLogoUrl('alpha', 'light'),
+      alt: "brand logo"
+    }, null, 8 /* PROPS */, ["src"]))
+}
+}
+
+}
