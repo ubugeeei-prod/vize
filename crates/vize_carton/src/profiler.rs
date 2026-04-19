@@ -181,7 +181,7 @@ impl Profiler {
             .collect();
 
         // Sort by total time descending
-        entries.sort_by(|a, b| b.total.cmp(&a.total));
+        entries.sort_by_key(|entry| std::cmp::Reverse(entry.total));
 
         ProfileSummary { entries }
     }
