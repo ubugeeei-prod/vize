@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: js_output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  props: {
+    renderLabel: { type: Function, required: true }
+  },
+  setup(__props: any) {
+
+const props = __props
+const { format } = useFormatter(catalog)
+
+return (_ctx: any,_cache: any) => {
+  const _component_OptionRow = _resolveComponent("OptionRow")
+  const _component_PopupMenu = _resolveComponent("PopupMenu")
+
+  return (_openBlock(), _createBlock(_component_PopupMenu, null, {
+      items: _withCtx(({ close }) => [
+        _createVNode(_component_OptionRow, null, {
+          default: _withCtx(({ active }) => [
+            _createElementVNode("li", {
+              class: _normalizeClass({ active: active }),
+              onClick: ($event: any) => (close())
+            }, [
+              _createElementVNode("span", null, _toDisplayString(_unref(format)('hello')), 1 /* TEXT */),
+              _createElementVNode("span", null, _toDisplayString(__props.renderLabel('x', _unref(format))), 1 /* TEXT */)
+            ], 10 /* CLASS, PROPS */, ["onClick"])
+          ]),
+          _: 1 /* STABLE */
+        })
+      ]),
+      _: 1 /* STABLE */
+    }))
+}
+}
+
+})

@@ -25,8 +25,8 @@ pub use transform_element::{
     TransformPropsExpression, TransformVNodeCall,
 };
 pub use transform_expression::{
-    is_simple_identifier, prefix_identifiers_in_expression, process_expression,
-    process_inline_handler, strip_typescript_from_expression,
+    is_event_handler_reference_expression, is_simple_identifier, prefix_identifiers_in_expression,
+    process_expression, process_inline_handler, strip_typescript_from_expression,
 };
 pub use transform_text::{
     build_text_call, condense_whitespace, is_condensible_whitespace, is_whitespace_only,

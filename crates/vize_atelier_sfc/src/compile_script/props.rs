@@ -19,6 +19,8 @@ pub struct PropTypeInfo {
     pub ts_type: Option<String>,
     /// Whether the prop is optional
     pub optional: bool,
+    /// Whether the prop accepts null at runtime
+    pub nullable: bool,
 }
 
 /// Strip TypeScript comments from source while preserving string literals.
@@ -179,7 +181,8 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
         let name_part = &trimmed[..colon_pos];
         let type_part = &trimmed[colon_pos + 1..];
 
-        let optional = name_part.ends_with('?');
+        let optional = name_part.ends_with('?') || type_includes_top_level_undefined(type_part);
+        let nullable = type_includes_top_level_null(type_part);
         let name = name_part.trim().trim_end_matches('?').trim();
 
         if !name.is_empty() && is_valid_identifier(name) {
@@ -193,11 +196,57 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
                         js_type,
                         ts_type: Some(ts_type_str),
                         optional,
+                        nullable,
                     },
                 ));
             }
         }
     }
+}
+
+fn type_includes_top_level_undefined(ts_type: &str) -> bool {
+    split_type_at_top_level(ts_type.trim(), '|')
+        .into_iter()
+        .any(|part| part.trim() == "undefined")
+}
+
+fn type_includes_top_level_null(ts_type: &str) -> bool {
+    split_type_at_top_level(ts_type.trim(), '|')
+        .into_iter()
+        .any(|part| part.trim() == "null")
+}
+
+pub fn add_null_to_runtime_type(js_type: &str, nullable: bool) -> String {
+    if !nullable || js_type == "null" {
+        return js_type.to_compact_string();
+    }
+
+    if js_type.starts_with('[') && js_type.ends_with(']') {
+        let inner = &js_type[1..js_type.len() - 1];
+        if inner
+            .split(',')
+            .map(|part| part.trim())
+            .any(|part| part == "null")
+        {
+            return js_type.to_compact_string();
+        }
+
+        let mut result = String::with_capacity(js_type.len() + 6);
+        result.push('[');
+        result.push_str(inner);
+        if !inner.trim().is_empty() {
+            result.push_str(", ");
+        }
+        result.push_str("null");
+        result.push(']');
+        return result;
+    }
+
+    let mut result = String::with_capacity(js_type.len() + 8);
+    result.push('[');
+    result.push_str(js_type);
+    result.push_str(", null]");
+    result
 }
 
 /// Split a type string at a delimiter only at the top level (depth 0),

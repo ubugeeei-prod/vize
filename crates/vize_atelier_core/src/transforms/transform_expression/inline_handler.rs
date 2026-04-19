@@ -11,7 +11,7 @@ use crate::{
 };
 
 use super::{
-    clone_expression,
+    clone_expression, is_event_handler_reference_expression,
     prefix::{get_identifier_prefix, is_simple_identifier},
     rewrite::rewrite_expression,
     typescript::strip_typescript_from_expression,
@@ -80,19 +80,28 @@ pub fn process_inline_handler<'a>(
                 return clone_expression(exp, allocator);
             }
 
-            // Check if it's a simple identifier (method name)
-            // Vue passes method references directly, no wrapping needed
-            if is_simple_identifier(content) {
+            // Check if it's an identifier/member-expression handler reference.
+            // Vue passes these directly without wrapping them in `$event => (...)`.
+            if is_simple_identifier(content) || is_event_handler_reference_expression(content) {
                 let new_content: String = if ctx.options.prefix_identifiers {
-                    // Use the same prefix logic as get_identifier_prefix for consistency
-                    if let Some(prefix) = get_identifier_prefix(content, ctx) {
-                        let mut s = String::with_capacity(prefix.len() + content.len());
-                        s.push_str(prefix);
-                        s.push_str(content);
-                        s
+                    if is_simple_identifier(content) {
+                        if let Some(prefix) = get_identifier_prefix(content, ctx) {
+                            let mut s = String::with_capacity(prefix.len() + content.len());
+                            s.push_str(prefix);
+                            s.push_str(content);
+                            s
+                        } else {
+                            content.clone()
+                        }
                     } else {
-                        content.clone()
+                        let result = rewrite_expression(content, ctx, false);
+                        if result.used_unref {
+                            ctx.helper(crate::ast::RuntimeHelper::Unref);
+                        }
+                        result.code
                     }
+                } else if ctx.options.is_ts {
+                    strip_typescript_from_expression(content)
                 } else {
                     content.clone()
                 };

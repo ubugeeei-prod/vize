@@ -9,6 +9,9 @@ pub(crate) mod prefix;
 mod rewrite;
 mod typescript;
 
+use oxc_ast::ast::{ChainElement, Expression};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_carton::{Box, Bump, String};
 
 use crate::{
@@ -21,6 +24,28 @@ pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
 pub use typescript::strip_typescript_from_expression;
 
 use rewrite::rewrite_expression;
+
+/// Returns true if an expression is a callable reference that should be passed
+/// through directly as an event handler, not wrapped as `$event => (...)`.
+pub fn is_event_handler_reference_expression(content: &str) -> bool {
+    let allocator = oxc_allocator::Allocator::default();
+    let parser = Parser::new(&allocator, content, SourceType::default().with_module(true));
+    let Ok(expr) = parser.parse_expression() else {
+        return false;
+    };
+
+    match expr {
+        Expression::Identifier(_)
+        | Expression::StaticMemberExpression(_)
+        | Expression::ComputedMemberExpression(_)
+        | Expression::PrivateFieldExpression(_) => true,
+        Expression::ChainExpression(chain) => matches!(
+            chain.expression,
+            ChainElement::StaticMemberExpression(_) | ChainElement::ComputedMemberExpression(_)
+        ),
+        _ => false,
+    }
+}
 
 /// Process expression with identifier prefixing and TypeScript stripping
 pub fn process_expression<'a>(

@@ -19,7 +19,8 @@ use super::super::macros::{
     is_macro_call_line, is_multiline_macro_start, is_paren_macro_start, is_props_destructure_line,
 };
 use super::super::props::{
-    extract_emit_names_from_type, extract_prop_types_from_type, extract_with_defaults_defaults,
+    add_null_to_runtime_type, extract_emit_names_from_type, extract_prop_types_from_type,
+    extract_with_defaults_defaults,
 };
 use super::super::statement_sections::extract_script_sections;
 use super::super::typescript::transform_typescript_to_js;
@@ -1377,10 +1378,12 @@ fn build_props_emits(
                     } else {
                         prop_type.js_type.clone()
                     };
+                    let runtime_js_type =
+                        add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
                     props_emits_buf.extend_from_slice(b"    ");
                     props_emits_buf.extend_from_slice(name.as_bytes());
                     props_emits_buf.extend_from_slice(b": { type: ");
-                    props_emits_buf.extend_from_slice(resolved_js_type.as_bytes());
+                    props_emits_buf.extend_from_slice(runtime_js_type.as_bytes());
                     if needs_prop_type {
                         if let Some(ref ts_type) = prop_type.ts_type {
                             if resolved_js_type == "null" {

@@ -13,7 +13,9 @@ use crate::script::{
 use crate::types::{BindingType, SfcError};
 
 use super::super::import_utils::extract_import_identifiers;
-use super::super::props::{extract_emit_names_from_type, extract_prop_types_from_type};
+use super::super::props::{
+    add_null_to_runtime_type, extract_emit_names_from_type, extract_prop_types_from_type,
+};
 use super::super::statement_sections::extract_script_sections;
 use super::super::typescript::transform_typescript_to_js;
 use super::super::ScriptCompileResult;
@@ -385,10 +387,12 @@ fn emit_props_definition(
                 let mut sorted_props: Vec<_> = prop_types.iter().collect();
                 sorted_props.sort_by(|a, b| a.0.cmp(&b.0));
                 for (name, prop_type) in sorted_props {
+                    let runtime_js_type =
+                        add_null_to_runtime_type(&prop_type.js_type, prop_type.nullable);
                     output.extend_from_slice(b"    ");
                     output.extend_from_slice(name.as_bytes());
                     output.extend_from_slice(b": { type: ");
-                    output.extend_from_slice(prop_type.js_type.as_bytes());
+                    output.extend_from_slice(runtime_js_type.as_bytes());
                     if needs_prop_type {
                         if let Some(ref ts_type) = prop_type.ts_type {
                             if prop_type.js_type == "null" {

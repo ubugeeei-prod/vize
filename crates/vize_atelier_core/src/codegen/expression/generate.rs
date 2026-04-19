@@ -19,20 +19,10 @@ pub fn generate_simple_expression_with_prefix(ctx: &CodegenContext, content: &st
     prefix_identifiers_with_context(content, ctx)
 }
 
-/// Check if a string is a simple member expression like `_ctx.foo` or `$setup.bar`.
-/// This is used to determine if an event handler needs wrapping.
+/// Check if a string is a member-expression style handler reference.
+/// This includes forms like `_ctx.foo`, `$setup.bar`, and `_unref(store).save`.
 pub fn is_simple_member_expression(s: &str) -> bool {
-    if let Some(dot_pos) = s.find('.') {
-        let prefix = &s[..dot_pos];
-        let suffix = &s[dot_pos + 1..];
-        let valid_prefix = prefix == "_ctx" || prefix == "$setup" || prefix == "$props";
-        let valid_suffix = !suffix.is_empty()
-            && !suffix.contains('.')
-            && !suffix.contains('(')
-            && !suffix.contains('[');
-        return valid_prefix && valid_suffix;
-    }
-    false
+    crate::transforms::is_event_handler_reference_expression(s)
 }
 
 /// Check if an event handler expression is an inline handler.

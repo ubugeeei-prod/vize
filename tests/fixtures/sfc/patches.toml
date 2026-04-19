@@ -334,6 +334,73 @@ import { vElementHover } from '@vueuse/components'
 """
 
 [[cases]]
+name = "component event member expression handler is invoked"
+input = """
+<script setup>
+const actionHandler = useActionHandler()
+</script>
+
+<template>
+  <ActionPanel @selectItem="actionHandler.selectItem" />
+</template>
+"""
+
+[[cases]]
+name = "component event rest params stay local"
+input = """
+<script setup>
+const emit = defineEmits(['update'])
+</script>
+
+<template>
+  <Child
+    @update="(...$args) => emit('update', ...$args)"
+    @change="(...args) => emit('update', ...args)"
+  />
+</template>
+"""
+
+[[cases]]
+name = "function typed prop param does not shadow local t"
+input = """
+<script setup lang="ts">
+const { format } = useFormatter(catalog)
+const props = defineProps<{
+  renderLabel: (value: string, format: any) => string
+}>()
+</script>
+
+<template>
+  <PopupMenu>
+    <template #items="{ close }">
+      <OptionRow v-slot="{ active }">
+        <li :class="{ active }" @click="close()">
+          <span>{{ format('hello') }}</span>
+          <span>{{ renderLabel('x', format) }}</span>
+        </li>
+      </OptionRow>
+    </template>
+  </PopupMenu>
+</template>
+"""
+
+[[cases]]
+name = "nullable runtime prop types keep null"
+input = """
+<script setup lang="ts">
+defineProps<{
+  activeKey: string | null
+  items: string[] | null
+  groupName: string | null
+}>()
+</script>
+
+<template>
+  <div />
+</template>
+"""
+
+[[cases]]
 name = "v-if with custom directive on element"
 input = """
 <script setup>

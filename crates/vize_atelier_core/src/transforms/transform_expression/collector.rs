@@ -319,6 +319,9 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         for param in &arrow.params.items {
             self.collect_binding_pattern(&param.pattern);
         }
+        if let Some(rest) = &arrow.params.rest {
+            self.collect_binding_pattern(&rest.rest.argument);
+        }
 
         // Visit body
         self.visit_function_body(&arrow.body);
