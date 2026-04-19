@@ -134,7 +134,6 @@ fn generate_if_branch_component(
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
-        ctx.use_helper(RuntimeHelper::ResolveDirective);
         ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
         ctx.push("(");
     }
@@ -386,7 +385,6 @@ fn generate_if_branch_element(
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
-        ctx.use_helper(RuntimeHelper::ResolveDirective);
         ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
         ctx.push("(");
     }

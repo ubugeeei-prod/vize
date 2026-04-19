@@ -7,11 +7,20 @@ use crate::ast::{RootNode, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
 use super::element::helpers::is_dynamic_component_tag;
-use vize_carton::String;
+use vize_carton::{camelize, capitalize, String};
 
 /// Check if a root-level text node is ignorable whitespace.
 pub(super) fn is_ignorable_root_text(child: &TemplateChildNode<'_>) -> bool {
     matches!(child, TemplateChildNode::Text(text) if text.content.chars().all(|c| c.is_whitespace()))
+}
+
+fn imported_directive_binding_name(name: &str) -> String {
+    let camel = camelize(name);
+    let pascal = capitalize(&camel);
+    let mut binding = String::with_capacity(1 + pascal.len());
+    binding.push('v');
+    binding.push_str(&pascal);
+    binding
 }
 
 /// Generate preamble from a list of helpers.
@@ -125,14 +134,24 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
 
     // Resolve directives
     for directive in root.directives.iter() {
-        ctx.use_helper(RuntimeHelper::ResolveDirective);
         ctx.push("const _directive_");
         ctx.push(&directive.replace('-', "_"));
         ctx.push(" = ");
-        ctx.push(ctx.helper(RuntimeHelper::ResolveDirective));
-        ctx.push("(\"");
-        ctx.push(directive);
-        ctx.push("\")");
+        let binding_name = imported_directive_binding_name(directive);
+        let uses_imported_binding = ctx
+            .options
+            .binding_metadata
+            .as_ref()
+            .is_some_and(|m| m.bindings.contains_key(binding_name.as_str()));
+        if uses_imported_binding {
+            ctx.push(&binding_name);
+        } else {
+            ctx.use_helper(RuntimeHelper::ResolveDirective);
+            ctx.push(ctx.helper(RuntimeHelper::ResolveDirective));
+            ctx.push("(\"");
+            ctx.push(directive);
+            ctx.push("\")");
+        }
         ctx.newline();
         has_resolved_assets = true;
     }

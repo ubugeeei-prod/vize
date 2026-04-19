@@ -55,7 +55,6 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             let has_custom_dirs = has_custom_directives(el);
             if has_custom_dirs {
                 ctx.use_helper(RuntimeHelper::WithDirectives);
-                ctx.use_helper(RuntimeHelper::ResolveDirective);
                 ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
                 ctx.push("(");
             }

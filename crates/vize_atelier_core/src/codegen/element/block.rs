@@ -65,7 +65,6 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
-        ctx.use_helper(RuntimeHelper::ResolveDirective);
         ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
         ctx.push("(");
     }

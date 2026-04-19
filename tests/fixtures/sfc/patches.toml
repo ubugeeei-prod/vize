@@ -322,6 +322,18 @@ export default {
 """
 
 [[cases]]
+name = "imported custom directive binding in script setup"
+input = """
+<script setup lang="ts">
+import { vElementHover } from '@vueuse/components'
+</script>
+
+<template>
+  <div v-element-hover="() => {}" />
+</template>
+"""
+
+[[cases]]
 name = "v-if with custom directive on element"
 input = """
 <script setup>
