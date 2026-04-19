@@ -416,3 +416,59 @@ const x = 1
     assert!(result.script_setup.is_some());
     insta::assert_debug_snapshot!(result.script_setup.unwrap());
 }
+
+#[test]
+fn test_malformed_template_reports_error() {
+    let source = "<template><div></div>";
+    let err = parse_sfc(source, Default::default()).unwrap_err();
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
+    assert!(err.message.contains("<template>"));
+
+    let loc = err.loc.as_ref().unwrap();
+    assert_eq!(loc.tag_start, 0);
+    assert_eq!(loc.start_line, 1);
+    assert_eq!(loc.start_column, 1);
+    insta::assert_debug_snapshot!(err);
+}
+
+#[test]
+fn test_malformed_script_opening_tag_reports_error() {
+    let source = r#"<script lang="ts""#;
+    let err = parse_sfc(source, Default::default()).unwrap_err();
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
+    assert!(err.message.contains("opening tag is incomplete"));
+}
+
+#[test]
+fn test_malformed_script_closing_tag_reports_error() {
+    let source = r#"<script lang="ts"></script"#;
+    let err = parse_sfc(source, Default::default()).unwrap_err();
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
+    assert!(err.message.contains("closing tag is missing"));
+}
+
+#[test]
+fn test_malformed_custom_block_reports_error() {
+    let source = r#"<i18n>{"hello":"world"}"#;
+    let err = parse_sfc(source, Default::default()).unwrap_err();
+    assert_eq!(err.code.as_deref(), Some("MALFORMED_BLOCK"));
+    assert!(err.message.contains("<i18n>"));
+}
+
+#[test]
+fn test_closing_block_tags_with_whitespace() {
+    let source = r#"<script>console.log(1)</script   >
+<style>.red { color: red; }</style
+>
+<i18n>{"hello":"world"}</i18n   >"#;
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    let script = result.script.unwrap();
+    assert!(script.content.contains("console.log(1)"));
+
+    assert_eq!(result.styles.len(), 1);
+    assert!(result.styles[0].content.contains(".red"));
+
+    assert_eq!(result.custom_blocks.len(), 1);
+    assert_eq!(result.custom_blocks[0].block_type, "i18n");
+}

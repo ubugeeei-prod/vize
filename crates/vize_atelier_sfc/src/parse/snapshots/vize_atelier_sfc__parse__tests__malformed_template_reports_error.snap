@@ -1,0 +1,22 @@
+---
+source: crates/vize_atelier_sfc/src/parse/tests.rs
+expression: err
+---
+SfcError {
+    message: "Malformed <template> block: the closing tag is missing.",
+    code: Some(
+        "MALFORMED_BLOCK",
+    ),
+    loc: Some(
+        BlockLocation {
+            start: 0,
+            end: 21,
+            tag_start: 0,
+            tag_end: 21,
+            start_line: 1,
+            start_column: 1,
+            end_line: 1,
+            end_column: 22,
+        },
+    ),
+}
