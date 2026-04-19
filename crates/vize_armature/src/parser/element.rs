@@ -330,6 +330,21 @@ impl<'a> Parser<'a> {
         self.add_child(TemplateChildNode::Comment(boxed));
     }
 
+    /// Process CDATA
+    pub(super) fn on_cdata_impl(&mut self, start: usize, end: usize) {
+        let is_html_ns = self
+            .stack
+            .last()
+            .map(|e| e.element.ns)
+            .unwrap_or(Namespace::Html)
+            == Namespace::Html;
+        if is_html_ns {
+            self.on_error_impl(ErrorCode::CdataInHtmlContent, start.saturating_sub(9));
+        } else {
+            self.on_text_impl(start, end);
+        }
+    }
+
     /// Handle error
     pub(super) fn on_error_impl(&mut self, code: ErrorCode, index: usize) {
         let len = self.source.len();

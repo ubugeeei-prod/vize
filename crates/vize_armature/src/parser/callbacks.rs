@@ -100,8 +100,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_comment_impl(start, end);
     }
 
-    fn on_cdata(&mut self, _start: usize, _end: usize) {
-        // CDATA handling
+    fn on_cdata(&mut self, start: usize, end: usize) {
+        self.parser.on_cdata_impl(start, end);
     }
 
     fn on_processing_instruction(&mut self, _start: usize, _end: usize) {
