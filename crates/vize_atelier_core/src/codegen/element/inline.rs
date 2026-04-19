@@ -19,7 +19,10 @@ use super::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
         props::generate_props,
-        slots::{generate_slots, has_dynamic_slots_flag, has_slot_children},
+        slots::{
+            generate_slot_outlet_name, generate_slot_outlet_props_entries, generate_slots,
+            has_dynamic_slots_flag, has_slot_children, has_slot_outlet_props,
+        },
     },
     directives::{generate_vmodel_closing, generate_vshow_closing},
     helpers::{
@@ -343,30 +346,8 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.use_helper(RuntimeHelper::RenderSlot);
             ctx.push(helper);
             ctx.push("(_ctx.$slots, ");
-            // Get slot name from props
-            let slot_name = el
-                .props
-                .iter()
-                .find_map(|p| match p {
-                    PropNode::Attribute(attr) if attr.name == "name" => {
-                        attr.value.as_ref().map(|v| v.content.as_str())
-                    }
-                    _ => None,
-                })
-                .unwrap_or("default");
-            ctx.push("\"");
-            ctx.push(slot_name);
-            ctx.push("\"");
-
-            // Generate slot props (excluding 'name' attribute)
-            let slot_props: Vec<_> = el
-                .props
-                .iter()
-                .filter(|p| match p {
-                    PropNode::Attribute(attr) => attr.name != "name",
-                    PropNode::Directive(_) => true,
-                })
-                .collect();
+            generate_slot_outlet_name(ctx, el);
+            let has_slot_props = has_slot_outlet_props(el);
 
             // Generate fallback content if present
             // Slots: skip scope_id in props -- not a real rendered element
@@ -374,11 +355,12 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.skip_scope_id = true;
             if !el.children.is_empty() {
                 // If we have children but no props, pass empty object
-                if slot_props.is_empty() {
+                if !has_slot_props {
                     ctx.push(", {}");
                 } else {
-                    ctx.push(", ");
-                    generate_props(ctx, &el.props);
+                    ctx.push(", {");
+                    generate_slot_outlet_props_entries(ctx, el);
+                    ctx.push("}");
                 }
                 ctx.push(", () => [");
                 ctx.skip_scope_id = prev_skip_scope_id;
@@ -398,10 +380,11 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.deindent();
                 ctx.newline();
                 ctx.push("])");
-            } else if !slot_props.is_empty() {
-                ctx.push(", ");
-                generate_props(ctx, &el.props);
+            } else if has_slot_props {
+                ctx.push(", {");
+                generate_slot_outlet_props_entries(ctx, el);
                 ctx.skip_scope_id = prev_skip_scope_id;
+                ctx.push("}");
                 ctx.push(")");
             } else {
                 ctx.skip_scope_id = prev_skip_scope_id;

@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: js_output.as_str()
+---
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, renderSlot as _renderSlot } from "vue"
+
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const tabs = [
+  { key: 'basic', label: 'Basic' },
+  { key: 'parts', label: 'Parts' },
+]
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(tabs, (tab) => {
+        return (_openBlock(), _createElementBlock(_Fragment, { key: tab.key }, [
+          _renderSlot(_ctx.$slots, tab.key, {tab: tab})
+        ], 64 /* STABLE_FRAGMENT */))
+      }), 128 /* KEYED_FRAGMENT */)) ]))
+}
+}
+
+}

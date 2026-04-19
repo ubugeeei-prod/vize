@@ -200,6 +200,25 @@ const showing = ref(false)
 """
 
 [[cases]]
+name = "dynamic slot outlet name in loop"
+input = """
+<script setup>
+const tabs = [
+  { key: 'basic', label: 'Basic' },
+  { key: 'parts', label: 'Parts' },
+]
+</script>
+
+<template>
+  <div>
+    <template v-for="tab in tabs" :key="tab.key">
+      <slot :name="tab.key" :tab="tab" />
+    </template>
+  </div>
+</template>
+"""
+
+[[cases]]
 name = "v-if with custom directive on element"
 input = """
 <script setup>

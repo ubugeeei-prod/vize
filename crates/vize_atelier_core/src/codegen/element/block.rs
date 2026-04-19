@@ -19,7 +19,10 @@ use super::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
         props::generate_props,
-        slots::{generate_slots, has_dynamic_slots_flag, has_slot_children},
+        slots::{
+            generate_slot_outlet_name, generate_slot_outlet_props_entries, generate_slots,
+            has_dynamic_slots_flag, has_slot_children, has_slot_outlet_props,
+        },
     },
     directives::{
         generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
@@ -90,25 +93,17 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.use_helper(RuntimeHelper::RenderSlot);
         ctx.push(helper);
         ctx.push("(_ctx.$slots, ");
-
-        // Get slot name from props
-        let slot_name = el
-            .props
-            .iter()
-            .find_map(|p| match p {
-                PropNode::Attribute(attr) if attr.name == "name" => {
-                    attr.value.as_ref().map(|v| v.content.as_str())
-                }
-                _ => None,
-            })
-            .unwrap_or("default");
-        ctx.push("\"");
-        ctx.push(slot_name);
-        ctx.push("\"");
+        generate_slot_outlet_name(ctx, el);
 
         // Generate fallback content if present
         if !el.children.is_empty() {
-            ctx.push(", {}, () => [");
+            if has_slot_outlet_props(el) {
+                ctx.push(", {");
+                generate_slot_outlet_props_entries(ctx, el);
+                ctx.push("}, () => [");
+            } else {
+                ctx.push(", {}, () => [");
+            }
             ctx.indent();
             let filtered: Vec<_> = el
                 .children
@@ -125,6 +120,10 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.deindent();
             ctx.newline();
             ctx.push("])");
+        } else if has_slot_outlet_props(el) {
+            ctx.push(", {");
+            generate_slot_outlet_props_entries(ctx, el);
+            ctx.push("})");
         } else {
             ctx.push(")");
         }
@@ -461,25 +460,19 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.use_helper(RuntimeHelper::RenderSlot);
             ctx.push(helper);
             ctx.push("(_ctx.$slots, ");
-
-            // Get slot name from props
-            let slot_name = el
-                .props
-                .iter()
-                .find_map(|p| match p {
-                    PropNode::Attribute(attr) if attr.name == "name" => {
-                        attr.value.as_ref().map(|v| v.content.as_str())
-                    }
-                    _ => None,
-                })
-                .unwrap_or("default");
-            ctx.push("\"");
-            ctx.push(slot_name);
-            ctx.push("\"");
+            generate_slot_outlet_name(ctx, el);
+            let has_slot_props = has_slot_outlet_props(el);
 
             // Generate fallback content if present
             if !el.children.is_empty() {
-                ctx.push(", {}, () => [");
+                if !has_slot_props {
+                    ctx.push(", {}");
+                } else {
+                    ctx.push(", {");
+                    generate_slot_outlet_props_entries(ctx, el);
+                    ctx.push("}");
+                }
+                ctx.push(", () => [");
                 ctx.indent();
                 let filtered: Vec<_> = el
                     .children
@@ -496,6 +489,10 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.deindent();
                 ctx.newline();
                 ctx.push("])");
+            } else if has_slot_props {
+                ctx.push(", {");
+                generate_slot_outlet_props_entries(ctx, el);
+                ctx.push("})");
             } else {
                 ctx.push(")");
             }

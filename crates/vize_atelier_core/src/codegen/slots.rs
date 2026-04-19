@@ -9,8 +9,14 @@ use super::context::CodegenContext;
 use super::expression::generate_expression;
 use super::helpers::{escape_js_string, is_valid_js_identifier};
 use super::node::generate_node;
+use super::props::{generate_directive_prop_with_static, is_supported_directive};
 use vize_carton::String;
 use vize_carton::ToCompactString;
+
+pub(crate) enum SlotOutletName<'a> {
+    Static(String),
+    Dynamic(&'a ExpressionNode<'a>),
+}
 
 /// Get slot props expression as raw source (not transformed)
 fn get_slot_props(dir: &DirectiveNode<'_>) -> Option<vize_carton::String> {
@@ -80,6 +86,161 @@ fn extract_slot_params(props_str: &str) -> Vec<String> {
     let mut params = Vec::new();
     super::v_for::extract_destructure_params(props_str.trim(), &mut params);
     params
+}
+
+fn is_slot_name_bind(dir: &DirectiveNode<'_>) -> bool {
+    if dir.name.as_str() != "bind" {
+        return false;
+    }
+
+    match dir.arg.as_ref() {
+        Some(ExpressionNode::Simple(exp)) => exp.is_static && exp.content.as_str() == "name",
+        _ => false,
+    }
+}
+
+fn is_slot_name_prop(prop: &PropNode<'_>) -> bool {
+    match prop {
+        PropNode::Attribute(attr) => attr.name.as_str() == "name",
+        PropNode::Directive(dir) => is_slot_name_bind(dir),
+    }
+}
+
+pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletName<'a> {
+    for prop in &el.props {
+        match prop {
+            PropNode::Attribute(attr) if attr.name.as_str() == "name" => {
+                let name = attr
+                    .value
+                    .as_ref()
+                    .map(|v| v.content.clone())
+                    .unwrap_or_else(|| String::new("default"));
+                return SlotOutletName::Static(name);
+            }
+            PropNode::Directive(dir) if is_slot_name_bind(dir) => {
+                if let Some(exp) = dir.exp.as_ref() {
+                    return SlotOutletName::Dynamic(exp);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    SlotOutletName::Static(String::new("default"))
+}
+
+pub(crate) fn generate_slot_outlet_name(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    match get_slot_outlet_name(el) {
+        SlotOutletName::Static(name) => {
+            ctx.push("\"");
+            ctx.push(&escape_js_string(name.as_str()));
+            ctx.push("\"");
+        }
+        SlotOutletName::Dynamic(exp) => generate_expression(ctx, exp),
+    }
+}
+
+pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| !is_slot_name_prop(prop))
+}
+
+pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    let static_class = el.props.iter().find_map(|prop| {
+        if is_slot_name_prop(prop) {
+            return None;
+        }
+        if let PropNode::Attribute(attr) = prop {
+            if attr.name.as_str() == "class" {
+                return attr.value.as_ref().map(|v| v.content.as_str());
+            }
+        }
+        None
+    });
+
+    let static_style = el.props.iter().find_map(|prop| {
+        if is_slot_name_prop(prop) {
+            return None;
+        }
+        if let PropNode::Attribute(attr) = prop {
+            if attr.name.as_str() == "style" {
+                return attr.value.as_ref().map(|v| v.content.as_str());
+            }
+        }
+        None
+    });
+
+    let has_dynamic_class = el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
+            matches!(
+                dir.arg.as_ref(),
+                Some(ExpressionNode::Simple(exp))
+                    if exp.is_static && exp.content.as_str() == "class"
+            )
+        }
+        _ => false,
+    });
+
+    let has_dynamic_style = el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
+            matches!(
+                dir.arg.as_ref(),
+                Some(ExpressionNode::Simple(exp))
+                    if exp.is_static && exp.content.as_str() == "style"
+            )
+        }
+        _ => false,
+    });
+
+    let mut first = true;
+    for prop in &el.props {
+        if is_slot_name_prop(prop) {
+            continue;
+        }
+
+        match prop {
+            PropNode::Attribute(attr) => {
+                if (attr.name.as_str() == "class" && has_dynamic_class)
+                    || (attr.name.as_str() == "style" && has_dynamic_style)
+                {
+                    continue;
+                }
+
+                if !first {
+                    ctx.push(", ");
+                }
+
+                if is_valid_js_identifier(&attr.name) {
+                    ctx.push(&attr.name);
+                } else {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(&attr.name));
+                    ctx.push("\"");
+                }
+                ctx.push(": ");
+                if let Some(value) = &attr.value {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(value.content.as_str()));
+                    ctx.push("\"");
+                } else {
+                    ctx.push("\"\"");
+                }
+                first = false;
+            }
+            PropNode::Directive(dir) => {
+                if !is_supported_directive(dir)
+                    || (dir.name.as_str() == "bind" && dir.arg.is_none())
+                {
+                    continue;
+                }
+
+                if !first {
+                    ctx.push(", ");
+                }
+                generate_directive_prop_with_static(ctx, dir, static_class, static_style);
+                first = false;
+            }
+        }
+    }
 }
 
 /// Check if component has slot children that need to be generated as slots object
