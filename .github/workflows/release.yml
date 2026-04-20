@@ -480,7 +480,8 @@ jobs:
           node -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('npm/oxlint-plugin-vize/package.json', 'utf8'));
-            const version = pkg.version;
+            const nativePkg = JSON.parse(fs.readFileSync('npm/vize-native/package.json', 'utf8'));
+            const version = nativePkg.version;
             if (pkg.optionalDependencies) {
               for (const dep of Object.keys(pkg.optionalDependencies)) {
                 if (dep.startsWith('@vizejs/native-')) {
@@ -489,7 +490,7 @@ jobs:
               }
             }
             fs.writeFileSync('npm/oxlint-plugin-vize/package.json', JSON.stringify(pkg, null, 2) + '\n');
-            console.log('Updated optionalDependencies to ' + version);
+            console.log('Updated optionalDependencies to native version ' + version);
           "
           cat npm/oxlint-plugin-vize/package.json
 

@@ -122,8 +122,8 @@ const devApp = (target?: string) =>
 const publishWithVersionTag = (cwd: string, publishCommand: string) =>
   `sh -c 'cd ${cwd} && VERSION=$(node -p "require(\\\"./package.json\\\").version") && case "$VERSION" in *-alpha*) ${publishCommand} --tag alpha ;; *-beta*) ${publishCommand} --tag beta ;; *-rc*) ${publishCommand} --tag rc ;; *) ${publishCommand} ;; esac'`;
 
-const injectNativeOptionalDependencyVersions = (cwd: string) =>
-  `node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('${cwd}/package.json', 'utf8')); const version = pkg.version; if (pkg.optionalDependencies) { for (const dep of Object.keys(pkg.optionalDependencies)) { if (dep.startsWith('@vizejs/native-')) { pkg.optionalDependencies[dep] = version; } } } fs.writeFileSync('${cwd}/package.json', JSON.stringify(pkg, null, 2) + '\\n');"`;
+const injectNativeOptionalDependencyVersions = (cwd: string, versionCwd = cwd) =>
+  `node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('${cwd}/package.json', 'utf8')); const versionPkg = JSON.parse(fs.readFileSync('${versionCwd}/package.json', 'utf8')); const version = versionPkg.version; if (pkg.optionalDependencies) { for (const dep of Object.keys(pkg.optionalDependencies)) { if (dep.startsWith('@vizejs/native-')) { pkg.optionalDependencies[dep] = version; } } } fs.writeFileSync('${cwd}/package.json', JSON.stringify(pkg, null, 2) + '\\n');"`;
 
 const setupTasks = {
   setup: noCacheTask("vp install"),
@@ -254,7 +254,7 @@ const releaseTasks = {
     `${runTask("build:vite-plugin")} && ${publishWithVersionTag("npm/vite-plugin-vize", "pnpm publish --access public --no-git-checks")}`,
   ),
   "publish:oxlint-plugin": noCacheTask(
-    `${runInPackages("build", ["./npm/oxlint-plugin-vize"])} && ${injectNativeOptionalDependencyVersions("npm/oxlint-plugin-vize")} && ${publishWithVersionTag("npm/oxlint-plugin-vize", "pnpm publish --access public --no-git-checks")}`,
+    `${runInPackages("build", ["./npm/oxlint-plugin-vize"])} && ${injectNativeOptionalDependencyVersions("npm/oxlint-plugin-vize", "npm/vize-native")} && ${publishWithVersionTag("npm/oxlint-plugin-vize", "pnpm publish --access public --no-git-checks")}`,
   ),
   "publish:npm": noCacheTask(
     runTasks("publish:wasm", "publish:native", "publish:vite-plugin", "publish:oxlint-plugin"),

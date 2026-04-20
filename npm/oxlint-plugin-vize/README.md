@@ -5,8 +5,18 @@ Oxlint JS plugin bridge for Vize Patina.
 This package lets Oxlint execute Patina through Vize's native binding while still using Oxlint's JS plugin model and rule configuration.
 
 > [!IMPORTANT]
-> As of March 21, 2026, `oxlint-plugin-vize` is not yet on npm. The first public release is planned as an alpha.
-> Until [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465) lands, prefer `oxlint-vize -f stylish` for terminal workflows and treat machine-readable / full-fidelity original-SFC reporting as best-effort.
+> `oxlint-plugin-vize` is an alpha package for terminal-first Vue SFC linting.
+> Until upstream Vue support in Oxlint matures, prefer `oxlint-vize -f stylish` for day-to-day output and treat machine-readable / full-fidelity original-SFC reporting as best-effort.
+
+## Main Features
+
+- Runs Vize Patina rules inside Oxlint as `vize/*` diagnostics, so Vue-specific findings can live beside Oxlint core rules in one command.
+- Keeps Oxlint's existing rules and built-in `vue` plugin active. The bridge adds Vize rules; it does not replace `eqeqeq`, `no-console`, or your existing `vue/*` setup.
+- Ships preset rule maps for JS/TS Oxlint configs: `configs.recommended`, `configs.essential`, `configs.opinionated`, `configs.nuxt`, `configs.all`, and type-aware opt-in variants.
+- Supports runtime settings through `settings.vize`, including `locale`, `preset`, and `helpLevel`.
+- Provides the `oxlint-vize` CLI wrapper, which runs Oxlint with a scriptless-SFC workaround and rewrites temporary paths back to the original `.vue` files.
+- Resolves Vize native bindings through platform-specific optional dependencies, so published installs do not need a separate `@vizejs/native` package.
+- Caches file contents and native rule results for the lifetime of the Oxlint process, reducing duplicate work when several Vize rules are enabled for the same file.
 
 ## Performance
 
@@ -127,11 +137,14 @@ pnpm exec oxlint-vize -c .oxlintrc.json -f stylish src
 `oxlint-vize` is a thin wrapper around `oxlint`. During the alpha period, it appends a temporary `<script setup>` block only for scriptless `.vue` files so Oxlint's JS plugin pipeline still invokes Vize, then rewrites reported paths back to the original files. This workaround is intended to be removed once upstream JS plugin coverage improves.
 `stylish` is currently the most usable compromise for mixed Oxlint + Vize output because the Patina summary can inline the original SFC location even though Oxlint still anchors JS plugin diagnostics to the extracted script program.
 
-## Current limitations
+## Limitations
 
 - Raw `oxlint` still misses files without `<script>` or `<script setup>`. The temporary `oxlint-vize` wrapper works around this by generating a transient script block for scriptless `.vue` files before invoking `oxlint`.
 - Oxlint JS plugins only accept ranges inside the extracted Vue script program. For template diagnostics, Vize now inlines the original SFC block and `line:column` into the summary, while the formatter anchor still points at the script block.
-- Because of [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465), formatter parity is not there yet. `stylish` is recommended for human-readable terminal output, while `json` and other machine-readable outputs are best treated as debugging aids for now.
+- Formatter parity is not there yet. `stylish` is recommended for human-readable terminal output, while `json` and other machine-readable outputs are best treated as debugging aids for original template/style positions.
+- Oxlint core rules that need JavaScript bindings extracted from Vue templates, such as template-aware unused-variable checks, still depend on upstream work in [Oxc's Better Vue Support](https://github.com/oxc-project/oxc/issues/15761).
+- Vize's own SFC diagnostics can run through the plugin, but precise original-SFC ranges across all Oxlint formatters depend on the JS plugin reporting work tracked in [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465).
+- Type-aware Vize rules are alpha-stage and excluded from the default exported configs. Opt into them explicitly with `configs.recommendedWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`.
 
 ## Alpha expectations
 
