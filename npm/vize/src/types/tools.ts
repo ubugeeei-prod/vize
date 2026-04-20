@@ -1,4 +1,5 @@
 import type { LintPreset, RuleSeverity, RuleCategory } from "./core.js";
+import type { LintRulesConfig } from "./rules.js";
 
 // ============================================================================
 // LinterConfig
@@ -22,7 +23,7 @@ export interface LinterConfig {
   /**
    * Rules to enable/disable
    */
-  rules?: Record<string, RuleSeverity>;
+  rules?: LintRulesConfig;
 
   /**
    * Category-level severity overrides

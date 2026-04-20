@@ -8,6 +8,8 @@ export type {
   VizeConfig,
 } from "./core.js";
 
+export type { LintRuleName, LintRulesConfig } from "./rules.js";
+
 export type { CompilerConfig, VitePluginConfig } from "./compiler.js";
 
 export type { LinterConfig, TypeCheckerConfig, FormatterConfig, LspConfig } from "./tools.js";

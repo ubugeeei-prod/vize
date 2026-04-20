@@ -45,10 +45,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "vp run generate:rule-types && vp pack",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
-    "fmt": "vp fmt --write src vite.config.ts"
+    "fmt": "vp fmt --write src vite.config.ts",
+    "generate:rule-types": "node --experimental-strip-types ../../scripts/generate-vize-rule-types.ts"
   },
   "dependencies": {
     "oxc-transform": "^0.56.0"

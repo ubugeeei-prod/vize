@@ -28,6 +28,8 @@ export type {
   LintPreset,
   RuleSeverity,
   RuleCategory,
+  LintRuleName,
+  LintRulesConfig,
 } from "./types/index.js";
 
 // Config utilities
