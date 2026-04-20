@@ -5,7 +5,7 @@ Oxlint JS plugin bridge for Vize Patina.
 This package lets Oxlint execute Patina through Vize's native binding while still using Oxlint's JS plugin model and rule configuration.
 
 > [!IMPORTANT]
-> `oxlint-plugin-vize` is an alpha package for terminal-first Vue SFC linting.
+> `oxlint-plugin-vize` is a terminal-first Vue SFC linting package.
 > Until upstream Vue support in Oxlint matures, prefer `oxlint-vize -f stylish` for day-to-day output and treat machine-readable / full-fidelity original-SFC reporting as best-effort.
 
 ## Main Features
@@ -36,10 +36,10 @@ vp run --filter './npm/vize-native' build
 vp run --filter './npm/oxlint-plugin-vize' build
 ```
 
-Once the alpha release is published, install it with:
+Install it from npm with:
 
 ```bash
-pnpm add -D oxlint oxlint-plugin-vize@alpha
+pnpm add -D oxlint oxlint-plugin-vize
 ```
 
 `oxlint-plugin-vize` pulls the appropriate Vize native binding for the current platform through optional dependencies, so no separate `@vizejs/native` install is required for published builds.
@@ -63,7 +63,7 @@ Enable Oxlint's built-in `vue` plugin as well as this JS plugin:
 
 This bridge only adds the `vize/*` rules. Oxlint's existing core rules and built-in plugin rules still run as configured, so checks like `eqeqeq`, `no-console`, or your existing `vue/*` setup continue to report normally.
 
-If you want a lower-config JS/TS Oxlint setup during the alpha period, the package also exports preset rule maps:
+If you want a lower-config JS/TS Oxlint setup, the package also exports preset rule maps:
 
 ```js
 import { configs } from "oxlint-plugin-vize";
@@ -81,7 +81,7 @@ export default {
 };
 ```
 
-`configs.recommended`, `configs.essential`, `configs.opinionated`, `configs.nuxt`, and `configs.all` intentionally skip Vize's unstable type-aware rules for now. If you explicitly want those alpha-stage rules too, use `configs.recommendedWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`.
+`configs.recommended`, `configs.essential`, `configs.opinionated`, `configs.nuxt`, and `configs.all` intentionally skip Vize's unstable type-aware rules for now. If you explicitly want those experimental rules too, use `configs.recommendedWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`.
 
 You can pass Patina settings through `settings.vize`:
 
@@ -134,7 +134,7 @@ For day-to-day terminal runs, the recommended command today is:
 pnpm exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
-`oxlint-vize` is a thin wrapper around `oxlint`. During the alpha period, it appends a temporary `<script setup>` block only for scriptless `.vue` files so Oxlint's JS plugin pipeline still invokes Vize, then rewrites reported paths back to the original files. This workaround is intended to be removed once upstream JS plugin coverage improves.
+`oxlint-vize` is a thin wrapper around `oxlint`. Until upstream JS plugin coverage improves, it appends a temporary `<script setup>` block only for scriptless `.vue` files so Oxlint's JS plugin pipeline still invokes Vize, then rewrites reported paths back to the original files.
 `stylish` is currently the most usable compromise for mixed Oxlint + Vize output because the Patina summary can inline the original SFC location even though Oxlint still anchors JS plugin diagnostics to the extracted script program.
 
 ## Limitations
@@ -144,10 +144,10 @@ pnpm exec oxlint-vize -c .oxlintrc.json -f stylish src
 - Formatter parity is not there yet. `stylish` is recommended for human-readable terminal output, while `json` and other machine-readable outputs are best treated as debugging aids for original template/style positions.
 - Oxlint core rules that need JavaScript bindings extracted from Vue templates, such as template-aware unused-variable checks, still depend on upstream work in [Oxc's Better Vue Support](https://github.com/oxc-project/oxc/issues/15761).
 - Vize's own SFC diagnostics can run through the plugin, but precise original-SFC ranges across all Oxlint formatters depend on the JS plugin reporting work tracked in [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465).
-- Type-aware Vize rules are alpha-stage and excluded from the default exported configs. Opt into them explicitly with `configs.recommendedWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`.
+- Type-aware Vize rules are experimental and excluded from the default exported configs. Opt into them explicitly with `configs.recommendedWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`.
 
-## Alpha expectations
+## Current expectations
 
-- The planned alpha release is meant for terminal-first workflows.
-- The alpha is not yet a promise of precise original-SFC spans across every Oxlint formatter.
+- This release is meant for terminal-first workflows.
+- It is not yet a promise of precise original-SFC spans across every Oxlint formatter.
 - Once Oxlint can preserve original Vue positions for JS plugins reliably, Vize can improve formatter parity and machine-readable reporting without relying on summary fallbacks.
