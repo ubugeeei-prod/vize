@@ -183,6 +183,35 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_component_name_with_colon_uses_valid_identifier() {
+        let allocator = bumpalo::Bump::new();
+        let parser_opts = crate::ParserOptions {
+            is_native_tag: Some(vize_carton::is_native_tag),
+            ..Default::default()
+        };
+        let (mut root, errors) = crate::parse_with_options(
+            &allocator,
+            r#"<global:head title="Page Title" />"#,
+            parser_opts,
+        );
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        crate::transform::transform(
+            &allocator,
+            &mut root,
+            crate::TransformOptions::default(),
+            None,
+        );
+        let output = result_output(&super::generate(&root, crate::CodegenOptions::default()));
+
+        assert!(
+            output.contains(r#"const _component_global_head = _resolveComponent("global:head")"#)
+        );
+        assert!(output.contains("_createBlock(_component_global_head"));
+        assert!(!output.contains("_component_global:head"));
+    }
+
+    #[test]
     fn test_root_directive_comment_does_not_create_fragment_hole() {
         let result =
             compile!("<!-- @vize:forget sections are labeled by their headings --><section />");

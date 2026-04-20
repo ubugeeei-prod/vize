@@ -17,7 +17,7 @@ use super::super::{
         has_custom_directives, has_vmodel_directive, has_vshow_directive,
     },
     expression::generate_expression,
-    helpers::{escape_js_string, is_builtin_component},
+    helpers::{escape_js_string, is_builtin_component, to_valid_asset_identifier},
     node::generate_node,
     patch_flag::{
         calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
@@ -182,8 +182,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                         }
                         ctx.push(&el.tag);
                     } else {
-                        ctx.push("_component_");
-                        ctx.push(&el.tag.replace('-', "_"));
+                        ctx.push(&to_valid_asset_identifier("component", &el.tag));
                     }
                 } else if gen_is_template {
                     // Template with multiple children: use Fragment

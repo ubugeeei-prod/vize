@@ -7,6 +7,7 @@ use crate::ast::{RootNode, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
 use super::element::helpers::is_dynamic_component_tag;
+use super::helpers::to_valid_asset_identifier;
 use vize_carton::{camelize, capitalize, String};
 
 /// Check if a root-level text node is ignorable whitespace.
@@ -121,8 +122,8 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
         }
 
         ctx.use_helper(RuntimeHelper::ResolveComponent);
-        ctx.push("const _component_");
-        ctx.push(&component.replace('-', "_"));
+        ctx.push("const ");
+        ctx.push(&to_valid_asset_identifier("component", component));
         ctx.push(" = ");
         ctx.push(ctx.helper(RuntimeHelper::ResolveComponent));
         ctx.push("(\"");
@@ -134,8 +135,8 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
 
     // Resolve directives
     for directive in root.directives.iter() {
-        ctx.push("const _directive_");
-        ctx.push(&directive.replace('-', "_"));
+        ctx.push("const ");
+        ctx.push(&to_valid_asset_identifier("directive", directive));
         ctx.push(" = ");
         let binding_name = imported_directive_binding_name(directive);
         let uses_imported_binding = ctx

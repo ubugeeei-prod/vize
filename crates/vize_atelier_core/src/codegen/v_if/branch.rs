@@ -19,7 +19,7 @@ use super::{
             has_custom_directives, has_vmodel_directive, has_vshow_directive,
         },
         expression::generate_expression,
-        helpers::{escape_js_string, is_builtin_component},
+        helpers::{escape_js_string, is_builtin_component, to_valid_asset_identifier},
         node::generate_node,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
@@ -203,8 +203,7 @@ fn generate_if_branch_component(
         }
         ctx.push(el.tag.as_str());
     } else {
-        ctx.push("_component_");
-        ctx.push(&el.tag.replace('-', "_"));
+        ctx.push(&to_valid_asset_identifier("component", &el.tag));
     }
 
     let (mut patch_flag, dynamic_props) = if is_dynamic_component {

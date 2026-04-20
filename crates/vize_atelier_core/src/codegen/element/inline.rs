@@ -13,7 +13,7 @@ use super::{
         children::{generate_children, is_directive_comment},
         context::CodegenContext,
         expression::generate_expression,
-        helpers::is_builtin_component,
+        helpers::{is_builtin_component, to_valid_asset_identifier},
         node::generate_node,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
@@ -215,8 +215,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 }
                 ctx.push(&el.tag);
             } else {
-                ctx.push("_component_");
-                ctx.push(&el.tag.replace('-', "_"));
+                ctx.push(&to_valid_asset_identifier("component", &el.tag));
             }
 
             // Calculate patch flag and dynamic props for component

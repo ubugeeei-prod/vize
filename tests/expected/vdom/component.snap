@@ -74,6 +74,20 @@ export function render(_ctx, _cache) {
 }
 
 ===
+name: component name with colon
+options: default
+--- INPUT ---
+<global:head title="Page Title" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_global_head = _resolveComponent("global:head")
+
+  return (_openBlock(), _createBlock(_component_global_head, { title: "Page Title" }))
+}
+
+===
 name: static prop
 options: default
 --- INPUT ---

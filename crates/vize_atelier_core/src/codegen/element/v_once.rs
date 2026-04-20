@@ -10,7 +10,7 @@ use crate::ast::{
 use super::super::{
     context::CodegenContext,
     expression::generate_expression,
-    helpers::escape_js_string,
+    helpers::{escape_js_string, to_valid_asset_identifier},
     node::generate_node,
     patch_flag::{calculate_element_patch_info, patch_flag_name},
     props::is_supported_directive,
@@ -45,8 +45,8 @@ pub fn generate_v_once_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.use_helper(RuntimeHelper::CreateVNode);
         ctx.use_helper(RuntimeHelper::ResolveComponent);
         ctx.push(ctx.helper(RuntimeHelper::CreateVNode));
-        ctx.push("(_component_");
-        ctx.push(&el.tag.replace('-', "_"));
+        ctx.push("(");
+        ctx.push(&to_valid_asset_identifier("component", &el.tag));
         ctx.push(")");
     } else {
         ctx.use_helper(RuntimeHelper::CreateElementVNode);
