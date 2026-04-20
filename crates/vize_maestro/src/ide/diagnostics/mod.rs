@@ -86,18 +86,25 @@ impl DiagnosticService {
 
         let content = doc.text();
         let mut diagnostics = Vec::new();
+        let features = state.lsp_features();
+
+        if !features.has_diagnostics() {
+            return diagnostics;
+        }
 
         // Check if this is an Art file (*.art.vue)
         let path = uri.path();
         if path.ends_with(".art.vue") {
             // Musea-specific diagnostics for Art files
-            diagnostics.extend(Self::collect_musea_diagnostics(uri, &content));
+            if features.lint {
+                diagnostics.extend(Self::collect_musea_diagnostics(uri, &content));
+            }
             // Don't return early here; async collection still adds Corsa diagnostics.
             return diagnostics;
         }
 
         // Standard SFC processing
-        // Collect SFC parser diagnostics
+        // Collect parser diagnostics when any diagnostic pipeline is enabled.
         let sfc_diags = Self::collect_sfc_diagnostics(uri, &content);
         tracing::info!("collect: SFC parser diagnostics: {}", sfc_diags.len());
         diagnostics.extend(sfc_diags);
@@ -110,10 +117,14 @@ impl DiagnosticService {
         );
         diagnostics.extend(template_diags);
 
-        // Collect linter diagnostics (vize_patina)
-        let lint_diags = Self::collect_lint_diagnostics(uri, &content);
-        tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
-        diagnostics.extend(lint_diags);
+        if features.lint {
+            // Collect linter diagnostics (vize_patina)
+            let lint_diags = Self::collect_lint_diagnostics(uri, &content);
+            tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
+            diagnostics.extend(lint_diags);
+        } else {
+            tracing::info!("collect: patina lint diagnostics skipped (disabled by config)");
+        }
 
         if state.is_lsp_typecheck_enabled() {
             // Collect type checker diagnostics (vize_canon)
@@ -125,12 +136,14 @@ impl DiagnosticService {
         }
 
         // Also lint inline <art> blocks in regular .vue files
-        let inline_art_diags = Self::collect_inline_art_diagnostics(uri, &content);
-        tracing::info!(
-            "collect: inline art diagnostics: {}",
-            inline_art_diags.len()
-        );
-        diagnostics.extend(inline_art_diags);
+        if features.lint {
+            let inline_art_diags = Self::collect_inline_art_diagnostics(uri, &content);
+            tracing::info!(
+                "collect: inline art diagnostics: {}",
+                inline_art_diags.len()
+            );
+            diagnostics.extend(inline_art_diags);
+        }
 
         diagnostics
     }

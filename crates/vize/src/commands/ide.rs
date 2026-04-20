@@ -270,73 +270,33 @@ fn zed_install() {
     match extensions_dir {
         Some(dir) => {
             let vize_dir = dir.join("vize");
-
-            // Create extension directory
-            if let Err(e) = std::fs::create_dir_all(&vize_dir) {
-                eprintln!("Failed to create extension directory: {}", e);
+            let Some(source_dir) = find_zed_extension_source() else {
+                eprintln!("Could not find npm/zed-vize extension source");
+                eprintln!(
+                    "Please run from the vize repository or install from Zed's extension gallery"
+                );
                 std::process::exit(1);
+            };
+
+            if vize_dir.exists() {
+                if let Err(e) = std::fs::remove_dir_all(&vize_dir) {
+                    eprintln!("Failed to replace existing extension: {}", e);
+                    std::process::exit(1);
+                }
             }
 
-            // Create extension.toml
-            let extension_toml = r#"id = "vize"
-name = "Vize"
-description = "Vue language support powered by Vize"
-version = "0.0.1"
-schema_version = 1
-authors = ["Vize <https://github.com/ubugeeei/vize>"]
-repository = "https://github.com/ubugeeei/vize"
-
-[language_servers.vize]
-name = "Vize Language Server"
-languages = ["Vue"]
-"#;
-
-            if let Err(e) = std::fs::write(vize_dir.join("extension.toml"), extension_toml) {
-                eprintln!("Failed to write extension.toml: {}", e);
-                std::process::exit(1);
-            }
-
-            // Create languages directory
-            let languages_dir = vize_dir.join("languages");
-            if let Err(e) = std::fs::create_dir_all(&languages_dir) {
-                eprintln!("Failed to create languages directory: {}", e);
-                std::process::exit(1);
-            }
-
-            // Create Vue language config
-            let vue_config = r#"name = "Vue"
-grammar = "vue"
-path_suffixes = ["vue"]
-line_comments = ["// "]
-block_comment = ["<!--", "-->"]
-brackets = [
-    { start = "{", end = "}", close = true, newline = true },
-    { start = "[", end = "]", close = true, newline = true },
-    { start = "(", end = ")", close = true, newline = true },
-    { start = "<", end = ">", close = true, newline = true },
-    { start = "\"", end = "\"", close = true, newline = false },
-    { start = "'", end = "'", close = true, newline = false },
-]
-"#;
-
-            if let Err(e) = std::fs::write(languages_dir.join("vue.toml"), vue_config) {
-                eprintln!("Failed to write vue.toml: {}", e);
+            if let Err(e) = copy_dir_all(&source_dir, &vize_dir) {
+                eprintln!("Failed to install extension: {}", e);
                 std::process::exit(1);
             }
 
             println!("✓ Vize extension installed to: {}", vize_dir.display());
-            println!("  Note: Configure 'vize lsp' as the language server in Zed settings.");
+            println!("  Note: Configure Vize features explicitly in Zed settings.");
             println!();
-            println!("  Add to your Zed settings.json:");
+            println!("  Start with lint-only mode:");
             println!("  {{");
-            println!("    \"lsp\": {{");
-            println!("      \"vize\": {{");
-            println!("        \"binary\": {{");
-            println!("          \"path\": \"vize\",");
-            println!("          \"arguments\": [\"lsp\"]");
-            println!("        }}");
-            println!("      }}");
-            println!("    }}");
+            println!("    \"languages\": {{ \"Vue\": {{ \"language_servers\": [\"vize\", \"...\"] }} }},");
+            println!("    \"lsp\": {{ \"vize\": {{ \"initialization_options\": {{ \"lint\": true }} }} }}");
             println!("  }}");
         }
         None => {
@@ -345,6 +305,36 @@ brackets = [
             std::process::exit(1);
         }
     }
+}
+
+fn find_zed_extension_source() -> Option<PathBuf> {
+    let locations = [
+        PathBuf::from("npm/zed-vize"),
+        std::env::current_exe()
+            .ok()
+            .and_then(|p| p.parent().map(|p| p.join("../../npm/zed-vize")))
+            .unwrap_or_default(),
+    ];
+
+    locations
+        .into_iter()
+        .find(|path| path.join("extension.toml").exists())
+}
+
+fn copy_dir_all(src: &std::path::Path, dst: &std::path::Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dst)?;
+    for entry in std::fs::read_dir(src)? {
+        let entry = entry?;
+        let file_type = entry.file_type()?;
+        let from = entry.path();
+        let to = dst.join(entry.file_name());
+        if file_type.is_dir() {
+            copy_dir_all(&from, &to)?;
+        } else if file_type.is_file() {
+            std::fs::copy(&from, &to)?;
+        }
+    }
+    Ok(())
 }
 
 fn zed_uninstall() {
@@ -394,17 +384,17 @@ fn zed_status() {
 fn get_zed_extensions_dir() -> Option<PathBuf> {
     #[cfg(target_os = "macos")]
     {
-        dirs::home_dir().map(|h| h.join(".config/zed/extensions/installed"))
+        dirs::data_dir().map(|d| d.join("Zed/extensions/installed"))
     }
 
     #[cfg(target_os = "linux")]
     {
-        dirs::config_dir().map(|c| c.join("zed/extensions/installed"))
+        dirs::data_dir().map(|d| d.join("zed/extensions/installed"))
     }
 
     #[cfg(target_os = "windows")]
     {
-        dirs::config_dir().map(|c| c.join("Zed/extensions/installed"))
+        dirs::data_local_dir().map(|d| d.join("Zed/extensions/installed"))
     }
 
     #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]

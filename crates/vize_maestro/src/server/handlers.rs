@@ -51,6 +51,9 @@ impl LanguageServer for MaestroServer {
             self.state.load_lsp_config(path);
         }
 
+        self.state
+            .apply_lsp_initialization_options(params.initialization_options.as_ref());
+
         // Set workspace root for native features (Corsa, batch checker)
         #[cfg(feature = "native")]
         if let Some(path) = workspace_path {
@@ -59,7 +62,7 @@ impl LanguageServer for MaestroServer {
         }
 
         Ok(InitializeResult {
-            capabilities: server_capabilities(),
+            capabilities: server_capabilities(self.state.lsp_features()),
             server_info: Some(ServerInfo {
                 name: "vize-maestro".to_string(),
                 version: Some(env!("CARGO_PKG_VERSION").to_string()),
@@ -127,6 +130,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
+        if !self.state.lsp_features().hover {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
@@ -163,6 +170,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
+        if !self.state.lsp_features().completion {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
 
@@ -209,6 +220,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Option<GotoDefinitionResponse>> {
+        if !self.state.lsp_features().definition {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
@@ -241,6 +256,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
+        if !self.state.lsp_features().references {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
         let include_declaration = params.context.include_declaration;
@@ -284,6 +303,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentSymbolParams,
     ) -> Result<Option<DocumentSymbolResponse>> {
+        if !self.state.lsp_features().document_symbols {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -439,6 +462,11 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
+        let features = self.state.lsp_features();
+        if !features.lint || !features.code_actions {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
         let range = params.range;
 
@@ -464,6 +492,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
+        if !self.state.lsp_features().rename {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
         let position = params.position;
 
@@ -492,6 +524,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
+        if !self.state.lsp_features().rename {
+            return Ok(None);
+        }
+
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
         let new_name = &params.new_name;
@@ -524,6 +560,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: SemanticTokensParams,
     ) -> Result<Option<SemanticTokensResult>> {
+        if !self.state.lsp_features().semantic_tokens {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -535,6 +575,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_lens(&self, params: CodeLensParams) -> Result<Option<Vec<CodeLens>>> {
+        if !self.state.lsp_features().code_lens {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -555,6 +599,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: WorkspaceSymbolParams,
     ) -> Result<Option<Vec<SymbolInformation>>> {
+        if !self.state.lsp_features().workspace_symbols {
+            return Ok(None);
+        }
+
         let query = &params.query;
         let symbols = WorkspaceSymbolsService::search(&self.state, query);
 
@@ -566,10 +614,18 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
+        if !self.state.lsp_features().file_rename {
+            return Ok(None);
+        }
+
         Ok(FileRenameService::will_rename_files(&self.state, &params).await)
     }
 
     async fn did_rename_files(&self, params: RenameFilesParams) {
+        if !self.state.lsp_features().file_rename {
+            return;
+        }
+
         let renamed = FileRenameService::did_rename_files(&self.state, &params).await;
 
         for (old_uri, new_uri) in renamed {
@@ -579,6 +635,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn document_link(&self, params: DocumentLinkParams) -> Result<Option<Vec<DocumentLink>>> {
+        if !self.state.lsp_features().document_links {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -596,6 +656,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
+        if !self.state.lsp_features().inlay_hints {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
         let range = params.range;
 
@@ -614,6 +678,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn folding_range(&self, params: FoldingRangeParams) -> Result<Option<Vec<FoldingRange>>> {
+        if !self.state.lsp_features().folding_ranges {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -690,6 +758,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
+        if !self.state.lsp_features().formatting {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {
@@ -710,6 +782,10 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentRangeFormattingParams,
     ) -> Result<Option<Vec<TextEdit>>> {
+        if !self.state.lsp_features().formatting {
+            return Ok(None);
+        }
+
         let uri = &params.text_document.uri;
 
         let Some(doc) = self.state.documents.get(uri) else {

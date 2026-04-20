@@ -136,51 +136,127 @@ export interface FormatterConfig {
 export interface LspConfig {
   /**
    * Enable LSP
-   * @default true
+   * @default false
    */
   enabled?: boolean;
 
   /**
-   * Enable diagnostics
-   * @default true
+   * Enable linter diagnostics.
+   * Prefer this over `diagnostics` for new configs.
+   * @default false
+   */
+  lint?: boolean;
+
+  /**
+   * Enable linter diagnostics.
+   * @deprecated Use `lint` instead.
+   * @default false
    */
   diagnostics?: boolean;
 
   /**
-   * Enable completions
-   * @default true
+   * Enable type checking diagnostics and type-aware LSP features.
+   * @default false
+   */
+  typecheck?: boolean;
+
+  /**
+   * Enable the editor assistance bundle: completion, hover, navigation,
+   * symbols, rename, code lens, semantic tokens, links, folding, inlay hints,
+   * and file rename handling. Formatting stays separately opt-in.
+   * @default false
+   */
+  editor?: boolean;
+
+  /**
+   * Enable completions.
+   * @default false
    */
   completion?: boolean;
 
   /**
    * Enable hover information
-   * @default true
+   * @default false
    */
   hover?: boolean;
 
   /**
    * Enable go-to-definition
-   * @default true
+   * @default false
    */
   definition?: boolean;
 
   /**
+   * Enable find references
+   * @default false
+   */
+  references?: boolean;
+
+  /**
+   * Enable document symbols
+   * @default false
+   */
+  documentSymbols?: boolean;
+
+  /**
+   * Enable workspace symbols
+   * @default false
+   */
+  workspaceSymbols?: boolean;
+
+  /**
    * Enable formatting via LSP
-   * @default true
+   * @default false
    */
   formatting?: boolean;
 
   /**
    * Enable code actions
-   * @default true
+   * @default false
    */
   codeActions?: boolean;
 
   /**
-   * Enable type checking diagnostics and type-aware LSP features
-   * @default true
+   * Enable rename
+   * @default false
    */
-  typecheck?: boolean;
+  rename?: boolean;
+
+  /**
+   * Enable code lens
+   * @default false
+   */
+  codeLens?: boolean;
+
+  /**
+   * Enable semantic tokens
+   * @default false
+   */
+  semanticTokens?: boolean;
+
+  /**
+   * Enable document links
+   * @default false
+   */
+  documentLinks?: boolean;
+
+  /**
+   * Enable folding ranges
+   * @default false
+   */
+  foldingRanges?: boolean;
+
+  /**
+   * Enable inlay hints
+   * @default false
+   */
+  inlayHints?: boolean;
+
+  /**
+   * Enable file rename edits
+   * @default false
+   */
+  fileRename?: boolean;
 
   /**
    * Use Corsa for type checking in LSP

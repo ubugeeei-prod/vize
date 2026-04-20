@@ -7,6 +7,7 @@ node_modules/
 # npm package build outputs
 npm/*/dist/
 npm/vite-plugin-vize/wasm/
+npm/zed-vize/target/
 
 # Native (NAPI) build output
 *.node
@@ -30,6 +31,8 @@ examples/*/.vite/
 *.swo
 .DS_Store
 *.tgz
+*.vsix
+zed-vize-extension.tar.gz
 
 # Benchmark input/output files
 bench/__in__/
@@ -45,6 +48,7 @@ npm-debug.log*
 .env.*.local
 
 # Playwright test outputs
+.cache/
 tests/app/results/
 tests/app/screenshots/
 playground/e2e/vrt/test-results/

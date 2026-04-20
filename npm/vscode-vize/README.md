@@ -25,7 +25,7 @@ Search "Vize" in VS Code Extensions.
 ### From VSIX
 
 ```bash
-code --install-extension vize-0.26.0.vsix
+code --install-extension dist/vize.vsix
 ```
 
 ### Development
@@ -44,15 +44,28 @@ pnpm run build
 
 ## Configuration
 
+Vize is disabled by default. Start with lint-only mode, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
+
 ```json
 {
   "vize.enable": true,
-  "vize.serverPath": "",
-  "vize.trace.server": "off",
-  "vize.diagnostics.enable": true,
-  "vize.completion.enable": true,
-  "vize.hover.enable": true,
-  "vize.codeLens.enable": true
+  "vize.lint.enable": true,
+  "vize.typecheck.enable": false,
+  "vize.editor.enable": false,
+  "vize.formatting.enable": false
+}
+```
+
+When you are ready to evaluate Vize editor assistance separately from `vuejs/language-tools`, use:
+
+```json
+{
+  "vize.enable": true,
+  "vize.lint.enable": true,
+  "vize.typecheck.enable": true,
+  "vize.definition.enable": true,
+  "vize.references.enable": true,
+  "vize.hover.enable": true
 }
 ```
 

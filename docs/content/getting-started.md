@@ -22,7 +22,7 @@ Vize (_/viːz/_) is an unofficial, high-performance Vue.js toolchain written ent
 All of these share a single parser, a single AST representation, and a single configuration surface — eliminating the overhead and inconsistencies of maintaining separate tools.
 
 > **Editor support note:** For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
-> `vize lsp` is available, but it should still be treated as experimental until the LSP and type-checking behavior stabilizes.
+> `vize lsp`, the VS Code extension, and the Zed extension default to opt-in capabilities so teams can evaluate lint diagnostics first, then type checking, then editor navigation/completion features.
 
 ## Prerequisites
 
@@ -33,7 +33,7 @@ For building from source:
 
 - [Rust](https://rustup.rs/) 1.80+
 
-For local development in this repository, Node is pinned in `.node-version`, and `vp` / Vite+ reads it automatically.
+For local development in this repository, the Nix flake pins Node.js, pnpm, Rust, and the WASM/native build tools.
 
 ## Installation
 
@@ -269,8 +269,8 @@ For contributing to Vize itself:
 
 ```bash
 nix develop
-vp env install
-vp install
+pnpm install --frozen-lockfile
+vp build
 vp run --workspace-root cli             # Enable vize CLI command
 vp run --workspace-root dev:playground  # Start playground
 ```

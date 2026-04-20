@@ -1,0 +1,14 @@
+id = "vize"
+name = "Vize"
+version = "0.49.0"
+schema_version = 1
+authors = ["Vize contributors"]
+description = "Opt-in Vue diagnostics and language support powered by Vize"
+repository = "https://github.com/ubugeeei/vize"
+
+[language_servers.vize]
+name = "Vize"
+languages = ["Vue"]
+
+[language_servers.vize.language_ids]
+"Vue" = "vue"

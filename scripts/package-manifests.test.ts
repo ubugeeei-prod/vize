@@ -68,3 +68,46 @@ test("esm packed npm manifests point at mjs and d.mts outputs", () => {
 
   assert.deepEqual(failures, []);
 });
+
+test("editor extension manifests stay opt-in and version aligned", () => {
+  const workspaceVersion = fs
+    .readFileSync(path.join(root, "Cargo.toml"), "utf-8")
+    .match(/^version = "(.+)"$/m)?.[1];
+  assert.ok(workspaceVersion);
+
+  const vscodePackage = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/vscode-vize/package.json"), "utf-8"),
+  ) as {
+    contributes?: {
+      configuration?: {
+        properties?: Record<string, { default?: unknown }>;
+      };
+    };
+    version?: string;
+  };
+
+  assert.equal(vscodePackage.version, workspaceVersion);
+  assert.equal(
+    vscodePackage.contributes?.configuration?.properties?.["vize.enable"]?.default,
+    false,
+  );
+  assert.equal(
+    vscodePackage.contributes?.configuration?.properties?.["vize.lint.enable"]?.default,
+    false,
+  );
+  assert.equal(
+    vscodePackage.contributes?.configuration?.properties?.["vize.typecheck.enable"]?.default,
+    false,
+  );
+  assert.equal(
+    vscodePackage.contributes?.configuration?.properties?.["vize.editor.enable"]?.default,
+    false,
+  );
+
+  const zedManifest = fs.readFileSync(path.join(root, "npm/zed-vize/extension.toml"), "utf-8");
+  const zedVersion = zedManifest.match(/^version = "(.+)"$/m)?.[1];
+
+  assert.equal(zedVersion, workspaceVersion);
+  assert.match(zedManifest, /^\[language_servers\.vize\]$/m);
+  assert.match(zedManifest, /^languages = \["Vue"\]$/m);
+});

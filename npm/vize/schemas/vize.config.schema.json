@@ -210,8 +210,21 @@
         "enabled": {
           "type": "boolean"
         },
+        "lint": {
+          "type": "boolean",
+          "description": "Enable Vize linter diagnostics in the LSP. Defaults to false."
+        },
         "diagnostics": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Deprecated alias for lint. Defaults to false."
+        },
+        "typecheck": {
+          "type": "boolean",
+          "description": "Enable type checking diagnostics and type-aware LSP integration. Defaults to false."
+        },
+        "editor": {
+          "type": "boolean",
+          "description": "Enable the editor assistance bundle: completion, hover, navigation, symbols, rename, code lens, semantic tokens, links, folding, inlay hints, and file rename handling. Formatting remains separately opt-in."
         },
         "completion": {
           "type": "boolean"
@@ -222,10 +235,40 @@
         "definition": {
           "type": "boolean"
         },
+        "references": {
+          "type": "boolean"
+        },
+        "documentSymbols": {
+          "type": "boolean"
+        },
+        "workspaceSymbols": {
+          "type": "boolean"
+        },
         "formatting": {
           "type": "boolean"
         },
         "codeActions": {
+          "type": "boolean"
+        },
+        "rename": {
+          "type": "boolean"
+        },
+        "codeLens": {
+          "type": "boolean"
+        },
+        "semanticTokens": {
+          "type": "boolean"
+        },
+        "documentLinks": {
+          "type": "boolean"
+        },
+        "foldingRanges": {
+          "type": "boolean"
+        },
+        "inlayHints": {
+          "type": "boolean"
+        },
+        "fileRename": {
           "type": "boolean"
         },
         "corsa": {

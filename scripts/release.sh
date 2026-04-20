@@ -193,6 +193,22 @@ main() {
     fi
   done
 
+  # Update Zed extension metadata (it is not an npm package)
+  if [ -f "npm/zed-vize/Cargo.toml" ]; then
+    sed -i.bak 's/^version = ".*"/version = "'"$NEW_VERSION"'"/' npm/zed-vize/Cargo.toml
+    rm -f npm/zed-vize/Cargo.toml.bak
+    echo "  Updated npm/zed-vize/Cargo.toml"
+  fi
+  if [ -f "npm/zed-vize/extension.toml" ]; then
+    sed -i.bak 's/^version = ".*"/version = "'"$NEW_VERSION"'"/' npm/zed-vize/extension.toml
+    rm -f npm/zed-vize/extension.toml.bak
+    echo "  Updated npm/zed-vize/extension.toml"
+  fi
+  if [ -f "npm/zed-vize/Cargo.lock" ]; then
+    cargo update --manifest-path npm/zed-vize/Cargo.toml -p vize-zed-extension
+    echo "  Updated npm/zed-vize/Cargo.lock"
+  fi
+
   # Update version references in READMEs
   echo "Updating READMEs..."
   find npm -name 'README.md' -exec sed -i.bak "s/$CURRENT_VERSION/$NEW_VERSION/g" {} \;
@@ -203,6 +219,7 @@ main() {
   # Commit changes
   echo "Committing changes..."
   git add Cargo.toml Cargo.lock npm/*/package.json README.md
+  git add npm/zed-vize/Cargo.toml npm/zed-vize/Cargo.lock npm/zed-vize/extension.toml 2>/dev/null || true
   # Add READMEs that are tracked (some may be gitignored)
   git add npm/*/README.md 2>/dev/null || true
   git commit -m "chore: release v$NEW_VERSION"

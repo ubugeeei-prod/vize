@@ -12,14 +12,23 @@ import {
 let client: LanguageClient | undefined;
 let outputChannel: OutputChannel;
 
+type LspInitializationOptions = Partial<Record<string, boolean>>;
+
 export async function activate(context: ExtensionContext): Promise<void> {
   outputChannel = window.createOutputChannel("Vize");
   outputChannel.appendLine("Vize extension activating...");
 
   const config = workspace.getConfiguration("vize");
-  if (!config.get<boolean>("enable", true)) {
-    outputChannel.appendLine("Vize is disabled in settings");
+  if (!config.get<boolean>("enable", false)) {
+    outputChannel.appendLine("Vize is disabled. Set vize.enable to true to start the server.");
     return;
+  }
+
+  const initializationOptions = getInitializationOptions(config);
+  if (Object.keys(initializationOptions).length === 0) {
+    outputChannel.appendLine(
+      "Vize server is enabled with no opt-in features. Enable vize.lint.enable first, then vize.typecheck.enable or vize.editor.enable when ready.",
+    );
   }
 
   // Find the language server executable
@@ -44,13 +53,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     },
     outputChannel,
     traceOutputChannel: outputChannel,
-    initializationOptions: {
-      diagnostics: config.get<boolean>("diagnostics.enable", true),
-      completion: config.get<boolean>("completion.enable", true),
-      hover: config.get<boolean>("hover.enable", true),
-      codeLens: config.get<boolean>("codeLens.enable", true),
-      formatting: config.get<boolean>("formatting.enable", true),
-    },
+    initializationOptions,
   };
 
   // Create the language client
@@ -89,6 +92,44 @@ export async function activate(context: ExtensionContext): Promise<void> {
   }
 
   context.subscriptions.push(client);
+}
+
+function getInitializationOptions(
+  config: ReturnType<typeof workspace.getConfiguration>,
+): LspInitializationOptions {
+  const options: LspInitializationOptions = {};
+
+  setIfEnabled(options, "lint", config.get<boolean>("lint.enable", false));
+  setIfEnabled(options, "lint", config.get<boolean>("diagnostics.enable", false));
+  setIfEnabled(options, "typecheck", config.get<boolean>("typecheck.enable", false));
+  setIfEnabled(options, "editor", config.get<boolean>("editor.enable", false));
+  setIfEnabled(options, "completion", config.get<boolean>("completion.enable", false));
+  setIfEnabled(options, "hover", config.get<boolean>("hover.enable", false));
+  setIfEnabled(options, "definition", config.get<boolean>("definition.enable", false));
+  setIfEnabled(options, "references", config.get<boolean>("references.enable", false));
+  setIfEnabled(options, "documentSymbols", config.get<boolean>("documentSymbols.enable", false));
+  setIfEnabled(options, "workspaceSymbols", config.get<boolean>("workspaceSymbols.enable", false));
+  setIfEnabled(options, "codeActions", config.get<boolean>("codeActions.enable", false));
+  setIfEnabled(options, "rename", config.get<boolean>("rename.enable", false));
+  setIfEnabled(options, "codeLens", config.get<boolean>("codeLens.enable", false));
+  setIfEnabled(options, "formatting", config.get<boolean>("formatting.enable", false));
+  setIfEnabled(options, "semanticTokens", config.get<boolean>("semanticTokens.enable", false));
+  setIfEnabled(options, "documentLinks", config.get<boolean>("documentLinks.enable", false));
+  setIfEnabled(options, "foldingRanges", config.get<boolean>("foldingRanges.enable", false));
+  setIfEnabled(options, "inlayHints", config.get<boolean>("inlayHints.enable", false));
+  setIfEnabled(options, "fileRename", config.get<boolean>("fileRename.enable", false));
+
+  return options;
+}
+
+function setIfEnabled(
+  options: LspInitializationOptions,
+  name: string,
+  enabled: boolean | undefined,
+): void {
+  if (enabled === true) {
+    options[name] = true;
+  }
 }
 
 export async function deactivate(): Promise<void> {

@@ -129,9 +129,10 @@ If you want to roll Vize out one rule at a time, use `"preset": "incremental"`. 
 If you are working inside the Vize repository itself:
 
 ```bash
-vp install
+nix develop
+pnpm install --frozen-lockfile
 vp run --filter './npm/vize-native' build
 vp run --filter './npm/oxlint-plugin-vize' build
 ```
 
-The package build uses `vp pack`, targets Node 24+, and follows the repository's `.node-version`.
+The package build uses `vp pack`, targets Node 24+, and follows the repository's pinned Nix and pnpm environment.

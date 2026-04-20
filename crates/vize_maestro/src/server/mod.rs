@@ -11,7 +11,7 @@ mod state;
 pub use capabilities::server_capabilities;
 #[cfg(feature = "native")]
 pub use state::BatchTypeCheckCache;
-pub use state::ServerState;
+pub use state::{LspFeatureConfig, ServerState};
 
 use tower_lsp::Client;
 

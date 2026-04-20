@@ -20,25 +20,162 @@ use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, CorsaBridge, CorsaBrid
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
-const fn default_true() -> bool {
-    true
-}
-
 #[derive(Debug, Default, Deserialize)]
 struct LspConfigFile {
     #[serde(default)]
     lsp: LspConfigSection,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
 struct LspConfigSection {
-    #[serde(default = "default_true")]
-    typecheck: bool,
+    enabled: Option<bool>,
+    /// Legacy diagnostics switch. Kept as a lint diagnostics alias for older configs.
+    diagnostics: Option<bool>,
+    lint: Option<bool>,
+    typecheck: Option<bool>,
+    editor: Option<bool>,
+    completion: Option<bool>,
+    hover: Option<bool>,
+    definition: Option<bool>,
+    references: Option<bool>,
+    document_symbols: Option<bool>,
+    workspace_symbols: Option<bool>,
+    code_actions: Option<bool>,
+    rename: Option<bool>,
+    formatting: Option<bool>,
+    code_lens: Option<bool>,
+    semantic_tokens: Option<bool>,
+    document_links: Option<bool>,
+    folding_ranges: Option<bool>,
+    inlay_hints: Option<bool>,
+    file_rename: Option<bool>,
+    corsa: Option<bool>,
 }
 
-impl Default for LspConfigSection {
-    fn default() -> Self {
-        Self { typecheck: true }
+impl LspConfigSection {
+    fn apply_to(self, features: &mut LspFeatureConfig) {
+        if self.enabled == Some(false) {
+            *features = LspFeatureConfig::default();
+            return;
+        }
+
+        if let Some(enabled) = self.diagnostics {
+            features.lint = enabled;
+            if !enabled {
+                features.typecheck = false;
+            }
+        }
+
+        if let Some(enabled) = self.lint {
+            features.lint = enabled;
+        }
+
+        if let Some(enabled) = self.typecheck {
+            features.typecheck = enabled;
+        }
+        if self.corsa == Some(true) {
+            features.typecheck = true;
+        }
+
+        if let Some(enabled) = self.editor {
+            features.apply_editor_bundle(enabled);
+        }
+
+        if let Some(enabled) = self.completion {
+            features.completion = enabled;
+        }
+        if let Some(enabled) = self.hover {
+            features.hover = enabled;
+        }
+        if let Some(enabled) = self.definition {
+            features.definition = enabled;
+        }
+        if let Some(enabled) = self.references {
+            features.references = enabled;
+        }
+        if let Some(enabled) = self.document_symbols {
+            features.document_symbols = enabled;
+        }
+        if let Some(enabled) = self.workspace_symbols {
+            features.workspace_symbols = enabled;
+        }
+        if let Some(enabled) = self.code_actions {
+            features.code_actions = enabled;
+        }
+        if let Some(enabled) = self.rename {
+            features.rename = enabled;
+        }
+        if let Some(enabled) = self.formatting {
+            features.formatting = enabled;
+        }
+        if let Some(enabled) = self.code_lens {
+            features.code_lens = enabled;
+        }
+        if let Some(enabled) = self.semantic_tokens {
+            features.semantic_tokens = enabled;
+        }
+        if let Some(enabled) = self.document_links {
+            features.document_links = enabled;
+        }
+        if let Some(enabled) = self.folding_ranges {
+            features.folding_ranges = enabled;
+        }
+        if let Some(enabled) = self.inlay_hints {
+            features.inlay_hints = enabled;
+        }
+        if let Some(enabled) = self.file_rename {
+            features.file_rename = enabled;
+        }
+    }
+}
+
+/// Feature switches for Maestro LSP capabilities.
+///
+/// Everything defaults to off so editor integrations can opt in incrementally:
+/// lint diagnostics first, type checking second, and editor navigation/completion
+/// features only when a workspace is ready for Vize to overlap with other Vue
+/// language tooling.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct LspFeatureConfig {
+    pub(crate) lint: bool,
+    pub(crate) typecheck: bool,
+    pub(crate) completion: bool,
+    pub(crate) hover: bool,
+    pub(crate) definition: bool,
+    pub(crate) references: bool,
+    pub(crate) document_symbols: bool,
+    pub(crate) workspace_symbols: bool,
+    pub(crate) code_actions: bool,
+    pub(crate) rename: bool,
+    pub(crate) formatting: bool,
+    pub(crate) code_lens: bool,
+    pub(crate) semantic_tokens: bool,
+    pub(crate) document_links: bool,
+    pub(crate) folding_ranges: bool,
+    pub(crate) inlay_hints: bool,
+    pub(crate) file_rename: bool,
+}
+
+impl LspFeatureConfig {
+    pub(crate) fn has_diagnostics(self) -> bool {
+        self.lint || self.typecheck
+    }
+
+    fn apply_editor_bundle(&mut self, enabled: bool) {
+        self.completion = enabled;
+        self.hover = enabled;
+        self.definition = enabled;
+        self.references = enabled;
+        self.document_symbols = enabled;
+        self.workspace_symbols = enabled;
+        self.rename = enabled;
+        self.code_lens = enabled;
+        self.semantic_tokens = enabled;
+        self.document_links = enabled;
+        self.folding_ranges = enabled;
+        self.inlay_hints = enabled;
+        self.file_rename = enabled;
     }
 }
 
@@ -106,7 +243,9 @@ pub struct ServerState {
     virtual_gen: RwLock<VirtualCodeGenerator>,
     /// Cached virtual documents per file
     virtual_docs_cache: DashMap<Url, VirtualDocuments>,
-    /// Whether type checking is enabled for LSP features.
+    /// Enabled LSP feature surface.
+    lsp_features: RwLock<LspFeatureConfig>,
+    /// Fast path for checking whether type-aware features are enabled.
     lsp_typecheck_enabled: AtomicBool,
     /// Formatting options (loaded from vize.config.json)
     #[cfg(feature = "glyph")]
@@ -141,7 +280,8 @@ impl ServerState {
             documents: DocumentStore::new(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
-            lsp_typecheck_enabled: AtomicBool::new(true),
+            lsp_features: RwLock::new(LspFeatureConfig::default()),
+            lsp_typecheck_enabled: AtomicBool::new(false),
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),
             #[cfg(feature = "native")]
@@ -171,19 +311,50 @@ impl ServerState {
         self.lsp_typecheck_enabled.load(Ordering::SeqCst)
     }
 
+    /// Get the enabled LSP feature set.
+    #[inline]
+    pub(crate) fn lsp_features(&self) -> LspFeatureConfig {
+        *self.lsp_features.read()
+    }
+
+    /// Check whether LSP lint diagnostics are enabled.
+    #[inline]
+    pub fn is_lsp_lint_enabled(&self) -> bool {
+        self.lsp_features().lint
+    }
+
+    /// Apply LSP initialization options sent by an editor client.
+    pub fn apply_lsp_initialization_options(&self, options: Option<&serde_json::Value>) {
+        let Some(options) = options else {
+            return;
+        };
+
+        match serde_json::from_value::<LspConfigSection>(options.clone()) {
+            Ok(config) => self.apply_lsp_config(config, "initializationOptions"),
+            Err(error) => {
+                tracing::warn!(
+                    "Failed to parse LSP initializationOptions: {}. Keeping current LSP options.",
+                    error
+                );
+            }
+        }
+    }
+
+    fn apply_lsp_config(&self, config: LspConfigSection, source: &str) {
+        let mut features = self.lsp_features.write();
+        config.apply_to(&mut features);
+        self.lsp_typecheck_enabled
+            .store(features.typecheck, Ordering::SeqCst);
+        tracing::info!("Loaded LSP config from {}: {:?}", source, *features);
+    }
+
     /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
     pub fn load_lsp_config(&self, dir: &std::path::Path) {
         let pkl_path = dir.join("vize.config.pkl");
         if pkl_path.exists() {
             match rpkl::from_config::<LspConfigFile>(&pkl_path) {
                 Ok(config) => {
-                    self.lsp_typecheck_enabled
-                        .store(config.lsp.typecheck, Ordering::SeqCst);
-                    tracing::info!(
-                        "Loaded LSP config from {} (typecheck={})",
-                        pkl_path.display(),
-                        config.lsp.typecheck
-                    );
+                    self.apply_lsp_config(config.lsp, &pkl_path.display().to_string());
                 }
                 Err(error) => {
                     tracing::warn!(
@@ -204,13 +375,7 @@ impl ServerState {
         match std::fs::read_to_string(&json_path) {
             Ok(content) => match serde_json::from_str::<LspConfigFile>(&content) {
                 Ok(config) => {
-                    self.lsp_typecheck_enabled
-                        .store(config.lsp.typecheck, Ordering::SeqCst);
-                    tracing::info!(
-                        "Loaded LSP config from {} (typecheck={})",
-                        json_path.display(),
-                        config.lsp.typecheck
-                    );
+                    self.apply_lsp_config(config.lsp, &json_path.display().to_string());
                 }
                 Err(error) => {
                     tracing::warn!(
@@ -610,9 +775,11 @@ mod tests {
     }
 
     #[test]
-    fn lsp_typecheck_enabled_by_default() {
+    fn lsp_features_are_opt_in_by_default() {
         let state = ServerState::new();
-        assert!(state.is_lsp_typecheck_enabled());
+        assert_eq!(state.lsp_features(), super::LspFeatureConfig::default());
+        assert!(!state.is_lsp_lint_enabled());
+        assert!(!state.is_lsp_typecheck_enabled());
     }
 
     #[test]
@@ -620,13 +787,25 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(
             dir.path().join("vize.config.json"),
-            r#"{ "lsp": { "typecheck": false } }"#,
+            r#"{
+                "lsp": {
+                    "lint": true,
+                    "typecheck": true,
+                    "editor": true,
+                    "formatting": false
+                }
+            }"#,
         )
         .unwrap();
 
         let state = ServerState::new();
         state.load_lsp_config(dir.path());
-        assert!(!state.is_lsp_typecheck_enabled());
+        let features = state.lsp_features();
+        assert!(features.lint);
+        assert!(features.typecheck);
+        assert!(features.completion);
+        assert!(features.definition);
+        assert!(!features.formatting);
     }
 
     #[test]
@@ -636,7 +815,25 @@ mod tests {
 
         let state = ServerState::new();
         state.load_lsp_config(dir.path());
-        assert!(state.is_lsp_typecheck_enabled());
+        assert_eq!(state.lsp_features(), super::LspFeatureConfig::default());
+    }
+
+    #[test]
+    fn apply_lsp_initialization_options() {
+        let state = ServerState::new();
+        let options = serde_json::json!({
+            "lint": true,
+            "codeActions": true,
+            "definition": true
+        });
+
+        state.apply_lsp_initialization_options(Some(&options));
+
+        let features = state.lsp_features();
+        assert!(features.lint);
+        assert!(features.code_actions);
+        assert!(features.definition);
+        assert!(!features.typecheck);
     }
 
     #[test]
@@ -645,12 +842,13 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(
             dir.path().join("vize.config.pkl"),
-            "lsp {\n    typecheck = false\n}\n",
+            "lsp {\n    lint = true\n    typecheck = true\n}\n",
         )
         .unwrap();
 
         let state = ServerState::new();
         state.load_lsp_config(dir.path());
-        assert!(!state.is_lsp_typecheck_enabled());
+        assert!(state.is_lsp_lint_enabled());
+        assert!(state.is_lsp_typecheck_enabled());
     }
 }

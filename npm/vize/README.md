@@ -84,6 +84,20 @@ JSON config with schema:
 The npm CLI currently applies shared config to the `lint` command. You can override discovery with
 `vize lint --config path/to/vize.config.ts` or skip config loading with `vize lint --no-config`.
 
+LSP capabilities are opt-in so Vize can be introduced alongside existing Vue editor tooling:
+
+```json
+{
+  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
+  "lsp": {
+    "lint": true,
+    "typecheck": false,
+    "editor": false,
+    "formatting": false
+  }
+}
+```
+
 ## Examples
 
 ```bash

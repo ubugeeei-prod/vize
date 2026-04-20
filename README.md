@@ -30,7 +30,7 @@
 
 > [!IMPORTANT]
 > For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
-> Treat `vize lsp` and the VS Code extension as experimental until the LSP and type-checking behavior stabilizes.
+> `vize lsp`, the VS Code extension, and the Zed extension default to opt-in capabilities so teams can evaluate lint diagnostics first, then type checking, then editor navigation/completion features.
 
 > [!NOTE]
 > `@vizejs/vite-plugin` is the recommended bundler integration today.
@@ -120,10 +120,50 @@ Limitations:
 - Oxlint core rules that depend on JavaScript bindings inside Vue templates are still tied to upstream Vue work in [Oxc's Better Vue Support](https://github.com/oxc-project/oxc/issues/15761).
 - The SFC range and formatter limitation is tracked separately in [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465).
 
+## Editor Integration
+
+Vize editor support is designed for incremental adoption alongside `vuejs/language-tools`:
+
+1. Enable lint diagnostics first.
+2. Enable type checking only after lint-only mode is stable for the project.
+3. Enable editor assistance such as hover, definition, references, completion, rename, and semantic tokens only when you are ready to let Vize overlap with the existing Vue language server.
+
+VS Code:
+
+```json
+{
+  "vize.enable": true,
+  "vize.lint.enable": true,
+  "vize.typecheck.enable": false,
+  "vize.editor.enable": false,
+  "vize.formatting.enable": false
+}
+```
+
+Zed:
+
+```json
+{
+  "languages": {
+    "Vue": {
+      "language_servers": ["vize", "..."]
+    }
+  },
+  "lsp": {
+    "vize": {
+      "initialization_options": {
+        "lint": true
+      }
+    }
+  }
+}
+```
+
+The same feature names can be committed in `vize.config.json` or `vize.config.pkl` under `lsp`.
+
 ## Nix Flake
 
 ```bash
-nix run github:ubugeeei/vize#vp -- --version
 nix run github:ubugeeei/vize#vize -- --help
 nix profile install github:ubugeeei/vize#vize
 ```
@@ -132,27 +172,29 @@ For local development:
 
 ```bash
 nix develop
-vp env install
-vp install
+pnpm install --frozen-lockfile
+vp build
 ```
 
 ## Development Environment
 
-The primary local setup is `Nix + vp`. Nix provides the Rust / WASM toolchain and the `vp` CLI itself, while Node.js version management stays with `vp` and `.node-version`.
+The primary local setup is `Nix + pnpm + vp`. Nix provides Node.js, pnpm, Rust, the WASM toolchain, and native build tools. `vp` is resolved from the locked workspace install, so the shell does not use `pnpm dlx` or `vp env` shims.
 
 ```bash
 nix develop
-vp env install
-vp install
+pnpm install --frozen-lockfile
+vp run --workspace-root check
+vp build
 ```
 
-If you want `node`, `npm`, and related shims to follow the pinned version in your shell, run `vp env setup` once and enable managed mode with `vp env on`.
+The flake is pinned by `flake.lock`; JS dependencies are pinned by `pnpm-lock.yaml`; Rust dependencies are pinned by `Cargo.lock`.
 
 ## Workspace Tasks
 
 Workspace orchestration lives in the root `vite.config.ts` via Vite+'s `run.tasks`.
 
 ```bash
+vp build                            # native + WASM + packages + VS Code/Zed extension artifacts
 vp run --workspace-root check       # packages + examples + playground
 vp run --workspace-root check:fix   # auto-fix JS/TS checks where supported
 vp run --workspace-root fmt         # format workspace files
@@ -162,7 +204,8 @@ vp run --filter './examples/vite-musea' build
 ```
 
 Use `vp run` directly; `mise` task wrappers have been removed.
-`npm/vscode-vize` and `npm/vscode-art` stay outside the root `vp run` graph, so build those from their package directories.
+`npm/vscode-vize` stays outside the package graph, but root tasks exist for `check:vscode-extension`, `package:vscode-extension`, and `publish:vscode-extension`.
+`npm/zed-vize` is checked with `check:zed-extension` and packaged as source with `package:zed-extension`.
 
 ## Performance
 

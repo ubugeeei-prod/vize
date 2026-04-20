@@ -65,12 +65,26 @@ class FormatterConfig {
 
 class LspConfig {
   enabled: Boolean? = null
+  lint: Boolean? = null
+  /// Deprecated: use `lint`.
   diagnostics: Boolean? = null
+  typecheck: Boolean? = null
+  editor: Boolean? = null
   completion: Boolean? = null
   hover: Boolean? = null
   definition: Boolean? = null
+  references: Boolean? = null
+  documentSymbols: Boolean? = null
+  workspaceSymbols: Boolean? = null
   formatting: Boolean? = null
   codeActions: Boolean? = null
+  rename: Boolean? = null
+  codeLens: Boolean? = null
+  semanticTokens: Boolean? = null
+  documentLinks: Boolean? = null
+  foldingRanges: Boolean? = null
+  inlayHints: Boolean? = null
+  fileRename: Boolean? = null
   corsa: Boolean? = null
 }
 

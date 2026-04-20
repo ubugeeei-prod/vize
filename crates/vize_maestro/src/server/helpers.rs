@@ -17,6 +17,13 @@ use vize_carton::append;
 impl MaestroServer {
     /// Publish diagnostics for a document.
     pub(crate) async fn publish_diagnostics(&self, uri: &Url) {
+        if !self.state.lsp_features().has_diagnostics() {
+            self.client
+                .publish_diagnostics(uri.clone(), Vec::new(), None)
+                .await;
+            return;
+        }
+
         // Use async version when native feature is enabled (includes Corsa diagnostics)
         #[cfg(feature = "native")]
         let diagnostics = DiagnosticService::collect_async(&self.state, uri).await;
@@ -84,6 +91,10 @@ impl MaestroServer {
         _content: &str,
         position: Position,
     ) -> Option<String> {
+        if !self.state.is_lsp_lint_enabled() {
+            return None;
+        }
+
         let diagnostics = DiagnosticService::collect(&self.state, uri);
 
         let lint_diags: Vec<_> = diagnostics

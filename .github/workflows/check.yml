@@ -54,6 +54,8 @@ jobs:
         run: vp install --workspace-root --force --frozen-lockfile
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
+      - name: Check editor extensions
+        run: vp run --workspace-root check:editor-extensions
       - name: Build JS packages
         run: vp run --workspace-root build:packages
       - name: Check JS/TS

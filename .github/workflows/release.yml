@@ -86,6 +86,80 @@ jobs:
           path: ${{ matrix.settings.archive }}
           if-no-files-found: error
 
+  # Package editor extensions for GitHub Releases and registry validation
+  build-editor-extensions:
+    name: Build Editor Extensions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          run-install: false
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install root dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Package VS Code extension
+        run: vp run --workspace-root package:vscode-extension
+
+      - name: Check Zed extension
+        run: vp run --workspace-root check:zed-extension
+
+      - name: Package Zed extension source
+        run: vp run --workspace-root package:zed-extension
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: editor-extensions
+          path: |
+            npm/vscode-vize/dist/vize.vsix
+            zed-vize-extension.tar.gz
+          if-no-files-found: error
+
+  # Publish VS Code extension when VSCE_PAT is configured
+  release-vscode-extension:
+    name: Release VS Code extension
+    runs-on: ubuntu-latest
+    needs: build-editor-extensions
+    environment: vscode-marketplace
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          run-install: false
+
+      - name: Install root dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Skip publish when VSCE_PAT is absent
+        if: env.VSCE_PAT == ''
+        run: echo "VSCE_PAT is not configured; skipping VS Code Marketplace publish."
+
+      - name: Publish VS Code extension
+        if: env.VSCE_PAT != ''
+        run: vp run --workspace-root publish:vscode-extension
+
   # Build native bindings (vize-native + fresco-native) for all platforms
   build-native-all:
     name: Build Native - ${{ matrix.settings.target }}
@@ -862,6 +936,7 @@ jobs:
     needs:
       [
         build-cli,
+        build-editor-extensions,
         release-npm-native,
         release-npm-fresco-native,
         release-npm-fresco,
@@ -886,8 +961,17 @@ jobs:
           path: cli-artifacts
           merge-multiple: true
 
+      - name: Download editor extension artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: editor-extensions
+          path: editor-extension-artifacts
+
       - name: List CLI artifacts
         run: ls -la cli-artifacts/
+
+      - name: List editor extension artifacts
+        run: ls -la editor-extension-artifacts/
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -898,6 +982,8 @@ jobs:
           files: |
             cli-artifacts/*.tar.gz
             cli-artifacts/*.zip
+            editor-extension-artifacts/*.vsix
+            editor-extension-artifacts/*.tar.gz
 
   # Publish vize CLI npm package (using Trusted Publishing / OIDC)
   # Native bindings are distributed via @vizejs/native-* optionalDependencies (NAPI-RS)

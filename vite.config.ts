@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process";
+import type { Plugin } from "vite";
 import { defineConfig } from "vite-plus";
 
 const checkedPackages = [
@@ -94,6 +96,24 @@ const noCacheTask = (command: string) => ({
   command,
 });
 
+const rootBuildTaskPlugin = (): Plugin => ({
+  name: "vize-root-build-task",
+  apply: "build",
+  closeBundle() {
+    if (process.env.VIZE_SKIP_ROOT_BUILD_TASK === "1") {
+      return;
+    }
+
+    execFileSync("vp", ["run", "--workspace-root", "build"], {
+      env: {
+        ...process.env,
+        VIZE_SKIP_ROOT_BUILD_TASK: "1",
+      },
+      stdio: "inherit",
+    });
+  },
+});
+
 const runInPackages = (
   taskName: string,
   packages: string[],
@@ -120,7 +140,7 @@ const devApp = (target?: string) =>
     : `usage_target=${target} node --experimental-strip-types scripts/dev-app.ts`;
 
 const publishWithVersionTag = (cwd: string, publishCommand: string) =>
-  `sh -c 'cd ${cwd} && VERSION=$(node -p "require(\\\"./package.json\\\").version") && case "$VERSION" in *-alpha*) ${publishCommand} --tag alpha ;; *-beta*) ${publishCommand} --tag beta ;; *-rc*) ${publishCommand} --tag rc ;; *) ${publishCommand} ;; esac'`;
+  `sh -c 'cd ${cwd} && VERSION=$(node -p "require(\\"./package.json\\").version") && case "$VERSION" in *-alpha*) ${publishCommand} --tag alpha ;; *-beta*) ${publishCommand} --tag beta ;; *-rc*) ${publishCommand} --tag rc ;; *) ${publishCommand} ;; esac'`;
 
 const injectNativeOptionalDependencyVersions = (cwd: string, versionCwd = cwd) =>
   `node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('${cwd}/package.json', 'utf8')); const versionPkg = JSON.parse(fs.readFileSync('${versionCwd}/package.json', 'utf8')); const version = versionPkg.version; if (pkg.optionalDependencies) { for (const dep of Object.keys(pkg.optionalDependencies)) { if (dep.startsWith('@vizejs/native-')) { pkg.optionalDependencies[dep] = version; } } } fs.writeFileSync('${cwd}/package.json', JSON.stringify(pkg, null, 2) + '\\n');"`;
@@ -141,7 +161,9 @@ const devTasks = {
 };
 
 const buildTasks = {
-  build: noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
+  build: noCacheTask(runTask("build:all")),
+  "build:all": noCacheTask(runTasks("build:runtime", "package:editor-extensions")),
+  "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
   "build:packages": noCacheTask(runInPackages("build", packedPackages)),
   "build:native": noCacheTask(runInPackages("build", ["./npm/vize-native"])),
   "build:wasm": task(
@@ -155,6 +177,22 @@ const buildTasks = {
   ),
   "build:plugin": noCacheTask(runTask("build:vite-plugin")),
   "build:cli": task("cargo build --release -p vize"),
+  "build:vscode-extension": noCacheTask(
+    "pnpm -C npm/vscode-vize install --ignore-workspace --no-lockfile && pnpm -C npm/vscode-vize run build",
+  ),
+  "build:editor-extensions": noCacheTask(runTasks("build:vscode-extension", "check:zed-extension")),
+  "package:vscode-extension": noCacheTask(
+    "pnpm -C npm/vscode-vize install --ignore-workspace --no-lockfile && pnpm -C npm/vscode-vize run package",
+  ),
+  "check:zed-extension": task("cargo check --manifest-path npm/zed-vize/Cargo.toml", {
+    input: ["npm/zed-vize/**"],
+  }),
+  "package:zed-extension": noCacheTask(
+    "tar --exclude 'zed-vize/target' -czf zed-vize-extension.tar.gz -C npm zed-vize",
+  ),
+  "package:editor-extensions": noCacheTask(
+    runTasks("package:vscode-extension", "check:zed-extension", "package:zed-extension"),
+  ),
   "install:plugin": noCacheTask("pnpm -C npm/vite-plugin-vize install"),
 };
 
@@ -228,6 +266,10 @@ const checkTasks = {
   }),
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
   "check:rust": task("cargo check --workspace", { input: cacheInputs.rust }),
+  "check:vscode-extension": noCacheTask(
+    "pnpm -C npm/vscode-vize install --ignore-workspace --no-lockfile && pnpm -C npm/vscode-vize run check",
+  ),
+  "check:editor-extensions": noCacheTask(runTasks("check:vscode-extension", "check:zed-extension")),
   clippy: task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
   fmt: noCacheTask(runInPackages("fmt", checkedPackages)),
   "fmt:rust": task("cargo fmt --all", { input: cacheInputs.rust }),
@@ -260,10 +302,23 @@ const releaseTasks = {
     runTasks("publish:wasm", "publish:native", "publish:vite-plugin", "publish:oxlint-plugin"),
   ),
   "publish:crates": noCacheTask("bash ./scripts/publish-crates.sh"),
+  "publish:vscode-extension": noCacheTask(
+    'sh -c \'cd npm/vscode-vize && pnpm install --ignore-workspace --no-lockfile && pnpm run build && if [ "${NPM_TAG:-latest}" = "latest" ]; then pnpm run publish; else pnpm run publish:pre; fi\'',
+  ),
   publish: noCacheTask(runTasks("publish:npm", "publish:crates")),
 };
 
 export default defineConfig({
+  plugins: [rootBuildTaskPlugin()],
+  build: {
+    emptyOutDir: true,
+    lib: {
+      entry: "scripts/vp-build-entry.ts",
+      fileName: "vp-build",
+      formats: ["es"],
+    },
+    outDir: "target/vp-build",
+  },
   lint: {
     options: {
       typeAware: true,
