@@ -20,6 +20,9 @@ importers:
       '@iarna/toml':
         specifier: ^2.2.5
         version: 2.2.5
+      '@types/node':
+        specifier: ^25.3.3
+        version: 25.3.3
       '@typescript/native-preview':
         specifier: 7.0.0-dev.20260124.1
         version: 7.0.0-dev.20260124.1
