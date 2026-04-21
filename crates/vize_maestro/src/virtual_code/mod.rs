@@ -150,7 +150,7 @@ impl VirtualDocuments {
             }
         } else {
             for art_template in &self.art_templates {
-                if let Some(ref template) = art_template.as_ref() {
+                if let Some(template) = art_template.as_ref() {
                     docs.push(template);
                 }
             }
@@ -169,16 +169,13 @@ impl VirtualDocuments {
 
     /// Get the virtual template document for a specific art variant.
     pub fn art_template(&self, variant_index: usize) -> Option<&VirtualDocument> {
+        if self.art_templates.is_empty() {
+            return self.template.as_ref();
+        }
+
         self.art_templates
             .get(variant_index)
             .and_then(Option::as_ref)
-            .or_else(|| {
-                if self.art_templates.is_empty() {
-                    self.template.as_ref()
-                } else {
-                    None
-                }
-            })
     }
 
     /// Find the virtual document containing the given source offset.

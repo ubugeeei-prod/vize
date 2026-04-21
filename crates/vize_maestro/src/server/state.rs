@@ -881,7 +881,9 @@ const secondaryLabel = ref('secondary')
         assert!(default_template.content.contains("primaryLabel"));
         assert!(secondary_template.content.contains("secondaryLabel"));
         assert!(!secondary_template.uri.ends_with(".__template.ts"));
-        assert!(secondary_template.uri.contains(".art_variant_1.template.ts"));
+        assert!(secondary_template
+            .uri
+            .contains(".art_variant_1.template.ts"));
 
         let offset = source.rfind("secondaryLabel").unwrap() + 1;
         let info = match find_art_block_at_offset(source, offset) {

@@ -135,11 +135,10 @@ impl HoverService {
 
                     // Open/update virtual document
                     if bridge.is_initialized() {
-                        let vdoc_uri =
-                            crate::ide::corsa_support::art_template_request_path(
-                                ctx.uri,
-                                info.variant_index,
-                            );
+                        let vdoc_uri = crate::ide::corsa_support::art_template_request_path(
+                            ctx.uri,
+                            info.variant_index,
+                        );
                         let Ok(uri) = bridge
                             .open_or_update_virtual_document(&vdoc_uri, &template.content)
                             .await
