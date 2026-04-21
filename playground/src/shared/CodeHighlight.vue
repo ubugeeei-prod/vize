@@ -261,10 +261,8 @@ watch(
   padding-right: 16px;
   overflow-x: auto;
 }
-</style>
 
-<style>
-.code-highlight .line-number {
+.code-highlight :deep(.line-number) {
   display: block;
   padding: 0 12px;
   text-align: right;
@@ -274,19 +272,19 @@ watch(
   box-sizing: border-box;
 }
 
-.code-highlight .code-line {
+.code-highlight :deep(.code-line) {
   white-space: pre;
   line-height: 20px;
   height: 20px;
   box-sizing: border-box;
 }
 
-.code-highlight .code-line span {
+.code-highlight :deep(.code-line span) {
   color: var(--l);
   line-height: inherit;
 }
 
-body[data-theme="dark"] .code-highlight .code-line span {
+:global(body[data-theme="dark"]) .code-highlight :deep(.code-line span) {
   color: var(--d);
 }
 </style>
