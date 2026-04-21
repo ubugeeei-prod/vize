@@ -11,9 +11,7 @@ const { init, getResult, isKeyRunning } = useA11y();
 
 init();
 
-const key = computed(() =>
-  props.variantName ? `${props.artPath}:${props.variantName}` : null,
-);
+const key = computed(() => (props.variantName ? `${props.artPath}:${props.variantName}` : null));
 
 const result = computed(() => (key.value ? getResult(key.value) : undefined));
 const running = computed(() => (key.value ? isKeyRunning(key.value) : false));
@@ -73,12 +71,7 @@ const title = computed(() => {
 </script>
 
 <template>
-  <span
-    v-if="count !== null"
-    class="a11y-badge"
-    :class="'severity-' + severity"
-    :title="title"
-  >
+  <span v-if="count !== null" class="a11y-badge" :class="'severity-' + severity" :title="title">
     {{ count }}
   </span>
 </template>

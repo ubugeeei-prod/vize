@@ -193,14 +193,6 @@ const window = globalThis.window;
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-lg);
   overflow: hidden;
-  transition:
-    border-color var(--musea-transition),
-    box-shadow var(--musea-transition);
-}
-
-.variant-card:hover {
-  border-color: var(--musea-text-muted);
-  box-shadow: var(--musea-shadow);
 }
 
 .variant-preview {
@@ -209,7 +201,6 @@ const window = globalThis.window;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
   box-sizing: border-box;
   position: relative;
   overflow: hidden;

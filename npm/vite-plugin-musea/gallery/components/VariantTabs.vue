@@ -47,25 +47,24 @@ const emit = defineEmits<{
 
 <style scoped>
 .variant-toc {
-  position: sticky;
-  top: calc(var(--musea-header-height) + 1rem);
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
-  padding: 1rem;
-  background: var(--musea-bg-secondary);
-  border: 1px solid var(--musea-border);
-  border-radius: var(--musea-radius-lg);
+  gap: 0.75rem;
+  padding: 0 0 0 1.125rem;
+  background: transparent;
+  border-left: 1px solid var(--musea-border-subtle);
 }
 
 .variant-toc-header {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 0.5rem 0 0.25rem;
 }
 
 .variant-toc-eyebrow {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -73,17 +72,19 @@ const emit = defineEmits<{
 }
 
 .variant-toc-count {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--musea-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--musea-text-muted);
+  white-space: nowrap;
 }
 
 .variant-toc-list {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 0.25rem;
   max-height: calc(100vh - var(--musea-header-height) - 4rem);
   overflow-y: auto;
+  padding-right: 0.125rem;
 }
 
 .variant-toc-item {
@@ -91,32 +92,31 @@ const emit = defineEmits<{
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.6875rem 0.75rem 0.6875rem 0.5rem;
   background: transparent;
-  border: 1px solid transparent;
+  border: none;
   border-radius: var(--musea-radius-md);
   color: var(--musea-text-muted);
   cursor: pointer;
   text-align: left;
-  transition: all var(--musea-transition);
+  transition:
+    background var(--musea-transition),
+    color var(--musea-transition);
 }
 
 .variant-toc-item:hover {
   background: var(--musea-bg-tertiary);
-  border-color: var(--musea-border);
   color: var(--musea-text);
 }
 
 .variant-toc-item--active {
   background: var(--musea-accent-subtle);
-  border-color: rgba(163, 72, 40, 0.4);
   color: var(--musea-text);
-  box-shadow: inset 3px 0 0 var(--musea-accent);
 }
 
 .variant-toc-index {
   flex-shrink: 0;
-  min-width: 2.125rem;
+  min-width: 1.875rem;
   font-size: 0.75rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -154,15 +154,19 @@ const emit = defineEmits<{
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 0.25rem 0.5rem;
+  padding: 0.1875rem 0.4375rem;
   border-radius: 999px;
-  background: var(--musea-accent);
-  color: white;
+  background: var(--musea-accent-subtle);
+  color: var(--musea-accent);
 }
 
 @media (max-width: 960px) {
   .variant-toc {
     position: static;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid var(--musea-border-subtle);
+    padding-top: 0.875rem;
   }
 
   .variant-toc-list {

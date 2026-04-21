@@ -70,16 +70,16 @@ import MyButton from "./MyButton.vue";
 
 ### Anatomy
 
-| Element / Attribute | Purpose |
-| ------------------- | ------- |
-| `<art>`             | Root metadata block |
-| `title`             | Display name |
+| Element / Attribute | Purpose                               |
+| ------------------- | ------------------------------------- |
+| `<art>`             | Root metadata block                   |
+| `title`             | Display name                          |
 | `component`         | Relative path to the source component |
-| `category`          | Sidebar grouping |
-| `status`            | Optional status badge |
-| `tags`              | Search and filtering tags |
-| `<variant>`         | Named component variation |
-| `default`           | Marks the default variant |
+| `category`          | Sidebar grouping                      |
+| `status`            | Optional status badge                 |
+| `tags`              | Search and filtering tags             |
+| `<variant>`         | Named component variation             |
+| `default`           | Marks the default variant             |
 
 ## Gallery Features
 

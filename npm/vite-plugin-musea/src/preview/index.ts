@@ -23,6 +23,7 @@ export function generatePreviewModule(
   const cssImportStatements = cssImports.map((cssPath) => `import '${cssPath}';`).join("\n");
   const setupImport = previewSetup ? `import __museaPreviewSetup from '${previewSetup}';` : "";
   const setupCall = previewSetup ? "await __museaPreviewSetup(app);" : "";
+  const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
 
   return `
 ${cssImportStatements}
@@ -72,7 +73,7 @@ async function mount() {
     currentApp = app;
 
     console.log('[musea-preview] Mounted variant: ${escapedVariantName}');
-    __museaInitAddons(container, '${escapedVariantName}');
+    __museaInitAddons(container, '${escapedVariantName}', ${actionEvents});
 
     // Override set-props to remount with raw component + props
     const TargetComponent = RawComponent || VariantComponent;
@@ -141,6 +142,7 @@ export function generatePreviewModuleWithProps(
   const cssImportStatements = cssImports.map((cssPath) => `import '${cssPath}';`).join("\n");
   const setupImport = previewSetup ? `import __museaPreviewSetup from '${previewSetup}';` : "";
   const setupCall = previewSetup ? "await __museaPreviewSetup(app);" : "";
+  const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
 
   return `
 ${cssImportStatements}
@@ -172,7 +174,7 @@ async function mount() {
     container.className = 'musea-variant';
     app.mount(container);
     console.log('[musea-preview] Mounted variant: ${escapedVariantName} with props override');
-    __museaInitAddons(container, '${escapedVariantName}');
+    __museaInitAddons(container, '${escapedVariantName}', ${actionEvents});
   } catch (error) {
     console.error('[musea-preview] Failed to mount:', error);
     container.innerHTML = '<div class="musea-error"><div class="musea-error-title">Failed to render</div><div>' + error.message + '</div></div>';

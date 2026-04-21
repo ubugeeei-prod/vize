@@ -9,6 +9,8 @@ export interface ArtMetadata {
   tags: string[];
   status: "draft" | "ready" | "deprecated";
   order?: number;
+  /** Additional DOM events to capture in the Actions panel, e.g. ["mousemove"] */
+  actionEvents?: string[];
 }
 
 /**

@@ -18,6 +18,7 @@ import AddonToolbar from "../components/AddonToolbar.vue";
 import ActionsPanel from "../components/ActionsPanel.vue";
 import FullscreenPreview from "../components/FullscreenPreview.vue";
 import { getVariantSectionId } from "../utils/variantSections";
+import { useResizable } from "../composables/useResizable";
 
 const route = useRoute();
 const { getArt, load } = useArts();
@@ -32,6 +33,16 @@ const { setCurrentVariant } = useEventCapture();
 const activeTab = ref<"variants" | "props" | "docs" | "a11y" | "vrt">("variants");
 const actionCount = computed(() => events.value.length);
 const actionsExpanded = ref(false);
+const actionsContentRef = ref<HTMLElement | null>(null);
+const actionsPanel = useResizable({
+  direction: "vertical",
+  minSize: 88,
+  maxSize: () => Math.max(160, window.innerHeight - 96),
+  storageKey: "musea-actions-height",
+  defaultSize: 240,
+  invert: true,
+  documentClass: "musea-actions-resizing",
+});
 const selectedVariantName = ref<string>("");
 const variantSectionElements = new Map<string, HTMLElement>();
 let variantObserver: IntersectionObserver | null = null;
@@ -79,6 +90,45 @@ const variantSectionIds = computed<Record<string, string>>(() => {
   return ids;
 });
 
+const actionCaptureEvents = computed(() => art.value?.metadata.actionEvents ?? []);
+
+const actionsTrackMousemove = computed(() =>
+  actionCaptureEvents.value.some((eventName) => eventName === "mousemove"),
+);
+
+const actionTrackingLabel = computed(() => {
+  if (actionsTrackMousemove.value) return "Tracks mousemove";
+  if (actionCaptureEvents.value.length > 0) return "Custom capture";
+  return "Standard capture";
+});
+
+const actionsFooterSummary = computed(() => {
+  if (actionCount.value > 0) {
+    return `${actionCount.value} captured · ${actionTrackingLabel.value}`;
+  }
+  return actionTrackingLabel.value;
+});
+
+function syncActionsPanelHeight() {
+  if (actionsContentRef.value) {
+    actionsContentRef.value.style.height = `${actionsPanel.size.value}px`;
+  }
+}
+
+watch(
+  () => actionsPanel.size.value,
+  () => {
+    syncActionsPanelHeight();
+  },
+  { flush: "sync" },
+);
+
+watch(actionsExpanded, async (expanded) => {
+  if (!expanded) return;
+  await nextTick();
+  syncActionsPanelHeight();
+});
+
 function disconnectVariantObserver() {
   variantObserver?.disconnect();
   variantObserver = null;
@@ -117,9 +167,10 @@ async function setupVariantObserver() {
         });
 
       const activeEntry = visibleEntries[0];
-      const variantName = activeEntry?.target instanceof HTMLElement
-        ? activeEntry.target.dataset.variantName
-        : undefined;
+      const variantName =
+        activeEntry?.target instanceof HTMLElement
+          ? activeEntry.target.dataset.variantName
+          : undefined;
 
       if (variantName && variantName !== selectedVariantName.value) {
         selectedVariantName.value = variantName;
@@ -223,61 +274,56 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <AddonToolbar />
+    <div class="component-sticky-menu">
+      <AddonToolbar />
 
-    <div class="component-tabs">
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'variants' }"
-        @click="activeTab = 'variants'"
-      >
-        Variants
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'props' }"
-        @click="activeTab = 'props'"
-      >
-        Props
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'docs' }"
-        @click="activeTab = 'docs'"
-      >
-        Docs
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'a11y' }"
-        @click="activeTab = 'a11y'"
-      >
-        A11y
-        <A11yBadge :art-path="art.path" :variant-name="selectedVariant?.name" />
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'vrt' }"
-        @click="activeTab = 'vrt'"
-      >
-        VRT
-      </button>
+      <div class="component-tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'variants' }"
+          @click="activeTab = 'variants'"
+        >
+          Variants
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'props' }"
+          @click="activeTab = 'props'"
+        >
+          Props
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'docs' }"
+          @click="activeTab = 'docs'"
+        >
+          Docs
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'a11y' }"
+          @click="activeTab = 'a11y'"
+        >
+          A11y
+          <A11yBadge :art-path="art.path" :variant-name="selectedVariant?.name" />
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'vrt' }"
+          @click="activeTab = 'vrt'"
+        >
+          VRT
+        </button>
+      </div>
     </div>
 
     <div class="component-content">
       <div v-if="activeTab === 'variants'" class="variants-view">
-        <VariantTabs
-          :variants="art.variants"
-          :selected-variant="selectedVariantName"
-          :section-ids="variantSectionIds"
-          @select="handleVariantSelect"
-        />
-
         <div class="variant-preview-area">
           <section
             v-for="(variant, index) in art.variants"
@@ -300,6 +346,15 @@ onUnmounted(() => {
             />
           </section>
         </div>
+
+        <aside class="variant-toc-column" aria-label="Variants navigation">
+          <VariantTabs
+            :variants="art.variants"
+            :selected-variant="selectedVariantName"
+            :section-ids="variantSectionIds"
+            @select="handleVariantSelect"
+          />
+        </aside>
       </div>
 
       <PropsPanel
@@ -325,20 +380,39 @@ onUnmounted(() => {
 
     <!-- Actions Footer Panel (sticky bottom) -->
     <div class="actions-footer" :class="{ expanded: actionsExpanded }">
-      <div v-if="actionsExpanded" class="actions-footer-content">
-        <ActionsPanel />
+      <div class="actions-footer-shell">
+        <div
+          v-if="actionsExpanded"
+          class="actions-footer-resizer"
+          title="Resize Actions panel"
+          @pointerdown.stop.prevent="actionsPanel.onPointerDown"
+        />
+        <button
+          type="button"
+          class="actions-footer-toggle"
+          @click="actionsExpanded = !actionsExpanded"
+        >
+          <span class="actions-footer-toggle-copy">
+            <span class="actions-footer-toggle-line">
+              <span class="actions-footer-title">Actions</span>
+              <span v-if="actionCount > 0" class="action-count-badge">{{
+                actionCount > 99 ? "99+" : actionCount
+              }}</span>
+            </span>
+            <span class="actions-footer-caption">{{ actionsFooterSummary }}</span>
+          </span>
+
+          <MdiIcon
+            class="actions-footer-chevron"
+            :path="actionsExpanded ? mdiChevronDown : mdiChevronUp"
+            :size="14"
+          />
+        </button>
+
+        <div v-if="actionsExpanded" ref="actionsContentRef" class="actions-footer-content">
+          <ActionsPanel :capture-events="actionCaptureEvents" />
+        </div>
       </div>
-      <button
-        type="button"
-        class="actions-footer-toggle"
-        @click="actionsExpanded = !actionsExpanded"
-      >
-        <MdiIcon :path="actionsExpanded ? mdiChevronDown : mdiChevronUp" :size="14" />
-        Actions
-        <span v-if="actionCount > 0" class="action-count-badge">{{
-          actionCount > 99 ? "99+" : actionCount
-        }}</span>
-      </button>
     </div>
 
     <FullscreenPreview />
@@ -405,15 +479,30 @@ onUnmounted(() => {
   height: 12px;
 }
 
+.component-sticky-menu {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.875rem;
+  background: linear-gradient(
+    to bottom,
+    var(--musea-bg-primary) 0%,
+    var(--musea-bg-primary) calc(100% - 0.5rem),
+    transparent 100%
+  );
+}
+
 .component-view :deep(.addon-toolbar) {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .component-tabs {
   display: flex;
   gap: 0.25rem;
   border-bottom: 1px solid var(--musea-border);
-  margin-bottom: 1.5rem;
+  background: color-mix(in srgb, var(--musea-bg-primary) 92%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .component-content {
@@ -461,16 +550,24 @@ onUnmounted(() => {
 
 .variants-view {
   display: grid;
-  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) clamp(220px, 24vw, 280px);
+  gap: 2rem;
   align-items: start;
 }
 
 .variant-preview-area {
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.variant-toc-column {
+  min-width: 0;
+  position: sticky;
+  top: calc(var(--musea-header-height) + 1rem);
+  align-self: start;
 }
 
 .variant-section {
@@ -522,35 +619,101 @@ onUnmounted(() => {
   position: sticky;
   bottom: 0;
   margin: 0 -2rem -2rem;
-  background: var(--musea-bg-primary);
-  border-top: 1px solid var(--musea-border);
-  z-index: 10;
+  z-index: 30;
+}
+
+.actions-footer-shell {
+  border-top: 1px solid var(--musea-border-subtle);
+  background: color-mix(in srgb, var(--musea-bg-primary) 94%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.actions-footer.expanded .actions-footer-shell {
+  box-shadow: 0 -12px 28px rgba(18, 18, 18, 0.08);
+}
+
+.actions-footer-resizer {
+  height: 1.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.actions-footer-resizer::before {
+  content: "";
+  width: 2.75rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--musea-border);
 }
 
 .actions-footer-toggle {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  gap: 1rem;
   width: 100%;
-  padding: 0.625rem 1rem;
-  background: var(--musea-bg-secondary);
+  padding: 0.75rem 1rem;
+  background: transparent;
   border: none;
   color: var(--musea-text-muted);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--musea-transition);
+  transition:
+    background var(--musea-transition),
+    color var(--musea-transition);
 }
 
 .actions-footer-toggle:hover {
-  background: var(--musea-bg-tertiary);
+  background: color-mix(in srgb, var(--musea-bg-secondary) 78%, transparent);
   color: var(--musea-text);
 }
 
+.actions-footer.expanded .actions-footer-toggle {
+  border-bottom: 1px solid var(--musea-border-subtle);
+}
+
+.actions-footer-toggle-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1875rem;
+  min-width: 0;
+}
+
+.actions-footer-toggle-line {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.actions-footer-title {
+  color: var(--musea-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.actions-footer-caption {
+  color: var(--musea-text-muted);
+  font-size: 0.6875rem;
+}
+
+.actions-footer-chevron {
+  color: var(--musea-text-muted);
+  transition: transform var(--musea-transition);
+  flex-shrink: 0;
+}
+
+.actions-footer.expanded .actions-footer-chevron {
+  transform: rotate(180deg);
+}
+
 .actions-footer-content {
-  border-bottom: 1px solid var(--musea-border);
-  max-height: 300px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .component-not-found {
@@ -579,12 +742,25 @@ onUnmounted(() => {
     padding: 1.25rem;
   }
 
+  .component-sticky-menu {
+    padding-bottom: 0.75rem;
+  }
+
   .variants-view {
     grid-template-columns: 1fr;
   }
 
+  .variant-toc-column {
+    order: -1;
+    position: static;
+  }
+
   .actions-footer {
     margin: 0 -1.25rem -1.25rem;
+  }
+
+  .actions-footer-toggle {
+    padding-inline: 0.875rem;
   }
 }
 </style>
