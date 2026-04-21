@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
-import path from "node:path";
+import { spawnSync } from "node:child_process";
+import * as path from "node:path";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 import { loadConfig } from "./config.js";
 
 const require = createRequire(import.meta.url);
@@ -157,6 +159,52 @@ interface ParsedLintCommand {
   sharedConfig: SharedConfigOptions;
 }
 
+function printUsage(): void {
+  console.error("Usage: vize <command> [options]");
+  console.error("Commands: lint, musea");
+}
+
+function resolvePackageBinaryFromCwd(packageName: string, binName: string = packageName): string {
+  const cwdRequire = createRequire(pathToFileURL(path.join(process.cwd(), "package.json")).href);
+  const packageJsonPath = cwdRequire.resolve(`${packageName}/package.json`);
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
+    bin?: string | Record<string, string>;
+  };
+
+  const bin = typeof packageJson.bin === "string" ? packageJson.bin : packageJson.bin?.[binName];
+
+  if (!bin) {
+    throw new Error(`Could not resolve binary '${binName}' from package '${packageName}'`);
+  }
+
+  return path.resolve(path.dirname(packageJsonPath), bin);
+}
+
+function runMusea(args: string[]): void {
+  const isHelp = args.includes("--help") || args.includes("-h");
+  if (isHelp) {
+    console.error("Usage: vize musea [--build] [...vite options]");
+    console.error("  --build    Run `vite build` instead of `vite dev`");
+    return;
+  }
+
+  const isBuild = args.includes("--build");
+  const viteArgs = args.filter((arg) => arg !== "--build");
+  const viteCommand = isBuild ? "build" : "dev";
+  const viteBin = resolvePackageBinaryFromCwd("vite");
+  const result = spawnSync(process.execPath, [viteBin, viteCommand, ...viteArgs], {
+    stdio: "inherit",
+    cwd: process.cwd(),
+    env: process.env,
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  process.exit(result.status ?? 1);
+}
+
 function parseLintCommand(args: string[]): ParsedLintCommand {
   const patterns: string[] = [];
   const options: LintOptions = {};
@@ -258,14 +306,14 @@ async function runLint(args: string[]): Promise<void> {
 // ============================================================================
 
 const NAPI_COMMANDS = new Set(["lint"]);
+const JS_COMMANDS = new Set(["musea"]);
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
 
-  if (!command) {
-    console.error("Usage: vize <command> [options]");
-    console.error("Commands: lint");
+  if (!command || command === "--help" || command === "-h") {
+    printUsage();
     process.exit(1);
   }
 
@@ -276,7 +324,15 @@ async function main(): Promise<void> {
         await runLint(commandArgs);
         break;
     }
+  } else if (JS_COMMANDS.has(command)) {
+    const commandArgs = args.slice(1);
+    switch (command) {
+      case "musea":
+        runMusea(commandArgs);
+        break;
+    }
   } else {
+    printUsage();
     console.error(`Unknown command: ${command}`);
     console.error(
       "For commands not yet available via NAPI, install from source: cargo install vize",

@@ -94,27 +94,57 @@ export async function parseTokens(tokensPath: string): Promise<TokenCategory[]> 
  * Parse tokens from a directory.
  */
 async function parseTokenDirectory(dirPath: string): Promise<TokenCategory[]> {
+  const mergedTokens: Record<string, unknown> = {};
+  await mergeTokenDirectory(mergedTokens, dirPath);
+  return flattenTokens(mergedTokens);
+}
+
+async function mergeTokenDirectory(
+  target: Record<string, unknown>,
+  dirPath: string,
+): Promise<void> {
   const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
-  const categories: TokenCategory[] = [];
 
-  for (const entry of entries) {
-    if (entry.isFile() && (entry.name.endsWith(".json") || entry.name.endsWith(".tokens.json"))) {
-      const filePath = path.join(dirPath, entry.name);
-      const content = await fs.promises.readFile(filePath, "utf-8");
-      const tokens = JSON.parse(content);
-      const categoryName = path
-        .basename(entry.name, path.extname(entry.name))
-        .replace(".tokens", "");
+  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    const fullPath = path.join(dirPath, entry.name);
 
-      categories.push({
-        name: formatCategoryName(categoryName),
-        tokens: extractTokens(tokens),
-        subcategories: extractSubcategories(tokens),
-      });
+    if (entry.isDirectory()) {
+      await mergeTokenDirectory(target, fullPath);
+      continue;
     }
-  }
 
-  return categories;
+    if (
+      !entry.isFile() ||
+      (!entry.name.endsWith(".json") && !entry.name.endsWith(".tokens.json"))
+    ) {
+      continue;
+    }
+
+    const content = await fs.promises.readFile(fullPath, "utf-8");
+    const tokens = JSON.parse(content) as Record<string, unknown>;
+    deepMergeTokenTrees(target, tokens);
+  }
+}
+
+function deepMergeTokenTrees(
+  target: Record<string, unknown>,
+  source: Record<string, unknown>,
+): void {
+  for (const [key, value] of Object.entries(source)) {
+    const existing = target[key];
+
+    if (
+      isPlainObject(existing) &&
+      isPlainObject(value) &&
+      !isTokenValue(existing) &&
+      !isTokenValue(value)
+    ) {
+      deepMergeTokenTrees(existing, value);
+      continue;
+    }
+
+    target[key] = value;
+  }
 }
 
 /**
@@ -162,30 +192,6 @@ function extractTokens(obj: Record<string, unknown>): Record<string, DesignToken
 }
 
 /**
- * Extract subcategories from an object.
- */
-function extractSubcategories(obj: Record<string, unknown>): TokenCategory[] | undefined {
-  const subcategories: TokenCategory[] = [];
-
-  for (const [key, value] of Object.entries(obj)) {
-    if (!isTokenValue(value) && typeof value === "object" && value !== null) {
-      const categoryTokens = extractTokens(value as Record<string, unknown>);
-      const nested = extractSubcategories(value as Record<string, unknown>);
-
-      if (Object.keys(categoryTokens).length > 0 || (nested && nested.length > 0)) {
-        subcategories.push({
-          name: formatCategoryName(key),
-          tokens: categoryTokens,
-          subcategories: nested,
-        });
-      }
-    }
-  }
-
-  return subcategories.length > 0 ? subcategories : undefined;
-}
-
-/**
  * Check if a value is a token definition.
  */
 function isTokenValue(value: unknown): boolean {
@@ -196,6 +202,10 @@ function isTokenValue(value: unknown): boolean {
     ("value" in obj && (typeof obj.value === "string" || typeof obj.value === "number")) ||
     ("$value" in obj && (typeof obj.$value === "string" || typeof obj.$value === "number"))
   );
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**

@@ -42,6 +42,28 @@ wait_for_registry_resolution() {
   echo "$crate v$version is resolvable from crates.io."
 }
 
+retry_publish() {
+  local crate=$1
+  local attempt=1
+
+  until cargo publish -p "$crate"; do
+    if is_published "$crate" "$EXPECTED_VERSION"; then
+      echo "$crate v$EXPECTED_VERSION was published despite a non-zero cargo publish exit."
+      wait_for_registry_resolution "$crate" "$EXPECTED_VERSION"
+      return 0
+    fi
+
+    if [ "$attempt" -ge "$PUBLISH_RETRY_LIMIT" ]; then
+      echo "Timed out publishing $crate v$EXPECTED_VERSION."
+      return 1
+    fi
+
+    echo "Retrying cargo publish for $crate v$EXPECTED_VERSION... ($attempt/$PUBLISH_RETRY_LIMIT)"
+    attempt=$((attempt + 1))
+    sleep "$PUBLISH_RETRY_DELAY"
+  done
+}
+
 publish_crate() {
   local crate=$1
   echo "Publishing $crate v$EXPECTED_VERSION..."
@@ -52,7 +74,7 @@ publish_crate() {
     return 0
   fi
 
-  cargo publish -p "$crate"
+  retry_publish "$crate"
   echo "$crate v$EXPECTED_VERSION published successfully."
   wait_for_registry_resolution "$crate" "$EXPECTED_VERSION"
 }

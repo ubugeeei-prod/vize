@@ -23,6 +23,9 @@ features:
   - title: Blazing Fast CLI
     details: Compile, format, lint, and type-check Vue SFC files from a single Rust-native binary. One tool replaces an entire toolchain.
     link: guide/cli.md
+  - title: Native Type Checking
+    details: "`vize check` runs through `vize_canon` and Corsa project sessions backed by `corsa-bind`, keeping Vue-aware diagnostics on a native path."
+    link: guide/cli.md
   - title: Vite Plugin
     details: Drop-in replacement for @vitejs/plugin-vue with native compilation speed. No code changes required.
     link: guide/vite-plugin.md
@@ -48,9 +51,15 @@ features:
     details: First-class support for Vue 3.6 Vapor mode — fine-grained reactive compilation without the virtual DOM.
     link: architecture/overview.md
   - title: Philosophy
-    details: "Art-inspired architecture, oxidation ecosystem (OXC, oxlint, corsa), and a unified toolchain vision."
+    details: "Art-inspired architecture, oxidation ecosystem (OXC, oxlint, corsa-bind), and a unified toolchain vision."
     link: philosophy.md
 ---
+
+## Current Direction
+
+One of the biggest recent shifts in Vize is native type checking. `vize check` and the editor-facing type-check pipeline are moving onto `vize_canon` plus [`corsa-bind`](https://github.com/ubugeeei/corsa-bind), which lets Vize keep Vue virtual files and TypeScript project diagnostics on a native path for longer.
+
+That matters for more than raw speed. It gives Vize a tighter loop between template analysis, diagnostics, navigation, and future editor features, while reducing the amount of work that has to bounce back through a JavaScript-hosted compiler process. The fidelity story is still catching up, but this is the direction the toolchain is clearly heading.
 
 ## Author
 

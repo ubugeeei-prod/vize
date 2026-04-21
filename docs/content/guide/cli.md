@@ -114,6 +114,8 @@ vize check --tsconfig tsconfig.app.json
 vize check --profile src
 ```
 
+`vize check` is backed by `vize_canon` and Corsa project sessions exposed through [`corsa-bind`](https://github.com/ubugeeei/corsa-bind). Vize generates virtual TypeScript for Vue SFCs, runs project diagnostics on a native path, and maps the results back to the original source locations.
+
 When no explicit paths are given, `vize check` uses `tsconfig.json` `files` / `include` /
 `exclude` if available.
 
@@ -131,6 +133,8 @@ Key options:
 | `--servers`         | Parallel Corsa worker count                        |
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
+
+Use `--corsa-path` when you want to pin a custom Corsa executable while developing Vize or testing a local `corsa-bind` checkout.
 
 ## Musea
 

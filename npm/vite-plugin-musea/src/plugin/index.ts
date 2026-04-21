@@ -13,6 +13,7 @@
  */
 
 import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
+import { transformWithEsbuild } from "vite";
 import fs from "node:fs";
 import path from "node:path";
 import { vizeConfigStore } from "@vizejs/vite-plugin";
@@ -21,7 +22,13 @@ import type { MuseaOptions, ArtFileInfo, ArtMetadata } from "../types/index.js";
 
 import { loadNative } from "../native-loader.js";
 import { extractScriptSetupContent } from "../art-module.js";
-import { shouldProcess, scanArtFiles, generateStorybookFiles, buildThemeConfig } from "../utils.js";
+import {
+  shouldProcess,
+  scanArtFiles,
+  generateStorybookFiles,
+  buildThemeConfig,
+  resolveScanRoots,
+} from "../utils.js";
 import { registerMiddleware } from "../server-middleware.js";
 import { createApiMiddleware } from "../api-routes/index.js";
 import {
@@ -72,6 +79,28 @@ function extractCustomArtMetadata(source: string): Pick<ArtMetadata, "actionEven
   };
 }
 
+function extractStyleBlocks(source: string): string[] {
+  const styles: string[] = [];
+
+  for (const match of source.matchAll(/<style\b([^>]*)>([\s\S]*?)<\/style>/gi)) {
+    const attrs = match[1] ?? "";
+    const content = match[2]?.trim();
+    const lang = attrs.match(/\blang\s*=\s*["']([^"']+)["']/i)?.[1]?.toLowerCase();
+
+    if (!content) {
+      continue;
+    }
+
+    if (lang && lang !== "css") {
+      continue;
+    }
+
+    styles.push(content);
+  }
+
+  return styles;
+}
+
 /**
  * Create Musea Vite plugin.
  */
@@ -92,6 +121,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   const artFiles = new Map<string, ArtFileInfo>();
   let resolvedPreviewCss: string[] = [];
   let resolvedPreviewSetup: string | null = null;
+  let scanRoots: string[] = [];
 
   // Shared state for virtual module hooks
   const virtualState: VirtualModuleState = {
@@ -163,10 +193,12 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       // Update shared state references after resolution
       virtualState.resolvedPreviewCss = resolvedPreviewCss;
       virtualState.resolvedPreviewSetup = resolvedPreviewSetup;
+      scanRoots = resolveScanRoots(resolvedConfig.root, include);
     },
 
     configureServer(devServer) {
       server = devServer;
+      devServer.watcher.add(scanRoots);
 
       // Register gallery SPA, preview, and art module middleware
       registerMiddleware(devServer, {
@@ -266,6 +298,11 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
       console.log(`[musea] Found ${files.length} art files`);
 
+      if (server) {
+        server.watcher.add(scanRoots);
+        server.watcher.add(files);
+      }
+
       for (const file of files) {
         await processArtFile(file);
       }
@@ -278,6 +315,28 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
     resolveId,
     load,
+    async transform(code, id) {
+      if (!id.includes("?musea-virtual")) {
+        return null;
+      }
+
+      if (!id.includes("musea-art:") && !id.includes("\0musea:")) {
+        return null;
+      }
+
+      const safeId = id
+        .replaceAll("\0", "")
+        .replace(/[^\w./-]+/g, "_")
+        .replace(/_+/g, "_");
+      const loaderId = path.join(config.root, `.musea-${safeId}.ts`);
+
+      return transformWithEsbuild(code, loaderId, {
+        loader: "ts",
+        format: "esm",
+        sourcemap: config.command === "serve",
+        target: "esnext",
+      });
+    },
     handleHotUpdate,
   };
 
@@ -318,6 +377,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           !isInline && parsed.hasScriptSetup ? extractScriptSetupContent(source) : undefined,
         hasScript: parsed.hasScript,
         styleCount: parsed.styleCount,
+        styleBlocks: isInline ? [] : extractStyleBlocks(source),
         isInline,
         componentPath: isInline ? filePath : undefined,
       };

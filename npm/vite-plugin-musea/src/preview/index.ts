@@ -24,6 +24,7 @@ export function generatePreviewModule(
   const setupImport = previewSetup ? `import __museaPreviewSetup from '${previewSetup}';` : "";
   const setupCall = previewSetup ? "await __museaPreviewSetup(app);" : "";
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
+  const artStyleId = `musea-art-styles-${art.path.replace(/[^\w-]+/g, "_")}`;
 
   return `
 ${cssImportStatements}
@@ -38,6 +39,24 @@ ${MUSEA_ADDONS_INIT_CODE}
 let currentApp = null;
 const propsOverride = reactive({});
 const slotsOverride = reactive({ default: '' });
+
+function ensureArtStyles(styles) {
+  const styleId = '${artStyleId}';
+  const existing = document.getElementById(styleId);
+
+  if (!Array.isArray(styles) || styles.length === 0) {
+    existing?.remove();
+    return;
+  }
+
+  const tag = existing ?? document.createElement('style');
+  tag.id = styleId;
+  tag.textContent = styles.join('\\n\\n');
+
+  if (!existing) {
+    document.head.appendChild(tag);
+  }
+}
 
 window.__museaSetProps = (props) => {
   // Clear old keys
@@ -66,6 +85,7 @@ async function mount() {
 
     // Create and mount the app
     const app = createApp(VariantComponent);
+    ensureArtStyles(artModule.__styles__);
     ${setupCall}
     container.innerHTML = '';
     container.className = 'musea-variant';
@@ -118,6 +138,7 @@ async function remountWithProps(Component) {
       };
     }
   });
+  ensureArtStyles(artModule.__styles__);
   ${setupCall}
   container.innerHTML = '';
   app.mount(container);
@@ -143,6 +164,7 @@ export function generatePreviewModuleWithProps(
   const setupImport = previewSetup ? `import __museaPreviewSetup from '${previewSetup}';` : "";
   const setupCall = previewSetup ? "await __museaPreviewSetup(app);" : "";
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
+  const artStyleId = `musea-art-styles-${art.path.replace(/[^\w-]+/g, "_")}`;
 
   return `
 ${cssImportStatements}
@@ -154,6 +176,24 @@ const container = document.getElementById('app');
 const propsOverride = ${propsJson};
 
 ${MUSEA_ADDONS_INIT_CODE}
+
+function ensureArtStyles(styles) {
+  const styleId = '${artStyleId}';
+  const existing = document.getElementById(styleId);
+
+  if (!Array.isArray(styles) || styles.length === 0) {
+    existing?.remove();
+    return;
+  }
+
+  const tag = existing ?? document.createElement('style');
+  tag.id = styleId;
+  tag.textContent = styles.join('\\n\\n');
+
+  if (!existing) {
+    document.head.appendChild(tag);
+  }
+}
 
 async function mount() {
   try {
@@ -169,6 +209,7 @@ async function mount() {
     };
 
     const app = createApp(WrappedComponent);
+    ensureArtStyles(artModule.__styles__);
     ${setupCall}
     container.innerHTML = '';
     container.className = 'musea-variant';

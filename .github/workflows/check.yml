@@ -56,7 +56,7 @@ jobs:
           cache: true
           run-install: false
       - name: Install JS dependencies
-        run: vp install --workspace-root --frozen-lockfile --prefer-offline
+        run: vp install --frozen-lockfile --prefer-offline
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
       - name: Check editor extensions

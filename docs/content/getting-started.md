@@ -16,7 +16,7 @@ building blocks for:
 | Template compile | `vize_atelier_*`, `vize_atelier_sfc` | `@vizejs/vite-plugin`, Rust `vize build` |
 | Lint             | `vize_patina`                        | `vize lint`, `oxlint-plugin-vize`        |
 | Format           | `vize_glyph`                         | Rust `vize fmt`                          |
-| Type check       | `vize_canon`                         | Rust `vize check`                        |
+| Type check       | `vize_canon`, `corsa-bind`           | Rust `vize check`                        |
 | Editor support   | `vize_maestro`                       | `vize lsp`, VS Code, Zed                 |
 | Musea art tools  | `vize_musea`                         | `@vizejs/vite-plugin-musea`              |
 | Bindings         | `vize_vitrine`                       | `@vizejs/native`, `@vizejs/wasm`         |
@@ -67,6 +67,12 @@ vize lint --profile src
 vize check --profile src
 vize lsp
 ```
+
+## Native Type Checking
+
+`vize check` is powered by `vize_canon`, which now leans on [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) project sessions for native TypeScript diagnostics. Vize generates virtual TypeScript for Vue SFCs, asks Corsa for project-aware diagnostics, and then maps the results back onto the original `.vue`, `.ts`, `.tsx`, and `.d.ts` files.
+
+This path is still maturing, so editor type checking remains an opt-in capability for now. If you are developing Vize alongside Corsa, `vize check --corsa-path /path/to/corsa` lets you point at a custom executable.
 
 ## Shared `vize.config.*`
 
