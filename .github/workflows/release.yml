@@ -60,6 +60,9 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-cli-${{ matrix.settings.target }}
+          cache-workspace-crates: "true"
 
       - name: Build CLI
         shell: bash
@@ -85,6 +88,7 @@ jobs:
           name: cli-${{ matrix.settings.target }}
           path: ${{ matrix.settings.archive }}
           if-no-files-found: error
+          compression-level: 0
 
   # Package editor extensions for GitHub Releases and registry validation
   build-editor-extensions:
@@ -92,9 +96,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
@@ -107,9 +108,17 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-tools
+          cache-workspace-crates: "true"
 
-      - name: Install root dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Cache npm registry for VS Code extension tooling
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-vscode-${{ hashFiles('.node-version', 'npm/vscode-vize/package.json', 'vite.config.ts') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-vscode-
 
       - name: Package VS Code extension
         run: vp run --workspace-root package:vscode-extension
@@ -128,6 +137,7 @@ jobs:
             npm/vscode-vize/dist/vize.vsix
             zed-vize-extension.tar.gz
           if-no-files-found: error
+          compression-level: 0
 
   # Publish VS Code extension when VSCE_PAT is configured
   release-vscode-extension:
@@ -138,19 +148,25 @@ jobs:
     env:
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
-          node-version-file: ".node-version"
+          node-version: "24.14.0"
           run-install: false
 
-      - name: Install root dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Cache npm registry for VS Code extension tooling
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-vscode-release-24.14.0-v1
+          restore-keys: |
+            ${{ runner.os }}-npm-vscode-release-
+
+      - name: Download editor extension artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: editor-extensions
+          path: editor-extension-artifacts
 
       - name: Skip publish when VSCE_PAT is absent
         if: env.VSCE_PAT == ''
@@ -158,7 +174,76 @@ jobs:
 
       - name: Publish VS Code extension
         if: env.VSCE_PAT != ''
-        run: vp run --workspace-root publish:vscode-extension
+        run: |
+          if [ "${NPM_TAG}" = "latest" ]; then
+            npm exec --yes --package=@vscode/vsce@^3.3.2 -- \
+              vsce publish --no-dependencies --packagePath editor-extension-artifacts/vize.vsix
+          else
+            npm exec --yes --package=@vscode/vsce@^3.3.2 -- \
+              vsce publish --no-dependencies --pre-release --packagePath editor-extension-artifacts/vize.vsix
+          fi
+
+  # Build release npm packages once and reuse them across publish jobs
+  build-release-packages:
+    name: Build release npm packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - name: Install package build dependencies
+        run: |
+          vp install --frozen-lockfile --prefer-offline \
+            --filter './npm/vize...' \
+            --filter './npm/vite-plugin-vize...' \
+            --filter './npm/oxlint-plugin-vize...' \
+            --filter './npm/unplugin-vize...' \
+            --filter './npm/fresco...' \
+            --filter './npm/musea-mcp-server...' \
+            --filter './npm/vite-plugin-musea...' \
+            --filter './npm/rspack-vize-plugin...' \
+            --filter './npm/musea-nuxt...' \
+            --filter './npm/nuxt...'
+
+      - name: Build release npm packages
+        run: |
+          vp run --filter './npm/vize' build
+          vp run --filter './npm/vite-plugin-vize' build
+          vp run --filter './npm/oxlint-plugin-vize' build
+          vp run --filter './npm/unplugin-vize' build
+          vp run --filter './npm/fresco' build
+          vp run --filter './npm/musea-mcp-server' build
+          vp run --filter './npm/vite-plugin-musea' build
+          vp run --filter './npm/vite-plugin-musea' build:gallery
+          vp run --filter './npm/rspack-vize-plugin' build
+          vp run --filter './npm/musea-nuxt' build
+          vp run --filter './npm/nuxt' build
+
+      - name: Upload prebuilt packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-npm-packages
+          path: |
+            npm/vize
+            npm/vize-native
+            npm/fresco-native
+            npm/vite-plugin-vize
+            npm/oxlint-plugin-vize
+            npm/unplugin-vize
+            npm/fresco
+            npm/musea-mcp-server
+            npm/vite-plugin-musea
+            npm/rspack-vize-plugin
+            npm/musea-nuxt
+            npm/nuxt
+          if-no-files-found: error
+          compression-level: 0
 
   # Build native bindings (vize-native + fresco-native) for all platforms
   build-native-all:
@@ -170,45 +255,42 @@ jobs:
         settings:
           - host: macos-latest
             target: x86_64-apple-darwin
-            build_vize: pnpm -C npm/vize-native build --target x86_64-apple-darwin
-            build_fresco: pnpm -C npm/fresco-native build --target x86_64-apple-darwin
+            build_vize: vp run --filter './npm/vize-native' build -- --target x86_64-apple-darwin
+            build_fresco: vp run --filter './npm/fresco-native' build -- --target x86_64-apple-darwin
           - host: macos-latest
             target: aarch64-apple-darwin
-            build_vize: pnpm -C npm/vize-native build --target aarch64-apple-darwin
-            build_fresco: pnpm -C npm/fresco-native build --target aarch64-apple-darwin
+            build_vize: vp run --filter './npm/vize-native' build -- --target aarch64-apple-darwin
+            build_fresco: vp run --filter './npm/fresco-native' build -- --target aarch64-apple-darwin
           - host: windows-latest
             target: x86_64-pc-windows-msvc
-            build_vize: pnpm -C npm/vize-native build --target x86_64-pc-windows-msvc
-            build_fresco: pnpm -C npm/fresco-native build --target x86_64-pc-windows-msvc
+            build_vize: vp run --filter './npm/vize-native' build -- --target x86_64-pc-windows-msvc
+            build_fresco: vp run --filter './npm/fresco-native' build -- --target x86_64-pc-windows-msvc
           - host: windows-latest
             target: aarch64-pc-windows-msvc
-            build_vize: pnpm -C npm/vize-native build --target aarch64-pc-windows-msvc
-            build_fresco: pnpm -C npm/fresco-native build --target aarch64-pc-windows-msvc
+            build_vize: vp run --filter './npm/vize-native' build -- --target aarch64-pc-windows-msvc
+            build_fresco: vp run --filter './npm/fresco-native' build -- --target aarch64-pc-windows-msvc
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            build_vize: pnpm -C npm/vize-native build --target x86_64-unknown-linux-gnu
-            build_fresco: pnpm -C npm/fresco-native build --target x86_64-unknown-linux-gnu
+            build_vize: vp run --filter './npm/vize-native' build -- --target x86_64-unknown-linux-gnu
+            build_fresco: vp run --filter './npm/fresco-native' build -- --target x86_64-unknown-linux-gnu
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            build_vize: pnpm -C npm/vize-native build --target x86_64-unknown-linux-musl --cross-compile
-            build_fresco: pnpm -C npm/fresco-native build --target x86_64-unknown-linux-musl --cross-compile
+            build_vize: vp run --filter './npm/vize-native' build -- --target x86_64-unknown-linux-musl --cross-compile
+            build_fresco: vp run --filter './npm/fresco-native' build -- --target x86_64-unknown-linux-musl --cross-compile
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            build_vize: pnpm -C npm/vize-native build --target aarch64-unknown-linux-gnu --cross-compile
-            build_fresco: pnpm -C npm/fresco-native build --target aarch64-unknown-linux-gnu --cross-compile
+            build_vize: vp run --filter './npm/vize-native' build -- --target aarch64-unknown-linux-gnu --cross-compile
+            build_fresco: vp run --filter './npm/fresco-native' build -- --target aarch64-unknown-linux-gnu --cross-compile
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            build_vize: pnpm -C npm/vize-native build --target aarch64-unknown-linux-musl --cross-compile
-            build_fresco: pnpm -C npm/fresco-native build --target aarch64-unknown-linux-musl --cross-compile
+            build_vize: vp run --filter './npm/vize-native' build -- --target aarch64-unknown-linux-musl --cross-compile
+            build_fresco: vp run --filter './npm/fresco-native' build -- --target aarch64-unknown-linux-musl --cross-compile
     steps:
       - uses: actions/checkout@v4
 
       - name: Enable long paths (Windows)
         if: runner.os == 'Windows'
         run: git config --system core.longpaths true
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
@@ -218,7 +300,7 @@ jobs:
           run-install: false
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile --no-frozen-lockfile
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...' --filter './npm/fresco-native...'
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -227,6 +309,9 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-native-${{ matrix.settings.target }}
+          cache-workspace-crates: "true"
 
       - name: Setup Zig
         if: contains(matrix.settings.build_vize, '--cross-compile')
@@ -242,6 +327,7 @@ jobs:
           name: bindings-${{ matrix.settings.target }}
           path: npm/vize-native/*.node
           if-no-files-found: error
+          compression-level: 0
 
       - name: Build fresco-native
         run: ${{ matrix.settings.build_fresco }}
@@ -253,6 +339,7 @@ jobs:
           name: fresco-bindings-${{ matrix.settings.target }}
           path: npm/fresco-native/*.node
           if-no-files-found: error
+          compression-level: 0
 
   # Publish native packages to npm (using Trusted Publishing / OIDC)
   release-npm-native:
@@ -266,9 +353,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
@@ -277,7 +361,7 @@ jobs:
           run-install: false
 
       - name: Install dependencies
-        run: vp install
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...'
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -336,7 +420,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Publish fresco native packages to npm (using Trusted Publishing / OIDC)
   release-npm-fresco-native:
@@ -350,9 +434,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
@@ -361,7 +442,7 @@ jobs:
           run-install: false
 
       - name: Install dependencies
-        run: vp install
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco-native...'
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -420,7 +501,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish WASM package (using Trusted Publishing / OIDC)
   release-npm-wasm:
@@ -433,23 +514,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
 
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-wasm
+          cache-workspace-crates: "true"
+
+      - name: Cache WASM package build
+        id: cache-wasm
+        uses: actions/cache@v4
+        with:
+          path: npm/vize-wasm
+          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json') }}
+
       - name: Install wasm-bindgen-cli
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@v2
         with:
           tool: wasm-bindgen-cli@0.2.111
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
-
       - name: Build WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
         run: |
           cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown
           wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir npm/vize-wasm --target web
@@ -477,13 +567,13 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish Vite plugin (using Trusted Publishing / OIDC)
   release-npm-vite-plugin:
     name: Release @vizejs/vite-plugin to npm
     runs-on: ubuntu-latest
-    needs: release-npm-native
+    needs: [build-release-packages, release-npm-native]
     environment: npm
     permissions:
       contents: read
@@ -491,21 +581,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
-          cache: true
           run-install: false
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build vite-plugin
-        run: vp run --filter './npm/vite-plugin-vize' build
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
@@ -522,13 +608,13 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish Oxlint plugin package (using Trusted Publishing / OIDC)
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-latest
-    needs: release-npm-native
+    needs: [build-release-packages, release-npm-native]
     environment: npm
     permissions:
       contents: read
@@ -536,18 +622,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
-          cache: true
           run-install: false
 
-      - name: Install dependencies
-        run: vp install
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Inject native binding package versions
         run: |
@@ -568,9 +653,6 @@ jobs:
           "
           cat npm/oxlint-plugin-vize/package.json
 
-      - name: Build oxlint-plugin-vize
-        run: vp run --filter './npm/oxlint-plugin-vize' build
-
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
 
@@ -586,13 +668,13 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish unplugin package (using Trusted Publishing / OIDC)
   release-npm-unplugin:
     name: Release @vizejs/unplugin to npm
     runs-on: ubuntu-latest
-    needs: release-npm-native
+    needs: [build-release-packages, release-npm-native]
     environment: npm
     permissions:
       contents: read
@@ -600,21 +682,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
-          cache: true
           run-install: false
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build unplugin-vize
-        run: vp run --filter './npm/unplugin-vize' build
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
@@ -631,13 +709,13 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish Fresco package (using Trusted Publishing / OIDC)
   release-npm-fresco:
     name: Release @vizejs/fresco to npm
     runs-on: ubuntu-latest
-    needs: release-npm-fresco-native
+    needs: [build-release-packages, release-npm-fresco-native]
     environment: npm
     permissions:
       contents: read
@@ -645,21 +723,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
-          cache: true
           run-install: false
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build fresco
-        run: vp run --filter './npm/fresco' build
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
@@ -676,13 +750,13 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish Musea MCP server (using Trusted Publishing / OIDC)
   release-npm-musea-mcp-server:
     name: Release @vizejs/musea-mcp-server to npm
     runs-on: ubuntu-latest
-    needs: release-npm-native
+    needs: [build-release-packages, release-npm-native]
     environment: npm
     permissions:
       contents: read
@@ -690,21 +764,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
-          cache: true
           run-install: false
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build musea-mcp-server
-        run: vp run --filter './npm/musea-mcp-server' build
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
@@ -721,13 +791,13 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish Vite plugin for Musea (using Trusted Publishing / OIDC)
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
     runs-on: ubuntu-latest
-    needs: release-npm-native
+    needs: [build-release-packages, release-npm-native]
     environment: npm
     permissions:
       contents: read
@@ -735,24 +805,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
-          cache: true
           run-install: false
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build vite-plugin-musea
-        run: vp run --filter './npm/vite-plugin-musea' build
-
-      - name: Build musea gallery
-        run: vp run --filter './npm/vite-plugin-musea' build:gallery
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
@@ -769,13 +832,13 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish Rspack plugin (using Trusted Publishing / OIDC)
   release-npm-rspack-plugin:
     name: Release @vizejs/rspack-plugin to npm
     runs-on: ubuntu-latest
-    needs: release-npm-native
+    needs: [build-release-packages, release-npm-native]
     environment: npm
     permissions:
       contents: read
@@ -783,21 +846,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
-          cache: true
           run-install: false
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build rspack-vize-plugin
-        run: vp run --filter './npm/rspack-vize-plugin' build
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
@@ -814,13 +873,13 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish Musea Nuxt (using Trusted Publishing / OIDC)
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
     runs-on: ubuntu-latest
-    needs: release-npm-native
+    needs: [build-release-packages, release-npm-native]
     environment: npm
     permissions:
       contents: read
@@ -828,21 +887,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
-          cache: true
           run-install: false
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build musea-nuxt
-        run: vp run --filter './npm/musea-nuxt' build
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
@@ -859,13 +914,19 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Build and publish @vizejs/nuxt (using Trusted Publishing / OIDC)
   release-npm-nuxt:
     name: Release @vizejs/nuxt to npm
     runs-on: ubuntu-latest
-    needs: [release-npm-vite-plugin, release-npm-vite-plugin-musea, release-npm-musea-nuxt]
+    needs:
+      [
+        build-release-packages,
+        release-npm-vite-plugin,
+        release-npm-vite-plugin-musea,
+        release-npm-musea-nuxt,
+      ]
     environment: npm
     permissions:
       contents: read
@@ -873,21 +934,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
-          cache: true
           run-install: false
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build @vizejs/nuxt
-        run: vp run --filter './npm/nuxt' build
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
@@ -904,7 +961,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
 
   # Publish crates to crates.io (using Trusted Publishing)
   release-crates:
@@ -919,6 +976,9 @@ jobs:
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-crates
+          cache-workspace-crates: "true"
 
       - name: Get crates.io token via Trusted Publishing
         id: crates-io-auth
@@ -933,27 +993,8 @@ jobs:
   create-github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs:
-      [
-        build-cli,
-        build-editor-extensions,
-        release-npm-native,
-        release-npm-fresco-native,
-        release-npm-fresco,
-        release-npm-wasm,
-        release-npm-vite-plugin,
-        release-npm-oxlint-plugin,
-        release-npm-unplugin,
-        release-npm-rspack-plugin,
-        release-npm-musea-mcp-server,
-        release-npm-vite-plugin-musea,
-        release-npm-musea-nuxt,
-        release-npm-nuxt,
-        release-crates,
-      ]
+    needs: [build-cli, build-editor-extensions]
     steps:
-      - uses: actions/checkout@v4
-
       - name: Download CLI artifacts
         uses: actions/download-artifact@v4
         with:
@@ -990,7 +1031,7 @@ jobs:
   release-npm-cli:
     name: Release vize CLI to npm
     runs-on: ubuntu-latest
-    needs: [release-npm-native, create-github-release]
+    needs: [build-release-packages, release-npm-native]
     environment: npm
     permissions:
       contents: read
@@ -998,14 +1039,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
           run-install: false
+
+      - name: Download prebuilt packages
+        uses: actions/download-artifact@v4
+        with:
+          name: release-npm-packages
+          path: .
 
       - name: Install npm with OIDC support
         run: npm install -g npm@latest
@@ -1028,10 +1072,6 @@ jobs:
           "
           cat npm/vize/package.json
 
-      - name: Build vize CLI package
-        working-directory: npm/vize
-        run: pnpm install --no-frozen-lockfile && vp pack
-
       - name: Publish vize CLI package
         working-directory: npm/vize
         run: |
@@ -1044,4 +1084,4 @@ jobs:
             done
             return 1
           }
-          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
+          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG

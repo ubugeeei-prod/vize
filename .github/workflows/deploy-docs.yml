@@ -12,8 +12,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-docs:
@@ -29,12 +29,22 @@ jobs:
         with:
           prefix-key: "v1-rust"
           shared-key: "napi"
+          cache-workspace-crates: "true"
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
           cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: |
+          vp install --frozen-lockfile --prefer-offline \
+            --filter './docs...' \
+            --filter './npm/vite-plugin-vize...' \
+            --filter './npm/vize...' \
+            --filter './npm/vize-native...'
 
       - name: Build @vizejs/vite-plugin
         run: |
@@ -66,13 +76,25 @@ jobs:
         with:
           prefix-key: "v1-rust"
           shared-key: "wasm"
+          cache-workspace-crates: "true"
+
+      - name: Cache WASM build
+        id: cache-wasm
+        uses: actions/cache@v4
+        with:
+          path: |
+            npm/vize-wasm
+            playground/src/wasm
+          key: ${{ runner.os }}-docs-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json') }}
 
       - name: Install wasm-bindgen-cli
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@v2
         with:
           tool: wasm-bindgen-cli@0.2.111
 
       - name: Build WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
         run: |
           cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown
           wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir npm/vize-wasm --target web
@@ -83,6 +105,17 @@ jobs:
         with:
           node-version-file: ".node-version"
           cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: |
+          vp install --frozen-lockfile --prefer-offline \
+            --filter './playground...' \
+            --filter './examples/vite-musea...' \
+            --filter './npm/vite-plugin-musea...' \
+            --filter './npm/vite-plugin-vize...' \
+            --filter './npm/vize...' \
+            --filter './npm/vize-native...'
 
       - name: Build npm packages
         run: |

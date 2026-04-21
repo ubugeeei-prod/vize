@@ -27,7 +27,7 @@
   "publisher": "ubugeeei",
   "main": "./dist/extension.cjs",
   "scripts": {
-    "vscode:prepublish": "pnpm run build",
+    "vscode:prepublish": "vp pack",
     "build": "vp pack",
     "watch": "vp pack --watch",
     "check": "tsc --noEmit && vp check src vite.config.ts",

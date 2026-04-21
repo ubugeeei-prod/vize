@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: check-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -41,6 +45,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "native"
+          cache-workspace-crates: "true"
       - name: Build vize CLI
         run: cargo build --release -p vize
       - name: Install vize CLI
@@ -50,8 +55,15 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - name: Cache npm registry for VS Code extension tooling
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-vscode-${{ hashFiles('.node-version', 'npm/vscode-vize/package.json', 'vite.config.ts') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-vscode-
       - name: Install JS dependencies
-        run: vp install --workspace-root --force --frozen-lockfile
+        run: vp install --workspace-root --frozen-lockfile --prefer-offline
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
       - name: Check editor extensions
@@ -71,6 +83,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "native"
+          cache-workspace-crates: "true"
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings
       - name: Test
@@ -86,6 +99,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "native"
+          cache-workspace-crates: "true"
 
       - name: Coverage report
         run: |
@@ -114,6 +128,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "wasm"
+          cache-workspace-crates: "true"
 
       - name: Cache WASM build
         id: cache-wasm
@@ -139,6 +154,15 @@ jobs:
         with:
           node-version-file: ".node-version"
           cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: |
+          vp install --frozen-lockfile --prefer-offline \
+            --filter './playground...' \
+            --filter './npm/vite-plugin-vize...' \
+            --filter './npm/vize...' \
+            --filter './npm/vize-native...'
 
       - name: Build npm packages
         run: |
