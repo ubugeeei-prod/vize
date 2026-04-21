@@ -6,11 +6,6 @@
     "access": "public",
     "provenance": true
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  },
   "devDependencies": {
     "@iarna/toml": "catalog:repo-tooling",
     "@tsdown/css": "catalog:content",
@@ -23,5 +18,10 @@
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack"
   },
-  "packageManager": "pnpm@10.0.0"
+  "packageManager": "pnpm@10.0.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
 }
