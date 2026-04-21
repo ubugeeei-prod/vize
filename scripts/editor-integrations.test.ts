@@ -47,7 +47,12 @@ test("vscode-vize wires art-vue documents into editor features", () => {
   );
 
   assert.match(extensionSource, /SUPPORTED_LANGUAGE_IDS\s*=\s*\["vue", "art-vue"\]/);
-  assert.match(extensionSource, /documentSelector:\s*SUPPORTED_LANGUAGE_IDS\.map/);
+  assert.match(extensionSource, /SUPPORTED_URI_SCHEMES\s*=\s*\["file", "untitled"\]/);
+  assert.match(extensionSource, /documentSelector:\s*SUPPORTED_URI_SCHEMES\.flatMap/);
+  assert.match(extensionSource, /onDidChangeConfiguration/);
+  assert.match(extensionSource, /syncClientToConfiguration\(context,\s*"configuration changed"\)/);
+  assert.match(extensionSource, /nextClient\.setTrace\(trace\)/);
+  assert.match(extensionSource, /Trace\.(Verbose|Messages|Off)/);
 });
 
 test("vscode-vize grammar keeps quote-aware block lookaheads", () => {

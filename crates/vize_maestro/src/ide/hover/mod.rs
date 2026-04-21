@@ -534,6 +534,42 @@ mod tests {
         insta::assert_snapshot!(desc);
     }
 
+    #[test]
+    fn test_hover_supports_art_variant_binding_at_identifier_boundary() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("HoverButton.art.vue");
+        let source = r#"<script setup lang="ts">
+const primaryLabel = ref('primary')
+const secondaryLabel = ref('secondary')
+</script>
+
+<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <Button>{{ primaryLabel }}</Button>
+  </variant>
+  <variant name="Secondary">
+    <Button>{{ secondaryLabel }}</Button>
+  </variant>
+</art>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.rfind("secondaryLabel").unwrap() + "secondaryLabel".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let hover = HoverService::hover(&ctx).unwrap();
+        let value = hover_markdown(hover);
+
+        assert!(value.contains("secondaryLabel"));
+        assert!(value.contains("Ref<string>"));
+    }
+
     #[cfg(feature = "native")]
     #[tokio::test]
     async fn test_hover_with_corsa_fallback_supports_identifier_boundaries() {
