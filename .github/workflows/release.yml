@@ -101,6 +101,7 @@ jobs:
         uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
+          cache: true
           run-install: false
 
       - name: Setup Rust
@@ -111,14 +112,6 @@ jobs:
         with:
           shared-key: release-tools
           cache-workspace-crates: "true"
-
-      - name: Cache npm registry for VS Code extension tooling
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-vscode-${{ hashFiles('.node-version', 'npm/vscode-vize/package.json', 'vite.config.ts') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-vscode-
 
       - name: Package VS Code extension
         run: vp run --workspace-root package:vscode-extension
@@ -154,13 +147,13 @@ jobs:
           node-version: "24.14.0"
           run-install: false
 
-      - name: Cache npm registry for VS Code extension tooling
+      - name: Cache pnpm store for VS Code extension tooling
         uses: actions/cache@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-vscode-release-24.14.0-v1
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-vscode-release-24.14.0-v1
           restore-keys: |
-            ${{ runner.os }}-npm-vscode-release-
+            ${{ runner.os }}-pnpm-vscode-release-
 
       - name: Download editor extension artifact
         uses: actions/download-artifact@v4
@@ -176,10 +169,10 @@ jobs:
         if: env.VSCE_PAT != ''
         run: |
           if [ "${NPM_TAG}" = "latest" ]; then
-            npm exec --yes --package=@vscode/vsce@^3.3.2 -- \
+            pnpm --package=@vscode/vsce@^3.3.2 dlx \
               vsce publish --no-dependencies --packagePath editor-extension-artifacts/vize.vsix
           else
-            npm exec --yes --package=@vscode/vsce@^3.3.2 -- \
+            pnpm --package=@vscode/vsce@^3.3.2 dlx \
               vsce publish --no-dependencies --pre-release --packagePath editor-extension-artifacts/vize.vsix
           fi
 
@@ -371,21 +364,18 @@ jobs:
 
       - name: Create npm platform directories
         working-directory: npm/vize-native
-        run: npx napi create-npm-dirs
+        run: pnpm exec napi create-npm-dirs
 
       - name: Move artifacts
         working-directory: npm/vize-native
-        run: npx napi artifacts --output-dir artifacts
+        run: pnpm exec napi artifacts --output-dir artifacts
 
       - name: Prepare for publish
         working-directory: npm/vize-native
-        run: npx napi pre-publish -t npm --no-gh-release --skip-optional-publish
+        run: pnpm exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
 
       - name: List packages
         run: ls -R npm/vize-native/npm/
-
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
 
       - name: Publish platform packages
         working-directory: npm/vize-native
@@ -403,7 +393,7 @@ jobs:
             if [ -d "$dir" ]; then
               echo "Publishing $dir..."
               cd "$dir"
-              publish_with_retry npm publish --provenance --access public --tag $NPM_TAG || echo "Failed to publish $dir (may need initial manual publish)"
+              publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG || echo "Failed to publish $dir (may need initial manual publish)"
               cd ../..
             fi
           done
@@ -420,7 +410,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Publish fresco native packages to npm (using Trusted Publishing / OIDC)
   release-npm-fresco-native:
@@ -452,21 +442,18 @@ jobs:
 
       - name: Create npm platform directories
         working-directory: npm/fresco-native
-        run: npx napi create-npm-dirs
+        run: pnpm exec napi create-npm-dirs
 
       - name: Move artifacts
         working-directory: npm/fresco-native
-        run: npx napi artifacts --output-dir artifacts
+        run: pnpm exec napi artifacts --output-dir artifacts
 
       - name: Prepare for publish
         working-directory: npm/fresco-native
-        run: npx napi pre-publish -t npm --no-gh-release --skip-optional-publish
+        run: pnpm exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
 
       - name: List packages
         run: ls -R npm/fresco-native/npm/
-
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
 
       - name: Publish platform packages
         working-directory: npm/fresco-native
@@ -484,7 +471,7 @@ jobs:
             if [ -d "$dir" ]; then
               echo "Publishing $dir..."
               cd "$dir"
-              publish_with_retry npm publish --provenance --access public --tag $NPM_TAG || echo "Failed to publish $dir (may need initial manual publish)"
+              publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG || echo "Failed to publish $dir (may need initial manual publish)"
               cd ../..
             fi
           done
@@ -501,7 +488,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish WASM package (using Trusted Publishing / OIDC)
   release-npm-wasm:
@@ -552,9 +539,6 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish @vizejs/wasm
         working-directory: npm/vize-wasm
         run: |
@@ -567,7 +551,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish Vite plugin (using Trusted Publishing / OIDC)
   release-npm-vite-plugin:
@@ -593,9 +577,6 @@ jobs:
           name: release-npm-packages
           path: .
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish @vizejs/vite-plugin
         working-directory: npm/vite-plugin-vize
         run: |
@@ -608,7 +589,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish Oxlint plugin package (using Trusted Publishing / OIDC)
   release-npm-oxlint-plugin:
@@ -653,9 +634,6 @@ jobs:
           "
           cat npm/oxlint-plugin-vize/package.json
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish oxlint-plugin-vize
         working-directory: npm/oxlint-plugin-vize
         run: |
@@ -668,7 +646,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish unplugin package (using Trusted Publishing / OIDC)
   release-npm-unplugin:
@@ -694,9 +672,6 @@ jobs:
           name: release-npm-packages
           path: .
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish @vizejs/unplugin
         working-directory: npm/unplugin-vize
         run: |
@@ -709,7 +684,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish Fresco package (using Trusted Publishing / OIDC)
   release-npm-fresco:
@@ -735,9 +710,6 @@ jobs:
           name: release-npm-packages
           path: .
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish @vizejs/fresco
         working-directory: npm/fresco
         run: |
@@ -750,7 +722,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish Musea MCP server (using Trusted Publishing / OIDC)
   release-npm-musea-mcp-server:
@@ -776,9 +748,6 @@ jobs:
           name: release-npm-packages
           path: .
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish @vizejs/musea-mcp-server
         working-directory: npm/musea-mcp-server
         run: |
@@ -791,7 +760,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish Vite plugin for Musea (using Trusted Publishing / OIDC)
   release-npm-vite-plugin-musea:
@@ -817,9 +786,6 @@ jobs:
           name: release-npm-packages
           path: .
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish @vizejs/vite-plugin-musea
         working-directory: npm/vite-plugin-musea
         run: |
@@ -832,7 +798,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish Rspack plugin (using Trusted Publishing / OIDC)
   release-npm-rspack-plugin:
@@ -858,9 +824,6 @@ jobs:
           name: release-npm-packages
           path: .
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish @vizejs/rspack-plugin
         working-directory: npm/rspack-vize-plugin
         run: |
@@ -873,7 +836,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish Musea Nuxt (using Trusted Publishing / OIDC)
   release-npm-musea-nuxt:
@@ -899,9 +862,6 @@ jobs:
           name: release-npm-packages
           path: .
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish @vizejs/musea-nuxt
         working-directory: npm/musea-nuxt
         run: |
@@ -914,7 +874,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Build and publish @vizejs/nuxt (using Trusted Publishing / OIDC)
   release-npm-nuxt:
@@ -946,9 +906,6 @@ jobs:
           name: release-npm-packages
           path: .
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Publish @vizejs/nuxt
         working-directory: npm/nuxt
         run: |
@@ -961,7 +918,7 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG
 
   # Publish crates to crates.io (using Trusted Publishing)
   release-crates:
@@ -1051,9 +1008,6 @@ jobs:
           name: release-npm-packages
           path: .
 
-      - name: Install npm with OIDC support
-        run: npm install -g npm@latest
-
       - name: Inject native binding package versions
         run: |
           node -e "
@@ -1084,4 +1038,4 @@ jobs:
             done
             return 1
           }
-          publish_with_retry npm publish --provenance --access public --tag $NPM_TAG
+          publish_with_retry pnpm publish --provenance --access public --no-git-checks --tag $NPM_TAG

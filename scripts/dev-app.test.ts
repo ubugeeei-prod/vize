@@ -4,7 +4,7 @@ import { createServer } from "node:net";
 import { test } from "node:test";
 import { buildMisskeyDevConfig, resolveAvailablePort, runMisskeyBeforeStart } from "./dev-app.ts";
 
-void test("buildMisskeyDevConfig uses a valid id generation method", () => {
+test("buildMisskeyDevConfig uses a valid id generation method", () => {
   const config = buildMisskeyDevConfig(
     3001,
     "/Users/ubugeeei/projects/personal/oss/ubugeeei/vize/__agent_only/vize-dev.pid",
@@ -18,7 +18,7 @@ void test("buildMisskeyDevConfig uses a valid id generation method", () => {
   );
 });
 
-void test("runMisskeyBeforeStart builds backend before readiness check", () => {
+test("runMisskeyBeforeStart builds backend before readiness check", () => {
   const calls: string[] = [];
 
   runMisskeyBeforeStart("/misskey", "vize-dev.yml", {
@@ -48,7 +48,7 @@ void test("runMisskeyBeforeStart builds backend before readiness check", () => {
   ]);
 });
 
-void test("resolveAvailablePort skips ports occupied by IPv6 wildcard listeners", async () => {
+test("resolveAvailablePort skips ports occupied by IPv6 wildcard listeners", async () => {
   const blocker = createServer();
   blocker.listen(0, "::");
   await once(blocker, "listening");
@@ -72,7 +72,7 @@ void test("resolveAvailablePort skips ports occupied by IPv6 wildcard listeners"
   }
 });
 
-void test("resolveAvailablePort skips ports occupied by IPv4 listeners", async () => {
+test("resolveAvailablePort skips ports occupied by IPv4 listeners", async () => {
   const blocker = createServer();
   blocker.listen(0, "127.0.0.1");
   await once(blocker, "listening");

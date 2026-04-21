@@ -55,13 +55,6 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
-      - name: Cache npm registry for VS Code extension tooling
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-vscode-${{ hashFiles('.node-version', 'npm/vscode-vize/package.json', 'vite.config.ts') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-vscode-
       - name: Install JS dependencies
         run: vp install --workspace-root --frozen-lockfile --prefer-offline
       - name: Test release scripts

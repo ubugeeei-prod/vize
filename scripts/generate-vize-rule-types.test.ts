@@ -7,7 +7,7 @@ import {
   lintRuleTypesPath,
 } from "./generate-vize-rule-types.ts";
 
-void test("generated vize lint rule types are up to date", () => {
+test("generated vize lint rule types are up to date", () => {
   const actual = fs.readFileSync(lintRuleTypesPath, "utf-8");
   const expected = generateLintRuleTypesFromSnapshot();
 

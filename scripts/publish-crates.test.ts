@@ -35,7 +35,7 @@ const getMetadata = (): CargoMetadata =>
     }),
   ) as CargoMetadata;
 
-void test("publish-crates script keeps publishable workspace dependencies ordered", () => {
+test("publish-crates script keeps publishable workspace dependencies ordered", () => {
   const publishedCrates = getPublishedCrates();
   const publishOrder = new Map(publishedCrates.map((crateName, index) => [crateName, index]));
   const metadata = getMetadata();

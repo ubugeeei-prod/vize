@@ -10,7 +10,7 @@ import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = elkApp;
 
-void describe(`${app.name} build (compiler)`, () => {
+describe(`${app.name} build (compiler)`, () => {
   before(() => {
     if (!fs.existsSync(VIZE_BIN)) {
       console.log(`Skipping: vize binary not found at ${VIZE_BIN}`);
@@ -18,7 +18,7 @@ void describe(`${app.name} build (compiler)`, () => {
     }
   });
 
-  void it("vize build compiles without errors", () => {
+  it("vize build compiles without errors", () => {
     const cwd = app.check!.cwd; // same patterns as check
     const patterns = app.check!.patterns.map((p) => `'${p}'`).join(" ");
     const outDir = path.join(__dirname, "__snapshots__", `${app.name}-build-output`);
@@ -44,7 +44,7 @@ void describe(`${app.name} build (compiler)`, () => {
     assert.ok(jsFiles.length > 0, "should produce .js output files");
   });
 
-  void it("compiled output is valid JavaScript", () => {
+  it("compiled output is valid JavaScript", () => {
     const outDir = path.join(__dirname, "__snapshots__", `${app.name}-build-output`);
     if (!fs.existsSync(outDir)) {
       assert.fail("output directory does not exist - run build test first");

@@ -5,7 +5,7 @@ import { misskeyApp } from "../../_helpers/apps.ts";
 const app = misskeyApp;
 const VITE_PLUS_BIN = `${process.env.HOME ?? ""}/.vite-plus/bin`;
 
-void describe(`${app.name} build`, () => {
+describe(`${app.name} build`, () => {
   before(() => {
     if (!process.env.RUN_BUILD_TESTS) {
       console.log("Skipping: build tests are opt-in (RUN_BUILD_TESTS=1)");
@@ -14,7 +14,7 @@ void describe(`${app.name} build`, () => {
     if (app.setup) app.setup();
   });
 
-  void it("build succeeds", () => {
+  it("build succeeds", () => {
     const build = app.build!;
     const cmd = `${build.command} ${build.args.join(" ")}`;
     console.log(`Running: ${cmd} (cwd: ${app.cwd})`);

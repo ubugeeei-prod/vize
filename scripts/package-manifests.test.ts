@@ -31,7 +31,7 @@ function isEsmPackPackage(packageDir: string): boolean {
   return config.includes('format: "esm"') && config.includes("pack:");
 }
 
-void test("esm packed npm manifests point at mjs and d.mts outputs", () => {
+test("esm packed npm manifests point at mjs and d.mts outputs", () => {
   const failures: string[] = [];
 
   for (const entry of fs.readdirSync(npmDir, { withFileTypes: true })) {
@@ -69,7 +69,7 @@ void test("esm packed npm manifests point at mjs and d.mts outputs", () => {
   assert.deepEqual(failures, []);
 });
 
-void test("editor extension manifests stay opt-in and version aligned", () => {
+test("editor extension manifests stay opt-in and version aligned", () => {
   const workspaceVersion = fs
     .readFileSync(path.join(root, "Cargo.toml"), "utf-8")
     .match(/^version = "(.+)"$/m)?.[1];

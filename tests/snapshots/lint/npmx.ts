@@ -17,7 +17,7 @@ interface LintFileResult {
   warningCount: number;
 }
 
-void describe(`${app.name} lint (linter)`, () => {
+describe(`${app.name} lint (linter)`, () => {
   before(() => {
     if (!fs.existsSync(VIZE_BIN)) {
       console.log(`Skipping: vize binary not found at ${VIZE_BIN}`);
@@ -25,7 +25,7 @@ void describe(`${app.name} lint (linter)`, () => {
     }
   });
 
-  void it("vize lint does not crash and snapshot matches", () => {
+  it("vize lint does not crash and snapshot matches", () => {
     const lintConfig = app.lint!;
     const patterns = lintConfig.patterns.map((p) => `'${p}'`).join(" ");
     const cmd = `${VIZE_BIN} lint ${patterns} --format json --quiet`;

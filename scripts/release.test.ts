@@ -18,7 +18,7 @@ function runBash(script: string) {
   });
 }
 
-void test("release script fails clearly when stdin is not interactive", () => {
+test("release script fails clearly when stdin is not interactive", () => {
   const result = runBash("bash ./scripts/release.sh minor");
 
   assert.equal(result.status, 1);
@@ -34,7 +34,7 @@ void test("release script fails clearly when stdin is not interactive", () => {
   );
 });
 
-void test("confirm_release skips prompting when -y is set", () => {
+test("confirm_release skips prompting when -y is set", () => {
   const result = runBash(
     "source scripts/release.sh; AUTO_CONFIRM=-y; confirm_release; printf 'confirmed\\n'",
   );
