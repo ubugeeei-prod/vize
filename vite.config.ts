@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite-plus";
 
@@ -96,6 +96,9 @@ const noCacheTask = (command: string) => ({
   command,
 });
 
+const commandExists = (command: string) =>
+  spawnSync("sh", ["-c", `command -v ${command}`], { stdio: "ignore" }).status === 0;
+
 const rootBuildTaskPlugin = (): Plugin => ({
   name: "vize-root-build-task",
   apply: "build",
@@ -104,7 +107,12 @@ const rootBuildTaskPlugin = (): Plugin => ({
       return;
     }
 
-    execFileSync("vp", ["run", "--workspace-root", "build"], {
+    const buildCommand = ["vp", "run", "--workspace-root", "build"];
+    const command = commandExists("wasm-pack") || !commandExists("nix") ? "vp" : "nix";
+    const args =
+      command === "vp" ? buildCommand.slice(1) : ["develop", "--command", ...buildCommand];
+
+    execFileSync(command, args, {
       env: {
         ...process.env,
         VIZE_SKIP_ROOT_BUILD_TASK: "1",

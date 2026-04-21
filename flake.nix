@@ -132,7 +132,7 @@
             echo "Vize dev shell ready."
             echo "Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, and binaryen."
             echo "Run: pnpm install --frozen-lockfile"
-            echo "Then: vp run --workspace-root build"
+            echo "Then: vp build"
           '';
         };
       in
