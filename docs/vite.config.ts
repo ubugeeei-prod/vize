@@ -97,8 +97,8 @@ export default defineConfig({
 
           header: {
             logo: "/logo.svg",
-            logoWidth: 32,
-            logoHeight: 32,
+            logoWidth: 40,
+            logoHeight: 40,
           },
 
           footer: {

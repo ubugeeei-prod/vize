@@ -65,10 +65,16 @@ That matters for more than raw speed. It gives Vize a tighter loop between templ
 
 ![ubugeeei](https://github.com/ubugeeei.png)
 
-**[ubugeeei](https://github.com/ubugeeei)** — Member of [Vue.js Japan User Group](https://github.com/vuejs-jp). Active in the Vue.js community as an organizer of [Vue Fes Japan](https://vuefes.jp/) and contributor to Vue.js ecosystem tools.
+**[ubugeeei](https://github.com/ubugeeei)** is a software engineer based in Tokyo, working across Vue, Rust, design, and language tooling.
+
+He is part of the [Vue.js Core Team](https://vuejs.org/about/team.html), [Vue.js Japan User Group](https://github.com/vuejs-jp) Core Staff, a [Vite+](https://github.com/voidzero-dev/vite-plus) Core Contributor, and Chief Engineer at [mates-dev](https://github.com/mates-dev).
+
+He is also the creator of [chibivue](https://github.com/chibivue-land/chibivue), [Vize](https://github.com/ubugeeei/vize), and [Ox Content](https://github.com/ubugeeei/ox-content).
 
 - GitHub: [github.com/ubugeeei](https://github.com/ubugeeei)
 - X (Twitter): [@ubugeeei](https://x.com/ubugeeei)
+- Blog: [wtrclred.io](https://wtrclred.io)
+- chibivue.land: [chibivue.land](https://chibivue.land)
 
 ## Sponsor
 

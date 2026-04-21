@@ -8,25 +8,28 @@ const vizeDocsSyntax = (() => {
     ["jsx", "javascript"],
     ["mjs", "javascript"],
     ["cjs", "javascript"],
+    ["cli", "bash"],
     ["sh", "bash"],
     ["shell", "bash"],
     ["zsh", "bash"],
     ["yml", "yaml"],
+    ["nix", "nix"],
     ["art", "art-vue"],
     ["html", "vue"],
   ]);
 
   const languageLabels = new Map([
-    ["typescript", "ts"],
-    ["javascript", "js"],
-    ["bash", "shell"],
+    ["typescript", "TypeScript"],
+    ["javascript", "JavaScript"],
+    ["bash", "sh"],
     ["art-vue", "art.vue"],
-    ["yaml", "yaml"],
-    ["json", "json"],
-    ["vue", "vue"],
-    ["rust", "rust"],
-    ["lua", "lua"],
-    ["pkl", "pkl"],
+    ["yaml", "YAML"],
+    ["json", "JSON"],
+    ["nix", "Nix"],
+    ["vue", "Vue"],
+    ["rust", "Rust"],
+    ["lua", "Lua"],
+    ["pkl", "Pkl"],
     ["text", ""],
   ]);
 
@@ -96,6 +99,35 @@ const vizeDocsSyntax = (() => {
   const booleanLiterals = /\b(false|null|true|undefined)\b/g;
   const functionNames = /\b([A-Za-z_$][\w$]*)(?=\s*\()/g;
   const variables = /\b([A-Z][A-Za-z0-9_]*|[a-z][A-Za-z0-9_]*)(?=\s*[=,)\]}])/g;
+  const shellSubcommands = [
+    "add",
+    "build",
+    "check",
+    "check-server",
+    "clippy",
+    "create",
+    "develop",
+    "exec",
+    "fmt",
+    "help",
+    "ide",
+    "init",
+    "install",
+    "lint",
+    "lsp",
+    "musea",
+    "remove",
+    "run",
+    "test",
+    "uninstall",
+    "update",
+  ];
+  const shellSubcommandPattern = new RegExp(
+    "^([\\t ]*)(?:([$#])\\s*)?([A-Za-z][\\w./:-]*)(\\s+)(" +
+      shellSubcommands.join("|") +
+      ")\\b",
+    "gm",
+  );
 
   function normalizeLanguage(value) {
     const normalized = String(value || "")
@@ -264,10 +296,19 @@ const vizeDocsSyntax = (() => {
     );
     result = replaceWithCallback(
       result,
-      /^(\s*)(?:[$#]\s*)?([A-Za-z][\w./:-]*)/gm,
-      (_, indent, command) => `${escapeHtml(indent)}${wrapToken("v-code__command", command)}`,
+      shellSubcommandPattern,
+      (_, indent, prompt = "", command, gap, subcommand) =>
+        `${escapeHtml(indent)}${escapeHtml(prompt ? `${prompt} ` : "")}${wrapToken("v-code__command", command)}${escapeHtml(gap)}${wrapToken("v-code__keyword", subcommand)}`,
       store,
     );
+    result = replaceWithCallback(
+      result,
+      /^([ \t]*)(?:([$#])\s*)?([A-Za-z][\w./:-]*)/gm,
+      (_, indent, prompt = "", command) =>
+        `${escapeHtml(indent)}${escapeHtml(prompt ? `${prompt} ` : "")}${wrapToken("v-code__command", command)}`,
+      store,
+    );
+    result = replaceWithClass(result, /\b(cargo|vize)\b/g, "v-code__command", store);
     result = replaceWithClass(
       result,
       /\b(case|do|done|elif|else|esac|export|fi|for|function|if|in|local|then|unset|while)\b/g,
@@ -366,6 +407,35 @@ const vizeDocsSyntax = (() => {
     return result;
   }
 
+  function highlightNix(source, store) {
+    let result = source;
+
+    result = replaceWithClass(result, /#.*$/gm, "v-code__comment", store);
+    result = replaceWithClass(
+      result,
+      /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g,
+      "v-code__string",
+      store,
+    );
+    result = replaceWithClass(
+      result,
+      /\b(assert|else|if|in|inherit|let|or|rec|then|with)\b/g,
+      "v-code__keyword",
+      store,
+    );
+    result = replaceWithCallback(
+      result,
+      /\b([A-Za-z_][\w-]*)(\s*=)/g,
+      (_, name, suffix) =>
+        `${wrapToken("v-code__property", name)}${escapeHtml(suffix)}`,
+      store,
+    );
+    result = replaceWithClass(result, /<[^>\n]+>|\.\/[\w./-]+|\/[\w./-]+/g, "v-code__type", store);
+    result = highlightNumbers(result, store);
+
+    return result;
+  }
+
   function createHighlightedHtml(source, language) {
     const normalizedLanguage = normalizeLanguage(language);
 
@@ -406,6 +476,9 @@ const vizeDocsSyntax = (() => {
         break;
       case "lua":
         result = highlightLua(result, store);
+        break;
+      case "nix":
+        result = highlightNix(result, store);
         break;
       default:
         result = highlightScriptLike(result, store, { highlightVariables: true });
