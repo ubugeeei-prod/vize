@@ -224,14 +224,14 @@ Current observed behavior in this repository: that probe reports `0` findings on
 
 ### Files
 
-| File                         | Description                                                  |
-| ---------------------------- | ------------------------------------------------------------ |
-| `.oxlintrc.json`             | Oxlint config enabling `vue` and `oxlint-plugin-vize`        |
-| `.oxlintrc.unused-vars.json` | Dedicated probe config for `no-unused-vars` on a Vue SFC     |
-| `src/HasPatinaErrors.vue`    | Sample SFC that intentionally triggers Patina diagnostics    |
-| `src/Clean.vue`              | Clean success-case sample                                    |
-| `src/UnusedVarProbe.vue`     | Probe file for current `no-unused-vars` behavior on `.vue`   |
-| `README.md`                  | Run instructions and current limitations                     |
+| File                         | Description                                                |
+| ---------------------------- | ---------------------------------------------------------- |
+| `.oxlintrc.json`             | Oxlint config enabling `vue` and `oxlint-plugin-vize`      |
+| `.oxlintrc.unused-vars.json` | Dedicated probe config for `no-unused-vars` on a Vue SFC   |
+| `src/HasPatinaErrors.vue`    | Sample SFC that intentionally triggers Patina diagnostics  |
+| `src/Clean.vue`              | Clean success-case sample                                  |
+| `src/UnusedVarProbe.vue`     | Probe file for current `no-unused-vars` behavior on `.vue` |
+| `README.md`                  | Run instructions and current limitations                   |
 
 ---
 

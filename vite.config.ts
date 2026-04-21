@@ -41,6 +41,16 @@ const testedPackages = [
   "./npm/rspack-vize-plugin",
 ];
 
+const rootIgnorePatterns = [
+  "docs/.cache/**",
+  "docs/dist/**",
+  "docs/node_modules/**",
+  "node_modules/**",
+  "playground/src/wasm/**",
+  "target/**",
+  "tests/snapshots/build/__snapshots__/**",
+];
+
 const cacheInputs = {
   workspace: [
     ".node-version",
@@ -318,6 +328,15 @@ const releaseTasks = {
 
 export default defineConfig({
   plugins: [rootBuildTaskPlugin()],
+  lint: {
+    ignorePatterns: rootIgnorePatterns,
+    options: {
+      typeAware: true,
+    },
+  },
+  fmt: {
+    ignorePatterns: rootIgnorePatterns,
+  },
   build: {
     emptyOutDir: true,
     lib: {

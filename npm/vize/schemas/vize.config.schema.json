@@ -385,10 +385,7 @@
     "globalTypesConfig": {
       "type": "object",
       "additionalProperties": {
-        "oneOf": [
-          { "type": "string" },
-          { "$ref": "#/$defs/globalTypeDeclaration" }
-        ]
+        "oneOf": [{ "type": "string" }, { "$ref": "#/$defs/globalTypeDeclaration" }]
       }
     }
   }

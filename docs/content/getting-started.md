@@ -11,15 +11,15 @@ title: Getting Started
 Vize (_/viːz/_) is an unofficial Vue.js toolchain written in Rust. The workspace contains shared
 building blocks for:
 
-| Area             | Main Rust crate(s)                         | User-facing package / command            |
-| ---------------- | ------------------------------------------ | ---------------------------------------- |
-| Template compile | `vize_atelier_*`, `vize_atelier_sfc`       | `@vizejs/vite-plugin`, Rust `vize build` |
-| Lint             | `vize_patina`                              | `vize lint`, `oxlint-plugin-vize`        |
-| Format           | `vize_glyph`                               | Rust `vize fmt`                          |
-| Type check       | `vize_canon`                               | Rust `vize check`                        |
-| Editor support   | `vize_maestro`                             | `vize lsp`, VS Code, Zed                 |
-| Musea art tools  | `vize_musea`                               | `@vizejs/vite-plugin-musea`              |
-| Bindings         | `vize_vitrine`                             | `@vizejs/native`, `@vizejs/wasm`         |
+| Area             | Main Rust crate(s)                   | User-facing package / command            |
+| ---------------- | ------------------------------------ | ---------------------------------------- |
+| Template compile | `vize_atelier_*`, `vize_atelier_sfc` | `@vizejs/vite-plugin`, Rust `vize build` |
+| Lint             | `vize_patina`                        | `vize lint`, `oxlint-plugin-vize`        |
+| Format           | `vize_glyph`                         | Rust `vize fmt`                          |
+| Type check       | `vize_canon`                         | Rust `vize check`                        |
+| Editor support   | `vize_maestro`                       | `vize lsp`, VS Code, Zed                 |
+| Musea art tools  | `vize_musea`                         | `@vizejs/vite-plugin-musea`              |
+| Bindings         | `vize_vitrine`                       | `@vizejs/native`, `@vizejs/wasm`         |
 
 ## Choose Your Entry Point
 
