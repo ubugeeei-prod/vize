@@ -102,6 +102,9 @@ export interface VrtResult {
   passed: boolean;
   isNew?: boolean;
   diffPercentage?: number;
+  snapshotPath?: string;
+  currentPath?: string;
+  diffPath?: string;
   error?: string;
 }
 
@@ -116,6 +119,14 @@ export interface VrtApiResponse {
   success: boolean;
   summary: VrtSummary;
   results: VrtResult[];
+  artifacts?: {
+    reportDir: string;
+    htmlReportPath: string;
+    jsonReportPath: string;
+    snapshotDir: string;
+    currentDir: string;
+    diffDir: string;
+  };
 }
 
 // Token types

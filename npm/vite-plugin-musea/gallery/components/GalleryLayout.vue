@@ -16,6 +16,7 @@ import SearchBar from "./SearchBar.vue";
 import Sidebar from "./Sidebar.vue";
 import SearchModal from "./SearchModal.vue";
 import MdiIcon from "./MdiIcon.vue";
+import { useResizable } from "../composables/useResizable";
 
 const router = useRouter();
 const { arts, load } = useArts();
@@ -24,6 +25,22 @@ const { currentTheme, cycleTheme } = useTheme();
 
 const searchModalOpen = ref(false);
 const sidebarCollapsed = ref(false);
+const sidebarWidth = useResizable({
+  direction: "horizontal",
+  minSize: 200,
+  maxSize: () => Math.max(240, window.innerWidth - 320),
+  storageKey: "musea-sidebar-width",
+  defaultSize: 240,
+  documentClass: "musea-sidebar-resizing",
+});
+
+const mainStyle = computed(() => ({
+  "--musea-sidebar-width": `${sidebarWidth.size.value}px`,
+}));
+
+const sidebarStyle = computed(() => ({
+  width: sidebarCollapsed.value ? "40px" : `${sidebarWidth.size.value}px`,
+}));
 
 function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value;
@@ -82,73 +99,17 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
     <header class="header">
       <div class="header-left">
         <router-link to="/" class="logo">
-          <svg class="logo-svg" width="32" height="32" viewBox="0 0 200 200" fill="none">
-            <g transform="translate(30, 25) scale(1.2)">
-              <g transform="translate(15, 10) skewX(-15)">
-                <path d="M 65 0 L 40 60 L 70 20 L 65 0 Z" fill="currentColor" />
-                <path d="M 20 0 L 40 60 L 53 13 L 20 0 Z" fill="currentColor" />
+          <svg class="logo-svg" viewBox="232 24 300 210" fill="none" aria-hidden="true">
+            <g transform="translate(180, 50)">
+              <g transform="translate(180, 80) skewX(-20)">
+                <rect x="0" y="0" width="150" height="4" rx="2" fill="currentColor" />
+                <rect x="20" y="25" width="100" height="3" rx="1.5" fill="currentColor" />
+                <rect x="10" y="-25" width="80" height="2" rx="1" fill="currentColor" />
               </g>
-            </g>
-            <g transform="translate(110, 120)">
-              <line
-                x1="5"
-                y1="10"
-                x2="5"
-                y2="50"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-              />
-              <line
-                x1="60"
-                y1="10"
-                x2="60"
-                y2="50"
-                stroke="currentColor"
-                stroke-width="3"
-                stroke-linecap="round"
-              />
-              <path
-                d="M 0 10 L 32.5 0 L 65 10"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <rect
-                x="15"
-                y="18"
-                width="14"
-                height="12"
-                rx="1"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                opacity="0.7"
-              />
-              <rect
-                x="36"
-                y="18"
-                width="14"
-                height="12"
-                rx="1"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                opacity="0.7"
-              />
-              <rect
-                x="23"
-                y="35"
-                width="18"
-                height="12"
-                rx="1"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                opacity="0.6"
-              />
+              <g transform="skewX(-15)">
+                <path d="M 200 0 L 120 180 L 210 60 L 200 0 Z" fill="currentColor" />
+                <path d="M 60 0 L 120 180 L 160 40 L 60 0 Z" fill="currentColor" />
+              </g>
             </g>
           </svg>
           Musea
@@ -176,10 +137,16 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
       </div>
     </header>
 
-    <main class="main" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+    <main class="main" :class="{ 'sidebar-collapsed': sidebarCollapsed }" :style="mainStyle">
       <!-- Sidebar -->
-      <aside class="sidebar-wrapper" :class="{ collapsed: sidebarCollapsed }">
+      <aside class="sidebar-wrapper" :class="{ collapsed: sidebarCollapsed }" :style="sidebarStyle">
         <Sidebar v-show="!sidebarCollapsed" :arts="results" />
+        <div
+          v-if="!sidebarCollapsed"
+          class="sidebar-resize-handle"
+          title="Resize sidebar"
+          @pointerdown.stop.prevent="sidebarWidth.onPointerDown"
+        />
         <button
           type="button"
           class="sidebar-toggle"
@@ -250,8 +217,8 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
 }
 
 .logo-svg {
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 29px;
   flex-shrink: 0;
 }
 
@@ -328,19 +295,15 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
 }
 
 .main {
-  display: grid;
-  grid-template-columns: var(--musea-sidebar-width) 1fr;
+  display: flex;
   flex: 1;
   overflow: hidden;
   height: calc(100vh - var(--musea-header-height));
-  transition: grid-template-columns 0.2s ease;
-}
-
-.main.sidebar-collapsed {
-  grid-template-columns: 40px 1fr;
+  min-height: 0;
 }
 
 .sidebar-wrapper {
+  flex: 0 0 auto;
   height: 100%;
   max-height: 100%;
   overflow-y: auto;
@@ -350,6 +313,7 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   position: relative;
   background: var(--musea-bg-secondary);
   border-right: 1px solid var(--musea-border);
+  min-width: 0;
 }
 
 .sidebar-wrapper.collapsed {
@@ -358,6 +322,34 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
 
 .sidebar-wrapper :deep(.sidebar) {
   border-right: none;
+}
+
+.sidebar-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 20;
+  touch-action: none;
+}
+
+.sidebar-resize-handle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background-color var(--musea-transition);
+}
+
+.sidebar-wrapper:hover .sidebar-resize-handle::before,
+.sidebar-resize-handle:hover::before {
+  background: color-mix(in srgb, var(--musea-border) 78%, transparent);
 }
 
 .sidebar-toggle {
@@ -394,6 +386,8 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   background: var(--musea-bg-primary);
   overflow-y: auto;
   height: calc(100vh - var(--musea-header-height));
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 @media (max-width: 768px) {

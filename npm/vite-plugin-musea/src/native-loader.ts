@@ -22,6 +22,7 @@ export interface NativeBinding {
       tags: string[];
       status: string;
       order?: number;
+      actionEvents?: string[];
     };
     variants: Array<{
       name: string;

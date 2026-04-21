@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { mdiPlay, mdiLoading, mdiImageOutline } from "@mdi/js";
+import { mdiLoading, mdiImageOutline } from "@mdi/js";
 import { runVrt } from "../api";
 import MdiIcon from "./MdiIcon.vue";
 
@@ -16,6 +16,9 @@ interface VrtResult {
   passed: boolean;
   isNew?: boolean;
   diffPercentage?: number;
+  snapshotPath?: string;
+  currentPath?: string;
+  diffPath?: string;
   error?: string;
 }
 
@@ -26,12 +29,22 @@ interface VrtSummary {
   new: number;
 }
 
+interface VrtArtifacts {
+  reportDir: string;
+  htmlReportPath: string;
+  jsonReportPath: string;
+  snapshotDir: string;
+  currentDir: string;
+  diffDir: string;
+}
+
 const isRunning = ref(false);
 const hasRun = ref(false);
 const results = ref<VrtResult[]>([]);
 const summary = ref<VrtSummary | null>(null);
 const error = ref<string | null>(null);
 const updateSnapshots = ref(false);
+const artifacts = ref<VrtArtifacts | null>(null);
 
 const groupedResults = computed(() => {
   const groups: Record<string, VrtResult[]> = {};
@@ -51,6 +64,7 @@ async function runTest() {
     const data = await runVrt(props.artPath, updateSnapshots.value);
     results.value = data.results;
     summary.value = data.summary;
+    artifacts.value = data.artifacts ?? null;
     hasRun.value = true;
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
@@ -121,6 +135,26 @@ function getStatusColor(result: VrtResult): string {
         </div>
       </div>
 
+      <div v-if="artifacts" class="vrt-artifacts">
+        <div class="vrt-artifacts-header">Local artifacts</div>
+        <div class="vrt-artifact">
+          <span class="vrt-artifact-label">Reports</span>
+          <code class="vrt-artifact-path">{{ artifacts.reportDir }}</code>
+        </div>
+        <div class="vrt-artifact">
+          <span class="vrt-artifact-label">Snapshots</span>
+          <code class="vrt-artifact-path">{{ artifacts.snapshotDir }}</code>
+        </div>
+        <div class="vrt-artifact">
+          <span class="vrt-artifact-label">HTML report</span>
+          <code class="vrt-artifact-path">{{ artifacts.htmlReportPath }}</code>
+        </div>
+        <div class="vrt-artifact">
+          <span class="vrt-artifact-label">JSON report</span>
+          <code class="vrt-artifact-path">{{ artifacts.jsonReportPath }}</code>
+        </div>
+      </div>
+
       <div class="vrt-results">
         <div
           v-for="(variantResults, variantName) in groupedResults"
@@ -136,12 +170,20 @@ function getStatusColor(result: VrtResult): string {
               :class="getStatusIcon(result)"
             >
               <span class="vrt-viewport-name">{{ result.viewport }}</span>
-              <span class="vrt-status" :style="{ color: getStatusColor(result) }">
-                <template v-if="result.error">Error</template>
-                <template v-else-if="result.isNew">New</template>
-                <template v-else-if="result.passed">Pass</template>
-                <template v-else> Diff {{ result.diffPercentage?.toFixed(2) }}% </template>
-              </span>
+              <div class="vrt-viewport-body">
+                <span class="vrt-status" :style="{ color: getStatusColor(result) }">
+                  <template v-if="result.error">Error</template>
+                  <template v-else-if="result.isNew">New baseline</template>
+                  <template v-else-if="result.passed">Pass</template>
+                  <template v-else> Diff {{ result.diffPercentage?.toFixed(2) }}% </template>
+                </span>
+                <code
+                  v-if="result.diffPath || result.currentPath || result.snapshotPath"
+                  class="vrt-result-path"
+                >
+                  {{ result.diffPath || result.currentPath || result.snapshotPath }}
+                </code>
+              </div>
             </div>
           </div>
         </div>
@@ -250,6 +292,47 @@ function getStatusColor(result: VrtResult): string {
   flex-wrap: wrap;
 }
 
+.vrt-artifacts {
+  display: grid;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  background: var(--musea-bg-secondary);
+  border: 1px solid var(--musea-border);
+  border-radius: var(--musea-radius-sm);
+}
+
+.vrt-artifacts-header {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.vrt-artifact {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.vrt-artifact-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--musea-text-muted);
+}
+
+.vrt-artifact-path {
+  display: block;
+  padding: 0.5rem 0.625rem;
+  background: var(--musea-bg-primary);
+  border: 1px solid var(--musea-border);
+  border-radius: var(--musea-radius-sm);
+  color: var(--musea-text-secondary);
+  font-size: 0.75rem;
+  font-family: var(--musea-font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .vrt-stat {
   background: var(--musea-bg-secondary);
   border: 1px solid var(--musea-border);
@@ -310,7 +393,7 @@ function getStatusColor(result: VrtResult): string {
 
 .vrt-viewport {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   padding: 0.25rem 0.5rem;
   background: var(--musea-bg-tertiary);
@@ -322,9 +405,22 @@ function getStatusColor(result: VrtResult): string {
   color: var(--musea-text-secondary);
 }
 
+.vrt-viewport-body {
+  display: grid;
+  gap: 0.25rem;
+}
+
 .vrt-status {
   font-weight: 600;
   font-size: 0.6875rem;
+}
+
+.vrt-result-path {
+  color: var(--musea-text-muted);
+  font-size: 0.6875rem;
+  font-family: var(--musea-font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 @keyframes spin {

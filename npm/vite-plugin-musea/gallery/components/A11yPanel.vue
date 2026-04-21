@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import {
   mdiPlay,
   mdiLoading,
@@ -8,7 +8,7 @@ import {
   mdiChevronDown,
   mdiChevronUp,
 } from "@mdi/js";
-import { useA11y, type A11yViolation, type A11yResult } from "../composables/useA11y";
+import { useA11y, type A11yResult } from "../composables/useA11y";
 import { getPreviewUrl } from "../api";
 import MdiIcon from "./MdiIcon.vue";
 
@@ -26,6 +26,7 @@ const expandedViolation = ref<string | null>(null);
 
 const key = computed(() => `${props.artPath}:${props.defaultVariantName || "default"}`);
 const result = computed<A11yResult | undefined>(() => getResult(key.value));
+const isRunning = computed(() => isKeyRunning(key.value));
 
 const previewUrl = computed(() => {
   if (!props.defaultVariantName) return "";
@@ -77,6 +78,21 @@ const summary = computed(() => {
     passes: result.value.passes,
   };
 });
+
+watch(
+  key,
+  (currentKey) => {
+    hasRun.value = Boolean(getResult(currentKey));
+    expandedViolation.value = null;
+  },
+  { immediate: true },
+);
+
+watch(result, (nextResult) => {
+  if (nextResult) {
+    hasRun.value = true;
+  }
+});
 </script>
 
 <template>
@@ -95,18 +111,24 @@ const summary = computed(() => {
       <button
         type="button"
         class="a11y-run-btn"
-        :disabled="isKeyRunning(key) || !iframeReady"
+        :disabled="isRunning || !iframeReady"
         @click="runTest"
       >
-        <MdiIcon v-if="isKeyRunning(key)" class="spin" :path="mdiLoading" :size="14" />
+        <MdiIcon v-if="isRunning" class="spin" :path="mdiLoading" :size="14" />
         <MdiIcon v-else :path="mdiPlay" :size="14" />
-        {{ isKeyRunning(key) ? "Running..." : "Run Test" }}
+        {{ isRunning ? "Running..." : hasRun ? "Run Again" : "Run Test" }}
       </button>
     </div>
 
     <div v-if="!hasRun" class="a11y-empty">
       <p>Click "Run Test" to check accessibility with axe-core.</p>
       <p class="a11y-hint">Tests WCAG 2.0/2.1 AA criteria and best practices.</p>
+    </div>
+
+    <div v-else-if="isRunning && !result" class="a11y-empty">
+      <MdiIcon class="spin a11y-running-icon" :path="mdiLoading" :size="20" />
+      <p>Running accessibility audit...</p>
+      <p class="a11y-hint">Results will appear here as soon as the iframe responds.</p>
     </div>
 
     <template v-else-if="result">
@@ -248,6 +270,10 @@ const summary = computed(() => {
   font-size: 0.75rem;
   margin-top: 0.5rem;
   opacity: 0.7;
+}
+
+.a11y-running-icon {
+  margin-bottom: 0.75rem;
 }
 
 .a11y-error {

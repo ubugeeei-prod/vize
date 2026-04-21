@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import { mdiViewGrid, mdiFolder, mdiChevronUp, mdiChevronDown } from "@mdi/js";
 import { useArts } from "../composables/useArts";
 import { useActions } from "../composables/useActions";
-import { useAddons } from "../composables/useAddons";
 import { useEventCapture } from "../composables/useEventCapture";
 import MdiIcon from "../components/MdiIcon.vue";
 import VariantCard from "../components/VariantCard.vue";
@@ -18,6 +17,8 @@ import VrtPanel from "../components/VrtPanel.vue";
 import AddonToolbar from "../components/AddonToolbar.vue";
 import ActionsPanel from "../components/ActionsPanel.vue";
 import FullscreenPreview from "../components/FullscreenPreview.vue";
+import { getVariantSectionId } from "../utils/variantSections";
+import { useResizable } from "../composables/useResizable";
 
 const route = useRoute();
 const { getArt, load } = useArts();
@@ -27,17 +28,24 @@ const {
   clear: clearActions,
   setCurrentVariant: setActionsVariant,
 } = useActions();
-const { gridDensity } = useAddons();
 const { setCurrentVariant } = useEventCapture();
 
 const activeTab = ref<"variants" | "props" | "docs" | "a11y" | "vrt">("variants");
 const actionCount = computed(() => events.value.length);
 const actionsExpanded = ref(false);
-
-// Currently selected variant name
+const actionsContentRef = ref<HTMLElement | null>(null);
+const actionsPanel = useResizable({
+  direction: "vertical",
+  minSize: 88,
+  maxSize: () => Math.max(160, window.innerHeight - 96),
+  storageKey: "musea-actions-height",
+  defaultSize: 240,
+  invert: true,
+  documentClass: "musea-actions-resizing",
+});
 const selectedVariantName = ref<string>("");
-
-const gridClass = computed(() => `gallery-grid density-${gridDensity.value}`);
+const variantSectionElements = new Map<string, HTMLElement>();
+let variantObserver: IntersectionObserver | null = null;
 
 const artPath = computed(() => route.params.path as string);
 const art = computed(() => getArt(artPath.value));
@@ -50,7 +58,6 @@ const selectedVariant = computed(() => {
   );
 });
 
-// Initialize selected variant when art changes
 watch(
   art,
   (newArt) => {
@@ -64,11 +71,143 @@ watch(
   { immediate: true },
 );
 
-// Update event capture when variant changes
 watch(selectedVariantName, (name) => {
   setCurrentVariant(name);
   setActionsVariant(name);
 });
+
+const variantSectionIds = computed<Record<string, string>>(() => {
+  const ids: Record<string, string> = {};
+  const usedIds = new Map<string, number>();
+
+  for (const [index, variant] of (art.value?.variants ?? []).entries()) {
+    const baseId = getVariantSectionId(variant.name, index);
+    const duplicateCount = usedIds.get(baseId) ?? 0;
+    usedIds.set(baseId, duplicateCount + 1);
+    ids[variant.name] = duplicateCount === 0 ? baseId : `${baseId}-${duplicateCount + 1}`;
+  }
+
+  return ids;
+});
+
+const actionCaptureEvents = computed(() => art.value?.metadata.actionEvents ?? []);
+
+const actionsTrackMousemove = computed(() =>
+  actionCaptureEvents.value.some((eventName) => eventName === "mousemove"),
+);
+
+const actionTrackingLabel = computed(() => {
+  if (actionsTrackMousemove.value) return "Tracks mousemove";
+  if (actionCaptureEvents.value.length > 0) return "Custom capture";
+  return "Standard capture";
+});
+
+const actionsFooterSummary = computed(() => {
+  if (actionCount.value > 0) {
+    return `${actionCount.value} captured · ${actionTrackingLabel.value}`;
+  }
+  return actionTrackingLabel.value;
+});
+
+function syncActionsPanelHeight() {
+  if (actionsContentRef.value) {
+    actionsContentRef.value.style.height = `${actionsPanel.size.value}px`;
+  }
+}
+
+watch(
+  () => actionsPanel.size.value,
+  () => {
+    syncActionsPanelHeight();
+  },
+  { flush: "sync" },
+);
+
+watch(actionsExpanded, async (expanded) => {
+  if (!expanded) return;
+  await nextTick();
+  syncActionsPanelHeight();
+});
+
+function disconnectVariantObserver() {
+  variantObserver?.disconnect();
+  variantObserver = null;
+}
+
+function setVariantSectionRef(variantName: string, el: HTMLElement | null) {
+  if (el) {
+    variantSectionElements.set(variantName, el);
+  } else {
+    variantSectionElements.delete(variantName);
+  }
+}
+
+async function setupVariantObserver() {
+  disconnectVariantObserver();
+
+  if (activeTab.value !== "variants" || variantSectionElements.size === 0) {
+    return;
+  }
+
+  await nextTick();
+
+  if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
+    return;
+  }
+
+  variantObserver = new IntersectionObserver(
+    (entries) => {
+      const visibleEntries = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => {
+          if (Math.abs(a.intersectionRatio - b.intersectionRatio) > 0.05) {
+            return b.intersectionRatio - a.intersectionRatio;
+          }
+          return Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top);
+        });
+
+      const activeEntry = visibleEntries[0];
+      const variantName =
+        activeEntry?.target instanceof HTMLElement
+          ? activeEntry.target.dataset.variantName
+          : undefined;
+
+      if (variantName && variantName !== selectedVariantName.value) {
+        selectedVariantName.value = variantName;
+      }
+    },
+    {
+      rootMargin: "-18% 0px -52% 0px",
+      threshold: [0.2, 0.4, 0.7],
+    },
+  );
+
+  for (const element of variantSectionElements.values()) {
+    variantObserver.observe(element);
+  }
+}
+
+async function syncSelectionFromHash() {
+  if (activeTab.value !== "variants" || !route.hash) {
+    return;
+  }
+
+  await nextTick();
+
+  const targetId = decodeURIComponent(route.hash.slice(1));
+  const targetEntry = Object.entries(variantSectionIds.value).find(([, id]) => id === targetId);
+  const targetEl = document.getElementById(targetId);
+
+  if (!targetEl) {
+    return;
+  }
+
+  if (targetEntry) {
+    selectedVariantName.value = targetEntry[0];
+  }
+
+  targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 onMounted(() => {
   load();
@@ -78,11 +217,38 @@ onMounted(() => {
 watch(artPath, () => {
   activeTab.value = "variants";
   clearActions();
+  disconnectVariantObserver();
+  variantSectionElements.clear();
 });
 
 const handleVariantSelect = (variantName: string) => {
   selectedVariantName.value = variantName;
+
+  const targetId = variantSectionIds.value[variantName];
+  const targetEl = targetId ? document.getElementById(targetId) : null;
+  targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
+
+watch(
+  () => [art.value?.path, activeTab.value] as const,
+  () => {
+    void setupVariantObserver();
+    void syncSelectionFromHash();
+  },
+  { immediate: true },
+);
+
+watch(
+  () => route.hash,
+  () => {
+    void syncSelectionFromHash();
+  },
+);
+
+onUnmounted(() => {
+  disconnectVariantObserver();
+  variantSectionElements.clear();
+});
 </script>
 
 <template>
@@ -108,69 +274,87 @@ const handleVariantSelect = (variantName: string) => {
       </div>
     </div>
 
-    <AddonToolbar />
+    <div class="component-sticky-menu">
+      <AddonToolbar />
 
-    <div class="component-tabs">
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'variants' }"
-        @click="activeTab = 'variants'"
-      >
-        Variants
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'props' }"
-        @click="activeTab = 'props'"
-      >
-        Props
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'docs' }"
-        @click="activeTab = 'docs'"
-      >
-        Docs
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'a11y' }"
-        @click="activeTab = 'a11y'"
-      >
-        A11y
-        <A11yBadge :art-path="art.path" />
-      </button>
-      <button
-        type="button"
-        class="tab-btn"
-        :class="{ active: activeTab === 'vrt' }"
-        @click="activeTab = 'vrt'"
-      >
-        VRT
-      </button>
+      <div class="component-tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'variants' }"
+          @click="activeTab = 'variants'"
+        >
+          Variants
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'props' }"
+          @click="activeTab = 'props'"
+        >
+          Props
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'docs' }"
+          @click="activeTab = 'docs'"
+        >
+          Docs
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'a11y' }"
+          @click="activeTab = 'a11y'"
+        >
+          A11y
+          <A11yBadge :art-path="art.path" :variant-name="selectedVariant?.name" />
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          :class="{ active: activeTab === 'vrt' }"
+          @click="activeTab = 'vrt'"
+        >
+          VRT
+        </button>
+      </div>
     </div>
 
     <div class="component-content">
-      <!-- Variants Tab: Show variant tabs + single preview -->
       <div v-if="activeTab === 'variants'" class="variants-view">
-        <VariantTabs
-          :variants="art.variants"
-          :selected-variant="selectedVariantName"
-          @select="handleVariantSelect"
-        />
         <div class="variant-preview-area">
-          <VariantCard
-            v-if="selectedVariant"
-            :key="selectedVariant.name"
-            :art-path="art.path"
-            :variant="selectedVariant"
-            :component-name="art.metadata.title"
-          />
+          <section
+            v-for="(variant, index) in art.variants"
+            :id="variantSectionIds[variant.name]"
+            :key="variant.name"
+            :ref="(el) => setVariantSectionRef(variant.name, el as HTMLElement | null)"
+            class="variant-section"
+            :data-variant-name="variant.name"
+          >
+            <div class="variant-section-header">
+              <span class="variant-section-index">{{ String(index + 1).padStart(2, "0") }}</span>
+              <h2 class="variant-section-title">{{ variant.name }}</h2>
+              <span v-if="variant.isDefault" class="variant-section-badge">Default</span>
+            </div>
+
+            <VariantCard
+              :art-path="art.path"
+              :variant="variant"
+              :component-name="art.metadata.title"
+            />
+          </section>
         </div>
+
+        <aside class="variant-toc-column" aria-label="Variants navigation">
+          <VariantTabs
+            :variants="art.variants"
+            :selected-variant="selectedVariantName"
+            :section-ids="variantSectionIds"
+            @select="handleVariantSelect"
+          />
+        </aside>
       </div>
 
       <PropsPanel
@@ -196,20 +380,39 @@ const handleVariantSelect = (variantName: string) => {
 
     <!-- Actions Footer Panel (sticky bottom) -->
     <div class="actions-footer" :class="{ expanded: actionsExpanded }">
-      <div v-if="actionsExpanded" class="actions-footer-content">
-        <ActionsPanel />
+      <div class="actions-footer-shell">
+        <div
+          v-if="actionsExpanded"
+          class="actions-footer-resizer"
+          title="Resize Actions panel"
+          @pointerdown.stop.prevent="actionsPanel.onPointerDown"
+        />
+        <button
+          type="button"
+          class="actions-footer-toggle"
+          @click="actionsExpanded = !actionsExpanded"
+        >
+          <span class="actions-footer-toggle-copy">
+            <span class="actions-footer-toggle-line">
+              <span class="actions-footer-title">Actions</span>
+              <span v-if="actionCount > 0" class="action-count-badge">{{
+                actionCount > 99 ? "99+" : actionCount
+              }}</span>
+            </span>
+            <span class="actions-footer-caption">{{ actionsFooterSummary }}</span>
+          </span>
+
+          <MdiIcon
+            class="actions-footer-chevron"
+            :path="actionsExpanded ? mdiChevronDown : mdiChevronUp"
+            :size="14"
+          />
+        </button>
+
+        <div v-if="actionsExpanded" ref="actionsContentRef" class="actions-footer-content">
+          <ActionsPanel :capture-events="actionCaptureEvents" />
+        </div>
       </div>
-      <button
-        type="button"
-        class="actions-footer-toggle"
-        @click="actionsExpanded = !actionsExpanded"
-      >
-        <MdiIcon :path="actionsExpanded ? mdiChevronDown : mdiChevronUp" :size="14" />
-        Actions
-        <span v-if="actionCount > 0" class="action-count-badge">{{
-          actionCount > 99 ? "99+" : actionCount
-        }}</span>
-      </button>
     </div>
 
     <FullscreenPreview />
@@ -276,15 +479,30 @@ const handleVariantSelect = (variantName: string) => {
   height: 12px;
 }
 
+.component-sticky-menu {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.875rem;
+  background: linear-gradient(
+    to bottom,
+    var(--musea-bg-primary) 0%,
+    var(--musea-bg-primary) calc(100% - 0.5rem),
+    transparent 100%
+  );
+}
+
 .component-view :deep(.addon-toolbar) {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .component-tabs {
   display: flex;
   gap: 0.25rem;
   border-bottom: 1px solid var(--musea-border);
-  margin-bottom: 1.5rem;
+  background: color-mix(in srgb, var(--musea-bg-primary) 92%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .component-content {
@@ -331,68 +549,171 @@ const handleVariantSelect = (variantName: string) => {
 }
 
 .variants-view {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(220px, 24vw, 280px);
+  gap: 2rem;
+  align-items: start;
 }
 
 .variant-preview-area {
   min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.gallery-grid {
-  display: grid;
-  gap: 1.25rem;
+.variant-toc-column {
+  min-width: 0;
+  position: sticky;
+  top: calc(var(--musea-header-height) + 1rem);
+  align-self: start;
 }
 
-.gallery-grid.density-compact {
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+.variant-section {
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
+  scroll-margin-top: calc(var(--musea-header-height) + 1.25rem);
 }
 
-.gallery-grid.density-comfortable {
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
+.variant-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-inline: 0.25rem;
 }
 
-.gallery-grid.density-spacious {
-  grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
-  gap: 1.75rem;
+.variant-section-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--musea-bg-secondary);
+  border: 1px solid var(--musea-border);
+  color: var(--musea-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.variant-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.variant-section-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--musea-accent-subtle);
+  color: var(--musea-accent);
 }
 
 .actions-footer {
   position: sticky;
   bottom: 0;
   margin: 0 -2rem -2rem;
-  background: var(--musea-bg-primary);
-  border-top: 1px solid var(--musea-border);
-  z-index: 10;
+  z-index: 30;
+}
+
+.actions-footer-shell {
+  border-top: 1px solid var(--musea-border-subtle);
+  background: color-mix(in srgb, var(--musea-bg-primary) 94%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.actions-footer.expanded .actions-footer-shell {
+  box-shadow: 0 -12px 28px rgba(18, 18, 18, 0.08);
+}
+
+.actions-footer-resizer {
+  height: 1.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.actions-footer-resizer::before {
+  content: "";
+  width: 2.75rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--musea-border);
 }
 
 .actions-footer-toggle {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  gap: 1rem;
   width: 100%;
-  padding: 0.625rem 1rem;
-  background: var(--musea-bg-secondary);
+  padding: 0.75rem 1rem;
+  background: transparent;
   border: none;
   color: var(--musea-text-muted);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--musea-transition);
+  transition:
+    background var(--musea-transition),
+    color var(--musea-transition);
 }
 
 .actions-footer-toggle:hover {
-  background: var(--musea-bg-tertiary);
+  background: color-mix(in srgb, var(--musea-bg-secondary) 78%, transparent);
   color: var(--musea-text);
 }
 
+.actions-footer.expanded .actions-footer-toggle {
+  border-bottom: 1px solid var(--musea-border-subtle);
+}
+
+.actions-footer-toggle-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1875rem;
+  min-width: 0;
+}
+
+.actions-footer-toggle-line {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.actions-footer-title {
+  color: var(--musea-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.actions-footer-caption {
+  color: var(--musea-text-muted);
+  font-size: 0.6875rem;
+}
+
+.actions-footer-chevron {
+  color: var(--musea-text-muted);
+  transition: transform var(--musea-transition);
+  flex-shrink: 0;
+}
+
+.actions-footer.expanded .actions-footer-chevron {
+  transform: rotate(180deg);
+}
+
 .actions-footer-content {
-  border-bottom: 1px solid var(--musea-border);
-  max-height: 300px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .component-not-found {
@@ -414,5 +735,32 @@ const handleVariantSelect = (variantName: string) => {
   margin-top: 1rem;
   color: var(--musea-accent);
   text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+  .component-view {
+    padding: 1.25rem;
+  }
+
+  .component-sticky-menu {
+    padding-bottom: 0.75rem;
+  }
+
+  .variants-view {
+    grid-template-columns: 1fr;
+  }
+
+  .variant-toc-column {
+    order: -1;
+    position: static;
+  }
+
+  .actions-footer {
+    margin: 0 -1.25rem -1.25rem;
+  }
+
+  .actions-footer-toggle {
+    padding-inline: 0.875rem;
+  }
 }
 </style>

@@ -1,47 +1,77 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { fetchA11y } from "../api";
+import { computed } from "vue";
+import { useA11y } from "../composables/useA11y";
 
 const props = defineProps<{
   artPath: string;
   variantName?: string;
 }>();
 
-const count = ref<number | null>(null);
-const severity = ref<string>("none");
+const { init, getResult, isKeyRunning } = useA11y();
 
-watch(
-  () => [props.artPath, props.variantName],
-  async ([path, variant]) => {
-    if (!path || !variant) {
-      count.value = null;
-      return;
-    }
-    try {
-      const data = await fetchA11y(path as string, variant as string);
-      count.value = data.violations.length;
-      if (data.violations.length > 0) {
-        const hasCritical = data.violations.some((v) => v.impact === "critical");
-        const hasSerious = data.violations.some((v) => v.impact === "serious");
-        severity.value = hasCritical ? "critical" : hasSerious ? "serious" : "moderate";
-      } else {
-        severity.value = "none";
-      }
-    } catch {
-      count.value = null;
-    }
-  },
-  { immediate: true },
-);
+init();
+
+const key = computed(() => (props.variantName ? `${props.artPath}:${props.variantName}` : null));
+
+const result = computed(() => (key.value ? getResult(key.value) : undefined));
+const running = computed(() => (key.value ? isKeyRunning(key.value) : false));
+
+const count = computed(() => {
+  if (running.value) {
+    return "…";
+  }
+
+  if (!result.value) {
+    return null;
+  }
+
+  return String(result.value.violations.length);
+});
+
+const severity = computed(() => {
+  if (running.value) {
+    return "running";
+  }
+
+  if (!result.value) {
+    return "none";
+  }
+
+  if (result.value.error) {
+    return "critical";
+  }
+
+  if (result.value.violations.length === 0) {
+    return "passed";
+  }
+
+  const hasCritical = result.value.violations.some((violation) => violation.impact === "critical");
+  const hasSerious = result.value.violations.some((violation) => violation.impact === "serious");
+
+  return hasCritical ? "critical" : hasSerious ? "serious" : "moderate";
+});
+
+const title = computed(() => {
+  if (running.value) {
+    return "Accessibility test is running";
+  }
+
+  if (!result.value) {
+    return "";
+  }
+
+  if (result.value.error) {
+    return result.value.error;
+  }
+
+  return `${result.value.violations.length} accessibility violation${
+    result.value.violations.length !== 1 ? "s" : ""
+  }`;
+});
 </script>
 
 <template>
-  <span
-    v-if="count !== null && count > 0"
-    class="a11y-badge"
-    :class="'severity-' + severity"
-    :title="`${count} accessibility violation${count !== 1 ? 's' : ''}`"
-  >
+  <span v-if="count !== null" class="a11y-badge" :class="'severity-' + severity" :title="title">
     {{ count }}
   </span>
 </template>
@@ -58,6 +88,16 @@ watch(
   font-size: 0.625rem;
   font-weight: 700;
   line-height: 1;
+}
+
+.severity-running {
+  background: rgba(251, 191, 36, 0.16);
+  color: var(--musea-warning);
+}
+
+.severity-passed {
+  background: rgba(74, 222, 128, 0.18);
+  color: #4ade80;
 }
 
 .severity-moderate {

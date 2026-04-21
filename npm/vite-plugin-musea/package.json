@@ -54,7 +54,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "vp pack && pnpm run build:gallery",
     "build:gallery": "vp build --config gallery-vite.config.ts",
     "dev": "vp pack --watch",
     "check": "vp check src vite.config.ts",

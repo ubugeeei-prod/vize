@@ -11,15 +11,16 @@ import {
   mdiOpenInNew,
 } from "@mdi/js";
 import { useArts } from "../composables/useArts";
-import { useA11y, type A11yResult, type A11yViolation } from "../composables/useA11y";
+import { useA11y, type A11yResult } from "../composables/useA11y";
 import { getPreviewUrl } from "../api";
 import MdiIcon from "../components/MdiIcon.vue";
+import { getVariantSectionId } from "../utils/variantSections";
 
 const POOL_SIZE = 4;
 
 const router = useRouter();
 const { arts, load } = useArts();
-const { init: initA11y, runA11yAsync, getResult, isKeyRunning, results: a11yResults } = useA11y();
+const { init: initA11y, runA11yAsync, getResult, results: a11yResults } = useA11y();
 
 interface TestStatus {
   artPath: string;
@@ -252,8 +253,12 @@ const getStatusColor = (status: TestStatus["status"]) => {
   }
 };
 
-const navigateToComponent = (artPath: string) => {
-  router.push({ name: "component", params: { path: artPath } });
+const navigateToComponent = (artPath: string, variantName: string) => {
+  router.push({
+    name: "component",
+    params: { path: artPath },
+    hash: `#${getVariantSectionId(variantName)}`,
+  });
 };
 
 onMounted(() => {
@@ -351,7 +356,7 @@ watch(
           passed: test.status === 'passed',
           failed: test.status === 'failed',
         }"
-        @click="navigateToComponent(test.artPath)"
+        @click="navigateToComponent(test.artPath, test.variantName)"
       >
         <MdiIcon
           class="test-status"
@@ -508,7 +513,7 @@ watch(
   background: var(--musea-accent);
   border: none;
   border-radius: var(--musea-radius-md);
-  color: #fff;
+  color: var(--musea-bg-primary);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
