@@ -22,7 +22,7 @@
       "name": "comment.block.html"
     },
     "vue-template": {
-      "begin": "(<)(template)\\b(?=[^>]*>)",
+      "begin": "(<)(template)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin.html" },
         "2": { "name": "entity.name.tag.template.html" }
@@ -102,7 +102,7 @@
       "patterns": [{ "include": "#vue-script-ts" }, { "include": "#vue-script-js" }]
     },
     "vue-script-ts": {
-      "begin": "(<)(script)\\b(?=[^>]*\\blang\\s*=\\s*['\"](?:ts|typescript)['\"][^>]*>)",
+      "begin": "(<)(script)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*\\blang\\s*=\\s*['\"](?:ts|typescript)['\"](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin.html" },
         "2": { "name": "entity.name.tag.script.html" }
@@ -124,7 +124,7 @@
       ]
     },
     "vue-script-js": {
-      "begin": "(<)(script)\\b(?=[^>]*>)",
+      "begin": "(<)(script)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin.html" },
         "2": { "name": "entity.name.tag.script.html" }
@@ -167,7 +167,7 @@
       ]
     },
     "vue-style-scss": {
-      "begin": "(<)(style)\\b(?=[^>]*\\blang\\s*=\\s*['\"]scss['\"][^>]*>)",
+      "begin": "(<)(style)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*\\blang\\s*=\\s*['\"]scss['\"](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin.html" },
         "2": { "name": "entity.name.tag.style.html" }
@@ -189,7 +189,7 @@
       ]
     },
     "vue-style-less": {
-      "begin": "(<)(style)\\b(?=[^>]*\\blang\\s*=\\s*['\"]less['\"][^>]*>)",
+      "begin": "(<)(style)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*\\blang\\s*=\\s*['\"]less['\"](?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin.html" },
         "2": { "name": "entity.name.tag.style.html" }
@@ -211,7 +211,7 @@
       ]
     },
     "vue-style-css": {
-      "begin": "(<)(style)\\b(?=[^>]*>)",
+      "begin": "(<)(style)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin.html" },
         "2": { "name": "entity.name.tag.style.html" }
@@ -263,7 +263,7 @@
       ]
     },
     "vue-custom-block": {
-      "begin": "(<)([a-zA-Z][a-zA-Z0-9_-]*)\\b(?=[^>]*>)",
+      "begin": "(<)([a-zA-Z][a-zA-Z0-9_-]*)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin.html" },
         "2": { "name": "entity.name.tag.custom.html" }
