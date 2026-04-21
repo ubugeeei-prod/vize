@@ -223,11 +223,11 @@
       "commandPalette": [
         {
           "command": "vize.restartServer",
-          "when": "editorLangId == vue"
+          "when": "editorLangId == vue || editorLangId == art-vue"
         },
         {
           "command": "vize.showOutput",
-          "when": "editorLangId == vue"
+          "when": "editorLangId == vue || editorLangId == art-vue"
         }
       ]
     },
@@ -277,7 +277,8 @@
     ]
   },
   "activationEvents": [
-    "onLanguage:vue"
+    "onLanguage:vue",
+    "onLanguage:art-vue"
   ],
   "icon": "icons/logo.png",
   "engines": {

@@ -13,6 +13,7 @@ let client: LanguageClient | undefined;
 let outputChannel: OutputChannel;
 
 type LspInitializationOptions = Partial<Record<string, boolean>>;
+const SUPPORTED_LANGUAGE_IDS = ["vue", "art-vue"] as const;
 
 export async function activate(context: ExtensionContext): Promise<void> {
   outputChannel = window.createOutputChannel("Vize");
@@ -47,7 +48,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
   // Configure the client
   const clientOptions: LanguageClientOptions = {
-    documentSelector: [{ scheme: "file", language: "vue" }],
+    documentSelector: SUPPORTED_LANGUAGE_IDS.map((language) => ({
+      scheme: "file",
+      language,
+    })),
     synchronize: {
       fileEvents: workspace.createFileSystemWatcher("**/*.vue"),
     },

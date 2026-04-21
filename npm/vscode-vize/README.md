@@ -69,6 +69,9 @@ When you are ready to evaluate Vize editor assistance separately from `vuejs/lan
 }
 ```
 
+When paired with the `Vize Art` extension, the same editor capabilities also apply to `*.art.vue`
+documents.
+
 ## Commands
 
 - `Vize: Restart Language Server` - Restart the LSP server
