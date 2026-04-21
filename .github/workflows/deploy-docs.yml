@@ -91,7 +91,7 @@ jobs:
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@v2
         with:
-          tool: wasm-bindgen-cli@0.2.111
+          tool: wasm-bindgen-cli@0.2.118
 
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'

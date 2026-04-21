@@ -45,9 +45,12 @@
     "@oxlint/plugins": "catalog:linting"
   },
   "devDependencies": {
+    "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
     "@vizejs/native": "workspace:*",
+    "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack"
   },
   "optionalDependencies": {

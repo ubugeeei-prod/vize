@@ -13,11 +13,13 @@
   },
   "devDependencies": {
     "@iarna/toml": "catalog:repo-tooling",
+    "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
     "@typescript/native-preview": "catalog:typescript",
     "glob": "catalog:repo-tooling",
     "oxfmt": "catalog:linting",
     "oxlint": "catalog:linting",
+    "tsdown": "catalog:vite-stack",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack"
   },

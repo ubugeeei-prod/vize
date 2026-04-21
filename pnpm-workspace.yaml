@@ -31,6 +31,7 @@ catalogs:
     vite: "npm:@voidzero-dev/vite-plus-core@0.1.19"
     vitest: "npm:@voidzero-dev/vite-plus-test@0.1.19"
     vite-plus: "0.1.19"
+    tsdown: "0.21.9"
     "@vitejs/plugin-vue": "6.0.6"
     vite-node: "5.3.0"
     vite-plugin-inspect: "11.3.3"
