@@ -166,7 +166,7 @@ main() {
   # Update Cargo.toml (workspace version and dependencies)
   echo "Updating Cargo.toml..."
   sed -i.bak 's/^version = ".*"/version = "'"$NEW_VERSION"'"/' Cargo.toml
-  # Update internal crate versions in workspace.dependencies
+  # Update publishable internal crate versions in workspace.dependencies
   sed -i.bak 's/version = "'"$CURRENT_VERSION"'"/version = "'"$NEW_VERSION"'"/g' Cargo.toml
   rm -f Cargo.toml.bak
 
