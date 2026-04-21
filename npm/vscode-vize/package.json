@@ -277,8 +277,8 @@
     ]
   },
   "activationEvents": [
-    "onLanguage:vue",
-    "onLanguage:art-vue"
+    "onLanguage:art-vue",
+    "onLanguage:vue"
   ],
   "icon": "icons/logo.png",
   "engines": {

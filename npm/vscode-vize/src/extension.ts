@@ -55,10 +55,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   await syncClientToConfiguration(context, "initial activation");
 }
 
-async function syncClientToConfiguration(
-  context: ExtensionContext,
-  reason: string,
-): Promise<void> {
+async function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
   const config = workspace.getConfiguration("vize");
 
   if (!config.get<boolean>("enable", false)) {
@@ -130,7 +127,9 @@ async function stopClient(): Promise<void> {
   await activeClient.stop();
 }
 
-function createClientOptions(initializationOptions: LspInitializationOptions): LanguageClientOptions {
+function createClientOptions(
+  initializationOptions: LspInitializationOptions,
+): LanguageClientOptions {
   return {
     documentSelector: SUPPORTED_URI_SCHEMES.flatMap((scheme) =>
       SUPPORTED_LANGUAGE_IDS.map((language) => ({
@@ -160,7 +159,7 @@ function applyTraceSetting(
         ? Trace.Messages
         : Trace.Off;
 
-  nextClient.setTrace(trace);
+  void nextClient.setTrace(trace);
   outputChannel.appendLine(`Vize trace level: ${traceSetting}`);
 }
 

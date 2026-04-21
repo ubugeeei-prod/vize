@@ -122,12 +122,6 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
 
   assert.deepEqual(
     (repository["variant-content"]?.patterns ?? []).map((pattern) => pattern.include),
-    [
-      "#vue-comments",
-      "#vue-interpolation",
-      "#vue-directives",
-      "#html-tags",
-      "#html-entities",
-    ],
+    ["#vue-comments", "#vue-interpolation", "#vue-directives", "#html-tags", "#html-entities"],
   );
 });
