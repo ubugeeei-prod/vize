@@ -24,7 +24,7 @@
     "type": "git",
     "url": "https://github.com/ubugeeei/vize"
   },
-  "publisher": "vize",
+  "publisher": "ubugeeei",
   "main": "./dist/extension.cjs",
   "scripts": {
     "vscode:prepublish": "pnpm run build",
