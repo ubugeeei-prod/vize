@@ -150,7 +150,7 @@ impl ReferencesService {
     ) -> Option<Vec<Location>> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
-        let template = virtual_docs.template.as_ref()?;
+        let template = virtual_docs.art_template(info.variant_index)?;
         let relative_offset = info.relative_offset as u32;
         let vts_offset = template
             .source_map
@@ -158,7 +158,7 @@ impl ReferencesService {
             .map(|offset| offset as usize)
             .unwrap_or(relative_offset as usize);
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = corsa_support::template_request_path(ctx.uri);
+        let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await

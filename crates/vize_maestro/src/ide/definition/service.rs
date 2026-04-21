@@ -74,7 +74,7 @@ impl super::DefinitionService {
         // Try Corsa definition lookup first.
         if let Some(bridge) = corsa_bridge {
             if let Some(ref virtual_docs) = ctx.virtual_docs {
-                if let Some(ref tmpl) = virtual_docs.template {
+                if let Some(tmpl) = virtual_docs.art_template(info.variant_index) {
                     let relative_offset = info.relative_offset as u32;
                     let vts_offset = tmpl
                         .source_map
@@ -86,7 +86,8 @@ impl super::DefinitionService {
                         crate::ide::offset_to_position(&tmpl.content, vts_offset);
 
                     if bridge.is_initialized() {
-                        let vdoc_uri = corsa_support::template_request_path(ctx.uri);
+                        let vdoc_uri =
+                            corsa_support::art_template_request_path(ctx.uri, info.variant_index);
                         let Ok(uri) = bridge
                             .open_or_update_virtual_document(&vdoc_uri, &tmpl.content)
                             .await
