@@ -14,6 +14,9 @@ Vize currently ships two VS Code extensions:
 - **Vize** — Vue language support backed by `vize lsp`
 - **Vize Art** — syntax highlighting for Musea `*.art.vue` files
 
+Install both if you want `*.art.vue` to receive Vize hover, completion, go-to-definition, and
+reference support in addition to syntax highlighting.
+
 ## Vize Extension
 
 The Vize extension starts `vize lsp` and can opt into specific capability bundles.

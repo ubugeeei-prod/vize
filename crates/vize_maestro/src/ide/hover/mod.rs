@@ -128,42 +128,7 @@ impl HoverService {
 
     /// Get the word at a given offset.
     pub(super) fn get_word_at_offset(content: &str, offset: usize) -> String {
-        if offset >= content.len() {
-            return String::new();
-        }
-
-        let bytes = content.as_bytes();
-
-        // If the character at offset is not a word character, return empty
-        if !Self::is_word_char(bytes[offset]) {
-            return String::new();
-        }
-
-        // Find word start
-        let mut start = offset;
-        while start > 0 {
-            let c = bytes[start - 1];
-            if !Self::is_word_char(c) {
-                break;
-            }
-            start -= 1;
-        }
-
-        // Find word end
-        let mut end = offset;
-        while end < bytes.len() {
-            let c = bytes[end];
-            if !Self::is_word_char(c) {
-                break;
-            }
-            end += 1;
-        }
-
-        if start == end {
-            return String::new();
-        }
-
-        String::from_utf8_lossy(&bytes[start..end]).to_string()
+        crate::ide::token_at_offset(content, offset, Self::is_word_char).unwrap_or_default()
     }
 
     /// Check if a byte is a valid word character.
@@ -489,7 +454,11 @@ impl Default for HoverBuilder {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use super::{HoverBuilder, HoverContents, HoverService};
+    use crate::{ide::IdeContext, server::ServerState};
+    use tower_lsp::lsp_types::Url;
     use vize_relief::BindingType;
 
     #[test]
@@ -498,7 +467,8 @@ mod tests {
 
         assert_eq!(HoverService::get_word_at_offset(content, 0), "const");
         assert_eq!(HoverService::get_word_at_offset(content, 6), "message");
-        assert_eq!(HoverService::get_word_at_offset(content, 5), "");
+        assert_eq!(HoverService::get_word_at_offset(content, 5), "const");
+        assert_eq!(HoverService::get_word_at_offset(content, 14), "");
     }
 
     #[test]
@@ -562,5 +532,117 @@ mod tests {
 
         let desc = HoverService::binding_type_to_description(BindingType::Props);
         insta::assert_snapshot!(desc);
+    }
+
+    #[test]
+    fn test_hover_supports_art_variant_binding_at_identifier_boundary() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("HoverButton.art.vue");
+        let source = r#"<script setup lang="ts">
+const primaryLabel = ref('primary')
+const secondaryLabel = ref('secondary')
+</script>
+
+<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <Button>{{ primaryLabel }}</Button>
+  </variant>
+  <variant name="Secondary">
+    <Button>{{ secondaryLabel }}</Button>
+  </variant>
+</art>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.rfind("secondaryLabel").unwrap() + "secondaryLabel".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let hover = HoverService::hover(&ctx).unwrap();
+        let value = hover_markdown(hover);
+
+        assert!(value.contains("secondaryLabel"));
+        assert!(value.contains("Ref<string>"));
+    }
+
+    #[cfg(feature = "native")]
+    #[tokio::test]
+    async fn test_hover_with_corsa_fallback_supports_identifier_boundaries() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("HoverBoundary.vue");
+        let source = r#"<script setup lang="ts">
+const count = ref(0)
+</script>
+
+<template>
+  {{ count }}
+</template>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.rfind("count").unwrap() + "count".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let hover = HoverService::hover_with_corsa(&ctx, None).await.unwrap();
+        let value = hover_markdown(hover);
+
+        assert!(value.contains("count"));
+        assert!(value.contains("Ref<number>"));
+    }
+
+    #[cfg(feature = "native")]
+    #[tokio::test]
+    async fn test_hover_with_corsa_fallback_supports_directive_boundaries() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("HoverDirective.vue");
+        let source = r#"<template>
+  <div v-if="visible" />
+</template>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.find("v-if").unwrap() + "v-if".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let hover = HoverService::hover_with_corsa(&ctx, None).await.unwrap();
+        let value = hover_markdown(hover);
+
+        assert!(value.contains("**v-if**"));
+        assert!(value.contains("Conditionally render"));
+    }
+
+    fn hover_markdown(hover: tower_lsp::lsp_types::Hover) -> String {
+        match hover.contents {
+            HoverContents::Markup(content) => content.value,
+            HoverContents::Scalar(marked) => match marked {
+                tower_lsp::lsp_types::MarkedString::String(value) => value,
+                tower_lsp::lsp_types::MarkedString::LanguageString(value) => value.value,
+            },
+            HoverContents::Array(items) => items
+                .into_iter()
+                .map(|item| match item {
+                    tower_lsp::lsp_types::MarkedString::String(value) => value,
+                    tower_lsp::lsp_types::MarkedString::LanguageString(value) => value.value,
+                })
+                .collect::<Vec<_>>()
+                .join("\n\n"),
+        }
     }
 }

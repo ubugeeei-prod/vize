@@ -13,6 +13,19 @@ use crate::ide::{is_component_tag, kebab_to_pascal};
 
 /// Find definition for a symbol in template context.
 pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
+    if let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset) {
+        if is_component_tag(&tag_name) {
+            if let Some(def) = find_component_definition(ctx, &tag_name) {
+                return Some(def);
+            }
+        }
+    }
+
+    // Check if this is a component attribute (e.g., :disabled -> component's props)
+    if let Some(def) = find_component_prop_definition(ctx) {
+        return Some(def);
+    }
+
     let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
     if word.is_empty() {
@@ -21,11 +34,6 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
 
     // Check if this is a props property access (e.g., props.title -> defineProps)
     if let Some(def) = find_props_property_definition(ctx, &word) {
-        return Some(def);
-    }
-
-    // Check if this is a component attribute (e.g., :disabled -> component's props)
-    if let Some(def) = find_component_prop_definition(ctx) {
         return Some(def);
     }
 
@@ -252,6 +260,26 @@ pub(crate) fn find_component_definition(
     let names_to_try = [tag_name.to_string(), pascal_name];
 
     for name in &names_to_try {
+        if let Some(import_path) = helpers::find_import_path(ctx, name) {
+            if let Some(resolved) = helpers::resolve_import_path(ctx.uri, &import_path) {
+                if let Ok(file_uri) = tower_lsp::lsp_types::Url::from_file_path(&resolved) {
+                    return Some(GotoDefinitionResponse::Scalar(Location {
+                        uri: file_uri,
+                        range: Range {
+                            start: Position {
+                                line: 0,
+                                character: 0,
+                            },
+                            end: Position {
+                                line: 0,
+                                character: 0,
+                            },
+                        },
+                    }));
+                }
+            }
+        }
+
         if let Some(binding_type) = summary.get_binding_type(name) {
             if binding_type == BindingType::ExternalModule {
                 if let Some(import_path) = helpers::find_import_path(ctx, name) {

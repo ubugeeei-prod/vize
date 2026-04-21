@@ -16,42 +16,7 @@ use super::IdeContext;
 
 /// Get the word at a given offset.
 pub(crate) fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
-    if offset >= content.len() {
-        return None;
-    }
-
-    let bytes = content.as_bytes();
-
-    // If the character at offset is not a word character, return None
-    if !is_word_char(bytes[offset]) {
-        return None;
-    }
-
-    // Find word start
-    let mut start = offset;
-    while start > 0 {
-        let c = bytes[start - 1];
-        if !is_word_char(c) {
-            break;
-        }
-        start -= 1;
-    }
-
-    // Find word end
-    let mut end = offset;
-    while end < bytes.len() {
-        let c = bytes[end];
-        if !is_word_char(c) {
-            break;
-        }
-        end += 1;
-    }
-
-    if start == end {
-        return None;
-    }
-
-    Some(String::from_utf8_lossy(&bytes[start..end]).to_string())
+    crate::ide::token_at_offset(content, offset, is_word_char)
 }
 
 /// Check if a byte is a valid word character.
@@ -99,44 +64,14 @@ pub(crate) fn skip_virtual_header(content: &str) -> usize {
 
 /// Get the tag name at the given offset (if cursor is on a tag).
 pub(crate) fn get_tag_at_offset(content: &str, offset: usize) -> Option<String> {
-    if offset >= content.len() {
+    let cursor = offset.min(content.len());
+    let (_, _, name_start, name_end) = find_tag_name_span(content, cursor)?;
+
+    if cursor < name_start || cursor > name_end {
         return None;
     }
 
-    let bytes = content.as_bytes();
-
-    // Look backwards for '<'
-    let mut tag_start = None;
-    let mut i = offset;
-    while i > 0 {
-        i -= 1;
-        if bytes[i] == b'<' {
-            tag_start = Some(i + 1);
-            break;
-        }
-        if bytes[i] == b'>' || bytes[i] == b'\n' {
-            break;
-        }
-    }
-
-    let start = tag_start?;
-
-    // Find the end of the tag name
-    let mut end = start;
-    while end < bytes.len() {
-        let c = bytes[end];
-        if c.is_ascii_alphanumeric() || c == b'-' || c == b'_' {
-            end += 1;
-        } else {
-            break;
-        }
-    }
-
-    if end > start {
-        Some(String::from_utf8_lossy(&bytes[start..end]).to_string())
-    } else {
-        None
-    }
+    Some(content[name_start..name_end].to_string())
 }
 
 /// Get the attribute name and component name at the cursor position.
@@ -144,70 +79,164 @@ pub(crate) fn get_attribute_and_component_at_offset(
     ctx: &IdeContext<'_>,
 ) -> Option<(String, String)> {
     let content = &ctx.content;
-    let offset = ctx.offset;
+    let cursor = ctx.offset.min(content.len());
+    let (tag_start, tag_end, name_start, name_end) = find_tag_name_span(content, cursor)?;
+    let bytes = content.as_bytes();
 
-    // Find the start of the current line or tag
-    let mut tag_start = offset;
-    let mut depth = 0;
+    if bytes.get(tag_start + 1) == Some(&b'/') {
+        return None;
+    }
 
-    // Scan backwards to find the opening tag
-    while tag_start > 0 {
-        let c = content.as_bytes()[tag_start - 1];
-        if c == b'>' {
-            depth += 1;
-        } else if c == b'<' {
-            if depth == 0 {
+    let tag_name = &content[name_start..name_end];
+    let mut pos = name_end;
+
+    while pos < tag_end {
+        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+            pos += 1;
+        }
+
+        if pos >= tag_end || bytes[pos] == b'/' {
+            break;
+        }
+
+        let attr_start = pos;
+        while pos < tag_end
+            && !bytes[pos].is_ascii_whitespace()
+            && bytes[pos] != b'='
+            && bytes[pos] != b'/'
+        {
+            pos += 1;
+        }
+        let attr_end = pos;
+
+        if attr_start == attr_end {
+            break;
+        }
+
+        let cursor_on_attr_name = cursor >= attr_start && cursor <= attr_end;
+        let raw_attr_name = &content[attr_start..attr_end];
+
+        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+            pos += 1;
+        }
+
+        if pos < tag_end && bytes[pos] == b'=' {
+            pos += 1;
+            while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+                pos += 1;
+            }
+
+            if pos < tag_end && (bytes[pos] == b'"' || bytes[pos] == b'\'') {
+                let quote = bytes[pos];
+                pos += 1;
+                while pos < tag_end && bytes[pos] != quote {
+                    pos += 1;
+                }
+                if pos < tag_end {
+                    pos += 1;
+                }
+            } else {
+                while pos < tag_end && !bytes[pos].is_ascii_whitespace() && bytes[pos] != b'>' {
+                    pos += 1;
+                }
+            }
+        }
+
+        if !cursor_on_attr_name {
+            continue;
+        }
+
+        let mut attr_name = raw_attr_name;
+        if let Some(stripped) = attr_name.strip_prefix(':') {
+            attr_name = stripped;
+        } else if let Some(stripped) = attr_name.strip_prefix("v-bind:") {
+            attr_name = stripped;
+        } else if attr_name.starts_with('@')
+            || attr_name.starts_with("v-on:")
+            || attr_name.starts_with("v-")
+        {
+            return None;
+        }
+
+        if attr_name.is_empty() {
+            return None;
+        }
+
+        return Some((attr_name.to_string(), tag_name.to_string()));
+    }
+
+    None
+}
+
+fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usize, usize)> {
+    let bytes = content.as_bytes();
+    if bytes.is_empty() {
+        return None;
+    }
+
+    let mut cursor = offset.min(bytes.len());
+    if cursor == bytes.len() {
+        cursor = cursor.saturating_sub(1);
+    }
+
+    let mut tag_start = None;
+    let mut i = cursor + 1;
+    while i > 0 {
+        i -= 1;
+        match bytes[i] {
+            b'<' => {
+                tag_start = Some(i);
                 break;
             }
-            depth -= 1;
+            b'>' | b'\n' => return None,
+            _ => {}
         }
-        tag_start -= 1;
     }
 
-    if tag_start == 0 {
+    let tag_start = tag_start?;
+    let mut tag_end = tag_start;
+    let mut quote = None;
+
+    while tag_end < bytes.len() {
+        let byte = bytes[tag_end];
+        if let Some(current_quote) = quote {
+            if byte == current_quote {
+                quote = None;
+            }
+        } else if byte == b'"' || byte == b'\'' {
+            quote = Some(byte);
+        } else if byte == b'>' {
+            break;
+        } else if byte == b'\n' {
+            return None;
+        }
+        tag_end += 1;
+    }
+
+    if tag_end >= bytes.len() || bytes[tag_end] != b'>' {
         return None;
     }
 
-    // Find the end of the tag (closing >)
-    let tag_end = content[offset..].find('>')? + offset;
-    let tag_content = &content[tag_start..tag_end];
+    let mut name_start = tag_start + 1;
+    if name_start < tag_end && bytes[name_start] == b'/' {
+        name_start += 1;
+    }
 
-    // Extract tag name
-    let tag_name_end = tag_content.find(|c: char| c.is_whitespace() || c == '>' || c == '/')?;
-    let tag_name = &tag_content[..tag_name_end];
+    let mut name_end = name_start;
+    while name_end < tag_end {
+        let byte = bytes[name_end];
+        if byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_' {
+            name_end += 1;
+        } else {
+            break;
+        }
+    }
 
-    // Check if cursor is on an attribute
-    let cursor_in_tag = offset - tag_start;
-    let before_cursor = &tag_content[..cursor_in_tag];
-
-    // Find the attribute we're on
-    let attr_start = before_cursor.rfind(|c: char| c.is_whitespace() || c == ':' || c == '@')?;
-    let after_attr_start = &before_cursor[attr_start..].trim_start();
-
-    // Extract attribute name
-    let attr_end = after_attr_start
-        .find(|c: char| c == '=' || c.is_whitespace())
-        .unwrap_or(after_attr_start.len());
-    let mut attr_name = &after_attr_start[..attr_end];
-
-    // Handle directive prefixes
-    if let Some(stripped) = attr_name.strip_prefix(':') {
-        attr_name = stripped;
-    } else if let Some(stripped) = attr_name.strip_prefix("v-bind:") {
-        attr_name = stripped;
-    } else if attr_name.starts_with('@')
-        || attr_name.starts_with("v-on:")
-        || attr_name.starts_with("v-")
-    {
-        // Event handlers and other directives - not props
+    if name_start == name_end {
         return None;
     }
 
-    if attr_name.is_empty() {
-        return None;
-    }
-
-    Some((attr_name.to_string(), tag_name.to_string()))
+    Some((tag_start, tag_end, name_start, name_end))
 }
 
 /// Convert kebab-case to camelCase.

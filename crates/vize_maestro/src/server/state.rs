@@ -582,24 +582,34 @@ impl ServerState {
         let base_uri = uri.path();
         let mut docs = VirtualDocuments::new();
 
-        // Generate template virtual doc from default variant's template
-        if let Some(variant) = art_desc.default_variant() {
+        // Generate one virtual template per variant so editor features remain correct even when
+        // the cursor is inside a non-default variant.
+        docs.art_templates.resize(art_desc.variants.len(), None);
+
+        for (index, variant) in art_desc.variants.iter().enumerate() {
             let template_content = variant.template;
-            if !template_content.trim().is_empty() {
-                let template_allocator = vize_carton::Bump::new();
-                let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
-
-                // Calculate template offset in the original art file
-                let template_ptr = template_content.as_ptr() as usize;
-                let source_ptr = content.as_ptr() as usize;
-                let block_offset = (template_ptr - source_ptr) as u32;
-
-                let mut template_gen = TemplateCodeGenerator::new();
-                template_gen.set_block_offset(block_offset);
-                let mut template_doc = template_gen.generate(&ast, template_content);
-                template_doc.uri = vize_carton::cstr!("{base_uri}.__template.ts").to_string();
-                docs.template = Some(template_doc);
+            if template_content.trim().is_empty() {
+                continue;
             }
+
+            let template_allocator = vize_carton::Bump::new();
+            let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
+
+            let template_ptr = template_content.as_ptr() as usize;
+            let source_ptr = content.as_ptr() as usize;
+            let block_offset = (template_ptr - source_ptr) as u32;
+
+            let mut template_gen = TemplateCodeGenerator::new();
+            template_gen.set_block_offset(block_offset);
+            let mut template_doc = template_gen.generate(&ast, template_content);
+            template_doc.uri =
+                vize_carton::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string();
+
+            if variant.is_default || docs.template.is_none() {
+                docs.template = Some(template_doc.clone());
+            }
+
+            docs.art_templates[index] = Some(template_doc);
         }
 
         // Generate script_setup virtual doc using SFC parser
@@ -677,6 +687,8 @@ impl ServerState {
 #[cfg(test)]
 mod tests {
     use super::ServerState;
+    use crate::virtual_code::{find_art_block_at_offset, ArtCursorPosition, BlockType};
+    use tower_lsp::lsp_types::Url;
 
     #[test]
     fn default_format_options() {
@@ -834,6 +846,55 @@ mod tests {
         assert!(features.code_actions);
         assert!(features.definition);
         assert!(!features.typecheck);
+    }
+
+    #[test]
+    fn update_art_virtual_docs_tracks_non_default_variants_separately() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///Button.art.vue").unwrap();
+        let source = r#"<script setup lang="ts">
+const primaryLabel = ref('primary')
+const secondaryLabel = ref('secondary')
+</script>
+
+<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <Button :label="primaryLabel" />
+  </variant>
+  <variant name="Secondary">
+    <Button :label="secondaryLabel" />
+  </variant>
+</art>
+"#;
+
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let virtual_docs = state.get_virtual_docs(&uri).unwrap();
+        assert_eq!(virtual_docs.art_templates.len(), 2);
+
+        let default_template = virtual_docs.template.as_ref().unwrap();
+        let secondary_template = virtual_docs.art_template(1).unwrap();
+
+        assert!(default_template.content.contains("primaryLabel"));
+        assert!(secondary_template.content.contains("secondaryLabel"));
+        assert!(!secondary_template.uri.ends_with(".__template.ts"));
+        assert!(secondary_template
+            .uri
+            .contains(".art_variant_1.template.ts"));
+
+        let offset = source.rfind("secondaryLabel").unwrap() + 1;
+        let info = match find_art_block_at_offset(source, offset) {
+            Some(BlockType::Art(ArtCursorPosition::VariantTemplate(info))) => info,
+            other => panic!("expected secondary variant template, got {other:?}"),
+        };
+
+        let generated_offset = secondary_template
+            .source_map
+            .to_generated(info.relative_offset as u32);
+        assert!(generated_offset.is_some());
     }
 
     #[test]

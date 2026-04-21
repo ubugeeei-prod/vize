@@ -2,6 +2,9 @@
 
 Syntax highlighting for Vize Art files (`*.art.vue`).
 
+Install the `Vize` extension alongside this one if you also want hover, completion,
+go-to-definition, and references inside `*.art.vue`.
+
 ## Features
 
 - Syntax highlighting for `<art>` and `<variant>` blocks

@@ -37,11 +37,13 @@
         "scopeName": "source.art.vue",
         "path": "./syntaxes/art.tmLanguage.json",
         "embeddedLanguages": {
+          "text.html.basic": "html",
           "source.js": "javascript",
           "source.ts": "typescript",
           "source.css": "css",
-          "source.scss": "scss",
-          "text.html.vue-html": "vue-html"
+          "source.css.scss": "scss",
+          "source.css.less": "less",
+          "source.json": "json"
         }
       }
     ]

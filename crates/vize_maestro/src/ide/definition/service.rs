@@ -62,12 +62,6 @@ impl super::DefinitionService {
         info: &crate::virtual_code::ArtVariantInfo,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
-        let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
-
-        if word.is_empty() {
-            return None;
-        }
-
         // Check if this is a component tag
         if let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset) {
             if is_component_tag(&tag_name) {
@@ -80,7 +74,7 @@ impl super::DefinitionService {
         // Try Corsa definition lookup first.
         if let Some(bridge) = corsa_bridge {
             if let Some(ref virtual_docs) = ctx.virtual_docs {
-                if let Some(ref tmpl) = virtual_docs.template {
+                if let Some(tmpl) = virtual_docs.art_template(info.variant_index) {
                     let relative_offset = info.relative_offset as u32;
                     let vts_offset = tmpl
                         .source_map
@@ -92,7 +86,8 @@ impl super::DefinitionService {
                         crate::ide::offset_to_position(&tmpl.content, vts_offset);
 
                     if bridge.is_initialized() {
-                        let vdoc_uri = corsa_support::template_request_path(ctx.uri);
+                        let vdoc_uri =
+                            corsa_support::art_template_request_path(ctx.uri, info.variant_index);
                         let Ok(uri) = bridge
                             .open_or_update_virtual_document(&vdoc_uri, &tmpl.content)
                             .await
@@ -120,12 +115,6 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
-        let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
-
-        if word.is_empty() {
-            return None;
-        }
-
         // Check if this is a component tag
         if let Some(tag_name) = helpers::get_tag_at_offset(&ctx.content, ctx.offset) {
             if is_component_tag(&tag_name) {
@@ -135,13 +124,19 @@ impl super::DefinitionService {
             }
         }
 
-        // Check if this is a props property access
-        if let Some(def) = template::find_props_property_definition(ctx, &word) {
+        // Check if this is a component attribute
+        if let Some(def) = template::find_component_prop_definition(ctx) {
             return Some(def);
         }
 
-        // Check if this is a component attribute
-        if let Some(def) = template::find_component_prop_definition(ctx) {
+        let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
+
+        if word.is_empty() {
+            return None;
+        }
+
+        // Check if this is a props property access
+        if let Some(def) = template::find_props_property_definition(ctx, &word) {
             return Some(def);
         }
 

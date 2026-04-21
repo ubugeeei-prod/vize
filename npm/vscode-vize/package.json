@@ -75,8 +75,8 @@
           "source.js": "javascript",
           "source.ts": "typescript",
           "source.css": "css",
-          "source.scss": "scss",
-          "source.less": "less",
+          "source.css.scss": "scss",
+          "source.css.less": "less",
           "source.json": "json"
         }
       }
@@ -223,11 +223,11 @@
       "commandPalette": [
         {
           "command": "vize.restartServer",
-          "when": "editorLangId == vue"
+          "when": "editorLangId == vue || editorLangId == art-vue"
         },
         {
           "command": "vize.showOutput",
-          "when": "editorLangId == vue"
+          "when": "editorLangId == vue || editorLangId == art-vue"
         }
       ]
     },
@@ -277,6 +277,7 @@
     ]
   },
   "activationEvents": [
+    "onLanguage:art-vue",
     "onLanguage:vue"
   ],
   "icon": "icons/logo.png",

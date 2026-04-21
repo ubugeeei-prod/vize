@@ -5,6 +5,7 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
+  Trace,
   TransportKind,
   Executable,
 } from "vscode-languageclient/node";
@@ -13,61 +14,30 @@ let client: LanguageClient | undefined;
 let outputChannel: OutputChannel;
 
 type LspInitializationOptions = Partial<Record<string, boolean>>;
+const SUPPORTED_LANGUAGE_IDS = ["vue", "art-vue"] as const;
+const SUPPORTED_URI_SCHEMES = ["file", "untitled"] as const;
 
 export async function activate(context: ExtensionContext): Promise<void> {
   outputChannel = window.createOutputChannel("Vize");
   outputChannel.appendLine("Vize extension activating...");
+  context.subscriptions.push(outputChannel);
 
-  const config = workspace.getConfiguration("vize");
-  if (!config.get<boolean>("enable", false)) {
-    outputChannel.appendLine("Vize is disabled. Set vize.enable to true to start the server.");
-    return;
-  }
+  context.subscriptions.push(
+    workspace.onDidChangeConfiguration(async (event) => {
+      if (!event.affectsConfiguration("vize")) {
+        return;
+      }
 
-  const initializationOptions = getInitializationOptions(config);
-  if (Object.keys(initializationOptions).length === 0) {
-    outputChannel.appendLine(
-      "Vize server is enabled with no opt-in features. Enable vize.lint.enable first, then vize.typecheck.enable or vize.editor.enable when ready.",
-    );
-  }
-
-  // Find the language server executable
-  const serverPath = await findServerPath(context, config);
-  if (!serverPath) {
-    window.showErrorMessage(
-      "Vize: Could not find language server. Please install vize or set vize.serverPath.",
-    );
-    return;
-  }
-
-  outputChannel.appendLine(`Using server: ${serverPath}`);
-
-  // Configure the server
-  const serverOptions: ServerOptions = createServerOptions(serverPath);
-
-  // Configure the client
-  const clientOptions: LanguageClientOptions = {
-    documentSelector: [{ scheme: "file", language: "vue" }],
-    synchronize: {
-      fileEvents: workspace.createFileSystemWatcher("**/*.vue"),
-    },
-    outputChannel,
-    traceOutputChannel: outputChannel,
-    initializationOptions,
-  };
-
-  // Create the language client
-  client = new LanguageClient("vize", "Vize Language Server", serverOptions, clientOptions);
+      outputChannel.appendLine("Vize configuration changed. Refreshing language server...");
+      await syncClientToConfiguration(context, "configuration changed");
+    }),
+  );
 
   // Register commands
   context.subscriptions.push(
     commands.registerCommand("vize.restartServer", async () => {
       outputChannel.appendLine("Restarting language server...");
-      if (client) {
-        await client.stop();
-        await client.start();
-        outputChannel.appendLine("Language server restarted");
-      }
+      await syncClientToConfiguration(context, "manual restart");
     }),
 
     commands.registerCommand("vize.showOutput", () => {
@@ -82,16 +52,115 @@ export async function activate(context: ExtensionContext): Promise<void> {
     }),
   );
 
-  // Start the client
+  await syncClientToConfiguration(context, "initial activation");
+}
+
+async function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
+  const config = workspace.getConfiguration("vize");
+
+  if (!config.get<boolean>("enable", false)) {
+    if (client) {
+      outputChannel.appendLine(`Stopping Vize language server (${reason}; extension disabled).`);
+      await stopClient();
+    } else {
+      outputChannel.appendLine("Vize is disabled. Set vize.enable to true to start the server.");
+    }
+    return;
+  }
+
+  if (client) {
+    outputChannel.appendLine(`Restarting Vize language server (${reason}).`);
+    await stopClient();
+  }
+
+  await startClient(context, config);
+}
+
+async function startClient(
+  context: ExtensionContext,
+  config: ReturnType<typeof workspace.getConfiguration>,
+): Promise<void> {
+  const initializationOptions = getInitializationOptions(config);
+  if (Object.keys(initializationOptions).length === 0) {
+    outputChannel.appendLine(
+      "Vize server is enabled with no opt-in features. Enable vize.lint.enable first, then vize.typecheck.enable or vize.editor.enable when ready.",
+    );
+  }
+
+  const serverPath = await findServerPath(context, config);
+  if (!serverPath) {
+    window.showErrorMessage(
+      "Vize: Could not find language server. Please install vize or set vize.serverPath.",
+    );
+    return;
+  }
+
+  outputChannel.appendLine(`Using server: ${serverPath}`);
+
+  const serverOptions: ServerOptions = createServerOptions(serverPath);
+  const nextClient = new LanguageClient(
+    "vize",
+    "Vize Language Server",
+    serverOptions,
+    createClientOptions(initializationOptions),
+  );
+
+  applyTraceSetting(nextClient, config);
+
   try {
-    await client.start();
+    await nextClient.start();
+    client = nextClient;
     outputChannel.appendLine("Vize language server started successfully");
   } catch (error) {
     outputChannel.appendLine(`Failed to start language server: ${String(error)}`);
     window.showErrorMessage(`Vize: Failed to start language server: ${String(error)}`);
   }
+}
 
-  context.subscriptions.push(client);
+async function stopClient(): Promise<void> {
+  if (!client) {
+    return;
+  }
+
+  const activeClient = client;
+  client = undefined;
+  await activeClient.stop();
+}
+
+function createClientOptions(
+  initializationOptions: LspInitializationOptions,
+): LanguageClientOptions {
+  return {
+    documentSelector: SUPPORTED_URI_SCHEMES.flatMap((scheme) =>
+      SUPPORTED_LANGUAGE_IDS.map((language) => ({
+        scheme,
+        language,
+      })),
+    ),
+    synchronize: {
+      configurationSection: "vize",
+      fileEvents: workspace.createFileSystemWatcher("**/*.vue"),
+    },
+    outputChannel,
+    traceOutputChannel: outputChannel,
+    initializationOptions,
+  };
+}
+
+function applyTraceSetting(
+  nextClient: LanguageClient,
+  config: ReturnType<typeof workspace.getConfiguration>,
+): void {
+  const traceSetting = config.get<string>("trace.server", "off");
+  const trace =
+    traceSetting === "verbose"
+      ? Trace.Verbose
+      : traceSetting === "messages"
+        ? Trace.Messages
+        : Trace.Off;
+
+  void nextClient.setTrace(trace);
+  outputChannel.appendLine(`Vize trace level: ${traceSetting}`);
 }
 
 function getInitializationOptions(
@@ -133,9 +202,7 @@ function setIfEnabled(
 }
 
 export async function deactivate(): Promise<void> {
-  if (client) {
-    await client.stop();
-  }
+  await stopClient();
 }
 
 /**
