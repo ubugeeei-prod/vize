@@ -196,14 +196,14 @@ function selectArt(art: ArtFileInfo) {
   list-style: none;
   margin: 0;
   margin-top: 0.25rem;
-  padding: 0;
+  padding: 0 0 0 1rem;
 }
 
 .art-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.375rem 0.75rem 0.375rem 2.25rem;
+  padding: 0.375rem 0.75rem 0.375rem 1.75rem;
   border-radius: var(--musea-radius-sm);
   cursor: pointer;
   font-size: 0.8125rem;
@@ -215,7 +215,7 @@ function selectArt(art: ArtFileInfo) {
 .art-item::before {
   content: "";
   position: absolute;
-  left: 1.25rem;
+  left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   width: 5px;

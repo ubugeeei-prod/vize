@@ -151,8 +151,8 @@ function viewComponent(artPath: string) {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: var(--musea-overlay);
-  backdrop-filter: blur(4px);
+  background: color-mix(in srgb, var(--musea-overlay) 84%, #000 16%);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,8 +161,8 @@ function viewComponent(artPath: string) {
 }
 
 .modal-panel {
-  background: var(--musea-bg);
-  border: 1px solid var(--musea-border);
+  background: var(--musea-bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--musea-border) 78%, var(--musea-text) 22%);
   border-radius: var(--musea-radius-lg, 12px);
   width: 100%;
   max-width: 640px;
@@ -170,7 +170,9 @@ function viewComponent(artPath: string) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: var(--musea-shadow);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--musea-bg-primary) 35%, transparent),
+    0 24px 64px rgba(0, 0, 0, 0.24);
 }
 
 .modal-header {
@@ -233,10 +235,10 @@ function viewComponent(artPath: string) {
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   margin-bottom: 0.75rem;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: color-mix(in srgb, var(--musea-warning) 16%, var(--musea-bg-secondary) 84%);
+  border: 1px solid color-mix(in srgb, var(--musea-warning) 42%, var(--musea-border) 58%);
   border-radius: var(--musea-radius-md);
-  color: #f59e0b;
+  color: var(--musea-text-secondary);
   font-size: 0.8125rem;
   line-height: 1.4;
 }
@@ -244,6 +246,7 @@ function viewComponent(artPath: string) {
 .primitive-warning svg {
   flex-shrink: 0;
   margin-top: 0.125rem;
+  color: var(--musea-warning);
 }
 
 .no-usage {

@@ -12,10 +12,17 @@
  * Shared between generatePreviewModule and generatePreviewModuleWithProps.
  */
 export const MUSEA_ADDONS_INIT_CODE = `
-function __museaInitAddons(container, variantName) {
+function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
   // === DOM event capture ===
-  // Note: mousemove, mouseenter, mouseleave, pointermove are excluded as they are too noisy
-  const CAPTURE_EVENTS = ['click','dblclick','input','change','submit','focus','blur','keydown','keyup','mousedown','mouseup','wheel','contextmenu','pointerdown','pointerup'];
+  // Note: wheel and hover-style events are excluded by default because they are too noisy.
+  const BASE_CAPTURE_EVENTS = ['click','dblclick','input','change','submit','focus','blur','keydown','keyup','mousedown','mouseup','contextmenu','pointerdown','pointerup'];
+  const CAPTURE_EVENTS = [...new Set([
+    ...BASE_CAPTURE_EVENTS,
+    ...((Array.isArray(extraCaptureEvents) ? extraCaptureEvents : [])
+      .filter((eventName) => typeof eventName === 'string')
+      .map((eventName) => eventName.trim())
+      .filter(Boolean))
+  ])];
   for (const evt of CAPTURE_EVENTS) {
     container.addEventListener(evt, (e) => {
       // Extract raw event properties
@@ -69,7 +76,7 @@ function __museaInitAddons(container, variantName) {
         rawEvent.deltaMode = e.deltaMode;
       }
       const payload = {
-        name: evt,
+        name: e.type,
         target: e.target?.tagName,
         timestamp: Date.now(),
         source: 'dom',
@@ -241,6 +248,7 @@ function __museaInitAddons(container, variantName) {
       }
       case 'musea:run-a11y': {
         // Run axe-core a11y test
+        const requestId = typeof payload?.requestId === 'string' ? payload.requestId : undefined;
         (async () => {
           try {
             // Dynamically load axe-core from local vendor route if not already loaded
@@ -263,6 +271,7 @@ function __museaInitAddons(container, variantName) {
             window.parent.postMessage({
               type: 'musea:a11y-result',
               payload: {
+                requestId,
                 violations: results.violations.map(v => ({
                   id: v.id,
                   impact: v.impact,
@@ -282,6 +291,7 @@ function __museaInitAddons(container, variantName) {
             window.parent.postMessage({
               type: 'musea:a11y-result',
               payload: {
+                requestId,
                 error: err instanceof Error ? err.message : String(err),
                 violations: [],
                 passes: 0,

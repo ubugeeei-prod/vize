@@ -10,12 +10,57 @@ import type { ViteDevServer } from "vite";
 import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import type { ArtFileInfo } from "./types/index.js";
 import { generateGalleryHtml } from "./gallery/index.js";
 import { generatePreviewModule, generatePreviewHtml } from "./preview/index.js";
 import { generateArtModule } from "./art-module.js";
 import { toPascalCase } from "./utils.js";
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+
+function resolveGalleryDistDir(): string {
+  return path.resolve(moduleDir, "gallery");
+}
+
+function resolveGallerySourceDir(): string {
+  return path.resolve(moduleDir, "../gallery");
+}
+
+function toViteFsPath(filePath: string): string {
+  return encodeURI(`/@fs${filePath.split(path.sep).join("/")}`);
+}
+
+async function tryLoadSourceGalleryHtml(
+  devServer: ViteDevServer,
+  url: string,
+  basePath: string,
+  themeConfig?: { default: string; custom?: Record<string, unknown> },
+): Promise<string | null> {
+  const gallerySourceDir = resolveGallerySourceDir();
+  const indexHtmlPath = path.join(gallerySourceDir, "index.html");
+
+  try {
+    await fs.promises.access(indexHtmlPath);
+  } catch {
+    return null;
+  }
+
+  const sourceEntryPath = toViteFsPath(path.join(gallerySourceDir, "main.ts"));
+  const themeScript = themeConfig
+    ? `window.__MUSEA_THEME_CONFIG__=${JSON.stringify(themeConfig)};`
+    : "";
+
+  let html = await fs.promises.readFile(indexHtmlPath, "utf-8");
+  html = html.replace('src="./main.ts"', `src="${sourceEntryPath}"`);
+  html = html.replace(
+    "</head>",
+    `<script>window.__MUSEA_BASE_PATH__='${basePath}';${themeScript}</script></head>`,
+  );
+
+  return devServer.transformIndexHtml(url, html);
+}
 
 /** Dependencies injected from the plugin closure. */
 export interface MiddlewareContext {
@@ -51,10 +96,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
       url.startsWith("/component/") ||
       url.startsWith("/tests")
     ) {
-      const galleryDistDir = path.resolve(
-        path.dirname(new URL(import.meta.url).pathname),
-        "gallery",
-      );
+      const galleryDistDir = resolveGalleryDistDir();
       const indexHtmlPath = path.join(galleryDistDir, "index.html");
 
       try {
@@ -71,6 +113,13 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
         res.end(html);
         return;
       } catch {
+        const sourceHtml = await tryLoadSourceGalleryHtml(devServer, url, basePath, themeConfig);
+        if (sourceHtml) {
+          res.setHeader("Content-Type", "text/html");
+          res.end(sourceHtml);
+          return;
+        }
+
         const html = generateGalleryHtml(basePath, themeConfig);
         res.setHeader("Content-Type", "text/html");
         res.end(html);
@@ -80,10 +129,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
 
     // Serve gallery static assets (JS, CSS) from built SPA
     if (url.startsWith("/assets/")) {
-      const galleryDistDir = path.resolve(
-        path.dirname(new URL(import.meta.url).pathname),
-        "gallery",
-      );
+      const galleryDistDir = resolveGalleryDistDir();
       const filePath = path.join(galleryDistDir, url);
       try {
         const stat = await fs.promises.stat(filePath);

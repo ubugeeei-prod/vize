@@ -6,12 +6,32 @@ import { mdiChevronUp, mdiChevronDown } from "@mdi/js";
 import { useActions, type ActionEvent } from "../composables/useActions";
 import MdiIcon from "./MdiIcon.vue";
 
+const props = withDefaults(
+  defineProps<{
+    captureEvents?: string[];
+  }>(),
+  {
+    captureEvents: () => [],
+  },
+);
+
 hljs.registerLanguage("json", json);
 
 const { events, clear } = useActions();
 const expandedIndex = ref<number | null>(null);
 
 const reversedEvents = computed(() => [...events.value].reverse());
+const tracksMousemove = computed(() =>
+  props.captureEvents.some((eventName) => eventName === "mousemove"),
+);
+const captureLabel = computed(() =>
+  tracksMousemove.value ? "mousemove enabled" : "standard capture",
+);
+const totalLabel = computed(() => `${events.value.length} total`);
+
+function formatTarget(target?: string): string {
+  return target ? target.toLowerCase() : "document";
+}
 
 function toggleExpand(index: number) {
   expandedIndex.value = expandedIndex.value === index ? null : index;
@@ -43,9 +63,18 @@ function highlightJson(str: string): string {
 <template>
   <div class="actions-panel">
     <div class="actions-header">
-      <span class="actions-count"
-        >{{ events.length }} event{{ events.length !== 1 ? "s" : "" }}</span
-      >
+      <div class="actions-header-copy">
+        <span class="actions-header-title">Captured Events</span>
+        <span class="actions-header-meta">
+          <span class="actions-count">{{ totalLabel }}</span>
+          <span
+            class="actions-capture-mode"
+            :class="{ 'actions-capture-mode--active': tracksMousemove }"
+          >
+            {{ captureLabel }}
+          </span>
+        </span>
+      </div>
       <button v-if="events.length > 0" type="button" class="actions-clear-btn" @click="clear()">
         Clear
       </button>
@@ -53,7 +82,17 @@ function highlightJson(str: string): string {
 
     <div v-if="events.length === 0" class="actions-empty">
       <p>No events captured yet.</p>
-      <p class="actions-hint">Interact with the component to see events here.</p>
+      <p class="actions-hint">
+        {{
+          tracksMousemove
+            ? "Move the pointer or interact with the component to see events here."
+            : "Interact with the component to see events here."
+        }}
+      </p>
+      <p v-if="!tracksMousemove" class="actions-note">
+        Add <code>action-events="mousemove"</code> to the <code>&lt;art&gt;</code> metadata to opt
+        in.
+      </p>
     </div>
 
     <div v-else class="actions-list">
@@ -67,7 +106,7 @@ function highlightJson(str: string): string {
         <div class="action-row">
           <span class="action-time">{{ formatTime(event.timestamp) }}</span>
           <span class="action-type" :class="event.source">{{ event.name }}</span>
-          <span v-if="event.target" class="action-target">{{ event.target }}</span>
+          <span class="action-target">{{ formatTarget(event.target) }}</span>
           <MdiIcon
             class="action-expand-icon"
             :path="expandedIndex === index ? mdiChevronUp : mdiChevronDown"
@@ -87,15 +126,41 @@ function highlightJson(str: string): string {
 <style scoped>
 .actions-panel {
   font-size: 0.75rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .actions-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--musea-border);
-  background: var(--musea-bg-secondary);
+  gap: 1rem;
+  padding: 0.75rem 1rem 0.625rem;
+  border-bottom: 1px solid var(--musea-border-subtle);
+  background: transparent;
+}
+
+.actions-header-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1875rem;
+  min-width: 0;
+}
+
+.actions-header-title {
+  color: var(--musea-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.actions-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .actions-count {
@@ -103,11 +168,27 @@ function highlightJson(str: string): string {
   color: var(--musea-text-muted);
 }
 
+.actions-capture-mode {
+  padding: 0.125rem 0.4375rem;
+  border-radius: 999px;
+  background: var(--musea-bg-secondary);
+  color: var(--musea-text-muted);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.actions-capture-mode--active {
+  background: var(--musea-accent-subtle);
+  color: var(--musea-accent);
+}
+
 .actions-clear-btn {
   padding: 0.125rem 0.375rem;
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-sm);
-  background: var(--musea-bg-tertiary);
+  background: transparent;
   color: var(--musea-text-muted);
   font-size: 0.625rem;
   cursor: pointer;
@@ -120,42 +201,71 @@ function highlightJson(str: string): string {
 }
 
 .actions-empty {
-  padding: 1rem;
+  padding: 1.25rem 1rem 1.5rem;
   text-align: center;
   color: var(--musea-text-muted);
   font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: auto 0;
 }
 
 .actions-hint {
   font-size: 0.6875rem;
-  margin-top: 0.25rem;
   opacity: 0.7;
 }
 
+.actions-note {
+  font-size: 0.6875rem;
+  color: var(--musea-text-muted);
+}
+
+.actions-note code {
+  font-family: var(--musea-font-mono, monospace);
+  font-size: 0.625rem;
+  padding: 0.125rem 0.25rem;
+  border-radius: var(--musea-radius-sm);
+  background: var(--musea-bg-secondary);
+  border: 1px solid var(--musea-border-subtle);
+}
+
 .actions-list {
-  max-height: 200px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  padding: 0.5rem;
 }
 
 .action-item {
-  border-bottom: 1px solid var(--musea-border-subtle);
+  border: 1px solid transparent;
+  border-radius: var(--musea-radius-md);
   cursor: pointer;
-  transition: background var(--musea-transition);
+  transition:
+    background var(--musea-transition),
+    border-color var(--musea-transition);
+}
+
+.action-item + .action-item {
+  margin-top: 0.375rem;
 }
 
 .action-item:hover {
-  background: var(--musea-bg-secondary);
+  background: color-mix(in srgb, var(--musea-bg-secondary) 72%, transparent);
+  border-color: var(--musea-border-subtle);
 }
 
 .action-item.expanded {
-  background: var(--musea-bg-secondary);
+  background: color-mix(in srgb, var(--musea-bg-secondary) 82%, transparent);
+  border-color: var(--musea-border-subtle);
 }
 
 .action-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
+  column-gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
   font-size: 0.6875rem;
 }
 
@@ -182,6 +292,10 @@ function highlightJson(str: string): string {
 }
 
 .action-target {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--musea-text-secondary);
   font-family: var(--musea-font-mono, monospace);
   font-size: 0.625rem;
@@ -196,7 +310,7 @@ function highlightJson(str: string): string {
 }
 
 .action-detail {
-  padding: 0 0.75rem 0.5rem 0.75rem;
+  padding: 0 0.75rem 0.75rem 0.75rem;
 }
 
 .action-raw {
