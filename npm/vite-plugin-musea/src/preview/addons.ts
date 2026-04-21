@@ -241,6 +241,7 @@ function __museaInitAddons(container, variantName) {
       }
       case 'musea:run-a11y': {
         // Run axe-core a11y test
+        const requestId = typeof payload?.requestId === 'string' ? payload.requestId : undefined;
         (async () => {
           try {
             // Dynamically load axe-core from local vendor route if not already loaded
@@ -263,6 +264,7 @@ function __museaInitAddons(container, variantName) {
             window.parent.postMessage({
               type: 'musea:a11y-result',
               payload: {
+                requestId,
                 violations: results.violations.map(v => ({
                   id: v.id,
                   impact: v.impact,
@@ -282,6 +284,7 @@ function __museaInitAddons(container, variantName) {
             window.parent.postMessage({
               type: 'musea:a11y-result',
               payload: {
+                requestId,
                 error: err instanceof Error ? err.message : String(err),
                 violations: [],
                 passes: 0,

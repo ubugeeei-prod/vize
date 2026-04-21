@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import { mdiViewGrid, mdiFolder, mdiChevronUp, mdiChevronDown } from "@mdi/js";
 import { useArts } from "../composables/useArts";
 import { useActions } from "../composables/useActions";
-import { useAddons } from "../composables/useAddons";
 import { useEventCapture } from "../composables/useEventCapture";
 import MdiIcon from "../components/MdiIcon.vue";
 import VariantCard from "../components/VariantCard.vue";
@@ -18,6 +17,7 @@ import VrtPanel from "../components/VrtPanel.vue";
 import AddonToolbar from "../components/AddonToolbar.vue";
 import ActionsPanel from "../components/ActionsPanel.vue";
 import FullscreenPreview from "../components/FullscreenPreview.vue";
+import { getVariantSectionId } from "../utils/variantSections";
 
 const route = useRoute();
 const { getArt, load } = useArts();
@@ -27,17 +27,14 @@ const {
   clear: clearActions,
   setCurrentVariant: setActionsVariant,
 } = useActions();
-const { gridDensity } = useAddons();
 const { setCurrentVariant } = useEventCapture();
 
 const activeTab = ref<"variants" | "props" | "docs" | "a11y" | "vrt">("variants");
 const actionCount = computed(() => events.value.length);
 const actionsExpanded = ref(false);
-
-// Currently selected variant name
 const selectedVariantName = ref<string>("");
-
-const gridClass = computed(() => `gallery-grid density-${gridDensity.value}`);
+const variantSectionElements = new Map<string, HTMLElement>();
+let variantObserver: IntersectionObserver | null = null;
 
 const artPath = computed(() => route.params.path as string);
 const art = computed(() => getArt(artPath.value));
@@ -50,7 +47,6 @@ const selectedVariant = computed(() => {
   );
 });
 
-// Initialize selected variant when art changes
 watch(
   art,
   (newArt) => {
@@ -64,11 +60,103 @@ watch(
   { immediate: true },
 );
 
-// Update event capture when variant changes
 watch(selectedVariantName, (name) => {
   setCurrentVariant(name);
   setActionsVariant(name);
 });
+
+const variantSectionIds = computed<Record<string, string>>(() => {
+  const ids: Record<string, string> = {};
+  const usedIds = new Map<string, number>();
+
+  for (const [index, variant] of (art.value?.variants ?? []).entries()) {
+    const baseId = getVariantSectionId(variant.name, index);
+    const duplicateCount = usedIds.get(baseId) ?? 0;
+    usedIds.set(baseId, duplicateCount + 1);
+    ids[variant.name] = duplicateCount === 0 ? baseId : `${baseId}-${duplicateCount + 1}`;
+  }
+
+  return ids;
+});
+
+function disconnectVariantObserver() {
+  variantObserver?.disconnect();
+  variantObserver = null;
+}
+
+function setVariantSectionRef(variantName: string, el: HTMLElement | null) {
+  if (el) {
+    variantSectionElements.set(variantName, el);
+  } else {
+    variantSectionElements.delete(variantName);
+  }
+}
+
+async function setupVariantObserver() {
+  disconnectVariantObserver();
+
+  if (activeTab.value !== "variants" || variantSectionElements.size === 0) {
+    return;
+  }
+
+  await nextTick();
+
+  if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
+    return;
+  }
+
+  variantObserver = new IntersectionObserver(
+    (entries) => {
+      const visibleEntries = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => {
+          if (Math.abs(a.intersectionRatio - b.intersectionRatio) > 0.05) {
+            return b.intersectionRatio - a.intersectionRatio;
+          }
+          return Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top);
+        });
+
+      const activeEntry = visibleEntries[0];
+      const variantName = activeEntry?.target instanceof HTMLElement
+        ? activeEntry.target.dataset.variantName
+        : undefined;
+
+      if (variantName && variantName !== selectedVariantName.value) {
+        selectedVariantName.value = variantName;
+      }
+    },
+    {
+      rootMargin: "-18% 0px -52% 0px",
+      threshold: [0.2, 0.4, 0.7],
+    },
+  );
+
+  for (const element of variantSectionElements.values()) {
+    variantObserver.observe(element);
+  }
+}
+
+async function syncSelectionFromHash() {
+  if (activeTab.value !== "variants" || !route.hash) {
+    return;
+  }
+
+  await nextTick();
+
+  const targetId = decodeURIComponent(route.hash.slice(1));
+  const targetEntry = Object.entries(variantSectionIds.value).find(([, id]) => id === targetId);
+  const targetEl = document.getElementById(targetId);
+
+  if (!targetEl) {
+    return;
+  }
+
+  if (targetEntry) {
+    selectedVariantName.value = targetEntry[0];
+  }
+
+  targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 onMounted(() => {
   load();
@@ -78,11 +166,38 @@ onMounted(() => {
 watch(artPath, () => {
   activeTab.value = "variants";
   clearActions();
+  disconnectVariantObserver();
+  variantSectionElements.clear();
 });
 
 const handleVariantSelect = (variantName: string) => {
   selectedVariantName.value = variantName;
+
+  const targetId = variantSectionIds.value[variantName];
+  const targetEl = targetId ? document.getElementById(targetId) : null;
+  targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
+
+watch(
+  () => [art.value?.path, activeTab.value] as const,
+  () => {
+    void setupVariantObserver();
+    void syncSelectionFromHash();
+  },
+  { immediate: true },
+);
+
+watch(
+  () => route.hash,
+  () => {
+    void syncSelectionFromHash();
+  },
+);
+
+onUnmounted(() => {
+  disconnectVariantObserver();
+  variantSectionElements.clear();
+});
 </script>
 
 <template>
@@ -142,7 +257,7 @@ const handleVariantSelect = (variantName: string) => {
         @click="activeTab = 'a11y'"
       >
         A11y
-        <A11yBadge :art-path="art.path" />
+        <A11yBadge :art-path="art.path" :variant-name="selectedVariant?.name" />
       </button>
       <button
         type="button"
@@ -155,21 +270,35 @@ const handleVariantSelect = (variantName: string) => {
     </div>
 
     <div class="component-content">
-      <!-- Variants Tab: Show variant tabs + single preview -->
       <div v-if="activeTab === 'variants'" class="variants-view">
         <VariantTabs
           :variants="art.variants"
           :selected-variant="selectedVariantName"
+          :section-ids="variantSectionIds"
           @select="handleVariantSelect"
         />
+
         <div class="variant-preview-area">
-          <VariantCard
-            v-if="selectedVariant"
-            :key="selectedVariant.name"
-            :art-path="art.path"
-            :variant="selectedVariant"
-            :component-name="art.metadata.title"
-          />
+          <section
+            v-for="(variant, index) in art.variants"
+            :id="variantSectionIds[variant.name]"
+            :key="variant.name"
+            :ref="(el) => setVariantSectionRef(variant.name, el as HTMLElement | null)"
+            class="variant-section"
+            :data-variant-name="variant.name"
+          >
+            <div class="variant-section-header">
+              <span class="variant-section-index">{{ String(index + 1).padStart(2, "0") }}</span>
+              <h2 class="variant-section-title">{{ variant.name }}</h2>
+              <span v-if="variant.isDefault" class="variant-section-badge">Default</span>
+            </div>
+
+            <VariantCard
+              :art-path="art.path"
+              :variant="variant"
+              :component-name="art.metadata.title"
+            />
+          </section>
         </div>
       </div>
 
@@ -331,33 +460,62 @@ const handleVariantSelect = (variantName: string) => {
 }
 
 .variants-view {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
 }
 
 .variant-preview-area {
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.gallery-grid {
-  display: grid;
-  gap: 1.25rem;
-}
-
-.gallery-grid.density-compact {
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+.variant-section {
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
+  scroll-margin-top: calc(var(--musea-header-height) + 1.25rem);
 }
 
-.gallery-grid.density-comfortable {
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
+.variant-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-inline: 0.25rem;
 }
 
-.gallery-grid.density-spacious {
-  grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
-  gap: 1.75rem;
+.variant-section-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--musea-bg-secondary);
+  border: 1px solid var(--musea-border);
+  color: var(--musea-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.variant-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.variant-section-badge {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--musea-accent-subtle);
+  color: var(--musea-accent);
 }
 
 .actions-footer {
@@ -414,5 +572,19 @@ const handleVariantSelect = (variantName: string) => {
   margin-top: 1rem;
   color: var(--musea-accent);
   text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+  .component-view {
+    padding: 1.25rem;
+  }
+
+  .variants-view {
+    grid-template-columns: 1fr;
+  }
+
+  .actions-footer {
+    margin: 0 -1.25rem -1.25rem;
+  }
 }
 </style>

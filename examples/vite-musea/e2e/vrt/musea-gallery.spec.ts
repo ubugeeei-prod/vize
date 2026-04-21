@@ -10,6 +10,20 @@ test.describe("musea gallery", () => {
     await expect(page).toHaveScreenshot("gallery-top.png");
   });
 
+  test("test summary page", async ({ page }) => {
+    await page.goto("/__musea__/tests");
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
+    await expect(page).toHaveScreenshot("test-summary.png");
+  });
+
+  test("tokens page", async ({ page }) => {
+    await page.goto("/__musea__/tokens");
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
+    await expect(page).toHaveScreenshot("tokens-page.png");
+  });
+
   for (const component of COMPONENTS) {
     test(`component - ${component}`, async ({ page }) => {
       await page.goto("/__musea__");
