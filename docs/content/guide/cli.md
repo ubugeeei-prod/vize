@@ -4,255 +4,162 @@ title: CLI
 
 # CLI Reference
 
-> **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. Commands, options, and output formats may change without notice.
+> **⚠️ Work in Progress:** Vize is under active development and the CLI surface is still evolving.
 
-The Vize CLI provides a unified interface for all Vue.js toolchain operations. A single binary handles compilation, formatting, linting, type checking, component gallery, and language server — all powered by Rust.
+This page describes the Rust-native `vize` binary.
+The npm `vize` package currently exposes shared config helpers plus `vize lint`; for the full CLI,
+install the Rust binary with `cargo install vize`.
 
 ## Installation
 
 ```bash
-# via npm
-npm install -g vize
-
-# via Cargo
 cargo install vize
 ```
 
-## Usage
+Or run the current workspace build:
 
 ```bash
-vize [COMMAND] [OPTIONS] [FILES...]
+nix run github:ubugeeei/vize#vize -- --help
 ```
-
-When invoked without a command, Vize defaults to `build`.
-
-## Config
-
-`vize` looks for these files in the project root:
-
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.pkl`
-- `vize.config.json`
-
-TypeScript config:
-
-```ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  linter: {
-    preset: "opinionated",
-  },
-});
-```
-
-PKL config:
-
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
-
-linter {
-  preset = "opinionated"
-}
-```
-
-JSON config with schema:
-
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "linter": {
-    "preset": "opinionated"
-  }
-}
-```
-
-At the moment, shared config is applied to `vize lint`. You can override discovery with
-`vize lint --config path/to/vize.config.ts` or skip config loading with `vize lint --no-config`.
 
 ## Commands
 
-| Command | Description                           | Crate              |
-| ------- | ------------------------------------- | ------------------ |
-| `build` | Compile Vue SFC files (default)       | `vize_atelier_sfc` |
-| `fmt`   | Format Vue SFC files                  | `vize_glyph`       |
-| `lint`  | Lint Vue SFC files                    | `vize_patina`      |
-| `check` | Type check Vue SFC files              | `vize_canon`       |
-| `musea` | Start component gallery server        | `vize_musea`       |
-| `lsp`   | Start Language Server Protocol server | `vize_maestro`     |
+```bash
+vize [COMMAND]
+```
+
+When invoked without a command, `vize` defaults to `build`.
+
+| Command        | Description                                      |
+| -------------- | ------------------------------------------------ |
+| `build`        | Compile Vue SFC files                            |
+| `fmt`          | Format Vue SFC files                             |
+| `lint`         | Lint Vue SFC files                               |
+| `check`        | Type check Vue SFC, TS, TSX, and `.d.ts` inputs  |
+| `check-server` | Start the Unix JSON-RPC typecheck server         |
+| `musea`        | Musea subcommands and scaffolding                |
+| `lsp`          | Start the language server                        |
+| `ide`          | Install or manage editor integrations            |
 
 ## Build
 
-Compile Vue Single File Components into JavaScript. This is the default command — running `vize` without arguments is equivalent to `vize build`.
-
-The build command supports three compilation backends:
-
-- **DOM** (default) — Generates `createVNode` / `h` calls for Vue's virtual DOM runtime
-- **Vapor** — Generates fine-grained reactive code without virtual DOM overhead (Vue 3.6+)
-- **SSR** — Generates string concatenation code optimized for server-side rendering
-
 ```bash
-# Default: compile ./**/*.vue to ./dist (DOM mode)
-vize
-
-# Custom input/output
-vize build src/**/*.vue -o out
-
-# SSR mode
+vize build src/**/*.vue
 vize build --ssr
-
-# Preserve script extensions (.ts/.tsx/.jsx)
-vize build --script_ext=preserve
+vize build --profile src
 ```
 
-### Options
+Key options:
 
-| Option         | Default | Description                                                 |
-| -------------- | ------- | ----------------------------------------------------------- |
-| `-o, --output` | `dist`  | Output directory                                            |
-| `--ssr`        | `false` | Enable SSR mode (uses `vize_atelier_ssr`)                   |
-| `--script_ext` | —       | Script extension handling (`preserve` to keep `.ts`/`.tsx`) |
-
-### Multi-threaded Compilation
-
-The build command automatically uses all available CPU cores via Rayon. Each SFC file is compiled independently, achieving near-linear scaling:
-
-| Files  | Single Thread | Multi Thread (8 cores) | Speedup |
-| ------ | ------------- | ---------------------- | ------- |
-| 1,000  | 443ms         | 73ms                   | 6.1x    |
-| 5,000  | 2.2s          | 198ms                  | 11.1x   |
-| 15,000 | 6.65s         | 498ms                  | 13.4x   |
+| Option            | Description                                                     |
+| ----------------- | --------------------------------------------------------------- |
+| `-o, --output`    | Output directory                                                |
+| `-f, --format`    | Output format: `js`, `json`, `stats`                            |
+| `--ssr`           | Enable SSR compilation                                          |
+| `--script-ext`    | `preserve` or `downcompile`                                     |
+| `-j, --threads`   | Thread count override                                           |
+| `--profile`       | Print timing profile                                            |
+| `--continue-on-error` | Keep compiling and report failures at the end               |
 
 ## Format
 
-Format Vue SFC files using the built-in formatter (Glyph). Glyph formats all three SFC blocks — `<template>`, `<script>`, and `<style>` — in a single pass.
-
 ```bash
-# Format all Vue files in-place
-vize fmt
-
-# Check formatting without writing (exit code 1 if unformatted)
-vize fmt --check
-
-# Format specific files
-vize fmt src/components/**/*.vue
+vize fmt --check src
+vize fmt --write src
 ```
 
-### Options
+Key options:
 
-| Option    | Description                                                                         |
-| --------- | ----------------------------------------------------------------------------------- |
-| `--check` | Check formatting without writing. Returns exit code 1 if any files are unformatted. |
+| Option                             | Description |
+| ---------------------------------- | ----------- |
+| `--check`                          | Report files that would change |
+| `-w, --write`                      | Write formatted output |
+| `--single-quote`                   | Toggle string quote style |
+| `--print-width`                    | Maximum line width |
+| `--tab-width`                      | Indentation width |
+| `--use-tabs`                       | Toggle tabs vs spaces |
+| `--no-semi`                        | Omit semicolons |
+| `--sort-attributes`                | Sort template attributes |
+| `--single-attribute-per-line`      | Put one attribute per line |
+| `--max-attributes-per-line`        | Wrap after a given attribute count |
+| `--normalize-directive-shorthands` | Normalize `v-bind:` / `v-on:` / `v-slot:` shorthands |
+| `--profile`                        | Print timing profile |
 
 ## Lint
 
-Lint Vue SFC files using the built-in linter (Patina). Patina provides Vue-specific lint rules covering template correctness, accessibility, and best practices.
-
 ```bash
-# Lint all Vue files
-vize lint
-
-# Auto-fix lint issues
-vize lint --fix
-
-# Lint specific files
-vize lint src/components/**/*.vue
+vize lint src
+vize lint --preset opinionated src
+vize lint --help-level short src
 ```
 
-### Options
+Key options:
 
-| Option     | Default | Description                              |
-| ---------- | ------- | ---------------------------------------- |
-| `--fix`    | `false` | Auto-fix lint issues where possible      |
-| `--locale` | `en`    | Lint message language (`en`, `ja`, `zh`) |
+| Option                | Description |
+| --------------------- | ----------- |
+| `--fix`               | Reserved for future autofix support |
+| `-f, --format`        | Output format: `text` or `json` |
+| `--max-warnings`      | Fail when warnings exceed the limit |
+| `-q, --quiet`         | Show summary only |
+| `--help-level`        | `full`, `short`, or `none` |
+| `--preset`            | `happy-path`, `opinionated`, `essential`, or `nuxt` |
+| `--profile`           | Print timing profile |
 
-### Locale Support
-
-Lint messages are fully internationalized with support for three languages:
-
-```bash
-vize lint --locale ja   # Japanese (日本語)
-vize lint --locale zh   # Chinese (中文)
-vize lint --locale en   # English (default)
-```
-
-This is particularly useful for teams where English is not the primary language. Error messages, suggestions, and fix descriptions are all translated.
-
-### Complementary with oxlint
-
-Patina focuses on Vue-specific template rules. For broader JavaScript/TypeScript linting, Vize is designed to work alongside [oxlint](https://oxc.rs/docs/guide/usage/linter) — another Rust-native linter from the OXC project. The two tools are complementary:
-
-- **Patina** — Vue template directives, accessibility, component best practices
-- **oxlint** — JavaScript/TypeScript rules (no-unused-vars, no-console, etc.)
-
-If you want both in one Oxlint run, use [`oxlint-plugin-vize`](./oxlint.md). It bridges Vize's Vue diagnostics into Oxlint's JS plugin system so Oxlint core rules and Vize rules can report together.
-
-## Type Check
-
-Type check Vue SFC files using the built-in checker (Canon). Canon performs TypeScript-aware type inference for template expressions, props, and emits.
+## Check
 
 ```bash
-# Type check
 vize check
-
-# Strict mode (stricter null checks and inference)
-vize check --strict
-
-# Check specific files
-vize check src/components/**/*.vue
+vize check src
+vize check --tsconfig tsconfig.app.json
+vize check --profile src
 ```
 
-### Options
+When no explicit paths are given, `vize check` uses `tsconfig.json` `files` / `include` /
+`exclude` if available.
 
-| Option     | Default | Description                      |
-| ---------- | ------- | -------------------------------- |
-| `--strict` | `false` | Enable strict type checking mode |
+Key options:
 
-### Future: Corsa Integration
-
-Vize's type checker is being aligned around [Corsa](https://github.com/ubugeeei/corsa-bind), the native TypeScript execution layer used throughout the workspace. The goal is to keep JavaScript/TypeScript checking native while Canon continues to provide Vue-specific template type analysis.
+| Option                    | Description |
+| ------------------------- | ----------- |
+| `-s, --socket`            | Connect to a running `check-server` |
+| `--tsconfig`              | Override `tsconfig.json` |
+| `-f, --format`            | Output format: `text` or `json` |
+| `--show-virtual-ts`       | Print generated virtual TypeScript |
+| `-q, --quiet`             | Show summary only |
+| `--profile`               | Write profile artifacts under `node_modules/.vize` |
+| `--corsa-path`            | Override the Corsa executable path |
+| `--servers`               | Parallel Corsa worker count |
+| `--declaration`           | Emit `.d.ts` output |
+| `--declaration-dir`       | Output directory for emitted declarations |
 
 ## Musea
 
-Start the component gallery server for browsing and developing Vue components.
-
 ```bash
-vize musea
+vize musea --help
+vize musea new
 ```
 
-This starts a development server with live reload, serving the Musea component gallery UI. See [Musea](./musea.md) for a comprehensive guide.
+The `musea` subcommand currently focuses on scaffolding and experimental entry points.
+For day-to-day gallery development, the recommended workflow today is
+`@vizejs/vite-plugin-musea`.
 
-## LSP
-
-Start the Language Server Protocol server for editor integration.
+## LSP and IDE
 
 ```bash
 vize lsp
+vize lsp --port 9527
+vize ide vscode
+vize ide zed
 ```
 
-This starts the Maestro LSP server, which provides:
-
-- IntelliSense and auto-completion
-- Real-time diagnostics (compilation errors + lint warnings)
-- Go to definition
-- Hover information (types, props, documentation)
-- Code actions and quick fixes
-
-The LSP server is typically started automatically by the [VS Code extension](../integrations/vscode.md), but can also be used with any LSP-compatible editor (Neovim, Helix, Zed, etc.).
+`vize lsp` starts the language server directly.
+`vize ide` adds editor-specific install and management commands for the VS Code and Zed
+integrations.
 
 ## Global Options
 
 ```bash
-vize --help             # Show help
-vize --version          # Show version
-vize <command> --help   # Show command-specific help
+vize --help
+vize --version
+vize <command> --help
 ```
-
-## Exit Codes
-
-| Code | Meaning                                                                    |
-| ---- | -------------------------------------------------------------------------- |
-| `0`  | Success                                                                    |
-| `1`  | Error (compilation failure, lint errors, formatting issues with `--check`) |

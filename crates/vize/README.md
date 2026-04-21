@@ -1,88 +1,51 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ubugeeei/vize/main/crates/vize/logo.svg" alt="vize logo" width="120" height="120">
-</p>
+# vize
 
-<h1 align="center">vize</h1>
+`vize` is the Rust-native entry point for the Vize workspace.
 
-<p align="center">
-  <strong>High-performance Vue.js toolchain in Rust</strong>
-</p>
+It provides:
 
----
+- the `vize` CLI binary (`build`, `fmt`, `lint`, `check`, `musea`, `lsp`, `ide`)
+- a facade crate that re-exports the workspace crates for unified Rust docs
 
-## Name Origin
-
-**Vize** (/viːz/) is named after Vizier + Visor + Advisor — a wise tool that sees through your code. This crate serves as the unified gateway to all Vize functionality, bringing together all the art-themed crates into a single, powerful command-line tool.
-
-## Features
-
-- High-performance native Vue SFC compilation
-- Parallel processing with configurable thread count
-- Multiple output formats (JS, JSON, stats)
-- SSR mode support
-- TypeScript/JSX transpilation options
-- `.gitignore` aware file discovery
-
-## Installation
+## Install
 
 ```bash
 cargo install vize
 ```
 
-## Commands
-
-### LSP Server
+## CLI
 
 ```bash
-vize lsp              # stdio mode (for VS Code)
-vize lsp --port 9527  # TCP mode (for debugging)
+vize build src/**/*.vue
+vize fmt --check src
+vize lint --preset opinionated src
+vize check --profile src
+vize lsp
 ```
 
-### Lint
+`vize` defaults to `build` when no subcommand is provided.
 
-```bash
-vize lint src/**/*.vue
-vize lint --fix src/
-vize lint --profile src/  # Show parse, rule hook, Croquis, and type-aware timing
-```
+## Re-exported Crates
 
-### Compile
+- `vize_carton` as `vize::carton`
+- `vize_relief` as `vize::relief`
+- `vize_armature` as `vize::armature`
+- `vize_atelier_core` as `vize::atelier_core`
+- `vize_atelier_dom` as `vize::atelier_dom`
+- `vize_atelier_vapor` as `vize::atelier_vapor`
+- `vize_atelier_sfc` as `vize::atelier_sfc`
+- `vize_patina` as `vize::patina`
+- `vize_canon` as `vize::canon`
+- `vize_musea` as `vize::musea`
+- `vize_maestro` as `vize::maestro`
+- `vize_glyph` as `vize::glyph` when the `glyph` feature is enabled
 
-```bash
-vize src/**/*.vue     # Compile all .vue files
-vize -o ./build       # Output to custom directory
-vize --ssr            # Enable SSR mode
-vize --profile        # Show parse, transform, codegen, and I/O profile
-vize -j 4             # Set thread count
-```
+## Related Crates
 
-### Type Check and Format Profiles
-
-```bash
-vize check --profile src/       # Show Virtual TS, Croquis, and Corsa timing profile
-vize fmt --check --profile src/ # Show formatter timing profile
-```
-
-Profile reports include hot files plus internal operation timings for compiler phases, linter rule
-hooks, Croquis analysis, Virtual TS generation, and Corsa probes.
-
-## Part of the Vize Art Collection
-
-`vize` is the command-line interface for the Vize compiler's art-themed crate collection:
-
-| Crate              | Art Term                | Role                         |
-| ------------------ | ----------------------- | ---------------------------- |
-| vize_carton        | Carton (Portfolio Case) | Shared utilities & allocator |
-| vize_atelier_core  | -                       | AST & Parser (core)          |
-| vize_atelier_dom   | Atelier (Workshop)      | DOM compiler                 |
-| vize_atelier_vapor | Atelier (Workshop)      | Vapor compiler               |
-| vize_atelier_sfc   | Atelier (Workshop)      | SFC compiler                 |
-| vize_vitrine       | Vitrine (Display Case)  | Bindings (Node.js/WASM)      |
-| vize_canon         | Canon (Standard)        | Type checker                 |
-| vize_glyph         | Glyph (Letterform)      | Formatter                    |
-| vize_patina        | Patina (Aged Surface)   | Linter                       |
-| **vize**           | **-**                   | **CLI (this crate)**         |
+- `vize_atelier_sfc` powers the build pipeline.
+- `vize_patina`, `vize_glyph`, and `vize_canon` power lint, format, and typecheck.
+- `vize_maestro` powers `vize lsp`.
 
 ## License
 
-MIT License
+MIT

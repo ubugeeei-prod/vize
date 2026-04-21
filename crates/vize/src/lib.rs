@@ -6,26 +6,26 @@
 //!
 //! ## Crates
 //!
-//! - [`carton`] - Box/container utilities for memory management
-//! - [`relief`] - Source text and span handling
-//! - [`armature`] - Vue template AST definitions
+//! - [`carton`] - Shared allocator, string, hash, and utility types
+//! - [`relief`] - Vue template AST, errors, and compiler options
+//! - [`armature`] - Vue template tokenizer and parser
 //! - [`atelier_core`] - Core template compiler infrastructure
 //! - [`atelier_dom`] - DOM mode template compiler
 //! - [`atelier_vapor`] - Vapor mode template compiler
 //! - [`atelier_sfc`] - Single File Component (SFC) parser and compiler
-//! - [`glyph`] - TypeScript/JavaScript transformer
-//! - [`patina`] - CSS/style processing with scoped styles
-//! - [`canon`] - Code formatter
-//! - [`musea`] - Multi-file project handling
+//! - [`glyph`] - Vue SFC formatter
+//! - [`patina`] - Vue SFC linter
+//! - [`canon`] - Vue-aware type checking and virtual TS generation
+//! - [`musea`] - Musea art parsing and documentation core
 //! - [`maestro`] - Language Server Protocol (LSP) implementation
 
-/// Box/container utilities for memory management.
+/// Shared allocator, string, hash, and utility types.
 pub use vize_carton as carton;
 
-/// Source text and span handling.
+/// Vue template AST, errors, and compiler options.
 pub use vize_relief as relief;
 
-/// Vue template AST definitions.
+/// Vue template tokenizer and parser.
 pub use vize_armature as armature;
 
 /// Core template compiler infrastructure.
@@ -40,17 +40,17 @@ pub use vize_atelier_vapor as atelier_vapor;
 /// Single File Component (SFC) parser and compiler.
 pub use vize_atelier_sfc as atelier_sfc;
 
-/// TypeScript/JavaScript transformer.
+/// Vue SFC formatter.
 #[cfg(feature = "glyph")]
 pub use vize_glyph as glyph;
 
-/// CSS/style processing with scoped styles.
+/// Vue SFC linter.
 pub use vize_patina as patina;
 
-/// Code formatter.
+/// Vue-aware type checking and virtual TS generation.
 pub use vize_canon as canon;
 
-/// Multi-file project handling.
+/// Musea art parsing and documentation core.
 pub use vize_musea as musea;
 
 /// Language Server Protocol (LSP) implementation.

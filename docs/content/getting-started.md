@@ -4,129 +4,35 @@ title: Getting Started
 
 # Getting Started
 
-> **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. APIs and features may change without notice.
+> **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. APIs and package boundaries may change without notice.
 
 ## What is Vize?
 
-Vize (_/viːz/_) is an unofficial, high-performance Vue.js toolchain written entirely in Rust. It provides a unified set of tools for Vue.js development:
+Vize (_/viːz/_) is an unofficial Vue.js toolchain written in Rust. The workspace contains shared
+building blocks for:
 
-| Tool         | Purpose                     | Replaces            |
-| ------------ | --------------------------- | ------------------- |
-| `vize build` | SFC compilation             | `@vue/compiler-sfc` |
-| `vize lint`  | Template and script linting | `eslint-plugin-vue` |
-| `vize fmt`   | Code formatting             | `prettier`          |
-| `vize check` | Type checking               | `vue-tsc`           |
-| `vize musea` | Component gallery           | Storybook           |
-| `vize lsp`   | Editor integration          | Volar               |
+| Area             | Main Rust crate(s)                         | User-facing package / command            |
+| ---------------- | ------------------------------------------ | ---------------------------------------- |
+| Template compile | `vize_atelier_*`, `vize_atelier_sfc`       | `@vizejs/vite-plugin`, Rust `vize build` |
+| Lint             | `vize_patina`                              | `vize lint`, `oxlint-plugin-vize`        |
+| Format           | `vize_glyph`                               | Rust `vize fmt`                          |
+| Type check       | `vize_canon`                               | Rust `vize check`                        |
+| Editor support   | `vize_maestro`                             | `vize lsp`, VS Code, Zed                 |
+| Musea art tools  | `vize_musea`                               | `@vizejs/vite-plugin-musea`              |
+| Bindings         | `vize_vitrine`                             | `@vizejs/native`, `@vizejs/wasm`         |
 
-All of these share a single parser, a single AST representation, and a single configuration surface — eliminating the overhead and inconsistencies of maintaining separate tools.
+## Choose Your Entry Point
 
-> **Editor support note:** For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
-> `vize lsp`, the VS Code extension, and the Zed extension default to opt-in capabilities so teams can evaluate lint diagnostics first, then type checking, then editor navigation/completion features.
+### 1. Vite Projects
 
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) 24+
-- [pnpm](https://pnpm.io/) 10+ (recommended) or npm
-
-For building from source:
-
-- [Rust](https://rustup.rs/) 1.80+
-
-For local development in this repository, the Nix flake pins Node.js, pnpm, Rust, and the WASM/native build tools.
-
-## Installation
-
-### CLI
-
-Install the Vize CLI globally:
+Use the Vite plugin if you want native Vue compilation in an existing Vite project.
 
 ```bash
-# via npm (recommended)
-npm install -g vize
-
-# via Cargo
-cargo install vize
+pnpm add -D vize @vizejs/vite-plugin
 ```
 
-### npm Packages
-
-Vize is distributed as multiple npm packages, each serving a specific integration point:
-
-```bash
-# Main package (includes CLI)
-pnpm add vize
-
-# Native bindings (Node.js) — direct NAPI access from Node
-pnpm add @vizejs/native
-
-# WASM bindings (Browser) — for playgrounds and in-browser compilation
-pnpm add @vizejs/wasm
-
-# Vite plugin — drop-in replacement for @vitejs/plugin-vue
-pnpm add @vizejs/vite-plugin vize
-
-# Oxlint bridge — planned alpha release
-# Once the alpha is published:
-pnpm add -D oxlint oxlint-plugin-vize@alpha
-
-# Experimental unplugin integration — rollup / webpack / esbuild
-pnpm add @vizejs/unplugin
-
-# Experimental Rspack integration — dedicated path
-pnpm add @vizejs/rspack-plugin @rspack/core
-
-# Nuxt module — first-class Nuxt integration
-pnpm add @vizejs/nuxt
-
-# Musea (component gallery)
-pnpm add @vizejs/vite-plugin-musea
-
-# MCP server (AI assistant integration)
-pnpm add @vizejs/musea-mcp-server
-```
-
-`@vizejs/native` is useful when you want to call Vize directly from Node. Packages like `@vizejs/vite-plugin` and `oxlint-plugin-vize` resolve their native bindings for you.
-
-> **Bundler status:** `@vizejs/vite-plugin` is the recommended integration today.
-> `@vizejs/unplugin` and `@vizejs/rspack-plugin` are available for non-Vite build systems, but they are still unstable.
-> Rspack intentionally uses the dedicated `@vizejs/rspack-plugin` path because its loader and CSS integration are Rspack-specific.
->
-> **Oxlint plugin status:** `oxlint-plugin-vize` is targeting an alpha npm release first.
-> As of March 21, 2026 it is not yet published, and until [oxc-project/oxc#20465](https://github.com/oxc-project/oxc/issues/20465) is fixed, `oxlint-vize -f stylish` is the recommended human-readable workflow.
-
-## Quick Start
-
-### Using the CLI
-
-Once installed, you can compile Vue SFC files immediately:
-
-```bash
-# Compile all .vue files in current directory to ./dist
-vize
-
-# Custom input/output
-vize build src/**/*.vue -o out
-
-# SSR mode
-vize build --ssr
-
-# Format check
-vize fmt --check
-
-# Lint with auto-fix
-vize lint --fix
-
-# Type check
-vize check --strict
-```
-
-### Using the Vite Plugin
-
-Add Vize to your Vite project for native-speed Vue compilation. This is a drop-in replacement for `@vitejs/plugin-vue` — no code changes to your components are required:
-
-```javascript
-// vite.config.js
+```ts
+// vite.config.ts
 import { defineConfig } from "vite";
 import vize from "@vizejs/vite-plugin";
 
@@ -135,11 +41,36 @@ export default defineConfig({
 });
 ```
 
-The plugin handles SFC compilation, `<script setup>`, scoped CSS, HMR, and SSR — all through Rust-native NAPI bindings. See [Vite Plugin](./guide/vite-plugin.md) for configuration options.
+### 2. npm CLI + Shared Config
 
-### Shared `vize.config.*`
+Use the `vize` npm package when you want shared config utilities and the native lint command.
 
-The npm CLI and `@vizejs/vite-plugin` share the same config discovery. Vize looks for these files in the project root:
+```bash
+pnpm add -D vize
+pnpm exec vize lint src
+```
+
+The npm package currently focuses on config loading plus `lint`.
+
+### 3. Full Rust CLI
+
+Use the Rust binary when you want the full native CLI today.
+
+```bash
+cargo install vize
+```
+
+```bash
+vize build src/**/*.vue
+vize fmt --check src
+vize lint --profile src
+vize check --profile src
+vize lsp
+```
+
+## Shared `vize.config.*`
+
+The npm CLI and `@vizejs/vite-plugin` share config discovery:
 
 - `vize.config.ts`
 - `vize.config.js`
@@ -150,15 +81,20 @@ The npm CLI and `@vizejs/vite-plugin` share the same config discovery. Vize look
 TypeScript config:
 
 ```ts
-// vize.config.ts
 import { defineConfig } from "vize";
 
 export default defineConfig({
-  compiler: {
-    sourceMap: true,
-  },
   linter: {
     preset: "opinionated",
+  },
+  formatter: {
+    printWidth: 100,
+  },
+  lsp: {
+    lint: true,
+    typecheck: false,
+    editor: false,
+    formatting: false,
   },
 });
 ```
@@ -168,12 +104,15 @@ PKL config:
 ```pkl
 amends "node_modules/vize/pkl/vize.pkl"
 
-compiler {
-  sourceMap = true
-}
-
 linter {
   preset = "opinionated"
+}
+
+lsp {
+  lint = true
+  typecheck = false
+  editor = false
+  formatting = false
 }
 ```
 
@@ -188,25 +127,33 @@ JSON config with schema:
 }
 ```
 
-Today the npm CLI applies shared config to `vize lint`, and the Vite plugin reads the same file for compiler and plugin options.
-
-### Using Other Bundlers (Experimental)
-
-For rollup, webpack, or esbuild, use `@vizejs/unplugin`.
-For Rspack, use `@vizejs/rspack-plugin`.
-
-These integrations are still unstable and should be treated as experimental.
-Vite remains the recommended path if you need the most complete and best-tested experience today.
-
-See [Experimental Bundler Integrations](./guide/unplugin.md) for setup details and caveats.
-
-### Using with Oxlint
-
-Run Vize's Vue diagnostics inside Oxlint's JS plugin system:
+## Packages
 
 ```bash
-# Once the alpha is published:
-pnpm add -D oxlint oxlint-plugin-vize@alpha
+pnpm add -D @vizejs/vite-plugin
+pnpm add @vizejs/native
+pnpm add @vizejs/wasm
+pnpm add @vizejs/unplugin
+pnpm add @vizejs/rspack-plugin @rspack/core
+pnpm add @vizejs/nuxt
+pnpm add @vizejs/vite-plugin-musea
+pnpm add @vizejs/musea-mcp-server
+pnpm add -D oxlint oxlint-plugin-vize
+```
+
+Notes:
+
+- `@vizejs/vite-plugin` is the recommended bundler integration today.
+- `@vizejs/unplugin` and `@vizejs/rspack-plugin` are still experimental.
+- `@vizejs/native` and `@vizejs/wasm` expose the Rust bindings directly.
+- `@vizejs/vite-plugin-musea` provides the gallery and dev-server workflow for Musea.
+
+## Oxlint Integration
+
+Run Vize's Vue diagnostics inside Oxlint:
+
+```bash
+pnpm add -D oxlint oxlint-plugin-vize
 ```
 
 ```json
@@ -216,12 +163,10 @@ pnpm add -D oxlint oxlint-plugin-vize@alpha
   "rules": {
     "eqeqeq": "error",
     "vize/vue/require-v-for-key": "error",
-    "vize/vue/no-v-html": "warn",
-    "no-console": "warn"
+    "vize/vue/no-v-html": "warn"
   },
   "settings": {
     "vize": {
-      "locale": "ja",
       "preset": "general-recommended",
       "helpLevel": "short"
     }
@@ -229,95 +174,55 @@ pnpm add -D oxlint oxlint-plugin-vize@alpha
 }
 ```
 
-This keeps Oxlint's built-in JavaScript and TypeScript rules running normally, including checks like `eqeqeq` and `no-console`, while adding Vize's Vue-specific diagnostics through the same run. `preset` defaults to `"general-recommended"`, but you can switch it to `"essential"` for the narrowest correctness-focused pass, `"opinionated"` when you want stricter built-in script checks too, or `"incremental"` when you want to enable Vize rules one by one from your Oxlint config. For now, prefer `pnpm exec oxlint-vize -f stylish` for terminal usage, and treat machine-readable output as best-effort until Oxlint's JS plugin range reporting improves upstream. See [Oxlint Plugin](./guide/oxlint.md) for details and current limitations.
+For terminal-first usage, prefer:
 
-### Using with Nuxt
+```bash
+pnpm exec oxlint-vize -c .oxlintrc.json -f stylish src
+```
 
-Vize provides a dedicated Nuxt module with first-class support:
+## Editor Support
 
-```typescript
-// nuxt.config.ts
-export default defineNuxtConfig({
-  modules: ["@vizejs/nuxt"],
-  vize: {
-    compiler: true,
-    musea: {
-      include: ["**/*.art.vue"],
-    },
+For day-to-day Vue editing, keep using `vuejs/language-tools` for now.
+Vize editor features are designed for incremental opt-in.
+
+VS Code starting point:
+
+```json
+{
+  "vize.enable": true,
+  "vize.lint.enable": true,
+  "vize.typecheck.enable": false,
+  "vize.editor.enable": false,
+  "vize.formatting.enable": false
+}
+```
+
+Zed starting point:
+
+```json
+{
+  "languages": {
+    "Vue": {
+      "language_servers": ["vize", "..."]
+    }
   },
-});
+  "lsp": {
+    "vize": {
+      "initialization_options": {
+        "lint": true
+      }
+    }
+  }
+}
 ```
 
-See [Nuxt Integration](./integrations/nuxt.md) for more details.
+## Local Development
 
-### Using WASM in the Browser
-
-```javascript
-import init, { compileSfc } from "@vizejs/wasm";
-
-await init();
-const { code } = compileSfc(`<template><div>{{ msg }}</div></template>`, { filename: "App.vue" });
-```
-
-See [WASM Bindings](./guide/wasm.md) for the full API.
-
-## Development Setup
-
-For contributing to Vize itself:
-
-### With Nix
+This repository uses `Nix + pnpm + vp` for local development.
 
 ```bash
 nix develop
 pnpm install --frozen-lockfile
 vp build
-vp run --workspace-root cli             # Enable vize CLI command
-vp run --workspace-root dev:playground  # Start playground
+vp run --workspace-root check
 ```
-
-### Without Nix
-
-```bash
-git clone https://github.com/ubugeeei/vize.git
-cd vize
-vp install
-
-# Build CLI
-cargo build --release -p vize
-
-# Run playground
-vp run --workspace-root dev:playground
-```
-
-### Project Structure
-
-```
-vize/
-├── crates/               # Rust crates (compiler, linter, formatter, etc.)
-│   ├── vize/             # CLI binary
-│   ├── vize_armature/    # Parser
-│   ├── vize_relief/      # AST definitions
-│   ├── vize_croquis/     # Semantic analysis
-│   ├── vize_atelier_*/   # Compilation backends (dom, vapor, sfc, ssr)
-│   ├── vize_patina/      # Linter
-│   ├── vize_glyph/       # Formatter
-│   ├── vize_canon/       # Type checker
-│   ├── vize_maestro/     # LSP
-│   ├── vize_musea/       # Component gallery
-│   ├── vize_vitrine/     # NAPI + WASM bindings
-│   └── ...
-├── npm/                  # npm packages (vite-plugin, wasm, native, etc.)
-├── playground/           # Development playground
-├── docs/                 # Documentation (this site)
-└── tests/                # Integration tests
-```
-
-## Next Steps
-
-- [Philosophy](./philosophy.md) — Design principles and vision
-- [CLI Reference](./guide/cli.md) — Full command documentation
-- [Vite Plugin](./guide/vite-plugin.md) — Configuration options
-- [Oxlint Plugin](./guide/oxlint.md) — Oxlint bridge for Vize diagnostics
-- [Experimental Bundler Integrations](./guide/unplugin.md) — rollup / webpack / esbuild / Rspack status
-- [Musea](./guide/musea.md) — Component gallery guide
-- [Architecture](./architecture/overview.md) — How Vize works internally

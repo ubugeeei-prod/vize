@@ -1,58 +1,28 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ubugeeei/vize/main/crates/vize_glyph/logo.svg" alt="vize_glyph logo" width="120" height="120">
-</p>
+# vize_glyph
 
-<h1 align="center">vize_glyph</h1>
+`vize_glyph` formats Vue Single File Components.
 
-<p align="center">
-  <strong>The Glyph - Code formatting for Vue SFCs</strong>
-</p>
+## Highlights
 
----
+- Whole-file SFC formatting
+- Block-level formatting helpers for template, script, and style content
+- Prettier-like options with Vue-specific attribute and block ordering controls
 
-## Name Origin
+## Key Entry Points
 
-**Glyph** (/ɡlɪf/) refers to the visual representation of a character - the elegant form that gives meaning to written symbols. In typography, calligraphy, and font design, glyphs are the carefully crafted shapes that transform abstract characters into beautiful, legible forms.
+- `format_sfc`
+- `format_sfc_with_allocator`
+- `format_template`
+- `format_script`
+- `format_style`
+- `FormatOptions`
 
-In the art world, a glyph:
+## Related Crates
 
-- **Shapes** - Gives form to abstract symbols
-- **Beautifies** - Makes text visually appealing
-- **Communicates** - Ensures clarity and readability
-
-Similarly, `vize_glyph` provides:
-
-- **Code formatting** - Consistent indentation and spacing
-- **Readability** - Clean, well-organized Vue SFC code
-- **Style enforcement** - Uniform code appearance across projects
-
-## Status
-
-This crate is currently a **work in progress** (WIP).
-
-## Planned Features
-
-- Vue template formatting
-- Script/TypeScript formatting
-- CSS/SCSS/Less formatting
-- Configurable style options
-- Prettier-compatible output
-
-## Part of the Vize Art Collection
-
-`vize_glyph` is part of the Vize compiler's art-themed crate collection:
-
-| Crate              | Art Term                | Role                         |
-| ------------------ | ----------------------- | ---------------------------- |
-| vize_carton        | Carton (Portfolio Case) | Shared utilities & allocator |
-| vize_atelier_core  | -                       | AST & Parser (core)          |
-| vize_atelier_dom   | Atelier (Workshop)      | DOM compiler                 |
-| vize_atelier_vapor | Atelier (Workshop)      | Vapor compiler               |
-| vize_atelier_sfc   | Atelier (Workshop)      | SFC compiler                 |
-| vize_vitrine       | Vitrine (Display Case)  | Bindings (Node.js/WASM)      |
-| vize_canon         | Canon (Standard)        | Type checker                 |
-| **vize_glyph**     | **Glyph (Letterform)**  | **Formatter (this crate)**   |
+- `vize` exposes Glyph through `vize fmt`
+- `vize_maestro` can use Glyph for LSP formatting
+- `vize_atelier_sfc` and `vize_carton` provide parsing and allocation support behind the formatter
 
 ## License
 
-MIT License
+MIT

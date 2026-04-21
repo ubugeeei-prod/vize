@@ -49,7 +49,7 @@ graph TD
     C --> F[Patina<br/>Linter]
     C --> G[Glyph<br/>Formatter]
     D --> H[Canon<br/>Type Checker]
-    C --> I[Musea<br/>Gallery]
+    C --> I[Musea<br/>Art & Docs Core]
     D --> J[Maestro<br/>LSP]
 ```
 
@@ -74,8 +74,11 @@ Because all tools share the same parser and AST, they have a consistent understa
 | Linting       | `vize_patina`        | Vue.js linter with i18n (en/ja/zh)                   |
 | Formatting    | `vize_glyph`         | Vue.js formatter (template + script + style)         |
 | LSP           | `vize_maestro`       | Language Server Protocol (tower-lsp)                 |
-| Gallery       | `vize_musea`         | Component gallery (Storybook alternative)            |
+| Musea         | `vize_musea`         | Art parsing, docs, palette, autogen, and VRT core    |
 | TUI           | `vize_fresco`        | Terminal UI framework (crossterm + taffy)            |
+
+The gallery UI and dev-server integration for Musea live in the JavaScript package
+`@vizejs/vite-plugin-musea`; the Rust crate focuses on the parsing and generation core.
 
 ## Naming Convention
 

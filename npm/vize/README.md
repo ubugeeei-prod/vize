@@ -1,54 +1,36 @@
 # Vize
 
-High-performance Vue.js toolchain in Rust.
+The `vize` npm package provides:
+
+- shared config utilities (`defineConfig`, `loadConfig`)
+- the native `vize lint` command
+
+For Vite integration, pair it with `@vizejs/vite-plugin`.
+For the full Rust-native CLI (`build`, `fmt`, `check`, `lsp`, `ide`), install the Rust `vize`
+binary with `cargo install vize`.
 
 ## Installation
 
 ```bash
-# Install globally
-npm install -g vize
-
-# Or add it to a project
-npm install -D vize
-
-# Or install from GitHub
-npm install -g github:ubugeeei/vize
+pnpm add -D vize
 ```
 
-If you use `@vizejs/vite-plugin` and want one shared config for both the plugin and the `vize`
-CLI, install both packages in the project and put your config in `vize.config.*`.
+## CLI
 
-## Usage
+The npm CLI currently exposes `lint`:
 
 ```bash
-vize [COMMAND] [OPTIONS]
+pnpm exec vize lint src
+pnpm exec vize lint --preset opinionated --help-level short src
 ```
 
-| Command | Description                           |
-| ------- | ------------------------------------- |
-| `build` | Compile Vue SFC files (default)       |
-| `fmt`   | Format Vue SFC files                  |
-| `lint`  | Lint Vue SFC files                    |
-| `check` | Type check Vue SFC files              |
-| `musea` | Start component gallery server        |
-| `lsp`   | Start Language Server Protocol server |
-
-```bash
-vize --help           # Show help
-vize <command> --help # Show command-specific help
-```
-
-## Config
-
-`vize` looks for these files in the project root:
+Shared config discovery is supported for the npm CLI:
 
 - `vize.config.ts`
 - `vize.config.js`
 - `vize.config.mjs`
 - `vize.config.pkl`
 - `vize.config.json`
-
-TypeScript config:
 
 ```ts
 import { defineConfig } from "vize";
@@ -60,69 +42,29 @@ export default defineConfig({
 });
 ```
 
-PKL config:
+Override config discovery with `--config`, or disable it with `--no-config`.
 
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
+## Programmatic Config Helpers
 
-linter {
-  preset = "opinionated"
-}
+```ts
+import { defineConfig, loadConfig } from "vize";
+
+export default defineConfig({
+  linter: {
+    preset: "happy-path",
+  },
+});
+
+const config = await loadConfig(process.cwd());
 ```
 
-JSON config with schema:
+## Related Packages
 
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "linter": {
-    "preset": "opinionated"
-  }
-}
-```
-
-The npm CLI currently applies shared config to the `lint` command. You can override discovery with
-`vize lint --config path/to/vize.config.ts` or skip config loading with `vize lint --no-config`.
-
-LSP capabilities are opt-in so Vize can be introduced alongside existing Vue editor tooling:
-
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "lsp": {
-    "lint": true,
-    "typecheck": false,
-    "editor": false,
-    "formatting": false
-  }
-}
-```
-
-## Examples
-
-```bash
-vize                              # Compile ./**/*.vue to ./dist
-vize build src/**/*.vue -o out    # Custom input/output
-vize build --ssr                  # SSR mode
-vize build --profile              # Parse, transform, codegen, and I/O profile
-vize fmt --check                  # Check formatting
-vize fmt --check --profile        # Formatter timing profile
-vize lint --fix                   # Auto-fix lint issues
-vize lint --profile               # Rule hook, Croquis, and type-aware timing profile
-vize check --strict               # Strict type checking
-vize check --profile src          # Virtual TS, Croquis, and Corsa timing profile
-```
-
-Profile output includes hot files and internal operation timings, so compiler, linter, typecheck,
-Croquis, and Corsa costs are visible in the same report style.
-
-## Alternative Installation
-
-If npm installation fails, you can install via Cargo:
-
-```bash
-cargo install vize
-```
+- `@vizejs/vite-plugin`
+- `@vizejs/native`
+- `@vizejs/wasm`
+- `@vizejs/nuxt`
+- `@vizejs/vite-plugin-musea`
 
 ## License
 

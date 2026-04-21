@@ -36,7 +36,7 @@ features:
     details: Multi-threaded compilation of 15,000 SFC files (36.9 MB) in under 500ms. Arena allocation, Rayon parallelism, zero GC.
     link: architecture/performance.md
   - title: Component Gallery
-    details: "Musea — a built-in Storybook alternative with art files, design tokens, props playground, a11y audit, and VRT."
+    details: "Musea — art files, docs, palette generation, a11y, and VRT tooling, with the gallery workflow provided by @vizejs/vite-plugin-musea."
     link: guide/musea.md
   - title: WASM Bindings
     details: Run the Vue compiler directly in the browser with WebAssembly. Power playgrounds, docs, and education tools.
