@@ -2,13 +2,27 @@
   "name": "oxlint-plugin-vize",
   "version": "0.49.0",
   "description": "Oxlint JS plugin bridge for Vize Patina",
-  "publishConfig": {
-    "access": "public"
+  "keywords": [
+    "lint",
+    "oxlint",
+    "plugin",
+    "vize",
+    "vue"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei/vize",
+    "directory": "npm/oxlint-plugin-vize"
   },
-  "type": "module",
   "bin": {
     "oxlint-vize": "bin/oxlint-vize"
   },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "type": "module",
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "exports": {
@@ -17,10 +31,9 @@
       "types": "./dist/index.d.mts"
     }
   },
-  "files": [
-    "bin",
-    "dist"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "vp pack",
     "test": "vp pack && node --experimental-strip-types src/test.ts",
@@ -28,24 +41,14 @@
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ubugeeei/vize",
-    "directory": "npm/oxlint-plugin-vize"
-  },
-  "keywords": [
-    "oxlint",
-    "plugin",
-    "vue",
-    "vize",
-    "lint"
-  ],
-  "license": "MIT",
-  "engines": {
-    "node": ">=24"
-  },
   "dependencies": {
     "@oxlint/plugins": "^1.53.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@vizejs/native": "workspace:*",
+    "typescript": "~5.6.0",
+    "vite-plus": "catalog:"
   },
   "optionalDependencies": {
     "@vizejs/native-darwin-arm64": "0.48.0",
@@ -57,10 +60,7 @@
     "@vizejs/native-win32-arm64-msvc": "0.48.0",
     "@vizejs/native-win32-x64-msvc": "0.48.0"
   },
-  "devDependencies": {
-    "@vizejs/native": "workspace:*",
-    "@types/node": "^22.0.0",
-    "typescript": "~5.6.0",
-    "vite-plus": "catalog:"
+  "engines": {
+    "node": ">=24"
   }
 }

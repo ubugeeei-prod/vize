@@ -11,7 +11,7 @@ import {
 
 const themeDir = fileURLToPath(new URL(".", import.meta.url));
 
-test("buildDocsBackgroundScript inlines the shared vein bootstrap", () => {
+void test("buildDocsBackgroundScript inlines the shared vein bootstrap", () => {
   const script = buildDocsBackgroundScript(themeDir);
   const prefix = `${script.split("\n").slice(0, 8).join("\n")}\n`;
   const snapshotPath = resolve(themeDir, "__snapshots__", "background-script-prefix.snap");
@@ -22,7 +22,7 @@ test("buildDocsBackgroundScript inlines the shared vein bootstrap", () => {
   assert.match(script, /getElementById\("vein-canvas"\)/);
 });
 
-test("createDocsBackgroundHtml reuses the shared canvas id", () => {
+void test("createDocsBackgroundHtml reuses the shared canvas id", () => {
   assert.equal(
     createDocsBackgroundHtml(),
     `<canvas id="${docsBackgroundCanvasId}" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>`,

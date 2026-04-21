@@ -62,6 +62,10 @@ async function loadVaporCompiler() {
   return _compileVaporFn;
 }
 
+function formatUnknownError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function compileVapor(source: string, _options?: Record<string, any>): string {
   if (!_compileVaporFn) {
     return `// @vue/compiler-vapor not loaded`;
@@ -73,25 +77,21 @@ function compileVapor(source: string, _options?: Record<string, any>): string {
     });
     return result.code;
   } catch (e) {
-    return `// Compile error: ${e}`;
+    return `// Compile error: ${formatUnknownError(e)}`;
   }
 }
 
-function compileSFC(source: string, filename: string = "test.vue", isTS: boolean = false): string {
+function compileSFC(source: string, filename: string = "test.vue"): string {
   const { descriptor, errors } = parseSFC(source, { filename });
 
   if (errors.length > 0) {
     return `Parse errors: ${errors.map((e) => e.message).join(", ")}`;
   }
 
-  // Detect if script is TypeScript
-  const scriptLang = descriptor.scriptSetup?.lang || descriptor.script?.lang;
-  const actualIsTS = isTS || scriptLang === "ts" || scriptLang === "tsx";
-
   let code = "";
 
   // Compile template if present
-  let templateResult: ReturnType<typeof compileTemplate> | null = null;
+  let templateResult: { code: string } | null = null;
   if (descriptor.template) {
     const bindings = descriptor.scriptSetup
       ? compileScript(descriptor, {
@@ -203,7 +203,7 @@ function processFixture(fixturePath: string, outputPath: string) {
       results.push({
         name: testCase.name,
         input: testCase.input,
-        output: `Compile error: ${error}`,
+        output: `Compile error: ${formatUnknownError(error)}`,
         mode,
       });
     }
@@ -266,4 +266,7 @@ async function main() {
   }
 }
 
-main();
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

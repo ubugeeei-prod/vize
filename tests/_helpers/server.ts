@@ -108,7 +108,8 @@ export function waitForServerReady(
       reject(new Error(reason));
     }
 
-    const stripAnsi = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, "");
+    const ansiPattern = new RegExp(String.raw`\u001b\[[0-9;]*m`, "g");
+    const stripAnsi = (s: string) => s.replace(ansiPattern, "");
     const onData = (data: Buffer) => {
       const text = stripAnsi(data.toString());
       if (readyPattern.test(text)) {

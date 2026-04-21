@@ -1,4 +1,24 @@
+import { spawnSync } from "node:child_process";
 import type { Page } from "@playwright/test";
+
+export function assertParsesAsModule(source: string, fileLabel: string): void {
+  const result = spawnSync(process.execPath, ["--input-type=module", "--check"], {
+    encoding: "utf-8",
+    input: source,
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  if (result.status !== 0) {
+    const details =
+      result.stderr.trim() ||
+      result.stdout.trim() ||
+      `node --check exited with status ${result.status}`;
+    throw new Error(`Invalid JS in ${fileLabel}: ${details}`);
+  }
+}
 
 export async function collectConsoleErrors(page: Page, appName: string): Promise<string[]> {
   const errors: string[] = [];

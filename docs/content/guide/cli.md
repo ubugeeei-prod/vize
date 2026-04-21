@@ -30,16 +30,16 @@ vize [COMMAND]
 
 When invoked without a command, `vize` defaults to `build`.
 
-| Command        | Description                                      |
-| -------------- | ------------------------------------------------ |
-| `build`        | Compile Vue SFC files                            |
-| `fmt`          | Format Vue SFC files                             |
-| `lint`         | Lint Vue SFC files                               |
-| `check`        | Type check Vue SFC, TS, TSX, and `.d.ts` inputs  |
-| `check-server` | Start the Unix JSON-RPC typecheck server         |
-| `musea`        | Musea subcommands and scaffolding                |
-| `lsp`          | Start the language server                        |
-| `ide`          | Install or manage editor integrations            |
+| Command        | Description                                     |
+| -------------- | ----------------------------------------------- |
+| `build`        | Compile Vue SFC files                           |
+| `fmt`          | Format Vue SFC files                            |
+| `lint`         | Lint Vue SFC files                              |
+| `check`        | Type check Vue SFC, TS, TSX, and `.d.ts` inputs |
+| `check-server` | Start the Unix JSON-RPC typecheck server        |
+| `musea`        | Musea subcommands and scaffolding               |
+| `lsp`          | Start the language server                       |
+| `ide`          | Install or manage editor integrations           |
 
 ## Build
 
@@ -51,15 +51,15 @@ vize build --profile src
 
 Key options:
 
-| Option            | Description                                                     |
-| ----------------- | --------------------------------------------------------------- |
-| `-o, --output`    | Output directory                                                |
-| `-f, --format`    | Output format: `js`, `json`, `stats`                            |
-| `--ssr`           | Enable SSR compilation                                          |
-| `--script-ext`    | `preserve` or `downcompile`                                     |
-| `-j, --threads`   | Thread count override                                           |
-| `--profile`       | Print timing profile                                            |
-| `--continue-on-error` | Keep compiling and report failures at the end               |
+| Option                | Description                                   |
+| --------------------- | --------------------------------------------- |
+| `-o, --output`        | Output directory                              |
+| `-f, --format`        | Output format: `js`, `json`, `stats`          |
+| `--ssr`               | Enable SSR compilation                        |
+| `--script-ext`        | `preserve` or `downcompile`                   |
+| `-j, --threads`       | Thread count override                         |
+| `--profile`           | Print timing profile                          |
+| `--continue-on-error` | Keep compiling and report failures at the end |
 
 ## Format
 
@@ -70,20 +70,20 @@ vize fmt --write src
 
 Key options:
 
-| Option                             | Description |
-| ---------------------------------- | ----------- |
-| `--check`                          | Report files that would change |
-| `-w, --write`                      | Write formatted output |
-| `--single-quote`                   | Toggle string quote style |
-| `--print-width`                    | Maximum line width |
-| `--tab-width`                      | Indentation width |
-| `--use-tabs`                       | Toggle tabs vs spaces |
-| `--no-semi`                        | Omit semicolons |
-| `--sort-attributes`                | Sort template attributes |
-| `--single-attribute-per-line`      | Put one attribute per line |
-| `--max-attributes-per-line`        | Wrap after a given attribute count |
+| Option                             | Description                                          |
+| ---------------------------------- | ---------------------------------------------------- |
+| `--check`                          | Report files that would change                       |
+| `-w, --write`                      | Write formatted output                               |
+| `--single-quote`                   | Toggle string quote style                            |
+| `--print-width`                    | Maximum line width                                   |
+| `--tab-width`                      | Indentation width                                    |
+| `--use-tabs`                       | Toggle tabs vs spaces                                |
+| `--no-semi`                        | Omit semicolons                                      |
+| `--sort-attributes`                | Sort template attributes                             |
+| `--single-attribute-per-line`      | Put one attribute per line                           |
+| `--max-attributes-per-line`        | Wrap after a given attribute count                   |
 | `--normalize-directive-shorthands` | Normalize `v-bind:` / `v-on:` / `v-slot:` shorthands |
-| `--profile`                        | Print timing profile |
+| `--profile`                        | Print timing profile                                 |
 
 ## Lint
 
@@ -95,15 +95,15 @@ vize lint --help-level short src
 
 Key options:
 
-| Option                | Description |
-| --------------------- | ----------- |
-| `--fix`               | Reserved for future autofix support |
-| `-f, --format`        | Output format: `text` or `json` |
-| `--max-warnings`      | Fail when warnings exceed the limit |
-| `-q, --quiet`         | Show summary only |
-| `--help-level`        | `full`, `short`, or `none` |
-| `--preset`            | `happy-path`, `opinionated`, `essential`, or `nuxt` |
-| `--profile`           | Print timing profile |
+| Option           | Description                                         |
+| ---------------- | --------------------------------------------------- |
+| `--fix`          | Reserved for future autofix support                 |
+| `-f, --format`   | Output format: `text` or `json`                     |
+| `--max-warnings` | Fail when warnings exceed the limit                 |
+| `-q, --quiet`    | Show summary only                                   |
+| `--help-level`   | `full`, `short`, or `none`                          |
+| `--preset`       | `happy-path`, `opinionated`, `essential`, or `nuxt` |
+| `--profile`      | Print timing profile                                |
 
 ## Check
 
@@ -119,18 +119,18 @@ When no explicit paths are given, `vize check` uses `tsconfig.json` `files` / `i
 
 Key options:
 
-| Option                    | Description |
-| ------------------------- | ----------- |
-| `-s, --socket`            | Connect to a running `check-server` |
-| `--tsconfig`              | Override `tsconfig.json` |
-| `-f, --format`            | Output format: `text` or `json` |
-| `--show-virtual-ts`       | Print generated virtual TypeScript |
-| `-q, --quiet`             | Show summary only |
-| `--profile`               | Write profile artifacts under `node_modules/.vize` |
-| `--corsa-path`            | Override the Corsa executable path |
-| `--servers`               | Parallel Corsa worker count |
-| `--declaration`           | Emit `.d.ts` output |
-| `--declaration-dir`       | Output directory for emitted declarations |
+| Option              | Description                                        |
+| ------------------- | -------------------------------------------------- |
+| `-s, --socket`      | Connect to a running `check-server`                |
+| `--tsconfig`        | Override `tsconfig.json`                           |
+| `-f, --format`      | Output format: `text` or `json`                    |
+| `--show-virtual-ts` | Print generated virtual TypeScript                 |
+| `-q, --quiet`       | Show summary only                                  |
+| `--profile`         | Write profile artifacts under `node_modules/.vize` |
+| `--corsa-path`      | Override the Corsa executable path                 |
+| `--servers`         | Parallel Corsa worker count                        |
+| `--declaration`     | Emit `.d.ts` output                                |
+| `--declaration-dir` | Output directory for emitted declarations          |
 
 ## Musea
 

@@ -5,7 +5,7 @@ import { npmxApp } from "../../_helpers/apps.ts";
 const app = npmxApp;
 const VITE_PLUS_BIN = `${process.env.HOME ?? ""}/.vite-plus/bin`;
 
-describe(`${app.name} build`, () => {
+void describe(`${app.name} build`, () => {
   before(() => {
     if (!process.env.RUN_BUILD_TESTS) {
       console.log("Skipping: build tests are opt-in (RUN_BUILD_TESTS=1)");
@@ -14,7 +14,7 @@ describe(`${app.name} build`, () => {
     if (app.setup) app.setup();
   });
 
-  it("build succeeds", () => {
+  void it("build succeeds", () => {
     const build = app.build!;
     const cmd = `${build.command} ${build.args.join(" ")}`;
     console.log(`Running: ${cmd} (cwd: ${app.cwd})`);

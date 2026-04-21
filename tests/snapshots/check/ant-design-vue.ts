@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = antDesignVueApp;
 
-describe(`${app.name} check (type checker)`, () => {
+void describe(`${app.name} check (type checker)`, () => {
   before(() => {
     if (!fs.existsSync(VIZE_BIN) || !fs.existsSync(CORSA_BIN)) {
       console.log(`Skipping: vize=${fs.existsSync(VIZE_BIN)}, corsa=${fs.existsSync(CORSA_BIN)}`);
@@ -21,7 +21,7 @@ describe(`${app.name} check (type checker)`, () => {
 
   // TODO: Corsa LSP deadlocks on ant-design-vue (731 files).
   // Unblock once the Corsa hang is fixed.
-  it.skip("vize check does not crash and snapshot matches", () => {
+  void it.skip("vize check does not crash and snapshot matches", () => {
     const checkConfig = app.check!;
     const patterns = checkConfig.patterns.map((p) => `'${p}'`).join(" ");
     const cmd = `${VIZE_BIN} check ${patterns} --format json --quiet --corsa-path '${CORSA_BIN}'`;

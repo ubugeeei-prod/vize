@@ -35,20 +35,20 @@ existing Vue tooling.
 
 ### Common Settings
 
-| Setting                        | Purpose |
-| ----------------------------- | ------- |
-| `vize.enable`                 | Enable the extension and language server |
-| `vize.serverPath`             | Override the `vize` executable path |
-| `vize.lint.enable`            | Enable lint diagnostics |
-| `vize.typecheck.enable`       | Enable type-aware diagnostics and backend features |
-| `vize.editor.enable`          | Enable the editor assistance bundle |
-| `vize.formatting.enable`      | Enable document formatting |
-| `vize.definition.enable`      | Enable go-to-definition |
-| `vize.references.enable`      | Enable references |
-| `vize.hover.enable`           | Enable hover |
-| `vize.codeActions.enable`     | Enable lint quick fixes |
-| `vize.semanticTokens.enable`  | Enable semantic tokens |
-| `vize.trace.server`           | Trace LSP communication |
+| Setting                      | Purpose                                            |
+| ---------------------------- | -------------------------------------------------- |
+| `vize.enable`                | Enable the extension and language server           |
+| `vize.serverPath`            | Override the `vize` executable path                |
+| `vize.lint.enable`           | Enable lint diagnostics                            |
+| `vize.typecheck.enable`      | Enable type-aware diagnostics and backend features |
+| `vize.editor.enable`         | Enable the editor assistance bundle                |
+| `vize.formatting.enable`     | Enable document formatting                         |
+| `vize.definition.enable`     | Enable go-to-definition                            |
+| `vize.references.enable`     | Enable references                                  |
+| `vize.hover.enable`          | Enable hover                                       |
+| `vize.codeActions.enable`    | Enable lint quick fixes                            |
+| `vize.semanticTokens.enable` | Enable semantic tokens                             |
+| `vize.trace.server`          | Trace LSP communication                            |
 
 ### What the Extension Uses
 

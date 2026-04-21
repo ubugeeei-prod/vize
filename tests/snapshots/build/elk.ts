@@ -5,11 +5,12 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { elkApp, VIZE_BIN } from "../../_helpers/apps.ts";
+import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = elkApp;
 
-describe(`${app.name} build (compiler)`, () => {
+void describe(`${app.name} build (compiler)`, () => {
   before(() => {
     if (!fs.existsSync(VIZE_BIN)) {
       console.log(`Skipping: vize binary not found at ${VIZE_BIN}`);
@@ -17,7 +18,7 @@ describe(`${app.name} build (compiler)`, () => {
     }
   });
 
-  it("vize build compiles without errors", () => {
+  void it("vize build compiles without errors", () => {
     const cwd = app.check!.cwd; // same patterns as check
     const patterns = app.check!.patterns.map((p) => `'${p}'`).join(" ");
     const outDir = path.join(__dirname, "__snapshots__", `${app.name}-build-output`);
@@ -43,7 +44,7 @@ describe(`${app.name} build (compiler)`, () => {
     assert.ok(jsFiles.length > 0, "should produce .js output files");
   });
 
-  it("compiled output is valid JavaScript", () => {
+  void it("compiled output is valid JavaScript", () => {
     const outDir = path.join(__dirname, "__snapshots__", `${app.name}-build-output`);
     if (!fs.existsSync(outDir)) {
       assert.fail("output directory does not exist - run build test first");
@@ -54,23 +55,11 @@ describe(`${app.name} build (compiler)`, () => {
       .filter((f) => String(f).endsWith(".js"))
       .slice(0, 10); // Check first 10 files
 
-    for (const file of jsFiles) {
-      const filePath = path.join(outDir, String(file));
+    for (const entry of jsFiles) {
+      const file = String(entry);
+      const filePath = path.join(outDir, file);
       const content = fs.readFileSync(filePath, "utf-8");
-
-      // Basic syntax check: try parsing with node's vm module
-      try {
-        new Function(content);
-      } catch (e: any) {
-        // Allow import/export syntax errors (expected in ESM)
-        if (
-          !e.message.includes("Cannot use import") &&
-          !e.message.includes("Unexpected token 'export'") &&
-          !e.message.includes("Cannot use 'import.meta'")
-        ) {
-          assert.fail(`Invalid JS in ${file}: ${e.message}`);
-        }
-      }
+      assertParsesAsModule(content, file);
       console.log(`Valid: ${file}`);
     }
   });

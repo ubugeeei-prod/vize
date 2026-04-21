@@ -263,15 +263,18 @@ const benchmarkTasks = {
   "bench:rust": noCacheTask("cargo bench -p vize_atelier_sfc"),
 };
 
+const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
+  concurrencyLimit: 1,
+});
+
 const checkTasks = {
   check: task(runInPackages("check", checkedPackages, { concurrencyLimit: 1 }), {
     input: cacheInputs.jsChecks,
   }),
+  "check:repo": noCacheTask("vp check"),
   // The oxlint example intentionally exits non-zero for its default lint script,
   // so CI checks every package except that runnable failure-case fixture.
-  "check:ci": task(runInPackages("check", ciCheckedPackages, { concurrencyLimit: 1 }), {
-    input: cacheInputs.jsChecks,
-  }),
+  "check:ci": noCacheTask(`vp check && ${ciPackageCheckCommand}`),
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
   "check:rust": task("cargo check --workspace", { input: cacheInputs.rust }),
   "check:vscode-extension": noCacheTask(
@@ -287,7 +290,7 @@ const checkTasks = {
   "lint:rust": task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
   "lint:all": noCacheTask(runTasks("lint:rust", "check")),
   "fmt:check": noCacheTask(runTask("check")),
-  ci: noCacheTask(runTasks("fmt:all", "clippy", "test")),
+  ci: noCacheTask(runTasks("fmt:all", "clippy", "test", "check:ci")),
 };
 
 const releaseTasks = {
@@ -327,7 +330,11 @@ export default defineConfig({
     },
     outDir: "target/vp-build",
   },
+  fmt: {
+    ignorePatterns: ["**/__snapshots__/**", "**/__snapshot__/**", "**/__agent_only/**"],
+  },
   lint: {
+    ignorePatterns: ["**/__snapshots__/**", "**/__snapshot__/**", "**/__agent_only/**"],
     options: {
       typeAware: true,
     },

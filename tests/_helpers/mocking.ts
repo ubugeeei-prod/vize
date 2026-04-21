@@ -59,7 +59,7 @@ export async function mockRoute(
   response: { status?: number; body?: string; contentType?: string },
 ): Promise<void> {
   await page.route(pattern, (route) => {
-    route.fulfill({
+    return route.fulfill({
       status: response.status ?? 200,
       contentType: response.contentType ?? "application/json",
       body: response.body ?? "{}",
