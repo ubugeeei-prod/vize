@@ -13,18 +13,18 @@
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import fs from "node:fs";
 
-import type { VizeOptions, ConfigEnv } from "../types.js";
-import { createFilter } from "../utils/index.js";
-import { toBrowserImportPrefix } from "../virtual.js";
-import { isBuiltinDefine, createLogger } from "../transform.js";
-import { loadConfig, vizeConfigStore } from "../config.js";
-import { type VizePluginState, compileAll } from "./state.js";
-import { resolveIdHook } from "./resolve.js";
-import { loadHook, transformHook } from "./load.js";
-import { handleHotUpdateHook, handleGenerateBundleHook } from "./hmr.js";
-import { createVueCompatPlugin, createPostTransformPlugin } from "./compat.js";
+import type { VizeOptions, ConfigEnv } from "../types.ts";
+import { createFilter } from "../utils/index.ts";
+import { toBrowserImportPrefix } from "../virtual.ts";
+import { isBuiltinDefine, createLogger } from "../transform.ts";
+import { loadConfig, vizeConfigStore } from "../config.ts";
+import { type VizePluginState, compileAll } from "./state.ts";
+import { resolveIdHook } from "./resolve.ts";
+import { loadHook, transformHook } from "./load.ts";
+import { handleHotUpdateHook, handleGenerateBundleHook } from "./hmr.ts";
+import { createVueCompatPlugin, createPostTransformPlugin } from "./compat.ts";
 
-export type { VizePluginState } from "./state.js";
+export type { VizePluginState } from "./state.ts";
 
 export function vize(options: VizeOptions = {}): Plugin[] {
   const state: VizePluginState = {

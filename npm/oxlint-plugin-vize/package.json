@@ -42,23 +42,23 @@
     "fmt": "vp fmt --write src vite.config.ts"
   },
   "dependencies": {
-    "@oxlint/plugins": "^1.53.0"
+    "@oxlint/plugins": "catalog:linting"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/node": "catalog:typescript",
     "@vizejs/native": "workspace:*",
-    "typescript": "~5.6.0",
-    "vite-plus": "catalog:"
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack"
   },
   "optionalDependencies": {
-    "@vizejs/native-darwin-arm64": "0.48.0",
-    "@vizejs/native-darwin-x64": "0.48.0",
-    "@vizejs/native-linux-arm64-gnu": "0.48.0",
-    "@vizejs/native-linux-arm64-musl": "0.48.0",
-    "@vizejs/native-linux-x64-gnu": "0.48.0",
-    "@vizejs/native-linux-x64-musl": "0.48.0",
-    "@vizejs/native-win32-arm64-msvc": "0.48.0",
-    "@vizejs/native-win32-x64-msvc": "0.48.0"
+    "@vizejs/native-darwin-arm64": "catalog:native-binaries",
+    "@vizejs/native-darwin-x64": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-musl": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-musl": "catalog:native-binaries",
+    "@vizejs/native-win32-arm64-msvc": "catalog:native-binaries",
+    "@vizejs/native-win32-x64-msvc": "catalog:native-binaries"
   },
   "engines": {
     "node": ">=24"

@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import "./../test/setup.ts";
-import { applyRuleCloning } from "./ruleCloning.js";
+import { applyRuleCloning } from "./ruleCloning.ts";
 
 void describe("applyRuleCloning", () => {
   void test("does nothing when no vize loader is found", () => {

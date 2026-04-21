@@ -2,16 +2,16 @@
  * High-performance native Vite plugin for Vue SFC compilation powered by Vize.
  */
 
-export { vize } from "./plugin/index.js";
-export { defineConfig, loadConfig, vizeConfigStore } from "./config.js";
-export { rewriteStaticAssetUrls as __internal_rewriteStaticAssetUrls } from "./transform.js";
-export type { VizeOptions, CompiledModule, VizeConfig, LoadConfigOptions } from "./types.js";
+export { vize } from "./plugin/index.ts";
+export { defineConfig, loadConfig, vizeConfigStore } from "./config.ts";
+export { rewriteStaticAssetUrls as __internal_rewriteStaticAssetUrls } from "./transform.ts";
+export type { VizeOptions, CompiledModule, VizeConfig, LoadConfigOptions } from "./types.ts";
 
 // Test-only export for snapshot coverage (re-exported for backward compat).
-import { rewriteStaticAssetUrls } from "./transform.js";
+import { rewriteStaticAssetUrls } from "./transform.ts";
 export const __internal = {
   rewriteStaticAssetUrls,
 };
 
-import { vize } from "./plugin/index.js";
+import { vize } from "./plugin/index.ts";
 export default vize;

@@ -36,20 +36,20 @@ vize_musea = { workspace = true }
 vize_maestro = { workspace = true }
 
 # CLI
-clap = { version = "4.5", features = ["derive"] }
+clap.workspace = true
 
 # Directory walking with .gitignore support
-ignore = "0.4"
+ignore.workspace = true
 
 # Glob pattern matching
-glob = "0.3"
+glob.workspace = true
 
 # Multithreading
-rayon = "1.10"
+rayon.workspace = true
 
 # Async runtime (for LSP)
-tokio = { version = "1", features = ["rt-multi-thread"] }
-futures = "0.3"
+tokio = { workspace = true, features = ["rt-multi-thread"] }
+futures.workspace = true
 
 # Serialization (for JSON output)
 serde = { workspace = true }
@@ -65,14 +65,14 @@ oxc_span = { workspace = true }
 oxc_transformer = { workspace = true }
 
 # Regex for script language detection
-regex-lite = "0.1"
+regex-lite.workspace = true
 
 # PKL configuration language
-rpkl = "0.7"
+rpkl.workspace = true
 
 # Home/config directory detection
-dirs = "5.0"
+dirs.workspace = true
 
 [dev-dependencies]
-tempfile = "3"
+tempfile.workspace = true
 insta.workspace = true

@@ -14,29 +14,29 @@ native = ["vize_canon/native"]
 
 [dependencies]
 # LSP Framework
-tower-lsp = "0.20"
+tower-lsp.workspace = true
 # lsp-types is re-exported by tower-lsp, use that version
 
 # Async Runtime
-tokio = { version = "1", features = ["full"] }
-async-trait = "0.1"
+tokio = { workspace = true, features = ["full"] }
+async-trait.workspace = true
 
 # Text Processing
-ropey = "1.6"
+ropey.workspace = true
 
 # Serialization
 serde.workspace = true
 serde_json.workspace = true
-rpkl = "0.7"
+rpkl.workspace = true
 
 # Logging
-tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing.workspace = true
+tracing-subscriber.workspace = true
 
 # Utilities
-dashmap = "6"
-parking_lot = "0.12"
-ignore = "0.4"
+dashmap.workspace = true
+parking_lot.workspace = true
+ignore.workspace = true
 oxc_allocator.workspace = true
 oxc_ast.workspace = true
 oxc_ast_visit.workspace = true
@@ -57,4 +57,4 @@ vize_vitrine = { workspace = true, default-features = false }
 
 [dev-dependencies]
 insta.workspace = true
-tempfile = "3"
+tempfile.workspace = true

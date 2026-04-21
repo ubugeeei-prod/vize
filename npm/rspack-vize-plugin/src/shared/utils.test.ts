@@ -6,7 +6,7 @@ import {
   collectTemplateAssetUrls,
   isImportableUrl,
   stripCssCommentsForScoped,
-} from "./utils.js";
+} from "./utils.ts";
 
 void describe("extractCustomBlocks", () => {
   void test("extracts a simple <i18n> custom block", () => {

@@ -8,6 +8,10 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
     "declaration": true,
     "outDir": "./dist",
     "rootDir": "./src"

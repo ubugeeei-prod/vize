@@ -51,10 +51,10 @@
     "@vizejs/fresco-native": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@vue/runtime-core": "^3.5.0",
-    "typescript": "~5.6.0",
-    "vite-plus": "catalog:"
+    "@types/node": "catalog:typescript",
+    "@vue/runtime-core": "catalog:vue-stable",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack"
   },
   "peerDependencies": {
     "@vue/runtime-core": "^3.4.0"

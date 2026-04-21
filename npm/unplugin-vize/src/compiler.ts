@@ -5,8 +5,8 @@ import type {
   NormalizedVizeUnpluginOptions,
   CachedCompiledModule,
   SfcCompileResultNapi,
-} from "./types.js";
-import { extractStyleBlocks, generateScopeId } from "./style.js";
+} from "./types.ts";
+import { extractStyleBlocks, generateScopeId } from "./style.ts";
 
 const { compileSfc } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;

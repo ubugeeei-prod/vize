@@ -1,23 +1,23 @@
 import fs from "node:fs";
 import type { Compiler as WebpackCompiler } from "webpack";
 import { createUnplugin } from "unplugin";
-import { createFilter } from "./filter.js";
-import { compileVueModule } from "./compiler.js";
+import { createFilter } from "./filter.ts";
+import { compileVueModule } from "./compiler.ts";
 import {
   createVirtualStyleId,
   isVirtualStyleId,
   isVueFile,
   isVueStyleRequest,
   parseVueRequest,
-} from "./request.js";
-import { generateOutput, wrapScopedPreprocessorStyle } from "./style.js";
-import { stripTypeScript } from "./strip-types.js";
+} from "./request.ts";
+import { generateOutput, wrapScopedPreprocessorStyle } from "./style.ts";
+import { stripTypeScript } from "./strip-types.ts";
 import type {
   CachedCompiledModule,
   CompiledModule,
   NormalizedVizeUnpluginOptions,
   VizeUnpluginOptions,
-} from "./types.js";
+} from "./types.ts";
 
 function normalizeOptions(rawOptions: VizeUnpluginOptions = {}): NormalizedVizeUnpluginOptions {
   const isProduction = rawOptions.isProduction ?? process.env.NODE_ENV === "production";

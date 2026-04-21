@@ -5,14 +5,14 @@ import type {
   BatchFileInput,
   BatchCompileResultWithFiles,
   StyleBlockInfo,
-} from "./types.js";
+} from "./types.ts";
 import {
   buildCompileBatchOptions,
   buildCompileFileOptions,
   type CompileBatchOptions,
   type CompileFileOptions,
-} from "./compile-options.js";
-import { generateScopeId } from "./utils/index.js";
+} from "./compile-options.ts";
+import { generateScopeId } from "./utils/index.ts";
 
 const { compileSfc, compileSfcBatchWithResults } = native;
 

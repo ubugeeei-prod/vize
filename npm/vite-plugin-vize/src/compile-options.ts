@@ -1,5 +1,5 @@
-import type { BatchCompileOptionsNapi, SfcCompileOptionsNapi } from "./types.js";
-import { generateScopeId } from "./utils/index.js";
+import type { BatchCompileOptionsNapi, SfcCompileOptionsNapi } from "./types.ts";
+import { generateScopeId } from "./utils/index.ts";
 
 export interface CompileFileOptions {
   sourceMap: boolean;

@@ -51,26 +51,26 @@ napi = { workspace = true, optional = true }
 napi-derive = { workspace = true, optional = true }
 
 # Glob pattern (for batch compile)
-glob = { version = "0.3", optional = true }
+glob = { workspace = true, optional = true }
 
 # Multithreading (for batch compile)
-rayon = { version = "1.10", optional = true }
+rayon = { workspace = true, optional = true }
 
 # Directory walking with .gitignore support (for lint)
-ignore = { version = "0.4", optional = true }
+ignore = { workspace = true, optional = true }
 
 # WASM (optional)
 wasm-bindgen = { workspace = true, optional = true }
 serde-wasm-bindgen = { workspace = true, optional = true }
 js-sys = { workspace = true, optional = true }
-web-sys = { version = "0.3", features = ["console"], optional = true }
+web-sys = { workspace = true, optional = true }
 
 # For WASM compatibility with getrandom
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.3", features = ["wasm_js"] }
+getrandom = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.build-dependencies]
-napi-build = "2.0"
+napi-build.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

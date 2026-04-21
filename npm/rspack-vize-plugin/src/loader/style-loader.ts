@@ -3,8 +3,8 @@
 import type { LoaderContext } from "@rspack/core";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { extractStyleBlocks } from "../shared/utils.js";
-import type { VizeStyleLoaderOptions } from "../types/index.js";
+import { extractStyleBlocks } from "../shared/utils.ts";
+import type { VizeStyleLoaderOptions } from "../types/index.ts";
 
 export default function vizeStyleLoader(
   this: LoaderContext<VizeStyleLoaderOptions>,

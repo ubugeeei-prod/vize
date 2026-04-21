@@ -10,8 +10,8 @@ import assert from "node:assert";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { generateOutput } from "./utils/index.js";
-import { resolveCssImports } from "./utils/css.js";
+import { generateOutput } from "./utils/index.ts";
+import { resolveCssImports } from "./utils/css.ts";
 
 // =============================================================================
 // Test: Non-script-setup SFC _sfc_main duplication fix

@@ -7,7 +7,7 @@ import type {
   CustomBlockInfo,
   SfcSrcInfo,
   TemplateAssetUrl,
-} from "../types/index.js";
+} from "../types/index.ts";
 
 /** Generate scope ID (8-char SHA256 prefix). Uses relative path for cross-env consistency. */
 export function generateScopeId(

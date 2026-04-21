@@ -5,7 +5,7 @@
  * provides the debug logger.
  */
 
-import { escapeRegExp, type DynamicImportAliasRule } from "./virtual.js";
+import { escapeRegExp, type DynamicImportAliasRule } from "./virtual.ts";
 
 /**
  * Rewrite static asset URLs in compiled template output.

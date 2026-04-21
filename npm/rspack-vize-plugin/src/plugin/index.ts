@@ -1,9 +1,9 @@
 /** Vize Rspack Plugin — injects Vue feature flags, auto-clones style rules, dev logging. */
 
 import type { Compiler, RuleSetRule } from "@rspack/core";
-import type { VizeRspackPluginOptions } from "../types/index.js";
-import { matchesPattern } from "../shared/utils.js";
-import { applyRuleCloning } from "./ruleCloning.js";
+import type { VizeRspackPluginOptions } from "../types/index.ts";
+import { matchesPattern } from "../shared/utils.ts";
+import { applyRuleCloning } from "./ruleCloning.ts";
 
 export class VizePlugin {
   static readonly name = "VizePlugin";

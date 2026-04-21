@@ -43,18 +43,18 @@
     "fmt": "vp fmt --write src vite.config.ts"
   },
   "dependencies": {
-    "@nuxt/kit": "^4.0.0",
+    "@nuxt/kit": "catalog:integrations",
     "@vizejs/musea-nuxt": "workspace:*",
     "@vizejs/vite-plugin": "workspace:*",
     "@vizejs/vite-plugin-musea": "workspace:*",
     "vize": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0"
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable",
+    "vue-router": "catalog:vue-stable"
   },
   "peerDependencies": {
     "nuxt": "^3.0.0 || ^4.0.0"

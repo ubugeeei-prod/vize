@@ -2,13 +2,13 @@ import type { HmrContext } from "vite";
 import fs from "node:fs";
 import path from "node:path";
 
-import type { VizePluginState } from "./state.js";
-import { getCompileOptionsForRequest } from "./state.js";
-import { compileFile } from "../compiler.js";
-import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.js";
-import { hasDelegatedStyles } from "../utils/index.js";
-import { toVirtualId } from "../virtual.js";
-import { resolveCssImports } from "../utils/css.js";
+import type { VizePluginState } from "./state.ts";
+import { getCompileOptionsForRequest } from "./state.ts";
+import { compileFile } from "../compiler.ts";
+import { detectHmrUpdateType, hasHmrChanges, type HmrUpdateType } from "../hmr.ts";
+import { hasDelegatedStyles } from "../utils/index.ts";
+import { toVirtualId } from "../virtual.ts";
+import { resolveCssImports } from "../utils/css.ts";
 
 export async function handleHotUpdateHook(
   state: VizePluginState,

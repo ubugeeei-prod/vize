@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 
-import type { VizePluginState } from "./state.js";
-import { getBoundaryPlaceholderCode } from "./load.js";
-import { loadHook } from "./load.js";
-import { toVirtualId } from "../virtual.js";
+import type { VizePluginState } from "./state.ts";
+import { getBoundaryPlaceholderCode } from "./load.ts";
+import { loadHook } from "./load.ts";
+import { toVirtualId } from "../virtual.ts";
 
 const ssrClientPlaceholder = getBoundaryPlaceholderCode("/src/Foo.client.vue", true);
 assert.ok(ssrClientPlaceholder, "SSR should stub .client.vue components");

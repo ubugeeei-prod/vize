@@ -40,11 +40,11 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0"
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable",
+    "vue-router": "catalog:vue-stable"
   },
   "peerDependencies": {
     "vite": "^8.0.0",

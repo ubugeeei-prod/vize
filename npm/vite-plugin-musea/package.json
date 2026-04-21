@@ -63,24 +63,24 @@
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "pngjs": "^7.0.0"
+    "pngjs": "catalog:content"
   },
   "devDependencies": {
-    "@mdi/js": "^7.4.47",
-    "@tsdown/css": "^0.21.2",
-    "@types/node": "^22.14.0",
-    "@types/pngjs": "^6.0.5",
-    "@vitejs/plugin-vue": "^6.0.4",
+    "@mdi/js": "catalog:content",
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "@types/pngjs": "catalog:content",
+    "@vitejs/plugin-vue": "catalog:vite-stack",
     "@vizejs/vite-plugin": "workspace:*",
-    "highlight.js": "^11.11.1",
-    "marked": "^17.0.1",
-    "marked-highlight": "^2.2.3",
-    "monaco-editor": "^0.52.0",
-    "typescript": "^5.7.0",
-    "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0"
+    "highlight.js": "catalog:content",
+    "marked": "catalog:content",
+    "marked-highlight": "catalog:content",
+    "monaco-editor": "catalog:content",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable",
+    "vue-router": "catalog:vue-stable"
   },
   "peerDependencies": {
     "@vizejs/vite-plugin": "workspace:*",

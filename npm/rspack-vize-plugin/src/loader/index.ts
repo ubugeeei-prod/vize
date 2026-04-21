@@ -3,14 +3,14 @@
 import type { LoaderContext } from "@rspack/core";
 import fs from "node:fs";
 import path from "node:path";
-import { compileFile, generateOutput } from "../shared/compiler.js";
+import { compileFile, generateOutput } from "../shared/compiler.ts";
 import {
   matchesPattern,
   extractSrcInfo,
   inlineSrcBlocks,
   extractCustomBlocks,
-} from "../shared/utils.js";
-import type { VizeLoaderOptions } from "../types/index.js";
+} from "../shared/utils.ts";
+import type { VizeLoaderOptions } from "../types/index.ts";
 
 /** .ce.vue → custom element */
 const DEFAULT_CE_PATTERN = /\.ce\.vue$/;

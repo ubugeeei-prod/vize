@@ -18,6 +18,6 @@
     "lint:unused-vars-probe": "vp exec node ../../npm/oxlint-plugin-vize/dist/cli.mjs -c .oxlintrc.unused-vars.json -f stylish src/UnusedVarProbe.vue"
   },
   "devDependencies": {
-    "oxlint": "^1.42.0"
+    "oxlint": "catalog:linting"
   }
 }

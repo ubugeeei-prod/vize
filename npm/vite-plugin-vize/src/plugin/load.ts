@@ -4,10 +4,10 @@ import { pathToFileURL } from "node:url";
 import type { TransformResult } from "vite";
 import { transformWithOxc } from "vite";
 
-import { getCompileOptionsForRequest, getEnvironmentCache, type VizePluginState } from "./state.js";
-import { compileFile } from "../compiler.js";
-import { generateOutput, hasDelegatedStyles } from "../utils/index.js";
-import { resolveCssImports } from "../utils/css.js";
+import { getCompileOptionsForRequest, getEnvironmentCache, type VizePluginState } from "./state.ts";
+import { compileFile } from "../compiler.ts";
+import { generateOutput, hasDelegatedStyles } from "../utils/index.ts";
+import { resolveCssImports } from "../utils/css.ts";
 import {
   isVizeVirtual,
   isVizeSsrVirtual,
@@ -15,8 +15,8 @@ import {
   LEGACY_VIZE_PREFIX,
   RESOLVED_CSS_MODULE,
   rewriteDynamicTemplateImports,
-} from "../virtual.js";
-import { rewriteStaticAssetUrls, applyDefineReplacements } from "../transform.js";
+} from "../virtual.ts";
+import { rewriteStaticAssetUrls, applyDefineReplacements } from "../transform.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({

@@ -11,13 +11,101 @@ packages:
   - "docs"
   - "tests"
   - "bench"
-catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-  vite-plus: latest
+
+catalogs:
+  # Shared repo and file-system utilities.
+  repo-tooling:
+    "@iarna/toml": "2.2.5"
+    glob: "13.0.6"
+    prettier: "3.8.3"
+    tinyglobby: "0.2.16"
+
+  # TypeScript toolchain shared across workspace packages.
+  typescript:
+    "@types/node": "25.6.0"
+    "@typescript/native-preview": "7.0.0-dev.20260421.1"
+    typescript: "6.0.3"
+
+  # Vite / Vite Plus stack and adjacent build-time plugins.
+  vite-stack:
+    vite: "npm:@voidzero-dev/vite-plus-core@0.1.19"
+    vitest: "npm:@voidzero-dev/vite-plus-test@0.1.19"
+    vite-plus: "0.1.19"
+    "@vitejs/plugin-vue": "6.0.6"
+    vite-node: "5.3.0"
+    vite-plugin-inspect: "11.3.3"
+    unplugin: "3.0.0"
+
+  # Stable Vue ecosystem packages used by shipping examples and integrations.
+  vue-stable:
+    vue: "3.5.32"
+    "@vue/runtime-core": "3.5.32"
+    "@vue/test-utils": "2.4.6"
+    vue-router: "4.6.4"
+
+  # Vue beta track used by the playground and benchmark harnesses.
+  vue-beta:
+    vue: "3.6.0-beta.10"
+    "@vue/compiler-sfc": "3.6.0-beta.10"
+    "@vue/compiler-vapor": "3.6.0-beta.10"
+
+  # Test runners and browser automation.
+  testing:
+    "@playwright/test": "1.59.1"
+    playwright: "1.59.1"
+
+  # Lint and formatting toolchain.
+  linting:
+    oxfmt: "0.46.0"
+    oxlint: "1.61.0"
+    "@oxlint/plugins": "1.61.0"
+
+  # Bundlers beyond the Vite stack.
+  bundlers:
+    "@rspack/cli": "1.7.11"
+    "@rspack/core": "1.7.11"
+    esbuild: "0.28.0"
+    rollup: "4.60.2"
+    webpack: "5.106.2"
+
+  # External framework integrations and native build helpers.
+  integrations:
+    "@modelcontextprotocol/sdk": "0.5.0"
+    "@napi-rs/cli": "3.6.2"
+    "@nuxt/kit": "4.4.2"
+    "@ox-content/vite-plugin": "0.13.0"
+
+  # Rendering / content tooling used by docs, playgrounds, and galleries.
+  content:
+    "@mdi/js": "7.4.47"
+    "@tsdown/css": "0.21.9"
+    "@types/pngjs": "6.0.5"
+    highlight.js: "11.11.1"
+    marked: "17.0.1"
+    marked-highlight: "2.2.4"
+    monaco-editor: "0.52.2"
+    pngjs: "7.0.0"
+    shiki: "1.29.2"
+    three: "0.183.1"
+
+  # JS-side OXC transform bridge.
+  oxc:
+    oxc-transform: "0.56.5"
+
+  # Published native binary packages that are installed optionally at runtime.
+  native-binaries:
+    "@vizejs/native-darwin-arm64": "0.49.0"
+    "@vizejs/native-darwin-x64": "0.49.0"
+    "@vizejs/native-linux-arm64-gnu": "0.49.0"
+    "@vizejs/native-linux-arm64-musl": "0.49.0"
+    "@vizejs/native-linux-x64-gnu": "0.49.0"
+    "@vizejs/native-linux-x64-musl": "0.49.0"
+    "@vizejs/native-win32-arm64-msvc": "0.49.0"
+    "@vizejs/native-win32-x64-msvc": "0.49.0"
+
 overrides:
-  vite: "catalog:"
-  vitest: "catalog:"
+  vite: "catalog:vite-stack"
+  vitest: "catalog:vite-stack"
 peerDependencyRules:
   allowAny:
     - vite

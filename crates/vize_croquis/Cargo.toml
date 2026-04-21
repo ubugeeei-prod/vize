@@ -24,6 +24,6 @@ oxc_span.workspace = true
 oxc_allocator.workspace = true
 
 [dev-dependencies]
-tempfile = "3.10"
+tempfile.workspace = true
 vize_armature.workspace = true
 insta.workspace = true

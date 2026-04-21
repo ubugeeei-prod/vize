@@ -11,7 +11,7 @@
     "test:check:fixtures": "node --test snapshots/check/typecheck-errors.ts snapshots/check/compiler-macros.ts snapshots/check/style-preprocessors.ts"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
-    "@types/node": "^25.3.3"
+    "@playwright/test": "catalog:testing",
+    "@types/node": "catalog:typescript"
   }
 }

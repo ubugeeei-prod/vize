@@ -20,7 +20,7 @@ export async function stripTypeScript(
   code: string,
   sourceMap: boolean,
 ): Promise<{ code: string; map: unknown }> {
-  const result = await transform(filePath, code, {
+  const result = transform(filePath, code, {
     lang: "ts",
     sourcemap: sourceMap,
     sourceType: "module",

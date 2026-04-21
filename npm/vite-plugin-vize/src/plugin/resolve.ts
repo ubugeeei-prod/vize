@@ -2,7 +2,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 
-import type { VizePluginState } from "./state.js";
+import type { VizePluginState } from "./state.ts";
 import {
   LEGACY_VIZE_PREFIX,
   VIRTUAL_CSS_MODULE,
@@ -12,7 +12,7 @@ import {
   toVirtualId,
   fromVirtualId,
   normalizeFsIdForBuild,
-} from "../virtual.js";
+} from "../virtual.ts";
 
 export function resolveVuePath(state: VizePluginState, id: string, importer?: string): string {
   let resolved: string;

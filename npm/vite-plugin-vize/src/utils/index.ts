@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
-import type { CompiledModule, StyleBlockInfo } from "../types.js";
-import { type HmrUpdateType, generateHmrCode } from "../hmr.js";
+import type { CompiledModule, StyleBlockInfo } from "../types.ts";
+import { type HmrUpdateType, generateHmrCode } from "../hmr.ts";
 
 // Re-export CSS utilities for backward compatibility
-export { resolveCssImports, type CssAliasRule } from "./css.js";
+export { resolveCssImports, type CssAliasRule } from "./css.ts";
 
 /** Known CSS preprocessor languages that must be delegated to Vite */
 const PREPROCESSOR_LANGS = new Set(["scss", "sass", "less", "stylus", "styl"]);

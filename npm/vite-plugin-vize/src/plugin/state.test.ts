@@ -4,7 +4,7 @@ import {
   diffPrecompileFiles,
   hasFileMetadataChanged,
   type PrecompileFileMetadata,
-} from "./state.js";
+} from "./state.ts";
 
 const previousMetadata = new Map<string, PrecompileFileMetadata>([
   ["/src/unchanged.vue", { mtimeMs: 10, size: 100 }],

@@ -1,16 +1,16 @@
 /** @vizejs/rspack-plugin — Rspack plugin for Vue SFC compilation powered by Vize. */
 
 // Plugin
-export { VizePlugin } from "./plugin/index.js";
-export { applyRuleCloning } from "./plugin/ruleCloning.js";
-export type { RuleCloningResult } from "./plugin/ruleCloning.js";
-export type { VizeRspackPluginOptions } from "./types/index.js";
+export { VizePlugin } from "./plugin/index.ts";
+export { applyRuleCloning } from "./plugin/ruleCloning.ts";
+export type { RuleCloningResult } from "./plugin/ruleCloning.ts";
+export type { VizeRspackPluginOptions } from "./types/index.ts";
 
 // Loaders (for direct import)
-export { default as vizeLoader } from "./loader/index.js";
-export { default as vizeStyleLoader } from "./loader/style-loader.js";
-export { default as vizeScopeLoader } from "./loader/scope-loader.js";
-export type { VizeLoaderOptions, VizeStyleLoaderOptions } from "./types/index.js";
+export { default as vizeLoader } from "./loader/index.ts";
+export { default as vizeStyleLoader } from "./loader/style-loader.ts";
+export { default as vizeScopeLoader } from "./loader/scope-loader.ts";
+export type { VizeLoaderOptions, VizeStyleLoaderOptions } from "./types/index.ts";
 
 // Shared utilities (optional export for advanced usage)
 export {
@@ -21,11 +21,11 @@ export {
   inlineSrcBlocks,
   addScopeToCssFallback,
   matchesPattern,
-} from "./shared/utils.js";
+} from "./shared/utils.ts";
 
-export { genHotReloadCode } from "./shared/hotReload.js";
+export { genHotReloadCode } from "./shared/hotReload.ts";
 
-export { compileFile, generateOutput, clearCompilationCache } from "./shared/compiler.js";
+export { compileFile, generateOutput, clearCompilationCache } from "./shared/compiler.ts";
 
 // Types
 export type {
@@ -36,4 +36,4 @@ export type {
   SfcCompileOptionsNapi,
   SfcCompileResultNapi,
   LoaderEntry,
-} from "./types/index.js";
+} from "./types/index.ts";

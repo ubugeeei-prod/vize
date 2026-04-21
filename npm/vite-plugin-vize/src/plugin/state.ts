@@ -6,13 +6,13 @@ import type { ViteDevServer } from "vite";
 import fs from "node:fs";
 import { glob } from "tinyglobby";
 
-import type { VizeOptions, CompiledModule } from "../types.js";
-import { compileBatch } from "../compiler.js";
-import { resolveCssImports, type CssAliasRule } from "../utils/css.js";
-import { hasDelegatedStyles } from "../utils/index.js";
-import { type DynamicImportAliasRule } from "../virtual.js";
-import { createLogger } from "../transform.js";
-import type { HmrUpdateType } from "../hmr.js";
+import type { VizeOptions, CompiledModule } from "../types.ts";
+import { compileBatch } from "../compiler.ts";
+import { resolveCssImports, type CssAliasRule } from "../utils/css.ts";
+import { hasDelegatedStyles } from "../utils/index.ts";
+import { type DynamicImportAliasRule } from "../virtual.ts";
+import { createLogger } from "../transform.ts";
+import type { HmrUpdateType } from "../hmr.ts";
 
 export interface PrecompileFileMetadata {
   mtimeMs: number;

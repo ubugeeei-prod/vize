@@ -3,14 +3,14 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
 import * as native from "@vizejs/native";
-import type { CompiledModule, SfcCompileOptionsNapi } from "../types/index.js";
+import type { CompiledModule, SfcCompileOptionsNapi } from "../types/index.ts";
 import {
   generateScopeId,
   extractStyleBlocks,
   extractCustomBlocks,
   collectTemplateAssetUrls,
-} from "./utils.js";
-import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.js";
+} from "./utils.ts";
+import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.ts";
 
 const { compileSfc } = native;
 

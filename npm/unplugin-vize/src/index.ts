@@ -1,2 +1,2 @@
-export { vizeUnplugin as default, vizeUnplugin } from "./unplugin.js";
-export type { VizeUnpluginOptions } from "./types.js";
+export { vizeUnplugin as default, vizeUnplugin } from "./unplugin.ts";
+export type { VizeUnpluginOptions } from "./types.ts";

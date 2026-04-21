@@ -3,8 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import webpack from "webpack";
 import "./test/setup.ts";
-import vize from "./webpack.js";
-import { normalizeSnapshot, prepareOutputDir, resolveFixturePath } from "./test/helpers.js";
+import vize from "./webpack.ts";
+import { normalizeSnapshot, prepareOutputDir, resolveFixturePath } from "./test/helpers.ts";
 
 function runWebpackCompiler(compiler: webpack.Compiler): Promise<webpack.Stats> {
   return new Promise((resolve, reject) => {

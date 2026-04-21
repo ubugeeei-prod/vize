@@ -8,12 +8,12 @@
     "preview": "vp preview"
   },
   "devDependencies": {
-    "@ox-content/vite-plugin": "^0.13.0",
+    "@ox-content/vite-plugin": "catalog:integrations",
     "@vizejs/vite-plugin": "workspace:*",
-    "playwright": "^1.52.0",
-    "three": "^0.183.1",
-    "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vue": "^3.4.0"
+    "playwright": "catalog:testing",
+    "three": "catalog:content",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
   }
 }

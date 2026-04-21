@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
-import type { CompiledModule } from "./types.js";
-import { detectHmrUpdateType, hasHmrChanges } from "./hmr.js";
+import type { CompiledModule } from "./types.ts";
+import { detectHmrUpdateType, hasHmrChanges } from "./hmr.ts";
 
 const baseModule: CompiledModule = {
   code: "export default {}",

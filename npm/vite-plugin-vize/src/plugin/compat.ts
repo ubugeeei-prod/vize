@@ -2,10 +2,10 @@ import type { Plugin, TransformResult } from "vite";
 import { transformWithOxc } from "vite";
 import { createRequire } from "node:module";
 
-import { getCompileOptionsForRequest, getEnvironmentCache, type VizePluginState } from "./state.js";
-import { compileFile } from "../compiler.js";
-import { generateOutput } from "../utils/index.js";
-import { applyDefineReplacements } from "../transform.js";
+import { getCompileOptionsForRequest, getEnvironmentCache, type VizePluginState } from "./state.ts";
+import { compileFile } from "../compiler.ts";
+import { generateOutput } from "../utils/index.ts";
+import { applyDefineReplacements } from "../transform.ts";
 
 export function createVueCompatPlugin(state: VizePluginState): Plugin {
   let compilerSfc: unknown = null;

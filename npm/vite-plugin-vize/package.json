@@ -38,19 +38,18 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "node --import tsx src/test.ts"
+    "test": "node src/test.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "tinyglobby": "^0.2.0",
+    "tinyglobby": "catalog:repo-tooling",
     "vize": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "tsx": "^4.21.0",
-    "typescript": "~5.6.0",
-    "vite": "catalog:",
-    "vite-plus": "catalog:"
+    "@types/node": "catalog:typescript",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
   },
   "peerDependencies": {
     "vite": "^8.0.0"

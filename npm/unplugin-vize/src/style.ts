@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
-import type { CompiledModule, StyleBlockInfo } from "./types.js";
+import type { CompiledModule, StyleBlockInfo } from "./types.ts";
 
 const PREPROCESSOR_LANGS = new Set(["scss", "sass", "less", "stylus", "styl"]);
 
