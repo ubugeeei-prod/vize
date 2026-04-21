@@ -94,8 +94,10 @@ const vizeDocsSyntax = (() => {
     "g",
   );
 
-  const vueApis = /\b(computed|defineEmits|defineExpose|defineModel|defineProps|defineSlots|inject|onMounted|onUnmounted|provide|reactive|ref|toRefs|watch|watchEffect)\b/g;
-  const builtinTypes = /\b(Promise|Record|Readonly|Partial|Pick|Omit|Exclude|Extract|any|boolean|never|null|number|object|string|symbol|undefined|unknown|void)\b/g;
+  const vueApis =
+    /\b(computed|defineEmits|defineExpose|defineModel|defineProps|defineSlots|inject|onMounted|onUnmounted|provide|reactive|ref|toRefs|watch|watchEffect)\b/g;
+  const builtinTypes =
+    /\b(Promise|Record|Readonly|Partial|Pick|Omit|Exclude|Extract|any|boolean|never|null|number|object|string|symbol|undefined|unknown|void)\b/g;
   const booleanLiterals = /\b(false|null|true|undefined)\b/g;
   const functionNames = /\b([A-Za-z_$][\w$]*)(?=\s*\()/g;
   const variables = /\b([A-Z][A-Za-z0-9_]*|[a-z][A-Za-z0-9_]*)(?=\s*[=,)\]}])/g;
@@ -123,9 +125,7 @@ const vizeDocsSyntax = (() => {
     "update",
   ];
   const shellSubcommandPattern = new RegExp(
-    "^([\\t ]*)(?:([$#])\\s*)?([A-Za-z][\\w./:-]*)(\\s+)(" +
-      shellSubcommands.join("|") +
-      ")\\b",
+    "^([\\t ]*)(?:([$#])\\s*)?([A-Za-z][\\w./:-]*)(\\s+)(" + shellSubcommands.join("|") + ")\\b",
     "gm",
   );
 
@@ -147,10 +147,7 @@ const vizeDocsSyntax = (() => {
   }
 
   function escapeHtml(value) {
-    return value
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;");
+    return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
   }
 
   function createStore() {
@@ -190,8 +187,7 @@ const vizeDocsSyntax = (() => {
     return replaceWithCallback(
       source,
       /(^|[^\w$-])(-?\d+(?:\.\d+)?(?:e[+-]?\d+)?\b)/gi,
-      (_, prefix, number) =>
-        `${escapeHtml(prefix)}${wrapToken("v-code__number", number)}`,
+      (_, prefix, number) => `${escapeHtml(prefix)}${wrapToken("v-code__number", number)}`,
       store,
     );
   }
@@ -209,8 +205,7 @@ const vizeDocsSyntax = (() => {
     result = replaceWithCallback(
       result,
       /(^|[^:])(\/\/.*$)/gm,
-      (_, prefix, comment) =>
-        `${escapeHtml(prefix)}${wrapToken("v-code__comment", comment)}`,
+      (_, prefix, comment) => `${escapeHtml(prefix)}${wrapToken("v-code__comment", comment)}`,
       store,
     );
     result = replaceWithClass(result, vueApis, "v-code__function", store);
@@ -249,7 +244,12 @@ const vizeDocsSyntax = (() => {
     );
     result = replaceWithClass(result, /<\/?[\w:-]+/g, "v-code__tag", store);
     result = replaceWithClass(result, /\{\{|\}\}/g, "v-code__delimiter", store);
-    result = replaceWithClass(result, /\b(v-[\w:-]+|@[\w.-]+|:[\w.-]+|#[\w.-]+)\b/g, "v-code__directive", store);
+    result = replaceWithClass(
+      result,
+      /\b(v-[\w:-]+|@[\w.-]+|:[\w.-]+|#[\w.-]+)\b/g,
+      "v-code__directive",
+      store,
+    );
     result = replaceWithCallback(
       result,
       /\b([A-Za-z_:][-A-Za-z0-9_:.]*)(?=\s*=)/g,
@@ -277,8 +277,7 @@ const vizeDocsSyntax = (() => {
     result = replaceWithCallback(
       result,
       /(^|[^\\])(#.*$)/gm,
-      (_, prefix, comment) =>
-        `${escapeHtml(prefix)}${wrapToken("v-code__comment", comment)}`,
+      (_, prefix, comment) => `${escapeHtml(prefix)}${wrapToken("v-code__comment", comment)}`,
       store,
     );
     result = replaceWithClass(
@@ -426,8 +425,7 @@ const vizeDocsSyntax = (() => {
     result = replaceWithCallback(
       result,
       /\b([A-Za-z_][\w-]*)(\s*=)/g,
-      (_, name, suffix) =>
-        `${wrapToken("v-code__property", name)}${escapeHtml(suffix)}`,
+      (_, name, suffix) => `${wrapToken("v-code__property", name)}${escapeHtml(suffix)}`,
       store,
     );
     result = replaceWithClass(result, /<[^>\n]+>|\.\/[\w./-]+|\/[\w./-]+/g, "v-code__type", store);

@@ -54,7 +54,10 @@ void test("createHighlightedHtml highlights json keys and values", () => {
 });
 
 void test("createHighlightedHtml highlights nix expressions", () => {
-  const html = syntax.createHighlightedHtml("let\n  pkgs = import <nixpkgs> {};\nin pkgs.hello", "nix");
+  const html = syntax.createHighlightedHtml(
+    "let\n  pkgs = import <nixpkgs> {};\nin pkgs.hello",
+    "nix",
+  );
 
   assert.match(html, /v-code__keyword/);
   assert.match(html, /v-code__property/);
