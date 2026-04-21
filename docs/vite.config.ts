@@ -40,16 +40,6 @@ if (puppeteerExecutablePath) {
   process.env.PUPPETEER_EXECUTABLE_PATH = puppeteerExecutablePath;
 }
 
-const artVueGrammar = {
-  ...JSON.parse(
-    readFileSync(
-      resolve(import.meta.dirname, "../npm/vscode-art/syntaxes/art.tmLanguage.json"),
-      "utf-8",
-    ),
-  ),
-  name: "art-vue",
-};
-
 const themeDir = resolve(import.meta.dirname, "theme");
 const themeCss = readFileSync(resolve(themeDir, "style.css"), "utf-8");
 const themeJs = buildDocsBackgroundScript(themeDir);
@@ -107,8 +97,8 @@ export default defineConfig({
 
           header: {
             logo: "/logo.svg",
-            logoWidth: 32,
-            logoHeight: 32,
+            logoWidth: 40,
+            logoHeight: 40,
           },
 
           footer: {
@@ -137,9 +127,7 @@ export default defineConfig({
         }),
       },
 
-      highlight: true,
-      highlightTheme: "vitesse-dark",
-      highlightLangs: [artVueGrammar],
+      highlight: false,
       mermaid: true,
     }),
   ],

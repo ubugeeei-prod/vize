@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const SCRIPT_BASENAME = "vein";
+const SCRIPT_BASENAMES = ["vein", "syntax-highlight"];
 const VERTEX_SHADER_PLACEHOLDER = "__VERT_SRC__";
 const FRAGMENT_SHADER_PLACEHOLDER = "__FRAG_SRC__";
 
@@ -21,11 +21,15 @@ export function createDocsBackgroundHtml(): string {
 
 export function buildDocsBackgroundScript(themeDir: string): string {
   const shaderDir = resolve(themeDir, "shaders");
-  const vertSrc = readFileSync(resolve(shaderDir, `${SCRIPT_BASENAME}.vert`), "utf-8");
-  const fragSrc = readFileSync(resolve(shaderDir, `${SCRIPT_BASENAME}.frag`), "utf-8");
-  const script = readFileSync(resolve(themeDir, `${SCRIPT_BASENAME}.js`), "utf-8");
+  const vertSrc = readFileSync(resolve(shaderDir, "vein.vert"), "utf-8");
+  const fragSrc = readFileSync(resolve(shaderDir, "vein.frag"), "utf-8");
+  const scripts = SCRIPT_BASENAMES.map((basename) =>
+    readFileSync(resolve(themeDir, `${basename}.js`), "utf-8"),
+  );
 
-  return ensureStatementBoundary(script)
+  return scripts
+    .map((script) => ensureStatementBoundary(script))
+    .join("\n\n")
     .replace(VERTEX_SHADER_PLACEHOLDER, escapeTemplateLiteral(vertSrc))
     .replace(FRAGMENT_SHADER_PLACEHOLDER, escapeTemplateLiteral(fragSrc));
 }
