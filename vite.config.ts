@@ -101,17 +101,10 @@ const noCacheTask = (command: string) => ({
 const shellQuote = (command: string) => `'${command.replaceAll("'", `'"'"'`)}'`;
 const runInDirectory = (cwd: string, command: string) =>
   `sh -c ${shellQuote(`cd ${cwd} && ${command}`)}`;
-const pnpmDlx = (packages: string[], command: string) =>
-  `pnpm ${packages.map((pkg) => `--package=${pkg}`).join(" ")} dlx sh -c ${shellQuote(command)}`;
-
-const vscodeBuildPackages = ["vite-plus@0.1.11"];
-const vscodeCheckPackages = [
-  "typescript@^5.7.0",
-  "@types/node@^20.11.0",
-  "@types/vscode@^1.75.0",
-  "vite-plus@0.1.11",
-];
-const vscodePackagePackages = ["@vscode/vsce@^3.3.2", "vite-plus@0.1.11"];
+const installVscodeExtensionDependencies = runInDirectory(
+  "npm/vscode-vize",
+  "pnpm install --ignore-workspace --no-lockfile --prefer-offline",
+);
 
 const commandExists = (command: string) =>
   spawnSync("sh", ["-c", `command -v ${command}`], { stdio: "ignore" }).status === 0;
@@ -203,14 +196,11 @@ const buildTasks = {
   "build:plugin": noCacheTask(runTask("build:vite-plugin")),
   "build:cli": task("cargo build --release -p vize"),
   "build:vscode-extension": noCacheTask(
-    runInDirectory("npm/vscode-vize", pnpmDlx(vscodeBuildPackages, "vp pack")),
+    `${installVscodeExtensionDependencies} && ${runInDirectory("npm/vscode-vize", "pnpm exec vp pack")}`,
   ),
   "build:editor-extensions": noCacheTask(runTasks("build:vscode-extension", "check:zed-extension")),
   "package:vscode-extension": noCacheTask(
-    runInDirectory(
-      "npm/vscode-vize",
-      pnpmDlx(vscodePackagePackages, "vsce package --no-dependencies --out dist/vize.vsix"),
-    ),
+    `${installVscodeExtensionDependencies} && ${runInDirectory("npm/vscode-vize", "pnpm exec vsce package --no-dependencies --out dist/vize.vsix")}`,
   ),
   "check:zed-extension": task("cargo check --manifest-path npm/zed-vize/Cargo.toml", {
     input: ["npm/zed-vize/**"],
@@ -298,10 +288,7 @@ const checkTasks = {
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
   "check:rust": task("cargo check --workspace", { input: cacheInputs.rust }),
   "check:vscode-extension": noCacheTask(
-    runInDirectory(
-      "npm/vscode-vize",
-      pnpmDlx(vscodeCheckPackages, "tsc --noEmit && vp check src vite.config.ts"),
-    ),
+    `${installVscodeExtensionDependencies} && ${runInDirectory("npm/vscode-vize", "pnpm exec tsc --noEmit && pnpm exec vp check src vite.config.ts")}`,
   ),
   "check:editor-extensions": noCacheTask(runTasks("check:vscode-extension", "check:zed-extension")),
   clippy: task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
@@ -337,13 +324,10 @@ const releaseTasks = {
   ),
   "publish:crates": noCacheTask("bash ./scripts/publish-crates.sh"),
   "publish:vscode-extension": noCacheTask(
-    runInDirectory(
+    `${installVscodeExtensionDependencies} && ${runInDirectory(
       "npm/vscode-vize",
-      pnpmDlx(
-        vscodePackagePackages,
-        'if [ "${NPM_TAG:-latest}" = "latest" ]; then vsce publish --no-dependencies; else vsce publish --no-dependencies --pre-release; fi',
-      ),
-    ),
+      'if [ "${NPM_TAG:-latest}" = "latest" ]; then pnpm exec vsce publish --no-dependencies; else pnpm exec vsce publish --no-dependencies --pre-release; fi',
+    )}`,
   ),
   publish: noCacheTask(runTasks("publish:npm", "publish:crates")),
 };

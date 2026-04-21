@@ -1,1 +1,22 @@
-export {};
+type NativeFunction = (...args: any[]) => any;
+
+export const artToCsf: NativeFunction;
+export const compile: NativeFunction;
+export const compileCss: NativeFunction;
+export const compileSfc: NativeFunction;
+export const compileSfcBatch: NativeFunction;
+export const compileSfcBatchWithResults: NativeFunction;
+export const compileVapor: NativeFunction;
+export const generateArtCatalog: NativeFunction;
+export const generateArtDoc: NativeFunction;
+export const generateArtDocsBatch: NativeFunction;
+export const generateArtPalette: NativeFunction;
+export const getPatinaRules: NativeFunction;
+export const getTypeCheckCapabilities: NativeFunction;
+export const lint: NativeFunction;
+export const lintPatinaSfc: NativeFunction;
+export const parseArt: NativeFunction;
+export const parseSfc: NativeFunction;
+export const parseTemplate: NativeFunction;
+export const typeCheck: NativeFunction;
+export const typeCheckBatch: NativeFunction;

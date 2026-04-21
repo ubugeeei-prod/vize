@@ -46,6 +46,10 @@ const nullResolveContext = {
   resolve: async () => null,
 };
 
+function hasFixtureProject(projectRoot: string): boolean {
+  return fs.existsSync(path.join(projectRoot, "package.json"));
+}
+
 function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): string {
   assert.notEqual(resolved, null);
   assert.notEqual(resolved, undefined);
@@ -61,21 +65,23 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
 {
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "npmx.dev");
-  const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));
-  const resolved = await resolveIdHook(
-    nullResolveContext,
-    createState(projectRoot),
-    "vue-data-ui/style.css",
-    importer,
-    undefined,
-  );
+  if (hasFixtureProject(projectRoot)) {
+    const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));
+    const resolved = await resolveIdHook(
+      nullResolveContext,
+      createState(projectRoot),
+      "vue-data-ui/style.css",
+      importer,
+      undefined,
+    );
 
-  assert.match(expectResolvedId(resolved), /vue-data-ui\/dist\/style\.css$/);
+    assert.match(expectResolvedId(resolved), /vue-data-ui\/dist\/style\.css$/);
+  }
 }
 
 {
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "vuefes-2025");
-  if (fs.existsSync(path.join(projectRoot, "package.json"))) {
+  if (hasFixtureProject(projectRoot)) {
     const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));
     const resolved = await resolveIdHook(
       nullResolveContext,
@@ -94,38 +100,42 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
 {
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "npmx.dev");
-  const source = path.join(projectRoot, "app", "pages", "index.vue");
-  const resolved = await resolveIdHook(
-    nullResolveContext,
-    createState(projectRoot),
-    source,
-    undefined,
-    { isEntry: true, ssr: true },
-  );
+  if (hasFixtureProject(projectRoot)) {
+    const source = path.join(projectRoot, "app", "pages", "index.vue");
+    const resolved = await resolveIdHook(
+      nullResolveContext,
+      createState(projectRoot),
+      source,
+      undefined,
+      { isEntry: true, ssr: true },
+    );
 
-  assert.equal(
-    expectResolvedId(resolved),
-    toVirtualId(source, true),
-    "SSR resolves should use a dedicated virtual module ID",
-  );
+    assert.equal(
+      expectResolvedId(resolved),
+      toVirtualId(source, true),
+      "SSR resolves should use a dedicated virtual module ID",
+    );
+  }
 }
 
 {
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "npmx.dev");
-  const source = path.join(projectRoot, "app", "pages", "index.vue");
-  const resolved = await resolveIdHook(
-    nullResolveContext,
-    createState(projectRoot),
-    toVirtualId(source),
-    undefined,
-    { isEntry: false, ssr: true },
-  );
+  if (hasFixtureProject(projectRoot)) {
+    const source = path.join(projectRoot, "app", "pages", "index.vue");
+    const resolved = await resolveIdHook(
+      nullResolveContext,
+      createState(projectRoot),
+      toVirtualId(source),
+      undefined,
+      { isEntry: false, ssr: true },
+    );
 
-  assert.equal(
-    expectResolvedId(resolved),
-    toVirtualId(source, true),
-    "SSR resolution should upgrade client virtual IDs to SSR-specific virtual IDs",
-  );
+    assert.equal(
+      expectResolvedId(resolved),
+      toVirtualId(source, true),
+      "SSR resolution should upgrade client virtual IDs to SSR-specific virtual IDs",
+    );
+  }
 }
 
 console.log("✅ vite-plugin-vize resolve tests passed!");

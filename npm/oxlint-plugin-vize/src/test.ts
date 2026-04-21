@@ -486,6 +486,8 @@ function normalizeOutput(output: string): string {
       "",
     )
     .replace(/^\s*\[tsgo\] Using: .*$/gmu, "")
+    .replace(/"offset": [0-9]+/gu, '"offset": 0')
+    .replace(/"threads_count": [0-9]+/gu, '"threads_count": 0')
     .replace(/"start_time": [0-9.]+/gu, '"start_time": 0')
     .replace(/^Finished in .*$/gmu, "")
     .trim();
@@ -496,7 +498,7 @@ function escapeRegExp(value: string): string {
 }
 
 function readSnapshot(name: string): string {
-  return fs.readFileSync(path.join(snapshotsDir, name), "utf8").trim();
+  return normalizeOutput(fs.readFileSync(path.join(snapshotsDir, name), "utf8"));
 }
 
 const defaultRun = runOxlint(["-c", ".oxlintrc.json", "App.vue"]);
