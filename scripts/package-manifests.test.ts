@@ -111,3 +111,17 @@ test("editor extension manifests stay opt-in and version aligned", () => {
   assert.match(zedManifest, /^\[language_servers\.vize\]$/m);
   assert.match(zedManifest, /^languages = \["Vue"\]$/m);
 });
+
+test("workspace package builds do not nest pnpm run commands", () => {
+  const museaPackage = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/vite-plugin-musea/package.json"), "utf-8"),
+  ) as {
+    scripts?: Record<string, string>;
+  };
+
+  assert.equal(
+    museaPackage.scripts?.build,
+    "vp pack && pnpm --dir ../.. install --frozen-lockfile --prefer-offline --filter @vizejs/vite-plugin-musea... && vp build --config gallery-vite.config.ts",
+  );
+  assert.doesNotMatch(museaPackage.scripts?.build ?? "", /\bpnpm run\b/);
+});

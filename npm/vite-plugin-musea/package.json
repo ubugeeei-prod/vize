@@ -54,7 +54,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack && pnpm run build:gallery",
+    "build": "vp pack && pnpm --dir ../.. install --frozen-lockfile --prefer-offline --filter @vizejs/vite-plugin-musea... && vp build --config gallery-vite.config.ts",
     "build:gallery": "vp build --config gallery-vite.config.ts",
     "dev": "vp pack --watch",
     "check": "vp check src vite.config.ts",
