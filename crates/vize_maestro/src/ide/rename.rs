@@ -450,47 +450,16 @@ impl RenameService {
 
     /// Get the word at the given offset.
     fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
-        if offset >= content.len() {
-            return None;
-        }
-
-        let bytes = content.as_bytes();
-
-        // Check if we're on an identifier character
-        if !Self::is_ident_char(bytes[offset] as char) {
-            return None;
-        }
-
-        let (start, end) = Self::get_word_range(content, offset)?;
-        Some(content[start..end].to_string())
+        crate::ide::token_at_offset(content, offset, |c| Self::is_ident_char(c as char))
     }
 
     /// Get the range of the word at offset.
     fn get_word_range(content: &str, offset: usize) -> Option<(usize, usize)> {
-        if offset >= content.len() {
-            return None;
-        }
-
-        let bytes = content.as_bytes();
-
-        if !Self::is_ident_char(bytes[offset] as char) {
-            return None;
-        }
-
-        // Find start
-        let mut start = offset;
-        while start > 0 && Self::is_ident_char(bytes[start - 1] as char) {
-            start -= 1;
-        }
-
-        // Find end
-        let mut end = offset;
-        while end < bytes.len() && Self::is_ident_char(bytes[end] as char) {
-            end += 1;
-        }
+        let (start, end) =
+            crate::ide::token_span_at_offset(content, offset, |c| Self::is_ident_char(c as char))?;
 
         // Verify it's a valid identifier start
-        if !Self::is_ident_start(bytes[start] as char) {
+        if !Self::is_ident_start(content.as_bytes()[start] as char) {
             return None;
         }
 
@@ -651,6 +620,11 @@ mod tests {
             RenameService::get_word_at_offset(content, 14),
             Some("ref".to_string())
         );
+        assert_eq!(
+            RenameService::get_word_at_offset(content, 11),
+            Some("count".to_string())
+        );
+        assert_eq!(RenameService::get_word_at_offset(content, 12), None);
     }
 
     #[test]

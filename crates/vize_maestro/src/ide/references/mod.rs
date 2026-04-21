@@ -215,31 +215,7 @@ impl ReferencesService {
 
     /// Get the word at an offset.
     fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
-        if offset >= content.len() {
-            return None;
-        }
-
-        let bytes = content.as_bytes();
-
-        if !Self::is_identifier_char(bytes[offset]) {
-            return None;
-        }
-
-        let mut start = offset;
-        while start > 0 && Self::is_identifier_char(bytes[start - 1]) {
-            start -= 1;
-        }
-
-        let mut end = offset;
-        while end < bytes.len() && Self::is_identifier_char(bytes[end]) {
-            end += 1;
-        }
-
-        if start == end {
-            return None;
-        }
-
-        Some(String::from_utf8_lossy(&bytes[start..end]).to_string())
+        crate::ide::token_at_offset(content, offset, Self::is_identifier_char)
     }
 
     /// Check if a byte is an identifier character.
@@ -338,7 +314,10 @@ const other = message.value
         assert_eq!(word, Some("message".to_string()));
 
         let word = ReferencesService::get_word_at_offset(content, 5);
-        assert_eq!(word, None); // space
+        assert_eq!(word, Some("const".to_string()));
+
+        let word = ReferencesService::get_word_at_offset(content, 14);
+        assert_eq!(word, None);
     }
 
     #[test]
