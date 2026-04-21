@@ -61,6 +61,21 @@ That breadth is what makes Vize different from most of the projects in this comp
 
 That is also why the recent type-check direction matters. Vize is not only trying to "make `vue-tsc` faster." The current direction is to keep Vue-aware virtual file generation, diagnostics mapping, and editor-facing type information inside `vize_canon`, with native project sessions powered by [`corsa-bind`](https://github.com/ubugeeei/corsa-bind).
 
+## How Vize Is Approaching `tsgo`
+
+A recent note, [`corsa-bind: The Idea of Language Processor Orchestration`](https://wtrclred.io/posts/17), argues that the interesting part is not only faster execution but to "change the shape of work, not the compiler."
+
+That framing is very close to how Vize is approaching `tsgo`.
+
+Vize is not trying to turn `tsgo` into the whole product story, and it is not treating it as a one-shot CLI that gets rerun for every feature. The direction is closer to treating TypeScript processing as a reusable native service inside a broader Vue toolchain:
+
+- `vize check` materializes a Vue-aware virtual TypeScript project, opens a Corsa project session, and requests diagnostics in batch.
+- `vize_maestro` can keep a Corsa bridge around for hover, completion, definition, references, and rename when native type checking is enabled.
+- `vize_patina` uses lazy native Corsa sessions for type-aware lint rules, probing only the types it needs instead of rebuilding everything in a JavaScript-hosted stack.
+- `vize_canon` keeps ownership of Vue-specific virtual file generation and source mapping, while `corsa-bind` and `tsgo` answer the TypeScript-side questions.
+
+So Vize's `tsgo` story is not just "swap `vue-tsc` for a faster binary." It is closer to building a Vue-native control layer around a resident TypeScript processor, then reusing that layer across batch checks, editor features, and type-aware linting.
+
 ## Vize vs Vue Language Tools
 
 The official [Vue Language Tools](https://github.com/vuejs/language-tools) project is the production-ready Vue editor and type-checking stack. It includes:
