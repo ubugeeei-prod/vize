@@ -125,3 +125,48 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
     ["#vue-comments", "#vue-interpolation", "#vue-directives", "#html-tags", "#html-entities"],
   );
 });
+
+test("zed-vize registers art-vue as a first-party language", () => {
+  const manifest = fs.readFileSync(path.join(root, "npm/zed-vize/extension.toml"), "utf-8");
+  assert.match(manifest, /^languages = \["Vue", "Art Vue"\]$/m);
+  assert.match(manifest, /^"Vue" = "vue"$/m);
+  assert.match(manifest, /^"Art Vue" = "art-vue"$/m);
+  assert.match(manifest, /^\[grammars\.art-vue\]$/m);
+
+  const artConfig = fs.readFileSync(
+    path.join(root, "npm/zed-vize/languages/art-vue/config.toml"),
+    "utf-8",
+  );
+  assert.match(artConfig, /^name = "Art Vue"$/m);
+  assert.match(artConfig, /^grammar = "art-vue"$/m);
+  assert.match(artConfig, /^path_suffixes = \["art\.vue"\]$/m);
+  assert.match(artConfig, /^prettier_parser_name = "vue"$/m);
+
+  for (const filename of [
+    "brackets.scm",
+    "highlights.scm",
+    "indents.scm",
+    "injections.scm",
+    "outline.scm",
+    "overrides.scm",
+  ]) {
+    assert.equal(
+      fs.existsSync(path.join(root, "npm/zed-vize/languages/art-vue", filename)),
+      true,
+      `missing zed art-vue language file: ${filename}`,
+    );
+  }
+
+  const injections = fs.readFileSync(
+    path.join(root, "npm/zed-vize/languages/art-vue/injections.scm"),
+    "utf-8",
+  );
+  assert.match(injections, /directive_attribute/);
+  assert.match(injections, /style_element/);
+  assert.match(injections, /template_element/);
+});
+
+test("CI packages editor extension artifacts", () => {
+  const workflow = fs.readFileSync(path.join(root, ".github/workflows/check.yml"), "utf-8");
+  assert.match(workflow, /name: Package editor extensions[\s\S]*package:editor-extensions/);
+});
