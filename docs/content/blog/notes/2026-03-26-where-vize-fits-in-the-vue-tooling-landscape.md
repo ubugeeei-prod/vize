@@ -32,14 +32,14 @@ So the most useful question is not "which one is better?" It is: **what problem 
 
 Here is the fastest way to position them:
 
-| Project | Main center of gravity | What it is not |
-| ------- | ---------------------- | -------------- |
-| **Vize** | Unofficial full Vue toolchain in Rust | Not the official Vue editor stack |
-| **Vue Language Tools** | Official Vue editor + type-check tooling | Not a full compiler/linter/formatter toolchain |
-| **Golar** | `typescript-go`-based embedded-language type checking framework | Not a Vue-specific full toolchain |
-| **Verter** | Alternative full Vue compiler + LSP + build toolchain | Not the official Vue toolchain |
-| **Vite+** | Unified web dev entry point across runtimes, package management, dev/build/check/test | Not a Vue-specific compiler or linter |
-| **Oxlint** | High-performance JS/TS linter | Not a Vue template-aware full lint stack by itself |
+| Project                | Main center of gravity                                                                | What it is not                                     |
+| ---------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **Vize**               | Unofficial full Vue toolchain in Rust                                                 | Not the official Vue editor stack                  |
+| **Vue Language Tools** | Official Vue editor + type-check tooling                                              | Not a full compiler/linter/formatter toolchain     |
+| **Golar**              | `typescript-go`-based embedded-language type checking framework                       | Not a Vue-specific full toolchain                  |
+| **Verter**             | Alternative full Vue compiler + LSP + build toolchain                                 | Not the official Vue toolchain                     |
+| **Vite+**              | Unified web dev entry point across runtimes, package management, dev/build/check/test | Not a Vue-specific compiler or linter              |
+| **Oxlint**             | High-performance JS/TS linter                                                         | Not a Vue template-aware full lint stack by itself |
 
 If you keep that table in your head, most of the confusion goes away.
 

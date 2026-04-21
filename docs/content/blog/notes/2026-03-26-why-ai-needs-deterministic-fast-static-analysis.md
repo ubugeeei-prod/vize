@@ -105,8 +105,8 @@ That is exactly the kind of signal AI systems can use well.
 
 An LLM is much more useful when it can work against deterministic structure instead of vague failure reports. "There is a `vize/vue/require-v-for-key` error at this location" is a far better substrate for automated repair than "something seems off in your template."
 
-So the future is not AI *instead of* static analysis.
-It is AI *on top of* static analysis.
+So the future is not AI _instead of_ static analysis.
+It is AI _on top of_ static analysis.
 
 ## The More Code AI Writes, the More We Need Fast Rejection
 
