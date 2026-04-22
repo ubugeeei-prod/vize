@@ -45,11 +45,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp run generate:rule-types && vp pack",
+    "build": "vp run --workspace-root generate:rule-types && vp pack",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "generate:rule-types": "moon run -q --target native - -- < ../../tools/moon/scripts/generate_rule_types.mbtx"
+    "generate:rule-types": "vp run --workspace-root generate:rule-types"
   },
   "dependencies": {
     "oxc-transform": "catalog:oxc"

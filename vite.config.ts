@@ -151,9 +151,10 @@ const runInPackages = (
 
 const runTask = (taskName: string) => `vp run --workspace-root ${taskName}`;
 const runTasks = (...taskNames: string[]) => taskNames.map(runTask).join(" && ");
+const moonCommand = process.env.MOON_BIN ?? "moon";
 const moonScript = (name: string, ...args: string[]) =>
   [
-    "moon",
+    moonCommand,
     "run",
     "-q",
     "--target",
@@ -246,6 +247,9 @@ const testTasks = {
     input: cacheInputs.rust,
   }),
   "coverage:diff": task("cargo run -p vize_test_runner --bin coverage -- -vv", {
+    input: cacheInputs.rust,
+  }),
+  "generate:rule-types": task(moonScript("generate_rule_types"), {
     input: cacheInputs.rust,
   }),
   "expected:generate": task(moonScript("generate_expected")),

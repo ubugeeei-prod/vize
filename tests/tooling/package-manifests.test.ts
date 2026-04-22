@@ -125,3 +125,20 @@ test("workspace package builds do not nest pnpm run commands", () => {
   );
   assert.doesNotMatch(museaPackage.scripts?.build ?? "", /\bpnpm run\b/);
 });
+
+test("vize package delegates rule type generation to the workspace MoonBit task", () => {
+  const vizePackage = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/vize/package.json"), "utf-8"),
+  ) as {
+    scripts?: Record<string, string>;
+  };
+
+  assert.equal(
+    vizePackage.scripts?.["generate:rule-types"],
+    "vp run --workspace-root generate:rule-types",
+  );
+  assert.equal(
+    vizePackage.scripts?.build,
+    "vp run --workspace-root generate:rule-types && vp pack",
+  );
+});
