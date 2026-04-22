@@ -33,13 +33,17 @@ function run(command, args, env) {
 function ensureMoonShim() {
   fs.mkdirSync(shimDir, { recursive: true });
   if (os.type() === "Windows_NT") {
-    fs.writeFileSync(shimMoon, `@echo off\r\n"${moonExe.replaceAll("\\", "\\\\")}" %*\r\n`);
+    fs.writeFileSync(
+      shimMoon,
+      `@echo off\r\nset "MOON_HOME=${moonHome.replaceAll("\\", "\\\\")}"\r\n"${moonExe.replaceAll("\\", "\\\\")}" %*\r\n`,
+    );
     return;
   }
   fs.writeFileSync(
     shimMoon,
     `#!/usr/bin/env bash
 set -euo pipefail
+export MOON_HOME="${moonHome}"
 "${moonExe}" "$@"
 `,
   );
@@ -115,4 +119,4 @@ smokeTestMoon();
 fs.appendFileSync(githubPath, `${shimDir}\n`);
 fs.appendFileSync(githubPath, `${moonBin}\n`);
 fs.appendFileSync(githubEnv, `MOON_HOME=${moonHome}\n`);
-fs.appendFileSync(githubEnv, `MOON_BIN=${moonExe}\n`);
+fs.appendFileSync(githubEnv, `MOON_BIN=${shimMoon}\n`);
