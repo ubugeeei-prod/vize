@@ -92,6 +92,8 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      - uses: ./.github/actions/setup-moonbit
+
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "native"

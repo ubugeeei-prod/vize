@@ -32,6 +32,23 @@ if (!platform || !arch) {
   process.exit(1);
 }
 
+function ensureExecutableTree(targetPath) {
+  if (!fs.existsSync(targetPath)) {
+    return;
+  }
+
+  const stats = fs.statSync(targetPath);
+  if (stats.isDirectory()) {
+    fs.chmodSync(targetPath, 0o755);
+    for (const entry of fs.readdirSync(targetPath)) {
+      ensureExecutableTree(path.join(targetPath, entry));
+    }
+    return;
+  }
+
+  fs.chmodSync(targetPath, 0o755);
+}
+
 const extension = platform === "windows" ? "zip" : "tar.gz";
 const moonHome = path.join(runnerTemp, "moonbit");
 const archivePath = path.join(runnerTemp, `moonbit-${platform}-${arch}.${extension}`);
@@ -67,6 +84,10 @@ const extractResult =
 
 if ((extractResult.status ?? 1) !== 0) {
   process.exit(extractResult.status ?? 1);
+}
+
+if (platform !== "windows") {
+  ensureExecutableTree(path.join(moonHome, "bin"));
 }
 
 fs.appendFileSync(githubPath, `${path.join(moonHome, "bin")}\n`);
