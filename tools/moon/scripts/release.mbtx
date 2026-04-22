@@ -1,0 +1,684 @@
+///|
+/// Prepares a release commit and tag from the repository root.
+///
+/// This script is intentionally conservative because it mutates versioned files,
+/// creates a git commit, and pushes a release tag that fans out into the
+/// publishing workflow. Its job is to keep all version bumps reproducible and
+/// explicit: it validates the working tree, computes the next version from the
+/// requested bump kind, updates every tracked manifest that must stay aligned,
+/// and only then creates and pushes the release commit and tag.
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/strconv",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/async@0.16.8/stdio",
+  "moonbitlang/x@0.4.41/fs" @xfs,
+  "moonbitlang/x@0.4.41/path",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+/// Parsed semantic version components used by the release bump logic.
+///
+/// The struct stores only the fields the repository needs today: major / minor /
+/// patch plus an optional prerelease label and numeric suffix.
+struct Version {
+  major : Int
+  minor : Int
+  patch : Int
+  prerelease : String?
+  prerelease_num : Int?
+}
+
+///|
+/// Returns command-line arguments passed after the script name.
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+/// Joins paths using the host platform's path semantics.
+fn join_path(base : String, child : String) -> String {
+  let path : @path.Path = base
+  path.join(child).to_string()
+}
+
+///|
+/// Returns whether a path exists without turning missing files into an error.
+fn safe_path_exists(path : String) -> Bool {
+  @xfs.path_exists(path)
+}
+
+///|
+fn safe_is_dir(path : String) -> Bool {
+  try {
+    @xfs.is_dir(path)
+  } catch {
+    _ => false
+  }
+}
+
+///|
+/// Reads a directory safely and returns an empty list on IO failure.
+fn safe_read_dir(path : String) -> Array[String] {
+  try {
+    @xfs.read_dir(path)
+  } catch {
+    _ => []
+  }
+}
+
+///|
+/// Reads a text file and returns `None` when the read fails.
+fn read_file_to_string(path : String) -> String? {
+  try {
+    Some(@xfs.read_file_to_string(path))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+/// Writes a text file and converts write failures into a boolean result.
+fn write_string_to_file(path : String, content : String) -> Bool {
+  try {
+    @xfs.write_string_to_file(path, content)
+    true
+  } catch {
+    _ => false
+  }
+}
+
+///|
+/// Parses an integer but keeps the caller in control of error handling.
+fn parse_int(value : String) -> Int? {
+  try {
+    Some(@strconv.parse_int(value))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+/// Parses the repository's release version format into structured fields.
+///
+/// Supported inputs are:
+///
+/// - `major.minor.patch`
+/// - `major.minor.patch-label`
+/// - `major.minor.patch-label.number`
+///
+/// The parser is intentionally strict so release automation never guesses when
+/// the current version format has drifted unexpectedly.
+fn parse_version(value : String) -> Version? {
+  let parts : Array[String] = value.split("-").map(StringView::to_string).collect()
+  guard parts.length() >= 1 && parts.length() <= 2 else { return None }
+
+  let base_parts : Array[String] = parts[0].split(".").map(StringView::to_string).collect()
+  guard base_parts.length() == 3 else { return None }
+  let major = match parse_int(base_parts[0]) {
+    Some(value) => value
+    None => return None
+  }
+  let minor = match parse_int(base_parts[1]) {
+    Some(value) => value
+    None => return None
+  }
+  let patch = match parse_int(base_parts[2]) {
+    Some(value) => value
+    None => return None
+  }
+
+  let mut prerelease : String? = None
+  let mut prerelease_num : Int? = None
+  if parts.length() == 2 {
+    let prerelease_parts : Array[String] = parts[1]
+      .split(".")
+      .map(StringView::to_string)
+      .collect()
+    guard prerelease_parts.length() >= 1 && prerelease_parts.length() <= 2 else {
+      return None
+    }
+    guard prerelease_parts[0] != "" else { return None }
+    prerelease = Some(prerelease_parts[0])
+    if prerelease_parts.length() == 2 {
+      prerelease_num = match parse_int(prerelease_parts[1]) {
+        Some(value) => Some(value)
+        None => return None
+      }
+    }
+  }
+
+  Some(Version::{
+    major,
+    minor,
+    patch,
+    prerelease,
+    prerelease_num,
+  })
+}
+
+///|
+/// Formats a structured version back into the repository's release string form.
+fn format_version(
+  major : Int,
+  minor : Int,
+  patch : Int,
+  prerelease : String?,
+  prerelease_num : Int?,
+) -> String {
+  let base = "\{major}.\{minor}.\{patch}"
+  match prerelease {
+    None => base
+    Some(label) =>
+      match prerelease_num {
+        Some(number) => "\{base}-\{label}.\{number}"
+        None => "\{base}-\{label}"
+      }
+  }
+}
+
+///|
+/// Computes the next release version for a given bump strategy.
+///
+/// Stable bumps (`patch`, `minor`, `major`) reset the numeric suffix, while
+/// prerelease bumps preserve the existing base version and increment the suffix
+/// only when the current version already uses the same prerelease channel.
+fn bump_version(current : String, bump : String) -> String? {
+  let version = match parse_version(current) {
+    Some(version) => version
+    None => return None
+  }
+  match bump {
+    "patch" =>
+      Some(
+        format_version(
+          version.major,
+          version.minor,
+          version.patch + 1,
+          version.prerelease,
+          None,
+        ),
+      )
+    "minor" =>
+      Some(
+        format_version(
+          version.major,
+          version.minor + 1,
+          0,
+          version.prerelease,
+          None,
+        ),
+      )
+    "major" =>
+      Some(format_version(version.major + 1, 0, 0, version.prerelease, None))
+    "alpha" =>
+      if version.prerelease == Some("alpha") {
+        Some(
+          format_version(
+            version.major,
+            version.minor,
+            version.patch,
+            Some("alpha"),
+            Some(version.prerelease_num.unwrap_or(1) + 1),
+          ),
+        )
+      } else {
+        Some(
+          format_version(
+            version.major,
+            version.minor,
+            version.patch,
+            Some("alpha"),
+            None,
+          ),
+        )
+      }
+    "beta" =>
+      Some(
+        format_version(
+          version.major,
+          version.minor,
+          version.patch,
+          Some("beta"),
+          None,
+        ),
+      )
+    "rc" =>
+      Some(format_version(version.major, version.minor, version.patch, Some("rc"), None))
+    "release" => Some(format_version(version.major, version.minor, version.patch, None, None))
+    _ => None
+  }
+}
+
+///|
+/// Extracts the current workspace version from the root `Cargo.toml`.
+fn workspace_version_from_content(content : String) -> String? {
+  let mut section = ""
+  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  for line in lines {
+    let trimmed = line.trim()
+    if trimmed.has_prefix("[") && trimmed.has_suffix("]") {
+      section = trimmed.to_string()
+      continue
+    }
+    if section == "[workspace.package]" &&
+      trimmed.has_prefix("version = \"") &&
+      trimmed.has_suffix("\"") {
+      return Some(
+        trimmed
+          .to_string()
+          .replace(old="version = \"", new="")
+          .replace_all(old="\"", new=""),
+      )
+    }
+  }
+  None
+}
+
+///|
+/// Rewrites all workspace-level Rust version pins that must stay aligned.
+///
+/// This updates both `[workspace.package].version` and the exact-version
+/// `vize_*` dependencies inside `[workspace.dependencies]`.
+fn update_workspace_manifest_versions(
+  content : String,
+  current_version : String,
+  new_version : String,
+) -> String {
+  let mut section = ""
+  let updated : Array[String] = []
+  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  for line in lines {
+    let trimmed = line.trim()
+    if trimmed.has_prefix("[") && trimmed.has_suffix("]") {
+      section = trimmed.to_string()
+      updated.push(line)
+      continue
+    }
+    if section == "[workspace.package]" && trimmed == "version = \"\{current_version}\"" {
+      updated.push(line.replace(old=current_version, new=new_version))
+      continue
+    }
+    if section == "[workspace.dependencies]" &&
+      trimmed.has_prefix("vize_") &&
+      line.contains("version = \"=\{current_version}\"") {
+      updated.push(
+        line.replace_all(old="version = \"=\{current_version}\"", new="version = \"=\{new_version}\""),
+      )
+      continue
+    }
+    updated.push(line)
+  }
+  updated.join("\n")
+}
+
+///|
+/// Replaces the first package.json `"version"` field that matches the current release.
+fn replace_package_json_version(
+  content : String,
+  current_version : String,
+  new_version : String,
+) -> String {
+  let updated : Array[String] = []
+  let mut replaced = false
+  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  for line in lines {
+    if !replaced {
+      let trimmed = line.trim()
+      if trimmed.has_prefix("\"version\"") && line.contains(current_version) {
+        updated.push(line.replace(old=current_version, new=new_version))
+        replaced = true
+        continue
+      }
+    }
+    updated.push(line)
+  }
+  updated.join("\n")
+}
+
+///|
+/// Replaces the first TOML `version = "..."` line in a file.
+///
+/// This is used for the Zed extension manifests where a full TOML parser would
+/// be overkill for the repository's simple version synchronization needs.
+fn replace_first_version_line(
+  content : String,
+  current_version : String,
+  new_version : String,
+) -> String {
+  let updated : Array[String] = []
+  let mut replaced = false
+  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  for line in lines {
+    if !replaced {
+      let trimmed = line.trim()
+      if trimmed.has_prefix("version = \"") &&
+        trimmed.has_suffix("\"") &&
+        line.contains(current_version) {
+        updated.push(line.replace(old=current_version, new=new_version))
+        replaced = true
+        continue
+      }
+    }
+    updated.push(line)
+  }
+  updated.join("\n")
+}
+
+///|
+/// Replaces every occurrence of the old version string in a text file.
+fn replace_all_version_references(
+  content : String,
+  current_version : String,
+  new_version : String,
+) -> String {
+  content.replace_all(old=current_version, new=new_version)
+}
+
+///|
+/// Detects whether the script can safely prompt the user for confirmation.
+///
+/// The release script is allowed to be interactive when run locally, but CI and
+/// non-interactive terminals must fail with an explicit message instead of
+/// hanging on stdin reads.
+async fn has_interactive_terminal() -> Bool {
+  let (exit_code, _, _) = @process.collect_output(
+    "sh",
+    ["-c", "test -t 0 && test -t 1"],
+  )
+  exit_code == 0
+}
+
+///|
+/// Filters a list of candidate paths down to the ones that currently exist.
+///
+/// The release commit stages files opportunistically because some package
+/// variants are optional in this repository.
+fn stage_files(files : Array[String]) -> Array[String] {
+  let staged = []
+  for file in files {
+    if safe_path_exists(file) {
+      staged.push(file)
+    }
+  }
+  staged
+}
+
+///|
+/// Main entry point for release preparation and publication kickoff.
+///
+/// The function computes the next version, confirms the operation when running
+/// interactively, verifies the repository is in a publishable state, updates
+/// all synchronized manifests, creates the release commit, tags it, and pushes
+/// both the branch and the tag so the tag-triggered publishing workflow can
+/// take over.
+async fn run_app() -> Int {
+  let args = cli_args()
+  if args.is_empty() {
+    @stdio.stderr.write(
+      "Usage: moon run --target native - -- <patch|minor|major|alpha|beta|rc|release> [-y] < tools/moon/scripts/release.mbtx\n",
+    )
+    return 1
+  }
+
+  let bump = args[0]
+  let mut auto_confirm = false
+  for i in 1..<args.length() {
+    if args[i] != "-y" {
+      @stdio.stderr.write("Unknown release arguments\n")
+      return 1
+    }
+    auto_confirm = true
+  }
+
+  let cargo_toml_path = "Cargo.toml"
+  let cargo_toml = match read_file_to_string(cargo_toml_path) {
+    Some(content) => content
+    None => {
+      @stdio.stderr.write("Failed to read Cargo.toml\n")
+      return 1
+    }
+  }
+  let current_version = match workspace_version_from_content(cargo_toml) {
+    Some(version) => version
+    None => {
+      @stdio.stderr.write("Failed to read current version from Cargo.toml\n")
+      return 1
+    }
+  }
+  let new_version = match bump_version(current_version, bump) {
+    Some(version) => version
+    None => {
+      @stdio.stderr.write("Failed to compute the next version\n")
+      return 1
+    }
+  }
+  let tag = "v" + new_version
+
+  println("Current version: \{current_version}")
+  println("New version: \{new_version} (tag: \{tag})")
+  println("")
+
+  if !auto_confirm {
+    if !has_interactive_terminal() {
+      @stdio.stderr.write(
+        "Error: Confirmation requires an interactive terminal. Re-run with -y to skip the prompt.\n",
+      )
+      return 1
+    }
+    @stdio.stdout.write("Proceed with release? [y/N] ")
+    let answer = match @stdio.stdin.read_until("\n") {
+      Some(input) => input.trim().to_lower()
+      None => ""
+    }
+    if answer != "y" && answer != "yes" {
+      println("Aborted.")
+      return 1
+    }
+  }
+
+  let (status_exit, status_output) = @process.collect_stdout("git", ["status", "--porcelain"])
+  if status_exit != 0 {
+    @stdio.stderr.write("Failed to inspect git status\n")
+    return 1
+  }
+  if status_output.text().trim() != "" {
+    @stdio.stderr.write(
+      "Error: There are uncommitted changes. Please commit or stash them first.\n",
+    )
+    return 1
+  }
+
+  let (tag_exit, _, _) = @process.collect_output("git", ["rev-parse", tag])
+  if tag_exit == 0 {
+    @stdio.stderr.write("Error: Tag \{tag} already exists.\n")
+    return 1
+  }
+
+  println("Updating Cargo.toml...")
+  if !write_string_to_file(
+    cargo_toml_path,
+    update_workspace_manifest_versions(cargo_toml, current_version, new_version),
+  ) {
+    @stdio.stderr.write("Failed to update Cargo.toml\n")
+    return 1
+  }
+
+  println("Updating Cargo.lock...")
+  if @process.run("cargo", ["update", "--workspace"]) != 0 {
+    @stdio.stderr.write("Failed to update Cargo.lock\n")
+    return 1
+  }
+
+  let files_to_stage = ["Cargo.toml", "Cargo.lock"]
+  println("Updating npm packages...")
+  for entry_name in safe_read_dir("npm") {
+    let package_dir = join_path("npm", entry_name)
+    if !safe_is_dir(package_dir) {
+      continue
+    }
+    let package_json_path = join_path(package_dir, "package.json")
+    if safe_path_exists(package_json_path) {
+      let package_json = match read_file_to_string(package_json_path) {
+        Some(content) => content
+        None => {
+          @stdio.stderr.write("Failed to read \{package_json_path}\n")
+          return 1
+        }
+      }
+      if !write_string_to_file(
+        package_json_path,
+        replace_package_json_version(package_json, current_version, new_version),
+      ) {
+        @stdio.stderr.write("Failed to update \{package_json_path}\n")
+        return 1
+      }
+      println("  Updated \{package_json_path}")
+      files_to_stage.push(package_json_path)
+    }
+  }
+
+  let zed_cargo_toml = "npm/zed-vize/Cargo.toml"
+  let zed_extension_toml = "npm/zed-vize/extension.toml"
+  let zed_cargo_lock = "npm/zed-vize/Cargo.lock"
+  if safe_path_exists(zed_cargo_toml) {
+    let content = match read_file_to_string(zed_cargo_toml) {
+      Some(content) => content
+      None => {
+        @stdio.stderr.write("Failed to read \{zed_cargo_toml}\n")
+        return 1
+      }
+    }
+    if !write_string_to_file(
+      zed_cargo_toml,
+      replace_first_version_line(content, current_version, new_version),
+    ) {
+      @stdio.stderr.write("Failed to update \{zed_cargo_toml}\n")
+      return 1
+    }
+    println("  Updated \{zed_cargo_toml}")
+    files_to_stage.push(zed_cargo_toml)
+  }
+  if safe_path_exists(zed_extension_toml) {
+    let content = match read_file_to_string(zed_extension_toml) {
+      Some(content) => content
+      None => {
+        @stdio.stderr.write("Failed to read \{zed_extension_toml}\n")
+        return 1
+      }
+    }
+    if !write_string_to_file(
+      zed_extension_toml,
+      replace_first_version_line(content, current_version, new_version),
+    ) {
+      @stdio.stderr.write("Failed to update \{zed_extension_toml}\n")
+      return 1
+    }
+    println("  Updated \{zed_extension_toml}")
+    files_to_stage.push(zed_extension_toml)
+  }
+  if safe_path_exists(zed_cargo_lock) {
+    if @process.run(
+      "cargo",
+      ["update", "--manifest-path", "npm/zed-vize/Cargo.toml", "-p", "vize-zed-extension"],
+    ) != 0 {
+      @stdio.stderr.write("Failed to update npm/zed-vize/Cargo.lock\n")
+      return 1
+    }
+    println("  Updated \{zed_cargo_lock}")
+    files_to_stage.push(zed_cargo_lock)
+  }
+
+  println("Updating READMEs...")
+  let root_readme = "README.md"
+  if safe_path_exists(root_readme) {
+    let content = match read_file_to_string(root_readme) {
+      Some(content) => content
+      None => {
+        @stdio.stderr.write("Failed to read \{root_readme}\n")
+        return 1
+      }
+    }
+    if !write_string_to_file(
+      root_readme,
+      replace_all_version_references(content, current_version, new_version),
+    ) {
+      @stdio.stderr.write("Failed to update \{root_readme}\n")
+      return 1
+    }
+    files_to_stage.push(root_readme)
+  }
+  for entry_name in safe_read_dir("npm") {
+    let package_dir = join_path("npm", entry_name)
+    if !safe_is_dir(package_dir) {
+      continue
+    }
+    let readme_path = join_path(package_dir, "README.md")
+    if !safe_path_exists(readme_path) {
+      continue
+    }
+    let content = match read_file_to_string(readme_path) {
+      Some(content) => content
+      None => {
+        @stdio.stderr.write("Failed to read \{readme_path}\n")
+        return 1
+      }
+    }
+    if !write_string_to_file(
+      readme_path,
+      replace_all_version_references(content, current_version, new_version),
+    ) {
+      @stdio.stderr.write("Failed to update \{readme_path}\n")
+      return 1
+    }
+    files_to_stage.push(readme_path)
+  }
+
+  println("Committing changes...")
+  let git_add_args = ["add"]
+  for file in stage_files(files_to_stage) {
+    git_add_args.push(file)
+  }
+  if @process.run("git", git_add_args) != 0 {
+    @stdio.stderr.write("Failed to stage release files\n")
+    return 1
+  }
+  if @process.run("git", ["commit", "-m", "chore: release \{tag}"]) != 0 {
+    @stdio.stderr.write("Failed to create the release commit\n")
+    return 1
+  }
+
+  println("Creating tag \{tag}...")
+  if @process.run("git", ["tag", "-a", tag, "-m", "Release \{new_version}"]) != 0 {
+    @stdio.stderr.write("Failed to create the git tag\n")
+    return 1
+  }
+
+  println("Pushing to remote...")
+  if @process.run("git", ["push", "origin", "main"]) != 0 {
+    @stdio.stderr.write("Failed to push main\n")
+    return 1
+  }
+  if @process.run("git", ["push", "origin", tag]) != 0 {
+    @stdio.stderr.write("Failed to push the release tag\n")
+    return 1
+  }
+
+  println("")
+  println("Release \{new_version} complete!")
+  println("GitHub Actions will now publish to npm and crates.io.")
+  println("Check: https://github.com/ubugeeei/vize/actions")
+  0
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

@@ -41,7 +41,7 @@ const testedPackages = [
   "./npm/rspack-vize-plugin",
 ];
 
-const floatingPromiseTestPatterns = ["scripts/*.test.ts", "tests/**/*.ts"];
+const floatingPromiseTestPatterns = ["tests/**/*.ts"];
 
 const cacheInputs = {
   workspace: [
@@ -79,7 +79,7 @@ const cacheInputs = {
     "Cargo.lock",
     "crates/**",
     "tests/**",
-    "scripts/**",
+    "tools/**",
   ],
 };
 
@@ -151,17 +151,22 @@ const runInPackages = (
 
 const runTask = (taskName: string) => `vp run --workspace-root ${taskName}`;
 const runTasks = (...taskNames: string[]) => taskNames.map(runTask).join(" && ");
+const moonScript = (name: string, ...args: string[]) =>
+  [
+    "moon",
+    "run",
+    "-q",
+    "--target",
+    "native",
+    "-",
+    "--",
+    ...args,
+    "<",
+    `tools/moon/scripts/${name}.mbtx`,
+  ].join(" ");
 
 const devApp = (target?: string) =>
-  target == null
-    ? "node --experimental-strip-types scripts/dev-app.ts"
-    : `usage_target=${target} node --experimental-strip-types scripts/dev-app.ts`;
-
-const publishWithVersionTag = (cwd: string, publishCommand: string) =>
-  `sh -c 'cd ${cwd} && VERSION=$(node -p "require(\\"./package.json\\").version") && case "$VERSION" in *-alpha*) ${publishCommand} --tag alpha ;; *-beta*) ${publishCommand} --tag beta ;; *-rc*) ${publishCommand} --tag rc ;; *) ${publishCommand} ;; esac'`;
-
-const injectNativeOptionalDependencyVersions = (cwd: string, versionCwd = cwd) =>
-  `node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('${cwd}/package.json', 'utf8')); const versionPkg = JSON.parse(fs.readFileSync('${versionCwd}/package.json', 'utf8')); const version = versionPkg.version; if (pkg.optionalDependencies) { for (const dep of Object.keys(pkg.optionalDependencies)) { if (dep.startsWith('@vizejs/native-')) { pkg.optionalDependencies[dep] = version; } } } fs.writeFileSync('${cwd}/package.json', JSON.stringify(pkg, null, 2) + '\\n');"`;
+  target == null ? moonScript("dev_app") : moonScript("dev_app", target);
 
 const setupTasks = {
   setup: noCacheTask("vp install"),
@@ -229,9 +234,12 @@ const testTasks = {
   test: noCacheTask(runTasks("test:rust", "test:js", "test:scripts")),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
   "test:js": noCacheTask(`${runTask("build:native")} && ${runInPackages("test", testedPackages)}`),
-  "test:scripts": task("node --experimental-strip-types --test scripts/*.test.ts", {
-    input: cacheInputs.rust,
-  }),
+  "test:scripts": task(
+    "node --experimental-strip-types --test --test-concurrency=1 tests/tooling/*.test.ts",
+    {
+      input: cacheInputs.rust,
+    },
+  ),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),
@@ -243,16 +251,10 @@ const testTasks = {
   "coverage:diff": task("cargo run -p vize_test_runner --bin coverage -- -vv", {
     input: cacheInputs.rust,
   }),
-  "expected:generate": task("node --experimental-strip-types scripts/generate-expected.ts"),
-  "expected:generate:sfc": task(
-    "node --experimental-strip-types scripts/generate-expected.ts --mode sfc",
-  ),
-  "expected:generate:vdom": task(
-    "node --experimental-strip-types scripts/generate-expected.ts --mode vdom",
-  ),
-  "expected:generate:vapor": task(
-    "node --experimental-strip-types scripts/generate-expected.ts --mode vapor",
-  ),
+  "expected:generate": task(moonScript("generate_expected")),
+  "expected:generate:sfc": task(moonScript("generate_expected", "--mode", "sfc")),
+  "expected:generate:vdom": task(moonScript("generate_expected", "--mode", "vdom")),
+  "expected:generate:vapor": task(moonScript("generate_expected", "--mode", "vapor")),
   snapshot: noCacheTask(runTasks("snapshot:test", "snapshot:review")),
   "snapshot:test": task("cargo insta test -p vize_atelier_sfc -- snapshot_tests"),
   "snapshot:review": noCacheTask("cargo insta review"),
@@ -304,30 +306,25 @@ const checkTasks = {
 };
 
 const releaseTasks = {
-  release: noCacheTask(
-    'sh -c \'if [ -n "${usage_type:-}" ] && { [ $# -eq 0 ] || [ "$1" != "$usage_type" ]; }; then set -- "$usage_type" "$@"; fi; ./scripts/release.sh "$@"\' --',
-  ),
+  release: noCacheTask(moonScript("release")),
   "publish:wasm": noCacheTask(
-    'sh -c \'cd npm/vize-wasm && cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown && wasm-bindgen ../../target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir . --target web && VERSION=$(node -p "require(\\"./package.json\\").version") && case "$VERSION" in *-alpha*) pnpm publish --access public --no-git-checks --tag alpha ;; *-beta*) pnpm publish --access public --no-git-checks --tag beta ;; *-rc*) pnpm publish --access public --no-git-checks --tag rc ;; *) pnpm publish --access public --no-git-checks ;; esac\'',
+    `${moonScript("build_vize_wasm_package")} && ${moonScript("publish_npm_package", "npm/vize-wasm")}`,
   ),
   "publish:native": noCacheTask(
-    `${runTask("build:native")} && ${publishWithVersionTag("npm/vize-native", "pnpm publish --access public --no-git-checks")}`,
+    `${runTask("build:native")} && ${moonScript("publish_npm_package", "npm/vize-native")}`,
   ),
   "publish:vite-plugin": noCacheTask(
-    `${runTask("build:vite-plugin")} && ${publishWithVersionTag("npm/vite-plugin-vize", "pnpm publish --access public --no-git-checks")}`,
+    `${runTask("build:vite-plugin")} && ${moonScript("publish_npm_package", "npm/vite-plugin-vize")}`,
   ),
   "publish:oxlint-plugin": noCacheTask(
-    `${runInPackages("build", ["./npm/oxlint-plugin-vize"])} && ${injectNativeOptionalDependencyVersions("npm/oxlint-plugin-vize", "npm/vize-native")} && ${publishWithVersionTag("npm/oxlint-plugin-vize", "pnpm publish --access public --no-git-checks")}`,
+    `${runInPackages("build", ["./npm/oxlint-plugin-vize"])} && ${moonScript("inject_native_optional_deps", "npm/oxlint-plugin-vize/package.json", "npm/vize-native/package.json")} && ${moonScript("publish_npm_package", "npm/oxlint-plugin-vize")}`,
   ),
   "publish:npm": noCacheTask(
     runTasks("publish:wasm", "publish:native", "publish:vite-plugin", "publish:oxlint-plugin"),
   ),
-  "publish:crates": noCacheTask("bash ./scripts/publish-crates.sh"),
+  "publish:crates": noCacheTask(moonScript("publish_crates")),
   "publish:vscode-extension": noCacheTask(
-    `${installVscodeExtensionDependencies} && ${runInDirectory(
-      "npm/vscode-vize",
-      'if [ "${NPM_TAG:-latest}" = "latest" ]; then pnpm exec vsce publish --no-dependencies; else pnpm exec vsce publish --no-dependencies --pre-release; fi',
-    )}`,
+    `${installVscodeExtensionDependencies} && ${moonScript("publish_vscode_extension", "npm/vscode-vize/dist/vize.vsix")}`,
   ),
   publish: noCacheTask(runTasks("publish:npm", "publish:crates")),
 };
@@ -337,7 +334,7 @@ export default defineConfig({
   build: {
     emptyOutDir: true,
     lib: {
-      entry: "scripts/vp-build-entry.ts",
+      entry: "tests/tooling/support/vp-build-entry.ts",
       fileName: "vp-build",
       formats: ["es"],
     },

@@ -49,7 +49,7 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "generate:rule-types": "node --experimental-strip-types ../../scripts/generate-vize-rule-types.ts"
+    "generate:rule-types": "moon run -q --target native - -- < ../../tools/moon/scripts/generate_rule_types.mbtx"
   },
   "dependencies": {
     "oxc-transform": "catalog:oxc"

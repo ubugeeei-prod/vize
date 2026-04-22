@@ -1,0 +1,59 @@
+///|
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+async fn run_app() -> Int {
+  let args = cli_args()
+  if args.length() < 4 || args.length() > 5 {
+    println(
+      "Usage: moon run --target native - -- <package-dir> <manifest-path> <package-name> <target> [--cross-compile] < tools/moon/scripts/github/build_napi_package.mbtx",
+    )
+    return 1
+  }
+  let cross_compile = args.length() == 5 && args[4] == "--cross-compile"
+  if args.length() == 5 && !cross_compile {
+    println("Unknown argument")
+    return 1
+  }
+  let command_args = [
+    "exec",
+    "napi",
+    "build",
+    "--platform",
+    "--release",
+    "--manifest-path",
+    args[1],
+    "-p",
+    args[2],
+    "--features",
+    "napi",
+    "--output-dir",
+    ".",
+    "--target",
+    args[3],
+  ]
+  if cross_compile {
+    command_args.push("--cross-compile")
+  }
+  @process.run("vp", command_args, cwd=args[0])
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

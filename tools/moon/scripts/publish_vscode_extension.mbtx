@@ -1,0 +1,58 @@
+///|
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/x@0.4.41/path",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+fn resolve_path(value : String) -> String {
+  let path : @path.Path = value
+  path.resolve().to_string()
+}
+
+///|
+async fn run_app() -> Int {
+  let args = cli_args()
+  if args.is_empty() {
+    println(
+      "Usage: moon run --target native - -- <vsix-path> < tools/moon/scripts/publish_vscode_extension.mbtx",
+    )
+    return 1
+  }
+  let tag = match @sys.get_env_var("NPM_TAG") {
+    Some(value) if value != "" => value
+    _ => "latest"
+  }
+  let publish_args = [
+    "dlx",
+    "-p",
+    "@vscode/vsce@^3.3.2",
+    "vsce",
+    "publish",
+    "--no-dependencies",
+    "--packagePath",
+    resolve_path(args[0]),
+  ]
+  if tag != "latest" {
+    publish_args.push("--pre-release")
+  }
+  @process.run("vp", publish_args)
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

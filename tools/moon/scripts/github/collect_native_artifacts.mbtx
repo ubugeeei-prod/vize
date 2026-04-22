@@ -1,0 +1,108 @@
+///|
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/fs" @afs,
+  "moonbitlang/x@0.4.41/fs" @xfs,
+  "moonbitlang/x@0.4.41/path",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+fn join_path(base : String, child : String) -> String {
+  let path : @path.Path = base
+  path.join(child).to_string()
+}
+
+///|
+fn basename(path_string : String) -> String {
+  let path : @path.Path = path_string
+  path.basename().to_string()
+}
+
+///|
+fn safe_read_dir(path : String) -> Array[String] {
+  try {
+    @xfs.read_dir(path)
+  } catch {
+    _ => []
+  }
+}
+
+///|
+fn safe_is_dir(path : String) -> Bool {
+  try {
+    @xfs.is_dir(path)
+  } catch {
+    _ => false
+  }
+}
+
+///|
+fn safe_is_file(path : String) -> Bool {
+  try {
+    @xfs.is_file(path)
+  } catch {
+    _ => false
+  }
+}
+
+///|
+fn collect_node_files(directory : String, collected : Array[String]) -> Unit {
+  for entry_name in safe_read_dir(directory) {
+    if entry_name == "node_modules" {
+      continue
+    }
+    let entry_path = join_path(directory, entry_name)
+    if safe_is_dir(entry_path) {
+      collect_node_files(entry_path, collected)
+    } else if entry_name.has_suffix(".node") && safe_is_file(entry_path) {
+      collected.push(entry_path)
+    }
+  }
+}
+
+///|
+async fn run_app() -> Int {
+  let args = cli_args()
+  if args.length() != 3 {
+    println(
+      "Usage: moon run --target native - -- <source-dir> <output-dir> <label> < tools/moon/scripts/github/collect_native_artifacts.mbtx",
+    )
+    return 1
+  }
+  let collected = []
+  collect_node_files(args[0], collected)
+  if collected.is_empty() {
+    println("No \{args[2]} .node files found after build.")
+    return 1
+  }
+  @afs.mkdir(args[1], recursive=true, permission=0o755)
+  let copied = []
+  for file in collected {
+    let destination = join_path(args[1], basename(file))
+    @afs.write_file(destination, @afs.read_file(file), create=0o644)
+    copied.push(destination)
+  }
+  copied.sort()
+  println("Collected \{args[2]} artifacts:")
+  for file in copied {
+    println("  \{file}")
+  }
+  0
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

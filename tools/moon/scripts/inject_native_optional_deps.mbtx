@@ -1,0 +1,128 @@
+///|
+/// Synchronizes native optional dependency versions before npm publication.
+///
+/// Packages such as the CLI and lint plugins depend on platform-specific native
+/// packages through `optionalDependencies`. During release, those dependency
+/// versions must be rewritten from workspace placeholders to the exact version
+/// being published so npm clients resolve a coherent set of artifacts.
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/stdio",
+  "moonbitlang/x@0.4.41/fs" @xfs,
+  "moonbitlang/x@0.4.41/path",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+/// Returns command-line arguments passed after the script name.
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+/// Resolves a path to an absolute normalized path string.
+fn resolve_path(value : String) -> String {
+  let path : @path.Path = value
+  path.resolve().to_string()
+}
+
+///|
+/// Reads and parses a package manifest, returning `None` on failure.
+fn read_package_json(path : String) -> Json? {
+  try {
+    Some(@json.parse(@xfs.read_file_to_string(path)))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+/// Extracts the package version string from a parsed manifest.
+fn package_version(json : Json) -> String? {
+  guard json is Object(obj) else { return None }
+  guard obj.get("version") is Some(String(version)) else { return None }
+  guard version != "" else { return None }
+  Some(version)
+}
+
+///|
+/// Main entry point for optional dependency version rewriting.
+///
+/// The script mutates only dependency names that start with
+/// `@vizejs/native-`, leaving unrelated optional dependencies untouched. The
+/// optional `--print` mode is used by CI so the final manifest is visible in
+/// logs when debugging a release.
+async fn run_app() -> Int {
+  let args = cli_args()
+  if args.is_empty() {
+    println(
+      "Usage: moon run --target native - -- <package-json> [version-package-json] [--print] < tools/moon/scripts/inject_native_optional_deps.mbtx",
+    )
+    return 1
+  }
+  let positional_args = []
+  let mut should_print = false
+  for arg in args {
+    if arg == "--print" {
+      should_print = true
+    } else {
+      positional_args.push(arg)
+    }
+  }
+  let package_json_path = resolve_path(positional_args[0])
+  let version_package_json_path = resolve_path(
+    if positional_args.length() >= 2 { positional_args[1] } else { positional_args[0] },
+  )
+  let version_package = match read_package_json(version_package_json_path) {
+    Some(json) => json
+    None => {
+      println("Failed to parse \{version_package_json_path}")
+      return 1
+    }
+  }
+  let version = match package_version(version_package) {
+    Some(version) => version
+    None => {
+      println("Failed to read version from \{version_package_json_path}")
+      return 1
+    }
+  }
+  let package_json = match read_package_json(package_json_path) {
+    Some(json) => json
+    None => {
+      println("Failed to parse \{package_json_path}")
+      return 1
+    }
+  }
+  guard package_json is Object(package_obj) else {
+    println("Failed to read object from \{package_json_path}")
+    return 1
+  }
+  if package_obj.get("optionalDependencies") is Some(Object(optional_dependencies)) {
+    for dependency_name, dependency_value in optional_dependencies {
+      ignore(dependency_value)
+      if dependency_name.starts_with("@vizejs/native-") {
+        optional_dependencies[dependency_name] = Json::string(version)
+      }
+    }
+  }
+  let updated = package_json.stringify(indent=2) + "\n"
+  @xfs.write_string_to_file(package_json_path, updated)
+  println("Updated optionalDependencies to native version \{version}")
+  if should_print {
+    @stdio.stdout.write(updated)
+  }
+  0
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

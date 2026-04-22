@@ -1,0 +1,447 @@
+///|
+/// Publishes a single npm package directory in a rerun-safe way.
+///
+/// The script is intentionally defensive because GitHub Actions releases often
+/// fail in the gap between "the registry accepted the publish" and "the version
+/// is visible from registry reads". To make the workflow resilient, the script:
+///
+/// 1. Reads the package name and version from `package.json`.
+/// 2. Checks whether the exact version is already visible in the registry.
+/// 3. Runs `vp pm publish` with retry/backoff when needed.
+/// 4. Treats "publish returned non-zero but the version is now visible" as a
+///    success, because that usually means the server-side publish completed.
+/// 5. Waits for both the published version and the expected dist-tag to become
+///    readable before reporting success.
+///
+/// This makes the script suitable for trusted publishing flows where the most
+/// common failures are transient registry propagation issues rather than actual
+/// package content problems.
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/core/strconv",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/async@0.16.8/stdio",
+  "moonbitlang/x@0.4.41/fs" @xfs,
+  "moonbitlang/x@0.4.41/path",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+/// Minimal package metadata that we need to reason about registry state.
+///
+/// Keeping the data in a small struct makes the retry / visibility helpers read
+/// more clearly and avoids repeatedly recomputing name, version, and dist-tag
+/// from the package manifest.
+struct NpmPackageInfo {
+  name : String
+  version : String
+  tag : String
+}
+
+///|
+/// Returns command-line arguments passed after the script name.
+///
+/// In MoonBit script mode, `@env.args()` includes the generated executable path
+/// as the first entry. All CLI scripts in this repository intentionally drop
+/// that entry so the rest of the code can reason about user-facing arguments.
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+/// Resolves a path to an absolute normalized path string.
+///
+/// The publishing scripts operate across multiple working directories in CI, so
+/// absolute paths make logs and subprocess calls much easier to reason about.
+fn resolve_path(value : String) -> String {
+  let path : @path.Path = value
+  path.resolve().to_string()
+}
+
+///|
+fn join_path(base : String, child : String) -> String {
+  let path : @path.Path = base
+  path.join(child).to_string()
+}
+
+///|
+/// Reads and parses a `package.json` file, returning `None` on any failure.
+///
+/// We intentionally collapse IO and JSON parsing failures into a single
+/// optional result because the caller only needs to know whether manifest
+/// discovery succeeded before producing a human-readable CLI error.
+fn read_package_json(path : String) -> Json? {
+  try {
+    Some(@json.parse(@xfs.read_file_to_string(path)))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+fn package_name(json : Json) -> String? {
+  guard json is Object(obj) else { return None }
+  guard obj.get("name") is Some(String(name)) else { return None }
+  guard name != "" else { return None }
+  Some(name)
+}
+
+///|
+fn package_version(json : Json) -> String? {
+  guard json is Object(obj) else { return None }
+  guard obj.get("version") is Some(String(version)) else { return None }
+  guard version != "" else { return None }
+  Some(version)
+}
+
+///|
+/// Parses a positive integer from a string and falls back on invalid input.
+///
+/// Retry and delay settings are user-configurable through environment
+/// variables and CLI flags, so we keep the parser forgiving and preserve a
+/// safe default instead of aborting on malformed values.
+fn positive_int_or(value : String, fallback : Int) -> Int {
+  try {
+    let parsed = @strconv.parse_int(value)
+    if parsed > 0 {
+      parsed
+    } else {
+      fallback
+    }
+  } catch {
+    _ => fallback
+  }
+}
+
+///|
+/// Reads a retry-related integer from the environment with a validated default.
+fn env_positive_int(name : String, fallback : Int) -> Int {
+  match @sys.get_env_var(name) {
+    Some(value) if value != "" => positive_int_or(value, fallback)
+    _ => fallback
+  }
+}
+
+///|
+/// Derives the npm dist-tag for a package version.
+///
+/// `NPM_TAG` is allowed to override the heuristic so the workflow can force a
+/// tag explicitly. Otherwise, prerelease suffixes map to the conventional
+/// `alpha`, `beta`, and `rc` tags, while stable releases use `latest`.
+fn npm_tag(version : String) -> String {
+  match @sys.get_env_var("NPM_TAG") {
+    Some(value) if value != "" => value
+    _ =>
+      if version.contains("-alpha") {
+        "alpha"
+      } else if version.contains("-beta") {
+        "beta"
+      } else if version.contains("-rc") {
+        "rc"
+      } else {
+        "latest"
+      }
+  }
+}
+
+///|
+/// Resolves a tool binary from the environment, with a CLI-oriented fallback.
+///
+/// This is mainly used by tests so they can substitute fake `vp` binaries
+/// without having to modify the script implementation itself.
+fn tool_bin(env_name : String, fallback : String) -> String {
+  match @sys.get_env_var(env_name) {
+    Some(value) if value != "" => value
+    _ => fallback
+  }
+}
+
+///|
+/// Recursively checks whether a JSON value contains the expected string.
+///
+/// Registry commands sometimes return a bare string and sometimes return JSON
+/// arrays or objects, depending on the field and the package manager wrapper.
+/// This helper keeps the visibility checks tolerant to those shape changes.
+fn json_contains_string(value : Json, expected : String) -> Bool {
+  match value {
+    String(text) => text == expected
+    Array(items) => {
+      for item in items {
+        if json_contains_string(item, expected) {
+          return true
+        }
+      }
+      false
+    }
+    _ => false
+  }
+}
+
+///|
+/// Returns `true` when a `dist-tags` JSON object maps `tag` to `version`.
+fn json_dist_tag_matches(value : Json, tag : String, version : String) -> Bool {
+  guard value is Object(obj) else { return false }
+  guard obj.get(tag) is Some(String(tag_version)) else { return false }
+  tag_version == version
+}
+
+///|
+/// Checks whether the exact package version is visible from npm registry reads.
+///
+/// Visibility is more important than the publish command's exit code: if the
+/// registry already serves `name@version`, rerunning the workflow should treat
+/// that state as success rather than attempting to publish again.
+async fn npm_version_is_visible(vp_bin : String, name : String, version : String) -> Bool {
+  let (exit_code, stdout, _) = @process.collect_output(
+    vp_bin,
+    ["pm", "view", name + "@" + version, "version", "--json"],
+  )
+  if exit_code != 0 {
+    return false
+  }
+  let body = stdout.text().trim()
+  if body == "" {
+    return false
+  }
+  if body == version || body == "\"" + version + "\"" {
+    return true
+  }
+  let parsed = try {
+    @json.parse(body)
+  } catch {
+    _ => return false
+  }
+  json_contains_string(parsed, version)
+}
+
+///|
+/// Checks whether the package's dist-tag has propagated to the expected version.
+///
+/// For consumers of prerelease channels, the dist-tag is often the real source
+/// of truth. We therefore wait for both the version and the dist-tag instead of
+/// declaring success immediately after `publish` returns.
+async fn npm_tag_points_to_version(
+  vp_bin : String,
+  name : String,
+  tag : String,
+  version : String,
+) -> Bool {
+  let (exit_code, stdout, _) = @process.collect_output(
+    vp_bin,
+    ["pm", "view", name, "dist-tags", "--json"],
+  )
+  if exit_code != 0 {
+    return false
+  }
+  let body = stdout.text().trim()
+  if body == "" {
+    return false
+  }
+  let parsed = try {
+    @json.parse(body)
+  } catch {
+    _ => return false
+  }
+  json_dist_tag_matches(parsed, tag, version)
+}
+
+///|
+/// Polls the registry until both the version and dist-tag become visible.
+///
+/// Publishing to npm is eventually consistent. This helper turns that
+/// propagation window into an explicit, bounded retry loop so workflow failures
+/// point to a real timeout rather than a transient post-publish race.
+async fn wait_for_registry_visibility(
+  vp_bin : String,
+  info : NpmPackageInfo,
+  max_attempts : Int,
+  delay_seconds : Int,
+) -> Int {
+  let mut attempt = 1
+  while attempt <= max_attempts {
+    let version_visible = npm_version_is_visible(vp_bin, info.name, info.version)
+    let tag_visible = npm_tag_points_to_version(vp_bin, info.name, info.tag, info.version)
+    if version_visible && tag_visible {
+      println(
+        "\{info.name}@\{info.version} is visible in npm with dist-tag \{info.tag}.",
+      )
+      return 0
+    }
+    if attempt >= max_attempts {
+      @stdio.stderr.write(
+        "Timed out waiting for \{info.name}@\{info.version} to appear in npm with dist-tag \{info.tag}.\n",
+      )
+      return 1
+    }
+    println(
+      "Waiting for \{info.name}@\{info.version} to appear in npm with dist-tag \{info.tag}... (\{attempt}/\{max_attempts})",
+    )
+    @async.sleep(delay_seconds * 1000)
+    attempt = attempt + 1
+  }
+  1
+}
+
+///|
+/// Main entry point for resilient single-package npm publishing.
+///
+/// The function first decides whether publishing is necessary, then performs
+/// retries around `vp pm publish`, and finally waits for registry propagation.
+/// `--ignore-failure` only affects the final hard failure after all retries and
+/// visibility checks have been exhausted.
+async fn run_app() -> Int {
+  let args = cli_args()
+  if args.is_empty() {
+    @stdio.stderr.write(
+      "Usage: moon run --target native - -- <dir> [--provenance] [--ignore-failure] [--retries N] [--delay N] < tools/moon/scripts/publish_npm_package.mbtx\n",
+    )
+    return 1
+  }
+
+  let directory = resolve_path(args[0])
+  let vp_bin = tool_bin("VP_BIN", "vp")
+  let mut retries = env_positive_int("PUBLISH_RETRY_LIMIT", 3)
+  let mut delay_seconds = env_positive_int("PUBLISH_RETRY_DELAY", 15)
+  let resolution_retries = env_positive_int("PUBLISH_RESOLUTION_RETRY_LIMIT", retries)
+  let resolution_delay_seconds = env_positive_int(
+    "PUBLISH_RESOLUTION_RETRY_DELAY",
+    delay_seconds,
+  )
+  let mut provenance = false
+  let mut ignore_failure = false
+  let mut index = 1
+  while index < args.length() {
+    let arg = args[index]
+    if arg == "--provenance" {
+      provenance = true
+      index = index + 1
+      continue
+    }
+    if arg == "--ignore-failure" {
+      ignore_failure = true
+      index = index + 1
+      continue
+    }
+    if arg == "--retries" && index + 1 < args.length() {
+      retries = positive_int_or(args[index + 1], retries)
+      index = index + 2
+      continue
+    }
+    if arg == "--delay" && index + 1 < args.length() {
+      delay_seconds = positive_int_or(args[index + 1], delay_seconds)
+      index = index + 2
+      continue
+    }
+    @stdio.stderr.write("Unknown argument: \{arg}\n")
+    return 1
+  }
+
+  let package_json_path = join_path(directory, "package.json")
+  let package_json = match read_package_json(package_json_path) {
+    Some(json) => json
+    None => {
+      @stdio.stderr.write("Failed to parse \{package_json_path}\n")
+      return 1
+    }
+  }
+  let version = match package_version(package_json) {
+    Some(version) => version
+    None => {
+      @stdio.stderr.write("Failed to read version from \{package_json_path}\n")
+      return 1
+    }
+  }
+  let name = match package_name(package_json) {
+    Some(name) => name
+    None => {
+      @stdio.stderr.write("Failed to read name from \{package_json_path}\n")
+      return 1
+    }
+  }
+  let info = NpmPackageInfo::{
+    name,
+    version,
+    tag: npm_tag(version),
+  }
+  let publish_args = [
+    "pm",
+    "publish",
+    "--access",
+    "public",
+    "--no-git-checks",
+    "--tag",
+    info.tag,
+  ]
+  if provenance {
+    publish_args.push("--")
+    publish_args.push("--provenance")
+  }
+
+  let max_attempts = if retries > 0 { retries } else { 1 }
+  if npm_version_is_visible(vp_bin, info.name, info.version) {
+    println(
+      "\{info.name}@\{info.version} is already published. Skipping publish and verifying registry visibility.",
+    )
+    return wait_for_registry_visibility(
+      vp_bin,
+      info,
+      resolution_retries,
+      resolution_delay_seconds,
+    )
+  }
+  let mut attempt = 1
+  while attempt <= max_attempts {
+    let command_display = publish_args.join(" ")
+    println(
+      "Attempt \{attempt}/\{max_attempts}: publish \{info.name}@\{info.version} with \{vp_bin} \{command_display}",
+    )
+    let exit_code = @process.run(vp_bin, publish_args, cwd=directory)
+    if exit_code == 0 {
+      return wait_for_registry_visibility(
+        vp_bin,
+        info,
+        resolution_retries,
+        resolution_delay_seconds,
+      )
+    }
+    if npm_version_is_visible(vp_bin, info.name, info.version) {
+      println(
+        "\{info.name}@\{info.version} appears in npm despite a non-zero publish exit. Verifying registry visibility.",
+      )
+      return wait_for_registry_visibility(
+        vp_bin,
+        info,
+        resolution_retries,
+        resolution_delay_seconds,
+      )
+    }
+    if attempt < max_attempts {
+      println(
+        "Publish attempt failed for \{info.name}@\{info.version}. Retrying in \{delay_seconds}s...",
+      )
+      @async.sleep(delay_seconds * 1000)
+    }
+    attempt = attempt + 1
+  }
+
+  if ignore_failure {
+    println(
+      "Failed to publish \{info.name}@\{info.version} from \{directory}, but continuing because --ignore-failure is set.",
+    )
+    return 0
+  }
+  @stdio.stderr.write("Failed to publish \{info.name}@\{info.version} from \{directory}\n")
+  1
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

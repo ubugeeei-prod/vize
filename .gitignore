@@ -3,6 +3,8 @@ target/
 
 # Node.js
 node_modules/
+.mooncakes/
+_build/
 
 # npm package build outputs
 npm/*/dist/

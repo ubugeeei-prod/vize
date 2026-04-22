@@ -1,0 +1,55 @@
+///|
+import {
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/x@0.4.41/fs" @xfs,
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+fn extract_vite_plus_test_version(lockfile : String) -> String? {
+  let prefix = "  '@voidzero-dev/vite-plus-test@"
+  for line in lockfile.split("\n").map(StringView::to_string) {
+    if line.starts_with(prefix) && line.ends_with("':") {
+      let without_prefix = line.strip_prefix(prefix).unwrap().to_string()
+      return without_prefix.strip_suffix("':").map(StringView::to_string)
+    }
+  }
+  None
+}
+
+///|
+async fn run_app() -> Int {
+  let lockfile = @xfs.read_file_to_string("pnpm-lock.yaml")
+  let vite_plus_test_version = match extract_vite_plus_test_version(lockfile) {
+    Some(version) => version
+    None => {
+      println("Failed to locate @voidzero-dev/vite-plus-test version in pnpm-lock.yaml")
+      return 1
+    }
+  }
+  let vite_plus_exit = @process.run(
+    "vp",
+    [
+      "dlx",
+      "-p",
+      "@voidzero-dev/vite-plus-test@" + vite_plus_test_version,
+      "playwright",
+      "install",
+      "chromium",
+      "--with-deps",
+    ],
+  )
+  if vite_plus_exit != 0 {
+    return vite_plus_exit
+  }
+  @process.run(
+    "vp",
+    ["exec", "--filter", "./playground", "--", "playwright", "install", "chromium"],
+  )
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

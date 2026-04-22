@@ -4,11 +4,11 @@ import { createServer } from "node:net";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import process from "node:process";
-import { elkApp, misskeyApp, npmxApp, vuefesApp, type AppConfig } from "../tests/_helpers/apps.ts";
+import { elkApp, misskeyApp, npmxApp, vuefesApp, type AppConfig } from "../../_helpers/apps.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const REPO_ROOT = path.resolve(__dirname, "..");
+const REPO_ROOT = path.resolve(__dirname, "../../..");
 const VITE_PLUS_BIN = `${process.env.HOME ?? ""}/.vite-plus/bin`;
 const MISE_BIN = `${process.env.HOME ?? ""}/.local/bin/mise`;
 const BASE_ENV = {

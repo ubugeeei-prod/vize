@@ -37,20 +37,13 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Install JS dependencies
-        run: |
-          vp install --frozen-lockfile --prefer-offline \
-            --filter './docs...' \
-            --filter './npm/vite-plugin-vize...' \
-            --filter './npm/vize...' \
-            --filter './npm/vize-native...'
+        run: moon run --target native - -- --filter './docs...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build @vizejs/vite-plugin
-        run: |
-          vp run --filter './npm/vize-native' build
-          vp run --filter './npm/vize' build
-          vp run --filter './npm/vite-plugin-vize' build
+        run: moon run --target native - -- vp run --filter './npm/vize-native' build -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Build docs
         run: vp run --filter './docs' build
@@ -95,10 +88,7 @@ jobs:
 
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: |
-          cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown
-          wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir npm/vize-wasm --target web
-          wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir playground/src/wasm --target web
+        run: moon run --target native - -- npm/vize-wasm playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
@@ -106,23 +96,13 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Install JS dependencies
-        run: |
-          vp install --frozen-lockfile --prefer-offline \
-            --filter './playground...' \
-            --filter './examples/vite-musea...' \
-            --filter './npm/vite-plugin-musea...' \
-            --filter './npm/vite-plugin-vize...' \
-            --filter './npm/vize...' \
-            --filter './npm/vize-native...'
+        run: moon run --target native - -- --filter './playground...' --filter './examples/vite-musea...' --filter './npm/vite-plugin-musea...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build npm packages
-        run: |
-          vp run --filter './npm/vize-native' build
-          vp run --filter './npm/vize' build
-          vp run --filter './npm/vite-plugin-vize' build
-          vp run --filter './npm/vite-plugin-musea' build
+        run: moon run --target native - -- vp run --filter './npm/vize-native' build -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build -- vp run --filter './npm/vite-plugin-musea' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Build playground
         run: vp run --filter './playground' build
@@ -160,12 +140,7 @@ jobs:
           path: artifacts
 
       - name: Create site structure
-        run: |
-          mkdir -p site/play site/musea-examples
-          cp -r artifacts/docs/* site/
-          cp -r artifacts/playground/* site/play/
-          cp -r artifacts/musea-examples/* site/musea-examples/
-          cp playground/public/CNAME site/
+        run: moon run --target native - -- < tools/moon/scripts/github/create_site_structure.mbtx
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -3,11 +3,11 @@
  * Generate expected outputs from Vue's official compiler.
  *
  * Usage:
- *   node --experimental-strip-types scripts/generate-expected.ts              # All modes
- *   node --experimental-strip-types scripts/generate-expected.ts sfc/basic    # Specific fixture
- *   node --experimental-strip-types scripts/generate-expected.ts --mode vdom  # All vdom fixtures
- *   node --experimental-strip-types scripts/generate-expected.ts --mode vapor # All vapor fixtures
- *   node --experimental-strip-types scripts/generate-expected.ts --mode sfc   # All sfc fixtures
+ *   node --experimental-strip-types tests/tooling/support/generate-expected.ts              # All modes
+ *   node --experimental-strip-types tests/tooling/support/generate-expected.ts sfc/basic    # Specific fixture
+ *   node --experimental-strip-types tests/tooling/support/generate-expected.ts --mode vdom  # All vdom fixtures
+ *   node --experimental-strip-types tests/tooling/support/generate-expected.ts --mode vapor # All vapor fixtures
+ *   node --experimental-strip-types tests/tooling/support/generate-expected.ts --mode sfc   # All sfc fixtures
  */
 
 import * as fs from "node:fs";
@@ -26,8 +26,8 @@ interface TestFixture {
   cases: TestCase[];
 }
 
-const fixturesDir = path.join(import.meta.dirname!, "..", "tests", "fixtures");
-const expectedDir = path.join(import.meta.dirname!, "..", "tests", "expected");
+const fixturesDir = path.join(import.meta.dirname!, "..", "..", "fixtures");
+const expectedDir = path.join(import.meta.dirname!, "..", "..", "expected");
 
 function loadFixture(filePath: string): TestFixture {
   const content = fs.readFileSync(filePath, "utf-8");

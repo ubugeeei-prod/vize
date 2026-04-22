@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import { createServer } from "node:net";
 import { test } from "node:test";
-import { buildMisskeyDevConfig, resolveAvailablePort, runMisskeyBeforeStart } from "./dev-app.ts";
+import {
+  buildMisskeyDevConfig,
+  resolveAvailablePort,
+  runMisskeyBeforeStart,
+} from "./support/dev-app.ts";
 
 test("buildMisskeyDevConfig uses a valid id generation method", () => {
   const config = buildMisskeyDevConfig(

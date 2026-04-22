@@ -24,11 +24,56 @@
       let
         pkgs = import nixpkgs {
           inherit system overlays;
+          config.allowUnfreePredicate = pkg: (pkg.pname or null) == "moonbit";
         };
 
         lib = pkgs.lib;
         workspaceCargo = builtins.fromTOML (builtins.readFile ./Cargo.toml);
         workspaceVersion = workspaceCargo.workspace.package.version;
+        moonbitArtifacts = {
+          aarch64-darwin = {
+            version = "latest-2026-04-20";
+            url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
+            hash = "sha256-YMfegcuZa6lZ5oSbJDxh6nXIVgvX0vg1kjpP8IyKdek=";
+          };
+          x86_64-linux = {
+            version = "latest-2026-04-20";
+            url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz";
+            hash = "sha256-Q0DItKe3+CA/Y1wnPNZ7CplCxg+4UpEDZk6KDDfQliQ=";
+          };
+          aarch64-linux = {
+            version = "latest-2026-04-20";
+            url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-aarch64.tar.gz";
+            hash = "sha256-ASUvvvTxPUIpXRZL684qhYYTV8Wzch2WZ9y4e0CS9bw=";
+          };
+        };
+        moonbit =
+          if builtins.hasAttr system moonbitArtifacts then
+            let
+              artifact = moonbitArtifacts.${system};
+            in
+            pkgs.stdenvNoCC.mkDerivation {
+              pname = "moonbit";
+              inherit (artifact) version;
+              src = pkgs.fetchurl {
+                inherit (artifact) url hash;
+              };
+              dontUnpack = true;
+              dontConfigure = true;
+              dontBuild = true;
+              installPhase = ''
+                mkdir -p $out
+                tar -xzf $src -C $out
+              '';
+              meta = {
+                description = "MoonBit native toolchain";
+                homepage = "https://www.moonbitlang.com/download/";
+                license = lib.licenses.unfree;
+                platforms = builtins.attrNames moonbitArtifacts;
+              };
+            }
+          else
+            null;
         nodejs = pkgs.nodejs_24;
         pnpm = pkgs.pnpm;
         workspaceVp = pkgs.writeShellApplication {
@@ -111,14 +156,15 @@
             pnpm
             workspaceVp
             rustToolchain
+            pkgs.git
             pkgs.rust-analyzer
             pkgs.wasm-pack
             pkgs.wasm-bindgen-cli
             pkgs.binaryen
             pkgs.cargo-insta
-            pkgs.git
             pkgs.jq
           ]
+          ++ lib.optionals (moonbit != null) [ moonbit ]
           ++ commonNativeBuildInputs;
 
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
@@ -128,9 +174,20 @@
             export PATH="$VIZE_WORKSPACE_ROOT/node_modules/.bin:$PATH"
             export PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright"
             export WASM_PACK_CACHE="$PWD/.cache/wasm-pack"
+            ${lib.optionalString (moonbit != null) ''
+              export MOON_HOME="${moonbit}"
+              if [ -n "''${HOME:-}" ]; then
+                PATH=":$PATH:"
+                PATH="''${PATH//:$HOME/.moon/bin:/:}"
+                PATH="''${PATH#:}"
+                PATH="''${PATH%:}"
+              fi
+              export PATH="${moonbit}/bin:$PATH"
+            ''}
 
             echo "Vize dev shell ready."
-            echo "Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, and binaryen."
+            echo "Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, binaryen, and MoonBit."
+            ${lib.optionalString (moonbit == null) ''echo "MoonBit native toolchain is not available for ${system}; install it separately if needed."''}
             echo "Run: pnpm install --frozen-lockfile"
             echo "Then: vp build"
           '';
@@ -153,6 +210,9 @@
         packages = {
           default = vize;
           vize = vize;
+        }
+        // lib.optionalAttrs (moonbit != null) {
+          moonbit = moonbit;
         };
       }
     )

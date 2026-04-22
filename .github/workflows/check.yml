@@ -55,6 +55,7 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test release scripts
@@ -97,11 +98,7 @@ jobs:
           cache-workspace-crates: "true"
 
       - name: Coverage report
-        run: |
-          cargo run -p vize_test_runner --bin coverage --release | tee coverage-report.txt
-          echo ""
-          echo "### Coverage Summary" >> $GITHUB_STEP_SUMMARY
-          tail -7 coverage-report.txt >> $GITHUB_STEP_SUMMARY
+        run: moon run --target native - -- < tools/moon/scripts/github/write_coverage_summary.mbtx
 
   playground-test:
     runs-on: ubuntu-latest
@@ -140,9 +137,7 @@ jobs:
 
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: |
-          cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown
-          wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir playground/src/wasm --target web
+        run: moon run --target native - -- playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
@@ -150,20 +145,13 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Install JS dependencies
-        run: |
-          vp install --frozen-lockfile --prefer-offline \
-            --filter './playground...' \
-            --filter './npm/vite-plugin-vize...' \
-            --filter './npm/vize...' \
-            --filter './npm/vize-native...'
+        run: moon run --target native - -- --filter './playground...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build npm packages
-        run: |
-          vp run --filter './npm/vize-native' build
-          vp run --filter './npm/vize' build
-          vp run --filter './npm/vite-plugin-vize' build
+        run: moon run --target native - -- vp run --filter './npm/vize-native' build -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -172,34 +160,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install Playwright browsers
-        run: |
-          VITE_PLUS_PLAYWRIGHT_CLI="$(node <<'EOF'
-          const path = require("node:path");
-
-          const vitePlusDir = path.dirname(require.resolve("vite-plus/package.json"));
-          const vitePlusTestDir = path.dirname(
-            require.resolve("@voidzero-dev/vite-plus-test/package.json", { paths: [vitePlusDir] }),
-          );
-          const playwrightPkg = require.resolve("playwright/package.json", {
-            paths: [vitePlusTestDir],
-          });
-
-          process.stdout.write(path.join(path.dirname(playwrightPkg), "cli.js"));
-          EOF
-          )"
-          PLAYGROUND_PLAYWRIGHT_CLI="$(node <<'EOF'
-          const path = require("node:path");
-
-          const playgroundDir = path.resolve("playground");
-          const playwrightPkg = require.resolve("playwright/package.json", {
-            paths: [playgroundDir],
-          });
-
-          process.stdout.write(path.join(path.dirname(playwrightPkg), "cli.js"));
-          EOF
-          )"
-          node "$VITE_PLUS_PLAYWRIGHT_CLI" install chromium --with-deps
-          node "$PLAYGROUND_PLAYWRIGHT_CLI" install chromium
+        run: moon run --target native - -- < tools/moon/scripts/github/install_playwright_browsers.mbtx
 
       - name: Run playground tests
         run: vp run --filter './playground' test:browser
@@ -215,16 +176,7 @@ jobs:
 
       - name: Commit updated snapshots
         if: steps.vrt.outcome == 'failure' && github.event_name == 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add playground/e2e/vrt/__snapshots__/
-          if git diff --cached --quiet; then
-            echo "No snapshot changes"
-          else
-            git commit -m "chore: update VRT snapshots"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
+        run: moon run --target native - -- ${{ github.head_ref }} < tools/moon/scripts/github/commit_vrt_snapshots.mbtx
 
       - name: Fail if VRT failed and no auto-update
         if: steps.vrt.outcome == 'failure' && github.event_name != 'pull_request'

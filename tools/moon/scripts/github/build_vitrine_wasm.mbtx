@@ -1,0 +1,66 @@
+///|
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+async fn run_app() -> Int {
+  let out_dirs = cli_args()
+  if out_dirs.is_empty() {
+    println(
+      "Usage: moon run --target native - -- <out-dir> [out-dir...] < tools/moon/scripts/github/build_vitrine_wasm.mbtx",
+    )
+    return 1
+  }
+  let cargo_exit = @process.run(
+    "cargo",
+    [
+      "build",
+      "--release",
+      "-p",
+      "vize_vitrine",
+      "--no-default-features",
+      "--features",
+      "wasm",
+      "--target",
+      "wasm32-unknown-unknown",
+    ],
+  )
+  if cargo_exit != 0 {
+    return cargo_exit
+  }
+  for out_dir in out_dirs {
+    let bindgen_exit = @process.run(
+      "wasm-bindgen",
+      [
+        "target/wasm32-unknown-unknown/release/vize_vitrine.wasm",
+        "--out-dir",
+        out_dir,
+        "--target",
+        "web",
+      ],
+    )
+    if bindgen_exit != 0 {
+      return bindgen_exit
+    }
+  }
+  0
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

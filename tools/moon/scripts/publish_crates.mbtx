@@ -1,0 +1,276 @@
+///|
+/// Publishes workspace crates to crates.io with retry and propagation checks.
+///
+/// The release workflow uses this script instead of inline shell so that the
+/// publication order, retry policy, and post-publish verification all live in a
+/// single place. The script is deliberately idempotent: if a crate version is
+/// already published, it skips the publish call and only waits until the crate
+/// becomes resolvable from crates.io index queries.
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/core/strconv",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/async@0.16.8/stdio",
+  "moonbitlang/x@0.4.41/fs" @xfs,
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+/// Ordered list of publishable crates.
+///
+/// The order matters because many of these crates depend on previously
+/// published workspace crates via exact-version dependencies. The accompanying
+/// test asserts that this list remains topologically valid.
+let published_crates : Array[String] = [
+  "vize_carton",
+  "vize_relief",
+  "vize_armature",
+  "vize_croquis",
+  "vize_atelier_core",
+  "vize_atelier_dom",
+  "vize_atelier_vapor",
+  "vize_atelier_ssr",
+  "vize_atelier_sfc",
+  "vize_canon",
+  "vize_patina",
+  "vize_musea",
+  "vize_fresco",
+]
+
+///|
+/// Parses a positive integer from a string and falls back on invalid input.
+fn positive_int_or(value : String, fallback : Int) -> Int {
+  try {
+    let parsed = @strconv.parse_int(value)
+    if parsed > 0 {
+      parsed
+    } else {
+      fallback
+    }
+  } catch {
+    _ => fallback
+  }
+}
+
+///|
+/// Reads a retry-related integer from the environment with a validated default.
+fn env_positive_int(name : String, fallback : Int) -> Int {
+  match @sys.get_env_var(name) {
+    Some(value) if value != "" => positive_int_or(value, fallback)
+    _ => fallback
+  }
+}
+
+///|
+/// Reads a text file and collapses IO failures into `None`.
+fn read_file_to_string(path : String) -> String? {
+  try {
+    Some(@xfs.read_file_to_string(path))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+/// Extracts the workspace package version from the root `Cargo.toml`.
+///
+/// We only need the `[workspace.package]` version line, so a lightweight line
+/// scanner is more predictable than shelling out to another TOML parser.
+fn workspace_version_from_content(content : String) -> String? {
+  let mut section = ""
+  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  for line in lines {
+    let trimmed = line.trim()
+    if trimmed.has_prefix("[") && trimmed.has_suffix("]") {
+      section = trimmed.to_string()
+      continue
+    }
+    if section == "[workspace.package]" &&
+      trimmed.has_prefix("version = \"") &&
+      trimmed.has_suffix("\"") {
+      return Some(
+        trimmed
+          .to_string()
+          .replace(old="version = \"", new="")
+          .replace_all(old="\"", new=""),
+      )
+    }
+  }
+  None
+}
+
+///|
+/// Returns `true` when the crates.io API already reports the target version.
+///
+/// This check is used both before and after `cargo publish` so reruns and
+/// partial-success cases remain safe.
+fn json_has_published_version(value : Json, version : String) -> Bool {
+  guard value is Object(root) else { return false }
+  guard root.get("versions") is Some(Array(versions)) else { return false }
+  for item in versions {
+    guard item is Object(version_obj) else { continue }
+    if version_obj.get("num") is Some(String(num)) && num == version {
+      return true
+    }
+  }
+  false
+}
+
+///|
+/// Queries crates.io to see whether `crate_name@version` has already been published.
+async fn crate_is_published(crate_name : String, version : String) -> Bool {
+  let (exit_code, body) = @process.collect_stdout(
+    "curl",
+    ["-sf", "https://crates.io/api/v1/crates/" + crate_name],
+  )
+  if exit_code != 0 {
+    return false
+  }
+  let parsed = try {
+    @json.parse(body.text())
+  } catch {
+    _ => return false
+  }
+  json_has_published_version(parsed, version)
+}
+
+///|
+/// Checks whether the published crate can be resolved by Cargo.
+///
+/// A crate may appear in the HTTP API before the registry index and Cargo
+/// metadata are fully updated. This helper verifies the state that downstream
+/// releases actually depend on.
+async fn crate_is_resolvable(crate_name : String, version : String) -> Bool {
+  let (exit_code, _, _) = @process.collect_output(
+    "cargo",
+    ["info", crate_name + "@" + version],
+  )
+  exit_code == 0
+}
+
+///|
+/// Waits until `cargo info crate@version` succeeds or a timeout is reached.
+async fn wait_for_resolution(
+  crate_name : String,
+  version : String,
+  max_attempts : Int,
+  delay_seconds : Int,
+) -> Int {
+  let mut attempt = 1
+  while attempt <= max_attempts {
+    if crate_is_resolvable(crate_name, version) {
+      println("\{crate_name} v\{version} is resolvable from crates.io.")
+      return 0
+    }
+    if attempt >= max_attempts {
+      @stdio.stderr.write(
+        "Timed out waiting for \{crate_name} v\{version} to become resolvable from crates.io.\n",
+      )
+      return 1
+    }
+    println(
+      "Waiting for \{crate_name} v\{version} to become resolvable from crates.io... (\{attempt}/\{max_attempts})",
+    )
+    @async.sleep(delay_seconds * 1000)
+    attempt = attempt + 1
+  }
+  1
+}
+
+///|
+/// Main entry point for ordered and rerun-safe crates.io publishing.
+///
+/// Each crate is published serially, retried on transient failure, and then
+/// verified through Cargo resolution before the next dependent crate is
+/// attempted. This avoids the common race where a dependent crate publishes
+/// before crates.io index propagation catches up.
+async fn run_app() -> Int {
+  let cargo_toml = match read_file_to_string("Cargo.toml") {
+    Some(content) => content
+    None => {
+      @stdio.stderr.write("Failed to read Cargo.toml\n")
+      return 1
+    }
+  }
+  let version = match workspace_version_from_content(cargo_toml) {
+    Some(version) => version
+    None => {
+      @stdio.stderr.write("Failed to read current version from Cargo.toml\n")
+      return 1
+    }
+  }
+
+  let max_attempts = env_positive_int("PUBLISH_RETRY_LIMIT", 60)
+  let delay_seconds = env_positive_int("PUBLISH_RETRY_DELAY", 5)
+  let resolution_attempts = env_positive_int("PUBLISH_RESOLUTION_RETRY_LIMIT", max_attempts)
+  let resolution_delay_seconds = env_positive_int(
+    "PUBLISH_RESOLUTION_RETRY_DELAY",
+    delay_seconds,
+  )
+  println("Expected version: \{version}")
+
+  for crate_name in published_crates {
+    println("Publishing \{crate_name} v\{version}...")
+    if crate_is_published(crate_name, version) {
+      println("\{crate_name} v\{version} is already published, skipping publish.")
+      if wait_for_resolution(
+        crate_name,
+        version,
+        resolution_attempts,
+        resolution_delay_seconds,
+      ) != 0 {
+        return 1
+      }
+      continue
+    }
+
+    let mut attempt = 1
+    let mut published = false
+    while attempt <= max_attempts {
+      let publish_exit = @process.run("cargo", ["publish", "-p", crate_name])
+      if publish_exit == 0 {
+        published = true
+        break
+      }
+      if crate_is_published(crate_name, version) {
+        println(
+          "\{crate_name} v\{version} was published despite a non-zero cargo publish exit.",
+        )
+        published = true
+        break
+      }
+      if attempt >= max_attempts {
+        @stdio.stderr.write("Timed out publishing \{crate_name} v\{version}.\n")
+        return 1
+      }
+      println(
+        "Retrying cargo publish for \{crate_name} v\{version}... (\{attempt}/\{max_attempts})",
+      )
+      @async.sleep(delay_seconds * 1000)
+      attempt = attempt + 1
+    }
+
+    if !published {
+      return 1
+    }
+    println("\{crate_name} v\{version} published successfully.")
+    if wait_for_resolution(
+      crate_name,
+      version,
+      resolution_attempts,
+      resolution_delay_seconds,
+    ) != 0 {
+      return 1
+    }
+  }
+
+  println("Done!")
+  0
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}
