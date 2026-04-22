@@ -20,7 +20,7 @@ fn cli_args() -> Array[String] {
 async fn main {
   let exit_code = @process.run(
     "node",
-    ["--experimental-strip-types", "tests/tooling/support/generate-expected.ts"] + cli_args(),
+    ["tests/tooling/support/generate-expected.ts"] + cli_args(),
   )
   @sys.exit(exit_code)
 }

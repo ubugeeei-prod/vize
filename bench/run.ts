@@ -6,7 +6,7 @@
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
  *   2. Build native bindings: vp run --filter './npm/vize-native' build
- *   3. Run benchmark: node --experimental-strip-types run.ts
+ *   3. Run benchmark: node run.ts
  */
 
 import { parse, compileScript, compileTemplate } from "@vue/compiler-sfc";

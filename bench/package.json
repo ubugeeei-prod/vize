@@ -4,10 +4,10 @@
   "type": "module",
   "scripts": {
     "generate": "node generate.mjs",
-    "bench:vite": "node --experimental-strip-types vite.ts",
-    "bench:lint": "node --experimental-strip-types lint.ts",
-    "bench:check": "node --experimental-strip-types check.ts",
-    "bench:fmt": "node --experimental-strip-types fmt.ts"
+    "bench:vite": "node vite.ts",
+    "bench:lint": "node lint.ts",
+    "bench:check": "node check.ts",
+    "bench:fmt": "node fmt.ts"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:vite-stack",

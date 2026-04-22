@@ -234,12 +234,9 @@ const testTasks = {
   test: noCacheTask(runTasks("test:rust", "test:js", "test:scripts")),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
   "test:js": noCacheTask(`${runTask("build:native")} && ${runInPackages("test", testedPackages)}`),
-  "test:scripts": task(
-    "node --experimental-strip-types --test --test-concurrency=1 tests/tooling/*.test.ts",
-    {
-      input: cacheInputs.rust,
-    },
-  ),
+  "test:scripts": task("node --test --test-concurrency=1 tests/tooling/*.test.ts", {
+    input: cacheInputs.rust,
+  }),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),
@@ -262,13 +259,13 @@ const testTasks = {
 };
 
 const benchmarkTasks = {
-  bench: noCacheTask("node --experimental-strip-types bench/run.ts"),
-  "bench:quick": noCacheTask("node --experimental-strip-types bench/run.ts 1000"),
+  bench: noCacheTask("node bench/run.ts"),
+  "bench:quick": noCacheTask("node bench/run.ts 1000"),
   "bench:generate": noCacheTask("node bench/generate.mjs 15000"),
-  "bench:lint": noCacheTask("node --experimental-strip-types bench/lint.ts"),
-  "bench:fmt": noCacheTask("node --experimental-strip-types bench/fmt.ts"),
-  "bench:check": noCacheTask("node --experimental-strip-types bench/check.ts"),
-  "bench:vite": noCacheTask("node --experimental-strip-types bench/vite.ts"),
+  "bench:lint": noCacheTask("node bench/lint.ts"),
+  "bench:fmt": noCacheTask("node bench/fmt.ts"),
+  "bench:check": noCacheTask("node bench/check.ts"),
+  "bench:vite": noCacheTask("node bench/vite.ts"),
   "bench:all": noCacheTask(
     runTasks("bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite"),
   ),

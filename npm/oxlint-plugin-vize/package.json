@@ -36,7 +36,7 @@
   },
   "scripts": {
     "build": "vp pack",
-    "test": "vp pack && node --experimental-strip-types src/test.ts",
+    "test": "vp pack && node src/test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"

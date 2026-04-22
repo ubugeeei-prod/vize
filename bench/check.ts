@@ -4,7 +4,7 @@
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
  *   2. Build CLI: vp run --workspace-root build:cli
- *   3. Run benchmark: node --experimental-strip-types bench/check.ts
+ *   3. Run benchmark: node bench/check.ts
  */
 
 import { existsSync, mkdirSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";

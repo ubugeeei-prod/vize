@@ -4,7 +4,7 @@
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
  *   2. Build CLI: mise run build:cli
- *   3. Run benchmark: node --experimental-strip-types bench/lint.ts
+ *   3. Run benchmark: node bench/lint.ts
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";

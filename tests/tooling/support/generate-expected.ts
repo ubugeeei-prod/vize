@@ -1,13 +1,13 @@
-#!/usr/bin/env node --experimental-strip-types
+#!/usr/bin/env node
 /**
  * Generate expected outputs from Vue's official compiler.
  *
  * Usage:
- *   node --experimental-strip-types tests/tooling/support/generate-expected.ts              # All modes
- *   node --experimental-strip-types tests/tooling/support/generate-expected.ts sfc/basic    # Specific fixture
- *   node --experimental-strip-types tests/tooling/support/generate-expected.ts --mode vdom  # All vdom fixtures
- *   node --experimental-strip-types tests/tooling/support/generate-expected.ts --mode vapor # All vapor fixtures
- *   node --experimental-strip-types tests/tooling/support/generate-expected.ts --mode sfc   # All sfc fixtures
+ *   node tests/tooling/support/generate-expected.ts              # All modes
+ *   node tests/tooling/support/generate-expected.ts sfc/basic    # Specific fixture
+ *   node tests/tooling/support/generate-expected.ts --mode vdom  # All vdom fixtures
+ *   node tests/tooling/support/generate-expected.ts --mode vapor # All vapor fixtures
+ *   node tests/tooling/support/generate-expected.ts --mode sfc   # All sfc fixtures
  */
 
 import * as fs from "node:fs";

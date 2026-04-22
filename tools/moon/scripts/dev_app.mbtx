@@ -29,7 +29,7 @@ async fn run_app() -> Int {
   }
   @process.run(
     "node",
-    ["--experimental-strip-types", "tests/tooling/support/dev-app.ts"],
+    ["tests/tooling/support/dev-app.ts"],
     extra_env=extra_env,
   )
 }
