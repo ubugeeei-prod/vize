@@ -117,6 +117,5 @@ ensureMoonShim();
 smokeTestMoon();
 
 fs.appendFileSync(githubPath, `${shimDir}\n`);
-fs.appendFileSync(githubPath, `${moonBin}\n`);
 fs.appendFileSync(githubEnv, `MOON_HOME=${moonHome}\n`);
 fs.appendFileSync(githubEnv, `MOON_BIN=${shimMoon}\n`);

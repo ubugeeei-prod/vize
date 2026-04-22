@@ -123,6 +123,43 @@ test("github/create_site_structure assembles the Pages output tree", () => {
   }
 });
 
+test("github/install_playwright_browsers uses the playground-local Playwright CLI", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-playwright-install-"));
+  const binDir = path.join(tempDir, "bin");
+  const argsPath = path.join(tempDir, "vp-args.txt");
+
+  try {
+    fs.mkdirSync(binDir, { recursive: true });
+    writeFakeCommand(
+      binDir,
+      "vp",
+      [
+        "require('node:fs').writeFileSync(",
+        `  ${JSON.stringify(argsPath)},`,
+        "  process.argv.slice(2).join('\\n'),",
+        ");",
+      ].join("\n"),
+    );
+
+    const result = runMoonScript("github/install_playwright_browsers", [], {
+      cwd: tempDir,
+      env: {
+        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+      },
+    });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(
+      fs.readFileSync(argsPath, "utf8"),
+      ["exec", "--filter", "./playground", "--", "playwright", "install", "chromium", "--with-deps"].join(
+        "\n",
+      ),
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
 test("github/write_coverage_summary appends the tail of coverage output", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-coverage-summary-"));
   const binDir = path.join(tempDir, "bin");
