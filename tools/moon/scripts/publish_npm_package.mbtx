@@ -79,6 +79,83 @@ fn safe_path_exists(path : String) -> Bool {
 }
 
 ///|
+fn normalize_manifest_path(value : String) -> String? {
+  let path = value.trim().to_string()
+  if path == "" {
+    return None
+  }
+  if path.has_prefix("http://") || path.has_prefix("https://") || path.has_prefix("#") {
+    return None
+  }
+  Some(path)
+}
+
+///|
+fn push_unique_string(items : Array[String], value : String) -> Unit {
+  for item in items {
+    if item == value {
+      return
+    }
+  }
+  items.push(value)
+}
+
+///|
+fn collect_manifest_paths(value : Json, paths : Array[String]) -> Unit {
+  match value {
+    String(path) => {
+      match normalize_manifest_path(path) {
+        Some(path) => push_unique_string(paths, path)
+        None => ()
+      }
+    }
+    Array(items) => {
+      for item in items {
+        collect_manifest_paths(item, paths)
+      }
+    }
+    Object(obj) => {
+      for _, child in obj {
+        collect_manifest_paths(child, paths)
+      }
+    }
+    _ => ()
+  }
+}
+
+///|
+fn validate_publish_entrypoints(directory : String, package_json : Json) -> Array[String] {
+  let missing = []
+  guard package_json is Object(package_obj) else {
+    missing.push("package.json root is not an object")
+    return missing
+  }
+
+  let manifest_paths = []
+  if package_obj.get("main") is Some(value) {
+    collect_manifest_paths(value, manifest_paths)
+  }
+  if package_obj.get("types") is Some(value) {
+    collect_manifest_paths(value, manifest_paths)
+  }
+  if package_obj.get("bin") is Some(value) {
+    collect_manifest_paths(value, manifest_paths)
+  }
+  if package_obj.get("exports") is Some(value) {
+    collect_manifest_paths(value, manifest_paths)
+  }
+
+  for manifest_path in manifest_paths {
+    let resolved = join_path(directory, manifest_path)
+    if !safe_path_exists(resolved) {
+      push_unique_string(missing, manifest_path)
+    }
+  }
+
+  missing
+}
+
+///|
 fn find_repo_root(start : String) -> String? {
   let current : @path.Path = start
   let current_path = current.resolve().to_string()
@@ -451,6 +528,16 @@ async fn run_app() -> Int {
     name,
     version,
     tag: npm_tag(version),
+  }
+  let missing_entrypoints = validate_publish_entrypoints(directory, package_json)
+  if !missing_entrypoints.is_empty() {
+    @stdio.stderr.write(
+      "Refusing to publish \{info.name}@\{info.version} because package.json points at files that are missing from \{directory}:\n",
+    )
+    for missing_path in missing_entrypoints {
+      @stdio.stderr.write("  - \{missing_path}\n")
+    }
+    return 1
   }
   let publish_args = [
     "pm",
