@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vp build && vp preview",
-    "build": "playwright install --with-deps chromium && vp build",
+    "build": "node ./scripts/ensure-browser.mjs && vp build",
     "preview": "vp preview"
   },
   "devDependencies": {

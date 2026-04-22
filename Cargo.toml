@@ -140,3 +140,9 @@ corsa_runtime = { package = "corsa_runtime", version = "=0.3.2" }
 lto = true
 codegen-units = 1
 opt-level = 3
+
+[profile.ci]
+inherits = "dev"
+debug = false
+incremental = false
+codegen-units = 256

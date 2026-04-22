@@ -75,6 +75,8 @@ test("WASM build jobs install MoonBit before invoking moon run", () => {
 test("setup-moonbit defines explicit Windows and Unix execution paths", () => {
   const action = readRepoFile(".github", "actions", "setup-moonbit", "action.yml");
 
+  assert.match(action, /Cache MoonBit toolchain/);
+  assert.match(action, /uses: actions\/cache@v4/);
   assert.match(action, /Setup MSVC toolchain \(Windows\)/);
   assert.match(action, /uses: ilammy\/msvc-dev-cmd@v1/);
   assert.match(action, /Install MoonBit \(Windows\)/);
@@ -88,6 +90,7 @@ test("setup-moonbit defines explicit Windows and Unix execution paths", () => {
 test("setup-moonbit smoke test validates the native async process runtime", () => {
   const installer = readRepoFile(".github", "actions", "setup-moonbit", "install-moonbit.mjs");
 
+  assert.match(installer, /function hasExistingMoonInstall\(\)/);
   assert.match(installer, /\["run", "-q", "--target", "native", "-", "--"\]/);
   assert.match(installer, /"moonbitlang\/async@0\.16\.8\/process"/);
   assert.match(installer, /@process\.run/);
@@ -122,6 +125,50 @@ test("release workflow configures npm auth fallback for every npm publish job", 
   assert.equal(fallbackSteps.length, 13);
   assert.match(workflow, /NPM_TOKEN:\s*\$\{\{\s*secrets\.NPM_TOKEN\s*\}\}/);
   assert.match(workflow, /tools\/moon\/scripts\/github\/configure_npm_auth\.mbtx/);
+});
+
+test("release workflow publishes npm packages from package-specific artifacts", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+
+  assert.doesNotMatch(workflow, /name:\s*release-npm-packages/);
+
+  for (const artifactName of [
+    "release-package-vize",
+    "release-package-vite-plugin-vize",
+    "release-package-oxlint-plugin-vize",
+    "release-package-unplugin-vize",
+    "release-package-fresco",
+    "release-package-musea-mcp-server",
+    "release-package-vite-plugin-musea",
+    "release-package-rspack-vize-plugin",
+    "release-package-musea-nuxt",
+    "release-package-nuxt",
+  ]) {
+    assert.match(workflow, new RegExp(`name:\\s*${artifactName}`));
+  }
+
+  const downloadTargets = [
+    ["release-npm-vite-plugin", "release-package-vite-plugin-vize"],
+    ["release-npm-oxlint-plugin", "release-package-oxlint-plugin-vize"],
+    ["release-npm-unplugin", "release-package-unplugin-vize"],
+    ["release-npm-fresco", "release-package-fresco"],
+    ["release-npm-musea-mcp-server", "release-package-musea-mcp-server"],
+    ["release-npm-vite-plugin-musea", "release-package-vite-plugin-musea"],
+    ["release-npm-rspack-plugin", "release-package-rspack-vize-plugin"],
+    ["release-npm-musea-nuxt", "release-package-musea-nuxt"],
+    ["release-npm-nuxt", "release-package-nuxt"],
+    ["release-npm-cli", "release-package-vize"],
+  ] as const;
+
+  for (const [jobName, artifactName] of downloadTargets) {
+    const jobStart = workflow.indexOf(`\n  ${jobName}:\n`);
+    assert.notEqual(jobStart, -1, `missing job ${jobName}`);
+    const remaining = workflow.slice(jobStart + 1);
+    const nextJobMatch = /\n  [a-z0-9-]+:\n/g.exec(remaining.slice(1));
+    const jobBody = remaining.slice(0, nextJobMatch ? nextJobMatch.index + 1 : undefined);
+
+    assert.match(jobBody, new RegExp(`name:\\s*${artifactName}`));
+  }
 });
 
 test("release workflow bundles fresco-native binaries into the root package instead of publishing platform packages", () => {
@@ -162,4 +209,24 @@ test("release workflow runs GitHub helper scripts with the native target on ever
     /Create archive \(Windows\)[\s\S]*moon run --target native - -- \$\{\{ matrix\.settings\.target \}\} \$\{\{ matrix\.settings\.archive \}\} vize\.exe < tools\/moon\/scripts\/github\/create_cli_archive\.mbtx/,
   );
   assert.match(workflow, /Build vize-native[\s\S]*moon run --target native - -- npm\/vize-native/);
+});
+
+test("check workflow only installs Playwright browsers on cache misses", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+
+  assert.match(workflow, /- name: Cache Playwright browsers\s+id: cache-playwright/);
+  assert.match(
+    workflow,
+    /- name: Install Playwright browsers\s+if: steps\.cache-playwright\.outputs\.cache-hit != 'true'/,
+  );
+});
+
+test("check and docs workflows use the CI Rust profile for non-release native builds", () => {
+  const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
+  const deployDocsWorkflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
+
+  assert.match(checkWorkflow, /cargo build --profile ci -p vize/);
+  assert.match(checkWorkflow, /cp target\/ci\/vize \/usr\/local\/bin\/vize/);
+  assert.match(checkWorkflow, /vp run --filter '\.\/npm\/vize-native' build:ci/);
+  assert.match(deployDocsWorkflow, /vp run --filter '\.\/npm\/vize-native' build:ci/);
 });

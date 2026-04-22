@@ -14,8 +14,8 @@
   "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "compile": "tsgo -p ./",
+    "watch": "tsgo -watch -p ./"
   },
   "contributes": {
     "languages": [

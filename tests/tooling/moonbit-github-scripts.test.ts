@@ -192,7 +192,7 @@ test("github/write_coverage_summary appends the tail of coverage output", () => 
       "cargo",
       [
         "const args = process.argv.slice(2);",
-        "if (args.join(' ') !== 'run -p vize_test_runner --bin coverage --release') process.exit(99);",
+        "if (args.join(' ') !== 'run --profile ci -p vize_test_runner --bin coverage') process.exit(99);",
         "process.stdout.write([",
         "  'Coverage report',",
         "  'line-1',",

@@ -48,9 +48,9 @@ jobs:
           shared-key: "native"
           cache-workspace-crates: "true"
       - name: Build vize CLI
-        run: cargo build --release -p vize
+        run: cargo build --profile ci -p vize
       - name: Install vize CLI
-        run: cp target/release/vize /usr/local/bin/vize
+        run: cp target/ci/vize /usr/local/bin/vize
       - uses: voidzero-dev/setup-vp@v1
         with:
           node-version-file: ".node-version"
@@ -61,9 +61,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
-      - name: Check editor extensions
-        run: vp run --workspace-root check:editor-extensions
-      - name: Package editor extensions
+      - name: Check and package editor extensions
         run: vp run --workspace-root package:editor-extensions
       - name: Build JS packages
         run: vp run --workspace-root build:packages
@@ -155,15 +153,17 @@ jobs:
         run: moon run --target native - -- --filter './playground...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build npm packages
-        run: moon run --target native - -- vp run --filter './npm/vize-native' build -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build < tools/moon/scripts/github/run_many.mbtx
+        run: moon run --target native - -- vp run --filter './npm/vize-native' build:ci -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Cache Playwright browsers
+        id: cache-playwright
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install Playwright browsers
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: moon run --target native - -- < tools/moon/scripts/github/install_playwright_browsers.mbtx
 
       - name: Run playground tests

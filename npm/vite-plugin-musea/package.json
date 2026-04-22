@@ -54,9 +54,9 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack && pnpm --dir ../.. install --frozen-lockfile --prefer-offline --filter @vizejs/vite-plugin-musea... && vp build --config gallery-vite.config.ts",
+    "build": "tsdown --config tsdown.config.ts && pnpm --dir ../.. install --frozen-lockfile --prefer-offline --filter @vizejs/vite-plugin-musea... && vp build --config gallery-vite.config.ts",
     "build:gallery": "vp build --config gallery-vite.config.ts",
-    "dev": "vp pack --watch",
+    "dev": "tsdown --config tsdown.config.ts --watch",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"
@@ -76,6 +76,7 @@
     "marked": "catalog:content",
     "marked-highlight": "catalog:content",
     "monaco-editor": "catalog:content",
+    "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",

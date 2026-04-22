@@ -82,10 +82,13 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
         embeddedLanguages?: Record<string, string>;
       }>;
     };
+    scripts?: Record<string, string>;
     version?: string;
   }>("npm/vscode-art/package.json");
 
   assert.equal(manifest.version, workspaceVersion());
+  assert.equal(manifest.scripts?.compile, "tsgo -p ./");
+  assert.equal(manifest.scripts?.watch, "tsgo -watch -p ./");
 
   const embeddedLanguages = manifest.contributes?.grammars?.[0]?.embeddedLanguages ?? {};
   assert.equal(embeddedLanguages["source.css.scss"], "scss");
@@ -168,5 +171,8 @@ test("zed-vize registers art-vue as a first-party language", () => {
 
 test("CI packages editor extension artifacts", () => {
   const workflow = fs.readFileSync(path.join(root, ".github/workflows/check.yml"), "utf-8");
-  assert.match(workflow, /name: Package editor extensions[\s\S]*package:editor-extensions/);
+  assert.match(
+    workflow,
+    /name: Check and package editor extensions[\s\S]*package:editor-extensions/,
+  );
 });

@@ -26,6 +26,7 @@
   },
   "scripts": {
     "build": "napi build --platform --release --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
+    "build:ci": "napi build --platform --profile ci --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
     "build:debug": "napi build --platform --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
     "prepublishOnly": "napi pre-publish -t npm --no-gh-release --skip-optional-publish"
   },

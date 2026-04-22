@@ -45,7 +45,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp run --workspace-root generate:rule-types && vp pack",
+    "build": "vp run --workspace-root generate:rule-types && tsdown --config tsdown.config.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",

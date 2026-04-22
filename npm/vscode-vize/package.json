@@ -27,11 +27,11 @@
   "publisher": "ubugeeei",
   "main": "./dist/extension.cjs",
   "scripts": {
-    "vscode:prepublish": "vp pack",
-    "build": "vp pack",
-    "watch": "vp pack --watch",
-    "check": "tsc --noEmit && vp check src vite.config.ts",
-    "check:fix": "vp check --fix src vite.config.ts && tsc --noEmit",
+    "vscode:prepublish": "tsdown --config tsdown.config.ts",
+    "build": "tsdown --config tsdown.config.ts",
+    "watch": "tsdown --config tsdown.config.ts --watch",
+    "check": "tsgo --noEmit && vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts && tsgo --noEmit",
     "fmt": "vp fmt --write src vite.config.ts",
     "package": "vsce package --no-dependencies --out dist/vize.vsix",
     "publish": "vsce publish --no-dependencies",
@@ -41,9 +41,11 @@
     "vscode-languageclient": "9.0.1"
   },
   "devDependencies": {
+    "@typescript/native-preview": "7.0.0-dev.20260421.1",
     "@types/node": "25.6.0",
     "@types/vscode": "1.75.0",
     "@vscode/vsce": "3.9.1",
+    "tsdown": "0.21.9",
     "typescript": "6.0.3",
     "vite-plus": "0.1.19"
   },

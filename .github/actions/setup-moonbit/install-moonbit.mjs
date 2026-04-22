@@ -98,39 +98,45 @@ async fn main {
   }
 }
 
-if (os.type() === "Windows_NT") {
-  run(
-    "pwsh",
-    [
-      "-NoProfile",
-      "-ExecutionPolicy",
-      "Bypass",
-      "-Command",
-      `Invoke-WebRequest -UseBasicParsing 'https://cli.moonbitlang.com/install/powershell.ps1' -OutFile "${moonInstallerScript}"`,
-    ],
-    {
-      ...process.env,
-      MOON_HOME: moonHome,
-    },
-  );
-  run("pwsh", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", moonInstallerScript], {
-    ...process.env,
-    MOON_HOME: moonHome,
-  });
-} else {
-  run("bash", ["-lc", "curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash"], {
-    ...process.env,
-    HOME: runnerTemp,
-    MOON_HOME: moonHome,
-    SHELL: process.env.SHELL ?? "/bin/bash",
-  });
+function hasExistingMoonInstall() {
+  return fs.existsSync(moonExe);
 }
 
-run(moonExe, ["update"], {
-  ...process.env,
-  MOON_HOME: moonHome,
-  PATH: `${moonBin}${path.delimiter}${process.env.PATH ?? ""}`,
-});
+if (!hasExistingMoonInstall()) {
+  if (os.type() === "Windows_NT") {
+    run(
+      "pwsh",
+      [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        `Invoke-WebRequest -UseBasicParsing 'https://cli.moonbitlang.com/install/powershell.ps1' -OutFile "${moonInstallerScript}"`,
+      ],
+      {
+        ...process.env,
+        MOON_HOME: moonHome,
+      },
+    );
+    run("pwsh", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", moonInstallerScript], {
+      ...process.env,
+      MOON_HOME: moonHome,
+    });
+  } else {
+    run("bash", ["-lc", "curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash"], {
+      ...process.env,
+      HOME: runnerTemp,
+      MOON_HOME: moonHome,
+      SHELL: process.env.SHELL ?? "/bin/bash",
+    });
+  }
+
+  run(moonExe, ["update"], {
+    ...process.env,
+    MOON_HOME: moonHome,
+    PATH: `${moonBin}${path.delimiter}${process.env.PATH ?? ""}`,
+  });
+}
 
 ensureMoonShim();
 smokeTestMoon();

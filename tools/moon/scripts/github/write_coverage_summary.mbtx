@@ -33,7 +33,7 @@ async fn run_app() -> Int {
   }
   let (exit_code, stdout_data, stderr_data) = @process.collect_output(
     "cargo",
-    ["run", "-p", "vize_test_runner", "--bin", "coverage", "--release"],
+    ["run", "--profile", "ci", "-p", "vize_test_runner", "--bin", "coverage"],
   )
   let stdout = stdout_data.text()
   let stderr = stderr_data.text()

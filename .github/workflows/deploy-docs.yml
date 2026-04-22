@@ -46,7 +46,7 @@ jobs:
         run: moon run --target native - -- --filter './docs...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build @vizejs/vite-plugin
-        run: moon run --target native - -- vp run --filter './npm/vize-native' build -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build < tools/moon/scripts/github/run_many.mbtx
+        run: moon run --target native - -- vp run --filter './npm/vize-native' build:ci -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Build docs
         run: vp run --filter './docs' build
@@ -106,7 +106,7 @@ jobs:
         run: moon run --target native - -- --filter './playground...' --filter './examples/vite-musea...' --filter './npm/vite-plugin-musea...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build npm packages
-        run: moon run --target native - -- vp run --filter './npm/vize-native' build -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build -- vp run --filter './npm/vite-plugin-musea' build < tools/moon/scripts/github/run_many.mbtx
+        run: moon run --target native - -- vp run --filter './npm/vize-native' build:ci -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build -- vp run --filter './npm/vite-plugin-musea' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Build playground
         run: vp run --filter './playground' build

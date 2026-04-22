@@ -202,23 +202,83 @@ jobs:
       - name: Build release npm packages
         run: moon run --target native - -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build -- vp run --filter './npm/oxlint-plugin-vize' build -- vp run --filter './npm/unplugin-vize' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/musea-mcp-server' build -- vp run --filter './npm/vite-plugin-musea' build -- vp run --filter './npm/vite-plugin-musea' build:gallery -- vp run --filter './npm/rspack-vize-plugin' build -- vp run --filter './npm/musea-nuxt' build -- vp run --filter './npm/nuxt' build < tools/moon/scripts/github/run_many.mbtx
 
-      - name: Upload prebuilt packages
+      - name: Upload vize CLI package artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-npm-packages
-          path: |
-            npm/vize
-            npm/vize-native
-            npm/fresco-native
-            npm/vite-plugin-vize
-            npm/oxlint-plugin-vize
-            npm/unplugin-vize
-            npm/fresco
-            npm/musea-mcp-server
-            npm/vite-plugin-musea
-            npm/rspack-vize-plugin
-            npm/musea-nuxt
-            npm/nuxt
+          name: release-package-vize
+          path: npm/vize
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Vite plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-vite-plugin-vize
+          path: npm/vite-plugin-vize
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Oxlint plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-oxlint-plugin-vize
+          path: npm/oxlint-plugin-vize
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload unplugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-unplugin-vize
+          path: npm/unplugin-vize
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Fresco artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-fresco
+          path: npm/fresco
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Musea MCP server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-musea-mcp-server
+          path: npm/musea-mcp-server
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Musea Vite plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-vite-plugin-musea
+          path: npm/vite-plugin-musea
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Rspack plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-rspack-vize-plugin
+          path: npm/rspack-vize-plugin
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Musea Nuxt artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-musea-nuxt
+          path: npm/musea-nuxt
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Nuxt artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-nuxt
+          path: npm/nuxt
           if-no-files-found: error
           compression-level: 0
 
@@ -502,7 +562,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-vite-plugin-vize
           path: .
 
       - name: Publish @vizejs/vite-plugin
@@ -535,7 +595,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-oxlint-plugin-vize
           path: .
 
       - name: Inject native binding package versions
@@ -571,7 +631,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-unplugin-vize
           path: .
 
       - name: Publish @vizejs/unplugin
@@ -604,7 +664,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-fresco
           path: .
 
       - name: Publish @vizejs/fresco
@@ -637,7 +697,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-musea-mcp-server
           path: .
 
       - name: Publish @vizejs/musea-mcp-server
@@ -670,7 +730,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-vite-plugin-musea
           path: .
 
       - name: Publish @vizejs/vite-plugin-musea
@@ -703,7 +763,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-rspack-vize-plugin
           path: .
 
       - name: Publish @vizejs/rspack-plugin
@@ -736,7 +796,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-musea-nuxt
           path: .
 
       - name: Publish @vizejs/musea-nuxt
@@ -775,7 +835,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-nuxt
           path: .
 
       - name: Publish @vizejs/nuxt
@@ -874,7 +934,7 @@ jobs:
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
+          name: release-package-vize
           path: .
 
       - name: Inject native binding package versions
