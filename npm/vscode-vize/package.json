@@ -41,9 +41,9 @@
     "vscode-languageclient": "9.0.1"
   },
   "devDependencies": {
-    "@typescript/native-preview": "7.0.0-dev.20260421.1",
     "@types/node": "25.6.0",
     "@types/vscode": "1.75.0",
+    "@typescript/native-preview": "7.0.0-dev.20260421.1",
     "@vscode/vsce": "3.9.1",
     "tsdown": "0.21.9",
     "typescript": "6.0.3",

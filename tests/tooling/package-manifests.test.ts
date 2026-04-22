@@ -109,7 +109,10 @@ test("editor extension manifests stay opt-in and version aligned", () => {
   assert.equal(vscodePackage.scripts?.build, "tsdown --config tsdown.config.ts");
   assert.equal(vscodePackage.scripts?.watch, "tsdown --config tsdown.config.ts --watch");
   assert.equal(vscodePackage.scripts?.check, "tsgo --noEmit && vp check src vite.config.ts");
-  assert.equal(vscodePackage.scripts?.["check:fix"], "vp check --fix src vite.config.ts && tsgo --noEmit");
+  assert.equal(
+    vscodePackage.scripts?.["check:fix"],
+    "vp check --fix src vite.config.ts && tsgo --noEmit",
+  );
   assert.equal(
     vscodePackage.devDependencies?.["@typescript/native-preview"],
     "7.0.0-dev.20260421.1",
@@ -167,7 +170,11 @@ test("workspace TypeScript package builds use tsdown configs", () => {
       "tsdown --config tsdown.config.ts",
       "tsdown --config tsdown.config.ts --watch",
     ],
-    ["npm/musea-nuxt", "tsdown --config tsdown.config.ts", "tsdown --config tsdown.config.ts --watch"],
+    [
+      "npm/musea-nuxt",
+      "tsdown --config tsdown.config.ts",
+      "tsdown --config tsdown.config.ts --watch",
+    ],
     ["npm/nuxt", "tsdown --config tsdown.config.ts", "tsdown --config tsdown.config.ts --watch"],
     ["npm/oxlint-plugin-vize", "tsdown --config tsdown.config.ts", undefined],
     [
@@ -211,10 +218,7 @@ test("workspace TypeScript package builds use tsdown configs", () => {
   ) as {
     scripts?: Record<string, string>;
   };
-  assert.equal(
-    oxlintPackage.scripts?.test,
-    "tsdown --config tsdown.config.ts && node src/test.ts",
-  );
+  assert.equal(oxlintPackage.scripts?.test, "tsdown --config tsdown.config.ts && node src/test.ts");
 
   const rootTasks = fs.readFileSync(path.join(root, "vite.config.ts"), "utf-8");
   assert.match(rootTasks, /pnpm exec tsdown --config tsdown\.config\.ts/);
