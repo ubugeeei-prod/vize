@@ -148,19 +148,19 @@ test("release workflow publishes npm packages from package-specific artifacts", 
   }
 
   const downloadTargets = [
-    ["release-npm-vite-plugin", "release-package-vite-plugin-vize"],
-    ["release-npm-oxlint-plugin", "release-package-oxlint-plugin-vize"],
-    ["release-npm-unplugin", "release-package-unplugin-vize"],
-    ["release-npm-fresco", "release-package-fresco"],
-    ["release-npm-musea-mcp-server", "release-package-musea-mcp-server"],
-    ["release-npm-vite-plugin-musea", "release-package-vite-plugin-musea"],
-    ["release-npm-rspack-plugin", "release-package-rspack-vize-plugin"],
-    ["release-npm-musea-nuxt", "release-package-musea-nuxt"],
-    ["release-npm-nuxt", "release-package-nuxt"],
-    ["release-npm-cli", "release-package-vize"],
+    ["release-npm-vite-plugin", "release-package-vite-plugin-vize", "npm/vite-plugin-vize"],
+    ["release-npm-oxlint-plugin", "release-package-oxlint-plugin-vize", "npm/oxlint-plugin-vize"],
+    ["release-npm-unplugin", "release-package-unplugin-vize", "npm/unplugin-vize"],
+    ["release-npm-fresco", "release-package-fresco", "npm/fresco"],
+    ["release-npm-musea-mcp-server", "release-package-musea-mcp-server", "npm/musea-mcp-server"],
+    ["release-npm-vite-plugin-musea", "release-package-vite-plugin-musea", "npm/vite-plugin-musea"],
+    ["release-npm-rspack-plugin", "release-package-rspack-vize-plugin", "npm/rspack-vize-plugin"],
+    ["release-npm-musea-nuxt", "release-package-musea-nuxt", "npm/musea-nuxt"],
+    ["release-npm-nuxt", "release-package-nuxt", "npm/nuxt"],
+    ["release-npm-cli", "release-package-vize", "npm/vize"],
   ] as const;
 
-  for (const [jobName, artifactName] of downloadTargets) {
+  for (const [jobName, artifactName, downloadPath] of downloadTargets) {
     const jobStart = workflow.indexOf(`\n  ${jobName}:\n`);
     assert.notEqual(jobStart, -1, `missing job ${jobName}`);
     const remaining = workflow.slice(jobStart + 1);
@@ -168,6 +168,7 @@ test("release workflow publishes npm packages from package-specific artifacts", 
     const jobBody = remaining.slice(0, nextJobMatch ? nextJobMatch.index + 1 : undefined);
 
     assert.match(jobBody, new RegExp(`name:\\s*${artifactName}`));
+    assert.match(jobBody, new RegExp(`path:\\s*${downloadPath.replace("/", "\\/")}`));
   }
 });
 

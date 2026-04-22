@@ -203,9 +203,7 @@ const buildTasks = {
   ),
   "build:plugin": noCacheTask(runTask("build:vite-plugin")),
   "build:cli": task("cargo build --release -p vize"),
-  "build:vscode-extension": noCacheTask(
-    runInVscodeExtension("pnpm exec tsdown --config tsdown.config.ts"),
-  ),
+  "build:vscode-extension": noCacheTask(runInVscodeExtension("pnpm exec vp pack")),
   "build:editor-extensions": noCacheTask(runTasks("build:vscode-extension", "check:zed-extension")),
   "package:vscode-extension": noCacheTask(
     runInVscodeExtension("pnpm exec vsce package --no-dependencies --out dist/vize.vsix"),

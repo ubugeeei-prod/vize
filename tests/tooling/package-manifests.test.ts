@@ -105,9 +105,9 @@ test("editor extension manifests stay opt-in and version aligned", () => {
     vscodePackage.contributes?.configuration?.properties?.["vize.editor.enable"]?.default,
     false,
   );
-  assert.equal(vscodePackage.scripts?.["vscode:prepublish"], "tsdown --config tsdown.config.ts");
-  assert.equal(vscodePackage.scripts?.build, "tsdown --config tsdown.config.ts");
-  assert.equal(vscodePackage.scripts?.watch, "tsdown --config tsdown.config.ts --watch");
+  assert.equal(vscodePackage.scripts?.["vscode:prepublish"], "vp pack");
+  assert.equal(vscodePackage.scripts?.build, "vp pack");
+  assert.equal(vscodePackage.scripts?.watch, "vp pack --watch");
   assert.equal(vscodePackage.scripts?.check, "tsgo --noEmit && vp check src vite.config.ts");
   assert.equal(
     vscodePackage.scripts?.["check:fix"],
@@ -117,8 +117,6 @@ test("editor extension manifests stay opt-in and version aligned", () => {
     vscodePackage.devDependencies?.["@typescript/native-preview"],
     "7.0.0-dev.20260421.1",
   );
-  assert.equal(vscodePackage.devDependencies?.tsdown, "0.21.9");
-  assert.equal(fs.existsSync(path.join(root, "npm/vscode-vize/tsdown.config.ts")), true);
 
   const zedManifest = fs.readFileSync(path.join(root, "npm/zed-vize/extension.toml"), "utf-8");
   const zedVersion = zedManifest.match(/^version = "(.+)"$/m)?.[1];
@@ -137,10 +135,9 @@ test("workspace package builds do not nest pnpm run commands", () => {
 
   assert.equal(
     museaPackage.scripts?.build,
-    "tsdown --config tsdown.config.ts && pnpm --dir ../.. install --frozen-lockfile --prefer-offline --filter @vizejs/vite-plugin-musea... && vp build --config gallery-vite.config.ts",
+    "vp pack && pnpm --dir ../.. install --frozen-lockfile --prefer-offline --filter @vizejs/vite-plugin-musea... && vp build --config gallery-vite.config.ts",
   );
-  assert.equal(museaPackage.scripts?.dev, "tsdown --config tsdown.config.ts --watch");
-  assert.equal(fs.existsSync(path.join(root, "npm/vite-plugin-musea/tsdown.config.ts")), true);
+  assert.equal(museaPackage.scripts?.dev, "vp pack --watch");
   assert.doesNotMatch(museaPackage.scripts?.build ?? "", /\bpnpm run\b/);
 });
 
@@ -157,41 +154,20 @@ test("vize package delegates rule type generation to the workspace MoonBit task"
   );
   assert.equal(
     vizePackage.scripts?.build,
-    "vp run --workspace-root generate:rule-types && tsdown --config tsdown.config.ts",
+    "vp run --workspace-root generate:rule-types && vp pack",
   );
-  assert.equal(fs.existsSync(path.join(root, "npm/vize/tsdown.config.ts")), true);
 });
 
-test("workspace TypeScript package builds use tsdown configs", () => {
+test("workspace TypeScript package builds use vp pack", () => {
   const packages = [
-    ["npm/fresco", "tsdown --config tsdown.config.ts", "tsdown --config tsdown.config.ts --watch"],
-    [
-      "npm/musea-mcp-server",
-      "tsdown --config tsdown.config.ts",
-      "tsdown --config tsdown.config.ts --watch",
-    ],
-    [
-      "npm/musea-nuxt",
-      "tsdown --config tsdown.config.ts",
-      "tsdown --config tsdown.config.ts --watch",
-    ],
-    ["npm/nuxt", "tsdown --config tsdown.config.ts", "tsdown --config tsdown.config.ts --watch"],
-    ["npm/oxlint-plugin-vize", "tsdown --config tsdown.config.ts", undefined],
-    [
-      "npm/rspack-vize-plugin",
-      "tsdown --config tsdown.config.ts",
-      "tsdown --config tsdown.config.ts --watch",
-    ],
-    [
-      "npm/unplugin-vize",
-      "tsdown --config tsdown.config.ts",
-      "tsdown --config tsdown.config.ts --watch",
-    ],
-    [
-      "npm/vite-plugin-vize",
-      "tsdown --config tsdown.config.ts",
-      "tsdown --config tsdown.config.ts --watch",
-    ],
+    ["npm/fresco", "vp pack", "vp pack --watch"],
+    ["npm/musea-mcp-server", "vp pack", "vp pack --watch"],
+    ["npm/musea-nuxt", "vp pack", "vp pack --watch"],
+    ["npm/nuxt", "vp pack", "vp pack --watch"],
+    ["npm/oxlint-plugin-vize", "vp pack", undefined],
+    ["npm/rspack-vize-plugin", "vp pack", "vp pack --watch"],
+    ["npm/unplugin-vize", "vp pack", "vp pack --watch"],
+    ["npm/vite-plugin-vize", "vp pack", "vp pack --watch"],
   ] as const;
 
   for (const [packageDir, buildScript, devScript] of packages) {
@@ -202,11 +178,6 @@ test("workspace TypeScript package builds use tsdown configs", () => {
     };
 
     assert.equal(packageJson.scripts?.build, buildScript, `${packageDir} build script`);
-    assert.equal(
-      fs.existsSync(path.join(root, packageDir, "tsdown.config.ts")),
-      true,
-      `${packageDir} tsdown config`,
-    );
 
     if (devScript != null) {
       assert.equal(packageJson.scripts?.dev, devScript, `${packageDir} dev script`);
@@ -218,10 +189,10 @@ test("workspace TypeScript package builds use tsdown configs", () => {
   ) as {
     scripts?: Record<string, string>;
   };
-  assert.equal(oxlintPackage.scripts?.test, "tsdown --config tsdown.config.ts && node src/test.ts");
+  assert.equal(oxlintPackage.scripts?.test, "vp pack && node src/test.ts");
 
   const rootTasks = fs.readFileSync(path.join(root, "vite.config.ts"), "utf-8");
-  assert.match(rootTasks, /pnpm exec tsdown --config tsdown\.config\.ts/);
+  assert.match(rootTasks, /pnpm exec vp pack/);
 });
 
 test("fresco-native publishes bundled binaries directly from the root package", () => {

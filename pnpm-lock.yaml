@@ -321,9 +321,6 @@ importers:
       '@vue/runtime-core':
         specifier: catalog:vue-stable
         version: 3.5.32
-      tsdown:
-        specifier: catalog:vite-stack
-        version: 0.21.9(@tsdown/css@0.21.9)(@typescript/native-preview@7.0.0-dev.20260421.1)(typescript@6.0.3)(vue-tsc@3.2.7(typescript@6.0.3))
       typescript:
         specifier: catalog:typescript
         version: 6.0.3
@@ -392,9 +389,6 @@ importers:
 
   npm/musea-nuxt:
     devDependencies:
-      tsdown:
-        specifier: catalog:vite-stack
-        version: 0.21.9(@tsdown/css@0.21.9)(@typescript/native-preview@7.0.0-dev.20260421.1)(typescript@6.0.3)(vue-tsc@3.2.7(typescript@6.0.3))
       typescript:
         specifier: catalog:typescript
         version: 6.0.3
@@ -432,9 +426,6 @@ importers:
         specifier: workspace:*
         version: link:../vize
     devDependencies:
-      tsdown:
-        specifier: catalog:vite-stack
-        version: 0.21.9(@tsdown/css@0.21.9)(@typescript/native-preview@7.0.0-dev.20260421.1)(typescript@6.0.3)(vue-tsc@3.2.7(typescript@6.0.3))
       typescript:
         specifier: catalog:typescript
         version: 6.0.3
@@ -575,9 +566,6 @@ importers:
       rollup:
         specifier: catalog:bundlers
         version: 4.60.2
-      tsdown:
-        specifier: catalog:vite-stack
-        version: 0.21.9(@tsdown/css@0.21.9)(@typescript/native-preview@7.0.0-dev.20260421.1)(typescript@6.0.3)(vue-tsc@3.2.7(typescript@6.0.3))
       typescript:
         specifier: catalog:typescript
         version: 6.0.3
@@ -636,9 +624,6 @@ importers:
       monaco-editor:
         specifier: catalog:content
         version: 0.52.2
-      tsdown:
-        specifier: catalog:vite-stack
-        version: 0.21.9(@tsdown/css@0.21.9)(@typescript/native-preview@7.0.0-dev.20260421.1)(typescript@6.0.3)(vue-tsc@3.2.7(typescript@6.0.3))
       typescript:
         specifier: catalog:typescript
         version: 6.0.3
@@ -670,9 +655,6 @@ importers:
       '@types/node':
         specifier: catalog:typescript
         version: 25.6.0
-      tsdown:
-        specifier: catalog:vite-stack
-        version: 0.21.9(@tsdown/css@0.21.9)(@typescript/native-preview@7.0.0-dev.20260421.1)(typescript@6.0.3)(vue-tsc@3.2.7(typescript@6.0.3))
       typescript:
         specifier: catalog:typescript
         version: 6.0.3

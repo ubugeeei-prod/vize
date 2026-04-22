@@ -563,7 +563,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-vite-plugin-vize
-          path: .
+          path: npm/vite-plugin-vize
 
       - name: Publish @vizejs/vite-plugin
         run: moon run --target native - -- npm/vite-plugin-vize --provenance < tools/moon/scripts/publish_npm_package.mbtx
@@ -596,7 +596,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-oxlint-plugin-vize
-          path: .
+          path: npm/oxlint-plugin-vize
 
       - name: Inject native binding package versions
         run: moon run --target native - -- npm/oxlint-plugin-vize/package.json npm/vize-native/package.json --print < tools/moon/scripts/inject_native_optional_deps.mbtx
@@ -632,7 +632,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-unplugin-vize
-          path: .
+          path: npm/unplugin-vize
 
       - name: Publish @vizejs/unplugin
         run: moon run --target native - -- npm/unplugin-vize --provenance < tools/moon/scripts/publish_npm_package.mbtx
@@ -665,7 +665,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-fresco
-          path: .
+          path: npm/fresco
 
       - name: Publish @vizejs/fresco
         run: moon run --target native - -- npm/fresco --provenance < tools/moon/scripts/publish_npm_package.mbtx
@@ -698,7 +698,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-musea-mcp-server
-          path: .
+          path: npm/musea-mcp-server
 
       - name: Publish @vizejs/musea-mcp-server
         run: moon run --target native - -- npm/musea-mcp-server --provenance < tools/moon/scripts/publish_npm_package.mbtx
@@ -731,7 +731,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-vite-plugin-musea
-          path: .
+          path: npm/vite-plugin-musea
 
       - name: Publish @vizejs/vite-plugin-musea
         run: moon run --target native - -- npm/vite-plugin-musea --provenance < tools/moon/scripts/publish_npm_package.mbtx
@@ -764,7 +764,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-rspack-vize-plugin
-          path: .
+          path: npm/rspack-vize-plugin
 
       - name: Publish @vizejs/rspack-plugin
         run: moon run --target native - -- npm/rspack-vize-plugin --provenance < tools/moon/scripts/publish_npm_package.mbtx
@@ -797,7 +797,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-musea-nuxt
-          path: .
+          path: npm/musea-nuxt
 
       - name: Publish @vizejs/musea-nuxt
         run: moon run --target native - -- npm/musea-nuxt --provenance < tools/moon/scripts/publish_npm_package.mbtx
@@ -836,7 +836,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-nuxt
-          path: .
+          path: npm/nuxt
 
       - name: Publish @vizejs/nuxt
         run: moon run --target native - -- npm/nuxt --provenance < tools/moon/scripts/publish_npm_package.mbtx
@@ -935,7 +935,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: release-package-vize
-          path: .
+          path: npm/vize
 
       - name: Inject native binding package versions
         run: moon run --target native - -- npm/vize/package.json --print < tools/moon/scripts/inject_native_optional_deps.mbtx

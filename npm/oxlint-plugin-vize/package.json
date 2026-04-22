@@ -35,8 +35,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown --config tsdown.config.ts",
-    "test": "tsdown --config tsdown.config.ts && node src/test.ts",
+    "build": "vp pack",
+    "test": "vp pack && node src/test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"

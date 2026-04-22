@@ -51,8 +51,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsdown --config tsdown.config.ts",
-    "dev": "tsdown --config tsdown.config.ts --watch",
+    "build": "vp pack",
+    "dev": "vp pack --watch",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
@@ -68,7 +68,6 @@
     "@types/node": "catalog:typescript",
     "esbuild": "catalog:bundlers",
     "rollup": "catalog:bundlers",
-    "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-beta",
