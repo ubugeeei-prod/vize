@@ -151,9 +151,16 @@ test("github/install_playwright_browsers uses the playground-local Playwright CL
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.equal(
       fs.readFileSync(argsPath, "utf8"),
-      ["exec", "--filter", "./playground", "--", "playwright", "install", "chromium", "--with-deps"].join(
-        "\n",
-      ),
+      [
+        "exec",
+        "--filter",
+        "./playground",
+        "--",
+        "playwright",
+        "install",
+        "chromium",
+        "--with-deps",
+      ].join("\n"),
     );
   } finally {
     rmSync(tempDir, { recursive: true, force: true });

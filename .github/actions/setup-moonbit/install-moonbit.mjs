@@ -51,17 +51,14 @@ export MOON_HOME="${moonHome}"
 }
 
 function smokeTestMoon() {
-  const result = spawnSync(
-    moonExe,
-    ["run", "-q", "--target", "native", "-", "--"],
-    {
-      stdio: ["pipe", "inherit", "inherit"],
-      env: {
-        ...process.env,
-        MOON_HOME: moonHome,
-        PATH: `${shimDir}${path.delimiter}${moonBin}${path.delimiter}${process.env.PATH ?? ""}`,
-      },
-      input: `///|
+  const result = spawnSync(moonExe, ["run", "-q", "--target", "native", "-", "--"], {
+    stdio: ["pipe", "inherit", "inherit"],
+    env: {
+      ...process.env,
+      MOON_HOME: moonHome,
+      PATH: `${shimDir}${path.delimiter}${moonBin}${path.delimiter}${process.env.PATH ?? ""}`,
+    },
+    input: `///|
 import {
   "moonbitlang/async@0.16.8",
   "moonbitlang/x@0.4.41/sys",
@@ -72,8 +69,7 @@ async fn main {
   println("moonbit-setup-ok")
 }
 `,
-    },
-  );
+  });
   if ((result.status ?? 1) !== 0) {
     process.exit(result.status ?? 1);
   }
@@ -95,16 +91,12 @@ if (os.type() === "Windows_NT") {
     },
   );
 } else {
-  run(
-    "bash",
-    ["-lc", "curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash"],
-    {
-      ...process.env,
-      HOME: runnerTemp,
-      MOON_HOME: moonHome,
-      SHELL: process.env.SHELL ?? "/bin/bash",
-    },
-  );
+  run("bash", ["-lc", "curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash"], {
+    ...process.env,
+    HOME: runnerTemp,
+    MOON_HOME: moonHome,
+    SHELL: process.env.SHELL ?? "/bin/bash",
+  });
 }
 
 run(moonExe, ["update"], {
