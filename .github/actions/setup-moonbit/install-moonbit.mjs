@@ -16,6 +16,8 @@ if (!runnerTemp || !githubPath || !githubEnv) {
 const moonHome = path.join(runnerTemp, "moonbit");
 const moonBin = path.join(moonHome, "bin");
 const moonExe = path.join(moonBin, os.type() === "Windows_NT" ? "moon.exe" : "moon");
+const shimDir = path.join(runnerTemp, "moonbit-shims");
+const shimMoon = path.join(shimDir, os.type() === "Windows_NT" ? "moon.cmd" : "moon");
 
 function run(command, args, env) {
   const result = spawnSync(command, args, {
@@ -23,6 +25,51 @@ function run(command, args, env) {
     env,
   });
 
+  if ((result.status ?? 1) !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
+
+function ensureMoonShim() {
+  fs.mkdirSync(shimDir, { recursive: true });
+  if (os.type() === "Windows_NT") {
+    fs.writeFileSync(shimMoon, `@echo off\r\n"${moonExe.replaceAll("\\", "\\\\")}" %*\r\n`);
+    return;
+  }
+  fs.writeFileSync(
+    shimMoon,
+    `#!/usr/bin/env bash
+set -euo pipefail
+"${moonExe}" "$@"
+`,
+  );
+  fs.chmodSync(shimMoon, 0o755);
+}
+
+function smokeTestMoon() {
+  const result = spawnSync(
+    moonExe,
+    ["run", "-q", "--target", "native", "-", "--"],
+    {
+      stdio: ["pipe", "inherit", "inherit"],
+      env: {
+        ...process.env,
+        MOON_HOME: moonHome,
+        PATH: `${shimDir}${path.delimiter}${moonBin}${path.delimiter}${process.env.PATH ?? ""}`,
+      },
+      input: `///|
+import {
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+async fn main {
+  println("moonbit-setup-ok")
+}
+`,
+    },
+  );
   if ((result.status ?? 1) !== 0) {
     process.exit(result.status ?? 1);
   }
@@ -62,5 +109,10 @@ run(moonExe, ["update"], {
   PATH: `${moonBin}${path.delimiter}${process.env.PATH ?? ""}`,
 });
 
+ensureMoonShim();
+smokeTestMoon();
+
+fs.appendFileSync(githubPath, `${shimDir}\n`);
 fs.appendFileSync(githubPath, `${moonBin}\n`);
 fs.appendFileSync(githubEnv, `MOON_HOME=${moonHome}\n`);
+fs.appendFileSync(githubEnv, `MOON_BIN=${moonExe}\n`);

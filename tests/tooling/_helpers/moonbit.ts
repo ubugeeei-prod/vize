@@ -10,7 +10,7 @@ export function moonScriptPath(name: string): string {
 }
 
 function stripMoonCacheLogs(output: string): string {
-  return output.replace(/^Using cached .*\n/gm, "");
+  return output.replace(/^(Using cached|Downloading) .*\n/gm, "");
 }
 
 export function runMoonScript(
@@ -21,7 +21,8 @@ export function runMoonScript(
     env?: NodeJS.ProcessEnv;
   } = {},
 ) {
-  const result = spawnSync("moon", ["run", "-q", "--target", "native", "-", "--", ...args], {
+  const moonCommand = process.env.MOON_BIN ?? "moon";
+  const result = spawnSync(moonCommand, ["run", "-q", "--target", "native", "-", "--", ...args], {
     cwd: options.cwd ?? repoRoot,
     env: {
       ...process.env,
