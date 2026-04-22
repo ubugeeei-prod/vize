@@ -13,9 +13,9 @@ fn last_lines(text : String, count : Int) -> String {
   if trimmed == "" {
     return ""
   }
-  let lines = trimmed.split("\n").map(StringView::to_string)
+  let lines : Array[String] = trimmed.split("\n").map(StringView::to_string).collect()
   let start = if lines.length() > count { lines.length() - count } else { 0 }
-  let summary_lines = []
+  let summary_lines : Array[String] = []
   for i in start..<lines.length() {
     summary_lines.push(lines[i])
   }

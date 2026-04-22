@@ -6,6 +6,16 @@ import { test } from "node:test";
 
 import { runMoonScript } from "./_helpers/moonbit.ts";
 
+function writeFakeCommand(binDir: string, name: string, body: string): void {
+  const unixPath = path.join(binDir, name);
+  writeFileSync(unixPath, `#!/usr/bin/env node\n${body}`);
+  fs.chmodSync(unixPath, 0o755);
+
+  if (process.platform === "win32") {
+    writeFileSync(path.join(binDir, `${name}.cmd`), `@echo off\r\nnode "%~dp0\\${name}" %*\r\n`);
+  }
+}
+
 test("github/run_many executes command groups in order", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-run-many-"));
   const outputPath = path.join(tempDir, "output.txt");
@@ -108,6 +118,76 @@ test("github/create_site_structure assembles the Pages output tree", () => {
       "musea",
     );
     assert.equal(fs.readFileSync(path.join(tempDir, "site", "CNAME"), "utf8"), "example.com");
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("github/write_coverage_summary appends the tail of coverage output", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-coverage-summary-"));
+  const binDir = path.join(tempDir, "bin");
+  const summaryPath = path.join(tempDir, "step-summary.md");
+
+  try {
+    fs.mkdirSync(binDir, { recursive: true });
+    writeFakeCommand(
+      binDir,
+      "cargo",
+      [
+        "const args = process.argv.slice(2);",
+        "if (args.join(' ') !== 'run -p vize_test_runner --bin coverage --release') process.exit(99);",
+        "process.stdout.write([",
+        "  'Coverage report',",
+        "  'line-1',",
+        "  'line-2',",
+        "  'line-3',",
+        "  'line-4',",
+        "  'line-5',",
+        "  'line-6',",
+        "  'line-7',",
+        "  'line-8',",
+        "].join('\\n'));",
+      ].join("\n"),
+    );
+    writeFileSync(summaryPath, "existing\n");
+
+    const result = runMoonScript("github/write_coverage_summary", [], {
+      cwd: tempDir,
+      env: {
+        GITHUB_STEP_SUMMARY: summaryPath,
+        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+      },
+    });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(
+      fs.readFileSync(path.join(tempDir, "coverage-report.txt"), "utf8"),
+      [
+        "Coverage report",
+        "line-1",
+        "line-2",
+        "line-3",
+        "line-4",
+        "line-5",
+        "line-6",
+        "line-7",
+        "line-8",
+      ].join("\n"),
+    );
+    assert.equal(
+      fs.readFileSync(summaryPath, "utf8"),
+      [
+        "existing",
+        "### Coverage Summary",
+        "line-2",
+        "line-3",
+        "line-4",
+        "line-5",
+        "line-6",
+        "line-7",
+        "line-8",
+      ].join("\n") + "\n",
+    );
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
