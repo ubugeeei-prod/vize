@@ -49,8 +49,29 @@ function formatThroughput(fileCount: number, ms: number): string {
   return `${filesPerSec.toFixed(0)} files/s`;
 }
 
+let eslintAvailability: boolean | undefined;
+
+async function hasEslintPackage(): Promise<boolean> {
+  if (eslintAvailability != null) {
+    return eslintAvailability;
+  }
+
+  try {
+    await import("eslint");
+    eslintAvailability = true;
+  } catch {
+    eslintAvailability = false;
+  }
+
+  return eslintAvailability;
+}
+
 // ESLint single-thread: use Node.js API
 async function runEslintSingleThread(): Promise<number> {
+  if (!(await hasEslintPackage())) {
+    return -1;
+  }
+
   const { ESLint } = await import("eslint");
   const eslint = new ESLint({
     overrideConfigFile: join(INPUT_DIR, "eslint.config.mjs"),
@@ -69,6 +90,10 @@ async function runEslintSingleThread(): Promise<number> {
 
 // ESLint multi-thread: worker threads
 async function runEslintMultiThread(): Promise<number> {
+  if (!(await hasEslintPackage())) {
+    return -1;
+  }
+
   const workerCount = CPU_COUNT;
   const chunkSize = Math.ceil(vueFiles.length / workerCount);
 
@@ -128,11 +153,11 @@ function execIgnoreExit(cmd: string): void {
 function runVizeLintSingleThread(): number {
   // Warmup
   for (let i = 0; i < 3; i++) {
-    execIgnoreExit(`RAYON_NUM_THREADS=1 ${VIZE_BIN} lint '${GLOB_PATTERN}'`);
+    execIgnoreExit(`RAYON_NUM_THREADS=1 ${VIZE_BIN} lint '${GLOB_PATTERN}' --quiet`);
   }
 
   const start = performance.now();
-  execIgnoreExit(`RAYON_NUM_THREADS=1 ${VIZE_BIN} lint '${GLOB_PATTERN}'`);
+  execIgnoreExit(`RAYON_NUM_THREADS=1 ${VIZE_BIN} lint '${GLOB_PATTERN}' --quiet`);
   return performance.now() - start;
 }
 
@@ -140,11 +165,11 @@ function runVizeLintSingleThread(): number {
 function runVizeLintMultiThread(): number {
   // Warmup
   for (let i = 0; i < 3; i++) {
-    execIgnoreExit(`${VIZE_BIN} lint '${GLOB_PATTERN}'`);
+    execIgnoreExit(`${VIZE_BIN} lint '${GLOB_PATTERN}' --quiet`);
   }
 
   const start = performance.now();
-  execIgnoreExit(`${VIZE_BIN} lint '${GLOB_PATTERN}'`);
+  execIgnoreExit(`${VIZE_BIN} lint '${GLOB_PATTERN}' --quiet`);
   return performance.now() - start;
 }
 
@@ -166,17 +191,27 @@ console.log(" Single Thread:");
 console.log();
 
 const eslintSingle = await runEslintSingleThread();
-console.log(
-  `   eslint-plugin-vue : ${formatTime(eslintSingle).padStart(8)}  (${formatThroughput(vueFiles.length, eslintSingle)})`,
-);
+if (eslintSingle >= 0) {
+  console.log(
+    `   eslint-plugin-vue : ${formatTime(eslintSingle).padStart(8)}  (${formatThroughput(vueFiles.length, eslintSingle)})`,
+  );
+} else {
+  console.log("   eslint-plugin-vue : SKIPPED (eslint not found)");
+}
 
 let vizeSingle = 0;
 if (existsSync(VIZE_BIN)) {
   vizeSingle = runVizeLintSingleThread();
-  const speedup = (eslintSingle / vizeSingle).toFixed(1);
-  console.log(
-    `   Vize (patina)     : ${formatTime(vizeSingle).padStart(8)}  (${formatThroughput(vueFiles.length, vizeSingle)})  ${speedup}x faster`,
-  );
+  if (eslintSingle >= 0) {
+    const speedup = (eslintSingle / vizeSingle).toFixed(1);
+    console.log(
+      `   Vize (patina)     : ${formatTime(vizeSingle).padStart(8)}  (${formatThroughput(vueFiles.length, vizeSingle)})  ${speedup}x faster`,
+    );
+  } else {
+    console.log(
+      `   Vize (patina)     : ${formatTime(vizeSingle).padStart(8)}  (${formatThroughput(vueFiles.length, vizeSingle)})`,
+    );
+  }
 } else {
   console.log("   Vize (patina)     : SKIPPED (vize CLI not found)");
 }
@@ -187,23 +222,33 @@ console.log(` Multi Thread (${CPU_COUNT} workers):`);
 console.log();
 
 const eslintMulti = await runEslintMultiThread();
-console.log(
-  `   eslint-plugin-vue : ${formatTime(eslintMulti).padStart(8)}  (${formatThroughput(vueFiles.length, eslintMulti)})`,
-);
+if (eslintMulti >= 0) {
+  console.log(
+    `   eslint-plugin-vue : ${formatTime(eslintMulti).padStart(8)}  (${formatThroughput(vueFiles.length, eslintMulti)})`,
+  );
+} else {
+  console.log("   eslint-plugin-vue : SKIPPED (eslint not found)");
+}
 
 let vizeMulti = 0;
 if (existsSync(VIZE_BIN)) {
   vizeMulti = runVizeLintMultiThread();
-  const speedup = (eslintMulti / vizeMulti).toFixed(1);
-  console.log(
-    `   Vize (patina)     : ${formatTime(vizeMulti).padStart(8)}  (${formatThroughput(vueFiles.length, vizeMulti)})  ${speedup}x faster`,
-  );
+  if (eslintMulti >= 0) {
+    const speedup = (eslintMulti / vizeMulti).toFixed(1);
+    console.log(
+      `   Vize (patina)     : ${formatTime(vizeMulti).padStart(8)}  (${formatThroughput(vueFiles.length, vizeMulti)})  ${speedup}x faster`,
+    );
+  } else {
+    console.log(
+      `   Vize (patina)     : ${formatTime(vizeMulti).padStart(8)}  (${formatThroughput(vueFiles.length, vizeMulti)})`,
+    );
+  }
 } else {
   console.log("   Vize (patina)     : SKIPPED (vize CLI not found)");
 }
 
 // Summary
-if (vizeSingle > 0 && vizeMulti > 0) {
+if (eslintSingle >= 0 && eslintMulti >= 0 && vizeSingle > 0 && vizeMulti > 0) {
   console.log();
   console.log("-".repeat(65));
   console.log();

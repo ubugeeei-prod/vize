@@ -22,6 +22,7 @@ use std::{
 use vize_carton::{cstr, FxHashMap, String};
 
 type DiagnosticBatch = Vec<(String, Vec<LspDiagnostic>)>;
+const LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE: usize = 128;
 
 impl CorsaProjectClient {
     /// Get cached diagnostics for a URI.
@@ -365,6 +366,30 @@ impl CorsaProjectClient {
     }
 
     fn request_diagnostics_batch_via_lsp(
+        &mut self,
+        uris: &[String],
+    ) -> Result<Option<DiagnosticBatch>, String> {
+        if uris.is_empty() {
+            return Ok(Some(Vec::new()));
+        }
+
+        if uris.len() > LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE {
+            let mut results = Vec::with_capacity(uris.len());
+            for chunk in uris.chunks(LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE) {
+                let Some(mut chunk_results) =
+                    self.request_diagnostics_batch_via_lsp_chunk(chunk)?
+                else {
+                    return Ok(None);
+                };
+                results.append(&mut chunk_results);
+            }
+            return Ok(Some(results));
+        }
+
+        self.request_diagnostics_batch_via_lsp_chunk(uris)
+    }
+
+    fn request_diagnostics_batch_via_lsp_chunk(
         &mut self,
         uris: &[String],
     ) -> Result<Option<DiagnosticBatch>, String> {
