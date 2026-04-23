@@ -2,14 +2,19 @@
  * MCP tool handlers for code generation.
  *
  * Handles `generate_variants`, `generate_csf`, `generate_docs`,
- * `generate_catalog`, and `get_tokens` tool calls.
+ * `generate_catalog`, `get_tokens`, and `search_tokens` tool calls.
  */
 
 import fs from "node:fs";
 import path from "node:path";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import { buildCatalogMarkdown, buildDocumentation, resolveArtReference } from "../../musea.js";
+import {
+  flattenTokenCategories,
+  generateTokensMarkdown,
+  parseTokensFromPath,
+} from "../../tokens.js";
 import type { ServerContext, ToolResult } from "./types.js";
-import { parseTokensFromPath, generateTokensMarkdown } from "../../tokens.js";
 
 export async function handleGenerateVariants(
   ctx: ServerContext,
@@ -31,11 +36,11 @@ export async function handleGenerateVariants(
   const source = await fs.promises.readFile(absolutePath, "utf-8");
 
   const analysis = binding.analyzeSfc(source, { filename: absolutePath });
-  const props = analysis.props.map((p) => ({
-    name: p.name,
-    prop_type: p.type,
-    required: p.required,
-    default_value: p.default_value,
+  const props = analysis.props.map((prop) => ({
+    name: prop.name,
+    prop_type: prop.type,
+    required: prop.required,
+    default_value: prop.default_value,
   }));
 
   const relPath = `./${path.basename(absolutePath)}`;
@@ -52,13 +57,14 @@ export async function handleGenerateVariants(
         type: "text",
         text: JSON.stringify(
           {
+            componentPath: componentRelPath,
             componentName: result.component_name,
             artFileContent: result.art_file_content,
-            variants: result.variants.map((v) => ({
-              name: v.name,
-              isDefault: v.is_default,
-              props: v.props,
-              description: v.description,
+            variants: result.variants.map((variant) => ({
+              name: variant.name,
+              isDefault: variant.is_default,
+              props: variant.props,
+              description: variant.description,
             })),
           },
           null,
@@ -74,38 +80,9 @@ export async function handleGenerateCsf(
   binding: ReturnType<ServerContext["loadNative"]>,
   args: Record<string, unknown> | undefined,
 ): Promise<ToolResult> {
-  const artPath = args?.path as string;
-  if (!artPath) throw new McpError(ErrorCode.InvalidParams, "path is required");
-
-  const absolutePath = path.resolve(ctx.projectRoot, artPath);
-  const source = await fs.promises.readFile(absolutePath, "utf-8");
-  const csf = binding.artToCsf(source, { filename: absolutePath });
-
-  return { content: [{ type: "text", text: csf.code }] };
-}
-
-export async function handleGenerateDocs(
-  ctx: ServerContext,
-  binding: ReturnType<ServerContext["loadNative"]>,
-  args: Record<string, unknown> | undefined,
-): Promise<ToolResult> {
-  const artPath = args?.path as string;
-  if (!artPath) throw new McpError(ErrorCode.InvalidParams, "path is required");
-  if (!binding.generateArtDoc) {
-    throw new McpError(ErrorCode.InternalError, "generateArtDoc not available in native binding");
-  }
-
-  const absolutePath = path.resolve(ctx.projectRoot, artPath);
-  const source = await fs.promises.readFile(absolutePath, "utf-8");
-  const doc = binding.generateArtDoc(
-    source,
-    { filename: absolutePath },
-    {
-      include_source: args?.includeSource as boolean | undefined,
-      include_templates: args?.includeTemplates as boolean | undefined,
-      include_metadata: true,
-    },
-  );
+  const resolved = await resolveArtReference(ctx, args);
+  const source = await fs.promises.readFile(resolved.absolutePath, "utf-8");
+  const csf = binding.artToCsf(source, { filename: resolved.absolutePath });
 
   return {
     content: [
@@ -113,7 +90,72 @@ export async function handleGenerateDocs(
         type: "text",
         text: JSON.stringify(
           {
-            markdown: doc.markdown,
+            component: {
+              title: resolved.info.title,
+              path: resolved.relativePath,
+            },
+            match: {
+              matchedBy: resolved.matchedBy,
+              matchValue: resolved.matchValue,
+              score: resolved.score,
+              reasons: resolved.reasons,
+              alternatives: resolved.alternatives,
+            },
+            filename: csf.filename,
+            code: csf.code,
+          },
+          null,
+          2,
+        ),
+      },
+    ],
+  };
+}
+
+export async function handleGenerateDocs(
+  ctx: ServerContext,
+  binding: ReturnType<ServerContext["loadNative"]>,
+  args: Record<string, unknown> | undefined,
+): Promise<ToolResult> {
+  const resolved = await resolveArtReference(ctx, args);
+  const source = await fs.promises.readFile(resolved.absolutePath, "utf-8");
+
+  if (!binding.generateArtDoc) {
+    throw new McpError(ErrorCode.InternalError, "generateArtDoc not available in native binding");
+  }
+
+  const doc = binding.generateArtDoc(
+    source,
+    { filename: resolved.absolutePath },
+    {
+      include_source: args?.includeSource as boolean | undefined,
+      include_templates: args?.includeTemplates as boolean | undefined,
+      include_metadata: true,
+    },
+  );
+  const formattedDoc = await buildDocumentation(binding, resolved, source, {
+    includeSource: args?.includeSource as boolean | undefined,
+    includeTemplates: args?.includeTemplates as boolean | undefined,
+  });
+
+  return {
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify(
+          {
+            component: {
+              title: resolved.info.title,
+              path: resolved.relativePath,
+            },
+            match: {
+              matchedBy: resolved.matchedBy,
+              matchValue: resolved.matchValue,
+              score: resolved.score,
+              reasons: resolved.reasons,
+              alternatives: resolved.alternatives,
+            },
+            markdown: formattedDoc?.markdown ?? doc.markdown,
             title: doc.title,
             category: doc.category,
             variantCount: doc.variant_count,
@@ -131,36 +173,51 @@ export async function handleGenerateCatalog(
   binding: ReturnType<ServerContext["loadNative"]>,
   args: Record<string, unknown> | undefined,
 ): Promise<ToolResult> {
-  if (!binding.generateArtCatalog) {
-    throw new McpError(
-      ErrorCode.InternalError,
-      "generateArtCatalog not available in native binding",
-    );
-  }
-
   const arts = await ctx.scanArtFiles();
-  const sources: string[] = [];
-  for (const [filePath] of arts) {
-    const source = await fs.promises.readFile(filePath, "utf-8");
-    sources.push(source);
+
+  if (binding.generateArtCatalog) {
+    const sources: string[] = [];
+    for (const [filePath] of arts) {
+      const source = await fs.promises.readFile(filePath, "utf-8");
+      sources.push(source);
+    }
+
+    const catalog = binding.generateArtCatalog(sources, {
+      include_source: args?.includeSource as boolean | undefined,
+      include_templates: args?.includeTemplates as boolean | undefined,
+      include_metadata: true,
+    });
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            {
+              markdown: catalog.markdown,
+              componentCount: catalog.component_count,
+              categories: catalog.categories,
+              tags: catalog.tags,
+            },
+            null,
+            2,
+          ),
+        },
+      ],
+    };
   }
 
-  const catalog = binding.generateArtCatalog(sources, {
-    include_source: args?.includeSource as boolean | undefined,
-    include_templates: args?.includeTemplates as boolean | undefined,
-    include_metadata: true,
-  });
-
+  const allArts = Array.from(arts.values());
   return {
     content: [
       {
         type: "text",
         text: JSON.stringify(
           {
-            markdown: catalog.markdown,
-            componentCount: catalog.component_count,
-            categories: catalog.categories,
-            tags: catalog.tags,
+            markdown: buildCatalogMarkdown(allArts, ctx.projectRoot),
+            componentCount: allArts.length,
+            categories: Array.from(new Set(allArts.map((art) => art.category || "Uncategorized"))),
+            tags: Array.from(new Set(allArts.flatMap((art) => art.tags))),
           },
           null,
           2,
@@ -192,12 +249,93 @@ export async function handleGetTokens(
   }
 
   const categories = await parseTokensFromPath(resolvedPath);
+  const flattened = flattenTokenCategories(categories);
 
   if (format === "markdown") {
-    return { content: [{ type: "text", text: generateTokensMarkdown(categories) }] };
+    return {
+      content: [
+        {
+          type: "text",
+          text: generateTokensMarkdown(categories),
+        },
+      ],
+    };
   }
 
   return {
-    content: [{ type: "text", text: JSON.stringify({ categories }, null, 2) }],
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify(
+          {
+            source: path.relative(ctx.projectRoot, resolvedPath),
+            categoryCount: categories.length,
+            tokenCount: flattened.length,
+            categories,
+          },
+          null,
+          2,
+        ),
+      },
+    ],
+  };
+}
+
+export async function handleSearchTokens(
+  ctx: ServerContext,
+  args: Record<string, unknown> | undefined,
+): Promise<ToolResult> {
+  const query = args?.query as string | undefined;
+  if (!query) {
+    throw new McpError(ErrorCode.InvalidParams, "query is required");
+  }
+
+  const inputPath = args?.tokensPath as string | undefined;
+  const typeFilter = typeof args?.type === "string" ? args.type.toLowerCase() : undefined;
+  const limit = typeof args?.limit === "number" ? args.limit : 20;
+  const resolvedPath = inputPath
+    ? path.resolve(ctx.projectRoot, inputPath)
+    : await ctx.resolveTokensPath();
+
+  if (!resolvedPath) {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      "No tokens path provided and none auto-detected. Looked for: tokens/, design-tokens/, style-dictionary/ directories.",
+    );
+  }
+
+  const flattened = flattenTokenCategories(await parseTokensFromPath(resolvedPath));
+  const normalizedQuery = query.toLowerCase();
+
+  const allMatches = flattened.filter((token) => {
+    if (typeFilter && token.type?.toLowerCase() !== typeFilter) {
+      return false;
+    }
+    return (
+      token.name.toLowerCase().includes(normalizedQuery) ||
+      token.path.toLowerCase().includes(normalizedQuery) ||
+      token.categoryPath.some((segment) => segment.toLowerCase().includes(normalizedQuery)) ||
+      String(token.value).toLowerCase().includes(normalizedQuery) ||
+      token.description?.toLowerCase().includes(normalizedQuery)
+    );
+  });
+  const matches = allMatches.slice(0, limit);
+
+  return {
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify(
+          {
+            query,
+            source: path.relative(ctx.projectRoot, resolvedPath),
+            totalMatches: allMatches.length,
+            matches,
+          },
+          null,
+          2,
+        ),
+      },
+    ],
   };
 }
