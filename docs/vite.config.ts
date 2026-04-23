@@ -99,6 +99,8 @@ export default defineConfig({
 
       highlight: false,
       mermaid: true,
+      // Keep source tree clean; this site does not use Ox Content's API docs generator.
+      docs: false,
     }),
   ],
 
