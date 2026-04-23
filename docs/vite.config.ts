@@ -66,7 +66,7 @@ export default defineConfig({
           },
 
           header: {
-            logo: "/logo.svg",
+            logo: "/logo-mark.svg",
             logoWidth: 40,
             logoHeight: 40,
           },
@@ -97,7 +97,7 @@ export default defineConfig({
         }),
       },
 
-      highlight: false,
+      highlight: true,
       mermaid: true,
       // Keep source tree clean; this site does not use Ox Content's API docs generator.
       docs: false,

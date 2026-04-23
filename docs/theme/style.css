@@ -1,13 +1,19 @@
 /* === Vize — Editorial Flyer Theme === */
 
-/* Override header logo for dark mode */
-[data-theme="dark"] .header-title img,
+/* Override logo assets for dark mode */
+[data-theme="dark"] .header-title img {
+  content: url("/logo-mark-light.svg");
+}
+
 [data-theme="dark"] .hero-image img {
   content: url("/logo-light.svg");
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .header-title img,
+  :root:not([data-theme="light"]) .header-title img {
+    content: url("/logo-mark-light.svg");
+  }
+
   :root:not([data-theme="light"]) .hero-image img {
     content: url("/logo-light.svg");
   }
@@ -76,9 +82,21 @@ body:not(.entry-page) .header {
 }
 
 .header-title img {
-  width: 2.25rem !important;
-  height: 2.25rem !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
   flex: 0 0 auto !important;
+  padding: 0.18rem !important;
+  border-radius: 0.55rem !important;
+  background: rgba(230, 226, 214, 0.82) !important;
+  border: 1px solid rgba(18, 18, 18, 0.08) !important;
+  box-shadow: 0 10px 24px rgba(18, 18, 18, 0.08) !important;
+}
+
+[data-theme="dark"] .header-title img,
+:root:not([data-theme="light"]) .header-title img {
+  background: rgba(22, 22, 22, 0.88) !important;
+  border-color: rgba(232, 228, 220, 0.12) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28) !important;
 }
 
 /* ================================================
@@ -95,9 +113,81 @@ body:not(.entry-page) .header {
   border-color: rgba(255, 255, 255, 0.04) !important;
 }
 
+@media (min-width: 769px) {
+  body:not(.entry-page) .sidebar {
+    top: calc(var(--octc-header-height) + 0.85rem) !important;
+    left: 0.85rem !important;
+    bottom: 1rem !important;
+    width: calc(var(--octc-sidebar-width) - 1.7rem) !important;
+    padding: 0.85rem 0.75rem 1rem !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-radius: 1.1rem !important;
+    backdrop-filter: blur(24px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(150%) !important;
+    box-shadow: 0 18px 40px rgba(86, 72, 58, 0.08) !important;
+  }
+
+  [data-theme="dark"] body:not(.entry-page) .sidebar,
+  :root:not([data-theme="light"]) body:not(.entry-page) .sidebar {
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.28) !important;
+  }
+}
+
+body:not(.entry-page) .sidebar nav {
+  gap: 0.7rem !important;
+}
+
+body:not(.entry-page) .nav-section {
+  padding: 0.55rem !important;
+  border-radius: 1rem !important;
+  background: rgba(245, 241, 233, 0.54) !important;
+  border: 1px solid rgba(18, 18, 18, 0.05) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 8px 20px rgba(86, 72, 58, 0.04) !important;
+}
+
+[data-theme="dark"] body:not(.entry-page) .nav-section,
+:root:not([data-theme="light"]) body:not(.entry-page) .nav-section {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 10px 22px rgba(0, 0, 0, 0.14) !important;
+}
+
+body:not(.entry-page) .nav-title {
+  margin-bottom: 0.5rem !important;
+  padding: 0 0.5rem !important;
+}
+
+body:not(.entry-page) .nav-link {
+  padding: 0.52rem 0.7rem !important;
+  border-radius: 0.8rem !important;
+}
+
+body:not(.entry-page) .nav-link.active {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 6px 16px rgba(86, 72, 58, 0.06) !important;
+}
+
+[data-theme="dark"] body:not(.entry-page) .nav-link.active,
+:root:not([data-theme="light"]) body:not(.entry-page) .nav-link.active {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 8px 18px rgba(0, 0, 0, 0.16) !important;
+}
+
 /* ================================================
    HERO — Editorial / Flyer layout
    ================================================ */
+body.entry-page {
+  background: transparent !important;
+  background-image: none !important;
+}
+
 .entry-page .layout {
   padding-top: 0 !important;
 }
@@ -115,6 +205,9 @@ body:not(.entry-page) .header {
   align-items: flex-start !important;
   justify-content: flex-start !important;
   padding: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  border-bottom: none !important;
 }
 
 .entry-page .hero-content {
