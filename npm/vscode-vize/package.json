@@ -94,7 +94,7 @@
         "vize.serverPath": {
           "type": "string",
           "default": "",
-          "description": "Path to the vize language server executable. Leave empty to use bundled server."
+          "description": "Path to the vize language server executable. Leave empty to auto-detect an installed or bundled vize binary."
         },
         "vize.trace.server": {
           "type": "string",

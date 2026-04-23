@@ -42,11 +42,14 @@ vp build
 ## Requirements
 
 - VS Code 1.75+
-- `vize` CLI installed (`cargo install vize`)
+- `vize` CLI installed (`cargo install vize`) unless you are using a build that bundles the server binary
 
 ## Configuration
 
-Vize is disabled by default. Start with lint-only mode, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
+Opening a Vue file now prompts you to apply a recommended workspace setup if the extension is still disabled or if no Vize capabilities are enabled yet.
+That quick setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, and `vize.editor.enable` for the current workspace so diagnostics, hover, and jump work immediately.
+
+If you dismissed that prompt and want a lighter rollout, start with lint-only mode, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
 
 ```json
 {

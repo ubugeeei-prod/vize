@@ -20,6 +20,8 @@ reference support in addition to syntax highlighting.
 ## Vize Extension
 
 The Vize extension starts `vize lsp` and can opt into specific capability bundles.
+When you open a Vue file with the extension still disabled, or with no capabilities enabled, the extension now offers a one-click recommended workspace setup so hover, jump, and diagnostics do not silently stay off.
+That setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, and `vize.editor.enable` for the current workspace.
 
 ### Recommended Starting Point
 
