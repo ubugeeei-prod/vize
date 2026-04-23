@@ -103,7 +103,7 @@ const runInDirectory = (cwd: string, command: string) =>
   `sh -c ${shellQuote(`cd ${cwd} && ${command}`)}`;
 const installVscodeExtensionDependencies = runInDirectory(
   "npm/vscode-vize",
-  "pnpm install --ignore-workspace --no-lockfile --prefer-offline",
+  "if [ -x node_modules/.bin/vp ]; then exit 0; fi && mkdir -p node_modules/.bin && pnpm install --ignore-workspace --no-lockfile --prefer-offline",
 );
 const runInVscodeExtension = (...commands: string[]) =>
   `${installVscodeExtensionDependencies} && ${runInDirectory("npm/vscode-vize", commands.join(" && "))}`;
@@ -122,7 +122,9 @@ const rootBuildTaskPlugin = (): Plugin => ({
     const buildCommand = ["vp", "run", "--workspace-root", "build"];
     const command = commandExists("wasm-pack") || !commandExists("nix") ? "vp" : "nix";
     const args =
-      command === "vp" ? buildCommand.slice(1) : ["develop", "--command", ...buildCommand];
+      command === "vp"
+        ? buildCommand.slice(1)
+        : ["--option", "warn-dirty", "false", "develop", "--command", ...buildCommand];
 
     execFileSync(command, args, {
       env: {
@@ -192,12 +194,8 @@ const buildTasks = {
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
   "build:packages": noCacheTask(runInPackages("build", packedPackages)),
   "build:native": noCacheTask(runInPackages("build", ["./npm/vize-native"])),
-  "build:wasm": task(
-    "wasm-pack build crates/vize_vitrine --target nodejs --out-dir ../../npm/vite-plugin-vize/wasm --features wasm --no-default-features",
-  ),
-  "build:wasm-web": task(
-    "wasm-pack build crates/vize_vitrine --target web --out-dir ../../playground/src/wasm --features wasm --no-default-features",
-  ),
+  "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/vite-plugin-vize/wasm")),
+  "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(
     `${runInPackages("build", ["./npm/vize"])} && ${runInPackages("build", ["./npm/vite-plugin-vize"])}`,
   ),

@@ -15,6 +15,15 @@ export default defineConfig({
     format: "esm",
     dts: true,
     clean: true,
-    external: ["@vizejs/vite-plugin", "@vizejs/vite-plugin-musea", "@vizejs/musea-nuxt", "vize"],
+    deps: {
+      neverBundle: [
+        "@vizejs/vite-plugin",
+        "@vizejs/vite-plugin-musea",
+        "@vizejs/musea-nuxt",
+        "nitropack/runtime",
+        "#vizejs/nuxt/dev-stylesheet-links-config",
+        "vize",
+      ],
+    },
   },
 });
