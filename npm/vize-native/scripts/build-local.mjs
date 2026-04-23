@@ -13,10 +13,7 @@ const resolveMacOsSdkRoot = () => {
     return process.env.SDKROOT.trim();
   }
 
-  for (const args of [
-    ["--sdk", "macosx", "--show-sdk-path"],
-    ["--show-sdk-path"],
-  ]) {
+  for (const args of [["--sdk", "macosx", "--show-sdk-path"], ["--show-sdk-path"]]) {
     try {
       return execFileSync("xcrun", args, {
         encoding: "utf8",
@@ -53,9 +50,7 @@ const resolveDarwinBuildEnv = () => {
   env.SDKROOT = sdkRoot;
 
   if (!env.LIBRARY_PATH?.split(":").includes(path.join(sdkRoot, "usr/lib"))) {
-    env.LIBRARY_PATH = [path.join(sdkRoot, "usr/lib"), env.LIBRARY_PATH]
-      .filter(Boolean)
-      .join(":");
+    env.LIBRARY_PATH = [path.join(sdkRoot, "usr/lib"), env.LIBRARY_PATH].filter(Boolean).join(":");
   }
 
   return env;

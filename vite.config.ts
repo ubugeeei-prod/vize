@@ -194,12 +194,8 @@ const buildTasks = {
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
   "build:packages": noCacheTask(runInPackages("build", packedPackages)),
   "build:native": noCacheTask(runInPackages("build", ["./npm/vize-native"])),
-  "build:wasm": task(
-    moonScript("build_vitrine_wasm", "nodejs", "npm/vite-plugin-vize/wasm"),
-  ),
-  "build:wasm-web": task(
-    moonScript("build_vitrine_wasm", "web", "playground/src/wasm"),
-  ),
+  "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/vite-plugin-vize/wasm")),
+  "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(
     `${runInPackages("build", ["./npm/vize"])} && ${runInPackages("build", ["./npm/vite-plugin-vize"])}`,
   ),
