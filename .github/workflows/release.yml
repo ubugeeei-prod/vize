@@ -179,7 +179,7 @@ jobs:
 
       - name: Publish VS Code extension
         if: env.VSCE_PAT != ''
-        run: moon run --target native - -- editor-extension-artifacts/vize.vsix < tools/moon/scripts/publish_vscode_extension.mbtx
+        run: moon run --target native - -- editor-extension-artifacts/npm/vscode-vize/dist/vize.vsix < tools/moon/scripts/publish_vscode_extension.mbtx
 
   # Build release npm packages once and reuse them across publish jobs
   build-release-packages:
@@ -891,7 +891,7 @@ jobs:
         run: ls -la cli-artifacts/
 
       - name: List editor extension artifacts
-        run: ls -la editor-extension-artifacts/
+        run: find editor-extension-artifacts -maxdepth 5 -type f | sort
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -903,7 +903,7 @@ jobs:
           files: |
             cli-artifacts/*.tar.gz
             cli-artifacts/*.zip
-            editor-extension-artifacts/*.vsix
+            editor-extension-artifacts/npm/vscode-vize/dist/*.vsix
             editor-extension-artifacts/*.tar.gz
 
   # Publish vize CLI npm package (using Trusted Publishing / OIDC)

@@ -24,6 +24,7 @@
     "type": "git",
     "url": "https://github.com/ubugeeei/vize"
   },
+  "icon": "icons/logo.png",
   "publisher": "ubugeeei",
   "main": "./dist/extension.cjs",
   "scripts": {
