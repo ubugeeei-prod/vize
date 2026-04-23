@@ -64,7 +64,11 @@ export function createMuseaServer(config: {
           component: parsed.metadata.component,
           category: parsed.metadata.category,
           tags: parsed.metadata.tags,
+          status: parsed.metadata.status,
+          order: parsed.metadata.order,
           variantCount: parsed.variants.length,
+          variantNames: parsed.variants.map((variant) => variant.name),
+          defaultVariant: parsed.variants.find((variant) => variant.is_default)?.name,
         });
       } catch (e) {
         console.error(`Failed to parse ${file}:`, e);
