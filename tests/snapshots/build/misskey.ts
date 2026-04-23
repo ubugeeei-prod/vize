@@ -16,6 +16,7 @@ describe(`${app.name} build (compiler)`, () => {
       console.log(`Skipping: vize binary not found at ${VIZE_BIN}`);
       process.exit(0);
     }
+    if (app.setup) app.setup();
   });
 
   it("vize build compiles without errors", () => {
@@ -93,6 +94,7 @@ describe(`${app.name} build (compiler)`, () => {
 
     const assertTooltipDirective = (file: string) => {
       const content = readOutput(file);
+      const normalized = content.replace(/\s+/g, " ");
       assert.ok(
         content.includes(`const _directive_tooltip = _resolveDirective("tooltip")`),
         `${file} should resolve the tooltip directive`,
@@ -102,7 +104,7 @@ describe(`${app.name} build (compiler)`, () => {
         `${file} should apply tooltip with withDirectives`,
       );
       assert.ok(
-        content.includes("[_directive_tooltip"),
+        /\[\[\s*_directive_tooltip\b/.test(normalized),
         `${file} should pass tooltip directive bindings`,
       );
     };

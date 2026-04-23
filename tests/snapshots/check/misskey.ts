@@ -17,6 +17,7 @@ describe(`${app.name} check (type checker)`, () => {
       console.log(`Skipping: vize=${fs.existsSync(VIZE_BIN)}, corsa=${fs.existsSync(CORSA_BIN)}`);
       process.exit(0);
     }
+    if (app.setup) app.setup();
   });
 
   it("vize check does not crash and snapshot matches", () => {

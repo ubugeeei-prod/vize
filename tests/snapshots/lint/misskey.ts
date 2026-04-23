@@ -15,6 +15,22 @@ interface LintFileResult {
   file: string;
   errorCount: number;
   warningCount: number;
+  messages?: Array<{
+    ruleId?: string | null;
+    severity?: number;
+    message?: string;
+    line?: number;
+    column?: number;
+    endLine?: number;
+    endColumn?: number;
+    help?: string;
+  }>;
+}
+
+function compareStrings(left: string, right: string): number {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
 }
 
 describe(`${app.name} lint (linter)`, () => {
@@ -23,6 +39,7 @@ describe(`${app.name} lint (linter)`, () => {
       console.log(`Skipping: vize binary not found at ${VIZE_BIN}`);
       process.exit(0);
     }
+    if (app.setup) app.setup();
   });
 
   it("vize lint does not crash and snapshot matches", () => {
@@ -48,7 +65,25 @@ describe(`${app.name} lint (linter)`, () => {
 
     const parsed = JSON.parse(stdout) as LintFileResult[];
     assert.ok(Array.isArray(parsed) && parsed.length > 0, "lint should produce results");
-    const prettyOutput = JSON.stringify(parsed, null, 2).replaceAll(lintConfig.cwd, "<cwd>") + "\n";
+
+    const normalized = parsed
+      .map((result) => ({
+        ...result,
+        messages: [...(result.messages ?? [])].sort((left, right) => {
+          return (
+            (left.line ?? 0) - (right.line ?? 0) ||
+            (left.column ?? 0) - (right.column ?? 0) ||
+            (left.endLine ?? 0) - (right.endLine ?? 0) ||
+            (left.endColumn ?? 0) - (right.endColumn ?? 0) ||
+            compareStrings(left.ruleId ?? "", right.ruleId ?? "") ||
+            compareStrings(left.message ?? "", right.message ?? "")
+          );
+        }),
+      }))
+      .sort((left, right) => compareStrings(left.file, right.file));
+
+    const prettyOutput =
+      JSON.stringify(normalized, null, 2).replaceAll(lintConfig.cwd, "<cwd>") + "\n";
 
     console.log(`fileCount=${parsed.length}`);
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-lint`, prettyOutput);

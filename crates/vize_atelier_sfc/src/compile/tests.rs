@@ -488,6 +488,49 @@ const { items } = defineProps<{
 }
 
 #[test]
+fn test_script_setup_typescript_downcompiles_to_javascript_by_default() {
+    let source = r#"<script setup lang="ts">
+const props = withDefaults(defineProps<{
+  first?: boolean;
+}>(), {
+  first: false,
+});
+
+async function updatePasswordLessLogin(value: boolean): Promise<void> {
+  console.log(value);
+}
+</script>
+
+<template>
+  <div>{{ props.first }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("setup(__props)"),
+        "default JS output should not preserve typed setup params: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("__props: any"),
+        "default JS output should strip typed setup params: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("(_ctx: any,_cache: any)"),
+        "default JS output should strip typed render params: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains(": Promise<void>"),
+        "default JS output should strip TypeScript return types: {}",
+        result.code
+    );
+}
+
+#[test]
 fn test_define_model_basic() {
     let source = r#"<script setup>
 const model = defineModel()
