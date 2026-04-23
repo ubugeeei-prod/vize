@@ -7,7 +7,7 @@
 
 use std::{
     path::PathBuf,
-    sync::{atomic::AtomicUsize, Mutex},
+    sync::atomic::{AtomicU64, AtomicUsize, Ordering},
     time::Duration,
 };
 
@@ -23,8 +23,8 @@ pub(crate) struct CompileStats {
     pub failed: AtomicUsize,
     pub total_bytes: AtomicUsize,
     pub output_bytes: AtomicUsize,
-    pub total_parse_time: Mutex<Duration>,
-    pub total_compile_time: Mutex<Duration>,
+    pub total_parse_nanos: AtomicU64,
+    pub total_compile_nanos: AtomicU64,
 }
 
 impl CompileStats {
@@ -35,21 +35,31 @@ impl CompileStats {
             failed: AtomicUsize::new(0),
             total_bytes: AtomicUsize::new(0),
             output_bytes: AtomicUsize::new(0),
-            total_parse_time: Mutex::new(Duration::ZERO),
-            total_compile_time: Mutex::new(Duration::ZERO),
+            total_parse_nanos: AtomicU64::new(0),
+            total_compile_nanos: AtomicU64::new(0),
         }
     }
 
     pub fn add_parse_time(&self, duration: Duration) {
-        if let Ok(mut total) = self.total_parse_time.lock() {
-            *total += duration;
-        }
+        self.total_parse_nanos.fetch_add(
+            duration.as_nanos().try_into().unwrap_or(u64::MAX),
+            Ordering::Relaxed,
+        );
     }
 
     pub fn add_compile_time(&self, duration: Duration) {
-        if let Ok(mut total) = self.total_compile_time.lock() {
-            *total += duration;
-        }
+        self.total_compile_nanos.fetch_add(
+            duration.as_nanos().try_into().unwrap_or(u64::MAX),
+            Ordering::Relaxed,
+        );
+    }
+
+    pub fn total_parse_time(&self) -> Duration {
+        Duration::from_nanos(self.total_parse_nanos.load(Ordering::Relaxed))
+    }
+
+    pub fn total_compile_time(&self) -> Duration {
+        Duration::from_nanos(self.total_compile_nanos.load(Ordering::Relaxed))
     }
 }
 

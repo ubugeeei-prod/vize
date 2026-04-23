@@ -1,6 +1,6 @@
 //! Element transformation functions.
 
-use vize_carton::{capitalize, is_builtin_directive, Box, String, Vec};
+use vize_carton::{capitalize, is_builtin_directive, is_native_tag, Box, String, Vec};
 
 use crate::ast::*;
 use crate::transforms::transform_expression::process_inline_handler;
@@ -66,12 +66,26 @@ fn maybe_promote_element_to_component(
         return;
     }
 
-    if is_dynamic_component_tag(&el.tag)
-        || has_is_attribute(el)
-        || is_registered_component(ctx, &el.tag)
+    let looks_like_component = is_dynamic_component_tag(&el.tag)
         || el.tag.chars().next().is_some_and(|c| c.is_uppercase())
-        || el.tag.contains('-')
-    {
+        || el.tag.contains('-');
+
+    if looks_like_component {
+        el.tag_type = ElementType::Component;
+        return;
+    }
+
+    let has_is = has_is_attribute(el);
+    if has_is {
+        el.tag_type = ElementType::Component;
+        return;
+    }
+
+    if is_native_tag(&el.tag) {
+        return;
+    }
+
+    if is_registered_component(ctx, &el.tag) {
         el.tag_type = ElementType::Component;
     }
 }
@@ -88,12 +102,17 @@ fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
         return true;
     }
 
-    let camel = vize_carton::camelize(tag);
-    if ctx.is_component_registered(camel.as_str()) {
-        return true;
+    if tag.contains('-') || tag.contains('_') {
+        let camel = vize_carton::camelize(tag);
+        if ctx.is_component_registered(camel.as_str()) {
+            return true;
+        }
+
+        let pascal = capitalize(&camel);
+        return ctx.is_component_registered(pascal.as_str());
     }
 
-    let pascal = capitalize(&camel);
+    let pascal = capitalize(tag);
     ctx.is_component_registered(pascal.as_str())
 }
 
@@ -158,6 +177,15 @@ fn process_directive_expressions<'a>(
 
 /// Process element properties and directives
 fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, ElementNode<'a>>) {
+    if el.props.is_empty()
+        || !el
+            .props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Directive(_)))
+    {
+        return;
+    }
+
     let allocator = ctx.allocator;
     let is_component = el.tag_type == ElementType::Component;
 

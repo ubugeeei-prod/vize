@@ -64,9 +64,6 @@ oxc_semantic = { workspace = true }
 oxc_span = { workspace = true }
 oxc_transformer = { workspace = true }
 
-# Regex for script language detection
-regex-lite.workspace = true
-
 # PKL configuration language
 rpkl.workspace = true
 
