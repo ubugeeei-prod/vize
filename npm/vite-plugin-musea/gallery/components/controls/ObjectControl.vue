@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import MonacoEditor from "../MonacoEditor.vue";
+import { defineAsyncComponent, ref, watch } from "vue";
+
+const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
 
 const props = defineProps<{
   label: string;

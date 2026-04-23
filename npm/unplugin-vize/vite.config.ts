@@ -13,7 +13,12 @@ export default defineConfig({
   pack: {
     entry: ["src/index.ts", "src/esbuild.ts", "src/rollup.ts", "src/webpack.ts"],
     format: "esm",
-    dts: true,
+    dts: {
+      resolver: "tsc",
+    },
     clean: true,
+    deps: {
+      neverBundle: ["webpack"],
+    },
   },
 });

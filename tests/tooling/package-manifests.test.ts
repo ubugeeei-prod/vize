@@ -133,10 +133,7 @@ test("workspace package builds do not nest pnpm run commands", () => {
     scripts?: Record<string, string>;
   };
 
-  assert.equal(
-    museaPackage.scripts?.build,
-    "vp pack && pnpm --dir ../.. install --frozen-lockfile --prefer-offline --filter @vizejs/vite-plugin-musea... && vp build --config gallery-vite.config.ts",
-  );
+  assert.equal(museaPackage.scripts?.build, "vp pack && vp build --config gallery-vite.config.ts");
   assert.equal(museaPackage.scripts?.dev, "vp pack --watch");
   assert.doesNotMatch(museaPackage.scripts?.build ?? "", /\bpnpm run\b/);
 });

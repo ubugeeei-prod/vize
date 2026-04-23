@@ -1,8 +1,8 @@
 [target.aarch64-apple-darwin]
-linker = "/usr/bin/cc"
+linker = "clang"
 
 [target.x86_64-apple-darwin]
-linker = "/usr/bin/cc"
+linker = "clang"
 
 # Git for Windows ships a Unix `link.exe` that can shadow the MSVC linker on
 # GitHub-hosted runners. Use the Rust toolchain's bundled linker explicitly for
