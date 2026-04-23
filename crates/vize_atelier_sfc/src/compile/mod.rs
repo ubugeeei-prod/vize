@@ -21,7 +21,9 @@ use crate::script::ScriptCompileContext;
 use crate::types::{BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError};
 
 use self::bindings::{croquis_to_legacy_bindings, register_normal_script_bindings};
-use self::helpers::{extract_component_name, generate_scope_id};
+use self::helpers::{
+    demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
+};
 use self::normal_script::extract_normal_script_content;
 use self::styles::compile_styles;
 
@@ -38,6 +40,21 @@ fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {
             .template
             .as_ref()
             .map(|template| template.loc.clone()),
+    }
+}
+
+fn create_v_model_reactive_const_warning(
+    script_setup: &crate::types::SfcScriptBlock<'_>,
+    binding_name: &str,
+) -> SfcError {
+    let mut message = String::from("`v-model` cannot update the const reactive binding `");
+    message.push_str(binding_name);
+    message.push_str("`. The compiler transformed it to `let` so the update can work.");
+
+    SfcError {
+        message,
+        code: Some("V_MODEL_CONST_REACTIVE_DEMOTED".to_compact_string()),
+        loc: Some(script_setup.loc.clone()),
     }
 }
 
@@ -341,11 +358,12 @@ pub fn compile_sfc(
     };
 
     // 1. Croquis parser: rich analysis with ReactivityTracker
-    let croquis = profile!(
+    let mut croquis = profile!(
         "atelier.sfc.script_setup.croquis",
         crate::script::analyze_script_setup_to_summary(&script_setup.content)
     );
     let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings);
+    let mut script_setup_content = script_setup.content.to_compact_string();
 
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
@@ -413,6 +431,27 @@ pub fn compile_sfc(
             "atelier.sfc.normal_script.register_bindings",
             register_normal_script_bindings(&script.content, &mut script_bindings)
         );
+    }
+
+    if let Some(template) = &descriptor.template {
+        let demoted_ids = profile!(
+            "atelier.sfc.script_setup.demote_v_model_reactive_consts",
+            demote_v_model_reactive_const_bindings(
+                &template.content,
+                script_setup.lang.as_deref(),
+                &mut script_setup_content,
+                &mut ctx,
+                &mut script_bindings,
+                &mut croquis,
+            )
+        );
+
+        for binding_name in demoted_ids {
+            warnings.push(create_v_model_reactive_const_warning(
+                script_setup,
+                &binding_name,
+            ));
+        }
     }
 
     // Compile template with bindings (if present) to get the render function
@@ -522,7 +561,7 @@ pub fn compile_sfc(
         "atelier.sfc.script_setup.inline_compile",
         compile_script_setup_inline_with_context(
             ctx,
-            &script_setup.content,
+            &script_setup_content,
             &component_name,
             is_ts,
             source_is_ts,
