@@ -254,14 +254,14 @@ export default {
                   key: 0,
                   component: root.value,
                   components: components.value
-                }, null, 8, ["component", "components"])) : _createCommentVNode("v-if", true)]), _createElementVNode("div", { class: "actions _panel" }, [_createElementVNode("div", { class: "items" }, [_createVNode(MkButton, {
+                }, null, 8, ["component", "components"])) : _createCommentVNode("v-if", true)]), _createElementVNode("div", { class: "actions _panel" }, [_createElementVNode("div", { class: "items" }, [_withDirectives(_createVNode(MkButton, {
                   class: "button",
                   rounded: "",
                   onClick: reset
                 }, {
                   default: _withCtx(() => [_hoisted_1]),
                   _: 1
-                })]), _createElementVNode("div", { class: "items" }, [
+                }), [[_directive_tooltip, _unref(i18n).ts.reload]])]), _createElementVNode("div", { class: "items" }, [
                   flash.value.isLiked ? _withDirectives((_openBlock(), _createBlock(
                     MkButton,
                     {
@@ -312,22 +312,22 @@ export default {
                     1024
                     /* DYNAMIC_SLOTS */
                   )), [[_directive_tooltip, _unref(i18n).ts.like]]),
-                  _createVNode(MkButton, {
+                  _withDirectives(_createVNode(MkButton, {
                     class: "button",
                     rounded: "",
                     onClick: copyLink
                   }, {
                     default: _withCtx(() => [_hoisted_4]),
                     _: 1
-                  }),
-                  _createVNode(MkButton, {
+                  }), [[_directive_tooltip, _unref(i18n).ts.copyLink]]),
+                  _withDirectives(_createVNode(MkButton, {
                     class: "button",
                     rounded: "",
                     onClick: share
                   }, {
                     default: _withCtx(() => [_hoisted_5]),
                     _: 1
-                  }),
+                  }), [[_directive_tooltip, _unref(i18n).ts.share]]),
                   _unref($i) && _unref($i).id !== flash.value.user.id ? (_openBlock(), _createBlock(MkButton, {
                     key: 0,
                     class: "button",
@@ -365,11 +365,11 @@ export default {
                     default: _withCtx(() => [_createTextVNode("Play")]),
                     _: 1
                   }),
-                  _createElementVNode("div", { class: "info" }, [_createElementVNode("span", null, [_hoisted_8, _createTextVNode(
+                  _createElementVNode("div", { class: "info" }, [_withDirectives(_createElementVNode("span", null, [_hoisted_8, _createTextVNode(
                     " " + _toDisplayString(flash.value.likedCount),
                     1
                     /* TEXT */
-                  )])])
+                  )]), [[_directive_tooltip, _unref(i18n).ts.numberOfLikes]])])
                 ])],
                 2
                 /* CLASS */

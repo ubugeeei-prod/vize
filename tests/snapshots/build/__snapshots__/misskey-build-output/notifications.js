@@ -122,14 +122,14 @@ export default {
                       /* TEXT */
                     )]),
                     suffix: _withCtx(() => [_createTextVNode(
-                      _toDisplayString($i.notificationRecieveConfig[type]?.type === "never" ? i18n.ts.none : $i.notificationRecieveConfig[type]?.type === "following" ? i18n.ts.following : $i.notificationRecieveConfig[type]?.type === "follower" ? i18n.ts.followers : $i.notificationRecieveConfig[type]?.type === "mutualFollow" ? i18n.ts.mutualFollow : $i.notificationRecieveConfig[type]?.type === "followingOrFollower" ? i18n.ts.followingOrFollower : $i.notificationRecieveConfig[type]?.type === "list" ? i18n.ts.userList : i18n.ts.all),
+                      _toDisplayString(_unref($i).notificationRecieveConfig[type]?.type === "never" ? _unref(i18n).ts.none : _unref($i).notificationRecieveConfig[type]?.type === "following" ? _unref(i18n).ts.following : _unref($i).notificationRecieveConfig[type]?.type === "follower" ? _unref(i18n).ts.followers : _unref($i).notificationRecieveConfig[type]?.type === "mutualFollow" ? _unref(i18n).ts.mutualFollow : _unref($i).notificationRecieveConfig[type]?.type === "followingOrFollower" ? _unref(i18n).ts.followingOrFollower : _unref($i).notificationRecieveConfig[type]?.type === "list" ? _unref(i18n).ts.userList : _unref(i18n).ts.all),
                       1
                       /* TEXT */
                     )]),
                     default: _withCtx(() => [_createVNode(XNotificationConfig, {
                       userLists: _unref(userLists),
                       value: _unref($i).notificationRecieveConfig[type] ?? { type: "all" },
-                      configurableTypes: onlyOnOrOffNotificationTypes.includes(type) ? ["all", "never"] : undefined,
+                      configurableTypes: _unref(onlyOnOrOffNotificationTypes).includes(type) ? ["all", "never"] : undefined,
                       onUpdate: (res) => updateReceiveConfig(type, res)
                     }, null, 8, [
                       "userLists",

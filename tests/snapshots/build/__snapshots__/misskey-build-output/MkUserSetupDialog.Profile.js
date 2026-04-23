@@ -1,4 +1,4 @@
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
 import { ref, watch } from "vue";
 import { i18n } from "@/i18n.js";
 import MkButton from "@/components/MkButton.vue";
@@ -63,7 +63,7 @@ description: description.value || null });
             1
             /* TEXT */
           )]),
-          default: _withCtx(() => [_createElementVNode(
+          default: _withCtx(() => [_withDirectives(_createElementVNode(
             "div",
             { class: _normalizeClass(["_panel", _ctx.$style.avatarSection]) },
             [_createVNode(_component_MkAvatar, {
@@ -85,7 +85,7 @@ description: description.value || null });
             })])],
             2
             /* CLASS */
-          )]),
+          ), [[_directive_adaptive_bg]])]),
           _: 1
         }),
         _createVNode(MkInput, {

@@ -1,4 +1,4 @@
-import { openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderSlot as _renderSlot, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref, vShow as _vShow, vModelText as _vModelText } from "vue";
+import { openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderSlot as _renderSlot, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref, vShow as _vShow } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-device-floppy" });
 import { onMounted, onUnmounted, nextTick, ref, watch, computed, toRefs, useTemplateRef } from "vue";
 import { debounce } from "throttle-debounce";
@@ -201,7 +201,7 @@ export default {
             "pattern",
             "autocomplete",
             "spellcheck"
-          ]), [[_vModelText, v.value]])],
+          ]), [[_directive_adaptive_border]])],
           2
           /* CLASS */
         ),

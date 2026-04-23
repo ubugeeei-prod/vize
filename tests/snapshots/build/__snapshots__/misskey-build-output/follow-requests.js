@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx, unref as _unref } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, withCtx as _withCtx, unref as _unref } from "vue";
 const _hoisted_1 = { class: "acct" };
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-check" });
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-x" });
@@ -102,13 +102,13 @@ export default {
                 indicator: "",
                 link: "",
                 preview: ""
-              }, null, 8, ["user"]), _createElementVNode("div", { class: "body" }, [_createElementVNode("div", { class: "name" }, [_createVNode(_component_MkA, {
+              }, null, 8, ["user"]), _createElementVNode("div", { class: "body" }, [_createElementVNode("div", { class: "name" }, [_withDirectives(_createVNode(_component_MkA, {
                 class: "name",
                 to: _unref(userPage)(displayUser(req))
               }, {
                 default: _withCtx(() => [_createVNode(_component_MkUserName, { user: displayUser(req) }, null, 8, ["user"])]),
                 _: 2
-              }, 8, ["to"]), _createElementVNode(
+              }, 8, ["to"]), [[_directive_user_preview, displayUser(req).id]]), _createElementVNode(
                 "p",
                 _hoisted_1,
                 "@" + _toDisplayString(_unref(acct)(displayUser(req))),

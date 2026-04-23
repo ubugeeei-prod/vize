@@ -1,4 +1,4 @@
-import { openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
+import { openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-sparkles" });
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-map-pin" });
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-cake" });
@@ -508,7 +508,7 @@ export default {
                     modelValue: fields.value,
                     "onUpdate:modelValue": _cache[7] || (_cache[7] = ($event) => fields.value = $event)
                   }, {
-                    default: _withCtx(({ item, dragStart }) => [_createElementVNode(
+                    default: _withCtx(({ item, dragStart }) => [_withDirectives(_createElementVNode(
                       "div",
                       { class: _normalizeClass(_ctx.$style.fieldDragItem) },
                       [
@@ -556,7 +556,7 @@ export default {
                       ],
                       2
                       /* CLASS */
-                    )]),
+                    ), [[_directive_panel]])]),
                     _: 1
                   }, 8, ["modelValue"])],
                   2

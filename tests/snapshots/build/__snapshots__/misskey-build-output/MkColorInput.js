@@ -1,4 +1,4 @@
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderSlot as _renderSlot, normalizeClass as _normalizeClass, vModelText as _vModelText } from "vue";
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderSlot as _renderSlot, normalizeClass as _normalizeClass } from "vue";
 import { ref, useTemplateRef, toRefs } from "vue";
 export default {
   __name: "MkColorInput",
@@ -57,7 +57,7 @@ export default {
             "disabled",
             "required",
             "readonly"
-          ]), [[_vModelText, v.value]])],
+          ]), [[_directive_adaptive_border]])],
           2
           /* CLASS */
         ),

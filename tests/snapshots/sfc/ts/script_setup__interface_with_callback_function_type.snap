@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 152
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
@@ -21,7 +22,7 @@ const props = __props
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", {
-      onClick: _cache[0] || (_cache[0] = props.refreshMethod(() => {}))
+      onClick: _cache[0] || (_cache[0] = ($event: any) => (props.refreshMethod(() => {})))
     }, "Refresh"))
 }
 }

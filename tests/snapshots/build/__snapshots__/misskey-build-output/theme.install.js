@@ -63,7 +63,7 @@ export default {
       }, 8, ["modelValue"]), _createElementVNode("div", { class: "_buttons" }, [_createVNode(MkButton, {
         disabled: installThemeCode.value == null || installThemeCode.value.trim() === "",
         inline: "",
-        onClick: _cache[1] || (_cache[1] = () => previewTheme(installThemeCode))
+        onClick: _cache[1] || (_cache[1] = () => _unref(previewTheme)(installThemeCode.value))
       }, {
         default: _withCtx(() => [
           _hoisted_1,
@@ -79,7 +79,7 @@ export default {
         disabled: installThemeCode.value == null || installThemeCode.value.trim() === "",
         primary: "",
         inline: "",
-        onClick: _cache[2] || (_cache[2] = () => install(installThemeCode))
+        onClick: _cache[2] || (_cache[2] = () => install(installThemeCode.value))
       }, {
         default: _withCtx(() => [
           _hoisted_2,

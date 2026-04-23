@@ -100,7 +100,7 @@ export default {
                 default: _withCtx(() => [_hoisted_3]),
                 _: 1
               }, 8, ["active"])), [[_directive_tooltip, _unref(i18n).ts.filter]]) : _createCommentVNode("v-if", true),
-              _createVNode(MkButton, {
+              _withDirectives(_createVNode(MkButton, {
                 iconOnly: "",
                 transparent: "",
                 rounded: "",
@@ -109,8 +109,8 @@ export default {
               }, {
                 default: _withCtx(() => [_hoisted_4]),
                 _: 1
-              }, 8, ["active"]),
-              _createVNode(MkButton, {
+              }, 8, ["active"]), [[_directive_tooltip, _unref(i18n).ts.dateAndTime]]),
+              _withDirectives(_createVNode(MkButton, {
                 iconOnly: "",
                 transparent: "",
                 rounded: "",
@@ -118,7 +118,7 @@ export default {
               }, {
                 default: _withCtx(() => [_hoisted_5]),
                 _: 1
-              })
+              }), [[_directive_tooltip, _unref(i18n).ts.reload]])
             ],
             2
             /* CLASS */

@@ -553,7 +553,7 @@ export default {
                     return _openBlock(), _createElementBlock(
                       "div",
                       { key: policy },
-                      _toDisplayString(policy) + " ... " + _toDisplayString(info.policies[policy]),
+                      _toDisplayString(policy) + " ... " + _toDisplayString(info.value.policies[policy]),
                       1
                       /* TEXT */
                     );
@@ -735,12 +735,12 @@ export default {
                 class: _normalizeClass(_ctx.$style.roleItemSub)
               },
               [_createElementVNode("div", null, [_createTextVNode("Assigned: "), _createVNode(_component_MkTime, {
-                time: info.roleAssigns.find((a) => a.roleId === role.id).createdAt,
+                time: info.value.roleAssigns.find((a) => a.roleId === role.id).createdAt,
                 mode: "detail"
-              }, null, 8, ["time"])]), info.roleAssigns.find((a) => a.roleId === role.id).expiresAt ? (_openBlock(), _createElementBlock(
+              }, null, 8, ["time"])]), info.value.roleAssigns.find((a) => a.roleId === role.id).expiresAt ? (_openBlock(), _createElementBlock(
                 "div",
                 { key: 0 },
-                "Period: " + _toDisplayString(new Date(info.roleAssigns.find((a) => a.roleId === role.id).expiresAt).toLocaleString()),
+                "Period: " + _toDisplayString(new Date(info.value.roleAssigns.find((a) => a.roleId === role.id).expiresAt).toLocaleString()),
                 1
                 /* TEXT */
               )) : (_openBlock(), _createElementBlock(

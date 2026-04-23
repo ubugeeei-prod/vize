@@ -138,7 +138,7 @@ export default {
         { class: _normalizeClass([_ctx.$style.root, { [_ctx.$style.isMe]: isMe.value }]) },
         [_createVNode(_component_MkAvatar, {
           class: _normalizeClass([_ctx.$style.avatar, _unref(prefer).s.useStickyIcons ? _ctx.$style.useSticky : null]),
-          user: message.fromUser,
+          user: __props.message.fromUser,
           link: !isMe.value,
           preview: false
         }, null, 10, [

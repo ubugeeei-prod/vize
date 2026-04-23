@@ -1,4 +1,4 @@
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass } from "vue";
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", {
   class: "ti ti-cookie",
   style: "font-size: 70%;"
@@ -82,7 +82,7 @@ export default {
             2
             /* CLASS */
           ),
-          _createElementVNode("button", {
+          _withDirectives(_createElementVNode("button", {
             class: "_button",
             onClick
           }, [_createElementVNode(
@@ -94,7 +94,7 @@ export default {
             null,
             2
             /* CLASS */
-          )])
+          )]), [[_directive_click_anime]])
         ],
         2
         /* CLASS */

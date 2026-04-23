@@ -198,10 +198,10 @@ export default {
           src: _unref(i18n).ts.userSaysSomething,
           tag: "small"
         }, {
-          name: _withCtx(() => [_createVNode(_component_MkA, { to: _unref(userPage)(__props.note.user) }, {
+          name: _withCtx(() => [_withDirectives(_createVNode(_component_MkA, { to: _unref(userPage)(__props.note.user) }, {
             default: _withCtx(() => [_createVNode(_component_MkUserName, { user: __props.note.user }, null, 8, ["user"])]),
             _: 1
-          }, 8, ["to"])]),
+          }, 8, ["to"]), [[_directive_user_preview, __props.note.userId]])]),
           _: 1
         }, 8, ["src"])],
         2

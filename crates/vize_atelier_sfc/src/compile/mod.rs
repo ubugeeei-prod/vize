@@ -58,6 +58,10 @@ fn create_v_model_reactive_const_warning(
     }
 }
 
+fn is_ts_lang(lang: Option<&str>) -> bool {
+    matches!(lang, Some("ts" | "tsx"))
+}
+
 /// Compile an SFC descriptor into JavaScript and CSS
 pub fn compile_sfc(
     descriptor: &SfcDescriptor,
@@ -110,6 +114,15 @@ pub fn compile_sfc(
     // - false: output JavaScript (strip TypeScript syntax from TS sources)
     // Source language detection is tracked separately in the script/setup branches below.
     let is_ts = options.script.is_ts || options.template.is_ts;
+    let template_is_ts = options.template.is_ts
+        || descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|s| is_ts_lang(s.lang.as_deref()))
+        || descriptor
+            .script
+            .as_ref()
+            .is_some_and(|s| is_ts_lang(s.lang.as_deref()));
 
     // Extract component name from filename
     let component_name = extract_component_name(filename);
@@ -149,7 +162,7 @@ pub fn compile_sfc(
                     &template_opts,
                     &scope_id,
                     options.template.ssr && has_scoped,
-                    is_ts,
+                    template_is_ts,
                     None,
                     None,
                 )
@@ -247,7 +260,7 @@ pub fn compile_sfc(
                         &template_opts,
                         &scope_id,
                         options.template.ssr && has_scoped,
-                        is_ts,
+                        template_is_ts,
                         None, // No bindings for normal scripts
                         None, // No Croquis for normal scripts
                     )
@@ -464,7 +477,7 @@ pub fn compile_sfc(
                     &options.template,
                     &scope_id,
                     options.template.ssr && has_scoped,
-                    is_ts,
+                    template_is_ts,
                     Some(&script_bindings), // Pass bindings for proper ref handling
                     Some(croquis),          // Pass Croquis for enhanced transforms
                 )

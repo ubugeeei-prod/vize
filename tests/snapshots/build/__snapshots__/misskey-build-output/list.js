@@ -199,7 +199,7 @@ export default {
             /* TEXT */
           )]),
           caption: _withCtx(() => [_createTextVNode(
-            _toDisplayString(i18n.tsx.nUsers({ n: `${list.userIds.length}/${$i.policies["userEachUserListsLimit"]}` })),
+            _toDisplayString(_unref(i18n).tsx.nUsers({ n: `${list.value.userIds.length}/${_unref($i).policies["userEachUserListsLimit"]}` })),
             1
             /* TEXT */
           )]),

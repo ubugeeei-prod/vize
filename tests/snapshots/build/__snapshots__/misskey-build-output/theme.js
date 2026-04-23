@@ -185,7 +185,7 @@ export default {
             onDrop: _withModifiers(onDrop, ["prevent", "stop"])
           },
           [
-            _createElementVNode("div", { class: "rfqxtzch _panel" }, [_createElementVNode("div", { class: "toggle" }, [_createElementVNode("div", { class: "toggleWrapper" }, [_createElementVNode(
+            _withDirectives(_createElementVNode("div", { class: "rfqxtzch _panel" }, [_createElementVNode("div", { class: "toggle" }, [_createElementVNode("div", { class: "toggleWrapper" }, [_createElementVNode(
               "div",
               {
                 class: _normalizeClass(["toggle", _unref(store).r.darkMode.value ? "checked" : null]),
@@ -242,7 +242,7 @@ export default {
                 _: 1
               }, 8, ["modelValue"])]),
               _: 1
-            }, 8, ["keywords"])])]),
+            }, 8, ["keywords"])])]), [[_directive_adaptive_border]]),
             _unref(isSafeMode) ? (_openBlock(), _createBlock(MkInfo, {
               key: 0,
               warn: ""

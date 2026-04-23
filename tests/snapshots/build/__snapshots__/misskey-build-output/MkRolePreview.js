@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, withCtx as _withCtx } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, withCtx as _withCtx } from "vue";
 export default {
   __name: "MkRolePreview",
   props: {
@@ -53,7 +53,7 @@ export default {
           ))],
           64
           /* STABLE_FRAGMENT */
-        )) : _createCommentVNode("v-if", true), _createElementVNode(
+        )) : _createCommentVNode("v-if", true), _withDirectives(_createElementVNode(
           "div",
           { class: _normalizeClass(["_panel", _ctx.$style.body]) },
           [_createElementVNode(
@@ -133,7 +133,7 @@ export default {
           )],
           2
           /* CLASS */
-        )]),
+        ), [[_directive_adaptive_bg]])]),
         _: 2
       }, 1038, ["to"]);
     };

@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, setBlockTracking as _setBlockTracking, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, setBlockTracking as _setBlockTracking, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-settings" });
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-clock ti-fw" });
 const _hoisted_3 = { class: "_acrylic" };
@@ -476,10 +476,10 @@ export default {
                 }),
                 128
                 /* KEYED_FRAGMENT */
-              )), _createElementVNode("button", {
+              )), _withDirectives(_createElementVNode("button", {
                 class: "_button config",
                 onClick: settings
-              }, [_hoisted_1])])])) : _createCommentVNode("v-if", true), _createElementVNode("section", null, [_createElementVNode("header", { class: "_acrylic" }, [_hoisted_2, _createTextVNode(
+              }, [_hoisted_1]), [[_directive_tooltip, _unref(i18n).ts.settings]])])])) : _createCommentVNode("v-if", true), _createElementVNode("section", null, [_createElementVNode("header", { class: "_acrylic" }, [_hoisted_2, _createTextVNode(
                 " " + _toDisplayString(_unref(i18n).ts.recentUsed),
                 1
                 /* TEXT */

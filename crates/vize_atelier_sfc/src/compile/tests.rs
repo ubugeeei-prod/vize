@@ -258,11 +258,11 @@ const reactiveObject = reactive({ foo: 'bar' });
     assert!(
         result
             .code
-            .contains("let reactiveObject = reactive({ foo: 'bar' });"),
+            .contains("let reactiveObject = reactive({ foo: \"bar\" });"),
         "compiled output should demote the binding to let"
     );
     assert!(
-        result.code.contains("((reactiveObject) = $event)"),
+        result.code.contains("reactiveObject = $event"),
         "compiled output should assign directly to the demoted binding"
     );
     assert_eq!(result.warnings.len(), 1, "expected exactly one warning");

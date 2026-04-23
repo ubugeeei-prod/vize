@@ -370,16 +370,16 @@ export default {
                   "div",
                   { class: _normalizeClass([_ctx.$style.accountSelectorItem, _ctx.$style.static]) },
                   [_createVNode(_component_MkAvatar, {
-                    user: users.get(selectedUser),
+                    user: users.value.get(selectedUser.value),
                     class: _normalizeClass(_ctx.$style.accountSelectorAvatar)
                   }, null, 10, ["user"]), _createElementVNode(
                     "div",
                     { class: _normalizeClass(_ctx.$style.accountSelectorBody) },
                     [_createVNode(_component_MkUserName, {
-                      user: users.get(selectedUser),
+                      user: users.value.get(selectedUser.value),
                       class: _normalizeClass(_ctx.$style.accountSelectorName)
                     }, null, 10, ["user"]), _createVNode(_component_MkAcct, {
-                      user: users.get(selectedUser),
+                      user: users.value.get(selectedUser.value),
                       class: _normalizeClass(_ctx.$style.accountSelectorAcct)
                     }, null, 10, ["user"])],
                     2

@@ -322,7 +322,7 @@ publicKey: res.authRequest });
             key: "password",
             ref_key: "passwordPageEl",
             ref: passwordPageEl,
-            user: userInfo,
+            user: userInfo.value,
             needCaptcha: needCaptcha.value,
             onPasswordSubmitted
           }, null, 8, ["user", "needCaptcha"])) : page.value === "totp" ? (_openBlock(), _createBlock(XTotp, {
@@ -330,7 +330,7 @@ publicKey: res.authRequest });
             onTotpSubmitted
           })) : page.value === "passkey" ? (_openBlock(), _createBlock(XPasskey, {
             key: "passkey",
-            credentialRequest,
+            credentialRequest: credentialRequest.value,
             isPerformingPasswordlessLogin: doingPasskeyFromInputPage.value,
             onDone: onPasskeyDone,
             onUseTotp

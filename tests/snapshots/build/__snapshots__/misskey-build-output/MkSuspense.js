@@ -44,7 +44,7 @@ export default {
     };
     return (_ctx, _cache) => {
       const _component_MkLoading = _resolveComponent("MkLoading");
-      return pending.value ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_createVNode(_component_MkLoading)])) : resolved.value ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_renderSlot(_ctx.$slots, "default", { result })])) : (_openBlock(), _createElementBlock("div", { key: 2 }, [_createElementVNode(
+      return pending.value ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_createVNode(_component_MkLoading)])) : resolved.value ? (_openBlock(), _createElementBlock("div", { key: 1 }, [_renderSlot(_ctx.$slots, "default", { result: result.value })])) : (_openBlock(), _createElementBlock("div", { key: 2 }, [_createElementVNode(
         "div",
         { class: _normalizeClass(_ctx.$style.error) },
         [_renderSlot(_ctx.$slots, "error", { error: error.value }, () => [

@@ -1,4 +1,4 @@
-import { Suspense as _Suspense, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
+import { Suspense as _Suspense, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("stop", {
   offset: "0%",
   "stop-color": "#86b300"
@@ -178,7 +178,11 @@ export default {
                         /* TEXT */
                       ),
                       _createTextVNode(" "),
-                      _createElementVNode("div", { class: "_button _help" }, [_hoisted_6])
+                      _withDirectives(_createElementVNode("div", { class: "_button _help" }, [_hoisted_6]), [[
+                        _directive_tooltip,
+                        _unref(i18n).ts.initialPasswordForSetupDescription,
+                        "dialog"
+                      ]])
                     ]),
                     prefix: _withCtx(() => [_hoisted_7]),
                     _: 1
@@ -198,7 +202,11 @@ export default {
                         /* TEXT */
                       ),
                       _createTextVNode(" "),
-                      _createElementVNode("div", { class: "_button _help" }, [_hoisted_8])
+                      _withDirectives(_createElementVNode("div", { class: "_button _help" }, [_hoisted_8]), [[
+                        _directive_tooltip,
+                        _unref(i18n).ts.usernameInfo,
+                        "dialog"
+                      ]])
                     ]),
                     prefix: _withCtx(() => [_createTextVNode("@")]),
                     suffix: _withCtx(() => [_createTextVNode(
@@ -299,7 +307,7 @@ export default {
                 ]),
                 _createVNode(_Suspense, null, {
                   default: _withCtx(() => [_createVNode(MkServerSetupWizard, {
-                    token,
+                    token: _unref(token),
                     onFinished: onWizardFinished
                   }, null, 8, ["token"])]),
                   fallback: _withCtx(() => [_createVNode(_component_MkLoading)]),

@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveDirective as _resolveDirective, renderList as _renderList, renderSlot as _renderSlot, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, renderSlot as _renderSlot, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("div", { class: "shine right" });
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("div", { class: "shine left" });
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("div", { class: "thumbInner" });
@@ -219,7 +219,7 @@ export default {
         }]) },
         [
           _createElementVNode("div", { class: "label" }, [_renderSlot(_ctx.$slots, "label")]),
-          _createElementVNode(
+          _withDirectives(_createElementVNode(
             "div",
             { class: _normalizeClass(["body", { "disabled": __props.disabled }]) },
             [
@@ -300,7 +300,7 @@ export default {
             ],
             2
             /* CLASS */
-          ),
+          ), [[_directive_adaptive_border]]),
           _createElementVNode("div", { class: "caption" }, [_renderSlot(_ctx.$slots, "caption")])
         ],
         2

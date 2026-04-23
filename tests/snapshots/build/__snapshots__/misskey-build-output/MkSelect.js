@@ -1,5 +1,5 @@
 import { useModel as _useModel } from "vue";
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, resolveDirective as _resolveDirective, renderSlot as _renderSlot, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withModifiers as _withModifiers, withKeys as _withKeys } from "vue";
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderSlot as _renderSlot, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withModifiers as _withModifiers, withKeys as _withKeys } from "vue";
 const _hoisted_1 = { style: "pointer-events: none;" };
 import { onMounted, nextTick, ref, watch, computed, toRefs, useTemplateRef } from "vue";
 import { useInterval } from "@@/js/use-interval.js";
@@ -189,7 +189,7 @@ export default {
               2
               /* CLASS */
             ),
-            _createElementVNode("div", {
+            _withDirectives(_createElementVNode("div", {
               ref_key: "inputEl",
               ref: inputEl,
               tabindex: "-1",
@@ -211,7 +211,7 @@ export default {
               "required",
               "readonly",
               "placeholder"
-            ]),
+            ]), [[_directive_adaptive_border]]),
             _createElementVNode(
               "div",
               {

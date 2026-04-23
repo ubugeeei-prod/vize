@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, renderSlot as _renderSlot, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref, vModelText as _vModelText } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, renderSlot as _renderSlot, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-check" });
 import { onMounted, onUnmounted, nextTick, ref, useTemplateRef, watch, computed, toRefs } from "vue";
 import { debounce } from "throttle-debounce";
@@ -266,7 +266,7 @@ export default {
               "list",
               "min",
               "max"
-            ]), [[_vModelText, v.value]]),
+            ]), [[_directive_adaptive_border]]),
             __props.datalist ? (_openBlock(), _createElementBlock("datalist", {
               key: 0,
               id: _unref(id)

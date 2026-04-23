@@ -65,7 +65,7 @@ export default {
           "div",
           { class: _normalizeClass(_ctx.$style.body) },
           [_createElementVNode("div", null, [
-            _createElementVNode(
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, _ctx.$style.instance]]),
@@ -78,8 +78,8 @@ export default {
               }, null, 10, ["src"])],
               2
               /* CLASS */
-            ),
-            _createVNode(_component_MkA, {
+            ), [[_directive_click_anime]]),
+            _withDirectives(_createVNode(_component_MkA, {
               class: _normalizeClass(_ctx.$style.item),
               activeClass: _ctx.$style.active,
               to: "/",
@@ -93,7 +93,7 @@ export default {
                 /* CLASS */
               )]),
               _: 1
-            }, 10, ["activeClass"]),
+            }, 10, ["activeClass"]), [[_directive_click_anime], [_directive_tooltip, _unref(i18n).ts.timeline]]),
             (_openBlock(true), _createElementBlock(
               _Fragment,
               null,
@@ -165,7 +165,7 @@ export default {
               )]),
               _: 1
             }, 8, ["activeClass", "behavior"])), [[_directive_click_anime], [_directive_tooltip, _unref(i18n).ts.controlPanel]]) : _createCommentVNode("v-if", true),
-            _createElementVNode(
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", _ctx.$style.item]),
@@ -189,12 +189,12 @@ export default {
               )) : _createCommentVNode("v-if", true)],
               2
               /* CLASS */
-            )
+            ), [[_directive_click_anime]])
           ]), _createElementVNode(
             "div",
             { class: _normalizeClass(_ctx.$style.right) },
             [
-              _createVNode(_component_MkA, {
+              _withDirectives(_createVNode(_component_MkA, {
                 class: _normalizeClass(_ctx.$style.item),
                 activeClass: _ctx.$style.active,
                 to: "/settings",
@@ -208,7 +208,7 @@ export default {
                   /* CLASS */
                 )]),
                 _: 1
-              }, 10, ["activeClass", "behavior"]),
+              }, 10, ["activeClass", "behavior"]), [[_directive_click_anime], [_directive_tooltip, _unref(i18n).ts.settings]]),
               _unref($i) ? _withDirectives((_openBlock(), _createElementBlock(
                 "button",
                 {

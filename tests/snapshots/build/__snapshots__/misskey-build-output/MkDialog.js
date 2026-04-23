@@ -255,15 +255,15 @@ export default {
               name: "caption",
               fn: _withCtx(() => [okButtonDisabledReason.value === "charactersExceeded" ? (_openBlock(), _createElementBlock("span", {
                 key: 0,
-                textContent: _toDisplayString(i18n.tsx._dialog.charactersExceeded({
-                  current: inputValue?.length ?? 0,
-                  max: input.maxLength ?? "NaN"
+                textContent: _toDisplayString(_unref(i18n).tsx._dialog.charactersExceeded({
+                  current: inputValue.value?.length ?? 0,
+                  max: __props.input.maxLength ?? "NaN"
                 }))
               }, null, 8, ["textContent"])) : okButtonDisabledReason.value === "charactersBelow" ? (_openBlock(), _createElementBlock("span", {
                 key: 1,
-                textContent: _toDisplayString(i18n.tsx._dialog.charactersBelow({
-                  current: inputValue?.length ?? 0,
-                  min: input.minLength ?? "NaN"
+                textContent: _toDisplayString(_unref(i18n).tsx._dialog.charactersBelow({
+                  current: inputValue.value?.length ?? 0,
+                  min: __props.input.minLength ?? "NaN"
                 }))
               }, null, 8, ["textContent"])) : _createCommentVNode("v-if", true)])
             }]), 1032, [

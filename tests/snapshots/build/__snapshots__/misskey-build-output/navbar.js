@@ -107,7 +107,7 @@ export default {
               "div",
               { class: _normalizeClass(_ctx.$style.top) },
               [
-                _createElementVNode(
+                _withDirectives(_createElementVNode(
                   "button",
                   {
                     class: _normalizeClass(["_button", _ctx.$style.instance]),
@@ -121,7 +121,15 @@ export default {
                   }, null, 10, ["src"])],
                   2
                   /* CLASS */
-                ),
+                ), [[
+                  _directive_tooltip,
+                  _unref(instance).name ?? _unref(i18n).ts.instance,
+                  void 0,
+                  {
+                    noDelay: true,
+                    right: true
+                  }
+                ]]),
                 !iconOnly.value ? _withDirectives((_openBlock(), _createElementBlock(
                   "button",
                   {
@@ -174,7 +182,7 @@ export default {
               "div",
               { class: _normalizeClass(_ctx.$style.middle) },
               [
-                _createVNode(_component_MkA, {
+                _withDirectives(_createVNode(_component_MkA, {
                   class: _normalizeClass(_ctx.$style.item),
                   activeClass: _ctx.$style.active,
                   to: "/",
@@ -197,7 +205,15 @@ export default {
                     /* TEXT, CLASS */
                   )]),
                   _: 1
-                }, 10, ["activeClass"]),
+                }, 10, ["activeClass"]), [[
+                  _directive_tooltip,
+                  _unref(i18n).ts.timeline,
+                  void 0,
+                  {
+                    noDelay: true,
+                    right: true
+                  }
+                ]]),
                 (_openBlock(true), _createElementBlock(
                   _Fragment,
                   null,
@@ -356,7 +372,7 @@ export default {
                   2
                   /* CLASS */
                 ),
-                _createVNode(_component_MkA, {
+                _withDirectives(_createVNode(_component_MkA, {
                   class: _normalizeClass(_ctx.$style.item),
                   activeClass: _ctx.$style.active,
                   to: "/settings"
@@ -378,7 +394,15 @@ export default {
                     /* TEXT, CLASS */
                   )]),
                   _: 1
-                }, 10, ["activeClass"])
+                }, 10, ["activeClass"]), [[
+                  _directive_tooltip,
+                  _unref(i18n).ts.settings,
+                  void 0,
+                  {
+                    noDelay: true,
+                    right: true
+                  }
+                ]])
               ],
               2
               /* CLASS */
@@ -431,7 +455,7 @@ export default {
                     right: true
                   }
                 ]]) : _createCommentVNode("v-if", true),
-                _createElementVNode(
+                _withDirectives(_createElementVNode(
                   "button",
                   {
                     class: _normalizeClass(["_button", [_ctx.$style.post]]),
@@ -455,7 +479,15 @@ export default {
                   )],
                   2
                   /* CLASS */
-                ),
+                ), [[
+                  _directive_tooltip,
+                  _unref(i18n).ts.note,
+                  void 0,
+                  {
+                    noDelay: true,
+                    right: true
+                  }
+                ]]),
                 _unref($i) != null ? _withDirectives((_openBlock(), _createElementBlock(
                   "button",
                   {

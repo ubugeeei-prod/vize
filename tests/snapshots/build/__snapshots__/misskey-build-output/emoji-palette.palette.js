@@ -1,4 +1,4 @@
-import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
+import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-palette" });
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-pencil" });
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-copy" });
@@ -140,7 +140,7 @@ export default {
             _: 1
           })
         ])]),
-        default: _withCtx(() => [_createElementVNode("div", null, [_createElementVNode("div", { style: "border-radius: 6px;" }, [_createVNode(MkDraggable, {
+        default: _withCtx(() => [_createElementVNode("div", null, [_withDirectives(_createElementVNode("div", { style: "border-radius: 6px;" }, [_createVNode(MkDraggable, {
           modelValue: emojis.value.map((emoji) => ({
             id: emoji,
             emoji
@@ -180,7 +180,7 @@ export default {
             /* CLASS */
           )]),
           _: 1
-        }, 10, ["modelValue"])]), _createElementVNode(
+        }, 10, ["modelValue"])]), [[_directive_panel]]), _createElementVNode(
           "div",
           { class: _normalizeClass(_ctx.$style.editorCaption) },
           _toDisplayString(_unref(i18n).ts.reactionSettingDescription2),

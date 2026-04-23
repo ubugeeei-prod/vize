@@ -129,5 +129,36 @@ describe(`${app.name} build (compiler)`, () => {
       streaming.includes(`_renderSlot(_ctx.$slots, "empty"`),
       "MkStreamingNotesTimeline.js should preserve the empty slot fallback",
     );
+    assert.ok(
+      streaming.includes(`const _directive_appear = _resolveDirective("appear")`),
+      "MkStreamingNotesTimeline.js should resolve the appear directive",
+    );
+    assert.ok(
+      streaming.includes("_withDirectives(_createElementVNode(\"button\""),
+      "MkStreamingNotesTimeline.js should wrap the load-more button with directives",
+    );
+    assert.ok(
+      streaming.includes("[[_directive_appear, _unref(prefer).s.enableInfiniteScroll ? _unref(paginator).fetchOlder : null], [_vShow, _unref(paginator).canFetchOlder.value]]"),
+      "MkStreamingNotesTimeline.js should keep appear and v-show on the same button",
+    );
+
+    const pagination = readOutput("MkPagination.js");
+    const normalizedPagination = pagination.replace(/\s+/g, " ");
+    assert.ok(
+      pagination.includes(`const _directive_appear = _resolveDirective("appear")`),
+      "MkPagination.js should resolve the appear directive",
+    );
+    assert.ok(
+      /_withDirectives\(\(_openBlock\(\), _createBlock\(\s*MkButton\b/.test(
+        normalizedPagination,
+      ),
+      "MkPagination.js should apply appear via withDirectives on load-more buttons",
+    );
+    assert.ok(
+      normalizedPagination.includes(
+        "[[_directive_appear, shouldEnableInfiniteScroll.value ? upButtonClick : null]]",
+      ),
+      "MkPagination.js should keep the appear binding on the upward load-more button",
+    );
   });
 });

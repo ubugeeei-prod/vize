@@ -347,7 +347,12 @@ export default {
           )],
           6
           /* CLASS, STYLE */
-        ), [[_vShow, __props.manualShowing != null ? __props.manualShowing : showing.value]])]),
+        ), [[
+          _directive_hotkey,
+          _unref(keymap),
+          void 0,
+          { global: true }
+        ], [_vShow, __props.manualShowing != null ? __props.manualShowing : showing.value]])]),
         _: 3
       }, 1032, [
         "name",

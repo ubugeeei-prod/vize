@@ -348,7 +348,7 @@ export default {
                         )
                       ]),
                       _: 2
-                    }, 8, ["onClick"])), _createVNode(MkButton, {
+                    }, 8, ["onClick"])), _withDirectives(_createVNode(MkButton, {
                       danger: "",
                       small: "",
                       iconOnly: true,
@@ -357,7 +357,7 @@ export default {
                     }, {
                       default: _withCtx(() => [_hoisted_9]),
                       _: 2
-                    }, 8, ["iconOnly", "onClick"])],
+                    }, 8, ["iconOnly", "onClick"]), [[_directive_tooltip, _unref(i18n).ts._drafts.delete]])],
                     2
                     /* CLASS */
                   )],

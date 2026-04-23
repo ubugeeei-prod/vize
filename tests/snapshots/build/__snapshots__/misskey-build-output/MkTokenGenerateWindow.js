@@ -158,11 +158,11 @@ export default {
             _renderList(Object.keys(permissionSwitches.value), (kind) => {
               return _openBlock(), _createBlock(MkSwitch, {
                 key: kind,
-                modelValue: permissionSwitches[kind],
-                "onUpdate:modelValue": ($event) => permissionSwitches[kind] = $event
+                modelValue: permissionSwitches.value[kind],
+                "onUpdate:modelValue": ($event) => permissionSwitches.value[kind] = $event
               }, {
                 default: _withCtx(() => [_createTextVNode(
-                  _toDisplayString(i18n.ts._permissions[kind]),
+                  _toDisplayString(_unref(i18n).ts._permissions[kind]),
                   1
                   /* TEXT */
                 )]),
@@ -196,11 +196,11 @@ export default {
               _renderList(Object.keys(permissionSwitchesForAdmin.value), (kind) => {
                 return _openBlock(), _createBlock(MkSwitch, {
                   key: kind,
-                  modelValue: permissionSwitchesForAdmin[kind],
-                  "onUpdate:modelValue": ($event) => permissionSwitchesForAdmin[kind] = $event
+                  modelValue: permissionSwitchesForAdmin.value[kind],
+                  "onUpdate:modelValue": ($event) => permissionSwitchesForAdmin.value[kind] = $event
                 }, {
                   default: _withCtx(() => [_createTextVNode(
-                    _toDisplayString(i18n.ts._permissions[kind]),
+                    _toDisplayString(_unref(i18n).ts._permissions[kind]),
                     1
                     /* TEXT */
                   )]),

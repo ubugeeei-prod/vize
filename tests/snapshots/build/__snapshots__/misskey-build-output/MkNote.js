@@ -537,13 +537,13 @@ export default {
                 tag: "span",
                 class: _normalizeClass(_ctx.$style.renoteText)
               }, {
-                user: _withCtx(() => [_createVNode(_component_MkA, {
+                user: _withCtx(() => [_withDirectives(_createVNode(_component_MkA, {
                   class: _normalizeClass(_ctx.$style.renoteUserName),
                   to: _unref(userPage)(_unref(note).user)
                 }, {
                   default: _withCtx(() => [_createVNode(_component_MkUserName, { user: _unref(note).user }, null, 8, ["user"])]),
                   _: 1
-                }, 10, ["to"])]),
+                }, 10, ["to"]), [[_directive_user_preview, _unref(note).userId]])]),
                 _: 1
               }, 10, ["src"]),
               _createElementVNode(
@@ -1085,30 +1085,30 @@ export default {
           src: _unref(i18n).ts.userSaysSomethingSensitive,
           tag: "small"
         }, {
-          name: _withCtx(() => [_createVNode(_component_MkA, { to: _unref(userPage)(_unref(appearNote).user) }, {
+          name: _withCtx(() => [_withDirectives(_createVNode(_component_MkA, { to: _unref(userPage)(_unref(appearNote).user) }, {
             default: _withCtx(() => [_createVNode(_component_MkUserName, { user: _unref(appearNote).user }, null, 8, ["user"])]),
             _: 1
-          }, 8, ["to"])]),
+          }, 8, ["to"]), [[_directive_user_preview, _unref(appearNote).userId]])]),
           _: 1
         }, 8, ["src"])) : showSoftWordMutedWord.value !== true ? (_openBlock(), _createBlock(_component_I18n, {
           key: 1,
           src: _unref(i18n).ts.userSaysSomething,
           tag: "small"
         }, {
-          name: _withCtx(() => [_createVNode(_component_MkA, { to: _unref(userPage)(_unref(appearNote).user) }, {
+          name: _withCtx(() => [_withDirectives(_createVNode(_component_MkA, { to: _unref(userPage)(_unref(appearNote).user) }, {
             default: _withCtx(() => [_createVNode(_component_MkUserName, { user: _unref(appearNote).user }, null, 8, ["user"])]),
             _: 1
-          }, 8, ["to"])]),
+          }, 8, ["to"]), [[_directive_user_preview, _unref(appearNote).userId]])]),
           _: 1
         }, 8, ["src"])) : (_openBlock(), _createBlock(_component_I18n, {
           key: 2,
           src: _unref(i18n).ts.userSaysSomethingAbout,
           tag: "small"
         }, {
-          name: _withCtx(() => [_createVNode(_component_MkA, { to: _unref(userPage)(_unref(appearNote).user) }, {
+          name: _withCtx(() => [_withDirectives(_createVNode(_component_MkA, { to: _unref(userPage)(_unref(appearNote).user) }, {
             default: _withCtx(() => [_createVNode(_component_MkUserName, { user: _unref(appearNote).user }, null, 8, ["user"])]),
             _: 1
-          }, 8, ["to"])]),
+          }, 8, ["to"]), [[_directive_user_preview, _unref(appearNote).userId]])]),
           word: _withCtx(() => [_createTextVNode(
             _toDisplayString(Array.isArray(muted.value) ? muted.value.map((words) => Array.isArray(words) ? words.join() : words).slice(0, 3).join(" ") : muted.value),
             1

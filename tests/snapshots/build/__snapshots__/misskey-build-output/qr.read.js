@@ -275,13 +275,13 @@ export default {
                 "div",
                 { class: _normalizeClass(_ctx.$style.controls) },
                 [
-                  _createVNode(MkButton, {
+                  _withDirectives(_createVNode(MkButton, {
                     iconOnly: "",
                     onClick: upload
                   }, {
                     default: _withCtx(() => [_hoisted_1]),
                     _: 1
-                  }),
+                  }), [[_directive_tooltip, _unref(i18n).ts._qr.scanFile]]),
                   qrStarted.value ? _withDirectives((_openBlock(), _createBlock(MkButton, {
                     key: 0,
                     iconOnly: "",
@@ -298,13 +298,13 @@ export default {
                     default: _withCtx(() => [_hoisted_3]),
                     _: 1
                   })), [[_directive_tooltip, _unref(i18n).ts._qr.startQr]]),
-                  _createVNode(MkButton, {
+                  _withDirectives(_createVNode(MkButton, {
                     iconOnly: "",
                     onClick: chooseCamera
                   }, {
                     default: _withCtx(() => [_hoisted_4]),
                     _: 1
-                  }),
+                  }), [[_directive_tooltip, _unref(i18n).ts._qr.chooseCamera]]),
                   !flashCanToggle.value ? _withDirectives((_openBlock(), _createBlock(MkButton, {
                     key: 0,
                     iconOnly: "",

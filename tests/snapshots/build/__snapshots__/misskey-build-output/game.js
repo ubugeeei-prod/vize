@@ -91,7 +91,7 @@ export default {
       return game.value == null || !game.value.isEnded && connection.value == null ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_createVNode(_component_MkLoading)])) : !game.value.isStarted ? (_openBlock(), _createBlock(GameSetting, {
         key: 1,
         game: game.value,
-        connection,
+        connection: connection.value,
         shareWhenStart: shareWhenStart.value,
         "onUpdate:shareWhenStart": _cache[0] || (_cache[0] = ($event) => shareWhenStart.value = $event)
       }, null, 8, [

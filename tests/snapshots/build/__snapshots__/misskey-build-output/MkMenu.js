@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, resolveDynamicComponent as _resolveDynamicComponent, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString, mergeProps as _mergeProps, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers, withKeys as _withKeys } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, resolveDynamicComponent as _resolveDynamicComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, mergeProps as _mergeProps, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers, withKeys as _withKeys } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", { class: "_indicatorCircle" });
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("i", { class: "_indicatorCircle" });
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("i", { class: "_indicatorCircle" });
@@ -247,7 +247,7 @@ export default {
           }),
           onFocusinPassive: _cache[0] || (_cache[0] = _withModifiers(() => {}, ["stop"]))
         },
-        [_createElementVNode(
+        [_withDirectives(_createElementVNode(
           "div",
           {
             ref_key: "itemsEl",
@@ -824,12 +824,12 @@ export default {
           )) : _createCommentVNode("v-if", true)],
           38
           /* CLASS, STYLE, NEED_HYDRATION */
-        ), childMenu.value ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_createVNode(XChild, {
+        ), [[_directive_hotkey, _unref(keymap)]]), childMenu.value ? (_openBlock(), _createElementBlock("div", { key: 0 }, [_createVNode(XChild, {
           ref_key: "child",
           ref: child,
           items: childMenu.value,
-          anchorElement: childTarget,
-          rootElement: itemsEl,
+          anchorElement: childTarget.value,
+          rootElement: _unref(itemsEl),
           onActioned: childActioned,
           onClosed: closeChild
         }, null, 8, [

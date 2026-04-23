@@ -718,7 +718,7 @@ export default {
           )) : (_openBlock(), _createElementBlock(
             _Fragment,
             { key: 1 },
-            [!selectedFolders.some((f) => f.id === folder.id) ? (_openBlock(), _createBlock(MkButton, {
+            [!selectedFolders.value.some((f) => f.id === folder.value.id) ? (_openBlock(), _createBlock(MkButton, {
               key: 0,
               onClick: _cache[5] || (_cache[5] = ($event) => selectedFolders.value.push(folder.value))
             }, {
@@ -734,7 +734,7 @@ export default {
               _: 1
             })) : (_openBlock(), _createBlock(MkButton, {
               key: 1,
-              onClick: _cache[6] || (_cache[6] = selectedFolders = selectedFolders.filter((f) => f.id !== folder.id))
+              onClick: _cache[6] || (_cache[6] = ($event) => selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))
             }, {
               default: _withCtx(() => [
                 _hoisted_7,
@@ -952,7 +952,7 @@ export default {
                 },
                 2
                 /* CLASS */
-              ), [[_vShow, canFetchFiles.value]]),
+              ), [[_directive_appear, shouldEnableInfiniteScroll.value ? fetchMoreFiles : null], [_vShow, canFetchFiles.value]]),
               _unref(filesPaginator).items.value.length == 0 && _unref(foldersPaginator).items.value.length == 0 && !fetching.value ? (_openBlock(), _createElementBlock(
                 "div",
                 {

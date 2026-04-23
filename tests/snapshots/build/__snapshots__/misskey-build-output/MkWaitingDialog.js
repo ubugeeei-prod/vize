@@ -37,7 +37,7 @@ export default {
         ref: modal,
         preferType: "dialog",
         zPriority: "high",
-        onClick: _cache[0] || (_cache[0] = __props.success ? done() : () => {}),
+        onClick: _cache[0] || (_cache[0] = ($event) => __props.success ? done() : () => {}),
         onClosed: _cache[1] || (_cache[1] = ($event) => emit("closed"))
       }, {
         default: _withCtx(() => [_createElementVNode(

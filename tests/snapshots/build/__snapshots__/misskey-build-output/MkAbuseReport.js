@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, withCtx as _withCtx, unref as _unref } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, withCtx as _withCtx, unref as _unref } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", {
   class: "ti ti-check",
   style: "color: var(--MI_THEME-success)"
@@ -188,7 +188,11 @@ export default {
                 )
               ]),
               _: 1
-            }, 8, ["disabled"]), _createElementVNode("div", { class: "_button _help" }, [_hoisted_5])],
+            }, 8, ["disabled"]), _withDirectives(_createElementVNode("div", { class: "_button _help" }, [_hoisted_5]), [[
+              _directive_tooltip,
+              _unref(i18n).ts._abuseUserReport.forwardDescription,
+              "dialog"
+            ]])],
             64
             /* STABLE_FRAGMENT */
           )) : _createCommentVNode("v-if", true),

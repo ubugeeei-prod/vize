@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, unref as _unref } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, unref as _unref } from "vue";
 import { onMounted, ref, computed } from "vue";
 import { misskeyApi } from "@/utility/misskey-api.js";
 import { i18n } from "@/i18n.js";
@@ -106,13 +106,13 @@ export default {
                     ), _createElementVNode(
                       "span",
                       { class: _normalizeClass(_ctx.$style.time) },
-                      [_createElementVNode(
+                      [_withDirectives(_createElementVNode(
                         "time",
                         null,
                         _toDisplayString(new Date(achievement.unlockedAt).getFullYear()) + "/" + _toDisplayString(new Date(achievement.unlockedAt).getMonth() + 1) + "/" + _toDisplayString(new Date(achievement.unlockedAt).getDate()),
                         1
                         /* TEXT */
-                      )],
+                      ), [[_directive_tooltip, new Date(achievement.unlockedAt).toLocaleString()]])],
                       2
                       /* CLASS */
                     )],
@@ -132,7 +132,7 @@ export default {
                       key: 0,
                       class: _normalizeClass(_ctx.$style.flavor)
                     },
-                    _toDisplayString(i18n.ts._achievements._types[`_${achievement.name}`].flavor),
+                    _toDisplayString(_unref(i18n).ts._achievements._types[`_${achievement.name}`].flavor),
                     3
                     /* TEXT, CLASS */
                   )) : _createCommentVNode("v-if", true)
@@ -156,7 +156,7 @@ export default {
               return _openBlock(), _createElementBlock("div", {
                 key: achievement,
                 class: _normalizeClass(["_panel", [_ctx.$style.achievement, _ctx.$style.locked]]),
-                onClick: achievement === "clickedClickHere" ? clickHere() : () => {}
+                onClick: ($event) => achievement === "clickedClickHere" ? clickHere() : () => {}
               }, [_createElementVNode(
                 "div",
                 { class: _normalizeClass(_ctx.$style.icon) },

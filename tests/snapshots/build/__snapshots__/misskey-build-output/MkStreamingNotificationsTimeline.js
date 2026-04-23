@@ -215,7 +215,7 @@ export default {
             _toDisplayString(_unref(i18n).ts.loadMore),
             1
             /* TEXT */
-          )) : (_openBlock(), _createBlock(_component_MkLoading, { key: 1 }))], 10, ["disabled"]), [[_vShow, _unref(paginator).canFetchOlder.value]])],
+          )) : (_openBlock(), _createBlock(_component_MkLoading, { key: 1 }))], 10, ["disabled"]), [[_directive_appear, _unref(prefer).s.enableInfiniteScroll ? _unref(paginator).fetchOlder : null], [_vShow, _unref(paginator).canFetchOlder.value]])],
           512
           /* NEED_PATCH */
         ))]),

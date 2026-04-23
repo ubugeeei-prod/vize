@@ -172,7 +172,7 @@ export default {
                   onClick: _withModifiers(($event) => removeWidget(item), ["prevent", "stop"])
                 }, [_hoisted_3], 10, ["onClick"]),
                 _createVNode(_resolveDynamicComponent(`widget-${item.name}`), {
-                  ref: (el) => widgetRefs[item.id] = el,
+                  ref: (el) => _unref(widgetRefs)[item.id] = el,
                   class: _normalizeClass(_ctx.$style.customizeContainerHandleWidget),
                   widget: item,
                   onUpdateProps: ($event) => updateWidget(item.id, $event)
@@ -193,7 +193,7 @@ export default {
             null,
             _renderList(_widgets.value, (widget) => {
               return _openBlock(), _createBlock(_resolveDynamicComponent(`widget-${widget.name}`), {
-                ref: (el) => widgetRefs[widget.id] = el,
+                ref: (el) => _unref(widgetRefs)[widget.id] = el,
                 class: _normalizeClass(_ctx.$style.widget),
                 widget,
                 onUpdateProps: ($event) => updateWidget(widget.id, $event),

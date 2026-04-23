@@ -445,13 +445,13 @@ export default {
                   src: _unref(i18n).ts.renotedBy,
                   tag: "span"
                 }, {
-                  user: _withCtx(() => [_createVNode(_component_MkA, {
+                  user: _withCtx(() => [_withDirectives(_createVNode(_component_MkA, {
                     class: _normalizeClass(_ctx.$style.renoteName),
                     to: _unref(userPage)(_unref(note).user)
                   }, {
                     default: _withCtx(() => [_createVNode(_component_MkUserName, { user: _unref(note).user }, null, 8, ["user"])]),
                     _: 1
-                  }, 10, ["to"])]),
+                  }, 10, ["to"]), [[_directive_user_preview, _unref(note).userId]])]),
                   _: 1
                 }, 8, ["src"])],
                 2
@@ -545,7 +545,7 @@ export default {
                       { class: _normalizeClass(_ctx.$style.noteHeaderBody) },
                       [
                         _createElementVNode("div", null, [
-                          _createVNode(_component_MkA, {
+                          _withDirectives(_createVNode(_component_MkA, {
                             class: _normalizeClass(_ctx.$style.noteHeaderName),
                             to: _unref(userPage)(_unref(appearNote).user)
                           }, {
@@ -554,7 +554,7 @@ export default {
                               user: _unref(appearNote).user
                             }, null, 8, ["nowrap", "user"])]),
                             _: 1
-                          }, 10, ["to"]),
+                          }, 10, ["to"]), [[_directive_user_preview, _unref(appearNote).user.id]]),
                           _unref(appearNote).user.isBot ? (_openBlock(), _createElementBlock(
                             "span",
                             {
@@ -1172,10 +1172,10 @@ export default {
           src: _unref(i18n).ts.userSaysSomething,
           tag: "small"
         }, {
-          name: _withCtx(() => [_createVNode(_component_MkA, { to: _unref(userPage)(_unref(appearNote).user) }, {
+          name: _withCtx(() => [_withDirectives(_createVNode(_component_MkA, { to: _unref(userPage)(_unref(appearNote).user) }, {
             default: _withCtx(() => [_createVNode(_component_MkUserName, { user: _unref(appearNote).user }, null, 8, ["user"])]),
             _: 1
-          }, 8, ["to"])]),
+          }, 8, ["to"]), [[_directive_user_preview, _unref(appearNote).userId]])]),
           _: 1
         }, 8, ["src"])],
         2

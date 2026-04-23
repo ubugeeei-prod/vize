@@ -1257,7 +1257,7 @@ export default {
                 [_hoisted_1],
                 2
                 /* CLASS */
-              )) : _createCommentVNode("v-if", true), _createElementVNode(
+              )) : _createCommentVNode("v-if", true), _withDirectives(_createElementVNode(
                 "button",
                 {
                   ref_key: "accountMenuEl",
@@ -1272,7 +1272,7 @@ export default {
                 }, null, 10, ["src"])],
                 512
                 /* NEED_PATCH */
-              )],
+              ), [[_directive_click_anime], [_directive_tooltip, _unref(i18n).ts.account]])],
               2
               /* CLASS */
             ), _createElementVNode(
@@ -1336,7 +1336,7 @@ export default {
                   disabled: targetChannel.value != null,
                   onClick: toggleLocalOnly
                 }, [!localOnly.value ? (_openBlock(), _createElementBlock("span", { key: 0 }, [_hoisted_7])) : (_openBlock(), _createElementBlock("span", { key: 1 }, [_hoisted_8]))], 10, ["disabled"])), [[_directive_tooltip, _unref(i18n).ts._visibility.disableFederation]]) : _createCommentVNode("v-if", true),
-                _createElementVNode(
+                _withDirectives(_createElementVNode(
                   "button",
                   {
                     ref_key: "otherSettingsButton",
@@ -1347,8 +1347,8 @@ export default {
                   [_hoisted_9],
                   2
                   /* CLASS */
-                ),
-                _createElementVNode("button", {
+                ), [[_directive_tooltip, _unref(i18n).ts.other]]),
+                _withDirectives(_createElementVNode("button", {
                   ref_key: "submitButtonEl",
                   ref: submitButtonEl,
                   class: _normalizeClass(["_button", _ctx.$style.submit]),
@@ -1386,7 +1386,7 @@ export default {
                   )],
                   2
                   /* CLASS */
-                )], 10, ["disabled"])
+                )], 10, ["disabled"]), [[_directive_click_anime]])
               ],
               2
               /* CLASS */
@@ -1712,7 +1712,7 @@ export default {
               "div",
               { class: _normalizeClass(_ctx.$style.footerLeft) },
               [
-                _createElementVNode(
+                _withDirectives(_createElementVNode(
                   "button",
                   {
                     class: _normalizeClass(["_button", _ctx.$style.footerButton]),
@@ -1721,8 +1721,8 @@ export default {
                   [_hoisted_15],
                   2
                   /* CLASS */
-                ),
-                _createElementVNode(
+                ), [[_directive_tooltip, _unref(i18n).ts.attachFile + " (" + _unref(i18n).ts.upload + ")"]]),
+                _withDirectives(_createElementVNode(
                   "button",
                   {
                     class: _normalizeClass(["_button", _ctx.$style.footerButton]),
@@ -1731,8 +1731,8 @@ export default {
                   [_hoisted_16],
                   2
                   /* CLASS */
-                ),
-                _createElementVNode(
+                ), [[_directive_tooltip, _unref(i18n).ts.attachFile + " (" + _unref(i18n).ts.fromDrive + ")"]]),
+                _withDirectives(_createElementVNode(
                   "button",
                   {
                     class: _normalizeClass(["_button", [_ctx.$style.footerButton, { [_ctx.$style.footerButtonActive]: poll.value }]]),
@@ -1741,8 +1741,8 @@ export default {
                   [_hoisted_17],
                   2
                   /* CLASS */
-                ),
-                _createElementVNode(
+                ), [[_directive_tooltip, _unref(i18n).ts.poll]]),
+                _withDirectives(_createElementVNode(
                   "button",
                   {
                     class: _normalizeClass(["_button", [_ctx.$style.footerButton, { [_ctx.$style.footerButtonActive]: useCw.value }]]),
@@ -1751,8 +1751,8 @@ export default {
                   [_hoisted_18],
                   2
                   /* CLASS */
-                ),
-                _createElementVNode(
+                ), [[_directive_tooltip, _unref(i18n).ts.useCw]]),
+                _withDirectives(_createElementVNode(
                   "button",
                   {
                     class: _normalizeClass(["_button", [_ctx.$style.footerButton, { [_ctx.$style.footerButtonActive]: _unref(withHashtags) }]]),
@@ -1761,8 +1761,8 @@ export default {
                   [_hoisted_19],
                   2
                   /* CLASS */
-                ),
-                _createElementVNode(
+                ), [[_directive_tooltip, _unref(i18n).ts.hashtags]]),
+                _withDirectives(_createElementVNode(
                   "button",
                   {
                     class: _normalizeClass(["_button", _ctx.$style.footerButton]),
@@ -1771,7 +1771,7 @@ export default {
                   [_hoisted_20],
                   2
                   /* CLASS */
-                ),
+                ), [[_directive_tooltip, _unref(i18n).ts.mention]]),
                 showAddMfmFunction.value ? _withDirectives((_openBlock(), _createElementBlock(
                   "button",
                   {
@@ -1800,7 +1800,7 @@ export default {
             ), _createElementVNode(
               "div",
               { class: _normalizeClass(_ctx.$style.footerRight) },
-              [_createElementVNode(
+              [_withDirectives(_createElementVNode(
                 "button",
                 {
                   class: _normalizeClass(["_button", _ctx.$style.footerButton]),
@@ -1809,7 +1809,7 @@ export default {
                 [_hoisted_23],
                 2
                 /* CLASS */
-              )],
+              ), [[_directive_tooltip, _unref(i18n).ts.emoji]])],
               2
               /* CLASS */
             )],

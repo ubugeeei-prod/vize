@@ -255,7 +255,7 @@ export default {
                       ])) : _unref(instance).backgroundImageUrl || _unref(instance).bannerUrl ? (_openBlock(), _createElementBlock("img", {
                         key: 1,
                         class: _normalizeClass([_ctx.$style.pageBannerBg, _ctx.$style.pageBannerBgFallback1]),
-                        src: getStaticImageUrl(instance.backgroundImageUrl ?? instance.bannerUrl)
+                        src: _unref(getStaticImageUrl)(_unref(instance).backgroundImageUrl ?? _unref(instance).bannerUrl)
                       }, null, 10, ["src"])) : (_openBlock(), _createElementBlock(
                         "div",
                         {
@@ -276,7 +276,7 @@ export default {
                         class: _normalizeClass(_ctx.$style.pageBannerImage)
                       },
                       [_createVNode(MkMediaImage, {
-                        image: page.eyeCatchingImage,
+                        image: page.value.eyeCatchingImage,
                         cover: true,
                         disableImageLink: true,
                         class: _normalizeClass(_ctx.$style.thumbnail)
@@ -335,7 +335,7 @@ export default {
                           }, {
                             default: _withCtx(() => [_hoisted_1]),
                             _: 1
-                          }, 10, ["to"])), [[_directive_tooltip, _unref(i18n).ts._pages.editThisPage]]) : _createCommentVNode("v-if", true), _createElementVNode(
+                          }, 10, ["to"])), [[_directive_tooltip, _unref(i18n).ts._pages.editThisPage]]) : _createCommentVNode("v-if", true), _withDirectives(_createElementVNode(
                             "button",
                             {
                               class: _normalizeClass(["_button", _ctx.$style.generalActionButton]),
@@ -344,7 +344,7 @@ export default {
                             [_hoisted_2],
                             2
                             /* CLASS */
-                          )],
+                          ), [[_directive_tooltip, _unref(i18n).ts.share]])],
                           2
                           /* CLASS */
                         )],
@@ -427,7 +427,7 @@ export default {
                         default: _withCtx(() => [_hoisted_5]),
                         _: 1
                       }, 10, ["to"])), [[_directive_tooltip, _unref(i18n).ts._pages.editThisPage]]) : _createCommentVNode("v-if", true),
-                      _createElementVNode(
+                      _withDirectives(_createElementVNode(
                         "button",
                         {
                           class: _normalizeClass(["_button", _ctx.$style.generalActionButton]),
@@ -436,8 +436,8 @@ export default {
                         [_hoisted_6],
                         2
                         /* CLASS */
-                      ),
-                      _createElementVNode(
+                      ), [[_directive_tooltip, _unref(i18n).ts.copyLink]]),
+                      _withDirectives(_createElementVNode(
                         "button",
                         {
                           class: _normalizeClass(["_button", _ctx.$style.generalActionButton]),
@@ -446,7 +446,7 @@ export default {
                         [_hoisted_7],
                         2
                         /* CLASS */
-                      ),
+                      ), [[_directive_tooltip, _unref(i18n).ts.share]]),
                       _unref($i) ? _withDirectives((_openBlock(), _createElementBlock(
                         "button",
                         {

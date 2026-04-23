@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-user-edit" });
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-key" });
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-help-circle" });
@@ -260,7 +260,11 @@ export default {
                 /* TEXT */
               ),
               _createTextVNode(" "),
-              _createElementVNode("div", { class: "_button _help" }, [_hoisted_3])
+              _withDirectives(_createElementVNode("div", { class: "_button _help" }, [_hoisted_3]), [[
+                _directive_tooltip,
+                _unref(i18n).ts.usernameInfo,
+                "dialog"
+              ]])
             ]),
             prefix: _withCtx(() => [_createTextVNode("@")]),
             suffix: _withCtx(() => [_createTextVNode(
@@ -341,7 +345,11 @@ export default {
                 /* TEXT */
               ),
               _createTextVNode(" "),
-              _createElementVNode("div", { class: "_button _help" }, [_hoisted_11])
+              _withDirectives(_createElementVNode("div", { class: "_button _help" }, [_hoisted_11]), [[
+                _directive_tooltip,
+                _unref(i18n).ts._signup.emailAddressInfo,
+                "dialog"
+              ]])
             ]),
             prefix: _withCtx(() => [_hoisted_12]),
             caption: _withCtx(() => [emailState.value === "wait" ? (_openBlock(), _createElementBlock("span", {

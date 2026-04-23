@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString, normalizeStyle as _normalizeStyle, withCtx as _withCtx, unref as _unref } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, normalizeStyle as _normalizeStyle, withCtx as _withCtx, unref as _unref } from "vue";
 const _hoisted_1 = { class: "name" };
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-x" });
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-plus" });
@@ -121,10 +121,10 @@ export default {
                   _toDisplayString(file.name),
                   1
                   /* TEXT */
-                ), _createElementVNode("button", {
+                ), _withDirectives(_createElementVNode("button", {
                   class: "remove _button",
                   onClick: ($event) => remove(file)
-                }, [_hoisted_2], 8, ["onClick"])],
+                }, [_hoisted_2], 8, ["onClick"]), [[_directive_tooltip, _unref(i18n).ts.remove]])],
                 4
                 /* STYLE */
               );

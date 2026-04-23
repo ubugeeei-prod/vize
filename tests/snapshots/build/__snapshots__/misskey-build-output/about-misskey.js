@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("div", { class: "misskey" }, "Misskey");
 const _hoisted_2 = { class: "version" };
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("img", {
@@ -437,7 +437,7 @@ export default {
           class: "_spacer",
           style: "--MI_SPACER-w: 600px; --MI_SPACER-min: 20px;"
         }, [_createElementVNode("div", { class: "_gaps_m znqjceqz" }, [
-          _createElementVNode("div", { class: "about" }, [_createElementVNode(
+          _withDirectives(_createElementVNode("div", { class: "about" }, [_createElementVNode(
             "div",
             {
               ref_key: "containerEl",
@@ -510,7 +510,7 @@ export default {
             key: 0,
             class: "_button treasure",
             onClick: getTreasure
-          }, [_hoisted_3])) : _createCommentVNode("v-if", true)]),
+          }, [_hoisted_3])) : _createCommentVNode("v-if", true)]), [[_directive_panel]]),
           _createElementVNode("div", { style: "text-align: center;" }, [
             _createTextVNode(
               _toDisplayString(_unref(i18n).ts._aboutMisskey.about),

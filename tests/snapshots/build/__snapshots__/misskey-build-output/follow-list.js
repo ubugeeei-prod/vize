@@ -36,7 +36,7 @@ export default {
           [(_openBlock(true), _createElementBlock(
             _Fragment,
             null,
-            _renderList(items.map((x) => type === "following" ? x.followee : x.follower), (user) => {
+            _renderList(items.map((x) => __props.type === "following" ? x.followee : x.follower), (user) => {
               return _openBlock(), _createBlock(MkUserInfo, {
                 key: user.id,
                 user

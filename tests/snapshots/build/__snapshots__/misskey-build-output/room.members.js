@@ -77,7 +77,7 @@ export default {
               },
               [_createVNode(_component_MkA, {
                 class: _normalizeClass(_ctx.$style.membershipBody),
-                to: `${userPage(membership.user)}`
+                to: `${_unref(userPage)(membership.user)}`
               }, {
                 default: _withCtx(() => [_createVNode(MkUserCardMini, { user: membership.user }, null, 8, ["user"])]),
                 _: 2

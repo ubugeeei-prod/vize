@@ -237,14 +237,14 @@ export default {
                   class: "_button",
                   onClick: edit
                 }, [_hoisted_5])), [[_directive_tooltip, _unref(i18n).ts.edit], [_directive_click_anime]]) : _createCommentVNode("v-if", true),
-                _createElementVNode("button", {
+                _withDirectives(_createElementVNode("button", {
                   class: "_button",
                   onClick: shareWithNote
-                }, [_hoisted_6]),
-                _createElementVNode("button", {
+                }, [_hoisted_6]), [[_directive_tooltip, _unref(i18n).ts.shareWithNote], [_directive_click_anime]]),
+                _withDirectives(_createElementVNode("button", {
                   class: "_button",
                   onClick: copyLink
-                }, [_hoisted_7]),
+                }, [_hoisted_7]), [[_directive_tooltip, _unref(i18n).ts.copyLink], [_directive_click_anime]]),
                 _unref(isSupportShare)() ? _withDirectives((_openBlock(), _createElementBlock("button", {
                   key: 0,
                   class: "_button",

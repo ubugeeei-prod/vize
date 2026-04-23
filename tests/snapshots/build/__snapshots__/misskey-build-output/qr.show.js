@@ -115,7 +115,7 @@ export default {
           "div",
           { class: _normalizeClass([_ctx.$style.content]) },
           [
-            _createElementVNode(
+            _withDirectives(_createElementVNode(
               "div",
               {
                 ref_key: "qrCodeEl",
@@ -127,8 +127,8 @@ export default {
               null,
               6
               /* CLASS, STYLE */
-            ),
-            _createElementVNode(
+            ), [[_directive_flip]]),
+            _withDirectives(_createElementVNode(
               "div",
               { class: _normalizeClass(_ctx.$style.user) },
               [_createVNode(_component_MkAvatar, {
@@ -157,7 +157,7 @@ export default {
               }, 8, ["minScale"])])])],
               2
               /* CLASS */
-            ),
+            ), [[_directive_flip]]),
             _unref(deviceMotionPermissionNeeded) ? _withDirectives((_openBlock(), _createElementBlock("img", {
               key: 0,
               class: _normalizeClass(_ctx.$style.logo),

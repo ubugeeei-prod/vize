@@ -162,7 +162,7 @@ export default {
                           return _openBlock(), _createElementBlock(
                             "div",
                             { key: policy },
-                            _toDisplayString(policy) + " ... " + _toDisplayString($i.policies[policy]),
+                            _toDisplayString(policy) + " ... " + _toDisplayString(_unref($i).policies[policy]),
                             1
                             /* TEXT */
                           );

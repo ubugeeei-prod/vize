@@ -105,7 +105,7 @@ export default {
               step: .01,
               textConverter: (v) => (v * 100).toFixed(1) + "%",
               continuousUpdate: "",
-              "onUpdate:modelValue": _cache[3] || (_cache[3] = (v) => layer.align.margin = v)
+              "onUpdate:modelValue": _cache[3] || (_cache[3] = (v) => layer.value.align.margin = v)
             }, {
               label: _withCtx(() => [_createTextVNode(
                 _toDisplayString(_unref(i18n).ts._watermarkEditor.margin),
@@ -247,7 +247,7 @@ export default {
               step: .01,
               textConverter: (v) => (v * 100).toFixed(1) + "%",
               continuousUpdate: "",
-              "onUpdate:modelValue": _cache[11] || (_cache[11] = (v) => layer.align.margin = v)
+              "onUpdate:modelValue": _cache[11] || (_cache[11] = (v) => layer.value.align.margin = v)
             }, {
               label: _withCtx(() => [_createTextVNode(
                 _toDisplayString(_unref(i18n).ts._watermarkEditor.margin),
@@ -404,7 +404,7 @@ export default {
               step: .01,
               textConverter: (v) => (v * 100).toFixed(1) + "%",
               continuousUpdate: "",
-              "onUpdate:modelValue": _cache[21] || (_cache[21] = (v) => layer.align.margin = v)
+              "onUpdate:modelValue": _cache[21] || (_cache[21] = (v) => layer.value.align.margin = v)
             }, {
               label: _withCtx(() => [_createTextVNode(
                 _toDisplayString(_unref(i18n).ts._watermarkEditor.margin),

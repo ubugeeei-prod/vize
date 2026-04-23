@@ -120,7 +120,7 @@ export default {
             )]),
             _: 1
           }, 8, ["modelValue"]),
-          !builtinThemes.some((t) => t.id == selectedTheme.id) ? (_openBlock(), _createBlock(MkButton, {
+          !_unref(builtinThemes).some((t) => t.id == selectedTheme.value.id) ? (_openBlock(), _createBlock(MkButton, {
             key: 0,
             danger: "",
             onClick: _cache[2] || (_cache[2] = ($event) => uninstall())

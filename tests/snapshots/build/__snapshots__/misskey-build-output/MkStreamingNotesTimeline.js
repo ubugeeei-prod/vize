@@ -500,7 +500,7 @@ export default {
             )) : (_openBlock(), _createBlock(_component_MkLoading, {
               key: 1,
               inline: true
-            }, null, 8, ["inline"]))], 10, ["disabled"]), [[_vShow, _unref(paginator).canFetchOlder.value]])
+            }, null, 8, ["inline"]))], 10, ["disabled"]), [[_directive_appear, _unref(prefer).s.enableInfiniteScroll ? _unref(paginator).fetchOlder : null], [_vShow, _unref(paginator).canFetchOlder.value]])
           ],
           512
           /* NEED_PATCH */

@@ -1,4 +1,4 @@
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("span", null, " / ");
 const _hoisted_2 = { class: "_monospace" };
 import { computed } from "vue";
@@ -70,7 +70,7 @@ export default {
             _: 1
           }, 8, ["user", "withChart"])]),
           _: 1
-        }, 8, ["to"]), _createElementVNode(
+        }, 8, ["to"]), _withDirectives(_createElementVNode(
           "button",
           {
             class: _normalizeClass(["_button", _ctx.$style.post]),
@@ -85,7 +85,12 @@ export default {
           )],
           2
           /* CLASS */
-        )],
+        ), [[
+          _directive_tooltip,
+          _unref(i18n).ts.note,
+          void 0,
+          { noDelay: true }
+        ]])],
         2
         /* CLASS */
       );

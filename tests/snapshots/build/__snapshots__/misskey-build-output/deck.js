@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveDynamicComponent as _resolveDynamicComponent, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveDynamicComponent as _resolveDynamicComponent, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, withCtx as _withCtx, unref as _unref, withModifiers as _withModifiers } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-caret-down" });
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-trash" });
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-plus" });
@@ -228,11 +228,11 @@ export default {
                             _Fragment,
                             null,
                             _renderList(ids, (id) => {
-                              return _openBlock(), _createBlock(_resolveDynamicComponent(columnComponents[columns.find((c) => c.id === id).type] ?? XTlColumn), {
+                              return _openBlock(), _createBlock(_resolveDynamicComponent(columnComponents[_unref(columns).find((c) => c.id === id).type] ?? XTlColumn), {
                                 key: id,
                                 ref: id,
                                 class: _normalizeClass({ "_shadow": _unref(withWallpaper) }),
-                                column: columns.find((c) => c.id === id),
+                                column: _unref(columns).find((c) => c.id === id),
                                 isStacked: ids.length > 1,
                                 onHeaderWheel: onWheel
                               }, null, 522, ["column", "isStacked"]);
@@ -300,7 +300,7 @@ export default {
                       _createElementVNode(
                         "div",
                         { class: _normalizeClass(_ctx.$style.sideMenuTop) },
-                        [_createElementVNode(
+                        [_withDirectives(_createElementVNode(
                           "button",
                           {
                             ref_key: "swicthProfileButtonEl",
@@ -311,7 +311,15 @@ export default {
                           [_hoisted_1],
                           2
                           /* CLASS */
-                        ), _createElementVNode(
+                        ), [[
+                          _directive_tooltip,
+                          `${_unref(i18n).ts._deck.profile}: ${_unref(prefer).s["deck.profile"]}`,
+                          void 0,
+                          {
+                            noDelay: true,
+                            left: true
+                          }
+                        ]]), _withDirectives(_createElementVNode(
                           "button",
                           {
                             class: _normalizeClass(["_button", _ctx.$style.sideMenuButton]),
@@ -320,14 +328,22 @@ export default {
                           [_hoisted_2],
                           2
                           /* CLASS */
-                        )],
+                        ), [[
+                          _directive_tooltip,
+                          _unref(i18n).ts._deck.deleteProfile,
+                          void 0,
+                          {
+                            noDelay: true,
+                            left: true
+                          }
+                        ]])],
                         2
                         /* CLASS */
                       ),
                       _createElementVNode(
                         "div",
                         { class: _normalizeClass(_ctx.$style.sideMenuMiddle) },
-                        [_createElementVNode(
+                        [_withDirectives(_createElementVNode(
                           "button",
                           {
                             ref_key: "addColumnButtonEl",
@@ -338,14 +354,22 @@ export default {
                           [_hoisted_3],
                           2
                           /* CLASS */
-                        )],
+                        ), [[
+                          _directive_tooltip,
+                          _unref(i18n).ts._deck.addColumn,
+                          void 0,
+                          {
+                            noDelay: true,
+                            left: true
+                          }
+                        ]])],
                         2
                         /* CLASS */
                       ),
                       _createElementVNode(
                         "div",
                         { class: _normalizeClass(_ctx.$style.sideMenuBottom) },
-                        [_createElementVNode(
+                        [_withDirectives(_createElementVNode(
                           "button",
                           {
                             ref_key: "settingsButtonEl",
@@ -356,7 +380,15 @@ export default {
                           [_hoisted_4],
                           2
                           /* CLASS */
-                        )],
+                        ), [[
+                          _directive_tooltip,
+                          _unref(i18n).ts.settings,
+                          void 0,
+                          {
+                            noDelay: true,
+                            left: true
+                          }
+                        ]])],
                         2
                         /* CLASS */
                       )
@@ -377,7 +409,7 @@ export default {
                     _createElementVNode(
                       "div",
                       { class: _normalizeClass(_ctx.$style.bottomMenuLeft) },
-                      [_createElementVNode(
+                      [_withDirectives(_createElementVNode(
                         "button",
                         {
                           ref_key: "swicthProfileButtonEl",
@@ -388,7 +420,15 @@ export default {
                         [_hoisted_5],
                         2
                         /* CLASS */
-                      ), _createElementVNode(
+                      ), [[
+                        _directive_tooltip,
+                        `${_unref(i18n).ts._deck.profile}: ${_unref(prefer).s["deck.profile"]}`,
+                        void 0,
+                        {
+                          noDelay: true,
+                          top: true
+                        }
+                      ]]), _withDirectives(_createElementVNode(
                         "button",
                         {
                           class: _normalizeClass(["_button", _ctx.$style.bottomMenuButton]),
@@ -397,14 +437,22 @@ export default {
                         [_hoisted_6],
                         2
                         /* CLASS */
-                      )],
+                      ), [[
+                        _directive_tooltip,
+                        _unref(i18n).ts._deck.deleteProfile,
+                        void 0,
+                        {
+                          noDelay: true,
+                          top: true
+                        }
+                      ]])],
                       2
                       /* CLASS */
                     ),
                     _createElementVNode(
                       "div",
                       { class: _normalizeClass(_ctx.$style.bottomMenuMiddle) },
-                      [_createElementVNode(
+                      [_withDirectives(_createElementVNode(
                         "button",
                         {
                           ref_key: "addColumnButtonEl",
@@ -415,14 +463,22 @@ export default {
                         [_hoisted_7],
                         2
                         /* CLASS */
-                      )],
+                      ), [[
+                        _directive_tooltip,
+                        _unref(i18n).ts._deck.addColumn,
+                        void 0,
+                        {
+                          noDelay: true,
+                          top: true
+                        }
+                      ]])],
                       2
                       /* CLASS */
                     ),
                     _createElementVNode(
                       "div",
                       { class: _normalizeClass(_ctx.$style.bottomMenuRight) },
-                      [_createElementVNode(
+                      [_withDirectives(_createElementVNode(
                         "button",
                         {
                           ref_key: "settingsButtonEl",
@@ -433,7 +489,15 @@ export default {
                         [_hoisted_8],
                         2
                         /* CLASS */
-                      )],
+                      ), [[
+                        _directive_tooltip,
+                        _unref(i18n).ts.settings,
+                        void 0,
+                        {
+                          noDelay: true,
+                          top: true
+                        }
+                      ]])],
                       2
                       /* CLASS */
                     )

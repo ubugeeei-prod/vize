@@ -205,7 +205,7 @@ export default {
               }, null, 8, ["movedTo"])) : _createCommentVNode("v-if", true),
               user.value.host != null ? (_openBlock(), _createBlock(MkRemoteCaution, {
                 key: 0,
-                href: user.url ?? user.uri
+                href: user.value.url ?? user.value.uri
               }, null, 8, ["href"])) : _createCommentVNode("v-if", true),
               user.value.host == null && user.value.username.includes(".") ? (_openBlock(), _createBlock(MkInfo, { key: 0 }, {
                 default: _withCtx(() => [_createTextVNode(
@@ -350,7 +350,7 @@ export default {
                         class: "role",
                         style: _normalizeStyle({ "--color": role.color ?? "" })
                       },
-                      [_createVNode(_component_MkA, { to: `/roles/${role.id}` }, {
+                      [_withDirectives(_createVNode(_component_MkA, { to: `/roles/${role.id}` }, {
                         default: _withCtx(() => [
                           role.iconUrl ? (_openBlock(), _createElementBlock("img", {
                             key: 0,
@@ -365,7 +365,7 @@ export default {
                           )
                         ]),
                         _: 2
-                      }, 1032, ["to"])],
+                      }, 1032, ["to"]), [[_directive_adaptive_bg]])],
                       4
                       /* STYLE */
                     )), [[_directive_tooltip, role.description]]);

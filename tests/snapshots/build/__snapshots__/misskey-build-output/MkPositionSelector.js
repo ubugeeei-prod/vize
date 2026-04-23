@@ -1,5 +1,5 @@
 import { useModel as _useModel } from "vue";
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, resolveDirective as _resolveDirective, normalizeClass as _normalizeClass } from "vue";
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, normalizeClass as _normalizeClass } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-arrow-up-left" });
 const _hoisted_2 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-arrow-up" });
 const _hoisted_3 = /* @__PURE__ */ _createElementVNode("i", { class: "ti ti-arrow-up-right" });
@@ -30,7 +30,7 @@ export default {
           "div",
           { class: _normalizeClass(_ctx.$style.items) },
           [
-            _createElementVNode(
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, x.value === "left" && y.value === "top" ? _ctx.$style.active : null]]),
@@ -42,8 +42,8 @@ export default {
               [_hoisted_1],
               2
               /* CLASS */
-            ),
-            _createElementVNode(
+            ), [[_directive_panel]]),
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, x.value === "center" && y.value === "top" ? _ctx.$style.active : null]]),
@@ -55,8 +55,8 @@ export default {
               [_hoisted_2],
               2
               /* CLASS */
-            ),
-            _createElementVNode(
+            ), [[_directive_panel]]),
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, x.value === "right" && y.value === "top" ? _ctx.$style.active : null]]),
@@ -68,8 +68,8 @@ export default {
               [_hoisted_3],
               2
               /* CLASS */
-            ),
-            _createElementVNode(
+            ), [[_directive_panel]]),
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, x.value === "left" && y.value === "center" ? _ctx.$style.active : null]]),
@@ -81,8 +81,8 @@ export default {
               [_hoisted_4],
               2
               /* CLASS */
-            ),
-            _createElementVNode(
+            ), [[_directive_panel]]),
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, x.value === "center" && y.value === "center" ? _ctx.$style.active : null]]),
@@ -94,8 +94,8 @@ export default {
               [_hoisted_5],
               2
               /* CLASS */
-            ),
-            _createElementVNode(
+            ), [[_directive_panel]]),
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, x.value === "right" && y.value === "center" ? _ctx.$style.active : null]]),
@@ -107,8 +107,8 @@ export default {
               [_hoisted_6],
               2
               /* CLASS */
-            ),
-            _createElementVNode(
+            ), [[_directive_panel]]),
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, x.value === "left" && y.value === "bottom" ? _ctx.$style.active : null]]),
@@ -120,8 +120,8 @@ export default {
               [_hoisted_7],
               2
               /* CLASS */
-            ),
-            _createElementVNode(
+            ), [[_directive_panel]]),
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, x.value === "center" && y.value === "bottom" ? _ctx.$style.active : null]]),
@@ -133,8 +133,8 @@ export default {
               [_hoisted_8],
               2
               /* CLASS */
-            ),
-            _createElementVNode(
+            ), [[_directive_panel]]),
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", [_ctx.$style.item, x.value === "right" && y.value === "bottom" ? _ctx.$style.active : null]]),
@@ -146,7 +146,7 @@ export default {
               [_hoisted_9],
               2
               /* CLASS */
-            )
+            ), [[_directive_panel]])
           ],
           2
           /* CLASS */

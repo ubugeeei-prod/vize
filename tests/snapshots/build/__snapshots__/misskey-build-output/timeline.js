@@ -289,7 +289,7 @@ export default {
             ref: tlComponent,
             key: src.value + withRenotes.value + withReplies.value + onlyFiles.value + withSensitive.value,
             class: _normalizeClass(_ctx.$style.tl),
-            src: src.split(":")[0],
+            src: src.value.split(":")[0],
             list: src.value.split(":")[1],
             withRenotes: withRenotes.value,
             withReplies: withReplies.value,

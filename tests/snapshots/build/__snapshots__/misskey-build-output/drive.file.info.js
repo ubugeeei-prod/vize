@@ -177,7 +177,7 @@ export default {
             "div",
             { class: _normalizeClass(_ctx.$style.fileQuickActionsOthers) },
             [
-              _createElementVNode(
+              _withDirectives(_createElementVNode(
                 "button",
                 {
                   class: _normalizeClass(["_button", _ctx.$style.fileQuickActionsOthersButton]),
@@ -186,7 +186,7 @@ export default {
                 [_hoisted_1],
                 2
                 /* CLASS */
-              ),
+              ), [[_directive_tooltip, _unref(i18n).ts.createNoteFromTheFile]]),
               file.value.isSensitive ? _withDirectives((_openBlock(), _createElementBlock(
                 "button",
                 {
@@ -208,12 +208,12 @@ export default {
                 2
                 /* CLASS */
               )), [[_directive_tooltip, _unref(i18n).ts.markAsSensitive]]),
-              _createElementVNode("a", {
+              _withDirectives(_createElementVNode("a", {
                 href: file.value.url,
                 download: file.value.name,
                 class: _normalizeClass(["_button", _ctx.$style.fileQuickActionsOthersButton])
-              }, [_hoisted_4], 10, ["href", "download"]),
-              _createElementVNode(
+              }, [_hoisted_4], 10, ["href", "download"]), [[_directive_tooltip, _unref(i18n).ts.download]]),
+              _withDirectives(_createElementVNode(
                 "button",
                 {
                   class: _normalizeClass(["_button", [_ctx.$style.fileQuickActionsOthersButton, _ctx.$style.danger]]),
@@ -222,7 +222,7 @@ export default {
                 [_hoisted_5],
                 2
                 /* CLASS */
-              )
+              ), [[_directive_tooltip, _unref(i18n).ts.delete]])
             ],
             2
             /* CLASS */

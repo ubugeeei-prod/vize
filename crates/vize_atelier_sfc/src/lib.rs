@@ -148,6 +148,22 @@ function onClick() {
 "#;
         let descriptor = parse_sfc(source, Default::default()).unwrap();
         let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+        assert!(
+            result.code.contains(r#"emits: ["update"]"#),
+            "unexpected code:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("const emit = __emit"),
+            "unexpected code:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("emit('update', count.value)")
+                || result.code.contains("emit(\"update\", count.value)"),
+            "unexpected code:\n{}",
+            result.code
+        );
 
         insta::assert_snapshot!(result.code.as_str());
     }
@@ -176,5 +192,158 @@ if (fx == null) {
         let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
 
         insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_compile_sfc_ts_ref_condition_and_handler_keep_value_access() {
+        use vize_carton::ToCompactString;
+
+        let source = r#"
+<template>
+  <div>
+    <template v-if="folder == null">
+      <MkButton @click="isRootSelected = true" />
+    </template>
+    <template v-else>
+      <MkButton
+        v-if="!selectedFolders.some(f => f.id === folder!.id)"
+        @click="selectedFolders.push(folder)"
+      />
+      <MkButton
+        v-else
+        @click="selectedFolders = selectedFolders.filter(f => f.id !== folder!.id)"
+      />
+    </template>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const folder = ref<{ id: string } | null>(null)
+const selectedFolders = ref<{ id: string }[]>([])
+const isRootSelected = ref(false)
+</script>
+"#;
+        let descriptor = parse_sfc(source, Default::default()).unwrap();
+        let script_setup = descriptor
+            .script_setup
+            .as_ref()
+            .expect("expected script setup block");
+        let template = descriptor
+            .template
+            .as_ref()
+            .expect("expected template block");
+        let croquis = crate::script::analyze_script_setup_to_summary(&script_setup.content);
+        let mut binding_metadata = crate::BindingMetadata::default();
+        binding_metadata.is_script_setup = croquis.bindings.is_script_setup;
+        for (name, binding_type) in croquis.bindings.iter() {
+            binding_metadata
+                .bindings
+                .insert(name.to_compact_string(), binding_type);
+        }
+        for (local, key) in &croquis.bindings.props_aliases {
+            binding_metadata
+                .props_aliases
+                .insert(local.to_compact_string(), key.to_compact_string());
+        }
+
+        let template_code = crate::compile_template::compile_template_block(
+            template,
+            &crate::TemplateCompileOptions::default(),
+            "",
+            false,
+            true,
+            Some(&binding_metadata),
+            Some(croquis),
+        )
+        .expect("template compile should succeed");
+        assert!(
+            template_code.contains("!selectedFolders.value.some((f) => f.id === folder.value.id)"),
+            "unexpected template code:\n{}",
+            template_code
+        );
+        assert!(
+            template_code.contains("$event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))"),
+            "unexpected template code:\n{}",
+            template_code
+        );
+        let (_imports, _hoisted, _preamble, render_body, _render_fn_name) =
+            crate::compile_template::extract_template_parts(&template_code);
+        assert!(
+            render_body.contains("!selectedFolders.value.some((f) => f.id === folder.value.id)"),
+            "unexpected render body:\n{}",
+            render_body
+        );
+        assert!(
+            render_body.contains("$event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))"),
+            "unexpected render body:\n{}",
+            render_body
+        );
+
+        let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+
+        assert!(
+            result
+                .code
+                .contains("!selectedFolders.value.some((f) => f.id === folder.value.id)"),
+            "unexpected code:\n{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains("selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id)"),
+            "unexpected code:\n{}",
+            result.code
+        );
+        assert!(!result.code.contains("($event) => (($event) =>"));
+    }
+
+    #[test]
+    fn test_compile_sfc_nested_custom_directive_keeps_inline_with_directives() {
+        let source = r#"
+<template>
+  <div>
+    <button
+      v-show="ok"
+      v-appear="shouldEnableInfiniteScroll ? fetchOlder : null"
+      @click="fetchOlder"
+    >
+      Load more
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+const ok = true
+const shouldEnableInfiniteScroll = true
+const fetchOlder = () => {}
+</script>
+"#;
+        let descriptor = parse_sfc(source, Default::default()).unwrap();
+        let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+        let normalized = result.code.replace('\n', " ");
+
+        assert!(
+            result
+                .code
+                .contains(r#"const _directive_appear = _resolveDirective("appear")"#),
+            "unexpected code:\n{}",
+            result.code
+        );
+        assert!(
+            normalized.contains(
+                r#"[_directive_appear, shouldEnableInfiniteScroll ? fetchOlder : null], [_vShow, ok]"#
+            ),
+            "unexpected code:\n{}",
+            result.code
+        );
+        assert!(
+            result.code.contains("_withDirectives(_createElementVNode(")
+                && result.code.contains("\"button\""),
+            "unexpected code:\n{}",
+            result.code
+        );
     }
 }

@@ -1,4 +1,4 @@
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveDirective as _resolveDirective, renderSlot as _renderSlot, normalizeClass as _normalizeClass, unref as _unref, withModifiers as _withModifiers } from "vue";
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderSlot as _renderSlot, normalizeClass as _normalizeClass, unref as _unref, withModifiers as _withModifiers } from "vue";
 const _hoisted_1 = /* @__PURE__ */ _createElementVNode("path", {
   d: "M149.512,4.707L108.507,4.707C116.252,4.719 118.758,14.958 118.758,14.958C118.758,14.958 121.381,25.283 129.009,25.209L149.512,25.209L149.512,4.707Z",
   style: "fill:var(--MI_THEME-deckBg);"
@@ -335,7 +335,7 @@ export default {
               2
               /* CLASS */
             ),
-            _createElementVNode(
+            _withDirectives(_createElementVNode(
               "button",
               {
                 class: _normalizeClass(["_button", _ctx.$style.menu]),
@@ -344,7 +344,7 @@ export default {
               [_hoisted_5],
               2
               /* CLASS */
-            )
+            ), [[_directive_tooltip, _unref(i18n).ts.settings]])
           ],
           34
           /* CLASS, NEED_HYDRATION */

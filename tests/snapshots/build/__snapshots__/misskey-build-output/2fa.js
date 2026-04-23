@@ -203,7 +203,7 @@ publicKey: await os.apiWithDialog("i/2fa/register-key", {
                   _toDisplayString(_unref(i18n).ts._2fa.alreadyRegistered),
                   1
                   /* TEXT */
-                ), $i.securityKeysList.length > 0 ? (_openBlock(), _createElementBlock(
+                ), _unref($i).securityKeysList.length > 0 ? (_openBlock(), _createElementBlock(
                   _Fragment,
                   { key: 0 },
                   [_createVNode(MkButton, { onClick: renewTOTP }, {
@@ -325,7 +325,7 @@ publicKey: await os.apiWithDialog("i/2fa/register-key", {
                   }), (_openBlock(true), _createElementBlock(
                     _Fragment,
                     null,
-                    _renderList($i.securityKeysList, (key) => {
+                    _renderList(_unref($i).securityKeysList, (key) => {
                       return _openBlock(), _createBlock(
                         MkFolder,
                         { key: key.id },
@@ -390,7 +390,7 @@ publicKey: await os.apiWithDialog("i/2fa/register-key", {
               "signin"
             ] }, {
               default: _withCtx(() => [_createVNode(MkSwitch, {
-                disabled: !$i.twoFactorEnabled || $i.securityKeysList.length === 0,
+                disabled: !_unref($i).twoFactorEnabled || _unref($i).securityKeysList.length === 0,
                 modelValue: usePasswordLessLogin.value,
                 "onUpdate:modelValue": _cache[0] || (_cache[0] = (v) => updatePasswordLessLogin(v))
               }, {
