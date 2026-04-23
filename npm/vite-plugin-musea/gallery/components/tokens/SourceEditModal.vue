@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { defineAsyncComponent, ref, watch } from "vue";
 import { fetchArtSource, updateArtSource } from "../../api";
-import MonacoEditor from "../MonacoEditor.vue";
+
+const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
 
 const props = defineProps<{
   isOpen: boolean;
