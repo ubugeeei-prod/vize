@@ -239,6 +239,68 @@ function refresh() {
 </style>
 "#;
 
+const PROP_HEAVY_LIST: &str = r#"<template>
+  <section class="catalog">
+    <ProductCard
+      v-for="product in products"
+      :key="product.id"
+      class="catalog-card"
+      style="--gap: 12px; --radius: 8px"
+      :class="{ active: product.id === activeId, featured: product.featured }"
+      :style="{ borderColor: product.color, opacity: product.disabled ? 0.5 : 1 }"
+      :id="`product-${product.id}`"
+      :title="product.title"
+      :aria-label="product.title"
+      :data-rank="product.rank"
+      :data-state="product.disabled ? 'disabled' : 'ready'"
+      @click="select(product)"
+      @click.stop="track(product.id)"
+      @keydown.enter="open(product)"
+      @mouseenter="hovered = product.id"
+      @mouseleave="hovered = null"
+    >
+      <template #meta="{ price, inventory }">
+        <span>{{ price }}</span>
+        <span>{{ inventory }}</span>
+      </template>
+    </ProductCard>
+  </section>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+interface Product {
+  id: number
+  title: string
+  rank: number
+  color: string
+  featured: boolean
+  disabled: boolean
+}
+
+const activeId = ref(1)
+const hovered = ref<number | null>(null)
+const products = ref<Product[]>([
+  { id: 1, title: 'Canvas', rank: 1, color: '#0ea5e9', featured: true, disabled: false },
+  { id: 2, title: 'Pigment', rank: 2, color: '#f97316', featured: false, disabled: false },
+  { id: 3, title: 'Frame', rank: 3, color: '#22c55e', featured: true, disabled: true },
+])
+
+function select(product: Product) {
+  activeId.value = product.id
+}
+
+function track(id: number) {
+  hovered.value = id
+}
+
+function open(product: Product) {
+  activeId.value = product.id
+}
+</script>
+"#;
+
 fn compile_options(filename: &'static str) -> SfcCompileOptions {
     SfcCompileOptions {
         parse: SfcParseOptions {
@@ -306,10 +368,15 @@ fn bench_compile_complex_script_setup(c: &mut Criterion) {
     );
 }
 
+fn bench_compile_prop_heavy_list(c: &mut Criterion) {
+    benchmark_compile_case(c, "prop_heavy_list", "PropHeavyList.vue", PROP_HEAVY_LIST);
+}
+
 criterion_group!(
     benches,
     bench_compile_template_only,
     bench_compile_medium_script_setup,
     bench_compile_complex_script_setup,
+    bench_compile_prop_heavy_list,
 );
 criterion_main!(benches);
