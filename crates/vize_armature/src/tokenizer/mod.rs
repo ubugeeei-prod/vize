@@ -47,6 +47,9 @@ pub struct Tokenizer<'a, C: Callbacks> {
     current_sequence: Option<Sequence>,
     /// Index of the next expected byte in that sequence.
     sequence_index: usize,
+
+    /// For special parsing behavior inside of script and style tags.
+    in_rcdata: bool,
 }
 
 impl<'a, C: Callbacks> Tokenizer<'a, C> {
@@ -77,6 +80,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             base_state: State::Text,
             current_sequence: None,
             sequence_index: 0,
+            in_rcdata: false,
         }
     }
 
