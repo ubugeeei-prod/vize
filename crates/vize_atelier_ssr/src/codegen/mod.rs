@@ -8,7 +8,7 @@ pub(crate) mod helpers;
 
 use crate::options::SsrCompilerOptions;
 use vize_atelier_core::ast::{RootNode, RuntimeHelper, TemplateChildNode};
-use vize_carton::{camelize, capitalize, cstr, Bump, FxHashSet, String, ToCompactString};
+use vize_carton::{camelize, capitalize, Bump, FxHashSet, SmallVec, String, ToCompactString};
 
 /// SSR codegen result
 #[derive(Debug, Default)]
@@ -42,7 +42,7 @@ pub struct SsrCodegenContext<'a> {
     /// Used core helpers (from vue)
     pub(crate) core_helpers: FxHashSet<RuntimeHelper>,
     /// Current template literal parts being accumulated
-    pub(crate) current_template_parts: Vec<TemplatePart>,
+    pub(crate) current_template_parts: SmallVec<[TemplatePart; 8]>,
     /// Whether we have an open _push call
     #[allow(dead_code)]
     pub(crate) has_open_push: bool,
@@ -62,7 +62,7 @@ impl<'a> SsrCodegenContext<'a> {
             indent_level: 0,
             ssr_helpers: FxHashSet::default(),
             core_helpers: FxHashSet::default(),
-            current_template_parts: Vec::new(),
+            current_template_parts: SmallVec::new(),
             has_open_push: false,
             with_slot_scope_id: false,
             scoped_params: std::vec::Vec::new(),
@@ -154,9 +154,7 @@ impl<'a> SsrCodegenContext<'a> {
         for part in &parts {
             match part {
                 TemplatePart::Static(s) => {
-                    // Escape backticks and ${
-                    let escaped = s.replace('`', "\\`").replace("${", "\\${");
-                    self.push(&escaped);
+                    self.push_template_static(s);
                 }
                 TemplatePart::Dynamic(expr) => {
                     self.push("${");
@@ -167,6 +165,34 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         self.push("`)\n");
+    }
+
+    fn push_template_static(&mut self, value: &str) {
+        let bytes = value.as_bytes();
+        let mut start = 0;
+        let mut index = 0;
+
+        while index < bytes.len() {
+            match bytes[index] {
+                b'`' => {
+                    self.code.extend_from_slice(&bytes[start..index]);
+                    self.code.extend_from_slice(b"\\`");
+                    index += 1;
+                    start = index;
+                }
+                b'$' if index + 1 < bytes.len() && bytes[index + 1] == b'{' => {
+                    self.code.extend_from_slice(&bytes[start..index]);
+                    self.code.extend_from_slice(b"\\${");
+                    index += 2;
+                    start = index;
+                }
+                _ => {
+                    index += 1;
+                }
+            }
+        }
+
+        self.code.extend_from_slice(&bytes[start..]);
     }
 
     /// Use an SSR helper
@@ -288,11 +314,7 @@ impl<'a> SsrCodegenContext<'a> {
             preamble.push_str("import { ");
             let mut ssr_helpers: Vec<_> = self.ssr_helpers.iter().copied().collect();
             ssr_helpers.sort();
-            let helpers: Vec<_> = ssr_helpers
-                .iter()
-                .map(|h| cstr!("{} as _{}", h.name(), h.name()))
-                .collect();
-            preamble.push_str(&helpers.join(", "));
+            push_helper_imports(&mut preamble, &ssr_helpers);
             preamble.push_str(" } from \"@vue/server-renderer\"\n");
         }
 
@@ -301,15 +323,23 @@ impl<'a> SsrCodegenContext<'a> {
             preamble.push_str("import { ");
             let mut core_helpers: Vec<_> = self.core_helpers.iter().copied().collect();
             core_helpers.sort();
-            let helpers: Vec<_> = core_helpers
-                .iter()
-                .map(|h| cstr!("{} as _{}", h.name(), h.name()))
-                .collect();
-            preamble.push_str(&helpers.join(", "));
+            push_helper_imports(&mut preamble, &core_helpers);
             preamble.push_str(" } from \"vue\"\n");
         }
 
         preamble
+    }
+}
+
+fn push_helper_imports(out: &mut String, helpers: &[RuntimeHelper]) {
+    for (index, helper) in helpers.iter().enumerate() {
+        if index > 0 {
+            out.push_str(", ");
+        }
+        let name = helper.name();
+        out.push_str(name);
+        out.push_str(" as _");
+        out.push_str(name);
     }
 }
 
