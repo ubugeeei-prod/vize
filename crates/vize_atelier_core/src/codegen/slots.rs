@@ -356,6 +356,37 @@ fn has_conditional_or_loop_slots(el: &ElementNode<'_>) -> bool {
     })
 }
 
+fn child_is_slot_template(child: &TemplateChildNode<'_>) -> bool {
+    match child {
+        TemplateChildNode::Element(el) => el.tag.as_str() == "template" && has_v_slot(el),
+        TemplateChildNode::If(if_node) => if_node.branches.iter().any(|branch| {
+            branch.children.iter().any(|child| {
+                matches!(
+                    child,
+                    TemplateChildNode::Element(el)
+                        if el.tag.as_str() == "template" && has_v_slot(el)
+                )
+            })
+        }),
+        TemplateChildNode::For(for_node) => for_node.children.iter().any(|child| {
+            matches!(
+                child,
+                TemplateChildNode::Element(el)
+                    if el.tag.as_str() == "template" && has_v_slot(el)
+            )
+        }),
+        _ => false,
+    }
+}
+
+fn slot_children_have_meaningful_content(children: &[&TemplateChildNode<'_>]) -> bool {
+    children.iter().any(|child| match child {
+        TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
+        TemplateChildNode::Comment(_) => false,
+        _ => true,
+    })
+}
+
 /// Generate slots object for component
 pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Note: WithCtx helper is registered at each _withCtx() output site,
@@ -569,7 +600,9 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.use_helper(RuntimeHelper::CreateSlots);
     ctx.push(ctx.helper(RuntimeHelper::CreateSlots));
-    ctx.push("({ _: 2 /* DYNAMIC */ }, [");
+    ctx.push("(");
+    generate_create_slots_base(ctx, el);
+    ctx.push(", [");
     ctx.indent();
 
     let mut first = true;
@@ -612,6 +645,47 @@ fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.deindent();
     ctx.newline();
     ctx.push("])");
+}
+
+fn generate_create_slots_base(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    let default_children: Vec<_> = el
+        .children
+        .iter()
+        .filter(|child| !child_is_slot_template(child))
+        .collect();
+    let has_default_children = slot_children_have_meaningful_content(&default_children);
+
+    if !has_default_children {
+        ctx.push("{ _: 2 /* DYNAMIC */ }");
+        return;
+    }
+
+    ctx.push("{");
+    ctx.indent();
+
+    ctx.newline();
+    ctx.push("default: ");
+    ctx.use_helper(RuntimeHelper::WithCtx);
+    ctx.push(ctx.helper(RuntimeHelper::WithCtx));
+    ctx.push("(() => [");
+    ctx.indent();
+    for (i, child) in default_children.iter().enumerate() {
+        if i > 0 {
+            ctx.push(",");
+        }
+        ctx.newline();
+        generate_slot_child_node(ctx, child);
+    }
+    ctx.deindent();
+    ctx.newline();
+    ctx.push("]),");
+
+    ctx.newline();
+    ctx.push("_: 2 /* DYNAMIC */");
+
+    ctx.deindent();
+    ctx.newline();
+    ctx.push("}");
 }
 
 /// Generate a conditional slot entry (v-if on slot template)

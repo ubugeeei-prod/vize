@@ -73,6 +73,86 @@ fn advance_line(bytes: &[u8], base: usize, line: &mut usize, last_newline: &mut 
     }
 }
 
+fn can_start_regex_literal(prev_significant_char: u8) -> bool {
+    matches!(
+        prev_significant_char,
+        b'=' | b'('
+            | b'['
+            | b','
+            | b':'
+            | b'{'
+            | b';'
+            | b'\n'
+            | b'?'
+            | b'&'
+            | b'|'
+            | b'+'
+            | b'-'
+            | b'*'
+            | b'!'
+            | b'>'
+            | b'<'
+            | b'%'
+            | b'^'
+    )
+}
+
+fn skip_regex_literal(
+    bytes: &[u8],
+    mut pos: usize,
+    len: usize,
+    line: &mut usize,
+    last_newline: &mut usize,
+) -> Option<usize> {
+    debug_assert_eq!(bytes[pos], b'/');
+    pos += 1;
+    let mut in_character_class = false;
+
+    while pos < len {
+        let c = bytes[pos];
+
+        if c == b'\n' {
+            // An unescaped newline terminates JavaScript regex literals. Stop
+            // treating this as regex so normal malformed-block handling wins.
+            return None;
+        }
+
+        if c == b'\\' {
+            if pos + 1 < len && bytes[pos + 1] == b'\n' {
+                *line += 1;
+                *last_newline = pos + 1;
+            }
+            pos = (pos + 2).min(len);
+            continue;
+        }
+
+        if in_character_class {
+            if c == b']' {
+                in_character_class = false;
+            }
+            pos += 1;
+            continue;
+        }
+
+        match c {
+            b'[' => {
+                in_character_class = true;
+                pos += 1;
+            }
+            b'/' => {
+                pos += 1;
+                while pos < len && (bytes[pos].is_ascii_alphanumeric() || bytes[pos] == b'_') {
+                    pos += 1;
+                }
+                return Some(pos);
+            }
+            _ => pos += 1,
+        }
+    }
+
+    None
+}
+
 /// Find the end of a closing tag `</tag_name` followed by optional whitespace and `>`.
 /// Returns the position immediately after `>`, or `None` if no valid closing tag at `pos`.
 #[inline]
@@ -449,6 +529,16 @@ pub(super) fn parse_block_fast<'a>(
                     pos = len;
                 }
                 continue;
+            }
+
+            if b == b'/' && can_start_regex_literal(prev_significant_char) {
+                if let Some(next_pos) =
+                    skip_regex_literal(bytes, pos, len, &mut line, &mut last_newline)
+                {
+                    prev_significant_char = b'/';
+                    pos = next_pos;
+                    continue;
+                }
             }
 
             // Check for string literals (', ", `)
