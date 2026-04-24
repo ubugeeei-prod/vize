@@ -320,6 +320,35 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_conditional_named_slot_preserves_implicit_default_slot() {
+        let result = compile!(
+            r#"<Parent>
+  Not rendering!
+  <template v-if="showNamed" #named>
+    Named content
+  </template>
+</Parent>"#
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains("default: _withCtx(() => ["),
+            "implicit default slot should be generated when createSlots is used:\n{}",
+            output
+        );
+        assert!(
+            output.contains("Not rendering!"),
+            "default slot text should be preserved:\n{}",
+            output
+        );
+        assert!(
+            output.contains("name: \"named\""),
+            "conditional named slot should still be dynamic:\n{}",
+            output
+        );
+    }
+
+    #[test]
     fn test_codegen_default_slot_with_v_if_is_marked_dynamic() {
         let result = compile!(
             r#"<PageWithHeader>

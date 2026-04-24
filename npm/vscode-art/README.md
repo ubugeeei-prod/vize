@@ -33,6 +33,9 @@ import Button from "./Button.vue";
 
 ## Installation
 
+This extension is not published to the VS Code Marketplace yet. Use a locally built VSIX while the
+editor package stabilizes.
+
 ### From VSIX
 
 ```bash

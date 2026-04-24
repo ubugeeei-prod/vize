@@ -9,10 +9,13 @@ title: VS Code
 > **Important:** For day-to-day Vue editor support, keep using the official Vue language tools
 > (`vuejs/language-tools`) for now. Vize is designed for incremental opt-in evaluation.
 
-Vize currently ships two VS Code extensions:
+The repository contains two experimental VS Code extensions:
 
 - **Vize** — Vue language support backed by `vize lsp`
 - **Vize Art** — syntax highlighting for Musea `*.art.vue` files
+
+They are not published to the VS Code Marketplace yet. Install from a locally built VSIX or run the
+extension development host while the editor packages stabilize.
 
 Install both if you want `*.art.vue` to receive Vize hover, completion, go-to-definition, and
 reference support in addition to syntax highlighting.
@@ -68,7 +71,7 @@ vize lsp (vize_maestro)
   → vize_glyph
 ```
 
-### Installing from Source
+### Installing from Source or VSIX
 
 Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then:
 
@@ -78,6 +81,8 @@ cd vize
 cd npm/vscode-vize
 vp install --ignore-workspace
 vp build
+vp exec vsce package --no-dependencies --out dist/vize.vsix
+code --install-extension dist/vize.vsix
 ```
 
 ## Vize Art Extension
@@ -101,5 +106,13 @@ Example Neovim setup:
 require("lspconfig").vize.setup({
   cmd = { "vize", "lsp" },
   filetypes = { "vue" },
+  init_options = {
+    lint = true,
+    typecheck = false,
+    editor = false,
+  },
 })
 ```
+
+When another TypeScript server such as tsgo owns project diagnostics, keep `typecheck = false` and
+turn on only the Vue-specific capabilities you want to evaluate.
