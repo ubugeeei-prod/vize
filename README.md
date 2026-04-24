@@ -28,7 +28,7 @@
 - Rust workspace crates for parsing, semantic analysis, compilation, linting, formatting, type checking, LSP, Musea art tooling, and bindings
 - A full Rust CLI via the `vize` crate (`build`, `fmt`, `lint`, `check`, `musea`, `lsp`, `ide`)
 - npm packages including `@vizejs/vite-plugin`, `@vizejs/native`, `@vizejs/wasm`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, and `oxlint-plugin-vize`
-- The `vize` npm package for shared config utilities and the native `lint` command
+- The `vize` npm package for shared config utilities and the native `lint` / `check` commands
 
 ## Quick Start
 
@@ -69,12 +69,14 @@ export default defineConfig({
 
 ### npm CLI
 
-The npm `vize` package currently exposes the native lint command plus shared config helpers:
+The npm `vize` package exposes native lint/check commands plus shared config helpers:
 
 ```bash
 vp install -D vize
 vp exec vize lint src
 vp exec vize lint --preset opinionated --help-level short src
+vp exec vize check
+vp exec vize check src
 ```
 
 ### Full Rust CLI

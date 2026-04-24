@@ -7,8 +7,9 @@ title: CLI
 > **⚠️ Work in Progress:** Vize is under active development and the CLI surface is still evolving.
 
 This page describes the Rust-native `vize` binary.
-The npm `vize` package currently exposes shared config helpers plus `vize lint`; for the full CLI,
-install the Rust binary with `cargo install vize`.
+The npm `vize` package exposes shared config helpers plus `vize lint` and an NAPI-backed
+`vize check`; for the full CLI and Corsa project diagnostics, install the Rust binary with
+`cargo install vize`.
 
 ## Installation
 

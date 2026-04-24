@@ -53,14 +53,17 @@ export default defineConfig({
 
 ### 2. npm CLI + Shared Config
 
-Use the `vize` npm package when you want shared config utilities and the native lint command.
+Use the `vize` npm package when you want shared config utilities and native lint/check commands
+available in package scripts.
 
 ```bash
 vp install -D vize
 vp exec vize lint src
+vp exec vize check
 ```
 
-The npm package currently focuses on config loading plus `lint`.
+The npm `vize check` command uses the packaged NAPI checker. Use the Rust CLI when you need the
+Corsa-backed project diagnostics path across Vue, TS, TSX, and `.d.ts` inputs.
 
 ### 3. Full Rust CLI
 
