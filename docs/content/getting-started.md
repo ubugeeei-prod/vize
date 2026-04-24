@@ -53,13 +53,16 @@ export default defineConfig({
 
 ### 2. npm CLI + Shared Config
 
-Use the `vize` npm package when you want shared config utilities and native lint/check commands
-available in package scripts.
+Use the `vize` npm package when you want shared config utilities and native CLI commands available
+in package scripts.
 
 ```bash
 vp install -D vize
+vp exec vize fmt --write src
 vp exec vize lint src
 vp exec vize check
+vp exec vize build src
+vp exec vize ready src
 ```
 
 The npm `vize check` command uses the packaged NAPI checker. Use the Rust CLI when you need the
@@ -78,6 +81,8 @@ vize build src/**/*.vue
 vize fmt --check src
 vize lint --profile src
 vize check --profile src
+vize ready src
+vize upgrade
 vize lsp
 ```
 

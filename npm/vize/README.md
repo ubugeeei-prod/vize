@@ -3,12 +3,16 @@
 The `vize` npm package provides:
 
 - shared config utilities (`defineConfig`, `loadConfig`)
+- the native `vize build` command
+- the native `vize fmt` command
 - the native `vize lint` command
 - the native `vize check` command for package scripts
+- `vize ready` for `fmt --write -> lint -> check -> build`
+- `vize upgrade` for updating the npm package
 
 For Vite integration, pair it with `@vizejs/vite-plugin`.
-For the full Rust-native CLI (`build`, `fmt`, project-backed `check`, `lsp`, `ide`), install the
-Rust `vize` binary with `cargo install vize`.
+For the full Rust-native CLI (`lsp`, `ide`, project-backed `check`, and `check-server`), install
+the Rust `vize` binary with `cargo install vize`.
 
 Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://viteplus.dev/guide/install).
 
@@ -20,13 +24,15 @@ vp install -D vize
 
 ## CLI
 
-The npm CLI exposes `lint` and `check`:
+The npm CLI exposes the common package-script commands:
 
 ```bash
+vp exec vize build src
+vp exec vize fmt --write src
 vp exec vize lint src
-vp exec vize lint --preset opinionated --help-level short src
 vp exec vize check
-vp exec vize check src
+vp exec vize ready src
+vp exec vize upgrade
 ```
 
 Shared config discovery is supported for the npm CLI:
@@ -55,6 +61,8 @@ Override config discovery with `--config`, or disable it with `--no-config`.
 `vize check` in the npm package uses the packaged NAPI checker so it can run from `package.json`
 scripts after installing `vize`. Use the Rust CLI when you need Corsa project diagnostics across
 Vue, TS, TSX, and `.d.ts` inputs.
+
+`vize ready` runs `fmt --write`, `lint`, `check`, and `build` in that order.
 
 ## Programmatic Config Helpers
 

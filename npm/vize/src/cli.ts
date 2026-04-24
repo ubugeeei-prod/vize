@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import * as path from "node:path";
 import { createRequire } from "node:module";
@@ -63,6 +63,11 @@ function getBindingPackageName(): string {
 }
 
 interface NativeBinding {
+  compileSfcBatchWithResults: (
+    files: BatchFileInput[],
+    options?: NativeBuildOptions,
+  ) => BatchCompileResult;
+  formatSfc: (source: string, options?: NativeFormatOptions) => FormatResult;
   typeCheck: (source: string, options?: NativeTypeCheckOptions) => TypeCheckResult;
   lint: (
     patterns: string[],
@@ -77,14 +82,24 @@ interface NativeBinding {
   ) => LintResult;
 }
 
-function loadNative(command: "check" | "lint"): NativeBinding {
+type NativeCommand = "build" | "check" | "fmt" | "lint";
+
+const REQUIRED_BINDINGS: Record<NativeCommand, keyof NativeBinding> = {
+  build: "compileSfcBatchWithResults",
+  check: "typeCheck",
+  fmt: "formatSfc",
+  lint: "lint",
+};
+
+function loadNative(command: NativeCommand): NativeBinding {
   const attemptedPackages = getAttemptedPackages();
   let lastError: unknown = null;
+  const requiredBinding = REQUIRED_BINDINGS[command];
 
   for (const packageName of attemptedPackages) {
     try {
       const binding = require(packageName) as Partial<NativeBinding>;
-      if (typeof binding[command === "check" ? "typeCheck" : "lint"] !== "function") {
+      if (typeof binding[requiredBinding] !== "function") {
         throw new Error(`${packageName} does not expose the ${command} binding.`);
       }
       return binding as NativeBinding;
@@ -162,7 +177,29 @@ interface ParsedLintCommand {
 
 function printUsage(): void {
   console.error("Usage: vize <command> [options]");
-  console.error("Commands: check, lint, musea");
+  console.error("Commands: build, fmt, check, lint, upgrade, ready, musea");
+}
+
+function printBuildUsage(): void {
+  console.error("Usage: vize build [options] [files-or-directories]");
+  console.error("Options:");
+  console.error("  -o, --output <dir>             Output directory");
+  console.error("  -f, --format <js|json|stats>   Output format");
+  console.error("      --ssr                      Enable SSR compilation");
+  console.error("      --script-ext <mode>        preserve or downcompile");
+  console.error("  -j, --threads <number>         Worker thread count");
+}
+
+function printFmtUsage(): void {
+  console.error("Usage: vize fmt [options] [files-or-directories]");
+  console.error("Options:");
+  console.error("      --check                    Exit with an error if files need formatting");
+  console.error("  -w, --write                    Write formatted output");
+  console.error("      --single-quote             Use single quotes");
+  console.error("      --print-width <number>     Maximum line width");
+  console.error("      --tab-width <number>       Indentation width");
+  console.error("      --use-tabs                 Indent with tabs");
+  console.error("      --no-semi                  Omit semicolons");
 }
 
 function printCheckUsage(): void {
@@ -179,6 +216,23 @@ function printCheckUsage(): void {
   console.error(
     "Note: npm `vize check` uses the packaged NAPI checker. Install the Rust CLI for project-backed Corsa diagnostics.",
   );
+}
+
+function printUpgradeUsage(): void {
+  console.error("Usage: vize upgrade [options]");
+  console.error("Options:");
+  console.error("      --package-manager <name>   npm, pnpm, yarn, bun, or vp");
+  console.error("  -g, --global                   Upgrade the global installation");
+  console.error("      --dry-run                  Print the command without running it");
+}
+
+function printReadyUsage(): void {
+  console.error("Usage: vize ready [options] [files-or-directories]");
+  console.error("Runs: fmt --write -> lint -> check -> build");
+  console.error("Options:");
+  console.error("  -o, --output <dir>             Output directory for build");
+  console.error("      --ssr                      Enable SSR compilation for build");
+  console.error("      --script-ext <mode>        preserve or downcompile");
 }
 
 function resolvePackageBinaryFromCwd(packageName: string, binName: string = packageName): string {
@@ -257,6 +311,413 @@ function parseLintCommand(args: string[]): ParsedLintCommand {
   }
 
   return { patterns, options, sharedConfig };
+}
+
+// ============================================================================
+// Build command
+// ============================================================================
+
+interface NativeBuildOptions {
+  ssr?: boolean;
+  vapor?: boolean;
+  customRenderer?: boolean;
+  custom_renderer?: boolean;
+  isTs?: boolean;
+  is_ts?: boolean;
+  threads?: number;
+}
+
+interface BatchFileInput {
+  path: string;
+  source: string;
+}
+
+interface BatchFileResult {
+  path: string;
+  code: string;
+  css?: string;
+  errors: string[];
+  warnings: string[];
+  scopeId?: string;
+  scope_id?: string;
+  hasScoped?: boolean;
+  has_scoped?: boolean;
+}
+
+interface BatchCompileResult {
+  results: BatchFileResult[];
+  successCount?: number;
+  success_count?: number;
+  failedCount?: number;
+  failed_count?: number;
+  timeMs?: number;
+  time_ms?: number;
+}
+
+interface BuildOptions {
+  output: string;
+  format: "js" | "json" | "stats";
+  ssr?: boolean;
+  vapor?: boolean;
+  customRenderer?: boolean;
+  scriptExt: "preserve" | "downcompile";
+  threads?: number;
+  help?: boolean;
+}
+
+interface ParsedBuildCommand {
+  patterns: string[];
+  options: BuildOptions;
+  sharedConfig: SharedConfigOptions;
+}
+
+function parseBuildCommand(args: string[]): ParsedBuildCommand {
+  const patterns: string[] = [];
+  const options: BuildOptions = {
+    output: "./dist",
+    format: "js",
+    scriptExt: "downcompile",
+  };
+  const sharedConfig: SharedConfigOptions = {
+    configMode: "root",
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--output" || arg === "-o") {
+      options.output = args[++i] ?? options.output;
+    } else if (arg === "--format" || arg === "-f") {
+      const format = args[++i];
+      if (format === "js" || format === "json" || format === "stats") {
+        options.format = format;
+      }
+    } else if (arg === "--ssr") {
+      options.ssr = true;
+    } else if (arg === "--vapor") {
+      options.vapor = true;
+    } else if (arg === "--custom-renderer") {
+      options.customRenderer = true;
+    } else if (arg === "--script-ext") {
+      const scriptExt = args[++i];
+      if (scriptExt === "preserve" || scriptExt === "downcompile") {
+        options.scriptExt = scriptExt;
+      }
+    } else if (arg === "--threads" || arg === "-j") {
+      options.threads = Number.parseInt(args[++i], 10);
+    } else if (arg === "--config" || arg === "-c") {
+      const configFile = args[++i];
+      if (!configFile) {
+        throw new Error("Missing path after --config");
+      }
+      sharedConfig.configFile = configFile;
+    } else if (arg === "--no-config") {
+      sharedConfig.configMode = "none";
+    } else if (arg === "--profile" || arg === "--continue-on-error") {
+      // Accepted for command compatibility. The npm build path prints a compact summary.
+    } else if (arg === "--help" || arg === "-h") {
+      options.help = true;
+    } else if (!arg.startsWith("-")) {
+      patterns.push(arg);
+    }
+  }
+
+  return { patterns, options, sharedConfig };
+}
+
+function getScriptLang(source: string): string {
+  const match = source.match(/<script\b[^>]*\blang=["']([^"']+)["']/i);
+  return match?.[1] ?? "js";
+}
+
+function getOutputExtension(source: string, scriptExt: BuildOptions["scriptExt"]): string {
+  if (scriptExt === "downcompile") {
+    return "js";
+  }
+  const lang = getScriptLang(source);
+  return lang === "ts" || lang === "tsx" || lang === "jsx" ? lang : "js";
+}
+
+function outputFileName(file: string, extension: string): string {
+  return path.basename(file).replace(/\.vue$/i, `.${extension}`);
+}
+
+function toNativeBuildOptions(options: BuildOptions): NativeBuildOptions {
+  const isTs = options.scriptExt === "preserve";
+  return {
+    ssr: options.ssr,
+    vapor: options.vapor,
+    customRenderer: options.customRenderer,
+    custom_renderer: options.customRenderer,
+    isTs,
+    is_ts: isTs,
+    threads: options.threads,
+  };
+}
+
+async function runBuild(args: string[]): Promise<void> {
+  const { patterns, options, sharedConfig } = parseBuildCommand(args);
+  if (options.help) {
+    printBuildUsage();
+    return;
+  }
+
+  const config = await loadConfig(process.cwd(), {
+    mode: sharedConfig.configMode,
+    configFile: sharedConfig.configFile,
+    env: {
+      mode: process.env.NODE_ENV ?? "development",
+      command: "build",
+    },
+  });
+
+  if (sharedConfig.configFile && !config) {
+    throw new Error(`Could not find config file: ${sharedConfig.configFile}`);
+  }
+
+  options.ssr ??= config?.compiler?.ssr;
+  options.vapor ??= config?.compiler?.vapor;
+  options.customRenderer ??= config?.compiler?.customRenderer;
+  if (config?.compiler?.scriptExt === "ts") {
+    options.scriptExt = "preserve";
+  } else if (config?.compiler?.scriptExt === "js") {
+    options.scriptExt = "downcompile";
+  }
+
+  const files = collectVueFiles(patterns);
+  if (files.length === 0) {
+    process.stderr.write(`No Vue files found matching inputs: ${JSON.stringify(patterns)}\n`);
+    process.exit(1);
+  }
+
+  const inputs = files.map((file) => ({
+    path: file,
+    source: readFileSync(file, "utf8"),
+  }));
+  const native = loadNative("build");
+  const startedAt = performance.now();
+  const result = native.compileSfcBatchWithResults(inputs, toNativeBuildOptions(options));
+  const timeMs = result.timeMs ?? result.time_ms ?? performance.now() - startedAt;
+  const results = [...result.results].sort((left, right) => left.path.localeCompare(right.path));
+
+  if (options.format !== "stats") {
+    mkdirSync(options.output, { recursive: true });
+  }
+
+  for (const fileResult of results) {
+    const source = inputs.find((input) => input.path === fileResult.path)?.source ?? "";
+    for (const warning of fileResult.warnings) {
+      process.stderr.write(`warning: ${displayPath(fileResult.path)} ${warning}\n`);
+    }
+    for (const error of fileResult.errors) {
+      process.stderr.write(`error: ${displayPath(fileResult.path)} ${error}\n`);
+    }
+
+    if (fileResult.errors.length > 0 || options.format === "stats") {
+      continue;
+    }
+
+    const extension =
+      options.format === "json" ? "json" : getOutputExtension(source, options.scriptExt);
+    const outputPath = path.join(options.output, outputFileName(fileResult.path, extension));
+    const content =
+      options.format === "json" ? JSON.stringify(fileResult, null, 2) : fileResult.code;
+    writeFileSync(outputPath, content);
+  }
+
+  const failed =
+    result.failedCount ?? result.failed_count ?? results.filter((r) => r.errors.length).length;
+  const success = result.successCount ?? result.success_count ?? results.length - failed;
+  process.stderr.write(
+    `\x1b[32mOK\x1b[0m Built ${success} Vue file(s) in ${timeMs.toFixed(2)}ms\n`,
+  );
+
+  if (failed > 0) {
+    process.stderr.write(`\x1b[31mERR\x1b[0m ${failed} file(s) failed\n`);
+    process.exit(1);
+  }
+}
+
+// ============================================================================
+// Format command
+// ============================================================================
+
+interface NativeFormatOptions {
+  printWidth?: number;
+  print_width?: number;
+  tabWidth?: number;
+  tab_width?: number;
+  useTabs?: boolean;
+  use_tabs?: boolean;
+  semi?: boolean;
+  singleQuote?: boolean;
+  single_quote?: boolean;
+  sortAttributes?: boolean;
+  sort_attributes?: boolean;
+  singleAttributePerLine?: boolean;
+  single_attribute_per_line?: boolean;
+  maxAttributesPerLine?: number;
+  max_attributes_per_line?: number;
+  normalizeDirectiveShorthands?: boolean;
+  normalize_directive_shorthands?: boolean;
+}
+
+interface FormatResult {
+  code: string;
+  changed: boolean;
+}
+
+interface FmtOptions extends NativeFormatOptions {
+  check?: boolean;
+  write?: boolean;
+  help?: boolean;
+}
+
+interface ParsedFmtCommand {
+  patterns: string[];
+  options: FmtOptions;
+  sharedConfig: SharedConfigOptions;
+}
+
+function parseFmtCommand(args: string[]): ParsedFmtCommand {
+  const patterns: string[] = [];
+  const options: FmtOptions = {};
+  const sharedConfig: SharedConfigOptions = {
+    configMode: "root",
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--check") {
+      options.check = true;
+    } else if (arg === "--write" || arg === "-w") {
+      options.write = true;
+    } else if (arg === "--single-quote") {
+      options.singleQuote = true;
+    } else if (arg === "--print-width") {
+      options.printWidth = Number.parseInt(args[++i], 10);
+    } else if (arg === "--tab-width") {
+      options.tabWidth = Number.parseInt(args[++i], 10);
+    } else if (arg === "--use-tabs") {
+      options.useTabs = true;
+    } else if (arg === "--no-semi") {
+      options.semi = false;
+    } else if (arg === "--sort-attributes") {
+      options.sortAttributes = true;
+    } else if (arg === "--single-attribute-per-line") {
+      options.singleAttributePerLine = true;
+    } else if (arg === "--max-attributes-per-line") {
+      options.maxAttributesPerLine = Number.parseInt(args[++i], 10);
+    } else if (arg === "--normalize-directive-shorthands") {
+      options.normalizeDirectiveShorthands = true;
+    } else if (arg === "--config" || arg === "-c") {
+      const configFile = args[++i];
+      if (!configFile) {
+        throw new Error("Missing path after --config");
+      }
+      sharedConfig.configFile = configFile;
+    } else if (arg === "--no-config") {
+      sharedConfig.configMode = "none";
+    } else if (arg === "--profile") {
+      // Accepted for command compatibility. The npm fmt path prints a compact summary.
+    } else if (arg === "--help" || arg === "-h") {
+      options.help = true;
+    } else if (!arg.startsWith("-")) {
+      patterns.push(arg);
+    }
+  }
+
+  return { patterns, options, sharedConfig };
+}
+
+function toNativeFormatOptions(options: FmtOptions): NativeFormatOptions {
+  return {
+    printWidth: options.printWidth,
+    print_width: options.printWidth,
+    tabWidth: options.tabWidth,
+    tab_width: options.tabWidth,
+    useTabs: options.useTabs,
+    use_tabs: options.useTabs,
+    semi: options.semi,
+    singleQuote: options.singleQuote,
+    single_quote: options.singleQuote,
+    sortAttributes: options.sortAttributes,
+    sort_attributes: options.sortAttributes,
+    singleAttributePerLine: options.singleAttributePerLine,
+    single_attribute_per_line: options.singleAttributePerLine,
+    maxAttributesPerLine: options.maxAttributesPerLine,
+    max_attributes_per_line: options.maxAttributesPerLine,
+    normalizeDirectiveShorthands: options.normalizeDirectiveShorthands,
+    normalize_directive_shorthands: options.normalizeDirectiveShorthands,
+  };
+}
+
+async function runFmt(args: string[]): Promise<void> {
+  const { patterns, options, sharedConfig } = parseFmtCommand(args);
+  if (options.help) {
+    printFmtUsage();
+    return;
+  }
+
+  const config = await loadConfig(process.cwd(), {
+    mode: sharedConfig.configMode,
+    configFile: sharedConfig.configFile,
+    env: {
+      mode: process.env.NODE_ENV ?? "development",
+      command: "fmt",
+    },
+  });
+
+  if (sharedConfig.configFile && !config) {
+    throw new Error(`Could not find config file: ${sharedConfig.configFile}`);
+  }
+
+  options.printWidth ??= config?.formatter?.printWidth;
+  options.tabWidth ??= config?.formatter?.tabWidth;
+  options.useTabs ??= config?.formatter?.useTabs;
+  options.semi ??= config?.formatter?.semi;
+  options.singleQuote ??= config?.formatter?.singleQuote;
+
+  const files = collectVueFiles(patterns);
+  if (files.length === 0) {
+    process.stderr.write(`No Vue files found matching inputs: ${JSON.stringify(patterns)}\n`);
+    return;
+  }
+
+  const native = loadNative("fmt");
+  let changed = 0;
+  let errored = 0;
+
+  for (const file of files) {
+    const source = readFileSync(file, "utf8");
+    try {
+      const result = native.formatSfc(source, toNativeFormatOptions(options));
+      if (!result.changed) {
+        continue;
+      }
+      changed++;
+      if (options.check) {
+        process.stderr.write(`Would reformat: ${displayPath(file)}\n`);
+      } else if (options.write) {
+        writeFileSync(file, result.code);
+        process.stderr.write(`Reformatted: ${displayPath(file)}\n`);
+      } else {
+        process.stderr.write(`Would reformat: ${displayPath(file)}\n`);
+      }
+    } catch (error) {
+      errored++;
+      process.stderr.write(
+        `Error formatting ${displayPath(file)}: ${error instanceof Error ? error.message : String(error)}\n`,
+      );
+    }
+  }
+
+  process.stderr.write(
+    `\x1b[32mOK\x1b[0m Formatted ${files.length} Vue file(s), ${changed} changed\n`,
+  );
+
+  if (errored > 0 || (options.check && changed > 0)) {
+    process.exit(1);
+  }
 }
 
 // ============================================================================
@@ -510,7 +971,7 @@ function collectVueFilesFromGlob(pattern: string): string[] {
   });
 }
 
-function collectCheckFiles(patterns: string[]): string[] {
+function collectVueFiles(patterns: string[]): string[] {
   const files = new Set<string>();
   const inputs = patterns.length === 0 ? ["."] : patterns;
 
@@ -673,7 +1134,7 @@ async function runCheck(args: string[]): Promise<void> {
   options.checkEmits ??= config?.typeChecker?.checkEmits;
   options.checkTemplateBindings ??= config?.typeChecker?.checkTemplateBindings;
 
-  const files = collectCheckFiles(patterns);
+  const files = collectVueFiles(patterns);
   if (files.length === 0) {
     process.stderr.write(`No Vue files found matching inputs: ${JSON.stringify(patterns)}\n`);
     return;
@@ -784,11 +1245,235 @@ async function runLint(args: string[]): Promise<void> {
 }
 
 // ============================================================================
+// Upgrade command
+// ============================================================================
+
+type PackageManager = "bun" | "npm" | "pnpm" | "vp" | "yarn";
+
+interface UpgradeOptions {
+  packageManager?: PackageManager;
+  global?: boolean;
+  dryRun?: boolean;
+  help?: boolean;
+}
+
+function parseUpgradeCommand(args: string[]): UpgradeOptions {
+  const options: UpgradeOptions = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--package-manager") {
+      const packageManager = args[++i];
+      if (
+        packageManager === "bun" ||
+        packageManager === "npm" ||
+        packageManager === "pnpm" ||
+        packageManager === "vp" ||
+        packageManager === "yarn"
+      ) {
+        options.packageManager = packageManager;
+      }
+    } else if (arg === "--global" || arg === "-g") {
+      options.global = true;
+    } else if (arg === "--dry-run") {
+      options.dryRun = true;
+    } else if (arg === "--help" || arg === "-h") {
+      options.help = true;
+    }
+  }
+
+  return options;
+}
+
+function readCwdPackageJson(): {
+  packageManager?: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+} | null {
+  const packageJsonPath = path.join(process.cwd(), "package.json");
+  if (!existsSync(packageJsonPath)) {
+    return null;
+  }
+  return JSON.parse(readFileSync(packageJsonPath, "utf8"));
+}
+
+function detectPackageManager(explicit?: PackageManager): PackageManager {
+  if (explicit) {
+    return explicit;
+  }
+
+  const userAgent = process.env.npm_config_user_agent ?? "";
+  if (userAgent.startsWith("pnpm")) {
+    return "pnpm";
+  }
+  if (userAgent.startsWith("yarn")) {
+    return "yarn";
+  }
+  if (userAgent.startsWith("bun")) {
+    return "bun";
+  }
+  if (userAgent.startsWith("npm")) {
+    return "npm";
+  }
+
+  const packageManager = readCwdPackageJson()?.packageManager;
+  if (packageManager?.startsWith("pnpm")) {
+    return "pnpm";
+  }
+  if (packageManager?.startsWith("yarn")) {
+    return "yarn";
+  }
+  if (packageManager?.startsWith("bun")) {
+    return "bun";
+  }
+  return "npm";
+}
+
+function buildUpgradeCommand(
+  packageManager: PackageManager,
+  options: UpgradeOptions,
+): { command: string; args: string[] } {
+  const packageJson = readCwdPackageJson();
+  const saveDev = !packageJson?.dependencies?.vize;
+  const packageSpec = "vize@latest";
+
+  if (packageManager === "vp") {
+    return {
+      command: "vp",
+      args: ["install", ...(options.global ? ["-g"] : saveDev ? ["-D"] : []), packageSpec],
+    };
+  }
+  if (packageManager === "pnpm") {
+    return {
+      command: "pnpm",
+      args: ["add", ...(options.global ? ["-g"] : saveDev ? ["-D"] : []), packageSpec],
+    };
+  }
+  if (packageManager === "yarn") {
+    return {
+      command: "yarn",
+      args: options.global
+        ? ["global", "add", packageSpec]
+        : ["add", ...(saveDev ? ["-D"] : []), packageSpec],
+    };
+  }
+  if (packageManager === "bun") {
+    return {
+      command: "bun",
+      args: ["add", ...(options.global ? ["-g"] : saveDev ? ["-d"] : []), packageSpec],
+    };
+  }
+  return {
+    command: "npm",
+    args: ["install", ...(options.global ? ["-g"] : saveDev ? ["-D"] : []), packageSpec],
+  };
+}
+
+function runUpgrade(args: string[]): void {
+  const options = parseUpgradeCommand(args);
+  if (options.help) {
+    printUpgradeUsage();
+    return;
+  }
+
+  const packageManager = detectPackageManager(options.packageManager);
+  const command = buildUpgradeCommand(packageManager, options);
+
+  if (options.dryRun) {
+    process.stdout.write(`${command.command} ${command.args.join(" ")}\n`);
+    return;
+  }
+
+  const result = spawnSync(command.command, command.args, {
+    stdio: "inherit",
+    cwd: process.cwd(),
+    env: process.env,
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  process.exit(result.status ?? 1);
+}
+
+// ============================================================================
+// Ready command
+// ============================================================================
+
+interface ReadyOptions {
+  output: string;
+  ssr?: boolean;
+  scriptExt: "preserve" | "downcompile";
+  help?: boolean;
+}
+
+interface ParsedReadyCommand {
+  patterns: string[];
+  options: ReadyOptions;
+}
+
+function parseReadyCommand(args: string[]): ParsedReadyCommand {
+  const patterns: string[] = [];
+  const options: ReadyOptions = {
+    output: "./dist",
+    scriptExt: "downcompile",
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--output" || arg === "-o") {
+      options.output = args[++i] ?? options.output;
+    } else if (arg === "--ssr") {
+      options.ssr = true;
+    } else if (arg === "--script-ext") {
+      const scriptExt = args[++i];
+      if (scriptExt === "preserve" || scriptExt === "downcompile") {
+        options.scriptExt = scriptExt;
+      }
+    } else if (arg === "--help" || arg === "-h") {
+      options.help = true;
+    } else if (!arg.startsWith("-")) {
+      patterns.push(arg);
+    }
+  }
+
+  return { patterns, options };
+}
+
+async function runReady(args: string[]): Promise<void> {
+  const { patterns, options } = parseReadyCommand(args);
+  if (options.help) {
+    printReadyUsage();
+    return;
+  }
+
+  process.stderr.write("vize ready: fmt\n");
+  await runFmt(["--write", ...patterns]);
+
+  process.stderr.write("vize ready: lint\n");
+  await runLint(patterns);
+
+  process.stderr.write("vize ready: check\n");
+  await runCheck(patterns);
+
+  process.stderr.write("vize ready: build\n");
+  await runBuild([
+    "--output",
+    options.output,
+    "--script-ext",
+    options.scriptExt,
+    ...(options.ssr ? ["--ssr"] : []),
+    ...patterns,
+  ]);
+}
+
+// ============================================================================
 // Command router
 // ============================================================================
 
-const NAPI_COMMANDS = new Set(["check", "lint"]);
-const JS_COMMANDS = new Set(["musea"]);
+const NAPI_COMMANDS = new Set(["build", "check", "fmt", "lint"]);
+const JS_COMMANDS = new Set(["musea", "ready", "upgrade"]);
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -802,8 +1487,14 @@ async function main(): Promise<void> {
   if (NAPI_COMMANDS.has(command)) {
     const commandArgs = args.slice(1);
     switch (command) {
+      case "build":
+        await runBuild(commandArgs);
+        break;
       case "check":
         await runCheck(commandArgs);
+        break;
+      case "fmt":
+        await runFmt(commandArgs);
         break;
       case "lint":
         await runLint(commandArgs);
@@ -814,6 +1505,12 @@ async function main(): Promise<void> {
     switch (command) {
       case "musea":
         runMusea(commandArgs);
+        break;
+      case "ready":
+        await runReady(commandArgs);
+        break;
+      case "upgrade":
+        runUpgrade(commandArgs);
         break;
     }
   } else {

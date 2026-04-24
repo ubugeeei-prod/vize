@@ -7,9 +7,9 @@ title: CLI
 > **⚠️ Work in Progress:** Vize is under active development and the CLI surface is still evolving.
 
 This page describes the Rust-native `vize` binary.
-The npm `vize` package exposes shared config helpers plus `vize lint` and an NAPI-backed
-`vize check`; for the full CLI and Corsa project diagnostics, install the Rust binary with
-`cargo install vize`.
+The npm `vize` package exposes shared config helpers plus NAPI-backed `build`, `fmt`, `lint`,
+`check`, `ready`, and `upgrade` commands. Install the Rust binary when you need LSP, IDE,
+`check-server`, or Corsa project diagnostics.
 
 ## Installation
 
@@ -37,6 +37,8 @@ When invoked without a command, `vize` defaults to `build`.
 | `fmt`          | Format Vue SFC files                            |
 | `lint`         | Lint Vue SFC files                              |
 | `check`        | Type check Vue SFC, TS, TSX, and `.d.ts` inputs |
+| `ready`        | Run `fmt`, `lint`, `check`, and `build`         |
+| `upgrade`      | Update the installed CLI                        |
 | `check-server` | Start the Unix JSON-RPC typecheck server        |
 | `musea`        | Musea subcommands and scaffolding               |
 | `lsp`          | Start the language server                       |
@@ -136,6 +138,34 @@ Key options:
 | `--declaration-dir` | Output directory for emitted declarations          |
 
 Use `--corsa-path` when you want to pin a custom Corsa executable while developing Vize or testing a local `corsa-bind` checkout.
+
+## Ready
+
+```bash
+vize ready src
+vize ready --output dist src
+```
+
+`vize ready` runs `fmt --write`, `lint`, `check`, and `build` in order. The command stops at the
+first failing step.
+
+Key options:
+
+| Option         | Description                         |
+| -------------- | ----------------------------------- |
+| `-o, --output` | Output directory for the build step |
+| `--ssr`        | Enable SSR compilation for build    |
+| `--script-ext` | `preserve` or `downcompile`         |
+
+## Upgrade
+
+```bash
+vize upgrade
+vize upgrade --dry-run
+```
+
+The Rust CLI upgrades through Cargo by running `cargo install vize --force --locked`.
+The npm CLI upgrades the npm package through the detected package manager.
 
 ## Musea
 
