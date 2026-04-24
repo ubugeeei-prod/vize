@@ -115,7 +115,7 @@ async function buildWithVizePlugin(): Promise<number> {
   let vizePlugin: any;
   try {
     vizePlugin = (
-      await import(join(__dirname, "..", "npm", "vite-plugin-vize", "dist", "index.js"))
+      await import(join(__dirname, "..", "npm", "vite-plugin-vize", "dist", "index.mjs"))
     ).default;
   } catch {
     return -1;
@@ -185,7 +185,7 @@ if (vizeTime >= 0) {
   );
 } else {
   console.log(
-    "   @vizejs/vite-plugin : SKIPPED (plugin not built, run 'mise run build:vite-plugin')",
+    "   @vizejs/vite-plugin : SKIPPED (plugin not built, run 'vp run --workspace-root build:vite-plugin')",
   );
 }
 

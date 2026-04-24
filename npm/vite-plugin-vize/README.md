@@ -210,10 +210,10 @@ When a `.vue` file changes:
 
 Vize's native compiler is significantly faster than the official Vue compiler:
 
-| Benchmark (15,000 SFCs) | @vue/compiler-sfc | Vize  | Speedup  |
-| ----------------------- | ----------------- | ----- | -------- |
-| Single-threaded         | 10.43s            | 6.06s | **1.7x** |
-| Multi-threaded          | 3.45s             | 612ms | **5.6x** |
+| Benchmark (15,000 SFCs) | @vue/compiler-sfc | Vize  | Speedup   |
+| ----------------------- | ----------------- | ----- | --------- |
+| Single-threaded         | 9.35s             | 3.47s | **2.7x**  |
+| Multi-threaded          | 4.08s             | 353ms | **11.6x** |
 
 ## Comparison with vite-plugin-vize
 

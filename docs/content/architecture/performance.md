@@ -13,10 +13,10 @@ Vize achieves significant performance improvements over the standard JavaScript-
 |             |                                           |
 | ----------- | ----------------------------------------- |
 | **Machine** | MacBook Pro (M2 Max, 12 cores, 96 GB RAM) |
-| **OS**      | macOS (Darwin 24.3.0)                     |
-| **Node.js** | v24.13.0                                  |
+| **OS**      | macOS 15.3.2 (Darwin 24.3.0)              |
+| **Node.js** | v24.14.0                                  |
 | **Vite**    | v8.0.0 (Rolldown)                         |
-| **Vue**     | v3.6.0-beta.1                             |
+| **Vue**     | v3.6.0-beta.10                            |
 
 ## Benchmark: 15,000 SFC Files
 
@@ -24,9 +24,9 @@ Compiling **15,000 Vue SFC files** (36.9 MB total):
 
 |                                | @vue/compiler-sfc | Vize  | Speedup   |
 | ------------------------------ | ----------------- | ----- | --------- |
-| **Single Thread**              | 9.28s             | 3.30s | **2.8x**  |
-| **Multi Thread**               | 3.35s             | 434ms | **7.7x**  |
-| **compiler-sfc ST vs Vize MT** | 9.28s             | 434ms | **20.9x** |
+| **Single Thread**              | 9.35s             | 3.47s | **2.7x**  |
+| **Multi Thread**               | 4.08s             | 353ms | **11.6x** |
+| **compiler-sfc ST vs Vize MT** | 9.35s             | 353ms | **26.0x** |
 
 The single-threaded improvement comes from Rust's zero-cost abstractions (no GC, no JIT warmup, cache-friendly memory layout). The multi-threaded improvement comes from Rayon's work-stealing thread pool, which scales near-linearly with CPU core count.
 
@@ -34,12 +34,12 @@ The single-threaded improvement comes from Rust's zero-cost abstractions (no GC,
 
 | Files  | Vize batch (1 thread) | Vize batch (12 threads) | Parallel Speedup |
 | ------ | --------------------- | ----------------------- | ---------------- |
-| 100    | 22ms                  | 3ms                     | 7.0x             |
-| 1,000  | 218ms                 | 25ms                    | 8.7x             |
-| 5,000  | 1.09s                 | 125ms                   | 8.7x             |
-| 15,000 | 3.65s                 | 432ms                   | 8.5x             |
+| 100    | 25ms                  | 3ms                     | 8.5x             |
+| 1,000  | 243ms                 | 26ms                    | 9.4x             |
+| 5,000  | 1.25s                 | 128ms                   | 9.7x             |
+| 15,000 | 3.75s                 | 373ms                   | 10.1x            |
 
-These native batch numbers include file reads. Small batches are dominated by fixed overhead; larger batches settle around 8.5x parallel speedup on this 12-core machine.
+These native batch numbers include file reads. Small batches are dominated by fixed overhead; larger batches settle around 10x parallel speedup on this 12-core machine.
 
 ## Why Rust?
 
@@ -111,9 +111,9 @@ The Vite plugin (`@vizejs/vite-plugin`) uses file-level caching. Only modified f
 
 Linting **15,000 Vue SFC files**:
 
-|          | eslint-plugin-vue (ST) | Vize patina (ST) | Speedup   | eslint-plugin-vue (MT) | Vize patina (MT) | Speedup  | **eslint ST vs Vize MT** |
-| -------- | ---------------------- | ---------------- | --------- | ---------------------- | ---------------- | -------- | ------------------------ |
-| **Time** | 65.30s                 | 5.45s            | **12.0x** | 26.82s                 | 5.48s            | **4.9x** | **11.9x**                |
+|          | eslint-plugin-vue (ST) | Vize patina (ST) | Speedup   | eslint-plugin-vue (MT) | Vize patina (MT) | Speedup   | **eslint ST vs Vize MT** |
+| -------- | ---------------------- | ---------------- | --------- | ---------------------- | ---------------- | --------- | ------------------------ |
+| **Time** | 45.08s                 | 4.02s            | **11.2x** | 16.38s                 | 784ms            | **20.9x** | **57.5x**                |
 
 Run `vp run --workspace-root bench:lint` to reproduce.
 
@@ -123,7 +123,7 @@ Formatting **15,000 Vue SFC files**:
 
 |          | Prettier (CLI) | Vize glyph (ST) | Speedup   | Vize glyph (MT) | **Prettier CLI vs Vize MT** |
 | -------- | -------------- | --------------- | --------- | --------------- | --------------------------- |
-| **Time** | 104.08s        | 3.44s           | **30.3x** | 1.32s           | **78.9x**                   |
+| **Time** | 101.20s        | 2.97s           | **34.1x** | 835ms           | **121.2x**                  |
 
 Run `vp run --workspace-root bench:fmt` to reproduce.
 
@@ -151,11 +151,11 @@ The current profile for this fixture keeps `canon.corsa.map_diagnostics` at ~31m
 
 ## Benchmark: Vite Plugin — @vizejs/vite-plugin vs @vitejs/plugin-vue
 
-Vite build with **15,000 Vue SFC imports** (all imported in a single entry):
+Vite build with **1,000 Vue SFC imports** (all imported in a single entry):
 
 |                | @vitejs/plugin-vue | @vizejs/vite-plugin | Speedup  |
 | -------------- | ------------------ | ------------------- | -------- |
-| **Build Time** | 16.98s             | 6.90s               | **2.5x** |
+| **Build Time** | 957ms              | 479ms               | **2.0x** |
 
 > Note: `@vizejs/vite-plugin` replaces only the Vue SFC compilation step — the performance difference comes entirely from that part. Dependency resolution, module graph construction, bundling (Rolldown), and all other Vite internals are identical to `@vitejs/plugin-vue`. For pure compilation performance, see the [Compiler benchmark](#benchmark-15000-sfc-files) above. `@vizejs/vite-plugin` eagerly pre-compiles `.vue` files using native multi-threaded compilation, which also enables faster HMR.
 
