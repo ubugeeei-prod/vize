@@ -70,8 +70,8 @@ pub(super) fn emit_component_definition(
     output.extend_from_slice(b"',\n");
 
     // Output props and emits definitions
-    output.extend_from_slice(&props_emits_buf);
-    output.extend_from_slice(&model_props_emits_buf);
+    output.extend_from_slice(props_emits_buf);
+    output.extend_from_slice(model_props_emits_buf);
     if !template.render_fn.is_empty() {
         output.extend_from_slice(b"  ");
         output.extend_from_slice(template.render_fn_name.as_bytes());

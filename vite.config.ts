@@ -374,14 +374,22 @@ export default defineConfig({
     outDir: "target/vp-build",
   },
   fmt: {
-    ignorePatterns: ["**/__snapshots__/**", "**/__snapshot__/**", "**/__agent_only/**"],
+    ignorePatterns: [
+      "**/__snapshots__/**",
+      "**/__snapshot__/**",
+      "**/__agent_only/**",
+      "**/__ubugeeei__/**",
+      "tests/_fixtures/**",
+    ],
   },
   lint: {
     ignorePatterns: [
       "**/__snapshots__/**",
       "**/__snapshot__/**",
       "**/__agent_only/**",
+      "**/__ubugeeei__/**",
       "npm/vscode-vize/**",
+      "tests/_fixtures/**",
     ],
     options: {
       typeAware: true,
