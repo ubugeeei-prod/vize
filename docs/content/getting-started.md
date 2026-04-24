@@ -239,6 +239,8 @@ This repository uses `Nix + Vite+ (vp)` for local development. In this workspace
 ```bash
 nix develop
 vp install --frozen-lockfile
+vp check
+vp fmt
+vp dev
 vp build
-vp run --workspace-root check
 ```

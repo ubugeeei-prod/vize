@@ -92,6 +92,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 self.state = State::Interpolation;
                 self.delimiter_index = 0;
             }
+        } else if self.in_rcdata {
+            self.state = State::InRCDATA;
+            self.state_in_rcdata(c);
         } else {
             self.state = State::Text;
             self.state_text(c);
@@ -114,8 +117,12 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                     self.section_start,
                     self.index + 1 - self.delimiter_close.len(),
                 );
+                if self.in_rcdata {
+                    self.state = State::InRCDATA
+                } else {
+                    self.state = State::Text
+                }
                 self.section_start = self.index + 1;
-                self.state = State::Text;
             }
         } else {
             self.state = State::Interpolation;
@@ -132,7 +139,13 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.section_start = self.index + 1;
         } else if is_tag_start_char(c) {
             self.section_start = self.index;
-            self.state = State::InTagName;
+            if c == b't' {
+                self.state = State::BeforeSpecialT;
+            } else if c == b's' {
+                self.state = State::BeforeSpecialS;
+            } else {
+                self.state = State::InTagName;
+            }
         } else if c == SLASH {
             self.state = State::BeforeClosingTagName;
         } else {
@@ -198,7 +211,11 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub(super) fn state_before_attr_name(&mut self, c: u8) {
         if c == GT {
             self.callbacks.on_open_tag_end(self.index);
-            self.state = State::Text;
+            if self.in_rcdata {
+                self.state = State::InRCDATA;
+            } else {
+                self.state = State::Text;
+            }
             self.section_start = self.index + 1;
         } else if c == SLASH {
             self.state = State::InSelfClosingTag;
@@ -449,11 +466,16 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         self.state = State::Text;
     }
 
+    #[inline]
+    fn current_sequence_with_bytes(&self) -> (Sequence, &'static [u8]) {
+        let sequence = self
+            .current_sequence
+            .expect("current_sequence must be set in this state");
+        (sequence, sequence.bytes())
+    }
+
     pub(super) fn state_in_comment_like(&mut self, c: u8) {
-        let Some(sequence) = self.current_sequence else {
-            return;
-        };
-        let sequence_bytes = sequence.bytes();
+        let (sequence, sequence_bytes) = self.current_sequence_with_bytes();
 
         if c == sequence_bytes[self.sequence_index] {
             self.sequence_index += 1;
@@ -471,23 +493,108 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         }
     }
 
-    pub(super) fn state_before_special_s(&mut self, _c: u8) {
-        // TODO: Handle script/style
-        self.state = State::InTagName;
+    // </script
+    // </style
+    pub(super) fn state_before_special_s(&mut self, c: u8) {
+        if c == Sequence::ScriptEnd.bytes()[3] {
+            self.start_special(Sequence::ScriptEnd, 4);
+        } else if c == Sequence::StyleEnd.bytes()[3] {
+            self.start_special(Sequence::StyleEnd, 4);
+        } else {
+            self.state = State::InTagName;
+            self.state_in_tag_name(c);
+        }
     }
 
-    pub(super) fn state_before_special_t(&mut self, _c: u8) {
-        // TODO: Handle title/textarea
-        self.state = State::InTagName;
+    // </title>
+    // </textarea>
+    pub(super) fn state_before_special_t(&mut self, c: u8) {
+        if c == Sequence::TitleEnd.bytes()[3] {
+            self.start_special(Sequence::TitleEnd, 4);
+        } else if c == Sequence::TextareaEnd.bytes()[3] {
+            self.start_special(Sequence::TextareaEnd, 4);
+        } else {
+            self.state = State::InTagName;
+            self.state_in_tag_name(c);
+        }
     }
 
-    pub(super) fn state_special_start_sequence(&mut self, _c: u8) {
-        self.state = State::InTagName;
+    pub(super) fn enter_rcdata(&mut self, sequence: Sequence, offset: usize) {
+        self.in_rcdata = true;
+        self.current_sequence = Some(sequence);
+        self.sequence_index = offset;
     }
 
+    fn start_special(&mut self, sequence: Sequence, offset: usize) {
+        self.enter_rcdata(sequence, offset);
+        self.state = State::SpecialStartSequence;
+    }
+
+    pub(super) fn state_special_start_sequence(&mut self, c: u8) {
+        let (_, sequence_bytes) = self.current_sequence_with_bytes();
+
+        let is_end = self.sequence_index == sequence_bytes.len();
+        let is_match = if is_end {
+            is_end_of_tag_section(c)
+        } else {
+            (c | 0x20) == sequence_bytes[self.sequence_index]
+        };
+
+        if !is_match {
+            self.in_rcdata = false;
+        } else if !is_end {
+            self.sequence_index += 1;
+            return;
+        }
+
+        self.sequence_index = 0;
+        self.state = State::InTagName;
+        self.state_in_tag_name(c);
+    }
+
+    // Look for an end tag. For `<title>` and `<textarea>`, also decode entities and handle
+    // interpolation
     pub(super) fn state_in_rcdata(&mut self, c: u8) {
-        if c == LT {
-            self.state = State::BeforeTagName;
+        let (sequence, sequence_bytes) = self.current_sequence_with_bytes();
+
+        if self.sequence_index == sequence_bytes.len() {
+            if c == GT || is_whitespace(c) {
+                let end_of_text: usize = self.index - sequence_bytes.len();
+                if self.section_start < end_of_text {
+                    let actual_index = self.index;
+                    self.index = end_of_text;
+                    self.callbacks.on_text(self.section_start, end_of_text);
+                    self.index = actual_index;
+                }
+                self.section_start = end_of_text + 2; // Skip over the `</`
+                self.state_in_closing_tag_name(c);
+                self.in_rcdata = false;
+                return;
+            }
+
+            self.sequence_index = 0;
+        }
+
+        if (c | 0x20) == sequence_bytes[self.sequence_index] {
+            self.sequence_index += 1;
+        } else if self.sequence_index == 0 {
+            // TODO(SFC root): align with vue-core `(TextareaEnd && !inSFCRoot)` — `<textarea>` at SFC
+            // file root should behave as RAWTEXT (no `&`/interpolation here); not distinguished yet.
+            if matches!(sequence, Sequence::TitleEnd | Sequence::TextareaEnd) {
+                if c == AMP {
+                    self.start_entity();
+                } else if !self.callbacks.is_in_v_pre() && c == self.delimiter_open[0] {
+                    self.state = State::InterpolationOpen;
+                    self.delimiter_index = 0;
+                    self.state_interpolation_open(c);
+                }
+            } else if self.fast_forward_to(LT) {
+                // Outside of `<title>` / `<textarea>`, skip ahead to the next `<` (script/style RAWTEXT).
+                self.sequence_index = 1;
+            }
+        } else {
+            // If we see `<`, set the sequence index to 1; useful for e.g. `<</script>`.
+            self.sequence_index = if c == LT { 1 } else { 0 };
         }
     }
 

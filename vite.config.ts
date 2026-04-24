@@ -19,7 +19,9 @@ const checkedPackages = [
   "./examples/oxlint-vize",
   "./playground",
 ];
-const ciCheckedPackages = checkedPackages.filter((pkg) => pkg !== "./examples/oxlint-vize");
+const directCheckPackages = ["./examples/vite-musea", "./playground"];
+const checkedPackagesViaVpRun = checkedPackages.filter((pkg) => !directCheckPackages.includes(pkg));
+const ciCheckedPackages = checkedPackagesViaVpRun.filter((pkg) => pkg !== "./examples/oxlint-vize");
 
 const packedPackages = [
   "./npm/vize",
@@ -83,24 +85,40 @@ const cacheInputs = {
   ],
 };
 
+const localVp = "./node_modules/.bin/vp";
+const shellQuote = (command: string) => `'${command.replaceAll("'", `'"'"'`)}'`;
+const darwinLibiconvLibraryPath = process.env.VIZE_DARWIN_LIBICONV_LIB;
+const rustTaskEnvironment =
+  darwinLibiconvLibraryPath == null
+    ? []
+    : [
+        `export LIBRARY_PATH=${shellQuote(darwinLibiconvLibraryPath)}\${LIBRARY_PATH:+:$LIBRARY_PATH}`,
+        `export RUSTFLAGS=${shellQuote(`-L native=${darwinLibiconvLibraryPath}`)}\${RUSTFLAGS:+ $RUSTFLAGS}`,
+      ];
+const withRustTaskEnvironment = (command: string) =>
+  rustTaskEnvironment.length === 0
+    ? command
+    : `sh -c ${shellQuote(`${rustTaskEnvironment.join("; ")}; ${command}`)}`;
+
 const task = (
   command: string,
   options: {
     input?: string[];
   } = {},
 ) => ({
-  command,
+  command: withRustTaskEnvironment(command),
   ...options,
 });
 
 const noCacheTask = (command: string) => ({
   cache: false as const,
-  command,
+  command: withRustTaskEnvironment(command),
 });
 
-const shellQuote = (command: string) => `'${command.replaceAll("'", `'"'"'`)}'`;
 const runInDirectory = (cwd: string, command: string) =>
   `sh -c ${shellQuote(`cd ${cwd} && ${command}`)}`;
+const runPackageScriptDirectly = (taskName: string, packages: string[]) =>
+  packages.map((pkg) => runInDirectory(pkg, `pnpm run ${taskName}`)).join(" && ");
 const installVscodeExtensionDependencies = runInDirectory(
   "npm/vscode-vize",
   "if [ -x node_modules/.bin/vp ]; then exit 0; fi && mkdir -p node_modules/.bin && pnpm install --ignore-workspace --no-lockfile --prefer-offline",
@@ -178,7 +196,7 @@ const setupTasks = {
 };
 
 const devTasks = {
-  dev: noCacheTask(runInPackages("dev", ["./playground"])),
+  dev: noCacheTask(runTask("dev:app")),
   "dev:app": noCacheTask(devApp()),
   "dev:playground": noCacheTask(devApp("playground")),
   "dev:misskey": noCacheTask(devApp("misskey")),
@@ -189,11 +207,12 @@ const devTasks = {
 };
 
 const buildTasks = {
-  build: noCacheTask(runTask("build:all")),
+  build: noCacheTask(runTasks("build:rust", "build:all")),
   "build:all": noCacheTask(runTasks("build:runtime", "package:editor-extensions")),
+  "build:rust": task("cargo build --workspace", { input: cacheInputs.rust }),
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
   "build:packages": noCacheTask(runInPackages("build", packedPackages)),
-  "build:native": noCacheTask(runInPackages("build", ["./npm/vize-native"])),
+  "build:native": noCacheTask(runPackageScriptDirectly("build", ["./npm/vize-native"])),
   "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/vite-plugin-vize/wasm")),
   "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(
@@ -281,25 +300,36 @@ const benchmarkTasks = {
 const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
   concurrencyLimit: 1,
 });
+const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
 
 const checkTasks = {
-  check: task(runInPackages("check", checkedPackages, { concurrencyLimit: 1 }), {
-    input: cacheInputs.jsChecks,
-  }),
-  "check:repo": noCacheTask("vp check"),
+  check: noCacheTask(runTasks("check:repo", "check:rust", "check:js", "check:editor-extensions")),
+  "check:js": noCacheTask(runTasks("check:js:packages", "check:js:direct-packages")),
+  "check:js:packages": task(
+    runInPackages("check", checkedPackagesViaVpRun, { concurrencyLimit: 1 }),
+    {
+      input: cacheInputs.jsChecks,
+    },
+  ),
+  "check:js:direct-packages": noCacheTask(directPackageCheckCommand),
+  "check:repo": noCacheTask(`${localVp} check`),
   // The oxlint example intentionally exits non-zero for its default lint script,
   // so CI checks every package except that runnable failure-case fixture.
-  "check:ci": noCacheTask(`vp check && ${ciPackageCheckCommand}`),
+  "check:ci": noCacheTask(
+    `${runTask("check:repo")} && ${ciPackageCheckCommand} && ${directPackageCheckCommand}`,
+  ),
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
-  "check:rust": task("cargo check --workspace", { input: cacheInputs.rust }),
+  "check:rust": noCacheTask("cargo check --workspace"),
   "check:vscode-extension": noCacheTask(
     runInVscodeExtension("pnpm exec tsgo --noEmit", "pnpm exec vp check src vite.config.ts"),
   ),
   "check:editor-extensions": noCacheTask(runTasks("check:vscode-extension", "check:zed-extension")),
   clippy: task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
-  fmt: noCacheTask(runInPackages("fmt", checkedPackages)),
+  fmt: noCacheTask(runTasks("fmt:repo", "fmt:rust", "fmt:js")),
+  "fmt:repo": noCacheTask(`${localVp} fmt --write`),
+  "fmt:js": noCacheTask(runInPackages("fmt", checkedPackages)),
   "fmt:rust": task("cargo fmt --all", { input: cacheInputs.rust }),
-  "fmt:all": noCacheTask(runTasks("fmt:rust", "fmt")),
+  "fmt:all": noCacheTask(runTask("fmt")),
   lint: noCacheTask(runTask("check")),
   "lint:fix": noCacheTask(runTask("check:fix")),
   "lint:rust": task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
@@ -347,7 +377,12 @@ export default defineConfig({
     ignorePatterns: ["**/__snapshots__/**", "**/__snapshot__/**", "**/__agent_only/**"],
   },
   lint: {
-    ignorePatterns: ["**/__snapshots__/**", "**/__snapshot__/**", "**/__agent_only/**"],
+    ignorePatterns: [
+      "**/__snapshots__/**",
+      "**/__snapshot__/**",
+      "**/__agent_only/**",
+      "npm/vscode-vize/**",
+    ],
     options: {
       typeAware: true,
     },

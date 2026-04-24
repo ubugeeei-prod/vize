@@ -83,23 +83,80 @@
             pnpm
           ];
           text = ''
-            workspace_root="''${VIZE_WORKSPACE_ROOT:-$PWD}"
-            if [ -x "$workspace_root/node_modules/.bin/vp" ]; then
-              exec "$workspace_root/node_modules/.bin/vp" "$@"
+            workspace_root_input="''${VIZE_WORKSPACE_ROOT:-$PWD}"
+            if workspace_root="$(cd "$workspace_root_input" 2>/dev/null && pwd -P)"; then
+              :
+            else
+              workspace_root="$(pwd -P)"
+            fi
+            current_dir="$(pwd -P)"
+
+            resolve_local_vp() {
+              if [ -x "$workspace_root/node_modules/.bin/vp" ]; then
+                printf '%s\n' "$workspace_root/node_modules/.bin/vp"
+                return 0
+              fi
+
+              if [ -x "$PWD/node_modules/.bin/vp" ]; then
+                printf '%s\n' "$PWD/node_modules/.bin/vp"
+                return 0
+              fi
+
+              return 1
+            }
+
+            if local_vp="$(resolve_local_vp)"; then
+              if [ "$current_dir" = "$workspace_root" ] && [ "$#" -eq 1 ]; then
+                case "$1" in
+                  check | fmt | dev | build)
+                    exec "$local_vp" run --workspace-root "$1"
+                    ;;
+                esac
+              fi
+
+              exec "$local_vp" "$@"
             fi
 
-            if [ -x "$PWD/node_modules/.bin/vp" ]; then
-              exec "$PWD/node_modules/.bin/vp" "$@"
+            if [ "$#" -ge 1 ] && [ "$1" = "install" ]; then
+              shift
+              exec pnpm install "$@"
             fi
 
             cat >&2 <<'EOF'
             Local vite-plus is not installed.
             Run this inside the Nix shell:
 
-              pnpm install --frozen-lockfile
+              vp install --frozen-lockfile
 
             The flake intentionally avoids `pnpm dlx` so builds only use the locked workspace dependencies.
             EOF
+            exit 127
+          '';
+        };
+        workspaceXcrun = pkgs.writeShellApplication {
+          name = "xcrun";
+          text = ''
+            if [ "$#" -eq 3 ] && [ "$1" = "--sdk" ] && [ "$2" = "macosx" ] && [ "$3" = "--show-sdk-path" ]; then
+              if [ -n "''${SDKROOT:-}" ]; then
+                printf '%s\n' "$SDKROOT"
+                exit 0
+              fi
+            fi
+
+            if [ "$#" -eq 2 ] && [ "$1" = "-f" ]; then
+              case "$2" in
+                clang | clang++)
+                  command -v "$2"
+                  exit $?
+                  ;;
+              esac
+            fi
+
+            if [ -x /usr/bin/xcrun ]; then
+              exec /usr/bin/xcrun "$@"
+            fi
+
+            printf 'unsupported xcrun invocation: %s\n' "$*" >&2
             exit 127
           '';
         };
@@ -164,6 +221,7 @@
             pkgs.cargo-insta
             pkgs.jq
           ]
+          ++ lib.optionals pkgs.stdenv.isDarwin [ workspaceXcrun ]
           ++ lib.optionals (moonbit != null) [ moonbit ]
           ++ commonNativeBuildInputs;
 
@@ -171,9 +229,14 @@
 
           shellHook = ''
             export VIZE_WORKSPACE_ROOT="$PWD"
-            export PATH="$VIZE_WORKSPACE_ROOT/node_modules/.bin:$PATH"
+            export PATH="${workspaceVp}/bin:$VIZE_WORKSPACE_ROOT/node_modules/.bin:$PATH"
             export PLAYWRIGHT_BROWSERS_PATH="$PWD/.cache/ms-playwright"
             export WASM_PACK_CACHE="$PWD/.cache/wasm-pack"
+            ${lib.optionalString pkgs.stdenv.isDarwin ''
+              export VIZE_DARWIN_LIBICONV_LIB="${pkgs.libiconv}/lib"
+              export LIBRARY_PATH="$VIZE_DARWIN_LIBICONV_LIB''${LIBRARY_PATH:+:$LIBRARY_PATH}"
+              export RUSTFLAGS="-L native=$VIZE_DARWIN_LIBICONV_LIB''${RUSTFLAGS:+ $RUSTFLAGS}"
+            ''}
             ${lib.optionalString (moonbit != null) ''
               export MOON_HOME="${moonbit}"
               if [ -n "''${HOME:-}" ]; then
@@ -188,8 +251,8 @@
             echo "Vize dev shell ready."
             echo "Nix provides Node, pnpm, Rust, wasm-pack, wasm-bindgen, binaryen, and MoonBit."
             ${lib.optionalString (moonbit == null) ''echo "MoonBit native toolchain is not available for ${system}; install it separately if needed."''}
-            echo "Run: pnpm install --frozen-lockfile"
-            echo "Then: vp build"
+            echo "Run: vp install --frozen-lockfile"
+            echo "Then: vp check / vp fmt / vp dev / vp build"
           '';
         };
       in
