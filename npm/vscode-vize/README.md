@@ -18,9 +18,8 @@ Vue Language Support powered by Vize - A high-performance language server for Vu
 
 ## Installation
 
-### From VS Code Marketplace
-
-Search "Vize" in VS Code Extensions.
+The extension is not published to the VS Code Marketplace yet. Use a locally built VSIX while the
+editor package stabilizes.
 
 ### From VSIX
 
@@ -36,6 +35,7 @@ Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/inst
 cd npm/vscode-vize
 vp install --ignore-workspace
 vp build
+vp exec vsce package --no-dependencies --out dist/vize.vsix
 # Press F5 to launch Extension Development Host
 ```
 

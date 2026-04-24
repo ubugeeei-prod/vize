@@ -155,6 +155,43 @@ assert.doesNotMatch(
   "Vapor builds must not leave dotted imported components to runtime resolution",
 );
 
+const antDesignScopedSlotSource = `<script setup lang="ts">
+import { Table } from "ant-design-vue";
+const columns = [{ key: "name" }, { key: "phone" }];
+const dataSource = [{ name: "Lin", phone: "123" }];
+</script>
+
+<template>
+  <Table :columns="columns" :data-source="dataSource">
+    <template #bodyCell="{ column, record }">
+      <template v-if="column.key === 'name'">
+        {{ record.name }}
+      </template>
+      <template v-else-if="column.key === 'phone'">
+        {{ record.phone }}
+      </template>
+    </template>
+  </Table>
+</template>`;
+
+const antDesignScopedSlotCompiled = compileFile(
+  "/src/AntDesignScopedSlot.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  antDesignScopedSlotSource,
+);
+
+assert.match(
+  antDesignScopedSlotCompiled.code,
+  /bodyCell: _withCtx\(\(\{ column, record \}\) => \[/,
+  "Ant Design table bodyCell slot should compile with scoped slot params",
+);
+assert.doesNotMatch(
+  antDesignScopedSlotCompiled.code,
+  /_ctx\.(?:column|record)\b/,
+  "Scoped slot params must stay local inside nested v-if templates",
+);
+
 const customRendererSource = `<script setup lang="ts">
 import { Primitive } from "@tresjs/core";
 const visible = true;

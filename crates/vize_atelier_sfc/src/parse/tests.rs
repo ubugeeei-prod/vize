@@ -325,6 +325,20 @@ const e = 5
 }
 
 #[test]
+fn test_script_with_regex_character_class_containing_comment_start() {
+    let source = r#"<script>
+const regexp = /[/*]/g;
+</script>"#;
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    assert!(result.script.is_some());
+    assert_eq!(
+        result.script.unwrap().content.trim(),
+        "const regexp = /[/*]/g;"
+    );
+}
+
+#[test]
 fn test_script_with_division_operator() {
     // Test that division operator doesn't interfere with string detection
     let source = r#"<script setup>
