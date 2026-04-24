@@ -83,6 +83,21 @@ const cacheInputs = {
     "tests/**",
     "tools/**",
   ],
+  e2e: [
+    ".node-version",
+    "package.json",
+    "vite.config.ts",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "tests/package.json",
+    "tests/app/**",
+    "tests/_helpers/**",
+    "npm/vize*/**",
+    "npm/vite-plugin-vize/**",
+    "npm/nuxt/**",
+    "npm/vite-plugin-musea/**",
+    "npm/musea-nuxt/**",
+  ],
 };
 
 const localVp = "./node_modules/.bin/vp";
@@ -261,6 +276,11 @@ const testTasks = {
   }),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
+  }),
+  "test:e2e": noCacheTask(runTasks("test:e2e:dev", "test:e2e:preview")),
+  "test:e2e:dev": task(runInPackages("test:dev", ["./tests"]), { input: cacheInputs.e2e }),
+  "test:e2e:preview": task(runInPackages("test:preview", ["./tests"]), {
+    input: cacheInputs.e2e,
   }),
   "test:vue": task("cargo test -p vize_test_runner", { input: cacheInputs.rust }),
   coverage: task("cargo run -p vize_test_runner --bin coverage", { input: cacheInputs.rust }),
