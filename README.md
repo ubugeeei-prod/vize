@@ -154,17 +154,20 @@ The primary local setup is `Nix + vp`.
 ```bash
 nix develop
 vp install --frozen-lockfile
+vp check
+vp fmt
+vp dev
 vp build
-vp run --workspace-root check
 ```
 
 Useful workspace tasks:
 
 ```bash
+vp check
+vp fmt
+vp dev
 vp build
-vp run --workspace-root check
 vp run --workspace-root check:fix
-vp run --workspace-root fmt
 vp run --workspace-root bench:all
 ```
 
