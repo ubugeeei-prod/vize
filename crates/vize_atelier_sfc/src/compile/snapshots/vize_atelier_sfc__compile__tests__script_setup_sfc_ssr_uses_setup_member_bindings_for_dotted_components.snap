@@ -4,7 +4,7 @@ expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
-import { withCtx as _withCtx, createVNode as _createVNode, mergeProps as _mergeProps } from "vue"
+import { createVNode as _createVNode, mergeProps as _mergeProps, withCtx as _withCtx } from "vue"
 
 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {

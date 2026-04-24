@@ -286,8 +286,9 @@ impl<'a> SsrCodegenContext<'a> {
         // SSR helpers from @vue/server-renderer
         if !self.ssr_helpers.is_empty() {
             preamble.push_str("import { ");
-            let helpers: Vec<_> = self
-                .ssr_helpers
+            let mut ssr_helpers: Vec<_> = self.ssr_helpers.iter().copied().collect();
+            ssr_helpers.sort();
+            let helpers: Vec<_> = ssr_helpers
                 .iter()
                 .map(|h| cstr!("{} as _{}", h.name(), h.name()))
                 .collect();
@@ -298,8 +299,9 @@ impl<'a> SsrCodegenContext<'a> {
         // Core helpers from vue
         if !self.core_helpers.is_empty() {
             preamble.push_str("import { ");
-            let helpers: Vec<_> = self
-                .core_helpers
+            let mut core_helpers: Vec<_> = self.core_helpers.iter().copied().collect();
+            core_helpers.sort();
+            let helpers: Vec<_> = core_helpers
                 .iter()
                 .map(|h| cstr!("{} as _{}", h.name(), h.name()))
                 .collect();
