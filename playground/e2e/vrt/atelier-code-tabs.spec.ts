@@ -88,7 +88,9 @@ test("atelier code targets expose VDOM, SSR, and Vapor outputs with stable toggl
   expect(ssrCode).toContain("ssrRender");
   expect(ssrCode).not.toContain("_ctx.name");
   expect(ssrCode).not.toContain("_ctx.doubled");
-  expect(ssrLines.some((line) => line.includes('<div class="card">'))).toBe(true);
+  expect(ssrCode).toMatch(
+    /_ssrRenderAttrs\(_mergeProps\(\{\s*class:\s*['"]card['"]\s*\},\s*_attrs\)\)/,
+  );
   expect(ssrLines).toContain("  <h2>${_ssrInterpolate(name)}</h2>");
   expect(ssrLines).toContain("  <button${_ssrRenderAttr('disabled', disabled)}>");
   expect(ssrLines).toContain("      Increment");
