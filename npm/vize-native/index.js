@@ -302,6 +302,7 @@ const {
   generateArtCatalog,
   generateArtDocsBatch,
   generateArtPalette,
+  formatSfc,
   lint,
   lintPatinaSfc,
   getPatinaRules,
@@ -324,6 +325,7 @@ module.exports.generateArtDoc = generateArtDoc;
 module.exports.generateArtCatalog = generateArtCatalog;
 module.exports.generateArtDocsBatch = generateArtDocsBatch;
 module.exports.generateArtPalette = generateArtPalette;
+module.exports.formatSfc = formatSfc;
 module.exports.lint = lint;
 module.exports.lintPatinaSfc = lintPatinaSfc;
 module.exports.getPatinaRules = getPatinaRules;

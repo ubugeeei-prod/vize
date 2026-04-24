@@ -26,9 +26,9 @@
 ## What Ships Today
 
 - Rust workspace crates for parsing, semantic analysis, compilation, linting, formatting, type checking, LSP, Musea art tooling, and bindings
-- A full Rust CLI via the `vize` crate (`build`, `fmt`, `lint`, `check`, `musea`, `lsp`, `ide`)
+- A full Rust CLI via the `vize` crate (`build`, `fmt`, `lint`, `check`, `ready`, `upgrade`, `musea`, `lsp`, `ide`)
 - npm packages including `@vizejs/vite-plugin`, `@vizejs/native`, `@vizejs/wasm`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, and `oxlint-plugin-vize`
-- The `vize` npm package for shared config utilities and the native `lint` / `check` commands
+- The `vize` npm package for shared config utilities and native `build`, `fmt`, `lint`, `check`, `ready`, and `upgrade` commands
 
 ## Quick Start
 
@@ -69,14 +69,15 @@ export default defineConfig({
 
 ### npm CLI
 
-The npm `vize` package exposes native lint/check commands plus shared config helpers:
+The npm `vize` package exposes native CLI commands plus shared config helpers:
 
 ```bash
 vp install -D vize
+vp exec vize fmt --write src
 vp exec vize lint src
-vp exec vize lint --preset opinionated --help-level short src
 vp exec vize check
-vp exec vize check src
+vp exec vize build src
+vp exec vize ready src
 ```
 
 ### Full Rust CLI
@@ -92,6 +93,8 @@ vize build src/**/*.vue
 vize fmt --check src
 vize lint --profile src
 vize check --profile src
+vize ready src
+vize upgrade
 vize lsp
 ```
 
