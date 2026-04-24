@@ -1,0 +1,101 @@
+name: App E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: App e2e suite to run
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - preview
+          - check
+          - lint
+          - build
+          - check-fixtures
+
+concurrency:
+  group: app-e2e-${{ github.ref }}-${{ inputs.suite }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  app-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "native"
+          cache-workspace-crates: "true"
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        run: vp install --workspace-root --frozen-lockfile --prefer-offline
+
+      - name: Build native package
+        run: vp run --filter './npm/vize-native' build:ci
+
+      - name: Cache Playwright browsers
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: pnpm --dir tests exec playwright install --with-deps chromium
+
+      - name: Run selected app e2e suite
+        run: |
+          case "${{ inputs.suite }}" in
+            dev)
+              pnpm --dir tests run test:dev
+              ;;
+            preview)
+              RUN_BUILD_TESTS=1 pnpm --dir tests run test:preview
+              ;;
+            check)
+              pnpm --dir tests run test:check
+              ;;
+            lint)
+              pnpm --dir tests run test:lint
+              ;;
+            build)
+              pnpm --dir tests run test:build
+              ;;
+            check-fixtures)
+              pnpm --dir tests run test:check:fixtures
+              ;;
+          esac
+
+      - name: Upload app e2e artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-e2e-artifacts-${{ inputs.suite }}
+          path: |
+            tests/app/results/
+            tests/app/screenshots/
+            tests/app/playwright-report/
+            tests/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
