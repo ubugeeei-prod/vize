@@ -42,6 +42,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+      - uses: ./.github/actions/setup-moonbit
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Check JS/TS
+        run: vp run --workspace-root check:ci
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
@@ -51,22 +61,12 @@ jobs:
         run: cargo build --profile ci -p vize
       - name: Install vize CLI
         run: cp target/ci/vize /usr/local/bin/vize
-      - uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
-      - uses: ./.github/actions/setup-moonbit
-      - name: Install JS dependencies
-        run: vp install --frozen-lockfile --prefer-offline
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
       - name: Check and package editor extensions
         run: vp run --workspace-root package:editor-extensions
       - name: Build JS packages
         run: vp run --workspace-root build:packages
-      - name: Check JS/TS
-        run: vp run --workspace-root check:ci
 
   clippy-and-test:
     runs-on: ubuntu-latest
