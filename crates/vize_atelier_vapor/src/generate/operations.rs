@@ -996,7 +996,7 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
         if first.is_static {
             return cstr!("\"{}\"", first.content);
         }
-        ctx.resolve_expression(first.content.as_str()).into()
+        ctx.resolve_expression(first.content.as_str())
     } else {
         "undefined".to_compact_string()
     }
