@@ -391,6 +391,35 @@ export function render(_ctx, _cache) {
 }
 
 ===
+name: conditional named slot with default
+options: default
+--- INPUT ---
+<MyComponent>Default content<template #header v-if="show">Header</template></MyComponent>
+--- OUTPUT ---
+import { createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx, createSlots as _createSlots, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+
+  return (_openBlock(), _createBlock(_component_MyComponent, null, _createSlots({
+    default: _withCtx(() => [
+      _createTextVNode("Default content")
+    ]),
+    _: 2 /* DYNAMIC */
+  }, [
+    (_ctx.show)
+      ? {
+          name: "header",
+          fn: _withCtx(() => [
+            _createTextVNode("Header")
+          ]),
+          key: "0"
+        }
+      : undefined
+  ]), 1024 /* DYNAMIC_SLOTS */))
+}
+
+===
 name: slot with v-for
 options: default
 --- INPUT ---
