@@ -7,10 +7,7 @@ import { MISSKEY_WORK_DIR } from "./apps.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MISSKEY_LOCALES_DIR = path.resolve(
-  MISSKEY_WORK_DIR,
-  "built/_frontend_dist_/locales",
-);
+const MISSKEY_LOCALES_DIR = path.resolve(MISSKEY_WORK_DIR, "built/_frontend_dist_/locales");
 const MISSKEY_SW_STUB = `
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
@@ -171,9 +168,11 @@ export async function setupMisskeyMocks(page: Page): Promise<void> {
     };
 
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register = (async () => serviceWorkerRegistration) as typeof navigator.serviceWorker.register;
-      navigator.serviceWorker.getRegistrations =
-        (async () => [serviceWorkerRegistration]) as typeof navigator.serviceWorker.getRegistrations;
+      navigator.serviceWorker.register = (async () =>
+        serviceWorkerRegistration) as typeof navigator.serviceWorker.register;
+      navigator.serviceWorker.getRegistrations = (async () => [
+        serviceWorkerRegistration,
+      ]) as typeof navigator.serviceWorker.getRegistrations;
       Object.defineProperty(navigator.serviceWorker, "controller", {
         configurable: true,
         value: serviceWorkerRegistration.active,

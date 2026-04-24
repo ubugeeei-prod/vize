@@ -506,7 +506,8 @@ async function updatePasswordLessLogin(value: boolean): Promise<void> {
 </template>"#;
 
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
     assert!(
         result.code.contains("setup(__props)"),

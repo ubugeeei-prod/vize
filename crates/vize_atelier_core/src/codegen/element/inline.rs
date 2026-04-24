@@ -28,9 +28,8 @@ use super::{
         generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
     },
     helpers::{
-        has_custom_directives, has_renderable_props, has_vmodel_directive,
-        has_vshow_directive, is_dynamic_component_tag, is_is_prop, is_renderable_prop,
-        is_whitespace_or_comment,
+        has_custom_directives, has_renderable_props, has_vmodel_directive, has_vshow_directive,
+        is_dynamic_component_tag, is_is_prop, is_renderable_prop, is_whitespace_or_comment,
     },
 };
 use vize_carton::ToCompactString;

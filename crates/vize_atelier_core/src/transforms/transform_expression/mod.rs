@@ -233,14 +233,20 @@ mod tests {
             source,
         );
 
-        ExpressionNode::Compound(Box::new_in(CompoundExpressionNode::new(allocator, loc), allocator))
+        ExpressionNode::Compound(Box::new_in(
+            CompoundExpressionNode::new(allocator, loc),
+            allocator,
+        ))
     }
 
     #[test]
     fn test_process_expression_rewrites_compound_ts_ref_reads() {
         let allocator = Bump::new();
         let mut ctx = test_context(&allocator);
-        let expr = compound_expression(&allocator, "!selectedFolders.some(f => f.id === folder!.id)");
+        let expr = compound_expression(
+            &allocator,
+            "!selectedFolders.some(f => f.id === folder!.id)",
+        );
 
         let result = process_expression(&mut ctx, &expr, false);
         let ExpressionNode::Simple(result) = result else {

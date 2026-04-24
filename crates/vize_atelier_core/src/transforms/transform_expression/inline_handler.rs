@@ -215,7 +215,10 @@ mod tests {
             source,
         );
 
-        ExpressionNode::Compound(Box::new_in(CompoundExpressionNode::new(allocator, loc), allocator))
+        ExpressionNode::Compound(Box::new_in(
+            CompoundExpressionNode::new(allocator, loc),
+            allocator,
+        ))
     }
 
     #[test]

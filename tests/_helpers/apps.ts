@@ -11,8 +11,7 @@ const TESTS_DIR = path.resolve(__dirname, "..");
 const GIT_DIR = path.join(TESTS_DIR, "_fixtures", "_git");
 const PROJECTS_DIR = path.join(TESTS_DIR, "_fixtures", "_projects");
 const MUTABLE_GIT_PROJECTS_DIR = path.join(PROJECTS_DIR, "_git-worktrees");
-const MUTABLE_GIT_WORKTREE_INSTANCE =
-  process.env.VIZE_TEST_WORKTREE_ID ?? `pid-${process.pid}`;
+const MUTABLE_GIT_WORKTREE_INSTANCE = process.env.VIZE_TEST_WORKTREE_ID ?? `pid-${process.pid}`;
 const NPM_DIR = path.resolve(__dirname, "../../npm");
 const REPO_ROOT = path.resolve(__dirname, "../..");
 

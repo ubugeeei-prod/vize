@@ -134,11 +134,13 @@ describe(`${app.name} build (compiler)`, () => {
       "MkStreamingNotesTimeline.js should resolve the appear directive",
     );
     assert.ok(
-      streaming.includes("_withDirectives(_createElementVNode(\"button\""),
+      streaming.includes('_withDirectives(_createElementVNode("button"'),
       "MkStreamingNotesTimeline.js should wrap the load-more button with directives",
     );
     assert.ok(
-      streaming.includes("[[_directive_appear, _unref(prefer).s.enableInfiniteScroll ? _unref(paginator).fetchOlder : null], [_vShow, _unref(paginator).canFetchOlder.value]]"),
+      streaming.includes(
+        "[[_directive_appear, _unref(prefer).s.enableInfiniteScroll ? _unref(paginator).fetchOlder : null], [_vShow, _unref(paginator).canFetchOlder.value]]",
+      ),
       "MkStreamingNotesTimeline.js should keep appear and v-show on the same button",
     );
 
@@ -149,9 +151,7 @@ describe(`${app.name} build (compiler)`, () => {
       "MkPagination.js should resolve the appear directive",
     );
     assert.ok(
-      /_withDirectives\(\(_openBlock\(\), _createBlock\(\s*MkButton\b/.test(
-        normalizedPagination,
-      ),
+      /_withDirectives\(\(_openBlock\(\), _createBlock\(\s*MkButton\b/.test(normalizedPagination),
       "MkPagination.js should apply appear via withDirectives on load-more buttons",
     );
     assert.ok(
