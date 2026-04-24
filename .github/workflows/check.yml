@@ -174,6 +174,15 @@ jobs:
         continue-on-error: true
         id: vrt
 
+      - name: Upload VRT report
+        if: steps.vrt.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground-vrt-report
+          path: playground/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Update VRT snapshots
         if: steps.vrt.outcome == 'failure'
         run: vp run --filter './playground' test:vrt:update
