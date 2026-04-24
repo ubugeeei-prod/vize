@@ -308,6 +308,81 @@ mod component {
     fn component_with_slot_content() {
         insta::assert_snapshot!(compile_full(r#"<Foo><div>slot content</div></Foo>"#));
     }
+
+    #[test]
+    fn component_slot_v_if_single_child_returns_vnode() {
+        insta::assert_snapshot!(compile_full(
+            r#"<Foo><span v-if="ok" class="item">slot content</span></Foo>"#
+        ));
+    }
+
+    #[test]
+    fn component_named_slots_are_separate() {
+        insta::assert_snapshot!(compile_full(
+            r#"<ClientOnly><span>client</span><template #fallback><span>server</span></template></ClientOnly>"#
+        ));
+    }
+
+    #[test]
+    fn component_slot_v_for_aliases_stay_local() {
+        insta::assert_snapshot!(compile_full(
+            r#"<Foo><div v-for="[dep, version] in deps" :key="dep">{{ dep }} {{ version }}</div></Foo>"#
+        ));
+    }
+
+    #[test]
+    fn component_scoped_slot_props_are_local() {
+        insta::assert_snapshot!(compile_full(
+            r#"<Carousel><template #item="{ data: speaker }"><div :style="{ backgroundImage: `url(${speaker.avatarUrl})` }">{{ speaker.name }}</div></template></Carousel>"#
+        ));
+    }
+
+    #[test]
+    fn component_with_static_and_dynamic_props() {
+        insta::assert_snapshot!(compile_full(
+            r#"<I18nT keypath="build.environment" tag="span" :plural="count">node</I18nT>"#
+        ));
+    }
+
+    #[test]
+    fn component_with_spread_and_dynamic_key_props() {
+        insta::assert_snapshot!(compile_full(r#"<Foo v-bind="attrs" :[name]="value" />"#));
+    }
+
+    #[test]
+    fn component_merges_static_and_dynamic_class_props() {
+        insta::assert_snapshot!(compile_full(
+            r#"<NuxtLink v-bind="props" class="group/link" :class="{ active }">node</NuxtLink>"#
+        ));
+    }
+
+    #[test]
+    fn dynamic_component_uses_vnode_renderer() {
+        insta::assert_snapshot!(compile_full(
+            r#"<component :is="headingLevel" class="title">node</component>"#
+        ));
+    }
+
+    #[test]
+    fn transition_renders_children_directly() {
+        insta::assert_snapshot!(compile_full(
+            r#"<Transition><Foo label="ready" /></Transition>"#
+        ));
+    }
+
+    #[test]
+    fn teleport_uses_ssr_helper() {
+        insta::assert_snapshot!(compile_full(
+            r#"<Teleport to="body"><Transition><div v-if="ok">tip</div></Transition></Teleport>"#
+        ));
+    }
+
+    #[test]
+    fn suspense_uses_ssr_helper() {
+        insta::assert_snapshot!(compile_full(
+            r#"<Suspense><Foo>slot content</Foo></Suspense>"#
+        ));
+    }
 }
 
 // =============================================================================
@@ -330,6 +405,13 @@ mod slot {
     #[test]
     fn slot_with_fallback() {
         insta::assert_snapshot!(get_compiled_string(r#"<slot>fallback content</slot>"#));
+    }
+
+    #[test]
+    fn slot_with_bound_props() {
+        insta::assert_snapshot!(get_compiled_string(
+            r#"<slot v-bind="formState" :status="status">fallback content</slot>"#
+        ));
     }
 }
 

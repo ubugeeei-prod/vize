@@ -260,14 +260,33 @@ test.describe("npmx.dev dev", () => {
       timeout: 30_000,
     });
     await page.waitForTimeout(3_000);
+    await readCurrentRoute(page);
 
     // Try to navigate to /about via client-side link
-    const aboutLink = page.locator('a[href="/about"], a[href*="about"]').first();
+    const aboutLink = page.locator('a[href="/about"]').first();
     const hasAboutLink = await aboutLink.count();
     if (hasAboutLink > 0) {
-      await aboutLink.click();
-      await page.waitForTimeout(2_000);
-      expect(page.url()).toContain("about");
+      await aboutLink.scrollIntoViewIfNeeded();
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const navigation = page.waitForURL((url) => url.pathname === "/about", {
+          timeout: 5_000,
+        });
+        await aboutLink.click();
+        try {
+          await navigation;
+          break;
+        } catch (error) {
+          if (attempt === 1) {
+            throw error;
+          }
+          await page.waitForLoadState("load", { timeout: 5_000 }).catch(() => {});
+          await page.waitForTimeout(1_000);
+        }
+      }
+
+      await expect.poll(() => new URL(page.url()).pathname).toBe("/about");
+      await expect.poll(async () => (await readCurrentRoute(page)).path).toBe("/about");
     }
   });
 
@@ -287,11 +306,31 @@ test.describe("npmx.dev dev", () => {
     const hasSearchInput = await searchInput.count();
     if (hasSearchInput > 0) {
       await searchInput.fill("test-package");
+      await expect(searchInput).toHaveValue("test-package");
       await page.waitForTimeout(1_000);
-      // URL or page state should reflect the search
-      const pageContent = await page.content();
-      const urlOrContent =
-        page.url().includes("test-package") || pageContent.includes("test-package");
+
+      // Some search UIs debounce into the URL while others require form
+      // submission. Verify the interactive state first, then exercise the
+      // user-facing submit path when needed.
+      const queryVisibleInUrlOrHtml = async () => {
+        if (page.url().includes("test-package")) return true;
+        const pageContent = await page.content().catch(() => "");
+        return pageContent.includes("test-package");
+      };
+      let urlOrContent = await queryVisibleInUrlOrHtml();
+      if (!urlOrContent) {
+        const urlWait = page
+          .waitForURL((url) => url.href.includes("test-package"), { timeout: 5_000 })
+          .catch(() => null);
+        await searchInput.press("Enter");
+        await Promise.race([
+          urlWait,
+          page.waitForLoadState("domcontentloaded", { timeout: 5_000 }).catch(() => null),
+        ]);
+        await page.waitForLoadState("networkidle", { timeout: 3_000 }).catch(() => undefined);
+        await expect.poll(queryVisibleInUrlOrHtml, { timeout: 5_000 }).toBe(true);
+        urlOrContent = true;
+      }
       expect(urlOrContent).toBe(true);
     }
   });

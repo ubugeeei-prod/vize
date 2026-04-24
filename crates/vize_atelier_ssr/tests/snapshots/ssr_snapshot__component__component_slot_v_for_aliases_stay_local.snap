@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<Foo><div v-for=\"[dep, version] in deps\" :key=\"dep\">{{ dep }} {{ version }}</div></Foo>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Foo"), _attrs, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<!--[-->`)
+        _ssrRenderList(_ctx.deps, ([dep, version]) => {
+          _push(`<div${_ssrRenderAttr("key", dep)}>${_ssrInterpolate(dep)} ${_ssrInterpolate(version)}</div>`)
+        })
+        _push(`<!--]-->`)
+      } else {
+        return []
+      }
+    }),
+    _: 1
+  }, _parent))
+}

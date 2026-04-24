@@ -917,6 +917,105 @@ import { Primitive } from '@tresjs/core'
 }
 
 #[test]
+fn test_script_setup_sfc_ssr_returns_template_only_imports_used_in_expressions() {
+    let source = r#"<script setup lang="ts">
+import { valibotResolver } from '@primevue/forms/resolvers/valibot'
+const schema = {}
+</script>
+
+<template>
+  <Form :resolver="schema ? valibotResolver(schema) : undefined" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(result.code.contains("resolver:"), "{}", result.code);
+    assert!(
+        result
+            .code
+            .contains("_unref($setup.valibotResolver)($setup.schema)"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("return { valibotResolver, schema }"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_returns_normal_script_imports_used_in_template_expressions() {
+    let source = r#"<script lang="ts">
+import {
+  type FormFieldState,
+  Form as PForm,
+} from '@primevue/forms'
+import { valibotResolver } from '@primevue/forms/resolvers/valibot'
+
+export interface FormProps {
+  schema?: unknown
+}
+</script>
+
+<script setup lang="ts">
+const { schema } = defineProps<FormProps>()
+const emit = defineEmits<{ submit: [] }>()
+</script>
+
+<template>
+  <PForm :resolver="schema ? valibotResolver(schema) : undefined" @submit="emit('submit')" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+    let setup_return = result
+        .code
+        .split("return {")
+        .nth(1)
+        .expect("setup should return bindings");
+
+    assert!(setup_return.contains("emit"), "{}", result.code);
+    assert!(setup_return.contains("PForm"), "{}", result.code);
+    assert!(setup_return.contains("valibotResolver"), "{}", result.code);
+    assert!(
+        result
+            .code
+            .contains("$setup.valibotResolver($props.schema)")
+            || result
+                .code
+                .contains("_unref($setup.valibotResolver)($props.schema)"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_normal_script_sfc_ssr_attaches_ssr_render() {
     let source = r#"<script lang="ts">
 export default {

@@ -3,11 +3,11 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { ssrInterpolate as _ssrInterpolate } from "@vue/server-renderer"
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
 
 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(`<div>${_ssrInterpolate($setup.msg)}</div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate($setup.msg)}</div>`)
 }
 const msg = 'hello'
 

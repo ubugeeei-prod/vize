@@ -7,7 +7,7 @@ import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
 
 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(_ssrRenderComponent($setup.Primitive, null, null, _parent))
+  _push(_ssrRenderComponent($setup.Primitive, _attrs, null, _parent))
 }
 import { Primitive } from '@tresjs/core'
 

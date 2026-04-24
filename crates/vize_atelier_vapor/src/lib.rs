@@ -286,6 +286,44 @@ mod tests {
     }
 
     #[test]
+    fn test_compile_component_v_model_uses_update_listener_getter() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<InputBase v-model="searchQuery" />"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_component_props_are_getters() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<NuxtLink :to="to" target="_blank" @click="onClick">about</NuxtLink>"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
     fn test_compile_branch_component_under_existing_parent() {
         let allocator = Bump::new();
         let result = compile_vapor(

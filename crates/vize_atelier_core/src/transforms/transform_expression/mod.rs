@@ -198,7 +198,7 @@ pub(crate) fn normalize_expression<'a>(
 mod tests {
     use super::process_expression;
     use crate::{
-        ast::{CompoundExpressionNode, ExpressionNode, Position, SourceLocation},
+        ast::{CompoundExpressionNode, ExpressionNode, Position, RuntimeHelper, SourceLocation},
         options::{BindingMetadata, BindingType, TransformOptions},
         transform::TransformContext,
     };
@@ -255,6 +255,41 @@ mod tests {
 
         assert!(result.content.starts_with("!selectedFolders.value.some("));
         assert!(result.content.contains("folder.value.id"));
+    }
+
+    #[test]
+    fn test_process_expression_unrefs_function_mode_setup_refs() {
+        let allocator = Bump::new();
+        let mut bindings = FxHashMap::default();
+        bindings.insert("isExternal".into(), BindingType::SetupRef);
+
+        let mut ctx = TransformContext::new(
+            &allocator,
+            "".into(),
+            TransformOptions {
+                prefix_identifiers: true,
+                inline: false,
+                is_ts: true,
+                binding_metadata: Some(BindingMetadata {
+                    bindings,
+                    props_aliases: FxHashMap::default(),
+                    is_script_setup: true,
+                }),
+                ..Default::default()
+            },
+        );
+        let expr = compound_expression(&allocator, "isExternal && isExternal.value");
+
+        let result = process_expression(&mut ctx, &expr, false);
+        let ExpressionNode::Simple(result) = result else {
+            panic!("expected simple expression");
+        };
+
+        assert_eq!(
+            result.content.as_str(),
+            "_unref($setup.isExternal) && $setup.isExternal.value"
+        );
+        assert!(ctx.has_helper(RuntimeHelper::Unref));
     }
 }
 

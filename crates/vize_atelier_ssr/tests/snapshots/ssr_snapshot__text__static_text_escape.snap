@@ -3,5 +3,5 @@ source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
 expression: "get_compiled_string(\"&lt;foo&gt;\")"
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<div>&lt;foo&gt;</div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)}>&lt;foo&gt;</div>`)
 }

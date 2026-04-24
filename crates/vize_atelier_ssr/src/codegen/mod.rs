@@ -49,6 +49,8 @@ pub struct SsrCodegenContext<'a> {
     /// Whether currently within a slot scope
     #[allow(dead_code)]
     pub(crate) with_slot_scope_id: bool,
+    /// Template-local identifiers from v-for and scoped slots.
+    pub(crate) scoped_params: std::vec::Vec<FxHashSet<String>>,
 }
 
 impl<'a> SsrCodegenContext<'a> {
@@ -63,11 +65,19 @@ impl<'a> SsrCodegenContext<'a> {
             current_template_parts: Vec::new(),
             has_open_push: false,
             with_slot_scope_id: false,
+            scoped_params: std::vec::Vec::new(),
         }
     }
 
     /// Generate SSR code from the AST
-    pub fn generate(mut self, root: &RootNode) -> SsrCodegenResult {
+    pub fn generate(mut self, root: &RootNode<'a>) -> SsrCodegenResult {
+        // Transforms can rewrite setup bindings to `_unref(...)` in SSR
+        // expressions. SSR codegen does not walk helper symbols the same way as
+        // DOM codegen, so carry the root helper through explicitly.
+        if root.helpers.contains(&RuntimeHelper::Unref) {
+            self.use_core_helper(RuntimeHelper::Unref);
+        }
+
         // Check if this is a fragment (multiple non-text children)
         let is_fragment = root.children.len() > 1
             && root
@@ -95,7 +105,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         // Process children
-        self.process_children(&root.children, is_fragment, false, false);
+        self.process_root_children(&root.children, is_fragment, false, false);
 
         // Flush any remaining template literal
         self.flush_push();
@@ -200,6 +210,61 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         resolve_base(component)
+    }
+
+    pub(crate) fn push_scoped_params(&mut self, params: FxHashSet<String>) {
+        self.scoped_params.push(params);
+    }
+
+    pub(crate) fn pop_scoped_params(&mut self) {
+        self.scoped_params.pop();
+    }
+
+    pub(crate) fn is_scoped_param(&self, name: &str) -> bool {
+        self.scoped_params
+            .iter()
+            .rev()
+            .any(|params| params.contains(name))
+    }
+
+    pub(crate) fn strip_ctx_for_scoped_params(&self, content: &str) -> String {
+        if self.scoped_params.is_empty() || !content.contains("_ctx.") {
+            return content.to_compact_string();
+        }
+
+        let mut result = String::with_capacity(content.len());
+        let bytes = content.as_bytes();
+        let prefix = b"_ctx.";
+        let mut index = 0;
+
+        while index < bytes.len() {
+            if index + prefix.len() <= bytes.len() && &bytes[index..index + prefix.len()] == prefix
+            {
+                let start = index + prefix.len();
+                let mut end = start;
+                while end < bytes.len()
+                    && (bytes[end].is_ascii_alphanumeric()
+                        || bytes[end] == b'_'
+                        || bytes[end] == b'$')
+                {
+                    end += 1;
+                }
+
+                let ident = &content[start..end];
+                if !ident.is_empty() && self.is_scoped_param(ident) {
+                    result.push_str(ident);
+                    index = end;
+                } else {
+                    result.push_str("_ctx.");
+                    index = start;
+                }
+            } else {
+                result.push(bytes[index] as char);
+                index += 1;
+            }
+        }
+
+        result
     }
 
     /// Push raw code to the buffer

@@ -4,17 +4,19 @@ expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
-import { withCtx as _withCtx } from "vue"
+import { withCtx as _withCtx, createVNode as _createVNode, mergeProps as _mergeProps } from "vue"
 
 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(_ssrRenderComponent($setup.Form.Item, null, {
+  _push(_ssrRenderComponent($setup.Form.Item, _mergeProps({ label: "Teacher" }, _attrs), {
     default: _withCtx((_, _push, _parent, _scopeId) => {
       if (_push) {
         _push(_ssrRenderComponent($setup.Input, null, null, _parent))
+      } else {
+        return [_createVNode($setup.Input, null, null)]
       }
     }),
-  _: 1
+    _: 1
   }, _parent))
 }
 import { Form, Input } from 'ant-design-vue'

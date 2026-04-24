@@ -3,11 +3,11 @@ source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
 
 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(`<mesh>`)
+  _push(`<mesh${_ssrRenderAttrs(_attrs)}>`)
   if ($setup.visible) {
     _push(`<group>`)
     _push(_ssrRenderComponent($setup.Primitive, null, null, _parent))

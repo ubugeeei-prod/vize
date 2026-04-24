@@ -140,7 +140,7 @@ pub(crate) fn transform_element<'a>(
                 match prop {
                     PropNode::Directive(dir) => {
                         if dir.name.as_str() == "bind" {
-                            // v-bind -> prop
+                            // v-bind -> prop, v-bind="obj" -> ordered spread source
                             if let Some(ref arg) = dir.arg {
                                 if let ExpressionNode::Simple(key_exp) = arg {
                                     let key_node = SimpleExpressionNode::new(
@@ -161,6 +161,25 @@ pub(crate) fn transform_element<'a>(
                                             values.push(Box::new_in(val_node, ctx.allocator));
                                         }
                                     }
+
+                                    props.push(IRProp {
+                                        key,
+                                        values,
+                                        is_component: true,
+                                    });
+                                }
+                            } else if let Some(ref exp) = dir.exp {
+                                if let ExpressionNode::Simple(val_exp) = exp {
+                                    let key_node =
+                                        SimpleExpressionNode::new("$", true, SourceLocation::STUB);
+                                    let key = Box::new_in(key_node, ctx.allocator);
+                                    let mut values = Vec::new_in(ctx.allocator);
+                                    let val_node = SimpleExpressionNode::new(
+                                        val_exp.content.clone(),
+                                        val_exp.is_static,
+                                        val_exp.loc.clone(),
+                                    );
+                                    values.push(Box::new_in(val_node, ctx.allocator));
 
                                     props.push(IRProp {
                                         key,
@@ -264,8 +283,8 @@ pub(crate) fn transform_element<'a>(
                             let event_key_node =
                                 SimpleExpressionNode::new(event_key, true, SourceLocation::STUB);
                             let event_key_box = Box::new_in(event_key_node, ctx.allocator);
-                            // Handler: _value => (_ctx.binding = _value)
-                            // Mark as static so generate won't add _ctx. prefix
+                            // Handler getter: the Vapor runtime resolves raw
+                            // component props lazily before emit invokes it.
                             let handler_content = {
                                 let mut s = String::from("__RAW__() => _value => (_ctx.");
                                 s.push_str(binding.as_str());
@@ -973,6 +992,24 @@ fn transform_component<'a>(
                                     values.push(Box::new_in(val_node, ctx.allocator));
                                 }
                             }
+                            props.push(IRProp {
+                                key,
+                                values,
+                                is_component: true,
+                            });
+                        }
+                    } else if let Some(ref exp) = dir.exp {
+                        if let ExpressionNode::Simple(val_exp) = exp {
+                            let key_node =
+                                SimpleExpressionNode::new("$", true, SourceLocation::STUB);
+                            let key = Box::new_in(key_node, ctx.allocator);
+                            let mut values = Vec::new_in(ctx.allocator);
+                            let val_node = SimpleExpressionNode::new(
+                                val_exp.content.clone(),
+                                val_exp.is_static,
+                                val_exp.loc.clone(),
+                            );
+                            values.push(Box::new_in(val_node, ctx.allocator));
                             props.push(IRProp {
                                 key,
                                 values,

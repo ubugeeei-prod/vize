@@ -15,6 +15,7 @@ use crate::script::{transform_destructured_props, ScriptCompileContext};
 use crate::types::SfcError;
 
 use super::super::function_mode::{contains_top_level_await, dedupe_imports};
+use super::super::import_utils::extract_import_identifiers;
 use super::super::macros::{
     is_macro_call_line, is_multiline_macro_start, is_paren_macro_start, is_props_destructure_line,
 };
@@ -296,6 +297,12 @@ fn compile_script_setup_inline_body(
         "atelier.script_inline.dedupe_imports",
         dedupe_imports(&user_imports, is_ts)
     );
+    let normal_script_imports = preserved_normal_script
+        .as_deref()
+        .map(|script| parse_script_content(script, is_ts).0)
+        .unwrap_or_default();
+    let mut setup_return_imports = deduped_imports.clone();
+    setup_return_imports.extend(normal_script_imports.iter().cloned());
     for import in &deduped_imports {
         output.extend_from_slice(import.as_bytes());
     }
@@ -577,6 +584,7 @@ fn compile_script_setup_inline_body(
     emit_render_return(
         &mut output,
         &template,
+        &setup_return_imports,
         is_ts,
         is_vapor,
         vapor_render_alias.as_deref(),
@@ -630,6 +638,7 @@ fn compile_script_setup_inline_body(
 fn emit_render_return(
     output: &mut vize_carton::Vec<u8>,
     template: &TemplateParts<'_>,
+    imports: &[String],
     is_ts: bool,
     is_vapor: bool,
     vapor_render_alias: Option<&str>,
@@ -689,7 +698,7 @@ fn emit_render_return(
         }
         output.extend_from_slice(b"}\n");
     } else {
-        let setup_bindings = collect_setup_bindings(ctx);
+        let setup_bindings = collect_setup_bindings(ctx, imports, template);
         if is_vapor && !template.render_fn.is_empty() {
             let needs_template_ref_setter = template.render_fn.contains("_createTemplateRefSetter");
             if needs_template_ref_setter {
@@ -783,10 +792,15 @@ fn append_usize(target: &mut String, value: usize) {
     target.push_str(digits);
 }
 
-fn collect_setup_bindings(ctx: &ScriptCompileContext) -> Vec<&str> {
+fn collect_setup_bindings(
+    ctx: &ScriptCompileContext,
+    imports: &[String],
+    template: &TemplateParts<'_>,
+) -> Vec<String> {
     use crate::types::BindingType;
 
-    ctx.bindings
+    let mut bindings: Vec<String> = ctx
+        .bindings
         .bindings
         .iter()
         .filter(|(_, bt)| {
@@ -800,8 +814,40 @@ fn collect_setup_bindings(ctx: &ScriptCompileContext) -> Vec<&str> {
                     | BindingType::LiteralConst
             )
         })
-        .map(|(name, _)| name.as_str())
-        .collect()
+        .map(|(name, _)| String::from(name.as_str()))
+        .collect();
+
+    let has_template = !template.render_fn.is_empty() || !template.render_body.is_empty();
+    let mut template_code =
+        String::with_capacity(template.render_fn.len() + template.render_body.len());
+    template_code.push_str(template.render_fn);
+    template_code.push_str(template.render_body);
+
+    for import in imports {
+        for name in extract_import_identifiers(import) {
+            let should_return =
+                !has_template || template_references_setup_binding(&template_code, name.as_str());
+            if should_return && !bindings.iter().any(|binding| binding == name.as_str()) {
+                bindings.push(name);
+            }
+        }
+    }
+
+    bindings
+}
+
+fn template_references_setup_binding(template_code: &str, name: &str) -> bool {
+    let mut setup_access = String::with_capacity(name.len() + 8);
+    setup_access.push_str("$setup.");
+    setup_access.push_str(name);
+    if template_code.contains(setup_access.as_str()) {
+        return true;
+    }
+
+    let mut ctx_access = String::with_capacity(name.len() + 5);
+    ctx_access.push_str("_ctx.");
+    ctx_access.push_str(name);
+    template_code.contains(ctx_access.as_str())
 }
 
 /// Parse script content to extract imports, setup lines, and TypeScript declarations.
