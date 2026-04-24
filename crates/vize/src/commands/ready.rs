@@ -80,7 +80,7 @@ pub fn run(args: ReadyArgs) {
         #[cfg(unix)]
         socket: None,
         tsconfig: None,
-        format: "text".to_string(),
+        format: "text".into(),
         show_virtual_ts: false,
         quiet: false,
         profile: false,

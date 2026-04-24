@@ -37,9 +37,9 @@ pub fn run(args: UpgradeArgs) {
 }
 
 fn run_cargo_upgrade(args: UpgradeArgs) {
-    let mut command_args = vec!["install".to_string(), args.package, "--force".to_string()];
+    let mut command_args = vec!["install", args.package.as_str(), "--force"];
     if !args.no_locked {
-        command_args.push("--locked".to_string());
+        command_args.push("--locked");
     }
 
     if args.dry_run {
