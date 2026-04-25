@@ -41,6 +41,7 @@ pub mod analyzer;
 pub mod builtins;
 pub mod call_graph;
 pub mod css;
+pub mod declaration_ts;
 pub mod display;
 pub mod hoist;
 pub mod import_resolver;

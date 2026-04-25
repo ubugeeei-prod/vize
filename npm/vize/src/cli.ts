@@ -69,6 +69,7 @@ interface NativeBinding {
   ) => BatchCompileResult;
   formatSfc: (source: string, options?: NativeFormatOptions) => FormatResult;
   typeCheck: (source: string, options?: NativeTypeCheckOptions) => TypeCheckResult;
+  generateDeclaration?: (source: string, options?: NativeDeclarationOptions) => DeclarationResult;
   lint: (
     patterns: string[],
     options?: {
@@ -209,6 +210,8 @@ function printCheckUsage(): void {
   console.error("  -q, --quiet                    Show summary only");
   console.error("      --strict                   Enable strict checks");
   console.error("      --show-virtual-ts          Print generated Virtual TS");
+  console.error("      --declaration              Emit Vue component .d.ts files");
+  console.error("      --declaration-dir <dir>    Output directory for declarations");
   console.error("      --max-warnings <number>    Fail when warnings exceed the limit");
   console.error("  -c, --config <path>            Use a specific vize config file");
   console.error("      --no-config                Disable config discovery");
@@ -745,6 +748,14 @@ interface NativeTypeCheckOptions {
   check_fallthrough_attrs?: boolean;
 }
 
+interface NativeDeclarationOptions {
+  filename?: string;
+}
+
+interface DeclarationResult {
+  code: string;
+}
+
 interface TypeDiagnostic {
   severity: string;
   message: string;
@@ -781,6 +792,8 @@ interface CheckOptions {
   checkSetupContext?: boolean;
   checkInvalidExports?: boolean;
   checkFallthroughAttrs?: boolean;
+  declaration?: boolean;
+  declarationDir?: string;
   help?: boolean;
 }
 
@@ -794,6 +807,11 @@ interface CheckedFileResult {
   file: string;
   source: string;
   result: TypeCheckResult;
+}
+
+interface EmittedDeclaration {
+  file: string;
+  path: string;
 }
 
 function parseCheckCommand(args: string[]): ParsedCheckCommand {
@@ -831,6 +849,14 @@ function parseCheckCommand(args: string[]): ParsedCheckCommand {
       options.checkInvalidExports = false;
     } else if (arg === "--no-check-fallthrough-attrs") {
       options.checkFallthroughAttrs = false;
+    } else if (arg === "--declaration") {
+      options.declaration = true;
+    } else if (arg === "--declaration-dir") {
+      const declarationDir = args[++i];
+      if (!declarationDir) {
+        throw new Error("Missing path after --declaration-dir");
+      }
+      options.declarationDir = declarationDir;
     } else if (arg === "--config" || arg === "-c") {
       const configFile = args[++i];
       if (!configFile) {
@@ -843,11 +869,10 @@ function parseCheckCommand(args: string[]): ParsedCheckCommand {
       options.help = true;
     } else if (arg === "--tsconfig" || arg === "--corsa-path" || arg === "--servers") {
       i++;
-    } else if (arg === "--socket" || arg === "-s" || arg === "--declaration-dir") {
+    } else if (arg === "--socket" || arg === "-s") {
       i++;
-    } else if (arg === "--profile" || arg === "--declaration") {
-      // Accepted for package-script compatibility with the Rust CLI. The npm
-      // checker does not currently emit project profiles or declarations.
+    } else if (arg === "--profile") {
+      // Accepted for package-script compatibility with the Rust CLI.
     } else if (!arg.startsWith("-")) {
       patterns.push(arg);
     }
@@ -1001,6 +1026,56 @@ function collectVueFiles(patterns: string[]): string[] {
   return Array.from(files).sort();
 }
 
+function commonSourceDirectory(results: CheckedFileResult[]): string {
+  let common = path.dirname(results[0]?.file ?? process.cwd());
+
+  for (let i = 1; i < results.length; i++) {
+    const directory = path.dirname(results[i].file);
+    while (common !== path.dirname(common)) {
+      const relative = path.relative(common, directory);
+      if (relative !== ".." && !relative.startsWith(`..${path.sep}`)) {
+        break;
+      }
+      common = path.dirname(common);
+    }
+  }
+
+  return common;
+}
+
+function emitCheckDeclarations(
+  results: CheckedFileResult[],
+  native: NativeBinding,
+  options: CheckOptions,
+): EmittedDeclaration[] {
+  if (!options.declaration) {
+    return [];
+  }
+
+  if (typeof native.generateDeclaration !== "function") {
+    throw new Error("The loaded native binding does not support declaration generation.");
+  }
+
+  const outDir = path.resolve(process.cwd(), options.declarationDir ?? "dist/types");
+  const sourceRoot = commonSourceDirectory(results);
+  const declarations: EmittedDeclaration[] = [];
+
+  for (const { file, source } of results) {
+    const relative = normalizePath(path.relative(sourceRoot, file));
+    const outputPath = path.join(outDir, `${relative}.d.ts`);
+    mkdirSync(path.dirname(outputPath), { recursive: true });
+
+    const declaration = native.generateDeclaration(source, { filename: file });
+    writeFileSync(outputPath, declaration.code);
+    declarations.push({
+      file: displayPath(outputPath),
+      path: outputPath,
+    });
+  }
+
+  return declarations;
+}
+
 function lineStarts(source: string): number[] {
   const starts = [0];
   for (let i = 0; i < source.length; i++) {
@@ -1057,6 +1132,7 @@ function renderCheckText(
   results: CheckedFileResult[],
   options: CheckOptions,
   timeMs: number,
+  declarations: EmittedDeclaration[] = [],
 ): void {
   let totalErrors = 0;
   let totalWarnings = 0;
@@ -1099,6 +1175,9 @@ function renderCheckText(
   }
   if (totalWarnings > 0) {
     process.stdout.write(`  \x1b[33m${totalWarnings} warning(s)\x1b[0m\n`);
+  }
+  if (declarations.length > 0) {
+    process.stdout.write(`  \x1b[32mEmitted ${declarations.length} declaration file(s)\x1b[0m\n`);
   }
 }
 
@@ -1151,6 +1230,7 @@ async function runCheck(args: string[]): Promise<void> {
     };
   });
   const timeMs = performance.now() - start;
+  const declarations = emitCheckDeclarations(results, native, options);
   const totalErrors = results.reduce((sum, { result }) => sum + result.errorCount, 0);
   const totalWarnings = results.reduce((sum, { result }) => sum + result.warningCount, 0);
 
@@ -1166,13 +1246,14 @@ async function runCheck(args: string[]): Promise<void> {
           errorCount: totalErrors,
           warningCount: totalWarnings,
           fileCount: results.length,
+          declarations: declarations.map(({ file }) => file),
         },
         null,
         2,
       )}\n`,
     );
   } else {
-    renderCheckText(results, options, timeMs);
+    renderCheckText(results, options, timeMs, declarations);
   }
 
   if (totalErrors > 0) {

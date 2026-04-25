@@ -288,6 +288,7 @@ const {
   typeCheck,
   getTypeCheckCapabilities,
   typeCheckBatch,
+  generateDeclaration,
   compile,
   compileVapor,
   parseTemplate,
@@ -311,6 +312,7 @@ const {
 module.exports.typeCheck = typeCheck;
 module.exports.getTypeCheckCapabilities = getTypeCheckCapabilities;
 module.exports.typeCheckBatch = typeCheckBatch;
+module.exports.generateDeclaration = generateDeclaration;
 module.exports.compile = compile;
 module.exports.compileVapor = compileVapor;
 module.exports.parseTemplate = parseTemplate;
