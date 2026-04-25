@@ -1,7 +1,7 @@
 {
   "name": "vize",
   "displayName": "Vize",
-  "version": "0.68.0",
+  "version": "0.69.0",
   "description": "Vue Language Support powered by Vize - A high-performance language server for Vue SFC",
   "categories": [
     "Formatters",
