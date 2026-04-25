@@ -65,8 +65,9 @@ vp exec vize build src
 vp exec vize ready src
 ```
 
-The npm `vize check` command uses the packaged NAPI checker. Use the Rust CLI when you need the
-Corsa-backed project diagnostics path across Vue, TS, TSX, and `.d.ts` inputs.
+The npm `vize check` command uses the packaged NAPI checker and can emit Vue component declarations
+with `--declaration --declaration-dir dist/types`. Use the Rust CLI when you need the Corsa-backed
+project diagnostics path across Vue, TS, TSX, and `.d.ts` inputs.
 
 ### 3. Full Rust CLI
 

@@ -59,8 +59,9 @@ export default defineConfig({
 Override config discovery with `--config`, or disable it with `--no-config`.
 
 `vize check` in the npm package uses the packaged NAPI checker so it can run from `package.json`
-scripts after installing `vize`. Use the Rust CLI when you need Corsa project diagnostics across
-Vue, TS, TSX, and `.d.ts` inputs.
+scripts after installing `vize`. Add `--declaration --declaration-dir dist/types` to emit Vue
+component `.d.ts` files. Use the Rust CLI when you need Corsa project diagnostics across Vue, TS,
+TSX, and `.d.ts` inputs.
 
 `vize ready` runs `fmt --write`, `lint`, `check`, and `build` in that order.
 
