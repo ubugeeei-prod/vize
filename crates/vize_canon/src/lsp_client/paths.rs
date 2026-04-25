@@ -68,7 +68,8 @@ pub(crate) fn find_corsa_in_search_roots(search_roots: &[PathBuf]) -> Option<Str
 
     for root in search_roots {
         let root_string = root.to_string_lossy();
-        let Some(candidate) = find_corsa_candidate(Some(root_string.as_ref()), Some(root.as_path()))
+        let Some(candidate) =
+            find_corsa_candidate(Some(root_string.as_ref()), Some(root.as_path()))
         else {
             continue;
         };
