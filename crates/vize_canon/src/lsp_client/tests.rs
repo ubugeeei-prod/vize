@@ -200,6 +200,25 @@ fn resolves_corsa_from_secondary_search_root() {
 }
 
 #[test]
+fn bounded_search_roots_do_not_escape_to_parent_sibling_cache() {
+    let case_dir = unique_case_dir("bounded-root");
+    let project_root = case_dir.join("project");
+    let sibling_cache = case_dir.join("corsa-bind").join(".cache").join("tsgo");
+
+    let _ = fs::remove_dir_all(&case_dir);
+    fs::create_dir_all(&project_root).unwrap();
+    fs::create_dir_all(sibling_cache.parent().unwrap()).unwrap();
+    fs::write(&sibling_cache, "").unwrap();
+
+    let search_roots = vec![project_root];
+    let resolved = find_corsa_in_search_roots(&search_roots);
+
+    assert_eq!(resolved, None);
+
+    let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
 fn prefers_workspace_native_preview_over_nested_wrapper() {
     let temp_dir = TempDir::new().unwrap();
     let workspace_root = temp_dir.path().join("workspace");

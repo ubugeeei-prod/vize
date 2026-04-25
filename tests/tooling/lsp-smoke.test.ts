@@ -268,7 +268,9 @@ class LspSession {
 }
 
 test("vize lsp smoke-tests production editor flows", async (t) => {
-  const workspaceDir = fs.mkdtempSync(path.join(root, ".tmp-lsp-smoke-"));
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-smoke");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
   const session = new LspSession();
 
   try {
@@ -413,6 +415,7 @@ const secondaryLabel = ref('secondary')
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
   }
 });
 
