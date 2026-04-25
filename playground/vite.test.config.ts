@@ -1,6 +1,5 @@
 import { defineConfig } from "vite-plus";
 import { vize } from "@vizejs/vite-plugin";
-import { playwright } from "vite-plus/test/browser-playwright";
 
 export default defineConfig({
   plugins: [vize()],
@@ -8,21 +7,12 @@ export default defineConfig({
     dedupe: ["vue"],
   },
   optimizeDeps: {
-    include: ["vue", "@vue/test-utils", "monaco-editor", "shiki", "prettier/plugins/html"],
+    include: ["vue", "@vue/test-utils"],
   },
   test: {
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      instances: [{ browser: "chromium" }],
-    },
+    environment: "happy-dom",
+    setupFiles: ["e2e/setup.ts"],
     include: ["src/**/*.test.ts", "e2e/**/*.test.ts"],
     exclude: ["**/__agent_only/**", "e2e/vite-plugin-vapor.test.ts"],
-  },
-  server: {
-    headers: {
-      "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "require-corp",
-    },
   },
 });

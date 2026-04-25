@@ -25,5 +25,6 @@ test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
     config,
     /"test:e2e:preview":\s*task\(runInPackages\("test:preview", \["\.\/tests"\]\)/,
   );
+  assert.match(config, /"test:e2e:vrt":\s*task\(runInPackages\("test:vrt", \["\.\/tests"\]\)/);
   assert.match(config, /input:\s*cacheInputs\.e2e/);
 });

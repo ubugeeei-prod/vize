@@ -53,6 +53,34 @@ const msg = ref('')
 }
 
 #[test]
+fn test_script_setup_self_component_resolves_for_recursion() {
+    let source = r#"<script setup lang="ts">
+const items = [{ name: 'dist', children: [{ name: 'file.js', children: [] }] }]
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" :key="item.name">
+      <FileTree v-if="item.children.length" />
+    </li>
+  </ul>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some("src/components/diff/FileTree.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains(r#"_resolveComponent("FileTree", true)"#),
+        "recursive SFC should resolve its own component name with maybeSelfReference. Got:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_bindings_passed_to_template() {
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue';
@@ -951,7 +979,16 @@ const schema = {}
         result.code
     );
     assert!(
-        result.code.contains("return { valibotResolver, schema }"),
+        result
+            .code
+            .contains("const __returned__ = { valibotResolver, schema }"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("Object.defineProperty(__returned__, '__isScriptSetup'"),
         "{}",
         result.code
     );
@@ -996,13 +1033,20 @@ const emit = defineEmits<{ submit: [] }>()
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
     let setup_return = result
         .code
-        .split("return {")
+        .split("const __returned__ = {")
         .nth(1)
         .expect("setup should return bindings");
 
     assert!(setup_return.contains("emit"), "{}", result.code);
     assert!(setup_return.contains("PForm"), "{}", result.code);
     assert!(setup_return.contains("valibotResolver"), "{}", result.code);
+    assert!(
+        result
+            .code
+            .contains("Object.defineProperty(__returned__, '__isScriptSetup'"),
+        "{}",
+        result.code
+    );
     assert!(
         result
             .code

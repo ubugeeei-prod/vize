@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test:dev": "playwright test --config app/playwright.config.ts",
+    "test:vrt": "playwright test --config app/playwright.vrt.config.ts",
     "test:preview": "node app/preview/elk.ts && node app/preview/misskey.ts && node app/preview/npmx.ts && node app/preview/vuefes.ts",
     "test:check": "node --test snapshots/check/elk.ts snapshots/check/misskey.ts snapshots/check/npmx.ts snapshots/check/vuefes.ts",
     "test:lint": "node --test snapshots/lint/elk.ts snapshots/lint/misskey.ts snapshots/lint/npmx.ts snapshots/lint/vuefes.ts",
@@ -12,6 +13,8 @@
   },
   "devDependencies": {
     "@playwright/test": "catalog:testing",
-    "@types/node": "catalog:typescript"
+    "@types/node": "catalog:typescript",
+    "@types/pngjs": "catalog:content",
+    "pngjs": "catalog:content"
   }
 }

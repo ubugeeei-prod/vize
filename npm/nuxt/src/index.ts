@@ -19,8 +19,55 @@ import { injectNuxtI18nHelpers } from "./i18n";
 import {
   buildNuxtCompilerOptions,
   isVizeVirtualVueModuleId,
+  normalizeNuxtInjectedKeysForVizeVirtualModule,
   normalizeVizeVirtualVueModuleId,
 } from "./utils";
+
+type ViteTransformResult = string | { code?: string; map?: unknown } | null | undefined;
+
+function normalizeNuxtKeyedTransformResult(
+  id: string,
+  result: ViteTransformResult,
+): ViteTransformResult {
+  if (!isVizeVirtualVueModuleId(id) || result == null) {
+    return result;
+  }
+  if (typeof result === "string") {
+    return normalizeNuxtInjectedKeysForVizeVirtualModule(result, id);
+  }
+  if (typeof result.code !== "string") {
+    return result;
+  }
+  const code = normalizeNuxtInjectedKeysForVizeVirtualModule(result.code, id);
+  return code === result.code ? result : { ...result, code };
+}
+
+function patchNuxtKeyedFunctionsPlugin(plugin: { transform?: unknown }): void {
+  if (typeof plugin.transform === "function") {
+    const original = plugin.transform;
+    plugin.transform = async function (
+      this: unknown,
+      code: string,
+      id: string,
+      ...args: unknown[]
+    ) {
+      const result = (await original.call(this, code, id, ...args)) as ViteTransformResult;
+      return normalizeNuxtKeyedTransformResult(id, result);
+    };
+    return;
+  }
+
+  const transform = plugin.transform as { handler?: unknown } | undefined;
+  if (!transform || typeof transform.handler !== "function") {
+    return;
+  }
+
+  const original = transform.handler;
+  transform.handler = async function (this: unknown, code: string, id: string, ...args: unknown[]) {
+    const result = (await original.call(this, code, id, ...args)) as ViteTransformResult;
+    return normalizeNuxtKeyedTransformResult(id, result);
+  };
+}
 
 export interface VizeNuxtOptions {
   /**
@@ -97,6 +144,8 @@ export default defineNuxtModule<VizeNuxtOptions>({
           const name = p && typeof p === "object" && "name" in p ? p.name : "";
           if (name === "vite:vue") {
             config.plugins.splice(i, 1);
+          } else if (name === "nuxt:compiler:keyed-functions") {
+            patchNuxtKeyedFunctionsPlugin(p);
           }
         }
       });
@@ -185,6 +234,12 @@ export default defineNuxtModule<VizeNuxtOptions>({
           } catch {
             // Ignore errors — auto-imports might not be needed for all modules
           }
+        }
+
+        const stableKeyResult = normalizeNuxtInjectedKeysForVizeVirtualModule(result, id);
+        if (stableKeyResult !== result) {
+          result = stableKeyResult;
+          changed = true;
         }
 
         if (changed) {

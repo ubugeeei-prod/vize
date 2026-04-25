@@ -17,7 +17,9 @@ export default /*@__PURE__*/_defineComponent({
   setup(__props) {
 
 
-return { Primitive }
+const __returned__ = { Primitive }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
 }
 
 })

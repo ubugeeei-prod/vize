@@ -531,6 +531,17 @@ fn test_special_opening_textarea_text_and_close() {
 }
 
 #[test]
+fn test_self_closing_textarea_returns_to_text_state() {
+    let cb = tokenize("<textarea /><span>ok</span>");
+    assert!(cb.errors.is_empty());
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(1, 9)));
+    assert!(cb.events.contains(&TokenEvent::SelfClosingTag(11)));
+    assert!(cb.events.contains(&TokenEvent::OpenTagName(13, 17)));
+    assert!(cb.events.contains(&TokenEvent::Text(18, 20)));
+    assert!(cb.events.contains(&TokenEvent::CloseTag(22, 26)));
+}
+
+#[test]
 fn test_special_opening_title_entity_in_plain_text() {
     let cb = tokenize("<title>a&amp;b</title>");
     assert!(cb.errors.is_empty());

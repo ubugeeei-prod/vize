@@ -42,6 +42,28 @@ assert.equal(
   "existing useI18n destructure should not be duplicated",
 );
 
+const injectsBeforeExistingDestructureWhenUsedEarlier = injectNuxtI18nHelpers(`
+export default {
+  setup(__props) {
+    useSeoMeta({
+      title: () => $t("privacy.title"),
+    });
+    const { locale } = useI18n();
+  }
+}
+`);
+
+assert.match(
+  injectsBeforeExistingDestructureWhenUsedEarlier,
+  /setup\(__props\) \{\nconst \{ t: \$t \} = useI18n\(\);\n\s+useSeoMeta/,
+  "helpers used before an existing useI18n() call should be injected at setup start",
+);
+assert.match(
+  injectsBeforeExistingDestructureWhenUsedEarlier,
+  /const \{ locale \} = useI18n\(\);/,
+  "later user-authored useI18n destructures should be preserved",
+);
+
 const leavesTemplateGlobalsAlone = injectNuxtI18nHelpers(`
 export default {
   setup(__props) {

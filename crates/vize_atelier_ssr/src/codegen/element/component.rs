@@ -56,7 +56,11 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_core_helper(RuntimeHelper::ResolveComponent);
             self.push("_resolveComponent(\"");
             self.push(tag);
-            self.push("\")");
+            self.push("\"");
+            if self.is_self_component_reference(tag) {
+                self.push(", true");
+            }
+            self.push(")");
         }
         self.push(", ");
         self.push(&props);

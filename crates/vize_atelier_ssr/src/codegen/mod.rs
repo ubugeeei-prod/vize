@@ -238,6 +238,20 @@ impl<'a> SsrCodegenContext<'a> {
         resolve_base(component)
     }
 
+    pub(crate) fn is_self_component_reference(&self, component: &str) -> bool {
+        let Some(component_name) = self.options.component_name.as_deref() else {
+            return false;
+        };
+
+        if component == component_name {
+            return true;
+        }
+
+        let camel = camelize(component);
+        let pascal = capitalize(camel.as_str());
+        pascal == component_name
+    }
+
     pub(crate) fn push_scoped_params(&mut self, params: FxHashSet<String>) {
         self.scoped_params.push(params);
     }

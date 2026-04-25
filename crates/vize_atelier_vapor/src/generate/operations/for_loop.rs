@@ -76,7 +76,7 @@ pub(super) fn generate_for(
     ctx.deindent();
 
     // Generate key function if key_prop is provided
-    let key_func = generate_for_key_function(for_node);
+    let key_func = generate_for_key_function(ctx, for_node);
 
     // Check if this is a range-based for (source is a number literal)
     let is_range = for_node.source.content.as_str().parse::<f64>().is_ok();
@@ -106,9 +106,12 @@ pub(super) fn generate_for(
 }
 
 /// Generate key function for v-for
-fn generate_for_key_function(for_node: &ForIRNode<'_>) -> Option<String> {
+fn generate_for_key_function(
+    ctx: &GenerateContext<'_>,
+    for_node: &ForIRNode<'_>,
+) -> Option<String> {
     if let Some(ref key_prop) = for_node.key_prop {
-        let key_expr = &key_prop.content;
+        let key_expr = resolve_key_expression(ctx, for_node, key_prop.content.as_str());
         // Build params: (value_alias) or (value_alias, key_alias)
         let value_name = for_node
             .value
@@ -127,4 +130,47 @@ fn generate_for_key_function(for_node: &ForIRNode<'_>) -> Option<String> {
     } else {
         None
     }
+}
+
+fn resolve_key_expression(
+    ctx: &GenerateContext<'_>,
+    for_node: &ForIRNode<'_>,
+    key_expr: &str,
+) -> String {
+    let mut resolved = ctx.resolve_expression(key_expr);
+    let Some(current_scope) = ctx.for_scopes.last() else {
+        return resolved;
+    };
+
+    if let Some(value) = for_node.value.as_ref() {
+        restore_current_alias_reference(
+            &mut resolved,
+            &cstr!("_for_item{}.value", current_scope.depth),
+            value.content.as_str(),
+        );
+    }
+    if let Some(key) = for_node.key.as_ref() {
+        restore_current_alias_reference(
+            &mut resolved,
+            &cstr!("_for_key{}.value", current_scope.depth),
+            key.content.as_str(),
+        );
+    }
+
+    resolved
+}
+
+fn restore_current_alias_reference(expr: &mut String, reference: &str, alias: &str) {
+    if is_simple_local_alias(alias) && expr.contains(reference) {
+        *expr = expr.replace(reference, alias).into();
+    }
+}
+
+fn is_simple_local_alias(alias: &str) -> bool {
+    let mut chars = alias.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    (first.is_ascii_alphabetic() || first == '_' || first == '$')
+        && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
 }

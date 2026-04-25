@@ -101,9 +101,13 @@ pub(super) fn emit_render_return(
             output.extend_from_slice(vapor_render_alias.unwrap_or("render").as_bytes());
             output.extend_from_slice(b"(__ctx, __props, __emit, __attrs, __slots)\n");
         } else if !setup_bindings.is_empty() {
-            // No template (e.g., Musea art files) -- return setup bindings as an object
-            // so they're accessible for runtime template compilation (compileToFunction).
-            output.extend_from_slice(b"return { ");
+            if !template.render_fn.is_empty() {
+                output.extend_from_slice(b"const __returned__ = { ");
+            } else {
+                // No template (e.g., Musea art files) -- return setup bindings as an object
+                // so they're accessible for runtime template compilation (compileToFunction).
+                output.extend_from_slice(b"return { ");
+            }
             for (i, name) in setup_bindings.iter().enumerate() {
                 if i > 0 {
                     output.extend_from_slice(b", ");
@@ -111,6 +115,10 @@ pub(super) fn emit_render_return(
                 output.extend_from_slice(name.as_bytes());
             }
             output.extend_from_slice(b" }\n");
+            if !template.render_fn.is_empty() {
+                output.extend_from_slice(b"Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+                output.extend_from_slice(b"return __returned__\n");
+            }
         } else if !template.render_fn.is_empty() {
             output.extend_from_slice(b"return {}\n");
         }

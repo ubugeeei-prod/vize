@@ -167,6 +167,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub(super) fn state_in_self_closing_tag(&mut self, c: u8) {
         if c == GT {
             self.callbacks.on_self_closing_tag(self.index);
+            self.in_rcdata = false;
+            self.current_sequence = None;
+            self.sequence_index = 0;
             self.state = State::Text;
             self.section_start = self.index + 1;
         } else if !is_whitespace(c) {

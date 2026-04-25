@@ -12,7 +12,7 @@ import {
 } from "./state.ts";
 import { compileFile } from "../compiler.ts";
 import { generateOutput, hasDelegatedStyles } from "../utils/index.ts";
-import { resolveCssImports } from "../utils/css.ts";
+import { resolveCssImports, scopeCssForPipeline } from "../utils/css.ts";
 import {
   isVizeVirtual,
   isVizeSsrVirtual,
@@ -46,6 +46,20 @@ function getOxcDumpPath(root: string, realPath: string): string {
   const dumpDir = path.resolve(root || process.cwd(), "__agent_only", "oxc-dumps");
   fs.mkdirSync(dumpDir, { recursive: true });
   return path.join(dumpDir, `vize-oxc-error-${path.basename(realPath)}.ts`);
+}
+
+function getVirtualModuleDefines(
+  state: Pick<VizePluginState, "clientViteDefine" | "isProduction" | "serverViteDefine">,
+  ssr: boolean,
+): Record<string, string> {
+  return {
+    "import.meta.client": ssr ? "false" : "true",
+    "import.meta.server": ssr ? "true" : "false",
+    "import.meta.dev": state.isProduction ? "false" : "true",
+    "import.meta.test": "false",
+    "import.meta.prerender": "false",
+    ...(ssr ? state.serverViteDefine : state.clientViteDefine),
+  };
 }
 
 export function loadHook(
@@ -91,6 +105,12 @@ export function loadHook(
     ) {
       const block = fallbackCompiled.styles[blockIndex];
       let styleContent = block.content;
+
+      // Keep delegated plain CSS scoped while preserving PostCSS-only syntax
+      // such as `@apply` for the downstream CSS pipeline.
+      if (scoped && block.scoped && (!lang || lang === "css")) {
+        styleContent = scopeCssForPipeline(styleContent, scoped);
+      }
 
       // For scoped preprocessor styles, wrap content in a scope selector
       if (scoped && block.scoped && lang && lang !== "css") {
@@ -257,11 +277,9 @@ export async function transformHook(
       const result = await transformWithOxc(code, realPath, {
         lang: "ts",
       });
-      const defines = options?.ssr ? state.serverViteDefine : state.clientViteDefine;
+      const defines = getVirtualModuleDefines(state, options?.ssr ?? false);
       let transformed = result.code;
-      if (Object.keys(defines).length > 0) {
-        transformed = applyDefineReplacements(transformed, defines);
-      }
+      transformed = applyDefineReplacements(transformed, defines);
 
       return { code: transformed, map: result.map as TransformResult["map"] };
     } catch (e: unknown) {

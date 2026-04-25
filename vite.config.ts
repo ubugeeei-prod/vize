@@ -282,6 +282,7 @@ const testTasks = {
   "test:e2e:preview": task(runInPackages("test:preview", ["./tests"]), {
     input: cacheInputs.e2e,
   }),
+  "test:e2e:vrt": task(runInPackages("test:vrt", ["./tests"]), { input: cacheInputs.e2e }),
   "test:vue": task("cargo test -p vize_test_runner", { input: cacheInputs.rust }),
   coverage: task("cargo run -p vize_test_runner --bin coverage", { input: cacheInputs.rust }),
   "coverage:verbose": task("cargo run -p vize_test_runner --bin coverage -- -v", {

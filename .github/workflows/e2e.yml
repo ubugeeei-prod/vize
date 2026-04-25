@@ -10,6 +10,7 @@ on:
         type: choice
         options:
           - dev
+          - vrt
           - preview
           - check
           - lint
@@ -69,6 +70,9 @@ jobs:
           case "${{ inputs.suite }}" in
             dev)
               pnpm --dir tests run test:dev
+              ;;
+            vrt)
+              pnpm --dir tests run test:vrt
               ;;
             preview)
               RUN_BUILD_TESTS=1 pnpm --dir tests run test:preview

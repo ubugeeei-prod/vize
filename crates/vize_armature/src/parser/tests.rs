@@ -169,6 +169,44 @@ fn test_parse_self_closing() {
     }
 }
 
+#[test]
+fn test_parse_self_closing_textarea_keeps_following_elements() {
+    let allocator = Bump::new();
+    let source = r#"<Primitive :class="ui.root({ class: [uiProp?.root, props.class] })"><textarea :class="ui.base({ class: uiProp?.base })" /><slot :ui="ui" /><span v-if="isLeading || !!avatar || !!slots.leading"><slot><UIcon v-if="isLeading && leadingIconName" /><UAvatar v-else-if="!!avatar" /></slot></span></Primitive>"#;
+    let (root, errors) = parse(&allocator, source);
+
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    assert_eq!(root.children.len(), 1);
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.tag.as_str(), "Primitive");
+        assert_eq!(el.children.len(), 3);
+
+        if let TemplateChildNode::Element(textarea) = &el.children[0] {
+            assert_eq!(textarea.tag.as_str(), "textarea");
+            assert!(textarea.is_self_closing);
+        } else {
+            panic!("Expected textarea element");
+        }
+
+        if let TemplateChildNode::Element(slot) = &el.children[1] {
+            assert_eq!(slot.tag.as_str(), "slot");
+            assert!(slot.is_self_closing);
+        } else {
+            panic!("Expected slot element");
+        }
+
+        if let TemplateChildNode::Element(span) = &el.children[2] {
+            assert_eq!(span.tag.as_str(), "span");
+            assert_eq!(span.children.len(), 1);
+        } else {
+            panic!("Expected span element");
+        }
+    } else {
+        panic!("Expected Primitive element");
+    }
+}
+
 // ====================================================================
 // Additional tests
 // ====================================================================

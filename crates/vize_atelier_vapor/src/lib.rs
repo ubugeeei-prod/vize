@@ -577,6 +577,25 @@ mod tests {
     }
 
     #[test]
+    fn test_compile_nested_v_for_key_uses_outer_alias() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div><template v-for="n in 4" :key="`set-${n}`"><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon">{{ icon }}</span></template></div>"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
     fn test_compile_first_dynamic_child_after_static_sibling() {
         let allocator = Bump::new();
         let result = compile_vapor(

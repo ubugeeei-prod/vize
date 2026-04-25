@@ -212,6 +212,24 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_self_component_resolve_marks_maybe_self_reference() {
+        let result = compile!(
+            "<FileTree />",
+            super::CodegenOptions {
+                component_name: Some("FileTree".into()),
+                ..Default::default()
+            }
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains(r#"const _component_FileTree = _resolveComponent("FileTree", true)"#),
+            "self component resolution should pass maybeSelfReference. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
     fn test_root_directive_comment_does_not_create_fragment_hole() {
         let result =
             compile!("<!-- @vize:forget sections are labeled by their headings --><section />");
@@ -426,6 +444,20 @@ mod tests {
             },
         );
 
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_numeric_template_v_for_uses_fragment() {
+        let result = compile!(
+            r#"<div><template v-for="n in 4" :key="`set-${n}`"><button /><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon" /></template></div>"#
+        );
+
+        assert!(
+            !result.code.contains("\"template\""),
+            "template v-for must not create a DOM template element. Got:\n{}",
+            result.code
+        );
         assert_codegen_snapshot!(result);
     }
 

@@ -251,11 +251,14 @@ const isRootSelected = ref(false)
         let template_code = crate::compile_template::compile_template_block(
             template,
             &crate::TemplateCompileOptions::default(),
-            "",
-            false,
-            true,
-            Some(&binding_metadata),
-            Some(croquis),
+            crate::compile_template::TemplateBlockCompileContext {
+                scope_id: "",
+                apply_scope_id: false,
+                is_ts: true,
+                component_name: None,
+                bindings: Some(&binding_metadata),
+                croquis: Some(croquis),
+            },
         )
         .expect("template compile should succeed");
         assert!(

@@ -18,18 +18,31 @@ use vize_carton::Bump;
 
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
 
+pub(crate) struct TemplateBlockCompileContext<'a> {
+    pub(crate) scope_id: &'a str,
+    pub(crate) apply_scope_id: bool,
+    pub(crate) is_ts: bool,
+    pub(crate) component_name: Option<&'a str>,
+    pub(crate) bindings: Option<&'a BindingMetadata>,
+    pub(crate) croquis: Option<vize_croquis::analysis::Croquis>,
+}
+
 /// Compile template block
 pub(crate) fn compile_template_block(
     template: &SfcTemplateBlock,
     options: &TemplateCompileOptions,
-    scope_id: &str,
-    has_scoped: bool,
-    is_ts: bool,
-    bindings: Option<&BindingMetadata>,
-    croquis: Option<vize_croquis::analysis::Croquis>,
+    ctx: TemplateBlockCompileContext<'_>,
 ) -> Result<String, SfcError> {
+    let TemplateBlockCompileContext {
+        scope_id,
+        apply_scope_id,
+        is_ts,
+        component_name,
+        bindings,
+        croquis,
+    } = ctx;
     let allocator = Bump::new();
-    let scope_attr = if has_scoped {
+    let scope_attr = if apply_scope_id {
         let mut attr = String::with_capacity(scope_id.len() + 7);
         attr.push_str("data-v-");
         attr.push_str(scope_id);
@@ -41,6 +54,7 @@ pub(crate) fn compile_template_block(
     if options.ssr {
         let ssr_opts = vize_atelier_ssr::SsrCompilerOptions {
             scope_id: scope_attr,
+            component_name: component_name.map(|name| name.to_compact_string()),
             comments: options
                 .compiler_options
                 .as_ref()
@@ -85,6 +99,7 @@ pub(crate) fn compile_template_block(
     dom_opts.ssr = options.ssr;
     dom_opts.is_ts = is_ts;
     dom_opts.custom_renderer = options.custom_renderer;
+    dom_opts.component_name = component_name.map(|name| name.to_compact_string());
 
     // For script setup, use inline mode to match Vue's actual compiler behavior
     // Inline mode generates direct closure references (e.g., msg instead of $setup.msg)

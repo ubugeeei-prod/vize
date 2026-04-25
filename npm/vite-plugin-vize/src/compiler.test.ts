@@ -405,8 +405,13 @@ const ssrScopedSlotCompiled = compileFile(
 
 assert.match(
   ssrScopedSlotCompiled.code,
-  /return \{\s*valibotResolver,\s*schema\s*\}/,
+  /const __returned__ = \{\s*valibotResolver,\s*schema\s*\}/,
   "SSR script setup should return imports that are only used inside template expressions",
+);
+assert.match(
+  ssrScopedSlotCompiled.code,
+  /Object\.defineProperty\(__returned__, "__isScriptSetup"/,
+  "SSR script setup should mark returned bindings as script setup bindings",
 );
 assert.match(
   ssrScopedSlotCompiled.code,
@@ -454,8 +459,13 @@ const ssrNormalScriptImportCompiled = compileFile(
 
 assert.match(
   ssrNormalScriptImportCompiled.code,
-  /return \{\s*emit,\s*PForm,\s*valibotResolver\s*\}/,
+  /const __returned__ = \{\s*emit,\s*PForm,\s*valibotResolver\s*\}/,
   "SSR script setup should return normal-script imports that are used by template expressions",
+);
+assert.match(
+  ssrNormalScriptImportCompiled.code,
+  /Object\.defineProperty\(__returned__, "__isScriptSetup"/,
+  "SSR normal-script template bindings should be returned as script setup bindings",
 );
 assert.match(
   ssrNormalScriptImportCompiled.code,

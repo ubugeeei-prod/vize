@@ -293,10 +293,34 @@ mod v_show {
 
 mod component {
     use super::compile_full;
+    use vize_atelier_ssr::{compile_ssr_with_options, SsrCompilerOptions};
+    use vize_carton::Bump;
 
     #[test]
     fn basic_component() {
         insta::assert_snapshot!(compile_full(r#"<Foo></Foo>"#));
+    }
+
+    #[test]
+    fn self_component_resolve_marks_maybe_self_reference() {
+        let allocator = Bump::new();
+        let (_, errors, result) = compile_ssr_with_options(
+            &allocator,
+            r#"<FileTree />"#,
+            SsrCompilerOptions {
+                component_name: Some("FileTree".into()),
+                ..Default::default()
+            },
+        );
+
+        assert!(errors.is_empty(), "Compilation errors: {:?}", errors);
+        assert!(
+            result
+                .code
+                .contains(r#"_resolveComponent("FileTree", true)"#),
+            "self component resolution should pass maybeSelfReference. Got:\n{}",
+            result.code
+        );
     }
 
     #[test]

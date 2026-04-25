@@ -15,7 +15,7 @@ test("app e2e workflow is manually selectable and uploads failure artifacts", ()
 
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /type:\s*choice/);
-  for (const suite of ["dev", "preview", "check", "lint", "build", "check-fixtures"]) {
+  for (const suite of ["dev", "vrt", "preview", "check", "lint", "build", "check-fixtures"]) {
     assert.match(workflow, new RegExp(`- ${suite}`));
     assert.match(workflow, new RegExp(`${suite}\\)\\n\\s+`));
   }

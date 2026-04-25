@@ -243,6 +243,8 @@ pub struct CodegenOptions {
     pub source_map: bool,
     /// Filename for source map
     pub filename: String,
+    /// Current SFC component name for self-reference resolution
+    pub component_name: Option<String>,
     /// Scope ID for scoped CSS
     pub scope_id: Option<String>,
     /// Whether in SSR mode
@@ -270,6 +272,7 @@ impl Default for CodegenOptions {
             prefix_identifiers: false,
             source_map: false,
             filename: String::from("template.vue"),
+            component_name: None,
             scope_id: None,
             ssr: false,
             optimize_imports: false,

@@ -14,7 +14,7 @@ mod tests;
 use crate::compile_script::{compile_script_setup_inline_with_context, TemplateParts};
 use crate::compile_template::{
     compile_template_block, compile_template_block_vapor, extract_template_parts,
-    extract_template_parts_full,
+    extract_template_parts_full, TemplateBlockCompileContext,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
@@ -160,11 +160,14 @@ pub fn compile_sfc(
                 compile_template_block(
                     template,
                     &template_opts,
-                    &scope_id,
-                    options.template.ssr && has_scoped,
-                    template_is_ts,
-                    None,
-                    None,
+                    TemplateBlockCompileContext {
+                        scope_id: &scope_id,
+                        apply_scope_id: options.template.ssr && has_scoped,
+                        is_ts: template_is_ts,
+                        component_name: Some(&component_name),
+                        bindings: None,
+                        croquis: None,
+                    },
                 )
             )
         };
@@ -258,11 +261,14 @@ pub fn compile_sfc(
                     compile_template_block(
                         template,
                         &template_opts,
-                        &scope_id,
-                        options.template.ssr && has_scoped,
-                        template_is_ts,
-                        None, // No bindings for normal scripts
-                        None, // No Croquis for normal scripts
+                        TemplateBlockCompileContext {
+                            scope_id: &scope_id,
+                            apply_scope_id: options.template.ssr && has_scoped,
+                            is_ts: template_is_ts,
+                            component_name: Some(&component_name),
+                            bindings: None,
+                            croquis: None,
+                        },
                     )
                 )
             };
@@ -475,11 +481,14 @@ pub fn compile_sfc(
                 compile_template_block(
                     template,
                     &options.template,
-                    &scope_id,
-                    options.template.ssr && has_scoped,
-                    template_is_ts,
-                    Some(&script_bindings), // Pass bindings for proper ref handling
-                    Some(croquis),          // Pass Croquis for enhanced transforms
+                    TemplateBlockCompileContext {
+                        scope_id: &scope_id,
+                        apply_scope_id: options.template.ssr && has_scoped,
+                        is_ts: template_is_ts,
+                        component_name: Some(&component_name),
+                        bindings: Some(&script_bindings),
+                        croquis: Some(croquis),
+                    },
                 )
             ))
         }

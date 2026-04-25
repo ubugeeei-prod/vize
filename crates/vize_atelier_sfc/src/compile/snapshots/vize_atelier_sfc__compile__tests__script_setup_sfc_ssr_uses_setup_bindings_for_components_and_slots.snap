@@ -27,7 +27,9 @@ export default /*@__PURE__*/_defineComponent({
   setup(__props) {
 
 
-return { NuxtPage, NuxtLayout }
+const __returned__ = { NuxtPage, NuxtLayout }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
 }
 
 })

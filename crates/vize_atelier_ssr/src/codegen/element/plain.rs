@@ -37,8 +37,16 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.push_string_part_static(">");
 
-        // Process children
-        self.process_children(&el.children, false, false, false);
+        if let Some(exp) = crate::get_v_html_exp(el) {
+            let exp = self.expression_to_string(exp);
+            self.push_string_part_dynamic(&cstr!("({exp}) ?? ''"));
+        } else if let Some(exp) = crate::get_v_text_exp(el) {
+            self.use_ssr_helper(RuntimeHelper::SsrInterpolate);
+            let exp = self.expression_to_string(exp);
+            self.push_string_part_dynamic(&cstr!("_ssrInterpolate({exp})"));
+        } else {
+            self.process_children(&el.children, false, false, false);
+        }
 
         // End tag
         self.push_string_part_static("</");
@@ -328,6 +336,12 @@ impl<'a> SsrCodegenContext<'a> {
                 self.push_string_part_dynamic(&style_exp);
                 self.push_string_part_static("\"");
             }
+            Some(name) if vize_carton::is_boolean_attr(name) => {
+                self.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
+                self.push_string_part_dynamic(&cstr!(
+                    "(_ssrIncludeBooleanAttr({exp})) ? \" {name}\" : \"\""
+                ));
+            }
             Some(name) => {
                 self.use_ssr_helper(RuntimeHelper::SsrRenderAttr);
                 self.push_string_part_dynamic(&cstr!("_ssrRenderAttr(\"{name}\", {exp})"));
@@ -369,7 +383,10 @@ impl<'a> SsrCodegenContext<'a> {
                         self.use_ssr_helper(RuntimeHelper::SsrIncludeBooleanAttr);
                         self.use_ssr_helper(RuntimeHelper::SsrLooseEqual);
                         let value = self.get_element_attr_value(el, "value");
-                        let value_exp = value.as_deref().unwrap_or("null");
+                        let value_exp = value
+                            .as_deref()
+                            .map(quoted_js_string)
+                            .unwrap_or_else(|| "null".to_compact_string());
                         self.push_string_part_dynamic(&cstr!(
                             "(_ssrIncludeBooleanAttr(_ssrLooseEqual({exp}, {value_exp}))) ? \" checked\" : \"\""
                         ));

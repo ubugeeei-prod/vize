@@ -147,11 +147,15 @@ function createVizeSymlinks(nodeModulesDir: string): void {
   }
 }
 
-function patchNuxtConfig(configPath: string, opts?: { removeModules?: string[] }): void {
+function patchNuxtConfig(
+  configPath: string,
+  opts?: { enableVize?: boolean; removeModules?: string[] },
+): void {
   let config = fs.readFileSync(configPath, "utf-8");
   let changed = false;
+  const enableVize = opts?.enableVize ?? true;
 
-  if (!config.includes("@vizejs/nuxt")) {
+  if (enableVize && !config.includes("@vizejs/nuxt")) {
     config = config.replace("modules: [", "modules: [\n    '@vizejs/nuxt',");
     config = config.replace(
       "compatibilityDate:",
@@ -323,7 +327,10 @@ function getGitFixtureSourceDir(name: string): string {
   return path.join(GIT_DIR, name);
 }
 
-function getMutableGitFixtureDir(name: string): string {
+function getMutableGitFixtureDir(name: string, variant?: string): string {
+  if (variant) {
+    return path.join(MUTABLE_GIT_PROJECTS_DIR, MUTABLE_GIT_WORKTREE_INSTANCE, variant, name);
+  }
   return path.join(MUTABLE_GIT_PROJECTS_DIR, MUTABLE_GIT_WORKTREE_INSTANCE, name);
 }
 
@@ -412,9 +419,9 @@ function cleanMutableWorktreeCaches(workDir: string): void {
   }
 }
 
-function syncGitFixtureWorktree(name: string): string {
+function syncGitFixtureWorktree(name: string, variant?: string): string {
   const sourceDir = getGitFixtureSourceDir(name);
-  const workDir = getMutableGitFixtureDir(name);
+  const workDir = getMutableGitFixtureDir(name, variant);
   const parentDir = path.dirname(workDir);
 
   fs.mkdirSync(parentDir, { recursive: true });
@@ -822,45 +829,7 @@ export const npmxApp: AppConfig = {
   },
   startupTimeout: 120_000,
   setup() {
-    const npmxDir = syncGitFixtureWorktree("npmx.dev");
-    const nmDir = path.join(npmxDir, "node_modules");
-
-    ensureLocalVizePackagesBuilt();
-
-    console.log("[npmx.dev:setup] pnpm install...");
-    execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
-      cwd: npmxDir,
-      stdio: "inherit",
-      timeout: 300_000,
-      env: {
-        ...process.env,
-        NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
-      },
-    });
-
-    createVizeSymlinks(nmDir);
-    patchNuxtConfig(path.join(npmxDir, "nuxt.config.ts"), {
-      removeModules: ["@nuxtjs/html-validator"],
-    });
-    const npmxAppPath = path.join(npmxDir, "app", "app.vue");
-    const npmxAppSource = fs.readFileSync(npmxAppPath, "utf-8");
-    const nextNpmxAppSource = npmxAppSource.replace(/\n\s*<NuxtPwaAssets\s*\/>\s*/g, "\n");
-    if (nextNpmxAppSource !== npmxAppSource) {
-      fs.writeFileSync(npmxAppPath, nextNpmxAppSource);
-    }
-    hoistPnpmPackage(nmDir, "vue-i18n");
-
-    // Ensure .nuxt/tsconfig.server.json exists (vite 8 needs it at startup)
-    console.log("[npmx.dev:setup] nuxt prepare...");
-    execSync("npx -y pnpm@10 exec nuxt prepare", {
-      cwd: npmxDir,
-      stdio: "inherit",
-      timeout: 180_000,
-      env: {
-        ...process.env,
-        NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
-      },
-    });
+    setupNpmxWorktree();
   },
   build: {
     command: "npx",
@@ -883,6 +852,95 @@ export const npmxApp: AppConfig = {
     patterns: ["app/**/*.vue"],
   },
 };
+
+function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): string {
+  const enableVize = opts?.enableVize ?? true;
+  const npmxDir = syncGitFixtureWorktree("npmx.dev", opts?.variant);
+  const nmDir = path.join(npmxDir, "node_modules");
+
+  if (enableVize) {
+    ensureLocalVizePackagesBuilt();
+  }
+
+  addPnpmOverrides(path.join(npmxDir, "package.json"), {
+    vite: "^8.0.0",
+  });
+
+  console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
+    cwd: npmxDir,
+    stdio: "inherit",
+    timeout: 300_000,
+    env: {
+      ...process.env,
+      NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+    },
+  });
+
+  if (enableVize) {
+    createVizeSymlinks(nmDir);
+  }
+
+  patchNuxtConfig(path.join(npmxDir, "nuxt.config.ts"), {
+    enableVize,
+    removeModules: ["@nuxtjs/html-validator"],
+  });
+
+  const npmxAppPath = path.join(npmxDir, "app", "app.vue");
+  const npmxAppSource = fs.readFileSync(npmxAppPath, "utf-8");
+  const nextNpmxAppSource = npmxAppSource.replace(/\n\s*<NuxtPwaAssets\s*\/>\s*/g, "\n");
+  if (nextNpmxAppSource !== npmxAppSource) {
+    fs.writeFileSync(npmxAppPath, nextNpmxAppSource);
+  }
+  hoistPnpmPackage(nmDir, "vue-i18n");
+
+  // Ensure .nuxt/tsconfig.server.json exists (vite 8 needs it at startup)
+  console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] nuxt prepare...`);
+  execSync("npx -y pnpm@10 exec nuxt prepare", {
+    cwd: npmxDir,
+    stdio: "inherit",
+    timeout: 180_000,
+    env: {
+      ...process.env,
+      NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+    },
+  });
+
+  return npmxDir;
+}
+
+function createNpmxVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
+  const variant = `vrt-${kind}`;
+  return {
+    name: `npmx.dev:${kind}`,
+    cwd: getMutableGitFixtureDir("npmx.dev", variant),
+    command: "npx",
+    args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"],
+    port,
+    url: `http://127.0.0.1:${port}`,
+    mountSelector: "#__nuxt",
+    readyPattern: new RegExp(
+      `Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`,
+    ),
+    allowNon200: true,
+    waitUntil: "load",
+    readyDelay: 30_000,
+    env: {
+      NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+    },
+    startupTimeout: 120_000,
+    setup() {
+      setupNpmxWorktree({ enableVize: kind === "candidate", variant });
+    },
+  };
+}
+
+export function createNpmxVisualParityApps(): { candidate: AppConfig; reference: AppConfig } {
+  return {
+    reference: createNpmxVisualParityApp("reference", 5320),
+    candidate: createNpmxVisualParityApp("candidate", 5321),
+  };
+}
 
 export const vuefesApp: AppConfig = {
   name: "vuefes-2025",

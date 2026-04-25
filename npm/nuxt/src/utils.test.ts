@@ -3,6 +3,7 @@ import {
   buildNuxtCompilerOptions,
   buildNuxtDevAssetBase,
   isVizeVirtualVueModuleId,
+  normalizeNuxtInjectedKeysForVizeVirtualModule,
   normalizeVizeVirtualVueModuleId,
 } from "./utils.ts";
 
@@ -56,5 +57,21 @@ assert.equal(
   "/repo/app/components/Foo.vue?vue&type=template",
   "Nuxt bridge normalization should preserve query strings on SSR virtual ids",
 );
+
+{
+  const clientCode =
+    "useFetch('/api/a', {}, '$client-a' /* nuxt-injected */); useFetch('/api/b', {}, '$client-b' /* nuxt-injected */)";
+  const ssrCode =
+    "useFetch('/api/a', {}, '$ssr-a' /* nuxt-injected */); useFetch('/api/b', {}, '$ssr-b' /* nuxt-injected */)";
+
+  assert.equal(
+    normalizeNuxtInjectedKeysForVizeVirtualModule(clientCode, "\0/repo/app/components/Foo.vue.ts"),
+    normalizeNuxtInjectedKeysForVizeVirtualModule(
+      ssrCode,
+      "\0vize-ssr:/repo/app/components/Foo.vue.ts",
+    ),
+    "Nuxt injected keys should match between client and SSR virtual modules",
+  );
+}
 
 console.log("✅ nuxt utils tests passed!");
