@@ -3,10 +3,14 @@
 //! Handles generating TypeScript code for template expressions (with optional
 //! v-if narrowing) and component prop value type assertions.
 
-use super::{helpers::generated_text_range, types::VizeMapping};
+use super::{
+    helpers::{generated_text_range, is_reserved_identifier},
+    types::VizeMapping,
+};
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
+use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_croquis::analysis::ComponentUsage;
 use vize_croquis::analyzer::strip_js_comments;
@@ -24,6 +28,7 @@ pub(crate) fn generate_expression(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     expr: &vize_croquis::TemplateExpression,
+    template_prop_names: &FxHashSet<String>,
     template_offset: u32,
     indent: &str,
 ) {
@@ -33,22 +38,38 @@ pub(crate) fn generate_expression(
         "canon.virtual_ts.expression.strip_comments",
         strip_js_comments(expr.content.as_str())
     );
+    let trimmed_expression = expression.as_ref().trim();
+    let rewritten_expression =
+        rewrite_reserved_template_prop(trimmed_expression, template_prop_names);
+    let generated_expression = rewritten_expression
+        .as_ref()
+        .map_or_else(|| expression.as_ref(), |s| s.as_str());
+    let mapping_needle = if rewritten_expression.is_some() {
+        generated_expression
+    } else {
+        expression.as_ref()
+    };
 
     if let Some(ref guard) = expr.vif_guard {
+        let trimmed_guard = guard.as_str().trim();
+        let rewritten_guard = rewrite_reserved_template_prop(trimmed_guard, template_prop_names);
+        let generated_guard = rewritten_guard
+            .as_ref()
+            .map_or_else(|| guard.as_str(), |s| s.as_str());
         // Wrap in if block for type narrowing
-        append!(*ts, "{indent}if ({guard}) {{\n");
+        append!(*ts, "{indent}if ({generated_guard}) {{\n");
         let gen_stmt_start = ts.len();
         append!(
             *ts,
             "{indent}  void ({}); // {}\n",
-            expression.as_ref(),
+            generated_expression,
             expr.kind.as_str()
         );
         let gen_stmt_end = ts.len();
         mappings.push(VizeMapping {
             gen_range: generated_text_range(
                 &ts[gen_stmt_start..gen_stmt_end],
-                expression.as_ref(),
+                mapping_needle,
                 gen_stmt_start,
             ),
             src_range: src_start..src_end,
@@ -63,14 +84,14 @@ pub(crate) fn generate_expression(
         append!(
             *ts,
             "{indent}void ({}); // {}\n",
-            expression.as_ref(),
+            generated_expression,
             expr.kind.as_str()
         );
         let gen_stmt_end = ts.len();
         mappings.push(VizeMapping {
             gen_range: generated_text_range(
                 &ts[gen_stmt_start..gen_stmt_end],
-                expression.as_ref(),
+                mapping_needle,
                 gen_stmt_start,
             ),
             src_range: src_start..src_end,
@@ -79,12 +100,23 @@ pub(crate) fn generate_expression(
     }
 }
 
+fn rewrite_reserved_template_prop(
+    expression: &str,
+    template_prop_names: &FxHashSet<String>,
+) -> Option<String> {
+    if !is_reserved_identifier(expression) || !template_prop_names.contains(expression) {
+        return None;
+    }
+    Some(cstr!("props[\"{expression}\"]"))
+}
+
 /// Generate component prop value checks at the given indentation level.
 pub(crate) fn generate_component_prop_checks(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     usage: &ComponentUsage,
     idx: usize,
+    template_prop_names: &FxHashSet<String>,
     template_offset: u32,
     indent: &str,
 ) {
@@ -101,6 +133,12 @@ pub(crate) fn generate_component_prop_checks(
                     "canon.virtual_ts.prop_check.strip_comments",
                     strip_js_comments(value.as_str())
                 );
+                let trimmed_value = value.as_ref().trim();
+                let rewritten_value =
+                    rewrite_reserved_template_prop(trimmed_value, template_prop_names);
+                let generated_value = rewritten_value
+                    .as_ref()
+                    .map_or_else(|| value.as_ref(), |s| s.as_str());
                 append!(
                     *ts,
                     "{indent}// @vize-map: prop -> {prop_src_start}:{prop_src_end}\n",
@@ -122,7 +160,7 @@ pub(crate) fn generate_component_prop_checks(
                 append!(
                     *ts,
                     "{expr_indent}const {check_name}: __{component_name}_{idx}_prop_{safe_prop_name} = {};\n",
-                    value.as_ref(),
+                    generated_value,
                 );
                 let gen_stmt_end = ts.len();
                 append!(*ts, "{expr_indent}void {check_name};\n");

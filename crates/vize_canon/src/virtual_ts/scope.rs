@@ -18,7 +18,7 @@ use super::{
     expressions::{generate_component_prop_checks, generate_expression},
     helpers::{
         generated_text_range, get_dom_event_type, strip_as_assertion, to_camel_case,
-        to_safe_identifier,
+        to_safe_identifier, to_safe_identifier_fragment,
     },
     types::VizeMapping,
 };
@@ -30,6 +30,7 @@ pub(crate) struct ScopeGenContext<'a> {
     pub(crate) summary: &'a Croquis,
     pub(crate) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
+    pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
 }
 
@@ -38,6 +39,7 @@ pub(crate) struct VForPropsContext<'a> {
     pub(crate) summary: &'a Croquis,
     pub(crate) components_by_scope: &'a FxHashMap<u32, Vec<(usize, &'a ComponentUsage)>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
+    pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
 }
 
@@ -56,6 +58,7 @@ pub(crate) fn generate_scope_closures(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
+    template_prop_names: &FxHashSet<String>,
     template_offset: u32,
 ) {
     // Group expressions by scope_id
@@ -125,7 +128,14 @@ pub(crate) fn generate_scope_closures(
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
-                        generate_expression(ts, mappings, expr, template_offset, "  ")
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            template_prop_names,
+                            template_offset,
+                            "  "
+                        )
                     );
                 }
             }
@@ -136,6 +146,7 @@ pub(crate) fn generate_scope_closures(
             summary,
             expressions_by_scope: &expressions_by_scope,
             children_map: &children_map,
+            template_prop_names,
             template_offset,
         };
         profile!(
@@ -153,7 +164,14 @@ pub(crate) fn generate_scope_closures(
     // Generate component props type checks (scope-aware)
     profile!(
         "canon.virtual_ts.component_props",
-        generate_component_props(ts, mappings, summary, &children_map, template_offset)
+        generate_component_props(
+            ts,
+            mappings,
+            summary,
+            &children_map,
+            template_prop_names,
+            template_offset
+        )
     );
 }
 
@@ -208,6 +226,18 @@ fn generate_undefined_refs(
     }
 }
 
+fn append_v_for_comment(ts: &mut String, indent: &str, label: &str, alias: &str, source: &str) {
+    append!(*ts, "\n{indent}// {label}: {alias} in ");
+    for c in source.chars() {
+        if c == '\n' || c == '\r' {
+            ts.push(' ');
+        } else {
+            ts.push(c);
+        }
+    }
+    ts.push('\n');
+}
+
 /// Generate component props type checks (scope-aware).
 /// Type declarations are at template level, value checks are in their scope.
 fn generate_component_props(
@@ -215,6 +245,7 @@ fn generate_component_props(
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     children_map: &FxHashMap<u32, Vec<ScopeId>>,
+    template_prop_names: &FxHashSet<String>,
     template_offset: u32,
 ) {
     if summary.component_usages.is_empty() {
@@ -304,7 +335,15 @@ fn generate_component_props(
         }
         profile!(
             "canon.virtual_ts.component_prop_checks",
-            generate_component_prop_checks(ts, mappings, usage, idx, template_offset, "  ")
+            generate_component_prop_checks(
+                ts,
+                mappings,
+                usage,
+                idx,
+                template_prop_names,
+                template_offset,
+                "  "
+            )
         );
     }
 
@@ -321,6 +360,7 @@ fn generate_component_props(
             summary,
             components_by_scope: &components_by_scope,
             children_map,
+            template_prop_names,
             template_offset,
         };
         profile!(
@@ -343,11 +383,12 @@ fn generate_scope_node(
 
     match scope.data() {
         ScopeData::VFor(data) => {
-            append!(
-                *ts,
-                "\n{indent}// v-for scope: {} in {}\n",
-                data.value_alias,
-                data.source
+            append_v_for_comment(
+                ts,
+                indent,
+                "v-for scope",
+                data.value_alias.as_str(),
+                data.source.as_str(),
             );
 
             // Strip TypeScript `as Type` assertion from v-for source expression.
@@ -409,7 +450,14 @@ fn generate_scope_node(
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
-                        generate_expression(ts, mappings, expr, ctx.template_offset, &inner_indent)
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            &inner_indent
+                        )
                     );
                 }
             }
@@ -427,10 +475,10 @@ fn generate_scope_node(
             append!(*ts, "\n{indent}// v-slot scope: #{}\n", data.name);
 
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
+            let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
             append!(
                 *ts,
-                "{indent}void function _slot_{}({props_pattern}: any) {{\n",
-                data.name,
+                "{indent}void function _slot_{safe_slot_name}({props_pattern}: any) {{\n",
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
@@ -447,7 +495,14 @@ fn generate_scope_node(
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
-                        generate_expression(ts, mappings, expr, ctx.template_offset, &inner_indent)
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            &inner_indent
+                        )
                     );
                 }
             }
@@ -544,7 +599,14 @@ fn generate_scope_node(
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
-                        generate_expression(ts, mappings, expr, ctx.template_offset, indent)
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            indent
+                        )
                     );
                 }
             }
@@ -681,11 +743,12 @@ fn generate_closure_component_props_recursive(
                 "any".into()
             };
 
-            append!(
-                *ts,
-                "\n{indent}// Component props in v-for scope: {} in {}\n",
-                data.value_alias,
-                data.source
+            append_v_for_comment(
+                ts,
+                indent,
+                "Component props in v-for scope",
+                data.value_alias.as_str(),
+                data.source.as_str(),
             );
             if is_numeric {
                 append!(
@@ -730,6 +793,7 @@ fn generate_closure_component_props_recursive(
                             mappings,
                             usage,
                             idx,
+                            ctx.template_prop_names,
                             ctx.template_offset,
                             &inner_indent,
                         )
@@ -762,6 +826,7 @@ fn generate_closure_component_props_recursive(
         }
         ScopeData::VSlot(data) => {
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
+            let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
             append!(
                 *ts,
                 "\n{indent}// Component props in v-slot scope: #{}\n",
@@ -769,8 +834,7 @@ fn generate_closure_component_props_recursive(
             );
             append!(
                 *ts,
-                "{indent}void function _slot_props_{}({props_pattern}: any) {{\n",
-                data.name,
+                "{indent}void function _slot_props_{safe_slot_name}({props_pattern}: any) {{\n",
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
@@ -791,6 +855,7 @@ fn generate_closure_component_props_recursive(
                             mappings,
                             usage,
                             idx,
+                            ctx.template_prop_names,
                             ctx.template_offset,
                             &inner_indent,
                         )

@@ -5,7 +5,8 @@ use std::{
 
 use super::super::{Diagnostic, TypeCheckResult, VirtualProject};
 use crate::batch::error::{CorsaError, CorsaResult};
-use crate::batch::executor::diagnostics::should_skip_diagnostic;
+use crate::batch::executor::diagnostics::{should_skip_diagnostic, DiagnosticMapper};
+use vize_carton::profile;
 use vize_carton::{cstr, String};
 
 pub(super) fn check_with_cli(
@@ -13,14 +14,20 @@ pub(super) fn check_with_cli(
     project: &VirtualProject,
 ) -> CorsaResult<TypeCheckResult> {
     let config_path = project.virtual_root().join("tsconfig.json");
-    let output = Command::new(corsa_path)
-        .current_dir(project.virtual_root())
-        .arg("--pretty")
-        .arg("false")
-        .arg("--project")
-        .arg(&config_path)
-        .output()?;
-    let diagnostics = parse_output_diagnostics(&output, project);
+    let output = profile!(
+        "canon.corsa.cli.command",
+        Command::new(corsa_path)
+            .current_dir(project.virtual_root())
+            .arg("--pretty")
+            .arg("false")
+            .arg("--project")
+            .arg(&config_path)
+            .output()
+    )?;
+    let diagnostics = profile!(
+        "canon.corsa.cli.parse",
+        parse_output_diagnostics(&output, project)
+    );
     let success = output.status.success()
         && diagnostics
             .iter()
@@ -42,23 +49,28 @@ pub(super) fn check_with_cli(
 
 fn parse_output_diagnostics(output: &Output, project: &VirtualProject) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
+    let mut mapper = DiagnosticMapper::new(project);
     #[allow(clippy::disallowed_types)]
     let stdout = std::string::String::from_utf8_lossy(&output.stdout);
-    parse_cli_diagnostics(stdout.as_ref(), project, &mut diagnostics);
+    parse_cli_diagnostics(stdout.as_ref(), project, &mut mapper, &mut diagnostics);
     #[allow(clippy::disallowed_types)]
     let stderr = std::string::String::from_utf8_lossy(&output.stderr);
-    parse_cli_diagnostics(stderr.as_ref(), project, &mut diagnostics);
+    parse_cli_diagnostics(stderr.as_ref(), project, &mut mapper, &mut diagnostics);
     diagnostics
 }
 
 fn parse_cli_diagnostics(
     output: &str,
     project: &VirtualProject,
+    mapper: &mut DiagnosticMapper<'_>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     for line in output.lines() {
-        if let Some(diagnostic) = parse_cli_diagnostic_line(line, project) {
+        if let Some(diagnostic) = parse_cli_diagnostic_line(line, project, mapper) {
             diagnostics.push(diagnostic);
+            continue;
+        }
+        if is_cli_diagnostic_line(line) {
             continue;
         }
 
@@ -74,7 +86,11 @@ fn parse_cli_diagnostics(
     }
 }
 
-fn parse_cli_diagnostic_line(line: &str, project: &VirtualProject) -> Option<Diagnostic> {
+fn parse_cli_diagnostic_line(
+    line: &str,
+    project: &VirtualProject,
+    mapper: &mut DiagnosticMapper<'_>,
+) -> Option<Diagnostic> {
     let (prefix, suffix) = line.split_once("): ")?;
     let open = prefix.rfind('(')?;
     let path = &prefix[..open];
@@ -99,7 +115,7 @@ fn parse_cli_diagnostic_line(line: &str, project: &VirtualProject) -> Option<Dia
     }
 
     let virtual_path = normalize_cli_path(path, project.virtual_root());
-    let original = project.map_to_original(&virtual_path, line, column)?;
+    let original = mapper.map_to_original(&virtual_path, line, column)?;
     Some(Diagnostic {
         file: original.path,
         line: original.line,
@@ -109,6 +125,27 @@ fn parse_cli_diagnostic_line(line: &str, project: &VirtualProject) -> Option<Dia
         severity,
         block_type: original.block_type,
     })
+}
+
+fn is_cli_diagnostic_line(line: &str) -> bool {
+    let Some((prefix, suffix)) = line.split_once("): ") else {
+        return false;
+    };
+    let Some(open) = prefix.rfind('(') else {
+        return false;
+    };
+    let position = &prefix[open + 1..];
+    let Some((line, column)) = position.split_once(',') else {
+        return false;
+    };
+    if line.parse::<u32>().is_err() || column.parse::<u32>().is_err() {
+        return false;
+    }
+
+    matches!(
+        suffix.split_once(' ').map(|(severity, _)| severity),
+        Some("error" | "warning" | "info")
+    )
 }
 
 fn normalize_cli_path(path: &str, virtual_root: &Path) -> PathBuf {
@@ -139,6 +176,7 @@ fn output_message(output: &Output) -> String {
 #[cfg(test)]
 mod tests {
     use super::parse_cli_diagnostics;
+    use crate::batch::executor::diagnostics::DiagnosticMapper;
     use crate::batch::VirtualProject;
     use std::{
         fs,
@@ -177,7 +215,8 @@ mod tests {
             project.virtual_root().join("src").join("main.ts").display()
         );
         let mut diagnostics = Vec::new();
-        parse_cli_diagnostics(output.as_str(), &project, &mut diagnostics);
+        let mut mapper = DiagnosticMapper::new(&project);
+        parse_cli_diagnostics(output.as_str(), &project, &mut mapper, &mut diagnostics);
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].file, source);

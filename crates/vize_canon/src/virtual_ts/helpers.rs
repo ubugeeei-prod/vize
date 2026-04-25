@@ -298,16 +298,98 @@ pub(crate) fn to_camel_case(s: &str) -> String {
 }
 
 /// Sanitize a string to be a valid TypeScript identifier.
-/// Replaces invalid characters (like ':') with underscores.
+/// Replaces invalid characters (like ':') with underscores and prefixes
+/// reserved words.
 /// Examples: "update:title" -> "update_title", "my-event" -> "my_event"
 pub(crate) fn to_safe_identifier(s: &str) -> String {
-    s.chars()
-        .map(|c| {
-            if c.is_alphanumeric() || c == '_' {
-                c
-            } else {
-                '_'
-            }
-        })
-        .collect()
+    let mut result = to_safe_identifier_fragment(s);
+
+    if !result
+        .chars()
+        .next()
+        .is_some_and(|c| c.is_ascii_alphabetic() || c == '_' || c == '$')
+    {
+        result.insert(0, '_');
+    }
+    if is_reserved_identifier(result.as_str()) {
+        result.insert(0, '_');
+    }
+
+    result
+}
+
+/// Sanitize a string for use inside a generated identifier that already has a
+/// safe prefix (for example `_slot_{name}`).
+pub(crate) fn to_safe_identifier_fragment(s: &str) -> String {
+    let mut result = String::with_capacity(s.len().max(1));
+
+    for c in s.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' || c == '$' {
+            result.push(c);
+        } else {
+            result.push('_');
+        }
+    }
+
+    if result.is_empty() {
+        result.push('_');
+    }
+
+    result
+}
+
+#[inline]
+pub(crate) fn is_reserved_identifier(s: &str) -> bool {
+    matches!(
+        s,
+        "await"
+            | "break"
+            | "case"
+            | "catch"
+            | "class"
+            | "const"
+            | "continue"
+            | "debugger"
+            | "default"
+            | "delete"
+            | "do"
+            | "else"
+            | "enum"
+            | "export"
+            | "extends"
+            | "false"
+            | "finally"
+            | "for"
+            | "function"
+            | "if"
+            | "import"
+            | "in"
+            | "instanceof"
+            | "new"
+            | "null"
+            | "return"
+            | "super"
+            | "switch"
+            | "this"
+            | "throw"
+            | "true"
+            | "try"
+            | "typeof"
+            | "var"
+            | "void"
+            | "while"
+            | "with"
+            | "yield"
+            | "let"
+            | "static"
+            | "implements"
+            | "interface"
+            | "package"
+            | "private"
+            | "protected"
+            | "public"
+            | "as"
+            | "from"
+            | "of"
+    )
 }

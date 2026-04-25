@@ -6,8 +6,11 @@
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
+use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_croquis::Croquis;
+
+use super::helpers::to_safe_identifier;
 
 #[inline]
 fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {
@@ -24,15 +27,16 @@ fn emit_template_prop_binding(
     prop_name: &str,
     has_default: bool,
 ) {
+    let binding_name = to_safe_identifier(prop_name);
     if has_default {
         append!(
             *ts,
-            "  const {prop_name} = props[\"{prop_name}\"] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
+            "  const {binding_name} = props[\"{prop_name}\"] as Exclude<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
         );
     } else {
-        append!(*ts, "  const {prop_name} = props[\"{prop_name}\"];\n");
+        append!(*ts, "  const {binding_name} = props[\"{prop_name}\"];\n");
     }
-    append!(*ts, "  void {prop_name};\n");
+    append!(*ts, "  void {binding_name};\n");
 }
 
 /// Generate Props type definition at module level.
@@ -164,6 +168,57 @@ pub(crate) fn generate_props_variables(
         }
         ts.push('\n');
     }
+}
+
+pub(crate) fn collect_template_prop_names(
+    summary: &Croquis,
+    script_content: Option<&str>,
+) -> FxHashSet<String> {
+    let mut names = FxHashSet::default();
+    let props = summary.macros.props();
+    if !props.is_empty() {
+        for prop in props {
+            if should_skip_template_prop_binding(summary, prop.name.as_str()) {
+                continue;
+            }
+            names.insert(prop.name.as_str().into());
+        }
+        return names;
+    }
+
+    let Some(type_args) = summary
+        .macros
+        .define_props()
+        .and_then(|m| m.type_args.as_ref())
+    else {
+        return names;
+    };
+    let type_name = strip_outer_angle_brackets(type_args.trim());
+    let type_properties = summary.types.extract_properties(type_name);
+    if !type_properties.is_empty() {
+        for prop in &type_properties {
+            if should_skip_template_prop_binding(summary, prop.name.as_str()) {
+                continue;
+            }
+            names.insert(prop.name.as_str().into());
+        }
+        return names;
+    }
+
+    let Some(script) = script_content else {
+        return names;
+    };
+    let field_names = profile!(
+        "canon.virtual_ts.extract_interface_fields_for_expressions",
+        extract_interface_fields(script, type_name)
+    );
+    for field in &field_names {
+        if should_skip_template_prop_binding(summary, field.as_str()) {
+            continue;
+        }
+        names.insert(field.clone());
+    }
+    names
 }
 
 /// Extract field names from an interface or type literal in script content.

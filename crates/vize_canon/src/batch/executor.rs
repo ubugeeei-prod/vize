@@ -63,6 +63,19 @@ impl CorsaExecutor {
     pub fn check(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
         profile!("canon.executor.materialize", project.materialize())?;
 
+        match profile!("canon.corsa.cli", check_with_cli(&self.corsa_path, project)) {
+            Ok(result) => return Ok(result),
+            Err(_cli_error) => {
+                // Fall through to the project-session API. This keeps the batch
+                // runner usable with runtimes whose CLI diagnostics are not
+                // available or not parseable.
+            }
+        }
+
+        self.check_with_project_session(project)
+    }
+
+    fn check_with_project_session(&self, project: &VirtualProject) -> CorsaResult<TypeCheckResult> {
         let corsa_path = self.corsa_path.to_string_lossy();
         let mut client = match profile!(
             "canon.corsa.session",
