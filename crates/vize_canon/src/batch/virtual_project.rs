@@ -16,7 +16,9 @@ use oxc_span::SourceType;
 use serde_json::{Map, Value};
 use vize_atelier_core::parser::parse;
 use vize_atelier_sfc::{parse_sfc, SfcDescriptor, SfcParseOptions};
-use vize_carton::{cstr, profile, Bump, FxHashMap, String as CompactString, ToCompactString};
+use vize_carton::{
+    cstr, profile, Bump, FxHashMap, FxHashSet, String as CompactString, ToCompactString,
+};
 use vize_croquis::{Analyzer, AnalyzerOptions, ImportStatementInfo, ReExportInfo, TypeExport};
 
 /// A virtual file in the project.
@@ -237,9 +239,12 @@ impl VirtualProject {
         profile!(
             "canon.project.write_files",
             (|| -> CorsaResult<()> {
+                let mut created_dirs = FxHashSet::default();
                 for file in self.virtual_files.values() {
                     if let Some(parent) = file.virtual_path.parent() {
-                        std::fs::create_dir_all(parent)?;
+                        if created_dirs.insert(parent.to_path_buf()) {
+                            std::fs::create_dir_all(parent)?;
+                        }
                     }
                     std::fs::write(&file.virtual_path, &file.content)?;
                 }

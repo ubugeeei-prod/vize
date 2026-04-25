@@ -409,6 +409,17 @@ fn render_diagnostics(
 
 fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
     let profile_dir = PathBuf::from("node_modules/.vize/check-profile");
+    if profile_dir.exists() {
+        if let Err(error) = fs::remove_dir_all(&profile_dir) {
+            eprintln!(
+                "Failed to clean profile directory {}: {}",
+                profile_dir.display(),
+                error
+            );
+            return;
+        }
+    }
+
     if let Err(error) = fs::create_dir_all(&profile_dir) {
         eprintln!("Failed to create profile directory: {}", error);
         return;

@@ -85,6 +85,13 @@ impl ImportRewriter {
 
     /// Rewrite imports in the given source code.
     pub fn rewrite(&self, source: &str, source_type: SourceType) -> RewriteResult {
+        if !source.contains(".vue") {
+            return RewriteResult {
+                code: source.to_compact_string(),
+                source_map: ImportSourceMap::empty(),
+            };
+        }
+
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_module_specifier(path)
         })
@@ -96,6 +103,13 @@ impl ImportRewriter {
         source: &str,
         source_type: SourceType,
     ) -> RewriteResult {
+        if !source.contains(".vue.ts") {
+            return RewriteResult {
+                code: source.to_compact_string(),
+                source_map: ImportSourceMap::empty(),
+            };
+        }
+
         self.rewrite_with(source, source_type, |path| {
             self.rewrite_declaration_specifier(path)
         })

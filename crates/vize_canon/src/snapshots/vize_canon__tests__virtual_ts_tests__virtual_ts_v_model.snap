@@ -27,6 +27,15 @@ declare global {
 type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
 type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
 type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
+type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
+type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
+type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
+type __DefaultFactory<T> = (props: any) => T;
+type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
+type __Ref<T> = import('vue').Ref<T>;
+type __ShallowRef<T> = import('vue').ShallowRef<T>;
 import { ref } from 'vue'
 
 // ========== Exported Types ==========
@@ -35,20 +44,6 @@ export type Props = {};
 // ========== Setup Scope ==========
 function __setup() {
   // Compiler macros (only valid in setup scope, not global)
-  // Emit type helper: converts { event: [args] } to callable emit function
-  type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
-  type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
-  type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
-  type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
-  type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
-  type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
-  type __DefaultFactory<T> = (props: any) => T;
-  type __WithDefaultValue<T> = T | __DefaultFactory<T>;
-  type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-  type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
-  // Vue ref type aliases (resolved from node_modules/vue)
-  type __Ref<T> = import('vue').Ref<T>;
-  type __ShallowRef<T> = import('vue').ShallowRef<T>;
   function defineProps<_T = unknown>(): _T;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
@@ -75,7 +70,7 @@ function __setup() {
   const checked = ref(false)
   const selected = ref('option1')
   
-  // @vize-map: 4849:4944 -> 0:108
+  // @vize-map: 4217:4312 -> 0:108
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
