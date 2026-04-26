@@ -23,13 +23,11 @@
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 #[allow(clippy::disallowed_types)]
 use std::sync::Arc;
-use vize_carton::cstr;
-use vize_carton::FxHashMap;
-use vize_carton::String;
+use vize_carton::{cstr, FxHashMap, FxHashSet, String};
 
 /// JSON-RPC Request
 #[derive(Debug, Deserialize)]
@@ -108,6 +106,8 @@ pub struct CorsaServer {
     cache: FxHashMap<String, String>,
     /// Project-session client for Corsa (lazy initialized).
     corsa_client: Option<crate::corsa_client::CorsaProjectClient>,
+    /// Virtual documents currently synced into the persistent Corsa session.
+    open_virtual_documents: FxHashSet<String>,
 }
 
 impl CorsaServer {
@@ -124,6 +124,7 @@ impl CorsaServer {
             running: Arc::new(AtomicBool::new(false)),
             cache: FxHashMap::default(),
             corsa_client: None,
+            open_virtual_documents: FxHashSet::default(),
         }
     }
 
@@ -404,17 +405,19 @@ impl CorsaServer {
             self.corsa_client = Some(client);
         }
 
+        let virtual_uri = self.virtual_uri_for(uri);
         let client = self
             .corsa_client
             .as_mut()
             .expect("corsa_client must be initialized above");
 
-        // Create virtual file URI (file:///path/to/file.vue.ts)
-        let virtual_uri = cstr!("file://{uri}.ts");
-
-        client.did_open(&virtual_uri, content)?;
+        if self.open_virtual_documents.contains(virtual_uri.as_str()) {
+            client.did_change(&virtual_uri, content)?;
+        } else {
+            client.did_open(&virtual_uri, content)?;
+            self.open_virtual_documents.insert(virtual_uri.clone());
+        }
         let corsa_diagnostics = client.request_diagnostics(&virtual_uri)?;
-        client.did_close(&virtual_uri)?;
 
         // Convert Corsa's editor-style diagnostics to the server payload.
         let diagnostics = corsa_diagnostics
@@ -445,6 +448,30 @@ impl CorsaServer {
         Ok(diagnostics)
     }
 
+    fn virtual_uri_for(&self, uri: &str) -> String {
+        if uri.starts_with("file://") || uri.contains("://") {
+            return cstr!("{uri}.ts");
+        }
+
+        let virtual_path = cstr!("{uri}.ts");
+        let path = Path::new(virtual_path.as_str());
+        let path = if path.is_absolute() {
+            path.to_path_buf()
+        } else {
+            self.working_dir().join(path)
+        };
+        crate::file_uri::path_to_file_uri(&path)
+    }
+
+    fn working_dir(&self) -> PathBuf {
+        self.config
+            .working_dir
+            .as_deref()
+            .map(PathBuf::from)
+            .or_else(|| std::env::current_dir().ok())
+            .unwrap_or_else(|| PathBuf::from("."))
+    }
+
     /// Stop the server.
     pub fn stop(&self) {
         self.running.store(false, Ordering::SeqCst);
@@ -459,7 +486,8 @@ impl Default for CorsaServer {
 
 #[cfg(test)]
 mod tests {
-    use super::JsonRpcRequest;
+    use super::{CorsaServer, JsonRpcRequest, ServerConfig};
+    use vize_carton::String;
 
     #[test]
     fn test_json_rpc_request_parse() {
@@ -467,5 +495,38 @@ mod tests {
         let request: JsonRpcRequest = serde_json::from_str(json).unwrap();
         assert_eq!(request.method, "check");
         assert_eq!(request.id, Some(1));
+    }
+
+    #[test]
+    fn relative_virtual_uris_are_rooted_in_working_dir() {
+        let server = CorsaServer::with_config(ServerConfig {
+            corsa_path: None,
+            working_dir: Some("/workspace/project".into()),
+        });
+
+        assert_eq!(
+            server.virtual_uri_for("src/App.vue"),
+            String::from("file:///workspace/project/src/App.vue.ts")
+        );
+    }
+
+    #[test]
+    fn absolute_virtual_uris_are_file_uris() {
+        let server = CorsaServer::new();
+
+        assert_eq!(
+            server.virtual_uri_for("/workspace/pages/[name] #1.vue"),
+            String::from("file:///workspace/pages/%5Bname%5D%20%231.vue.ts")
+        );
+    }
+
+    #[test]
+    fn existing_file_uris_keep_their_scheme() {
+        let server = CorsaServer::new();
+
+        assert_eq!(
+            server.virtual_uri_for("file:///workspace/src/App.vue"),
+            String::from("file:///workspace/src/App.vue.ts")
+        );
     }
 }
