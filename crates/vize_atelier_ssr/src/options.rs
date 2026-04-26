@@ -17,6 +17,10 @@ pub struct SsrCompilerOptions {
     #[serde(default)]
     pub comments: bool,
 
+    /// Current SFC component name for self-reference resolution
+    #[serde(default)]
+    pub component_name: Option<String>,
+
     /// Whether to inline template
     #[serde(default)]
     pub inline: bool,
@@ -47,6 +51,7 @@ impl Clone for SsrCompilerOptions {
         Self {
             scope_id: self.scope_id.clone(),
             comments: self.comments,
+            component_name: self.component_name.clone(),
             inline: self.inline,
             is_ts: self.is_ts,
             custom_renderer: self.custom_renderer,
@@ -67,6 +72,7 @@ mod tests {
         let opts = SsrCompilerOptions::default();
         assert!(opts.scope_id.is_none());
         assert!(!opts.comments);
+        assert!(opts.component_name.is_none());
         assert!(!opts.inline);
         assert!(!opts.is_ts);
         assert!(opts.ssr_css_vars.is_none());

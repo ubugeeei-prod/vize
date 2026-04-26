@@ -24,10 +24,12 @@ use super::{
             has_dynamic_slots_flag, has_slot_children, has_slot_outlet_props,
         },
     },
-    directives::{generate_vmodel_closing, generate_vshow_closing},
+    directives::{
+        generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
+    },
     helpers::{
-        has_renderable_props, has_vmodel_directive, has_vshow_directive, is_dynamic_component_tag,
-        is_is_prop, is_renderable_prop, is_whitespace_or_comment,
+        has_custom_directives, has_renderable_props, has_vmodel_directive, has_vshow_directive,
+        is_dynamic_component_tag, is_is_prop, is_renderable_prop, is_whitespace_or_comment,
     },
 };
 use vize_carton::ToCompactString;
@@ -60,16 +62,25 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
     match el.tag_type {
         ElementType::Element => {
-            // Check for v-model directive on native elements (only if no v-show)
-            let has_vmodel = has_vmodel_directive(el);
+            // Check for custom directives.
+            // Inline children need the same withDirectives wrapping as block roots.
+            let has_custom_dirs = has_custom_directives(el);
+            if has_custom_dirs {
+                ctx.use_helper(RuntimeHelper::WithDirectives);
+                ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
+                ctx.push("(");
+            }
+
+            // Check for v-model directive on native elements (only if no custom directives)
+            let has_vmodel = has_vmodel_directive(el) && !has_custom_dirs;
             if has_vmodel {
                 ctx.use_helper(RuntimeHelper::WithDirectives);
                 ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
                 ctx.push("(");
             }
 
-            // Check for v-show directive (only if no v-model)
-            let has_vshow = has_vshow_directive(el) && !has_vmodel;
+            // Check for v-show directive (only if no custom directives or v-model)
+            let has_vshow = has_vshow_directive(el) && !has_vmodel && !has_custom_dirs;
             if has_vshow {
                 ctx.use_helper(RuntimeHelper::WithDirectives);
                 ctx.use_helper(RuntimeHelper::VShow);
@@ -139,6 +150,12 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
             ctx.push(")");
 
+            // Close withDirectives for custom directives.
+            // This helper also merges v-show when both are present.
+            if has_custom_dirs {
+                generate_custom_directives_closing(ctx, el);
+            }
+
             // Close withDirectives for v-model
             if has_vmodel {
                 generate_vmodel_closing(ctx, el);
@@ -150,9 +167,16 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             }
         }
         ElementType::Component => {
+            let has_custom_dirs = has_custom_directives(el);
+            if has_custom_dirs {
+                ctx.use_helper(RuntimeHelper::WithDirectives);
+                ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
+                ctx.push("(");
+            }
+
             // Support v-show on non-block components:
             // _withDirectives(_createVNode(...), [[_vShow, expr]])
-            let has_vshow = has_vshow_directive(el);
+            let has_vshow = has_vshow_directive(el) && !has_custom_dirs;
             if has_vshow {
                 ctx.use_helper(RuntimeHelper::WithDirectives);
                 ctx.use_helper(RuntimeHelper::VShow);
@@ -334,6 +358,10 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             }
 
             ctx.push(")");
+
+            if has_custom_dirs {
+                generate_custom_directives_closing(ctx, el);
+            }
 
             // Close withDirectives for v-show on component
             if has_vshow {

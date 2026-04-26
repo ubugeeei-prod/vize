@@ -79,10 +79,7 @@ pub(crate) fn run(args: BuildArgs) {
     let results: Vec<_> = files
         .par_iter()
         .map(|path| {
-            let source_size = fs::metadata(path).map(|m| m.len() as usize).unwrap_or(0);
-            stats.total_bytes.fetch_add(source_size, Ordering::Relaxed);
-
-            match compile_file_with_profile(path, args.ssr, args.script_ext, &stats) {
+            match compile_file_with_profile(path, args.ssr, args.script_ext, &stats, args.profile) {
                 Ok((output, profile)) => {
                     stats.success.fetch_add(1, Ordering::Relaxed);
                     stats
@@ -263,16 +260,8 @@ pub(crate) fn run(args: BuildArgs) {
         let profiler = global_profiler();
         let operation_summary = profiler.summary();
         profiler.disable();
-        let total_parse = stats
-            .total_parse_time
-            .lock()
-            .map(|d| *d)
-            .unwrap_or(Duration::ZERO);
-        let total_compile = stats
-            .total_compile_time
-            .lock()
-            .map(|d| *d)
-            .unwrap_or(Duration::ZERO);
+        let total_parse = stats.total_parse_time();
+        let total_compile = stats.total_compile_time();
 
         let mut all_profiles = profiles.into_inner().unwrap_or_default();
         all_profiles.sort_by_key(|profile| std::cmp::Reverse(profile.total_time));
@@ -490,26 +479,13 @@ fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
     path_str.ends_with(".vue")
 }
 
-/// Detect the script language from `<script lang="...">` in the SFC source.
-fn detect_script_lang(source: &str) -> String {
-    let script_pattern = regex_lite::Regex::new(r#"<script[^>]*\blang\s*=\s*["']([^"']+)["']"#)
-        .expect("Invalid regex");
-
-    if let Some(captures) = script_pattern.captures(source) {
-        if let Some(lang) = captures.get(1) {
-            return lang.as_str().to_compact_string();
-        }
-    }
-
-    "js".into()
-}
-
 /// Compile a single `.vue` file with profiling information.
 fn compile_file_with_profile(
     path: &PathBuf,
     ssr: bool,
     script_ext: ScriptExtension,
     stats: &CompileStats,
+    record_profile_totals: bool,
 ) -> Result<(CompileOutput, FileProfile), CompileError> {
     let file_start = Instant::now();
 
@@ -521,14 +497,13 @@ fn compile_file_with_profile(
     })?;
 
     let file_size = source.len();
+    stats.total_bytes.fetch_add(file_size, Ordering::Relaxed);
 
     let filename: String = path
         .file_name()
         .and_then(|n| n.to_str())
         .unwrap_or("anonymous.vue")
         .into();
-
-    let script_lang = detect_script_lang(&source);
 
     // Parse
     let parse_start = Instant::now();
@@ -546,7 +521,17 @@ fn compile_file_with_profile(
             }
         })?;
     let parse_time = parse_start.elapsed();
-    stats.add_parse_time(parse_time);
+    if record_profile_totals {
+        stats.add_parse_time(parse_time);
+    }
+
+    let script_lang = descriptor
+        .script_setup
+        .as_ref()
+        .and_then(|s| s.lang.as_deref())
+        .or_else(|| descriptor.script.as_ref().and_then(|s| s.lang.as_deref()))
+        .unwrap_or("js")
+        .to_compact_string();
 
     // Calculate sizes
     let template_size = descriptor
@@ -606,7 +591,9 @@ fn compile_file_with_profile(
         phase: ErrorPhase::Compile,
     })?;
     let compile_time = compile_start.elapsed();
-    stats.add_compile_time(compile_time);
+    if record_profile_totals {
+        stats.add_compile_time(compile_time);
+    }
 
     let total_time = file_start.elapsed();
 

@@ -222,6 +222,15 @@ test("check workflow only installs Playwright browsers on cache misses", () => {
   );
 });
 
+test("check workflow uploads the VRT HTML report when snapshots fail", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+
+  assert.match(workflow, /- name: Upload VRT report\s+if: steps\.vrt\.outcome == 'failure'/);
+  assert.match(workflow, /name:\s*playground-vrt-report/);
+  assert.match(workflow, /path:\s*playground\/playwright-report\//);
+  assert.match(workflow, /if-no-files-found:\s*ignore/);
+});
+
 test("check and docs workflows use the CI Rust profile for non-release native builds", () => {
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
   const deployDocsWorkflow = readRepoFile(".github", "workflows", "deploy-docs.yml");

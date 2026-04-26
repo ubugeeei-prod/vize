@@ -63,6 +63,11 @@ pub struct LintArgs {
 
 pub fn run(args: LintArgs) {
     let start = Instant::now();
+    let format = match args.format.as_str() {
+        "json" => OutputFormat::Json,
+        _ => OutputFormat::Text,
+    };
+    let render_details = should_render_lint_details(format, args.quiet);
 
     // Collect .vue files using glob patterns or directory walking
     let collect_start = Instant::now();
@@ -180,15 +185,9 @@ pub fn run(args: LintArgs) {
     let total_errors = error_count.load(Ordering::Relaxed);
     let total_warnings = warning_count.load(Ordering::Relaxed);
 
-    // Determine output format
-    let format = match args.format.as_str() {
-        "json" => OutputFormat::Json,
-        _ => OutputFormat::Text,
-    };
-
     // Format and print results
     let output_start = Instant::now();
-    if !args.quiet || total_errors > 0 || total_warnings > 0 {
+    if render_details {
         let lint_results: Vec<_> = results.iter().map(|(_, _, r)| r).cloned().collect();
         let sources: Vec<_> = results
             .iter()
@@ -322,5 +321,26 @@ pub fn run(args: LintArgs) {
             eprintln!("\nToo many warnings ({} > max {})", total_warnings, max);
             std::process::exit(1);
         }
+    }
+}
+
+#[inline]
+fn should_render_lint_details(format: OutputFormat, quiet: bool) -> bool {
+    matches!(format, OutputFormat::Json) || !quiet
+}
+
+#[cfg(test)]
+mod tests {
+    use super::should_render_lint_details;
+    use vize_patina::OutputFormat;
+
+    #[test]
+    fn quiet_text_output_skips_detailed_diagnostics() {
+        assert!(!should_render_lint_details(OutputFormat::Text, true));
+    }
+
+    #[test]
+    fn json_output_remains_machine_readable_in_quiet_mode() {
+        assert!(should_render_lint_details(OutputFormat::Json, true));
     }
 }

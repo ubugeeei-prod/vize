@@ -29,14 +29,14 @@ pub(super) fn map_batch_diagnostics(
     diagnostics
 }
 
-struct DiagnosticMapper<'a> {
+pub(super) struct DiagnosticMapper<'a> {
     project: &'a VirtualProject,
     original_sources: FxHashMap<PathBuf, CachedSource>,
     virtual_line_indexes: FxHashMap<PathBuf, LineIndex>,
 }
 
 impl<'a> DiagnosticMapper<'a> {
-    fn new(project: &'a VirtualProject) -> Self {
+    pub(super) fn new(project: &'a VirtualProject) -> Self {
         Self {
             project,
             original_sources: FxHashMap::default(),
@@ -75,7 +75,7 @@ impl<'a> DiagnosticMapper<'a> {
         None
     }
 
-    fn map_to_original(
+    pub(super) fn map_to_original(
         &mut self,
         virtual_path: &Path,
         line: u32,

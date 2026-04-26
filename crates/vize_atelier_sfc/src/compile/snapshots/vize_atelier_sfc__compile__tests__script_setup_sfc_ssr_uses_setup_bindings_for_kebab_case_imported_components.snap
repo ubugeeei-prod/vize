@@ -20,7 +20,9 @@ export default /*@__PURE__*/_defineComponent({
   setup(__props) {
 
 
-return { DashTest }
+const __returned__ = { DashTest }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
 }
 
 })

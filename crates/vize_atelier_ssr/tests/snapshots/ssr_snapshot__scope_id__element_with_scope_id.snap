@@ -3,5 +3,5 @@ source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
 expression: "compile_with_scope_id(\"<div>hello</div>\")"
 ---
 function ssrRender(_ctx, _push, _parent, _attrs, _scopeId) {
-  _push(`<div data-v-abc123>hello</div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)} data-v-abc123>hello</div>`)
 }

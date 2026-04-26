@@ -36,6 +36,8 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             let is_component = el.tag_type == ElementType::Component;
             let is_dynamic_component = is_component && is_dynamic_component_tag(&el.tag);
             let prev_skip_scope_id = ctx.skip_scope_id;
+            let unwrapped_child = unwrap_template_single_element(el);
+            let gen_is_template = is_template && unwrapped_child.is_none();
 
             // Check for v-memo directive on for item (skip if already handled by v-for)
             let memo_exp = if !ctx.skip_v_memo && has_v_memo(el) {
@@ -80,56 +82,74 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             }
 
             if is_stable {
-                // Stable fragment: use createElementVNode without block wrapper
-                ctx.use_helper(RuntimeHelper::CreateElementVNode);
-                ctx.push(ctx.helper(RuntimeHelper::CreateElementVNode));
-                ctx.push("(\"");
-                ctx.push(&el.tag);
-                ctx.push("\"");
+                if gen_is_template {
+                    ctx.use_helper(RuntimeHelper::OpenBlock);
+                    ctx.use_helper(RuntimeHelper::CreateElementBlock);
+                    ctx.use_helper(RuntimeHelper::Fragment);
+                    ctx.push("(");
+                    ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
+                    ctx.push("(), ");
+                    ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
+                    ctx.push("(");
+                    ctx.push(ctx.helper(RuntimeHelper::Fragment));
+                } else {
+                    // Stable fragment: use createElementVNode without block wrapper
+                    ctx.use_helper(RuntimeHelper::CreateElementVNode);
+                    ctx.push(ctx.helper(RuntimeHelper::CreateElementVNode));
+                    ctx.push("(\"");
+                    let node_el = unwrapped_child.unwrap_or(el);
+                    ctx.push(&node_el.tag);
+                    ctx.push("\"");
+                }
 
                 // Props with key and all other props
-                generate_for_item_props(ctx, el, key_exp, is_dynamic_component);
+                let props_el = unwrapped_child.unwrap_or(el);
+                generate_for_item_props(ctx, props_el, key_exp, is_dynamic_component);
 
                 // Children
-                if !el.children.is_empty() {
+                let children_el = unwrapped_child.unwrap_or(el);
+                if !children_el.children.is_empty() {
                     ctx.push(", ");
-                    generate_children(ctx, &el.children);
+                    if gen_is_template {
+                        ctx.push("[");
+                        ctx.indent();
+                        for (i, child) in children_el.children.iter().enumerate() {
+                            if i > 0 {
+                                ctx.push(",");
+                            }
+                            ctx.newline();
+                            generate_node(ctx, child);
+                        }
+                        ctx.deindent();
+                        ctx.newline();
+                        ctx.push("]");
+                    } else {
+                        generate_children(ctx, &children_el.children);
+                    }
                 }
 
                 // Add TEXT patch flag if has interpolation
-                let has_interpolation = el
+                let has_interpolation = children_el
                     .children
                     .iter()
                     .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
-                if has_interpolation {
+                if gen_is_template {
+                    ctx.push(", 64 /* STABLE_FRAGMENT */");
+                } else if has_interpolation {
                     ctx.push(", 1 /* TEXT */");
                 }
 
-                ctx.push(")");
+                if gen_is_template {
+                    ctx.push("))");
+                } else {
+                    ctx.push(")");
+                }
             } else {
                 // Dynamic list: wrap in block
                 ctx.use_helper(RuntimeHelper::OpenBlock);
                 ctx.push("(");
                 ctx.push(ctx.helper(RuntimeHelper::OpenBlock));
                 ctx.push("(), ");
-
-                // Template with single child element optimization:
-                // unwrap the template and generate the child directly as a block
-                let unwrapped_child: Option<&ElementNode<'_>> =
-                    if is_template && el.children.len() == 1 {
-                        if let TemplateChildNode::Element(ref child_el) = el.children[0] {
-                            if child_el.tag_type == ElementType::Element {
-                                Some(child_el)
-                            } else {
-                                None
-                            }
-                        } else {
-                            None
-                        }
-                    } else {
-                        None
-                    };
-                let gen_is_template = is_template && unwrapped_child.is_none();
 
                 if is_component {
                     // Component: use createBlock
@@ -350,6 +370,22 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             ctx.skip_scope_id = prev_skip_scope_id;
         }
         _ => generate_node(ctx, node),
+    }
+}
+
+fn unwrap_template_single_element<'a>(el: &'a ElementNode<'a>) -> Option<&'a ElementNode<'a>> {
+    if el.tag_type != ElementType::Template || el.children.len() != 1 {
+        return None;
+    }
+
+    let TemplateChildNode::Element(child_el) = &el.children[0] else {
+        return None;
+    };
+
+    if child_el.tag_type == ElementType::Element {
+        Some(child_el)
+    } else {
+        None
     }
 }
 

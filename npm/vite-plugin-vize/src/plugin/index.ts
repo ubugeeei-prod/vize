@@ -16,7 +16,7 @@ import fs from "node:fs";
 import type { VizeOptions, ConfigEnv } from "../types.ts";
 import { createFilter } from "../utils/index.ts";
 import { toBrowserImportPrefix } from "../virtual.ts";
-import { isBuiltinDefine, createLogger } from "../transform.ts";
+import { shouldApplyDefineInVirtualModule, createLogger } from "../transform.ts";
 import { loadConfig, vizeConfigStore } from "../config.ts";
 import { type VizePluginState, compileAll } from "./state.ts";
 import { resolveIdHook } from "./resolve.ts";
@@ -116,9 +116,10 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       }
       state.extractCss = state.isProduction;
 
-      // Capture custom Vite define values for applying to virtual modules.
-      // Vite's built-in define plugin may not process \0-prefixed virtual modules,
-      // so we apply replacements ourselves in the transform hook.
+      // Capture Vite define values for applying to virtual modules. Vite's
+      // built-in define plugin may not process \0-prefixed virtual modules, so
+      // the transform hook mirrors the environment-sensitive replacements that
+      // are safe to inline.
       // IMPORTANT: Nuxt shares the same plugin instance for client and server builds,
       // each calling configResolved with environment-specific defines. We must store
       // them separately to avoid the server's `document: "undefined"` leaking into
@@ -127,7 +128,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       const envDefine: Record<string, string> = {};
       if (resolvedConfig.define) {
         for (const [key, value] of Object.entries(resolvedConfig.define)) {
-          if (isBuiltinDefine(key)) continue;
+          if (!shouldApplyDefineInVirtualModule(key)) continue;
           if (typeof value === "string") {
             envDefine[key] = value;
           } else {

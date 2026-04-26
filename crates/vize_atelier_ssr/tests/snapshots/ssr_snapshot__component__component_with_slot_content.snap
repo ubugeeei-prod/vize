@@ -7,8 +7,10 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
     default: _withCtx((_, _push, _parent, _scopeId) => {
       if (_push) {
         _push(`<div>slot content</div>`)
+      } else {
+        return [_createElementVNode("div", null, "slot content")]
       }
     }),
-  _: 1
+    _: 1
   }, _parent))
 }

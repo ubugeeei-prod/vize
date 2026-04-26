@@ -237,6 +237,46 @@ const items = ['a', 'b']
     }
 
     #[test]
+    fn test_reserved_prop_and_hyphenated_slot_names() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import TrendChart from './TrendChart.vue'
+defineProps<{
+  class?: string
+}>()
+"#;
+        let template = r#"<TrendChart :class="class">
+  <template #area-gradient="{ id }">
+    {{ id }}
+  </template>
+</TrendChart>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        let expression_start = template.find("\"class\"").unwrap() + 1;
+        let expression_end = expression_start + "class".len();
+        let mapping = output
+            .mappings
+            .iter()
+            .find(|mapping| mapping.src_range == (expression_start..expression_end))
+            .expect("should map the rewritten class prop expression");
+        assert_eq!(&output.code[mapping.gen_range.clone()], "props[\"class\"]");
+
+        assert_virtual_ts_snapshot(
+            "virtual_ts_reserved_prop_and_hyphenated_slot_names",
+            output.code.as_str(),
+        );
+    }
+
+    #[test]
     fn test_multiple_event_handlers() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 

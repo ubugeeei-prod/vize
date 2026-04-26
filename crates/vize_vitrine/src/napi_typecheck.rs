@@ -125,6 +125,159 @@ pub fn type_check_napi(
     })
 }
 
+/// Declaration generation options for NAPI
+#[napi(object)]
+#[derive(Default)]
+pub struct DeclarationOptionsNapi {
+    pub filename: Option<String>,
+}
+
+/// Declaration generation result for NAPI
+#[napi(object)]
+pub struct DeclarationResultNapi {
+    pub code: String,
+}
+
+/// Generate a Vue SFC `.d.ts` declaration from Croquis analysis.
+#[napi(js_name = "generateDeclaration")]
+pub fn generate_declaration_napi(
+    source: String,
+    options: Option<DeclarationOptionsNapi>,
+) -> Result<DeclarationResultNapi> {
+    use std::mem;
+    use vize_atelier_sfc::{parse_sfc, SfcDescriptor, SfcParseOptions};
+    use vize_croquis::declaration_ts::{
+        generate_declaration_ts, generate_declaration_ts_with_split_scripts,
+    };
+    use vize_croquis::{
+        Analyzer, AnalyzerOptions, Croquis, ImportStatementInfo, ReExportInfo, TypeExport,
+    };
+
+    let opts = options.unwrap_or_default();
+    let filename = opts.filename.unwrap_or_else(|| "anonymous.vue".to_string());
+    let descriptor = parse_sfc(
+        &source,
+        SfcParseOptions {
+            filename: filename.as_str().into(),
+            ..Default::default()
+        },
+    )
+    .map_err(|error| Error::new(Status::GenericFailure, error.message.to_string()))?;
+
+    trait ModuleSpan {
+        fn shift(&mut self, delta: u32);
+    }
+
+    impl ModuleSpan for ImportStatementInfo {
+        fn shift(&mut self, delta: u32) {
+            self.start += delta;
+            self.end += delta;
+        }
+    }
+
+    impl ModuleSpan for ReExportInfo {
+        fn shift(&mut self, delta: u32) {
+            self.start += delta;
+            self.end += delta;
+        }
+    }
+
+    impl ModuleSpan for TypeExport {
+        fn shift(&mut self, delta: u32) {
+            self.start += delta;
+            self.end += delta;
+        }
+    }
+
+    fn shift_module_spans<T: ModuleSpan>(items: &mut [T], delta: u32) {
+        for item in items {
+            item.shift(delta);
+        }
+    }
+
+    enum DeclarationScript<'a> {
+        None,
+        Single(&'a str),
+        Split { plain: &'a str, setup: &'a str },
+    }
+
+    fn declaration_analyzer() -> Analyzer {
+        Analyzer::with_options(AnalyzerOptions {
+            analyze_script: true,
+            ..Default::default()
+        })
+    }
+
+    fn analyze_descriptor<'a>(
+        descriptor: &'a SfcDescriptor<'a>,
+    ) -> (Croquis, DeclarationScript<'a>) {
+        let mut analyzer = declaration_analyzer();
+
+        match (descriptor.script.as_ref(), descriptor.script_setup.as_ref()) {
+            (Some(script), Some(script_setup)) => {
+                analyzer.analyze_script_plain(&script.content);
+                let plain_imports = mem::take(&mut analyzer.croquis_mut().import_statements);
+                let plain_re_exports = mem::take(&mut analyzer.croquis_mut().re_exports);
+                let plain_type_exports = mem::take(&mut analyzer.croquis_mut().type_exports);
+
+                let generic = script_setup
+                    .attrs
+                    .get("generic")
+                    .map(|value| value.as_ref());
+                analyzer.analyze_script_setup_with_generic(&script_setup.content, generic);
+                let mut summary = analyzer.finish();
+                let plain_len = script.content.len() as u32 + 1;
+                shift_module_spans(&mut summary.import_statements, plain_len);
+                shift_module_spans(&mut summary.re_exports, plain_len);
+                shift_module_spans(&mut summary.type_exports, plain_len);
+                summary.import_statements.extend(plain_imports);
+                summary.re_exports.extend(plain_re_exports);
+                summary.type_exports.extend(plain_type_exports);
+
+                (
+                    summary,
+                    DeclarationScript::Split {
+                        plain: script.content.as_ref(),
+                        setup: script_setup.content.as_ref(),
+                    },
+                )
+            }
+            (Some(script), None) => {
+                analyzer.analyze_script_plain(&script.content);
+                (
+                    analyzer.finish(),
+                    DeclarationScript::Single(script.content.as_ref()),
+                )
+            }
+            (None, Some(script_setup)) => {
+                let generic = script_setup
+                    .attrs
+                    .get("generic")
+                    .map(|value| value.as_ref());
+                analyzer.analyze_script_setup_with_generic(&script_setup.content, generic);
+                (
+                    analyzer.finish(),
+                    DeclarationScript::Single(script_setup.content.as_ref()),
+                )
+            }
+            (None, None) => (analyzer.finish(), DeclarationScript::None),
+        }
+    }
+
+    let (summary, script_content) = analyze_descriptor(&descriptor);
+    let output = match script_content {
+        DeclarationScript::None => generate_declaration_ts(&summary, None),
+        DeclarationScript::Single(script) => generate_declaration_ts(&summary, Some(script)),
+        DeclarationScript::Split { plain, setup } => {
+            generate_declaration_ts_with_split_scripts(&summary, plain, setup)
+        }
+    };
+
+    Ok(DeclarationResultNapi {
+        code: output.content.into(),
+    })
+}
+
 /// Type check capabilities info
 #[napi(object)]
 pub struct TypeCheckCapabilityNapi {

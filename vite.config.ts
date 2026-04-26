@@ -19,7 +19,9 @@ const checkedPackages = [
   "./examples/oxlint-vize",
   "./playground",
 ];
-const ciCheckedPackages = checkedPackages.filter((pkg) => pkg !== "./examples/oxlint-vize");
+const directCheckPackages = ["./examples/vite-musea", "./playground"];
+const checkedPackagesViaVpRun = checkedPackages.filter((pkg) => !directCheckPackages.includes(pkg));
+const ciCheckedPackages = checkedPackagesViaVpRun.filter((pkg) => pkg !== "./examples/oxlint-vize");
 
 const packedPackages = [
   "./npm/vize",
@@ -81,7 +83,37 @@ const cacheInputs = {
     "tests/**",
     "tools/**",
   ],
+  e2e: [
+    ".node-version",
+    "package.json",
+    "vite.config.ts",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "tests/package.json",
+    "tests/app/**",
+    "tests/_helpers/**",
+    "npm/vize*/**",
+    "npm/vite-plugin-vize/**",
+    "npm/nuxt/**",
+    "npm/vite-plugin-musea/**",
+    "npm/musea-nuxt/**",
+  ],
 };
+
+const localVp = "./node_modules/.bin/vp";
+const shellQuote = (command: string) => `'${command.replaceAll("'", `'"'"'`)}'`;
+const darwinLibiconvLibraryPath = process.env.VIZE_DARWIN_LIBICONV_LIB;
+const rustTaskEnvironment =
+  darwinLibiconvLibraryPath == null
+    ? []
+    : [
+        `export LIBRARY_PATH=${shellQuote(darwinLibiconvLibraryPath)}\${LIBRARY_PATH:+:$LIBRARY_PATH}`,
+        `export RUSTFLAGS=${shellQuote(`-L native=${darwinLibiconvLibraryPath}`)}\${RUSTFLAGS:+ $RUSTFLAGS}`,
+      ];
+const withRustTaskEnvironment = (command: string) =>
+  rustTaskEnvironment.length === 0
+    ? command
+    : `sh -c ${shellQuote(`${rustTaskEnvironment.join("; ")}; ${command}`)}`;
 
 const task = (
   command: string,
@@ -89,21 +121,22 @@ const task = (
     input?: string[];
   } = {},
 ) => ({
-  command,
+  command: withRustTaskEnvironment(command),
   ...options,
 });
 
 const noCacheTask = (command: string) => ({
   cache: false as const,
-  command,
+  command: withRustTaskEnvironment(command),
 });
 
-const shellQuote = (command: string) => `'${command.replaceAll("'", `'"'"'`)}'`;
 const runInDirectory = (cwd: string, command: string) =>
   `sh -c ${shellQuote(`cd ${cwd} && ${command}`)}`;
+const runPackageScriptDirectly = (taskName: string, packages: string[]) =>
+  packages.map((pkg) => runInDirectory(pkg, `pnpm run ${taskName}`)).join(" && ");
 const installVscodeExtensionDependencies = runInDirectory(
   "npm/vscode-vize",
-  "pnpm install --ignore-workspace --no-lockfile --prefer-offline",
+  "if [ -x node_modules/.bin/vp ]; then exit 0; fi && mkdir -p node_modules/.bin && pnpm install --ignore-workspace --no-lockfile --prefer-offline",
 );
 const runInVscodeExtension = (...commands: string[]) =>
   `${installVscodeExtensionDependencies} && ${runInDirectory("npm/vscode-vize", commands.join(" && "))}`;
@@ -122,7 +155,9 @@ const rootBuildTaskPlugin = (): Plugin => ({
     const buildCommand = ["vp", "run", "--workspace-root", "build"];
     const command = commandExists("wasm-pack") || !commandExists("nix") ? "vp" : "nix";
     const args =
-      command === "vp" ? buildCommand.slice(1) : ["develop", "--command", ...buildCommand];
+      command === "vp"
+        ? buildCommand.slice(1)
+        : ["--option", "warn-dirty", "false", "develop", "--command", ...buildCommand];
 
     execFileSync(command, args, {
       env: {
@@ -153,7 +188,7 @@ const runInPackages = (
 
 const runTask = (taskName: string) => `vp run --workspace-root ${taskName}`;
 const runTasks = (...taskNames: string[]) => taskNames.map(runTask).join(" && ");
-const moonCommand = process.env.MOON_BIN ?? "moon";
+const moonCommand = process.env.MOON_BIN ?? "env -u MOON_HOME moon";
 const moonScript = (name: string, ...args: string[]) =>
   [
     moonCommand,
@@ -176,7 +211,7 @@ const setupTasks = {
 };
 
 const devTasks = {
-  dev: noCacheTask(runInPackages("dev", ["./playground"])),
+  dev: noCacheTask(runTask("dev:app")),
   "dev:app": noCacheTask(devApp()),
   "dev:playground": noCacheTask(devApp("playground")),
   "dev:misskey": noCacheTask(devApp("misskey")),
@@ -187,17 +222,14 @@ const devTasks = {
 };
 
 const buildTasks = {
-  build: noCacheTask(runTask("build:all")),
+  build: noCacheTask(runTasks("build:rust", "build:all")),
   "build:all": noCacheTask(runTasks("build:runtime", "package:editor-extensions")),
+  "build:rust": task("cargo build --workspace", { input: cacheInputs.rust }),
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
   "build:packages": noCacheTask(runInPackages("build", packedPackages)),
-  "build:native": noCacheTask(runInPackages("build", ["./npm/vize-native"])),
-  "build:wasm": task(
-    "wasm-pack build crates/vize_vitrine --target nodejs --out-dir ../../npm/vite-plugin-vize/wasm --features wasm --no-default-features",
-  ),
-  "build:wasm-web": task(
-    "wasm-pack build crates/vize_vitrine --target web --out-dir ../../playground/src/wasm --features wasm --no-default-features",
-  ),
+  "build:native": noCacheTask(runPackageScriptDirectly("build", ["./npm/vize-native"])),
+  "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/vite-plugin-vize/wasm")),
+  "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(
     `${runInPackages("build", ["./npm/vize"])} && ${runInPackages("build", ["./npm/vite-plugin-vize"])}`,
   ),
@@ -245,6 +277,12 @@ const testTasks = {
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),
+  "test:e2e": noCacheTask(runTasks("test:e2e:dev", "test:e2e:preview")),
+  "test:e2e:dev": task(runInPackages("test:dev", ["./tests"]), { input: cacheInputs.e2e }),
+  "test:e2e:preview": task(runInPackages("test:preview", ["./tests"]), {
+    input: cacheInputs.e2e,
+  }),
+  "test:e2e:vrt": task(runInPackages("test:vrt", ["./tests"]), { input: cacheInputs.e2e }),
   "test:vue": task("cargo test -p vize_test_runner", { input: cacheInputs.rust }),
   coverage: task("cargo run -p vize_test_runner --bin coverage", { input: cacheInputs.rust }),
   "coverage:verbose": task("cargo run -p vize_test_runner --bin coverage -- -v", {
@@ -267,13 +305,13 @@ const testTasks = {
 };
 
 const benchmarkTasks = {
-  bench: noCacheTask("node bench/run.ts"),
-  "bench:quick": noCacheTask("node bench/run.ts 1000"),
-  "bench:generate": noCacheTask("node bench/generate.mjs 15000"),
-  "bench:lint": noCacheTask("node bench/lint.ts"),
-  "bench:fmt": noCacheTask("node bench/fmt.ts"),
-  "bench:check": noCacheTask("node bench/check.ts"),
-  "bench:vite": noCacheTask("node bench/vite.ts"),
+  bench: noCacheTask(moonScript("bench", "run")),
+  "bench:quick": noCacheTask(moonScript("bench", "run", "1000")),
+  "bench:generate": noCacheTask(moonScript("bench", "generate", "15000")),
+  "bench:lint": noCacheTask(moonScript("bench", "lint")),
+  "bench:fmt": noCacheTask(moonScript("bench", "fmt")),
+  "bench:check": noCacheTask(moonScript("bench", "check")),
+  "bench:vite": noCacheTask(moonScript("bench", "vite")),
   "bench:all": noCacheTask(
     runTasks("bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite"),
   ),
@@ -283,25 +321,36 @@ const benchmarkTasks = {
 const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
   concurrencyLimit: 1,
 });
+const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
 
 const checkTasks = {
-  check: task(runInPackages("check", checkedPackages, { concurrencyLimit: 1 }), {
-    input: cacheInputs.jsChecks,
-  }),
-  "check:repo": noCacheTask("vp check"),
+  check: noCacheTask(runTasks("check:repo", "check:rust", "check:js", "check:editor-extensions")),
+  "check:js": noCacheTask(runTasks("check:js:packages", "check:js:direct-packages")),
+  "check:js:packages": task(
+    runInPackages("check", checkedPackagesViaVpRun, { concurrencyLimit: 1 }),
+    {
+      input: cacheInputs.jsChecks,
+    },
+  ),
+  "check:js:direct-packages": noCacheTask(directPackageCheckCommand),
+  "check:repo": noCacheTask(`${localVp} check`),
   // The oxlint example intentionally exits non-zero for its default lint script,
   // so CI checks every package except that runnable failure-case fixture.
-  "check:ci": noCacheTask(`vp check && ${ciPackageCheckCommand}`),
+  "check:ci": noCacheTask(
+    `${runTask("check:repo")} && ${ciPackageCheckCommand} && ${directPackageCheckCommand}`,
+  ),
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
-  "check:rust": task("cargo check --workspace", { input: cacheInputs.rust }),
+  "check:rust": noCacheTask("cargo check --workspace"),
   "check:vscode-extension": noCacheTask(
     runInVscodeExtension("pnpm exec tsgo --noEmit", "pnpm exec vp check src vite.config.ts"),
   ),
   "check:editor-extensions": noCacheTask(runTasks("check:vscode-extension", "check:zed-extension")),
   clippy: task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
-  fmt: noCacheTask(runInPackages("fmt", checkedPackages)),
+  fmt: noCacheTask(runTasks("fmt:repo", "fmt:rust", "fmt:js")),
+  "fmt:repo": noCacheTask(`${localVp} fmt --write`),
+  "fmt:js": noCacheTask(runInPackages("fmt", checkedPackages)),
   "fmt:rust": task("cargo fmt --all", { input: cacheInputs.rust }),
-  "fmt:all": noCacheTask(runTasks("fmt:rust", "fmt")),
+  "fmt:all": noCacheTask(runTask("fmt")),
   lint: noCacheTask(runTask("check")),
   "lint:fix": noCacheTask(runTask("check:fix")),
   "lint:rust": task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
@@ -346,10 +395,23 @@ export default defineConfig({
     outDir: "target/vp-build",
   },
   fmt: {
-    ignorePatterns: ["**/__snapshots__/**", "**/__snapshot__/**", "**/__agent_only/**"],
+    ignorePatterns: [
+      "**/__snapshots__/**",
+      "**/__snapshot__/**",
+      "**/__agent_only/**",
+      "**/__ubugeeei__/**",
+      "tests/_fixtures/**",
+    ],
   },
   lint: {
-    ignorePatterns: ["**/__snapshots__/**", "**/__snapshot__/**", "**/__agent_only/**"],
+    ignorePatterns: [
+      "**/__snapshots__/**",
+      "**/__snapshot__/**",
+      "**/__agent_only/**",
+      "**/__ubugeeei__/**",
+      "npm/vscode-vize/**",
+      "tests/_fixtures/**",
+    ],
     options: {
       typeAware: true,
     },

@@ -288,6 +288,7 @@ const {
   typeCheck,
   getTypeCheckCapabilities,
   typeCheckBatch,
+  generateDeclaration,
   compile,
   compileVapor,
   parseTemplate,
@@ -302,6 +303,7 @@ const {
   generateArtCatalog,
   generateArtDocsBatch,
   generateArtPalette,
+  formatSfc,
   lint,
   lintPatinaSfc,
   getPatinaRules,
@@ -310,6 +312,7 @@ const {
 module.exports.typeCheck = typeCheck;
 module.exports.getTypeCheckCapabilities = getTypeCheckCapabilities;
 module.exports.typeCheckBatch = typeCheckBatch;
+module.exports.generateDeclaration = generateDeclaration;
 module.exports.compile = compile;
 module.exports.compileVapor = compileVapor;
 module.exports.parseTemplate = parseTemplate;
@@ -324,6 +327,7 @@ module.exports.generateArtDoc = generateArtDoc;
 module.exports.generateArtCatalog = generateArtCatalog;
 module.exports.generateArtDocsBatch = generateArtDocsBatch;
 module.exports.generateArtPalette = generateArtPalette;
+module.exports.formatSfc = formatSfc;
 module.exports.lint = lint;
 module.exports.lintPatinaSfc = lintPatinaSfc;
 module.exports.getPatinaRules = getPatinaRules;

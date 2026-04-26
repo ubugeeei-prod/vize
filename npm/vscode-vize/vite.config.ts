@@ -16,6 +16,8 @@ export default defineConfig({
     format: "cjs",
     platform: "node",
     minify: true,
-    external: ["vscode"],
+    deps: {
+      neverBundle: ["vscode"],
+    },
   },
 });

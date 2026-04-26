@@ -264,6 +264,14 @@ fn collect_fallback_stubs(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<St
 
 fn fallback_stub_strings() -> Vec<String> {
     vec![
+        "type $Vue = typeof import('vue');".into(),
+        "type Composer = any;".into(),
+        "type Ref<T = any> = import('vue').Ref<T>;".into(),
+        "type ComputedRef<T = any> = import('vue').ComputedRef<T>;".into(),
+        "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;".into(),
+        "type MaybeRef<T = any> = import('vue').MaybeRef<T>;".into(),
+        "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;".into(),
+        "type Component = import('vue').Component;".into(),
         "declare function ref<T>(value: T): $Vue['Ref']<$Vue['UnwrapRef']<T>>;".into(),
         "declare function ref<T = any>(): $Vue['Ref']<T | undefined>;".into(),
         "declare function computed<T>(getter: () => T): $Vue['ComputedRef']<T>;".into(),

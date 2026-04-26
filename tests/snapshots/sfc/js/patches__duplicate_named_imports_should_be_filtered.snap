@@ -2,21 +2,20 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
-
-import { cloneDeep } from 'lodash-es'
-import { merge } from 'lodash-es'
-
-export default /*@__PURE__*/_defineComponent({
-  __name: 'test',
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue";
+import { cloneDeep } from "lodash-es";
+export default {
+  __name: "test",
   setup(__props) {
-
-const data = cloneDeep({ value: 1 })
-
-return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data).value), 1 /* TEXT */))
-}
-}
-
-})
+    const data = cloneDeep({ value: 1 });
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        "div",
+        null,
+        _toDisplayString(_unref(data).value),
+        1
+        /* TEXT */
+      );
+    };
+  }
+};

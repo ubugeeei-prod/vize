@@ -6,6 +6,7 @@ import path from "node:path";
 import type { VizePluginState } from "./state.ts";
 import { getBoundaryPlaceholderCode } from "./load.ts";
 import { loadHook } from "./load.ts";
+import { transformHook } from "./load.ts";
 import { toVirtualId } from "../virtual.ts";
 
 const ssrClientPlaceholder = getBoundaryPlaceholderCode("/src/Foo.client.vue", true);
@@ -82,6 +83,37 @@ export default _sfc_main`,
     error() {},
   } as never,
 };
+
+const virtualDefineState: VizePluginState = {
+  ...hmrState,
+  clientViteDefine: {
+    "import.meta.client": "true",
+    "import.meta.server": "false",
+    "import.meta.dev": "true",
+  },
+};
+
+const virtualDefineTransform = await transformHook(
+  virtualDefineState,
+  `export const flags = [import.meta.client, import.meta.server, import.meta.dev, import.meta.hot];`,
+  toVirtualId("/src/EnvFlags.vue"),
+  { ssr: false },
+);
+
+assert.ok(
+  virtualDefineTransform && typeof virtualDefineTransform === "object",
+  "Virtual module transforms should succeed",
+);
+assert.doesNotMatch(
+  virtualDefineTransform.code,
+  /import\.meta\.(client|server|dev)/,
+  "Virtual module transforms should inline environment flags that Vite skips for \\0 IDs",
+);
+assert.match(
+  virtualDefineTransform.code,
+  /import\.meta\.hot/,
+  "Virtual module transforms must leave import.meta.hot available for Vite HMR",
+);
 
 const firstLoad = loadHook(hmrState, toVirtualId(realPath), { ssr: false });
 assert.ok(firstLoad && typeof firstLoad === "object", "Virtual module should load as code object");
@@ -289,6 +321,65 @@ assert.match(
   cssModuleLoad.code,
   /_sfc_main\.__cssModules\["buttonStyles"\] = buttonStyles;/,
   "CSS module bindings should be attached for normal-script output without relying on semicolons",
+);
+
+const applyCssPath = "/src/ApplyStyles.vue";
+const applyCssState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      applyCssPath,
+      {
+        code: `const _sfc_main = { name: "ApplyStyles" }
+export default _sfc_main`,
+        scopeId: "applycss",
+        hasScoped: true,
+        styles: [
+          {
+            content: ".root { @apply text-fg; }",
+            lang: "css",
+            scoped: true,
+            module: false,
+            index: 0,
+          },
+        ],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+};
+
+const applyCssLoad = loadHook(applyCssState, toVirtualId(applyCssPath), {
+  ssr: false,
+});
+assert.ok(
+  applyCssLoad && typeof applyCssLoad === "object",
+  "CSS with @apply should load successfully",
+);
+assert.match(
+  applyCssLoad.code,
+  /import "\/src\/ApplyStyles\.vue\?vue=&type=style&index=0&scoped=data-v-applycss&lang=css";/,
+  "CSS with @apply should be delegated so PostCSS and UnoCSS transformers can run",
+);
+assert.doesNotMatch(
+  applyCssLoad.code,
+  /__vize_css__/,
+  "Delegated @apply CSS should not be injected through the inline CSS runtime path",
+);
+
+const applyCssVirtualLoad = loadHook(
+  applyCssState,
+  "\0/src/ApplyStyles.vue?vue=&type=style&index=0&scoped=data-v-applycss&lang=css.css",
+  { ssr: false },
+);
+assert.ok(
+  applyCssVirtualLoad && typeof applyCssVirtualLoad === "object",
+  "Delegated @apply CSS should load as a virtual style module",
+);
+assert.match(
+  applyCssVirtualLoad.code,
+  /\.root\[data-v-applycss\] \{ @apply text-fg; \}/,
+  "Delegated @apply CSS should keep @apply while applying the scoped selector",
 );
 
 const onDemandProdDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-load-"));

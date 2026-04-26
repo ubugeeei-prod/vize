@@ -2,23 +2,26 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
-
-
-export default /*@__PURE__*/_defineComponent({
-  __name: 'test',
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue";
+export default {
+  __name: "test",
   props: {
-    activeKey: { type: [String, null], required: true },
-    items: { type: [Array, null], required: true },
-    groupName: { type: [String, null], required: true }
+    activeKey: {
+      type: [String, null],
+      required: true
+    },
+    items: {
+      type: [Array, null],
+      required: true
+    },
+    groupName: {
+      type: [String, null],
+      required: true
+    }
   },
-  setup(__props: any) {
-
-
-return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div"))
-}
-}
-
-})
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("div");
+    };
+  }
+};

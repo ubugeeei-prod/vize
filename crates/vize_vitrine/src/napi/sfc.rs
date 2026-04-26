@@ -275,7 +275,7 @@ pub fn compile_sfc(
         external_scope_id
             .as_ref()
             .map(|scope_id| vize_atelier_dom::DomCompilerOptions {
-                scope_id: Some(cstr!("data-v-{scope_id}").into()),
+                scope_id: Some(cstr!("data-v-{scope_id}")),
                 ..Default::default()
             })
     } else {
@@ -384,87 +384,120 @@ pub fn compile_sfc_batch(
         ));
     }
 
-    let success = AtomicUsize::new(0);
-    let failed = AtomicUsize::new(0);
-    let input_bytes = AtomicUsize::new(0);
-    let output_bytes = AtomicUsize::new(0);
+    #[derive(Default)]
+    struct BatchStats {
+        success: usize,
+        failed: usize,
+        input_bytes: usize,
+        output_bytes: usize,
+    }
+
+    impl BatchStats {
+        fn failed() -> Self {
+            Self {
+                failed: 1,
+                ..Default::default()
+            }
+        }
+
+        fn failed_with_input(input_bytes: usize) -> Self {
+            Self {
+                failed: 1,
+                input_bytes,
+                ..Default::default()
+            }
+        }
+
+        fn success(input_bytes: usize, output_bytes: usize) -> Self {
+            Self {
+                success: 1,
+                input_bytes,
+                output_bytes,
+                failed: 0,
+            }
+        }
+
+        fn add(mut self, other: Self) -> Self {
+            self.success += other.success;
+            self.failed += other.failed;
+            self.input_bytes += other.input_bytes;
+            self.output_bytes += other.output_bytes;
+            self
+        }
+    }
 
     let start = Instant::now();
 
     // Compile files in parallel using rayon
-    files.par_iter().for_each(|path| {
-        let source = match fs::read_to_string(path) {
-            Ok(s) => s,
-            Err(_) => {
-                failed.fetch_add(1, Ordering::Relaxed);
-                return;
-            }
-        };
+    let stats = files
+        .par_iter()
+        .map(|path| {
+            let source = match fs::read_to_string(path) {
+                Ok(s) => s,
+                Err(_) => {
+                    return BatchStats::failed();
+                }
+            };
 
-        input_bytes.fetch_add(source.len(), Ordering::Relaxed);
+            let source_len = source.len();
 
-        let filename: vize_carton::CompactString = path.to_string_lossy().as_ref().into();
+            let filename: vize_carton::CompactString = path.to_string_lossy().as_ref().into();
 
-        // Parse
-        let parse_opts = SfcParseOptions {
-            filename: filename.clone(),
-            ..Default::default()
-        };
-
-        let descriptor = match sfc_parse(&source, parse_opts) {
-            Ok(d) => d,
-            Err(_) => {
-                failed.fetch_add(1, Ordering::Relaxed);
-                return;
-            }
-        };
-
-        // Compile
-        let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
-        let compile_opts = SfcCompileOptions {
-            parse: SfcParseOptions {
+            // Parse
+            let parse_opts = SfcParseOptions {
                 filename: filename.clone(),
                 ..Default::default()
-            },
-            script: ScriptCompileOptions {
-                id: Some(filename.clone()),
-                is_ts,
-                ..Default::default()
-            },
-            template: TemplateCompileOptions {
-                id: Some(filename.clone()),
-                scoped: has_scoped,
-                ssr,
-                is_ts,
-                ..Default::default()
-            },
-            style: StyleCompileOptions {
-                id: filename,
-                scoped: has_scoped,
-                ..Default::default()
-            },
-            vapor,
-            scope_id: None,
-        };
+            };
 
-        match sfc_compile(&descriptor, compile_opts) {
-            Ok(result) => {
-                success.fetch_add(1, Ordering::Relaxed);
-                output_bytes.fetch_add(result.code.len(), Ordering::Relaxed);
+            let descriptor = match sfc_parse(&source, parse_opts) {
+                Ok(d) => d,
+                Err(_) => {
+                    return BatchStats::failed_with_input(source_len);
+                }
+            };
+
+            // Compile
+            let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
+            let compile_opts = SfcCompileOptions {
+                parse: SfcParseOptions {
+                    filename: filename.clone(),
+                    ..Default::default()
+                },
+                script: ScriptCompileOptions {
+                    id: Some(filename.clone()),
+                    is_ts,
+                    ..Default::default()
+                },
+                template: TemplateCompileOptions {
+                    id: Some(filename.clone()),
+                    scoped: has_scoped,
+                    ssr,
+                    is_ts,
+                    ..Default::default()
+                },
+                style: StyleCompileOptions {
+                    id: filename,
+                    scoped: has_scoped,
+                    ..Default::default()
+                },
+                vapor,
+                scope_id: None,
+            };
+
+            match sfc_compile(&descriptor, compile_opts) {
+                Ok(result) => BatchStats::success(source_len, result.code.len()),
+                Err(_) => BatchStats::failed_with_input(source_len),
             }
-            Err(_) => {
-                failed.fetch_add(1, Ordering::Relaxed);
-            }
-        }
-    });
+        })
+        .reduce(BatchStats::default, BatchStats::add);
 
     let elapsed = start.elapsed();
 
     Ok(BatchCompileResultNapi {
-        success: success.load(Ordering::Relaxed) as u32,
-        failed: failed.load(Ordering::Relaxed) as u32,
-        input_bytes: input_bytes.load(Ordering::Relaxed) as u32,
-        output_bytes: output_bytes.load(Ordering::Relaxed) as u32,
+        success: stats.success as u32,
+        failed: stats.failed as u32,
+        input_bytes: stats.input_bytes as u32,
+        output_bytes: stats.output_bytes as u32,
         time_ms: elapsed.as_secs_f64() * 1000.0,
     })
 }
@@ -562,7 +595,7 @@ pub fn compile_sfc_batch_with_results(
         // Create compiler options with scope_id for scoped CSS
         let template_compiler_options = if actual_has_scoped {
             Some(vize_atelier_dom::DomCompilerOptions {
-                scope_id: Some(cstr!("data-v-{scope_id}").into()),
+                scope_id: Some(cstr!("data-v-{scope_id}")),
                 ..Default::default()
             })
         } else {

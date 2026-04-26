@@ -1,0 +1,23 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<ClientOnly><span>client</span><template #fallback><span>server</span></template></ClientOnly>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("ClientOnly"), _attrs, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<span>client</span>`)
+      } else {
+        return [_createElementVNode("span", null, "client")]
+      }
+    }),
+    fallback: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<span>server</span>`)
+      } else {
+        return [_createElementVNode("span", null, "server")]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

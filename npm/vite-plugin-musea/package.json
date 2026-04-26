@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/vite-plugin-musea",
-  "version": "0.60.0",
+  "version": "0.70.0",
   "description": "Vite plugin for Musea - Component gallery for Vue components",
   "keywords": [
     "component-gallery",
@@ -54,7 +54,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack && pnpm --dir ../.. install --frozen-lockfile --prefer-offline --filter @vizejs/vite-plugin-musea... && vp build --config gallery-vite.config.ts",
+    "build": "vp pack && vp build --config gallery-vite.config.ts",
     "build:gallery": "vp build --config gallery-vite.config.ts",
     "dev": "vp pack --watch",
     "check": "vp check src vite.config.ts",

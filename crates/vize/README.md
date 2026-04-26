@@ -4,7 +4,7 @@
 
 It provides:
 
-- the `vize` CLI binary (`build`, `fmt`, `lint`, `check`, `musea`, `lsp`, `ide`)
+- the `vize` CLI binary (`build`, `fmt`, `lint`, `check`, `ready`, `upgrade`, `musea`, `lsp`, `ide`)
 - a facade crate that re-exports the workspace crates for unified Rust docs
 
 ## Install
@@ -20,10 +20,14 @@ vize build src/**/*.vue
 vize fmt --check src
 vize lint --preset opinionated src
 vize check --profile src
+vize ready src
+vize upgrade
 vize lsp
 ```
 
 `vize` defaults to `build` when no subcommand is provided.
+`vize ready` runs `fmt --write`, `lint`, `check`, and `build` in order.
+`vize upgrade` updates the installed Rust CLI through Cargo.
 
 ## Re-exported Crates
 

@@ -8,9 +8,9 @@ use vize_croquis::{BindingType, Croquis, ScopeData, ScopeKind, COMPILER_MACRO_NA
 use super::{
     helpers::{
         generate_template_context, to_safe_identifier, IMPORT_META_AUGMENTATION,
-        VUE_SETUP_COMPILER_MACROS,
+        VUE_SETUP_COMPILER_MACROS, VUE_TYPE_HELPERS,
     },
-    props::{generate_props_type, generate_props_variables},
+    props::{collect_template_prop_names, generate_props_type, generate_props_variables},
     scope::generate_scope_closures,
     types::{VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
@@ -99,9 +99,8 @@ pub fn generate_virtual_ts_with_offsets(
     // Type declarations (interface, type, enum) must be at module level so they
     // are accessible from `export type Props = ...` outside __setup().
     ts.push_str("// ========== Module Scope (imports) ==========\n");
-    ts.push_str("type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;\n");
-    ts.push_str("type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];\n");
-    ts.push_str("type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);\n");
+    ts.push_str(VUE_TYPE_HELPERS);
+    ts.push('\n');
 
     // Collect all module-level statement spans from croquis analysis
     let module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
@@ -359,11 +358,21 @@ pub fn generate_virtual_ts_with_offsets(
                 "canon.virtual_ts.generate_props_variables",
                 generate_props_variables(&mut ts, summary, script_content, generic_param)
             );
+            let template_prop_names = profile!(
+                "canon.virtual_ts.collect_template_prop_names",
+                collect_template_prop_names(summary, script_content)
+            );
 
             // Generate scope closures
             profile!(
                 "canon.virtual_ts.generate_scope_closures",
-                generate_scope_closures(&mut ts, &mut mappings, summary, template_offset)
+                generate_scope_closures(
+                    &mut ts,
+                    &mut mappings,
+                    summary,
+                    &template_prop_names,
+                    template_offset
+                )
             );
 
             // Declare unresolved components (auto-imported or built-in) as `any`

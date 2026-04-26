@@ -18,13 +18,17 @@ function isCssModule(block: StyleBlockInfo): boolean {
   return block.module !== false;
 }
 
+function needsCssPipeline(block: StyleBlockInfo): boolean {
+  return block.content.includes("@apply");
+}
+
 /**
  * Check if any style blocks in the compiled module require delegation to
- * Vite's CSS pipeline (preprocessor or CSS Modules).
+ * Vite's CSS pipeline (preprocessor, CSS Modules, or PostCSS transforms).
  */
 export function hasDelegatedStyles(compiled: CompiledModule): boolean {
   if (!compiled.styles) return false;
-  return compiled.styles.some((s) => needsPreprocessor(s) || isCssModule(s));
+  return compiled.styles.some((s) => needsPreprocessor(s) || isCssModule(s) || needsCssPipeline(s));
 }
 
 function supportsTemplateOnlyHmr(output: string): boolean {

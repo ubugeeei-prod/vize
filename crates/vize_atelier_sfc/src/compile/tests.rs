@@ -53,6 +53,34 @@ const msg = ref('')
 }
 
 #[test]
+fn test_script_setup_self_component_resolves_for_recursion() {
+    let source = r#"<script setup lang="ts">
+const items = [{ name: 'dist', children: [{ name: 'file.js', children: [] }] }]
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" :key="item.name">
+      <FileTree v-if="item.children.length" />
+    </li>
+  </ul>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some("src/components/diff/FileTree.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains(r#"_resolveComponent("FileTree", true)"#),
+        "recursive SFC should resolve its own component name with maybeSelfReference. Got:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_bindings_passed_to_template() {
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue';
@@ -237,6 +265,57 @@ const currentCode = ref('dom');
         compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
     insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_demotes_reactive_const_used_in_v_model() {
+    let source = r#"<template>
+  <Comp v-model="reactiveObject" />
+</template>
+
+<script lang="ts" setup>
+import { reactive } from 'vue';
+
+const reactiveObject = reactive({ foo: 'bar' });
+</script>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains("let reactiveObject = reactive({ foo: \"bar\" });"),
+        "compiled output should demote the binding to let"
+    );
+    assert!(
+        result.code.contains("reactiveObject = $event"),
+        "compiled output should assign directly to the demoted binding"
+    );
+    assert_eq!(result.warnings.len(), 1, "expected exactly one warning");
+    assert_eq!(
+        result.warnings[0].code.as_deref(),
+        Some("V_MODEL_CONST_REACTIVE_DEMOTED")
+    );
+    assert!(
+        result.warnings[0]
+            .message
+            .contains("const reactive binding `reactiveObject`"),
+        "warning should explain the reactive const demotion"
+    );
+
+    let bindings = result
+        .bindings
+        .as_ref()
+        .expect("script setup output should include bindings");
+    assert!(
+        matches!(
+            bindings.bindings.get("reactiveObject"),
+            Some(BindingType::SetupLet)
+        ),
+        "reactiveObject should be exposed as SetupLet after demotion"
+    );
 }
 
 #[test]
@@ -434,6 +513,50 @@ const { items } = defineProps<{
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_typescript_downcompiles_to_javascript_by_default() {
+    let source = r#"<script setup lang="ts">
+const props = withDefaults(defineProps<{
+  first?: boolean;
+}>(), {
+  first: false,
+});
+
+async function updatePasswordLessLogin(value: boolean): Promise<void> {
+  console.log(value);
+}
+</script>
+
+<template>
+  <div>{{ props.first }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("setup(__props)"),
+        "default JS output should not preserve typed setup params: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("__props: any"),
+        "default JS output should strip typed setup params: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("(_ctx: any,_cache: any)"),
+        "default JS output should strip typed render params: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains(": Promise<void>"),
+        "default JS output should strip TypeScript return types: {}",
+        result.code
+    );
 }
 
 #[test]
@@ -819,6 +942,121 @@ import { Primitive } from '@tresjs/core'
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_returns_template_only_imports_used_in_expressions() {
+    let source = r#"<script setup lang="ts">
+import { valibotResolver } from '@primevue/forms/resolvers/valibot'
+const schema = {}
+</script>
+
+<template>
+  <Form :resolver="schema ? valibotResolver(schema) : undefined" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(result.code.contains("resolver:"), "{}", result.code);
+    assert!(
+        result
+            .code
+            .contains("_unref($setup.valibotResolver)($setup.schema)"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("const __returned__ = { valibotResolver, schema }"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("Object.defineProperty(__returned__, '__isScriptSetup'"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_returns_normal_script_imports_used_in_template_expressions() {
+    let source = r#"<script lang="ts">
+import {
+  type FormFieldState,
+  Form as PForm,
+} from '@primevue/forms'
+import { valibotResolver } from '@primevue/forms/resolvers/valibot'
+
+export interface FormProps {
+  schema?: unknown
+}
+</script>
+
+<script setup lang="ts">
+const { schema } = defineProps<FormProps>()
+const emit = defineEmits<{ submit: [] }>()
+</script>
+
+<template>
+  <PForm :resolver="schema ? valibotResolver(schema) : undefined" @submit="emit('submit')" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+    let setup_return = result
+        .code
+        .split("const __returned__ = {")
+        .nth(1)
+        .expect("setup should return bindings");
+
+    assert!(setup_return.contains("emit"), "{}", result.code);
+    assert!(setup_return.contains("PForm"), "{}", result.code);
+    assert!(setup_return.contains("valibotResolver"), "{}", result.code);
+    assert!(
+        result
+            .code
+            .contains("Object.defineProperty(__returned__, '__isScriptSetup'"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("$setup.valibotResolver($props.schema)")
+            || result
+                .code
+                .contains("_unref($setup.valibotResolver)($props.schema)"),
+        "{}",
+        result.code
+    );
 }
 
 #[test]

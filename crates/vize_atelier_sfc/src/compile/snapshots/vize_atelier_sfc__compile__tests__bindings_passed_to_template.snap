@@ -2,31 +2,49 @@
 source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, withDirectives as _withDirectives, toDisplayString as _toDisplayString, vModelCheckbox as _vModelCheckbox } from "vue"
-
-
-const _hoisted_1 = /*#__PURE__*/ _createElementVNode("option", { value: "a" }, "A")
-import { ref } from 'vue'
-import MonacoEditor from './MonacoEditor.vue'
-
-export default /*@__PURE__*/_defineComponent({
-  __name: 'anonymous',
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, withDirectives as _withDirectives, toDisplayString as _toDisplayString, vModelCheckbox as _vModelCheckbox } from "vue";
+const _hoisted_1 = /* @__PURE__ */ _createElementVNode("option", { value: "a" }, "A");
+import { ref } from "vue";
+import MonacoEditor from "./MonacoEditor.vue";
+export default {
+  __name: "anonymous",
   setup(__props) {
-
-const selectedPreset = ref('test');
-const options = ref({ ssr: false });
-function handleChange(val: string) { selectedPreset.value = val; }
-
-return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock(_Fragment, null, [ _createElementVNode("div", null, _toDisplayString(selectedPreset.value), 1 /* TEXT */), _createElementVNode("select", {
-        value: selectedPreset.value,
-        onChange: _cache[0] || (_cache[0] = ($event: any) => (handleChange($event.target.value)))
-      }, [ _hoisted_1 ], 40 /* PROPS, NEED_HYDRATION */, ["value"]), _withDirectives(_createElementVNode("input", {
-        type: "checkbox",
-        "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event: any) => ((options.value.ssr) = $event))
-      }, null, 512 /* NEED_PATCH */), [ [_vModelCheckbox, options.value.ssr] ]), _createVNode(MonacoEditor) ], 64 /* STABLE_FRAGMENT */))
-}
-}
-
-})
+    const selectedPreset = ref("test");
+    const options = ref({ ssr: false });
+    function handleChange(val) {
+      selectedPreset.value = val;
+    }
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        _Fragment,
+        null,
+        [
+          _createElementVNode(
+            "div",
+            null,
+            _toDisplayString(selectedPreset.value),
+            1
+            /* TEXT */
+          ),
+          _createElementVNode("select", {
+            value: selectedPreset.value,
+            onChange: _cache[0] || (_cache[0] = ($event) => handleChange($event.target.value))
+          }, [_hoisted_1], 40, ["value"]),
+          _withDirectives(_createElementVNode(
+            "input",
+            {
+              type: "checkbox",
+              "onUpdate:modelValue": _cache[1] || (_cache[1] = ($event) => options.value.ssr = $event)
+            },
+            null,
+            512
+            /* NEED_PATCH */
+          ), [[_vModelCheckbox, options.value.ssr]]),
+          _createVNode(MonacoEditor)
+        ],
+        64
+        /* STABLE_FRAGMENT */
+      );
+    };
+  }
+};

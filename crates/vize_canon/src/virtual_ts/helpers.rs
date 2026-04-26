@@ -9,24 +9,24 @@ use super::types::VirtualTsOptions;
 use vize_carton::append;
 use vize_carton::String;
 
+/// Shared type helpers used by generated virtual modules and setup-scope macros.
+pub(crate) const VUE_TYPE_HELPERS: &str = r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
+type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
+type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
+type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
+type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
+type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
+type __DefaultFactory<T> = (props: any) => T;
+type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
+type __Ref<T> = import('vue').Ref<T>;
+type __ShallowRef<T> = import('vue').ShallowRef<T>;"#;
+
 /// Vue compiler macros - these are defined inside setup scope, NOT globally.
 /// This ensures they're only valid within <script setup>.
 /// Parameters and type parameters are prefixed with _ to avoid "unused" warnings.
 pub(crate) const VUE_SETUP_COMPILER_MACROS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
-  // Emit type helper: converts { event: [args] } to callable emit function
-  type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
-  type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
-  type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
-  type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
-  type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
-  type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
-  type __DefaultFactory<T> = (props: any) => T;
-  type __WithDefaultValue<T> = T | __DefaultFactory<T>;
-  type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
-  type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
-  // Vue ref type aliases (resolved from node_modules/vue)
-  type __Ref<T> = import('vue').Ref<T>;
-  type __ShallowRef<T> = import('vue').ShallowRef<T>;
   function defineProps<_T = unknown>(): _T;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
@@ -298,16 +298,98 @@ pub(crate) fn to_camel_case(s: &str) -> String {
 }
 
 /// Sanitize a string to be a valid TypeScript identifier.
-/// Replaces invalid characters (like ':') with underscores.
+/// Replaces invalid characters (like ':') with underscores and prefixes
+/// reserved words.
 /// Examples: "update:title" -> "update_title", "my-event" -> "my_event"
 pub(crate) fn to_safe_identifier(s: &str) -> String {
-    s.chars()
-        .map(|c| {
-            if c.is_alphanumeric() || c == '_' {
-                c
-            } else {
-                '_'
-            }
-        })
-        .collect()
+    let mut result = to_safe_identifier_fragment(s);
+
+    if !result
+        .chars()
+        .next()
+        .is_some_and(|c| c.is_ascii_alphabetic() || c == '_' || c == '$')
+    {
+        result.insert(0, '_');
+    }
+    if is_reserved_identifier(result.as_str()) {
+        result.insert(0, '_');
+    }
+
+    result
+}
+
+/// Sanitize a string for use inside a generated identifier that already has a
+/// safe prefix (for example `_slot_{name}`).
+pub(crate) fn to_safe_identifier_fragment(s: &str) -> String {
+    let mut result = String::with_capacity(s.len().max(1));
+
+    for c in s.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' || c == '$' {
+            result.push(c);
+        } else {
+            result.push('_');
+        }
+    }
+
+    if result.is_empty() {
+        result.push('_');
+    }
+
+    result
+}
+
+#[inline]
+pub(crate) fn is_reserved_identifier(s: &str) -> bool {
+    matches!(
+        s,
+        "await"
+            | "break"
+            | "case"
+            | "catch"
+            | "class"
+            | "const"
+            | "continue"
+            | "debugger"
+            | "default"
+            | "delete"
+            | "do"
+            | "else"
+            | "enum"
+            | "export"
+            | "extends"
+            | "false"
+            | "finally"
+            | "for"
+            | "function"
+            | "if"
+            | "import"
+            | "in"
+            | "instanceof"
+            | "new"
+            | "null"
+            | "return"
+            | "super"
+            | "switch"
+            | "this"
+            | "throw"
+            | "true"
+            | "try"
+            | "typeof"
+            | "var"
+            | "void"
+            | "while"
+            | "with"
+            | "yield"
+            | "let"
+            | "static"
+            | "implements"
+            | "interface"
+            | "package"
+            | "private"
+            | "protected"
+            | "public"
+            | "as"
+            | "from"
+            | "of"
+    )
 }

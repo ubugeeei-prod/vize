@@ -9,5 +9,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist/gallery"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 6500,
   },
 });

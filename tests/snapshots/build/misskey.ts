@@ -16,6 +16,7 @@ describe(`${app.name} build (compiler)`, () => {
       console.log(`Skipping: vize binary not found at ${VIZE_BIN}`);
       process.exit(0);
     }
+    if (app.setup) app.setup();
   });
 
   it("vize build compiles without errors", () => {
@@ -93,6 +94,7 @@ describe(`${app.name} build (compiler)`, () => {
 
     const assertTooltipDirective = (file: string) => {
       const content = readOutput(file);
+      const normalized = content.replace(/\s+/g, " ");
       assert.ok(
         content.includes(`const _directive_tooltip = _resolveDirective("tooltip")`),
         `${file} should resolve the tooltip directive`,
@@ -102,7 +104,7 @@ describe(`${app.name} build (compiler)`, () => {
         `${file} should apply tooltip with withDirectives`,
       );
       assert.ok(
-        content.includes("[_directive_tooltip"),
+        /\[\[\s*_directive_tooltip\b/.test(normalized),
         `${file} should pass tooltip directive bindings`,
       );
     };
@@ -126,6 +128,37 @@ describe(`${app.name} build (compiler)`, () => {
     assert.ok(
       streaming.includes(`_renderSlot(_ctx.$slots, "empty"`),
       "MkStreamingNotesTimeline.js should preserve the empty slot fallback",
+    );
+    assert.ok(
+      streaming.includes(`const _directive_appear = _resolveDirective("appear")`),
+      "MkStreamingNotesTimeline.js should resolve the appear directive",
+    );
+    assert.ok(
+      streaming.includes('_withDirectives(_createElementVNode("button"'),
+      "MkStreamingNotesTimeline.js should wrap the load-more button with directives",
+    );
+    assert.ok(
+      streaming.includes(
+        "[[_directive_appear, _unref(prefer).s.enableInfiniteScroll ? _unref(paginator).fetchOlder : null], [_vShow, _unref(paginator).canFetchOlder.value]]",
+      ),
+      "MkStreamingNotesTimeline.js should keep appear and v-show on the same button",
+    );
+
+    const pagination = readOutput("MkPagination.js");
+    const normalizedPagination = pagination.replace(/\s+/g, " ");
+    assert.ok(
+      pagination.includes(`const _directive_appear = _resolveDirective("appear")`),
+      "MkPagination.js should resolve the appear directive",
+    );
+    assert.ok(
+      /_withDirectives\(\(_openBlock\(\), _createBlock\(\s*MkButton\b/.test(normalizedPagination),
+      "MkPagination.js should apply appear via withDirectives on load-more buttons",
+    );
+    assert.ok(
+      normalizedPagination.includes(
+        "[[_directive_appear, shouldEnableInfiniteScroll.value ? upButtonClick : null]]",
+      ),
+      "MkPagination.js should keep the appear binding on the upward load-more button",
     );
   });
 });

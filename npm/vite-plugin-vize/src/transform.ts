@@ -53,11 +53,8 @@ export function rewriteStaticAssetUrls(code: string, aliasRules: DynamicImportAl
 }
 
 /**
- * Built-in Vite/Vue/Nuxt define keys that are handled by Vite's own transform pipeline.
- * These must NOT be replaced by the vize plugin because:
- * 1. Nuxt runs both client and server Vite builds, each with different values
- *    (e.g., import.meta.server = true on server, false on client).
- * 2. Vite's import.meta transform already handles these correctly per-environment.
+ * Built-in Vite/Vue/Nuxt define keys that are normally handled by Vite's own
+ * transform pipeline.
  */
 const BUILTIN_DEFINE_PREFIXES = [
   "import.meta.server",
@@ -72,10 +69,25 @@ const BUILTIN_DEFINE_PREFIXES = [
   "process.env",
 ];
 
+const VIRTUAL_MODULE_DEFINE_KEYS = new Set([
+  "import.meta.server",
+  "import.meta.client",
+  "import.meta.dev",
+  "import.meta.test",
+  "import.meta.prerender",
+]);
+
 export function isBuiltinDefine(key: string): boolean {
   return BUILTIN_DEFINE_PREFIXES.some(
     (prefix) => key === prefix || key.startsWith(prefix + ".") || key.startsWith(prefix + "_"),
   );
+}
+
+export function shouldApplyDefineInVirtualModule(key: string): boolean {
+  if (VIRTUAL_MODULE_DEFINE_KEYS.has(key)) {
+    return true;
+  }
+  return !isBuiltinDefine(key);
 }
 
 /**

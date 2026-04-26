@@ -8,7 +8,10 @@
     "skipLibCheck": true,
     "declaration": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "paths": {
+      "@vizejs/vite-plugin-musea": ["../vite-plugin-musea/src/index.ts"]
+    }
   },
   "include": ["src"]
 }

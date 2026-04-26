@@ -14,14 +14,16 @@ mod tests;
 use crate::compile_script::{compile_script_setup_inline_with_context, TemplateParts};
 use crate::compile_template::{
     compile_template_block, compile_template_block_vapor, extract_template_parts,
-    extract_template_parts_full,
+    extract_template_parts_full, TemplateBlockCompileContext,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
 use crate::types::{BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError};
 
 use self::bindings::{croquis_to_legacy_bindings, register_normal_script_bindings};
-use self::helpers::{extract_component_name, generate_scope_id};
+use self::helpers::{
+    demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
+};
 use self::normal_script::extract_normal_script_content;
 use self::styles::compile_styles;
 
@@ -39,6 +41,25 @@ fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {
             .as_ref()
             .map(|template| template.loc.clone()),
     }
+}
+
+fn create_v_model_reactive_const_warning(
+    script_setup: &crate::types::SfcScriptBlock<'_>,
+    binding_name: &str,
+) -> SfcError {
+    let mut message = String::from("`v-model` cannot update the const reactive binding `");
+    message.push_str(binding_name);
+    message.push_str("`. The compiler transformed it to `let` so the update can work.");
+
+    SfcError {
+        message,
+        code: Some("V_MODEL_CONST_REACTIVE_DEMOTED".to_compact_string()),
+        loc: Some(script_setup.loc.clone()),
+    }
+}
+
+fn is_ts_lang(lang: Option<&str>) -> bool {
+    matches!(lang, Some("ts" | "tsx"))
 }
 
 /// Compile an SFC descriptor into JavaScript and CSS
@@ -88,24 +109,20 @@ pub fn compile_sfc(
     }
     let is_vapor = !options.template.ssr && vapor_requested;
 
-    // source_has_ts: whether source uses TypeScript (detected from lang="ts")
-    // Used for: parsing source as TS, preserving TS declarations, resolving type references
-    let source_has_ts = descriptor
-        .script_setup
-        .as_ref()
-        .and_then(|s| s.lang.as_ref())
-        .is_some_and(|l| l == "ts" || l == "tsx")
+    // is_ts controls output format:
+    // - true: output TypeScript (add `: any` annotations, defineComponent wrapper)
+    // - false: output JavaScript (strip TypeScript syntax from TS sources)
+    // Source language detection is tracked separately in the script/setup branches below.
+    let is_ts = options.script.is_ts || options.template.is_ts;
+    let template_is_ts = options.template.is_ts
+        || descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|s| is_ts_lang(s.lang.as_deref()))
         || descriptor
             .script
             .as_ref()
-            .and_then(|s| s.lang.as_ref())
-            .is_some_and(|l| l == "ts" || l == "tsx");
-    // is_ts controls output format:
-    // - true: output TypeScript (add `: any` annotations, defineComponent wrapper)
-    // - false: output JavaScript (no type annotations)
-    // Auto-detected from source lang, or set by explicit options.
-    // When true, TypeScript is preserved in output (downstream tools like Vite strip it via .ts suffix).
-    let is_ts = options.script.is_ts || options.template.is_ts || source_has_ts;
+            .is_some_and(|s| is_ts_lang(s.lang.as_deref()));
 
     // Extract component name from filename
     let component_name = extract_component_name(filename);
@@ -143,11 +160,14 @@ pub fn compile_sfc(
                 compile_template_block(
                     template,
                     &template_opts,
-                    &scope_id,
-                    options.template.ssr && has_scoped,
-                    is_ts,
-                    None,
-                    None,
+                    TemplateBlockCompileContext {
+                        scope_id: &scope_id,
+                        apply_scope_id: options.template.ssr && has_scoped,
+                        is_ts: template_is_ts,
+                        component_name: Some(&component_name),
+                        bindings: None,
+                        croquis: None,
+                    },
                 )
             )
         };
@@ -241,11 +261,14 @@ pub fn compile_sfc(
                     compile_template_block(
                         template,
                         &template_opts,
-                        &scope_id,
-                        options.template.ssr && has_scoped,
-                        is_ts,
-                        None, // No bindings for normal scripts
-                        None, // No Croquis for normal scripts
+                        TemplateBlockCompileContext {
+                            scope_id: &scope_id,
+                            apply_scope_id: options.template.ssr && has_scoped,
+                            is_ts: template_is_ts,
+                            component_name: Some(&component_name),
+                            bindings: None,
+                            croquis: None,
+                        },
                     )
                 )
             };
@@ -341,11 +364,12 @@ pub fn compile_sfc(
     };
 
     // 1. Croquis parser: rich analysis with ReactivityTracker
-    let croquis = profile!(
+    let mut croquis = profile!(
         "atelier.sfc.script_setup.croquis",
         crate::script::analyze_script_setup_to_summary(&script_setup.content)
     );
     let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings);
+    let mut script_setup_content = script_setup.content.to_compact_string();
 
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
@@ -415,6 +439,27 @@ pub fn compile_sfc(
         );
     }
 
+    if let Some(template) = &descriptor.template {
+        let demoted_ids = profile!(
+            "atelier.sfc.script_setup.demote_v_model_reactive_consts",
+            demote_v_model_reactive_const_bindings(
+                &template.content,
+                script_setup.lang.as_deref(),
+                &mut script_setup_content,
+                &mut ctx,
+                &mut script_bindings,
+                &mut croquis,
+            )
+        );
+
+        for binding_name in demoted_ids {
+            warnings.push(create_v_model_reactive_const_warning(
+                script_setup,
+                &binding_name,
+            ));
+        }
+    }
+
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {
         if is_vapor {
@@ -436,11 +481,14 @@ pub fn compile_sfc(
                 compile_template_block(
                     template,
                     &options.template,
-                    &scope_id,
-                    options.template.ssr && has_scoped,
-                    is_ts,
-                    Some(&script_bindings), // Pass bindings for proper ref handling
-                    Some(croquis),          // Pass Croquis for enhanced transforms
+                    TemplateBlockCompileContext {
+                        scope_id: &scope_id,
+                        apply_scope_id: options.template.ssr && has_scoped,
+                        is_ts: template_is_ts,
+                        component_name: Some(&component_name),
+                        bindings: Some(&script_bindings),
+                        croquis: Some(croquis),
+                    },
                 )
             ))
         }
@@ -522,7 +570,7 @@ pub fn compile_sfc(
         "atelier.sfc.script_setup.inline_compile",
         compile_script_setup_inline_with_context(
             ctx,
-            &script_setup.content,
+            &script_setup_content,
             &component_name,
             is_ts,
             source_is_ts,

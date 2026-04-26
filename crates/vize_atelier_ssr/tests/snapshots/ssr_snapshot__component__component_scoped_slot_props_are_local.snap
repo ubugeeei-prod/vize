@@ -1,0 +1,16 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<Carousel><template #item=\"{ data: speaker }\"><div :style=\"{ backgroundImage: `url(${speaker.avatarUrl})` }\">{{ speaker.name }}</div></template></Carousel>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Carousel"), _attrs, {
+    item: _withCtx(({ data: speaker }, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<div style="${_ssrRenderStyle({ backgroundImage: `url(${speaker.avatarUrl})` })}">${_ssrInterpolate(speaker.name)}</div>`)
+      } else {
+        return [_createElementVNode("div", { style: { backgroundImage: `url(${speaker.avatarUrl})` } }, [_createTextVNode(_toDisplayString(speaker.name))])]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

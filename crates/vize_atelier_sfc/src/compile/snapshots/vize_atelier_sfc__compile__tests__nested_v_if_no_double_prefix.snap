@@ -2,26 +2,18 @@
 source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createCommentVNode as _createCommentVNode } from "vue"
-
-import { ref } from 'vue'
-import CodeHighlight from './CodeHighlight.vue'
-
-export default /*@__PURE__*/_defineComponent({
-  __name: 'anonymous',
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, createCommentVNode as _createCommentVNode } from "vue";
+import { ref } from "vue";
+import CodeHighlight from "./CodeHighlight.vue";
+export default {
+  __name: "anonymous",
   setup(__props) {
-
-const output = ref(null);
-
-return (_ctx: any,_cache: any) => {
-  return (output.value)
-      ? (_openBlock(), _createElementBlock("div", { key: 0 }, [ (output.value.preamble) ? (_openBlock(), _createElementBlock("div", {
-            key: 0,
-            class: "preamble"
-          }, [ _createVNode(CodeHighlight, { code: output.value.preamble }, null, 8 /* PROPS */, ["code"]) ])) : _createCommentVNode("v-if", true) ]))
-      : _createCommentVNode("v-if", true)
-}
-}
-
-})
+    const output = ref(null);
+    return (_ctx, _cache) => {
+      return output.value ? (_openBlock(), _createElementBlock("div", { key: 0 }, [output.value.preamble ? (_openBlock(), _createElementBlock("div", {
+        key: 0,
+        class: "preamble"
+      }, [_createVNode(CodeHighlight, { code: output.value.preamble }, null, 8, ["code"])])) : _createCommentVNode("v-if", true)])) : _createCommentVNode("v-if", true);
+    };
+  }
+};
