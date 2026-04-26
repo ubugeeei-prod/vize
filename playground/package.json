@@ -9,7 +9,7 @@
     "preview": "vp preview --config vite.app.config.ts",
     "test": "pnpm test:node && pnpm test:browser",
     "test:node": "vp test run --config vite.node.config.ts",
-    "test:browser": "CI=1 vp test run --config vite.test.config.ts --browser.enabled=false --dom",
+    "test:browser": "CI=1 vp test run --config vite.test.config.ts",
     "test:vrt": "playwright test",
     "test:vrt:update": "playwright test --update-snapshots",
     "check": "ROOT=\"$(cd .. && pwd -P)\" && vp check src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && cargo run --quiet --manifest-path \"$ROOT/Cargo.toml\" -p vize -- lint --max-warnings 0",
@@ -29,7 +29,6 @@
     "@playwright/test": "catalog:testing",
     "@vizejs/vite-plugin": "workspace:*",
     "@vue/test-utils": "catalog:vue-stable",
-    "happy-dom": "catalog:testing",
     "playwright": "catalog:testing",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack"

@@ -1,4 +1,5 @@
 import { defineConfig } from "vite-plus";
+import { playwright } from "vite-plus/test/browser/providers/playwright";
 import { vize } from "@vizejs/vite-plugin";
 
 export default defineConfig({
@@ -10,8 +11,12 @@ export default defineConfig({
     include: ["vue", "@vue/test-utils"],
   },
   test: {
-    environment: "happy-dom",
-    setupFiles: ["e2e/setup.ts"],
+    browser: {
+      enabled: true,
+      provider: playwright(),
+      headless: true,
+      instances: [{ browser: "chromium" }],
+    },
     include: ["src/**/*.test.ts", "e2e/**/*.test.ts"],
     exclude: ["**/__agent_only/**", "e2e/vite-plugin-vapor.test.ts"],
   },

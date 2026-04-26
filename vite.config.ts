@@ -188,7 +188,7 @@ const runInPackages = (
 
 const runTask = (taskName: string) => `vp run --workspace-root ${taskName}`;
 const runTasks = (...taskNames: string[]) => taskNames.map(runTask).join(" && ");
-const moonCommand = process.env.MOON_BIN ?? "moon";
+const moonCommand = process.env.MOON_BIN ?? "env -u MOON_HOME moon";
 const moonScript = (name: string, ...args: string[]) =>
   [
     moonCommand,
@@ -305,13 +305,13 @@ const testTasks = {
 };
 
 const benchmarkTasks = {
-  bench: noCacheTask("node bench/run.ts"),
-  "bench:quick": noCacheTask("node bench/run.ts 1000"),
-  "bench:generate": noCacheTask("node bench/generate.mjs 15000"),
-  "bench:lint": noCacheTask("node bench/lint.ts"),
-  "bench:fmt": noCacheTask("node bench/fmt.ts"),
-  "bench:check": noCacheTask("node bench/check.ts"),
-  "bench:vite": noCacheTask("node bench/vite.ts"),
+  bench: noCacheTask(moonScript("bench", "run")),
+  "bench:quick": noCacheTask(moonScript("bench", "run", "1000")),
+  "bench:generate": noCacheTask(moonScript("bench", "generate", "15000")),
+  "bench:lint": noCacheTask(moonScript("bench", "lint")),
+  "bench:fmt": noCacheTask(moonScript("bench", "fmt")),
+  "bench:check": noCacheTask(moonScript("bench", "check")),
+  "bench:vite": noCacheTask(moonScript("bench", "vite")),
   "bench:all": noCacheTask(
     runTasks("bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite"),
   ),
