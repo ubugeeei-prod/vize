@@ -12,6 +12,7 @@ export interface ThemeColors {
   bgElevated: string;
   accent: string;
   accentHover: string;
+  accentContrast: string;
   accentSubtle: string;
   text: string;
   textSecondary: string;
@@ -32,6 +33,7 @@ export const darkTheme: ThemeColors = {
   bgElevated: "#2a2a2a",
   accent: "#E6E2D6",
   accentHover: "#d4d0c4",
+  accentContrast: "#121212",
   accentSubtle: "rgba(230, 226, 214, 0.1)",
   text: "#E6E2D6",
   textSecondary: "#c4c1b6",
@@ -52,6 +54,7 @@ export const lightTheme: ThemeColors = {
   bgElevated: "#E6E2D6",
   accent: "#121212",
   accentHover: "#2a2a2a",
+  accentContrast: "#E6E2D6",
   accentSubtle: "rgba(18, 18, 18, 0.08)",
   text: "#121212",
   textSecondary: "#3a3a3a",

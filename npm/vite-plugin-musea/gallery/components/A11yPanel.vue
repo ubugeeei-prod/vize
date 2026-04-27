@@ -243,7 +243,7 @@ watch(result, (nextResult) => {
   background: var(--musea-accent);
   border: none;
   border-radius: var(--musea-radius-sm);
-  color: #fff;
+  color: var(--musea-accent-contrast);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;

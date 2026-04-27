@@ -6,6 +6,7 @@
   --musea-bg-elevated: #e6e2d6;
   --musea-accent: #121212;
   --musea-accent-hover: #2a2a2a;
+  --musea-accent-contrast: #e6e2d6;
   --musea-accent-subtle: rgba(18, 18, 18, 0.08);
   --musea-text: #121212;
   --musea-text-secondary: #3a3a3a;
@@ -36,6 +37,7 @@
   --musea-bg-elevated: #e6e2d6;
   --musea-accent: #121212;
   --musea-accent-hover: #2a2a2a;
+  --musea-accent-contrast: #e6e2d6;
   --musea-accent-subtle: rgba(18, 18, 18, 0.08);
   --musea-text: #121212;
   --musea-text-secondary: #3a3a3a;
@@ -58,6 +60,7 @@
   --musea-bg-elevated: #2a2a2a;
   --musea-accent: #e6e2d6;
   --musea-accent-hover: #d4d0c4;
+  --musea-accent-contrast: #121212;
   --musea-accent-subtle: rgba(230, 226, 214, 0.1);
   --musea-text: #e6e2d6;
   --musea-text-secondary: #c4c1b6;
@@ -81,6 +84,7 @@
     --musea-bg-elevated: #2a2a2a;
     --musea-accent: #e6e2d6;
     --musea-accent-hover: #d4d0c4;
+    --musea-accent-contrast: #121212;
     --musea-accent-subtle: rgba(230, 226, 214, 0.1);
     --musea-text: #e6e2d6;
     --musea-text-secondary: #c4c1b6;
