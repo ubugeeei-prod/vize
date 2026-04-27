@@ -113,7 +113,7 @@ function __setup() {
   type __MyList_0_prop_items = __MyList_Props_0 extends { 'items'?: infer T } ? T : __MyList_Props_0 extends { 'items': infer T } ? T : unknown;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 153:166
+  // @vize-map: prop -> 153:167
   const __vize_prop_check_0_items: __MyList_0_prop_items = items;
   void __vize_prop_check_0_items;
 

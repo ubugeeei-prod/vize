@@ -89,13 +89,13 @@ function __setup() {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   void (emit('close')); // VOn
-  // @vize-map: expr -> 266:287
+  // @vize-map: expr -> 266:288
 
   // @click handler
   (($event: MouseEvent) => {
     const __vize_handler_7_11 = ((handler: ($event: MouseEvent) => unknown) => handler)((handleClick));
     __vize_handler_7_11($event);  // handler expression
-    // @vize-map: handler -> 219:238
+    // @vize-map: handler -> 219:239
   })({} as MouseEvent);
 
   // Reference setup bindings (used in template/CSS v-bind)

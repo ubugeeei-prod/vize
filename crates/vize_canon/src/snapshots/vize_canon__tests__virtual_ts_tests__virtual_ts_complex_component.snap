@@ -132,7 +132,7 @@ function __setup() {
   (($event: MouseEvent) => {
     const __vize_handler_10_132 = ((handler: ($event: MouseEvent) => unknown) => handler)((increment));
     __vize_handler_10_132($event);  // handler expression
-    // @vize-map: handler -> 678:695
+    // @vize-map: handler -> 678:696
   })({} as MouseEvent);
 
   // Reference setup bindings (used in template/CSS v-bind)

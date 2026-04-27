@@ -106,7 +106,7 @@ function __setup() {
   // Component props in v-for scope: todo in todos
   (todos).forEach((todo: typeof todos[number]) => {
     void todo;
-    // @vize-map: prop -> 55:66
+    // @vize-map: prop -> 55:67
     const __vize_prop_check_0_item: __TodoItem_0_prop_item = todo;
     void __vize_prop_check_0_item;
   });
