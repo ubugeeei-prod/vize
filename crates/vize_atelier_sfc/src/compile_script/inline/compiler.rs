@@ -22,6 +22,7 @@ use crate::script::ScriptCompileContext;
 use crate::types::SfcError;
 
 use super::super::function_mode::contains_top_level_await;
+use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::{ScriptCompileResult, TemplateParts};
 use body::compile_script_setup_inline_body;
 use parser::parse_script_content;
@@ -41,8 +42,13 @@ pub fn compile_script_setup_inline(
     scope_id: &str,
     filename: Option<&str>,
 ) -> Result<ScriptCompileResult, SfcError> {
+    let transformed = transform_lazy_hydration_macros(content);
+    let content = transformed
+        .as_ref()
+        .map(|result| result.code.as_str())
+        .unwrap_or(content);
     let ctx = build_script_setup_context(content, normal_script_content, filename);
-    compile_script_setup_inline_with_context(
+    let mut result = compile_script_setup_inline_with_context(
         ctx,
         content,
         component_name,
@@ -53,7 +59,13 @@ pub fn compile_script_setup_inline(
         normal_script_content,
         css_vars,
         scope_id,
-    )
+    )?;
+    if let Some(transformed) = transformed {
+        let mut code = transformed.preamble;
+        code.push_str(&result.code);
+        result.code = code;
+    }
+    Ok(result)
 }
 
 #[allow(clippy::too_many_arguments)]

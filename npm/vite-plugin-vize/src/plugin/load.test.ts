@@ -115,6 +115,83 @@ assert.match(
   "Virtual module transforms must leave import.meta.hot available for Vite HMR",
 );
 
+const definePageDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-define-page-"));
+const definePagePath = path.join(definePageDir, "Home.vue");
+fs.writeFileSync(
+  definePagePath,
+  `<script setup lang="ts">
+definePage({
+  name: "home",
+  meta: { requiresAuth: true },
+})
+
+const msg = "ready"
+</script>
+<template><div>{{ msg }}</div></template>`,
+);
+
+const definePageLoad = loadHook(
+  { ...hmrState, cache: new Map(), ssrCache: new Map(), root: definePageDir },
+  `\0${definePagePath}?definePage`,
+  { ssr: false },
+);
+
+assert.ok(
+  definePageLoad && typeof definePageLoad === "object",
+  "Vue Router definePage queries should load as code objects",
+);
+assert.match(
+  definePageLoad.code,
+  /export default \{/,
+  "Vue Router definePage queries should return the extracted route record module",
+);
+assert.doesNotMatch(
+  definePageLoad.code,
+  /const msg/,
+  "Vue Router definePage queries should not return the component setup body",
+);
+
+const definePageMetaDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-define-page-meta-"));
+const definePageMetaPath = path.join(definePageMetaDir, "Docs.vue");
+fs.writeFileSync(
+  definePageMetaPath,
+  `<script setup lang="ts">
+definePageMeta({
+  name: "docs",
+  meta: { scrollMargin: 180 },
+})
+
+const msg = "ready"
+</script>
+<template><div>{{ msg }}</div></template>`,
+);
+
+const definePageMetaLoad = loadHook(
+  { ...hmrState, cache: new Map(), ssrCache: new Map(), root: definePageMetaDir },
+  `\0${definePageMetaPath}?macro=true`,
+  { ssr: false },
+);
+
+assert.ok(
+  definePageMetaLoad && typeof definePageMetaLoad === "object",
+  "Nuxt definePageMeta macro queries should load as code objects",
+);
+assert.match(
+  definePageMetaLoad.code,
+  /export default \{/,
+  "Nuxt definePageMeta macro queries should return the extracted page metadata module",
+);
+assert.match(
+  definePageMetaLoad.code,
+  /scrollMargin/,
+  "Nuxt definePageMeta macro queries should preserve page metadata",
+);
+assert.doesNotMatch(
+  definePageMetaLoad.code,
+  /const msg/,
+  "Nuxt definePageMeta macro queries should not return the component setup body",
+);
+
 const firstLoad = loadHook(hmrState, toVirtualId(realPath), { ssr: false });
 assert.ok(firstLoad && typeof firstLoad === "object", "Virtual module should load as code object");
 assert.match(

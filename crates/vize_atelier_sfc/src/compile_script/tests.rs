@@ -295,6 +295,104 @@ const msg = ref('hello')
     }
 
     #[test]
+    fn test_compile_script_setup_strips_ecosystem_compile_time_macro() {
+        let content = r#"
+definePage({
+  name: 'home',
+  meta: {
+    requiresAuth: true,
+  },
+})
+
+const msg = 'ready'
+"#;
+        let result =
+            compile_script_setup(content, "Test", false, false, Some("<div>{{ msg }}</div>"))
+                .unwrap();
+
+        assert!(
+            !result.code.contains("definePage"),
+            "definePage should be removed from runtime output:\n{}",
+            result.code
+        );
+        assert!(result.code.contains("ready"));
+    }
+
+    #[test]
+    fn test_compile_script_setup_strips_define_page_meta() {
+        let content = r#"
+definePageMeta({
+  name: 'docs',
+  meta: {
+    scrollMargin: 180,
+  },
+})
+
+const msg = 'ready'
+"#;
+        let result =
+            compile_script_setup(content, "Test", false, false, Some("<div>{{ msg }}</div>"))
+                .unwrap();
+
+        assert!(
+            !result.code.contains("definePageMeta"),
+            "definePageMeta should be removed from runtime output:\n{}",
+            result.code
+        );
+        assert!(result.code.contains("ready"));
+    }
+
+    #[test]
+    fn test_compile_script_setup_strips_define_route_rules() {
+        let content = r#"
+defineRouteRules({
+  prerender: true,
+  cache: {
+    maxAge: 60,
+  },
+})
+
+const msg = 'ready'
+"#;
+        let result =
+            compile_script_setup(content, "Test", false, false, Some("<div>{{ msg }}</div>"))
+                .unwrap();
+
+        assert!(
+            !result.code.contains("defineRouteRules"),
+            "defineRouteRules should be removed from runtime output:\n{}",
+            result.code
+        );
+        assert!(result.code.contains("ready"));
+    }
+
+    #[test]
+    fn test_compile_script_setup_expands_define_lazy_hydration_component() {
+        let content = r#"
+const LazyHydrationMyComponent = defineLazyHydrationComponent(
+  'idle',
+  () => import('./components/MyComponent.vue'),
+)
+"#;
+        let result = compile_script_setup(
+            content,
+            "Test",
+            false,
+            false,
+            Some("<LazyHydrationMyComponent />"),
+        )
+        .unwrap();
+
+        assert!(
+            !result.code.contains("defineLazyHydrationComponent"),
+            "defineLazyHydrationComponent should be expanded from runtime output:\n{}",
+            result.code
+        );
+        assert!(result.code.contains("__vizeCreateLazyIdleComponent"));
+        assert!(result.code.contains("./components/MyComponent.vue"));
+    }
+
+    #[test]
     fn test_compile_script_setup_with_props_destructure() {
         let content = r#"
 import { computed } from 'vue'

@@ -10,6 +10,7 @@ const baseModule: CompiledModule = {
   templateHash: "template-a",
   styleHash: "style-a",
   scriptHash: "script-a",
+  macroArtifacts: [],
   styles: [],
 };
 

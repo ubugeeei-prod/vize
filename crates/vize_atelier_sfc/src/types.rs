@@ -504,6 +504,37 @@ pub struct SfcCompileResult {
 
     /// Binding metadata
     pub bindings: Option<BindingMetadata>,
+
+    /// Compile-time macro artifacts extracted from script blocks.
+    #[serde(default)]
+    pub macro_artifacts: Vec<SfcMacroArtifact>,
+}
+
+/// Compile-time macro artifact extracted from an SFC.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcMacroArtifact {
+    /// Stable artifact kind.
+    pub kind: String,
+
+    /// Macro call name.
+    pub name: String,
+
+    /// Full macro call source.
+    pub source: String,
+
+    /// Extracted macro payload source.
+    pub content: String,
+
+    /// Ready-to-load virtual module code, when applicable.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub module_code: Option<String>,
+
+    /// Absolute start offset in the original SFC source.
+    pub start: usize,
+
+    /// Absolute end offset in the original SFC source.
+    pub end: usize,
 }
 
 /// SFC error/warning

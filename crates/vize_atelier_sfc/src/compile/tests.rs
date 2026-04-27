@@ -81,6 +81,185 @@ const items = [{ name: 'dist', children: [{ name: 'file.js', children: [] }] }]
 }
 
 #[test]
+fn test_script_setup_define_page_is_compile_time_only() {
+    let source = r#"<script setup lang="ts">
+definePage({
+  name: 'home',
+  meta: {
+    requiresAuth: true,
+  },
+})
+
+const msg = 'ready'
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("definePage"),
+        "definePage should be removed from runtime output:\n{}",
+        result.code
+    );
+    assert!(result.code.contains("ready"));
+    assert_eq!(result.macro_artifacts.len(), 1);
+
+    let artifact = &result.macro_artifacts[0];
+    assert_eq!(artifact.kind.as_str(), "vue-router.definePage");
+    assert_eq!(artifact.name.as_str(), "definePage");
+    assert!(artifact.source.contains("definePage"));
+    assert!(artifact.content.contains("requiresAuth"));
+    assert!(artifact
+        .module_code
+        .as_ref()
+        .is_some_and(|code| code.starts_with("export default {")));
+}
+
+#[test]
+fn test_script_setup_define_page_meta_is_compile_time_only() {
+    let source = r#"<script setup lang="ts">
+definePageMeta({
+  name: 'docs',
+  meta: {
+    scrollMargin: 180,
+  },
+})
+
+const msg = 'ready'
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("definePageMeta"),
+        "definePageMeta should be removed from runtime output:\n{}",
+        result.code
+    );
+    assert!(result.code.contains("ready"));
+    assert_eq!(result.macro_artifacts.len(), 1);
+
+    let artifact = &result.macro_artifacts[0];
+    assert_eq!(artifact.kind.as_str(), "nuxt.definePageMeta");
+    assert_eq!(artifact.name.as_str(), "definePageMeta");
+    assert!(artifact.source.contains("definePageMeta"));
+    assert!(artifact.content.contains("scrollMargin"));
+    assert!(artifact
+        .module_code
+        .as_ref()
+        .is_some_and(|code| code.starts_with("export default {")));
+}
+
+#[test]
+fn test_script_setup_define_route_rules_is_compile_time_only() {
+    let source = r#"<script setup lang="ts">
+defineRouteRules({
+  prerender: true,
+  cache: {
+    maxAge: 60,
+  },
+})
+
+const msg = 'ready'
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("defineRouteRules"),
+        "defineRouteRules should be removed from runtime output:\n{}",
+        result.code
+    );
+    assert!(result.code.contains("ready"));
+    assert_eq!(result.macro_artifacts.len(), 1);
+
+    let artifact = &result.macro_artifacts[0];
+    assert_eq!(artifact.kind.as_str(), "nuxt.defineRouteRules");
+    assert_eq!(artifact.name.as_str(), "defineRouteRules");
+    assert!(artifact.source.contains("defineRouteRules"));
+    assert!(artifact.content.contains("prerender"));
+    assert!(artifact
+        .module_code
+        .as_ref()
+        .is_some_and(|code| code.starts_with("export default {")));
+}
+
+#[test]
+fn test_script_setup_define_lazy_hydration_component_expands() {
+    let source = r#"<script setup lang="ts">
+const LazyHydrationMyComponent = defineLazyHydrationComponent(
+  'visible',
+  () => import('./components/MyComponent.vue'),
+)
+</script>
+<template>
+  <LazyHydrationMyComponent :hydrate-on-visible="{ rootMargin: '100px' }" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some("/src/pages/Home.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("defineLazyHydrationComponent"),
+        "defineLazyHydrationComponent should be expanded from runtime output:\n{}",
+        result.code
+    );
+    assert!(result.code.contains("__vizeCreateLazyVisibleComponent"));
+    assert!(result.code.contains("useNuxtApp as __vizeUseNuxtApp"));
+    assert!(result.code.contains("./components/MyComponent.vue"));
+    assert!(result.code.contains("LazyHydrationMyComponent"));
+}
+
+#[test]
+fn test_normal_script_define_page_outputs_artifact_and_is_erased() {
+    let source = r#"<script>
+definePage({
+  name: 'legacy-page',
+})
+
+export default {
+  data() {
+    return { msg: 'ready' }
+  },
+}
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("definePage"),
+        "definePage should be removed from normal script runtime output:\n{}",
+        result.code
+    );
+    assert_eq!(result.macro_artifacts.len(), 1);
+    assert_eq!(
+        result.macro_artifacts[0].kind.as_str(),
+        "vue-router.definePage"
+    );
+    assert!(result.macro_artifacts[0].content.contains("legacy-page"));
+}
+
+#[test]
 fn test_bindings_passed_to_template() {
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue';

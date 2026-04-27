@@ -9,7 +9,7 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 
 use vize_carton::{String, ToCompactString};
-use vize_croquis::macros::is_builtin_macro;
+use vize_croquis::macros::is_runtime_erased_macro;
 
 enum StatementBucket {
     Import,
@@ -152,7 +152,7 @@ fn unwrap_call_expression<'a>(
 
 fn is_macro_call(call: &oxc_ast::ast::CallExpression<'_>) -> bool {
     match &call.callee {
-        Expression::Identifier(id) => is_builtin_macro(id.name.as_str()),
+        Expression::Identifier(id) => is_runtime_erased_macro(id.name.as_str()),
         _ => false,
     }
 }
@@ -218,5 +218,65 @@ const store = useStore<RootState>()
             ts_declarations[0].as_str(),
             "interface RootState {\n  count: number\n}"
         );
+    }
+
+    #[test]
+    fn test_extract_script_sections_skips_ecosystem_compile_time_macro() {
+        let content = r#"definePage({
+  name: 'home',
+  meta: {
+    requiresAuth: true,
+  },
+})
+
+const msg = 'ready'
+"#;
+
+        let (_, setup_lines, ts_declarations) =
+            extract_script_sections(content, true).expect("sections should parse");
+
+        assert_eq!(setup_lines.len(), 1);
+        assert_eq!(setup_lines[0].as_str(), "const msg = 'ready'");
+        assert!(ts_declarations.is_empty());
+    }
+
+    #[test]
+    fn test_extract_script_sections_skips_define_page_meta() {
+        let content = r#"definePageMeta({
+  name: 'docs',
+  meta: {
+    scrollMargin: 180,
+  },
+})
+
+const msg = 'ready'
+"#;
+
+        let (_, setup_lines, ts_declarations) =
+            extract_script_sections(content, true).expect("sections should parse");
+
+        assert_eq!(setup_lines.len(), 1);
+        assert_eq!(setup_lines[0].as_str(), "const msg = 'ready'");
+        assert!(ts_declarations.is_empty());
+    }
+
+    #[test]
+    fn test_extract_script_sections_skips_define_route_rules() {
+        let content = r#"defineRouteRules({
+  prerender: true,
+  cache: {
+    maxAge: 60,
+  },
+})
+
+const msg = 'ready'
+"#;
+
+        let (_, setup_lines, ts_declarations) =
+            extract_script_sections(content, true).expect("sections should parse");
+
+        assert_eq!(setup_lines.len(), 1);
+        assert_eq!(setup_lines[0].as_str(), "const msg = 'ready'");
+        assert!(ts_declarations.is_empty());
     }
 }

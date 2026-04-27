@@ -316,6 +316,7 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function useRouter(): any;".into(),
         "declare function useRoute(name?: string): any;".into(),
         "declare function definePageMeta(meta: any): void;".into(),
+        "declare function defineRouteRules(rules: any): void;".into(),
         "declare function useSeoMeta(meta: any): void;".into(),
         "declare function useFetch<T = any>(url: string | (() => string), options?: any): any;".into(),
         "declare function useAsyncData<T = any>(handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),

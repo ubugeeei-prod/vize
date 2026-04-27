@@ -3,9 +3,11 @@
 //! This module handles compilation of `<script>` and `<script setup>` blocks,
 //! following the Vue.js core output format.
 
+pub(crate) mod artifacts;
 pub mod function_mode;
 pub mod import_utils;
 pub mod inline;
+pub(crate) mod lazy_hydration;
 pub mod macros;
 pub mod props;
 pub mod statement_sections;
@@ -16,6 +18,7 @@ pub mod typescript;
 use crate::types::{BindingMetadata, ScriptCompileOptions, SfcDescriptor, SfcError};
 
 use self::function_mode::compile_script_setup;
+use self::lazy_hydration::transform_lazy_hydration_macros;
 use self::typescript::transform_typescript_to_js;
 
 // Re-export commonly used items
@@ -63,13 +66,24 @@ pub fn compile_script(
     // Handle script setup
     if let Some(script_setup) = &descriptor.script_setup {
         let template_content = descriptor.template.as_ref().map(|t| t.content.as_ref());
-        compile_script_setup(
-            &script_setup.content,
+        let transformed = transform_lazy_hydration_macros(&script_setup.content);
+        let script_content = transformed
+            .as_ref()
+            .map(|result| result.code.as_str())
+            .unwrap_or(&script_setup.content);
+        let mut result = compile_script_setup(
+            script_content,
             component_name,
             is_vapor,
             is_ts,
             template_content,
-        )
+        )?;
+        if let Some(transformed) = transformed {
+            let mut code = transformed.preamble;
+            code.push_str(&result.code);
+            result.code = code;
+        }
+        Ok(result)
     } else if let Some(script) = &descriptor.script {
         // Use regular script, wrapped in __sfc__
         let mut code = String::default();

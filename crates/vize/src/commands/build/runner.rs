@@ -615,6 +615,7 @@ fn compile_file_with_profile(
         errors: result.errors.into_iter().map(|e| e.message).collect(),
         warnings: result.warnings.into_iter().map(|e| e.message).collect(),
         script_lang,
+        macro_artifacts: result.macro_artifacts,
     };
 
     Ok((output, profile))

@@ -64,6 +64,7 @@ export function compileVueModule(
     templateHash: result.templateHash,
     styleHash: result.styleHash,
     scriptHash: result.scriptHash,
+    macroArtifacts: result.macroArtifacts ?? [],
     styles: extractStyleBlocks(source),
   };
 

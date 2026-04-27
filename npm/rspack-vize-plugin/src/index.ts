@@ -30,6 +30,7 @@ export { compileFile, generateOutput, clearCompilationCache } from "./shared/com
 // Types
 export type {
   CompiledModule,
+  MacroArtifact,
   StyleBlockInfo,
   CustomBlockInfo,
   SfcSrcInfo,

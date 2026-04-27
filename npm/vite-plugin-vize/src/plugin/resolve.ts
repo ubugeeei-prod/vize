@@ -49,6 +49,20 @@ interface ResolveContext {
   ): Promise<{ id: string } | null>;
 }
 
+function hasQueryParam(id: string, name: string): boolean {
+  const query = id.split("?")[1];
+  return query ? new URLSearchParams(query).has(name) : false;
+}
+
+function hasMacroQuery(id: string): boolean {
+  const query = id.split("?")[1];
+  return query ? new URLSearchParams(query).get("macro") === "true" : false;
+}
+
+function isMacroVirtualId(id: string): boolean {
+  return id.startsWith("\0") && (hasMacroQuery(id) || hasQueryParam(id, "definePage"));
+}
+
 function normalizeRequireBase(importer?: string): string | null {
   if (!importer) {
     return null;
@@ -57,8 +71,8 @@ function normalizeRequireBase(importer?: string): string | null {
   let normalized = importer;
   if (isVizeVirtual(normalized)) {
     normalized = fromVirtualId(normalized);
-  } else if (normalized.startsWith("\0") && normalized.endsWith("?macro=true")) {
-    normalized = normalized.slice(1).replace("?macro=true", "");
+  } else if (isMacroVirtualId(normalized)) {
+    normalized = normalized.slice(1).split("?")[0] ?? "";
   }
 
   return normalized.split("?")[0] ?? null;
@@ -163,15 +177,18 @@ export async function resolveIdHook(
     return normalizeFsIdForBuild(id);
   }
 
-  // Handle ?macro=true queries (Nuxt page macros: defineRouteRules, definePageMeta, etc.)
+  // Handle route macro queries.
+  // - ?macro=true is used by Nuxt page macros.
+  // - ?definePage is used by Vue Router file-based routing.
   // Nuxt's router generates `import { default } from "page.vue?macro=true"` to extract
-  // route metadata. Without @vitejs/plugin-vue, Vize must handle this query and return
-  // the compiled script output so Vite's OXC transform can process it as JS.
-  if (id.includes("?macro=true")) {
+  // route metadata. Without @vitejs/plugin-vue, Vize must resolve this query so the
+  // load hook can return compile-time macro artifact modules.
+  if (hasMacroQuery(id) || hasQueryParam(id, "definePage")) {
     const filePath = id.split("?")[0];
+    const querySuffix = id.slice(id.indexOf("?"));
     const resolved = resolveVuePath(state, filePath, importer);
     if (resolved && fs.existsSync(resolved)) {
-      return `\0${resolved}?macro=true`;
+      return `\0${resolved}${querySuffix}`;
     }
   }
 
@@ -192,10 +209,10 @@ export async function resolveIdHook(
   }
 
   // If importer is a vize virtual module or macro module, resolve imports against the real path
-  const isMacroImporter = importer?.startsWith("\0") && importer?.endsWith("?macro=true");
+  const isMacroImporter = importer ? isMacroVirtualId(importer) : false;
   if (importer && (isVizeVirtual(importer) || isMacroImporter)) {
     const cleanImporter = isMacroImporter
-      ? importer.slice(1).replace("?macro=true", "")
+      ? importer.slice(1).split("?")[0]!
       : fromVirtualId(importer);
 
     state.logger.log(`resolveId from virtual: id=${id}, cleanImporter=${cleanImporter}`);

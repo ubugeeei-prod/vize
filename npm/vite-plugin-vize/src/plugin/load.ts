@@ -62,6 +62,64 @@ function getVirtualModuleDefines(
   };
 }
 
+function hasQueryParam(id: string, name: string): boolean {
+  const query = id.split("?")[1];
+  return query ? new URLSearchParams(query).has(name) : false;
+}
+
+function hasMacroQuery(id: string): boolean {
+  const query = id.split("?")[1];
+  return query ? new URLSearchParams(query).get("macro") === "true" : false;
+}
+
+function normalizeMacroRealPath(realPath: string): string {
+  return realPath.endsWith(".vue.ts") ? realPath.slice(0, -3) : realPath;
+}
+
+function stripVirtualQuery(id: string): string {
+  return normalizeMacroRealPath(id.slice(1).split("?")[0] ?? "");
+}
+
+function findMacroArtifactModule(
+  state: VizePluginState,
+  realPath: string,
+  ssr: boolean,
+  kind: string,
+): string | null {
+  const cache = getEnvironmentCache(state, ssr);
+  realPath = normalizeMacroRealPath(realPath);
+  let compiled = cache.get(realPath) ?? state.cache.get(realPath) ?? state.ssrCache.get(realPath);
+
+  if (!compiled && fs.existsSync(realPath)) {
+    const source = fs.readFileSync(realPath, "utf-8");
+    compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, ssr), source);
+    syncCollectedCssForFile(state, realPath, compiled);
+  }
+
+  return compiled?.macroArtifacts?.find((artifact) => artifact.kind === kind)?.moduleCode ?? null;
+}
+
+function loadDefinePageArtifact(
+  state: VizePluginState,
+  realPath: string,
+  ssr: boolean,
+): { code: string; map: null } {
+  return {
+    code:
+      findMacroArtifactModule(state, realPath, ssr, "vue-router.definePage") ?? "export default {}",
+    map: null,
+  };
+}
+
+function loadDefinePageMetaArtifact(
+  state: VizePluginState,
+  realPath: string,
+  ssr: boolean,
+): { code: string; map: null } | null {
+  const code = findMacroArtifactModule(state, realPath, ssr, "nuxt.definePageMeta");
+  return code ? { code, map: null } : null;
+}
+
 export function loadHook(
   state: VizePluginState,
   id: string,
@@ -152,9 +210,19 @@ export function loadHook(
     return "";
   }
 
+  // Handle Vue Router's ?definePage query through extracted artifacts.
+  if (id.startsWith("\0") && hasQueryParam(id, "definePage")) {
+    return loadDefinePageArtifact(state, stripVirtualQuery(id), !!loadOptions?.ssr);
+  }
+
   // Handle ?macro=true queries
-  if (id.startsWith("\0") && id.endsWith("?macro=true")) {
-    const realPath = id.slice(1).replace("?macro=true", "");
+  if (id.startsWith("\0") && hasMacroQuery(id)) {
+    const realPath = stripVirtualQuery(id);
+    const artifactLoad = loadDefinePageMetaArtifact(state, realPath, !!loadOptions?.ssr);
+    if (artifactLoad) {
+      return artifactLoad;
+    }
+
     if (fs.existsSync(realPath)) {
       const source = fs.readFileSync(realPath, "utf-8");
       const setupMatch = source.match(/<script\s+setup[^>]*>([\s\S]*?)<\/script>/);
@@ -270,9 +338,9 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
-  const isMacro = id.startsWith("\0") && id.endsWith("?macro=true");
+  const isMacro = id.startsWith("\0") && (hasMacroQuery(id) || hasQueryParam(id, "definePage"));
   if (isVizeVirtual(id) || isMacro) {
-    const realPath = isMacro ? id.slice(1).replace("?macro=true", "") : fromVirtualId(id);
+    const realPath = isMacro ? stripVirtualQuery(id) : fromVirtualId(id);
     try {
       const result = await transformWithOxc(code, realPath, {
         lang: "ts",
