@@ -8,7 +8,7 @@ expression: result.diagnostics
         severity: Error,
         message: "@vue:updated lifecycle events are not supported in Vapor",
         start: 5,
-        end: 28,
+        end: 29,
         help: Some(
             "Use component lifecycle hooks instead",
         ),

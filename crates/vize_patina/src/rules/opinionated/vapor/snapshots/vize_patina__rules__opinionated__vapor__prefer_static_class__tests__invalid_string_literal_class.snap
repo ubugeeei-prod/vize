@@ -8,7 +8,7 @@ expression: result.diagnostics
         severity: Warning,
         message: "Prefer static class attribute over dynamic :class binding for constant values",
         start: 6,
-        end: 27,
+        end: 28,
         help: None,
         labels: [],
         fix: Some(
@@ -17,7 +17,7 @@ expression: result.diagnostics
                 edits: [
                     TextEdit {
                         start: 5,
-                        end: 28,
+                        end: 29,
                         new_text: "class=\"static-class\"",
                     },
                 ],

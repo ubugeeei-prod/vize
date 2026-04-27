@@ -8,7 +8,7 @@ expression: result.diagnostics
         severity: Error,
         message: "v-show cannot be used on <template> element",
         start: 10,
-        end: 21,
+        end: 22,
         help: Some(
             "Add an expression to the v-show directive",
         ),

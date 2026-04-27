@@ -452,6 +452,59 @@ fn test_parse_v_for() {
 }
 
 #[test]
+fn test_no_value_directive_loc_excludes_trailing_whitespace() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div v-if />");
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Directive(dir) = &el.props[0] {
+            assert_eq!(dir.loc.source.as_str(), "v-if");
+        } else {
+            panic!("Expected directive");
+        }
+    }
+}
+
+#[test]
+fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div class ="w-100" />"#);
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.loc.source.as_str(), r#"class ="w-100""#);
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "w-100");
+            assert_eq!(attr.value.as_ref().unwrap().loc.source.as_str(), "w-100");
+        } else {
+            panic!("Expected attribute");
+        }
+    }
+}
+
+#[test]
+fn test_quoted_directive_loc_includes_closing_quote_with_spaced_equals() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div v-if ="ok" />"#);
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Directive(dir) = &el.props[0] {
+            assert_eq!(dir.loc.source.as_str(), r#"v-if ="ok""#);
+            if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
+                assert_eq!(exp.content.as_str(), "ok");
+                assert_eq!(exp.loc.source.as_str(), "ok");
+            } else {
+                panic!("Expected expression");
+            }
+        } else {
+            panic!("Expected directive");
+        }
+    }
+}
+
+#[test]
 fn test_parse_mixed_children() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, "<div>text<span></span>{{ msg }}</div>");
