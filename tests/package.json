@@ -9,12 +9,16 @@
     "test:check": "node --test snapshots/check/elk.ts snapshots/check/misskey.ts snapshots/check/npmx.ts snapshots/check/vuefes.ts",
     "test:lint": "node --test snapshots/lint/elk.ts snapshots/lint/misskey.ts snapshots/lint/npmx.ts snapshots/lint/vuefes.ts",
     "test:build": "node --test snapshots/build/elk.ts snapshots/build/misskey.ts snapshots/build/npmx.ts snapshots/build/vuefes.ts",
-    "test:check:fixtures": "node --test snapshots/check/typecheck-errors.ts snapshots/check/compiler-macros.ts snapshots/check/style-preprocessors.ts"
+    "test:check:fixtures": "node --test snapshots/check/typecheck-errors.ts snapshots/check/compiler-macros.ts snapshots/check/style-preprocessors.ts snapshots/check/toolchain-parity.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:testing",
     "@types/node": "catalog:typescript",
     "@types/pngjs": "catalog:content",
-    "pngjs": "catalog:content"
+    "@vue/compiler-sfc": "catalog:vue-beta",
+    "pngjs": "catalog:content",
+    "typescript": "catalog:typescript",
+    "vue": "catalog:vue-beta",
+    "vue-tsc": "catalog:typescript"
   }
 }
