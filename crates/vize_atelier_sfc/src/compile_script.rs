@@ -10,6 +10,7 @@ pub mod inline;
 pub(crate) mod lazy_hydration;
 pub mod macros;
 pub mod props;
+pub(crate) mod runtime_bindings;
 pub mod statement_sections;
 #[cfg(test)]
 mod tests;

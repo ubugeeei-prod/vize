@@ -13,6 +13,8 @@ use vize_croquis::macros::{artifact_macro_names, macro_artifact_kind};
 
 use crate::types::SfcMacroArtifact;
 
+use super::runtime_bindings::collect_runtime_bindings;
+
 pub(crate) fn extract_macro_artifacts(
     content: &str,
     absolute_offset: usize,
@@ -30,6 +32,7 @@ pub(crate) fn extract_macro_artifacts(
     }
 
     let static_imports = collect_static_imports(ret.program.body.iter(), content);
+    let runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
     let mut artifacts = Vec::new();
 
     for stmt in ret.program.body.iter() {
@@ -39,6 +42,9 @@ pub(crate) fn extract_macro_artifacts(
         let Some(name) = call_name(call) else {
             continue;
         };
+        if runtime_bindings.contains(name) {
+            continue;
+        }
         let Some(kind) = macro_artifact_kind(name) else {
             continue;
         };
@@ -85,6 +91,7 @@ pub(crate) fn erase_artifact_macro_statements(content: &str) -> Option<String> {
         return None;
     }
 
+    let runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
     let mut ranges = Vec::new();
     for stmt in ret.program.body.iter() {
         let Some(call) = artifact_call_from_statement(stmt) else {
@@ -93,6 +100,9 @@ pub(crate) fn erase_artifact_macro_statements(content: &str) -> Option<String> {
         let Some(name) = call_name(call) else {
             continue;
         };
+        if runtime_bindings.contains(name) {
+            continue;
+        }
         if macro_artifact_kind(name).is_none() {
             continue;
         }
@@ -300,6 +310,21 @@ const LazyHydrationMyComponent = defineLazyHydrationComponent(
   'visible',
   () => import('./components/MyComponent.vue'),
 )
+"#;
+
+        assert!(extract_macro_artifacts(content, 0).is_empty());
+        assert!(erase_artifact_macro_statements(content).is_none());
+    }
+
+    #[test]
+    fn preserves_imported_define_page_runtime_call() {
+        let content = r#"import { definePage } from '@/page.js'
+
+definePage(() => ({
+  title: 'runtime page',
+}))
+
+const msg = 'ready'
 "#;
 
         assert!(extract_macro_artifacts(content, 0).is_empty());

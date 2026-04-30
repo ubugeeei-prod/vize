@@ -120,6 +120,40 @@ const msg = 'ready'
 }
 
 #[test]
+fn test_script_setup_imported_define_page_stays_runtime() {
+    let source = r#"<script setup lang="ts">
+import { definePage } from '@/page.js'
+
+definePage(() => ({
+  title: 'runtime page',
+}))
+
+const msg = 'ready'
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains("import { definePage } from \"@/page.js\";"),
+        "runtime definePage import should be preserved:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("definePage(() =>"),
+        "runtime definePage call should be preserved:\n{}",
+        result.code
+    );
+    assert!(result.macro_artifacts.is_empty());
+}
+
+#[test]
 fn test_script_setup_define_page_meta_is_compile_time_only() {
     let source = r#"<script setup lang="ts">
 definePageMeta({

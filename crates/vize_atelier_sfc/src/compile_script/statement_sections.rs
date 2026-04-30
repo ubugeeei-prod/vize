@@ -8,8 +8,10 @@ use oxc_ast::ast::{Declaration, Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 
-use vize_carton::{String, ToCompactString};
-use vize_croquis::macros::is_runtime_erased_macro;
+use vize_carton::{FxHashSet, String, ToCompactString};
+use vize_croquis::macros::{is_builtin_macro, is_runtime_erased_macro};
+
+use super::runtime_bindings::collect_runtime_bindings;
 
 enum StatementBucket {
     Import,
@@ -36,6 +38,7 @@ pub(crate) fn extract_script_sections(
 
     let mut prev_end = 0usize;
     let mut pending_gap = String::default();
+    let runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
 
     for stmt in ret.program.body.iter() {
         let span = stmt.span();
@@ -49,7 +52,7 @@ pub(crate) fn extract_script_sections(
         pending_gap.push_str(&content[prev_end..start]);
 
         let slice = &content[start..end];
-        match classify_statement(stmt, slice) {
+        match classify_statement(stmt, slice, &runtime_bindings) {
             StatementBucket::Import => {
                 let mut segment = std::mem::take(&mut pending_gap);
                 segment.push_str(slice);
@@ -81,7 +84,11 @@ pub(crate) fn extract_script_sections(
     Some((user_imports, setup_lines, ts_declarations))
 }
 
-fn classify_statement(stmt: &Statement<'_>, slice: &str) -> StatementBucket {
+fn classify_statement(
+    stmt: &Statement<'_>,
+    slice: &str,
+    runtime_bindings: &FxHashSet<String>,
+) -> StatementBucket {
     let trimmed = slice.trim_start();
 
     if trimmed.starts_with("declare ") {
@@ -111,7 +118,9 @@ fn classify_statement(stmt: &Statement<'_>, slice: &str) -> StatementBucket {
             }
         }
         Statement::ExpressionStatement(expr_stmt) => {
-            if unwrap_call_expression(&expr_stmt.expression).is_some_and(is_macro_call) {
+            if unwrap_call_expression(&expr_stmt.expression)
+                .is_some_and(|call| is_macro_call(call, runtime_bindings))
+            {
                 StatementBucket::Macro
             } else {
                 StatementBucket::Setup
@@ -122,7 +131,7 @@ fn classify_statement(stmt: &Statement<'_>, slice: &str) -> StatementBucket {
                 decl.init
                     .as_ref()
                     .and_then(unwrap_call_expression)
-                    .is_some_and(is_macro_call)
+                    .is_some_and(|call| is_macro_call(call, runtime_bindings))
             }) {
                 StatementBucket::Macro
             } else {
@@ -150,9 +159,16 @@ fn unwrap_call_expression<'a>(
     }
 }
 
-fn is_macro_call(call: &oxc_ast::ast::CallExpression<'_>) -> bool {
+fn is_macro_call(
+    call: &oxc_ast::ast::CallExpression<'_>,
+    runtime_bindings: &FxHashSet<String>,
+) -> bool {
     match &call.callee {
-        Expression::Identifier(id) => is_runtime_erased_macro(id.name.as_str()),
+        Expression::Identifier(id) => {
+            let name = id.name.as_str();
+            is_builtin_macro(name)
+                || (is_runtime_erased_macro(name) && !runtime_bindings.contains(name))
+        }
         _ => false,
     }
 }
@@ -237,6 +253,26 @@ const msg = 'ready'
 
         assert_eq!(setup_lines.len(), 1);
         assert_eq!(setup_lines[0].as_str(), "const msg = 'ready'");
+        assert!(ts_declarations.is_empty());
+    }
+
+    #[test]
+    fn test_extract_script_sections_preserves_imported_define_page() {
+        let content = r#"import { definePage } from '@/page.js'
+
+definePage(() => ({
+  title: 'runtime page',
+}))
+
+const msg = 'ready'
+"#;
+
+        let (imports, setup_lines, ts_declarations) =
+            extract_script_sections(content, true).expect("sections should parse");
+
+        assert_eq!(imports.len(), 1);
+        assert!(setup_lines.iter().any(|line| line.contains("definePage")));
+        assert!(setup_lines.iter().any(|line| line.contains("const msg")));
         assert!(ts_declarations.is_empty());
     }
 
