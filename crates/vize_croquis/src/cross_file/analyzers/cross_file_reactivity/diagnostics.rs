@@ -105,9 +105,8 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
 
                 CrossFileReactivityIssueKind::NonReactiveProvide { key } => {
                     CrossFileDiagnostic::new(
-                        CrossFileDiagnosticKind::ReactivityOutsideSetup {
-                            api_name: CompactString::new("provide"),
-                            context_description: CompactString::new("non-reactive value"),
+                        CrossFileDiagnosticKind::NonReactiveProvideValue {
+                            key: key.clone(),
                         },
                         issue.severity,
                         issue.file_id,

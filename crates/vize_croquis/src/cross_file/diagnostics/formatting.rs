@@ -292,6 +292,21 @@ impl CrossFileDiagnostic {
                 out.push_str("// Option 3: Restructure to remove bidirectional dependency\n");
                 out.push_str("```\n");
             }
+            CrossFileDiagnosticKind::NonReactiveProvideValue { key } => {
+                append!(
+                    *out,
+                    "**Problem**: `provide('{key}', value)` passes a plain value to consumers.\n\n",
+                );
+                out.push_str("**Why this matters**:\n\n");
+                out.push_str("- Consumers that call `inject()` receive a snapshot-like value.\n");
+                out.push_str("- Later provider updates will not be visible unless the value is a ref, computed, reactive, readonly, or toRef/toRefs result.\n\n");
+                out.push_str("**Safer patterns**:\n\n");
+                out.push_str("```ts\n");
+                append!(*out, "provide('{key}', ref(value))\n");
+                append!(*out, "provide('{key}', reactive({{ ... }}))\n");
+                append!(*out, "provide('{key}', computed(() => value))\n");
+                out.push_str("```\n");
+            }
             CrossFileDiagnosticKind::ProvideInjectWithoutSymbol { key, is_provide } => {
                 let action = if *is_provide { "provide" } else { "inject" };
                 append!(

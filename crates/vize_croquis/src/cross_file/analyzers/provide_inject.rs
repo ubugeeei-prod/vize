@@ -422,11 +422,10 @@ pub fn analyze_provide_inject(
                 InjectPattern::ObjectDestructure(props) => {
                     diagnostics.push(
                         CrossFileDiagnostic::new(
-                            CrossFileDiagnosticKind::HydrationMismatchRisk {
-                                reason: cstr!(
-                                    "Destructuring inject('{}') loses reactivity",
-                                    key_str
-                                ),
+                            CrossFileDiagnosticKind::DestructuringBreaksReactivity {
+                                source_name: cstr!("inject('{key_str}')"),
+                                destructured_keys: props.clone(),
+                                suggestion: CompactString::new("toRefs"),
                             },
                             DiagnosticSeverity::Error,
                             consumer_id,
@@ -448,11 +447,10 @@ pub fn analyze_provide_inject(
                 InjectPattern::ArrayDestructure(items) => {
                     diagnostics.push(
                         CrossFileDiagnostic::new(
-                            CrossFileDiagnosticKind::HydrationMismatchRisk {
-                                reason: cstr!(
-                                    "Array destructuring inject('{}') loses reactivity",
-                                    key_str
-                                ),
+                            CrossFileDiagnosticKind::DestructuringBreaksReactivity {
+                                source_name: cstr!("inject('{key_str}')"),
+                                destructured_keys: items.clone(),
+                                suggestion: CompactString::new("toRefs"),
                             },
                             DiagnosticSeverity::Error,
                             consumer_id,
@@ -479,11 +477,10 @@ pub fn analyze_provide_inject(
                     // Indirect destructuring also loses reactivity
                     diagnostics.push(
                         CrossFileDiagnostic::new(
-                            CrossFileDiagnosticKind::HydrationMismatchRisk {
-                                reason: cstr!(
-                                    "Destructuring inject variable '{}' loses reactivity",
-                                    inject_var
-                                ),
+                            CrossFileDiagnosticKind::DestructuringBreaksReactivity {
+                                source_name: inject_var.clone(),
+                                destructured_keys: props.clone(),
+                                suggestion: CompactString::new("toRefs"),
                             },
                             DiagnosticSeverity::Error,
                             consumer_id,
@@ -551,21 +548,25 @@ pub fn analyze_provide_inject(
                             )),
                         );
                     } else {
-                        // Has default, just info
                         diagnostics.push(
                             CrossFileDiagnostic::new(
                                 CrossFileDiagnosticKind::UnmatchedInject {
                                     key: key_str.clone(),
                                 },
-                                DiagnosticSeverity::Info,
+                                DiagnosticSeverity::Warning,
                                 consumer_id,
                                 inject.start,
                                 cstr!(
-                                    "**Info**: `inject('{}')` uses default value — no ancestor provides this key",
+                                    "**Unmatched Inject Default**: `inject('{}')` falls back to its default value because no ancestor provides this key.\n\n\
+                                    The runtime fallback is safe, but this can hide broken provider wiring.",
                                     key_str
                                 ),
                             )
-                            .with_end_offset(inject.end),
+                            .with_end_offset(inject.end)
+                            .with_suggestion(cstr!(
+                                "Add `provide('{}', value)` in an ancestor, or keep the fallback only if it is intentional",
+                                key_str
+                            )),
                         );
                     }
                 }

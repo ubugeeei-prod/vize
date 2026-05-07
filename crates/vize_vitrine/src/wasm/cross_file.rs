@@ -386,6 +386,7 @@ fn diagnostic_kind_to_string(
         UnusedProvide { .. } => "provide-inject",
         ProvideInjectTypeMismatch { .. } => "provide-inject",
         ProvideInjectWithoutSymbol { .. } => "provide-inject",
+        NonReactiveProvideValue { .. } => "provide-inject",
         // Unique IDs
         DuplicateElementId { .. } => "unique-ids",
         NonUniqueIdInLoop { .. } => "unique-ids",

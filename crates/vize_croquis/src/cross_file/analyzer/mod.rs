@@ -13,7 +13,7 @@ pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 mod tests {
     use super::{CrossFileAnalyzer, CrossFileOptions};
     use crate::analysis::ComponentUsage;
-    use crate::cross_file::diagnostics::CrossFileDiagnosticKind;
+    use crate::cross_file::diagnostics::{CrossFileDiagnosticKind, DiagnosticSeverity};
     use crate::cross_file::DependencyEdge;
     use crate::AnalyzerOptions;
     use std::path::Path;
@@ -930,6 +930,146 @@ const state = inject('globalState')"#,
             })
             .collect();
         assert_eq!(errors.len(), 0, "Should have no provide/inject errors");
+    }
+
+    #[test]
+    fn test_defaulted_unmatched_inject_is_warning() {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+        analyzer.add_file(
+            Path::new("Child.vue"),
+            r#"import { inject } from 'vue'
+const theme = inject('theme', 'light')"#,
+        );
+
+        let result = analyzer.analyze();
+        let diagnostic = result
+            .diagnostics
+            .iter()
+            .find(|d| matches!(&d.kind, CrossFileDiagnosticKind::UnmatchedInject { key } if key == "theme"))
+            .expect("defaulted unmatched inject should be reported");
+
+        assert_eq!(diagnostic.severity, DiagnosticSeverity::Warning);
+    }
+
+    #[test]
+    fn test_inject_alias_array_destructure_is_reactivity_error() {
+        use crate::provide::InjectPattern;
+
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
+
+        analyzer.add_file(
+            Path::new("Child.vue"),
+            r#"import { inject } from 'vue'
+const useInject = inject
+const [first, second] = useInject('items') as [number, number]"#,
+        );
+
+        let result = analyzer.analyze();
+        let analysis = analyzer
+            .get_analysis(analyzer.registry().iter().next().unwrap().id)
+            .unwrap();
+
+        let injects = analysis.provide_inject.injects();
+        assert_eq!(injects.len(), 1);
+        match &injects[0].pattern {
+            InjectPattern::ArrayDestructure(items) => {
+                assert!(items.contains(&vize_carton::CompactString::new("first")));
+                assert!(items.contains(&vize_carton::CompactString::new("second")));
+            }
+            other => panic!("Expected ArrayDestructure pattern, got {:?}", other),
+        }
+
+        let diagnostic = result
+            .diagnostics
+            .iter()
+            .find(|d| {
+                matches!(
+                    d.kind,
+                    CrossFileDiagnosticKind::DestructuringBreaksReactivity { .. }
+                )
+            })
+            .expect("array destructured inject should be reported as reactivity loss");
+        assert_eq!(diagnostic.severity, DiagnosticSeverity::Error);
+    }
+
+    #[test]
+    fn test_reactivity_loss_diagnostics_are_errors() {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
+
+        analyzer.add_file(
+            Path::new("State.vue"),
+            r#"import { reactive, ref } from 'vue'
+
+const state = reactive({ count: 0, name: 'Ada' })
+const { count } = state
+const snapshot = { ...state }
+
+const countRef = ref(1)
+const plainCount = countRef.value"#,
+        );
+
+        let result = analyzer.analyze();
+        let strict_loss_kinds = [
+            "vize:croquis/cf/destructuring-breaks-reactivity",
+            "vize:croquis/cf/spread-breaks-reactivity",
+            "vize:croquis/cf/value-extraction-breaks-reactivity",
+        ];
+
+        for code in strict_loss_kinds {
+            let diagnostic = result
+                .diagnostics
+                .iter()
+                .find(|d| d.code() == code)
+                .unwrap_or_else(|| panic!("missing diagnostic {code}"));
+            assert_eq!(diagnostic.severity, DiagnosticSeverity::Error);
+        }
+    }
+
+    #[test]
+    fn test_non_reactive_provide_is_warning_but_reactive_calls_are_preserved() {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
+
+        analyzer.add_file(
+            Path::new("Provider.vue"),
+            r#"import { provide, reactive } from 'vue'
+
+provide('config', { debug: true })
+provide('state', reactive({ count: 0 }))"#,
+        );
+        analyzer.add_file(
+            Path::new("Consumer.vue"),
+            r#"import { inject } from 'vue'
+
+const config = inject('config')
+const state = inject('state')"#,
+        );
+
+        let result = analyzer.analyze();
+        let non_reactive_provides: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|d| {
+                matches!(
+                    d.kind,
+                    CrossFileDiagnosticKind::NonReactiveProvideValue { .. }
+                )
+            })
+            .collect();
+
+        assert_eq!(non_reactive_provides.len(), 1);
+        assert_eq!(
+            non_reactive_provides[0].severity,
+            DiagnosticSeverity::Warning
+        );
+        assert!(matches!(
+            &non_reactive_provides[0].kind,
+            CrossFileDiagnosticKind::NonReactiveProvideValue { key } if key == "config"
+        ));
     }
 
     // === Snapshot Tests ===

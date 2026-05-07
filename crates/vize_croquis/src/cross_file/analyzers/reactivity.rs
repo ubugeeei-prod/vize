@@ -375,7 +375,7 @@ fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> CrossFileDiagnos
                     destructured_keys: destructured_props.clone(),
                     suggestion: CompactString::new("toRefs"),
                 },
-                DiagnosticSeverity::Warning,
+                DiagnosticSeverity::Error,
                 file_id,
                 issue.offset,
                 cstr!(
@@ -401,7 +401,7 @@ fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> CrossFileDiagnos
                     destructured_keys: vec![CompactString::new("value")],
                     suggestion: CompactString::new("computed"),
                 },
-                DiagnosticSeverity::Warning,
+                DiagnosticSeverity::Error,
                 file_id,
                 issue.offset,
                 cstr!(
@@ -444,7 +444,7 @@ fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> CrossFileDiagnos
                         variable_name: value_name.clone(),
                         original_type: context.clone(),
                     },
-                    DiagnosticSeverity::Warning,
+                    DiagnosticSeverity::Error,
                     file_id,
                     issue.offset,
                     cstr!("Reassigning '{value_name}' breaks reactivity tracking",),
@@ -461,7 +461,7 @@ fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> CrossFileDiagnos
                     CrossFileDiagnosticKind::HydrationMismatchRisk {
                         reason: cstr!("'{value_name}' loses reactivity in {context}",),
                     },
-                    DiagnosticSeverity::Warning,
+                    DiagnosticSeverity::Error,
                     file_id,
                     issue.offset,
                     cstr!(
@@ -488,7 +488,7 @@ fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> CrossFileDiagnos
                     source_name: source_name.clone(),
                     source_type: CompactString::new("reactive"),
                 },
-                DiagnosticSeverity::Warning,
+                DiagnosticSeverity::Error,
                 file_id,
                 issue.offset,
                 cstr!("Spreading '{source_name}' creates a non-reactive copy"),
@@ -511,7 +511,7 @@ fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> CrossFileDiagnos
                     source_name: source_name.clone(),
                     extracted_value: target_name.clone(),
                 },
-                DiagnosticSeverity::Warning,
+                DiagnosticSeverity::Error,
                 file_id,
                 issue.offset,
                 cstr!(
@@ -533,7 +533,7 @@ fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> CrossFileDiagnos
                 destructured_keys: vec![],
                 suggestion: CompactString::new("storeToRefs"),
             },
-            DiagnosticSeverity::Warning,
+            DiagnosticSeverity::Error,
             file_id,
             issue.offset,
             cstr!(
@@ -573,7 +573,7 @@ fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> CrossFileDiagnos
             CrossFileDiagnosticKind::HydrationMismatchRisk {
                 reason: cstr!("Prop '{prop_name}' passed to ref() creates a copy"),
             },
-            DiagnosticSeverity::Warning,
+            DiagnosticSeverity::Error,
             file_id,
             issue.offset,
             cstr!("Passing prop '{prop_name}' to ref() creates a non-reactive copy"),

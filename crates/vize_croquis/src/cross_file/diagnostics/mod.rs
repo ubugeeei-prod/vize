@@ -88,6 +88,8 @@ pub enum CrossFileDiagnosticKind {
         key: CompactString,
         is_provide: bool,
     },
+    /// provide() passes a non-reactive value to consumers.
+    NonReactiveProvideValue { key: CompactString },
 
     // === Unique Element IDs ===
     /// Duplicate ID attribute across components.

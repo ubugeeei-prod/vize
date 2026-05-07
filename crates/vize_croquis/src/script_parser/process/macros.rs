@@ -89,38 +89,34 @@ pub(in crate::script_parser) fn process_variable_declarator(
 
                 // Check for inject() call - track with local_name for indirect destructure detection
                 // Also handles inject aliases (e.g., const a = inject; const state = a('key'))
-                if let Expression::Identifier(callee_id) = &call.callee {
-                    let callee_name = callee_id.name.as_str();
-                    let is_inject =
-                        callee_name == "inject" || result.inject_aliases.contains(callee_name);
-                    if is_inject && !call.arguments.is_empty() {
-                        // Detect setup context violation for inject
-                        detect_setup_context_violation(result, call);
+                if is_inject_call(call, result) && !call.arguments.is_empty() {
+                    // Detect setup context violation for inject
+                    detect_setup_context_violation(result, call);
 
-                        if let Some(key) = extract_provide_key(&call.arguments[0], source) {
-                            let default_value = call.arguments.get(1).map(|arg| {
-                                CompactString::new(extract_argument_source(arg, source))
-                            });
-                            let local_name = CompactString::new(name);
-                            // Track inject variable name for indirect destructure detection
-                            result.inject_var_names.insert(local_name.clone());
-                            result.provide_inject.add_inject(
-                                key,
-                                local_name, // local_name is the binding name
-                                default_value,
-                                None, // expected_type
-                                InjectPattern::Simple,
-                                None, // from_composable
-                                call.span.start,
-                                call.span.end,
-                            );
-                            // Walk into the call's callback arguments to track nested scopes
-                            walk_call_arguments(result, call, source);
-                            // Add binding and return
-                            let binding_type = get_binding_type_from_kind(kind);
-                            result.bindings.add(name, binding_type);
-                            return;
-                        }
+                    if let Some(key) = extract_provide_key(&call.arguments[0], source) {
+                        let default_value = call
+                            .arguments
+                            .get(1)
+                            .map(|arg| CompactString::new(extract_argument_source(arg, source)));
+                        let local_name = CompactString::new(name);
+                        // Track inject variable name for indirect destructure detection
+                        result.inject_var_names.insert(local_name.clone());
+                        result.provide_inject.add_inject(
+                            key,
+                            local_name, // local_name is the binding name
+                            default_value,
+                            None, // expected_type
+                            InjectPattern::Simple,
+                            None, // from_composable
+                            call.span.start,
+                            call.span.end,
+                        );
+                        // Walk into the call's callback arguments to track nested scopes
+                        walk_call_arguments(result, call, source);
+                        // Add binding and return
+                        let binding_type = get_binding_type_from_kind(kind);
+                        result.bindings.add(name, binding_type);
+                        return;
                     }
                 }
 
@@ -234,10 +230,8 @@ pub(in crate::script_parser) fn process_variable_declarator(
             // Check if this is destructuring from inject() - this loses reactivity!
             let inject_call = declarator.init.as_ref().and_then(|init| {
                 let call = extract_call_expression(init)?;
-                if let Expression::Identifier(id) = &call.callee {
-                    if id.name.as_str() == "inject" {
-                        return Some(call);
-                    }
+                if is_inject_call(call, result) {
+                    return Some(call);
                 }
                 None
             });
@@ -438,6 +432,75 @@ pub(in crate::script_parser) fn process_variable_declarator(
         }
 
         BindingPattern::ArrayPattern(arr) => {
+            let inject_call = declarator.init.as_ref().and_then(|init| {
+                let call = extract_call_expression(init)?;
+                if is_inject_call(call, result) {
+                    return Some(call);
+                }
+                None
+            });
+
+            let indirect_inject_var = declarator.init.as_ref().and_then(|init| {
+                if let Expression::Identifier(id) = init {
+                    let var_name = CompactString::new(id.name.as_str());
+                    if result.inject_var_names.contains(&var_name) {
+                        return Some((var_name, id.span.start));
+                    }
+                }
+                None
+            });
+
+            if let Some(call) = inject_call {
+                let mut destructured_items: Vec<CompactString> = Vec::new();
+                for elem in arr.elements.iter().flatten() {
+                    if let Some(name) = get_binding_pattern_name(elem) {
+                        destructured_items.push(CompactString::new(&name));
+                    }
+                }
+                if let Some(rest) = &arr.rest {
+                    if let Some(name) = get_binding_pattern_name(&rest.argument) {
+                        destructured_items.push(CompactString::new(&name));
+                    }
+                }
+
+                if let Some(key) = call
+                    .arguments
+                    .first()
+                    .and_then(|arg| extract_provide_key(arg, source))
+                {
+                    result.provide_inject.add_inject(
+                        key,
+                        CompactString::new("(destructured)"),
+                        call.arguments
+                            .get(1)
+                            .map(|arg| CompactString::new(extract_argument_source(arg, source))),
+                        None,
+                        InjectPattern::ArrayDestructure(destructured_items),
+                        None,
+                        call.span.start,
+                        call.span.end,
+                    );
+                }
+            } else if let Some((inject_var, offset)) = indirect_inject_var {
+                let mut destructured_items: Vec<CompactString> = Vec::new();
+                for elem in arr.elements.iter().flatten() {
+                    if let Some(name) = get_binding_pattern_name(elem) {
+                        destructured_items.push(CompactString::new(&name));
+                    }
+                }
+                if let Some(rest) = &arr.rest {
+                    if let Some(name) = get_binding_pattern_name(&rest.argument) {
+                        destructured_items.push(CompactString::new(&name));
+                    }
+                }
+
+                result.provide_inject.add_indirect_destructure(
+                    inject_var,
+                    destructured_items,
+                    offset,
+                );
+            }
+
             // Handle array destructuring
             let arr_binding_type = infer_destructure_binding_type(kind, declarator.init.as_ref());
             for elem in arr.elements.iter().flatten() {
@@ -459,4 +522,12 @@ pub(in crate::script_parser) fn process_variable_declarator(
             }
         }
     }
+}
+
+fn is_inject_call(call: &oxc_ast::ast::CallExpression<'_>, result: &ScriptParseResult) -> bool {
+    let Expression::Identifier(id) = &call.callee else {
+        return false;
+    };
+    let callee_name = id.name.as_str();
+    callee_name == "inject" || result.inject_aliases.contains(callee_name)
 }

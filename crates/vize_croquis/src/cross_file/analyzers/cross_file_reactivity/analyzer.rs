@@ -182,18 +182,8 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                 };
 
                 // Check if the provided value is reactive
-                let is_reactive = analysis
-                    .reactivity
-                    .sources()
-                    .iter()
-                    .any(|s| s.name == provide.value);
-
-                let reactive_kind = analysis
-                    .reactivity
-                    .sources()
-                    .iter()
-                    .find(|s| s.name == provide.value)
-                    .map(|s| s.kind);
+                let reactive_kind = provided_value_reactive_kind(analysis, provide.value.as_str());
+                let is_reactive = reactive_kind.is_some();
 
                 self.provides.insert(
                     key_str.clone(),
@@ -366,7 +356,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                             },
                             offset: provider.offset,
                             related_file: Some(consumer_file_id),
-                            severity: DiagnosticSeverity::Info,
+                            severity: DiagnosticSeverity::Warning,
                         });
                     }
 
@@ -604,5 +594,36 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
         path.pop();
         rec_stack.remove(current);
         false
+    }
+}
+
+fn provided_value_reactive_kind(analysis: &crate::Croquis, value: &str) -> Option<ReactiveKind> {
+    let value = value.trim();
+
+    if let Some(source) = analysis
+        .reactivity
+        .sources()
+        .iter()
+        .find(|source| source.name.as_str() == value)
+    {
+        return Some(source.kind);
+    }
+
+    let callee = value
+        .split_once('(')
+        .map(|(callee, _)| callee.trim())
+        .unwrap_or_default();
+
+    match callee {
+        "ref" => Some(ReactiveKind::Ref),
+        "shallowRef" => Some(ReactiveKind::ShallowRef),
+        "reactive" => Some(ReactiveKind::Reactive),
+        "shallowReactive" => Some(ReactiveKind::ShallowReactive),
+        "computed" => Some(ReactiveKind::Computed),
+        "readonly" => Some(ReactiveKind::Readonly),
+        "shallowReadonly" => Some(ReactiveKind::ShallowReadonly),
+        "toRef" => Some(ReactiveKind::ToRef),
+        "toRefs" => Some(ReactiveKind::ToRefs),
+        _ => None,
     }
 }

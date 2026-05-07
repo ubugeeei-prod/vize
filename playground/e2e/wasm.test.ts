@@ -281,4 +281,75 @@ defineProps<{
       validation.diagnostics.some((diagnostic) => diagnostic.type === "component-resolution"),
     ).toBe(false);
   });
+
+  it("should report strict provide/inject and reactivity loss severities", () => {
+    const wasm = getWasm();
+    expect(wasm).not.toBeNull();
+    if (!wasm) {
+      return;
+    }
+
+    const files = [
+      {
+        path: "Parent.vue",
+        source: `
+<script setup lang="ts">
+import { provide, reactive } from 'vue'
+import Child from './Child.vue'
+
+provide('config', { debug: true })
+provide('state', reactive({ count: 0 }))
+</script>
+
+<template>
+  <Child />
+</template>
+`,
+      },
+      {
+        path: "Child.vue",
+        source: `
+<script setup lang="ts">
+import { inject } from 'vue'
+
+const useInject = inject
+const config = inject('config')
+const { count } = inject('state') as { count: number }
+const [first] = useInject('items', [1])
+const theme = inject('theme', 'light')
+</script>
+
+<template>
+  <p>{{ config }} {{ count }} {{ first }} {{ theme }}</p>
+</template>
+`,
+      },
+    ];
+
+    const result = wasm.analyzeCrossFile(files, {
+      provideInject: true,
+      reactivityTracking: true,
+    });
+
+    const destructuring = result.diagnostics.filter(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/destructuring-breaks-reactivity",
+    );
+    expect(destructuring.length).toBeGreaterThanOrEqual(2);
+    expect(destructuring.every((diagnostic) => diagnostic.severity === "error")).toBe(true);
+    expect(destructuring.every((diagnostic) => diagnostic.type === "reactivity-loss")).toBe(true);
+
+    const defaultedInject = result.diagnostics.find(
+      (diagnostic) =>
+        diagnostic.code === "vize:croquis/cf/unmatched-inject" &&
+        diagnostic.message.includes("theme"),
+    );
+    expect(defaultedInject?.severity).toBe("warning");
+    expect(defaultedInject?.type).toBe("provide-inject");
+
+    const nonReactiveProvide = result.diagnostics.find(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/non-reactive-provide",
+    );
+    expect(nonReactiveProvide?.severity).toBe("warning");
+    expect(nonReactiveProvide?.type).toBe("provide-inject");
+  });
 });
