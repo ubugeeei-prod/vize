@@ -1,0 +1,96 @@
+name: Benchmark
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: benchmark-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  VIZE_BENCH_FILE_COUNT: 300
+  VIZE_BENCH_RUNS: 5
+  VIZE_BENCH_WARMUPS: 1
+
+jobs:
+  pr-benchmark:
+    name: pr-benchmark
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout head
+        uses: actions/checkout@v4
+        with:
+          path: head
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Checkout base
+        uses: actions/checkout@v4
+        with:
+          path: base
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "benchmark"
+          cache-workspace-crates: "true"
+
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: "head/.node-version"
+          cache: true
+          run-install: false
+
+      - name: Install JS dependencies
+        working-directory: head
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Build base CLI
+        run: cargo build --manifest-path base/Cargo.toml --profile ci -p vize
+
+      - name: Build head CLI
+        run: cargo build --manifest-path head/Cargo.toml --profile ci -p vize
+
+      - name: Generate benchmark input
+        working-directory: head
+        run: node bench/generate.mjs "$VIZE_BENCH_FILE_COUNT"
+
+      - name: Compare base and head
+        run: |
+          node head/bench/compare-pr.mjs \
+            --input "$GITHUB_WORKSPACE/head/bench/__in__" \
+            --base-bin "$GITHUB_WORKSPACE/base/target/ci/vize" \
+            --head-bin "$GITHUB_WORKSPACE/head/target/ci/vize" \
+            --base-label "${{ github.event.pull_request.base.sha }}" \
+            --head-label "${{ github.event.pull_request.head.sha }}" \
+            --runs "$VIZE_BENCH_RUNS" \
+            --warmups "$VIZE_BENCH_WARMUPS" \
+            --out "$GITHUB_WORKSPACE/benchmark-summary.md" \
+            --json "$GITHUB_WORKSPACE/benchmark-results.json"
+
+      - name: Write job summary
+        run: cat benchmark-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-benchmark
+          path: |
+            benchmark-summary.md
+            benchmark-results.json
+          retention-days: 14
+
+      - name: Comment on PR
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: node head/bench/comment-pr.mjs --body benchmark-summary.md
