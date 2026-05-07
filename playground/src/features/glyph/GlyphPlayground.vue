@@ -268,7 +268,7 @@ onUnmounted(() => {
             </div>
             <div v-else class="diff-view">
               <div class="diff-line-numbers">
-                <span v-for="(line, i) in diffLines" :key="i" class="diff-ln">{{ i + 1 }}</span>
+                <span v-for="(_line, i) in diffLines" :key="i" class="diff-ln">{{ i + 1 }}</span>
               </div>
               <div class="diff-code">
                 <div

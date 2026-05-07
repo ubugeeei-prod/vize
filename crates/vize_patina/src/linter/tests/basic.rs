@@ -25,6 +25,20 @@ fn test_lint_with_allocator_reuse() {
 }
 
 #[test]
+fn test_lint_template_uses_semantic_analysis_for_unused_v_for_vars() {
+    let linter =
+        Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-vars".to_compact_string()]));
+    let result = linter.lint_template(
+        r#"<ul><li v-for="(_item, index) in items" :key="_item.id">{{ _item }}</li></ul>"#,
+        "test.vue",
+    );
+
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "vue/no-unused-vars");
+    assert!(result.diagnostics[0].message.contains("index"));
+}
+
+#[test]
 fn test_lint_files_batch() {
     let linter = Linter::new();
     let files = vec![
@@ -68,7 +82,7 @@ fn test_vize_forget_without_reason_warns() {
     let linter = Linter::new();
     let result = linter.lint_template(
         r#"<ul><!-- @vize:forget -->
-<li v-for="item in items">{{ item }}</li></ul>"#,
+<li v-for="_item in items">{{ _item }}</li></ul>"#,
         "test.vue",
     );
     assert_eq!(result.error_count, 0, "v-for error should be suppressed");

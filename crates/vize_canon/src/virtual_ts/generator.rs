@@ -3,12 +3,12 @@
 //! Contains the public `generate_virtual_ts` and `generate_virtual_ts_with_offsets`
 //! functions that orchestrate the full virtual TypeScript generation pipeline.
 
-use vize_croquis::{BindingType, Croquis, ScopeData, ScopeKind, COMPILER_MACRO_NAMES};
+use vize_croquis::{BindingType, Croquis, ScopeData, ScopeKind};
 
 use super::{
     helpers::{
         generate_template_context, to_safe_identifier, IMPORT_META_AUGMENTATION,
-        VUE_SETUP_COMPILER_MACROS, VUE_TYPE_HELPERS,
+        SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS, VUE_TYPE_HELPERS,
     },
     props::{collect_template_prop_names, generate_props_type, generate_props_variables},
     scope::generate_scope_closures,
@@ -134,9 +134,9 @@ pub fn generate_virtual_ts_with_offsets(
                 });
             }
 
-            // Void-reference imported names that match compiler macro names.
+            // Void-reference imported names that match setup-scope helper names.
             // These get shadowed by __setup() declarations, causing TS6133 at module level.
-            let shadowed_imports: Vec<&&str> = COMPILER_MACRO_NAMES
+            let shadowed_imports: Vec<&&str> = SETUP_SCOPE_HELPER_NAMES
                 .iter()
                 .filter(|&&name| summary.bindings.bindings.contains_key(name))
                 .collect();
@@ -202,14 +202,14 @@ pub fn generate_virtual_ts_with_offsets(
         generate_props_type(&mut ts, summary, generic_param)
     );
 
-    // Setup scope: function that contains compiler macros and script content
+    // Setup scope: function that contains setup helpers and script content
     ts.push_str("// ========== Setup Scope ==========\n");
     let async_prefix = if is_async { "async " } else { "" };
     let generic_params = generic_param.map(|g| cstr!("<{g}>")).unwrap_or_default();
     append!(ts, "{async_prefix}function __setup{generic_params}() {{\n",);
 
-    // Compiler macros (only valid inside setup scope)
-    ts.push_str(VUE_SETUP_COMPILER_MACROS);
+    // Setup helpers (only valid inside setup scope)
+    ts.push_str(VUE_SETUP_HELPERS);
     ts.push_str("\n\n");
 
     // User's script content (minus imports)

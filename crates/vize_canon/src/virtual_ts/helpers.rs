@@ -8,6 +8,25 @@ use std::ops::Range;
 use super::types::VirtualTsOptions;
 use vize_carton::append;
 use vize_carton::String;
+use vize_croquis::macros::{
+    DEFINE_EMITS, DEFINE_EXPOSE, DEFINE_MODEL, DEFINE_PROPS, DEFINE_SLOTS, WITH_DEFAULTS,
+};
+
+pub(crate) const USE_TEMPLATE_REF: &str = "useTemplateRef";
+
+/// Names declared by the generated setup-scope helper block.
+///
+/// This includes Vue compiler macros plus runtime helper shims that are modeled
+/// inside `__setup()`. It is intentionally broader than `COMPILER_MACRO_NAMES`.
+pub(crate) const SETUP_SCOPE_HELPER_NAMES: &[&str] = &[
+    DEFINE_PROPS,
+    DEFINE_EMITS,
+    DEFINE_EXPOSE,
+    DEFINE_MODEL,
+    DEFINE_SLOTS,
+    WITH_DEFAULTS,
+    USE_TEMPLATE_REF,
+];
 
 /// Shared type helpers used by generated virtual modules and setup-scope macros.
 pub(crate) const VUE_TYPE_HELPERS: &str = r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
@@ -23,10 +42,10 @@ type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D>
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;"#;
 
-/// Vue compiler macros - these are defined inside setup scope, NOT globally.
-/// This ensures they're only valid within <script setup>.
+/// Vue setup-scope helpers - these are defined inside setup scope, NOT globally.
+/// Compiler macros stay setup-only, while runtime helper shims model Vue APIs.
 /// Parameters and type parameters are prefixed with _ to avoid "unused" warnings.
-pub(crate) const VUE_SETUP_COMPILER_MACROS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
+pub(crate) const VUE_SETUP_HELPERS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
   function defineProps<_T = unknown>(): _T;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
   function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;

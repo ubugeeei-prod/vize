@@ -9,7 +9,7 @@
 use oxc_ast::ast::{Argument, BindingPattern, Expression, PropertyKey, VariableDeclarationKind};
 use oxc_span::GetSpan;
 
-use crate::macros::{MacroKind, PropsDestructuredBindings};
+use crate::macros::{MacroKind, PropsDestructuredBindings, DEFINE_PROPS, WITH_DEFAULTS};
 use crate::provide::InjectPattern;
 use crate::reactivity::ReactiveKind;
 use vize_carton::CompactString;
@@ -211,16 +211,16 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     Expression::CallExpression(call) => {
                         if let Expression::Identifier(id) = &call.callee {
                             let name = id.name.as_str();
-                            if name == "defineProps" {
+                            if name == DEFINE_PROPS {
                                 return true;
                             }
                             // withDefaults(defineProps<...>(), {...})
-                            if name == "withDefaults" {
+                            if name == WITH_DEFAULTS {
                                 if let Some(Argument::CallExpression(inner)) =
                                     call.arguments.first()
                                 {
                                     if let Expression::Identifier(inner_id) = &inner.callee {
-                                        return inner_id.name.as_str() == "defineProps";
+                                        return inner_id.name.as_str() == DEFINE_PROPS;
                                     }
                                 }
                             }

@@ -95,6 +95,7 @@ function runVize(
 
 function resolveVizeCommand(): string[] {
   const candidates = [
+    [path.join(root, "target/ci/vize")],
     [path.join(root, "target/release/vize")],
     [path.join(root, "target/debug/vize")],
     ["vize"],

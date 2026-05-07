@@ -56,6 +56,27 @@ const foo = 'bar';
 }
 
 #[test]
+fn test_lint_sfc_uses_script_analysis_for_prop_mutation() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-mutating-props".into()]));
+    let sfc = r#"<script setup lang="ts">
+defineProps<{ count: number }>()
+</script>
+
+<template>
+  <input v-model="count" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.error_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "vue/no-mutating-props");
+    assert!(
+        result.diagnostics[0].start > 70,
+        "diagnostic should be reported in template coordinates"
+    );
+}
+
+#[test]
 fn test_lint_sfc_offset_line_conversion() {
     let linter = Linter::new();
     let sfc = r#"<script setup lang="ts">

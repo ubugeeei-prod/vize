@@ -10,7 +10,7 @@ use super::utils::{extract_type_args, find_call_paren, find_matching_paren};
 use super::MacroCall;
 use vize_carton::String;
 
-pub const DEFINE_MODEL: &str = "defineModel";
+pub use vize_croquis::macros::DEFINE_MODEL;
 
 /// Extract all defineModel calls from source (can appear multiple times)
 #[allow(dead_code)]

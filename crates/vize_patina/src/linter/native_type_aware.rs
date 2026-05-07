@@ -22,15 +22,18 @@ const RULE_REQUIRE_TYPED_EMITS: &str = "type/require-typed-emits";
 const RULE_NO_FLOATING_PROMISES: &str = "type/no-floating-promises";
 const RULE_NO_UNSAFE_TEMPLATE_BINDING: &str = "type/no-unsafe-template-binding";
 
+pub(crate) const TYPE_AWARE_RULES: &[&str] = &[
+    RULE_REQUIRE_TYPED_PROPS,
+    RULE_REQUIRE_TYPED_EMITS,
+    RULE_NO_FLOATING_PROMISES,
+    RULE_NO_UNSAFE_TEMPLATE_BINDING,
+];
+
 pub(crate) fn has_active_type_aware_rules(linter: &Linter) -> bool {
-    [
-        RULE_REQUIRE_TYPED_PROPS,
-        RULE_REQUIRE_TYPED_EMITS,
-        RULE_NO_FLOATING_PROMISES,
-        RULE_NO_UNSAFE_TEMPLATE_BINDING,
-    ]
-    .into_iter()
-    .any(|rule_name| linter.registry.has_rule(rule_name) && linter.is_rule_enabled(rule_name))
+    TYPE_AWARE_RULES
+        .iter()
+        .copied()
+        .any(|rule_name| linter.registry.has_rule(rule_name) && linter.is_rule_enabled(rule_name))
 }
 
 pub(crate) fn lint_sfc_with_corsa(linter: &Linter, source: &str, filename: &str) -> LintResult {

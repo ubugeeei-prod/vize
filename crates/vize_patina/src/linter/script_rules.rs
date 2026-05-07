@@ -78,31 +78,10 @@ pub(crate) fn lint_with_descriptor<'a>(
     filename: &str,
     descriptor: &SfcDescriptor<'a>,
 ) -> LintResult {
-    let mut result = if let Some(template) = descriptor.template.as_ref() {
-        let mut template_result = profile!(
-            "patina.sfc.descriptor.template_lint",
-            linter.lint_template(&template.content, filename)
-        );
-        let byte_offset = template.loc.start as u32;
-        if byte_offset > 0 {
-            for diag in &mut template_result.diagnostics {
-                diag.start += byte_offset;
-                diag.end += byte_offset;
-                for label in &mut diag.labels {
-                    label.start += byte_offset;
-                    label.end += byte_offset;
-                }
-            }
-        }
-        template_result
-    } else {
-        LintResult {
-            filename: filename.into(),
-            diagnostics: Vec::new(),
-            error_count: 0,
-            warning_count: 0,
-        }
-    };
+    let mut result = profile!(
+        "patina.sfc.descriptor.template_lint",
+        linter.lint_sfc_template_with_descriptor(filename, descriptor)
+    );
 
     append_builtin_script_diagnostics(linter, descriptor, &mut result);
     result

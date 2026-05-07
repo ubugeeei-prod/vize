@@ -5,6 +5,14 @@
 
 use vize_carton::{CompactString, FxHashMap};
 
+pub const DEFINE_PROPS: &str = "defineProps";
+pub const DEFINE_EMITS: &str = "defineEmits";
+pub const DEFINE_EXPOSE: &str = "defineExpose";
+pub const DEFINE_OPTIONS: &str = "defineOptions";
+pub const DEFINE_SLOTS: &str = "defineSlots";
+pub const DEFINE_MODEL: &str = "defineModel";
+pub const WITH_DEFAULTS: &str = "withDefaults";
+
 /// How a macro participates in the script setup compilation lifecycle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MacroLifecycle {
@@ -44,13 +52,13 @@ pub struct MacroDefinition {
 
 /// Built-in Vue compiler macros
 pub static BUILTIN_MACROS: &[&str] = &[
-    "defineProps",
-    "defineEmits",
-    "defineExpose",
-    "defineOptions",
-    "defineSlots",
-    "defineModel",
-    "withDefaults",
+    DEFINE_PROPS,
+    DEFINE_EMITS,
+    DEFINE_EXPOSE,
+    DEFINE_OPTIONS,
+    DEFINE_SLOTS,
+    DEFINE_MODEL,
+    WITH_DEFAULTS,
 ];
 
 /// Known ecosystem macros that are compile-time only.
@@ -190,13 +198,13 @@ impl MacroKind {
     #[inline]
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
-            "defineProps" => Some(Self::DefineProps),
-            "defineEmits" => Some(Self::DefineEmits),
-            "defineExpose" => Some(Self::DefineExpose),
-            "defineOptions" => Some(Self::DefineOptions),
-            "defineSlots" => Some(Self::DefineSlots),
-            "defineModel" => Some(Self::DefineModel),
-            "withDefaults" => Some(Self::WithDefaults),
+            DEFINE_PROPS => Some(Self::DefineProps),
+            DEFINE_EMITS => Some(Self::DefineEmits),
+            DEFINE_EXPOSE => Some(Self::DefineExpose),
+            DEFINE_OPTIONS => Some(Self::DefineOptions),
+            DEFINE_SLOTS => Some(Self::DefineSlots),
+            DEFINE_MODEL => Some(Self::DefineModel),
+            WITH_DEFAULTS => Some(Self::WithDefaults),
             _ => None,
         }
     }
@@ -597,6 +605,7 @@ mod tests {
             Some(MacroLifecycle::Expand)
         );
         assert_eq!(macro_lifecycle("notAMacro"), None);
+        assert_eq!(macro_lifecycle("useTemplateRef"), None);
 
         assert!(is_compile_time_macro("definePage"));
         assert!(is_ecosystem_compile_time_macro("definePage"));

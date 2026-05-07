@@ -185,18 +185,7 @@ impl Analyzer {
             crate::script_parser::parse_script_setup_with_generic(source, generic)
         );
 
-        // Merge results into summary
-        self.summary.bindings = result.bindings;
-        self.summary.macros = result.macros;
-        self.summary.reactivity = result.reactivity;
-        self.summary.type_exports = result.type_exports;
-        self.summary.invalid_exports = result.invalid_exports;
-        self.summary.scopes = result.scopes;
-        self.summary.provide_inject = result.provide_inject;
-        self.summary.import_statements = result.import_statements;
-        self.summary.re_exports = result.re_exports;
-        self.summary.binding_spans = result.binding_spans;
-        self.summary.setup_context = result.setup_context;
+        result.apply_to_croquis(&mut self.summary);
 
         self
     }
@@ -215,18 +204,7 @@ impl Analyzer {
             crate::script_parser::parse_script(source)
         );
 
-        // Merge results into summary
-        self.summary.bindings = result.bindings;
-        self.summary.macros = result.macros;
-        self.summary.reactivity = result.reactivity;
-        self.summary.type_exports = result.type_exports;
-        self.summary.invalid_exports = result.invalid_exports;
-        self.summary.scopes = result.scopes;
-        self.summary.provide_inject = result.provide_inject;
-        self.summary.import_statements = result.import_statements;
-        self.summary.re_exports = result.re_exports;
-        self.summary.binding_spans = result.binding_spans;
-        self.summary.setup_context = result.setup_context;
+        result.apply_to_croquis(&mut self.summary);
 
         self
     }

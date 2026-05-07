@@ -22,7 +22,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
-use crate::analysis::BindingMetadata;
+use crate::analysis::{BindingMetadata, Croquis};
 use crate::analysis::{ImportStatementInfo, InvalidExport, ReExportInfo, TypeExport};
 use crate::macros::MacroTracker;
 use crate::provide::ProvideInjectTracker;
@@ -67,6 +67,33 @@ pub struct ScriptParseResult {
     pub re_exports: Vec<ReExportInfo>,
     /// Definition spans for bindings (name -> (start, end) offset in script)
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
+}
+
+impl ScriptParseResult {
+    /// Apply script analysis fields to an existing SFC analysis summary.
+    ///
+    /// This keeps script parsing as the single owner of script-scoped data while
+    /// allowing callers to add template analysis before or after the script pass.
+    pub fn apply_to_croquis(self, summary: &mut Croquis) {
+        summary.bindings = self.bindings;
+        summary.macros = self.macros;
+        summary.reactivity = self.reactivity;
+        summary.type_exports = self.type_exports;
+        summary.invalid_exports = self.invalid_exports;
+        summary.scopes = self.scopes;
+        summary.provide_inject = self.provide_inject;
+        summary.setup_context = self.setup_context;
+        summary.import_statements = self.import_statements;
+        summary.re_exports = self.re_exports;
+        summary.binding_spans = self.binding_spans;
+    }
+
+    /// Convert script analysis into a `Croquis` summary.
+    pub fn into_croquis(self) -> Croquis {
+        let mut summary = Croquis::new();
+        self.apply_to_croquis(&mut summary);
+        summary
+    }
 }
 
 /// Setup global scopes hierarchy:
