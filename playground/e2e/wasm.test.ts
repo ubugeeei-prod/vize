@@ -221,4 +221,64 @@ const instance = getCurrentInstance()
       ),
     ).toBe(true);
   });
+
+  it("should honor cross-file analyzer toggles and imported component aliases", () => {
+    const wasm = getWasm();
+    expect(wasm).not.toBeNull();
+    if (!wasm) {
+      return;
+    }
+
+    const files = [
+      {
+        path: "Parent.vue",
+        source: `
+<script setup lang="ts">
+import Panel from './Child.vue'
+</script>
+
+<template>
+  <Panel />
+</template>
+`,
+      },
+      {
+        path: "Child.vue",
+        source: `
+<script setup lang="ts">
+defineProps<{
+  title: string
+}>()
+</script>
+
+<template>
+  <section>{{ title }}</section>
+</template>
+`,
+      },
+    ];
+
+    const relationshipOnly = wasm.analyzeCrossFile(files, {
+      componentResolution: true,
+      propsValidation: false,
+    });
+    expect(
+      relationshipOnly.diagnostics.some((diagnostic) => diagnostic.type === "props-validation"),
+    ).toBe(false);
+
+    const validation = wasm.analyzeCrossFile(files, {
+      componentResolution: true,
+      propsValidation: true,
+    });
+    expect(
+      validation.diagnostics.some(
+        (diagnostic) =>
+          diagnostic.type === "props-validation" &&
+          diagnostic.code === "vize:croquis/cf/missing-required-prop",
+      ),
+    ).toBe(true);
+    expect(
+      validation.diagnostics.some((diagnostic) => diagnostic.type === "component-resolution"),
+    ).toBe(false);
+  });
 });

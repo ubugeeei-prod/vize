@@ -14,6 +14,19 @@ import {
   filterSuppressedIssues,
 } from "./utils";
 
+export interface CrossFileAnalyzerOptions {
+  provideInject: boolean;
+  componentEmits: boolean;
+  fallthroughAttrs: boolean;
+  reactivityTracking: boolean;
+  uniqueIds: boolean;
+  serverClientBoundary: boolean;
+  setupContext: boolean;
+  circularDependencies: boolean;
+  componentResolution: boolean;
+  propsValidation: boolean;
+}
+
 interface UseCrossFileAnalysisOptions {
   files: Ref<Record<string, string>>;
   croquisResults: Ref<Record<string, CroquisResult | null>>;
@@ -21,14 +34,7 @@ interface UseCrossFileAnalysisOptions {
   analysisTime: Ref<number>;
   isAnalyzing: Ref<boolean>;
   dependencyGraph: ComputedRef<Record<string, string[]>>;
-  options: Ref<{
-    provideInject: boolean;
-    componentEmits: boolean;
-    fallthroughAttrs: boolean;
-    reactivityTracking: boolean;
-    uniqueIds: boolean;
-    serverClientBoundary: boolean;
-  }>;
+  options: Ref<CrossFileAnalyzerOptions>;
 }
 
 export function useCrossFileAnalysis({
@@ -65,13 +71,17 @@ export function useCrossFileAnalysis({
     }));
 
     const wasmOptions: WasmCrossFileOptions = {
-      all: true,
       provideInject: options.value.provideInject,
       componentEmits: options.value.componentEmits,
       fallthroughAttrs: options.value.fallthroughAttrs,
       reactivityTracking: options.value.reactivityTracking,
       uniqueIds: options.value.uniqueIds,
       serverClientBoundary: options.value.serverClientBoundary,
+      setupContext: options.value.setupContext,
+      circularDependencies: options.value.circularDependencies,
+      maxImportDepth: options.value.circularDependencies ? 10 : undefined,
+      componentResolution: options.value.componentResolution,
+      propsValidation: options.value.propsValidation,
     };
 
     const issues: CrossFileIssue[] = [];
