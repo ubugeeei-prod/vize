@@ -90,6 +90,7 @@ const plainCssModule: CompiledModule = {
   css: ".card { color: tomato; }",
   scopeId: "plaincss",
   hasScoped: false,
+  macroArtifacts: [],
   styles: [
     {
       content: ".card { color: tomato; }",
@@ -113,6 +114,7 @@ const delegatedCssModule: CompiledModule = {
   css: ".button { color: red; }",
   scopeId: "delegatedcss",
   hasScoped: false,
+  macroArtifacts: [],
   styles: [
     {
       content: ".button { color: red; }",

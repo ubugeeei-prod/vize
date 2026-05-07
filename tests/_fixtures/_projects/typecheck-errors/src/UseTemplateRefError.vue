@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, useTemplateRef } from "vue";
 
 const inputRef = useTemplateRef<HTMLInputElement>("input");
 const count = ref(0);

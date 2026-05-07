@@ -89,7 +89,7 @@ function __setup() {
   type __Child_0_prop_count = __Child_Props_0 extends { 'count'?: infer T } ? T : __Child_Props_0 extends { 'count': infer T } ? T : unknown;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 104:117
+  // @vize-map: prop -> 104:118
   const __vize_prop_check_0_count: __Child_0_prop_count = count;
   void __vize_prop_check_0_count;
 

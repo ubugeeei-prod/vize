@@ -28,6 +28,17 @@ impl<'a> Parser<'a> {
         });
     }
 
+    /// Process the end of a full attribute or directive head.
+    pub(super) fn on_attrib_name_end_impl(&mut self, end: usize) {
+        if let Some(ref mut attr) = self.current_attr {
+            attr.name_end = end;
+        }
+
+        if let Some(ref mut dir) = self.current_dir {
+            dir.name_end = end;
+        }
+    }
+
     /// Process directive name
     pub(super) fn on_dir_name_impl(&mut self, start: usize, end: usize) {
         let raw_name = self.get_source(start, end);
@@ -136,9 +147,18 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn prop_loc_end(&self, quote: QuoteType, end: usize, name_end: usize) -> usize {
+        match quote {
+            QuoteType::NoValue => name_end,
+            QuoteType::Double | QuoteType::Single => (end + 1).min(self.source.len()),
+            QuoteType::Unquoted => end,
+        }
+    }
+
     /// Finish building an attribute node
     fn finish_attribute(&mut self, attr: CurrentAttribute<'a>, quote: QuoteType, end: usize) {
-        let loc = self.create_loc(attr.name_start, end);
+        let loc_end = self.prop_loc_end(quote, end, attr.name_end);
+        let loc = self.create_loc(attr.name_start, loc_end);
         let name_loc = self.create_loc(attr.name_start, attr.name_end);
 
         let mut attr_node = AttributeNode::new(attr.name.clone(), loc);
@@ -163,8 +183,9 @@ impl<'a> Parser<'a> {
     }
 
     /// Finish building a directive node
-    fn finish_directive(&mut self, dir: CurrentDirective<'a>, _quote: QuoteType, end: usize) {
-        let loc = self.create_loc(dir.name_start, end);
+    fn finish_directive(&mut self, dir: CurrentDirective<'a>, quote: QuoteType, end: usize) {
+        let loc_end = self.prop_loc_end(quote, end, dir.name_end);
+        let loc = self.create_loc(dir.name_start, loc_end);
 
         let mut dir_node = DirectiveNode::new(self.allocator, dir.name.clone(), loc);
         dir_node.raw_name = Some(dir.raw_name);

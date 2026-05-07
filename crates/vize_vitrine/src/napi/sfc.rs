@@ -20,6 +20,34 @@ use std::{
 };
 use vize_carton::cstr;
 
+#[napi(object)]
+pub struct MacroArtifactNapi {
+    pub kind: String,
+    pub name: String,
+    pub source: String,
+    pub content: String,
+    pub module_code: Option<String>,
+    pub start: u32,
+    pub end: u32,
+}
+
+fn macro_artifacts_to_napi(
+    artifacts: Vec<vize_atelier_sfc::SfcMacroArtifact>,
+) -> Vec<MacroArtifactNapi> {
+    artifacts
+        .into_iter()
+        .map(|artifact| MacroArtifactNapi {
+            kind: artifact.kind.into(),
+            name: artifact.name.into(),
+            source: artifact.source.into(),
+            content: artifact.content.into(),
+            module_code: artifact.module_code.map(Into::into),
+            start: artifact.start as u32,
+            end: artifact.end as u32,
+        })
+        .collect()
+}
+
 /// SFC parse options for NAPI
 #[napi(object)]
 #[derive(Default)]
@@ -59,6 +87,8 @@ pub struct SfcCompileResultNapi {
     pub style_hash: Option<String>,
     /// Hash of script content (for HMR)
     pub script_hash: Option<String>,
+    /// Compile-time macro artifacts
+    pub macro_artifacts: Vec<MacroArtifactNapi>,
 }
 
 /// Batch compile options for NAPI
@@ -120,6 +150,8 @@ pub struct BatchFileResultNapi {
     pub style_hash: Option<String>,
     /// Hash of script content (for HMR)
     pub script_hash: Option<String>,
+    /// Compile-time macro artifacts
+    pub macro_artifacts: Vec<MacroArtifactNapi>,
 }
 
 /// Batch compile result with per-file results
@@ -251,6 +283,7 @@ pub fn compile_sfc(
                 template_hash: None,
                 style_hash: None,
                 script_hash: None,
+                macro_artifacts: vec![],
             });
         }
     };
@@ -311,23 +344,27 @@ pub fn compile_sfc(
     };
 
     match sfc_compile(&descriptor, compile_opts) {
-        Ok(result) => Ok(SfcCompileResultNapi {
-            code: result.code.into(),
-            css: result.css.map(Into::into),
-            errors: result
-                .errors
-                .into_iter()
-                .map(|e| e.message.into())
-                .collect(),
-            warnings: result
-                .warnings
-                .into_iter()
-                .map(|e| e.message.into())
-                .collect(),
-            template_hash: template_hash.clone(),
-            style_hash: style_hash.clone(),
-            script_hash: script_hash.clone(),
-        }),
+        Ok(result) => {
+            let macro_artifacts = macro_artifacts_to_napi(result.macro_artifacts);
+            Ok(SfcCompileResultNapi {
+                code: result.code.into(),
+                css: result.css.map(Into::into),
+                errors: result
+                    .errors
+                    .into_iter()
+                    .map(|e| e.message.into())
+                    .collect(),
+                warnings: result
+                    .warnings
+                    .into_iter()
+                    .map(|e| e.message.into())
+                    .collect(),
+                template_hash: template_hash.clone(),
+                style_hash: style_hash.clone(),
+                script_hash: script_hash.clone(),
+                macro_artifacts,
+            })
+        }
         Err(e) => Ok(SfcCompileResultNapi {
             code: String::new(),
             css: None,
@@ -336,6 +373,7 @@ pub fn compile_sfc(
             template_hash,
             style_hash,
             script_hash,
+            macro_artifacts: vec![],
         }),
     }
 }
@@ -579,6 +617,7 @@ pub fn compile_sfc_batch_with_results(
                     template_hash: None,
                     style_hash: None,
                     script_hash: None,
+                    macro_artifacts: vec![],
                 });
                 return;
             }
@@ -632,6 +671,7 @@ pub fn compile_sfc_batch_with_results(
 
         match sfc_compile(&descriptor, compile_opts) {
             Ok(result) => {
+                let macro_artifacts = macro_artifacts_to_napi(result.macro_artifacts);
                 success_count.fetch_add(1, Ordering::Relaxed);
                 let mut guard = results.lock().unwrap();
                 guard.push(BatchFileResultNapi {
@@ -653,6 +693,7 @@ pub fn compile_sfc_batch_with_results(
                     template_hash: template_hash.clone(),
                     style_hash: style_hash.clone(),
                     script_hash: script_hash.clone(),
+                    macro_artifacts,
                 });
             }
             Err(e) => {
@@ -669,6 +710,7 @@ pub fn compile_sfc_batch_with_results(
                     template_hash,
                     style_hash,
                     script_hash,
+                    macro_artifacts: vec![],
                 });
             }
         }

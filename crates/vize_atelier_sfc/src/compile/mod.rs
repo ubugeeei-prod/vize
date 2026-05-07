@@ -11,6 +11,8 @@ mod styles;
 #[cfg(test)]
 mod tests;
 
+use crate::compile_script::artifacts::{erase_artifact_macro_statements, extract_macro_artifacts};
+use crate::compile_script::lazy_hydration::transform_lazy_hydration_macros;
 use crate::compile_script::{compile_script_setup_inline_with_context, TemplateParts};
 use crate::compile_template::{
     compile_template_block, compile_template_block_vapor, extract_template_parts,
@@ -18,7 +20,9 @@ use crate::compile_template::{
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
-use crate::types::{BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError};
+use crate::types::{
+    BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError, SfcMacroArtifact,
+};
 
 use self::bindings::{croquis_to_legacy_bindings, register_normal_script_bindings};
 use self::helpers::{
@@ -62,6 +66,23 @@ fn is_ts_lang(lang: Option<&str>) -> bool {
     matches!(lang, Some("ts" | "tsx"))
 }
 
+fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacroArtifact> {
+    let mut artifacts = Vec::new();
+
+    if let Some(script) = descriptor.script.as_ref() {
+        artifacts.extend(extract_macro_artifacts(&script.content, script.loc.start));
+    }
+    if let Some(script_setup) = descriptor.script_setup.as_ref() {
+        artifacts.extend(extract_macro_artifacts(
+            &script_setup.content,
+            script_setup.loc.start,
+        ));
+    }
+
+    artifacts.sort_by_key(|artifact| artifact.start);
+    artifacts
+}
+
 /// Compile an SFC descriptor into JavaScript and CSS
 pub fn compile_sfc(
     descriptor: &SfcDescriptor,
@@ -71,6 +92,7 @@ pub fn compile_sfc(
     let mut warnings = Vec::new();
     let mut code = String::default();
     let mut css = None;
+    let macro_artifacts = extract_descriptor_macro_artifacts(descriptor);
 
     let filename = options.script.id.as_deref().unwrap_or("anonymous.vue");
 
@@ -204,12 +226,20 @@ pub fn compile_sfc(
             errors,
             warnings,
             bindings: None,
+            macro_artifacts,
         });
     }
 
     // Case 2: Script (non-setup) + Template - rewrite default and compile template
     if has_script && !has_script_setup {
         let script = descriptor.script.as_ref().unwrap();
+        let lazy_hydration_transform = transform_lazy_hydration_macros(&script.content);
+        let script_source = lazy_hydration_transform
+            .as_ref()
+            .map(|result| result.code.as_str())
+            .unwrap_or(&script.content);
+        let script_content = erase_artifact_macro_statements(script_source)
+            .unwrap_or_else(|| script_source.to_compact_string());
 
         // Check if source script is TypeScript
         let source_is_ts = script
@@ -221,11 +251,11 @@ pub fn compile_sfc(
         // Parse as TypeScript if source is TypeScript
         let (rewritten_script, _has_default) = profile!(
             "atelier.sfc.normal_script.rewrite_default",
-            rewrite_default(&script.content, "_sfc_main", source_is_ts)
+            rewrite_default(&script_content, "_sfc_main", source_is_ts)
         );
 
         // Transpile TypeScript to JavaScript if needed
-        let final_script = if source_is_ts && !is_ts {
+        let mut final_script = if source_is_ts && !is_ts {
             profile!(
                 "atelier.sfc.normal_script.ts_to_js",
                 crate::compile_script::typescript::transform_typescript_to_js(&rewritten_script)
@@ -233,6 +263,11 @@ pub fn compile_sfc(
         } else {
             rewritten_script
         };
+        if let Some(transform) = lazy_hydration_transform {
+            let mut script_with_preamble = transform.preamble;
+            script_with_preamble.push_str(&final_script);
+            final_script = script_with_preamble;
+        }
 
         // Compile template if present
         if has_template {
@@ -298,7 +333,7 @@ pub fn compile_sfc(
                 Err(e) => {
                     errors.push(e);
                     // Fall back to just the script
-                    code = script.content.to_compact_string();
+                    code = final_script.clone();
                     code.push('\n');
                 }
             }
@@ -327,6 +362,7 @@ pub fn compile_sfc(
             errors,
             warnings,
             bindings: None,
+            macro_artifacts,
         });
     }
 
@@ -363,19 +399,24 @@ pub fn compile_sfc(
         None
     };
 
+    let lazy_hydration_transform = transform_lazy_hydration_macros(&script_setup.content);
+    let mut script_setup_content = lazy_hydration_transform
+        .as_ref()
+        .map(|result| result.code.clone())
+        .unwrap_or_else(|| script_setup.content.to_compact_string());
+
     // 1. Croquis parser: rich analysis with ReactivityTracker
     let mut croquis = profile!(
         "atelier.sfc.script_setup.croquis",
-        crate::script::analyze_script_setup_to_summary(&script_setup.content)
+        crate::script::analyze_script_setup_to_summary(&script_setup_content)
     );
     let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings);
-    let mut script_setup_content = script_setup.content.to_compact_string();
 
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
     let mut ctx = profile!(
         "atelier.sfc.script_context.new",
-        ScriptCompileContext::new(&script_setup.content)
+        ScriptCompileContext::new(&script_setup_content)
     );
 
     // Merge type definitions from normal <script> block so that
@@ -389,7 +430,7 @@ pub fn compile_sfc(
     }
     profile!(
         "atelier.sfc.script_context.collect_setup_import_types",
-        ctx.collect_imported_types_from_path(&script_setup.content, filename)
+        ctx.collect_imported_types_from_path(&script_setup_content, filename)
     );
     if has_script {
         let script = descriptor.script.as_ref().unwrap();
@@ -592,6 +633,9 @@ pub fn compile_sfc(
 
     // The inline mode compile_script_setup_inline generates a complete output
     // including imports, hoisted vars, and `export default { ... }` with inline render
+    if let Some(transform) = lazy_hydration_transform {
+        code.push_str(&transform.preamble);
+    }
     code.push_str(&script_result.code);
 
     // Compile styles
@@ -610,5 +654,6 @@ pub fn compile_sfc(
         errors,
         warnings,
         bindings: script_result.bindings,
+        macro_artifacts,
     })
 }

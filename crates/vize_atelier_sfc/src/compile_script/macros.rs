@@ -3,7 +3,7 @@
 //! This module provides utilities for detecting Vue compiler macro calls
 //! in script setup code.
 
-use vize_croquis::macros::BUILTIN_MACROS;
+use vize_croquis::macros::runtime_erased_macro_names;
 
 /// Check if a line is a compiler macro call (not just containing the macro name as a string)
 pub fn is_macro_call_line(line: &str) -> bool {
@@ -14,7 +14,7 @@ pub fn is_macro_call_line(line: &str) -> bool {
     }
 
     // Check if line contains a macro that is being called (not just mentioned in a string)
-    for macro_name in BUILTIN_MACROS {
+    for macro_name in runtime_erased_macro_names() {
         if let Some(pos) = line.find(macro_name) {
             // Check that this is an actual call, not just a substring or string literal
             // 1. Check that macro is followed by '(' or '<' (with optional whitespace)
@@ -70,7 +70,7 @@ pub fn is_paren_macro_start(line: &str) -> bool {
     }
 
     // Check if line contains a macro call that isn't complete on the same line
-    for macro_name in BUILTIN_MACROS {
+    for macro_name in runtime_erased_macro_names() {
         if let Some(pos) = line.find(macro_name) {
             // Check that this is an actual call, not a string literal
             let after = &line[pos + macro_name.len()..];
@@ -111,7 +111,7 @@ pub fn is_multiline_macro_start(line: &str) -> bool {
     }
 
     // Check if line contains a macro with type args that spans multiple lines
-    for macro_name in BUILTIN_MACROS {
+    for macro_name in runtime_erased_macro_names() {
         if let Some(pos) = line.find(macro_name) {
             // Check that this is an actual call, not a string literal
             let after = &line[pos + macro_name.len()..];
@@ -217,6 +217,8 @@ mod tests {
             "const layer = defineModel<Layer>('layer', { required: true });"
         ));
         assert!(is_macro_call_line("defineExpose({})"));
+        assert!(is_macro_call_line("definePage({ name: 'home' })"));
+        assert!(is_macro_call_line("defineRouteRules({ prerender: true })"));
         assert!(!is_macro_call_line("import { defineModel } from 'vue'"));
         assert!(!is_macro_call_line("const fx = FXS[layer.value.fxId];"));
         // Note: string-embedded macro names ARE detected (pre-existing limitation)

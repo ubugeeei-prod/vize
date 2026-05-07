@@ -39,7 +39,8 @@ use vize_atelier_dom::{compile_template_with_options, DomCompilerOptions};
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
     compile_sfc as sfc_compile, parse_sfc, CssCompileOptions, CssTargets, ScriptCompileOptions,
-    SfcCompileOptions, SfcDescriptor, SfcParseOptions, StyleCompileOptions, TemplateCompileOptions,
+    SfcCompileOptions, SfcDescriptor, SfcMacroArtifact, SfcParseOptions, StyleCompileOptions,
+    TemplateCompileOptions,
 };
 use vize_atelier_ssr::compile_ssr as ssr_compile;
 use vize_atelier_vapor::{compile_vapor as vapor_compile, VaporCompilerOptions};
@@ -232,6 +233,8 @@ pub struct SfcWasmResult {
     pub warnings: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none", rename = "bindingMetadata")]
     pub binding_metadata: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Vec::is_empty", rename = "macroArtifacts")]
+    pub macro_artifacts: Vec<SfcMacroArtifactWasm>,
 }
 
 /// Script compilation result
@@ -240,6 +243,19 @@ pub struct SfcScriptResult {
     pub code: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bindings: Option<serde_json::Value>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcMacroArtifactWasm {
+    pub kind: String,
+    pub name: String,
+    pub source: String,
+    pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module_code: Option<String>,
+    pub start: usize,
+    pub end: usize,
 }
 
 #[derive(Serialize)]
@@ -404,6 +420,18 @@ fn descriptor_to_wasm(descriptor: &SfcDescriptor<'_>) -> SfcDescriptorWasm {
             .collect(),
         slotted: descriptor.slotted,
         should_force_reload: descriptor.should_force_reload,
+    }
+}
+
+fn macro_artifact_to_wasm(artifact: &SfcMacroArtifact) -> SfcMacroArtifactWasm {
+    SfcMacroArtifactWasm {
+        kind: artifact.kind.to_string(),
+        name: artifact.name.to_string(),
+        source: artifact.source.to_string(),
+        content: artifact.content.to_string(),
+        module_code: artifact.module_code.as_ref().map(ToString::to_string),
+        start: artifact.start,
+        end: artifact.end,
     }
 }
 
@@ -613,6 +641,11 @@ impl Compiler {
             .bindings
             .as_ref()
             .and_then(|b| serde_json::to_value(&b.bindings).ok());
+        let macro_artifacts = sfc_result
+            .macro_artifacts
+            .iter()
+            .map(macro_artifact_to_wasm)
+            .collect();
 
         let result = SfcWasmResult {
             descriptor: descriptor_to_wasm(&descriptor),
@@ -635,6 +668,7 @@ impl Compiler {
                 .map(|e| e.message.into())
                 .collect(),
             binding_metadata,
+            macro_artifacts,
         };
 
         to_json_js_value(&result)

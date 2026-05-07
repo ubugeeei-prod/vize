@@ -12,6 +12,7 @@ use std::{
 };
 
 use super::ScriptExtension;
+use vize_atelier_sfc::SfcMacroArtifact;
 use vize_carton::cstr;
 use vize_carton::String;
 
@@ -72,6 +73,7 @@ pub(crate) struct CompileOutput {
     pub errors: Vec<String>,
     pub warnings: Vec<String>,
     pub script_lang: String,
+    pub macro_artifacts: Vec<SfcMacroArtifact>,
 }
 
 /// Detailed timing information for a single file.

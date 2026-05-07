@@ -320,7 +320,7 @@ async function handleSourceSaved() {
   gap: 0.375rem;
   padding: 0.5rem 1rem;
   background: var(--musea-accent);
-  color: #fff;
+  color: var(--musea-accent-contrast);
   border: none;
   border-radius: var(--musea-radius-md);
   font-size: 0.8125rem;

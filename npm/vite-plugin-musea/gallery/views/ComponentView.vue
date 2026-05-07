@@ -542,7 +542,7 @@ onUnmounted(() => {
   padding: 0 0.375rem;
   border-radius: 9px;
   background: var(--musea-accent);
-  color: #fff;
+  color: var(--musea-accent-contrast);
   font-size: 0.625rem;
   font-weight: 700;
   line-height: 1;

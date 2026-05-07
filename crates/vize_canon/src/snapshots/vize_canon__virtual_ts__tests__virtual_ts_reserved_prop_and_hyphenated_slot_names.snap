@@ -106,7 +106,7 @@ function __setup() {
   type __TrendChart_0_prop_class = __TrendChart_Props_0 extends { 'class'?: infer T } ? T : __TrendChart_Props_0 extends { 'class': infer T } ? T : unknown;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 12:25
+  // @vize-map: prop -> 12:26
   const __vize_prop_check_0_class: __TrendChart_0_prop_class = props["class"];
   void __vize_prop_check_0_class;
 

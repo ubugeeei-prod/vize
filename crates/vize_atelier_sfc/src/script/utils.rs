@@ -6,6 +6,7 @@
 //! parsing in production. They are marked with `#[allow(dead_code)]`.
 
 use vize_carton::{String, ToCompactString};
+use vize_croquis::macros::runtime_erased_macro_names;
 
 /// Macro definitions found in script setup
 #[derive(Debug, Default)]
@@ -151,16 +152,7 @@ pub fn extract_type_args(before_call: &str) -> Option<String> {
 
 /// Check if a line contains a compiler macro call
 pub fn is_compiler_macro_line(line: &str) -> bool {
-    let macros = [
-        "defineProps",
-        "defineEmits",
-        "defineExpose",
-        "defineOptions",
-        "defineSlots",
-        "defineModel",
-        "withDefaults",
-    ];
-    macros.iter().any(|m| line.contains(m))
+    runtime_erased_macro_names().any(|macro_name| line.contains(macro_name))
 }
 
 /// Check if string is valid JS identifier

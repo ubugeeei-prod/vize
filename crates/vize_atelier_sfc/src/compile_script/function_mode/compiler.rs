@@ -5,6 +5,7 @@
 //! render function.
 
 use vize_carton::{Bump, FxHashSet, String, ToCompactString};
+use vize_croquis::macros::runtime_erased_macro_names;
 
 use crate::script::{
     resolve_template_used_identifiers, transform_destructured_props, ScriptCompileContext,
@@ -13,6 +14,7 @@ use crate::script::{
 use crate::types::{BindingType, SfcError};
 
 use super::super::import_utils::extract_import_identifiers;
+use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::props::{
     add_null_to_runtime_type, extract_emit_names_from_type, extract_prop_types_from_type,
 };
@@ -31,6 +33,12 @@ pub fn compile_script_setup(
     is_ts: bool,
     template_content: Option<&str>,
 ) -> Result<ScriptCompileResult, SfcError> {
+    let lazy_hydration_transform = transform_lazy_hydration_macros(content);
+    let content = lazy_hydration_transform
+        .as_ref()
+        .map(|result| result.code.as_str())
+        .unwrap_or(content);
+
     let mut ctx = ScriptCompileContext::new(content);
     ctx.analyze();
 
@@ -292,11 +300,16 @@ pub fn compile_script_setup(
         unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };
 
     // Transform TypeScript to JavaScript only when output is not TS.
-    let final_code: String = if is_ts {
+    let mut final_code: String = if is_ts {
         output_str.into()
     } else {
         transform_typescript_to_js(&output_str)
     };
+    if let Some(transform) = lazy_hydration_transform {
+        let mut code = transform.preamble;
+        code.push_str(&final_code);
+        final_code = code;
+    }
 
     Ok(ScriptCompileResult {
         code: final_code,
@@ -572,17 +585,7 @@ fn build_returned_bindings(
     _model_binding_names: &[String],
 ) -> Vec<String> {
     // Compiler macros preset - these are compile-time only and should not be in __returned__
-    let compiler_macros: FxHashSet<&str> = [
-        "defineProps",
-        "defineEmits",
-        "defineExpose",
-        "defineOptions",
-        "defineSlots",
-        "defineModel",
-        "withDefaults",
-    ]
-    .into_iter()
-    .collect();
+    let compiler_macros: FxHashSet<&str> = runtime_erased_macro_names().collect();
 
     // Collect destructured prop local names to exclude from __returned__
     let destructured_prop_locals: FxHashSet<String> = ctx

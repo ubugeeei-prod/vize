@@ -71,6 +71,7 @@ export function compileFile(
     templateHash: result.templateHash,
     styleHash: result.styleHash,
     scriptHash: result.scriptHash,
+    macroArtifacts: result.macroArtifacts ?? [],
     styles,
   };
 
@@ -113,6 +114,7 @@ export function compileBatch(
         templateHash: fileResult.templateHash,
         styleHash: fileResult.styleHash,
         scriptHash: fileResult.scriptHash,
+        macroArtifacts: fileResult.macroArtifacts ?? [],
         styles,
       });
     }

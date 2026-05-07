@@ -8,7 +8,7 @@ expression: result.diagnostics
         severity: Warning,
         message: "Variable 'item' shadows a variable in an outer scope",
         start: 48,
-        end: 76,
+        end: 77,
         help: Some(
             "Rename the variable to avoid shadowing",
         ),

@@ -101,7 +101,7 @@ function __setup() {
   type __LinkComp_0_prop_to = __LinkComp_Props_0 extends { 'to'?: infer T } ? T : __LinkComp_Props_0 extends { 'to': infer T } ? T : unknown;
 
   // Component props value checks (template scope)
-  // @vize-map: prop -> 22:36
+  // @vize-map: prop -> 22:37
   if (item) {
     const __vize_prop_check_0_to: __LinkComp_0_prop_to = item.name;
     void __vize_prop_check_0_to;

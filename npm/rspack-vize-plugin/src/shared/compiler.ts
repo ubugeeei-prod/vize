@@ -105,6 +105,7 @@ export function compileFile(
     customBlocks,
     isCustomElement,
     templateAssetUrls,
+    macroArtifacts: result.macroArtifacts ?? [],
   };
 
   // Only cache successful compilations

@@ -101,7 +101,7 @@ function __setup() {
   void (props.disabled); // VBind
   // @vize-map: expr -> 319:333
   void (emit('submit')); // VOn
-  // @vize-map: expr -> 335:357
+  // @vize-map: expr -> 335:358
 
   // Reference setup bindings (used in template/CSS v-bind)
   void props; void emit;

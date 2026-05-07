@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -61,6 +62,26 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   assert.equal(typeof resolved, "object");
   assert.equal(typeof resolved.id, "string");
   return resolved.id;
+}
+
+{
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-resolve-define-page-"));
+  const source = path.join(tempRoot, "Home.vue");
+  fs.writeFileSync(source, "<script setup>definePage({})</script>");
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(tempRoot),
+    `${source}?definePage`,
+    undefined,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `\0${source}?definePage`,
+    "Vue Router definePage queries should resolve to a virtual macro module",
+  );
 }
 
 {

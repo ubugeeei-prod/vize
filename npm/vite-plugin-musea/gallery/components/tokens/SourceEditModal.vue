@@ -238,7 +238,7 @@ async function handleSave() {
 
 .btn--primary {
   background: var(--musea-accent);
-  color: #fff;
+  color: var(--musea-accent-contrast);
   border-color: var(--musea-accent);
 }
 

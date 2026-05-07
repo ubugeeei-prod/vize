@@ -91,6 +91,154 @@ assert.doesNotMatch(
   "Batch SSR compilation should also drop the Vapor marker when falling back to VDOM",
 );
 
+const definePageSource = `<script setup lang="ts">
+definePage({
+  name: "home",
+  meta: {
+    requiresAuth: true,
+  },
+});
+
+const msg = "hello";
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>`;
+
+const definePageCompiled = compileFile(
+  "/src/pages/Home.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  definePageSource,
+);
+
+assert.doesNotMatch(
+  definePageCompiled.code,
+  /definePage/,
+  "definePage should not stay in component runtime output",
+);
+assert.equal(
+  definePageCompiled.macroArtifacts?.[0]?.kind,
+  "vue-router.definePage",
+  "definePage should be exposed as a Vue Router macro artifact",
+);
+assert.match(
+  definePageCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
+  /export default \{/,
+  "definePage artifacts should include loadable module code",
+);
+
+const definePageMetaSource = `<script setup lang="ts">
+definePageMeta({
+  name: "docs",
+  meta: {
+    scrollMargin: 180,
+  },
+});
+
+const msg = "hello";
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>`;
+
+const definePageMetaCompiled = compileFile(
+  "/src/pages/docs.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  definePageMetaSource,
+);
+
+assert.doesNotMatch(
+  definePageMetaCompiled.code,
+  /definePageMeta/,
+  "definePageMeta should not stay in component runtime output",
+);
+assert.equal(
+  definePageMetaCompiled.macroArtifacts?.[0]?.kind,
+  "nuxt.definePageMeta",
+  "definePageMeta should be exposed as a Nuxt page macro artifact",
+);
+assert.match(
+  definePageMetaCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
+  /export default \{/,
+  "definePageMeta artifacts should include loadable module code",
+);
+
+const defineRouteRulesSource = `<script setup lang="ts">
+defineRouteRules({
+  prerender: true,
+  cache: {
+    maxAge: 60,
+  },
+});
+
+const msg = "hello";
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>`;
+
+const defineRouteRulesCompiled = compileFile(
+  "/src/pages/docs.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  defineRouteRulesSource,
+);
+
+assert.doesNotMatch(
+  defineRouteRulesCompiled.code,
+  /defineRouteRules/,
+  "defineRouteRules should not stay in component runtime output",
+);
+assert.equal(
+  defineRouteRulesCompiled.macroArtifacts?.[0]?.kind,
+  "nuxt.defineRouteRules",
+  "defineRouteRules should be exposed as a Nuxt route rules macro artifact",
+);
+assert.match(
+  defineRouteRulesCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
+  /prerender/,
+  "defineRouteRules artifacts should include loadable route rules module code",
+);
+
+const defineLazyHydrationSource = `<script setup lang="ts">
+const LazyHydrationMyComponent = defineLazyHydrationComponent(
+  "visible",
+  () => import("./components/MyComponent.vue"),
+);
+</script>
+
+<template>
+  <LazyHydrationMyComponent :hydrate-on-visible="{ rootMargin: '100px' }" />
+</template>`;
+
+const defineLazyHydrationCompiled = compileFile(
+  "/src/pages/lazy.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  defineLazyHydrationSource,
+);
+
+assert.doesNotMatch(
+  defineLazyHydrationCompiled.code,
+  /defineLazyHydrationComponent/,
+  "defineLazyHydrationComponent should not stay in component runtime output",
+);
+assert.match(
+  defineLazyHydrationCompiled.code,
+  /__vizeCreateLazyVisibleComponent/,
+  "defineLazyHydrationComponent should expand to a lazy hydration factory",
+);
+assert.match(
+  defineLazyHydrationCompiled.code,
+  /useNuxtApp as __vizeUseNuxtApp/,
+  "defineLazyHydrationComponent should include Nuxt lazy hydration runtime support",
+);
+
 const antDesignSource = `<script setup lang="ts">
 import { Form, Input } from "ant-design-vue";
 </script>

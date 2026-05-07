@@ -5,6 +5,43 @@
 
 use vize_carton::{CompactString, FxHashMap};
 
+/// How a macro participates in the script setup compilation lifecycle.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MacroLifecycle {
+    /// The SFC compiler analyzes the call and emits the matching runtime code.
+    AnalyzeAndErase,
+    /// The SFC compiler rewrites the macro call into runtime code.
+    Expand,
+    /// The SFC compiler extracts the call as a separate artifact, then removes
+    /// the top-level call from runtime output.
+    ExtractAndErase,
+}
+
+impl MacroLifecycle {
+    /// Whether calls with this lifecycle should be removed from setup runtime code.
+    #[inline]
+    pub const fn erases_from_runtime(self) -> bool {
+        matches!(self, Self::AnalyzeAndErase | Self::ExtractAndErase)
+    }
+
+    /// Whether calls with this lifecycle produce a compiler artifact.
+    #[inline]
+    pub const fn produces_artifact(self) -> bool {
+        matches!(self, Self::ExtractAndErase)
+    }
+}
+
+/// Static metadata for a known compiler macro.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MacroDefinition {
+    /// Macro call name.
+    pub name: &'static str,
+    /// How the macro participates in compilation.
+    pub lifecycle: MacroLifecycle,
+    /// Optional artifact kind emitted by the SFC compiler.
+    pub artifact_kind: Option<&'static str>,
+}
+
 /// Built-in Vue compiler macros
 pub static BUILTIN_MACROS: &[&str] = &[
     "defineProps",
@@ -16,10 +53,106 @@ pub static BUILTIN_MACROS: &[&str] = &[
     "withDefaults",
 ];
 
+/// Known ecosystem macros that are compile-time only.
+///
+/// These are intentionally separate from Vue's built-in compiler macros:
+/// Vize does not expand them into component runtime itself, but it may extract
+/// artifacts for surrounding tooling before removing top-level calls.
+pub static ECOSYSTEM_COMPILE_TIME_MACROS: &[MacroDefinition] = &[
+    MacroDefinition {
+        name: "definePage",
+        lifecycle: MacroLifecycle::ExtractAndErase,
+        artifact_kind: Some("vue-router.definePage"),
+    },
+    MacroDefinition {
+        name: "definePageMeta",
+        lifecycle: MacroLifecycle::ExtractAndErase,
+        artifact_kind: Some("nuxt.definePageMeta"),
+    },
+    MacroDefinition {
+        name: "defineRouteRules",
+        lifecycle: MacroLifecycle::ExtractAndErase,
+        artifact_kind: Some("nuxt.defineRouteRules"),
+    },
+    MacroDefinition {
+        name: "defineLazyHydrationComponent",
+        lifecycle: MacroLifecycle::Expand,
+        artifact_kind: None,
+    },
+];
+
 /// Check if a name is a built-in compiler macro
 #[inline]
 pub fn is_builtin_macro(name: &str) -> bool {
     BUILTIN_MACROS.contains(&name)
+}
+
+/// Return the ecosystem macro definition for a name.
+#[inline]
+pub fn ecosystem_macro_definition(name: &str) -> Option<&'static MacroDefinition> {
+    ECOSYSTEM_COMPILE_TIME_MACROS
+        .iter()
+        .find(|definition| definition.name == name)
+}
+
+/// Check if a name is a known ecosystem compile-time macro.
+#[inline]
+pub fn is_ecosystem_compile_time_macro(name: &str) -> bool {
+    ecosystem_macro_definition(name).is_some()
+}
+
+/// Return the compile-time macro lifecycle for a name.
+#[inline]
+pub fn macro_lifecycle(name: &str) -> Option<MacroLifecycle> {
+    if is_builtin_macro(name) {
+        Some(MacroLifecycle::AnalyzeAndErase)
+    } else {
+        ecosystem_macro_definition(name).map(|definition| definition.lifecycle)
+    }
+}
+
+/// Check if a name is compile-time only in script setup.
+#[inline]
+pub fn is_compile_time_macro(name: &str) -> bool {
+    macro_lifecycle(name).is_some()
+}
+
+/// Check if a macro call should be removed from setup runtime output.
+#[inline]
+pub fn is_runtime_erased_macro(name: &str) -> bool {
+    macro_lifecycle(name).is_some_and(MacroLifecycle::erases_from_runtime)
+}
+
+/// Return the artifact kind emitted for a macro name, when any.
+#[inline]
+pub fn macro_artifact_kind(name: &str) -> Option<&'static str> {
+    ecosystem_macro_definition(name).and_then(|definition| definition.artifact_kind)
+}
+
+/// Check if a macro call should produce a compiler artifact.
+#[inline]
+pub fn is_artifact_macro(name: &str) -> bool {
+    macro_lifecycle(name).is_some_and(MacroLifecycle::produces_artifact)
+}
+
+/// Names of macros that should not remain in setup runtime code.
+#[inline]
+pub fn runtime_erased_macro_names() -> impl Iterator<Item = &'static str> {
+    BUILTIN_MACROS.iter().copied().chain(
+        ECOSYSTEM_COMPILE_TIME_MACROS
+            .iter()
+            .filter(|definition| definition.lifecycle.erases_from_runtime())
+            .map(|definition| definition.name),
+    )
+}
+
+/// Names of macros that should produce compiler artifacts.
+#[inline]
+pub fn artifact_macro_names() -> impl Iterator<Item = &'static str> {
+    ECOSYSTEM_COMPILE_TIME_MACROS
+        .iter()
+        .filter(|definition| definition.lifecycle.produces_artifact())
+        .map(|definition| definition.name)
 }
 
 /// Unique identifier for a macro call
@@ -434,8 +567,77 @@ impl MacroTracker {
 
 #[cfg(test)]
 mod tests {
-    use super::{MacroKind, MacroTracker};
+    use super::{
+        artifact_macro_names, is_artifact_macro, is_compile_time_macro,
+        is_ecosystem_compile_time_macro, is_runtime_erased_macro, macro_artifact_kind,
+        macro_lifecycle, runtime_erased_macro_names, MacroKind, MacroLifecycle, MacroTracker,
+    };
     use vize_carton::CompactString;
+
+    #[test]
+    fn test_macro_lifecycle_classifies_builtin_and_ecosystem_macros() {
+        assert_eq!(
+            macro_lifecycle("defineProps"),
+            Some(MacroLifecycle::AnalyzeAndErase)
+        );
+        assert_eq!(
+            macro_lifecycle("definePage"),
+            Some(MacroLifecycle::ExtractAndErase)
+        );
+        assert_eq!(
+            macro_lifecycle("definePageMeta"),
+            Some(MacroLifecycle::ExtractAndErase)
+        );
+        assert_eq!(
+            macro_lifecycle("defineRouteRules"),
+            Some(MacroLifecycle::ExtractAndErase)
+        );
+        assert_eq!(
+            macro_lifecycle("defineLazyHydrationComponent"),
+            Some(MacroLifecycle::Expand)
+        );
+        assert_eq!(macro_lifecycle("notAMacro"), None);
+
+        assert!(is_compile_time_macro("definePage"));
+        assert!(is_ecosystem_compile_time_macro("definePage"));
+        assert!(is_runtime_erased_macro("definePage"));
+        assert!(is_artifact_macro("definePage"));
+        assert_eq!(
+            macro_artifact_kind("definePage"),
+            Some("vue-router.definePage")
+        );
+        assert!(is_compile_time_macro("definePageMeta"));
+        assert!(is_ecosystem_compile_time_macro("definePageMeta"));
+        assert!(is_runtime_erased_macro("definePageMeta"));
+        assert!(is_artifact_macro("definePageMeta"));
+        assert_eq!(
+            macro_artifact_kind("definePageMeta"),
+            Some("nuxt.definePageMeta")
+        );
+        assert!(is_compile_time_macro("defineRouteRules"));
+        assert!(is_ecosystem_compile_time_macro("defineRouteRules"));
+        assert!(is_runtime_erased_macro("defineRouteRules"));
+        assert!(is_artifact_macro("defineRouteRules"));
+        assert_eq!(
+            macro_artifact_kind("defineRouteRules"),
+            Some("nuxt.defineRouteRules")
+        );
+        assert!(is_compile_time_macro("defineLazyHydrationComponent"));
+        assert!(is_ecosystem_compile_time_macro(
+            "defineLazyHydrationComponent"
+        ));
+        assert!(!is_runtime_erased_macro("defineLazyHydrationComponent"));
+        assert!(!is_artifact_macro("defineLazyHydrationComponent"));
+        assert_eq!(macro_artifact_kind("defineLazyHydrationComponent"), None);
+        assert!(runtime_erased_macro_names().any(|name| name == "definePage"));
+        assert!(runtime_erased_macro_names().any(|name| name == "definePageMeta"));
+        assert!(runtime_erased_macro_names().any(|name| name == "defineRouteRules"));
+        assert!(!runtime_erased_macro_names().any(|name| name == "defineLazyHydrationComponent"));
+        assert!(artifact_macro_names().any(|name| name == "definePage"));
+        assert!(artifact_macro_names().any(|name| name == "definePageMeta"));
+        assert!(artifact_macro_names().any(|name| name == "defineRouteRules"));
+        assert!(!artifact_macro_names().any(|name| name == "defineLazyHydrationComponent"));
+    }
 
     #[test]
     fn test_macro_tracker() {

@@ -335,6 +335,16 @@ interface BatchFileInput {
   source: string;
 }
 
+interface MacroArtifact {
+  kind: string;
+  name: string;
+  source: string;
+  content: string;
+  moduleCode?: string;
+  start: number;
+  end: number;
+}
+
 interface BatchFileResult {
   path: string;
   code: string;
@@ -345,6 +355,8 @@ interface BatchFileResult {
   scope_id?: string;
   hasScoped?: boolean;
   has_scoped?: boolean;
+  macroArtifacts?: MacroArtifact[];
+  macro_artifacts?: MacroArtifact[];
 }
 
 interface BatchCompileResult {

@@ -14,6 +14,16 @@ export interface SfcCompileOptionsNapi {
   scopeId?: string;
 }
 
+export interface MacroArtifact {
+  kind: string;
+  name: string;
+  source: string;
+  content: string;
+  moduleCode?: string;
+  start: number;
+  end: number;
+}
+
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
@@ -21,6 +31,7 @@ export interface SfcCompileResultNapi {
   map?: string;
   errors: string[];
   warnings: string[];
+  macroArtifacts?: MacroArtifact[];
 }
 
 // CSS Compile API Types
@@ -134,6 +145,8 @@ export interface CompiledModule {
   isCustomElement: boolean;
   /** Static asset URLs needing import rewrite. Empty when transformAssetUrls is false. */
   templateAssetUrls: TemplateAssetUrl[];
+  /** Compile-time macro artifacts extracted from the source SFC. */
+  macroArtifacts?: MacroArtifact[];
 }
 
 // Loader Options Types

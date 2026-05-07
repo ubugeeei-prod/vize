@@ -25,6 +25,7 @@ catalogs:
     "@types/node": "25.6.0"
     "@typescript/native-preview": "7.0.0-dev.20260421.1"
     typescript: "6.0.3"
+    vue-tsc: "3.2.7"
 
   # Vite / Vite Plus stack and adjacent build-time plugins.
   vite-stack:

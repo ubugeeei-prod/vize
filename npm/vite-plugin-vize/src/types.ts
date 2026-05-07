@@ -14,6 +14,16 @@ export interface SfcCompileOptionsNapi {
   scopeId?: string;
 }
 
+export interface MacroArtifact {
+  kind: string;
+  name: string;
+  source: string;
+  content: string;
+  moduleCode?: string;
+  start: number;
+  end: number;
+}
+
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
@@ -22,6 +32,7 @@ export interface SfcCompileResultNapi {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  macroArtifacts?: MacroArtifact[];
 }
 
 export type CompileSfcFn = (
@@ -148,6 +159,8 @@ export interface CompiledModule {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  /** Compile-time macro artifacts extracted from the source SFC */
+  macroArtifacts?: MacroArtifact[];
   /** Per-block style metadata extracted from the source SFC */
   styles?: StyleBlockInfo[];
 }
@@ -168,6 +181,8 @@ export interface BatchFileResult {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  /** Compile-time macro artifacts extracted from the source SFC */
+  macroArtifacts?: MacroArtifact[];
   /** Per-block style metadata extracted from the source SFC */
   styles?: StyleBlockInfo[];
 }
