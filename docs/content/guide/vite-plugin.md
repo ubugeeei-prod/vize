@@ -17,8 +17,11 @@ title: Vite Plugin
 Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the packages:
 
 ```bash
-vp install -D @vizejs/vite-plugin vize
+vp install -D @vizejs/vite-plugin
 ```
+
+Add `vize` as a direct dependency only if your project imports shared config helpers from `"vize"`
+or runs the npm CLI through `vp exec vize`.
 
 ## Basic Usage
 
@@ -37,6 +40,10 @@ That's it. Replace `@vitejs/plugin-vue` with `@vizejs/vite-plugin` and your proj
 ## Shared Config
 
 The recommended shared entry point is `vize`. A single `vize.config.*` file is read by both the npm CLI and `@vizejs/vite-plugin`.
+
+```bash
+vp install -D vize
+```
 
 Supported config files:
 

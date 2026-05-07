@@ -108,6 +108,7 @@ const vizeDocsSyntax = (() => {
     "check-server",
     "clippy",
     "create",
+    "dev",
     "develop",
     "exec",
     "fmt",
@@ -276,7 +277,7 @@ const vizeDocsSyntax = (() => {
 
     result = replaceWithCallback(
       result,
-      /(^|[^\\])(#.*$)/gm,
+      /(^|[\t ])(#.*$)/gm,
       (_, prefix, comment) => `${escapeHtml(prefix)}${wrapToken("v-code__comment", comment)}`,
       store,
     );
@@ -498,7 +499,7 @@ const vizeDocsSyntax = (() => {
       if (!candidate) {
         continue;
       }
-      const match = candidate.match(/(?:^|language-|lang-)([\w-]+)$/);
+      const match = candidate.match(/^(?:language-|lang-)?([\w-]+)$/);
       const normalized = normalizeLanguage(match?.[1] ?? candidate);
       if (normalized !== "text") {
         return normalized;

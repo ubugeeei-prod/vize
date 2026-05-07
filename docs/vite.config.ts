@@ -66,9 +66,10 @@ export default defineConfig({
           },
 
           header: {
-            logo: "/logo-mark.svg",
-            logoWidth: 40,
-            logoHeight: 40,
+            logo: "/logo.svg",
+            logoDark: "/logo-light.svg",
+            logoWidth: 68,
+            logoHeight: 34,
           },
 
           footer: {
@@ -83,6 +84,7 @@ export default defineConfig({
 
           embed: {
             head: [
+              '<link rel="icon" href="/mv.svg" type="image/svg+xml">',
               '<link rel="preconnect" href="https://fonts.googleapis.com">',
               '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
               '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">',
@@ -97,7 +99,7 @@ export default defineConfig({
         }),
       },
 
-      highlight: true,
+      highlight: false,
       mermaid: true,
       // Keep source tree clean; this site does not use Ox Content's API docs generator.
       docs: false,

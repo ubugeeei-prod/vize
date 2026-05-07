@@ -38,8 +38,11 @@ See the [Vite+ docs](https://viteplus.dev/) and the [Installing Dependencies gui
 Use the Vite plugin if you want native Vue compilation in an existing Vite project.
 
 ```bash
-vp install -D vize @vizejs/vite-plugin
+vp install -D @vizejs/vite-plugin
 ```
+
+Install `vize` as a direct dependency only when you want to import shared config helpers from
+`"vize"` or run the npm CLI through `vp exec vize`.
 
 ```ts
 // vite.config.ts

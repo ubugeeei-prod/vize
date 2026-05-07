@@ -16,7 +16,7 @@ function ensureStatementBoundary(source: string): string {
 }
 
 export function createDocsBackgroundHtml(): string {
-  return `<canvas id="${docsBackgroundCanvasId}" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>`;
+  return `<canvas id="${docsBackgroundCanvasId}" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>`;
 }
 
 export function buildDocsBackgroundScript(themeDir: string): string {
