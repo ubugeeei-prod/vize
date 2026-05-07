@@ -12,9 +12,13 @@ pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 #[cfg(test)]
 mod tests {
     use super::{CrossFileAnalyzer, CrossFileOptions};
+    use crate::analysis::ComponentUsage;
+    use crate::cross_file::diagnostics::CrossFileDiagnosticKind;
+    use crate::cross_file::DependencyEdge;
     use crate::AnalyzerOptions;
     use std::path::Path;
     use vize_carton::append;
+    use vize_carton::{CompactString, SmallVec};
 
     #[test]
     fn test_cross_file_options() {
@@ -77,6 +81,116 @@ mod tests {
         // For now, just verify the analysis runs without crashing
         let result = analyzer.analyze();
         assert!(result.circular_deps.is_empty());
+    }
+
+    #[test]
+    fn test_rebuild_import_edges_resolves_relative_imports_added_out_of_order() {
+        let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
+
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        parent_analyzer.analyze_script_setup("import Child from './components/Child.vue'");
+        let parent_id = analyzer.add_file_with_analysis(
+            Path::new("src/Parent.vue"),
+            "",
+            parent_analyzer.finish(),
+        );
+
+        let mut child_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        child_analyzer.analyze_script_setup("const child = true");
+        let child_id = analyzer.add_file_with_analysis(
+            Path::new("src/components/Child.vue"),
+            "",
+            child_analyzer.finish(),
+        );
+
+        assert!(!analyzer
+            .graph()
+            .dependencies(parent_id)
+            .any(|(id, edge)| id == child_id && edge == DependencyEdge::Import));
+
+        analyzer.rebuild_import_edges();
+
+        assert!(analyzer
+            .graph()
+            .dependencies(parent_id)
+            .any(|(id, edge)| id == child_id && edge == DependencyEdge::Import));
+    }
+
+    #[test]
+    fn test_import_and_component_usage_edges_can_share_same_target() {
+        let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
+
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        parent_analyzer.analyze_script_setup("import Widget from './Child.vue'");
+        parent_analyzer
+            .croquis_mut()
+            .used_components
+            .insert(CompactString::new("Widget"));
+        parent_analyzer
+            .croquis_mut()
+            .component_usages
+            .push(ComponentUsage {
+                name: CompactString::new("Widget"),
+                start: 0,
+                end: 8,
+                props: SmallVec::new(),
+                events: SmallVec::new(),
+                slots: SmallVec::new(),
+                has_spread_attrs: false,
+                scope_id: crate::scope::ScopeId::ROOT,
+                vif_guard: None,
+            });
+        let parent_id =
+            analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analyzer.finish());
+
+        let mut child_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        child_analyzer.analyze_script_setup(
+            r#"defineProps<{
+  title: string
+}>()"#,
+        );
+        let child_id =
+            analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analyzer.finish());
+
+        analyzer.rebuild_import_edges();
+        analyzer.rebuild_component_edges();
+
+        let edges: Vec<_> = analyzer.graph().dependencies(parent_id).collect();
+        assert!(edges
+            .iter()
+            .any(|(id, edge)| *id == child_id && *edge == DependencyEdge::Import));
+        assert!(edges
+            .iter()
+            .any(|(id, edge)| *id == child_id && *edge == DependencyEdge::ComponentUsage));
+
+        let result = analyzer.analyze();
+        assert!(result.diagnostics.iter().any(|diagnostic| matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::MissingRequiredProp { .. }
+        )));
+    }
+
+    #[test]
+    fn test_component_resolution_requires_local_registration() {
+        let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
+
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        parent_analyzer
+            .croquis_mut()
+            .used_components
+            .insert(CompactString::new("Child"));
+        analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analyzer.finish());
+
+        let mut child_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        child_analyzer.analyze_script_setup("const child = true");
+        analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analyzer.finish());
+        analyzer.rebuild_component_edges();
+
+        let result = analyzer.analyze();
+        assert!(result.diagnostics.iter().any(|diagnostic| matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::UnregisteredComponent { .. }
+        )));
     }
 
     // === Provide/Inject Tests ===
@@ -830,6 +944,7 @@ const state = inject('globalState')"#,
         let mut app_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
         app_analyzer.analyze_script_setup(
             r#"import { provide, ref, computed } from 'vue'
+import Dashboard from './Dashboard.vue'
 
 const theme = ref('dark')
 const user = ref({ name: 'Alice', role: 'admin' })
@@ -849,6 +964,7 @@ const isAdmin = computed(() => user.value.role === 'admin')"#,
         let mut dashboard_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
         dashboard_analyzer.analyze_script_setup(
             r#"import { inject, provide, ref } from 'vue'
+import Widget from './Widget.vue'
 
 const theme = inject('theme')
 const user = inject('user')
@@ -878,6 +994,7 @@ const displayCount = computed(() => dashboardState.value.count)"#,
         analyzer.add_file_with_analysis(Path::new("Dashboard.vue"), "", dashboard_analysis);
         analyzer.add_file_with_analysis(Path::new("Widget.vue"), "", widget_analysis);
 
+        analyzer.rebuild_import_edges();
         analyzer.rebuild_component_edges();
         let result = analyzer.analyze();
 

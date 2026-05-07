@@ -38,16 +38,10 @@ pub enum ComponentResolutionIssueKind {
 /// 2. All import specifiers can be resolved to actual files
 pub fn analyze_component_resolution(
     registry: &ModuleRegistry,
-    graph: &DependencyGraph,
+    _graph: &DependencyGraph,
 ) -> (Vec<ComponentResolutionIssue>, Vec<CrossFileDiagnostic>) {
     let mut issues = Vec::new();
     let mut diagnostics = Vec::new();
-
-    // Build a set of all registered component names from the dependency graph
-    let registered_components: FxHashSet<&str> = graph
-        .nodes()
-        .filter_map(|node| node.component_name.as_deref())
-        .collect();
 
     // Check each file
     for entry in registry.iter() {
@@ -68,16 +62,16 @@ pub fn analyze_component_resolution(
                 continue;
             }
 
-            // Check if component is imported as a binding
-            let is_imported = imported_identifiers.contains(component_name.as_str());
+            // Check if component is imported as a binding. Vue templates can
+            // use either PascalCase (`UserCard`) or kebab-case (`user-card`).
+            let is_imported = imported_identifiers
+                .iter()
+                .any(|name| component_names_match(component_name.as_str(), name));
 
-            // Check if component exists in the project (registered in graph)
-            let exists_in_project = registered_components.contains(component_name.as_str());
-
-            // Check if it's available as a global component name (via import)
-            let is_available = is_imported
-                || exists_in_project
-                || analysis.bindings.contains(component_name.as_str());
+            // A component being present somewhere in the project is not enough:
+            // local template usage must come from an import/local binding unless
+            // a framework-specific global component registry is modeled.
+            let is_available = is_imported || analysis.bindings.contains(component_name.as_str());
 
             if !is_available {
                 let issue = ComponentResolutionIssue {
@@ -208,6 +202,24 @@ fn is_builtin_component(name: &str) -> bool {
             | "NoScript"
             | "Script"
     )
+}
+
+fn component_names_match(left: &str, right: &str) -> bool {
+    left == right || to_pascal_case(left) == to_pascal_case(right)
+}
+
+fn to_pascal_case(value: &str) -> String {
+    value
+        .split(['-', '_'])
+        .filter(|part| !part.is_empty())
+        .map(|part| {
+            let mut chars = part.chars();
+            match chars.next() {
+                Some(first) => first.to_uppercase().chain(chars).collect::<String>(),
+                None => String::new(),
+            }
+        })
+        .collect()
 }
 
 /// Try to resolve an import specifier to a file in the registry.
