@@ -8,7 +8,9 @@ title: Nuxt
 
 Vize provides first-class Nuxt integration through the `@vizejs/nuxt` module. This replaces Nuxt's default Vue compiler with Vize's Rust-native compiler, providing the same speed improvements in Nuxt projects.
 
-## Installation
+## Getting Started
+
+### 1. Install the Module
 
 Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the module:
 
@@ -16,9 +18,7 @@ Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/inst
 vp install @vizejs/nuxt
 ```
 
-## Setup
-
-### Using the Nuxt Module (Recommended)
+### 2. Register the Nuxt Module
 
 ```typescript
 // nuxt.config.ts
@@ -29,6 +29,20 @@ export default defineNuxtConfig({
   },
 });
 ```
+
+### 3. Start Nuxt
+
+Run the app with your existing Nuxt command:
+
+```bash
+vp dev
+```
+
+The module injects `@vizejs/vite-plugin` into Nuxt's Vite config and keeps Nuxt-specific transforms
+in the pipeline, so auto-imports, components, middleware, and SSR behavior continue to work through
+Nuxt.
+
+## Advanced Setup
 
 ### Using the Vite Plugin Directly
 

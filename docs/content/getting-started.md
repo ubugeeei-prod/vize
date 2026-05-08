@@ -54,7 +54,31 @@ export default defineConfig({
 });
 ```
 
-### 2. npm CLI + Shared Config
+### 2. Nuxt Projects
+
+Use the Nuxt module when you want Vize to run inside Nuxt's own Vite pipeline.
+
+```bash
+vp install @vizejs/nuxt
+```
+
+Add the module to `nuxt.config.ts`:
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compiler: true,
+  },
+});
+```
+
+Run your Nuxt dev server as usual. The module registers `@vizejs/vite-plugin` for Vue SFC
+compilation while preserving Nuxt auto-imports, components, middleware, and SSR transforms.
+
+See the [Nuxt Integration](./integrations/nuxt.md) guide for Musea setup and Nuxt-specific notes.
+
+### 3. npm CLI + Shared Config
 
 Use the `vize` npm package when you want shared config utilities and native CLI commands available
 in package scripts.
@@ -72,7 +96,7 @@ The npm `vize check` command uses the packaged NAPI checker and can emit Vue com
 with `--declaration --declaration-dir dist/types`. Use the Rust CLI when you need the Corsa-backed
 project diagnostics path across Vue, TS, TSX, and `.d.ts` inputs.
 
-### 3. Full Rust CLI
+### 4. Full Rust CLI
 
 Use the Rust binary when you want the full native CLI today.
 
