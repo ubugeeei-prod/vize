@@ -398,6 +398,28 @@ pub fn analyze_provide_inject(
         // Extract provide/inject from analysis
         // In a full implementation, this would come from script_parser
         let (p, i) = extract_provide_inject(&entry.analysis);
+        for provide in &p {
+            if let ProvideKey::String(key) = &provide.key {
+                diagnostics.push(create_string_key_diagnostic(
+                    entry.id,
+                    key,
+                    true,
+                    provide.start,
+                    provide.end,
+                ));
+            }
+        }
+        for inject in &i {
+            if let ProvideKey::String(key) = &inject.key {
+                diagnostics.push(create_string_key_diagnostic(
+                    entry.id,
+                    key,
+                    false,
+                    inject.start,
+                    inject.end,
+                ));
+            }
+        }
         if !p.is_empty() {
             provides.insert(entry.id, p);
         }
@@ -622,6 +644,36 @@ fn extract_provide_inject(analysis: &crate::Croquis) -> (Vec<ProvideEntry>, Vec<
     let provides = analysis.provide_inject.provides().to_vec();
     let injects = analysis.provide_inject.injects().to_vec();
     (provides, injects)
+}
+
+fn create_string_key_diagnostic(
+    file_id: FileId,
+    key: &CompactString,
+    is_provide: bool,
+    start: u32,
+    end: u32,
+) -> CrossFileDiagnostic {
+    let api_name = if is_provide { "provide" } else { "inject" };
+    CrossFileDiagnostic::new(
+        CrossFileDiagnosticKind::ProvideInjectWithoutSymbol {
+            key: key.clone(),
+            is_provide,
+        },
+        DiagnosticSeverity::Warning,
+        file_id,
+        start,
+        cstr!(
+            "{}('{}') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow",
+            api_name,
+            key
+        ),
+    )
+    .with_end_offset(end)
+    .with_suggestion(cstr!(
+        "Define an InjectionKey, for example `const {}Key: InjectionKey<...> = Symbol('{}')`, then use it in provide() and inject()",
+        key,
+        key
+    ))
 }
 
 /// Find a provider for a given key in ancestor components.

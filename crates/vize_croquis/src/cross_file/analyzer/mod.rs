@@ -954,6 +954,56 @@ const theme = inject('theme', 'light')"#,
     }
 
     #[test]
+    fn test_string_provide_inject_keys_warn() {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+        analyzer.add_file(
+            Path::new("Component.vue"),
+            r#"import { inject, provide } from 'vue'
+
+const ThemeKey = Symbol('theme')
+provide('theme', 'dark')
+provide(ThemeKey, 'dark')
+const theme = inject('theme')
+const typedTheme = inject(ThemeKey)"#,
+        );
+
+        let result = analyzer.analyze();
+        let string_key_warnings: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|d| {
+                matches!(
+                    d.kind,
+                    CrossFileDiagnosticKind::ProvideInjectWithoutSymbol { .. }
+                )
+            })
+            .collect();
+
+        assert_eq!(string_key_warnings.len(), 2);
+        assert!(string_key_warnings.iter().all(|d| d.is_warning()));
+        assert!(string_key_warnings.iter().any(|d| {
+            matches!(
+                &d.kind,
+                CrossFileDiagnosticKind::ProvideInjectWithoutSymbol {
+                    key,
+                    is_provide: true,
+                } if key == "theme"
+            )
+        }));
+        assert!(string_key_warnings.iter().any(|d| {
+            matches!(
+                &d.kind,
+                CrossFileDiagnosticKind::ProvideInjectWithoutSymbol {
+                    key,
+                    is_provide: false,
+                } if key == "theme"
+            )
+        }));
+    }
+
+    #[test]
     fn test_inject_alias_array_destructure_is_reactivity_error() {
         use crate::provide::InjectPattern;
 

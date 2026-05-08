@@ -375,5 +375,19 @@ const theme = inject('theme', 'light')
     );
     expect(nonReactiveProvide?.severity).toBe("warning");
     expect(nonReactiveProvide?.type).toBe("provide-inject");
+
+    const stringProvideKeys = result.diagnostics.filter(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/provide-without-symbol",
+    );
+    const stringInjectKeys = result.diagnostics.filter(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/inject-without-symbol",
+    );
+    expect(stringProvideKeys.length).toBeGreaterThanOrEqual(2);
+    expect(stringInjectKeys.length).toBeGreaterThanOrEqual(4);
+    expect(
+      [...stringProvideKeys, ...stringInjectKeys].every(
+        (diagnostic) => diagnostic.severity === "warning" && diagnostic.type === "provide-inject",
+      ),
+    ).toBe(true);
   });
 });
