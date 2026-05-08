@@ -47,6 +47,10 @@ body:not(.entry-page) #vein-canvas {
 
 .layout {
   position: relative;
+}
+
+.main {
+  position: relative;
   z-index: 1;
 }
 
