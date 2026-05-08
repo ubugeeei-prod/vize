@@ -1029,6 +1029,45 @@ const { count } = inject('state') as { count: number }"#,
     }
 
     #[test]
+    fn test_diagnostics_are_sorted_by_location() {
+        let mut analyzer = CrossFileAnalyzer::new(
+            CrossFileOptions::default()
+                .with_provide_inject(true)
+                .with_reactivity_tracking(true),
+        );
+
+        analyzer.add_file(
+            Path::new("Mixed.vue"),
+            r#"import { inject, reactive } from 'vue'
+
+const state = reactive({ count: 0 })
+const { count } = state
+const missing = inject('missing')"#,
+        );
+
+        let result = analyzer.analyze();
+        assert!(result.diagnostics.len() >= 2);
+
+        for pair in result.diagnostics.windows(2) {
+            let left = &pair[0];
+            let right = &pair[1];
+            let left_key = (
+                left.primary_file.as_u32(),
+                left.primary_offset,
+                left.severity as u8,
+                left.code(),
+            );
+            let right_key = (
+                right.primary_file.as_u32(),
+                right.primary_offset,
+                right.severity as u8,
+                right.code(),
+            );
+            assert!(left_key <= right_key);
+        }
+    }
+
+    #[test]
     fn test_reactivity_loss_diagnostics_are_errors() {
         let mut analyzer =
             CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));

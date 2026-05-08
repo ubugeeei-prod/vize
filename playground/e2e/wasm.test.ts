@@ -345,6 +345,23 @@ const theme = inject('theme', 'light')
     );
     expect(uniqueDiagnosticKeys.size).toBe(result.diagnostics.length);
 
+    const fileOrder = new Map(files.map((file, index) => [file.path, index]));
+    const severityOrder: Record<string, number> = { error: 0, warning: 1, info: 2, hint: 3 };
+    const diagnosticOrder = result.diagnostics.map((diagnostic) => ({
+      code: diagnostic.code,
+      fileIndex: fileOrder.get(diagnostic.file) ?? Number.MAX_SAFE_INTEGER,
+      offset: diagnostic.offset,
+      severity: severityOrder[diagnostic.severity] ?? Number.MAX_SAFE_INTEGER,
+    }));
+    const sortedDiagnosticOrder = [...diagnosticOrder].sort(
+      (left, right) =>
+        left.fileIndex - right.fileIndex ||
+        left.offset - right.offset ||
+        left.severity - right.severity ||
+        left.code.localeCompare(right.code),
+    );
+    expect(diagnosticOrder).toEqual(sortedDiagnosticOrder);
+
     const defaultedInject = result.diagnostics.find(
       (diagnostic) =>
         diagnostic.code === "vize:croquis/cf/unmatched-inject" &&

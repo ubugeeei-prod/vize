@@ -262,6 +262,7 @@ impl CrossFileAnalyzer {
         }
 
         dedupe_diagnostics(&mut result.diagnostics);
+        sort_diagnostics(&mut result.diagnostics);
 
         // Calculate statistics
         let error_count = result.diagnostics.iter().filter(|d| d.is_error()).count();
@@ -482,8 +483,23 @@ fn merge_duplicate_diagnostic(existing: &mut CrossFileDiagnostic, incoming: Cros
     }
 }
 
+fn sort_diagnostics(diagnostics: &mut [CrossFileDiagnostic]) {
+    diagnostics.sort_by(|left, right| {
+        left.primary_file
+            .as_u32()
+            .cmp(&right.primary_file.as_u32())
+            .then_with(|| left.primary_offset.cmp(&right.primary_offset))
+            .then_with(|| severity_order(left.severity).cmp(&severity_order(right.severity)))
+            .then_with(|| left.code().cmp(right.code()))
+    });
+}
+
 fn is_more_severe(candidate: DiagnosticSeverity, current: DiagnosticSeverity) -> bool {
-    (candidate as u8) < (current as u8)
+    severity_order(candidate) < severity_order(current)
+}
+
+fn severity_order(severity: DiagnosticSeverity) -> u8 {
+    severity as u8
 }
 
 fn import_candidates(specifier: &str, from_dir: Option<&Path>) -> Vec<PathBuf> {
