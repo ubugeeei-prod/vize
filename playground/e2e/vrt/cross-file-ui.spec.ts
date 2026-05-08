@@ -41,4 +41,18 @@ test.describe("cross-file playground", () => {
       }),
     ).toBeVisible({ timeout: 10_000 });
   });
+
+  test("shows provider locations for inject reactivity loss", async ({ page }) => {
+    await openCrossFile(page);
+
+    await page.locator(".preset-item", { hasText: "Provide/Inject Tree" }).click();
+    await page.locator(".profile-switch").getByRole("button", { name: "Signals" }).click();
+
+    const issue = page.locator(".issue-card", {
+      hasText: "Destructuring inject('legacyData')",
+    });
+    await expect(issue).toBeVisible({ timeout: 10_000 });
+    await expect(issue.locator(".issue-related")).toContainText("App.vue");
+    await expect(issue.locator(".related-msg")).toContainText("provide('legacyData') source");
+  });
 });

@@ -337,6 +337,13 @@ const theme = inject('theme', 'light')
     expect(destructuring.length).toBe(2);
     expect(destructuring.every((diagnostic) => diagnostic.severity === "error")).toBe(true);
     expect(destructuring.every((diagnostic) => diagnostic.type === "reactivity-loss")).toBe(true);
+    const stateDestructure = destructuring.find((diagnostic) =>
+      diagnostic.message.includes("state"),
+    );
+    expect(stateDestructure?.relatedLocations?.[0]).toMatchObject({
+      file: "Parent.vue",
+      message: "provide('state') source",
+    });
 
     const uniqueDiagnosticKeys = new Set(
       result.diagnostics.map(

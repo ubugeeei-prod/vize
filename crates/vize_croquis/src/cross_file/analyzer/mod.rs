@@ -1053,11 +1053,30 @@ const [first, second] = useInject('items') as [number, number]"#,
                 .with_reactivity_tracking(true),
         );
 
-        analyzer.add_file(
-            Path::new("Child.vue"),
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        parent_analyzer.analyze_script_setup(
+            r#"import { provide, reactive } from 'vue'
+import Child from './Child.vue'
+
+const state = reactive({ count: 0 })
+provide('state', state)"#,
+        );
+        parent_analyzer
+            .croquis_mut()
+            .used_components
+            .insert(vize_carton::CompactString::new("Child"));
+        let parent_analysis = parent_analyzer.finish();
+
+        let mut child_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        child_analyzer.analyze_script_setup(
             r#"import { inject } from 'vue'
 const { count } = inject('state') as { count: number }"#,
         );
+        let child_analysis = child_analyzer.finish();
+
+        analyzer.add_file_with_analysis(Path::new("Parent.vue"), "script content", parent_analysis);
+        analyzer.add_file_with_analysis(Path::new("Child.vue"), "script content", child_analysis);
+        analyzer.rebuild_component_edges();
 
         let result = analyzer.analyze();
         let diagnostics: Vec<_> = result
@@ -1071,6 +1090,14 @@ const { count } = inject('state') as { count: number }"#,
         assert!(
             diagnostics[0].message.contains("inject('state')"),
             "should preserve the provide/inject-specific message"
+        );
+        assert_eq!(diagnostics[0].related_files.len(), 1);
+        assert!(
+            diagnostics[0].related_files[0]
+                .2
+                .as_str()
+                .contains("provide('state') source"),
+            "should point back to the provider"
         );
         assert_eq!(
             result.stats.error_count,

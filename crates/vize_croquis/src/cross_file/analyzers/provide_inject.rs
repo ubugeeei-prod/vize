@@ -438,11 +438,15 @@ pub fn analyze_provide_inject(
                 ProvideKey::String(s) => s.clone(),
                 ProvideKey::Symbol(s) => s.clone(),
             };
+            let provider_match = find_provider(consumer_id, &key_str, &provides, graph);
+            let provider_related = provider_match
+                .as_ref()
+                .map(|(provider_id, provide_entry, _)| (*provider_id, provide_entry.start));
 
             // Check for destructured inject - this causes reactivity loss
             match &inject.pattern {
                 InjectPattern::ObjectDestructure(props) => {
-                    diagnostics.push(
+                    let diagnostic =
                         CrossFileDiagnostic::new(
                             CrossFileDiagnosticKind::DestructuringBreaksReactivity {
                                 source_name: cstr!("inject('{key_str}')"),
@@ -463,11 +467,15 @@ pub fn analyze_provide_inject(
                             "Store inject result first: `const {} = inject('{}')`, then access properties",
                             inject.local_name,
                             key_str
-                        )),
-                    );
+                        ));
+                    diagnostics.push(with_provider_related(
+                        diagnostic,
+                        provider_related,
+                        &key_str,
+                    ));
                 }
                 InjectPattern::ArrayDestructure(items) => {
-                    diagnostics.push(
+                    let diagnostic =
                         CrossFileDiagnostic::new(
                             CrossFileDiagnosticKind::DestructuringBreaksReactivity {
                                 source_name: cstr!("inject('{key_str}')"),
@@ -488,8 +496,12 @@ pub fn analyze_provide_inject(
                             "Store inject result first: `const {} = inject('{}')`, then access indices",
                             inject.local_name,
                             key_str
-                        )),
-                    );
+                        ));
+                    diagnostics.push(with_provider_related(
+                        diagnostic,
+                        provider_related,
+                        &key_str,
+                    ));
                 }
                 InjectPattern::IndirectDestructure {
                     inject_var,
@@ -497,7 +509,7 @@ pub fn analyze_provide_inject(
                     offset,
                 } => {
                     // Indirect destructuring also loses reactivity
-                    diagnostics.push(
+                    let diagnostic =
                         CrossFileDiagnostic::new(
                             CrossFileDiagnosticKind::DestructuringBreaksReactivity {
                                 source_name: inject_var.clone(),
@@ -517,16 +529,17 @@ pub fn analyze_provide_inject(
                         .with_suggestion(cstr!(
                             "Access properties directly: `{}.prop` instead of destructuring",
                             inject_var
-                        )),
-                    );
+                        ));
+                    diagnostics.push(with_provider_related(
+                        diagnostic,
+                        provider_related,
+                        &key_str,
+                    ));
                 }
                 InjectPattern::Simple => {
                     // No reactivity loss issue
                 }
             }
-
-            // Search ancestors for a matching provide
-            let provider_match = find_provider(consumer_id, &key_str, &provides, graph);
 
             match provider_match {
                 Some((provider_id, provide_entry, path)) => {
@@ -634,6 +647,22 @@ pub fn analyze_provide_inject(
     }
 
     (matches, diagnostics)
+}
+
+fn with_provider_related(
+    diagnostic: CrossFileDiagnostic,
+    provider_related: Option<(FileId, u32)>,
+    key: &CompactString,
+) -> CrossFileDiagnostic {
+    if let Some((provider_id, provider_offset)) = provider_related {
+        diagnostic.with_related(
+            provider_id,
+            provider_offset,
+            cstr!("provide('{key}') source"),
+        )
+    } else {
+        diagnostic
+    }
 }
 
 /// Extract provide/inject calls from a component's analysis.
