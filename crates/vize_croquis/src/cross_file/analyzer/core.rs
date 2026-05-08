@@ -7,7 +7,7 @@ use super::super::registry::{FileId, ModuleRegistry};
 use super::types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 use crate::{Analyzer, AnalyzerOptions, Croquis};
 use std::path::{Component, Path, PathBuf};
-use vize_carton::{CompactString, FxHashMap};
+use vize_carton::{CompactString, FxHashMap, String};
 
 /// Cross-file analyzer for Vue projects.
 pub struct CrossFileAnalyzer {
@@ -585,7 +585,7 @@ fn to_pascal_case(value: &str) -> String {
             let mut chars = part.chars();
             match chars.next() {
                 Some(first) => first.to_uppercase().chain(chars).collect::<String>(),
-                None => String::new(),
+                None => String::default(),
             }
         })
         .collect()

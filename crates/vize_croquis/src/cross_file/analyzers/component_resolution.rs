@@ -7,7 +7,7 @@ use crate::cross_file::diagnostics::{
 };
 use crate::cross_file::graph::DependencyGraph;
 use crate::cross_file::registry::{FileId, ModuleRegistry};
-use vize_carton::{cstr, CompactString, FxHashSet};
+use vize_carton::{cstr, CompactString, FxHashSet, String};
 
 /// Information about a component resolution issue.
 #[derive(Debug, Clone)]
@@ -216,7 +216,7 @@ fn to_pascal_case(value: &str) -> String {
             let mut chars = part.chars();
             match chars.next() {
                 Some(first) => first.to_uppercase().chain(chars).collect::<String>(),
-                None => String::new(),
+                None => String::default(),
             }
         })
         .collect()
