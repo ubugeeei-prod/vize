@@ -334,9 +334,16 @@ const theme = inject('theme', 'light')
     const destructuring = result.diagnostics.filter(
       (diagnostic) => diagnostic.code === "vize:croquis/cf/destructuring-breaks-reactivity",
     );
-    expect(destructuring.length).toBeGreaterThanOrEqual(2);
+    expect(destructuring.length).toBe(2);
     expect(destructuring.every((diagnostic) => diagnostic.severity === "error")).toBe(true);
     expect(destructuring.every((diagnostic) => diagnostic.type === "reactivity-loss")).toBe(true);
+
+    const uniqueDiagnosticKeys = new Set(
+      result.diagnostics.map(
+        (diagnostic) => `${diagnostic.code}:${diagnostic.file}:${diagnostic.offset}`,
+      ),
+    );
+    expect(uniqueDiagnosticKeys.size).toBe(result.diagnostics.length);
 
     const defaultedInject = result.diagnostics.find(
       (diagnostic) =>

@@ -1,12 +1,13 @@
 //! Cross-file analyzer implementation.
 
 use super::super::analyzers;
+use super::super::diagnostics::{CrossFileDiagnostic, DiagnosticSeverity};
 use super::super::graph::{DependencyEdge, DependencyGraph, ModuleNode};
 use super::super::registry::{FileId, ModuleRegistry};
 use super::types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 use crate::{Analyzer, AnalyzerOptions, Croquis};
 use std::path::{Component, Path, PathBuf};
-use vize_carton::CompactString;
+use vize_carton::{CompactString, FxHashMap};
 
 /// Cross-file analyzer for Vue projects.
 pub struct CrossFileAnalyzer {
@@ -260,6 +261,8 @@ impl CrossFileAnalyzer {
             result.diagnostics.extend(diags);
         }
 
+        dedupe_diagnostics(&mut result.diagnostics);
+
         // Calculate statistics
         let error_count = result.diagnostics.iter().filter(|d| d.is_error()).count();
         let warning_count = result.diagnostics.iter().filter(|d| d.is_warning()).count();
@@ -439,6 +442,48 @@ impl CrossFileAnalyzer {
     fn count_edges(&self) -> usize {
         self.graph.nodes().map(|n| n.imports.len()).sum()
     }
+}
+
+fn dedupe_diagnostics(diagnostics: &mut Vec<CrossFileDiagnostic>) {
+    let mut seen: FxHashMap<(&'static str, FileId, u32), usize> = FxHashMap::default();
+    let mut deduped: Vec<CrossFileDiagnostic> = Vec::with_capacity(diagnostics.len());
+
+    for diagnostic in diagnostics.drain(..) {
+        let key = (
+            diagnostic.code(),
+            diagnostic.primary_file,
+            diagnostic.primary_offset,
+        );
+
+        if let Some(index) = seen.get(&key).copied() {
+            merge_duplicate_diagnostic(&mut deduped[index], diagnostic);
+        } else {
+            seen.insert(key, deduped.len());
+            deduped.push(diagnostic);
+        }
+    }
+
+    *diagnostics = deduped;
+}
+
+fn merge_duplicate_diagnostic(existing: &mut CrossFileDiagnostic, incoming: CrossFileDiagnostic) {
+    if is_more_severe(incoming.severity, existing.severity) {
+        existing.severity = incoming.severity;
+    }
+
+    if existing.suggestion.is_none() {
+        existing.suggestion = incoming.suggestion.clone();
+    }
+
+    for related in incoming.related_files {
+        if !existing.related_files.iter().any(|entry| entry == &related) {
+            existing.related_files.push(related);
+        }
+    }
+}
+
+fn is_more_severe(candidate: DiagnosticSeverity, current: DiagnosticSeverity) -> bool {
+    (candidate as u8) < (current as u8)
 }
 
 fn import_candidates(specifier: &str, from_dir: Option<&Path>) -> Vec<PathBuf> {

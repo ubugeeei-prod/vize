@@ -996,6 +996,39 @@ const [first, second] = useInject('items') as [number, number]"#,
     }
 
     #[test]
+    fn test_duplicate_reactivity_diagnostics_are_collapsed() {
+        let mut analyzer = CrossFileAnalyzer::new(
+            CrossFileOptions::default()
+                .with_provide_inject(true)
+                .with_reactivity_tracking(true),
+        );
+
+        analyzer.add_file(
+            Path::new("Child.vue"),
+            r#"import { inject } from 'vue'
+const { count } = inject('state') as { count: number }"#,
+        );
+
+        let result = analyzer.analyze();
+        let diagnostics: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|d| d.code() == "vize:croquis/cf/destructuring-breaks-reactivity")
+            .collect();
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].severity, DiagnosticSeverity::Error);
+        assert!(
+            diagnostics[0].message.contains("inject('state')"),
+            "should preserve the provide/inject-specific message"
+        );
+        assert_eq!(
+            result.stats.error_count,
+            result.diagnostics.iter().filter(|d| d.is_error()).count()
+        );
+    }
+
+    #[test]
     fn test_reactivity_loss_diagnostics_are_errors() {
         let mut analyzer =
             CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
