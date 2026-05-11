@@ -227,9 +227,9 @@ fn test_parse_comment() {
 fn parser_options_svg_subtree() -> ParserOptions {
     ParserOptions {
         get_namespace: |tag, parent| {
-            if tag.eq_ignore_ascii_case("svg") {
-                Namespace::Svg
-            } else if parent.is_some_and(|p| p.eq_ignore_ascii_case("svg")) {
+            if tag.eq_ignore_ascii_case("svg")
+                || parent.is_some_and(|p| p.eq_ignore_ascii_case("svg"))
+            {
                 Namespace::Svg
             } else {
                 Namespace::Html
