@@ -3,12 +3,13 @@
 //! Uses parser-derived race facts and adds cross-file context for injected
 //! state mutations.
 
+use super::provide_inject::ProvideInjectIndex;
 use crate::cross_file::diagnostics::{
     CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity,
 };
 use crate::cross_file::graph::DependencyGraph;
 use crate::cross_file::registry::{FileId, ModuleEntry, ModuleRegistry};
-use crate::provide::InjectEntry;
+use crate::provide::{InjectEntry, ProvideKey};
 use crate::race::{RaceConditionRisk, RaceConditionRiskKind};
 use vize_carton::{cstr, CompactString, FxHashMap};
 
@@ -61,29 +62,37 @@ struct InjectedMutation {
     provide_offset: u32,
 }
 
+struct PendingInjectedMutation<'a> {
+    consumer: FileId,
+    inject: InjectEntry,
+    target_name: CompactString,
+    risk: &'a RaceConditionRisk,
+}
+
 /// Analyze async race-condition risks across registered files.
+#[allow(dead_code)]
 pub fn analyze_race_conditions(
     registry: &ModuleRegistry,
     graph: &DependencyGraph,
 ) -> (Vec<RaceConditionIssue>, Vec<CrossFileDiagnostic>) {
-    let provide_matches = super::provide_inject::analyze_provide_inject(registry, graph).0;
-    let mut matches_by_consumer_key = FxHashMap::default();
-    for provide_match in provide_matches {
-        matches_by_consumer_key
-            .entry((provide_match.consumer, provide_match.key_identity.clone()))
-            .or_insert_with(Vec::new)
-            .push(provide_match);
-    }
+    analyze_race_conditions_with_index(registry, graph, None)
+}
 
+pub(crate) fn analyze_race_conditions_with_index(
+    registry: &ModuleRegistry,
+    graph: &DependencyGraph,
+    provide_inject_index: Option<&ProvideInjectIndex>,
+) -> (Vec<RaceConditionIssue>, Vec<CrossFileDiagnostic>) {
     let mut issues = Vec::new();
     let mut diagnostics = Vec::new();
     let mut injected_mutations = Vec::new();
+    let mut pending_injected_mutations = Vec::new();
 
     for entry in registry.vue_components() {
         let injected_targets = injected_targets(entry);
         for risk in entry.analysis.race_conditions.risks() {
             for target in risk.kind.mutated_targets() {
-                let Some(inject) = injected_targets.get(target.as_str()) else {
+                let Some(&inject) = injected_targets.get(target.as_str()) else {
                     diagnostics.extend(local_diagnostics(entry.id, risk, target));
                     issues.push(RaceConditionIssue {
                         file_id: entry.id,
@@ -94,32 +103,61 @@ pub fn analyze_race_conditions(
                     continue;
                 };
 
-                let key_identity = provide_key_identity(&inject.key);
-                let Some(matches) = matches_by_consumer_key.get(&(entry.id, key_identity.clone()))
-                else {
-                    diagnostics.extend(local_diagnostics(entry.id, risk, target));
-                    issues.push(RaceConditionIssue {
-                        file_id: entry.id,
-                        kind: local_issue_kind(risk, target),
-                        offset: risk.start,
-                        end: risk.end,
-                    });
-                    continue;
-                };
+                pending_injected_mutations.push(PendingInjectedMutation {
+                    consumer: entry.id,
+                    inject: inject.clone(),
+                    target_name: target.clone(),
+                    risk,
+                });
+            }
+        }
+    }
 
-                for provide_match in matches {
-                    injected_mutations.push(InjectedMutation {
-                        consumer: entry.id,
-                        provider: provide_match.provider,
-                        key: provide_match.key.clone(),
-                        key_identity: key_identity.clone(),
-                        target_name: target.clone(),
-                        async_context: risk.kind.async_context(),
-                        offset: risk.start,
-                        end: risk.end,
-                        provide_offset: provide_match.provide_offset,
-                    });
-                }
+    if !pending_injected_mutations.is_empty() {
+        let owned_index;
+        let index = if let Some(index) = provide_inject_index {
+            index
+        } else {
+            owned_index = ProvideInjectIndex::new(registry, graph);
+            &owned_index
+        };
+
+        let mut provider_cache = FxHashMap::default();
+        for pending in pending_injected_mutations {
+            let key_identity = provide_key_identity(&pending.inject.key);
+            let cache_key = (pending.consumer, pending.inject.key.clone());
+            let matches = provider_cache
+                .entry(cache_key)
+                .or_insert_with(|| index.resolve_providers(pending.consumer, &pending.inject.key))
+                .clone();
+
+            if matches.is_empty() {
+                diagnostics.extend(local_diagnostics(
+                    pending.consumer,
+                    pending.risk,
+                    &pending.target_name,
+                ));
+                issues.push(RaceConditionIssue {
+                    file_id: pending.consumer,
+                    kind: local_issue_kind(pending.risk, &pending.target_name),
+                    offset: pending.risk.start,
+                    end: pending.risk.end,
+                });
+                continue;
+            }
+
+            for provider_match in matches {
+                injected_mutations.push(InjectedMutation {
+                    consumer: pending.consumer,
+                    provider: provider_match.provider_id,
+                    key: provide_key_display(&pending.inject.key),
+                    key_identity: key_identity.clone(),
+                    target_name: pending.target_name.clone(),
+                    async_context: pending.risk.kind.async_context(),
+                    offset: pending.risk.start,
+                    end: pending.risk.end,
+                    provide_offset: provider_match.provide.start,
+                });
             }
         }
     }
@@ -308,6 +346,12 @@ fn injected_writer_counts(
         .into_iter()
         .map(|(key, writers)| (key, writers.len()))
         .collect()
+}
+
+fn provide_key_display(key: &ProvideKey) -> CompactString {
+    match key {
+        ProvideKey::String(s) | ProvideKey::Symbol(s) => s.clone(),
+    }
 }
 
 fn provide_key_identity(key: &crate::provide::ProvideKey) -> CompactString {

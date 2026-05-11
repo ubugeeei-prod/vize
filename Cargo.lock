@@ -3641,6 +3641,7 @@ dependencies = [
 name = "vize_croquis"
 version = "0.76.0"
 dependencies = [
+ "criterion",
  "dashmap 6.1.0",
  "insta",
  "once_cell",

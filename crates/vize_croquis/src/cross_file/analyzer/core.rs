@@ -190,6 +190,11 @@ impl CrossFileAnalyzer {
             result.circular_deps = self.graph.circular_dependencies().to_vec();
         }
 
+        let provide_inject_index = self
+            .options
+            .provide_inject
+            .then(|| analyzers::ProvideInjectIndex::new(&self.registry, &self.graph));
+
         // Run enabled analyzers
         if self.options.fallthrough_attrs {
             let (info, diags) = analyzers::analyze_fallthrough(&self.registry, &self.graph);
@@ -210,10 +215,13 @@ impl CrossFileAnalyzer {
         }
 
         if self.options.provide_inject {
-            let (matches, diags) = analyzers::analyze_provide_inject(&self.registry, &self.graph);
-            result.provide_inject_tree = Some(analyzers::build_provide_inject_tree(
+            let index = provide_inject_index
+                .as_ref()
+                .expect("provide/inject index should be initialized when enabled");
+            let (matches, diags) = analyzers::analyze_provide_inject_with_index(index);
+            result.provide_inject_tree = Some(analyzers::build_provide_inject_tree_with_index(
                 &self.registry,
-                &self.graph,
+                index,
                 &matches,
             ));
             result.provide_inject_matches = matches;
@@ -246,7 +254,11 @@ impl CrossFileAnalyzer {
         }
 
         if self.options.race_conditions {
-            let (issues, diags) = analyzers::analyze_race_conditions(&self.registry, &self.graph);
+            let (issues, diags) = analyzers::analyze_race_conditions_with_index(
+                &self.registry,
+                &self.graph,
+                provide_inject_index.as_ref(),
+            );
             result.race_condition_issues = issues;
             result.diagnostics.extend(diags);
         }
@@ -443,12 +455,7 @@ impl CrossFileAnalyzer {
     }
 
     fn find_component_by_name(&self, name: &str) -> Option<FileId> {
-        self.graph.find_by_component(name).or_else(|| {
-            self.graph.nodes().find_map(|node| {
-                let component_name = node.component_name.as_deref()?;
-                component_names_match(name, component_name).then_some(node.file_id)
-            })
-        })
+        self.graph.find_by_component(name)
     }
 
     fn count_edges(&self) -> usize {
