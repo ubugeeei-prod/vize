@@ -698,4 +698,45 @@ const ready = true
         assert_eq!(diagnostic.start, expected_start);
         assert!(diagnostic.end > diagnostic.start);
     }
+
+    #[test]
+    fn cross_file_opt_in_reports_loop_element_ids_at_template_offsets() {
+        let dir = tempfile::tempdir().unwrap();
+        let list = dir.path().join("List.vue");
+
+        let source = r#"<script setup lang="ts">
+const rows = [{ name: 'Ada' }]
+</script>
+
+<template>
+  <ul>
+    <li v-for="row in rows">
+      <span id="row-label">{{ row.name }}</span>
+    </li>
+  </ul>
+</template>
+"#;
+        fs::write(&list, source).unwrap();
+
+        let files = [list]
+            .into_iter()
+            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+            .collect::<Vec<_>>();
+        let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
+
+        let list_result = output
+            .results
+            .iter()
+            .find(|result| result.filename.ends_with("List.vue"))
+            .expect("list result should exist");
+        let diagnostic = list_result
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.message.contains("non-unique-id"))
+            .expect("static id in v-for should be reported");
+
+        let expected_start = source.find("id=\"row-label\"").unwrap() as u32;
+        assert_eq!(diagnostic.start, expected_start);
+        assert!(diagnostic.end > diagnostic.start);
+    }
 }

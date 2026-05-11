@@ -36,6 +36,8 @@ pub use provide_inject::{
 pub use reactivity::{analyze_reactivity, ReactivityIssue, ReactivityIssueKind};
 
 // Cross-file reactivity tracking
+#[cfg(test)]
+pub(crate) use cross_file_reactivity::CrossFileReactivityIssueKind;
 pub use cross_file_reactivity::{analyze_cross_file_reactivity, CrossFileReactivityIssue};
 
 // Setup context violation tracking

@@ -292,9 +292,10 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                 let key_str = provide_key_display(&inject.key);
                 let key_identity = provide_key_identity(&inject.key);
 
-                // Find the provider
-                if let Some(provider) =
-                    self.find_nearest_provider(consumer_file_id, key_identity.as_str())
+                // Find providers in every ancestor branch. A component can be reused
+                // under multiple parents, so a single inject can have multiple
+                // runtime provider contexts.
+                for provider in self.find_nearest_providers(consumer_file_id, key_identity.as_str())
                 {
                     // Check if inject result is destructured
                     use crate::provide::InjectPattern;
@@ -394,31 +395,31 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
         }
     }
 
-    fn find_nearest_provider(
+    fn find_nearest_providers(
         &self,
         consumer_file_id: FileId,
         key_identity: &str,
-    ) -> Option<ProvideDefinition> {
-        let mut visited = FxHashSet::default();
-        let mut queue = vec![consumer_file_id];
+    ) -> Vec<ProvideDefinition> {
+        let mut providers = Vec::new();
+        let mut seen_providers = FxHashSet::default();
+        let mut queue = vec![(consumer_file_id, vec![consumer_file_id])];
         let mut cursor = 0;
 
         while cursor < queue.len() {
-            let current = queue[cursor];
+            let (current, path) = queue[cursor].clone();
             cursor += 1;
-
-            if visited.contains(&current) {
-                continue;
-            }
-            visited.insert(current);
 
             if current != consumer_file_id {
                 if let Some(provides) = self.provides.get(&current) {
                     if let Some(provider) = provides
                         .iter()
+                        .rev()
                         .find(|provider| provider.key_identity.as_str() == key_identity)
                     {
-                        return Some(provider.clone());
+                        if seen_providers.insert((provider.file_id, provider.offset)) {
+                            providers.push(provider.clone());
+                        }
+                        continue;
                     }
                 }
             }
@@ -427,17 +428,20 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                 .graph
                 .dependents(current)
                 .filter(|(parent_id, edge_type)| {
-                    *edge_type == DependencyEdge::ComponentUsage && !visited.contains(parent_id)
+                    *edge_type == DependencyEdge::ComponentUsage && !path.contains(parent_id)
                 })
                 .collect();
             parents.sort_by_key(|(parent_id, _)| parent_id.as_u32());
 
             for (parent_id, _) in parents {
-                queue.push(parent_id);
+                let mut new_path = path.clone();
+                new_path.push(parent_id);
+                queue.push((parent_id, new_path));
             }
         }
 
-        None
+        providers.sort_by_key(|provider| (provider.file_id.as_u32(), provider.offset));
+        providers
     }
 
     /// Track props flows between parent and child components.
