@@ -11,6 +11,7 @@ use vize_carton::{profile, String, ToCompactString};
 mod driver;
 mod markers;
 mod parsing;
+mod reactivity_loss;
 mod rule_queries;
 mod template_queries;
 
@@ -21,12 +22,14 @@ const RULE_REQUIRE_TYPED_PROPS: &str = "type/require-typed-props";
 const RULE_REQUIRE_TYPED_EMITS: &str = "type/require-typed-emits";
 const RULE_NO_FLOATING_PROMISES: &str = "type/no-floating-promises";
 const RULE_NO_UNSAFE_TEMPLATE_BINDING: &str = "type/no-unsafe-template-binding";
+const RULE_NO_REACTIVITY_LOSS: &str = "type/no-reactivity-loss";
 
 pub(crate) const TYPE_AWARE_RULES: &[&str] = &[
     RULE_REQUIRE_TYPED_PROPS,
     RULE_REQUIRE_TYPED_EMITS,
     RULE_NO_FLOATING_PROMISES,
     RULE_NO_UNSAFE_TEMPLATE_BINDING,
+    RULE_NO_REACTIVITY_LOSS,
 ];
 
 pub(crate) fn has_active_type_aware_rules(linter: &Linter) -> bool {
@@ -156,4 +159,37 @@ pub(super) fn has_unsafe_template_type(probe: Option<&TypeProbe>) -> bool {
     !probe.type_texts.is_empty()
         && (is_any_like_type_texts(&probe.type_texts)
             || is_unknown_like_type_texts(&probe.type_texts))
+}
+
+pub(super) fn should_warn_for_reactivity_loss(probe: Option<&TypeProbe>) -> bool {
+    let Some(probe) = probe else {
+        return true;
+    };
+    if probe.type_texts.is_empty() {
+        return true;
+    }
+    if is_any_like_type_texts(&probe.type_texts) || is_unknown_like_type_texts(&probe.type_texts) {
+        return true;
+    }
+    !has_reactive_wrapper_type(probe)
+}
+
+fn has_reactive_wrapper_type(probe: &TypeProbe) -> bool {
+    probe
+        .type_texts
+        .iter()
+        .any(|text| is_reactive_wrapper_type_text(text.as_str()))
+}
+
+fn is_reactive_wrapper_type_text(text: &str) -> bool {
+    text.contains("Ref<")
+        || text.contains("Ref <")
+        || text.contains("ComputedRef<")
+        || text.contains("ComputedRef <")
+        || text.contains("WritableComputedRef<")
+        || text.contains("WritableComputedRef <")
+        || text.contains("ShallowRef<")
+        || text.contains("ShallowRef <")
+        || text.contains("ModelRef<")
+        || text.contains("ModelRef <")
 }

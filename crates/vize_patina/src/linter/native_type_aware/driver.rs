@@ -1,8 +1,8 @@
 use super::{
     has_promise_like_return, has_unsafe_template_type, push_warning,
-    should_warn_for_emit_validator, should_warn_for_prop_access, with_corsa_session, LintResult,
-    Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS,
-    RULE_REQUIRE_TYPED_PROPS,
+    should_warn_for_emit_validator, should_warn_for_prop_access, should_warn_for_reactivity_loss,
+    with_corsa_session, LintResult, Linter, RULE_NO_FLOATING_PROMISES,
+    RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
 };
 use crate::diagnostic::LintDiagnostic;
 use std::path::Path;
@@ -16,6 +16,7 @@ use vize_croquis::{
 use super::{
     markers::{push_promise_marker, QueryKind},
     parsing::collect_floating_candidates,
+    reactivity_loss::collect_reactivity_loss_queries,
     rule_queries::{collect_emit_queries, collect_prop_queries, push_macro_warning, MacroWarning},
     template_queries::{collect_template_queries, TemplateQueryKind},
 };
@@ -154,6 +155,17 @@ pub(super) fn lint_with_descriptor<'a>(
         }
     }
 
+    let reactivity_loss_queries = profile!("patina.type_aware.collect_reactivity_loss_queries", {
+        collect_reactivity_loss_queries(
+            linter,
+            &mut result,
+            &parse_result,
+            script_content,
+            script_block.loc.start as u32,
+            &mut virtual_ts,
+        )
+    });
+
     let template_queries = profile!("patina.type_aware.collect_template_queries", {
         if linter.registry.has_rule(RULE_NO_UNSAFE_TEMPLATE_BINDING)
             && linter.is_rule_enabled(RULE_NO_UNSAFE_TEMPLATE_BINDING)
@@ -166,13 +178,15 @@ pub(super) fn lint_with_descriptor<'a>(
         }
     });
 
-    if macro_queries.is_empty() && template_queries.is_empty() {
+    if macro_queries.is_empty() && template_queries.is_empty() && reactivity_loss_queries.is_empty()
+    {
         return result;
     }
 
     let mut should_warn_for_props = false;
     let mut should_warn_for_emits = false;
     let mut warned_template_owners = FxHashSet::default();
+    let mut warned_reactivity_loss_owners = FxHashSet::default();
     let _ = profile!(
         "patina.type_aware.corsa_session",
         with_corsa_session(linter, filename, |session| {
@@ -248,6 +262,26 @@ pub(super) fn lint_with_descriptor<'a>(
                 push_warning(&mut result, query.diagnostic());
                 if matches!(query.kind, TemplateQueryKind::CallCallee) {
                     warned_template_owners.insert(owner_key);
+                }
+            }
+
+            for query in &reactivity_loss_queries {
+                let probe = profile!(
+                    "patina.type_aware.corsa.probe_reactivity_loss",
+                    session.probe_type_at_offset(
+                        &virtual_ts.content,
+                        query.generated_offset,
+                        false,
+                        false,
+                    )
+                )?;
+                if !should_warn_for_reactivity_loss(probe.as_ref()) {
+                    continue;
+                }
+
+                let owner_key = query.owner_key();
+                if warned_reactivity_loss_owners.insert(owner_key) {
+                    push_warning(&mut result, query.diagnostic(script_block.loc.start as u32));
                 }
             }
             Ok(())

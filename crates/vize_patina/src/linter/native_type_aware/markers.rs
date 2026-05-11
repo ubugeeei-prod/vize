@@ -143,7 +143,7 @@ pub(super) fn push_emit_validator_markers(
     virtual_ts.content.insert_str(insert_offset, &block);
 }
 
-fn marker_insert_offset(content: &str) -> Option<usize> {
+pub(super) fn marker_insert_offset(content: &str) -> Option<usize> {
     content
         .rfind("\n}\n\n// Invoke setup")
         .map(|index| index + 1)

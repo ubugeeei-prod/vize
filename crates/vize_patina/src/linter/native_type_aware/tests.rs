@@ -1,6 +1,7 @@
 use super::{
     has_active_type_aware_rules, lint_sfc_with_corsa, RULE_NO_FLOATING_PROMISES,
-    RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
+    RULE_NO_REACTIVITY_LOSS, RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS,
+    RULE_REQUIRE_TYPED_PROPS,
 };
 use crate::{LintPreset, Linter};
 
@@ -102,6 +103,92 @@ const anyHandler: any = () => {}
 }
 
 #[test]
+fn no_reactivity_loss_tracks_props_calls_and_getter_returns() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const { count } = defineProps<{ count: number }>()
+
+const ctx = useMyComposable(count)
+
+const ctx2 = useMyComposable(() => count)
+const a = ctx2.count()
+</script>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    let messages = result
+        .diagnostics
+        .iter()
+        .filter(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS)
+        .map(|diag| diag.message.as_str())
+        .collect::<Vec<_>>();
+
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("Destructuring props")));
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("useMyComposable")));
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("ctx2.count()")));
+}
+
+#[test]
+fn no_reactivity_loss_uses_type_probe_to_keep_ref_typed_props() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+import type { Ref } from 'vue'
+
+const props = defineProps<{ count: Ref<number> }>()
+const count = props.count
+</script>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(!result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS));
+}
+
+#[test]
+fn no_reactivity_loss_reports_ref_value_and_reactive_member_snapshots() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+import { reactive, ref } from 'vue'
+
+const countRef = ref(0)
+const count = countRef.value
+
+const state = reactive({ user: { name: 'Ada' } })
+const user = state.user
+</script>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    let messages = result
+        .diagnostics
+        .iter()
+        .filter(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS)
+        .map(|diag| diag.message.as_str())
+        .collect::<Vec<_>>();
+
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("countRef.value")));
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("state.user")));
+}
+
+#[test]
 fn voided_promises_are_ignored() {
     if !corsa_available() {
         return;
@@ -177,16 +264,20 @@ fn type_aware_diagnostics_snapshot() {
 
     let linter = Linter::with_preset(LintPreset::Opinionated);
     let source = r#"<script setup lang="ts">
+import { ref } from 'vue'
 defineProps(['msg'])
 defineEmits(['save'])
 const payload: any = { label: 'unsafe' }
 const anyHandler: any = () => {}
+const countRef = ref(0)
+const count = countRef.value
 
 async function loadData(): Promise<number> {
   return 1
 }
 
 loadData()
+useMyComposable(count)
 </script>
 
 <template>

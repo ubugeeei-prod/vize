@@ -1,13 +1,14 @@
 ---
 source: crates/vize_patina/src/linter/native_type_aware/tests.rs
+assertion_line: 305
 expression: diagnostics
 ---
 [
     (
         "type/require-typed-props",
         "Prop should have a type definition",
-        25,
-        45,
+        51,
+        71,
         Some(
             "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
         ),
@@ -15,8 +16,8 @@ expression: diagnostics
     (
         "type/require-typed-emits",
         "Emit should have a type definition",
-        46,
-        67,
+        72,
+        93,
         Some(
             "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
         ),
@@ -24,8 +25,8 @@ expression: diagnostics
     (
         "type/no-floating-promises",
         "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
-        202,
-        212,
+        281,
+        291,
         Some(
             "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
         ),
@@ -33,8 +34,8 @@ expression: diagnostics
     (
         "type/no-unsafe-template-binding",
         "Template interpolation resolves to an unsafe `any` or `unknown` type",
-        245,
-        258,
+        347,
+        360,
         Some(
             "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
         ),
@@ -42,10 +43,28 @@ expression: diagnostics
     (
         "type/no-unsafe-template-binding",
         "Template event handler calls a value with an unsafe `any` or `unknown` type",
-        286,
-        296,
+        388,
+        398,
         Some(
             "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
+        ),
+    ),
+    (
+        "type/no-reactivity-loss",
+        "Assigning 'countRef.value' to 'count' stores a plain snapshot",
+        206,
+        220,
+        Some(
+            "Pass the ref itself, use a getter `() => ref.value`, or wrap the derived value in `computed(...)`.",
+        ),
+    ),
+    (
+        "type/no-reactivity-loss",
+        "Passing 'count' to 'useMyComposable' crosses a plain-value boundary from 'countRef.value'",
+        308,
+        313,
+        Some(
+            "Pass a ref, `toRef(...)`, `computed(...)`, or a getter so the callee can observe later updates.",
         ),
     ),
 ]

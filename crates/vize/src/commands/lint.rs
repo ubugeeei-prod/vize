@@ -72,6 +72,10 @@ pub struct LintArgs {
     #[arg(long)]
     pub cross_file_tree: bool,
 
+    /// Enable opt-in type-aware reactivity-loss linting through the native checker.
+    #[arg(long)]
+    pub strict_reactivity: bool,
+
     /// Show detailed timing profile
     #[arg(long)]
     pub profile: bool,
@@ -131,7 +135,13 @@ pub fn run(args: LintArgs) {
         _ => HelpLevel::Full,
     };
     let preset = LintPreset::parse(&args.preset).unwrap_or_default();
-    let linter = Linter::with_preset(preset).with_help_level(help_level);
+    let mut linter = Linter::with_preset(preset).with_help_level(help_level);
+    #[cfg(not(target_arch = "wasm32"))]
+    if args.strict_reactivity {
+        linter = linter.with_rule(Box::new(
+            vize_patina::rules::type_aware::NoReactivityLoss::new(),
+        ));
+    }
     let error_count = AtomicUsize::new(0);
     let warning_count = AtomicUsize::new(0);
     let profile_rows = args.profile.then(|| Mutex::new(Vec::new()));
@@ -569,7 +579,7 @@ fn should_render_lint_details(format: OutputFormat, quiet: bool) -> bool {
 mod tests {
     use super::{build_cross_file_lint_output, should_render_lint_details};
     use std::fs;
-    use vize_patina::OutputFormat;
+    use vize_patina::{LintPreset, Linter, OutputFormat};
 
     #[test]
     fn quiet_text_output_skips_detailed_diagnostics() {
@@ -579,6 +589,16 @@ mod tests {
     #[test]
     fn json_output_remains_machine_readable_in_quiet_mode() {
         assert!(should_render_lint_details(OutputFormat::Json, true));
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    #[test]
+    fn strict_reactivity_can_be_enabled_without_opinionated_preset() {
+        let linter = Linter::with_preset(LintPreset::HappyPath).with_rule(Box::new(
+            vize_patina::rules::type_aware::NoReactivityLoss::new(),
+        ));
+
+        assert!(linter.registry().has_rule("type/no-reactivity-loss"));
     }
 
     #[test]

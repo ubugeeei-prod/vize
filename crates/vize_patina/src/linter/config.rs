@@ -147,6 +147,16 @@ impl Linter {
         self
     }
 
+    /// Register an extra rule if the active preset did not already include it.
+    #[inline]
+    pub fn with_rule(mut self, rule: Box<dyn crate::rule::Rule>) -> Self {
+        let rule_name = rule.meta().name;
+        if !self.registry.has_rule(rule_name) {
+            self.registry.register(rule);
+        }
+        self
+    }
+
     /// Set the help display level.
     #[inline]
     pub fn with_help_level(mut self, level: HelpLevel) -> Self {
