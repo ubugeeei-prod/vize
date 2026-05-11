@@ -245,6 +245,12 @@ impl CrossFileAnalyzer {
             result.diagnostics.extend(cross_diags);
         }
 
+        if self.options.race_conditions {
+            let (issues, diags) = analyzers::analyze_race_conditions(&self.registry, &self.graph);
+            result.race_condition_issues = issues;
+            result.diagnostics.extend(diags);
+        }
+
         if self.options.setup_context {
             // Setup context violation analysis (CSRP/memory leaks)
             let (issues, diags) = analyzers::analyze_setup_context(&self.registry, &self.graph);

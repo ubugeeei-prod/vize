@@ -109,6 +109,23 @@ fn test_diagnostic_codes() {
         "test",
     );
     assert_eq!(diag_ssr.code(), "vize:croquis/cf/browser-api-ssr");
+
+    let diag_race = CrossFileDiagnostic::new(
+        CrossFileDiagnosticKind::InjectedAsyncMutationRace {
+            key: "store".into(),
+            target_name: "store".into(),
+            async_context: "watch await".into(),
+            writer_count: 2,
+        },
+        DiagnosticSeverity::Error,
+        make_file_id(),
+        0,
+        "test",
+    );
+    assert_eq!(
+        diag_race.code(),
+        "vize:croquis/cf/injected-async-mutation-race"
+    );
 }
 
 // ============================================================

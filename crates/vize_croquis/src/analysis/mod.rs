@@ -48,6 +48,7 @@ pub use template::{
 use crate::hoist::HoistTracker;
 use crate::macros::MacroTracker;
 use crate::provide::ProvideInjectTracker;
+use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
 use crate::setup_context::SetupContextTracker;
 use crate::types::TypeResolver;
@@ -71,6 +72,9 @@ pub struct Croquis {
 
     /// Reactivity tracking (ref, reactive, computed)
     pub reactivity: ReactivityTracker,
+
+    /// Race-condition risk tracking for async reactive writes
+    pub race_conditions: RaceConditionTracker,
 
     /// Provide/Inject tracking
     pub provide_inject: ProvideInjectTracker,

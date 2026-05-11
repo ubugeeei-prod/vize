@@ -133,6 +133,9 @@ impl CrossFileDiagnostic {
             CrossFileDiagnosticKind::AsyncBoundaryCrossing { .. } => {
                 "vize:croquis/cf/async-boundary"
             }
+            CrossFileDiagnosticKind::InjectedAsyncMutationRace { .. } => {
+                "vize:croquis/cf/injected-async-mutation-race"
+            }
             CrossFileDiagnosticKind::ClosureCapturesReactive { .. } => {
                 "vize:croquis/cf/closure-captures-reactive"
             }

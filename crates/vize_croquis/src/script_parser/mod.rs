@@ -26,6 +26,7 @@ use crate::analysis::{BindingMetadata, Croquis};
 use crate::analysis::{ImportStatementInfo, InvalidExport, ReExportInfo, TypeExport};
 use crate::macros::MacroTracker;
 use crate::provide::ProvideInjectTracker;
+use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
 use crate::scope::{
     JsGlobalScopeData, JsRuntime, NonScriptSetupScopeData, ScopeChain, ScriptSetupScopeData,
@@ -42,6 +43,7 @@ pub struct ScriptParseResult {
     pub bindings: BindingMetadata,
     pub macros: MacroTracker,
     pub reactivity: ReactivityTracker,
+    pub race_conditions: RaceConditionTracker,
     pub type_exports: Vec<TypeExport>,
     pub invalid_exports: Vec<InvalidExport>,
     /// Scope chain for tracking nested JavaScript scopes
@@ -78,6 +80,7 @@ impl ScriptParseResult {
         summary.bindings = self.bindings;
         summary.macros = self.macros;
         summary.reactivity = self.reactivity;
+        summary.race_conditions = self.race_conditions;
         summary.type_exports = self.type_exports;
         summary.invalid_exports = self.invalid_exports;
         summary.scopes = self.scopes;

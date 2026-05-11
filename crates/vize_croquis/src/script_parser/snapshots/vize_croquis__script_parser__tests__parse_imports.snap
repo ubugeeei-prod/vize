@@ -35,6 +35,9 @@ ScriptParseResult {
         losses: [],
         next_id: 0,
     },
+    race_conditions: RaceConditionTracker {
+        risks: [],
+    },
     type_exports: [],
     invalid_exports: [],
     scopes: ScopeChain {

@@ -19,6 +19,7 @@ mod event_bubbling;
 mod fallthrough;
 mod props_validation;
 mod provide_inject;
+mod race_conditions;
 mod reactivity;
 mod setup_context;
 
@@ -33,6 +34,7 @@ pub use props_validation::{analyze_props_validation, PropsValidationIssue};
 pub use provide_inject::{
     analyze_provide_inject, build_provide_inject_tree, ProvideInjectMatch, ProvideInjectTree,
 };
+pub use race_conditions::{analyze_race_conditions, RaceConditionIssue};
 pub use reactivity::{analyze_reactivity, ReactivityIssue, ReactivityIssueKind};
 
 // Cross-file reactivity tracking

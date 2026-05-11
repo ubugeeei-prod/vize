@@ -64,7 +64,7 @@ pub struct LintArgs {
     #[arg(long, default_value = "happy-path")]
     pub preset: String,
 
-    /// Enable opt-in cross-file lint checks for provide/inject and reactivity flow.
+    /// Enable opt-in cross-file lint checks for provide/inject, reactivity flow, and race risks.
     #[arg(long)]
     pub cross_file: bool,
 
@@ -465,6 +465,7 @@ fn patina_cross_file_options() -> CrossFileOptions {
         .with_provide_inject(true)
         .with_unique_ids(true)
         .with_reactivity_tracking(true)
+        .with_race_conditions(true)
 }
 
 fn analyze_sfc_for_cross_file(
@@ -788,5 +789,61 @@ const rows = [{ name: 'Ada' }]
         let expected_start = source.find("id=\"row-label\"").unwrap() as u32;
         assert_eq!(diagnostic.start, expected_start);
         assert!(diagnostic.end > diagnostic.start);
+    }
+
+    #[test]
+    fn cross_file_opt_in_reports_async_injected_state_race() {
+        let dir = tempfile::tempdir().unwrap();
+        let provider = dir.path().join("Provider.vue");
+        let child = dir.path().join("Child.vue");
+
+        fs::write(
+            &provider,
+            r#"<script setup lang="ts">
+import { provide, reactive } from 'vue'
+import Child from './Child.vue'
+
+const store = reactive({ count: 0 })
+provide('store', store)
+</script>
+
+<template>
+  <Child />
+</template>
+"#,
+        )
+        .unwrap();
+        fs::write(
+            &child,
+            r#"<script setup lang="ts">
+import { inject, ref, watch } from 'vue'
+
+const store = inject('store')!
+const query = ref('')
+
+watch(query, async () => {
+  await load()
+  store.count = 1
+})
+</script>
+"#,
+        )
+        .unwrap();
+
+        let files = [&provider, &child]
+            .into_iter()
+            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+            .collect::<Vec<_>>();
+        let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
+
+        let child_result = output
+            .results
+            .iter()
+            .find(|result| result.filename.ends_with("Child.vue"))
+            .expect("child result should exist");
+        assert!(child_result.diagnostics.iter().any(|diagnostic| {
+            diagnostic.severity == vize_patina::Severity::Error
+                && diagnostic.message.contains("injected-async-mutation-race")
+        }));
     }
 }

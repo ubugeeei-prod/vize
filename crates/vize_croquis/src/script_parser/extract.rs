@@ -1,17 +1,18 @@
 //! Extraction functions for props, emits, and reactivity detection.
 
 use oxc_ast::ast::{
-    Argument, CallExpression, Declaration, Expression, ObjectPropertyKind, PropertyKey, TSType,
-    VariableDeclarationKind,
+    Argument, AssignmentTarget, CallExpression, Declaration, Expression, ObjectPropertyKind,
+    PropertyKey, SimpleAssignmentTarget, Statement, TSType, VariableDeclarationKind,
 };
 use oxc_span::{GetSpan, Span};
 
 use crate::analysis::{InvalidExport, InvalidExportKind, TypeExport, TypeExportKind};
 use crate::macros::{EmitDefinition, MacroKind, ModelDefinition, PropDefinition};
 use crate::provide::ProvideKey;
+use crate::race::RaceConditionRiskKind;
 use crate::reactivity::ReactiveKind;
 use crate::setup_context::SetupContextViolationKind;
-use vize_carton::{CompactString, FxHashMap, String};
+use vize_carton::{CompactString, FxHashMap, FxHashSet, String};
 use vize_relief::BindingType;
 
 use super::ScriptParseResult;
@@ -501,6 +502,50 @@ pub fn detect_setup_context_violation(
     false
 }
 
+/// Detect async reactive mutation patterns that can race with later updates,
+/// unmounting, or sibling consumers.
+pub fn detect_race_condition_call(
+    result: &mut ScriptParseResult,
+    call: &CallExpression<'_>,
+    _source: &str,
+) {
+    let Some(callee_name) = resolved_call_name(result, call) else {
+        return;
+    };
+
+    match callee_name.as_str() {
+        "watch" => {
+            if let Some(callback) = call.arguments.get(1).and_then(argument_expression) {
+                record_watcher_risk(result, call, callback, "watch");
+            }
+        }
+        "watchEffect" | "watchPostEffect" | "watchSyncEffect" => {
+            if let Some(callback) = call.arguments.first().and_then(argument_expression) {
+                record_watcher_risk(result, call, callback, callee_name.as_str());
+            }
+        }
+        name if super::walk::is_client_only_hook(name) => {
+            if let Some(callback) = call.arguments.first().and_then(argument_expression) {
+                record_lifecycle_risk(result, call, callback, name);
+            }
+        }
+        name if is_scheduler_api(name) => {
+            if let Some(callback) = call.arguments.first().and_then(argument_expression) {
+                record_scheduler_risk(result, call, callback, name);
+            }
+        }
+        "then" | "catch" | "finally" => {
+            for arg in &call.arguments {
+                let Some(callback) = argument_expression(arg) else {
+                    continue;
+                };
+                record_promise_risk(result, call, callback, callee_name.as_str());
+            }
+        }
+        _ => {}
+    }
+}
+
 /// Detect provide() and inject() calls and track them (including through aliases)
 pub fn detect_provide_inject_call(
     result: &mut ScriptParseResult,
@@ -547,6 +592,551 @@ pub fn detect_provide_inject_call(
         // it's handled in process_variable_declarator. This handles bare inject calls
         // like `a('key')` that appear in expression statements.
     }
+}
+
+fn record_watcher_risk(
+    result: &mut ScriptParseResult,
+    call: &CallExpression<'_>,
+    callback: &Expression<'_>,
+    watcher_name: &str,
+) {
+    let scan = scan_callback_for_race(result, callback);
+    if !scan.has_async_boundary() || scan.mutated_targets.is_empty() || scan.has_cleanup_call {
+        return;
+    }
+
+    let async_operation = scan.primary_async_operation();
+    let mutated_targets = scan.mutated_targets();
+
+    let kind = if matches!(
+        watcher_name,
+        "watchEffect" | "watchPostEffect" | "watchSyncEffect"
+    ) {
+        RaceConditionRiskKind::AsyncWatchEffect {
+            async_operation,
+            mutated_targets,
+        }
+    } else {
+        RaceConditionRiskKind::AsyncWatcherMutation {
+            watcher_name: CompactString::new(watcher_name),
+            async_operation,
+            mutated_targets,
+        }
+    };
+
+    result
+        .race_conditions
+        .record(kind, call.span.start, call.span.end);
+}
+
+fn record_lifecycle_risk(
+    result: &mut ScriptParseResult,
+    call: &CallExpression<'_>,
+    callback: &Expression<'_>,
+    hook_name: &str,
+) {
+    let scan = scan_callback_for_race(result, callback);
+    if !scan.has_async_boundary() || scan.mutated_targets.is_empty() || scan.has_cleanup_call {
+        return;
+    }
+
+    result.race_conditions.record(
+        RaceConditionRiskKind::AsyncLifecycleMutation {
+            hook_name: CompactString::new(hook_name),
+            async_operation: scan.primary_async_operation(),
+            mutated_targets: scan.mutated_targets(),
+        },
+        call.span.start,
+        call.span.end,
+    );
+}
+
+fn record_scheduler_risk(
+    result: &mut ScriptParseResult,
+    call: &CallExpression<'_>,
+    callback: &Expression<'_>,
+    scheduler_name: &str,
+) {
+    let scan = scan_callback_for_race(result, callback);
+    if scan.mutated_targets.is_empty() || scan.has_cleanup_call {
+        return;
+    }
+
+    result.race_conditions.record(
+        RaceConditionRiskKind::ScheduledMutation {
+            scheduler_name: CompactString::new(scheduler_name),
+            mutated_targets: scan.mutated_targets(),
+        },
+        call.span.start,
+        call.span.end,
+    );
+}
+
+fn record_promise_risk(
+    result: &mut ScriptParseResult,
+    call: &CallExpression<'_>,
+    callback: &Expression<'_>,
+    operation_name: &str,
+) {
+    let scan = scan_callback_for_race(result, callback);
+    if scan.mutated_targets.is_empty() || scan.has_cleanup_call {
+        return;
+    }
+
+    result.race_conditions.record(
+        RaceConditionRiskKind::PromiseContinuationMutation {
+            async_operation: CompactString::new(operation_name),
+            mutated_targets: scan.mutated_targets(),
+        },
+        call.span.start,
+        call.span.end,
+    );
+}
+
+#[derive(Default)]
+struct RaceScan {
+    async_operations: Vec<CompactString>,
+    mutated_targets: FxHashSet<CompactString>,
+    cleanup_names: FxHashSet<CompactString>,
+    has_cleanup_call: bool,
+}
+
+impl RaceScan {
+    fn has_async_boundary(&self) -> bool {
+        !self.async_operations.is_empty()
+    }
+
+    fn add_async_operation(&mut self, operation: &str) {
+        if !self
+            .async_operations
+            .iter()
+            .any(|existing| existing.as_str() == operation)
+        {
+            self.async_operations.push(CompactString::new(operation));
+        }
+    }
+
+    fn primary_async_operation(&self) -> CompactString {
+        self.async_operations
+            .iter()
+            .find(|operation| operation.as_str() != "async callback")
+            .or_else(|| self.async_operations.first())
+            .cloned()
+            .unwrap_or_else(|| CompactString::new("async callback"))
+    }
+
+    fn mutated_targets(&self) -> Vec<CompactString> {
+        let mut targets = self.mutated_targets.iter().cloned().collect::<Vec<_>>();
+        targets.sort();
+        targets
+    }
+}
+
+fn scan_callback_for_race(result: &ScriptParseResult, callback: &Expression<'_>) -> RaceScan {
+    let mut scan = RaceScan::default();
+    for name in callback_param_names(callback) {
+        scan.cleanup_names.insert(name);
+    }
+
+    match callback {
+        Expression::ArrowFunctionExpression(arrow) => {
+            if arrow.r#async {
+                scan.add_async_operation("async callback");
+            }
+            for stmt in arrow.body.statements.iter() {
+                scan_statement_for_race(result, stmt, &mut scan);
+            }
+        }
+        Expression::FunctionExpression(func) => {
+            if func.r#async {
+                scan.add_async_operation("async callback");
+            }
+            if let Some(body) = &func.body {
+                for stmt in body.statements.iter() {
+                    scan_statement_for_race(result, stmt, &mut scan);
+                }
+            }
+        }
+        _ => scan_expression_for_race(result, callback, &mut scan),
+    }
+
+    scan
+}
+
+fn callback_param_names(callback: &Expression<'_>) -> Vec<CompactString> {
+    match callback {
+        Expression::ArrowFunctionExpression(arrow) => {
+            super::walk::extract_function_params(&arrow.params).into_vec()
+        }
+        Expression::FunctionExpression(func) => {
+            super::walk::extract_function_params(&func.params).into_vec()
+        }
+        _ => Vec::new(),
+    }
+}
+
+fn scan_statement_for_race(result: &ScriptParseResult, stmt: &Statement<'_>, scan: &mut RaceScan) {
+    match stmt {
+        Statement::ExpressionStatement(expr_stmt) => {
+            scan_expression_for_race(result, &expr_stmt.expression, scan);
+        }
+        Statement::VariableDeclaration(var_decl) => {
+            for decl in var_decl.declarations.iter() {
+                if let Some(init) = &decl.init {
+                    scan_expression_for_race(result, init, scan);
+                }
+            }
+        }
+        Statement::ReturnStatement(ret) => {
+            if let Some(arg) = &ret.argument {
+                scan_expression_for_race(result, arg, scan);
+            }
+        }
+        Statement::BlockStatement(block) => {
+            for stmt in block.body.iter() {
+                scan_statement_for_race(result, stmt, scan);
+            }
+        }
+        Statement::IfStatement(if_stmt) => {
+            scan_expression_for_race(result, &if_stmt.test, scan);
+            scan_statement_for_race(result, &if_stmt.consequent, scan);
+            if let Some(alt) = &if_stmt.alternate {
+                scan_statement_for_race(result, alt, scan);
+            }
+        }
+        Statement::ForStatement(for_stmt) => {
+            if let Some(init) = &for_stmt.init {
+                if let Some(expr) = init.as_expression() {
+                    scan_expression_for_race(result, expr, scan);
+                }
+            }
+            if let Some(test) = &for_stmt.test {
+                scan_expression_for_race(result, test, scan);
+            }
+            if let Some(update) = &for_stmt.update {
+                scan_expression_for_race(result, update, scan);
+            }
+            scan_statement_for_race(result, &for_stmt.body, scan);
+        }
+        Statement::ForInStatement(for_in) => {
+            scan_expression_for_race(result, &for_in.right, scan);
+            scan_statement_for_race(result, &for_in.body, scan);
+        }
+        Statement::ForOfStatement(for_of) => {
+            scan_expression_for_race(result, &for_of.right, scan);
+            scan_statement_for_race(result, &for_of.body, scan);
+        }
+        Statement::WhileStatement(while_stmt) => {
+            scan_expression_for_race(result, &while_stmt.test, scan);
+            scan_statement_for_race(result, &while_stmt.body, scan);
+        }
+        Statement::DoWhileStatement(do_while) => {
+            scan_statement_for_race(result, &do_while.body, scan);
+            scan_expression_for_race(result, &do_while.test, scan);
+        }
+        Statement::SwitchStatement(switch_stmt) => {
+            scan_expression_for_race(result, &switch_stmt.discriminant, scan);
+            for case in switch_stmt.cases.iter() {
+                if let Some(test) = &case.test {
+                    scan_expression_for_race(result, test, scan);
+                }
+                for stmt in case.consequent.iter() {
+                    scan_statement_for_race(result, stmt, scan);
+                }
+            }
+        }
+        Statement::TryStatement(try_stmt) => {
+            for stmt in try_stmt.block.body.iter() {
+                scan_statement_for_race(result, stmt, scan);
+            }
+            if let Some(handler) = &try_stmt.handler {
+                for stmt in handler.body.body.iter() {
+                    scan_statement_for_race(result, stmt, scan);
+                }
+            }
+            if let Some(finalizer) = &try_stmt.finalizer {
+                for stmt in finalizer.body.iter() {
+                    scan_statement_for_race(result, stmt, scan);
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+fn scan_expression_for_race(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+    scan: &mut RaceScan,
+) {
+    match expr {
+        Expression::AwaitExpression(await_expr) => {
+            scan.add_async_operation("await");
+            scan_expression_for_race(result, &await_expr.argument, scan);
+        }
+        Expression::CallExpression(call) => {
+            scan_call_expression_for_race(result, call, scan);
+        }
+        Expression::AssignmentExpression(assign) => {
+            if let Some(target) = assignment_target_root(result, &assign.left) {
+                scan.mutated_targets.insert(target);
+            }
+            scan_expression_for_race(result, &assign.right, scan);
+        }
+        Expression::UpdateExpression(update) => {
+            if let Some(target) = simple_assignment_target_root(result, &update.argument) {
+                scan.mutated_targets.insert(target);
+            }
+        }
+        Expression::StaticMemberExpression(member) => {
+            scan_expression_for_race(result, &member.object, scan);
+        }
+        Expression::ComputedMemberExpression(member) => {
+            scan_expression_for_race(result, &member.object, scan);
+            scan_expression_for_race(result, &member.expression, scan);
+        }
+        Expression::ChainExpression(chain) => match &chain.expression {
+            oxc_ast::ast::ChainElement::CallExpression(call) => {
+                scan_call_expression_for_race(result, call, scan);
+            }
+            oxc_ast::ast::ChainElement::TSNonNullExpression(expr) => {
+                scan_expression_for_race(result, &expr.expression, scan);
+            }
+            oxc_ast::ast::ChainElement::StaticMemberExpression(member) => {
+                scan_expression_for_race(result, &member.object, scan);
+            }
+            oxc_ast::ast::ChainElement::ComputedMemberExpression(member) => {
+                scan_expression_for_race(result, &member.object, scan);
+                scan_expression_for_race(result, &member.expression, scan);
+            }
+            oxc_ast::ast::ChainElement::PrivateFieldExpression(field) => {
+                scan_expression_for_race(result, &field.object, scan);
+            }
+        },
+        Expression::ConditionalExpression(cond) => {
+            scan_expression_for_race(result, &cond.test, scan);
+            scan_expression_for_race(result, &cond.consequent, scan);
+            scan_expression_for_race(result, &cond.alternate, scan);
+        }
+        Expression::LogicalExpression(logical) => {
+            scan_expression_for_race(result, &logical.left, scan);
+            scan_expression_for_race(result, &logical.right, scan);
+        }
+        Expression::BinaryExpression(binary) => {
+            scan_expression_for_race(result, &binary.left, scan);
+            scan_expression_for_race(result, &binary.right, scan);
+        }
+        Expression::ArrayExpression(arr) => {
+            for elem in arr.elements.iter() {
+                if let Some(expr) = elem.as_expression() {
+                    scan_expression_for_race(result, expr, scan);
+                }
+            }
+        }
+        Expression::ObjectExpression(obj) => {
+            for prop in obj.properties.iter() {
+                match prop {
+                    ObjectPropertyKind::ObjectProperty(prop) => {
+                        scan_expression_for_race(result, &prop.value, scan);
+                    }
+                    ObjectPropertyKind::SpreadProperty(spread) => {
+                        scan_expression_for_race(result, &spread.argument, scan);
+                    }
+                }
+            }
+        }
+        Expression::UnaryExpression(unary) => {
+            scan_expression_for_race(result, &unary.argument, scan);
+        }
+        Expression::SequenceExpression(seq) => {
+            for expr in seq.expressions.iter() {
+                scan_expression_for_race(result, expr, scan);
+            }
+        }
+        Expression::ParenthesizedExpression(paren) => {
+            scan_expression_for_race(result, &paren.expression, scan);
+        }
+        Expression::TSAsExpression(ts_as) => {
+            scan_expression_for_race(result, &ts_as.expression, scan);
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            scan_expression_for_race(result, &ts_satisfies.expression, scan);
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            scan_expression_for_race(result, &ts_non_null.expression, scan);
+        }
+        _ => {}
+    }
+}
+
+fn scan_call_expression_for_race(
+    result: &ScriptParseResult,
+    call: &CallExpression<'_>,
+    scan: &mut RaceScan,
+) {
+    if let Some(name) = resolved_call_name(result, call) {
+        if name == "fetch" {
+            scan.add_async_operation("fetch");
+        } else if matches!(name.as_str(), "then" | "catch" | "finally") {
+            scan.add_async_operation("promise callback");
+        } else if is_scheduler_api(name.as_str()) {
+            scan.add_async_operation(name.as_str());
+        }
+
+        if name == "onWatcherCleanup" || scan.cleanup_names.contains(name.as_str()) {
+            scan.has_cleanup_call = true;
+        }
+    }
+
+    if let Some(target) = mutation_call_target(result, call) {
+        scan.mutated_targets.insert(target);
+    }
+
+    scan_expression_for_race(result, &call.callee, scan);
+    for arg in call.arguments.iter() {
+        if let Some(expr) = arg.as_expression() {
+            scan_expression_for_race(result, expr, scan);
+        }
+    }
+}
+
+fn mutation_call_target(
+    result: &ScriptParseResult,
+    call: &CallExpression<'_>,
+) -> Option<CompactString> {
+    let Expression::StaticMemberExpression(member) = &call.callee else {
+        return None;
+    };
+    if !is_mutating_method(member.property.name.as_str()) {
+        return None;
+    }
+    expression_reactive_root(result, &member.object)
+}
+
+fn assignment_target_root(
+    result: &ScriptParseResult,
+    target: &AssignmentTarget<'_>,
+) -> Option<CompactString> {
+    match target {
+        AssignmentTarget::AssignmentTargetIdentifier(id) => {
+            tracked_mutation_root(result, id.name.as_str())
+        }
+        AssignmentTarget::StaticMemberExpression(member) => {
+            expression_reactive_root(result, &member.object)
+        }
+        AssignmentTarget::ComputedMemberExpression(member) => {
+            expression_reactive_root(result, &member.object)
+        }
+        _ => None,
+    }
+}
+
+fn simple_assignment_target_root(
+    result: &ScriptParseResult,
+    target: &SimpleAssignmentTarget<'_>,
+) -> Option<CompactString> {
+    match target {
+        SimpleAssignmentTarget::AssignmentTargetIdentifier(id) => {
+            tracked_mutation_root(result, id.name.as_str())
+        }
+        SimpleAssignmentTarget::StaticMemberExpression(member) => {
+            expression_reactive_root(result, &member.object)
+        }
+        SimpleAssignmentTarget::ComputedMemberExpression(member) => {
+            expression_reactive_root(result, &member.object)
+        }
+        _ => None,
+    }
+}
+
+fn expression_reactive_root(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+) -> Option<CompactString> {
+    match expr {
+        Expression::Identifier(id) => tracked_mutation_root(result, id.name.as_str()),
+        Expression::StaticMemberExpression(member) => {
+            expression_reactive_root(result, &member.object)
+        }
+        Expression::ComputedMemberExpression(member) => {
+            expression_reactive_root(result, &member.object)
+        }
+        Expression::ChainExpression(chain) => match &chain.expression {
+            oxc_ast::ast::ChainElement::StaticMemberExpression(member) => {
+                expression_reactive_root(result, &member.object)
+            }
+            oxc_ast::ast::ChainElement::ComputedMemberExpression(member) => {
+                expression_reactive_root(result, &member.object)
+            }
+            oxc_ast::ast::ChainElement::PrivateFieldExpression(field) => {
+                expression_reactive_root(result, &field.object)
+            }
+            oxc_ast::ast::ChainElement::TSNonNullExpression(expr) => {
+                expression_reactive_root(result, &expr.expression)
+            }
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn tracked_mutation_root(result: &ScriptParseResult, name: &str) -> Option<CompactString> {
+    (result.reactivity.is_reactive(name) || result.inject_var_names.contains(name))
+        .then(|| CompactString::new(name))
+}
+
+fn resolved_call_name(
+    result: &ScriptParseResult,
+    call: &CallExpression<'_>,
+) -> Option<CompactString> {
+    let raw_name = match &call.callee {
+        Expression::Identifier(id) => Some(id.name.as_str()),
+        Expression::StaticMemberExpression(member) => Some(member.property.name.as_str()),
+        Expression::ComputedMemberExpression(_) => None,
+        _ => None,
+    }?;
+
+    Some(
+        result
+            .reactivity_aliases
+            .get(raw_name)
+            .cloned()
+            .unwrap_or_else(|| CompactString::new(raw_name)),
+    )
+}
+
+fn argument_expression<'a>(arg: &'a Argument<'a>) -> Option<&'a Expression<'a>> {
+    arg.as_expression()
+}
+
+fn is_scheduler_api(name: &str) -> bool {
+    matches!(
+        name,
+        "setTimeout"
+            | "setInterval"
+            | "requestAnimationFrame"
+            | "requestIdleCallback"
+            | "queueMicrotask"
+    )
+}
+
+fn is_mutating_method(name: &str) -> bool {
+    matches!(
+        name,
+        "push"
+            | "pop"
+            | "shift"
+            | "unshift"
+            | "splice"
+            | "sort"
+            | "reverse"
+            | "fill"
+            | "copyWithin"
+            | "set"
+            | "add"
+            | "delete"
+            | "clear"
+    )
 }
 
 /// Check for ref.value extraction to a plain variable (loses reactivity)

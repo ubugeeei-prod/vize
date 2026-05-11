@@ -279,6 +279,14 @@ pub enum CrossFileDiagnosticKind {
         variable_name: CompactString,
         async_context: CompactString, // "await" | "setTimeout" | "promise callback"
     },
+    /// Injected reactive state is asynchronously mutated by a consumer.
+    /// Provider-owned state can be overwritten by stale consumer work.
+    InjectedAsyncMutationRace {
+        key: CompactString,
+        target_name: CompactString,
+        async_context: CompactString,
+        writer_count: usize,
+    },
     /// Closure captures reactive state implicitly.
     /// Like Rust's closure capture, this creates hidden dependencies.
     ClosureCapturesReactive {

@@ -137,6 +137,26 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
                         }
                     };
 
+                    if source_name == "vue" {
+                        if let oxc_ast::ast::ImportDeclarationSpecifier::ImportSpecifier(s) = spec {
+                            let imported = s.imported.name().as_str();
+                            if is_vue_runtime_api(imported) && imported != name {
+                                result
+                                    .reactivity_aliases
+                                    .insert(CompactString::new(name), CompactString::new(imported));
+                                match imported {
+                                    "inject" => {
+                                        result.inject_aliases.insert(CompactString::new(name));
+                                    }
+                                    "provide" => {
+                                        result.provide_aliases.insert(CompactString::new(name));
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                    }
+
                     // Record definition span for Go-to-Definition
                     result
                         .binding_spans
@@ -253,4 +273,34 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
 
         _ => {}
     }
+}
+
+fn is_vue_runtime_api(name: &str) -> bool {
+    matches!(
+        name,
+        "inject"
+            | "provide"
+            | "ref"
+            | "shallowRef"
+            | "reactive"
+            | "shallowReactive"
+            | "computed"
+            | "readonly"
+            | "shallowReadonly"
+            | "toRef"
+            | "toRefs"
+            | "watch"
+            | "watchEffect"
+            | "watchPostEffect"
+            | "watchSyncEffect"
+            | "onMounted"
+            | "onUnmounted"
+            | "onBeforeMount"
+            | "onBeforeUnmount"
+            | "onUpdated"
+            | "onBeforeUpdate"
+            | "onActivated"
+            | "onDeactivated"
+            | "onWatcherCleanup"
+    )
 }

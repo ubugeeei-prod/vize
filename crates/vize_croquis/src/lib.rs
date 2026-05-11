@@ -49,6 +49,7 @@ pub mod macros;
 pub mod naming;
 pub mod optimization;
 pub mod provide;
+pub mod race;
 pub mod reactivity;
 pub mod reactivity_tracking;
 pub mod script_parser;

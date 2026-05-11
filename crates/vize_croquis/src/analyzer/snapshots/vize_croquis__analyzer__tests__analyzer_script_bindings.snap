@@ -1234,6 +1234,9 @@ Croquis {
         losses: [],
         next_id: 1,
     },
+    race_conditions: RaceConditionTracker {
+        risks: [],
+    },
     provide_inject: ProvideInjectTracker {
         provides: [],
         injects: [],

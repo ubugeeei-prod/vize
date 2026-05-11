@@ -22,6 +22,10 @@ mod tests_provide_inject;
 mod tests_reactivity_props;
 
 #[cfg(test)]
+#[path = "tests_race_conditions.rs"]
+mod tests_race_conditions;
+
+#[cfg(test)]
 mod tests {
     use super::{CrossFileAnalyzer, CrossFileOptions};
     use crate::analysis::ComponentUsage;
@@ -41,6 +45,7 @@ mod tests {
         assert!(options.any_enabled());
         assert!(options.fallthrough_attrs);
         assert!(options.reactivity_tracking);
+        assert!(options.race_conditions);
         assert!(options.component_resolution);
         assert!(options.props_validation);
     }
