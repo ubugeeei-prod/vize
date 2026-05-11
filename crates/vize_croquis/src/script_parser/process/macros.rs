@@ -19,12 +19,13 @@ use vize_carton::CompactString;
 use vize_relief::BindingType;
 
 use super::super::extract::{
-    check_reactive_property_extraction, check_ref_value_extraction, detect_reactivity_call,
-    detect_setup_context_violation, extract_argument_source, extract_call_expression,
-    extract_provide_key, get_binding_type_from_kind, process_call_expression,
+    check_getter_call_extraction, check_reactive_property_extraction, check_ref_value_extraction,
+    detect_reactivity_call, detect_setup_context_violation, extract_argument_source,
+    extract_call_expression, extract_provide_key, get_binding_type_from_kind,
+    process_call_expression, record_getter_context_from_call,
 };
 use super::super::walk::{walk_call_arguments, walk_expression};
-use super::super::ScriptParseResult;
+use super::super::{ReactiveValueOrigin, ScriptParseResult};
 use super::bindings::{
     get_binding_pattern_name, infer_destructure_binding_type, is_function_expression,
     is_literal_expression,
@@ -130,6 +131,11 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     }
                 }
 
+                if let Some(init) = &declarator.init {
+                    check_getter_call_extraction(result, &declarator.id, init);
+                }
+                record_getter_context_from_call(result, name, call, source);
+
                 // Not a known macro/reactivity/inject, but still walk for nested scopes
                 walk_call_arguments(result, call, source);
                 true // Call was extracted and processed
@@ -147,6 +153,8 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     check_ref_value_extraction(result, &declarator.id, init);
                     // Check for reactive object property extraction: const x = props.x
                     check_reactive_property_extraction(result, &declarator.id, init);
+                    // Check for getter-backed context extraction hidden behind wrappers
+                    check_getter_call_extraction(result, &declarator.id, init);
 
                     // Check for Vue API aliases: const a = inject, const r = ref, etc.
                     if let Expression::Identifier(id) = init {
@@ -350,6 +358,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
             } else if let Some((source_name, start, end)) = reactive_destructure_var {
                 // Destructuring reactive variable: const { count } = state
                 let destructured_props = collect_object_pattern_keys(obj);
+                record_object_pattern_property_origins(result, obj, source_name.clone());
                 result
                     .reactivity
                     .record_destructure(source_name, destructured_props, start, end);
@@ -357,6 +366,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 // Direct destructuring: const { count } = reactive({ count: 0 })
                 let destructured_props = collect_object_pattern_keys(obj);
                 use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
+                record_object_pattern_property_origins(result, obj, fn_name.clone());
                 result.reactivity.add_loss(ReactivityLoss {
                     kind: ReactivityLossKind::ReactiveDestructure {
                         source_name: fn_name,
@@ -428,6 +438,12 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         let key = key_name
                             .map(CompactString::new)
                             .unwrap_or_else(|| CompactString::new(&local_name));
+                        result.reactive_value_origins.insert(
+                            CompactString::new(&local_name),
+                            ReactiveValueOrigin::PropsDestructure {
+                                prop_name: key.clone(),
+                            },
+                        );
                         define_props_destructured_props.push(key);
                     }
                 }
@@ -449,6 +465,12 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     }
 
                     if is_define_props {
+                        result.reactive_value_origins.insert(
+                            CompactString::new(&name),
+                            ReactiveValueOrigin::PropsDestructure {
+                                prop_name: CompactString::new("(rest)"),
+                            },
+                        );
                         define_props_destructured_props.push(CompactString::new("(rest)"));
                     }
                 }
@@ -651,4 +673,47 @@ fn collect_object_pattern_keys(obj: &ObjectPattern<'_>) -> Vec<CompactString> {
     }
 
     keys
+}
+
+fn record_object_pattern_property_origins(
+    result: &mut ScriptParseResult,
+    obj: &ObjectPattern<'_>,
+    source_name: CompactString,
+) {
+    for prop in obj.properties.iter() {
+        let prop_name = match &prop.key {
+            PropertyKey::StaticIdentifier(id) => CompactString::new(id.name.as_str()),
+            PropertyKey::StringLiteral(s) => CompactString::new(s.value.as_str()),
+            _ => {
+                let Some(local_name) = get_binding_pattern_name(&prop.value) else {
+                    continue;
+                };
+                CompactString::new(&local_name)
+            }
+        };
+
+        let Some(local_name) = get_binding_pattern_name(&prop.value) else {
+            continue;
+        };
+
+        result.reactive_value_origins.insert(
+            CompactString::new(&local_name),
+            ReactiveValueOrigin::ReactiveProperty {
+                source_name: source_name.clone(),
+                prop_name,
+            },
+        );
+    }
+
+    if let Some(rest) = &obj.rest {
+        if let Some(local_name) = get_binding_pattern_name(&rest.argument) {
+            result.reactive_value_origins.insert(
+                CompactString::new(&local_name),
+                ReactiveValueOrigin::ReactiveProperty {
+                    source_name,
+                    prop_name: CompactString::new("(rest)"),
+                },
+            );
+        }
+    }
 }

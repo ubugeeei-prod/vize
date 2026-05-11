@@ -735,6 +735,30 @@ fn prop_reactivity_loss(analysis: &crate::Croquis, prop_name: &str) -> Option<Pr
                     reason: ReactivityLossReason::DirectExtraction,
                 });
             }
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                ..
+            } if reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
+                || reactivity_loss_source_matches_prop(argument_name.as_str(), prop_name) =>
+            {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::DirectExtraction,
+                });
+            }
+            ReactivityLossKind::GetterCallExtract {
+                source_name,
+                getter_name,
+                ..
+            } if reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
+                || prop_names_match(getter_name.as_str(), prop_name) =>
+            {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::DirectExtraction,
+                });
+            }
             _ => {}
         }
     }
@@ -764,6 +788,18 @@ fn prop_list_contains(props: &[CompactString], prop_name: &str) -> bool {
     props
         .iter()
         .any(|prop| prop.as_str() == "(rest)" || prop_names_match(prop.as_str(), prop_name))
+}
+
+fn reactivity_loss_source_matches_prop(source_name: &str, prop_name: &str) -> bool {
+    if prop_names_match(source_name, prop_name) {
+        return true;
+    }
+
+    let Some(rest) = source_name.strip_prefix("props.") else {
+        return false;
+    };
+    let first_segment = rest.split(['.', '[', '?', '!']).next().unwrap_or(rest);
+    prop_names_match(first_segment, prop_name)
 }
 
 fn component_usage_targets_child(

@@ -125,6 +125,22 @@ pub enum ReactivityLossKind {
     PropsDestructure {
         destructured_props: Vec<CompactString>,
     },
+    /// Passing a plain reactive snapshot through a function boundary:
+    /// `useComposable(count)` where `count` came from props destructure.
+    FunctionArgumentExtract {
+        source_name: CompactString,
+        argument_name: CompactString,
+        callee_name: CompactString,
+    },
+    /// Extracting the return value of a getter-backed context method:
+    /// `const x = ctx.count()` after `ctx` was created with `() => count`.
+    GetterCallExtract {
+        context_name: CompactString,
+        getter_name: CompactString,
+        target_name: CompactString,
+        callee_name: CompactString,
+        source_name: CompactString,
+    },
     /// Spreading reactive object: `{ ...state }`
     ReactiveSpread { source_name: CompactString },
     /// Reassigning reactive variable: `let state = reactive({}); state = {}`
@@ -316,6 +332,26 @@ impl ReactivityTracker {
     ) {
         self.losses.push(ReactivityLoss {
             kind: ReactivityLossKind::PropsDestructure { destructured_props },
+            start,
+            end,
+        });
+    }
+
+    /// Record passing a reactive snapshot to a call argument.
+    pub fn record_function_argument_extract(
+        &mut self,
+        source_name: CompactString,
+        argument_name: CompactString,
+        callee_name: CompactString,
+        start: u32,
+        end: u32,
+    ) {
+        self.losses.push(ReactivityLoss {
+            kind: ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            },
             start,
             end,
         });

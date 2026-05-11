@@ -37,6 +37,37 @@ use vize_carton::{profile, CompactString, FxHashMap, FxHashSet};
 
 pub use process::process_statement;
 
+/// Origin of a local binding that already carries a plain, non-reactive value.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum ReactiveValueOrigin {
+    PropsDestructure {
+        prop_name: CompactString,
+    },
+    ReactiveProperty {
+        source_name: CompactString,
+        prop_name: CompactString,
+    },
+    RefValue {
+        source_name: CompactString,
+    },
+    FunctionArgument {
+        source_name: CompactString,
+        callee_name: CompactString,
+    },
+    GetterCall {
+        context_name: CompactString,
+        getter_name: CompactString,
+        source_name: CompactString,
+    },
+}
+
+/// A returned context whose methods are backed by getter arguments.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct ReactiveGetterContext {
+    pub callee_name: CompactString,
+    pub getters: FxHashMap<CompactString, CompactString>,
+}
+
 /// Result of parsing a script setup block
 #[derive(Debug, Default)]
 pub struct ScriptParseResult {
@@ -59,6 +90,10 @@ pub struct ScriptParseResult {
     /// Track aliases for reactivity APIs (e.g., const r = ref; r(0))
     /// Maps alias name to the original function name
     pub(crate) reactivity_aliases: FxHashMap<CompactString, CompactString>,
+    /// Bindings that are known plain snapshots of reactive values.
+    pub(crate) reactive_value_origins: FxHashMap<CompactString, ReactiveValueOrigin>,
+    /// Call results that were constructed from getter arguments.
+    pub(crate) reactive_getter_contexts: FxHashMap<CompactString, ReactiveGetterContext>,
     /// Setup context violation tracking
     pub setup_context: SetupContextTracker,
     /// Flag to track if we're in a non-setup script context
@@ -697,6 +732,105 @@ const copy = { ...state }
         }
 
         assert_snapshot!(output);
+    }
+
+    #[test]
+    fn test_props_snapshot_crossing_call_and_getter_context() {
+        use crate::reactivity::ReactivityLossKind;
+
+        let result = parse_script_setup(
+            r#"
+const { count } = defineProps<{ count: number }>()
+
+const ctx = useMyComposable(count)
+
+const ctx2 = useMyComposable(() => count)
+const a = ctx2.count()
+"#,
+        );
+
+        assert!(result.reactivity.losses().iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "count"
+                && argument_name == "count"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(result.reactivity.losses().iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::GetterCallExtract {
+                context_name,
+                getter_name,
+                target_name,
+                callee_name,
+                source_name,
+            } if context_name == "ctx2"
+                && getter_name == "count"
+                && target_name == "a"
+                && callee_name == "useMyComposable"
+                && source_name == "count"
+        )));
+    }
+
+    #[test]
+    fn test_plain_reactive_values_inside_call_arguments() {
+        use crate::reactivity::ReactivityLossKind;
+
+        let result = parse_script_setup(
+            r#"
+const props = defineProps<{ count: number }>()
+const { count: localCount } = props
+const countRef = ref(0)
+
+useMyComposable({ count: localCount })
+useMyComposable(props.count)
+useMyComposable(countRef.value)
+watch(() => localCount, () => {})
+"#,
+        );
+
+        let losses = result.reactivity.losses();
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "props.count"
+                && argument_name == "localCount"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "props.count"
+                && argument_name == "props.count"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "countRef.value"
+                && argument_name == "countRef.value"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(!losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                argument_name,
+                callee_name,
+                ..
+            } if argument_name == "localCount" && callee_name == "watch"
+        )));
     }
 
     #[test]

@@ -12,10 +12,10 @@ use crate::provide::ProvideKey;
 use crate::race::RaceConditionRiskKind;
 use crate::reactivity::ReactiveKind;
 use crate::setup_context::SetupContextViolationKind;
-use vize_carton::{CompactString, FxHashMap, FxHashSet, String};
+use vize_carton::{cstr, CompactString, FxHashMap, FxHashSet, String};
 use vize_relief::BindingType;
 
-use super::ScriptParseResult;
+use super::{ReactiveGetterContext, ReactiveValueOrigin, ScriptParseResult};
 
 /// Extract a CallExpression from an expression, unwrapping type assertions (as/satisfies)
 pub fn extract_call_expression<'a>(expr: &'a Expression<'a>) -> Option<&'a CallExpression<'a>> {
@@ -1139,6 +1139,519 @@ fn is_mutating_method(name: &str) -> bool {
     )
 }
 
+struct ReactivePlainValue {
+    source_name: CompactString,
+    argument_name: CompactString,
+    getter_name: CompactString,
+    start: u32,
+    end: u32,
+}
+
+/// Record reactivity loss when a plain reactive snapshot crosses a call boundary.
+#[inline]
+pub fn detect_call_argument_reactivity_loss(
+    result: &mut ScriptParseResult,
+    call: &CallExpression<'_>,
+    source: &str,
+) {
+    let callee_name = call_label(result, call, source);
+
+    for arg in call.arguments.iter() {
+        match arg {
+            Argument::SpreadElement(spread) => {
+                record_reactive_plain_values_in_call_arg(
+                    result,
+                    &spread.argument,
+                    &callee_name,
+                    source,
+                );
+            }
+            _ => {
+                if let Some(expr) = arg.as_expression() {
+                    if getter_source_from_function(result, expr, source).is_some() {
+                        continue;
+                    }
+                    record_reactive_plain_values_in_call_arg(result, expr, &callee_name, source);
+                }
+            }
+        }
+    }
+}
+
+/// Track call results whose arguments are getters of reactive snapshots.
+#[inline]
+pub fn record_getter_context_from_call(
+    result: &mut ScriptParseResult,
+    target_name: &str,
+    call: &CallExpression<'_>,
+    source: &str,
+) {
+    let mut getters = FxHashMap::default();
+
+    for arg in call.arguments.iter() {
+        let Some(expr) = arg.as_expression() else {
+            continue;
+        };
+        let Some(value) = getter_source_from_function(result, expr, source) else {
+            continue;
+        };
+        getters.insert(value.getter_name, value.source_name);
+    }
+
+    if getters.is_empty() {
+        return;
+    }
+
+    result.reactive_getter_contexts.insert(
+        CompactString::new(target_name),
+        ReactiveGetterContext {
+            callee_name: call_label(result, call, source),
+            getters,
+        },
+    );
+}
+
+/// Check `const x = ctx.count()` where `ctx` was produced from getter arguments.
+#[inline]
+pub fn check_getter_call_extraction(
+    result: &mut ScriptParseResult,
+    id: &oxc_ast::ast::BindingPattern<'_>,
+    init: &Expression<'_>,
+) {
+    let target_name = match id {
+        oxc_ast::ast::BindingPattern::BindingIdentifier(id) => id.name.as_str(),
+        _ => return,
+    };
+
+    let Some((context_name, getter_name, source_name, callee_name)) =
+        getter_call_source(result, init)
+    else {
+        return;
+    };
+
+    use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
+    result.reactivity.add_loss(ReactivityLoss {
+        kind: ReactivityLossKind::GetterCallExtract {
+            context_name: context_name.clone(),
+            getter_name: getter_name.clone(),
+            target_name: CompactString::new(target_name),
+            callee_name,
+            source_name: source_name.clone(),
+        },
+        start: init.span().start,
+        end: init.span().end,
+    });
+    result.reactive_value_origins.insert(
+        CompactString::new(target_name),
+        ReactiveValueOrigin::GetterCall {
+            context_name,
+            getter_name,
+            source_name,
+        },
+    );
+}
+
+fn record_reactive_plain_values_in_call_arg(
+    result: &mut ScriptParseResult,
+    expr: &Expression<'_>,
+    callee_name: &CompactString,
+    source: &str,
+) {
+    if let Some(value) = reactive_plain_value_from_expr(result, expr, source) {
+        result.reactivity.record_function_argument_extract(
+            value.source_name.clone(),
+            value.argument_name.clone(),
+            callee_name.clone(),
+            value.start,
+            value.end,
+        );
+        result.reactive_value_origins.insert(
+            value.argument_name,
+            ReactiveValueOrigin::FunctionArgument {
+                source_name: value.source_name,
+                callee_name: callee_name.clone(),
+            },
+        );
+        return;
+    }
+
+    match expr {
+        Expression::ArrayExpression(arr) => {
+            for elem in arr.elements.iter() {
+                match elem {
+                    oxc_ast::ast::ArrayExpressionElement::SpreadElement(spread) => {
+                        record_reactive_plain_values_in_call_arg(
+                            result,
+                            &spread.argument,
+                            callee_name,
+                            source,
+                        );
+                    }
+                    oxc_ast::ast::ArrayExpressionElement::Elision(_) => {}
+                    _ => {
+                        if let Some(expr) = elem.as_expression() {
+                            record_reactive_plain_values_in_call_arg(
+                                result,
+                                expr,
+                                callee_name,
+                                source,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        Expression::ObjectExpression(obj) => {
+            for prop in obj.properties.iter() {
+                match prop {
+                    ObjectPropertyKind::ObjectProperty(prop) => {
+                        record_reactive_plain_values_in_call_arg(
+                            result,
+                            &prop.value,
+                            callee_name,
+                            source,
+                        );
+                    }
+                    ObjectPropertyKind::SpreadProperty(spread) => {
+                        record_reactive_plain_values_in_call_arg(
+                            result,
+                            &spread.argument,
+                            callee_name,
+                            source,
+                        );
+                    }
+                }
+            }
+        }
+        Expression::ConditionalExpression(cond) => {
+            record_reactive_plain_values_in_call_arg(result, &cond.test, callee_name, source);
+            record_reactive_plain_values_in_call_arg(result, &cond.consequent, callee_name, source);
+            record_reactive_plain_values_in_call_arg(result, &cond.alternate, callee_name, source);
+        }
+        Expression::LogicalExpression(logical) => {
+            record_reactive_plain_values_in_call_arg(result, &logical.left, callee_name, source);
+            record_reactive_plain_values_in_call_arg(result, &logical.right, callee_name, source);
+        }
+        Expression::SequenceExpression(seq) => {
+            for expr in seq.expressions.iter() {
+                record_reactive_plain_values_in_call_arg(result, expr, callee_name, source);
+            }
+        }
+        Expression::ParenthesizedExpression(paren) => {
+            record_reactive_plain_values_in_call_arg(
+                result,
+                &paren.expression,
+                callee_name,
+                source,
+            );
+        }
+        Expression::TSAsExpression(ts_as) => {
+            record_reactive_plain_values_in_call_arg(
+                result,
+                &ts_as.expression,
+                callee_name,
+                source,
+            );
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            record_reactive_plain_values_in_call_arg(
+                result,
+                &ts_satisfies.expression,
+                callee_name,
+                source,
+            );
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            record_reactive_plain_values_in_call_arg(
+                result,
+                &ts_non_null.expression,
+                callee_name,
+                source,
+            );
+        }
+        _ => {}
+    }
+}
+
+fn getter_source_from_function(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+    source: &str,
+) -> Option<ReactivePlainValue> {
+    let returned = match expr {
+        Expression::ArrowFunctionExpression(arrow) => {
+            if !arrow.params.items.is_empty() {
+                return None;
+            }
+            arrow_return_expression(arrow)?
+        }
+        Expression::FunctionExpression(func) => {
+            if !func.params.items.is_empty() {
+                return None;
+            }
+            function_return_expression(func)?
+        }
+        Expression::ParenthesizedExpression(paren) => {
+            return getter_source_from_function(result, &paren.expression, source);
+        }
+        Expression::TSAsExpression(ts_as) => {
+            return getter_source_from_function(result, &ts_as.expression, source);
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            return getter_source_from_function(result, &ts_satisfies.expression, source);
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            return getter_source_from_function(result, &ts_non_null.expression, source);
+        }
+        _ => return None,
+    };
+
+    reactive_plain_value_from_expr(result, returned, source)
+}
+
+fn arrow_return_expression<'a>(
+    arrow: &'a oxc_ast::ast::ArrowFunctionExpression<'a>,
+) -> Option<&'a Expression<'a>> {
+    if !arrow.expression {
+        return function_body_return_expression(&arrow.body.statements);
+    }
+
+    let Statement::ExpressionStatement(expr_stmt) = arrow.body.statements.first()? else {
+        return None;
+    };
+    Some(&expr_stmt.expression)
+}
+
+fn function_return_expression<'a>(
+    func: &'a oxc_ast::ast::Function<'a>,
+) -> Option<&'a Expression<'a>> {
+    function_body_return_expression(&func.body.as_ref()?.statements)
+}
+
+fn function_body_return_expression<'a>(
+    statements: &'a oxc_allocator::Vec<'a, Statement<'a>>,
+) -> Option<&'a Expression<'a>> {
+    for stmt in statements.iter() {
+        if let Statement::ReturnStatement(ret) = stmt {
+            if let Some(argument) = &ret.argument {
+                return Some(argument);
+            }
+        }
+    }
+    None
+}
+
+fn reactive_plain_value_from_expr(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+    source: &str,
+) -> Option<ReactivePlainValue> {
+    match expr {
+        Expression::Identifier(id) => {
+            let binding_name = id.name.as_str();
+            let origin = result.reactive_value_origins.get(binding_name)?;
+            let (source_name, getter_name) = plain_origin_labels(origin, binding_name);
+            Some(ReactivePlainValue {
+                source_name,
+                argument_name: CompactString::new(binding_name),
+                getter_name,
+                start: id.span.start,
+                end: id.span.end,
+            })
+        }
+        Expression::StaticMemberExpression(member) => {
+            if member.property.name.as_str() == "value" {
+                if let Some(root) = member_chain_root_identifier(&member.object) {
+                    if result.reactivity.needs_value_access(root.as_str()) {
+                        return Some(ReactivePlainValue {
+                            source_name: expression_label(source, member.span),
+                            argument_name: expression_label(source, member.span),
+                            getter_name: root,
+                            start: member.span.start,
+                            end: member.span.end,
+                        });
+                    }
+                }
+            }
+
+            let (root, prop_name) = extract_member_chain_root(expr)?;
+            if result
+                .reactivity
+                .lookup(root.as_str())
+                .is_some_and(|source| !source.kind.needs_value_access())
+            {
+                return Some(ReactivePlainValue {
+                    source_name: expression_label(source, member.span),
+                    argument_name: expression_label(source, member.span),
+                    getter_name: prop_name,
+                    start: member.span.start,
+                    end: member.span.end,
+                });
+            }
+
+            let root_origin = result.reactive_value_origins.get(root.as_str())?;
+            let (source_name, _) = plain_origin_labels(root_origin, root.as_str());
+            Some(ReactivePlainValue {
+                source_name,
+                argument_name: expression_label(source, member.span),
+                getter_name: prop_name,
+                start: member.span.start,
+                end: member.span.end,
+            })
+        }
+        Expression::ComputedMemberExpression(member) => {
+            let root = member_chain_root_identifier(&member.object)?;
+            if result
+                .reactivity
+                .lookup(root.as_str())
+                .is_some_and(|source| !source.kind.needs_value_access())
+            {
+                return Some(ReactivePlainValue {
+                    source_name: expression_label(source, member.span),
+                    argument_name: expression_label(source, member.span),
+                    getter_name: expression_label(source, member.span),
+                    start: member.span.start,
+                    end: member.span.end,
+                });
+            }
+            None
+        }
+        Expression::CallExpression(_) => getter_call_plain_value(result, expr, source),
+        Expression::ChainExpression(chain) => match &chain.expression {
+            oxc_ast::ast::ChainElement::CallExpression(_) => {
+                getter_call_plain_value(result, expr, source)
+            }
+            oxc_ast::ast::ChainElement::StaticMemberExpression(member) => {
+                reactive_plain_value_from_expr(result, &member.object, source)
+            }
+            oxc_ast::ast::ChainElement::ComputedMemberExpression(member) => {
+                reactive_plain_value_from_expr(result, &member.object, source)
+            }
+            oxc_ast::ast::ChainElement::TSNonNullExpression(expr) => {
+                reactive_plain_value_from_expr(result, &expr.expression, source)
+            }
+            oxc_ast::ast::ChainElement::PrivateFieldExpression(field) => {
+                reactive_plain_value_from_expr(result, &field.object, source)
+            }
+        },
+        Expression::ParenthesizedExpression(paren) => {
+            reactive_plain_value_from_expr(result, &paren.expression, source)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            reactive_plain_value_from_expr(result, &ts_as.expression, source)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            reactive_plain_value_from_expr(result, &ts_satisfies.expression, source)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            reactive_plain_value_from_expr(result, &ts_non_null.expression, source)
+        }
+        _ => None,
+    }
+}
+
+fn getter_call_plain_value(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+    source: &str,
+) -> Option<ReactivePlainValue> {
+    let (context_name, getter_name, source_name, _) = getter_call_source(result, expr)?;
+    Some(ReactivePlainValue {
+        source_name,
+        argument_name: expression_label(source, expr.span()),
+        getter_name,
+        start: expr.span().start,
+        end: expr.span().end,
+    })
+    .filter(|_| !context_name.is_empty())
+}
+
+fn getter_call_source(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+) -> Option<(CompactString, CompactString, CompactString, CompactString)> {
+    match expr {
+        Expression::CallExpression(call) => getter_call_source_from_call(result, call),
+        Expression::ParenthesizedExpression(paren) => getter_call_source(result, &paren.expression),
+        Expression::TSAsExpression(ts_as) => getter_call_source(result, &ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            getter_call_source(result, &ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            getter_call_source(result, &ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
+fn getter_call_source_from_call(
+    result: &ScriptParseResult,
+    call: &CallExpression<'_>,
+) -> Option<(CompactString, CompactString, CompactString, CompactString)> {
+    let Expression::StaticMemberExpression(member) = &call.callee else {
+        return None;
+    };
+    let Expression::Identifier(context) = &member.object else {
+        return None;
+    };
+
+    let context_name = CompactString::new(context.name.as_str());
+    let getter_name = CompactString::new(member.property.name.as_str());
+    let context = result.reactive_getter_contexts.get(context_name.as_str())?;
+    let source_name = context.getters.get(getter_name.as_str())?.clone();
+
+    Some((
+        context_name,
+        getter_name,
+        source_name,
+        context.callee_name.clone(),
+    ))
+}
+
+fn plain_origin_labels(
+    origin: &ReactiveValueOrigin,
+    binding_name: &str,
+) -> (CompactString, CompactString) {
+    match origin {
+        ReactiveValueOrigin::PropsDestructure { prop_name } => {
+            (prop_name.clone(), prop_name.clone())
+        }
+        ReactiveValueOrigin::ReactiveProperty {
+            source_name,
+            prop_name,
+        } => (cstr!("{source_name}.{prop_name}"), prop_name.clone()),
+        ReactiveValueOrigin::RefValue { source_name } => {
+            (cstr!("{source_name}.value"), source_name.clone())
+        }
+        ReactiveValueOrigin::FunctionArgument {
+            source_name,
+            callee_name: _callee_name,
+        } => (source_name.clone(), CompactString::new(binding_name)),
+        ReactiveValueOrigin::GetterCall {
+            context_name: _context_name,
+            getter_name,
+            source_name,
+        } => (source_name.clone(), getter_name.clone()),
+    }
+}
+
+fn call_label(
+    result: &ScriptParseResult,
+    call: &CallExpression<'_>,
+    source: &str,
+) -> CompactString {
+    resolved_call_name(result, call).unwrap_or_else(|| expression_label(source, call.callee.span()))
+}
+
+fn expression_label(source: &str, span: Span) -> CompactString {
+    source
+        .get(span.start as usize..span.end as usize)
+        .map(str::trim)
+        .filter(|label| !label.is_empty())
+        .map(CompactString::new)
+        .unwrap_or_else(|| CompactString::new("<expression>"))
+}
+
 /// Check for ref.value extraction to a plain variable (loses reactivity)
 /// e.g., `const x = someRef.value` or `const primitiveValue = countRef.value`
 #[inline]
@@ -1162,12 +1675,18 @@ pub fn check_ref_value_extraction(
                     use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
                     result.reactivity.add_loss(ReactivityLoss {
                         kind: ReactivityLossKind::RefValueExtract {
-                            source_name: ref_name,
+                            source_name: ref_name.clone(),
                             target_name: CompactString::new(target_name),
                         },
                         start: member.span.start,
                         end: member.span.end,
                     });
+                    result.reactive_value_origins.insert(
+                        CompactString::new(target_name),
+                        ReactiveValueOrigin::RefValue {
+                            source_name: ref_name,
+                        },
+                    );
                 }
             }
         }
@@ -1191,12 +1710,27 @@ pub fn check_reactive_property_extraction(
         return;
     };
 
+    let is_reactive_property = result
+        .reactivity
+        .lookup(source_name.as_str())
+        .is_some_and(|source| !source.kind.needs_value_access());
+    if !is_reactive_property {
+        return;
+    }
+
     result.reactivity.record_property_extract(
-        source_name,
-        prop_name,
+        source_name.clone(),
+        prop_name.clone(),
         CompactString::new(target_name),
         init.span().start,
         init.span().end,
+    );
+    result.reactive_value_origins.insert(
+        CompactString::new(target_name),
+        ReactiveValueOrigin::ReactiveProperty {
+            source_name,
+            prop_name,
+        },
     );
 }
 

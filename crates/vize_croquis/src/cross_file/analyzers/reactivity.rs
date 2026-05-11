@@ -44,6 +44,20 @@ pub enum ReactivityIssueKind {
         source_name: CompactString,
         target_name: CompactString,
     },
+    /// Plain reactive snapshot passed through a function boundary.
+    ReactiveSnapshotPassedToCall {
+        source_name: CompactString,
+        argument_name: CompactString,
+        callee_name: CompactString,
+    },
+    /// Getter-backed context method extracted to a plain binding.
+    GetterCallToPlain {
+        context_name: CompactString,
+        getter_name: CompactString,
+        target_name: CompactString,
+        callee_name: CompactString,
+        source_name: CompactString,
+    },
     /// storeToRefs should be used for Pinia store.
     ShouldUseStoreToRefs { store_name: CompactString },
     /// Computed without return statement.
@@ -277,6 +291,42 @@ fn analyze_component_reactivity(analysis: &crate::Croquis) -> Vec<InternalIssue>
                     offset: loss.start,
                     end_offset: Some(loss.end),
                     source: Some(CompactString::new("props")),
+                });
+            }
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } => {
+                issues.push(InternalIssue {
+                    kind: ReactivityIssueKind::ReactiveSnapshotPassedToCall {
+                        source_name: source_name.clone(),
+                        argument_name: argument_name.clone(),
+                        callee_name: callee_name.clone(),
+                    },
+                    offset: loss.start,
+                    end_offset: Some(loss.end),
+                    source: Some(source_name.clone()),
+                });
+            }
+            ReactivityLossKind::GetterCallExtract {
+                context_name,
+                getter_name,
+                target_name,
+                callee_name,
+                source_name,
+            } => {
+                issues.push(InternalIssue {
+                    kind: ReactivityIssueKind::GetterCallToPlain {
+                        context_name: context_name.clone(),
+                        getter_name: getter_name.clone(),
+                        target_name: target_name.clone(),
+                        callee_name: callee_name.clone(),
+                        source_name: source_name.clone(),
+                    },
+                    offset: loss.start,
+                    end_offset: Some(loss.end),
+                    source: Some(source_name.clone()),
                 });
             }
             ReactivityLossKind::ReactiveSpread { source_name } => {
@@ -547,6 +597,66 @@ fn create_diagnostic(file_id: FileId, issue: &InternalIssue) -> CrossFileDiagnos
                 ),
             )
             .with_suggestion("Use computed() or keep the reactive reference");
+            if let Some(end) = issue.end_offset {
+                diag = diag.with_end_offset(end);
+            }
+            diag
+        }
+
+        ReactivityIssueKind::ReactiveSnapshotPassedToCall {
+            source_name,
+            argument_name,
+            callee_name,
+        } => {
+            let mut diag = CrossFileDiagnostic::new(
+                CrossFileDiagnosticKind::ValueExtractionBreaksReactivity {
+                    source_name: source_name.clone(),
+                    extracted_value: argument_name.clone(),
+                },
+                DiagnosticSeverity::Error,
+                file_id,
+                issue.offset,
+                cstr!(
+                    "Passing '{}' to '{}' captures a non-reactive snapshot",
+                    argument_name,
+                    callee_name
+                ),
+            )
+            .with_suggestion(cstr!(
+                "Pass a getter like () => {argument_name}, or pass a ref/computed value explicitly"
+            ));
+            if let Some(end) = issue.end_offset {
+                diag = diag.with_end_offset(end);
+            }
+            diag
+        }
+
+        ReactivityIssueKind::GetterCallToPlain {
+            context_name,
+            getter_name,
+            target_name,
+            callee_name,
+            source_name,
+        } => {
+            let mut diag = CrossFileDiagnostic::new(
+                CrossFileDiagnosticKind::ValueExtractionBreaksReactivity {
+                    source_name: cstr!("{context_name}.{getter_name}()"),
+                    extracted_value: target_name.clone(),
+                },
+                DiagnosticSeverity::Error,
+                file_id,
+                issue.offset,
+                cstr!(
+                    "Assigning '{}.{}()' to '{}' extracts the getter-backed value from '{}'",
+                    context_name,
+                    getter_name,
+                    target_name,
+                    source_name
+                ),
+            )
+            .with_suggestion(cstr!(
+                "Keep the getter from {callee_name} lazy, or wrap {target_name} with computed()"
+            ));
             if let Some(end) = issue.end_offset {
                 diag = diag.with_end_offset(end);
             }

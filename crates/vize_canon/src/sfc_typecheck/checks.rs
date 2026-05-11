@@ -223,6 +223,21 @@ pub fn check_reactivity(
                 "Destructuring props loses reactivity for: {}",
                 destructured_props.join(", ")
             ),
+            ReactivityLossKind::FunctionArgumentExtract {
+                argument_name,
+                callee_name,
+                ..
+            } => cstr!(
+                "Passing '{argument_name}' to '{callee_name}' captures a non-reactive snapshot"
+            ),
+            ReactivityLossKind::GetterCallExtract {
+                context_name,
+                getter_name,
+                target_name,
+                ..
+            } => cstr!(
+                "Assigning '{context_name}.{getter_name}()' to '{target_name}' extracts a non-reactive snapshot"
+            ),
             ReactivityLossKind::ReactiveSpread { source_name } => {
                 cstr!("Spreading reactive object '{source_name}' loses reactivity")
             }

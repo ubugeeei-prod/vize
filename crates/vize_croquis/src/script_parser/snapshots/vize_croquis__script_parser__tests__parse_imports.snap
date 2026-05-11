@@ -1279,6 +1279,8 @@ ScriptParseResult {
     inject_aliases: {},
     provide_aliases: {},
     reactivity_aliases: {},
+    reactive_value_origins: {},
+    reactive_getter_contexts: {},
     setup_context: SetupContextTracker {
         violations: [],
     },
