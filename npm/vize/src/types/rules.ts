@@ -47,6 +47,7 @@ export const LINT_RULE_NAMES = [
   "ssr/no-browser-globals-in-ssr",
   "ssr/no-hydration-mismatch",
   "type/no-floating-promises",
+  "type/no-reactivity-loss",
   "type/no-unsafe-template-binding",
   "type/require-typed-emits",
   "type/require-typed-props",
