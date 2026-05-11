@@ -700,6 +700,56 @@ const ready = true
     }
 
     #[test]
+    fn cross_file_opt_in_reports_reactive_prop_destructure() {
+        let dir = tempfile::tempdir().unwrap();
+        let parent = dir.path().join("Parent.vue");
+        let child = dir.path().join("Child.vue");
+
+        fs::write(
+            &parent,
+            r#"<script setup lang="ts">
+import { reactive } from 'vue'
+import Child from './Child.vue'
+
+const state = reactive({ count: 0 })
+</script>
+
+<template>
+  <Child :item="state" />
+</template>
+"#,
+        )
+        .unwrap();
+        fs::write(
+            &child,
+            r#"<script setup lang="ts">
+const props = defineProps<{ item: { count: number } }>()
+const { item } = props
+</script>
+"#,
+        )
+        .unwrap();
+
+        let files = [&parent, &child]
+            .into_iter()
+            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+            .collect::<Vec<_>>();
+        let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
+
+        let child_result = output
+            .results
+            .iter()
+            .find(|result| result.filename.ends_with("Child.vue"))
+            .expect("child result should exist");
+        assert!(child_result.diagnostics.iter().any(|diagnostic| {
+            diagnostic.severity == vize_patina::Severity::Error
+                && diagnostic
+                    .message
+                    .contains("destructuring-breaks-reactivity")
+        }));
+    }
+
+    #[test]
     fn cross_file_opt_in_reports_loop_element_ids_at_template_offsets() {
         let dir = tempfile::tempdir().unwrap();
         let list = dir.path().join("List.vue");

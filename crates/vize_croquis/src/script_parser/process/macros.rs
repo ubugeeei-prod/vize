@@ -7,7 +7,8 @@
 //! - Object/array destructuring from defineProps and reactive sources
 
 use oxc_ast::ast::{
-    Argument, BindingPattern, CallExpression, Expression, PropertyKey, VariableDeclarationKind,
+    Argument, BindingPattern, CallExpression, Expression, ObjectPattern, PropertyKey,
+    VariableDeclarationKind,
 };
 use oxc_span::GetSpan;
 
@@ -18,9 +19,9 @@ use vize_carton::CompactString;
 use vize_relief::BindingType;
 
 use super::super::extract::{
-    check_ref_value_extraction, detect_reactivity_call, detect_setup_context_violation,
-    extract_argument_source, extract_call_expression, extract_provide_key,
-    get_binding_type_from_kind, process_call_expression,
+    check_reactive_property_extraction, check_ref_value_extraction, detect_reactivity_call,
+    detect_setup_context_violation, extract_argument_source, extract_call_expression,
+    extract_provide_key, get_binding_type_from_kind, process_call_expression,
 };
 use super::super::walk::{walk_call_arguments, walk_expression};
 use super::super::ScriptParseResult;
@@ -66,6 +67,13 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         result
                             .reactivity
                             .register(CompactString::new(name), ReactiveKind::Ref, 0);
+                    }
+                    if matches!(macro_kind, MacroKind::DefineProps | MacroKind::WithDefaults) {
+                        result.reactivity.register(
+                            CompactString::new(name),
+                            ReactiveKind::Readonly,
+                            id.span.start,
+                        );
                     }
                     result.bindings.add(name, binding_type);
                     // Walk into the call's callback arguments to track nested scopes
@@ -137,6 +145,8 @@ pub(in crate::script_parser) fn process_variable_declarator(
 
                     // Check for ref.value extraction: const x = someRef.value
                     check_ref_value_extraction(result, &declarator.id, init);
+                    // Check for reactive object property extraction: const x = props.x
+                    check_reactive_property_extraction(result, &declarator.id, init);
 
                     // Check for Vue API aliases: const a = inject, const r = ref, etc.
                     if let Expression::Identifier(id) = init {
@@ -286,12 +296,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
             // If inject(), track it with ObjectDestructure pattern
             if let Some(call) = inject_call {
                 // Extract destructured property names
-                let mut destructured_props: Vec<CompactString> = Vec::new();
-                for prop in obj.properties.iter() {
-                    if let Some(name) = get_binding_pattern_name(&prop.value) {
-                        destructured_props.push(CompactString::new(&name));
-                    }
-                }
+                let destructured_props = collect_object_pattern_keys(obj);
 
                 // Extract inject key
                 if let Some(key) = call
@@ -333,12 +338,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 }
             } else if let Some((inject_var, offset)) = indirect_inject_var {
                 // Indirect destructuring: const { count } = injectVar
-                let mut destructured_props: Vec<CompactString> = Vec::new();
-                for prop in obj.properties.iter() {
-                    if let Some(name) = get_binding_pattern_name(&prop.value) {
-                        destructured_props.push(CompactString::new(&name));
-                    }
-                }
+                let destructured_props = collect_object_pattern_keys(obj);
 
                 // Find the original inject entry and update it with indirect destructure info
                 // We need to record this as a new pattern variant
@@ -349,23 +349,13 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 );
             } else if let Some((source_name, start, end)) = reactive_destructure_var {
                 // Destructuring reactive variable: const { count } = state
-                let mut destructured_props: Vec<CompactString> = Vec::new();
-                for prop in obj.properties.iter() {
-                    if let Some(name) = get_binding_pattern_name(&prop.value) {
-                        destructured_props.push(CompactString::new(&name));
-                    }
-                }
+                let destructured_props = collect_object_pattern_keys(obj);
                 result
                     .reactivity
                     .record_destructure(source_name, destructured_props, start, end);
             } else if let Some((fn_name, start, end)) = direct_reactive_call {
                 // Direct destructuring: const { count } = reactive({ count: 0 })
-                let mut destructured_props: Vec<CompactString> = Vec::new();
-                for prop in obj.properties.iter() {
-                    if let Some(name) = get_binding_pattern_name(&prop.value) {
-                        destructured_props.push(CompactString::new(&name));
-                    }
-                }
+                let destructured_props = collect_object_pattern_keys(obj);
                 use crate::reactivity::{ReactivityLoss, ReactivityLossKind};
                 result.reactivity.add_loss(ReactivityLoss {
                     kind: ReactivityLossKind::ReactiveDestructure {
@@ -390,6 +380,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
             } else {
                 None
             };
+            let mut define_props_destructured_props = Vec::new();
 
             // Handle object destructuring
             for prop in obj.properties.iter() {
@@ -432,6 +423,13 @@ pub(in crate::script_parser) fn process_variable_declarator(
 
                         destructure.insert(key, CompactString::new(&local_name), default_value);
                     }
+
+                    if is_define_props {
+                        let key = key_name
+                            .map(CompactString::new)
+                            .unwrap_or_else(|| CompactString::new(&local_name));
+                        define_props_destructured_props.push(key);
+                    }
                 }
             }
 
@@ -449,6 +447,10 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     if let Some(ref mut destructure) = props_destructure {
                         destructure.rest_id = Some(CompactString::new(&name));
                     }
+
+                    if is_define_props {
+                        define_props_destructured_props.push(CompactString::new("(rest)"));
+                    }
                 }
             }
 
@@ -457,6 +459,15 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 if !destructure.is_empty() {
                     result.macros.set_props_destructure(destructure);
                 }
+            }
+
+            if is_define_props && !define_props_destructured_props.is_empty() {
+                let span = declarator.id.span();
+                result.reactivity.record_props_destructure(
+                    define_props_destructured_props,
+                    span.start,
+                    span.end,
+                );
             }
         }
 
@@ -616,4 +627,28 @@ fn is_torefs_call(call: &CallExpression<'_>, result: &ScriptParseResult) -> bool
             .reactivity_aliases
             .get(callee_name)
             .is_some_and(|api_name| api_name.as_str() == "toRefs")
+}
+
+fn collect_object_pattern_keys(obj: &ObjectPattern<'_>) -> Vec<CompactString> {
+    let mut keys = Vec::new();
+
+    for prop in obj.properties.iter() {
+        let key_name = match &prop.key {
+            PropertyKey::StaticIdentifier(id) => Some(id.name.as_str()),
+            PropertyKey::StringLiteral(s) => Some(s.value.as_str()),
+            _ => None,
+        };
+
+        if let Some(key_name) = key_name {
+            keys.push(CompactString::new(key_name));
+        } else if let Some(name) = get_binding_pattern_name(&prop.value) {
+            keys.push(CompactString::new(&name));
+        }
+    }
+
+    if obj.rest.is_some() {
+        keys.push(CompactString::new("(rest)"));
+    }
+
+    keys
 }

@@ -584,6 +584,54 @@ pub fn check_ref_value_extraction(
     }
 }
 
+/// Check for reactive property extraction to a plain variable.
+/// e.g., `const x = state.x` or `const x = props.x`
+#[inline]
+pub fn check_reactive_property_extraction(
+    result: &mut ScriptParseResult,
+    id: &oxc_ast::ast::BindingPattern<'_>,
+    init: &Expression<'_>,
+) {
+    let target_name = match id {
+        oxc_ast::ast::BindingPattern::BindingIdentifier(id) => id.name.as_str(),
+        _ => return,
+    };
+
+    let Some((source_name, prop_name)) = extract_member_chain_root(init) else {
+        return;
+    };
+
+    result.reactivity.record_property_extract(
+        source_name,
+        prop_name,
+        CompactString::new(target_name),
+        init.span().start,
+        init.span().end,
+    );
+}
+
+fn extract_member_chain_root(expr: &Expression<'_>) -> Option<(CompactString, CompactString)> {
+    match expr {
+        Expression::StaticMemberExpression(member) => {
+            if let Some((root, prop_name)) = extract_member_chain_root(&member.object) {
+                Some((root, prop_name))
+            } else {
+                let root = member_chain_root_identifier(&member.object)?;
+                Some((root, CompactString::new(member.property.name.as_str())))
+            }
+        }
+        _ => None,
+    }
+}
+
+fn member_chain_root_identifier(expr: &Expression<'_>) -> Option<CompactString> {
+    match expr {
+        Expression::Identifier(id) => Some(CompactString::new(id.name.as_str())),
+        Expression::StaticMemberExpression(member) => member_chain_root_identifier(&member.object),
+        _ => None,
+    }
+}
+
 /// Extract a provide/inject key from an argument
 pub fn extract_provide_key(arg: &Argument<'_>, source: &str) -> Option<ProvideKey> {
     match arg {

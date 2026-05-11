@@ -212,6 +212,17 @@ pub fn check_reactivity(
                 source_name,
                 target_name,
             } => cstr!("Extracting '{target_name}' from '{source_name}.value' loses reactivity"),
+            ReactivityLossKind::ReactivePropertyExtract {
+                source_name,
+                prop_name,
+                target_name,
+            } => cstr!(
+                "Extracting '{target_name}' from '{source_name}.{prop_name}' loses reactivity"
+            ),
+            ReactivityLossKind::PropsDestructure { destructured_props } => cstr!(
+                "Destructuring props loses reactivity for: {}",
+                destructured_props.join(", ")
+            ),
             ReactivityLossKind::ReactiveSpread { source_name } => {
                 cstr!("Spreading reactive object '{source_name}' loses reactivity")
             }

@@ -18,6 +18,10 @@ mod tests_element_id;
 mod tests_provide_inject;
 
 #[cfg(test)]
+#[path = "tests_reactivity_props.rs"]
+mod tests_reactivity_props;
+
+#[cfg(test)]
 mod tests {
     use super::{CrossFileAnalyzer, CrossFileOptions};
     use crate::analysis::ComponentUsage;
