@@ -10,6 +10,7 @@ use super::types::{
 use crate::cross_file::diagnostics::{CrossFileDiagnostic, DiagnosticSeverity};
 use crate::cross_file::graph::{DependencyEdge, DependencyGraph};
 use crate::cross_file::registry::{FileId, ModuleRegistry};
+use crate::provide::ProvideKey;
 use crate::reactivity::ReactiveKind;
 use vize_carton::{cstr, CompactString, FxHashMap, FxHashSet, SmallVec};
 
@@ -25,8 +26,8 @@ pub struct CrossFileReactivityAnalyzer<'a> {
     pub(super) issues: Vec<CrossFileReactivityIssue>,
     /// Composable definitions (file -> composable name -> return type info).
     pub(super) composables: FxHashMap<FileId, Vec<ComposableInfo>>,
-    /// Provide definitions across all files.
-    pub(super) provides: FxHashMap<CompactString, ProvideDefinition>,
+    /// Provide definitions by component file.
+    pub(super) provides: FxHashMap<FileId, Vec<ProvideDefinition>>,
 }
 
 impl<'a> CrossFileReactivityAnalyzer<'a> {
@@ -174,28 +175,25 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             let analysis = &entry.analysis;
 
             for provide in analysis.provide_inject.provides() {
-                let key_str = match &provide.key {
-                    crate::provide::ProvideKey::String(s) => s.clone(),
-                    crate::provide::ProvideKey::Symbol(s) => {
-                        cstr!("Symbol:{s}")
-                    }
-                };
+                let key_str = provide_key_display(&provide.key);
+                let key_identity = provide_key_identity(&provide.key);
 
                 // Check if the provided value is reactive
                 let reactive_kind = provided_value_reactive_kind(analysis, provide.value.as_str());
                 let is_reactive = reactive_kind.is_some();
 
-                self.provides.insert(
-                    key_str.clone(),
-                    ProvideDefinition {
+                self.provides
+                    .entry(file_id)
+                    .or_default()
+                    .push(ProvideDefinition {
                         file_id,
                         key: key_str,
+                        key_identity,
                         value_name: provide.value.clone(),
                         is_reactive,
                         reactive_kind,
                         offset: provide.start,
-                    },
-                );
+                    });
             }
         }
     }
@@ -291,15 +289,13 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             let analysis = &entry.analysis;
 
             for inject in analysis.provide_inject.injects() {
-                let key_str = match &inject.key {
-                    crate::provide::ProvideKey::String(s) => s.clone(),
-                    crate::provide::ProvideKey::Symbol(s) => {
-                        cstr!("Symbol:{s}")
-                    }
-                };
+                let key_str = provide_key_display(&inject.key);
+                let key_identity = provide_key_identity(&inject.key);
 
                 // Find the provider
-                if let Some(provider) = self.provides.get(&key_str) {
+                if let Some(provider) =
+                    self.find_nearest_provider(consumer_file_id, key_identity.as_str())
+                {
                     // Check if inject result is destructured
                     use crate::provide::InjectPattern;
                     match &inject.pattern {
@@ -352,7 +348,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                         self.issues.push(CrossFileReactivityIssue {
                             file_id: provider.file_id,
                             kind: CrossFileReactivityIssueKind::NonReactiveProvide {
-                                key: key_str.clone(),
+                                key: provider.key.clone(),
                             },
                             offset: provider.offset,
                             related_file: Some(consumer_file_id),
@@ -396,6 +392,52 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                 }
             }
         }
+    }
+
+    fn find_nearest_provider(
+        &self,
+        consumer_file_id: FileId,
+        key_identity: &str,
+    ) -> Option<ProvideDefinition> {
+        let mut visited = FxHashSet::default();
+        let mut queue = vec![consumer_file_id];
+        let mut cursor = 0;
+
+        while cursor < queue.len() {
+            let current = queue[cursor];
+            cursor += 1;
+
+            if visited.contains(&current) {
+                continue;
+            }
+            visited.insert(current);
+
+            if current != consumer_file_id {
+                if let Some(provides) = self.provides.get(&current) {
+                    if let Some(provider) = provides
+                        .iter()
+                        .find(|provider| provider.key_identity.as_str() == key_identity)
+                    {
+                        return Some(provider.clone());
+                    }
+                }
+            }
+
+            let mut parents: Vec<_> = self
+                .graph
+                .dependents(current)
+                .filter(|(parent_id, edge_type)| {
+                    *edge_type == DependencyEdge::ComponentUsage && !visited.contains(parent_id)
+                })
+                .collect();
+            parents.sort_by_key(|(parent_id, _)| parent_id.as_u32());
+
+            for (parent_id, _) in parents {
+                queue.push(parent_id);
+            }
+        }
+
+        None
     }
 
     /// Track props flows between parent and child components.
@@ -625,5 +667,18 @@ fn provided_value_reactive_kind(analysis: &crate::Croquis, value: &str) -> Optio
         "toRef" => Some(ReactiveKind::ToRef),
         "toRefs" => Some(ReactiveKind::ToRefs),
         _ => None,
+    }
+}
+
+fn provide_key_display(key: &ProvideKey) -> CompactString {
+    match key {
+        ProvideKey::String(s) | ProvideKey::Symbol(s) => s.clone(),
+    }
+}
+
+fn provide_key_identity(key: &ProvideKey) -> CompactString {
+    match key {
+        ProvideKey::String(s) => cstr!("string:{s}"),
+        ProvideKey::Symbol(s) => cstr!("symbol:{s}"),
     }
 }

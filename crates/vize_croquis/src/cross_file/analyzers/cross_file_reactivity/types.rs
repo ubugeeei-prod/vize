@@ -208,6 +208,7 @@ pub(super) struct ComposableInfo {
 pub(super) struct ProvideDefinition {
     pub(super) file_id: FileId,
     pub(super) key: CompactString,
+    pub(super) key_identity: CompactString,
     pub(super) value_name: CompactString,
     pub(super) is_reactive: bool,
     pub(super) reactive_kind: Option<ReactiveKind>,

@@ -5,13 +5,24 @@ use glob::glob;
 use ignore::Walk;
 use rayon::prelude::*;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
 use std::time::Duration;
 use std::time::Instant;
-use vize_carton::{cstr, profiler::global_profiler, String, ToCompactString};
-use vize_patina::{format_results, format_summary, HelpLevel, LintPreset, Linter, OutputFormat};
+use vize_armature::Parser;
+use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
+use vize_carton::{
+    cstr, profiler::global_profiler, Allocator, CompactString, FxHashMap, String, ToCompactString,
+};
+use vize_croquis::cross_file::{
+    CrossFileAnalyzer, CrossFileDiagnostic, CrossFileOptions, DiagnosticSeverity, FileId,
+};
+use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
+use vize_patina::{
+    format_results, format_summary, HelpLevel, LintDiagnostic, LintPreset, LintResult, Linter,
+    OutputFormat,
+};
 
 use crate::commands::profile::{
     print_profile_report, ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport,
@@ -51,6 +62,14 @@ pub struct LintArgs {
     /// Lint preset: happy-path (default), opinionated, essential, nuxt
     #[arg(long, default_value = "happy-path")]
     pub preset: String,
+
+    /// Enable opt-in cross-file lint checks for provide/inject and reactivity flow.
+    #[arg(long)]
+    pub cross_file: bool,
+
+    /// Print the provide/inject tree when cross-file lint is enabled.
+    #[arg(long)]
+    pub cross_file_tree: bool,
 
     /// Show detailed timing profile
     #[arg(long)]
@@ -123,7 +142,7 @@ pub fn run(args: LintArgs) {
 
     // Lint all files in parallel and collect results
     let lint_start = Instant::now();
-    let results: Vec<_> = files
+    let mut results: Vec<_> = files
         .par_iter()
         .filter_map(|path| {
             let file_start = args.profile.then(Instant::now);
@@ -169,10 +188,28 @@ pub fn run(args: LintArgs) {
                 }
             }
 
-            Some((filename, source, result))
+            Some((path.clone(), filename, source, result))
         })
         .collect();
     let lint_time = lint_start.elapsed();
+
+    let mut cross_file_tree = None;
+    let cross_file_enabled = args.cross_file || args.cross_file_tree;
+    if cross_file_enabled {
+        let cross_file_inputs: Vec<_> = results
+            .iter()
+            .map(|(path, _, source, _)| (path.clone(), source.as_str()))
+            .collect();
+        let cross_file_output =
+            build_cross_file_lint_output(&cross_file_inputs, help_level, args.cross_file_tree);
+        cross_file_tree = cross_file_output.provide_inject_tree;
+
+        for (index, cross_result) in cross_file_output.results.into_iter().enumerate() {
+            if let Some((_, _, _, result)) = results.get_mut(index) {
+                merge_lint_result(result, cross_result);
+            }
+        }
+    }
     let operation_summary = if args.profile {
         let profiler = global_profiler();
         let summary = profiler.summary();
@@ -182,16 +219,22 @@ pub fn run(args: LintArgs) {
         None
     };
 
-    let total_errors = error_count.load(Ordering::Relaxed);
-    let total_warnings = warning_count.load(Ordering::Relaxed);
+    let total_errors: usize = results
+        .iter()
+        .map(|(_, _, _, result)| result.error_count)
+        .sum();
+    let total_warnings: usize = results
+        .iter()
+        .map(|(_, _, _, result)| result.warning_count)
+        .sum();
 
     // Format and print results
     let output_start = Instant::now();
     if render_details {
-        let lint_results: Vec<_> = results.iter().map(|(_, _, r)| r).cloned().collect();
+        let lint_results: Vec<_> = results.iter().map(|(_, _, _, r)| r).cloned().collect();
         let sources: Vec<_> = results
             .iter()
-            .map(|(f, s, _)| (f.clone(), vize_carton::String::from(s.as_str())))
+            .map(|(_, f, s, _)| (f.clone(), vize_carton::String::from(s.as_str())))
             .collect();
 
         let output = format_results(&lint_results, &sources, format);
@@ -209,6 +252,11 @@ pub fn run(args: LintArgs) {
             format_summary(total_errors, total_warnings, files.len())
         );
         println!("Linted {} files in {:.4?}", files.len(), elapsed);
+        if args.cross_file_tree {
+            if let Some(tree) = cross_file_tree.as_deref() {
+                println!("\n{tree}");
+            }
+        }
     }
 
     // Fix mode warning
@@ -324,6 +372,172 @@ pub fn run(args: LintArgs) {
     }
 }
 
+struct CrossFileLintOutput {
+    results: Vec<LintResult>,
+    provide_inject_tree: Option<String>,
+}
+
+fn build_cross_file_lint_output<S: AsRef<str>>(
+    files: &[(PathBuf, S)],
+    help_level: HelpLevel,
+    include_tree: bool,
+) -> CrossFileLintOutput {
+    let root = std::env::current_dir().unwrap_or_default();
+    let mut analyzer = CrossFileAnalyzer::with_project_root(patina_cross_file_options(), root);
+    let mut file_indexes: FxHashMap<FileId, usize> = FxHashMap::default();
+    let mut script_offsets: FxHashMap<FileId, u32> = FxHashMap::default();
+    let mut results: Vec<_> = files
+        .iter()
+        .map(|(path, _)| LintResult {
+            filename: path.to_string_lossy().to_compact_string(),
+            diagnostics: Vec::new(),
+            error_count: 0,
+            warning_count: 0,
+        })
+        .collect();
+
+    for (index, (path, source)) in files.iter().enumerate() {
+        let source = source.as_ref();
+        let Some((analysis, script_offset)) = analyze_sfc_for_cross_file(source, path) else {
+            continue;
+        };
+        let file_id = analyzer.add_file_with_analysis(path, source, analysis);
+        file_indexes.insert(file_id, index);
+        script_offsets.insert(file_id, script_offset);
+    }
+
+    analyzer.rebuild_import_edges();
+    analyzer.rebuild_component_edges();
+    let cross_file_result = analyzer.analyze();
+
+    for diagnostic in &cross_file_result.diagnostics {
+        let Some(index) = file_indexes.get(&diagnostic.primary_file).copied() else {
+            continue;
+        };
+        let script_offset = script_offsets
+            .get(&diagnostic.primary_file)
+            .copied()
+            .unwrap_or_default();
+        let source_len = files[index].1.as_ref().len();
+        results[index]
+            .diagnostics
+            .push(cross_file_diagnostic_to_lint(
+                diagnostic,
+                script_offset,
+                source_len,
+                help_level,
+            ));
+    }
+
+    for result in &mut results {
+        result.error_count = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.severity == vize_patina::Severity::Error)
+            .count();
+        result.warning_count = result.diagnostics.len() - result.error_count;
+        result
+            .diagnostics
+            .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
+    }
+
+    let provide_inject_tree = include_tree
+        .then(|| {
+            cross_file_result
+                .provide_inject_tree
+                .as_ref()
+                .map(|tree| tree.to_markdown(analyzer.registry()))
+        })
+        .flatten();
+
+    CrossFileLintOutput {
+        results,
+        provide_inject_tree,
+    }
+}
+
+fn patina_cross_file_options() -> CrossFileOptions {
+    CrossFileOptions::minimal()
+        .with_provide_inject(true)
+        .with_reactivity_tracking(true)
+}
+
+fn analyze_sfc_for_cross_file(source: &str, path: &Path) -> Option<(Croquis, u32)> {
+    let filename = path.to_string_lossy();
+    let descriptor = parse_sfc(
+        source,
+        SfcParseOptions {
+            filename: filename.as_ref().into(),
+            ..Default::default()
+        },
+    )
+    .ok()?;
+
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    let mut script_offset = 0;
+
+    if let Some(script_setup) = descriptor.script_setup.as_ref() {
+        script_offset = script_setup.loc.start as u32;
+        let generic = script_setup
+            .attrs
+            .get("generic")
+            .map(|value| value.as_ref());
+        analyzer.analyze_script_setup_with_generic(script_setup.content.as_ref(), generic);
+    } else if let Some(script) = descriptor.script.as_ref() {
+        script_offset = script.loc.start as u32;
+        analyzer.analyze_script_plain(script.content.as_ref());
+    }
+
+    if let Some(template) = descriptor.template.as_ref() {
+        let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
+        let parser = Parser::new(allocator.as_bump(), template.content.as_ref());
+        let (root, _parse_errors) = parser.parse();
+        analyzer.analyze_template(&root);
+    }
+
+    Some((analyzer.finish(), script_offset))
+}
+
+fn cross_file_diagnostic_to_lint(
+    diagnostic: &CrossFileDiagnostic,
+    script_offset: u32,
+    source_len: usize,
+    help_level: HelpLevel,
+) -> LintDiagnostic {
+    let source_len = source_len as u32;
+    let start = (diagnostic.primary_offset + script_offset).min(source_len);
+    let raw_end = diagnostic.primary_end_offset + script_offset;
+    let end = raw_end.max(start.saturating_add(1)).min(source_len);
+    let message = cstr!("{}: {}", diagnostic.code(), diagnostic.message);
+    let help = help_level.process(diagnostic.to_markdown().as_str());
+
+    let mut lint = match diagnostic.severity {
+        DiagnosticSeverity::Error => LintDiagnostic::error("cross-file", message, start, end),
+        DiagnosticSeverity::Warning | DiagnosticSeverity::Info | DiagnosticSeverity::Hint => {
+            LintDiagnostic::warn("cross-file", message, start, end)
+        }
+    };
+
+    if let Some(help) = help {
+        lint = lint.with_help(CompactString::new(help.as_str()));
+    }
+
+    lint
+}
+
+fn merge_lint_result(target: &mut LintResult, mut extra: LintResult) {
+    if extra.diagnostics.is_empty() {
+        return;
+    }
+
+    target.error_count += extra.error_count;
+    target.warning_count += extra.warning_count;
+    target.diagnostics.append(&mut extra.diagnostics);
+    target
+        .diagnostics
+        .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
+}
+
 #[inline]
 fn should_render_lint_details(format: OutputFormat, quiet: bool) -> bool {
     matches!(format, OutputFormat::Json) || !quiet
@@ -331,7 +545,8 @@ fn should_render_lint_details(format: OutputFormat, quiet: bool) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::should_render_lint_details;
+    use super::{build_cross_file_lint_output, should_render_lint_details};
+    use std::fs;
     use vize_patina::OutputFormat;
 
     #[test]
@@ -342,5 +557,77 @@ mod tests {
     #[test]
     fn json_output_remains_machine_readable_in_quiet_mode() {
         assert!(should_render_lint_details(OutputFormat::Json, true));
+    }
+
+    #[test]
+    fn cross_file_opt_in_reports_reactivity_and_tree() {
+        let dir = tempfile::tempdir().unwrap();
+        let app = dir.path().join("App.vue");
+        let middle = dir.path().join("Middle.vue");
+        let child = dir.path().join("Child.vue");
+
+        fs::write(
+            &app,
+            r#"<script setup lang="ts">
+import { provide, reactive } from 'vue'
+import Middle from './Middle.vue'
+
+const state = reactive({ count: 0 })
+provide('state', state)
+</script>
+
+<template>
+  <Middle />
+</template>
+"#,
+        )
+        .unwrap();
+        fs::write(
+            &middle,
+            r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child />
+</template>
+"#,
+        )
+        .unwrap();
+        fs::write(
+            &child,
+            r#"<script setup lang="ts">
+import { inject } from 'vue'
+
+const { count } = inject('state') as { count: number }
+</script>
+"#,
+        )
+        .unwrap();
+
+        let files = [&app, &middle, &child]
+            .into_iter()
+            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+            .collect::<Vec<_>>();
+        let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, true);
+
+        let child_result = output
+            .results
+            .iter()
+            .find(|result| result.filename.ends_with("Child.vue"))
+            .expect("child result should exist");
+        assert!(child_result.diagnostics.iter().any(|diagnostic| {
+            diagnostic
+                .message
+                .contains("destructuring-breaks-reactivity")
+        }));
+
+        let tree = output
+            .provide_inject_tree
+            .as_deref()
+            .expect("tree should be rendered");
+        assert!(tree.contains("App"));
+        assert!(tree.contains("Middle"));
+        assert!(tree.contains("Child"));
     }
 }

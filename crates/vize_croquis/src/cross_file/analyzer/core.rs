@@ -211,6 +211,11 @@ impl CrossFileAnalyzer {
 
         if self.options.provide_inject {
             let (matches, diags) = analyzers::analyze_provide_inject(&self.registry, &self.graph);
+            result.provide_inject_tree = Some(analyzers::build_provide_inject_tree(
+                &self.registry,
+                &self.graph,
+                &matches,
+            ));
             result.provide_inject_matches = matches;
             result.diagnostics.extend(diags);
         }

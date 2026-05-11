@@ -6,7 +6,9 @@
 //! - Inject call detection and destructuring patterns
 //! - Object/array destructuring from defineProps and reactive sources
 
-use oxc_ast::ast::{Argument, BindingPattern, Expression, PropertyKey, VariableDeclarationKind};
+use oxc_ast::ast::{
+    Argument, BindingPattern, CallExpression, Expression, PropertyKey, VariableDeclarationKind,
+};
 use oxc_span::GetSpan;
 
 use crate::macros::{MacroKind, PropsDestructuredBindings, DEFINE_PROPS, WITH_DEFAULTS};
@@ -235,6 +237,14 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 }
                 None
             });
+            let torefs_inject_call = if inject_call.is_none() {
+                declarator
+                    .init
+                    .as_ref()
+                    .and_then(|init| extract_inject_call_from_torefs(init, result))
+            } else {
+                None
+            };
 
             // Check if this is indirect destructuring from an inject variable
             // e.g., const state = inject('state'); const { count } = state;
@@ -297,6 +307,25 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
                         None,
                         InjectPattern::ObjectDestructure(destructured_props.clone()),
+                        None,
+                        call.span.start,
+                        call.span.end,
+                    );
+                }
+            } else if let Some(call) = torefs_inject_call {
+                if let Some(key) = call
+                    .arguments
+                    .first()
+                    .and_then(|arg| extract_provide_key(arg, source))
+                {
+                    result.provide_inject.add_inject(
+                        key,
+                        CompactString::new("(toRefs)"),
+                        call.arguments
+                            .get(1)
+                            .map(|arg| CompactString::new(extract_argument_source(arg, source))),
+                        None,
+                        InjectPattern::Simple,
                         None,
                         call.span.start,
                         call.span.end,
@@ -439,6 +468,14 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 }
                 None
             });
+            let torefs_inject_call = if inject_call.is_none() {
+                declarator
+                    .init
+                    .as_ref()
+                    .and_then(|init| extract_inject_call_from_torefs(init, result))
+            } else {
+                None
+            };
 
             let indirect_inject_var = declarator.init.as_ref().and_then(|init| {
                 if let Expression::Identifier(id) = init {
@@ -476,6 +513,25 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .map(|arg| CompactString::new(extract_argument_source(arg, source))),
                         None,
                         InjectPattern::ArrayDestructure(destructured_items),
+                        None,
+                        call.span.start,
+                        call.span.end,
+                    );
+                }
+            } else if let Some(call) = torefs_inject_call {
+                if let Some(key) = call
+                    .arguments
+                    .first()
+                    .and_then(|arg| extract_provide_key(arg, source))
+                {
+                    result.provide_inject.add_inject(
+                        key,
+                        CompactString::new("(toRefs)"),
+                        call.arguments
+                            .get(1)
+                            .map(|arg| CompactString::new(extract_argument_source(arg, source))),
+                        None,
+                        InjectPattern::Simple,
                         None,
                         call.span.start,
                         call.span.end,
@@ -530,4 +586,34 @@ fn is_inject_call(call: &oxc_ast::ast::CallExpression<'_>, result: &ScriptParseR
     };
     let callee_name = id.name.as_str();
     callee_name == "inject" || result.inject_aliases.contains(callee_name)
+}
+
+fn extract_inject_call_from_torefs<'a>(
+    init: &'a Expression<'a>,
+    result: &ScriptParseResult,
+) -> Option<&'a CallExpression<'a>> {
+    let outer = extract_call_expression(init)?;
+    if !is_torefs_call(outer, result) {
+        return None;
+    }
+
+    let first_arg = outer.arguments.first()?;
+    let inner = match first_arg {
+        Argument::CallExpression(call) => Some(call.as_ref()),
+        _ => first_arg.as_expression().and_then(extract_call_expression),
+    }?;
+
+    is_inject_call(inner, result).then_some(inner)
+}
+
+fn is_torefs_call(call: &CallExpression<'_>, result: &ScriptParseResult) -> bool {
+    let Expression::Identifier(id) = &call.callee else {
+        return false;
+    };
+    let callee_name = id.name.as_str();
+    callee_name == "toRefs"
+        || result
+            .reactivity_aliases
+            .get(callee_name)
+            .is_some_and(|api_name| api_name.as_str() == "toRefs")
 }

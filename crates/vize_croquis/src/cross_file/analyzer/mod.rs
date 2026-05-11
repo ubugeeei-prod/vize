@@ -10,6 +10,10 @@ pub use core::CrossFileAnalyzer;
 pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 
 #[cfg(test)]
+#[path = "tests_provide_inject.rs"]
+mod tests_provide_inject;
+
+#[cfg(test)]
 mod tests {
     use super::{CrossFileAnalyzer, CrossFileOptions};
     use crate::analysis::ComponentUsage;
@@ -1183,20 +1187,38 @@ const plainCount = countRef.value"#,
         let mut analyzer =
             CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
 
-        analyzer.add_file(
-            Path::new("Provider.vue"),
-            r#"import { provide, reactive } from 'vue'
+        let provider_script = r#"import { provide, reactive } from 'vue'
+import Consumer from './Consumer.vue'
 
 provide('config', { debug: true })
-provide('state', reactive({ count: 0 }))"#,
-        );
-        analyzer.add_file(
-            Path::new("Consumer.vue"),
-            r#"import { inject } from 'vue'
+provide('state', reactive({ count: 0 }))"#;
+        let mut provider_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        provider_analyzer.analyze_script_setup(provider_script);
+        provider_analyzer
+            .croquis_mut()
+            .used_components
+            .insert(vize_carton::CompactString::new("Consumer"));
+        let provider_analysis = provider_analyzer.finish();
+
+        let consumer_script = r#"import { inject } from 'vue'
 
 const config = inject('config')
-const state = inject('state')"#,
+const state = inject('state')"#;
+        let mut consumer_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        consumer_analyzer.analyze_script_setup(consumer_script);
+        let consumer_analysis = consumer_analyzer.finish();
+
+        analyzer.add_file_with_analysis(
+            Path::new("Provider.vue"),
+            provider_script,
+            provider_analysis,
         );
+        analyzer.add_file_with_analysis(
+            Path::new("Consumer.vue"),
+            consumer_script,
+            consumer_analysis,
+        );
+        analyzer.rebuild_component_edges();
 
         let result = analyzer.analyze();
         let non_reactive_provides: Vec<_> = result

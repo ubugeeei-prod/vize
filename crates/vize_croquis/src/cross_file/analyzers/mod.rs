@@ -30,7 +30,9 @@ pub use emit::{analyze_emits, EmitFlow};
 pub use event_bubbling::{analyze_event_bubbling, EventBubble};
 pub use fallthrough::{analyze_fallthrough, FallthroughInfo};
 pub use props_validation::{analyze_props_validation, PropsValidationIssue};
-pub use provide_inject::{analyze_provide_inject, ProvideInjectMatch};
+pub use provide_inject::{
+    analyze_provide_inject, build_provide_inject_tree, ProvideInjectMatch, ProvideInjectTree,
+};
 pub use reactivity::{analyze_reactivity, ReactivityIssue, ReactivityIssueKind};
 
 // Cross-file reactivity tracking

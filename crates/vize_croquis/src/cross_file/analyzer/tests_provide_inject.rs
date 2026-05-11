@@ -280,6 +280,39 @@ const { name } = inject('user') as { name: string; id: number }"#,
 }
 
 #[test]
+fn test_inject_wrapped_in_torefs_tracks_inject_without_loss() {
+    use crate::provide::InjectPattern;
+
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
+
+    analyzer.add_file(
+        Path::new("Child.ts"),
+        r#"import { inject, toRefs } from 'vue'
+const { count } = toRefs(inject('state') as { count: number })"#,
+    );
+
+    let result = analyzer.analyze();
+    let analysis = analyzer
+        .get_analysis(analyzer.registry().iter().next().unwrap().id)
+        .unwrap();
+
+    let injects = analysis.provide_inject.injects();
+    assert_eq!(injects.len(), 1);
+    assert!(matches!(injects[0].pattern, InjectPattern::Simple));
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| !matches!(
+                diagnostic.kind,
+                crate::cross_file::diagnostics::CrossFileDiagnosticKind::DestructuringBreaksReactivity { .. }
+            )),
+        "toRefs(inject(...)) should not be reported as reactivity loss"
+    );
+}
+
+#[test]
 fn test_playground_style_provide_inject() {
     // This test mimics the playground's exact setup (without template parsing)
     use crate::cross_file::diagnostics::CrossFileDiagnosticKind;
@@ -433,11 +466,8 @@ const user = inject('user')"#,
     // Add files with pre-computed analysis
     let _app_id =
         analyzer.add_file_with_analysis(Path::new("App.vue"), "script content", app_analysis);
-    let _child_id = analyzer.add_file_with_analysis(
-        Path::new("Child.vue"),
-        "script content",
-        child_analysis,
-    );
+    let _child_id =
+        analyzer.add_file_with_analysis(Path::new("Child.vue"), "script content", child_analysis);
 
     // Rebuild component edges (App uses Child)
     analyzer.rebuild_component_edges();
@@ -554,4 +584,103 @@ const state = inject('globalState')"#,
         })
         .collect();
     assert_eq!(errors.len(), 0, "Should have no provide/inject errors");
+}
+
+#[test]
+fn test_provide_inject_tree_keeps_pass_through_component() {
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+    let mut app_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+    app_analyzer.analyze_script_setup(
+        r#"import { provide, reactive } from 'vue'
+const state = reactive({ count: 0 })
+provide('state', state)"#,
+    );
+    app_analyzer
+        .croquis_mut()
+        .used_components
+        .insert(vize_carton::CompactString::new("Middle"));
+    let app_analysis = app_analyzer.finish();
+
+    let mut middle_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+    middle_analyzer.analyze_script_setup("// pass-through component");
+    middle_analyzer
+        .croquis_mut()
+        .used_components
+        .insert(vize_carton::CompactString::new("Leaf"));
+    let middle_analysis = middle_analyzer.finish();
+
+    let mut leaf_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+    leaf_analyzer.analyze_script_setup(
+        r#"import { inject } from 'vue'
+const state = inject('state')"#,
+    );
+    let leaf_analysis = leaf_analyzer.finish();
+
+    analyzer.add_file_with_analysis(Path::new("App.vue"), "", app_analysis);
+    analyzer.add_file_with_analysis(Path::new("Middle.vue"), "", middle_analysis);
+    analyzer.add_file_with_analysis(Path::new("Leaf.vue"), "", leaf_analysis);
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    assert_eq!(result.provide_inject_matches.len(), 1);
+    assert_eq!(
+        result.provide_inject_matches[0].path.len(),
+        3,
+        "match path should include provider, pass-through, and consumer"
+    );
+
+    let tree = result
+        .provide_inject_tree
+        .as_ref()
+        .expect("tree should be built");
+    assert_eq!(tree.roots.len(), 1);
+    assert_eq!(tree.roots[0].children.len(), 1);
+    assert_eq!(tree.roots[0].children[0].children.len(), 1);
+    assert_eq!(tree.roots[0].children[0].children[0].injects.len(), 1);
+}
+
+#[test]
+fn test_provide_inject_does_not_match_string_and_symbol_keys() {
+    use crate::cross_file::diagnostics::CrossFileDiagnosticKind;
+
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+    let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+    parent_analyzer.analyze_script_setup(
+        r#"import { provide, ref } from 'vue'
+const ThemeKey = Symbol('theme')
+const theme = ref('dark')
+provide(ThemeKey, theme)"#,
+    );
+    parent_analyzer
+        .croquis_mut()
+        .used_components
+        .insert(vize_carton::CompactString::new("Child"));
+    let parent_analysis = parent_analyzer.finish();
+
+    let mut child_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+    child_analyzer.analyze_script_setup(
+        r#"import { inject } from 'vue'
+const theme = inject('ThemeKey')"#,
+    );
+    let child_analysis = child_analyzer.finish();
+
+    analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analysis);
+    analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analysis);
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    assert!(
+        result.provide_inject_matches.is_empty(),
+        "string keys must not match symbol keys with the same display text"
+    );
+    assert!(result.diagnostics.iter().any(|diagnostic| {
+        matches!(
+            &diagnostic.kind,
+            CrossFileDiagnosticKind::UnmatchedInject { key } if key == "ThemeKey"
+        )
+    }));
 }

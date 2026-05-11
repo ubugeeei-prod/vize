@@ -70,6 +70,8 @@ pub fn run(args: ReadyArgs) {
         quiet: false,
         help_level: "full".into(),
         preset: "happy-path".into(),
+        cross_file: false,
+        cross_file_tree: false,
         profile: false,
         slow_threshold: 100,
     });

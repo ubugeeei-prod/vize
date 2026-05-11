@@ -22,6 +22,8 @@ pub struct ProvideInjectMatch {
     pub consumer: FileId,
     /// The provide/inject key.
     pub key: CompactString,
+    /// Stable key identity including string/symbol namespace.
+    pub key_identity: CompactString,
     /// Path from provider to consumer.
     pub path: Vec<FileId>,
     /// Whether types match (if available).
@@ -33,7 +35,6 @@ pub struct ProvideInjectMatch {
 }
 
 /// Tree representation of provide/inject relationships.
-#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct ProvideInjectTree {
     /// Root nodes (components that provide but don't inject from ancestors).
@@ -41,7 +42,6 @@ pub struct ProvideInjectTree {
 }
 
 /// A node in the provide/inject tree.
-#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct ProvideNode {
     /// File ID of this component.
@@ -57,7 +57,6 @@ pub struct ProvideNode {
 }
 
 /// Information about a provide call.
-#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct ProvideInfo {
     /// The provide key.
@@ -71,7 +70,6 @@ pub struct ProvideInfo {
 }
 
 /// Information about an inject call.
-#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct InjectInfo {
     /// The inject key.
@@ -84,7 +82,6 @@ pub struct InjectInfo {
     pub offset: u32,
 }
 
-#[allow(unused)]
 impl ProvideInjectTree {
     /// Render the tree as a markdown string for visualization.
     pub fn to_markdown(&self, registry: &ModuleRegistry) -> String {
@@ -173,10 +170,9 @@ impl ProvideInjectTree {
 }
 
 /// Build the provide/inject tree from analysis results.
-#[allow(unused)]
 pub fn build_provide_inject_tree(
     registry: &ModuleRegistry,
-    graph: &DependencyGraph,
+    _graph: &DependencyGraph,
     matches: &[ProvideInjectMatch],
 ) -> ProvideInjectTree {
     // Collect all provides and injects
@@ -197,94 +193,73 @@ pub fn build_provide_inject_tree(
     // Count consumers for each provide
     for m in matches {
         *consumer_counts
-            .entry((m.provider, m.key.clone()))
+            .entry((m.provider, m.key_identity.clone()))
             .or_insert(0) += 1;
     }
 
-    // Build tree starting from components that provide but have no ancestor providers
-    let mut roots = Vec::new();
-    let mut visited = FxHashSet::default();
+    // Build the displayed tree from resolved provider -> ... -> consumer paths.
+    // This keeps pass-through components visible even when they do not provide
+    // or inject the key themselves.
+    let mut included_nodes = FxHashSet::default();
+    let mut child_map: FxHashMap<FileId, Vec<FileId>> = FxHashMap::default();
+    let mut parent_map: FxHashMap<FileId, FileId> = FxHashMap::default();
+
+    for m in matches {
+        for file_id in &m.path {
+            included_nodes.insert(*file_id);
+        }
+        for pair in m.path.windows(2) {
+            let parent = pair[0];
+            let child = pair[1];
+            child_map.entry(parent).or_default().push(child);
+            parent_map.entry(child).or_insert(parent);
+        }
+    }
 
     for &file_id in provides_map.keys() {
-        if visited.contains(&file_id) {
-            continue;
-        }
+        included_nodes.insert(file_id);
+    }
+    for &file_id in injects_map.keys() {
+        included_nodes.insert(file_id);
+    }
 
-        // Check if this component has any ancestor that provides
-        let has_ancestor_provider = has_ancestor_with_provide(file_id, graph, &provides_map);
+    for children in child_map.values_mut() {
+        children.sort_by_key(|id| id.as_u32());
+        children.dedup();
+    }
 
-        if !has_ancestor_provider {
-            let node = build_node(
+    let mut root_ids: Vec<_> = included_nodes
+        .iter()
+        .copied()
+        .filter(|file_id| !parent_map.contains_key(file_id))
+        .collect();
+    root_ids.sort_by_key(|id| id.as_u32());
+
+    let mut visited = FxHashSet::default();
+    let roots = root_ids
+        .into_iter()
+        .map(|file_id| {
+            build_node(
                 file_id,
                 registry,
-                graph,
+                &child_map,
                 &provides_map,
                 &injects_map,
                 &consumer_counts,
                 matches,
                 &mut visited,
-            );
-            roots.push(node);
-        }
-    }
-
-    // Also add components that only inject (no provides) but have no ancestor
-    for &file_id in injects_map.keys() {
-        if visited.contains(&file_id) || provides_map.contains_key(&file_id) {
-            continue;
-        }
-
-        let node = build_node(
-            file_id,
-            registry,
-            graph,
-            &provides_map,
-            &injects_map,
-            &consumer_counts,
-            matches,
-            &mut visited,
-        );
-        if !node.injects.is_empty() {
-            roots.push(node);
-        }
-    }
+            )
+        })
+        .collect();
 
     ProvideInjectTree { roots }
-}
-
-#[allow(unused)]
-fn has_ancestor_with_provide(
-    file_id: FileId,
-    graph: &DependencyGraph,
-    provides_map: &FxHashMap<FileId, Vec<ProvideEntry>>,
-) -> bool {
-    let mut visited = FxHashSet::default();
-    let mut queue = vec![file_id];
-
-    while let Some(current) = queue.pop() {
-        if visited.contains(&current) {
-            continue;
-        }
-        visited.insert(current);
-
-        for (parent_id, edge_type) in graph.dependents(current) {
-            if edge_type == DependencyEdge::ComponentUsage {
-                if provides_map.contains_key(&parent_id) {
-                    return true;
-                }
-                queue.push(parent_id);
-            }
-        }
-    }
-
-    false
 }
 
 #[allow(unused, clippy::too_many_arguments)]
 fn build_node(
     file_id: FileId,
     registry: &ModuleRegistry,
-    graph: &DependencyGraph,
+    child_map: &FxHashMap<FileId, Vec<FileId>>,
     provides_map: &FxHashMap<FileId, Vec<ProvideEntry>>,
     injects_map: &FxHashMap<FileId, Vec<InjectEntry>>,
     consumer_counts: &FxHashMap<(FileId, CompactString), usize>,
@@ -305,7 +280,8 @@ fn build_node(
                         ProvideKey::String(s) => s.clone(),
                         ProvideKey::Symbol(s) => s.clone(),
                     };
-                    let count = *consumer_counts.get(&(file_id, key.clone())).unwrap_or(&0);
+                    let key_identity = provide_key_identity(&p.key);
+                    let count = *consumer_counts.get(&(file_id, key_identity)).unwrap_or(&0);
                     ProvideInfo {
                         key,
                         value_type: p.value_type.clone(),
@@ -327,9 +303,10 @@ fn build_node(
                         ProvideKey::String(s) => s.clone(),
                         ProvideKey::Symbol(s) => s.clone(),
                     };
+                    let key_identity = provide_key_identity(&i.key);
                     let provider = matches
                         .iter()
-                        .find(|m| m.consumer == file_id && m.key == key)
+                        .find(|m| m.consumer == file_id && m.key_identity == key_identity)
                         .map(|m| m.provider);
                     InjectInfo {
                         key,
@@ -344,32 +321,22 @@ fn build_node(
 
     // Find children (components that inject from this provider)
     let mut children = Vec::new();
-    for (child_id, edge_type) in graph.dependencies(file_id) {
-        if edge_type == DependencyEdge::ComponentUsage && !visited.contains(&child_id) {
-            // Check if child injects something we provide
-            let child_injects_from_us = injects_map.get(&child_id).is_some_and(|child_injects| {
-                child_injects.iter().any(|ci| {
-                    let ci_key = match &ci.key {
-                        ProvideKey::String(s) => s.as_str(),
-                        ProvideKey::Symbol(s) => s.as_str(),
-                    };
-                    provides.iter().any(|p| p.key.as_str() == ci_key)
-                })
-            });
-
-            if child_injects_from_us || provides_map.contains_key(&child_id) {
-                let child_node = build_node(
-                    child_id,
-                    registry,
-                    graph,
-                    provides_map,
-                    injects_map,
-                    consumer_counts,
-                    matches,
-                    visited,
-                );
-                children.push(child_node);
+    if let Some(child_ids) = child_map.get(&file_id) {
+        for &child_id in child_ids {
+            if visited.contains(&child_id) {
+                continue;
             }
+            let child_node = build_node(
+                child_id,
+                registry,
+                child_map,
+                provides_map,
+                injects_map,
+                consumer_counts,
+                matches,
+                visited,
+            );
+            children.push(child_node);
         }
     }
 
@@ -429,16 +396,13 @@ pub fn analyze_provide_inject(
     }
 
     // Track which provides are used
-    let mut used_provides: FxHashSet<(FileId, CompactString)> = FxHashSet::default();
+    let mut used_provides: FxHashSet<(FileId, ProvideKey)> = FxHashSet::default();
 
     // For each inject, try to find a matching provide in ancestors
     for (&consumer_id, consumer_injects) in &injects {
         for inject in consumer_injects {
-            let key_str = match &inject.key {
-                ProvideKey::String(s) => s.clone(),
-                ProvideKey::Symbol(s) => s.clone(),
-            };
-            let provider_match = find_provider(consumer_id, &key_str, &provides, graph);
+            let key_str = provide_key_display(&inject.key);
+            let provider_match = find_provider(consumer_id, &inject.key, &provides, graph);
             let provider_related = provider_match
                 .as_ref()
                 .map(|(provider_id, provide_entry, _)| (*provider_id, provide_entry.start));
@@ -544,12 +508,13 @@ pub fn analyze_provide_inject(
             match provider_match {
                 Some((provider_id, provide_entry, path)) => {
                     // Found a match
-                    used_provides.insert((provider_id, key_str.clone()));
+                    used_provides.insert((provider_id, inject.key.clone()));
 
                     matches.push(ProvideInjectMatch {
                         provider: provider_id,
                         consumer: consumer_id,
                         key: key_str.clone(),
+                        key_identity: provide_key_identity(&inject.key),
                         path,
                         type_match: None, // Would need type analysis
                         provide_offset: provide_entry.start,
@@ -612,15 +577,12 @@ pub fn analyze_provide_inject(
     // Check for unused provides
     for (&provider_id, provider_provides) in &provides {
         for provide in provider_provides {
-            let key_str = match &provide.key {
-                ProvideKey::String(s) => s.clone(),
-                ProvideKey::Symbol(s) => s.clone(),
-            };
+            let key_str = provide_key_display(&provide.key);
 
-            if !used_provides.contains(&(provider_id, key_str.clone())) {
+            if !used_provides.contains(&(provider_id, provide.key.clone())) {
                 // Check if any descendant injects this key
                 let has_descendant_inject =
-                    has_inject_in_descendants(provider_id, &key_str, &injects, graph);
+                    has_inject_in_descendants(provider_id, &provide.key, &injects, graph);
 
                 if !has_descendant_inject {
                     diagnostics.push(
@@ -675,6 +637,19 @@ fn extract_provide_inject(analysis: &crate::Croquis) -> (Vec<ProvideEntry>, Vec<
     (provides, injects)
 }
 
+fn provide_key_display(key: &ProvideKey) -> CompactString {
+    match key {
+        ProvideKey::String(s) | ProvideKey::Symbol(s) => s.clone(),
+    }
+}
+
+fn provide_key_identity(key: &ProvideKey) -> CompactString {
+    match key {
+        ProvideKey::String(s) => cstr!("string:{s}"),
+        ProvideKey::Symbol(s) => cstr!("symbol:{s}"),
+    }
+}
+
 fn create_string_key_diagnostic(
     file_id: FileId,
     key: &CompactString,
@@ -708,14 +683,18 @@ fn create_string_key_diagnostic(
 /// Find a provider for a given key in ancestor components.
 fn find_provider(
     consumer: FileId,
-    key: &str,
+    key: &ProvideKey,
     provides: &FxHashMap<FileId, Vec<ProvideEntry>>,
     graph: &DependencyGraph,
 ) -> Option<(FileId, ProvideEntry, Vec<FileId>)> {
     let mut visited = FxHashSet::default();
     let mut queue = vec![(consumer, vec![consumer])];
+    let mut cursor = 0;
 
-    while let Some((current, path)) = queue.pop() {
+    while cursor < queue.len() {
+        let (current, path) = queue[cursor].clone();
+        cursor += 1;
+
         if visited.contains(&current) {
             continue;
         }
@@ -725,24 +704,28 @@ fn find_provider(
         if current != consumer {
             if let Some(component_provides) = provides.get(&current) {
                 for provide in component_provides {
-                    let provide_key = match &provide.key {
-                        ProvideKey::String(s) => s.as_str(),
-                        ProvideKey::Symbol(s) => s.as_str(),
-                    };
-                    if provide_key == key {
-                        return Some((current, provide.clone(), path));
+                    if provide.key == *key {
+                        let mut provider_to_consumer = path;
+                        provider_to_consumer.reverse();
+                        return Some((current, provide.clone(), provider_to_consumer));
                     }
                 }
             }
         }
 
         // Add parents (components that use this one) to queue
-        for (parent_id, edge_type) in graph.dependents(current) {
-            if edge_type == DependencyEdge::ComponentUsage && !visited.contains(&parent_id) {
-                let mut new_path = path.clone();
-                new_path.push(parent_id);
-                queue.push((parent_id, new_path));
-            }
+        let mut parents: Vec<_> = graph
+            .dependents(current)
+            .filter(|(parent_id, edge_type)| {
+                *edge_type == DependencyEdge::ComponentUsage && !visited.contains(parent_id)
+            })
+            .collect();
+        parents.sort_by_key(|(parent_id, _)| parent_id.as_u32());
+
+        for (parent_id, _) in parents {
+            let mut new_path = path.clone();
+            new_path.push(parent_id);
+            queue.push((parent_id, new_path));
         }
     }
 
@@ -752,7 +735,7 @@ fn find_provider(
 /// Check if any descendant component injects a given key.
 fn has_inject_in_descendants(
     provider: FileId,
-    key: &str,
+    key: &ProvideKey,
     injects: &FxHashMap<FileId, Vec<InjectEntry>>,
     graph: &DependencyGraph,
 ) -> bool {
@@ -771,11 +754,7 @@ fn has_inject_in_descendants(
                 // Check if child injects this key
                 if let Some(child_injects) = injects.get(&child_id) {
                     for inject in child_injects {
-                        let inject_key = match &inject.key {
-                            ProvideKey::String(s) => s.as_str(),
-                            ProvideKey::Symbol(s) => s.as_str(),
-                        };
-                        if inject_key == key {
+                        if inject.key == *key {
                             return true;
                         }
                     }

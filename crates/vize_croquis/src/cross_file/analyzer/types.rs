@@ -185,6 +185,9 @@ pub struct CrossFileResult {
     /// Provide/inject matches.
     pub provide_inject_matches: Vec<analyzers::ProvideInjectMatch>,
 
+    /// Provide/inject tree, populated when provide/inject analysis is enabled.
+    pub provide_inject_tree: Option<analyzers::ProvideInjectTree>,
+
     /// Unique ID issues.
     pub unique_id_issues: Vec<analyzers::UniqueIdIssue>,
 
