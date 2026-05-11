@@ -706,38 +706,34 @@ fn expression_root_identifier(expression: &str) -> Option<&str> {
 fn prop_reactivity_loss(analysis: &crate::Croquis, prop_name: &str) -> Option<PropLoss> {
     for loss in analysis.reactivity.losses() {
         match &loss.kind {
-            ReactivityLossKind::PropsDestructure { destructured_props } => {
-                if prop_list_contains(destructured_props, prop_name) {
-                    return Some(PropLoss {
-                        offset: loss.start,
-                        reason: ReactivityLossReason::Destructured {
-                            props: destructured_props.clone(),
-                        },
-                    });
-                }
+            ReactivityLossKind::PropsDestructure { destructured_props }
+                if prop_list_contains(destructured_props, prop_name) =>
+            {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::Destructured {
+                        props: destructured_props.clone(),
+                    },
+                });
             }
             ReactivityLossKind::ReactiveDestructure {
                 destructured_props, ..
-            } => {
-                if prop_list_contains(destructured_props, prop_name) {
-                    return Some(PropLoss {
-                        offset: loss.start,
-                        reason: ReactivityLossReason::Destructured {
-                            props: destructured_props.clone(),
-                        },
-                    });
-                }
+            } if prop_list_contains(destructured_props, prop_name) => {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::Destructured {
+                        props: destructured_props.clone(),
+                    },
+                });
             }
             ReactivityLossKind::ReactivePropertyExtract {
                 prop_name: extracted,
                 ..
-            } => {
-                if prop_names_match(extracted.as_str(), prop_name) {
-                    return Some(PropLoss {
-                        offset: loss.start,
-                        reason: ReactivityLossReason::DirectExtraction,
-                    });
-                }
+            } if prop_names_match(extracted.as_str(), prop_name) => {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::DirectExtraction,
+                });
             }
             _ => {}
         }
