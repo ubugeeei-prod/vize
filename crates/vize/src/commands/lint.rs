@@ -16,7 +16,8 @@ use vize_carton::{
     cstr, profiler::global_profiler, Allocator, CompactString, FxHashMap, String, ToCompactString,
 };
 use vize_croquis::cross_file::{
-    CrossFileAnalyzer, CrossFileDiagnostic, CrossFileOptions, DiagnosticSeverity, FileId,
+    CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
+    DiagnosticSeverity, FileId,
 };
 use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
 use vize_patina::{
@@ -377,6 +378,12 @@ struct CrossFileLintOutput {
     provide_inject_tree: Option<String>,
 }
 
+#[derive(Clone, Copy, Debug, Default)]
+struct CrossFileSourceOffsets {
+    script: u32,
+    template: u32,
+}
+
 fn build_cross_file_lint_output<S: AsRef<str>>(
     files: &[(PathBuf, S)],
     help_level: HelpLevel,
@@ -385,7 +392,7 @@ fn build_cross_file_lint_output<S: AsRef<str>>(
     let root = std::env::current_dir().unwrap_or_default();
     let mut analyzer = CrossFileAnalyzer::with_project_root(patina_cross_file_options(), root);
     let mut file_indexes: FxHashMap<FileId, usize> = FxHashMap::default();
-    let mut script_offsets: FxHashMap<FileId, u32> = FxHashMap::default();
+    let mut source_offsets: FxHashMap<FileId, CrossFileSourceOffsets> = FxHashMap::default();
     let mut results: Vec<_> = files
         .iter()
         .map(|(path, _)| LintResult {
@@ -398,12 +405,12 @@ fn build_cross_file_lint_output<S: AsRef<str>>(
 
     for (index, (path, source)) in files.iter().enumerate() {
         let source = source.as_ref();
-        let Some((analysis, script_offset)) = analyze_sfc_for_cross_file(source, path) else {
+        let Some((analysis, offsets)) = analyze_sfc_for_cross_file(source, path) else {
             continue;
         };
         let file_id = analyzer.add_file_with_analysis(path, source, analysis);
         file_indexes.insert(file_id, index);
-        script_offsets.insert(file_id, script_offset);
+        source_offsets.insert(file_id, offsets);
     }
 
     analyzer.rebuild_import_edges();
@@ -414,7 +421,7 @@ fn build_cross_file_lint_output<S: AsRef<str>>(
         let Some(index) = file_indexes.get(&diagnostic.primary_file).copied() else {
             continue;
         };
-        let script_offset = script_offsets
+        let offsets = source_offsets
             .get(&diagnostic.primary_file)
             .copied()
             .unwrap_or_default();
@@ -422,10 +429,7 @@ fn build_cross_file_lint_output<S: AsRef<str>>(
         results[index]
             .diagnostics
             .push(cross_file_diagnostic_to_lint(
-                diagnostic,
-                script_offset,
-                source_len,
-                help_level,
+                diagnostic, offsets, source_len, help_level,
             ));
     }
 
@@ -459,10 +463,14 @@ fn build_cross_file_lint_output<S: AsRef<str>>(
 fn patina_cross_file_options() -> CrossFileOptions {
     CrossFileOptions::minimal()
         .with_provide_inject(true)
+        .with_unique_ids(true)
         .with_reactivity_tracking(true)
 }
 
-fn analyze_sfc_for_cross_file(source: &str, path: &Path) -> Option<(Croquis, u32)> {
+fn analyze_sfc_for_cross_file(
+    source: &str,
+    path: &Path,
+) -> Option<(Croquis, CrossFileSourceOffsets)> {
     let filename = path.to_string_lossy();
     let descriptor = parse_sfc(
         source,
@@ -474,39 +482,41 @@ fn analyze_sfc_for_cross_file(source: &str, path: &Path) -> Option<(Croquis, u32
     .ok()?;
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-    let mut script_offset = 0;
+    let mut offsets = CrossFileSourceOffsets::default();
 
     if let Some(script_setup) = descriptor.script_setup.as_ref() {
-        script_offset = script_setup.loc.start as u32;
+        offsets.script = script_setup.loc.start as u32;
         let generic = script_setup
             .attrs
             .get("generic")
             .map(|value| value.as_ref());
         analyzer.analyze_script_setup_with_generic(script_setup.content.as_ref(), generic);
     } else if let Some(script) = descriptor.script.as_ref() {
-        script_offset = script.loc.start as u32;
+        offsets.script = script.loc.start as u32;
         analyzer.analyze_script_plain(script.content.as_ref());
     }
 
     if let Some(template) = descriptor.template.as_ref() {
+        offsets.template = template.loc.start as u32;
         let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
         let parser = Parser::new(allocator.as_bump(), template.content.as_ref());
         let (root, _parse_errors) = parser.parse();
         analyzer.analyze_template(&root);
     }
 
-    Some((analyzer.finish(), script_offset))
+    Some((analyzer.finish(), offsets))
 }
 
 fn cross_file_diagnostic_to_lint(
     diagnostic: &CrossFileDiagnostic,
-    script_offset: u32,
+    offsets: CrossFileSourceOffsets,
     source_len: usize,
     help_level: HelpLevel,
 ) -> LintDiagnostic {
     let source_len = source_len as u32;
-    let start = (diagnostic.primary_offset + script_offset).min(source_len);
-    let raw_end = diagnostic.primary_end_offset + script_offset;
+    let offset = cross_file_diagnostic_offset(diagnostic, offsets);
+    let start = (diagnostic.primary_offset + offset).min(source_len);
+    let raw_end = diagnostic.primary_end_offset + offset;
     let end = raw_end.max(start.saturating_add(1)).min(source_len);
     let message = cstr!("{}: {}", diagnostic.code(), diagnostic.message);
     let help = help_level.process(diagnostic.to_markdown().as_str());
@@ -523,6 +533,17 @@ fn cross_file_diagnostic_to_lint(
     }
 
     lint
+}
+
+fn cross_file_diagnostic_offset(
+    diagnostic: &CrossFileDiagnostic,
+    offsets: CrossFileSourceOffsets,
+) -> u32 {
+    match diagnostic.kind {
+        CrossFileDiagnosticKind::DuplicateElementId { .. }
+        | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. } => offsets.template,
+        _ => offsets.script,
+    }
 }
 
 fn merge_lint_result(target: &mut LintResult, mut extra: LintResult) {
@@ -629,5 +650,52 @@ const { count } = inject('state') as { count: number }
         assert!(tree.contains("App"));
         assert!(tree.contains("Middle"));
         assert!(tree.contains("Child"));
+    }
+
+    #[test]
+    fn cross_file_opt_in_reports_duplicate_element_ids_at_template_offsets() {
+        let dir = tempfile::tempdir().unwrap();
+        let first = dir.path().join("First.vue");
+        let second = dir.path().join("Second.vue");
+
+        let first_source = r#"<script setup lang="ts">
+const ready = true
+</script>
+
+<template>
+  <label for="email">Email</label>
+  <input id="email" />
+</template>
+"#;
+        fs::write(&first, first_source).unwrap();
+        fs::write(
+            &second,
+            r#"<template>
+  <input id="email" />
+</template>
+"#,
+        )
+        .unwrap();
+
+        let files = [&first, &second]
+            .into_iter()
+            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+            .collect::<Vec<_>>();
+        let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
+
+        let first_result = output
+            .results
+            .iter()
+            .find(|result| result.filename.ends_with("First.vue"))
+            .expect("first result should exist");
+        let diagnostic = first_result
+            .diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.message.contains("duplicate-id"))
+            .expect("duplicate element id should be reported");
+
+        let expected_start = first_source.find("id=\"email\"").unwrap() as u32;
+        assert_eq!(diagnostic.start, expected_start);
+        assert!(diagnostic.end > diagnostic.start);
     }
 }

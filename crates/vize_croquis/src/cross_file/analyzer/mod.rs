@@ -10,6 +10,10 @@ pub use core::CrossFileAnalyzer;
 pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 
 #[cfg(test)]
+#[path = "tests_element_id.rs"]
+mod tests_element_id;
+
+#[cfg(test)]
 #[path = "tests_provide_inject.rs"]
 mod tests_provide_inject;
 
