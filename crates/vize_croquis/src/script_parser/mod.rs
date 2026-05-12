@@ -59,6 +59,9 @@ pub(crate) enum ReactiveValueOrigin {
         getter_name: CompactString,
         source_name: CompactString,
     },
+    PlainAlias {
+        source_name: CompactString,
+    },
 }
 
 /// A returned context whose methods are backed by getter arguments.
@@ -830,6 +833,83 @@ watch(() => localCount, () => {})
                 callee_name,
                 ..
             } if argument_name == "localCount" && callee_name == "watch"
+        )));
+    }
+
+    #[test]
+    fn test_plain_reactive_alias_chain_crosses_calls_and_getters() {
+        use crate::reactivity::ReactivityLossKind;
+
+        let result = parse_script_setup(
+            r#"
+const { count } = defineProps<{ count: number }>()
+
+const alias = count
+const second = alias
+let assigned
+assigned = second
+
+useMyComposable(second)
+useMyComposable(assigned)
+
+const ctx = useMyComposable(() => second)
+const a = ctx.second()
+"#,
+        );
+
+        let losses = result.reactivity.losses();
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } if source_name == "count" && alias_name == "count" && target_name == "alias"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } if source_name == "count" && alias_name == "alias" && target_name == "second"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } if source_name == "count" && alias_name == "second" && target_name == "assigned"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "count"
+                && argument_name == "second"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "count"
+                && argument_name == "assigned"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::GetterCallExtract {
+                context_name,
+                getter_name,
+                source_name,
+                ..
+            } if context_name == "ctx" && getter_name == "second" && source_name == "count"
         )));
     }
 

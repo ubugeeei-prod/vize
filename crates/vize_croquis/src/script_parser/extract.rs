@@ -1251,6 +1251,73 @@ pub fn check_getter_call_extraction(
     );
 }
 
+/// Check `const alias = count` where `count` is already a plain reactive snapshot.
+#[inline]
+pub fn check_reactive_plain_alias_extraction(
+    result: &mut ScriptParseResult,
+    id: &oxc_ast::ast::BindingPattern<'_>,
+    init: &Expression<'_>,
+) {
+    let target_name = match id {
+        oxc_ast::ast::BindingPattern::BindingIdentifier(id) => id.name.as_str(),
+        _ => return,
+    };
+
+    let Some(value) = reactive_plain_identifier_value_from_expr(result, init) else {
+        return;
+    };
+    if value.argument_name.as_str() == target_name {
+        return;
+    }
+
+    result.reactivity.record_plain_value_alias(
+        value.source_name.clone(),
+        value.argument_name,
+        CompactString::new(target_name),
+        value.start,
+        value.end,
+    );
+    result.reactive_value_origins.insert(
+        CompactString::new(target_name),
+        ReactiveValueOrigin::PlainAlias {
+            source_name: value.source_name,
+        },
+    );
+}
+
+/// Check `alias = count` where `count` is already a plain reactive snapshot.
+#[inline]
+pub fn check_reactive_plain_assignment_alias(
+    result: &mut ScriptParseResult,
+    target_name: &str,
+    init: &Expression<'_>,
+) {
+    if result.reactivity.is_reactive(target_name) {
+        return;
+    }
+
+    let Some(value) = reactive_plain_identifier_value_from_expr(result, init) else {
+        return;
+    };
+    if value.argument_name.as_str() == target_name {
+        return;
+    }
+
+    result.reactivity.record_plain_value_alias(
+        value.source_name.clone(),
+        value.argument_name,
+        CompactString::new(target_name),
+        value.start,
+        value.end,
+    );
+    result.reactive_value_origins.insert(
+        CompactString::new(target_name),
+        ReactiveValueOrigin::PlainAlias {
+            source_name: value.source_name,
+        },
+    );
+}
+
 fn record_reactive_plain_values_in_call_arg(
     result: &mut ScriptParseResult,
     expr: &Expression<'_>,
@@ -1550,6 +1617,39 @@ fn reactive_plain_value_from_expr(
     }
 }
 
+fn reactive_plain_identifier_value_from_expr(
+    result: &ScriptParseResult,
+    expr: &Expression<'_>,
+) -> Option<ReactivePlainValue> {
+    match expr {
+        Expression::Identifier(id) => {
+            let binding_name = id.name.as_str();
+            let origin = result.reactive_value_origins.get(binding_name)?;
+            let (source_name, _) = plain_origin_labels(origin, binding_name);
+            Some(ReactivePlainValue {
+                source_name,
+                argument_name: CompactString::new(binding_name),
+                getter_name: CompactString::new(binding_name),
+                start: id.span.start,
+                end: id.span.end,
+            })
+        }
+        Expression::ParenthesizedExpression(paren) => {
+            reactive_plain_identifier_value_from_expr(result, &paren.expression)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            reactive_plain_identifier_value_from_expr(result, &ts_as.expression)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            reactive_plain_identifier_value_from_expr(result, &ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            reactive_plain_identifier_value_from_expr(result, &ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
 fn getter_call_plain_value(
     result: &ScriptParseResult,
     expr: &Expression<'_>,
@@ -1632,6 +1732,9 @@ fn plain_origin_labels(
             getter_name,
             source_name,
         } => (source_name.clone(), getter_name.clone()),
+        ReactiveValueOrigin::PlainAlias { source_name } => {
+            (source_name.clone(), CompactString::new(binding_name))
+        }
     }
 }
 

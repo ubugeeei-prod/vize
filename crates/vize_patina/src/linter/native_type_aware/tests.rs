@@ -148,12 +148,63 @@ import type { Ref } from 'vue'
 
 const props = defineProps<{ count: Ref<number> }>()
 const count = props.count
+const alias = count
+useMyComposable(alias)
 </script>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
     assert!(!result
         .diagnostics
         .iter()
         .any(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS));
+}
+
+#[test]
+fn no_reactivity_loss_tracks_plain_alias_chains() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const { count } = defineProps<{ count: number }>()
+
+const alias = count
+const second = alias
+let assigned: number
+assigned = second
+
+useMyComposable(second)
+useMyComposable(assigned)
+
+const ctx = useMyComposable(() => second)
+const a = ctx.second()
+</script>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    let messages = result
+        .diagnostics
+        .iter()
+        .filter(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS)
+        .map(|diag| diag.message.as_str())
+        .collect::<Vec<_>>();
+
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("plain snapshot 'count' to 'alias'")));
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("plain snapshot 'alias' to 'second'")));
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("plain snapshot 'second' to 'assigned'")));
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("Passing 'second'")));
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("Passing 'assigned'")));
+    assert!(messages
+        .iter()
+        .any(|message| message.contains("ctx.second()")));
 }
 
 #[test]

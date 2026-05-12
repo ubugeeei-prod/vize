@@ -36,6 +36,9 @@ pub(in crate::script_parser) fn walk_statement(
                         result, &decl.id, init,
                     );
                     super::super::extract::check_getter_call_extraction(result, &decl.id, init);
+                    super::super::extract::check_reactive_plain_alias_extraction(
+                        result, &decl.id, init,
+                    );
                 }
             }
         }

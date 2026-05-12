@@ -191,6 +191,43 @@ const ctx = useMyComposable(props.item)"#,
 }
 
 #[test]
+fn test_reactive_prop_alias_chain_is_cross_file_loss() {
+    let (mut analyzer, parent_id, child_id) = analyzer_with_parent_child(
+        r#"import { reactive } from 'vue'
+import Child from './Child.vue'
+const item = reactive({ count: 0 })"#,
+        r#"const props = defineProps<{ item: { count: number } }>()
+const local = props.item
+const alias = local
+let assigned
+assigned = alias
+useMyComposable(assigned)"#,
+        &[("Child", &[("item", "item")])],
+    );
+
+    let result = analyzer.analyze();
+    assert!(result.cross_file_reactivity_issues.iter().any(|issue| {
+        issue.file_id == child_id
+            && issue.related_file == Some(parent_id)
+            && matches!(
+                &issue.kind,
+                CrossFileReactivityIssueKind::ReactivityLostInPropChain { prop_name, .. }
+                    if prop_name == "item"
+            )
+    }));
+    assert!(result.diagnostics.iter().any(|diagnostic| {
+        diagnostic.primary_file == child_id
+            && matches!(
+                &diagnostic.kind,
+                CrossFileDiagnosticKind::ValueExtractionBreaksReactivity {
+                    extracted_value,
+                    ..
+                } if extracted_value == "assigned"
+            )
+    }));
+}
+
+#[test]
 fn test_reactive_prop_getter_context_extraction_is_cross_file_loss() {
     let (mut analyzer, parent_id, child_id) = analyzer_with_parent_child(
         r#"import { computed } from 'vue'

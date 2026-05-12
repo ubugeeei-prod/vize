@@ -19,10 +19,11 @@ use vize_carton::CompactString;
 use vize_relief::BindingType;
 
 use super::super::extract::{
-    check_getter_call_extraction, check_reactive_property_extraction, check_ref_value_extraction,
-    detect_reactivity_call, detect_setup_context_violation, extract_argument_source,
-    extract_call_expression, extract_provide_key, get_binding_type_from_kind,
-    process_call_expression, record_getter_context_from_call,
+    check_getter_call_extraction, check_reactive_plain_alias_extraction,
+    check_reactive_property_extraction, check_ref_value_extraction, detect_reactivity_call,
+    detect_setup_context_violation, extract_argument_source, extract_call_expression,
+    extract_provide_key, get_binding_type_from_kind, process_call_expression,
+    record_getter_context_from_call,
 };
 use super::super::walk::{walk_call_arguments, walk_expression};
 use super::super::{ReactiveValueOrigin, ScriptParseResult};
@@ -133,6 +134,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
 
                 if let Some(init) = &declarator.init {
                     check_getter_call_extraction(result, &declarator.id, init);
+                    check_reactive_plain_alias_extraction(result, &declarator.id, init);
                 }
                 record_getter_context_from_call(result, name, call, source);
 
@@ -155,6 +157,8 @@ pub(in crate::script_parser) fn process_variable_declarator(
                     check_reactive_property_extraction(result, &declarator.id, init);
                     // Check for getter-backed context extraction hidden behind wrappers
                     check_getter_call_extraction(result, &declarator.id, init);
+                    // Check aliases of known plain snapshots: const alias = count
+                    check_reactive_plain_alias_extraction(result, &declarator.id, init);
 
                     // Check for Vue API aliases: const a = inject, const r = ref, etc.
                     if let Expression::Identifier(id) = init {

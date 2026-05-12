@@ -238,6 +238,13 @@ pub fn check_reactivity(
             } => cstr!(
                 "Assigning '{context_name}.{getter_name}()' to '{target_name}' extracts a non-reactive snapshot"
             ),
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } => cstr!(
+                "Assigning plain snapshot '{alias_name}' to '{target_name}' keeps reactivity lost from '{source_name}'"
+            ),
             ReactivityLossKind::ReactiveSpread { source_name } => {
                 cstr!("Spreading reactive object '{source_name}' loses reactivity")
             }

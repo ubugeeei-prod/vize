@@ -759,6 +759,21 @@ fn prop_reactivity_loss(analysis: &crate::Croquis, prop_name: &str) -> Option<Pr
                     reason: ReactivityLossReason::DirectExtraction,
                 });
             }
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } if reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
+                || reactivity_loss_source_matches_prop(alias_name.as_str(), prop_name)
+                || prop_names_match(target_name.as_str(), prop_name) =>
+            {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::NonReactiveIntermediate {
+                        intermediate: target_name.clone(),
+                    },
+                });
+            }
             _ => {}
         }
     }

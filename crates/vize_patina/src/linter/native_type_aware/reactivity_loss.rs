@@ -124,7 +124,8 @@ fn query_expressions_for_loss(
         ReactivityLossKind::RefValueExtract { .. }
         | ReactivityLossKind::ReactivePropertyExtract { .. }
         | ReactivityLossKind::FunctionArgumentExtract { .. }
-        | ReactivityLossKind::GetterCallExtract { .. } => script_content
+        | ReactivityLossKind::GetterCallExtract { .. }
+        | ReactivityLossKind::PlainValueAlias { .. } => script_content
             .get(loss.start as usize..loss.end as usize)
             .map(str::trim)
             .filter(|source| !source.is_empty())
@@ -247,6 +248,19 @@ fn reactivity_loss_diagnostic(loss: &ReactivityLoss) -> ReactivityLossQuery {
                 callee_name
             ),
             "Keep the getter lazy, wrap it in `computed(...)`, or have the composable return a ref-like value.",
+        ),
+        ReactivityLossKind::PlainValueAlias {
+            source_name,
+            alias_name,
+            target_name,
+        } => (
+            cstr!(
+                "Assigning plain snapshot '{}' to '{}' keeps reactivity lost from '{}'",
+                alias_name,
+                target_name,
+                source_name
+            ),
+            "Pass the reactive source itself, a getter, `toRef(...)`, or `computed(...)` instead of aliasing the snapshot.",
         ),
         ReactivityLossKind::ReactiveSpread { source_name } => (
             cstr!("Spreading '{}' creates a non-reactive copy", source_name),

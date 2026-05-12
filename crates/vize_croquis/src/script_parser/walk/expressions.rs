@@ -210,6 +210,12 @@ pub(in crate::script_parser) fn walk_expression(
                     result
                         .reactivity
                         .record_reassign(var_name, id.span.start, assign.span.end);
+                } else {
+                    super::super::extract::check_reactive_plain_assignment_alias(
+                        result,
+                        id.name.as_str(),
+                        &assign.right,
+                    );
                 }
             }
             walk_expression(result, &assign.right, source);

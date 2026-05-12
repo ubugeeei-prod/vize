@@ -329,6 +329,21 @@ fn analyze_component_reactivity(analysis: &crate::Croquis) -> Vec<InternalIssue>
                     source: Some(source_name.clone()),
                 });
             }
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } => {
+                issues.push(InternalIssue {
+                    kind: ReactivityIssueKind::ReactiveToPlain {
+                        source_name: cstr!("{source_name} via {alias_name}"),
+                        target_name: target_name.clone(),
+                    },
+                    offset: loss.start,
+                    end_offset: Some(loss.end),
+                    source: Some(source_name.clone()),
+                });
+            }
             ReactivityLossKind::ReactiveSpread { source_name } => {
                 issues.push(InternalIssue {
                     kind: ReactivityIssueKind::ShouldUseToRefs {

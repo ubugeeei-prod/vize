@@ -141,6 +141,13 @@ pub enum ReactivityLossKind {
         callee_name: CompactString,
         source_name: CompactString,
     },
+    /// Aliasing an already plain reactive snapshot:
+    /// `const alias = count` where `count` came from props destructure.
+    PlainValueAlias {
+        source_name: CompactString,
+        alias_name: CompactString,
+        target_name: CompactString,
+    },
     /// Spreading reactive object: `{ ...state }`
     ReactiveSpread { source_name: CompactString },
     /// Reassigning reactive variable: `let state = reactive({}); state = {}`
@@ -351,6 +358,26 @@ impl ReactivityTracker {
                 source_name,
                 argument_name,
                 callee_name,
+            },
+            start,
+            end,
+        });
+    }
+
+    /// Record aliasing an already plain reactive snapshot.
+    pub fn record_plain_value_alias(
+        &mut self,
+        source_name: CompactString,
+        alias_name: CompactString,
+        target_name: CompactString,
+        start: u32,
+        end: u32,
+    ) {
+        self.losses.push(ReactivityLoss {
+            kind: ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
             },
             start,
             end,
