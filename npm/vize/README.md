@@ -29,10 +29,24 @@ The npm CLI exposes the common package-script commands:
 ```bash
 vp exec vize build src
 vp exec vize fmt --write src
-vp exec vize lint src
-vp exec vize check
+vp exec vize lint --preset happy-path src
+vp exec vize check src
 vp exec vize ready src
 vp exec vize upgrade
+```
+
+Recommended scripts:
+
+```json
+{
+  "scripts": {
+    "vue:build": "vize build src",
+    "vue:fmt": "vize fmt --write src",
+    "vue:lint": "vize lint --preset happy-path src",
+    "vue:check": "vize check src",
+    "vue:ready": "vize ready src"
+  }
+}
 ```
 
 Shared config discovery is supported for the npm CLI:
@@ -47,10 +61,19 @@ Shared config discovery is supported for the npm CLI:
 import { defineConfig } from "vize";
 
 export default defineConfig({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
   linter: {
     preset: "opinionated",
   },
   typeChecker: {
+    enabled: true,
     strict: true,
   },
 });
@@ -58,12 +81,44 @@ export default defineConfig({
 
 Override config discovery with `--config`, or disable it with `--no-config`.
 
+## Static Analysis
+
+`vize lint` runs Vue-aware Patina diagnostics through the native binding:
+
+```bash
+vp exec vize lint --preset essential --max-warnings 0 src
+vp exec vize lint --preset opinionated --help-level short src
+vp exec vize lint --format json src
+```
+
 `vize check` in the npm package uses the packaged NAPI checker so it can run from `package.json`
-scripts after installing `vize`. Add `--declaration --declaration-dir dist/types` to emit Vue
-component `.d.ts` files. Use the Rust CLI when you need Corsa project diagnostics across Vue, TS,
-TSX, and `.d.ts` inputs.
+scripts after installing `vize`:
+
+```bash
+vp exec vize check src --strict
+vp exec vize check src --show-virtual-ts
+vp exec vize check src --declaration --declaration-dir dist/types
+```
+
+Use the Rust CLI when you need Corsa project diagnostics across Vue, TS, TSX, and `.d.ts` inputs.
 
 `vize ready` runs `fmt --write`, `lint`, `check`, and `build` in that order.
+
+## Compiler and Tool Options
+
+Important shared fields:
+
+| Field                     | Used by                | Purpose                                                 |
+| ------------------------- | ---------------------- | ------------------------------------------------------- |
+| `compiler.sourceMap`      | Vite plugin            | Enable source maps                                      |
+| `compiler.ssr`            | npm build, Vite plugin | Force SSR compilation                                   |
+| `compiler.vapor`          | npm build, Vite plugin | Enable Vapor compilation                                |
+| `compiler.customRenderer` | npm build, Vite plugin | Support custom renderer element semantics               |
+| `compiler.scriptExt`      | npm build              | Preserve TypeScript output or downcompile to JavaScript |
+| `vite.scanPatterns`       | Vite plugin            | Pre-compile matching Vue files                          |
+| `linter.preset`           | npm lint               | Select the Patina lint preset                           |
+| `typeChecker.strict`      | npm check              | Enable strict checks                                    |
+| `formatter.printWidth`    | npm fmt                | Set formatting width                                    |
 
 ## Programmatic Config Helpers
 

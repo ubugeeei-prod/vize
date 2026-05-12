@@ -31,6 +31,23 @@ curl -fsSL https://vite.plus | bash
 
 See the [Vite+ docs](https://viteplus.dev/) and the [Installing Dependencies guide](https://viteplus.dev/guide/install) for more.
 
+## What Vize Does
+
+At a high level, Vize is split into a few reusable pipelines:
+
+| Pipeline          | Command or package                       | What you get                                                                               |
+| ----------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Compile           | `@vizejs/vite-plugin`, `vize build`      | Rust-native Vue SFC compilation, SSR output, Vapor mode, scoped CSS handling               |
+| Static analysis   | `vize lint`, `oxlint-plugin-vize`        | Vue template, script, CSS, a11y, SSR, Vapor, Musea, cross-file, and type-aware diagnostics |
+| Type check        | `vize check`                             | Virtual TypeScript generation, project diagnostics, Vue-to-source diagnostic mapping       |
+| Format            | `vize fmt`                               | Vue SFC formatting with project and CLI options                                            |
+| Component gallery | `@vizejs/vite-plugin-musea`, `musea-vrt` | Art files, component variants, preview setup, design tokens, a11y, VRT                     |
+| Editor support    | `vize lsp`, VS Code, Zed                 | Opt-in diagnostics and editor features                                                     |
+
+See [Static Analysis](./guide/static-analysis.md) for the lint and type-checking model,
+[Analysis Diagnostics](./guide/analysis-diagnostics.md) for concrete rule output, and
+[Configuration](./guide/configuration.md) for shared config and compiler options.
+
 ## Choose Your Entry Point
 
 ### 1. Vite Projects
@@ -38,7 +55,7 @@ See the [Vite+ docs](https://viteplus.dev/) and the [Installing Dependencies gui
 Use the Vite plugin if you want native Vue compilation in an existing Vite project.
 
 ```bash
-vp install -D @vizejs/vite-plugin
+vp install -D @vizejs/vite-plugin vize
 ```
 
 Install `vize` as a direct dependency only when you want to import shared config helpers from
@@ -51,6 +68,24 @@ import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
   plugins: [vize()],
+});
+```
+
+Add compiler options in `vize.config.ts` when you want the same settings available to the npm CLI
+and plugin:
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
 });
 ```
 
@@ -86,8 +121,8 @@ in package scripts.
 ```bash
 vp install -D vize
 vp exec vize fmt --write src
-vp exec vize lint src
-vp exec vize check
+vp exec vize lint --preset happy-path src
+vp exec vize check src
 vp exec vize build src
 vp exec vize ready src
 ```
@@ -95,6 +130,19 @@ vp exec vize ready src
 The npm `vize check` command uses the packaged NAPI checker and can emit Vue component declarations
 with `--declaration --declaration-dir dist/types`. Use the Rust CLI when you need the Corsa-backed
 project diagnostics path across Vue, TS, TSX, and `.d.ts` inputs.
+
+Recommended package scripts:
+
+```json
+{
+  "scripts": {
+    "vue:fmt": "vize fmt --write src",
+    "vue:lint": "vize lint --preset happy-path src",
+    "vue:check": "vize check src",
+    "vue:ready": "vize ready src"
+  }
+}
+```
 
 ### 4. Full Rust CLI
 
@@ -120,6 +168,15 @@ vize lsp
 
 This path is still maturing, so editor type checking remains an opt-in capability for now. If you are developing Vize alongside Corsa, `vize check --corsa-path /path/to/corsa` lets you point at a custom executable.
 
+Useful type-checking commands:
+
+```bash
+vize check
+vize check --tsconfig tsconfig.app.json
+vize check --show-virtual-ts src/components/App.vue
+vize check --declaration --declaration-dir dist/types
+```
+
 ## Shared `vize.config.*`
 
 The npm CLI and `@vizejs/vite-plugin` share config discovery:
@@ -136,11 +193,24 @@ TypeScript config:
 import { defineConfig } from "vize";
 
 export default defineConfig({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+  },
   linter: {
     preset: "opinionated",
   },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+  },
   formatter: {
     printWidth: 100,
+  },
+  musea: {
+    include: ["src/**/*.art.vue"],
+    basePath: "/__musea__",
   },
   lsp: {
     lint: true,
@@ -158,6 +228,11 @@ amends "node_modules/vize/pkl/vize.pkl"
 
 linter {
   preset = "opinionated"
+}
+
+typeChecker {
+  enabled = true
+  strict = true
 }
 
 lsp {
@@ -199,6 +274,35 @@ Notes:
 - `@vizejs/unplugin` and `@vizejs/rspack-plugin` are still experimental.
 - `@vizejs/native` and `@vizejs/wasm` expose the Rust bindings directly.
 - `@vizejs/vite-plugin-musea` provides the gallery and dev-server workflow for Musea.
+
+## Musea Component Gallery
+
+Use Musea when you want Vue-native component examples, documentation, tokens, VRT, and a11y checks:
+
+```bash
+vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
+```
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
+import { musea } from "@vizejs/vite-plugin-musea";
+
+export default defineConfig({
+  plugins: [
+    vize(),
+    musea({
+      include: ["src/**/*.art.vue"],
+      basePath: "/__musea__",
+      previewCss: ["src/styles/main.css"],
+    }),
+  ],
+});
+```
+
+Run your Vite dev server and open `/__musea__`. See [Musea](./guide/musea.md) for art files,
+preview setup, design tokens, VRT, and generated variants.
 
 ## Oxlint Integration
 

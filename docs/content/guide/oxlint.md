@@ -8,6 +8,9 @@ title: Oxlint Plugin
 Use it when you want Oxlint's Rust-native JS and TS rules together with Vize's Vue-aware
 diagnostics in one run.
 
+For the native lint and type-checking pipeline outside Oxlint, see
+[Static Analysis](./static-analysis.md).
+
 > [!IMPORTANT]
 > The package is available on npm, but the integration is still early. For human-readable terminal
 > output, prefer `oxlint-vize -f stylish` while original SFC range fidelity continues to improve.

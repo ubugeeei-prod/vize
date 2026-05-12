@@ -104,6 +104,58 @@ You can also run the current workspace build directly:
 nix run github:ubugeeei/vize#vize -- --help
 ```
 
+## Static Analysis
+
+Vize shares the same parser and semantic analysis layers across linting, type checking, editor
+diagnostics, compilation, and Musea metadata.
+
+```bash
+vp exec vize lint --preset happy-path src
+vp exec vize lint --preset essential --max-warnings 0 src
+vp exec vize check src
+```
+
+Use the Rust CLI for the fuller project-backed type-checking surface:
+
+```bash
+vize check --tsconfig tsconfig.app.json
+vize check --show-virtual-ts src/components/App.vue
+vize check --declaration --declaration-dir dist/types
+```
+
+`vize lint` runs Patina rules for Vue templates, scripts, CSS, a11y, SSR, Vapor, Musea, cross-file,
+and type-aware checks. `vize check` generates virtual TypeScript for Vue SFCs and maps project
+diagnostics back to the original source files.
+
+## Compiler Configuration
+
+The npm CLI and Vite plugin share `vize.config.*`:
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+  },
+});
+```
+
+Direct `vize()` options override shared config for Vite. See the docs for compiler options,
+project scanning, lint presets, type-checker settings, and Musea config.
+
 ## Oxlint Integration
 
 `oxlint-plugin-vize` lets Oxlint execute Vize Patina diagnostics through Oxlint's JS plugin system.
@@ -114,6 +166,40 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
 This keeps Oxlint's core JS and TS rules active while adding Vue-aware diagnostics under the `vize/*` namespace.
+
+## Musea Component Gallery
+
+Musea uses `*.art.vue` files to describe component variants with Vue-native syntax, then serves a
+gallery through Vite.
+
+```bash
+vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
+```
+
+```ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
+import { musea } from "@vizejs/vite-plugin-musea";
+
+export default defineConfig({
+  plugins: [
+    vize(),
+    musea({
+      include: ["src/**/*.art.vue"],
+      basePath: "/__musea__",
+      previewCss: ["src/styles/main.css"],
+    }),
+  ],
+});
+```
+
+```bash
+vp dev
+vp exec musea-vrt --base-url http://localhost:5173 --ci --json
+```
+
+Use Musea for component documentation, prop palettes, design token views, accessibility audits,
+visual regression snapshots, generated variants, and Storybook-compatible output.
 
 ## Editor Integration
 

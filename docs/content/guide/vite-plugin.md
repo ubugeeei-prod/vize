@@ -37,6 +37,9 @@ export default defineConfig({
 
 That's it. Replace `@vitejs/plugin-vue` with `@vizejs/vite-plugin` and your project compiles through Rust.
 
+For most projects, keep direct plugin options small and put stable compiler settings in
+`vize.config.ts`.
+
 ## Shared Config
 
 The recommended shared entry point is `vize`. A single `vize.config.*` file is read by both the npm CLI and `@vizejs/vite-plugin`.
@@ -62,6 +65,8 @@ import { defineConfig } from "vize";
 export default defineConfig({
   compiler: {
     sourceMap: true,
+    vapor: false,
+    customRenderer: false,
   },
   vite: {
     scanPatterns: ["src/**/*.vue"],
@@ -98,6 +103,54 @@ JSON config with schema:
 
 Importing `defineConfig` from `@vizejs/vite-plugin` still works for backward compatibility, but `import { defineConfig } from "vize"` is the shared path going forward.
 
+See [Configuration](./configuration.md) for the full shared config shape.
+
+## Compiler Options
+
+Direct options passed to `vize()` override `vize.config.*`.
+
+```ts
+vize({
+  sourceMap: true,
+  ssr: false,
+  vapor: false,
+  customRenderer: false,
+  scanPatterns: ["src/**/*.vue"],
+  ignorePatterns: ["node_modules/**", "dist/**", ".git/**"],
+});
+```
+
+| Option                 | Where to set it                                         | Description                                                                                               |
+| ---------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `sourceMap`            | `compiler.sourceMap` or `vize({ sourceMap })`           | Generate source maps. Defaults to development on, production off.                                         |
+| `ssr`                  | `compiler.ssr` or `vize({ ssr })`                       | Force SSR compilation when Vite's SSR build flag is not enough.                                           |
+| `vapor`                | `compiler.vapor` or `vize({ vapor })`                   | Compile templates through the Vapor backend.                                                              |
+| `customRenderer`       | `compiler.customRenderer` or `vize({ customRenderer })` | Treat lowercase non-HTML tags as custom renderer elements. Useful for renderer ecosystems such as TresJS. |
+| `include`              | `vite.include` or `vize({ include })`                   | Files that the plugin should compile.                                                                     |
+| `exclude`              | `vite.exclude` or `vize({ exclude })`                   | Files that the plugin should ignore.                                                                      |
+| `scanPatterns`         | `vite.scanPatterns` or `vize({ scanPatterns })`         | Glob patterns used for startup pre-compilation.                                                           |
+| `ignorePatterns`       | `vite.ignorePatterns` or `vize({ ignorePatterns })`     | Glob patterns skipped during startup pre-compilation.                                                     |
+| `configMode`           | `vize({ configMode })`                                  | Use `"root"`, `"auto"`, or `false` for shared config loading.                                             |
+| `configFile`           | `vize({ configFile })`                                  | Load a specific config file.                                                                              |
+| `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                        | Compile `.vue` files imported from `node_modules` on demand.                                              |
+| `debug`                | `vize({ debug })`                                       | Print plugin debug logs.                                                                                  |
+
+Common recipes:
+
+```ts
+// Vapor-oriented build
+vize({ vapor: true });
+
+// TresJS or another custom renderer
+vize({ customRenderer: true });
+
+// Monorepo package with explicit scan roots
+vize({
+  root: import.meta.dirname,
+  scanPatterns: ["src/**/*.vue", "examples/**/*.vue"],
+});
+```
+
 ## How It Works
 
 The plugin intercepts `.vue` file requests and compiles them using Vize's Rust-native pipeline through Node.js NAPI bindings:
@@ -120,6 +173,9 @@ The plugin intercepts `.vue` file requests and compiles them using Vize's Rust-n
   → Vitrine (NAPI Binding)      — Delivers the result to Node.js
   → Vite module graph            — Served as a virtual module
 ```
+
+The same semantic analysis layer is reused by linting and type checking. See
+[Static Analysis](./static-analysis.md) for the diagnostic side of the pipeline.
 
 ## Comparison
 
