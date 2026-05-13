@@ -496,9 +496,9 @@ body.entry-page {
   padding: 0.85rem 0.95rem;
   border: 1px solid color-mix(in srgb, var(--octc-color-border) 74%, transparent);
   border-radius: 0;
-  background: color-mix(in srgb, var(--octc-color-bg-alt) 48%, transparent) !important;
+  background: color-mix(in srgb, var(--octc-color-bg-alt) 58%, var(--octc-color-bg)) !important;
   color: var(--vize-code-text) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  box-shadow: none;
   overflow: auto;
 }
 
@@ -515,13 +515,14 @@ body.entry-page {
   min-width: max-content;
   padding: 0;
   border: none;
-  background: transparent;
+  background: transparent !important;
   color: inherit !important;
   font-size: 0.84rem;
   line-height: 1.58;
 }
 
 .content pre code span[style] {
+  background: transparent !important;
   color: inherit !important;
 }
 
@@ -585,9 +586,8 @@ body.entry-page {
   --vize-code-function: #d1a27a;
   --vize-code-property: #d3bea0;
   --vize-code-punctuation: rgba(237, 228, 214, 0.58);
-  background: rgba(238, 228, 212, 0.035) !important;
-  border-color: rgba(238, 228, 212, 0.08);
-  box-shadow: inset 0 1px 0 rgba(238, 228, 212, 0.04);
+  background: #211f1e !important;
+  border-color: rgba(238, 228, 212, 0.09);
 }
 
 [data-theme="dark"] .content code,
@@ -599,6 +599,7 @@ body.entry-page {
 
 [data-theme="dark"] .content pre code,
 :root:not([data-theme="light"]) .content pre code {
+  background: transparent !important;
   color: inherit !important;
 }
 
