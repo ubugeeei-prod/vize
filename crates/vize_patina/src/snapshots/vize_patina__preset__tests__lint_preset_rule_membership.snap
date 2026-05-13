@@ -1,6 +1,5 @@
 ---
 source: crates/vize_patina/src/preset.rs
-assertion_line: 97
 expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
 ---
 {
@@ -212,7 +211,6 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/warn-custom-block",
     "vue/warn-custom-directive",
     "vue/no-boolean-attr-value",
-    "vapor/no-suspense",
     "vapor/no-inline-template",
     "vapor/prefer-static-class",
     "vapor/require-vapor-attribute",
@@ -325,7 +323,6 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/warn-custom-directive",
     "vue/no-boolean-attr-value",
     "vue/require-component-registration",
-    "vapor/no-suspense",
     "vapor/no-inline-template",
     "vapor/prefer-static-class",
     "vapor/require-vapor-attribute",

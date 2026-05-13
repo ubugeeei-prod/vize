@@ -62,18 +62,18 @@ template elements, directives, `v-for`, `v-if`, and interpolations. Each rule ca
 its rule name, category, default severity, help text, and whether it is fixable. Presets are just
 registries that decide which rules are enabled together.
 
-| Area                | Example rules                                                                              | What they cover                                    |
-| ------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
-| Vue correctness     | `vue/require-v-for-key`, `vue/valid-v-model`, `vue/no-use-v-if-with-v-for`                 | Template semantics that are local to one component |
-| Vue structure       | `vue/sfc-element-order`, `vue/require-scoped-style`, `vue/no-unused-components`            | SFC shape, component usage, and maintainability    |
-| Script conventions  | `script/no-options-api`, `script/no-get-current-instance`, `script/prefer-import-from-vue` | Vue Composition API and compiler macro conventions |
-| CSS                 | `css/no-important`, `css/no-hardcoded-values`, `css/prefer-logical-properties`             | Style blocks and design-system friendly CSS        |
-| Accessibility       | `a11y/img-alt`, `a11y/anchor-has-content`, `a11y/label-has-for`                            | Accessible markup and interaction patterns         |
-| HTML                | `html/deprecated-element`, `html/id-duplication`, `html/no-empty-palpable-content`         | HTML validity and semantic markup                  |
-| SSR                 | `ssr/no-browser-globals-in-ssr`, `ssr/no-hydration-mismatch`                               | Server/client rendering hazards                    |
-| Vapor               | `vapor/no-vue-lifecycle-events`, `vapor/no-suspense`, `vapor/require-vapor-attribute`      | Vapor-only template constraints                    |
-| Musea               | `musea/require-title`, `musea/valid-variant`, `musea/prefer-design-tokens`                 | Component gallery and variant authoring            |
-| Type-aware analysis | `type/require-typed-props`, `type/require-typed-emits`, `type/no-reactivity-loss`          | Rules that need semantic or checker-backed context |
+| Area                | Example rules                                                                                | What they cover                                    |
+| ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Vue correctness     | `vue/require-v-for-key`, `vue/valid-v-model`, `vue/no-use-v-if-with-v-for`                   | Template semantics that are local to one component |
+| Vue structure       | `vue/sfc-element-order`, `vue/require-scoped-style`, `vue/no-unused-components`              | SFC shape, component usage, and maintainability    |
+| Script conventions  | `script/no-options-api`, `script/no-get-current-instance`, `script/prefer-import-from-vue`   | Vue Composition API and compiler macro conventions |
+| CSS                 | `css/no-important`, `css/no-hardcoded-values`, `css/prefer-logical-properties`               | Style blocks and design-system friendly CSS        |
+| Accessibility       | `a11y/img-alt`, `a11y/anchor-has-content`, `a11y/label-has-for`                              | Accessible markup and interaction patterns         |
+| HTML                | `html/deprecated-element`, `html/id-duplication`, `html/no-empty-palpable-content`           | HTML validity and semantic markup                  |
+| SSR                 | `ssr/no-browser-globals-in-ssr`, `ssr/no-hydration-mismatch`                                 | Server/client rendering hazards                    |
+| Vapor               | `vapor/no-vue-lifecycle-events`, `vapor/no-inline-template`, `vapor/require-vapor-attribute` | Vapor-oriented template constraints                |
+| Musea               | `musea/require-title`, `musea/valid-variant`, `musea/prefer-design-tokens`                   | Component gallery and variant authoring            |
+| Type-aware analysis | `type/require-typed-props`, `type/require-typed-emits`, `type/no-reactivity-loss`            | Rules that need semantic or checker-backed context |
 
 The built-in presets are meant to support adoption in stages:
 

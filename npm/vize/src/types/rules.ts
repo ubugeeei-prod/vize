@@ -52,7 +52,6 @@ export const LINT_RULE_NAMES = [
   "type/require-typed-emits",
   "type/require-typed-props",
   "vapor/no-inline-template",
-  "vapor/no-suspense",
   "vapor/no-vue-lifecycle-events",
   "vapor/prefer-static-class",
   "vapor/require-vapor-attribute",

@@ -38,40 +38,6 @@ onMounted(() => {
 </template>
 ```
 
-## `vapor/no-suspense`
-
-Reports `<Suspense>` in Vapor-only apps.
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <Suspense>
-    <AsyncPanel />
-  </Suspense>
-</template>
-```
-
-Good:
-
-```vue
-<script setup lang="ts" vapor>
-const panel = ref<PanelData | null>(null);
-
-onMounted(async () => {
-  panel.value = await loadPanelData();
-});
-</script>
-
-<template>
-  <AsyncPanel v-if="panel" :data="panel" />
-  <LoadingPanel v-else />
-</template>
-```
-
 ## `vapor/require-vapor-attribute`
 
 Suggests adding `vapor` to `<script setup>` when the preset expects Vapor-compatible components.
