@@ -12,16 +12,16 @@ manual.
 
 - [Vue rules](./vue.md): SFC template structure, Vue directives, component conventions, and
   single-file Vue correctness checks.
-- [Accessibility rules](./accessibility.md): ARIA, keyboard interaction, labels, landmarks, and
-  accessible media checks.
 - [Type and script rules](./type-and-script.md): TypeScript checker-backed diagnostics and Vapor
   script restrictions.
 - [HTML rules](./html.md): HTML validity and semantic markup checks.
+- [Accessibility rules](./accessibility.md): ARIA, keyboard interaction, labels, landmarks, and
+  accessible media checks.
 - [SSR rules](./ssr.md): server rendering and hydration hazards.
 - [Vapor rules](./vapor.md): Vapor-only template constraints.
+- [Musea and CSS rules](./musea-and-css.md): Musea art-block checks and style diagnostics.
 - [Cross-file analyzer rules](./cross-file.md): project-graph diagnostics emitted by
   `vize lint --cross-file`.
-- [Musea and CSS rules](./musea-and-css.md): Musea art-block checks and style diagnostics.
 
 ## Presets
 

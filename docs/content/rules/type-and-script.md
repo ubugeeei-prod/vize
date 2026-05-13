@@ -1,8 +1,8 @@
 ---
-title: Type And Script Rules
+title: Type & Script Rules
 ---
 
-# Type And Script Rules
+# Type & Script Rules
 
 Type rules use the TypeScript checker when semantic information is needed. Vize reads the same
 project shape that TypeScript reads from `tsconfig.json`, so shared ambient names should come from

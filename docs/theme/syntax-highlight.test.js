@@ -38,6 +38,20 @@ void test("createHighlightedHtml highlights vue directives and strings", () => {
   assert.match(html, /v-code__directive/);
   assert.match(html, /v-code__string/);
   assert.match(html, /v-code__delimiter/);
+  assert.match(html, /v-code__delimiter">&gt;/);
+});
+
+void test("createHighlightedHtml does not treat TypeScript generics in Vue scripts as tags", () => {
+  const html = syntax.createHighlightedHtml(
+    '<script setup lang="ts">\nconst key: InjectionKey<Ref<Theme>> = Symbol("theme");\n</script>',
+    "vue",
+  );
+
+  assert.match(html, /&lt;script/);
+  assert.match(html, /&lt;\/script/);
+  assert.match(html, /InjectionKey&lt;Ref&lt;Theme&gt;&gt;/);
+  assert.doesNotMatch(html, /v-code__tag[^>]*>&lt;Ref/);
+  assert.doesNotMatch(html, /v-code__tag[^>]*>&lt;Theme/);
 });
 
 void test("createHighlightedHtml highlights bash commands and flags", () => {

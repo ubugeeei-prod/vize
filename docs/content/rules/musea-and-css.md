@@ -1,8 +1,8 @@
 ---
-title: Musea And CSS Rules
+title: Musea & CSS Rules
 ---
 
-# Musea And CSS Rules
+# Musea & CSS Rules
 
 Musea rules validate `<art>` and `<variant>` blocks. CSS rules inspect style content and recommend
 patterns that keep component styles themeable, predictable, and compatible with Vue and Vapor.

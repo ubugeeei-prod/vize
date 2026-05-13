@@ -1,8 +1,8 @@
 ---
-title: Cross-File Analyzer Rules
+title: Cross-file Analyzer Rules
 ---
 
-# Cross-File Analyzer Rules
+# Cross-file Analyzer Rules
 
 Cross-file diagnostics are emitted by `vize lint --cross-file`. They use
 `vize:croquis/cf/*` diagnostic codes because they analyze a project graph rather than one isolated

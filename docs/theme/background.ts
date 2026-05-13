@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const SCRIPT_BASENAMES = ["vein", "syntax-highlight"];
+const SCRIPT_BASENAMES = ["vein", "navigation", "syntax-highlight"];
 const VERTEX_SHADER_PLACEHOLDER = "__VERT_SRC__";
 const FRAGMENT_SHADER_PLACEHOLDER = "__FRAG_SRC__";
 
