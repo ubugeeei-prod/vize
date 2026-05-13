@@ -14,7 +14,9 @@ examples together.
 - [Vue rules](../rules/vue.md)
 - [Accessibility rules](../rules/accessibility.md)
 - [Type and script rules](../rules/type-and-script.md)
-- [HTML, SSR, and Vapor rules](../rules/html-ssr-vapor.md)
+- [HTML rules](../rules/html.md)
+- [SSR rules](../rules/ssr.md)
+- [Vapor rules](../rules/vapor.md)
 - [Cross-file analyzer rules](../rules/cross-file.md)
 - [Musea and CSS rules](../rules/musea-and-css.md)
 

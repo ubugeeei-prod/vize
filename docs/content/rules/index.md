@@ -16,8 +16,9 @@ manual.
   accessible media checks.
 - [Type and script rules](./type-and-script.md): TypeScript checker-backed diagnostics and Vapor
   script restrictions.
-- [HTML, SSR, and Vapor rules](./html-ssr-vapor.md): HTML validity, server rendering hazards, and
-  Vapor-only template constraints.
+- [HTML rules](./html.md): HTML validity and semantic markup checks.
+- [SSR rules](./ssr.md): server rendering and hydration hazards.
+- [Vapor rules](./vapor.md): Vapor-only template constraints.
 - [Cross-file analyzer rules](./cross-file.md): project-graph diagnostics emitted by
   `vize lint --cross-file`.
 - [Musea and CSS rules](./musea-and-css.md): Musea art-block checks and style diagnostics.
@@ -25,8 +26,8 @@ manual.
 ## Presets
 
 `essential` contains correctness rules that should almost always be enabled. `happy-path` adds
-practical hygiene checks for day-to-day Vue development. `nuxt` includes Nuxt-oriented SSR and Vapor
-expectations. `opinionated` is the broadest built-in preset.
+practical hygiene checks for day-to-day Vue development. `nuxt` includes Nuxt-oriented SSR
+expectations and Vapor expectations. `opinionated` is the broadest built-in preset.
 
 `incremental` starts empty. Use it when a host wants to opt into specific rules without inheriting a
 larger preset.
