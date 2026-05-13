@@ -45,7 +45,7 @@ At a high level, Vize is split into a few reusable pipelines:
 | Editor support    | `vize lsp`, VS Code, Zed                 | Opt-in diagnostics and editor features                                                     |
 
 See [Static Analysis](./guide/static-analysis.md) for the lint and type-checking model,
-[Analysis Diagnostics](./guide/analysis-diagnostics.md) for concrete rule output, and
+[Rules](./rules/index.md) for concrete rule output, and
 [Configuration](./guide/configuration.md) for shared config and compiler options.
 
 ## Choose Your Entry Point

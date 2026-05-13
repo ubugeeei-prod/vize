@@ -72,7 +72,7 @@ semantic model, then feeds Patina lint rules, Canon virtual TypeScript, compiler
 diagnostics, and component gallery metadata. The practical workflow is documented in
 [Static Analysis](./guide/static-analysis.md), with config details in
 [Configuration](./guide/configuration.md). The concrete rule and diagnostic catalog is in
-[Analysis Diagnostics](./guide/analysis-diagnostics.md).
+[Rules](./rules/index.md).
 
 ## Author
 

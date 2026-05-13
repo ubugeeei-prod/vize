@@ -23,7 +23,7 @@ metadata, provide/inject relationships, reactivity flow, generated virtual TypeS
 component gallery metadata all depend on the same lower-level analysis work.
 
 For the concrete rule names, defaults, and cross-file diagnostic codes that can be emitted, see
-[Analysis Diagnostics](./analysis-diagnostics.md).
+[Rules](../rules/index.md).
 
 ## Linting
 

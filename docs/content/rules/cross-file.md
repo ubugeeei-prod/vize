@@ -1,0 +1,415 @@
+---
+title: Cross-File Analyzer Rules
+---
+
+# Cross-File Analyzer Rules
+
+Cross-file diagnostics are emitted by `vize lint --cross-file`. They use
+`vize:croquis/cf/*` diagnostic codes because they analyze a project graph rather than one isolated
+SFC. These checks are the current public surface for Patina rules that need cross-file information.
+
+## `vize:croquis/cf/unmatched-inject`
+
+Reports an `inject()` whose key cannot be matched to a reachable `provide()`.
+
+Bad:
+
+```vue
+<!-- Child.vue -->
+<script setup lang="ts">
+import { ThemeKey } from "./keys";
+
+const theme = inject(ThemeKey);
+</script>
+```
+
+Good:
+
+```vue
+<!-- Parent.vue -->
+<script setup lang="ts">
+import { ThemeKey } from "./keys";
+
+provide(ThemeKey, theme);
+</script>
+
+<template>
+  <Child />
+</template>
+```
+
+## `vize:croquis/cf/unused-provide`
+
+Reports a `provide()` that has no matching injector in the analyzed graph.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+provide(ThemeKey, theme);
+</script>
+```
+
+Good:
+
+```vue
+<!-- Child.vue -->
+<script setup lang="ts">
+const theme = inject(ThemeKey);
+</script>
+```
+
+## `vize:croquis/cf/provide-inject-type`
+
+Reports mismatched provider and injector types.
+
+Bad:
+
+```ts
+// keys.ts
+export const CountKey = Symbol("count") as InjectionKey<Ref<number>>;
+```
+
+```vue
+<!-- Provider.vue -->
+<script setup lang="ts">
+provide(CountKey, ref("1"));
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+provide(CountKey, ref(1));
+</script>
+```
+
+## `vize:croquis/cf/provide-without-symbol`
+
+Reports `provide()` calls that use string keys. Symbols preserve type identity across files.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+provide("theme", theme);
+</script>
+```
+
+Good:
+
+```ts
+// keys.ts
+export const ThemeKey = Symbol("theme") as InjectionKey<Ref<Theme>>;
+```
+
+```vue
+<script setup lang="ts">
+provide(ThemeKey, theme);
+</script>
+```
+
+## `vize:croquis/cf/inject-without-symbol`
+
+Reports `inject()` calls that use string keys.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+const theme = inject("theme");
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+import { ThemeKey } from "./keys";
+
+const theme = inject(ThemeKey);
+</script>
+```
+
+## `vize:croquis/cf/non-reactive-provide`
+
+Reports provided values that are plain snapshots instead of reactive values.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+const theme = { color: "blue" };
+
+provide(ThemeKey, theme);
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const theme = reactive({ color: "blue" });
+
+provide(ThemeKey, theme);
+</script>
+```
+
+## `vize:croquis/cf/duplicate-id`
+
+Reports duplicate static IDs across the analyzed component graph.
+
+Bad:
+
+```vue
+<!-- SearchBox.vue -->
+<template>
+  <input id="search" />
+</template>
+```
+
+```vue
+<!-- HeaderSearch.vue -->
+<template>
+  <input id="search" />
+</template>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const searchId = useId();
+</script>
+
+<template>
+  <input :id="searchId" />
+</template>
+```
+
+## `vize:croquis/cf/non-unique-id`
+
+Reports IDs inside repeated template scopes.
+
+Bad:
+
+```vue
+<template>
+  <div v-for="item in items" id="row" :key="item.id">
+    {{ item.name }}
+  </div>
+</template>
+```
+
+Good:
+
+```vue
+<template>
+  <div v-for="item in items" :id="`row-${item.id}`" :key="item.id">
+    {{ item.name }}
+  </div>
+</template>
+```
+
+## `vize:croquis/cf/spread-breaks-reactivity`
+
+Reports object spreads that snapshot reactive state before passing it to another component or flow.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+const props = defineProps<{ user: User }>();
+const copied = { ...props.user };
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const props = defineProps<{ user: User }>();
+const user = toRef(props, "user");
+</script>
+```
+
+## `vize:croquis/cf/reassignment-breaks-reactivity`
+
+Reports reactive references that are reassigned to plain values.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+let user = toRef(props, "user");
+
+user = props.user;
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const user = toRef(props, "user");
+</script>
+```
+
+## `vize:croquis/cf/value-extraction-breaks-reactivity`
+
+Reports `.value` extraction that is kept as a long-lived snapshot.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+const count = injectedCount.value;
+</script>
+
+<template>
+  <p>{{ count }}</p>
+</template>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const count = injectedCount;
+</script>
+
+<template>
+  <p>{{ count }}</p>
+</template>
+```
+
+## `vize:croquis/cf/destructuring-breaks-reactivity`
+
+Reports destructuring that turns reactive source data into plain bindings.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+const { item } = defineProps<{ item: Item }>();
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const props = defineProps<{ item: Item }>();
+const item = toRef(props, "item");
+</script>
+```
+
+## `vize:croquis/cf/hydration-risk`
+
+Reports values that can render differently between the server and the client.
+
+Bad:
+
+```vue
+<template>
+  <p>{{ new Date().toLocaleString() }}</p>
+</template>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const renderedAt = useState("rendered-at", () => new Date().toISOString());
+</script>
+
+<template>
+  <time :datetime="renderedAt">{{ renderedAt }}</time>
+</template>
+```
+
+## `vize:croquis/cf/async-boundary`
+
+Reports async reactive work that can outlive the state it reads unless cleanup is registered.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+watch(query, async () => {
+  result.value = await load(query.value);
+});
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+watch(query, async (_value, _oldValue, onCleanup) => {
+  const controller = new AbortController();
+  onCleanup(() => controller.abort());
+
+  result.value = await load(query.value, { signal: controller.signal });
+});
+</script>
+```
+
+## `vize:croquis/cf/watcheffect-async`
+
+Reports `watchEffect` callbacks that mix dependency collection with async work.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+watchEffect(async () => {
+  result.value = await load(query.value);
+});
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+watch(query, async (value) => {
+  result.value = await load(value);
+});
+</script>
+```
+
+## `vize:croquis/cf/injected-async-mutation-race`
+
+Reports async mutations to injected state that can race with the provider or sibling injectors.
+
+Bad:
+
+```vue
+<script setup lang="ts">
+const store = inject(StoreKey)!;
+
+watch(query, async () => {
+  store.count = await loadCount(query.value);
+});
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const emit = defineEmits<{ loaded: [count: number] }>();
+
+watch(query, async (value) => {
+  emit("loaded", await loadCount(value));
+});
+</script>
+```
+
+## Analyzer Direction
+
+The cross-file analyzer is intentionally shaped like rule documentation, even though it uses
+diagnostic codes today. Future work can promote more Patina rules into this layer when they need
+imports, component relationships, or project-wide symbol identity to explain a bug accurately.
