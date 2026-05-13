@@ -262,13 +262,15 @@ const count = injectedCount;
 
 ## `vize:croquis/cf/destructuring-breaks-reactivity`
 
-Reports destructuring that turns reactive source data into plain bindings.
+Reports destructured reactive bindings that are copied into another plain binding. Reactive props
+destructure itself is valid; the snapshot happens when the destructured value is assigned elsewhere.
 
 Bad:
 
 ```vue
 <script setup lang="ts">
 const { item } = defineProps<{ item: Item }>();
+const item2 = item;
 </script>
 ```
 
@@ -276,8 +278,8 @@ Good:
 
 ```vue
 <script setup lang="ts">
-const props = defineProps<{ item: Item }>();
-const item = toRef(props, "item");
+const { item } = defineProps<{ item: Item }>();
+const item2 = computed(() => item);
 </script>
 ```
 
