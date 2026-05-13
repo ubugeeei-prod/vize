@@ -80,6 +80,50 @@ loadData()
 }
 
 #[test]
+fn no_floating_promises_reports_template_event_calls() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function save(): Promise<void> {}
+</script>
+
+<template>
+  <button @click="save()">Save</button>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(result.diagnostics.iter().any(|diag| {
+        diag.rule_name == RULE_NO_FLOATING_PROMISES
+            && diag.message.contains("Template event handler")
+    }));
+}
+
+#[test]
+fn no_floating_promises_reports_template_interpolations() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function loadLabel(): Promise<string> {
+  return 'ready'
+}
+</script>
+
+<template>
+  <p>{{ loadLabel() }}</p>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(result.diagnostics.iter().any(|diag| {
+        diag.rule_name == RULE_NO_FLOATING_PROMISES
+            && diag.message.contains("Template interpolation")
+    }));
+}
+
+#[test]
 fn no_unsafe_template_binding_uses_corsa() {
     if !corsa_available() {
         return;
@@ -267,6 +311,51 @@ async function loadData(): Promise<number> {
 
 void loadData()
 </script>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(!result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES));
+}
+
+#[test]
+fn voided_template_promises_are_ignored() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function save(): Promise<void> {}
+</script>
+
+<template>
+  <button @click="void save()">Save</button>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(!result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES));
+}
+
+#[test]
+fn handled_template_promises_are_ignored() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function save(): Promise<void> {}
+function report(error: unknown) {
+  console.error(error)
+}
+</script>
+
+<template>
+  <button @click="save().catch(report)">Save</button>
+</template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
     assert!(!result
         .diagnostics

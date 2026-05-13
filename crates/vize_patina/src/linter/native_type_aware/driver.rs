@@ -18,7 +18,9 @@ use super::{
     parsing::collect_floating_candidates,
     reactivity_loss::collect_reactivity_loss_queries,
     rule_queries::{collect_emit_queries, collect_prop_queries, push_macro_warning, MacroWarning},
-    template_queries::{collect_template_queries, TemplateQueryKind},
+    template_queries::{
+        collect_template_promise_queries, collect_template_queries, TemplateQueryKind,
+    },
 };
 
 pub(super) fn lint_with_descriptor<'a>(
@@ -177,8 +179,23 @@ pub(super) fn lint_with_descriptor<'a>(
             Vec::new()
         }
     });
+    let template_promise_queries =
+        profile!("patina.type_aware.collect_template_promise_queries", {
+            if linter.registry.has_rule(RULE_NO_FLOATING_PROMISES)
+                && linter.is_rule_enabled(RULE_NO_FLOATING_PROMISES)
+            {
+                template_ast.as_ref().map_or_else(Vec::new, |(root, _)| {
+                    collect_template_promise_queries(&virtual_ts, root, template_offset)
+                })
+            } else {
+                Vec::new()
+            }
+        });
 
-    if macro_queries.is_empty() && template_queries.is_empty() && reactivity_loss_queries.is_empty()
+    if macro_queries.is_empty()
+        && template_queries.is_empty()
+        && template_promise_queries.is_empty()
+        && reactivity_loss_queries.is_empty()
     {
         return result;
     }
@@ -262,6 +279,29 @@ pub(super) fn lint_with_descriptor<'a>(
                 push_warning(&mut result, query.diagnostic());
                 if matches!(query.kind, TemplateQueryKind::CallCallee) {
                     warned_template_owners.insert(owner_key);
+                }
+            }
+
+            for query in &template_promise_queries {
+                let probe = profile!(
+                    "patina.type_aware.corsa.probe_template_promise",
+                    session.probe_type_at_offset(
+                        &virtual_ts.content,
+                        query.generated_offset,
+                        false,
+                        true,
+                    )
+                )?;
+                let Some(probe) = probe.as_ref() else {
+                    continue;
+                };
+                if has_promise_like_return(probe)
+                    || corsa::utils::is_promise_like_type_texts(
+                        &probe.type_texts,
+                        &probe.property_names,
+                    )
+                {
+                    push_warning(&mut result, query.diagnostic());
                 }
             }
 

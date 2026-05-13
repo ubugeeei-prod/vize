@@ -103,6 +103,7 @@ const payload = await loadPayload<Payload>();
 ## `type/no-floating-promises`
 
 Reports promises that are created but not awaited, returned, or intentionally handled.
+The check covers both `<script>` and template expressions.
 
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`
@@ -115,16 +116,35 @@ function submit() {
   saveForm(form.value);
 }
 </script>
+
+<template>
+  <button @click="saveForm(form)">Save</button>
+  <p>{{ loadPreview() }}</p>
+</template>
 ```
 
 Good:
 
 ```vue
 <script setup lang="ts">
+type Preview = { title: string };
+
 async function submit() {
   await saveForm(form.value);
 }
+
+const preview = ref<Preview | null>(null);
+
+async function loadPreviewIntoState() {
+  preview.value = await loadPreview();
+}
 </script>
+
+<template>
+  <button @click="void submit()">Save</button>
+  <button @click="void loadPreviewIntoState()">Preview</button>
+  <PreviewPanel v-if="preview" :preview="preview" />
+</template>
 ```
 
 ## `type/no-reactivity-loss`
