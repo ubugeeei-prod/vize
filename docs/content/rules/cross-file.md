@@ -126,7 +126,18 @@ Good:
 
 ```vue
 <script setup lang="ts">
-const theme = reactive({ color: "blue" });
+const theme = ref({ color: "blue" });
+
+provide(ThemeKey, theme);
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const color = ref("blue");
+const theme = computed(() => ({ color: color.value }));
 
 provide(ThemeKey, theme);
 </script>

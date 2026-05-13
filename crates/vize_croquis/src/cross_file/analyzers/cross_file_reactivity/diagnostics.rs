@@ -116,7 +116,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                             key
                         ),
                     )
-                    .with_suggestion("provide('key', ref(value)) or provide('key', reactive({...}))")
+                    .with_suggestion("provide('key', ref(value)) or provide('key', computed(() => value))")
                 }
 
                 CrossFileReactivityIssueKind::ReactivityLostInPropChain {

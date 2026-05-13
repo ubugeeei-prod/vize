@@ -299,11 +299,10 @@ impl CrossFileDiagnostic {
                 );
                 out.push_str("**Why this matters**:\n\n");
                 out.push_str("- Consumers that call `inject()` receive a snapshot-like value.\n");
-                out.push_str("- Later provider updates will not be visible unless the value is a ref, computed, reactive, readonly, or toRef/toRefs result.\n\n");
+                out.push_str("- Later provider updates will not be visible unless consumers receive a ref or computed value.\n\n");
                 out.push_str("**Safer patterns**:\n\n");
                 out.push_str("```ts\n");
                 append!(*out, "provide('{key}', ref(value))\n");
-                append!(*out, "provide('{key}', reactive({{ ... }}))\n");
                 append!(*out, "provide('{key}', computed(() => value))\n");
                 out.push_str("```\n");
             }
