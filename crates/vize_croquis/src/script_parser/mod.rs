@@ -858,6 +858,9 @@ const a = ctx.second()
         );
 
         let losses = result.reactivity.losses();
+        assert!(!losses
+            .iter()
+            .any(|loss| matches!(&loss.kind, ReactivityLossKind::PropsDestructure { .. })));
         assert!(losses.iter().any(|loss| matches!(
             &loss.kind,
             ReactivityLossKind::PlainValueAlias {

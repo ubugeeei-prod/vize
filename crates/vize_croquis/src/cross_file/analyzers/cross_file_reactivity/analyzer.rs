@@ -542,8 +542,8 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             // Look for Pinia store usage patterns
             self.detect_pinia_issues(file_id, analysis);
 
-            // Detect props destructuring
-            self.detect_props_destructure_issues(file_id, analysis);
+            // Direct `defineProps` destructure is reactive in modern Vue. Plain
+            // aliases from those bindings are tracked by the parser instead.
         }
 
         // Check for circular reactive dependencies
@@ -583,34 +583,6 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    /// Detect props destructuring issues.
-    fn detect_props_destructure_issues(&mut self, file_id: FileId, analysis: &crate::Croquis) {
-        if let Some(destructure) = analysis.macros.props_destructure() {
-            // Check if toRefs is used
-            let has_to_refs = analysis
-                .reactivity
-                .sources()
-                .iter()
-                .any(|s| matches!(s.kind, ReactiveKind::ToRefs));
-
-            if !has_to_refs && !destructure.bindings.is_empty() {
-                let props: Vec<CompactString> = destructure.bindings.keys().cloned().collect();
-
-                // Note: Modern Vue handles this via reactive props destructure transform
-                // So we only emit an info-level diagnostic
-                self.issues.push(CrossFileReactivityIssue {
-                    file_id,
-                    kind: CrossFileReactivityIssueKind::PropsDestructured {
-                        destructured_props: props,
-                    },
-                    offset: 0, // Destructure location from macro analysis
-                    related_file: None,
-                    severity: DiagnosticSeverity::Info,
-                });
             }
         }
     }
@@ -706,16 +678,7 @@ fn expression_root_identifier(expression: &str) -> Option<&str> {
 fn prop_reactivity_loss(analysis: &crate::Croquis, prop_name: &str) -> Option<PropLoss> {
     for loss in analysis.reactivity.losses() {
         match &loss.kind {
-            ReactivityLossKind::PropsDestructure { destructured_props }
-                if prop_list_contains(destructured_props, prop_name) =>
-            {
-                return Some(PropLoss {
-                    offset: loss.start,
-                    reason: ReactivityLossReason::Destructured {
-                        props: destructured_props.clone(),
-                    },
-                });
-            }
+            ReactivityLossKind::PropsDestructure { .. } => {}
             ReactivityLossKind::ReactiveDestructure {
                 destructured_props, ..
             } if prop_list_contains(destructured_props, prop_name) => {

@@ -234,13 +234,15 @@ const user = toRef(props, "user");
 
 ## `vize:croquis/cf/value-extraction-breaks-reactivity`
 
-Reports `.value` extraction that is kept as a long-lived snapshot.
+Reports a reactive value that is copied into a long-lived plain binding.
 
 Bad:
 
 ```vue
 <script setup lang="ts">
 const count = injectedCount.value;
+const { item } = defineProps<{ item: Item }>();
+const item2 = item;
 </script>
 
 <template>
@@ -253,6 +255,8 @@ Good:
 ```vue
 <script setup lang="ts">
 const count = injectedCount;
+const { item } = defineProps<{ item: Item }>();
+const item2 = computed(() => item);
 </script>
 
 <template>
@@ -262,15 +266,15 @@ const count = injectedCount;
 
 ## `vize:croquis/cf/destructuring-breaks-reactivity`
 
-Reports destructured reactive bindings that are copied into another plain binding. Reactive props
-destructure itself is valid; the snapshot happens when the destructured value is assigned elsewhere.
+Reports destructuring of reactive objects that are not covered by Vue's reactive props destructure
+transform.
 
 Bad:
 
 ```vue
 <script setup lang="ts">
-const { item } = defineProps<{ item: Item }>();
-const item2 = item;
+const state = reactive({ item });
+const { item: localItem } = state;
 </script>
 ```
 
@@ -278,8 +282,8 @@ Good:
 
 ```vue
 <script setup lang="ts">
-const { item } = defineProps<{ item: Item }>();
-const item2 = computed(() => item);
+const state = reactive({ item });
+const localItem = toRef(state, "item");
 </script>
 ```
 

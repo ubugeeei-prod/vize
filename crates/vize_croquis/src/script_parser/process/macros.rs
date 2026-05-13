@@ -394,8 +394,6 @@ pub(in crate::script_parser) fn process_variable_declarator(
             } else {
                 None
             };
-            let mut define_props_destructured_props = Vec::new();
-
             // Handle object destructuring
             for prop in obj.properties.iter() {
                 // Get the key (prop name in defineProps)
@@ -448,7 +446,6 @@ pub(in crate::script_parser) fn process_variable_declarator(
                                 prop_name: key.clone(),
                             },
                         );
-                        define_props_destructured_props.push(key);
                     }
                 }
             }
@@ -475,7 +472,6 @@ pub(in crate::script_parser) fn process_variable_declarator(
                                 prop_name: CompactString::new("(rest)"),
                             },
                         );
-                        define_props_destructured_props.push(CompactString::new("(rest)"));
                     }
                 }
             }
@@ -487,14 +483,9 @@ pub(in crate::script_parser) fn process_variable_declarator(
                 }
             }
 
-            if is_define_props && !define_props_destructured_props.is_empty() {
-                let span = declarator.id.span();
-                result.reactivity.record_props_destructure(
-                    define_props_destructured_props,
-                    span.start,
-                    span.end,
-                );
-            }
+            // Direct `defineProps` destructure is handled by Vue's reactive props
+            // destructure transform. The origin metadata above is enough for later
+            // plain aliases such as `const item2 = item` to be reported.
         }
 
         BindingPattern::ArrayPattern(arr) => {

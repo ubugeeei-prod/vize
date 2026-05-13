@@ -57,7 +57,7 @@ pub(super) fn collect_reactivity_loss_queries(
 
     for loss in parse_result.reactivity.losses() {
         let diagnostic = reactivity_loss_diagnostic(loss);
-        let expressions = query_expressions_for_loss(loss, parse_result, script_content);
+        let expressions = query_expressions_for_loss(loss, script_content);
 
         if expressions.is_empty() {
             let key = diagnostic_key(loss.start, loss.end);
@@ -112,15 +112,9 @@ fn push_reactivity_loss_marker(
     Some(query)
 }
 
-fn query_expressions_for_loss(
-    loss: &ReactivityLoss,
-    parse_result: &ScriptParseResult,
-    script_content: &str,
-) -> Vec<CompactString> {
+fn query_expressions_for_loss(loss: &ReactivityLoss, script_content: &str) -> Vec<CompactString> {
     match &loss.kind {
-        ReactivityLossKind::PropsDestructure { destructured_props } => {
-            props_destructure_locals(parse_result, destructured_props)
-        }
+        ReactivityLossKind::PropsDestructure { .. } => Vec::new(),
         ReactivityLossKind::RefValueExtract { .. }
         | ReactivityLossKind::ReactivePropertyExtract { .. }
         | ReactivityLossKind::FunctionArgumentExtract { .. }
@@ -136,32 +130,6 @@ fn query_expressions_for_loss(
         | ReactivityLossKind::ReactiveSpread { .. }
         | ReactivityLossKind::ReactiveReassign { .. } => Vec::new(),
     }
-}
-
-fn props_destructure_locals(
-    parse_result: &ScriptParseResult,
-    destructured_props: &[CompactString],
-) -> Vec<CompactString> {
-    let Some(destructure) = parse_result.macros.props_destructure() else {
-        return destructured_props.to_vec();
-    };
-
-    let mut locals =
-        Vec::with_capacity(destructured_props.len() + usize::from(destructure.rest_id.is_some()));
-    for prop in destructured_props {
-        if prop.as_str() == "(rest)" {
-            if let Some(rest_id) = &destructure.rest_id {
-                locals.push(rest_id.clone());
-            }
-            continue;
-        }
-        if let Some(binding) = destructure.get(prop.as_str()) {
-            locals.push(binding.local.clone());
-        } else {
-            locals.push(prop.clone());
-        }
-    }
-    locals
 }
 
 fn reactivity_loss_diagnostic(loss: &ReactivityLoss) -> ReactivityLossQuery {

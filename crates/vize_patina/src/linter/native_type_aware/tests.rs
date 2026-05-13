@@ -127,13 +127,27 @@ const a = ctx2.count()
 
     assert!(messages
         .iter()
-        .any(|message| message.contains("Destructuring props")));
-    assert!(messages
-        .iter()
         .any(|message| message.contains("useMyComposable")));
     assert!(messages
         .iter()
         .any(|message| message.contains("ctx2.count()")));
+}
+
+#[test]
+fn no_reactivity_loss_allows_direct_define_props_destructure() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const { count } = defineProps<{ count: number }>()
+</script>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(!result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_REACTIVITY_LOSS));
 }
 
 #[test]

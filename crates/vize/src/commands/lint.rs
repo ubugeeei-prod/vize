@@ -771,6 +771,62 @@ const { item } = props
     }
 
     #[test]
+    fn cross_file_opt_in_allows_direct_define_props_destructure_until_aliased() {
+        let dir = tempfile::tempdir().unwrap();
+        let direct = dir.path().join("Direct.vue");
+        let alias = dir.path().join("Alias.vue");
+
+        fs::write(
+            &direct,
+            r#"<script setup lang="ts">
+const { item } = defineProps<{ item: { count: number } }>()
+</script>
+"#,
+        )
+        .unwrap();
+        fs::write(
+            &alias,
+            r#"<script setup lang="ts">
+const { item } = defineProps<{ item: { count: number } }>()
+const item2 = item
+</script>
+"#,
+        )
+        .unwrap();
+
+        let files = [&direct, &alias]
+            .into_iter()
+            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
+            .collect::<Vec<_>>();
+        let output = build_cross_file_lint_output(&files, vize_patina::HelpLevel::Short, false);
+
+        let direct_result = output
+            .results
+            .iter()
+            .find(|result| result.filename.ends_with("Direct.vue"))
+            .expect("direct result should exist");
+        assert!(!direct_result.diagnostics.iter().any(|diagnostic| {
+            diagnostic
+                .message
+                .contains("destructuring-breaks-reactivity")
+                || diagnostic
+                    .message
+                    .contains("value-extraction-breaks-reactivity")
+        }));
+
+        let alias_result = output
+            .results
+            .iter()
+            .find(|result| result.filename.ends_with("Alias.vue"))
+            .expect("alias result should exist");
+        assert!(alias_result.diagnostics.iter().any(|diagnostic| {
+            diagnostic
+                .message
+                .contains("value-extraction-breaks-reactivity")
+        }));
+    }
+
+    #[test]
     fn cross_file_opt_in_reports_loop_element_ids_at_template_offsets() {
         let dir = tempfile::tempdir().unwrap();
         let list = dir.path().join("List.vue");

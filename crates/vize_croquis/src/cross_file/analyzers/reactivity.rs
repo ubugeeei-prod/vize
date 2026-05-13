@@ -282,17 +282,7 @@ fn analyze_component_reactivity(analysis: &crate::Croquis) -> Vec<InternalIssue>
                     source: Some(source_name.clone()),
                 });
             }
-            ReactivityLossKind::PropsDestructure { destructured_props } => {
-                issues.push(InternalIssue {
-                    kind: ReactivityIssueKind::DestructuredReactive {
-                        source_name: CompactString::new("props"),
-                        destructured_props: destructured_props.clone(),
-                    },
-                    offset: loss.start,
-                    end_offset: Some(loss.end),
-                    source: Some(CompactString::new("props")),
-                });
-            }
+            ReactivityLossKind::PropsDestructure { .. } => {}
             ReactivityLossKind::FunctionArgumentExtract {
                 source_name,
                 argument_name,
