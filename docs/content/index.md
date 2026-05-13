@@ -20,21 +20,24 @@ hero:
       text: Playground
       link: https://vizejs.dev/play
 features:
-  - title: Blazing Fast CLI
-    details: Compile, format, lint, and type-check Vue SFC files from a single Rust-native binary. One tool replaces an entire toolchain.
-    link: guide/cli.md
-  - title: Native Type Checking
-    details: "`vize check` runs through `vize_canon` and Corsa project sessions backed by `corsa-bind`, keeping Vue-aware diagnostics on a native path."
-    link: guide/static-analysis.md
+  - title: Vite Plugin
+    details: "Start from the recommended integration for Vue applications: native SFC compilation inside Vite with shared Vize configuration."
+    link: guide/vite-plugin.md
   - title: Static Analysis Pipeline
     details: Parser, semantic analysis, lint rules, virtual TypeScript, cross-file checks, and editor diagnostics share the same Rust-native analysis layers.
     link: guide/static-analysis.md
+  - title: Rule Documentation
+    details: Browse concrete Vue, HTML, SSR, Vapor, Musea, type-aware, and cross-file diagnostics with bad and good examples.
+    link: rules/index.md
   - title: Shared Configuration
     details: Configure compiler options, Vite scanning, lint presets, type checking, formatting, LSP features, and Musea from `vize.config.*`.
     link: guide/configuration.md
-  - title: Vite Plugin
-    details: Drop-in replacement for @vitejs/plugin-vue with native compilation speed. No code changes required.
-    link: guide/vite-plugin.md
+  - title: Native Type Checking
+    details: "`vize check` runs through `vize_canon` and Corsa project sessions backed by `corsa-bind`, keeping Vue-aware diagnostics on a native path."
+    link: guide/static-analysis.md
+  - title: CLI Reference
+    details: Compile, format, lint, and type-check Vue SFC files from native commands when scripts or terminal workflows are the right entry point.
+    link: guide/cli.md
   - title: Oxlint Plugin
     details: Run Vize's Vue diagnostics inside Oxlint and combine them with OXC's JS and TS rules in one pass.
     link: guide/oxlint.md

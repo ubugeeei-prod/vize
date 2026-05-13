@@ -36,17 +36,16 @@ const vizeDocsNavigation = (() => {
       paths: ["/", "/getting-started"],
     },
     {
-      title: "Use",
+      title: "Project Setup",
       paths: [
-        "/guide/configuration",
-        "/guide/cli",
         "/guide/vite-plugin",
+        "/integrations/nuxt",
+        "/guide/configuration",
         "/guide/unplugin",
-        "/guide/wasm",
       ],
     },
     {
-      title: "Analyze",
+      title: "Static Analysis",
       paths: [
         "/guide/static-analysis",
         "/guide/analysis-diagnostics",
@@ -69,8 +68,14 @@ const vizeDocsNavigation = (() => {
       ],
     },
     {
-      title: "Integrations",
-      paths: ["/guide/musea", "/integrations/nuxt", "/integrations/vscode", "/integrations/mcp"],
+      title: "Tooling",
+      paths: [
+        "/guide/musea",
+        "/integrations/vscode",
+        "/integrations/mcp",
+        "/guide/wasm",
+        "/guide/cli",
+      ],
     },
     {
       title: "Architecture",
