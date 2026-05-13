@@ -153,7 +153,7 @@
   "script/no-get-current-instance.help": "**修复:** 使用provide/inject或composables:\n```ts\n// 错误\nconst instance = getCurrentInstance()\n\n// 正确 - 使用provide/inject\nconst value = inject('key')\n\n// 正确 - 使用composable\nfunction useMyFeature() {\n  const state = ref(0)\n  return { state }\n}\n```",
   "script/no-async-in-computed.description": "禁止computed属性中的异步函数",
   "script/no-async-in-computed.message": "computed属性不能是异步的。它们必须同步返回值",
-  "script/no-async-in-computed.help": "**问题:** computed必须同步返回值。\n\n**修复:** 使用ref和watchEffect处理异步操作:\n```ts\n// 错误\nconst data = computed(async () => {\n  return await fetchData()\n})\n\n// 正确\nconst data = ref(null)\nwatchEffect(async () => {\n  data.value = await fetchData()\n})\n```",
+  "script/no-async-in-computed.help": "**问题:** computed必须同步返回值。\n\n**修复:** 使用ref和带cleanup的watch处理异步操作，取消过期请求后再写入结果:\n```ts\nconst data = ref(null)\nwatch(source, async (value, _oldValue, onCleanup) => {\n  const controller = new AbortController()\n  let active = true\n  onCleanup(() => {\n    active = false\n    controller.abort()\n  })\n  const next = await fetchData(value, { signal: controller.signal })\n  if (active) data.value = next\n})\n```",
   "script/no-deep-destructure-in-props.description": "禁止defineProps中的深层嵌套解构",
   "script/no-deep-destructure-in-props.message": "避免在defineProps中使用深层嵌套解构（最大深度: {depth}）",
   "script/no-deep-destructure-in-props.help": "**问题:** 深层解构会失去响应性。\n\n**修复:**\n```ts\n// 错误\nconst { user: { name } } = defineProps<{ user: User }>()\n\n// 正确\nconst props = defineProps<{ user: User }>()\nconst name = computed(() => props.user.name)\n```",

@@ -18,11 +18,18 @@
 //!
 //! ### Valid
 //! ```ts
-//! // Use ref + watchEffect for async operations
+//! // Use ref + watch with cleanup for async operations
 //! const data = ref(null)
-//! watchEffect(async () => {
-//!   const response = await fetch('/api/data')
-//!   data.value = await response.json()
+//! watch(query, async (value, _oldValue, onCleanup) => {
+//!   const controller = new AbortController()
+//!   let active = true
+//!   onCleanup(() => {
+//!     active = false
+//!     controller.abort()
+//!   })
+//!   const response = await fetch(`/api/data?q=${value}`, { signal: controller.signal })
+//!   const next = await response.json()
+//!   if (active) data.value = next
 //! })
 //!
 //! // Or use a dedicated async state library
@@ -86,8 +93,8 @@ impl ScriptRule for NoAsyncInComputed {
                             (offset + abs_pos + 9 + trimmed.find("async").unwrap_or(0) + 5) as u32,
                         )
                         .with_help(
-                            "Use ref with watchEffect for async operations: \
-                             `const data = ref(null); watchEffect(async () => { data.value = await fetchData() })`",
+                            "Use ref with watch() and cleanup for async operations; \
+                             abort or ignore stale work before assigning the result.",
                         ),
                     );
                 }
@@ -133,10 +140,19 @@ mod tests {
     }
 
     #[test]
-    fn test_valid_watcheffect_async() {
+    fn test_valid_async_watch_with_cleanup() {
         let linter = create_linter();
         let result = linter.lint(
-            "watchEffect(async () => { data.value = await fetch('/api') })",
+            r#"watch(source, async (value, _oldValue, onCleanup) => {
+  const controller = new AbortController()
+  let active = true
+  onCleanup(() => {
+    active = false
+    controller.abort()
+  })
+  const next = await fetchData(value, { signal: controller.signal })
+  if (active) data.value = next
+})"#,
             0,
         );
         assert_eq!(result.error_count, 0);

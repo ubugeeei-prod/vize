@@ -153,7 +153,7 @@
   "script/no-get-current-instance.help": "Use provide/inject or composables instead",
   "script/no-async-in-computed.description": "Disallow async functions in computed properties",
   "script/no-async-in-computed.message": "Computed properties cannot be async. They must return a value synchronously",
-  "script/no-async-in-computed.help": "Use ref with watchEffect for async operations: `const data = ref(null); watchEffect(async () => { data.value = await fetchData() })`",
+  "script/no-async-in-computed.help": "Use ref with watch() and cleanup for async operations; abort or ignore stale work before assigning the result.",
   "script/no-deep-destructure-in-props.description": "Disallow deeply nested destructuring in defineProps",
   "script/no-deep-destructure-in-props.message": "Avoid deeply nested destructuring in defineProps (max depth: {depth})",
   "script/no-deep-destructure-in-props.help": "Use simple destructuring and access nested properties via computed or direct prop access: `const props = defineProps<...>(); const nested = computed(() => props.parent.child)`",

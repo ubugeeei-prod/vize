@@ -153,7 +153,7 @@
   "script/no-get-current-instance.help": "代わりにprovide/injectまたはcomposablesを使用してください",
   "script/no-async-in-computed.description": "computedプロパティでの非同期関数を禁止する",
   "script/no-async-in-computed.message": "computedプロパティは非同期にできません。値を同期的に返す必要があります",
-  "script/no-async-in-computed.help": "非同期操作にはrefとwatchEffectを使用してください: `const data = ref(null); watchEffect(async () => { data.value = await fetchData() })`",
+  "script/no-async-in-computed.help": "非同期操作にはrefとcleanup付きのwatch()を使用し、結果を書き込む前に古い処理を中断または無視してください",
   "script/no-deep-destructure-in-props.description": "definePropsでの深くネストした分割代入を禁止する",
   "script/no-deep-destructure-in-props.message": "definePropsでの深くネストした分割代入を避けてください（最大深度: {depth}）",
   "script/no-deep-destructure-in-props.help": "シンプルな分割代入を使用し、ネストしたプロパティにはcomputedまたは直接のpropアクセス経由でアクセスしてください: `const props = defineProps<...>(); const nested = computed(() => props.parent.child)`",

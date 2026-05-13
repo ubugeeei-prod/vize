@@ -329,11 +329,17 @@ Good:
 
 ```vue
 <script setup lang="ts">
-watch(query, async (_value, _oldValue, onCleanup) => {
+watch(query, async (value, _oldValue, onCleanup) => {
   const controller = new AbortController();
-  onCleanup(() => controller.abort());
+  let active = true;
 
-  result.value = await load(query.value, { signal: controller.signal });
+  onCleanup(() => {
+    active = false;
+    controller.abort();
+  });
+
+  const next = await load(value, { signal: controller.signal });
+  if (active) result.value = next;
 });
 </script>
 ```
@@ -356,8 +362,17 @@ Good:
 
 ```vue
 <script setup lang="ts">
-watch(query, async (value) => {
-  result.value = await load(value);
+watch(query, async (value, _oldValue, onCleanup) => {
+  const controller = new AbortController();
+  let active = true;
+
+  onCleanup(() => {
+    active = false;
+    controller.abort();
+  });
+
+  const next = await load(value, { signal: controller.signal });
+  if (active) result.value = next;
 });
 </script>
 ```
@@ -384,8 +399,17 @@ Good:
 <script setup lang="ts">
 const emit = defineEmits<{ loaded: [count: number] }>();
 
-watch(query, async (value) => {
-  emit("loaded", await loadCount(value));
+watch(query, async (value, _oldValue, onCleanup) => {
+  const controller = new AbortController();
+  let active = true;
+
+  onCleanup(() => {
+    active = false;
+    controller.abort();
+  });
+
+  const count = await loadCount(value, { signal: controller.signal });
+  if (active) emit("loaded", count);
 });
 </script>
 ```
