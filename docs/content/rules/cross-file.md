@@ -7,6 +7,8 @@ title: Cross-File Analyzer Rules
 Cross-file diagnostics are emitted by `vize lint --cross-file`. They use
 `vize:croquis/cf/*` diagnostic codes because they analyze a project graph rather than one isolated
 SFC. These checks are the current public surface for Patina rules that need cross-file information.
+Provider and injector value type mismatches are left to TypeScript diagnostics when the key is
+declared with `InjectionKey<T>`.
 
 ## `vize:croquis/cf/unmatched-inject`
 
@@ -59,32 +61,6 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-## `vize:croquis/cf/provide-inject-type`
-
-Reports mismatched provider and injector types.
-
-Bad:
-
-```ts
-// keys.ts
-export const CountKey = Symbol("count") as InjectionKey<Ref<number>>;
-```
-
-```vue
-<!-- Provider.vue -->
-<script setup lang="ts">
-provide(CountKey, ref("1"));
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-provide(CountKey, ref(1));
-</script>
-```
-
 ## `vize:croquis/cf/provide-without-symbol`
 
 Reports `provide()` calls that use string keys. Symbols preserve type identity across files.
@@ -101,7 +77,7 @@ Good:
 
 ```ts
 // keys.ts
-export const ThemeKey = Symbol("theme") as InjectionKey<Ref<Theme>>;
+export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
 ```vue
