@@ -85,6 +85,28 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-resolve-js-macro-"));
+  const importer = path.join(tempRoot, "App.vue");
+  const stub = path.join(tempRoot, "component-stub.js");
+  fs.writeFileSync(importer, "<template><div /></template>");
+  fs.writeFileSync(stub, "export default {};");
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(tempRoot),
+    "./component-stub.js?macro=true",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `${stub}?macro=true`,
+    "non-Vue macro imports should stay regular JavaScript modules",
+  );
+}
+
+{
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "npmx.dev");
   if (hasFixtureProject(projectRoot)) {
     const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));

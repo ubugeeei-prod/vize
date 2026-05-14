@@ -76,6 +76,10 @@ function normalizeMacroRealPath(realPath: string): string {
   return realPath.endsWith(".vue.ts") ? realPath.slice(0, -3) : realPath;
 }
 
+function isVueSfcPath(realPath: string): boolean {
+  return normalizeMacroRealPath(realPath).endsWith(".vue");
+}
+
 function stripVirtualQuery(id: string): string {
   return normalizeMacroRealPath(id.slice(1).split("?")[0] ?? "");
 }
@@ -212,29 +216,34 @@ export function loadHook(
 
   // Handle Vue Router's ?definePage query through extracted artifacts.
   if (id.startsWith("\0") && hasQueryParam(id, "definePage")) {
-    return loadDefinePageArtifact(state, stripVirtualQuery(id), !!loadOptions?.ssr);
+    const realPath = stripVirtualQuery(id);
+    if (isVueSfcPath(realPath)) {
+      return loadDefinePageArtifact(state, realPath, !!loadOptions?.ssr);
+    }
   }
 
   // Handle ?macro=true queries
   if (id.startsWith("\0") && hasMacroQuery(id)) {
     const realPath = stripVirtualQuery(id);
-    const artifactLoad = loadDefinePageMetaArtifact(state, realPath, !!loadOptions?.ssr);
-    if (artifactLoad) {
-      return artifactLoad;
-    }
-
-    if (fs.existsSync(realPath)) {
-      const source = fs.readFileSync(realPath, "utf-8");
-      const setupMatch = source.match(/<script\s+setup[^>]*>([\s\S]*?)<\/script>/);
-      if (setupMatch) {
-        const scriptContent = setupMatch[1];
-        return {
-          code: `${scriptContent}\nexport default {}`,
-          map: null,
-        };
+    if (isVueSfcPath(realPath)) {
+      const artifactLoad = loadDefinePageMetaArtifact(state, realPath, !!loadOptions?.ssr);
+      if (artifactLoad) {
+        return artifactLoad;
       }
+
+      if (fs.existsSync(realPath)) {
+        const source = fs.readFileSync(realPath, "utf-8");
+        const setupMatch = source.match(/<script\s+setup[^>]*>([\s\S]*?)<\/script>/);
+        if (setupMatch) {
+          const scriptContent = setupMatch[1];
+          return {
+            code: `${scriptContent}\nexport default {}`,
+            map: null,
+          };
+        }
+      }
+      return { code: "export default {}", map: null };
     }
-    return { code: "export default {}", map: null };
   }
 
   // Handle vize virtual modules

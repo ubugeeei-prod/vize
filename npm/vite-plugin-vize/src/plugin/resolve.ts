@@ -63,6 +63,10 @@ function isMacroVirtualId(id: string): boolean {
   return id.startsWith("\0") && (hasMacroQuery(id) || hasQueryParam(id, "definePage"));
 }
 
+function isVueSfcPath(id: string): boolean {
+  return (id.split("?")[0] ?? id).endsWith(".vue");
+}
+
 function normalizeRequireBase(importer?: string): string | null {
   if (!importer) {
     return null;
@@ -183,7 +187,7 @@ export async function resolveIdHook(
   // Nuxt's router generates `import { default } from "page.vue?macro=true"` to extract
   // route metadata. Without @vitejs/plugin-vue, Vize must resolve this query so the
   // load hook can return compile-time macro artifact modules.
-  if (hasMacroQuery(id) || hasQueryParam(id, "definePage")) {
+  if ((hasMacroQuery(id) || hasQueryParam(id, "definePage")) && isVueSfcPath(id)) {
     const filePath = id.split("?")[0];
     const querySuffix = id.slice(id.indexOf("?"));
     const resolved = resolveVuePath(state, filePath, importer);

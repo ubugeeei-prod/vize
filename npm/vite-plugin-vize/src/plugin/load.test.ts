@@ -192,6 +192,27 @@ assert.doesNotMatch(
   "Nuxt definePageMeta macro queries should not return the component setup body",
 );
 
+const jsMacroDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-js-macro-"));
+const jsMacroPath = path.join(jsMacroDir, "component-stub.js");
+fs.writeFileSync(jsMacroPath, "export default {};");
+
+const jsMacroLoad = loadHook(
+  { ...hmrState, cache: new Map(), ssrCache: new Map(), root: jsMacroDir },
+  `\0${jsMacroPath}?macro=true`,
+  { ssr: false },
+);
+
+assert.equal(
+  typeof jsMacroLoad,
+  "string",
+  "non-Vue macro virtual IDs should be proxied without SFC compilation",
+);
+assert.match(
+  jsMacroLoad as string,
+  /component-stub\.js\?macro=true/,
+  "non-Vue macro proxies should preserve the macro query for Vite",
+);
+
 const firstLoad = loadHook(hmrState, toVirtualId(realPath), { ssr: false });
 assert.ok(firstLoad && typeof firstLoad === "object", "Virtual module should load as code object");
 assert.match(
