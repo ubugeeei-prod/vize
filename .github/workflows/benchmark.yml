@@ -93,4 +93,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: node head/bench/comment-pr.mjs --body benchmark-summary.md
+          BENCHMARK_COMMENT_KEY: ${{ github.event.pull_request.head.sha }}
+        run: node head/bench/comment-pr.mjs --body benchmark-summary.md --comment-key "$BENCHMARK_COMMENT_KEY"

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Create or update the PR benchmark comment.
+ * Create or update a PR benchmark comment.
  */
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const MARKER = "<!-- vize-pr-benchmark -->";
+const MARKER_NAME = "vize-pr-benchmark";
 
 function parseArgs(argv) {
   const args = {};
@@ -32,6 +32,17 @@ function requireValue(value, name) {
     throw new Error(`Missing ${name}`);
   }
   return value;
+}
+
+function markerForKey(key) {
+  const trimmed = key?.trim();
+  if (!trimmed) {
+    return `<!-- ${MARKER_NAME} -->`;
+  }
+  if (trimmed.includes("-->") || /[\r\n]/.test(trimmed)) {
+    throw new Error("Invalid benchmark comment key");
+  }
+  return `<!-- ${MARKER_NAME}:${trimmed} -->`;
 }
 
 async function githubRequest(path, options = {}) {
@@ -63,12 +74,13 @@ async function main() {
   const repo = requireValue(process.env.GITHUB_REPOSITORY, "GITHUB_REPOSITORY");
   const prNumber = requireValue(process.env.PR_NUMBER, "PR_NUMBER");
   const bodyPath = resolve(requireValue(args.body, "--body"));
+  const marker = markerForKey(args["comment-key"] ?? process.env.BENCHMARK_COMMENT_KEY);
   const benchmarkBody = readFileSync(bodyPath, "utf8");
-  const body = `${MARKER}\n${benchmarkBody}`;
+  const body = `${marker}\n${benchmarkBody}`;
 
   const comments = await githubRequest(`/repos/${repo}/issues/${prNumber}/comments?per_page=100`);
   const existing = comments.find(
-    (comment) => comment.user?.type === "Bot" && comment.body?.includes(MARKER),
+    (comment) => comment.user?.type === "Bot" && comment.body?.includes(marker),
   );
 
   if (existing) {
