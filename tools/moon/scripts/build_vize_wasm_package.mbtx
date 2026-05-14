@@ -14,6 +14,15 @@ import {
 }
 
 ///|
+fn wasm_rustflags() -> String {
+  let flag = "--cfg getrandom_backend=\"wasm_js\""
+  match @sys.get_env_var("RUSTFLAGS") {
+    Some(value) if value.trim() != "" => value + " " + flag
+    _ => flag
+  }
+}
+
+///|
 /// Main entry point for generating the publishable WASM package directory.
 async fn run_app() -> Int {
   let cargo_exit = @process.run(
@@ -29,6 +38,7 @@ async fn run_app() -> Int {
       "--target",
       "wasm32-unknown-unknown",
     ],
+    extra_env={"RUSTFLAGS": wasm_rustflags()},
   )
   if cargo_exit != 0 {
     println("Failed to build the WASM crate")

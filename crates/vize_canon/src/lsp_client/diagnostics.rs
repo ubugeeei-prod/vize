@@ -428,7 +428,7 @@ impl CorsaProjectClient {
             let document = VirtualDocument::new(
                 lsp_uri.clone(),
                 language_id_for_uri(document_uri.as_str()),
-                text,
+                text.as_str(),
             );
             overlay
                 .open(document)

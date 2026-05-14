@@ -11,9 +11,10 @@
 )]
 
 use glob::glob;
-use napi::bindgen_prelude::{Env, Error, Object, Result, Status};
+use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
+use serde_json::{json, Value};
 use std::{
     fs,
     sync::atomic::{AtomicUsize, Ordering},
@@ -169,7 +170,7 @@ pub struct BatchCompileResultWithFilesNapi {
 
 /// Parse SFC (.vue file) - returns lightweight result for speed
 #[napi(js_name = "parseSfc")]
-pub fn parse_sfc(env: Env, source: String, options: Option<SfcParseOptionsNapi>) -> Result<Object> {
+pub fn parse_sfc(source: String, options: Option<SfcParseOptionsNapi>) -> Result<Value> {
     use vize_atelier_sfc::{parse_sfc as sfc_parse, SfcParseOptions};
 
     let opts = options.unwrap_or_default();
@@ -183,67 +184,67 @@ pub fn parse_sfc(env: Env, source: String, options: Option<SfcParseOptionsNapi>)
 
     match sfc_parse(&source, parse_opts) {
         Ok(descriptor) => {
-            // Build JS object directly for speed (avoid JSON serialization)
-            let mut obj = env.create_object()?;
-
-            obj.set("filename", descriptor.filename.as_ref())?;
-            obj.set("source", descriptor.source.as_ref())?;
-
-            // Template
-            if let Some(ref template) = descriptor.template {
-                let mut tpl_obj = env.create_object()?;
-                tpl_obj.set("content", template.content.as_ref())?;
-                tpl_obj.set("lang", template.lang.as_deref())?;
-                obj.set("template", tpl_obj)?;
+            let template = if let Some(ref template) = descriptor.template {
+                json!({
+                    "content": template.content.as_ref(),
+                    "lang": template.lang.as_deref(),
+                })
             } else {
-                obj.set("template", env.get_null()?)?;
-            }
+                Value::Null
+            };
 
-            // Script
-            if let Some(ref script) = descriptor.script {
-                let mut scr_obj = env.create_object()?;
-                scr_obj.set("content", script.content.as_ref())?;
-                scr_obj.set("lang", script.lang.as_deref())?;
-                scr_obj.set("setup", script.setup)?;
-                obj.set("script", scr_obj)?;
+            let script = if let Some(ref script) = descriptor.script {
+                json!({
+                    "content": script.content.as_ref(),
+                    "lang": script.lang.as_deref(),
+                    "setup": script.setup,
+                })
             } else {
-                obj.set("script", env.get_null()?)?;
-            }
+                Value::Null
+            };
 
-            // Script Setup
-            if let Some(ref script_setup) = descriptor.script_setup {
-                let mut scr_obj = env.create_object()?;
-                scr_obj.set("content", script_setup.content.as_ref())?;
-                scr_obj.set("lang", script_setup.lang.as_deref())?;
-                scr_obj.set("setup", script_setup.setup)?;
-                obj.set("scriptSetup", scr_obj)?;
+            let script_setup = if let Some(ref script_setup) = descriptor.script_setup {
+                json!({
+                    "content": script_setup.content.as_ref(),
+                    "lang": script_setup.lang.as_deref(),
+                    "setup": script_setup.setup,
+                })
             } else {
-                obj.set("scriptSetup", env.get_null()?)?;
-            }
+                Value::Null
+            };
 
-            // Styles
-            let mut styles_arr = env.create_array(descriptor.styles.len() as u32)?;
-            for (i, style) in descriptor.styles.iter().enumerate() {
-                let mut style_obj = env.create_object()?;
-                style_obj.set("content", style.content.as_ref())?;
-                style_obj.set("lang", style.lang.as_deref())?;
-                style_obj.set("scoped", style.scoped)?;
-                style_obj.set("module", style.module.as_deref())?;
-                styles_arr.set(i as u32, style_obj)?;
-            }
-            obj.set("styles", styles_arr)?;
+            let styles = descriptor
+                .styles
+                .iter()
+                .map(|style| {
+                    json!({
+                        "content": style.content.as_ref(),
+                        "lang": style.lang.as_deref(),
+                        "scoped": style.scoped,
+                        "module": style.module.as_deref(),
+                    })
+                })
+                .collect::<Vec<_>>();
+            let custom_blocks = descriptor
+                .custom_blocks
+                .iter()
+                .map(|block| {
+                    json!({
+                        "type": block.block_type.as_ref(),
+                        "content": block.content.as_ref(),
+                    })
+                })
+                .collect::<Vec<_>>();
 
-            // Custom blocks
-            let mut customs_arr = env.create_array(descriptor.custom_blocks.len() as u32)?;
-            for (i, block) in descriptor.custom_blocks.iter().enumerate() {
-                let mut block_obj = env.create_object()?;
-                block_obj.set("type", block.block_type.as_ref())?;
-                block_obj.set("content", block.content.as_ref())?;
-                customs_arr.set(i as u32, block_obj)?;
-            }
-            obj.set("customBlocks", customs_arr)?;
-
-            Ok(obj)
+            Ok(json!({
+                "filename": descriptor.filename.as_ref(),
+                "source": descriptor.source.as_ref(),
+                "template": template,
+                "script": script,
+                "scriptSetup": script_setup,
+                "styles": styles,
+                "customBlocks": custom_blocks,
+            }))
         }
         Err(e) => Err(Error::new(Status::GenericFailure, e.message.to_string())),
     }

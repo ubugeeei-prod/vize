@@ -10,7 +10,7 @@ import {
 }
 
 ///|
-let wasm_bindgen_version = "0.2.118"
+let wasm_bindgen_version = "0.2.121"
 
 ///|
 fn cli_args() -> Array[String] {
@@ -123,8 +123,30 @@ fn macos_library_path(sdk_root : String) -> String {
 }
 
 ///|
+fn wasm_rustflags() -> String {
+  let flag = "--cfg getrandom_backend=\"wasm_js\""
+  match @sys.get_env_var("RUSTFLAGS") {
+    Some(value) if value.trim() != "" => value + " " + flag
+    _ => flag
+  }
+}
+
+///|
+fn args_include_wasm_target(args : Array[String]) -> Bool {
+  for arg in args {
+    if arg == "wasm32-unknown-unknown" {
+      return true
+    }
+  }
+  false
+}
+
+///|
 async fn run_cargo(root : String, args : Array[String]) -> Int {
   let extra_env : Map[String, String] = {}
+  if args_include_wasm_target(args) {
+    extra_env["RUSTFLAGS"] = wasm_rustflags()
+  }
   match resolve_macos_sdk_root(root) {
     Some(sdk_root) => {
       extra_env["SDKROOT"] = sdk_root

@@ -22,28 +22,28 @@ catalogs:
 
   # TypeScript toolchain shared across workspace packages.
   typescript:
-    "@types/node": "25.6.0"
-    "@typescript/native-preview": "7.0.0-dev.20260421.1"
+    "@types/node": "25.7.0"
+    "@typescript/native-preview": "7.0.0-dev.20260514.1"
     typescript: "6.0.3"
-    vue-tsc: "3.2.7"
+    vue-tsc: "3.2.9"
 
   # Vite / Vite Plus stack and adjacent build-time plugins.
   vite-stack:
-    vite: "npm:@voidzero-dev/vite-plus-core@0.1.19"
-    vitest: "npm:@voidzero-dev/vite-plus-test@0.1.19"
-    vite-plus: "0.1.19"
-    tsdown: "0.21.9"
+    vite: "npm:@voidzero-dev/vite-plus-core@0.1.21"
+    vitest: "npm:@voidzero-dev/vite-plus-test@0.1.21"
+    vite-plus: "0.1.21"
+    tsdown: "0.22.0"
     "@vitejs/plugin-vue": "6.0.6"
-    vite-node: "5.3.0"
+    vite-node: "6.0.0"
     vite-plugin-inspect: "11.3.3"
     unplugin: "3.0.0"
 
   # Stable Vue ecosystem packages used by shipping examples and integrations.
   vue-stable:
-    vue: "3.5.32"
-    "@vue/runtime-core": "3.5.32"
-    "@vue/test-utils": "2.4.6"
-    vue-router: "4.6.4"
+    vue: "3.5.34"
+    "@vue/runtime-core": "3.5.34"
+    "@vue/test-utils": "2.4.10"
+    vue-router: "5.0.7"
 
   # Vue beta track used by the playground and benchmark harnesses.
   vue-beta:
@@ -53,57 +53,57 @@ catalogs:
 
   # Test runners and browser automation.
   testing:
-    "@playwright/test": "1.59.1"
-    playwright: "1.59.1"
+    "@playwright/test": "1.60.0"
+    playwright: "1.60.0"
 
   # Lint and formatting toolchain.
   linting:
-    oxfmt: "0.46.0"
-    oxlint: "1.61.0"
-    "@oxlint/plugins": "1.61.0"
+    oxfmt: "0.49.0"
+    oxlint: "1.64.0"
+    "@oxlint/plugins": "1.64.0"
 
   # Bundlers beyond the Vite stack.
   bundlers:
-    "@rspack/cli": "1.7.11"
-    "@rspack/core": "1.7.11"
+    "@rspack/cli": "2.0.3"
+    "@rspack/core": "2.0.3"
     esbuild: "0.28.0"
-    rollup: "4.60.2"
+    rollup: "4.60.3"
     webpack: "5.106.2"
 
   # External framework integrations and native build helpers.
   integrations:
-    "@modelcontextprotocol/sdk": "0.5.0"
+    "@modelcontextprotocol/sdk": "1.29.0"
     "@napi-rs/cli": "3.6.2"
-    "@nuxt/kit": "4.4.2"
-    "@ox-content/vite-plugin": "2.4.0"
+    "@nuxt/kit": "4.4.5"
+    "@ox-content/vite-plugin": "2.5.0"
 
   # Rendering / content tooling used by docs, playgrounds, and galleries.
   content:
     "@mdi/js": "7.4.47"
-    "@tsdown/css": "0.21.9"
+    "@tsdown/css": "0.22.0"
     "@types/pngjs": "6.0.5"
     highlight.js: "11.11.1"
-    marked: "17.0.1"
+    marked: "18.0.3"
     marked-highlight: "2.2.4"
-    monaco-editor: "0.52.2"
+    monaco-editor: "0.55.1"
     pngjs: "7.0.0"
-    shiki: "1.29.2"
-    three: "0.183.1"
+    shiki: "4.0.2"
+    three: "0.184.0"
 
   # JS-side OXC transform bridge.
   oxc:
-    oxc-transform: "0.56.5"
+    oxc-transform: "0.130.0"
 
   # Published native binary packages that are installed optionally at runtime.
   native-binaries:
-    "@vizejs/native-darwin-arm64": "0.49.0"
-    "@vizejs/native-darwin-x64": "0.49.0"
-    "@vizejs/native-linux-arm64-gnu": "0.49.0"
-    "@vizejs/native-linux-arm64-musl": "0.49.0"
-    "@vizejs/native-linux-x64-gnu": "0.49.0"
-    "@vizejs/native-linux-x64-musl": "0.49.0"
-    "@vizejs/native-win32-arm64-msvc": "0.49.0"
-    "@vizejs/native-win32-x64-msvc": "0.49.0"
+    "@vizejs/native-darwin-arm64": "0.77.0"
+    "@vizejs/native-darwin-x64": "0.77.0"
+    "@vizejs/native-linux-arm64-gnu": "0.77.0"
+    "@vizejs/native-linux-arm64-musl": "0.77.0"
+    "@vizejs/native-linux-x64-gnu": "0.77.0"
+    "@vizejs/native-linux-x64-musl": "0.77.0"
+    "@vizejs/native-win32-arm64-msvc": "0.77.0"
+    "@vizejs/native-win32-x64-msvc": "0.77.0"
 
 overrides:
   vite: "catalog:vite-stack"

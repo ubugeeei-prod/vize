@@ -17,6 +17,15 @@ fn cli_args() -> Array[String] {
 }
 
 ///|
+fn wasm_rustflags() -> String {
+  let flag = "--cfg getrandom_backend=\"wasm_js\""
+  match @sys.get_env_var("RUSTFLAGS") {
+    Some(value) if value.trim() != "" => value + " " + flag
+    _ => flag
+  }
+}
+
+///|
 async fn run_app() -> Int {
   let out_dirs = cli_args()
   if out_dirs.is_empty() {
@@ -38,6 +47,7 @@ async fn run_app() -> Int {
       "--target",
       "wasm32-unknown-unknown",
     ],
+    extra_env={"RUSTFLAGS": wasm_rustflags()},
   )
   if cargo_exit != 0 {
     return cargo_exit

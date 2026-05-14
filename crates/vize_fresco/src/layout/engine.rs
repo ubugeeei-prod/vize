@@ -58,8 +58,8 @@ impl LayoutEngine {
 
         let mut taffy_style = style.to_taffy();
         taffy_style.size = Size {
-            width: Dimension::Length(width),
-            height: Dimension::Length(height),
+            width: Dimension::length(width),
+            height: Dimension::length(height),
         };
 
         let node_id = self
@@ -233,11 +233,7 @@ impl Default for LayoutEngine {
 
 /// Resolve margin value (treating auto as 0)
 fn resolve_margin(m: taffy::LengthPercentageAuto) -> f32 {
-    match m {
-        taffy::LengthPercentageAuto::Length(v) => v,
-        taffy::LengthPercentageAuto::Percent(_v) => 0.0, // TODO: resolve percentage
-        taffy::LengthPercentageAuto::Auto => 0.0,
-    }
+    m.resolve_to_option(0.0, |_, _| 0.0).unwrap_or(0.0)
 }
 
 #[cfg(test)]

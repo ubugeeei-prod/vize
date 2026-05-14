@@ -43,7 +43,7 @@ async function githubRequest(path, options = {}) {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       "X-GitHub-Api-Version": "2022-11-28",
-      ...(options.headers ?? {}),
+      ...options.headers,
     },
   });
 

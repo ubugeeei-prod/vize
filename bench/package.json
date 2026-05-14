@@ -13,13 +13,13 @@
     "@vitejs/plugin-vue": "catalog:vite-stack",
     "@vue/compiler-sfc": "catalog:vue-beta",
     "@vue/compiler-vapor": "catalog:vue-beta",
-    "eslint": "9.39.3",
-    "eslint-plugin-vue": "10.8.0",
+    "eslint": "10.3.0",
+    "eslint-plugin-vue": "10.9.1",
     "prettier": "catalog:repo-tooling",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-beta",
     "vue-eslint-parser": "10.4.0",
-    "vue-tsc": "3.2.7"
+    "vue-tsc": "3.2.9"
   }
 }

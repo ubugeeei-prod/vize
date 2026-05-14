@@ -336,9 +336,9 @@ impl Dimension {
 
     fn to_taffy(self) -> taffy::Dimension {
         match self {
-            Dimension::Auto => taffy::Dimension::Auto,
-            Dimension::Points(v) => taffy::Dimension::Length(v),
-            Dimension::Percent(v) => taffy::Dimension::Percent(v / 100.0),
+            Dimension::Auto => taffy::Dimension::auto(),
+            Dimension::Points(v) => taffy::Dimension::length(v),
+            Dimension::Percent(v) => taffy::Dimension::percent(v / 100.0),
         }
     }
 }
@@ -405,18 +405,18 @@ pub enum LengthPercentageAuto {
 impl LengthPercentageAuto {
     fn to_taffy(self) -> taffy::LengthPercentageAuto {
         match self {
-            LengthPercentageAuto::Auto => taffy::LengthPercentageAuto::Auto,
-            LengthPercentageAuto::Points(v) => taffy::LengthPercentageAuto::Length(v),
-            LengthPercentageAuto::Percent(v) => taffy::LengthPercentageAuto::Percent(v / 100.0),
+            LengthPercentageAuto::Auto => taffy::LengthPercentageAuto::auto(),
+            LengthPercentageAuto::Points(v) => taffy::LengthPercentageAuto::length(v),
+            LengthPercentageAuto::Percent(v) => taffy::LengthPercentageAuto::percent(v / 100.0),
         }
     }
 
     /// Convert to LengthPercentage, treating Auto as zero.
     fn to_taffy_no_auto(self) -> taffy::LengthPercentage {
         match self {
-            LengthPercentageAuto::Auto => taffy::LengthPercentage::Length(0.0),
-            LengthPercentageAuto::Points(v) => taffy::LengthPercentage::Length(v),
-            LengthPercentageAuto::Percent(v) => taffy::LengthPercentage::Percent(v / 100.0),
+            LengthPercentageAuto::Auto => taffy::LengthPercentage::length(0.0),
+            LengthPercentageAuto::Points(v) => taffy::LengthPercentage::length(v),
+            LengthPercentageAuto::Percent(v) => taffy::LengthPercentage::percent(v / 100.0),
         }
     }
 }
@@ -439,8 +439,8 @@ impl Gap {
 
     fn to_taffy(self) -> taffy::Size<taffy::LengthPercentage> {
         taffy::Size {
-            width: taffy::LengthPercentage::Length(self.column),
-            height: taffy::LengthPercentage::Length(self.row),
+            width: taffy::LengthPercentage::length(self.column),
+            height: taffy::LengthPercentage::length(self.row),
         }
     }
 }
