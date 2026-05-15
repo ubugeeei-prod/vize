@@ -75,6 +75,9 @@ vize lint examples/cli/src/*.vue --max-warnings 5
 
 # Show only the summary
 vize lint examples/cli/src/*.vue --quiet
+
+# Print rule and file timing
+vize lint examples/cli/src/*.vue --profile
 ```
 
 **Options:**

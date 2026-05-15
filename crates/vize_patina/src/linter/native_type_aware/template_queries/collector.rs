@@ -11,82 +11,93 @@ use vize_relief::ast::{
     TextCallContent,
 };
 
-pub(super) fn collect_template_queries(
+pub(super) fn collect_template_query_sets(
     virtual_ts: &VirtualTsOutput,
     template_ast: &RootNode<'_>,
     template_offset: u32,
-) -> Vec<TemplateQuery> {
-    let mut queries = Vec::new();
+    include_template_queries: bool,
+    include_template_promise_queries: bool,
+) -> (Vec<TemplateQuery>, Vec<TemplatePromiseQuery>) {
+    let mut template_queries = Vec::new();
+    let mut template_promise_queries = Vec::new();
+    let mut sinks = TemplateQuerySinks {
+        template_queries: include_template_queries.then_some(&mut template_queries),
+        template_promise_queries: include_template_promise_queries
+            .then_some(&mut template_promise_queries),
+    };
+
     profile!(
-        "patina.type_aware.template_queries.walk",
+        "patina.type_aware.template_query_sets.walk",
         collect_children(
             virtual_ts,
             &template_ast.children,
             template_offset,
-            &mut queries,
+            &mut sinks,
         )
     );
-    profile!("patina.type_aware.template_queries.dedupe", {
-        queries.sort_unstable_by_key(|query| {
-            (
-                query.owner_start,
-                query.owner_end,
-                query.kind,
-                query.context,
-                query.source_start,
-                query.source_end,
-            )
-        });
-        queries.dedup_by(|left, right| {
-            left.kind == right.kind
-                && left.context == right.context
-                && left.source_start == right.source_start
-                && left.source_end == right.source_end
-                && left.owner_start == right.owner_start
-                && left.owner_end == right.owner_end
-        });
-    });
-    queries
+    if include_template_queries {
+        profile!(
+            "patina.type_aware.template_queries.dedupe",
+            dedupe_template_queries(&mut template_queries)
+        );
+    }
+    if include_template_promise_queries {
+        profile!(
+            "patina.type_aware.template_promise_queries.dedupe",
+            dedupe_template_promise_queries(&mut template_promise_queries)
+        );
+    }
+
+    (template_queries, template_promise_queries)
 }
 
-pub(super) fn collect_template_promise_queries(
-    virtual_ts: &VirtualTsOutput,
-    template_ast: &RootNode<'_>,
-    template_offset: u32,
-) -> Vec<TemplatePromiseQuery> {
-    let mut queries = Vec::new();
-    profile!(
-        "patina.type_aware.template_promise_queries.walk",
-        collect_promise_children(
-            virtual_ts,
-            &template_ast.children,
-            template_offset,
-            &mut queries,
+struct TemplateQuerySinks<'a> {
+    template_queries: Option<&'a mut Vec<TemplateQuery>>,
+    template_promise_queries: Option<&'a mut Vec<TemplatePromiseQuery>>,
+}
+
+fn dedupe_template_queries(queries: &mut Vec<TemplateQuery>) {
+    queries.sort_unstable_by_key(|query| {
+        (
+            query.owner_start,
+            query.owner_end,
+            query.kind,
+            query.context,
+            query.source_start,
+            query.source_end,
         )
-    );
-    profile!("patina.type_aware.template_promise_queries.dedupe", {
-        queries.sort_unstable_by_key(|query| {
-            (
-                query.context,
-                query.source_start,
-                query.source_end,
-                query.generated_offset,
-            )
-        });
-        queries.dedup_by(|left, right| {
-            left.context == right.context
-                && left.source_start == right.source_start
-                && left.source_end == right.source_end
-        });
     });
-    queries
+    queries.dedup_by(|left, right| {
+        left.kind == right.kind
+            && left.context == right.context
+            && left.source_start == right.source_start
+            && left.source_end == right.source_end
+            && left.owner_start == right.owner_start
+            && left.owner_end == right.owner_end
+    });
+}
+
+fn dedupe_template_promise_queries(queries: &mut Vec<TemplatePromiseQuery>) {
+    queries.sort_unstable_by_key(|query| {
+        (
+            query.context,
+            query.source_start,
+            query.source_end,
+            query.generated_offset,
+        )
+    });
+    queries.dedup_by(|left, right| {
+        left.context == right.context
+            && left.source_start == right.source_start
+            && left.source_end == right.source_end
+    });
 }
 
 fn collect_children(
     virtual_ts: &VirtualTsOutput,
     children: &[TemplateChildNode<'_>],
     template_offset: u32,
-    queries: &mut Vec<TemplateQuery>,
+    sinks: &mut TemplateQuerySinks<'_>,
 ) {
     for child in children {
         match child {
@@ -95,169 +106,76 @@ fn collect_children(
                     let PropNode::Directive(directive) = prop else {
                         continue;
                     };
-                    profile!(
-                        "patina.type_aware.template_queries.directive",
-                        collect_directive(virtual_ts, directive, template_offset, queries)
-                    );
+                    if let Some(queries) = sinks.template_queries.as_deref_mut() {
+                        profile!(
+                            "patina.type_aware.template_queries.directive",
+                            collect_directive(virtual_ts, directive, template_offset, queries)
+                        );
+                    }
+                    if let Some(queries) = sinks.template_promise_queries.as_deref_mut() {
+                        profile!(
+                            "patina.type_aware.template_promise_queries.directive",
+                            collect_promise_directive(
+                                virtual_ts,
+                                directive,
+                                template_offset,
+                                queries
+                            )
+                        );
+                    }
                 }
                 profile!(
-                    "patina.type_aware.template_queries.children",
-                    collect_children(virtual_ts, &element.children, template_offset, queries)
+                    "patina.type_aware.template_query_sets.children",
+                    collect_children(virtual_ts, &element.children, template_offset, sinks)
                 );
             }
             TemplateChildNode::Interpolation(interpolation) => {
+                collect_expression(
+                    virtual_ts,
+                    &interpolation.content,
+                    template_offset,
+                    TemplateContext::Interpolation,
+                    false,
+                    sinks,
+                );
+            }
+            TemplateChildNode::If(if_node) => {
                 profile!(
-                    "patina.type_aware.template_queries.expression",
-                    collect_expression_queries(
+                    "patina.type_aware.template_query_sets.if",
+                    collect_if(virtual_ts, if_node, template_offset, sinks)
+                )
+            }
+            TemplateChildNode::IfBranch(branch) => {
+                if let Some(condition) = &branch.condition {
+                    collect_expression(
+                        virtual_ts,
+                        condition,
+                        template_offset,
+                        TemplateContext::Directive,
+                        false,
+                        sinks,
+                    );
+                }
+                profile!(
+                    "patina.type_aware.template_query_sets.children",
+                    collect_children(virtual_ts, &branch.children, template_offset, sinks)
+                );
+            }
+            TemplateChildNode::For(for_node) => {
+                profile!(
+                    "patina.type_aware.template_query_sets.for",
+                    collect_for(virtual_ts, for_node, template_offset, sinks)
+                )
+            }
+            TemplateChildNode::TextCall(text_call) => {
+                if let TextCallContent::Interpolation(interpolation) = &text_call.content {
+                    collect_expression(
                         virtual_ts,
                         &interpolation.content,
                         template_offset,
                         TemplateContext::Interpolation,
                         false,
-                        queries,
-                    )
-                );
-            }
-            TemplateChildNode::If(if_node) => {
-                profile!(
-                    "patina.type_aware.template_queries.if",
-                    collect_if(virtual_ts, if_node, template_offset, queries)
-                )
-            }
-            TemplateChildNode::IfBranch(branch) => {
-                if let Some(condition) = &branch.condition {
-                    profile!(
-                        "patina.type_aware.template_queries.expression",
-                        collect_expression_queries(
-                            virtual_ts,
-                            condition,
-                            template_offset,
-                            TemplateContext::Directive,
-                            false,
-                            queries,
-                        )
-                    );
-                }
-                profile!(
-                    "patina.type_aware.template_queries.children",
-                    collect_children(virtual_ts, &branch.children, template_offset, queries)
-                );
-            }
-            TemplateChildNode::For(for_node) => {
-                profile!(
-                    "patina.type_aware.template_queries.for",
-                    collect_for(virtual_ts, for_node, template_offset, queries)
-                )
-            }
-            TemplateChildNode::TextCall(text_call) => {
-                if let TextCallContent::Interpolation(interpolation) = &text_call.content {
-                    profile!(
-                        "patina.type_aware.template_queries.expression",
-                        collect_expression_queries(
-                            virtual_ts,
-                            &interpolation.content,
-                            template_offset,
-                            TemplateContext::Interpolation,
-                            false,
-                            queries,
-                        )
-                    );
-                }
-            }
-            _ => {}
-        }
-    }
-}
-
-fn collect_promise_children(
-    virtual_ts: &VirtualTsOutput,
-    children: &[TemplateChildNode<'_>],
-    template_offset: u32,
-    queries: &mut Vec<TemplatePromiseQuery>,
-) {
-    for child in children {
-        match child {
-            TemplateChildNode::Element(element) => {
-                for prop in &element.props {
-                    let PropNode::Directive(directive) = prop else {
-                        continue;
-                    };
-                    profile!(
-                        "patina.type_aware.template_promise_queries.directive",
-                        collect_promise_directive(virtual_ts, directive, template_offset, queries)
-                    );
-                }
-                profile!(
-                    "patina.type_aware.template_promise_queries.children",
-                    collect_promise_children(
-                        virtual_ts,
-                        &element.children,
-                        template_offset,
-                        queries,
-                    )
-                );
-            }
-            TemplateChildNode::Interpolation(interpolation) => {
-                profile!(
-                    "patina.type_aware.template_promise_queries.expression",
-                    collect_promise_expression_queries(
-                        virtual_ts,
-                        &interpolation.content,
-                        template_offset,
-                        TemplateContext::Interpolation,
-                        false,
-                        queries,
-                    )
-                );
-            }
-            TemplateChildNode::If(if_node) => {
-                profile!(
-                    "patina.type_aware.template_promise_queries.if",
-                    collect_promise_if(virtual_ts, if_node, template_offset, queries)
-                )
-            }
-            TemplateChildNode::IfBranch(branch) => {
-                if let Some(condition) = &branch.condition {
-                    profile!(
-                        "patina.type_aware.template_promise_queries.expression",
-                        collect_promise_expression_queries(
-                            virtual_ts,
-                            condition,
-                            template_offset,
-                            TemplateContext::Directive,
-                            false,
-                            queries,
-                        )
-                    );
-                }
-                profile!(
-                    "patina.type_aware.template_promise_queries.children",
-                    collect_promise_children(
-                        virtual_ts,
-                        &branch.children,
-                        template_offset,
-                        queries,
-                    )
-                );
-            }
-            TemplateChildNode::For(for_node) => {
-                profile!(
-                    "patina.type_aware.template_promise_queries.for",
-                    collect_promise_for(virtual_ts, for_node, template_offset, queries)
-                )
-            }
-            TemplateChildNode::TextCall(text_call) => {
-                if let TextCallContent::Interpolation(interpolation) = &text_call.content {
-                    profile!(
-                        "patina.type_aware.template_promise_queries.expression",
-                        collect_promise_expression_queries(
-                            virtual_ts,
-                            &interpolation.content,
-                            template_offset,
-                            TemplateContext::Interpolation,
-                            false,
-                            queries,
-                        )
+                        sinks,
                     );
                 }
             }
@@ -270,52 +188,22 @@ fn collect_if(
     virtual_ts: &VirtualTsOutput,
     if_node: &IfNode<'_>,
     template_offset: u32,
-    queries: &mut Vec<TemplateQuery>,
+    sinks: &mut TemplateQuerySinks<'_>,
 ) {
     for branch in &if_node.branches {
         if let Some(condition) = &branch.condition {
-            profile!(
-                "patina.type_aware.template_queries.expression",
-                collect_expression_queries(
-                    virtual_ts,
-                    condition,
-                    template_offset,
-                    TemplateContext::Directive,
-                    false,
-                    queries,
-                )
+            collect_expression(
+                virtual_ts,
+                condition,
+                template_offset,
+                TemplateContext::Directive,
+                false,
+                sinks,
             );
         }
         profile!(
-            "patina.type_aware.template_queries.children",
-            collect_children(virtual_ts, &branch.children, template_offset, queries)
-        );
-    }
-}
-
-fn collect_promise_if(
-    virtual_ts: &VirtualTsOutput,
-    if_node: &IfNode<'_>,
-    template_offset: u32,
-    queries: &mut Vec<TemplatePromiseQuery>,
-) {
-    for branch in &if_node.branches {
-        if let Some(condition) = &branch.condition {
-            profile!(
-                "patina.type_aware.template_promise_queries.expression",
-                collect_promise_expression_queries(
-                    virtual_ts,
-                    condition,
-                    template_offset,
-                    TemplateContext::Directive,
-                    false,
-                    queries,
-                )
-            );
-        }
-        profile!(
-            "patina.type_aware.template_promise_queries.children",
-            collect_promise_children(virtual_ts, &branch.children, template_offset, queries)
+            "patina.type_aware.template_query_sets.children",
+            collect_children(virtual_ts, &branch.children, template_offset, sinks)
         );
     }
 }
@@ -324,46 +212,56 @@ fn collect_for(
     virtual_ts: &VirtualTsOutput,
     for_node: &ForNode<'_>,
     template_offset: u32,
-    queries: &mut Vec<TemplateQuery>,
+    sinks: &mut TemplateQuerySinks<'_>,
 ) {
-    profile!(
-        "patina.type_aware.template_queries.expression",
-        collect_expression_queries(
-            virtual_ts,
-            &for_node.source,
-            template_offset,
-            TemplateContext::Directive,
-            false,
-            queries,
-        )
+    collect_expression(
+        virtual_ts,
+        &for_node.source,
+        template_offset,
+        TemplateContext::Directive,
+        false,
+        sinks,
     );
     profile!(
-        "patina.type_aware.template_queries.children",
-        collect_children(virtual_ts, &for_node.children, template_offset, queries)
+        "patina.type_aware.template_query_sets.children",
+        collect_children(virtual_ts, &for_node.children, template_offset, sinks)
     );
 }
 
-fn collect_promise_for(
+fn collect_expression(
     virtual_ts: &VirtualTsOutput,
-    for_node: &ForNode<'_>,
+    expression: &ExpressionNode<'_>,
     template_offset: u32,
-    queries: &mut Vec<TemplatePromiseQuery>,
+    context: TemplateContext,
+    allow_statement_fallback: bool,
+    sinks: &mut TemplateQuerySinks<'_>,
 ) {
-    profile!(
-        "patina.type_aware.template_promise_queries.expression",
-        collect_promise_expression_queries(
-            virtual_ts,
-            &for_node.source,
-            template_offset,
-            TemplateContext::Directive,
-            false,
-            queries,
-        )
-    );
-    profile!(
-        "patina.type_aware.template_promise_queries.children",
-        collect_promise_children(virtual_ts, &for_node.children, template_offset, queries)
-    );
+    if let Some(queries) = sinks.template_queries.as_deref_mut() {
+        profile!(
+            "patina.type_aware.template_queries.expression",
+            collect_expression_queries(
+                virtual_ts,
+                expression,
+                template_offset,
+                context,
+                allow_statement_fallback,
+                queries,
+            )
+        );
+    }
+    if let Some(queries) = sinks.template_promise_queries.as_deref_mut() {
+        profile!(
+            "patina.type_aware.template_promise_queries.expression",
+            collect_promise_expression_queries(
+                virtual_ts,
+                expression,
+                template_offset,
+                context,
+                allow_statement_fallback,
+                queries,
+            )
+        );
+    }
 }
 
 fn collect_directive(

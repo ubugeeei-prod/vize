@@ -117,20 +117,20 @@ impl TemplatePromiseQuery {
     }
 }
 
-pub(super) fn collect_template_queries(
+pub(super) fn collect_template_query_sets(
     virtual_ts: &VirtualTsOutput,
     template_ast: &RootNode<'_>,
     template_offset: u32,
-) -> Vec<TemplateQuery> {
-    collector::collect_template_queries(virtual_ts, template_ast, template_offset)
-}
-
-pub(super) fn collect_template_promise_queries(
-    virtual_ts: &VirtualTsOutput,
-    template_ast: &RootNode<'_>,
-    template_offset: u32,
-) -> Vec<TemplatePromiseQuery> {
-    collector::collect_template_promise_queries(virtual_ts, template_ast, template_offset)
+    include_template_queries: bool,
+    include_template_promise_queries: bool,
+) -> (Vec<TemplateQuery>, Vec<TemplatePromiseQuery>) {
+    collector::collect_template_query_sets(
+        virtual_ts,
+        template_ast,
+        template_offset,
+        include_template_queries,
+        include_template_promise_queries,
+    )
 }
 
 pub(super) fn absolute_expression_range(

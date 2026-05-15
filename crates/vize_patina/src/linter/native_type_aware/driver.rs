@@ -18,9 +18,7 @@ use super::{
     parsing::collect_floating_candidates,
     reactivity_loss::collect_reactivity_loss_queries,
     rule_queries::{collect_emit_queries, collect_prop_queries, push_macro_warning, MacroWarning},
-    template_queries::{
-        collect_template_promise_queries, collect_template_queries, TemplateQueryKind,
-    },
+    template_queries::{collect_template_query_sets, TemplateQueryKind},
 };
 
 pub(super) fn lint_with_descriptor<'a>(
@@ -168,27 +166,27 @@ pub(super) fn lint_with_descriptor<'a>(
         )
     });
 
-    let template_queries = profile!("patina.type_aware.collect_template_queries", {
-        if linter.registry.has_rule(RULE_NO_UNSAFE_TEMPLATE_BINDING)
-            && linter.is_rule_enabled(RULE_NO_UNSAFE_TEMPLATE_BINDING)
-        {
-            template_ast.as_ref().map_or_else(Vec::new, |(root, _)| {
-                collect_template_queries(&virtual_ts, root, template_offset)
-            })
-        } else {
-            Vec::new()
-        }
-    });
-    let template_promise_queries =
-        profile!("patina.type_aware.collect_template_promise_queries", {
-            if linter.registry.has_rule(RULE_NO_FLOATING_PROMISES)
-                && linter.is_rule_enabled(RULE_NO_FLOATING_PROMISES)
-            {
-                template_ast.as_ref().map_or_else(Vec::new, |(root, _)| {
-                    collect_template_promise_queries(&virtual_ts, root, template_offset)
-                })
+    let include_template_queries = linter.registry.has_rule(RULE_NO_UNSAFE_TEMPLATE_BINDING)
+        && linter.is_rule_enabled(RULE_NO_UNSAFE_TEMPLATE_BINDING);
+    let include_template_promise_queries = linter.registry.has_rule(RULE_NO_FLOATING_PROMISES)
+        && linter.is_rule_enabled(RULE_NO_FLOATING_PROMISES);
+    let (template_queries, template_promise_queries) =
+        profile!("patina.type_aware.collect_template_query_sets", {
+            if include_template_queries || include_template_promise_queries {
+                template_ast.as_ref().map_or_else(
+                    || (Vec::new(), Vec::new()),
+                    |(root, _)| {
+                        collect_template_query_sets(
+                            &virtual_ts,
+                            root,
+                            template_offset,
+                            include_template_queries,
+                            include_template_promise_queries,
+                        )
+                    },
+                )
             } else {
-                Vec::new()
+                (Vec::new(), Vec::new())
             }
         });
 

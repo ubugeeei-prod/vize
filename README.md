@@ -127,6 +127,9 @@ vize check --declaration --declaration-dir dist/types
 and type-aware checks. `vize check` generates virtual TypeScript for Vue SFCs and maps project
 diagnostics back to the original source files.
 
+Use `vize lint --profile src` when tuning rule cost. Type-aware lint profile rows include template
+query collection and Corsa probe phases so expensive cross-rule work can be spotted quickly.
+
 ## Compiler Configuration
 
 The npm CLI and Vite plugin share `vize.config.*`:
