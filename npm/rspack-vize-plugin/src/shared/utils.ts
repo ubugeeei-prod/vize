@@ -354,8 +354,15 @@ export function matchesPattern(
     if (typeof item === "string") {
       return normalizedFile.includes(item) || file.includes(item);
     }
-    return item.test(normalizedFile);
+    return testRegExp(item, normalizedFile);
   });
+}
+
+function testRegExp(pattern: RegExp, value: string): boolean {
+  pattern.lastIndex = 0;
+  const matches = pattern.test(value);
+  pattern.lastIndex = 0;
+  return matches;
 }
 
 // Template Asset URL Transformation
