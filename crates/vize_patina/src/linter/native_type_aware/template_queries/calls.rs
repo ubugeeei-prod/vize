@@ -74,11 +74,11 @@ pub(super) fn collect_floating_promise_ranges(
         "patina.type_aware.template_floating.parse_expression",
         OxcParser::new(&allocator, source, source_type).parse_expression()
     ) {
-        if expression.span().end as usize == source.trim_end().len()
-            && !is_explicitly_handled(&expression)
-        {
-            if let Some(range) = floating_promise_range_for_expression(&expression) {
-                return vec![range];
+        if expression.span().end as usize == source.trim_end().len() {
+            let mut ranges = Vec::new();
+            collect_floating_promise_ranges_for_expression(&expression, &mut ranges);
+            if !ranges.is_empty() {
+                return ranges;
             }
         }
     }
@@ -100,17 +100,17 @@ pub(super) fn collect_floating_promise_ranges(
         let Statement::ExpressionStatement(expression_statement) = statement else {
             continue;
         };
-        let expression = &expression_statement.expression;
-        if is_explicitly_handled(expression) {
-            continue;
+        let mut statement_ranges = Vec::new();
+        collect_floating_promise_ranges_for_expression(
+            &expression_statement.expression,
+            &mut statement_ranges,
+        );
+        for range in statement_ranges {
+            if range.end <= range.start || range.end as usize > source.len() {
+                continue;
+            }
+            ranges.push(range);
         }
-        let Some(range) = floating_promise_range_for_expression(expression) else {
-            continue;
-        };
-        if range.end <= range.start || range.end as usize > source.len() {
-            continue;
-        }
-        ranges.push(range);
     }
     ranges
 }
@@ -200,6 +200,37 @@ fn floating_promise_range_for_expression(
             floating_promise_range_for_expression(&ts_non_null.expression)
         }
         _ => None,
+    }
+}
+
+fn collect_floating_promise_ranges_for_expression(
+    expression: &Expression<'_>,
+    ranges: &mut Vec<FloatingPromiseRange>,
+) {
+    if is_explicitly_handled(expression) {
+        return;
+    }
+    if let Some(range) = floating_promise_range_for_expression(expression) {
+        ranges.push(range);
+        return;
+    }
+
+    match expression {
+        Expression::LogicalExpression(logical) => {
+            collect_floating_promise_ranges_for_expression(&logical.left, ranges);
+            collect_floating_promise_ranges_for_expression(&logical.right, ranges);
+        }
+        Expression::ConditionalExpression(conditional) => {
+            collect_floating_promise_ranges_for_expression(&conditional.test, ranges);
+            collect_floating_promise_ranges_for_expression(&conditional.consequent, ranges);
+            collect_floating_promise_ranges_for_expression(&conditional.alternate, ranges);
+        }
+        Expression::SequenceExpression(sequence) => {
+            for expression in &sequence.expressions {
+                collect_floating_promise_ranges_for_expression(expression, ranges);
+            }
+        }
+        _ => {}
     }
 }
 
