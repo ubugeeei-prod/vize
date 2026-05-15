@@ -222,7 +222,8 @@ const selectedItem = ref("selected");
 
 ## `vue/no-unsafe-url`
 
-Reports URL bindings that may resolve to unsafe schemes such as `javascript:`.
+Reports URL bindings and static URL attributes that may resolve to unsafe schemes such as
+`javascript:`, `vbscript:`, or executable `data:` payloads.
 
 Default severity: `warning`  
 Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
@@ -231,6 +232,9 @@ Bad:
 
 ```vue
 <template>
+  <iframe src="javascript:alert(1)"></iframe>
+  <object data="data:text/html,<script>alert(1)</script>"></object>
+  <img srcset="/safe.png 1x, javascript:alert(1) 2x" />
   <a :href="nextUrl">Continue</a>
 </template>
 ```
@@ -246,6 +250,8 @@ const nextUrl = computed(() => {
 </script>
 
 <template>
+  <iframe src="/embedded/report" title="Report"></iframe>
+  <img srcset="/avatar.png 1x, /avatar@2x.png 2x" />
   <a :href="nextUrl">Continue</a>
 </template>
 ```

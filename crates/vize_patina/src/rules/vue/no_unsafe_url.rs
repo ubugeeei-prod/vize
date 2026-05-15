@@ -42,6 +42,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::String;
 use vize_relief::ast::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -78,7 +79,7 @@ fn is_router_link_tag(tag: &str) -> bool {
 }
 
 fn normalized_scheme(value: &str) -> Option<(String, &str)> {
-    let mut scheme = String::new();
+    let mut scheme = String::default();
     let mut saw_scheme_char = false;
 
     for (index, ch) in value.char_indices() {

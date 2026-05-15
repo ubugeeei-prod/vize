@@ -65,6 +65,7 @@ registries that decide which rules are enabled together.
 | Area                | Example rules                                                                                | What they cover                                    |
 | ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | Vue correctness     | `vue/require-v-for-key`, `vue/valid-v-model`, `vue/no-use-v-if-with-v-for`                   | Template semantics that are local to one component |
+| Vue security        | `vue/no-v-html`, `vue/no-unsafe-url`                                                         | XSS-prone HTML and URL sinks                        |
 | Vue structure       | `vue/sfc-element-order`, `vue/require-scoped-style`, `vue/no-unused-components`              | SFC shape, component usage, and maintainability    |
 | Script conventions  | `script/no-options-api`, `script/no-get-current-instance`, `script/prefer-import-from-vue`   | Vue Composition API and compiler macro conventions |
 | CSS                 | `css/no-important`, `css/no-hardcoded-values`, `css/prefer-logical-properties`               | Style blocks and design-system friendly CSS        |

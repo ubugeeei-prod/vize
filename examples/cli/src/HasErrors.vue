@@ -30,6 +30,9 @@ const users = ref([
     <template v-for="product in items" :key="product.id">
       <div>{{ product.name }}</div>
     </template>
+
+    <!-- vue/no-unsafe-url: executable scheme in a static URL attribute -->
+    <iframe src="javascript:alert(1)" title="Unsafe embedded content"></iframe>
   </div>
 </template>
 

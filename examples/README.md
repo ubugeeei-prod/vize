@@ -31,7 +31,7 @@ The `examples/cli/` directory contains sample Vue files for trying the CLI tools
 | --------------------- | --------------------------------- |
 | `src/App.vue`         | A correctly formatted Vue file    |
 | `src/Unformatted.vue` | A Vue file that needs formatting  |
-| `src/HasErrors.vue`   | A Vue file containing lint errors |
+| `src/HasErrors.vue`   | A Vue file containing lint and security diagnostics |
 
 ### Formatter (`vize fmt`)
 
@@ -76,6 +76,9 @@ vize lint examples/cli/src/*.vue --max-warnings 5
 # Show only the summary
 vize lint examples/cli/src/*.vue --quiet
 ```
+
+`src/HasErrors.vue` intentionally includes missing `v-for` keys, a `v-if`/`v-for` conflict, and a
+static unsafe URL so the linter output demonstrates correctness and security diagnostics together.
 
 **Options:**
 
