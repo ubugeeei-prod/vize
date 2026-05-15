@@ -206,3 +206,42 @@ jobs:
           name: vrt-diff
           path: playground/e2e/vrt/test-results/
           retention-days: 7
+
+  test-report:
+    name: test-report
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs:
+      - nix-flake
+      - fmt-rust
+      - check-js
+      - clippy-and-test
+      - coverage
+      - playground-test
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Collect test inventory
+        run: node bench/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"
+      - name: Upload test inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-inventory
+          path: test-inventory.json
+          retention-days: 14
+      - name: Comment detailed test report
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TEST_REPORT_COMMENT_KEY: ${{ github.event.pull_request.head.sha }}
+          TEST_REPORT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          TEST_REPORT_RUN_ID: ${{ github.run_id }}
+          TEST_REPORT_RUN_ATTEMPT: ${{ github.run_attempt }}
+          TEST_REPORT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TEST_REPORT_WORKFLOW_NAME: ${{ github.workflow }}
+        run: node bench/comment-test-report.mjs --inventory test-inventory.json --summary "$GITHUB_STEP_SUMMARY"

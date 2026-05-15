@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -50,6 +52,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     ["clippy-and-test", 30],
     ["coverage", 10],
     ["playground-test", 30],
+    ["test-report", 5],
   ] as const) {
     assert.match(
       workflowJobBody(checkWorkflow, jobName),
@@ -58,6 +61,86 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
   }
 
   assert.match(workflowJobBody(benchmarkWorkflow, "pr-benchmark"), /timeout-minutes:\s*30\b/);
+});
+
+test("check workflow comments a detailed PR test report for each head push", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const reportJob = workflowJobBody(workflow, "test-report");
+
+  assert.match(
+    reportJob,
+    /if:\s*\$\{\{\s*always\(\) && github\.event_name == 'pull_request'\s*\}\}/,
+  );
+  assert.match(reportJob, /actions:\s*read/);
+  assert.match(reportJob, /issues:\s*write/);
+  assert.match(reportJob, /pull-requests:\s*write/);
+
+  for (const jobName of [
+    "nix-flake",
+    "fmt-rust",
+    "check-js",
+    "clippy-and-test",
+    "coverage",
+    "playground-test",
+  ]) {
+    assert.match(reportJob, new RegExp(`- ${jobName}\\b`));
+  }
+
+  assert.match(
+    reportJob,
+    /TEST_REPORT_COMMENT_KEY:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+  );
+  assert.match(
+    reportJob,
+    /TEST_REPORT_HEAD_SHA:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+  );
+  assert.match(
+    reportJob,
+    /node bench\/test-inventory\.mjs --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
+  );
+  assert.match(reportJob, /name:\s*test-inventory/);
+  assert.match(
+    reportJob,
+    /node bench\/comment-test-report\.mjs --inventory test-inventory\.json --summary "\$GITHUB_STEP_SUMMARY"/,
+  );
+});
+
+test("test inventory script counts JS, Rust, e2e, VRT, and fixture cases", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-test-inventory-"));
+  const inventoryPath = path.join(tempDir, "inventory.json");
+
+  try {
+    execFileSync(process.execPath, ["bench/test-inventory.mjs", "--json", inventoryPath], {
+      cwd: root,
+      stdio: "pipe",
+    });
+
+    const inventory = JSON.parse(fs.readFileSync(inventoryPath, "utf8")) as {
+      totalCases: number;
+      totalFiles: number;
+      areas: Array<{ area: string; files: number; cases: number }>;
+      groups: Array<{ area: string; file: string; count: number }>;
+    };
+
+    assert.ok(inventory.totalCases > 1_000);
+    assert.ok(inventory.totalFiles > 100);
+
+    for (const areaName of ["JS / TS", "Rust", "E2E", "VRT", "Compiler Fixtures"]) {
+      const area = inventory.areas.find((candidate) => candidate.area === areaName);
+      assert.ok(area, `missing ${areaName} inventory area`);
+      assert.ok(area.cases > 0, `${areaName} should have cases`);
+    }
+
+    assert.ok(
+      inventory.groups.some((group) => group.file === "tests/tooling/github-workflows.test.ts"),
+    );
+    assert.ok(inventory.groups.some((group) => group.file === "tests/fixtures/vdom/element.toml"));
+    assert.ok(
+      inventory.groups.some((group) => group.file === "playground/e2e/vrt/cross-file-ui.spec.ts"),
+    );
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
 });
 
 test("deploy-docs deploy job installs MoonBit before running script-mode helpers", () => {
