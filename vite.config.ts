@@ -41,6 +41,7 @@ const testedPackages = [
   "./npm/oxlint-plugin-vize",
   "./npm/unplugin-vize",
   "./npm/rspack-vize-plugin",
+  "./npm/nuxt",
 ];
 
 const floatingPromiseTestPatterns = ["tests/**/*.ts"];
