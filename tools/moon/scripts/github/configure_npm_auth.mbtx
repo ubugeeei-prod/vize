@@ -58,7 +58,7 @@ async fn run_app() -> Int {
   let registry_line = "registry=https://registry.npmjs.org/"
   let lines = []
   if existing.trim() != "" {
-    let existing_lines : Array[String] = existing.split("\n").map(StringView::to_string).collect()
+    let existing_lines : Array[String] = existing.split("\n").map(StringView::to_owned).collect()
     for line in existing_lines {
       let trimmed = line.trim()
       if trimmed == "" {

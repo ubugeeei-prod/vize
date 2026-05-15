@@ -53,7 +53,7 @@ async fn command_stdout(
   if body == "" {
     return None
   }
-  Some(body.to_string())
+  Some(body.to_owned())
 }
 
 ///|

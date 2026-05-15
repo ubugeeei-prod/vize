@@ -21,7 +21,7 @@
 import {
   "moonbitlang/core/env",
   "moonbitlang/core/json",
-  "moonbitlang/core/strconv",
+  "moonbitlang/core/string",
   "moonbitlang/async@0.16.8",
   "moonbitlang/async@0.16.8/process",
   "moonbitlang/async@0.16.8/stdio",
@@ -80,7 +80,7 @@ fn safe_path_exists(path : String) -> Bool {
 
 ///|
 fn normalize_manifest_path(value : String) -> String? {
-  let path = value.trim().to_string()
+  let path = value.trim().to_owned()
   if path == "" {
     return None
   }
@@ -209,7 +209,7 @@ fn package_version(json : Json) -> String? {
 /// safe default instead of aborting on malformed values.
 fn positive_int_or(value : String, fallback : Int) -> Int {
   try {
-    let parsed = @strconv.parse_int(value)
+    let parsed = @string.parse_int(value)
     if parsed > 0 {
       parsed
     } else {

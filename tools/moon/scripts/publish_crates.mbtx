@@ -9,7 +9,7 @@
 import {
   "moonbitlang/core/env",
   "moonbitlang/core/json",
-  "moonbitlang/core/strconv",
+  "moonbitlang/core/string",
   "moonbitlang/async@0.16.8",
   "moonbitlang/async@0.16.8/process",
   "moonbitlang/async@0.16.8/stdio",
@@ -43,7 +43,7 @@ let published_crates : Array[String] = [
 /// Parses a positive integer from a string and falls back on invalid input.
 fn positive_int_or(value : String, fallback : Int) -> Int {
   try {
-    let parsed = @strconv.parse_int(value)
+    let parsed = @string.parse_int(value)
     if parsed > 0 {
       parsed
     } else {
@@ -80,11 +80,11 @@ fn read_file_to_string(path : String) -> String? {
 /// scanner is more predictable than shelling out to another TOML parser.
 fn workspace_version_from_content(content : String) -> String? {
   let mut section = ""
-  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  let lines : Array[String] = content.split("\n").map(StringView::to_owned).collect()
   for line in lines {
     let trimmed = line.trim()
     if trimmed.has_prefix("[") && trimmed.has_suffix("]") {
-      section = trimmed.to_string()
+      section = trimmed.to_owned()
       continue
     }
     if section == "[workspace.package]" &&
@@ -92,7 +92,7 @@ fn workspace_version_from_content(content : String) -> String? {
       trimmed.has_suffix("\"") {
       return Some(
         trimmed
-          .to_string()
+          .to_owned()
           .replace(old="version = \"", new="")
           .replace_all(old="\"", new=""),
       )

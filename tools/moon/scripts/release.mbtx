@@ -9,7 +9,7 @@
 /// and only then creates and pushes the release commit and tag.
 import {
   "moonbitlang/core/env",
-  "moonbitlang/core/strconv",
+  "moonbitlang/core/string",
   "moonbitlang/async@0.16.8",
   "moonbitlang/async@0.16.8/process",
   "moonbitlang/async@0.16.8/stdio",
@@ -104,7 +104,7 @@ fn write_string_to_file(path : String, content : String) -> Bool {
 /// Parses an integer but keeps the caller in control of error handling.
 fn parse_int(value : String) -> Int? {
   try {
-    Some(@strconv.parse_int(value))
+    Some(@string.parse_int(value))
   } catch {
     _ => None
   }
@@ -122,10 +122,10 @@ fn parse_int(value : String) -> Int? {
 /// The parser is intentionally strict so release automation never guesses when
 /// the current version format has drifted unexpectedly.
 fn parse_version(value : String) -> Version? {
-  let parts : Array[String] = value.split("-").map(StringView::to_string).collect()
+  let parts : Array[String] = value.split("-").map(StringView::to_owned).collect()
   guard parts.length() >= 1 && parts.length() <= 2 else { return None }
 
-  let base_parts : Array[String] = parts[0].split(".").map(StringView::to_string).collect()
+  let base_parts : Array[String] = parts[0].split(".").map(StringView::to_owned).collect()
   guard base_parts.length() == 3 else { return None }
   let major = match parse_int(base_parts[0]) {
     Some(value) => value
@@ -145,7 +145,7 @@ fn parse_version(value : String) -> Version? {
   if parts.length() == 2 {
     let prerelease_parts : Array[String] = parts[1]
       .split(".")
-      .map(StringView::to_string)
+      .map(StringView::to_owned)
       .collect()
     guard prerelease_parts.length() >= 1 && prerelease_parts.length() <= 2 else {
       return None
@@ -266,11 +266,11 @@ fn bump_version(current : String, bump : String) -> String? {
 /// Extracts the current workspace version from the root `Cargo.toml`.
 fn workspace_version_from_content(content : String) -> String? {
   let mut section = ""
-  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  let lines : Array[String] = content.split("\n").map(StringView::to_owned).collect()
   for line in lines {
     let trimmed = line.trim()
     if trimmed.has_prefix("[") && trimmed.has_suffix("]") {
-      section = trimmed.to_string()
+      section = trimmed.to_owned()
       continue
     }
     if section == "[workspace.package]" &&
@@ -278,7 +278,7 @@ fn workspace_version_from_content(content : String) -> String? {
       trimmed.has_suffix("\"") {
       return Some(
         trimmed
-          .to_string()
+          .to_owned()
           .replace(old="version = \"", new="")
           .replace_all(old="\"", new=""),
       )
@@ -299,11 +299,11 @@ fn update_workspace_manifest_versions(
 ) -> String {
   let mut section = ""
   let updated : Array[String] = []
-  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  let lines : Array[String] = content.split("\n").map(StringView::to_owned).collect()
   for line in lines {
     let trimmed = line.trim()
     if trimmed.has_prefix("[") && trimmed.has_suffix("]") {
-      section = trimmed.to_string()
+      section = trimmed.to_owned()
       updated.push(line)
       continue
     }
@@ -333,7 +333,7 @@ fn replace_package_json_version(
 ) -> String {
   let updated : Array[String] = []
   let mut replaced = false
-  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  let lines : Array[String] = content.split("\n").map(StringView::to_owned).collect()
   for line in lines {
     if !replaced {
       let trimmed = line.trim()
@@ -360,7 +360,7 @@ fn replace_first_version_line(
 ) -> String {
   let updated : Array[String] = []
   let mut replaced = false
-  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  let lines : Array[String] = content.split("\n").map(StringView::to_owned).collect()
   for line in lines {
     if !replaced {
       let trimmed = line.trim()
