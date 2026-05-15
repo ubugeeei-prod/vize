@@ -18,6 +18,27 @@ type JsonRpcMessage = {
   error?: { code: number; message: string };
 };
 
+type LspInitializationOptions = {
+  editor?: boolean;
+  lint?: boolean;
+  typecheck?: boolean;
+};
+
+type LspDiagnostic = {
+  source?: string;
+  severity?: number;
+  message?: string;
+  range?: {
+    start?: { line?: number; character?: number };
+    end?: { line?: number; character?: number };
+  };
+};
+
+type PublishDiagnosticsParams = {
+  uri: string;
+  diagnostics: LspDiagnostic[];
+};
+
 class LspSession {
   private readonly process: ChildProcessWithoutNullStreams;
   private readonly pending = new Map<
@@ -76,7 +97,13 @@ class LspSession {
     });
   }
 
-  async initialize(workspaceDir: string): Promise<unknown> {
+  async initialize(
+    workspaceDir: string,
+    initializationOptions: LspInitializationOptions = {
+      editor: true,
+      typecheck: true,
+    },
+  ): Promise<unknown> {
     const result = await this.request("initialize", {
       processId: process.pid,
       rootUri: pathToFileURL(workspaceDir).href,
@@ -89,10 +116,7 @@ class LspSession {
           },
         },
       },
-      initializationOptions: {
-        editor: true,
-        typecheck: true,
-      },
+      initializationOptions,
       workspaceFolders: [
         {
           uri: pathToFileURL(workspaceDir).href,
@@ -419,6 +443,74 @@ const secondaryLabel = ref('secondary')
   }
 });
 
+test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-malformed");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      lint: true,
+      typecheck: false,
+    });
+
+    const brokenPath = path.join(workspaceDir, "Broken.vue");
+    const brokenUri = pathToFileURL(brokenPath).href;
+    const brokenSource = "<template><div></div>";
+    fs.writeFileSync(brokenPath, brokenSource, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: brokenUri,
+        languageId: "vue",
+        version: 1,
+        text: brokenSource,
+      },
+    });
+
+    const brokenPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => hasDiagnosticSource(params, brokenUri, "vize/sfc"),
+    )) as PublishDiagnosticsParams;
+    const parserDiagnostic = brokenPublish.diagnostics.find(
+      (diagnostic) => diagnostic.source === "vize/sfc",
+    );
+
+    assert.ok(parserDiagnostic, JSON.stringify(brokenPublish.diagnostics));
+    assert.equal(parserDiagnostic.severity, 1);
+    assert.match(parserDiagnostic.message ?? "", /template/i);
+    assertDiagnosticRange(parserDiagnostic);
+
+    const fixedSource = `<template>
+  <div>fixed</div>
+</template>
+`;
+    session.notify("textDocument/didChange", {
+      textDocument: {
+        uri: brokenUri,
+        version: 2,
+      },
+      contentChanges: [
+        {
+          text: fixedSource,
+        },
+      ],
+    });
+
+    const fixedPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, brokenUri),
+    )) as PublishDiagnosticsParams;
+
+    assert.deepEqual(fixedPublish.diagnostics, []);
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+  }
+});
+
 function resolveVizeLaunchCommand(): string[] {
   const candidates = [
     [path.join(root, "target/release/vize"), "lsp"],
@@ -437,6 +529,35 @@ function resolveVizeLaunchCommand(): string[] {
   }
 
   return ["cargo", "run", "-q", "-p", "vize", "--", "lsp"];
+}
+
+function isDiagnosticsForUri(params: unknown, uri: string): params is PublishDiagnosticsParams {
+  return (
+    typeof params === "object" &&
+    params != null &&
+    "uri" in params &&
+    (params as { uri?: unknown }).uri === uri &&
+    "diagnostics" in params &&
+    Array.isArray((params as { diagnostics?: unknown }).diagnostics)
+  );
+}
+
+function hasDiagnosticSource(params: unknown, uri: string, source: string): boolean {
+  return (
+    isDiagnosticsForUri(params, uri) &&
+    params.diagnostics.some((diagnostic) => diagnostic.source === source)
+  );
+}
+
+function assertDiagnosticRange(diagnostic: LspDiagnostic): void {
+  const { range } = diagnostic;
+  assert.ok(range?.start, "diagnostic should include a start range");
+  assert.ok(range?.end, "diagnostic should include an end range");
+  assert.equal(typeof range.start.line, "number");
+  assert.equal(typeof range.start.character, "number");
+  assert.equal(typeof range.end.line, "number");
+  assert.equal(typeof range.end.character, "number");
+  assert.ok((range.end.line ?? 0) >= (range.start.line ?? 0));
 }
 
 function offsetToPosition(source: string, offset: number): { line: number; character: number } {

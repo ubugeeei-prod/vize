@@ -4,6 +4,7 @@
 //! type checking and compilation performance.
 
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{RwLockReadGuard, RwLockWriteGuard};
 use std::time::{Duration, Instant};
 
 use rustc_hash::FxHashMap;
@@ -81,7 +82,8 @@ impl Metrics {
         if self.count == 0 {
             Duration::ZERO
         } else {
-            self.total_duration / self.count as u32
+            let nanos = self.total_duration.as_nanos() / u128::from(self.count);
+            Duration::from_nanos(nanos.try_into().unwrap_or(u64::MAX))
         }
     }
 }
@@ -146,28 +148,34 @@ impl Profiler {
             return;
         }
 
-        let mut metrics = self.metrics.write().unwrap();
+        self.record_enabled(name, duration);
+    }
+
+    /// Record a duration after the caller has already checked that profiling is enabled.
+    #[doc(hidden)]
+    pub fn record_enabled(&self, name: &'static str, duration: Duration) {
+        let mut metrics = self.metrics_write();
         metrics.entry(name).or_default().record(duration);
     }
 
     /// Get metrics for the given operation.
     pub fn get(&self, name: &str) -> Option<Metrics> {
-        self.metrics.read().unwrap().get(name).cloned()
+        self.metrics_read().get(name).cloned()
     }
 
     /// Get all metrics.
     pub fn all(&self) -> FxHashMap<&'static str, Metrics> {
-        self.metrics.read().unwrap().clone()
+        self.metrics_read().clone()
     }
 
     /// Clear all metrics.
     pub fn clear(&self) {
-        self.metrics.write().unwrap().clear();
+        self.metrics_write().clear();
     }
 
     /// Generate a summary report.
     pub fn summary(&self) -> ProfileSummary {
-        let metrics = self.metrics.read().unwrap();
+        let metrics = self.metrics_read();
         let mut entries: Vec<_> = metrics
             .iter()
             .map(|(name, m)| ProfileEntry {
@@ -184,6 +192,20 @@ impl Profiler {
         entries.sort_by_key(|entry| std::cmp::Reverse(entry.total));
 
         ProfileSummary { entries }
+    }
+
+    #[inline]
+    fn metrics_read(&self) -> RwLockReadGuard<'_, FxHashMap<&'static str, Metrics>> {
+        self.metrics
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    #[inline]
+    fn metrics_write(&self) -> RwLockWriteGuard<'_, FxHashMap<&'static str, Metrics>> {
+        self.metrics
+            .write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 }
 
@@ -215,20 +237,30 @@ impl std::fmt::Display for ProfileSummary {
         writeln!(
             f,
             "{:<30} {:>8} {:>12} {:>12} {:>12} {:>12}",
-            "Operation", "Count", "Total", "Average", "Min", "Max"
+            "Operation", "Count", "Total ms", "Avg ms", "Min ms", "Max ms"
         )?;
         writeln!(f, "{}", "-".repeat(88))?;
 
         for entry in &self.entries {
             writeln!(
                 f,
-                "{:<30} {:>8} {:>12.2?} {:>12.2?} {:>12.2?} {:>12.2?}",
-                entry.name, entry.count, entry.total, entry.average, entry.min, entry.max
+                "{:<30} {:>8} {:>12.3} {:>12.3} {:>12.3} {:>12.3}",
+                entry.name,
+                entry.count,
+                duration_ms(entry.total),
+                duration_ms(entry.average),
+                duration_ms(entry.min),
+                duration_ms(entry.max)
             )?;
         }
 
         Ok(())
     }
+}
+
+#[inline]
+fn duration_ms(duration: Duration) -> f64 {
+    duration.as_secs_f64() * 1000.0
 }
 
 /// A single entry in the profile summary.
@@ -261,12 +293,16 @@ pub fn global_profiler() -> &'static Profiler {
 #[macro_export]
 macro_rules! profile {
     ($name:expr, $block:expr) => {{
-        let _timer = $crate::profiler::global_profiler().timer($name);
-        let result = $block;
-        if let Some(timer) = _timer {
-            timer.record($crate::profiler::global_profiler());
+        let name: &'static str = $name;
+        let profiler = $crate::profiler::global_profiler();
+        if profiler.is_enabled() {
+            let timer = $crate::profiler::Timer::start(name);
+            let result = $block;
+            profiler.record_enabled(name, timer.elapsed());
+            result
+        } else {
+            $block
         }
-        result
     }};
 }
 
@@ -339,7 +375,8 @@ impl std::fmt::Display for CacheStats {
 
 #[cfg(test)]
 mod tests {
-    use super::{CacheStats, Profiler, Timer};
+    use super::{CacheStats, Metrics, Profiler, Timer};
+    use std::sync::Arc;
     use std::time::Duration;
 
     #[test]
@@ -362,6 +399,59 @@ mod tests {
         assert_eq!(metrics.min_duration, Duration::from_millis(10));
         assert_eq!(metrics.max_duration, Duration::from_millis(20));
         assert_eq!(metrics.average(), Duration::from_millis(15));
+    }
+
+    #[test]
+    fn disabled_profiler_ignores_records() {
+        let profiler = Profiler::new();
+        profiler.record("test", Duration::from_millis(10));
+
+        assert!(profiler.get("test").is_none());
+    }
+
+    #[test]
+    fn average_handles_counts_larger_than_u32() {
+        let metrics = Metrics {
+            count: u64::from(u32::MAX) + 2,
+            total_duration: Duration::from_secs(10),
+            min_duration: Duration::ZERO,
+            max_duration: Duration::from_secs(10),
+        };
+
+        assert_eq!(
+            metrics.average(),
+            Duration::from_nanos(
+                (Duration::from_secs(10).as_nanos() / u128::from(metrics.count)) as u64
+            )
+        );
+    }
+
+    #[test]
+    #[allow(clippy::disallowed_macros)]
+    fn profiler_recovers_from_poisoned_metrics_lock() {
+        let profiler = Arc::new(Profiler::enabled());
+        let cloned = Arc::clone(&profiler);
+        let _ = std::thread::spawn(move || {
+            let _guard = cloned.metrics.write().unwrap();
+            panic!("poison profiler metrics lock");
+        })
+        .join();
+
+        profiler.record("after_poison", Duration::from_millis(1));
+
+        assert_eq!(profiler.get("after_poison").unwrap().count, 1);
+    }
+
+    #[test]
+    fn profile_summary_display_uses_ms_columns() {
+        let profiler = Profiler::enabled();
+        profiler.record("tiny", Duration::from_micros(250));
+
+        let report = profiler.summary().to_string();
+
+        assert!(report.contains("Total ms"));
+        assert!(report.contains("0.250"));
+        assert!(!report.contains("us"));
     }
 
     #[test]
