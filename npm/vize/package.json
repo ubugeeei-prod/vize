@@ -73,6 +73,6 @@
     "@vizejs/native-win32-x64-msvc": "catalog:native-binaries"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }
