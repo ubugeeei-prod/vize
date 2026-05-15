@@ -22,6 +22,16 @@ use vize_carton::{
 use vize_croquis::{Analyzer, AnalyzerOptions, ImportStatementInfo, ReExportInfo, TypeExport};
 
 const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
+const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
+    "baseUrl",
+    "paths",
+    "rootDir",
+    "rootDirs",
+    "outDir",
+    "declarationDir",
+    "typeRoots",
+    "tsBuildInfoFile",
+];
 
 /// A virtual file in the project.
 #[derive(Debug)]
@@ -400,6 +410,9 @@ impl VirtualProject {
         }
 
         let mut compiler_options = self.load_compiler_options(original_tsconfig.as_deref())?;
+        for option in PATH_SENSITIVE_COMPILER_OPTIONS {
+            compiler_options.remove(*option);
+        }
         compiler_options.insert("allowImportingTsExtensions".into(), Value::Bool(true));
 
         if let Some(out_dir) = out_dir {
@@ -1003,6 +1016,58 @@ const message = 'Hello'
         assert!(fs::read_to_string(&tsconfig_path)
             .unwrap()
             .contains("__vize_auto_imports.d.ts"));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn materialized_tsconfig_preserves_original_path_option_bases() {
+        let case_dir = unique_case_dir("tsconfig-path-bases");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "rootDirs": ["src", "generated"],
+    "typeRoots": ["types"]
+  }
+}"#,
+        )
+        .unwrap();
+        let vue_path = src_dir.join("App.vue");
+        fs::write(
+            &vue_path,
+            "<script setup lang=\"ts\">const count = 1</script>",
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&vue_path).unwrap();
+        project.materialize().unwrap();
+
+        let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
+        let compiler_options = value["compilerOptions"].as_object().unwrap();
+
+        assert_eq!(compiler_options["strict"], serde_json::Value::Bool(true));
+        assert_eq!(
+            compiler_options["allowImportingTsExtensions"],
+            serde_json::Value::Bool(true)
+        );
+        for option in ["baseUrl", "paths", "rootDir", "rootDirs", "typeRoots"] {
+            assert!(
+                !compiler_options.contains_key(option),
+                "{option} should remain owned by the extended tsconfig"
+            );
+        }
 
         let _ = fs::remove_dir_all(&case_dir);
     }
