@@ -166,16 +166,17 @@ pub fn analyze_component_resolution(
 /// Check if a component name is a Vue built-in component.
 #[inline]
 fn is_builtin_component(name: &str) -> bool {
+    let normalized = to_pascal_case(name);
     matches!(
-        name,
+        normalized.as_str(),
         "Transition"
             | "TransitionGroup"
             | "KeepAlive"
             | "Suspense"
             | "Teleport"
-            | "component"
-            | "slot"
-            | "template"
+            | "Component"
+            | "Slot"
+            | "Template"
             // Nuxt built-ins
             | "NuxtPage"
             | "NuxtLayout"
@@ -302,9 +303,17 @@ mod tests {
     #[test]
     fn test_is_builtin_component() {
         assert!(is_builtin_component("Transition"));
+        assert!(is_builtin_component("transition"));
+        assert!(is_builtin_component("transition-group"));
         assert!(is_builtin_component("KeepAlive"));
+        assert!(is_builtin_component("keep-alive"));
         assert!(is_builtin_component("RouterView"));
+        assert!(is_builtin_component("router-view"));
         assert!(is_builtin_component("NuxtPage"));
+        assert!(is_builtin_component("nuxt-page"));
+        assert!(is_builtin_component("nuxt-link"));
+        assert!(is_builtin_component("client-only"));
+        assert!(is_builtin_component("slot"));
         assert!(!is_builtin_component("MyComponent"));
         assert!(!is_builtin_component("UserCard"));
     }

@@ -210,6 +210,29 @@ mod tests {
         )));
     }
 
+    #[test]
+    fn test_component_resolution_skips_kebab_case_builtins() {
+        let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
+
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        for component in ["router-view", "router-link", "nuxt-link", "client-only"] {
+            parent_analyzer
+                .croquis_mut()
+                .used_components
+                .insert(CompactString::new(component));
+        }
+        analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analyzer.finish());
+
+        let result = analyzer.analyze();
+        assert!(
+            result.diagnostics.iter().all(|diagnostic| !matches!(
+                diagnostic.kind,
+                CrossFileDiagnosticKind::UnregisteredComponent { .. }
+            )),
+            "kebab-case framework built-ins should not require local registration"
+        );
+    }
+
     // === Provide/Inject Tests ===
     // NOTE: CrossFileAnalyzer.analyze_single_file doesn't parse SFC tags,
     // so we use .ts extension to pass raw script content
