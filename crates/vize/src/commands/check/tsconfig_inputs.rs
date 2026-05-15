@@ -256,10 +256,22 @@ fn resolve_extended_tsconfig(tsconfig_path: &Path, extends: &str) -> Option<Path
             },
         );
     } else {
-        push_tsconfig_candidates(&mut candidates, base_dir.join("node_modules").join(extends));
+        push_node_modules_tsconfig_candidates(&mut candidates, base_dir, extends);
     }
 
     candidates.into_iter().find(|candidate| candidate.exists())
+}
+
+fn push_node_modules_tsconfig_candidates(
+    candidates: &mut Vec<PathBuf>,
+    base_dir: &Path,
+    extends: &str,
+) {
+    let mut current = Some(base_dir);
+    while let Some(dir) = current {
+        push_tsconfig_candidates(candidates, dir.join("node_modules").join(extends));
+        current = dir.parent();
+    }
 }
 
 fn push_tsconfig_candidates(candidates: &mut Vec<PathBuf>, base: PathBuf) {
@@ -489,7 +501,7 @@ fn strip_trailing_commas(content: &str) -> std::string::String {
 
 #[cfg(test)]
 mod tests {
-    use super::collect_default_check_files;
+    use super::{collect_default_check_files, resolve_extended_tsconfig};
     use std::fs;
     use std::path::{Path, PathBuf};
     use vize_carton::cstr;
@@ -603,6 +615,35 @@ mod tests {
         let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
         assert_eq!(files, vec![case_dir.join("src/two/App.vue")]);
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn extended_config_resolution_finds_ancestor_node_modules() {
+        let case_dir = unique_case_dir("tsconfig-package-extends");
+        let _ = fs::remove_dir_all(&case_dir);
+        let app_dir = case_dir.join("packages/app");
+        let package_dir = case_dir.join("node_modules/@scope/tsconfig");
+        fs::create_dir_all(&app_dir).unwrap();
+        fs::create_dir_all(&package_dir).unwrap();
+        fs::write(app_dir.join("tsconfig.json"), "{}").unwrap();
+        fs::write(
+            package_dir.join("tsconfig.vue.json"),
+            r#"{
+  "compilerOptions": {
+    "strict": true
+  }
+}"#,
+        )
+        .unwrap();
+
+        let resolved = resolve_extended_tsconfig(
+            &app_dir.join("tsconfig.json"),
+            "@scope/tsconfig/tsconfig.vue.json",
+        );
+
+        assert_eq!(resolved, Some(package_dir.join("tsconfig.vue.json")));
 
         let _ = fs::remove_dir_all(&case_dir);
     }
