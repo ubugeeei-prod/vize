@@ -71,6 +71,13 @@ jobs:
           shared-key: release-cli-${{ matrix.settings.target }}
           cache-workspace-crates: "true"
 
+      - name: Tune Windows release profile
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
+          echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
+
       - name: Build CLI
         shell: bash
         env:
@@ -343,6 +350,13 @@ jobs:
         with:
           shared-key: release-native-${{ matrix.settings.target }}
           cache-workspace-crates: "true"
+
+      - name: Tune Windows release profile
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
+          echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
 
       - name: Setup Zig
         if: matrix.settings.cross_compile
