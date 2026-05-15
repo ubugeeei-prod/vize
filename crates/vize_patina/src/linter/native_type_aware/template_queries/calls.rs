@@ -20,28 +20,74 @@ pub(super) struct FloatingPromiseRange {
     pub probe_end: u32,
 }
 
-pub(super) fn collect_call_callee_ranges(
+#[derive(Default)]
+pub(super) struct TemplateCallRanges {
+    pub callees: Vec<RelativeRange>,
+    pub floating_promises: Vec<FloatingPromiseRange>,
+}
+
+pub(super) fn collect_template_call_ranges(
     source: &str,
     allow_statement_fallback: bool,
-) -> Vec<RelativeRange> {
+    include_callees: bool,
+    include_floating_promises: bool,
+) -> TemplateCallRanges {
+    let mut ranges = TemplateCallRanges::default();
+    if !include_callees && !include_floating_promises {
+        return ranges;
+    }
+
     let allocator = OxcAllocator::default();
     let source_type = SourceType::from_path("template.ts").unwrap_or_default();
     if let Ok(expression) = profile!(
-        "patina.type_aware.template_calls.parse_expression",
+        "patina.type_aware.template_queries.parse_expression",
         OxcParser::new(&allocator, source, source_type).parse_expression()
     ) {
-        let mut collector = CallCalleeCollector::default();
-        profile!(
-            "patina.type_aware.template_calls.visit_expression",
-            collector.visit_expression(&expression)
-        );
-        return collector.into_relative_ranges(0, source.len() as u32);
+        if include_callees {
+            let mut collector = CallCalleeCollector::default();
+            profile!(
+                "patina.type_aware.template_calls.visit_expression",
+                collector.visit_expression(&expression)
+            );
+            ranges.callees = collector.into_relative_ranges(0, source.len() as u32);
+        }
+        if include_floating_promises {
+            if expression.span().end as usize == source.trim_end().len() {
+                profile!(
+                    "patina.type_aware.template_floating.visit_expression",
+                    collect_floating_promise_ranges_for_expression(
+                        &expression,
+                        &mut ranges.floating_promises
+                    )
+                );
+            } else if allow_statement_fallback {
+                ranges.floating_promises =
+                    collect_statement_floating_promise_ranges(&allocator, source_type, source);
+            }
+        }
+        return ranges;
     }
 
     if !allow_statement_fallback {
-        return Vec::new();
+        return ranges;
     }
 
+    if include_callees {
+        ranges.callees = collect_statement_call_callee_ranges(&allocator, source_type, source);
+    }
+    if include_floating_promises {
+        ranges.floating_promises =
+            collect_statement_floating_promise_ranges(&allocator, source_type, source);
+    }
+
+    ranges
+}
+
+fn collect_statement_call_callee_ranges(
+    allocator: &OxcAllocator,
+    source_type: SourceType,
+    source: &str,
+) -> Vec<RelativeRange> {
     const PREFIX: &str = "function __vize_template_handler(){\n";
     let mut wrapped = String::with_capacity(PREFIX.len() + source.len() + 4);
     wrapped.push_str(PREFIX);
@@ -50,7 +96,7 @@ pub(super) fn collect_call_callee_ranges(
 
     let parsed = profile!(
         "patina.type_aware.template_calls.parse_statement",
-        OxcParser::new(&allocator, wrapped.as_str(), source_type).parse()
+        OxcParser::new(allocator, wrapped.as_str(), source_type).parse()
     );
     if parsed.panicked || !parsed.errors.is_empty() {
         return Vec::new();
@@ -64,32 +110,14 @@ pub(super) fn collect_call_callee_ranges(
     collector.into_relative_ranges(PREFIX.len() as u32, source.len() as u32)
 }
 
-pub(super) fn collect_floating_promise_ranges(
+fn collect_statement_floating_promise_ranges(
+    allocator: &OxcAllocator,
+    source_type: SourceType,
     source: &str,
-    allow_statement_fallback: bool,
 ) -> Vec<FloatingPromiseRange> {
-    let allocator = OxcAllocator::default();
-    let source_type = SourceType::from_path("template.ts").unwrap_or_default();
-    if let Ok(expression) = profile!(
-        "patina.type_aware.template_floating.parse_expression",
-        OxcParser::new(&allocator, source, source_type).parse_expression()
-    ) {
-        if expression.span().end as usize == source.trim_end().len() {
-            let mut ranges = Vec::new();
-            collect_floating_promise_ranges_for_expression(&expression, &mut ranges);
-            if !ranges.is_empty() {
-                return ranges;
-            }
-        }
-    }
-
-    if !allow_statement_fallback {
-        return Vec::new();
-    }
-
     let parsed = profile!(
         "patina.type_aware.template_floating.parse_statement",
-        OxcParser::new(&allocator, source, source_type).parse()
+        OxcParser::new(allocator, source, source_type).parse()
     );
     if parsed.panicked || !parsed.errors.is_empty() {
         return Vec::new();
@@ -289,5 +317,57 @@ fn is_handled_promise_chain(expression: &Expression<'_>) -> bool {
         },
         Expression::CallExpression(call) => is_handled_call(call),
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{collect_template_call_ranges, FloatingPromiseRange, RelativeRange};
+
+    fn range_slices<'a>(source: &'a str, ranges: &[RelativeRange]) -> Vec<&'a str> {
+        ranges
+            .iter()
+            .map(|range| &source[range.start as usize..range.end as usize])
+            .collect()
+    }
+
+    fn promise_slices<'a>(source: &'a str, ranges: &[FloatingPromiseRange]) -> Vec<&'a str> {
+        ranges
+            .iter()
+            .map(|range| &source[range.start as usize..range.end as usize])
+            .collect()
+    }
+
+    #[test]
+    fn collects_callees_and_floating_promises_from_one_expression_parse() {
+        let source = "enabled && save()";
+        let ranges = collect_template_call_ranges(source, false, true, true);
+
+        assert_eq!(range_slices(source, &ranges.callees), vec!["save"]);
+        assert_eq!(
+            promise_slices(source, &ranges.floating_promises),
+            vec!["save()"]
+        );
+    }
+
+    #[test]
+    fn collects_statement_fallback_callees_for_event_handlers() {
+        let source = "if (enabled) { save(); track() }";
+        let ranges = collect_template_call_ranges(source, true, true, false);
+
+        assert_eq!(range_slices(source, &ranges.callees), vec!["save", "track"]);
+        assert!(ranges.floating_promises.is_empty());
+    }
+
+    #[test]
+    fn collects_statement_fallback_floating_promises() {
+        let source = "save(); track()";
+        let ranges = collect_template_call_ranges(source, true, false, true);
+
+        assert!(ranges.callees.is_empty());
+        assert_eq!(
+            promise_slices(source, &ranges.floating_promises),
+            vec!["save()", "track()"]
+        );
     }
 }

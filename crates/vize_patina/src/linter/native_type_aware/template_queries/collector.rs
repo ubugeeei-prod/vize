@@ -1,8 +1,6 @@
 use super::{
-    absolute_expression_range,
-    calls::{collect_call_callee_ranges, collect_floating_promise_ranges},
-    generated_offset_for_text, TemplateContext, TemplatePromiseQuery, TemplateQuery,
-    TemplateQueryKind,
+    absolute_expression_range, calls::collect_template_call_ranges, generated_offset_for_text,
+    TemplateContext, TemplatePromiseQuery, TemplateQuery, TemplateQueryKind,
 };
 use vize_carton::profile;
 use vize_croquis::virtual_ts::VirtualTsOutput;
@@ -56,6 +54,12 @@ struct TemplateQuerySinks<'a> {
     template_promise_queries: Option<&'a mut Vec<TemplatePromiseQuery>>,
 }
 
+impl TemplateQuerySinks<'_> {
+    fn has_queries(&self) -> bool {
+        self.template_queries.is_some() || self.template_promise_queries.is_some()
+    }
+}
+
 fn dedupe_template_queries(queries: &mut Vec<TemplateQuery>) {
     queries.sort_unstable_by_key(|query| {
         (
@@ -106,21 +110,10 @@ fn collect_children(
                     let PropNode::Directive(directive) = prop else {
                         continue;
                     };
-                    if let Some(queries) = sinks.template_queries.as_deref_mut() {
+                    if sinks.has_queries() {
                         profile!(
-                            "patina.type_aware.template_queries.directive",
-                            collect_directive(virtual_ts, directive, template_offset, queries)
-                        );
-                    }
-                    if let Some(queries) = sinks.template_promise_queries.as_deref_mut() {
-                        profile!(
-                            "patina.type_aware.template_promise_queries.directive",
-                            collect_promise_directive(
-                                virtual_ts,
-                                directive,
-                                template_offset,
-                                queries
-                            )
+                            "patina.type_aware.template_query_sets.directive",
+                            collect_directive(virtual_ts, directive, template_offset, sinks)
                         );
                     }
                 }
@@ -236,29 +229,20 @@ fn collect_expression(
     allow_statement_fallback: bool,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
-    if let Some(queries) = sinks.template_queries.as_deref_mut() {
+    let include_template_queries = sinks.template_queries.is_some();
+    let include_template_promise_queries = sinks.template_promise_queries.is_some();
+    if include_template_queries || include_template_promise_queries {
         profile!(
-            "patina.type_aware.template_queries.expression",
-            collect_expression_queries(
+            "patina.type_aware.template_query_sets.expression",
+            collect_expression_query_sets(
                 virtual_ts,
                 expression,
                 template_offset,
                 context,
                 allow_statement_fallback,
-                queries,
-            )
-        );
-    }
-    if let Some(queries) = sinks.template_promise_queries.as_deref_mut() {
-        profile!(
-            "patina.type_aware.template_promise_queries.expression",
-            collect_promise_expression_queries(
-                virtual_ts,
-                expression,
-                template_offset,
-                context,
-                allow_statement_fallback,
-                queries,
+                include_template_queries,
+                include_template_promise_queries,
+                sinks,
             )
         );
     }
@@ -268,7 +252,7 @@ fn collect_directive(
     virtual_ts: &VirtualTsOutput,
     directive: &DirectiveNode<'_>,
     template_offset: u32,
-    queries: &mut Vec<TemplateQuery>,
+    sinks: &mut TemplateQuerySinks<'_>,
 ) {
     let Some(expression) = &directive.exp else {
         return;
@@ -278,135 +262,104 @@ fn collect_directive(
         "on" => TemplateContext::Event,
         _ => TemplateContext::Directive,
     };
-    profile!(
-        "patina.type_aware.template_queries.expression",
-        collect_expression_queries(
-            virtual_ts,
-            expression,
-            template_offset,
-            context,
-            matches!(context, TemplateContext::Event),
-            queries,
-        )
+    collect_expression(
+        virtual_ts,
+        expression,
+        template_offset,
+        context,
+        matches!(context, TemplateContext::Event),
+        sinks,
     );
 }
 
-fn collect_promise_directive(
-    virtual_ts: &VirtualTsOutput,
-    directive: &DirectiveNode<'_>,
-    template_offset: u32,
-    queries: &mut Vec<TemplatePromiseQuery>,
-) {
-    let Some(expression) = &directive.exp else {
-        return;
-    };
-    let context = match directive.name.as_str() {
-        "bind" => TemplateContext::Binding,
-        "on" => TemplateContext::Event,
-        _ => TemplateContext::Directive,
-    };
-    profile!(
-        "patina.type_aware.template_promise_queries.expression",
-        collect_promise_expression_queries(
-            virtual_ts,
-            expression,
-            template_offset,
-            context,
-            matches!(context, TemplateContext::Event),
-            queries,
-        )
-    );
-}
-
-fn collect_expression_queries(
+fn collect_expression_query_sets(
     virtual_ts: &VirtualTsOutput,
     expression: &ExpressionNode<'_>,
     template_offset: u32,
     context: TemplateContext,
     allow_statement_fallback: bool,
-    queries: &mut Vec<TemplateQuery>,
+    include_template_queries: bool,
+    include_template_promise_queries: bool,
+    sinks: &mut TemplateQuerySinks<'_>,
 ) {
     let Some((source_start, source_end)) = absolute_expression_range(expression, template_offset)
     else {
         return;
     };
     let source_text = expression.loc().source.as_str();
-    let Some(generated_offset) = generated_offset_for_text(virtual_ts, source_start, source_text)
-    else {
-        return;
-    };
-    queries.push(TemplateQuery {
-        kind: TemplateQueryKind::Expression,
-        context,
-        generated_offset,
-        source_start,
-        source_end,
-        owner_start: source_start,
-        owner_end: source_end,
-    });
+    let expression_generated_offset = include_template_queries
+        .then(|| generated_offset_for_text(virtual_ts, source_start, source_text))
+        .flatten();
+    let include_call_callees = expression_generated_offset.is_some();
+    let call_ranges = profile!(
+        "patina.type_aware.template_query_sets.call_ranges",
+        collect_template_call_ranges(
+            source_text,
+            allow_statement_fallback,
+            include_call_callees,
+            include_template_promise_queries,
+        )
+    );
 
-    for callee in profile!(
-        "patina.type_aware.template_queries.call_callees",
-        collect_call_callee_ranges(source_text, allow_statement_fallback)
+    if let (Some(queries), Some(generated_offset)) = (
+        sinks.template_queries.as_deref_mut(),
+        expression_generated_offset,
     ) {
-        let callee_start = source_start + callee.start;
-        let callee_end = source_start + callee.end;
-        let Some(callee_source) = source_text.get(callee.start as usize..callee.end as usize)
-        else {
-            continue;
-        };
-        let Some(generated_offset) =
-            generated_offset_for_text(virtual_ts, callee_start, callee_source)
-        else {
-            continue;
-        };
         queries.push(TemplateQuery {
-            kind: TemplateQueryKind::CallCallee,
+            kind: TemplateQueryKind::Expression,
             context,
             generated_offset,
-            source_start: callee_start,
-            source_end: callee_end,
+            source_start,
+            source_end,
             owner_start: source_start,
             owner_end: source_end,
         });
-    }
-}
 
-fn collect_promise_expression_queries(
-    virtual_ts: &VirtualTsOutput,
-    expression: &ExpressionNode<'_>,
-    template_offset: u32,
-    context: TemplateContext,
-    allow_statement_fallback: bool,
-    queries: &mut Vec<TemplatePromiseQuery>,
-) {
-    let Some((source_start, _source_end)) = absolute_expression_range(expression, template_offset)
-    else {
-        return;
-    };
-    let source_text = expression.loc().source.as_str();
-    for candidate in profile!(
-        "patina.type_aware.template_promise_queries.floating_ranges",
-        collect_floating_promise_ranges(source_text, allow_statement_fallback)
-    ) {
-        let candidate_start = source_start + candidate.start;
-        let candidate_end = source_start + candidate.end;
-        let probe_start = source_start + candidate.probe_start;
-        let Some(probe_source) =
-            source_text.get(candidate.probe_start as usize..candidate.probe_end as usize)
-        else {
-            continue;
-        };
-        let Some(generated_offset) =
-            generated_offset_for_text(virtual_ts, probe_start, probe_source)
-        else {
-            continue;
-        };
-        queries.push(TemplatePromiseQuery {
-            context,
-            generated_offset,
-            source_start: candidate_start,
-            source_end: candidate_end,
-        });
+        for callee in call_ranges.callees {
+            let callee_start = source_start + callee.start;
+            let callee_end = source_start + callee.end;
+            let Some(callee_source) = source_text.get(callee.start as usize..callee.end as usize)
+            else {
+                continue;
+            };
+            let Some(generated_offset) =
+                generated_offset_for_text(virtual_ts, callee_start, callee_source)
+            else {
+                continue;
+            };
+            queries.push(TemplateQuery {
+                kind: TemplateQueryKind::CallCallee,
+                context,
+                generated_offset,
+                source_start: callee_start,
+                source_end: callee_end,
+                owner_start: source_start,
+                owner_end: source_end,
+            });
+        }
+    }
+
+    if let Some(queries) = sinks.template_promise_queries.as_deref_mut() {
+        for candidate in call_ranges.floating_promises {
+            let candidate_start = source_start + candidate.start;
+            let candidate_end = source_start + candidate.end;
+            let probe_start = source_start + candidate.probe_start;
+            let Some(probe_source) =
+                source_text.get(candidate.probe_start as usize..candidate.probe_end as usize)
+            else {
+                continue;
+            };
+            let Some(generated_offset) =
+                generated_offset_for_text(virtual_ts, probe_start, probe_source)
+            else {
+                continue;
+            };
+            queries.push(TemplatePromiseQuery {
+                context,
+                generated_offset,
+                source_start: candidate_start,
+                source_end: candidate_end,
+            });
+        }
     }
 }

@@ -122,7 +122,9 @@ Run `vp run --workspace-root bench:lint` to reproduce.
 Type-aware linting is intentionally profiled at the phases where cost tends to cluster: SFC parsing,
 Croquis analysis, virtual TypeScript generation, template query collection, and Corsa probes. When
 multiple template-backed type-aware rules are enabled, Patina collects template expression and
-template Promise queries in one AST walk before the Corsa probe phase.
+template Promise queries in one AST walk before the Corsa probe phase. Query collection also shares
+the OXC expression parse for unsafe-template and floating-Promise checks, so one template expression
+does not pay duplicate parse cost when both rules are enabled.
 
 Run `vize lint --profile --preset opinionated src` to see these rows in a local project.
 

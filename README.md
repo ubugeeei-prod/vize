@@ -133,7 +133,9 @@ static `href` values, so case changes or HTML-decoded control characters do not 
 diagnostics back to the original source files.
 
 Use `vize lint --profile src` when tuning rule cost. Type-aware lint profile rows include template
-query collection and Corsa probe phases so expensive cross-rule work can be spotted quickly.
+query collection and Corsa probe phases so expensive cross-rule work can be spotted quickly. When
+template unsafe-binding and floating-Promise checks are both enabled, shared expression parsing keeps
+their query collection from doing duplicate OXC work.
 SSR browser-global diagnostics also avoid common literal-boundary false positives such as strings,
 regexes, comments, and direct `typeof window` guards.
 
