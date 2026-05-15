@@ -112,6 +112,52 @@ function resolveBareImportWithNode(
   return null;
 }
 
+function normalizeResolvedVuePath(id: string): string | null {
+  const pathPart = id.split("?")[0];
+  if (!pathPart?.endsWith(".vue")) {
+    return null;
+  }
+  return pathPart.startsWith("/@fs/") ? pathPart.slice(4) : pathPart;
+}
+
+async function resolveAliasedVueImport(
+  ctx: ResolveContext,
+  state: VizePluginState,
+  id: string,
+  importer: string | undefined,
+  isSsrRequest: boolean,
+  handleNodeModules: boolean,
+): Promise<string | null> {
+  if (path.isAbsolute(id)) {
+    return null;
+  }
+
+  const viteImporter = normalizeRequireBase(importer) ?? importer;
+  const viteResolved = await ctx.resolve(id, viteImporter, { skipSelf: true });
+  const realPath = viteResolved ? normalizeResolvedVuePath(viteResolved.id) : null;
+  if (!realPath) {
+    return null;
+  }
+
+  const isResolvedNodeModules = realPath.includes("node_modules");
+  if (!handleNodeModules && isResolvedNodeModules) {
+    state.logger.log(`resolveId: skipping resolved node_modules path ${realPath}`);
+    return null;
+  }
+
+  if (!isResolvedNodeModules && state.filter && !state.filter(realPath)) {
+    state.logger.log(`resolveId: skipping filtered resolved path ${realPath}`);
+    return null;
+  }
+
+  if (state.cache.has(realPath) || fs.existsSync(realPath)) {
+    state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
+    return toVirtualId(realPath, isSsrRequest);
+  }
+
+  return null;
+}
+
 export async function resolveIdHook(
   ctx: ResolveContext,
   state: VizePluginState,
@@ -320,6 +366,21 @@ export async function resolveIdHook(
     }
 
     const resolved = resolveVuePath(state, id, importer);
+    const fileExists = fs.existsSync(resolved);
+    if (!fileExists) {
+      const aliased = await resolveAliasedVueImport(
+        ctx,
+        state,
+        id,
+        importer,
+        isSsrRequest,
+        handleNodeModules,
+      );
+      if (aliased) {
+        return aliased;
+      }
+    }
+
     const isNodeModulesPath = resolved.includes("node_modules");
 
     if (!handleNodeModules && isNodeModulesPath) {
@@ -333,7 +394,6 @@ export async function resolveIdHook(
     }
 
     const hasCache = state.cache.has(resolved);
-    const fileExists = fs.existsSync(resolved);
     state.logger.log(
       `resolveId: id=${id}, resolved=${resolved}, hasCache=${hasCache}, fileExists=${fileExists}, importer=${importer ?? "none"}`,
     );
@@ -341,22 +401,6 @@ export async function resolveIdHook(
     // Return virtual module ID: \0/path/to/Component.vue.ts
     if (hasCache || fileExists) {
       return toVirtualId(resolved, isSsrRequest);
-    }
-
-    // Vite fallback for aliased imports
-    if (!fileExists && !path.isAbsolute(id)) {
-      const viteResolved = await ctx.resolve(id, importer, { skipSelf: true });
-      if (viteResolved && viteResolved.id.endsWith(".vue")) {
-        const realPath = viteResolved.id;
-        const isResolvedNodeModules = realPath.includes("node_modules");
-        if (
-          (isResolvedNodeModules ? handleNodeModules : state.filter(realPath)) &&
-          (state.cache.has(realPath) || fs.existsSync(realPath))
-        ) {
-          state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
-          return toVirtualId(realPath, isSsrRequest);
-        }
-      }
     }
   }
 
