@@ -70,6 +70,11 @@ const msg = 'hello'
     /document\.createElement/,
     "SSR post-transforms should stay free of document-based side effects",
   );
+  assert.equal(
+    result.map,
+    null,
+    "SSR post-transforms should not allocate discarded OXC sourcemaps",
+  );
 }
 
 {

@@ -115,6 +115,11 @@ assert.match(
   /import\.meta\.hot/,
   "Virtual module transforms must leave import.meta.hot available for Vite HMR",
 );
+assert.equal(
+  virtualDefineTransform.map,
+  null,
+  "Virtual module OXC transforms should not allocate sourcemaps that Vize discards",
+);
 
 const definePageDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-define-page-"));
 const definePagePath = path.join(definePageDir, "Home.vue");

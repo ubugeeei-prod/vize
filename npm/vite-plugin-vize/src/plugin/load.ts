@@ -353,12 +353,13 @@ export async function transformHook(
     try {
       const result = await transformWithOxc(code, realPath, {
         lang: "ts",
+        sourcemap: false,
       });
       const defines = getVirtualModuleDefines(state, options?.ssr ?? false);
       let transformed = result.code;
       transformed = applyDefineReplacements(transformed, defines);
 
-      return { code: transformed, map: result.map as TransformResult["map"] };
+      return { code: transformed, map: null };
     } catch (e: unknown) {
       state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
       const dumpPath = getOxcDumpPath(state.root, realPath);

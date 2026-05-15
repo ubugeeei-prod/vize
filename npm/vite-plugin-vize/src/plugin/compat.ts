@@ -77,7 +77,7 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
             filePath: id,
           });
 
-          const result = await transformWithOxc(output, id, { lang: "ts" });
+          const result = await transformWithOxc(output, id, { lang: "ts", sourcemap: false });
           const defines = transformOptions?.ssr ? state.serverViteDefine : state.clientViteDefine;
           let transformed = result.code;
           if (Object.keys(defines).length > 0) {
@@ -85,7 +85,7 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
           }
           return {
             code: transformed,
-            map: result.map as TransformResult["map"],
+            map: null,
           };
         } catch (e: unknown) {
           state.logger.error(`Virtual SFC compilation failed for ${id}:`, e);
