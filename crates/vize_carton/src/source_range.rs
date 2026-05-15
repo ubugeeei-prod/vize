@@ -86,8 +86,8 @@ impl SourceRange {
     #[inline]
     pub const fn offset(&self, amount: i32) -> Self {
         Self {
-            start: (self.start as i32 + amount) as u32,
-            end: (self.end as i32 + amount) as u32,
+            start: offset_u32(self.start, amount),
+            end: offset_u32(self.end, amount),
         }
     }
 
@@ -98,6 +98,15 @@ impl SourceRange {
             start: self.start.saturating_sub(amount),
             end: self.end.saturating_add(amount),
         }
+    }
+}
+
+#[inline]
+const fn offset_u32(value: u32, amount: i32) -> u32 {
+    if amount >= 0 {
+        value.saturating_add(amount as u32)
+    } else {
+        value.saturating_sub(amount.unsigned_abs())
     }
 }
 
@@ -331,6 +340,17 @@ mod tests {
         assert!(b.intersects(&a));
         assert!(!a.intersects(&c));
         assert!(!c.intersects(&a));
+    }
+
+    #[test]
+    fn test_source_range_offset_saturates() {
+        assert_eq!(SourceRange::new(10, 20).offset(5), SourceRange::new(15, 25));
+        assert_eq!(SourceRange::new(10, 20).offset(-5), SourceRange::new(5, 15));
+        assert_eq!(SourceRange::new(10, 20).offset(-50), SourceRange::new(0, 0));
+        assert_eq!(
+            SourceRange::new(u32::MAX - 1, u32::MAX).offset(10),
+            SourceRange::new(u32::MAX, u32::MAX),
+        );
     }
 
     #[test]
