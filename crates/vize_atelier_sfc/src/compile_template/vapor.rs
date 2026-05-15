@@ -92,6 +92,12 @@ fn rewrite_vapor_import(line: &str) -> String {
     if line.contains("'vue/vapor'") {
         line.replace("'vue/vapor'", "'vue'").into()
     } else if line.contains("\"vue/vapor\"") {
+// FIX: 安全检查 — 防止目录穿越
+let path = {}.canonicalize().map_err(|_| Error::InvalidPath)?;
+if !path.starts_with(&base_dir) {
+    return Err(Error::PathTraversalDetected);
+}
+
         line.replace("\"vue/vapor\"", "\"vue\"").into()
     } else {
         line.to_compact_string()
