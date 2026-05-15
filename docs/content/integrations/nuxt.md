@@ -18,8 +18,8 @@ Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/inst
 vp install @vizejs/nuxt
 ```
 
-If you want to use `pkl` config with pnpm, you might need to install `vize` package itself.
-`@vizejs/nuxt` installs `vize` which serves `vize.pkl` with default config, but `vize.pkl` file position might be different in case of using pnpm. 
+If you want to use `pkl` config with pnpm, you might need to install the `vize` package itself.
+`@vizejs/nuxt` installs `vize` which serves `vize.pkl` with default config, but the location of `vize.pkl` may differ when using pnpm. 
 
 ```bash
 vp install vize
@@ -42,7 +42,7 @@ export default defineNuxtConfig({
 Start the dev server as usual:
 
 ```bash
-vp run dev 
+vp run dev
 ```
 
 The module injects `@vizejs/vite-plugin` into Nuxt's Vite config and keeps Nuxt-specific transforms
