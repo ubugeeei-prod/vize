@@ -267,7 +267,7 @@ fn append_padded(mut out: &mut String, value: &str, width: usize) {
 }
 
 fn write_duration(mut out: &mut String, duration: Duration) {
-    append!(out, "{:.2}ms", duration.as_secs_f64() * 1000.0);
+    append!(out, "{:.3}ms", duration.as_secs_f64() * 1000.0);
 }
 
 fn write_duration_padded(out: &mut String, duration: Duration, width: usize) {

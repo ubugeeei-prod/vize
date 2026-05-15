@@ -1,10 +1,9 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
-import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { misskeyApp, VIZE_BIN } from "../../_helpers/apps.ts";
+import { misskeyApp, VIZE_BIN, requireVizeBin } from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,10 +34,7 @@ function compareStrings(left: string, right: string): number {
 
 describe(`${app.name} lint (linter)`, () => {
   before(() => {
-    if (!fs.existsSync(VIZE_BIN)) {
-      console.log(`Skipping: vize binary not found at ${VIZE_BIN}`);
-      process.exit(0);
-    }
+    requireVizeBin();
     if (app.setup) app.setup();
   });
 
