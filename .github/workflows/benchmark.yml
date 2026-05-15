@@ -54,10 +54,26 @@ jobs:
         working-directory: head
         run: vp install --frozen-lockfile --prefer-offline
 
+      - name: Cache base CLI
+        id: cache-base-cli
+        uses: actions/cache@v5
+        with:
+          path: base/target/ci/vize
+          key: ${{ runner.os }}-benchmark-base-cli-${{ github.event.pull_request.base.sha }}
+
       - name: Build base CLI
+        if: steps.cache-base-cli.outputs.cache-hit != 'true'
         run: cargo build --manifest-path base/Cargo.toml --profile ci -p vize
 
+      - name: Cache head CLI
+        id: cache-head-cli
+        uses: actions/cache@v5
+        with:
+          path: head/target/ci/vize
+          key: ${{ runner.os }}-benchmark-head-cli-${{ github.event.pull_request.head.sha }}
+
       - name: Build head CLI
+        if: steps.cache-head-cli.outputs.cache-hit != 'true'
         run: cargo build --manifest-path head/Cargo.toml --profile ci -p vize
 
       - name: Generate benchmark input
