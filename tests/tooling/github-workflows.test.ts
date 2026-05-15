@@ -100,7 +100,7 @@ test("check workflow comments a detailed PR test report for each head push", () 
   assert.match(commentJob, /actions:\s*read/);
   assert.match(commentJob, /contents:\s*read/);
   assert.match(commentJob, /issues:\s*write/);
-  assert.doesNotMatch(commentJob, /pull-requests:\s*write/);
+  assert.match(commentJob, /pull-requests:\s*write/);
   assert.match(commentJob, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
   assert.match(commentJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v4/);
   assert.match(commentJob, /name:\s*test-inventory/);
