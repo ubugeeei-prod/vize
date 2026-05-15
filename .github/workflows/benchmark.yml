@@ -55,33 +55,55 @@ jobs:
         working-directory: head
         run: vp install --frozen-lockfile --prefer-offline
 
+      - name: Validate base metadata
+        id: validate-base
+        continue-on-error: true
+        run: cargo metadata --manifest-path base/Cargo.toml --format-version 1 --no-deps > /dev/null
+
+      - name: Skip benchmark when base metadata is invalid
+        if: steps.validate-base.outcome != 'success'
+        run: |
+          {
+            echo "## PR Benchmark"
+            echo
+            echo "Base metadata could not be parsed, so the benchmark was skipped for this PR."
+            echo
+            echo "| status | reason |"
+            echo "| --- | --- |"
+            echo "| skipped | base checkout is not buildable |"
+          } > benchmark-summary.md
+
       - name: Cache base CLI
         id: cache-base-cli
+        if: steps.validate-base.outcome == 'success'
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: base/target/ci/vize
           key: ${{ runner.os }}-benchmark-base-cli-${{ github.event.pull_request.base.sha }}
 
       - name: Build base CLI
-        if: steps.cache-base-cli.outputs.cache-hit != 'true'
+        if: steps.validate-base.outcome == 'success' && steps.cache-base-cli.outputs.cache-hit != 'true'
         run: cargo build --manifest-path base/Cargo.toml --profile ci -p vize
 
       - name: Cache head CLI
         id: cache-head-cli
+        if: steps.validate-base.outcome == 'success'
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: head/target/ci/vize
           key: ${{ runner.os }}-benchmark-head-cli-${{ github.event.pull_request.head.sha }}
 
       - name: Build head CLI
-        if: steps.cache-head-cli.outputs.cache-hit != 'true'
+        if: steps.validate-base.outcome == 'success' && steps.cache-head-cli.outputs.cache-hit != 'true'
         run: cargo build --manifest-path head/Cargo.toml --profile ci -p vize
 
       - name: Generate benchmark input
+        if: steps.validate-base.outcome == 'success'
         working-directory: head
         run: node bench/generate.mjs "$VIZE_BENCH_FILE_COUNT"
 
       - name: Compare base and head
+        if: steps.validate-base.outcome == 'success'
         run: |
           node head/bench/compare-pr.mjs \
             --input "$GITHUB_WORKSPACE/head/bench/__in__" \
@@ -104,6 +126,7 @@ jobs:
           path: |
             benchmark-summary.md
             benchmark-results.json
+          if-no-files-found: warn
           retention-days: 14
 
       - name: Comment on PR
