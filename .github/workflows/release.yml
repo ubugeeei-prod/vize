@@ -161,7 +161,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
 
       - name: Cache pnpm store for VS Code extension tooling
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: ${{ runner.os }}-pnpm-vscode-release-${{ hashFiles('.node-version') }}-v1
@@ -507,7 +507,7 @@ jobs:
 
       - name: Cache WASM package build
         id: cache-wasm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: npm/vize-wasm
           key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json') }}

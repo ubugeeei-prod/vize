@@ -25,6 +25,20 @@ test("GitHub workflows opt JavaScript actions into Node 24", () => {
   }
 });
 
+test("GitHub workflows use the current cache action", () => {
+  for (const relativePath of [
+    ".github/actions/setup-moonbit/action.yml",
+    ".github/workflows/benchmark.yml",
+    ".github/workflows/check.yml",
+    ".github/workflows/deploy-docs.yml",
+    ".github/workflows/e2e.yml",
+    ".github/workflows/release.yml",
+  ]) {
+    const file = readRepoFile(...relativePath.split("/"));
+    assert.doesNotMatch(file, /uses:\s*actions\/cache@v4/, `${relativePath} still uses cache v4`);
+  }
+});
+
 test("PR CI jobs cap runtime with explicit timeouts", () => {
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
   const benchmarkWorkflow = readRepoFile(".github", "workflows", "benchmark.yml");
