@@ -7,6 +7,29 @@ export function sanitizeNuxtDevStylesheetLinks(html: string, buildAssetsDir = "/
   const normalizedAssetsDir = normalizeUrlPrefix(buildAssetsDir);
   const seenHrefs = new Set<string>();
 
+  function decodePathPart(pathPart: string): string {
+    try {
+      return decodeURIComponent(pathPart);
+    } catch {
+      return pathPart;
+    }
+  }
+
+  function hasUnsafePathSegment(pathPart: string): boolean {
+    return pathPart.split(/[\\/]/).some((segment) => segment === "..");
+  }
+
+  function isAllowedNuxtDevStylesheetPath(pathPart: string): boolean {
+    return (
+      pathPart.startsWith("@fs/") ||
+      pathPart.startsWith("@id/") ||
+      pathPart.startsWith("assets/") ||
+      pathPart.startsWith("virtual:") ||
+      /^__[\w.-]+\.css$/i.test(pathPart) ||
+      /^[\w.-]+\.css$/i.test(pathPart)
+    );
+  }
+
   function shouldKeepHref(href: string): boolean {
     if (seenHrefs.has(href)) {
       return false;
@@ -18,26 +41,13 @@ export function sanitizeNuxtDevStylesheetLinks(html: string, buildAssetsDir = "/
     }
 
     const pathPart = href.slice(normalizedAssetsDir.length).split("?")[0].split("#")[0];
+    const decodedPath = decodePathPart(pathPart);
 
-    let decodedPath = pathPart;
-    try {
-      decodedPath = decodeURIComponent(pathPart);
-    } catch {
-      // Keep the raw path if decoding fails.
-    }
-
-    if (decodedPath.includes("\0")) {
+    if (decodedPath.includes("\0") || hasUnsafePathSegment(decodedPath)) {
       return false;
     }
 
-    return (
-      pathPart.startsWith("@fs/") ||
-      pathPart.startsWith("@id/") ||
-      pathPart.startsWith("assets/") ||
-      pathPart.startsWith("virtual:") ||
-      /^__[\w.-]+\.css$/i.test(pathPart) ||
-      /^[\w.-]+\.css$/i.test(pathPart)
-    );
+    return isAllowedNuxtDevStylesheetPath(decodedPath);
   }
 
   return html.replace(

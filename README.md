@@ -29,6 +29,7 @@
 - A full Rust CLI via the `vize` crate (`build`, `fmt`, `lint`, `check`, `ready`, `upgrade`, `musea`, `lsp`, `ide`)
 - npm packages including `@vizejs/vite-plugin`, `@vizejs/native`, `@vizejs/wasm`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, and `oxlint-plugin-vize`
 - The `vize` npm package for shared config utilities and native `build`, `fmt`, `lint`, `check`, `ready`, and `upgrade` commands
+- Nuxt dev integration that preserves URL-encoded asset links while removing broken or unsafe stylesheet references from rendered HTML
 
 ## Quick Start
 

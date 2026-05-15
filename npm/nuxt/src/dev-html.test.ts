@@ -25,6 +25,22 @@ assert.equal(
 
 assert.equal(
   sanitizeNuxtDevStylesheetLinks(
+    `<link rel="stylesheet" href="/_nuxt/%40fs/Users/me/project/node_modules/pkg/style.css"><link rel="stylesheet" href="/_nuxt/assets%2Fentry.css">`,
+  ),
+  `<link rel="stylesheet" href="/_nuxt/%40fs/Users/me/project/node_modules/pkg/style.css"><link rel="stylesheet" href="/_nuxt/assets%2Fentry.css">`,
+  "URL-encoded valid Nuxt dev asset paths should be preserved",
+);
+
+assert.equal(
+  sanitizeNuxtDevStylesheetLinks(
+    `<link rel="stylesheet" href="/_nuxt/assets/%2e%2e/server.css"><link rel="stylesheet" href="/_nuxt/@fs/C:%5Cproject%5C..%5Csecret.css"><link rel="stylesheet" href="/_nuxt/assets/%00secret.css">`,
+  ),
+  "",
+  "decoded traversal and null-byte paths should be stripped",
+);
+
+assert.equal(
+  sanitizeNuxtDevStylesheetLinks(
     `<link rel="stylesheet" href="/docs/_nuxt/assets/main.css"><link rel="stylesheet" href="/docs/_nuxt/pkg/style.css">`,
     "/docs/_nuxt/",
   ),

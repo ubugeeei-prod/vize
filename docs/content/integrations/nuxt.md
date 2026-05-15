@@ -48,6 +48,8 @@ vp run dev
 The module injects `@vizejs/vite-plugin` into Nuxt's Vite config and keeps Nuxt-specific transforms
 in the pipeline, so auto-imports, components, middleware, and SSR behavior continue to work through
 Nuxt.
+During development, the server response cleanup preserves valid URL-encoded Nuxt asset links such
+as `%40fs/` and encoded `assets/` paths while dropping decoded null-byte or traversal paths.
 
 ## Advanced Setup
 
