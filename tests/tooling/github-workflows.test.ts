@@ -356,6 +356,29 @@ test("cargo config forces the bundled Rust linker for Windows MSVC targets", () 
   assert.match(cargoConfig, /\[target\.aarch64-pc-windows-msvc\]\s*linker = "rust-lld"/);
 });
 
+test("release workflow tunes Windows production Rust builds for cold runners", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const profileSteps = [...workflow.matchAll(/- name: Tune Windows release profile/g)];
+
+  assert.equal(profileSteps.length, 2);
+  assert.match(
+    workflow,
+    /Tune Windows release profile[\s\S]*if: runner\.os == 'Windows'[\s\S]*CARGO_PROFILE_RELEASE_LTO=thin/,
+  );
+  assert.match(
+    workflow,
+    /Tune Windows release profile[\s\S]*CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16/,
+  );
+  assert.match(
+    workflow,
+    /Tune Windows release profile[\s\S]*Build CLI[\s\S]*cargo build --release -p vize --target \$\{\{ matrix\.settings\.target \}\}/,
+  );
+  assert.match(
+    workflow,
+    /Tune Windows release profile[\s\S]*Build vize-native[\s\S]*tools\/moon\/scripts\/github\/build_napi_package\.mbtx/,
+  );
+});
+
 test("release workflow runs GitHub helper scripts with the native target on every runner", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
 
