@@ -11,10 +11,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-const GENERATED_PATH = path.resolve(
-  import.meta.dirname,
-  "../npm/vize/src/types/generated.ts",
-);
+const GENERATED_PATH = path.resolve(import.meta.dirname, "../npm/vize/src/types/generated.ts");
 
 let content = fs.readFileSync(GENERATED_PATH, "utf-8");
 

@@ -9,10 +9,7 @@
           "description": "Compilation mode",
           "default": "module",
           "type": "string",
-          "enum": [
-            "module",
-            "function"
-          ]
+          "enum": ["module", "function"]
         },
         "vapor": {
           "description": "Enable Vapor mode compilation",
@@ -52,10 +49,7 @@
           "description": "Script file extension for generated output",
           "default": "ts",
           "type": "string",
-          "enum": [
-            "ts",
-            "js"
-          ]
+          "enum": ["ts", "js"]
         },
         "runtimeModuleName": {
           "description": "Module name for runtime imports",
@@ -132,11 +126,7 @@
           "type": "object",
           "additionalProperties": {
             "type": "string",
-            "enum": [
-              "off",
-              "warn",
-              "error"
-            ]
+            "enum": ["off", "warn", "error"]
           }
         },
         "categories": {
@@ -145,51 +135,27 @@
           "properties": {
             "correctness": {
               "type": "string",
-              "enum": [
-                "off",
-                "warn",
-                "error"
-              ]
+              "enum": ["off", "warn", "error"]
             },
             "suspicious": {
               "type": "string",
-              "enum": [
-                "off",
-                "warn",
-                "error"
-              ]
+              "enum": ["off", "warn", "error"]
             },
             "style": {
               "type": "string",
-              "enum": [
-                "off",
-                "warn",
-                "error"
-              ]
+              "enum": ["off", "warn", "error"]
             },
             "perf": {
               "type": "string",
-              "enum": [
-                "off",
-                "warn",
-                "error"
-              ]
+              "enum": ["off", "warn", "error"]
             },
             "a11y": {
               "type": "string",
-              "enum": [
-                "off",
-                "warn",
-                "error"
-              ]
+              "enum": ["off", "warn", "error"]
             },
             "security": {
               "type": "string",
-              "enum": [
-                "off",
-                "warn",
-                "error"
-              ]
+              "enum": ["off", "warn", "error"]
             }
           },
           "additionalProperties": false
@@ -303,11 +269,7 @@
           "description": "Trailing commas",
           "default": "all",
           "type": "string",
-          "enum": [
-            "all",
-            "none",
-            "es5"
-          ]
+          "enum": ["all", "none", "es5"]
         },
         "bracketSpacing": {
           "description": "Print spaces between brackets in object literals",
@@ -323,31 +285,19 @@
           "description": "Arrow parens mode",
           "default": "always",
           "type": "string",
-          "enum": [
-            "always",
-            "avoid"
-          ]
+          "enum": ["always", "avoid"]
         },
         "endOfLine": {
           "description": "End-of-line mode",
           "default": "lf",
           "type": "string",
-          "enum": [
-            "lf",
-            "crlf",
-            "cr",
-            "auto"
-          ]
+          "enum": ["lf", "crlf", "cr", "auto"]
         },
         "quoteProps": {
           "description": "Object property quoting mode",
           "default": "as-needed",
           "type": "string",
-          "enum": [
-            "as-needed",
-            "consistent",
-            "preserve"
-          ]
+          "enum": ["as-needed", "consistent", "preserve"]
         },
         "singleAttributePerLine": {
           "description": "Force one attribute per line",
@@ -368,10 +318,7 @@
           "description": "Attribute ordering strategy",
           "default": "alphabetical",
           "type": "string",
-          "enum": [
-            "alphabetical",
-            "as-written"
-          ]
+          "enum": ["alphabetical", "as-written"]
         },
         "mergeBindAndNonBindAttrs": {
           "description": "Merge bind and non-bind attrs for sorting",
@@ -517,10 +464,7 @@
         }
       },
       "additionalProperties": false,
-      "required": [
-        "width",
-        "height"
-      ]
+      "required": ["width", "height"]
     },
     "MuseaVrtConfig": {
       "description": "VRT (Visual Regression Testing) configuration",
@@ -641,9 +585,7 @@
         }
       },
       "additionalProperties": false,
-      "required": [
-        "type"
-      ]
+      "required": ["type"]
     },
     "GlobalTypesConfig": {
       "description": "Global type declarations",
