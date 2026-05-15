@@ -76,7 +76,7 @@ test("setup-moonbit defines explicit Windows and Unix execution paths", () => {
   const action = readRepoFile(".github", "actions", "setup-moonbit", "action.yml");
 
   assert.match(action, /Cache MoonBit toolchain/);
-  assert.match(action, /uses: actions\/cache@v4/);
+  assert.match(action, /uses: actions\/cache@v5/);
   assert.match(action, /Setup MSVC toolchain \(Windows\)/);
   assert.match(action, /uses: ilammy\/msvc-dev-cmd@v1/);
   assert.match(action, /Install MoonBit \(Windows\)/);
