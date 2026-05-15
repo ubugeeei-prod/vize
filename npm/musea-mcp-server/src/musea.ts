@@ -93,11 +93,34 @@ function tokenize(query: string): string[] {
 }
 
 function toProjectPath(projectRoot: string, absolutePath: string): string {
-  const relativePath = path.relative(projectRoot, absolutePath);
-  if (!relativePath || relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
-    return absolutePath;
+  const root = path.resolve(projectRoot);
+  const resolved = path.resolve(absolutePath);
+  const relativePath = path.relative(root, resolved);
+  return isProjectPath(root, resolved) ? relativePath || "." : resolved;
+}
+
+export function isProjectPath(projectRoot: string, candidatePath: string): boolean {
+  const root = path.resolve(projectRoot);
+  const candidate = path.resolve(candidatePath);
+  const relativePath = path.relative(root, candidate);
+  return relativePath === "" || (!relativePath.startsWith("..") && !path.isAbsolute(relativePath));
+}
+
+export function resolveProjectPath(projectRoot: string, inputPath: string, label = "path"): string {
+  if (inputPath.includes("\0")) {
+    throw new McpError(ErrorCode.InvalidParams, `${label} contains an invalid character`);
   }
-  return relativePath;
+
+  const root = path.resolve(projectRoot);
+  const resolvedPath = path.isAbsolute(inputPath)
+    ? path.resolve(inputPath)
+    : path.resolve(root, inputPath);
+
+  if (!isProjectPath(root, resolvedPath)) {
+    throw new McpError(ErrorCode.InvalidParams, `${label} must stay inside the project root`);
+  }
+
+  return resolvedPath;
 }
 
 function buildResourceUris(
@@ -316,9 +339,7 @@ export async function resolveArtReference(
   const refArg = typeof args?.ref === "string" ? args.ref : undefined;
 
   if (pathArg) {
-    const resolvedPath = path.isAbsolute(pathArg)
-      ? pathArg
-      : path.resolve(ctx.projectRoot, pathArg);
+    const resolvedPath = resolveProjectPath(ctx.projectRoot, pathArg, "path");
     const normalizedResolvedPath = normalizePathLike(resolvedPath);
     const normalizedRelativePath = normalizePathLike(path.relative(ctx.projectRoot, resolvedPath));
     const directMatch = arts.find((info) => {
@@ -448,6 +469,16 @@ async function getComponentSourceDescriptor(
       reference: resolved.info.component,
       exists: false,
       error: "This art file does not declare a component source.",
+    };
+  }
+
+  if (!isProjectPath(ctx.projectRoot, componentPath)) {
+    return {
+      reference: resolved.info.component,
+      absolutePath: componentPath,
+      path: componentPath,
+      exists: false,
+      error: "Component source is outside the project root.",
     };
   }
 

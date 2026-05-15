@@ -8,6 +8,7 @@ import {
   buildIndexSummary,
   getProjectPath,
   resolveArtReference,
+  resolveProjectPath,
 } from "./musea.js";
 import { flattenTokenCategories, generateTokensMarkdown, parseTokensFromPath } from "./tokens.js";
 import type { ServerContext } from "./types.js";
@@ -193,7 +194,7 @@ export async function readResource(ctx: ServerContext, uri: string) {
 
   if (uri.startsWith("musea://source/")) {
     const relativePath = decodeURIComponent(uri.slice("musea://source/".length));
-    const absolutePath = path.resolve(ctx.projectRoot, relativePath);
+    const absolutePath = resolveProjectPath(ctx.projectRoot, relativePath, "source path");
     const source = await fs.promises.readFile(absolutePath, "utf-8");
 
     return {
@@ -225,7 +226,11 @@ export async function readResource(ctx: ServerContext, uri: string) {
       );
     }
 
-    const absolutePath = path.resolve(ctx.projectRoot, componentSource.path);
+    const absolutePath = resolveProjectPath(
+      ctx.projectRoot,
+      componentSource.path,
+      "component source path",
+    );
     const source = await fs.promises.readFile(absolutePath, "utf-8");
     return {
       contents: [{ uri, mimeType: "text/plain", text: source }],

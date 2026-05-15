@@ -4,6 +4,8 @@
  * Extracted from gallery.ts to keep file sizes manageable.
  */
 
+import { serializeScriptValue } from "../security.js";
+
 /**
  * Generate the gallery HTML body (header, sidebar, content, and inline script).
  */
@@ -68,7 +70,7 @@ export function generateGalleryBody(basePath: string): string {
  */
 export function generateGalleryScript(basePath: string): string {
   return `
-    const basePath = '${basePath}';
+    const basePath = ${serializeScriptValue(basePath)};
     let arts = [];
     let selectedArt = null;
     let searchQuery = '';

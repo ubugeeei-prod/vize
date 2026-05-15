@@ -9,9 +9,8 @@
  * - DELETE /tokens    -- delete a token
  */
 
-import path from "node:path";
-
 import type { ApiRoutesContext, SendJson, SendError, ReadBody } from "./api-routes/index.js";
+import { HttpError, resolveInside } from "./security.js";
 import {
   parseTokens,
   buildTokenMap,
@@ -27,6 +26,24 @@ import {
   type TokenUsageMap,
 } from "./style-dictionary.js";
 
+function resolveTokensPath(ctx: ApiRoutesContext): string {
+  return resolveInside(ctx.config.root, ctx.tokensPath!, "tokensPath");
+}
+
+function sendTokenMutationError(e: unknown, sendError: SendError): void {
+  if (e instanceof HttpError) {
+    sendError(e.message, e.status);
+    return;
+  }
+
+  if (e instanceof Error && /token path/i.test(e.message)) {
+    sendError(e.message, 400);
+    return;
+  }
+
+  sendError(e instanceof Error ? e.message : String(e));
+}
+
 /** GET /api/tokens/usage */
 export async function handleTokensUsage(ctx: ApiRoutesContext, sendJson: SendJson): Promise<void> {
   if (!ctx.tokensPath) {
@@ -35,7 +52,7 @@ export async function handleTokensUsage(ctx: ApiRoutesContext, sendJson: SendJso
   }
 
   try {
-    const absoluteTokensPath = path.resolve(ctx.config.root, ctx.tokensPath);
+    const absoluteTokensPath = resolveTokensPath(ctx);
     const categories = await parseTokens(absoluteTokensPath);
     const tokenMap = buildTokenMap(categories);
     resolveReferences(categories, tokenMap);
@@ -65,7 +82,7 @@ export async function handleTokensGet(ctx: ApiRoutesContext, sendJson: SendJson)
   }
 
   try {
-    const absoluteTokensPath = path.resolve(ctx.config.root, ctx.tokensPath);
+    const absoluteTokensPath = resolveTokensPath(ctx);
     const categories = await parseTokens(absoluteTokensPath);
     const tokenMap = buildTokenMap(categories);
     resolveReferences(categories, tokenMap);
@@ -114,7 +131,7 @@ export async function handleTokensCreate(
       sendError("Missing required fields: path, token.value", 400);
       return;
     }
-    const absoluteTokensPath = path.resolve(ctx.config.root, ctx.tokensPath!);
+    const absoluteTokensPath = resolveTokensPath(ctx);
     const rawData = await readRawTokenFile(absoluteTokensPath);
 
     const currentCategories = await parseTokens(absoluteTokensPath);
@@ -143,7 +160,7 @@ export async function handleTokensCreate(
     const resolvedTokenMap = buildTokenMap(categories);
     sendJson({ categories, tokenMap: resolvedTokenMap }, 201);
   } catch (e) {
-    sendError(e instanceof Error ? e.message : String(e));
+    sendTokenMutationError(e, sendError);
   }
 }
 
@@ -169,7 +186,7 @@ export async function handleTokensUpdate(
       sendError("Missing required fields: path, token.value", 400);
       return;
     }
-    const absoluteTokensPath = path.resolve(ctx.config.root, ctx.tokensPath!);
+    const absoluteTokensPath = resolveTokensPath(ctx);
 
     if (token.$reference) {
       const currentCategories = await parseTokens(absoluteTokensPath);
@@ -193,7 +210,7 @@ export async function handleTokensUpdate(
     const resolvedTokenMap = buildTokenMap(categories);
     sendJson({ categories, tokenMap: resolvedTokenMap });
   } catch (e) {
-    sendError(e instanceof Error ? e.message : String(e));
+    sendTokenMutationError(e, sendError);
   }
 }
 
@@ -216,7 +233,7 @@ export async function handleTokensDelete(
       sendError("Missing required field: path", 400);
       return;
     }
-    const absoluteTokensPath = path.resolve(ctx.config.root, ctx.tokensPath!);
+    const absoluteTokensPath = resolveTokensPath(ctx);
 
     const currentCategories = await parseTokens(absoluteTokensPath);
     const currentMap = buildTokenMap(currentCategories);
@@ -240,6 +257,6 @@ export async function handleTokensDelete(
       dependentsWarning: dependents.length > 0 ? dependents : undefined,
     });
   } catch (e) {
-    sendError(e instanceof Error ? e.message : String(e));
+    sendTokenMutationError(e, sendError);
   }
 }

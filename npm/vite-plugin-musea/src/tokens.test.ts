@@ -4,8 +4,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+import { generateTokensHtml } from "./tokens/generator.ts";
 import { parseTokens } from "./tokens/parser.ts";
-import { buildTokenMap, resolveReferences } from "./tokens/resolver.ts";
+import {
+  buildTokenMap,
+  deleteTokenAtPath,
+  resolveReferences,
+  setTokenAtPath,
+} from "./tokens/resolver.ts";
 
 void test("parseTokens merges token directories into canonical reference paths", async () => {
   const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-tokens-"));
@@ -45,4 +51,33 @@ void test("parseTokens merges token directories into canonical reference paths",
   assert.equal(resolvedTokenMap["color.semantic.surface"]?.$resolvedValue, "#f7f7f7");
 
   await fs.promises.rm(tempDir, { recursive: true, force: true });
+});
+
+void test("token mutations reject prototype-polluting paths", () => {
+  const data: Record<string, unknown> = {};
+
+  assert.throws(() => setTokenAtPath(data, "__proto__.polluted", { value: "yes" }), /not allowed/);
+  assert.throws(() => deleteTokenAtPath(data, "constructor.prototype"), /not allowed/);
+  assert.equal(({} as Record<string, unknown>).polluted, undefined);
+});
+
+void test("generateTokensHtml escapes untrusted token text and filters unsafe color styles", () => {
+  const html = generateTokensHtml([
+    {
+      name: `Colors <img src=x onerror=alert(1)>`,
+      tokens: {
+        [`bad"><script>alert(1)</script>`]: {
+          value: `url(javascript:alert(1)); color:red`,
+          type: "color",
+          description: `<b onclick=alert(1)>owned</b>`,
+        },
+      },
+    },
+  ]);
+
+  assert.match(html, /Colors &lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.match(html, /bad&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+  assert.match(html, /&lt;b onclick=alert\(1\)&gt;owned&lt;\/b&gt;/);
+  assert.doesNotMatch(html, /<script>|<b onclick=|javascript:/);
+  assert.doesNotMatch(html, /color-swatch/);
 });

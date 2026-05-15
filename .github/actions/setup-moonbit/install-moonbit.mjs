@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 
 const runnerTemp = process.env.RUNNER_TEMP;
 const githubPath = process.env.GITHUB_PATH;
@@ -21,6 +22,11 @@ const shimMoonCmd = path.join(shimDir, "moon.cmd");
 const shimMoonShell = path.join(shimDir, "moon");
 const shimMoon = os.type() === "Windows_NT" ? shimMoonCmd : shimMoonShell;
 const moonInstallerScript = path.join(runnerTemp, "moonbit-install.ps1");
+const moonInstallerUnixScript = path.join(runnerTemp, "moonbit-install.sh");
+const moonInstallerSha256 = {
+  unix: "802ea2310c13e2a6b447050a2c82e60b4d5f222ec7c6a8e55b77df09d4b4da7d",
+  windows: "e1b22bd41363ca8cdb1480b523a8c61ce57ffcb4a581375369ff16c5afd5c5b7",
+};
 
 function run(command, args, env) {
   const result = spawnSync(command, args, {
@@ -30,6 +36,20 @@ function run(command, args, env) {
 
   if ((result.status ?? 1) !== 0) {
     process.exit(result.status ?? 1);
+  }
+}
+
+function sha256File(filePath) {
+  return createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+}
+
+function verifyInstaller(filePath, expectedHash) {
+  const actualHash = sha256File(filePath);
+  if (actualHash !== expectedHash) {
+    console.error(`MoonBit installer hash mismatch for ${filePath}`);
+    console.error(`Expected: ${expectedHash}`);
+    console.error(`Actual:   ${actualHash}`);
+    process.exit(1);
   }
 }
 
@@ -118,12 +138,20 @@ if (!hasExistingMoonInstall()) {
         MOON_HOME: moonHome,
       },
     );
+    verifyInstaller(moonInstallerScript, moonInstallerSha256.windows);
     run("pwsh", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", moonInstallerScript], {
       ...process.env,
       MOON_HOME: moonHome,
     });
   } else {
-    run("bash", ["-lc", "curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash"], {
+    run("curl", ["-fsSL", "https://cli.moonbitlang.com/install/unix.sh", "-o", moonInstallerUnixScript], {
+      ...process.env,
+      HOME: runnerTemp,
+      MOON_HOME: moonHome,
+      SHELL: process.env.SHELL ?? "/bin/bash",
+    });
+    verifyInstaller(moonInstallerUnixScript, moonInstallerSha256.unix);
+    run("bash", [moonInstallerUnixScript], {
       ...process.env,
       HOME: runnerTemp,
       MOON_HOME: moonHome,

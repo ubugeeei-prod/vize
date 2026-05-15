@@ -10,6 +10,22 @@ import path from "node:path";
 
 import type { TokenCategory, StyleDictionaryConfig, StyleDictionaryOutput } from "./parser.js";
 import { parseTokens } from "./parser.js";
+import { escapeHtml } from "../utils.js";
+
+const SAFE_CSS_COLOR_PATTERN = /^(?:#[0-9a-fA-F]{3,8}|(?:rgb|hsl)a?\(\s*[-+.\d,%\s]+\))$/;
+
+function safeCssColor(value: string | number, type?: string): string | null {
+  if (typeof value !== "string") return null;
+
+  const trimmed = value.trim();
+  const looksLikeColor =
+    type === "color" ||
+    trimmed.startsWith("#") ||
+    trimmed.startsWith("rgb") ||
+    trimmed.startsWith("hsl");
+
+  return looksLikeColor && SAFE_CSS_COLOR_PATTERN.test(trimmed) ? trimmed : null;
+}
 
 /**
  * Generate HTML documentation for tokens.
@@ -19,22 +35,17 @@ export function generateTokensHtml(categories: TokenCategory[]): string {
     name: string,
     token: { value: string | number; type?: string; description?: string },
   ): string => {
-    const isColor =
-      typeof token.value === "string" &&
-      (token.value.startsWith("#") ||
-        token.value.startsWith("rgb") ||
-        token.value.startsWith("hsl") ||
-        token.type === "color");
+    const color = safeCssColor(token.value, token.type);
 
     return `
       <div class="token">
         <div class="token-preview">
-          ${isColor ? `<div class="color-swatch" style="background: ${token.value}"></div>` : ""}
+          ${color ? `<div class="color-swatch" style="background: ${color}"></div>` : ""}
         </div>
         <div class="token-info">
-          <div class="token-name">${name}</div>
-          <div class="token-value">${token.value}</div>
-          ${token.description ? `<div class="token-description">${token.description}</div>` : ""}
+          <div class="token-name">${escapeHtml(name)}</div>
+          <div class="token-value">${escapeHtml(String(token.value))}</div>
+          ${token.description ? `<div class="token-description">${escapeHtml(token.description)}</div>` : ""}
         </div>
       </div>
     `;
@@ -42,7 +53,7 @@ export function generateTokensHtml(categories: TokenCategory[]): string {
 
   const renderCategory = (category: TokenCategory, level: number = 2): string => {
     const heading = `h${Math.min(level, 6)}`;
-    let html = `<${heading}>${category.name}</${heading}>`;
+    let html = `<${heading}>${escapeHtml(category.name)}</${heading}>`;
     html += '<div class="tokens-grid">';
 
     for (const [name, token] of Object.entries(category.tokens)) {

@@ -58,6 +58,30 @@ function ensureArtStyles(styles) {
   }
 }
 
+function renderError(title, error) {
+  container.textContent = '';
+  const root = document.createElement('div');
+  root.className = 'musea-error';
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'musea-error-title';
+  titleEl.textContent = title;
+  root.appendChild(titleEl);
+
+  const messageEl = document.createElement('div');
+  messageEl.textContent = error instanceof Error ? error.message : String(error);
+  root.appendChild(messageEl);
+
+  const stack = error instanceof Error ? error.stack : '';
+  if (stack) {
+    const stackEl = document.createElement('pre');
+    stackEl.textContent = stack;
+    root.appendChild(stackEl);
+  }
+
+  container.appendChild(root);
+}
+
 window.__museaSetProps = (props) => {
   // Clear old keys
   for (const key of Object.keys(propsOverride)) {
@@ -113,13 +137,7 @@ async function mount() {
     };
   } catch (error) {
     console.error('[musea-preview] Failed to mount:', error);
-    container.innerHTML = \`
-      <div class="musea-error">
-        <div class="musea-error-title">Failed to render component</div>
-        <div>\${error.message}</div>
-        <pre>\${error.stack || ''}</pre>
-      </div>
-    \`;
+    renderError('Failed to render component', error);
   }
 }
 
@@ -132,7 +150,7 @@ async function remountWithProps(Component) {
       return () => {
         const slotFns = {};
         for (const [name, content] of Object.entries(slotsOverride)) {
-          if (content) slotFns[name] = () => h('span', { innerHTML: content });
+          if (content) slotFns[name] = () => h('span', String(content));
         }
         return h(Component, { ...propsOverride }, slotFns);
       };
@@ -195,6 +213,23 @@ function ensureArtStyles(styles) {
   }
 }
 
+function renderError(title, error) {
+  container.textContent = '';
+  const root = document.createElement('div');
+  root.className = 'musea-error';
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'musea-error-title';
+  titleEl.textContent = title;
+  root.appendChild(titleEl);
+
+  const messageEl = document.createElement('div');
+  messageEl.textContent = error instanceof Error ? error.message : String(error);
+  root.appendChild(messageEl);
+
+  container.appendChild(root);
+}
+
 async function mount() {
   try {
     const VariantComponent = artModule['${variantComponentName}'];
@@ -218,7 +253,7 @@ async function mount() {
     __museaInitAddons(container, '${escapedVariantName}', ${actionEvents});
   } catch (error) {
     console.error('[musea-preview] Failed to mount:', error);
-    container.innerHTML = '<div class="musea-error"><div class="musea-error-title">Failed to render</div><div>' + error.message + '</div></div>';
+    renderError('Failed to render', error);
   }
 }
 

@@ -11,8 +11,6 @@ env:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages-${{ github.ref }}
@@ -129,6 +127,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [build-docs, build-playground]
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

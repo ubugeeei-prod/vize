@@ -31,6 +31,7 @@ import {
 } from "../utils.js";
 import { registerMiddleware } from "../server-middleware.js";
 import { createApiMiddleware } from "../api-routes/index.js";
+import { createDevSessionToken } from "../security.js";
 import {
   createResolveId,
   createLoad,
@@ -115,6 +116,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   const themeConfig = buildThemeConfig(options.theme);
   const previewCss = options.previewCss ?? [];
   const previewSetup = options.previewSetup;
+  const devSessionToken = createDevSessionToken();
 
   let config: ResolvedConfig;
   let server: ViteDevServer | null = null;
@@ -203,6 +205,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
       // Register gallery SPA, preview, and art module middleware
       registerMiddleware(devServer, {
         basePath,
+        devSessionToken,
         themeConfig,
         artFiles,
         resolvedPreviewCss,
@@ -219,6 +222,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           basePath,
           resolvedPreviewCss,
           resolvedPreviewSetup,
+          devSessionToken,
           processArtFile,
           getDevServerPort: () => devServer.config.server.port || 5173,
         }),

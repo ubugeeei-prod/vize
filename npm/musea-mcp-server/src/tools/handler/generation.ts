@@ -8,7 +8,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
-import { buildCatalogMarkdown, buildDocumentation, resolveArtReference } from "../../musea.js";
+import {
+  buildCatalogMarkdown,
+  buildDocumentation,
+  resolveArtReference,
+  resolveProjectPath,
+} from "../../musea.js";
 import {
   flattenTokenCategories,
   generateTokensMarkdown,
@@ -32,7 +37,7 @@ export async function handleGenerateVariants(
     throw new McpError(ErrorCode.InternalError, "generateVariants not available in native binding");
   }
 
-  const absolutePath = path.resolve(ctx.projectRoot, componentRelPath);
+  const absolutePath = resolveProjectPath(ctx.projectRoot, componentRelPath, "componentPath");
   const source = await fs.promises.readFile(absolutePath, "utf-8");
 
   const analysis = binding.analyzeSfc(source, { filename: absolutePath });
@@ -236,7 +241,7 @@ export async function handleGetTokens(
 
   let resolvedPath: string | null;
   if (inputPath) {
-    resolvedPath = path.resolve(ctx.projectRoot, inputPath);
+    resolvedPath = resolveProjectPath(ctx.projectRoot, inputPath, "tokensPath");
   } else {
     resolvedPath = await ctx.resolveTokensPath();
   }
@@ -294,7 +299,7 @@ export async function handleSearchTokens(
   const typeFilter = typeof args?.type === "string" ? args.type.toLowerCase() : undefined;
   const limit = typeof args?.limit === "number" ? args.limit : 20;
   const resolvedPath = inputPath
-    ? path.resolve(ctx.projectRoot, inputPath)
+    ? resolveProjectPath(ctx.projectRoot, inputPath, "tokensPath")
     : await ctx.resolveTokensPath();
 
   if (!resolvedPath) {

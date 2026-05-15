@@ -10,6 +10,9 @@ concurrency:
   group: check-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -106,12 +109,9 @@ jobs:
   playground-test:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ github.head_ref }}
-          token: ${{ github.token }}
 
       # Rust is always needed for @vizejs/native (used by vite-plugin-vize)
       - name: Setup Rust
@@ -189,12 +189,8 @@ jobs:
         if: steps.vrt.outcome == 'failure'
         run: vp run --filter './playground' test:vrt:update
 
-      - name: Commit updated snapshots
-        if: steps.vrt.outcome == 'failure' && github.event_name == 'pull_request'
-        run: moon run --target native - -- ${{ github.head_ref }} < tools/moon/scripts/github/commit_vrt_snapshots.mbtx
-
-      - name: Fail if VRT failed and no auto-update
-        if: steps.vrt.outcome == 'failure' && github.event_name != 'pull_request'
+      - name: Fail if VRT failed
+        if: steps.vrt.outcome == 'failure'
         run: exit 1
 
       - name: Upload VRT diff artifacts

@@ -10,6 +10,7 @@ import path from "node:path";
 
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { generatePreviewModuleWithProps } from "../preview/index.js";
+import { HttpError, resolveInside } from "../security.js";
 import { toPascalCase } from "../utils.js";
 
 /** POST /api/preview-with-props */
@@ -46,20 +47,30 @@ export function handlePreviewWithProps(
     res.setHeader("Content-Type", "application/javascript");
     res.end(moduleCode);
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }
 
 /** POST /api/generate */
 export async function handleGenerate(
+  ctx: ApiRoutesContext,
   body: string,
   sendJson: SendJson,
   sendError: SendError,
 ): Promise<void> {
   try {
     const { componentPath: reqComponentPath, options: autogenOptions } = JSON.parse(body);
+    if (typeof reqComponentPath !== "string") {
+      sendError("Missing required field: componentPath", 400);
+      return;
+    }
     const { generateArtFile: genArt } = await import("../autogen/index.js");
-    const result = await genArt(reqComponentPath, autogenOptions);
+    const componentPath = resolveInside(ctx.config.root, reqComponentPath, "componentPath");
+    const result = await genArt(componentPath, autogenOptions);
     sendJson({
       generated: true,
       componentName: result.componentName,
@@ -67,6 +78,10 @@ export async function handleGenerate(
       artFileContent: result.artFileContent,
     });
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }
