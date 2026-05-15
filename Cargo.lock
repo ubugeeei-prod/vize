@@ -3372,11 +3372,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "vize"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "clap",
  "dirs",
@@ -3413,11 +3409,7 @@ dependencies = [
 
 [[package]]
 name = "vize_armature"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "compact_str 0.9.0",
  "htmlize",
@@ -3429,11 +3421,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_core"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "bumpalo",
  "compact_str 0.9.0",
@@ -3460,11 +3448,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_dom"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "insta",
  "phf 0.13.1",
@@ -3477,11 +3461,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_sfc"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "criterion",
  "insta",
@@ -3511,11 +3491,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_ssr"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "insta",
  "serde",
@@ -3528,11 +3504,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_vapor"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "insta",
  "oxc_allocator",
@@ -3550,11 +3522,7 @@ dependencies = [
 
 [[package]]
 name = "vize_canon"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "corsa",
  "dashmap 6.1.0",
@@ -3585,11 +3553,7 @@ dependencies = [
 
 [[package]]
 name = "vize_carton"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "bitflags 2.11.1",
  "bumpalo",
@@ -3608,11 +3572,7 @@ dependencies = [
 
 [[package]]
 name = "vize_croquis"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "criterion",
  "dashmap 6.1.0",
@@ -3635,11 +3595,7 @@ dependencies = [
 
 [[package]]
 name = "vize_fresco"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "compact_str 0.9.0",
  "criterion",
@@ -3661,11 +3617,7 @@ dependencies = [
 
 [[package]]
 name = "vize_glyph"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "criterion",
  "insta",
@@ -3684,11 +3636,7 @@ dependencies = [
 
 [[package]]
 name = "vize_maestro"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "async-trait",
  "dashmap 6.1.0",
@@ -3722,11 +3670,7 @@ dependencies = [
 
 [[package]]
 name = "vize_musea"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "criterion",
  "insta",
@@ -3741,11 +3685,7 @@ dependencies = [
 
 [[package]]
 name = "vize_patina"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "corsa",
  "criterion",
@@ -3771,11 +3711,7 @@ dependencies = [
 
 [[package]]
 name = "vize_relief"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "serde",
  "serde_json",
@@ -3785,11 +3721,7 @@ dependencies = [
 
 [[package]]
 name = "vize_test_runner"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "serde",
  "toml",
@@ -3801,11 +3733,7 @@ dependencies = [
 
 [[package]]
 name = "vize_vitrine"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 dependencies = [
  "getrandom 0.3.4",
  "glob",
