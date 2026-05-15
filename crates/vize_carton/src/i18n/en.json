@@ -91,6 +91,8 @@
   "vue/a11y-img-alt.help": "Add alt=\"description\" for informative images or alt=\"\" for decorative images",
   "vue/no-unsafe-url.description": "Warn about potentially unsafe URL bindings",
   "vue/no-unsafe-url.message": "Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+  "vue/no-unsafe-url.static_message": "Static URL attribute uses a potentially unsafe protocol or active data URL",
+  "vue/no-unsafe-url.static_help": "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
   "vue/no-unsafe-url.help_href": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
   "vue/no-unsafe-url.help_src": "Ensure URLs are sanitized before binding. Use @braintree/sanitize-url for validation",
   "vue/no-unsafe-url.help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",

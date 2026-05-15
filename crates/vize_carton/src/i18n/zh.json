@@ -91,6 +91,8 @@
   "vue/a11y-img-alt.help": "为信息性图片添加alt=\"描述\"，为装饰性图片添加alt=\"\"",
   "vue/no-unsafe-url.description": "警告潜在的不安全URL绑定",
   "vue/no-unsafe-url.message": "动态:{attr}绑定可能通过javascript:协议导致XSS漏洞",
+  "vue/no-unsafe-url.static_message": "静态URL属性使用了潜在不安全协议或可执行data URL",
+  "vue/no-unsafe-url.static_help": "请使用http(s)、相对URL或不可执行的data URL。避免javascript:、vbscript:、text/html data URL和SVG data URL",
   "vue/no-unsafe-url.help_href": "考虑使用<router-link :to=\"...\">或使用@braintree/sanitize-url净化URL",
   "vue/no-unsafe-url.help_src": "确保在绑定前净化URL。使用@braintree/sanitize-url进行验证",
   "vue/no-unsafe-url.help": "在绑定前净化URL以防止通过javascript:协议的XSS攻击",

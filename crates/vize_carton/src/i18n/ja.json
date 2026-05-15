@@ -91,6 +91,8 @@
   "vue/a11y-img-alt.help": "説明的な画像にはalt=\"説明\"を、装飾的な画像にはalt=\"\"を追加してください",
   "vue/no-unsafe-url.description": "安全でないURLバインディングについて警告する",
   "vue/no-unsafe-url.message": "動的な:{attr}バインディングはjavascript:プロトコル経由でXSSに脆弱な可能性があります",
+  "vue/no-unsafe-url.static_message": "静的URL属性に安全でない可能性のあるプロトコルまたは実行可能なdata URLが使われています",
+  "vue/no-unsafe-url.static_help": "http(s)、相対URL、または実行可能でないdata URLを使用してください。javascript:、vbscript:、text/html data URL、SVG data URLは避けてください",
   "vue/no-unsafe-url.help_href": "<router-link :to=\"...\">を使用するか、@braintree/sanitize-urlでURLをサニタイズすることを検討してください",
   "vue/no-unsafe-url.help_src": "バインディング前にURLがサニタイズされていることを確認してください。検証には@braintree/sanitize-urlを使用してください",
   "vue/no-unsafe-url.help": "javascript:プロトコルによるXSSを防ぐため、バインディング前にURLをサニタイズしてください",
