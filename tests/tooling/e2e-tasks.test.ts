@@ -12,7 +12,7 @@ function readRepoFile(...segments: string[]): string {
 
 test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
   const taskInputs = readRepoFile("tools/vite-plus/task-inputs.ts");
-  const taskGroups = readRepoFile("tools/vite-plus/task-groups.ts");
+  const taskGroups = readRepoFile("tools/vite-plus/tasks/test-benchmark.ts");
 
   assert.match(taskInputs, /e2e:\s*\[/);
   assert.match(taskInputs, /"tests\/app\/\*\*"/);
