@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { buildComment } from "../../bench/comment-test-report.mjs";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 function readRepoFile(...segments: string[]): string {
@@ -141,6 +143,37 @@ test("test inventory script counts JS, Rust, e2e, VRT, and fixture cases", () =>
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
+});
+
+test("PR test report keeps the test file inventory collapsed with a short toggle", () => {
+  const report = buildComment({
+    jobs: [
+      {
+        name: "check-js",
+        conclusion: "success",
+        started_at: "2026-05-15T00:00:00Z",
+        completed_at: "2026-05-15T00:01:00Z",
+        html_url: "https://github.com/ubugeeei/vize/actions/runs/1/job/1",
+        steps: [],
+      },
+    ],
+    workflowName: "Check",
+    runUrl: "https://github.com/ubugeeei/vize/actions/runs/1",
+    runId: "1",
+    runAttempt: "1",
+    sha: "0123456789abcdef",
+    inventory: {
+      totalCases: 2,
+      totalFiles: 1,
+      areas: [{ area: "JS / TS", files: 1, cases: 2 }],
+      groups: [{ area: "JS / TS", file: "tests/tooling/github-workflows.test.ts", count: 2 }],
+    },
+  });
+
+  assert.match(report, /Total tracked cases: \*\*2\*\* across \*\*1\*\* files\./);
+  assert.match(report, /<details>\n<summary>Files<\/summary>/);
+  assert.doesNotMatch(report, /<details open>\n<summary>Test files/);
+  assert.doesNotMatch(report, /<summary>Test files \(/);
 });
 
 test("deploy-docs deploy job installs MoonBit before running script-mode helpers", () => {

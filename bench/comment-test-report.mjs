@@ -339,8 +339,8 @@ function buildInventorySummary(inventory) {
   }
 
   lines.push("");
-  lines.push("<details open>");
-  lines.push(`<summary>Test files (${inventory.totalFiles})</summary>`);
+  lines.push("<details>");
+  lines.push("<summary>Files</summary>");
   lines.push("");
   lines.push("| Area | File | Cases |");
   lines.push("| --- | --- | ---: |");
