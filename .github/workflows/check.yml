@@ -84,12 +84,18 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          run-install: false
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "native"
           cache-workspace-crates: "true"
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test
         run: cargo test --workspace
 
