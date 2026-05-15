@@ -1,10 +1,9 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
-import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { antDesignVueApp, VIZE_BIN } from "../../_helpers/apps.ts";
+import { antDesignVueApp, VIZE_BIN, requireVizeBin } from "../../_helpers/apps.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -19,10 +18,7 @@ interface LintFileResult {
 
 describe(`${app.name} lint (linter)`, () => {
   before(() => {
-    if (!fs.existsSync(VIZE_BIN)) {
-      console.log(`Skipping: vize binary not found at ${VIZE_BIN}`);
-      process.exit(0);
-    }
+    requireVizeBin();
   });
 
   it("vize lint does not crash and snapshot matches", () => {
