@@ -418,6 +418,36 @@ function resolveCssTransforms(css: string): string {
   );
 }
 
+// Test 21: CSS aliases should not match package prefixes
+{
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-alias-"));
+  const srcAssetPath = path.join(tempDir, "src", "assets", "logo.svg");
+  const packageAssetPath = path.join(tempDir, "node_modules", "@scope", "icons", "logo.svg");
+  fs.mkdirSync(path.dirname(srcAssetPath), { recursive: true });
+  fs.mkdirSync(path.dirname(packageAssetPath), { recursive: true });
+  fs.writeFileSync(srcAssetPath, "");
+  fs.writeFileSync(packageAssetPath, "");
+
+  const result = resolveCssImports(
+    `
+.local { background-image: url("@/assets/logo.svg"); }
+.package { background-image: url("@scope/icons/logo.svg"); }
+`,
+    path.join(tempDir, "Component.vue"),
+    [{ find: "@", replacement: path.join(tempDir, "src") }],
+    true,
+  );
+
+  assert.ok(
+    result.includes(`url("/@fs${srcAssetPath.replace(/\\/g, "/")}")`),
+    "CSS alias should resolve @/ URLs",
+  );
+  assert.ok(
+    result.includes('url("@scope/icons/logo.svg")'),
+    "CSS alias should not rewrite package specifiers that only share the first character",
+  );
+}
+
 // =============================================================================
 // Test: applyDefineReplacements
 // =============================================================================

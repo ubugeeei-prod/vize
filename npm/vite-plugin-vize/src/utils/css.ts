@@ -401,8 +401,9 @@ function resolveCssPath(
 ): string | null {
   // Try alias resolution
   for (const rule of aliasRules) {
-    if (importPath.startsWith(rule.find)) {
-      const resolved = importPath.replace(rule.find, rule.replacement);
+    const suffix = matchedAliasSuffix(importPath, rule.find);
+    if (suffix !== null) {
+      const resolved = path.join(rule.replacement, suffix);
       return path.resolve(resolved);
     }
   }
@@ -419,4 +420,17 @@ function resolveCssPath(
   }
 
   return null;
+}
+
+function matchedAliasSuffix(importPath: string, find: string): string | null {
+  if (importPath === find) {
+    return "";
+  }
+
+  const prefix = find.endsWith("/") ? find : `${find}/`;
+  if (!importPath.startsWith(prefix)) {
+    return null;
+  }
+
+  return importPath.slice(prefix.length);
 }
