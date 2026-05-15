@@ -31,6 +31,8 @@
 //! vize_atelier_core (Transform)
 //! ```
 
+#![cfg_attr(test, allow(clippy::disallowed_macros, clippy::disallowed_types))]
+
 // Core modules
 mod scope;
 mod symbol;

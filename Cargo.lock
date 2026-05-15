@@ -246,6 +246,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "byteorder"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
+
+[[package]]
 name = "bytes"
 version = "1.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -865,12 +871,6 @@ checksum = "cd1511a7b6a56299bd043a9c167a6d2bfb37bf84a6dfceaba651168adfb43c87"
 dependencies = [
  "dtoa",
 ]
-
-[[package]]
-name = "dunce"
-version = "1.0.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
 name = "either"
@@ -2301,6 +2301,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
+name = "pklrust"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1df97a6d402450bc33cd60d3ade512cb17cfac9f8c99d244daa8661d880a0fb4"
+dependencies = [
+ "byteorder",
+ "pklrust-derive",
+ "rmp-serde",
+ "rmpv",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "pklrust-derive"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "249ee2f18cfc814e6a1d36472f64eb79a85dcb279b95b4b5c92f5b3824c5e863"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
+
+[[package]]
 name = "plotters"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2553,6 +2579,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a4e1d4b9b938a26d2996af33229f0ca0956c652c1375067f0b45291c1df8417"
 dependencies = [
  "rmp",
+ "serde",
+ "serde_bytes",
 ]
 
 [[package]]
@@ -2563,18 +2591,6 @@ checksum = "93411e420bcd1a75ddd1dc3caf18c23155eda2c090631a85af21ba19e97093b5"
 dependencies = [
  "smallvec",
  "str_indices",
-]
-
-[[package]]
-name = "rpkl"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a9bf78448f899ef84e3b12215af07cc91ae9a7f4ab649a118cb9c8d77da6608"
-dependencies = [
- "dunce",
- "rmp-serde",
- "rmpv",
- "serde",
 ]
 
 [[package]]
@@ -2684,6 +2700,16 @@ dependencies = [
  "js-sys",
  "serde",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "serde_bytes"
+version = "0.11.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5d440709e79d88e51ac01c4b72fc6cb7314017bb7da9eeff678aa94c10e3ea8"
+dependencies = [
+ "serde",
+ "serde_core",
 ]
 
 [[package]]
@@ -3362,7 +3388,6 @@ dependencies = [
  "oxc_span",
  "oxc_transformer",
  "rayon",
- "rpkl",
  "serde",
  "serde_json",
  "tempfile",
@@ -3536,10 +3561,12 @@ dependencies = [
  "insta",
  "once_cell",
  "phf 0.13.1",
+ "pklrust",
  "rustc-hash",
  "serde",
  "serde_json",
  "smallvec",
+ "tempfile",
  "xxhash-rust",
 ]
 
@@ -3622,7 +3649,6 @@ dependencies = [
  "oxc_span",
  "parking_lot",
  "ropey",
- "rpkl",
  "serde",
  "serde_json",
  "tempfile",

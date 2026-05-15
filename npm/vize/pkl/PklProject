@@ -1,0 +1,16 @@
+amends "pkl:Project"
+
+package {
+  name = "vize"
+  version = "0.25.0"
+  baseUri = "package://pkg.pkl-lang.org/github.com/ubugeeei/vize/vize"
+  packageZipUrl = "https://github.com/ubugeeei/vize/releases/download/v\(version)/vize@\(version).zip"
+  description = "Pkl schema for Vize configuration"
+  authors {
+    "ubugeeei <ubugeeei@users.noreply.github.com>"
+  }
+}
+
+dependencies {
+  ["json_schema"] { uri = "package://pkg.pkl-lang.org/pkl-pantry/org.json_schema@1.1.0" }
+}

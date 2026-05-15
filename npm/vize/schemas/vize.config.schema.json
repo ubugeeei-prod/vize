@@ -1,399 +1,648 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://unpkg.com/vize/schemas/vize.config.schema.json",
-  "title": "Vize Config",
-  "description": "Configuration file for Vize.",
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "$schema": {
-      "type": "string",
-      "description": "JSON Schema reference for editor autocompletion."
-    },
-    "compiler": {
-      "$ref": "#/$defs/compilerConfig"
-    },
-    "vite": {
-      "$ref": "#/$defs/vitePluginConfig"
-    },
-    "linter": {
-      "$ref": "#/$defs/linterConfig"
-    },
-    "typeChecker": {
-      "$ref": "#/$defs/typeCheckerConfig"
-    },
-    "formatter": {
-      "$ref": "#/$defs/formatterConfig"
-    },
-    "lsp": {
-      "$ref": "#/$defs/lspConfig"
-    },
-    "musea": {
-      "$ref": "#/$defs/museaConfig"
-    },
-    "globalTypes": {
-      "$ref": "#/$defs/globalTypesConfig"
-    }
-  },
-  "$defs": {
-    "ruleSeverity": {
-      "type": "string",
-      "enum": ["off", "warn", "error"]
-    },
-    "lintPreset": {
-      "type": "string",
-      "enum": ["happy-path", "opinionated", "essential", "nuxt"]
-    },
-    "patternLike": {
-      "type": "string",
-      "description": "Pattern string used by non-JavaScript configs. JavaScript configs may also use RegExp values."
-    },
-    "compilerConfig": {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "CompilerConfig": {
+      "description": "Vue compiler options",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "mode": {
+          "description": "Compilation mode",
+          "default": "module",
           "type": "string",
           "enum": ["module", "function"]
         },
         "vapor": {
-          "type": "boolean"
-        },
-        "customRenderer": {
+          "description": "Enable Vapor mode compilation",
+          "default": false,
           "type": "boolean"
         },
         "ssr": {
+          "description": "Enable SSR mode",
+          "default": false,
           "type": "boolean"
         },
         "sourceMap": {
+          "description": "Enable source map generation",
           "type": "boolean"
         },
         "prefixIdentifiers": {
+          "description": "Prefix template identifiers with _ctx",
+          "default": false,
           "type": "boolean"
         },
         "hoistStatic": {
+          "description": "Hoist static nodes",
+          "default": true,
           "type": "boolean"
         },
         "cacheHandlers": {
+          "description": "Cache v-on handlers",
+          "default": true,
           "type": "boolean"
         },
         "isTs": {
+          "description": "Enable TypeScript parsing in <script> blocks",
+          "default": true,
           "type": "boolean"
         },
         "scriptExt": {
+          "description": "Script file extension for generated output",
+          "default": "ts",
           "type": "string",
           "enum": ["ts", "js"]
         },
         "runtimeModuleName": {
+          "description": "Module name for runtime imports",
+          "default": "vue",
           "type": "string"
         },
         "runtimeGlobalName": {
+          "description": "Global variable name for runtime (IIFE builds)",
+          "default": "Vue",
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "vitePluginConfig": {
+    "VitePluginConfig": {
+      "description": "Vite plugin options",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "include": {
+          "description": "Files to include in compilation (glob patterns or strings)",
           "oneOf": [
-            { "$ref": "#/$defs/patternLike" },
+            {
+              "type": "string"
+            },
             {
               "type": "array",
-              "items": { "$ref": "#/$defs/patternLike" }
+              "items": {
+                "type": "string"
+              }
             }
           ]
         },
         "exclude": {
+          "description": "Files to exclude from compilation (glob patterns or strings)",
           "oneOf": [
-            { "$ref": "#/$defs/patternLike" },
+            {
+              "type": "string"
+            },
             {
               "type": "array",
-              "items": { "$ref": "#/$defs/patternLike" }
+              "items": {
+                "type": "string"
+              }
             }
           ]
         },
         "scanPatterns": {
+          "description": "Glob patterns to scan for .vue files during pre-compilation",
           "type": "array",
-          "items": { "type": "string" }
-        },
-        "precompileBatchSize": {
-          "type": "integer",
-          "minimum": 1
+          "items": {
+            "type": "string"
+          }
         },
         "ignorePatterns": {
+          "description": "Glob patterns to ignore during pre-compilation",
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "linterConfig": {
+    "LinterConfig": {
+      "description": "Linter options",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "enabled": {
+          "description": "Enable linting",
           "type": "boolean"
         },
         "preset": {
-          "$ref": "#/$defs/lintPreset"
+          "description": "Built-in lint preset",
+          "default": "happy-path",
+          "type": "string",
+          "enum": ["happy-path", "opinionated", "essential", "incremental", "nuxt"]
         },
         "rules": {
+          "description": "Rules to enable/disable",
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/$defs/ruleSeverity"
+            "type": "string",
+            "enum": ["off", "warn", "error"]
           }
         },
         "categories": {
+          "description": "Category-level severity overrides",
           "type": "object",
-          "additionalProperties": false,
           "properties": {
-            "correctness": { "$ref": "#/$defs/ruleSeverity" },
-            "suspicious": { "$ref": "#/$defs/ruleSeverity" },
-            "style": { "$ref": "#/$defs/ruleSeverity" },
-            "perf": { "$ref": "#/$defs/ruleSeverity" },
-            "a11y": { "$ref": "#/$defs/ruleSeverity" },
-            "security": { "$ref": "#/$defs/ruleSeverity" }
-          }
+            "correctness": {
+              "type": "string",
+              "enum": ["off", "warn", "error"]
+            },
+            "suspicious": {
+              "type": "string",
+              "enum": ["off", "warn", "error"]
+            },
+            "style": {
+              "type": "string",
+              "enum": ["off", "warn", "error"]
+            },
+            "perf": {
+              "type": "string",
+              "enum": ["off", "warn", "error"]
+            },
+            "a11y": {
+              "type": "string",
+              "enum": ["off", "warn", "error"]
+            },
+            "security": {
+              "type": "string",
+              "enum": ["off", "warn", "error"]
+            }
+          },
+          "additionalProperties": false
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "typeCheckerConfig": {
+    "TypeCheckerConfig": {
+      "description": "Type checker options",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "enabled": {
+          "description": "Enable type checking",
+          "default": true,
           "type": "boolean"
         },
         "strict": {
+          "description": "Enable strict mode",
+          "default": false,
           "type": "boolean"
         },
         "checkProps": {
+          "description": "Check component props",
+          "default": true,
           "type": "boolean"
         },
         "checkEmits": {
+          "description": "Check component emits",
+          "default": true,
           "type": "boolean"
         },
         "checkTemplateBindings": {
+          "description": "Check template bindings",
+          "default": true,
+          "type": "boolean"
+        },
+        "checkReactivity": {
+          "description": "Check reactivity loss patterns",
+          "default": true,
+          "type": "boolean"
+        },
+        "checkSetupContext": {
+          "description": "Check setup context violations",
+          "default": true,
+          "type": "boolean"
+        },
+        "checkInvalidExports": {
+          "description": "Check invalid exports in <script setup>",
+          "default": true,
+          "type": "boolean"
+        },
+        "checkFallthroughAttrs": {
+          "description": "Check fallthrough attrs on multi-root templates",
+          "default": true,
           "type": "boolean"
         },
         "tsconfig": {
+          "description": "Path to tsconfig.json",
           "type": "string"
         },
-        "corsaPath": {
+        "tsgoPath": {
+          "description": "Path to tsgo binary",
           "type": "string"
+        },
+        "globalsFile": {
+          "description": "Path to a .d.ts file that declares template globals",
+          "type": "string"
+        },
+        "servers": {
+          "description": "Number of parallel Corsa servers to use",
+          "type": "integer"
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "formatterConfig": {
+    "FormatterConfig": {
+      "description": "Formatter options",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "printWidth": {
+          "description": "Max line width",
+          "default": 100,
           "type": "integer"
         },
         "tabWidth": {
+          "description": "Indentation width",
+          "default": 2,
           "type": "integer"
         },
         "useTabs": {
+          "description": "Use tabs for indentation",
+          "default": false,
           "type": "boolean"
         },
         "semi": {
+          "description": "Print semicolons",
+          "default": true,
           "type": "boolean"
         },
         "singleQuote": {
+          "description": "Use single quotes",
+          "default": false,
+          "type": "boolean"
+        },
+        "jsxSingleQuote": {
+          "description": "Use single quotes in JSX",
+          "default": false,
           "type": "boolean"
         },
         "trailingComma": {
+          "description": "Trailing commas",
+          "default": "all",
           "type": "string",
           "enum": ["all", "none", "es5"]
+        },
+        "bracketSpacing": {
+          "description": "Print spaces between brackets in object literals",
+          "default": true,
+          "type": "boolean"
+        },
+        "bracketSameLine": {
+          "description": "Keep > on the last line of multiline tags",
+          "default": false,
+          "type": "boolean"
+        },
+        "arrowParens": {
+          "description": "Arrow parens mode",
+          "default": "always",
+          "type": "string",
+          "enum": ["always", "avoid"]
+        },
+        "endOfLine": {
+          "description": "End-of-line mode",
+          "default": "lf",
+          "type": "string",
+          "enum": ["lf", "crlf", "cr", "auto"]
+        },
+        "quoteProps": {
+          "description": "Object property quoting mode",
+          "default": "as-needed",
+          "type": "string",
+          "enum": ["as-needed", "consistent", "preserve"]
+        },
+        "singleAttributePerLine": {
+          "description": "Force one attribute per line",
+          "default": false,
+          "type": "boolean"
+        },
+        "vueIndentScriptAndStyle": {
+          "description": "Indent script and style blocks",
+          "default": false,
+          "type": "boolean"
+        },
+        "sortAttributes": {
+          "description": "Sort attributes",
+          "default": true,
+          "type": "boolean"
+        },
+        "attributeSortOrder": {
+          "description": "Attribute ordering strategy",
+          "default": "alphabetical",
+          "type": "string",
+          "enum": ["alphabetical", "as-written"]
+        },
+        "mergeBindAndNonBindAttrs": {
+          "description": "Merge bind and non-bind attrs for sorting",
+          "default": false,
+          "type": "boolean"
+        },
+        "maxAttributesPerLine": {
+          "description": "Maximum attributes per line before wrapping",
+          "type": "integer"
+        },
+        "attributeGroups": {
+          "description": "Custom attribute groups",
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "normalizeDirectiveShorthands": {
+          "description": "Normalize directive shorthands",
+          "default": true,
+          "type": "boolean"
+        },
+        "sortBlocks": {
+          "description": "Sort SFC blocks in canonical order",
+          "default": true,
+          "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "lspConfig": {
+    "LanguageServerConfig": {
+      "description": "Language server options",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "enabled": {
+          "description": "Enable the language server",
           "type": "boolean"
         },
         "lint": {
-          "type": "boolean",
-          "description": "Enable Vize linter diagnostics in the LSP. Defaults to false."
+          "description": "Enable lint diagnostics",
+          "type": "boolean"
         },
         "diagnostics": {
-          "type": "boolean",
-          "description": "Deprecated alias for lint. Defaults to false."
+          "description": "Deprecated alias for lint",
+          "type": "boolean"
         },
         "typecheck": {
-          "type": "boolean",
-          "description": "Enable type checking diagnostics and type-aware LSP integration. Defaults to false."
+          "description": "Enable project type checking diagnostics",
+          "type": "boolean"
         },
         "editor": {
-          "type": "boolean",
-          "description": "Enable the editor assistance bundle: completion, hover, navigation, symbols, rename, code lens, semantic tokens, links, folding, inlay hints, and file rename handling. Formatting remains separately opt-in."
+          "description": "Enable editor-oriented IDE features",
+          "type": "boolean"
         },
         "completion": {
+          "description": "Enable completions",
           "type": "boolean"
         },
         "hover": {
+          "description": "Enable hover information",
           "type": "boolean"
         },
         "definition": {
+          "description": "Enable go-to-definition",
           "type": "boolean"
         },
         "references": {
+          "description": "Enable reference search",
           "type": "boolean"
         },
         "documentSymbols": {
+          "description": "Enable document symbols",
           "type": "boolean"
         },
         "workspaceSymbols": {
+          "description": "Enable workspace symbols",
           "type": "boolean"
         },
         "formatting": {
+          "description": "Enable formatting via the language server",
           "type": "boolean"
         },
         "codeActions": {
+          "description": "Enable code actions",
           "type": "boolean"
         },
         "rename": {
+          "description": "Enable rename support",
           "type": "boolean"
         },
         "codeLens": {
+          "description": "Enable code lenses",
           "type": "boolean"
         },
         "semanticTokens": {
+          "description": "Enable semantic tokens",
           "type": "boolean"
         },
         "documentLinks": {
+          "description": "Enable document links",
           "type": "boolean"
         },
         "foldingRanges": {
+          "description": "Enable folding ranges",
           "type": "boolean"
         },
         "inlayHints": {
+          "description": "Enable inlay hints",
           "type": "boolean"
         },
         "fileRename": {
+          "description": "Enable file rename edits",
           "type": "boolean"
         },
         "corsa": {
+          "description": "Enable Corsa-backed IDE features",
+          "type": "boolean"
+        },
+        "tsgo": {
+          "description": "Deprecated alias for corsa",
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "museaViewport": {
+    "MuseaViewport": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "width": {
-          "type": "number"
+          "description": "Viewport width",
+          "type": "integer"
         },
         "height": {
-          "type": "number"
+          "description": "Viewport height",
+          "type": "integer"
         },
         "name": {
+          "description": "Viewport name",
           "type": "string"
         }
       },
+      "additionalProperties": false,
       "required": ["width", "height"]
     },
-    "museaVrtConfig": {
+    "MuseaVrtConfig": {
+      "description": "VRT (Visual Regression Testing) configuration",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "threshold": {
+          "description": "Threshold for pixel comparison (0-1)",
+          "default": 0.1,
           "type": "number"
         },
         "outDir": {
+          "description": "Output directory for screenshots",
+          "default": "__musea_snapshots__",
           "type": "string"
         },
         "viewports": {
+          "description": "Viewport sizes",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/museaViewport"
+            "$ref": "#/definitions/MuseaViewport"
           }
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "museaA11yConfig": {
+    "MuseaA11yConfig": {
+      "description": "A11y configuration",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "enabled": {
+          "description": "Enable a11y checking",
+          "default": false,
           "type": "boolean"
         },
         "rules": {
+          "description": "Axe-core rules to enable/disable",
           "type": "object",
           "additionalProperties": {
             "type": "boolean"
           }
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "museaAutogenConfig": {
+    "MuseaAutogenConfig": {
+      "description": "Autogen configuration",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "enabled": {
+          "description": "Enable auto-generation of variants",
+          "default": false,
           "type": "boolean"
         },
         "maxVariants": {
+          "description": "Max variants to generate per component",
+          "default": 10,
           "type": "integer"
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "museaConfig": {
+    "MuseaConfig": {
+      "description": "Musea component gallery options",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "include": {
+          "description": "Glob patterns for art files",
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "exclude": {
+          "description": "Glob patterns to exclude",
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "basePath": {
+          "description": "Base path for gallery",
+          "default": "/__musea__",
           "type": "string"
         },
         "storybookCompat": {
+          "description": "Enable Storybook compatibility",
+          "default": false,
           "type": "boolean"
         },
         "inlineArt": {
+          "description": "Enable inline art detection in .vue files",
+          "default": false,
           "type": "boolean"
         },
         "vrt": {
-          "$ref": "#/$defs/museaVrtConfig"
+          "$ref": "#/definitions/MuseaVrtConfig"
         },
         "a11y": {
-          "$ref": "#/$defs/museaA11yConfig"
+          "$ref": "#/definitions/MuseaA11yConfig"
         },
         "autogen": {
-          "$ref": "#/$defs/museaAutogenConfig"
+          "$ref": "#/definitions/MuseaAutogenConfig"
         }
-      }
+      },
+      "additionalProperties": false
     },
-    "globalTypeDeclaration": {
+    "GlobalTypeDeclaration": {
+      "description": "Global type declaration",
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "type": {
+          "description": "TypeScript type string",
           "type": "string"
         },
         "defaultValue": {
+          "description": "Default value",
           "type": "string"
         }
       },
+      "additionalProperties": false,
       "required": ["type"]
     },
-    "globalTypesConfig": {
+    "GlobalTypesConfig": {
+      "description": "Global type declarations",
       "type": "object",
       "additionalProperties": {
-        "oneOf": [{ "type": "string" }, { "$ref": "#/$defs/globalTypeDeclaration" }]
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "$ref": "#/definitions/GlobalTypeDeclaration"
+          }
+        ]
       }
     }
-  }
+  },
+  "title": "VizeConfig",
+  "description": "Configuration file for vize - High-performance Vue.js toolchain",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "JSON Schema reference for editor autocompletion",
+      "type": "string"
+    },
+    "compiler": {
+      "$ref": "#/definitions/CompilerConfig"
+    },
+    "vite": {
+      "$ref": "#/definitions/VitePluginConfig"
+    },
+    "linter": {
+      "$ref": "#/definitions/LinterConfig"
+    },
+    "typeChecker": {
+      "$ref": "#/definitions/TypeCheckerConfig"
+    },
+    "formatter": {
+      "$ref": "#/definitions/FormatterConfig"
+    },
+    "languageServer": {
+      "$ref": "#/definitions/LanguageServerConfig"
+    },
+    "lsp": {
+      "$ref": "#/definitions/LanguageServerConfig"
+    },
+    "musea": {
+      "$ref": "#/definitions/MuseaConfig"
+    },
+    "globalTypes": {
+      "$ref": "#/definitions/GlobalTypesConfig"
+    }
+  },
+  "additionalProperties": false
 }

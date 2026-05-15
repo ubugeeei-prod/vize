@@ -1,0 +1,55 @@
+/// Root configuration module for Vize.
+///
+/// Usage in `vize.config.pkl`:
+/// ```
+/// amends "node_modules/vize/pkl/VizeConfig.pkl"
+///
+/// formatter {
+///   singleQuote = true
+/// }
+///
+/// languageServer {
+///   completion = false
+/// }
+/// ```
+module vize.VizeConfig
+
+import "CompilerConfig.pkl"
+import "VitePluginConfig.pkl"
+import "LinterConfig.pkl"
+import "TypeCheckerConfig.pkl"
+import "FormatterConfig.pkl"
+import "LanguageServerConfig.pkl"
+import "MuseaConfig.pkl"
+import "GlobalTypesConfig.pkl"
+
+/// Vue compiler options.
+compiler: CompilerConfig.CompilerConfig = new CompilerConfig.CompilerConfig {}
+
+/// Vite plugin options.
+vite: VitePluginConfig.VitePluginConfig = new VitePluginConfig.VitePluginConfig {}
+
+/// Linter options.
+linter: LinterConfig.LinterConfig = new LinterConfig.LinterConfig {}
+
+/// Type checker options.
+typeChecker: TypeCheckerConfig.TypeCheckerConfig = new TypeCheckerConfig.TypeCheckerConfig {}
+
+/// Formatter options.
+formatter: FormatterConfig.FormatterConfig = new FormatterConfig.FormatterConfig {}
+
+/// Language server options.
+languageServer: LanguageServerConfig.LanguageServerConfig = new LanguageServerConfig.LanguageServerConfig {}
+
+/// Legacy alias for `languageServer`.
+@Deprecated {
+  message = "Use languageServer instead."
+  replaceWith = "languageServer"
+}
+lsp: LanguageServerConfig.LanguageServerConfig = languageServer
+
+/// Musea component gallery options.
+musea: MuseaConfig.MuseaConfig = new MuseaConfig.MuseaConfig {}
+
+/// Global type declarations.
+globalTypes: GlobalTypesConfig.GlobalTypesConfig = new GlobalTypesConfig.GlobalTypesConfig {}

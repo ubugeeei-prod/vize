@@ -47,10 +47,16 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         profiler.enable();
     }
 
-    let config = crate::config::load_config(None);
     crate::config::write_schema(None);
 
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let loaded_config = crate::config::load_config_with_source(None);
+    let config = loaded_config.config;
+    let config_dir = loaded_config
+        .source_path
+        .as_deref()
+        .and_then(Path::parent)
+        .unwrap_or(cwd.as_path());
     let project_root = resolve_project_root(args.tsconfig.as_deref(), &cwd, &[]);
     let tsconfig_path = resolve_tsconfig_path(args.tsconfig.as_deref(), &cwd, &project_root, &[]);
     let collect_start = Instant::now();
@@ -73,7 +79,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let tsconfig_path =
         resolve_tsconfig_path(args.tsconfig.as_deref(), &cwd, &project_root, &files);
 
-    let mut virtual_ts_options = build_virtual_ts_options(&config, &cwd);
+    let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &cwd);
 
     if !args.quiet {
@@ -446,40 +452,45 @@ fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
 
 fn build_virtual_ts_options(
     config: &crate::config::VizeConfig,
-    cwd: &Path,
+    config_dir: &Path,
 ) -> vize_canon::virtual_ts::VirtualTsOptions {
-    let globals_path = config
-        .check
-        .globals
-        .as_deref()
-        .map(PathBuf::from)
-        .map(|path| {
-            if path.is_absolute() {
-                path
-            } else {
-                cwd.join(path)
-            }
-        });
+    let mut template_globals = config
+        .global_types
+        .iter()
+        .map(
+            |(name, declaration)| vize_canon::virtual_ts::TemplateGlobal {
+                name: name.clone(),
+                type_annotation: declaration.type_annotation.clone(),
+                default_value: declaration.template_default_value(),
+            },
+        )
+        .collect::<Vec<_>>();
 
-    if let Some(ref globals_path) = globals_path {
-        match parse_dts_globals(globals_path) {
-            Ok(template_globals) => {
-                return vize_canon::virtual_ts::VirtualTsOptions {
-                    template_globals,
-                    ..Default::default()
-                };
-            }
-            Err(error) => {
-                eprintln!(
-                    "\x1b[33mWarning:\x1b[0m Failed to parse globals from {}: {}",
-                    globals_path.display(),
-                    error
-                );
+    let globals_path = config
+        .type_checker
+        .globals_file
+        .as_deref()
+        .map(|candidate| resolve_from_config_dir(config_dir, candidate));
+
+    if template_globals.is_empty() {
+        if let Some(ref globals_path) = globals_path {
+            match parse_dts_globals(globals_path) {
+                Ok(globals) => template_globals = globals,
+                Err(error) => {
+                    eprintln!(
+                        "\x1b[33mWarning:\x1b[0m Failed to parse globals from {}: {}",
+                        globals_path.display(),
+                        error
+                    );
+                }
             }
         }
     }
 
-    vize_canon::virtual_ts::VirtualTsOptions::default()
+    vize_canon::virtual_ts::VirtualTsOptions {
+        template_globals,
+        ..Default::default()
+    }
 }
 
 fn resolve_declaration_dir(declaration_dir: Option<&Path>, project_root: &Path) -> PathBuf {
@@ -574,6 +585,15 @@ fn display_path(base: &Path, path: &Path) -> vize_carton::String {
     path.strip_prefix(base)
         .map(|relative| cstr!("{}", relative.display()))
         .unwrap_or_else(|_| cstr!("{}", path.display()))
+}
+
+fn resolve_from_config_dir(config_dir: &Path, candidate: &str) -> PathBuf {
+    let path = Path::new(candidate);
+    if path.is_absolute() {
+        return path.to_path_buf();
+    }
+
+    config_dir.join(path)
 }
 
 /// Parse a `.d.ts` file containing `ComponentCustomProperties` augmentation.

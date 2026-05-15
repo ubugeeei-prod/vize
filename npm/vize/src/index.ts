@@ -14,6 +14,7 @@ export type {
   LinterConfig,
   TypeCheckerConfig,
   FormatterConfig,
+  LanguageServerConfig,
   LspConfig,
   MuseaConfig,
   MuseaVrtConfig,

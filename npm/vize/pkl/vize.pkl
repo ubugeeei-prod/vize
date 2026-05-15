@@ -11,7 +11,7 @@ module vize.Config
 typealias CompilerMode = "module" | "function"
 typealias ScriptExt = "ts" | "js"
 typealias RuleSeverity = "off" | "warn" | "error"
-typealias LintPreset = "happy-path" | "opinionated" | "essential" | "nuxt"
+typealias LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "nuxt"
 typealias TrailingComma = "all" | "none" | "es5"
 typealias FilterPattern = String | Listing<String>
 typealias GlobalTypeValue = String | GlobalTypeDeclaration
@@ -52,8 +52,15 @@ class TypeCheckerConfig {
   checkProps: Boolean? = null
   checkEmits: Boolean? = null
   checkTemplateBindings: Boolean? = null
+  checkReactivity: Boolean? = null
+  checkSetupContext: Boolean? = null
+  checkInvalidExports: Boolean? = null
+  checkFallthroughAttrs: Boolean? = null
   tsconfig: String? = null
+  tsgoPath: String? = null
   corsaPath: String? = null
+  globalsFile: String? = null
+  servers: Int? = null
 }
 
 class FormatterConfig {
@@ -88,6 +95,8 @@ class LspConfig {
   inlayHints: Boolean? = null
   fileRename: Boolean? = null
   corsa: Boolean? = null
+  /// Deprecated: use `corsa`.
+  tsgo: Boolean? = null
 }
 
 class MuseaViewport {
@@ -133,6 +142,8 @@ vite: VitePluginConfig?
 linter: LinterConfig?
 typeChecker: TypeCheckerConfig?
 formatter: FormatterConfig?
+languageServer: LspConfig?
+/// Deprecated: use `languageServer`.
 lsp: LspConfig?
 musea: MuseaConfig?
 globalTypes: Mapping<String, GlobalTypeValue>? = null

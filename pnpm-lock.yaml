@@ -108,9 +108,15 @@ catalogs:
     '@iarna/toml':
       specifier: 2.2.5
       version: 2.2.5
+    '@pkl-community/pkl':
+      specifier: 0.27.2
+      version: 0.27.2
     glob:
       specifier: 13.0.6
       version: 13.0.6
+    json-schema-to-typescript:
+      specifier: 15.0.4
+      version: 15.0.4
     prettier:
       specifier: 3.8.3
       version: 3.8.3
@@ -202,6 +208,9 @@ importers:
       glob:
         specifier: catalog:repo-tooling
         version: 13.0.6
+      json-schema-to-typescript:
+        specifier: catalog:repo-tooling
+        version: 15.0.4
       oxfmt:
         specifier: catalog:linting
         version: 0.49.0
@@ -718,6 +727,9 @@ importers:
         specifier: catalog:vite-stack
         version: 0.1.21(@tsdown/css@0.22.0)(@types/node@25.7.0)(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
     optionalDependencies:
+      '@pkl-community/pkl':
+        specifier: catalog:repo-tooling
+        version: 0.27.2
       '@vizejs/native-darwin-arm64':
         specifier: catalog:native-binaries
         version: 0.77.0
@@ -826,6 +838,10 @@ packages:
 
   '@antfu/install-pkg@1.1.0':
     resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
+
+  '@apidevtools/json-schema-ref-parser@11.9.3':
+    resolution: {integrity: sha512-60vepv88RwcJtSHrD6MjIL6Ta3SOYbgfnkHb+ppAVK+o9mXprRtulx7VlRl3lN3bbvysAfCS7WMVfhUYemB0IQ==}
+    engines: {node: '>= 16'}
 
   '@azure/abort-controller@2.1.2':
     resolution: {integrity: sha512-nBrLsEWm4J2u5LpAPjxADTlq3trDgVZZXHNKabeXZtpq3d3AbN/KGO82R87rdDz5/lYB024rtEf10/q0urNgsA==}
@@ -2064,6 +2080,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@jsdevtools/ono@7.1.3':
+    resolution: {integrity: sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==}
 
   '@kwsites/file-exists@1.1.1':
     resolution: {integrity: sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw==}
@@ -3788,6 +3807,30 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
+  '@pkl-community/pkl-darwin-arm64@0.27.2':
+    resolution: {integrity: sha512-3KIjVmjHuGNIc6KYD5IzegE/7CK6088Ve5A/BrXHleUQL2e40TFUi5t3iJtqM9+xPbqtc+leeGLU+PcemU7k3w==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@pkl-community/pkl-darwin-x64@0.27.2':
+    resolution: {integrity: sha512-uZ/2GVmjeRmmXwzC++twlwjuPyAltlRXJRxhVgxNSMTPgt3t8AEht7bpbLnRqAuOD3Csaxdojcv2QeWfRp9Krw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@pkl-community/pkl-linux-arm64@0.27.2':
+    resolution: {integrity: sha512-FWf+UQ1VwjcWhDiLQtuO6LuOzuWCwORg8E/+kCS9kmFzkAcn7mC7wMJD4NLxHDoEUgGGBIUgM3S6jPShiMtwYQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@pkl-community/pkl-linux-x64@0.27.2':
+    resolution: {integrity: sha512-uqD/VqaGe43b9YsFArbxCFjcEA32M81+AX1vPo0Jwwq2CcfFNre6hi0s/sinNpMJA1vwh0nx94T+XbSq3/lyvA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@pkl-community/pkl@0.27.2':
+    resolution: {integrity: sha512-e6HaEVKvyUdlUMRurPC18USM1tICnTEAoEAvbWKcAJxaCIzhEm8JZ6OhtIOkyI6WxgZpcWPPvjiPRIrKsNY9Hg==}
+    hasBin: true
+
   '@playwright/test@1.60.0':
     resolution: {integrity: sha512-O71yZIbAh/PxDMNGns37GHBIfrVkEVyn+AXyIa5dOTfb4/xNvRWV+Vv/NMbNCtODB/pO7vLlF2OTmMVLhmr7Ag==}
     engines: {node: '>=18'}
@@ -4614,6 +4657,9 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+  '@types/lodash@4.17.24':
+    resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
 
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
@@ -6966,6 +7012,11 @@ packages:
   json-parse-even-better-errors@2.3.1:
     resolution: {integrity: sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w==}
 
+  json-schema-to-typescript@15.0.4:
+    resolution: {integrity: sha512-Su9oK8DR4xCmDsLlyvadkXzX6+GGXJpbhwoLtOGArAG61dvbW4YQmSEno2y66ahpIdmLMg6YUf/QHLgiwvkrHQ==}
+    engines: {node: '>=16.0.0'}
+    hasBin: true
+
   json-schema-traverse@0.4.1:
     resolution: {integrity: sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==}
 
@@ -7167,9 +7218,6 @@ packages:
   lodash.uniq@4.5.0:
     resolution: {integrity: sha512-xfBaXQd9ryd9dlSDvnvI0lvxfLJlYAZzXomUYzLKtUeOQvOP5piqAWuGtrhWeqaXK9hhoM/iyJc5AV+XfsX3HQ==}
 
-  lodash@4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
-
   lodash@4.18.1:
     resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
 
@@ -7307,6 +7355,9 @@ packages:
   minimatch@9.0.9:
     resolution: {integrity: sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg==}
     engines: {node: '>=16 || 14 >=14.17'}
+
+  minimist@1.2.8:
+    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
   minipass@7.1.3:
     resolution: {integrity: sha512-tEBHqDnIoM/1rXME1zgka9g6Q2lcoCkxHLuc7ODJ5BxbP5d4c2Z5cGgtXAku59200Cx7diuHTOYfSBD8n6mm8A==}
@@ -9368,6 +9419,12 @@ snapshots:
       package-manager-detector: 1.6.0
       tinyexec: 1.1.2
 
+  '@apidevtools/json-schema-ref-parser@11.9.3':
+    dependencies:
+      '@jsdevtools/ono': 7.1.3
+      '@types/json-schema': 7.0.15
+      js-yaml: 4.1.1
+
   '@azure/abort-controller@2.1.2':
     dependencies:
       tslib: 2.8.1
@@ -10471,6 +10528,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@jsdevtools/ono@7.1.3': {}
 
   '@kwsites/file-exists@1.1.1':
     dependencies:
@@ -11900,6 +11959,26 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
+  '@pkl-community/pkl-darwin-arm64@0.27.2':
+    optional: true
+
+  '@pkl-community/pkl-darwin-x64@0.27.2':
+    optional: true
+
+  '@pkl-community/pkl-linux-arm64@0.27.2':
+    optional: true
+
+  '@pkl-community/pkl-linux-x64@0.27.2':
+    optional: true
+
+  '@pkl-community/pkl@0.27.2':
+    optionalDependencies:
+      '@pkl-community/pkl-darwin-arm64': 0.27.2
+      '@pkl-community/pkl-darwin-x64': 0.27.2
+      '@pkl-community/pkl-linux-arm64': 0.27.2
+      '@pkl-community/pkl-linux-x64': 0.27.2
+    optional: true
+
   '@playwright/test@1.60.0':
     dependencies:
       playwright: 1.60.0
@@ -12606,6 +12685,8 @@ snapshots:
   '@types/jsesc@2.5.1': {}
 
   '@types/json-schema@7.0.15': {}
+
+  '@types/lodash@4.17.24': {}
 
   '@types/mdast@4.0.4':
     dependencies:
@@ -13589,7 +13670,7 @@ snapshots:
       graceful-fs: 4.2.11
       is-stream: 2.0.1
       lazystream: 1.0.1
-      lodash: 4.17.21
+      lodash: 4.18.1
       normalize-path: 3.0.0
       readable-stream: 4.7.0
 
@@ -15419,6 +15500,18 @@ snapshots:
 
   json-parse-even-better-errors@2.3.1: {}
 
+  json-schema-to-typescript@15.0.4:
+    dependencies:
+      '@apidevtools/json-schema-ref-parser': 11.9.3
+      '@types/json-schema': 7.0.15
+      '@types/lodash': 4.17.24
+      is-glob: 4.0.3
+      js-yaml: 4.1.1
+      lodash: 4.18.1
+      minimist: 1.2.8
+      prettier: 3.8.3
+      tinyglobby: 0.2.16
+
   json-schema-traverse@0.4.1: {}
 
   json-schema-traverse@1.0.0: {}
@@ -15611,8 +15704,6 @@ snapshots:
 
   lodash.uniq@4.5.0: {}
 
-  lodash@4.17.21: {}
-
   lodash@4.18.1: {}
 
   lru-cache@10.4.3: {}
@@ -15756,6 +15847,8 @@ snapshots:
   minimatch@9.0.9:
     dependencies:
       brace-expansion: 2.1.0
+
+  minimist@1.2.8: {}
 
   minipass@7.1.3: {}
 

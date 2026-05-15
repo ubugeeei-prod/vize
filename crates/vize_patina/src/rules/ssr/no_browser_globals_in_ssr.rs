@@ -473,8 +473,9 @@ mod tests {
     use crate::context::{LintContext, SsrMode};
     use crate::rule::{Rule, RuleRegistry};
     use crate::Linter;
+    use vize_carton::CompactString;
 
-    fn lint_with_ssr(source: &str) -> Vec<String> {
+    fn lint_with_ssr(source: &str) -> Vec<CompactString> {
         let mut registry = RuleRegistry::new();
         registry.add(Box::new(NoBrowserGlobalsInSsr));
         let _linter = Linter::with_registry(registry);
@@ -499,7 +500,7 @@ mod tests {
 
         ctx.into_diagnostics()
             .into_iter()
-            .map(|d| d.message.to_string())
+            .map(|d| d.message)
             .collect()
     }
 

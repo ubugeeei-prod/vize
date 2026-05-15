@@ -17,7 +17,21 @@ use crate::server::ServerState;
 impl TypeService {
     /// Collect type diagnostics for a document using the strict type checker.
     pub fn collect_diagnostics(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        Self::collect_diagnostics_with_options(state, uri, &LspTypeCheckOptions::default())
+        let cfg = state.get_type_checker_config();
+        Self::collect_diagnostics_with_options(
+            state,
+            uri,
+            &LspTypeCheckOptions {
+                strict: cfg.strict,
+                check_props: cfg.check_props,
+                check_emits: cfg.check_emits,
+                check_template_bindings: cfg.check_template_bindings,
+                check_reactivity: cfg.check_reactivity,
+                check_setup_context: cfg.check_setup_context,
+                check_invalid_exports: cfg.check_invalid_exports,
+                check_fallthrough_attrs: cfg.check_fallthrough_attrs,
+            },
+        )
     }
 
     /// Collect type diagnostics with custom options.

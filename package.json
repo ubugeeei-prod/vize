@@ -12,6 +12,7 @@
     "@types/node": "catalog:typescript",
     "@typescript/native-preview": "catalog:typescript",
     "glob": "catalog:repo-tooling",
+    "json-schema-to-typescript": "catalog:repo-tooling",
     "oxfmt": "catalog:linting",
     "oxlint": "catalog:linting",
     "tsdown": "catalog:vite-stack",

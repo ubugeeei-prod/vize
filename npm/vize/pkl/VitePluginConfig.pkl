@@ -1,0 +1,20 @@
+/// Vite plugin configuration for Vize.
+module vize.VitePluginConfig
+
+class VitePluginConfig {
+  /// Files to include in compilation (glob patterns).
+  include: Listing<String> = new Listing { "**/*.vue" }
+
+  /// Files to exclude from compilation (glob patterns).
+  exclude: Listing<String> = new Listing { "node_modules/**" }
+
+  /// Glob patterns to scan for .vue files during pre-compilation.
+  scanPatterns: Listing<String> = new Listing { "**/*.vue" }
+
+  /// Glob patterns to ignore during pre-compilation.
+  ignorePatterns: Listing<String> = new Listing {
+    "node_modules/**"
+    "dist/**"
+    ".git/**"
+  }
+}

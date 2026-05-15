@@ -1,7 +1,7 @@
 //! Server state management.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
@@ -10,6 +10,10 @@ use parking_lot::RwLock;
 use serde::Deserialize;
 use tokio::sync::OnceCell;
 use tower_lsp::lsp_types::Url;
+use vize_carton::config::{LanguageServerConfig, TypeCheckerConfig};
+
+#[cfg(feature = "glyph")]
+use vize_carton::config::FormatterConfig;
 
 #[cfg(feature = "native")]
 use std::sync::OnceLock;
@@ -19,12 +23,6 @@ use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, CorsaBridge, CorsaBrid
 
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
-
-#[derive(Debug, Default, Deserialize)]
-struct LspConfigFile {
-    #[serde(default)]
-    lsp: LspConfigSection,
-}
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -51,6 +49,7 @@ struct LspConfigSection {
     inlay_hints: Option<bool>,
     file_rename: Option<bool>,
     corsa: Option<bool>,
+    tsgo: Option<bool>,
 }
 
 impl LspConfigSection {
@@ -74,7 +73,7 @@ impl LspConfigSection {
         if let Some(enabled) = self.typecheck {
             features.typecheck = enabled;
         }
-        if self.corsa == Some(true) {
+        if self.corsa == Some(true) || self.tsgo == Some(true) {
             features.typecheck = true;
         }
 
@@ -126,6 +125,35 @@ impl LspConfigSection {
         }
         if let Some(enabled) = self.file_rename {
             features.file_rename = enabled;
+        }
+    }
+}
+
+impl From<LanguageServerConfig> for LspConfigSection {
+    fn from(config: LanguageServerConfig) -> Self {
+        Self {
+            enabled: config.enabled,
+            diagnostics: config.diagnostics,
+            lint: config.lint,
+            typecheck: config.typecheck,
+            editor: config.editor,
+            completion: config.completion,
+            hover: config.hover,
+            definition: config.definition,
+            references: config.references,
+            document_symbols: config.document_symbols,
+            workspace_symbols: config.workspace_symbols,
+            code_actions: config.code_actions,
+            rename: config.rename,
+            formatting: config.formatting,
+            code_lens: config.code_lens,
+            semantic_tokens: config.semantic_tokens,
+            document_links: config.document_links,
+            folding_ranges: config.folding_ranges,
+            inlay_hints: config.inlay_hints,
+            file_rename: config.file_rename,
+            corsa: config.corsa,
+            tsgo: config.tsgo,
         }
     }
 }
@@ -247,6 +275,8 @@ pub struct ServerState {
     lsp_features: RwLock<LspFeatureConfig>,
     /// Fast path for checking whether type-aware features are enabled.
     lsp_typecheck_enabled: AtomicBool,
+    /// Type checker options shared by LSP diagnostics.
+    type_checker_config: RwLock<TypeCheckerConfig>,
     /// Formatting options (loaded from vize.config.json)
     #[cfg(feature = "glyph")]
     format_options: RwLock<vize_glyph::FormatOptions>,
@@ -282,6 +312,7 @@ impl ServerState {
             virtual_docs_cache: DashMap::new(),
             lsp_features: RwLock::new(LspFeatureConfig::default()),
             lsp_typecheck_enabled: AtomicBool::new(false),
+            type_checker_config: RwLock::new(TypeCheckerConfig::default()),
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),
             #[cfg(feature = "native")]
@@ -340,6 +371,17 @@ impl ServerState {
         }
     }
 
+    /// Get a clone of the current type checker config.
+    #[inline]
+    pub fn get_type_checker_config(&self) -> TypeCheckerConfig {
+        self.type_checker_config.read().clone()
+    }
+
+    fn apply_type_checker_config(&self, config: TypeCheckerConfig, source: &str) {
+        *self.type_checker_config.write() = config;
+        tracing::info!("Loaded type checker config from {}", source);
+    }
+
     fn apply_lsp_config(&self, config: LspConfigSection, source: &str) {
         let mut features = self.lsp_features.write();
         config.apply_to(&mut features);
@@ -348,50 +390,29 @@ impl ServerState {
         tracing::info!("Loaded LSP config from {}: {:?}", source, *features);
     }
 
+    /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
+    pub fn load_workspace_config(&self, dir: &Path) {
+        let loaded = vize_carton::config::load_config_with_source(Some(dir));
+        if let Some(source_path) = loaded.source_path {
+            let source = source_path.display().to_string();
+            let config = loaded.config;
+            #[cfg(feature = "glyph")]
+            {
+                *self.format_options.write() = format_options_from_config(&config.formatter);
+                tracing::info!("Loaded format config from {}", source);
+            }
+            self.apply_type_checker_config(config.type_checker, &source);
+            self.apply_lsp_config(config.language_server.into(), &source);
+        }
+    }
+
     /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
-    pub fn load_lsp_config(&self, dir: &std::path::Path) {
-        let pkl_path = dir.join("vize.config.pkl");
-        if pkl_path.exists() {
-            match rpkl::from_config::<LspConfigFile>(&pkl_path) {
-                Ok(config) => {
-                    self.apply_lsp_config(config.lsp, &pkl_path.display().to_string());
-                }
-                Err(error) => {
-                    tracing::warn!(
-                        "Failed to parse {}: {}. Keeping default LSP options.",
-                        pkl_path.display(),
-                        error
-                    );
-                }
-            }
-            return;
-        }
-
-        let json_path = dir.join("vize.config.json");
-        if !json_path.exists() {
-            return;
-        }
-
-        match std::fs::read_to_string(&json_path) {
-            Ok(content) => match serde_json::from_str::<LspConfigFile>(&content) {
-                Ok(config) => {
-                    self.apply_lsp_config(config.lsp, &json_path.display().to_string());
-                }
-                Err(error) => {
-                    tracing::warn!(
-                        "Failed to parse {}: {}. Keeping default LSP options.",
-                        json_path.display(),
-                        error
-                    );
-                }
-            },
-            Err(error) => {
-                tracing::warn!(
-                    "Failed to read {}: {}. Keeping default LSP options.",
-                    json_path.display(),
-                    error
-                );
-            }
+    pub fn load_lsp_config(&self, dir: &Path) {
+        let loaded = vize_carton::config::load_config_with_source(Some(dir));
+        if let Some(source_path) = loaded.source_path {
+            let source = source_path.display().to_string();
+            self.apply_type_checker_config(loaded.config.type_checker, &source);
+            self.apply_lsp_config(loaded.config.language_server.into(), &source);
         }
     }
 
@@ -663,24 +684,62 @@ impl ServerState {
 
     /// Load format options from `vize.config.json` in the given directory.
     #[cfg(feature = "glyph")]
-    pub fn load_format_config(&self, dir: &std::path::Path) {
-        let config_path = dir.join("vize.config.json");
-        if !config_path.exists() {
-            return;
+    pub fn load_format_config(&self, dir: &Path) {
+        let loaded = vize_carton::config::load_config_with_source(Some(dir));
+        if let Some(source_path) = loaded.source_path {
+            *self.format_options.write() = format_options_from_config(&loaded.config.formatter);
+            tracing::info!("Loaded format config from {}", source_path.display());
         }
-        if let Ok(content) = std::fs::read_to_string(&config_path) {
-            // Parse only the "fmt" field to avoid pulling in the full VizeConfig type
-            if let Ok(value) = serde_json::from_str::<serde_json::Value>(&content) {
-                if let Some(fmt_value) = value.get("fmt") {
-                    if let Ok(opts) =
-                        serde_json::from_value::<vize_glyph::FormatOptions>(fmt_value.clone())
-                    {
-                        *self.format_options.write() = opts;
-                        tracing::info!("Loaded format config from {}", config_path.display());
-                    }
-                }
+    }
+}
+
+#[cfg(feature = "glyph")]
+fn format_options_from_config(config: &FormatterConfig) -> vize_glyph::FormatOptions {
+    vize_glyph::FormatOptions {
+        print_width: config.print_width,
+        tab_width: config.tab_width,
+        use_tabs: config.use_tabs,
+        semi: config.semi,
+        single_quote: config.single_quote,
+        jsx_single_quote: config.jsx_single_quote,
+        trailing_comma: match config.trailing_comma {
+            vize_carton::config::TrailingComma::None => vize_glyph::TrailingComma::None,
+            vize_carton::config::TrailingComma::Es5 => vize_glyph::TrailingComma::Es5,
+            vize_carton::config::TrailingComma::All => vize_glyph::TrailingComma::All,
+        },
+        bracket_spacing: config.bracket_spacing,
+        bracket_same_line: config.bracket_same_line,
+        arrow_parens: match config.arrow_parens {
+            vize_carton::config::ArrowParens::Always => vize_glyph::ArrowParens::Always,
+            vize_carton::config::ArrowParens::Avoid => vize_glyph::ArrowParens::Avoid,
+        },
+        end_of_line: match config.end_of_line {
+            vize_carton::config::EndOfLine::Lf => vize_glyph::EndOfLine::Lf,
+            vize_carton::config::EndOfLine::Crlf => vize_glyph::EndOfLine::Crlf,
+            vize_carton::config::EndOfLine::Cr => vize_glyph::EndOfLine::Cr,
+            vize_carton::config::EndOfLine::Auto => vize_glyph::EndOfLine::Auto,
+        },
+        quote_props: match config.quote_props {
+            vize_carton::config::QuoteProps::AsNeeded => vize_glyph::QuoteProps::AsNeeded,
+            vize_carton::config::QuoteProps::Consistent => vize_glyph::QuoteProps::Consistent,
+            vize_carton::config::QuoteProps::Preserve => vize_glyph::QuoteProps::Preserve,
+        },
+        single_attribute_per_line: config.single_attribute_per_line,
+        vue_indent_script_and_style: config.vue_indent_script_and_style,
+        sort_attributes: config.sort_attributes,
+        attribute_sort_order: match config.attribute_sort_order {
+            vize_carton::config::AttributeSortOrder::Alphabetical => {
+                vize_glyph::AttributeSortOrder::Alphabetical
             }
-        }
+            vize_carton::config::AttributeSortOrder::AsWritten => {
+                vize_glyph::AttributeSortOrder::AsWritten
+            }
+        },
+        merge_bind_and_non_bind_attrs: config.merge_bind_and_non_bind_attrs,
+        max_attributes_per_line: config.max_attributes_per_line,
+        attribute_groups: config.attribute_groups.clone(),
+        normalize_directive_shorthands: config.normalize_directive_shorthands,
+        sort_blocks: config.sort_blocks,
     }
 }
 
@@ -818,6 +877,29 @@ mod tests {
         assert!(features.completion);
         assert!(features.definition);
         assert!(!features.formatting);
+    }
+
+    #[test]
+    fn load_lsp_config_updates_type_checker_config() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{
+                "typeChecker": {
+                    "strict": true,
+                    "checkProps": false,
+                    "checkEmits": false
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+        let config = state.get_type_checker_config();
+        assert!(config.strict);
+        assert!(!config.check_props);
+        assert!(!config.check_emits);
     }
 
     #[test]

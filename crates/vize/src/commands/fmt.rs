@@ -293,7 +293,7 @@ pub fn run(args: FmtArgs) {
 fn build_format_options(args: &FmtArgs) -> FormatOptions {
     // Load config file as base (zero-cost if no file exists)
     let cfg = config::load_config(args.config.as_deref());
-    let mut opts = cfg.fmt;
+    let mut opts = config::to_glyph_format_options(&cfg.formatter);
 
     // CLI flags override config values
     if let Some(v) = args.print_width {

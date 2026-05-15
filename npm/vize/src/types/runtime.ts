@@ -1,36 +1,31 @@
-import type { ConfigEnv } from "./core.js";
+import type { LanguageServerConfig, VizeConfig } from "./generated.js";
 
 // ============================================================================
-// GlobalTypesConfig
+// TS-specific runtime types (cannot be expressed in Pkl)
 // ============================================================================
 
-/**
- * Global type declaration
- */
-export interface GlobalTypeDeclaration {
-  /**
-   * TypeScript type string
-   */
-  type: string;
+export type MaybePromise<T> = T | Promise<T>;
 
-  /**
-   * Default value
-   */
-  defaultValue?: string;
+export interface ConfigEnv {
+  mode: string;
+  command: "serve" | "build" | "check" | "lint" | "fmt";
+  isSsrBuild?: boolean;
 }
 
-/**
- * Global types configuration
- */
-export type GlobalTypesConfig = Record<string, GlobalTypeDeclaration | string>;
+export type UserConfig = VizeConfig & {
+  /**
+   * Legacy alias for `languageServer`.
+   * Prefer `languageServer`.
+   */
+  lsp?: LanguageServerConfig;
+};
+
+export type UserConfigExport = UserConfig | ((env: ConfigEnv) => MaybePromise<UserConfig>);
 
 // ============================================================================
 // LoadConfigOptions
 // ============================================================================
 
-/**
- * Options for loading vize.config file
- */
 export interface LoadConfigOptions {
   /**
    * Config file search mode

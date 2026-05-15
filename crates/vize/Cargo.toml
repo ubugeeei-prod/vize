@@ -64,9 +64,6 @@ oxc_semantic = { workspace = true }
 oxc_span = { workspace = true }
 oxc_transformer = { workspace = true }
 
-# PKL configuration language
-rpkl.workspace = true
-
 # Home/config directory detection
 dirs.workspace = true
 

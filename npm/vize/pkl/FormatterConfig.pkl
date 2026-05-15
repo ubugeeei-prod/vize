@@ -1,0 +1,67 @@
+/// Formatter configuration for Vize.
+module vize.FormatterConfig
+
+class FormatterConfig {
+  /// Maximum line width.
+  printWidth: Int = 100
+
+  /// Indentation width.
+  tabWidth: Int = 2
+
+  /// Use tabs for indentation.
+  useTabs: Boolean = false
+
+  /// Print semicolons.
+  semi: Boolean = true
+
+  /// Use single quotes.
+  singleQuote: Boolean = false
+
+  /// Use single quotes in JSX.
+  jsxSingleQuote: Boolean = false
+
+  /// Trailing comma mode.
+  trailingComma: ("all"|"none"|"es5") = "all"
+
+  /// Print spaces between brackets in object literals.
+  bracketSpacing: Boolean = true
+
+  /// Keep > on the last line of multiline tags.
+  bracketSameLine: Boolean = false
+
+  /// Arrow parens mode.
+  arrowParens: ("always"|"avoid") = "always"
+
+  /// End-of-line mode.
+  endOfLine: ("lf"|"crlf"|"cr"|"auto") = "lf"
+
+  /// Quote properties mode.
+  quoteProps: ("as-needed"|"consistent"|"preserve") = "as-needed"
+
+  /// Force one attribute per line.
+  singleAttributePerLine: Boolean = false
+
+  /// Indent script/style blocks.
+  vueIndentScriptAndStyle: Boolean = false
+
+  /// Sort attributes.
+  sortAttributes: Boolean = true
+
+  /// Attribute ordering strategy.
+  attributeSortOrder: ("alphabetical"|"as-written") = "alphabetical"
+
+  /// Merge bind and non-bind attrs for sorting.
+  mergeBindAndNonBindAttrs: Boolean = false
+
+  /// Maximum attributes per line before wrapping.
+  maxAttributesPerLine: Int? = null
+
+  /// Custom attribute groups.
+  attributeGroups: Listing<Listing<String>>? = null
+
+  /// Normalize directive shorthands.
+  normalizeDirectiveShorthands: Boolean = true
+
+  /// Sort SFC blocks in canonical order.
+  sortBlocks: Boolean = true
+}

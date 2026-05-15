@@ -1,0 +1,47 @@
+---
+source: crates/vize_carton/tests/loading.rs
+expression: "serde_json::to_string_pretty(&config).unwrap()"
+---
+{
+  "formatter": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": true,
+    "jsxSingleQuote": false,
+    "trailingComma": "all",
+    "bracketSpacing": true,
+    "bracketSameLine": false,
+    "arrowParens": "always",
+    "endOfLine": "lf",
+    "quoteProps": "as-needed",
+    "singleAttributePerLine": false,
+    "vueIndentScriptAndStyle": false,
+    "sortAttributes": true,
+    "attributeSortOrder": "alphabetical",
+    "mergeBindAndNonBindAttrs": false,
+    "maxAttributesPerLine": null,
+    "attributeGroups": null,
+    "normalizeDirectiveShorthands": true,
+    "sortBlocks": true
+  },
+  "typeChecker": {
+    "enabled": true,
+    "strict": false,
+    "checkProps": true,
+    "checkEmits": true,
+    "checkTemplateBindings": true,
+    "checkReactivity": true,
+    "checkSetupContext": true,
+    "checkInvalidExports": true,
+    "checkFallthroughAttrs": true,
+    "tsconfig": null,
+    "tsgoPath": null,
+    "globalsFile": "./globals.d.ts",
+    "servers": null
+  },
+  "languageServer": {
+    "completion": false
+  }
+}

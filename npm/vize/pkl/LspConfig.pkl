@@ -1,0 +1,6 @@
+/// Deprecated alias for `LanguageServerConfig.pkl`.
+module vize.LspConfig
+
+import "LanguageServerConfig.pkl"
+
+typealias LspConfig = LanguageServerConfig.LanguageServerConfig
