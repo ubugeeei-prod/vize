@@ -25,6 +25,7 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
   const isProduction = this.mode === "production" || process.env.NODE_ENV === "production";
   const isSsr = options.ssr ?? false;
   const needsHotReload = !isSsr && !isProduction && options.hotReload !== false;
+  const nativeCss = resolveNativeCss(this, options);
 
   this.addDependency(resourcePath);
 
@@ -155,6 +156,7 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       filePath: resourcePath,
       isProduction,
       rootContext: this.rootContext,
+      nativeCss,
     });
 
     // TODO: pass source map when @vizejs/native exposes it
@@ -174,6 +176,20 @@ function shouldCompileFile(file: string, options: VizeLoaderOptions): boolean {
   }
 
   return true;
+}
+
+function resolveNativeCss(
+  loader: LoaderContext<VizeLoaderOptions>,
+  options: VizeLoaderOptions,
+): boolean {
+  if (options.css?.native != null) {
+    return options.css.native;
+  }
+
+  return Boolean(
+    (loader as unknown as { _compiler?: { options?: { experiments?: { css?: boolean } } } })
+      ._compiler?.options?.experiments?.css,
+  );
 }
 
 /** Resolve custom element mode for a file. */

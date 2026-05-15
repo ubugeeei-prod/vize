@@ -179,6 +179,12 @@ export interface VizeLoaderOptions {
   /** HMR. false to disable in dev. @default true (dev), false (prod/SSR) */
   hotReload?: boolean;
 
+  /** CSS handling config */
+  css?: {
+    /** Native CSS (experiments.css), uses LightningCSS @default auto-detected */
+    native?: boolean;
+  };
+
   /**
    * Transform static asset URLs in templates into import bindings.
    * true=built-in tags, false=disabled, object=custom map. @default true

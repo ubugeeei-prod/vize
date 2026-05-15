@@ -129,6 +129,8 @@ export function generateOutput(
     isProduction?: boolean;
     /** Project root context (for computing relative __file path) */
     rootContext?: string;
+    /** Whether Rspack native CSS is handling CSS module exports */
+    nativeCss?: boolean;
   },
 ): string {
   let output = compiled.code;
@@ -223,7 +225,9 @@ export function generateOutput(
           // Use _cssModule_<n> as binding since module name may not be a valid identifier
           const varName = `_cssModule_${style.index}`;
           cssModuleHmrEntries.push({ request, varName, bindingName });
-          return `import ${varName} from ${JSON.stringify(request)};`;
+          return options.nativeCss
+            ? `import * as ${varName} from ${JSON.stringify(request)};`
+            : `import ${varName} from ${JSON.stringify(request)};`;
         }
         return `import ${JSON.stringify(request)};`;
       })

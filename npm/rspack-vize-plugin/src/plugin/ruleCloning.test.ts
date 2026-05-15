@@ -111,10 +111,35 @@ void describe("applyRuleCloning", () => {
     const vueRule = rules[1] as Record<string, unknown>;
     const oneOf = vueRule.oneOf as Array<Record<string, unknown>>;
 
-    // Find a cloned style rule
-    const styleRule = oneOf.find((r) => r.resourceQuery instanceof RegExp);
+    const styleRule = oneOf.find((r) => {
+      const rq = r.resourceQuery as RegExp;
+      return rq && rq.test("vue&type=style&index=0&lang=scss") && r.type === "css/auto";
+    });
     assert.ok(styleRule);
     assert.equal(styleRule!.type, "css/auto");
+  });
+
+  void test("generates css/module type for native CSS module style requests", () => {
+    const rules = [
+      { test: /\.css$/, use: ["css-loader"] },
+      {
+        test: /\.vue$/,
+        use: [{ loader: "@vizejs/rspack-plugin/loader" }],
+      },
+    ];
+
+    const result = applyRuleCloning(rules as never, true);
+    assert.equal(result.applied, true);
+
+    const vueRule = rules[1] as Record<string, unknown>;
+    const oneOf = vueRule.oneOf as Array<Record<string, unknown>>;
+    const cssModuleRule = oneOf.find((r) => {
+      const rq = r.resourceQuery as RegExp;
+      return rq && rq.test("vue&type=style&index=0&lang=css&module=true");
+    });
+
+    assert.ok(cssModuleRule);
+    assert.equal(cssModuleRule!.type, "css/module");
   });
 
   void test("always adds a CSS fallback rule for plain <style>", () => {
