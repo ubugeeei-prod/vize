@@ -144,12 +144,16 @@ if (!hasExistingMoonInstall()) {
       MOON_HOME: moonHome,
     });
   } else {
-    run("curl", ["-fsSL", "https://cli.moonbitlang.com/install/unix.sh", "-o", moonInstallerUnixScript], {
-      ...process.env,
-      HOME: runnerTemp,
-      MOON_HOME: moonHome,
-      SHELL: process.env.SHELL ?? "/bin/bash",
-    });
+    run(
+      "curl",
+      ["-fsSL", "https://cli.moonbitlang.com/install/unix.sh", "-o", moonInstallerUnixScript],
+      {
+        ...process.env,
+        HOME: runnerTemp,
+        MOON_HOME: moonHome,
+        SHELL: process.env.SHELL ?? "/bin/bash",
+      },
+    );
     verifyInstaller(moonInstallerUnixScript, moonInstallerSha256.unix);
     run("bash", [moonInstallerUnixScript], {
       ...process.env,
