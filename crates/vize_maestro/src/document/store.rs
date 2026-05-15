@@ -64,6 +64,10 @@ impl Document {
                     self.content.try_byte_to_char(start),
                     self.content.try_byte_to_char(end),
                 ) {
+                    if start_char > end_char {
+                        return;
+                    }
+
                     self.content.remove(start_char..end_char);
                     self.content.insert(start_char, &change.text);
                 }
@@ -250,6 +254,56 @@ mod tests {
         doc.apply_change(&change, 2);
 
         assert_eq!(doc.text(), "completely new content");
+    }
+
+    #[test]
+    fn test_reversed_incremental_change_is_ignored() {
+        let mut doc = Document::new(test_uri(), "hello world".to_string(), 1, "vue".to_string());
+
+        let change = TextDocumentContentChangeEvent {
+            range: Some(Range {
+                start: Position {
+                    line: 0,
+                    character: 11,
+                },
+                end: Position {
+                    line: 0,
+                    character: 6,
+                },
+            }),
+            range_length: None,
+            text: "universe".to_string(),
+        };
+
+        doc.apply_change(&change, 2);
+
+        assert_eq!(doc.text(), "hello world");
+        assert_eq!(doc.version, 2);
+    }
+
+    #[test]
+    fn test_out_of_bounds_incremental_change_is_ignored() {
+        let mut doc = Document::new(test_uri(), "hello world".to_string(), 1, "vue".to_string());
+
+        let change = TextDocumentContentChangeEvent {
+            range: Some(Range {
+                start: Position {
+                    line: 42,
+                    character: 0,
+                },
+                end: Position {
+                    line: 42,
+                    character: 5,
+                },
+            }),
+            range_length: None,
+            text: "ignored".to_string(),
+        };
+
+        doc.apply_change(&change, 2);
+
+        assert_eq!(doc.text(), "hello world");
+        assert_eq!(doc.version, 2);
     }
 
     #[test]
