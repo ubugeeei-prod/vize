@@ -20,6 +20,25 @@
   },
   "packageManager": "pnpm@10.0.0",
   "pnpm": {
+    "overrides": {
+      "defu": "6.1.7",
+      "devalue": "5.8.1",
+      "dompurify": "3.4.3",
+      "h3": "1.15.9",
+      "minimatch": "5.1.8",
+      "nanotar": "0.3.0",
+      "nitropack": "2.13.4",
+      "node-forge": "1.4.0",
+      "serialize-javascript": "7.0.5",
+      "simple-git": "3.36.0",
+      "srvx": "0.11.15",
+      "svgo": "4.0.1",
+      "tar": "7.5.15",
+      "unhead": "2.1.13",
+      "vite-node>vite": "8.0.13",
+      "vite-plus>vite": "8.0.13",
+      "yaml": "2.9.0"
+    },
     "onlyBuiltDependencies": [
       "esbuild"
     ]
