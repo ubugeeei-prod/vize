@@ -10,7 +10,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "../../..");
 const VITE_PLUS_BIN = `${process.env.HOME ?? ""}/.vite-plus/bin`;
-const MISE_BIN = `${process.env.HOME ?? ""}/.local/bin/mise`;
 const BASE_ENV = {
   ...process.env,
   PATH: `${VITE_PLUS_BIN}:${process.env.PATH ?? ""}`,
@@ -103,56 +102,16 @@ function hasListeningProcessOnPort(port: number): boolean {
   return result.status === 0;
 }
 
-const misskeyNodeVersionCache = new Map<string, string>();
-
-function getMisskeyNodeVersion(misskeyRoot: string): string {
-  const cached = misskeyNodeVersionCache.get(misskeyRoot);
-  if (cached != null) {
-    return cached;
-  }
-
-  const versionFile = path.join(misskeyRoot, ".node-version");
-  if (!fs.existsSync(versionFile)) {
-    throw new Error(`Missing misskey node version file: ${versionFile}`);
-  }
-
-  const version = fs.readFileSync(versionFile, "utf-8").trim();
-  if (version.length === 0) {
-    throw new Error(`Misskey node version file is empty: ${versionFile}`);
-  }
-
-  misskeyNodeVersionCache.set(misskeyRoot, version);
-  return version;
-}
-
-function resolveMisskeyCommandRoot(misskeyRoot: string): string {
-  const versionFile = path.join(misskeyRoot, ".node-version");
-  if (fs.existsSync(versionFile)) {
-    return misskeyRoot;
-  }
-
-  const sourceFixtureRoot = path.join(REPO_ROOT, "tests", "_fixtures", "_git", "misskey");
-  if (fs.existsSync(path.join(sourceFixtureRoot, ".node-version"))) {
-    return sourceFixtureRoot;
-  }
-
-  return misskeyRoot;
-}
-
 function getMisskeyPnpmCommand(
-  misskeyRoot: string,
+  _misskeyRoot: string,
   args: string[],
 ): {
   command: string;
   args: string[];
 } {
-  if (!fs.existsSync(MISE_BIN)) {
-    throw new Error(`mise is required to start misskey: ${MISE_BIN}`);
-  }
-
   return {
-    command: MISE_BIN,
-    args: ["exec", `node@${getMisskeyNodeVersion(misskeyRoot)}`, "--", "pnpm", ...args],
+    command: "pnpm",
+    args,
   };
 }
 
@@ -490,7 +449,7 @@ async function createLaunchConfig(currentTarget: Target): Promise<LaunchConfig> 
     const misskeyRoot = path.resolve(misskeyApp.cwd, "../..");
     const port = await resolveAvailablePort(3000);
     const configName = "vize-dev.yml";
-    const misskeyCommand = getMisskeyPnpmCommand(resolveMisskeyCommandRoot(misskeyRoot), ["dev"]);
+    const misskeyCommand = getMisskeyPnpmCommand(misskeyRoot, ["dev"]);
     return {
       target: "misskey",
       url: `http://127.0.0.1:${port}`,

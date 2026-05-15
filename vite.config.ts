@@ -1,6 +1,15 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import type { Plugin } from "vite";
+import type { UserConfig } from "vite-plus";
 import { defineConfig } from "vite-plus";
+
+type TaskMap = NonNullable<NonNullable<UserConfig["run"]>["tasks"]>;
+type TaskConfig = TaskMap[string];
+type CacheableTaskConfig = Extract<TaskConfig, { cache?: true }>;
+type TaskInput = NonNullable<CacheableTaskConfig["input"]>;
+type PackagePath = `./${string}`;
+
+const defineTasks = <const T extends TaskMap>(tasks: T): T => tasks;
 
 const checkedPackages = [
   "./npm/vize",
@@ -18,9 +27,10 @@ const checkedPackages = [
   "./examples/vite-musea",
   "./examples/oxlint-vize",
   "./playground",
-];
-const directCheckPackages = ["./examples/vite-musea", "./playground"];
-const checkedPackagesViaVpRun = checkedPackages.filter((pkg) => !directCheckPackages.includes(pkg));
+] satisfies PackagePath[];
+const directCheckPackages = ["./examples/vite-musea", "./playground"] satisfies PackagePath[];
+const directCheckPackageSet = new Set<PackagePath>(directCheckPackages);
+const checkedPackagesViaVpRun = checkedPackages.filter((pkg) => !directCheckPackageSet.has(pkg));
 const ciCheckedPackages = checkedPackagesViaVpRun.filter((pkg) => pkg !== "./examples/oxlint-vize");
 
 const packedPackages = [
@@ -34,14 +44,14 @@ const packedPackages = [
   "./npm/musea-nuxt",
   "./npm/musea-mcp-server",
   "./npm/fresco",
-];
+] satisfies PackagePath[];
 
 const testedPackages = [
   "./npm/vite-plugin-vize",
   "./npm/oxlint-plugin-vize",
   "./npm/unplugin-vize",
   "./npm/rspack-vize-plugin",
-];
+] satisfies PackagePath[];
 
 const floatingPromiseTestPatterns = ["tests/**/*.ts"];
 
@@ -98,7 +108,7 @@ const cacheInputs = {
     "npm/vite-plugin-musea/**",
     "npm/musea-nuxt/**",
   ],
-};
+} satisfies Record<string, TaskInput>;
 
 const localVp = "./node_modules/.bin/vp";
 const shellQuote = (command: string) => `'${command.replaceAll("'", `'"'"'`)}'`;
@@ -118,21 +128,21 @@ const withRustTaskEnvironment = (command: string) =>
 const task = (
   command: string,
   options: {
-    input?: string[];
+    input?: TaskInput;
   } = {},
-) => ({
+): TaskConfig => ({
   command: withRustTaskEnvironment(command),
   ...options,
 });
 
-const noCacheTask = (command: string) => ({
+const noCacheTask = (command: string): TaskConfig => ({
   cache: false as const,
   command: withRustTaskEnvironment(command),
 });
 
 const runInDirectory = (cwd: string, command: string) =>
   `sh -c ${shellQuote(`cd ${cwd} && ${command}`)}`;
-const runPackageScriptDirectly = (taskName: string, packages: string[]) =>
+const runPackageScriptDirectly = (taskName: string, packages: readonly PackagePath[]) =>
   packages.map((pkg) => runInDirectory(pkg, `pnpm run ${taskName}`)).join(" && ");
 const installVscodeExtensionDependencies = runInDirectory(
   "npm/vscode-vize",
@@ -171,7 +181,7 @@ const rootBuildTaskPlugin = (): Plugin => ({
 
 const runInPackages = (
   taskName: string,
-  packages: string[],
+  packages: readonly PackagePath[],
   options: {
     concurrencyLimit?: number;
   } = {},
@@ -206,11 +216,11 @@ const moonScript = (name: string, ...args: string[]) =>
 const devApp = (target?: string) =>
   target == null ? moonScript("dev_app") : moonScript("dev_app", target);
 
-const setupTasks = {
+const setupTasks = defineTasks({
   setup: noCacheTask("vp install"),
-};
+});
 
-const devTasks = {
+const devTasks = defineTasks({
   dev: noCacheTask(runTask("dev:app")),
   "dev:app": noCacheTask(devApp()),
   "dev:playground": noCacheTask(devApp("playground")),
@@ -219,9 +229,9 @@ const devTasks = {
   "dev:elk": noCacheTask(devApp("elk")),
   "dev:vuefes": noCacheTask(devApp("vuefes")),
   example: noCacheTask(runInPackages("dev", ["./npm/vite-plugin-vize/example"])),
-};
+});
 
-const buildTasks = {
+const buildTasks = defineTasks({
   build: noCacheTask(runTasks("build:rust", "build:all")),
   "build:all": noCacheTask(runTasks("build:runtime", "package:editor-extensions")),
   "build:rust": task("cargo build --workspace", { input: cacheInputs.rust }),
@@ -254,9 +264,19 @@ const buildTasks = {
     )} && ${runTask("check:zed-extension")} && ${runTask("package:zed-extension")}`,
   ),
   "install:plugin": noCacheTask("vp install --filter './npm/vite-plugin-vize'"),
-};
+});
 
-const cliTasks = {
+const generationTasks = defineTasks({
+  "gen:schema": noCacheTask(
+    "pnpm exec pkl eval -f json npm/vize/pkl/jsonschema/generate.pkl -o npm/vize/schemas/vize.config.schema.json",
+  ),
+  "gen:types": noCacheTask(
+    `${runTask("gen:schema")} && pnpm exec json2ts -i npm/vize/schemas/vize.config.schema.json -o npm/vize/src/types/generated.ts && ${moonScript("postprocess_types")}`,
+  ),
+  gen: noCacheTask(runTask("gen:types")),
+});
+
+const cliTasks = defineTasks({
   cli: noCacheTask(
     'sh -c \'if [ "${usage_debug:-$1}" = "true" ] || [ "$1" = "--debug" ]; then cargo install --path crates/vize --force --locked --debug && echo "Installed vize CLI (debug build)"; else cargo install --path crates/vize --force --locked && echo "Installed vize CLI (release build)"; fi\' --',
   ),
@@ -265,9 +285,9 @@ const cliTasks = {
   "cli:example-json": noCacheTask("vize './**/*.vue' -o . -f json -v"),
   "cli:example-ssr": noCacheTask("vize './**/*.vue' -o . -f json --ssr -v"),
   "cli:example-stats": noCacheTask("vize './**/*.vue' -f stats -v"),
-};
+});
 
-const testTasks = {
+const testTasks = defineTasks({
   test: noCacheTask(runTasks("test:rust", "test:js", "test:scripts")),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
   "test:js": noCacheTask(`${runTask("build:native")} && ${runInPackages("test", testedPackages)}`),
@@ -302,9 +322,9 @@ const testTasks = {
   "snapshot:test": task("cargo insta test -p vize_atelier_sfc -- snapshot_tests"),
   "snapshot:review": noCacheTask("cargo insta review"),
   "snapshot:accept": noCacheTask("cargo insta accept"),
-};
+});
 
-const benchmarkTasks = {
+const benchmarkTasks = defineTasks({
   bench: noCacheTask(moonScript("bench", "run")),
   "bench:quick": noCacheTask(moonScript("bench", "run", "1000")),
   "bench:generate": noCacheTask(moonScript("bench", "generate", "15000")),
@@ -316,14 +336,14 @@ const benchmarkTasks = {
     runTasks("bench", "bench:lint", "bench:fmt", "bench:check", "bench:vite"),
   ),
   "bench:rust": noCacheTask("cargo bench -p vize_atelier_sfc"),
-};
+});
 
 const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
   concurrencyLimit: 1,
 });
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
 
-const checkTasks = {
+const checkTasks = defineTasks({
   check: noCacheTask(runTasks("check:repo", "check:rust", "check:js", "check:editor-extensions")),
   "check:js": noCacheTask(runTasks("check:js:packages", "check:js:direct-packages")),
   "check:js:packages": task(
@@ -357,9 +377,9 @@ const checkTasks = {
   "lint:all": noCacheTask(runTasks("lint:rust", "check")),
   "fmt:check": noCacheTask(runTask("check")),
   ci: noCacheTask(runTasks("fmt:all", "clippy", "test", "check:ci")),
-};
+});
 
-const releaseTasks = {
+const releaseTasks = defineTasks({
   release: noCacheTask(moonScript("release")),
   "publish:wasm": noCacheTask(
     `${moonScript("build_vize_wasm_package")} && ${moonScript("publish_npm_package", "npm/vize-wasm")}`,
@@ -381,9 +401,9 @@ const releaseTasks = {
     `${installVscodeExtensionDependencies} && ${moonScript("publish_vscode_extension", "npm/vscode-vize/dist/vize.vsix")}`,
   ),
   publish: noCacheTask(runTasks("publish:npm", "publish:crates")),
-};
+});
 
-export default defineConfig({
+const config = {
   plugins: [rootBuildTaskPlugin()],
   build: {
     emptyOutDir: true,
@@ -433,6 +453,7 @@ export default defineConfig({
       ...setupTasks,
       ...devTasks,
       ...buildTasks,
+      ...generationTasks,
       ...cliTasks,
       ...testTasks,
       ...benchmarkTasks,
@@ -440,4 +461,6 @@ export default defineConfig({
       ...releaseTasks,
     },
   },
-});
+} satisfies UserConfig;
+
+export default defineConfig(config);

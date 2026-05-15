@@ -187,12 +187,11 @@ fn keep_candidate(fallback: &mut Option<CorsaCandidate>, candidate: CorsaCandida
 pub(super) fn find_corsa_in_common_locations() -> Option<String> {
     let home = std::env::var("HOME").ok()?;
     for executable in EXECUTABLE_NAMES {
-        let candidates: [String; 10] = [
+        let candidates: [String; 9] = [
             cstr!("{home}/.npm-global/bin/{executable}"),
             cstr!("{home}/.npm/bin/{executable}"),
             cstr!("{home}/.local/share/pnpm/{executable}"),
             cstr!("{home}/.volta/bin/{executable}"),
-            cstr!("{home}/.local/share/mise/shims/{executable}"),
             cstr!("{home}/.asdf/shims/{executable}"),
             cstr!("{home}/.local/share/fnm/node-versions/current/bin/{executable}"),
             cstr!("{home}/.nvm/versions/node/current/bin/{executable}"),
