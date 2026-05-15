@@ -5,6 +5,8 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
+export type LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "nuxt";
+
 export type RuleSeverity = "off" | "warn" | "error";
 
 export type RuleCategory = "correctness" | "suspicious" | "style" | "perf" | "a11y" | "security";
@@ -101,6 +103,10 @@ export interface LinterConfig {
    * Enable linting
    */
   enabled?: boolean;
+  /**
+   * Built-in lint preset
+   */
+  preset?: "happy-path" | "opinionated" | "essential" | "incremental" | "nuxt";
   /**
    * Rules to enable/disable
    */

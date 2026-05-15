@@ -10,6 +10,11 @@ local ruleSeverityEnum: JsonSchema = new JsonSchema {
   enum = new Listing { "off"; "warn"; "error" }
 }
 
+local lintPresetEnum: JsonSchema = new JsonSchema {
+  type = "string"
+  enum = new Listing { "happy-path"; "opinionated"; "essential"; "incremental"; "nuxt" }
+}
+
 local compilerConfigDef: JsonSchema = new JsonSchema {
   type = "object"
   description = "Vue compiler options"
@@ -119,6 +124,12 @@ local linterConfigDef: JsonSchema = new JsonSchema {
     ["enabled"] = new JsonSchema {
       type = "boolean"
       description = "Enable linting"
+    }
+    ["preset"] = new JsonSchema {
+      type = lintPresetEnum.type
+      enum = lintPresetEnum.enum
+      description = "Built-in lint preset"
+      default = "happy-path"
     }
     ["rules"] = new JsonSchema {
       type = "object"

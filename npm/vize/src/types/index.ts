@@ -1,4 +1,5 @@
 export type {
+  LintPreset,
   RuleSeverity,
   RuleCategory,
   VizeConfig,
@@ -16,6 +17,8 @@ export type {
   GlobalTypeDeclaration,
   GlobalTypesConfig,
 } from "./generated.js";
+
+export type { LintRuleName, LintRulesConfig } from "./rules.js";
 
 /**
  * @deprecated Use `LanguageServerConfig`.

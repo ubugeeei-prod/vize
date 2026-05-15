@@ -60,7 +60,7 @@ pub struct LintArgs {
     #[arg(long, default_value = "full")]
     pub help_level: String,
 
-    /// Lint preset: happy-path (default), opinionated, essential, nuxt
+    /// Lint preset: happy-path (default), opinionated, essential, incremental, nuxt
     #[arg(long, default_value = "happy-path")]
     pub preset: String,
 

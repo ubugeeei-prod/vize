@@ -5,7 +5,7 @@
  * - VitePluginConfig.include/exclude: adds RegExp union
  * - Fixes naming inconsistencies from json-schema-to-typescript
  * - Removes $schema from VizeConfig (internal only)
- * - Adds RuleSeverity and RuleCategory type aliases
+ * - Adds shared lint type aliases
  */
 
 import * as fs from "node:fs";
@@ -34,13 +34,15 @@ content = content.replace(
   "",
 );
 
-// Add RuleSeverity and RuleCategory type aliases after the generated header
+// Add shared lint type aliases after the generated header
 // The header ends with "regenerate this file.\n */\n"
 const marker = "regenerate this file.\n */\n";
 const markerIdx = content.indexOf(marker);
 if (markerIdx !== -1) {
   const insertPos = markerIdx + marker.length;
   const typeAliases = `
+export type LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "nuxt";
+
 export type RuleSeverity = "off" | "warn" | "error";
 
 export type RuleCategory = "correctness" | "suspicious" | "style" | "perf" | "a11y" | "security";

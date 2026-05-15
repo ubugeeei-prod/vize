@@ -121,6 +121,12 @@
           "description": "Enable linting",
           "type": "boolean"
         },
+        "preset": {
+          "description": "Built-in lint preset",
+          "default": "happy-path",
+          "type": "string",
+          "enum": ["happy-path", "opinionated", "essential", "incremental", "nuxt"]
+        },
         "rules": {
           "description": "Rules to enable/disable",
           "type": "object",
