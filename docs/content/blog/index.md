@@ -36,6 +36,14 @@ The Vize docs now have two writing lanes:
 
 ## Latest Posts
 
+- [Comparing Vize with Official Vue, Oxc, Golar, Verter, Flint, and TSSLint](./notes/2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint.md)
+- [Performance tuning notes for a Vue toolchain](./notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain.md)
+- [Testing, Agentic Coding, and trust](./notes/2026-05-16-testing-agentic-coding-and-trust.md)
+- [Vapor Mode and the next Vue compiler surface](./notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface.md)
+- [Vue as a language and the strongest frontend environment](./notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment.md)
+- [Why Musea and design systems matter in the AI era](./notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md)
+- [Real-world feedback and the road to production ready](./notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready.md)
+- [Unofficial personal tooling and development speed](./notes/2026-05-16-unofficial-personal-tooling-and-development-speed.md)
 - [The advantages and beauty of toolchains and vertical integration](./notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration.md)
 - [Why the AI era needs deterministic, fast static analysis](./notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis.md)
 - [Where Vize fits in the Vue tooling landscape](./notes/2026-03-26-where-vize-fits-in-the-vue-tooling-landscape.md)
