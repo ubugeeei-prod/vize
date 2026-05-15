@@ -108,6 +108,44 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-resolve-alias-"));
+  const importer = path.join(tempRoot, "src", "App.vue");
+  const aliased = path.join(tempRoot, "src", "views", "Aliased.vue");
+  fs.mkdirSync(path.dirname(importer), { recursive: true });
+  fs.mkdirSync(path.dirname(aliased), { recursive: true });
+  fs.writeFileSync(importer, "<template><Aliased /></template>");
+  fs.writeFileSync(aliased, "<template><div /></template>");
+
+  const state = createState(tempRoot);
+  state.filter = (id) => id === aliased;
+
+  let resolverImporter: string | undefined;
+  const resolved = await resolveIdHook(
+    {
+      resolve: async (id, importer) => {
+        resolverImporter = importer;
+        return id === "@views/Aliased.vue" ? { id: `/@fs${aliased}` } : null;
+      },
+    },
+    state,
+    "@views/Aliased.vue",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    resolverImporter,
+    importer,
+    "Vite alias resolution should receive the real importer path",
+  );
+  assert.equal(
+    expectResolvedId(resolved),
+    toVirtualId(aliased),
+    "Aliased Vue imports should be filtered after Vite resolves the real file path",
+  );
+}
+
+{
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "npmx.dev");
   if (hasFixtureProject(projectRoot)) {
     const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));
