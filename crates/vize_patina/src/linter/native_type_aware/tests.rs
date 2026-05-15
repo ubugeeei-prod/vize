@@ -104,6 +104,53 @@ if (enabled) {
 }
 
 #[test]
+fn no_floating_promises_reports_finally_only_calls() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function loadData(): Promise<number> {
+  return 1
+}
+function cleanup() {}
+
+loadData().finally(cleanup)
+</script>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES));
+}
+
+#[test]
+fn handled_finally_chains_are_ignored() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function loadData(): Promise<number> {
+  return 1
+}
+function cleanup() {}
+function report(error: unknown) {
+  console.error(error)
+}
+
+loadData().catch(report).finally(cleanup)
+</script>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(!result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES));
+}
+
+#[test]
 fn no_floating_promises_reports_template_event_calls() {
     if !corsa_available() {
         return;
@@ -145,6 +192,28 @@ async function loadLabel(): Promise<string> {
         diag.rule_name == RULE_NO_FLOATING_PROMISES
             && diag.message.contains("Template interpolation")
     }));
+}
+
+#[test]
+fn no_floating_promises_reports_template_finally_only_calls() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function save(): Promise<void> {}
+function cleanup() {}
+</script>
+
+<template>
+  <button @click="save().finally(cleanup)">Save</button>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES));
 }
 
 #[test]
@@ -379,6 +448,31 @@ function report(error: unknown) {
 
 <template>
   <button @click="save().catch(report)">Save</button>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(!result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES));
+}
+
+#[test]
+fn handled_template_finally_chains_are_ignored() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function save(): Promise<void> {}
+function cleanup() {}
+function report(error: unknown) {
+  console.error(error)
+}
+</script>
+
+<template>
+  <button @click="save().catch(report).finally(cleanup)">Save</button>
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
     assert!(!result
