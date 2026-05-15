@@ -70,18 +70,17 @@ function formatMs(ms) {
   if (!Number.isFinite(ms)) {
     return "n/a";
   }
-  if (ms >= 1000) {
-    return `${(ms / 1000).toFixed(2)}s`;
-  }
-  return `${ms.toFixed(0)}ms`;
+  return `${ms.toLocaleString("en-US", {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  })}ms`;
 }
 
-function formatPercent(value) {
+function formatRate(value) {
   if (!Number.isFinite(value)) {
     return "n/a";
   }
-  const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toFixed(1)}%`;
+  return `${value.toFixed(3)}x`;
 }
 
 function formatRunList(values) {
@@ -155,7 +154,8 @@ function measureTask(task, baseBin, headBin, options) {
 
   const baseMs = median(baseRuns);
   const headMs = median(headRuns);
-  const changePercent = ((headMs - baseMs) / baseMs) * 100;
+  const rate = baseMs === 0 ? Number.NaN : headMs / baseMs;
+  const changePercent = Number.isFinite(rate) ? (rate - 1) * 100 : Number.NaN;
   const status =
     changePercent >= options.thresholdPercent
       ? "regression"
@@ -168,6 +168,7 @@ function measureTask(task, baseBin, headBin, options) {
     label: task.label,
     baseMs,
     headMs,
+    rate,
     changePercent,
     status,
     baseRuns,
@@ -222,14 +223,14 @@ function renderMarkdown(data) {
     `Base: \`${data.baseLabel}\`  Head: \`${data.headLabel}\`  Input: ${data.fileCount.toLocaleString()} generated SFC files`,
   );
   lines.push(
-    `Median of ${data.runs} measured run(s) after ${data.warmups} warmup run(s). Lower is better. Regression threshold: ${data.thresholdPercent}%.`,
+    `Median of ${data.runs} measured run(s) after ${data.warmups} warmup run(s). Times are shown in milliseconds to 0.001ms. Rate is head/base, so below 1.000x is faster. Regression threshold: ${data.thresholdPercent}%.`,
   );
   lines.push("");
-  lines.push("| Task | Base | Head | Change | Result |");
+  lines.push("| Task | Base | Head | Rate | Result |");
   lines.push("| --- | ---: | ---: | ---: | --- |");
   for (const result of data.results) {
     lines.push(
-      `| ${result.label} | ${formatMs(result.baseMs)} | ${formatMs(result.headMs)} | ${formatPercent(result.changePercent)} | ${result.status} |`,
+      `| ${result.label} | ${formatMs(result.baseMs)} | ${formatMs(result.headMs)} | ${formatRate(result.rate)} | ${result.status} |`,
     );
   }
   lines.push("");

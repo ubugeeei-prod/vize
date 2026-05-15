@@ -195,6 +195,52 @@ async function loadLabel(): Promise<string> {
 }
 
 #[test]
+fn no_floating_promises_reports_nested_template_event_calls() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const enabled = true
+async function save(): Promise<void> {}
+</script>
+
+<template>
+  <button @click="enabled && save()">Save</button>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(result.diagnostics.iter().any(|diag| {
+        diag.rule_name == RULE_NO_FLOATING_PROMISES
+            && diag.message.contains("Template event handler")
+    }));
+}
+
+#[test]
+fn no_floating_promises_reports_nested_template_interpolations() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const enabled = true
+async function loadLabel(): Promise<string> {
+  return 'ready'
+}
+</script>
+
+<template>
+  <p>{{ enabled ? loadLabel() : 'idle' }}</p>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(result.diagnostics.iter().any(|diag| {
+        diag.rule_name == RULE_NO_FLOATING_PROMISES
+            && diag.message.contains("Template interpolation")
+    }));
+}
+
+#[test]
 fn no_floating_promises_reports_template_finally_only_calls() {
     if !corsa_available() {
         return;
@@ -211,6 +257,31 @@ function cleanup() {}
 </template>"#;
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
     assert!(result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES));
+}
+
+#[test]
+fn handled_nested_template_promises_are_ignored() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const enabled = true
+async function save(): Promise<void> {}
+function report(error: unknown) {
+  console.error(error)
+}
+</script>
+
+<template>
+  <button @click="enabled && save().catch(report)">Save</button>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(!result
         .diagnostics
         .iter()
         .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES));

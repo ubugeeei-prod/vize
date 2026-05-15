@@ -10,11 +10,40 @@ function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(root, ...segments), "utf8");
 }
 
+function workflowJobBody(workflow: string, jobName: string): string {
+  const jobStart = workflow.indexOf(`\n  ${jobName}:\n`);
+  assert.notEqual(jobStart, -1, `missing job ${jobName}`);
+  const remaining = workflow.slice(jobStart + 1);
+  const nextJobMatch = /\n  [a-z0-9-]+:\n/g.exec(remaining.slice(1));
+  return remaining.slice(0, nextJobMatch ? nextJobMatch.index + 1 : undefined);
+}
+
 test("GitHub workflows opt JavaScript actions into Node 24", () => {
   for (const workflowName of ["check.yml", "deploy-docs.yml", "release.yml"]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);
     assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
   }
+});
+
+test("PR CI jobs cap runtime with explicit timeouts", () => {
+  const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
+  const benchmarkWorkflow = readRepoFile(".github", "workflows", "benchmark.yml");
+
+  for (const [jobName, minutes] of [
+    ["nix-flake", 30],
+    ["fmt-rust", 10],
+    ["check-js", 30],
+    ["clippy-and-test", 30],
+    ["coverage", 10],
+    ["playground-test", 30],
+  ] as const) {
+    assert.match(
+      workflowJobBody(checkWorkflow, jobName),
+      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
+    );
+  }
+
+  assert.match(workflowJobBody(benchmarkWorkflow, "pr-benchmark"), /timeout-minutes:\s*30\b/);
 });
 
 test("deploy-docs deploy job installs MoonBit before running script-mode helpers", () => {
