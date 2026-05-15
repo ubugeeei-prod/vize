@@ -209,6 +209,57 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const tempRoot = createTempRoot("regexp-bare-alias");
+  const viteRoot = path.join(tempRoot, "app");
+  const importer = path.join(tempRoot, "app", "src", "App.vue");
+  const packageName = "vize-regexp-alias-fixture";
+  const packageRoot = path.join(
+    tempRoot,
+    "node_modules",
+    ".pnpm",
+    `${packageName}@0.0.0`,
+    "node_modules",
+    packageName,
+  );
+  const pnpmHoistRoot = path.join(tempRoot, "node_modules", ".pnpm", "node_modules");
+  const entry = path.join(packageRoot, "esm", "vs", "editor", "editor.main.js");
+
+  fs.mkdirSync(path.dirname(importer), { recursive: true });
+  fs.mkdirSync(path.dirname(entry), { recursive: true });
+  fs.mkdirSync(pnpmHoistRoot, { recursive: true });
+  fs.writeFileSync(importer, "<template><div /></template>");
+  fs.writeFileSync(
+    path.join(packageRoot, "package.json"),
+    `{"name":"${packageName}","version":"0.0.0"}`,
+  );
+  fs.writeFileSync(entry, "export const editor = {};");
+  fs.symlinkSync(packageRoot, path.join(pnpmHoistRoot, packageName), "dir");
+
+  const state = createState(viteRoot);
+  state.server = null;
+  state.cssAliasRules = [
+    {
+      find: /^vize-regexp-alias-fixture$/,
+      replacement: "vize-regexp-alias-fixture/esm/vs/editor/editor.main.js",
+    },
+  ];
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    state,
+    packageName,
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    entry,
+    "RegExp package aliases from virtual modules should resolve to loadable files",
+  );
+}
+
+{
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "npmx.dev");
   if (hasFixtureProject(projectRoot)) {
     const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));

@@ -108,6 +108,14 @@ function resolveAliasRequest(
 ): string | null {
   const [request, querySuffix] = splitIdQuery(id);
   for (const rule of state.cssAliasRules) {
+    if (rule.find instanceof RegExp) {
+      const pattern = stableAliasPattern(rule.find);
+      if (pattern.test(request)) {
+        return request.replace(pattern, rule.replacement) + querySuffix;
+      }
+      continue;
+    }
+
     if (request === rule.find) {
       return rule.replacement + querySuffix;
     }
@@ -121,6 +129,10 @@ function resolveAliasRequest(
     }
   }
   return null;
+}
+
+function stableAliasPattern(pattern: RegExp): RegExp {
+  return new RegExp(pattern.source, pattern.flags.replace(/[gy]/g, ""));
 }
 
 function pushPnpmHoistBases(
