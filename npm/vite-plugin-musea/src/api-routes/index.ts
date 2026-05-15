@@ -42,6 +42,7 @@ import {
 export interface ApiRoutesContext {
   config: ResolvedConfig;
   artFiles: Map<string, ArtFileInfo>;
+  scanRoots: string[];
   tokensPath: string | undefined;
   basePath: string;
   resolvedPreviewCss: string[];

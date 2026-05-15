@@ -6,9 +6,9 @@
  */
 
 import fs from "node:fs";
-import path from "node:path";
 
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
+import { allowedSourceRoots, resolveComponentSourcePath } from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
 
 export { handleArtPalette } from "./handler-palette.js";
@@ -50,14 +50,11 @@ export async function handleArtAnalysis(
   }
 
   try {
-    const resolvedComponentPath =
-      art.isInline && art.componentPath
-        ? art.componentPath
-        : art.metadata.component
-          ? path.isAbsolute(art.metadata.component)
-            ? art.metadata.component
-            : path.resolve(path.dirname(artPath), art.metadata.component)
-          : null;
+    const resolvedComponentPath = resolveComponentSourcePath(
+      art,
+      artPath,
+      allowedSourceRoots(ctx.config.root, ctx.scanRoots),
+    );
 
     if (resolvedComponentPath) {
       const source = await fs.promises.readFile(resolvedComponentPath, "utf-8");

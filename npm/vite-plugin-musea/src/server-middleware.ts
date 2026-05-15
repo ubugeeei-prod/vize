@@ -78,6 +78,7 @@ export interface MiddlewareContext {
   devSessionToken: string;
   themeConfig: { default: string; custom?: Record<string, unknown> } | undefined;
   artFiles: Map<string, ArtFileInfo>;
+  scanRoots: string[];
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
 }
@@ -303,13 +304,19 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
         res.setHeader("Cache-Control", "no-cache");
         res.end(result.code);
       } else {
-        const moduleCode = generateArtModule(art, artPath);
+        const moduleCode = generateArtModule(art, artPath, {
+          root: devServer.config.root,
+          scanRoots: ctx.scanRoots,
+        });
         res.setHeader("Content-Type", "application/javascript");
         res.end(moduleCode);
       }
     } catch (err) {
       console.error("[musea] Failed to transform art module:", err);
-      const moduleCode = generateArtModule(art, artPath);
+      const moduleCode = generateArtModule(art, artPath, {
+        root: devServer.config.root,
+        scanRoots: ctx.scanRoots,
+      });
       res.setHeader("Content-Type", "application/javascript");
       res.end(moduleCode);
     }

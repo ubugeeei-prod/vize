@@ -5,9 +5,9 @@
  */
 
 import fs from "node:fs";
-import path from "node:path";
 
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
+import { allowedSourceRoots, resolveComponentSourcePath } from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
 
 /** GET /api/arts/:path/palette */
@@ -59,9 +59,16 @@ export async function handleArtPalette(
 
     // If the native palette returned no controls, try JS-based SFC analysis
     if (palette.controls.length === 0 && art.metadata.component) {
-      const resolvedComponentPath = path.isAbsolute(art.metadata.component)
-        ? art.metadata.component
-        : path.resolve(path.dirname(artPath), art.metadata.component);
+      const resolvedComponentPath = resolveComponentSourcePath(
+        art,
+        artPath,
+        allowedSourceRoots(ctx.config.root, ctx.scanRoots),
+      );
+      if (!resolvedComponentPath) {
+        sendJson(palette);
+        return;
+      }
+
       try {
         const componentSource = await fs.promises.readFile(resolvedComponentPath, "utf-8");
         const analysis = binding.analyzeSfc
