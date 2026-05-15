@@ -384,7 +384,7 @@ mod tests {
         let uri = Url::parse("file:///Component.vue").unwrap();
         state.documents.open(
             uri.clone(),
-            "<template>{{ missingBinding }}</template>".to_string(),
+            "<script setup>const props = defineProps(['count'])</script><template>{{ props.count }}</template>".to_string(),
             1,
             "vue".to_string(),
         );
