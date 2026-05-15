@@ -222,6 +222,9 @@ Good:
 ## `a11y/anchor-is-valid`
 
 Requires anchors to have valid link targets.
+Static `href` values are checked after scheme normalization, so `JaVaScRiPt:` and HTML-decoded
+control characters inside `java&#x0A;script:` are still reported while similar non-matching schemes
+stay allowed.
 
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `opinionated`
@@ -231,6 +234,7 @@ Bad:
 ```vue
 <template>
   <a href="#" @click="open">Open</a>
+  <a href="JaVaScRiPt:void(0)">Open</a>
 </template>
 ```
 
@@ -239,6 +243,7 @@ Good:
 ```vue
 <template>
   <button type="button" @click="open">Open</button>
+  <a href="/docs/javascript:void">Docs</a>
 </template>
 ```
 
