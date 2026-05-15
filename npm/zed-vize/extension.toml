@@ -1,10 +1,6 @@
 id = "vize"
 name = "Vize"
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 schema_version = 1
 authors = ["Vize contributors"]
 description = "Opt-in Vue diagnostics and language support powered by Vize"

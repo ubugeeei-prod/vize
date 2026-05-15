@@ -22,32 +22,13 @@ members = [
 ]
 
 [workspace.package]
-<<<<<<< HEAD
-version = "0.70.0"
-=======
 version = "0.90.0"
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/ubugeeei/vize"
 
 [workspace.dependencies]
 # Publishable internal crates (path for local dev, version fallback for crates.io)
-<<<<<<< HEAD
-vize_carton = { path = "crates/vize_carton", version = "=0.70.0" }
-vize_relief = { path = "crates/vize_relief", version = "=0.70.0" }
-vize_armature = { path = "crates/vize_armature", version = "=0.70.0" }
-vize_croquis = { path = "crates/vize_croquis", version = "=0.70.0" }
-vize_atelier_core = { path = "crates/vize_atelier_core", version = "=0.70.0" }
-vize_atelier_dom = { path = "crates/vize_atelier_dom", version = "=0.70.0" }
-vize_atelier_vapor = { path = "crates/vize_atelier_vapor", version = "=0.70.0" }
-vize_atelier_ssr = { path = "crates/vize_atelier_ssr", version = "=0.70.0" }
-vize_atelier_sfc = { path = "crates/vize_atelier_sfc", version = "=0.70.0", default-features = false }
-vize_musea = { path = "crates/vize_musea", version = "=0.70.0" }
-vize_patina = { path = "crates/vize_patina", version = "=0.70.0" }
-vize_canon = { path = "crates/vize_canon", version = "=0.70.0", default-features = false }
-vize_fresco = { path = "crates/vize_fresco", version = "=0.70.0", default-features = false }
-=======
 vize_carton = { path = "crates/vize_carton", version = "=0.90.0" }
 vize_relief = { path = "crates/vize_relief", version = "=0.90.0" }
 vize_armature = { path = "crates/vize_armature", version = "=0.90.0" }
@@ -61,7 +42,6 @@ vize_musea = { path = "crates/vize_musea", version = "=0.90.0" }
 vize_patina = { path = "crates/vize_patina", version = "=0.90.0" }
 vize_canon = { path = "crates/vize_canon", version = "=0.90.0", default-features = false }
 vize_fresco = { path = "crates/vize_fresco", version = "=0.90.0", default-features = false }
->>>>>>> 4a1f8bd588428ec7a8e25028edfa1e75e255caab
 
 # Workspace-only internal crates (always use the local path)
 vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
