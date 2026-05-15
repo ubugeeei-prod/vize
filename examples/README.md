@@ -27,10 +27,10 @@ The `examples/cli/` directory contains sample Vue files for trying the CLI tools
 
 ### File Structure
 
-| File                  | Description                       |
-| --------------------- | --------------------------------- |
-| `src/App.vue`         | A correctly formatted Vue file    |
-| `src/Unformatted.vue` | A Vue file that needs formatting  |
+| File                  | Description                                         |
+| --------------------- | --------------------------------------------------- |
+| `src/App.vue`         | A correctly formatted Vue file                      |
+| `src/Unformatted.vue` | A Vue file that needs formatting                    |
 | `src/HasErrors.vue`   | A Vue file containing lint and security diagnostics |
 
 ### Formatter (`vize fmt`)
