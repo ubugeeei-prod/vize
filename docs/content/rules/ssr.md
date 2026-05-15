@@ -36,8 +36,9 @@ onMounted(() => {
 ```
 
 Guard checks such as `typeof window === "undefined"` are allowed because the direct `typeof`
-identifier form is safe during server rendering. Accessing a member such as `typeof window.innerWidth`
-still reports, because it evaluates the browser global.
+identifier form is safe during server rendering. Strings, comments, and regex literals are also
+ignored when they contain names like `window` or `document`. Accessing a member such as
+`typeof window.innerWidth` still reports, because it evaluates the browser global.
 
 ## `ssr/no-hydration-mismatch`
 

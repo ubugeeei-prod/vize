@@ -131,6 +131,8 @@ diagnostics back to the original source files.
 
 Use `vize lint --profile src` when tuning rule cost. Type-aware lint profile rows include template
 query collection and Corsa probe phases so expensive cross-rule work can be spotted quickly.
+SSR browser-global diagnostics also avoid common literal-boundary false positives such as strings,
+regexes, comments, and direct `typeof window` guards.
 
 ## Compiler Configuration
 

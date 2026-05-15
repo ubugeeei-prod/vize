@@ -82,6 +82,7 @@ vize lint examples/cli/src/*.vue --profile
 
 `src/HasErrors.vue` intentionally includes missing `v-for` keys, a `v-if`/`v-for` conflict, and a
 static unsafe URL so the linter output demonstrates correctness and security diagnostics together.
+The SSR rule docs include extra boundary examples for `typeof window`, comments, and regex literals.
 
 **Options:**
 
