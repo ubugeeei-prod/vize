@@ -35,6 +35,10 @@ onMounted(() => {
 </script>
 ```
 
+Guard checks such as `typeof window === "undefined"` are allowed because the direct `typeof`
+identifier form is safe during server rendering. Accessing a member such as `typeof window.innerWidth`
+still reports, because it evaluates the browser global.
+
 ## `ssr/no-hydration-mismatch`
 
 Reports non-deterministic template values that can differ between server render and client

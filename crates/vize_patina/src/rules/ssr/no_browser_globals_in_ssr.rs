@@ -181,6 +181,7 @@ impl NoBrowserGlobalsInSsr {
     /// - Skips content inside string literals ('...', "...", `...`)
     /// - Skips property access after `.` (e.g., `obj.top` → only `obj`)
     /// - Skips object property keys (e.g., `{ top: 0 }` → skips `top`)
+    /// - Skips direct `typeof window` guards that are safe in SSR
     fn extract_identifiers(expr: &str) -> Vec<&str> {
         let mut identifiers = Vec::new();
         let bytes = expr.as_bytes();
@@ -188,12 +189,14 @@ impl NoBrowserGlobalsInSsr {
         let mut i = 0;
         // Track whether the previous token was a `.` (property access)
         let mut after_dot = false;
+        let mut after_typeof = false;
 
         while i < len {
             let b = bytes[i];
 
             // Skip string literals
             if b == b'\'' || b == b'"' || b == b'`' {
+                after_typeof = false;
                 let quote = b;
                 i += 1;
                 while i < len {
@@ -232,6 +235,7 @@ impl NoBrowserGlobalsInSsr {
                 // Skip if it's a property access (after `.`)
                 if after_dot {
                     after_dot = false;
+                    after_typeof = false;
                     continue;
                 }
 
@@ -244,7 +248,26 @@ impl NoBrowserGlobalsInSsr {
                 if j < len && bytes[j] == b':' && (j + 1 >= len || bytes[j + 1] != b':') {
                     // This is an object key like `{ top: 0 }`, skip it
                     after_dot = false;
+                    after_typeof = false;
                     continue;
+                }
+
+                if ident == "typeof" {
+                    after_typeof = true;
+                    after_dot = false;
+                    continue;
+                }
+
+                if after_typeof {
+                    after_typeof = false;
+                    let mut next = i;
+                    while next < len && bytes[next].is_ascii_whitespace() {
+                        next += 1;
+                    }
+                    if next >= len || !matches!(bytes[next], b'.' | b'[') {
+                        after_dot = false;
+                        continue;
+                    }
                 }
 
                 identifiers.push(ident);
@@ -254,6 +277,7 @@ impl NoBrowserGlobalsInSsr {
 
             // Skip digits (number literals)
             if b.is_ascii_digit() {
+                after_typeof = false;
                 i += 1;
                 while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'.') {
                     i += 1;
@@ -265,6 +289,9 @@ impl NoBrowserGlobalsInSsr {
             // Any other character
             if !b.is_ascii_whitespace() {
                 after_dot = false;
+                if !matches!(b, b'(' | b')') {
+                    after_typeof = false;
+                }
             }
             i += 1;
         }
@@ -463,5 +490,33 @@ mod tests {
         // { top: window.scrollY } - 'window' is a real global reference
         let result = lint_with_ssr(r#"<div :style="{ top: window.scrollY + 'px' }"></div>"#);
         insta::assert_debug_snapshot!(result);
+    }
+
+    #[test]
+    fn test_ignores_typeof_window_guard() {
+        let result = lint_with_ssr(r#"<div>{{ typeof window === 'undefined' }}</div>"#);
+        assert!(
+            result.is_empty(),
+            "Should not flag direct typeof guards, got: {:?}",
+            result
+        );
+    }
+
+    #[test]
+    fn test_ignores_parenthesized_typeof_document_guard_in_directive() {
+        let result = lint_with_ssr(
+            r#"<div :class="typeof (document) === 'undefined' ? 'ssr' : 'dom'"></div>"#,
+        );
+        assert!(
+            result.is_empty(),
+            "Should not flag parenthesized direct typeof guards, got: {:?}",
+            result
+        );
+    }
+
+    #[test]
+    fn test_detects_typeof_member_access() {
+        let result = lint_with_ssr(r#"<div>{{ typeof window.innerWidth }}</div>"#);
+        assert_eq!(result.len(), 1);
     }
 }
