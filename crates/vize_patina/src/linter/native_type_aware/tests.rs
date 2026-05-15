@@ -217,6 +217,28 @@ async function save(): Promise<void> {}
 }
 
 #[test]
+fn no_floating_promises_reports_template_event_statement_blocks() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const enabled = true
+async function save(): Promise<void> {}
+</script>
+
+<template>
+  <button @click="if (enabled) { save() }">Save</button>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(result.diagnostics.iter().any(|diag| {
+        diag.rule_name == RULE_NO_FLOATING_PROMISES
+            && diag.message.contains("Template event handler")
+    }));
+}
+
+#[test]
 fn no_floating_promises_reports_nested_template_interpolations() {
     if !corsa_available() {
         return;

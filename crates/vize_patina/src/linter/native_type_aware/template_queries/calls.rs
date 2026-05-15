@@ -1,6 +1,9 @@
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_ast::ast::{CallExpression, ChainElement, Expression, Statement};
-use oxc_ast_visit::{walk::walk_call_expression, Visit};
+use oxc_ast::ast::{CallExpression, ChainElement, Expression, ExpressionStatement};
+use oxc_ast_visit::{
+    walk::{walk_call_expression, walk_expression_statement},
+    Visit,
+};
 use oxc_parser::Parser as OxcParser;
 use oxc_span::{GetSpan, SourceType, Span};
 use oxc_syntax::operator::UnaryOperator;
@@ -25,6 +28,8 @@ pub(super) struct TemplateCallRanges {
     pub callees: Vec<RelativeRange>,
     pub floating_promises: Vec<FloatingPromiseRange>,
 }
+
+const TEMPLATE_HANDLER_PREFIX: &str = "function __vize_template_handler(){\n";
 
 pub(super) fn collect_template_call_ranges(
     source: &str,
@@ -88,9 +93,8 @@ fn collect_statement_call_callee_ranges(
     source_type: SourceType,
     source: &str,
 ) -> Vec<RelativeRange> {
-    const PREFIX: &str = "function __vize_template_handler(){\n";
-    let mut wrapped = String::with_capacity(PREFIX.len() + source.len() + 4);
-    wrapped.push_str(PREFIX);
+    let mut wrapped = String::with_capacity(TEMPLATE_HANDLER_PREFIX.len() + source.len() + 4);
+    wrapped.push_str(TEMPLATE_HANDLER_PREFIX);
     wrapped.push_str(source);
     wrapped.push_str("\n}");
 
@@ -107,7 +111,7 @@ fn collect_statement_call_callee_ranges(
         "patina.type_aware.template_calls.visit_program",
         collector.visit_program(&parsed.program)
     );
-    collector.into_relative_ranges(PREFIX.len() as u32, source.len() as u32)
+    collector.into_relative_ranges(TEMPLATE_HANDLER_PREFIX.len() as u32, source.len() as u32)
 }
 
 fn collect_statement_floating_promise_ranges(
@@ -115,32 +119,25 @@ fn collect_statement_floating_promise_ranges(
     source_type: SourceType,
     source: &str,
 ) -> Vec<FloatingPromiseRange> {
+    let mut wrapped = String::with_capacity(TEMPLATE_HANDLER_PREFIX.len() + source.len() + 4);
+    wrapped.push_str(TEMPLATE_HANDLER_PREFIX);
+    wrapped.push_str(source);
+    wrapped.push_str("\n}");
+
     let parsed = profile!(
         "patina.type_aware.template_floating.parse_statement",
-        OxcParser::new(allocator, source, source_type).parse()
+        OxcParser::new(allocator, wrapped.as_str(), source_type).parse()
     );
     if parsed.panicked || !parsed.errors.is_empty() {
         return Vec::new();
     }
 
-    let mut ranges = Vec::new();
-    for statement in &parsed.program.body {
-        let Statement::ExpressionStatement(expression_statement) = statement else {
-            continue;
-        };
-        let mut statement_ranges = Vec::new();
-        collect_floating_promise_ranges_for_expression(
-            &expression_statement.expression,
-            &mut statement_ranges,
-        );
-        for range in statement_ranges {
-            if range.end <= range.start || range.end as usize > source.len() {
-                continue;
-            }
-            ranges.push(range);
-        }
-    }
-    ranges
+    let mut collector = FloatingPromiseCollector::default();
+    profile!(
+        "patina.type_aware.template_floating.visit_program",
+        collector.visit_program(&parsed.program)
+    );
+    collector.into_relative_ranges(TEMPLATE_HANDLER_PREFIX.len() as u32, source.len() as u32)
 }
 
 #[derive(Default)]
@@ -173,6 +170,55 @@ impl<'a> Visit<'a> for CallCalleeCollector {
     fn visit_call_expression(&mut self, expression: &CallExpression<'a>) {
         self.spans.push(expression.callee.span());
         walk_call_expression(self, expression);
+    }
+}
+
+#[derive(Default)]
+struct FloatingPromiseCollector {
+    ranges: Vec<FloatingPromiseRange>,
+}
+
+impl FloatingPromiseCollector {
+    fn into_relative_ranges(
+        mut self,
+        base_offset: u32,
+        source_len: u32,
+    ) -> Vec<FloatingPromiseRange> {
+        let mut ranges = Vec::with_capacity(self.ranges.len());
+        let limit = base_offset + source_len;
+        self.ranges
+            .sort_unstable_by_key(|range| (range.start, range.end, range.probe_start));
+        self.ranges.dedup_by(|left, right| {
+            left.start == right.start
+                && left.end == right.end
+                && left.probe_start == right.probe_start
+                && left.probe_end == right.probe_end
+        });
+        for range in self.ranges {
+            if range.end <= range.start
+                || range.start < base_offset
+                || range.end > limit
+                || range.probe_end <= range.probe_start
+                || range.probe_start < base_offset
+                || range.probe_end > limit
+            {
+                continue;
+            }
+            ranges.push(FloatingPromiseRange {
+                start: range.start - base_offset,
+                end: range.end - base_offset,
+                probe_start: range.probe_start - base_offset,
+                probe_end: range.probe_end - base_offset,
+            });
+        }
+        ranges
+    }
+}
+
+impl<'a> Visit<'a> for FloatingPromiseCollector {
+    fn visit_expression_statement(&mut self, statement: &ExpressionStatement<'a>) {
+        collect_floating_promise_ranges_for_expression(&statement.expression, &mut self.ranges);
+        walk_expression_statement(self, statement);
     }
 }
 
@@ -362,6 +408,18 @@ mod tests {
     #[test]
     fn collects_statement_fallback_floating_promises() {
         let source = "save(); track()";
+        let ranges = collect_template_call_ranges(source, true, false, true);
+
+        assert!(ranges.callees.is_empty());
+        assert_eq!(
+            promise_slices(source, &ranges.floating_promises),
+            vec!["save()", "track()"]
+        );
+    }
+
+    #[test]
+    fn collects_statement_fallback_floating_promises_inside_control_flow() {
+        let source = "if (enabled) { save(); track() }";
         let ranges = collect_template_call_ranges(source, true, false, true);
 
         assert!(ranges.callees.is_empty());
