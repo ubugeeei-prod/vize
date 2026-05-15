@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<Teleport to=\"body\"><Transition><div v-if=\"ok\">tip</div></Transition></Teleport>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _ssrRenderTeleport(_push, (_push) => {
+    if (_ctx.ok) {
+      _push(`<div>tip</div>`)
+    } else {
+      _push(`<!---->`)
+    }
+  }, "body", false, _parent)
+}

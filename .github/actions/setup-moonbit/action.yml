@@ -1,0 +1,30 @@
+name: Setup MoonBit
+description: Install the MoonBit native toolchain on GitHub-hosted runners
+
+runs:
+  using: composite
+  steps:
+    - name: Cache MoonBit toolchain
+      id: cache-moonbit
+      uses: actions/cache@v5
+      with:
+        path: |
+          ${{ runner.temp }}/moonbit
+          ${{ runner.temp }}/moonbit-shims
+        key: moonbit-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/actions/setup-moonbit/action.yml', '.github/actions/setup-moonbit/install-moonbit.mjs') }}
+
+    - name: Setup MSVC toolchain (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64
+
+    - name: Install MoonBit (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: node .github/actions/setup-moonbit/install-moonbit.mjs
+
+    - name: Install MoonBit (Unix)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: node .github/actions/setup-moonbit/install-moonbit.mjs

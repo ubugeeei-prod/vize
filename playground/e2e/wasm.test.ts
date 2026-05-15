@@ -221,4 +221,180 @@ const instance = getCurrentInstance()
       ),
     ).toBe(true);
   });
+
+  it("should honor cross-file analyzer toggles and imported component aliases", () => {
+    const wasm = getWasm();
+    expect(wasm).not.toBeNull();
+    if (!wasm) {
+      return;
+    }
+
+    const files = [
+      {
+        path: "Parent.vue",
+        source: `
+<script setup lang="ts">
+import Panel from './Child.vue'
+</script>
+
+<template>
+  <Panel />
+</template>
+`,
+      },
+      {
+        path: "Child.vue",
+        source: `
+<script setup lang="ts">
+defineProps<{
+  title: string
+}>()
+</script>
+
+<template>
+  <section>{{ title }}</section>
+</template>
+`,
+      },
+    ];
+
+    const relationshipOnly = wasm.analyzeCrossFile(files, {
+      componentResolution: true,
+      propsValidation: false,
+    });
+    expect(
+      relationshipOnly.diagnostics.some((diagnostic) => diagnostic.type === "props-validation"),
+    ).toBe(false);
+
+    const validation = wasm.analyzeCrossFile(files, {
+      componentResolution: true,
+      propsValidation: true,
+    });
+    expect(
+      validation.diagnostics.some(
+        (diagnostic) =>
+          diagnostic.type === "props-validation" &&
+          diagnostic.code === "vize:croquis/cf/missing-required-prop",
+      ),
+    ).toBe(true);
+    expect(
+      validation.diagnostics.some((diagnostic) => diagnostic.type === "component-resolution"),
+    ).toBe(false);
+  });
+
+  it("should report strict provide/inject and reactivity loss severities", () => {
+    const wasm = getWasm();
+    expect(wasm).not.toBeNull();
+    if (!wasm) {
+      return;
+    }
+
+    const files = [
+      {
+        path: "Parent.vue",
+        source: `
+<script setup lang="ts">
+import { provide, reactive } from 'vue'
+import Child from './Child.vue'
+
+provide('config', { debug: true })
+provide('state', reactive({ count: 0 }))
+</script>
+
+<template>
+  <Child />
+</template>
+`,
+      },
+      {
+        path: "Child.vue",
+        source: `
+<script setup lang="ts">
+import { inject } from 'vue'
+
+const useInject = inject
+const config = inject('config')
+const { count } = inject('state') as { count: number }
+const [first] = useInject('items', [1])
+const theme = inject('theme', 'light')
+</script>
+
+<template>
+  <p>{{ config }} {{ count }} {{ first }} {{ theme }}</p>
+</template>
+`,
+      },
+    ];
+
+    const result = wasm.analyzeCrossFile(files, {
+      provideInject: true,
+      reactivityTracking: true,
+    });
+
+    const destructuring = result.diagnostics.filter(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/destructuring-breaks-reactivity",
+    );
+    expect(destructuring.length).toBe(2);
+    expect(destructuring.every((diagnostic) => diagnostic.severity === "error")).toBe(true);
+    expect(destructuring.every((diagnostic) => diagnostic.type === "reactivity-loss")).toBe(true);
+    const stateDestructure = destructuring.find((diagnostic) =>
+      diagnostic.message.includes("state"),
+    );
+    expect(stateDestructure?.relatedLocations?.[0]).toMatchObject({
+      file: "Parent.vue",
+      message: "provide('state') source",
+    });
+
+    const uniqueDiagnosticKeys = new Set(
+      result.diagnostics.map(
+        (diagnostic) => `${diagnostic.code}:${diagnostic.file}:${diagnostic.offset}`,
+      ),
+    );
+    expect(uniqueDiagnosticKeys.size).toBe(result.diagnostics.length);
+
+    const fileOrder = new Map(files.map((file, index) => [file.path, index]));
+    const severityOrder: Record<string, number> = { error: 0, warning: 1, info: 2, hint: 3 };
+    const diagnosticOrder = result.diagnostics.map((diagnostic) => ({
+      code: diagnostic.code,
+      fileIndex: fileOrder.get(diagnostic.file) ?? Number.MAX_SAFE_INTEGER,
+      offset: diagnostic.offset,
+      severity: severityOrder[diagnostic.severity] ?? Number.MAX_SAFE_INTEGER,
+    }));
+    const sortedDiagnosticOrder = [...diagnosticOrder].sort(
+      (left, right) =>
+        left.fileIndex - right.fileIndex ||
+        left.offset - right.offset ||
+        left.severity - right.severity ||
+        left.code.localeCompare(right.code),
+    );
+    expect(diagnosticOrder).toEqual(sortedDiagnosticOrder);
+
+    const defaultedInject = result.diagnostics.find(
+      (diagnostic) =>
+        diagnostic.code === "vize:croquis/cf/unmatched-inject" &&
+        diagnostic.message.includes("theme"),
+    );
+    expect(defaultedInject?.severity).toBe("warning");
+    expect(defaultedInject?.type).toBe("provide-inject");
+
+    const nonReactiveProvide = result.diagnostics.find(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/non-reactive-provide",
+    );
+    expect(nonReactiveProvide?.severity).toBe("warning");
+    expect(nonReactiveProvide?.type).toBe("provide-inject");
+
+    const stringProvideKeys = result.diagnostics.filter(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/provide-without-symbol",
+    );
+    const stringInjectKeys = result.diagnostics.filter(
+      (diagnostic) => diagnostic.code === "vize:croquis/cf/inject-without-symbol",
+    );
+    expect(stringProvideKeys.length).toBeGreaterThanOrEqual(2);
+    expect(stringInjectKeys.length).toBeGreaterThanOrEqual(4);
+    expect(
+      [...stringProvideKeys, ...stringInjectKeys].every(
+        (diagnostic) => diagnostic.severity === "warning" && diagnostic.type === "provide-inject",
+      ),
+    ).toBe(true);
+  });
 });

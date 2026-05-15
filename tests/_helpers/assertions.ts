@@ -42,8 +42,10 @@ export async function collectConsoleErrors(page: Page, appName: string): Promise
 export function isFatalError(error: string): boolean {
   const fatalPatterns = [
     /Failed to resolve component/,
+    /is not a function/,
     /\[Vue warn\].*is not a function/,
     /Cannot read propert/,
+    /ReferenceError/,
     /Uncaught TypeError/,
     /Uncaught ReferenceError/,
     /Uncaught SyntaxError/,

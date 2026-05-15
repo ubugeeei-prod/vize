@@ -1,6 +1,6 @@
 [package]
 name = "vize-zed-extension"
-version = "0.52.0"
+version = "0.90.0"
 edition = "2021"
 license = "MIT"
 publish = false
@@ -9,6 +9,6 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-zed_extension_api = "0.7"
+zed_extension_api = "=0.7.0"
 
 [workspace]

@@ -9,9 +9,17 @@ use super::types::{
 };
 use crate::cross_file::diagnostics::{CrossFileDiagnostic, DiagnosticSeverity};
 use crate::cross_file::graph::{DependencyEdge, DependencyGraph};
-use crate::cross_file::registry::{FileId, ModuleRegistry};
-use crate::reactivity::ReactiveKind;
-use vize_carton::{cstr, CompactString, FxHashMap, FxHashSet, SmallVec};
+use crate::cross_file::registry::{FileId, ModuleEntry, ModuleRegistry};
+use crate::provide::ProvideKey;
+use crate::reactivity::{ReactiveKind, ReactivityLossKind};
+use std::path::{Component, Path, PathBuf};
+use vize_carton::{cstr, CompactString, FxHashMap, FxHashSet, SmallVec, String};
+
+#[derive(Debug, Clone)]
+struct PropLoss {
+    offset: u32,
+    reason: ReactivityLossReason,
+}
 
 /// The cross-file reactivity analyzer.
 pub struct CrossFileReactivityAnalyzer<'a> {
@@ -25,8 +33,8 @@ pub struct CrossFileReactivityAnalyzer<'a> {
     pub(super) issues: Vec<CrossFileReactivityIssue>,
     /// Composable definitions (file -> composable name -> return type info).
     pub(super) composables: FxHashMap<FileId, Vec<ComposableInfo>>,
-    /// Provide definitions across all files.
-    pub(super) provides: FxHashMap<CompactString, ProvideDefinition>,
+    /// Provide definitions by component file.
+    pub(super) provides: FxHashMap<FileId, Vec<ProvideDefinition>>,
 }
 
 impl<'a> CrossFileReactivityAnalyzer<'a> {
@@ -174,38 +182,25 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             let analysis = &entry.analysis;
 
             for provide in analysis.provide_inject.provides() {
-                let key_str = match &provide.key {
-                    crate::provide::ProvideKey::String(s) => s.clone(),
-                    crate::provide::ProvideKey::Symbol(s) => {
-                        cstr!("Symbol:{s}")
-                    }
-                };
+                let key_str = provide_key_display(&provide.key);
+                let key_identity = provide_key_identity(&provide.key);
 
                 // Check if the provided value is reactive
-                let is_reactive = analysis
-                    .reactivity
-                    .sources()
-                    .iter()
-                    .any(|s| s.name == provide.value);
+                let reactive_kind = provided_value_reactive_kind(analysis, provide.value.as_str());
+                let is_reactive = reactive_kind.is_some();
 
-                let reactive_kind = analysis
-                    .reactivity
-                    .sources()
-                    .iter()
-                    .find(|s| s.name == provide.value)
-                    .map(|s| s.kind);
-
-                self.provides.insert(
-                    key_str.clone(),
-                    ProvideDefinition {
+                self.provides
+                    .entry(file_id)
+                    .or_default()
+                    .push(ProvideDefinition {
                         file_id,
                         key: key_str,
+                        key_identity,
                         value_name: provide.value.clone(),
                         is_reactive,
                         reactive_kind,
                         offset: provide.start,
-                    },
-                );
+                    });
             }
         }
     }
@@ -301,15 +296,14 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             let analysis = &entry.analysis;
 
             for inject in analysis.provide_inject.injects() {
-                let key_str = match &inject.key {
-                    crate::provide::ProvideKey::String(s) => s.clone(),
-                    crate::provide::ProvideKey::Symbol(s) => {
-                        cstr!("Symbol:{s}")
-                    }
-                };
+                let key_str = provide_key_display(&inject.key);
+                let key_identity = provide_key_identity(&inject.key);
 
-                // Find the provider
-                if let Some(provider) = self.provides.get(&key_str) {
+                // Find providers in every ancestor branch. A component can be reused
+                // under multiple parents, so a single inject can have multiple
+                // runtime provider contexts.
+                for provider in self.find_nearest_providers(consumer_file_id, key_identity.as_str())
+                {
                     // Check if inject result is destructured
                     use crate::provide::InjectPattern;
                     match &inject.pattern {
@@ -362,11 +356,11 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                         self.issues.push(CrossFileReactivityIssue {
                             file_id: provider.file_id,
                             kind: CrossFileReactivityIssueKind::NonReactiveProvide {
-                                key: key_str.clone(),
+                                key: provider.key.clone(),
                             },
                             offset: provider.offset,
                             related_file: Some(consumer_file_id),
-                            severity: DiagnosticSeverity::Info,
+                            severity: DiagnosticSeverity::Warning,
                         });
                     }
 
@@ -408,10 +402,62 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
         }
     }
 
+    fn find_nearest_providers(
+        &self,
+        consumer_file_id: FileId,
+        key_identity: &str,
+    ) -> Vec<ProvideDefinition> {
+        let mut providers = Vec::new();
+        let mut seen_providers = FxHashSet::default();
+        let mut queue = vec![(consumer_file_id, vec![consumer_file_id])];
+        let mut cursor = 0;
+
+        while cursor < queue.len() {
+            let (current, path) = queue[cursor].clone();
+            cursor += 1;
+
+            if current != consumer_file_id {
+                if let Some(provides) = self.provides.get(&current) {
+                    if let Some(provider) = provides
+                        .iter()
+                        .rev()
+                        .find(|provider| provider.key_identity.as_str() == key_identity)
+                    {
+                        if seen_providers.insert((provider.file_id, provider.offset)) {
+                            providers.push(provider.clone());
+                        }
+                        continue;
+                    }
+                }
+            }
+
+            let mut parents: Vec<_> = self
+                .graph
+                .dependents(current)
+                .filter(|(parent_id, edge_type)| {
+                    *edge_type == DependencyEdge::ComponentUsage && !path.contains(parent_id)
+                })
+                .collect();
+            parents.sort_by_key(|(parent_id, _)| parent_id.as_u32());
+
+            for (parent_id, _) in parents {
+                let mut new_path = path.clone();
+                new_path.push(parent_id);
+                queue.push((parent_id, new_path));
+            }
+        }
+
+        providers.sort_by_key(|provider| (provider.file_id.as_u32(), provider.offset));
+        providers
+    }
+
     /// Track props flows between parent and child components.
     fn track_props_flows(&mut self) {
         for node in self.graph.nodes() {
             let parent_file_id = node.file_id;
+            let Some(parent_entry) = self.registry.get(parent_file_id) else {
+                continue;
+            };
 
             // Check component usages from this file
             for (child_file_id, edge_type) in &node.imports {
@@ -419,46 +465,67 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                     continue;
                 }
 
-                // Get the parent's component usages
-                if let Some(parent_entry) = self.registry.get(parent_file_id) {
-                    for usage in &parent_entry.analysis.component_usages {
-                        // Check each prop passed
-                        for prop in &usage.props {
-                            // Skip if no value
-                            let Some(value) = &prop.value else {
-                                continue;
-                            };
+                let Some(child_entry) = self.registry.get(*child_file_id) else {
+                    continue;
+                };
+                let aliases = imported_aliases_for_child(parent_entry, child_entry);
 
-                            // Check if this prop is reactive in the parent
-                            let is_reactive = parent_entry
-                                .analysis
-                                .reactivity
-                                .sources()
-                                .iter()
-                                .any(|s| s.name == *value);
+                for usage in &parent_entry.analysis.component_usages {
+                    if !component_usage_targets_child(usage.name.as_str(), child_entry, &aliases) {
+                        continue;
+                    }
 
-                            if is_reactive {
-                                // Create a props flow
-                                let source_id = ReactiveValueId {
-                                    file_id: parent_file_id,
-                                    name: value.clone(),
-                                    offset: prop.start,
-                                };
-                                let target_id = ReactiveValueId {
-                                    file_id: *child_file_id,
-                                    name: prop.name.clone(),
-                                    offset: 0, // We don't know child's offset here
-                                };
+                    // Check each prop passed
+                    for prop in &usage.props {
+                        // Skip if no value
+                        let Some(value) = &prop.value else {
+                            continue;
+                        };
 
-                                self.flows.push(ReactivityFlow {
-                                    source: source_id,
-                                    target: target_id,
-                                    flow_kind: ReactivityFlowKind::PropsFlow,
-                                    preserved: true, // Props flow preserves reactivity
-                                    loss_reason: None,
-                                });
-                            }
+                        // Check if this prop receives a reactive value from the parent.
+                        let Some(source) =
+                            reactive_source_from_expression(&parent_entry.analysis, value.as_str())
+                        else {
+                            continue;
+                        };
+
+                        let prop_loss =
+                            prop_reactivity_loss(&child_entry.analysis, prop.name.as_str());
+                        if let Some(loss) = &prop_loss {
+                            self.issues.push(CrossFileReactivityIssue {
+                                file_id: *child_file_id,
+                                kind: CrossFileReactivityIssueKind::ReactivityLostInPropChain {
+                                    prop_name: prop.name.clone(),
+                                    parent_component: parent_entry
+                                        .component_name
+                                        .clone()
+                                        .unwrap_or_else(|| parent_entry.filename.clone()),
+                                },
+                                offset: loss.offset,
+                                related_file: Some(parent_file_id),
+                                severity: DiagnosticSeverity::Error,
+                            });
                         }
+
+                        // Create a props flow
+                        let source_id = ReactiveValueId {
+                            file_id: parent_file_id,
+                            name: source.name.clone(),
+                            offset: source.declaration_offset,
+                        };
+                        let target_id = ReactiveValueId {
+                            file_id: *child_file_id,
+                            name: prop.name.clone(),
+                            offset: prop_loss.as_ref().map_or(0, |loss| loss.offset),
+                        };
+
+                        self.flows.push(ReactivityFlow {
+                            source: source_id,
+                            target: target_id,
+                            flow_kind: ReactivityFlowKind::PropsFlow,
+                            preserved: prop_loss.is_none(),
+                            loss_reason: prop_loss.map(|loss| loss.reason),
+                        });
                     }
                 }
             }
@@ -475,8 +542,8 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             // Look for Pinia store usage patterns
             self.detect_pinia_issues(file_id, analysis);
 
-            // Detect props destructuring
-            self.detect_props_destructure_issues(file_id, analysis);
+            // Direct `defineProps` destructure is reactive in modern Vue. Plain
+            // aliases from those bindings are tracked by the parser instead.
         }
 
         // Check for circular reactive dependencies
@@ -516,34 +583,6 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    /// Detect props destructuring issues.
-    fn detect_props_destructure_issues(&mut self, file_id: FileId, analysis: &crate::Croquis) {
-        if let Some(destructure) = analysis.macros.props_destructure() {
-            // Check if toRefs is used
-            let has_to_refs = analysis
-                .reactivity
-                .sources()
-                .iter()
-                .any(|s| matches!(s.kind, ReactiveKind::ToRefs));
-
-            if !has_to_refs && !destructure.bindings.is_empty() {
-                let props: Vec<CompactString> = destructure.bindings.keys().cloned().collect();
-
-                // Note: Modern Vue handles this via reactive props destructure transform
-                // So we only emit an info-level diagnostic
-                self.issues.push(CrossFileReactivityIssue {
-                    file_id,
-                    kind: CrossFileReactivityIssueKind::PropsDestructured {
-                        destructured_props: props,
-                    },
-                    offset: 0, // Destructure location from macro analysis
-                    related_file: None,
-                    severity: DiagnosticSeverity::Info,
-                });
             }
         }
     }
@@ -604,5 +643,332 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
         path.pop();
         rec_stack.remove(current);
         false
+    }
+}
+
+fn reactive_source_from_expression<'a>(
+    analysis: &'a crate::Croquis,
+    expression: &str,
+) -> Option<&'a crate::reactivity::ReactiveSource> {
+    let root = expression_root_identifier(expression)?;
+    analysis.reactivity.lookup(root)
+}
+
+fn expression_root_identifier(expression: &str) -> Option<&str> {
+    let expression = expression.trim_start();
+    let mut chars = expression.char_indices();
+    let (_, first) = chars.next()?;
+
+    if !(first == '_' || first == '$' || first.is_ascii_alphabetic()) {
+        return None;
+    }
+
+    let mut end = first.len_utf8();
+    for (idx, ch) in chars {
+        if ch == '_' || ch == '$' || ch.is_ascii_alphanumeric() {
+            end = idx + ch.len_utf8();
+        } else {
+            break;
+        }
+    }
+
+    Some(&expression[..end])
+}
+
+fn prop_reactivity_loss(analysis: &crate::Croquis, prop_name: &str) -> Option<PropLoss> {
+    for loss in analysis.reactivity.losses() {
+        match &loss.kind {
+            ReactivityLossKind::PropsDestructure { .. } => {}
+            ReactivityLossKind::ReactiveDestructure {
+                destructured_props, ..
+            } if prop_list_contains(destructured_props, prop_name) => {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::Destructured {
+                        props: destructured_props.clone(),
+                    },
+                });
+            }
+            ReactivityLossKind::ReactivePropertyExtract {
+                prop_name: extracted,
+                ..
+            } if prop_names_match(extracted.as_str(), prop_name) => {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::DirectExtraction,
+                });
+            }
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                ..
+            } if reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
+                || reactivity_loss_source_matches_prop(argument_name.as_str(), prop_name) =>
+            {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::DirectExtraction,
+                });
+            }
+            ReactivityLossKind::GetterCallExtract {
+                source_name,
+                getter_name,
+                ..
+            } if reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
+                || prop_names_match(getter_name.as_str(), prop_name) =>
+            {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::DirectExtraction,
+                });
+            }
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } if reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
+                || reactivity_loss_source_matches_prop(alias_name.as_str(), prop_name)
+                || prop_names_match(target_name.as_str(), prop_name) =>
+            {
+                return Some(PropLoss {
+                    offset: loss.start,
+                    reason: ReactivityLossReason::NonReactiveIntermediate {
+                        intermediate: target_name.clone(),
+                    },
+                });
+            }
+            _ => {}
+        }
+    }
+
+    if let Some(destructure) = analysis.macros.props_destructure() {
+        if destructure
+            .bindings
+            .keys()
+            .any(|key| prop_names_match(key.as_str(), prop_name))
+            || destructure.rest_id.is_some()
+        {
+            let props = destructure.bindings.keys().cloned().collect::<Vec<_>>();
+            return Some(PropLoss {
+                offset: analysis
+                    .macros
+                    .define_props()
+                    .map_or(0, |define_props| define_props.start),
+                reason: ReactivityLossReason::Destructured { props },
+            });
+        }
+    }
+
+    None
+}
+
+fn prop_list_contains(props: &[CompactString], prop_name: &str) -> bool {
+    props
+        .iter()
+        .any(|prop| prop.as_str() == "(rest)" || prop_names_match(prop.as_str(), prop_name))
+}
+
+fn reactivity_loss_source_matches_prop(source_name: &str, prop_name: &str) -> bool {
+    if prop_names_match(source_name, prop_name) {
+        return true;
+    }
+
+    let Some(rest) = source_name.strip_prefix("props.") else {
+        return false;
+    };
+    let first_segment = rest.split(['.', '[', '?', '!']).next().unwrap_or(rest);
+    prop_names_match(first_segment, prop_name)
+}
+
+fn component_usage_targets_child(
+    usage_name: &str,
+    child_entry: &ModuleEntry,
+    aliases: &[CompactString],
+) -> bool {
+    child_entry
+        .component_name
+        .as_deref()
+        .is_some_and(|component_name| component_names_match(usage_name, component_name))
+        || aliases
+            .iter()
+            .any(|alias| component_names_match(usage_name, alias.as_str()))
+}
+
+fn imported_aliases_for_child(
+    parent_entry: &ModuleEntry,
+    child_entry: &ModuleEntry,
+) -> Vec<CompactString> {
+    let parent_dir = parent_entry.path.parent();
+    let mut aliases = Vec::new();
+
+    for scope in parent_entry.analysis.scopes.iter() {
+        let crate::scope::ScopeData::ExternalModule(data) = scope.data() else {
+            continue;
+        };
+
+        if !import_targets_path(data.source.as_str(), parent_dir, child_entry.path.as_path()) {
+            continue;
+        }
+
+        aliases.extend(scope.bindings().map(|(name, _)| CompactString::new(name)));
+    }
+
+    aliases
+}
+
+fn import_targets_path(specifier: &str, from_dir: Option<&Path>, target: &Path) -> bool {
+    let normalized_target = normalize_logical_path(target.to_path_buf());
+    import_candidates(specifier, from_dir)
+        .into_iter()
+        .any(|candidate| candidate == normalized_target || normalized_target.ends_with(&candidate))
+}
+
+fn import_candidates(specifier: &str, from_dir: Option<&Path>) -> Vec<PathBuf> {
+    let mut bases = Vec::new();
+
+    if let Some(relative) = specifier.strip_prefix("@/") {
+        bases.push(PathBuf::from("src").join(relative));
+    } else if specifier.starts_with('.') {
+        let base = from_dir
+            .filter(|dir| !dir.as_os_str().is_empty())
+            .map_or_else(|| PathBuf::from(specifier), |dir| dir.join(specifier));
+        bases.push(base);
+    } else if let Some(stripped) = specifier.strip_prefix('/') {
+        bases.push(PathBuf::from(stripped));
+        bases.push(PathBuf::from(specifier));
+    } else {
+        bases.push(PathBuf::from(specifier));
+    }
+
+    let mut candidates = Vec::new();
+    for base in bases {
+        let has_extension = base.extension().is_some();
+        candidates.push(normalize_logical_path(base.clone()));
+
+        if !has_extension {
+            for suffix in [
+                ".vue",
+                ".ts",
+                ".tsx",
+                ".js",
+                ".jsx",
+                "/index.vue",
+                "/index.ts",
+                "/index.tsx",
+                "/index.js",
+                "/index.jsx",
+            ] {
+                candidates.push(normalize_logical_path(path_with_suffix(&base, suffix)));
+            }
+        }
+    }
+
+    candidates
+}
+
+fn path_with_suffix(base: &Path, suffix: &str) -> PathBuf {
+    if let Some(index_file) = suffix.strip_prefix('/') {
+        base.join(index_file)
+    } else {
+        let mut value = base.as_os_str().to_os_string();
+        value.push(suffix);
+        PathBuf::from(value)
+    }
+}
+
+fn normalize_logical_path(path: PathBuf) -> PathBuf {
+    let mut normalized = PathBuf::new();
+
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                normalized.pop();
+            }
+            Component::Normal(part) => normalized.push(part),
+            Component::RootDir => normalized.push(Path::new("/")),
+            Component::Prefix(prefix) => normalized.push(prefix.as_os_str()),
+        }
+    }
+
+    normalized
+}
+
+fn prop_names_match(left: &str, right: &str) -> bool {
+    left == right || to_camel_case(left) == to_camel_case(right)
+}
+
+fn component_names_match(left: &str, right: &str) -> bool {
+    left == right || to_pascal_case(left) == to_pascal_case(right)
+}
+
+fn to_pascal_case(s: &str) -> String {
+    s.split('-')
+        .map(|part| {
+            let mut chars = part.chars();
+            match chars.next() {
+                None => String::default(),
+                Some(c) => c.to_uppercase().chain(chars).collect(),
+            }
+        })
+        .collect()
+}
+
+fn to_camel_case(s: &str) -> String {
+    let mut parts = s.split('-');
+    let mut out = String::from(parts.next().unwrap_or_default());
+
+    for part in parts {
+        let mut chars = part.chars();
+        if let Some(first) = chars.next() {
+            out.extend(first.to_uppercase());
+            out.push_str(chars.as_str());
+        }
+    }
+
+    out
+}
+
+fn provided_value_reactive_kind(analysis: &crate::Croquis, value: &str) -> Option<ReactiveKind> {
+    let value = value.trim();
+
+    if let Some(source) = analysis
+        .reactivity
+        .sources()
+        .iter()
+        .find(|source| source.name.as_str() == value)
+    {
+        return Some(source.kind);
+    }
+
+    let callee = value
+        .split_once('(')
+        .map(|(callee, _)| callee.trim())
+        .unwrap_or_default();
+
+    match callee {
+        "ref" => Some(ReactiveKind::Ref),
+        "shallowRef" => Some(ReactiveKind::ShallowRef),
+        "reactive" => Some(ReactiveKind::Reactive),
+        "shallowReactive" => Some(ReactiveKind::ShallowReactive),
+        "computed" => Some(ReactiveKind::Computed),
+        "readonly" => Some(ReactiveKind::Readonly),
+        "shallowReadonly" => Some(ReactiveKind::ShallowReadonly),
+        "toRef" => Some(ReactiveKind::ToRef),
+        "toRefs" => Some(ReactiveKind::ToRefs),
+        _ => None,
+    }
+}
+
+fn provide_key_display(key: &ProvideKey) -> CompactString {
+    match key {
+        ProvideKey::String(s) | ProvideKey::Symbol(s) => s.clone(),
+    }
+}
+
+fn provide_key_identity(key: &ProvideKey) -> CompactString {
+    match key {
+        ProvideKey::String(s) => cstr!("string:{s}"),
+        ProvideKey::Symbol(s) => cstr!("symbol:{s}"),
     }
 }

@@ -5,7 +5,7 @@
  * npm CLI resolve the same `vize.config.*` files with the same behavior.
  */
 
-import type { VizeConfig } from "./types.js";
+import type { VizeConfig } from "./types.ts";
 import {
   CONFIG_FILE_NAMES,
   defineConfig,

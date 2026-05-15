@@ -27,11 +27,11 @@ The `examples/cli/` directory contains sample Vue files for trying the CLI tools
 
 ### File Structure
 
-| File                  | Description                       |
-| --------------------- | --------------------------------- |
-| `src/App.vue`         | A correctly formatted Vue file    |
-| `src/Unformatted.vue` | A Vue file that needs formatting  |
-| `src/HasErrors.vue`   | A Vue file containing lint errors |
+| File                  | Description                                         |
+| --------------------- | --------------------------------------------------- |
+| `src/App.vue`         | A correctly formatted Vue file                      |
+| `src/Unformatted.vue` | A Vue file that needs formatting                    |
+| `src/HasErrors.vue`   | A Vue file containing lint and security diagnostics |
 
 ### Formatter (`vize fmt`)
 
@@ -75,7 +75,15 @@ vize lint examples/cli/src/*.vue --max-warnings 5
 
 # Show only the summary
 vize lint examples/cli/src/*.vue --quiet
+
+# Print rule and file timing
+vize lint examples/cli/src/*.vue --profile
 ```
+
+`src/HasErrors.vue` intentionally includes missing `v-for` keys, a `v-if`/`v-for` conflict, a
+static unsafe URL, and an obfuscated invalid anchor so the linter output demonstrates correctness,
+accessibility, and security diagnostics together.
+The SSR rule docs include extra boundary examples for `typeof window`, comments, and regex literals.
 
 **Options:**
 

@@ -11,12 +11,10 @@
 )]
 
 use glob::glob;
-use napi::{
-    bindgen_prelude::{Error, Object, Result, Status},
-    Env,
-};
+use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
+use serde_json::{json, Value};
 use std::{
     fs,
     sync::atomic::{AtomicUsize, Ordering},
@@ -227,42 +225,31 @@ fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>> {
     rules
 }
 
-fn create_position_object(env: Env, line: u32, column: u32, offset: u32) -> Result<Object> {
-    let mut obj = env.create_object()?;
-    obj.set("line", line)?;
-    obj.set("column", column)?;
-    obj.set("offset", offset)?;
-    Ok(obj)
+fn create_position_object(line: u32, column: u32, offset: u32) -> Value {
+    json!({
+        "line": line,
+        "column": column,
+        "offset": offset,
+    })
 }
 
 fn create_location_object(
-    env: Env,
     start_line: u32,
     start_column: u32,
     start_offset: u32,
     end_line: u32,
     end_column: u32,
     end_offset: u32,
-) -> Result<Object> {
-    let mut obj = env.create_object()?;
-    obj.set(
-        "start",
-        create_position_object(env, start_line, start_column, start_offset)?,
-    )?;
-    obj.set(
-        "end",
-        create_position_object(env, end_line, end_column, end_offset)?,
-    )?;
-    Ok(obj)
+) -> Value {
+    json!({
+        "start": create_position_object(start_line, start_column, start_offset),
+        "end": create_position_object(end_line, end_column, end_offset),
+    })
 }
 
 /// Lint a single Vue SFC with Patina and return structured diagnostics.
 #[napi(js_name = "lintPatinaSfc")]
-pub fn lint_patina_sfc(
-    env: Env,
-    source: String,
-    options: Option<PatinaLintOptionsNapi>,
-) -> Result<Object> {
+pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -> Result<Value> {
     use vize_patina::{Linter, LspEmitter, Severity};
 
     let opts = options.unwrap_or_default();
@@ -287,77 +274,61 @@ pub fn lint_patina_sfc(
         ));
     }
 
-    let mut output = env.create_object()?;
     let result_filename: &str = result.filename.as_ref();
-    output.set("filename", result_filename)?;
-    output.set("errorCount", result.error_count as u32)?;
-    output.set("warningCount", result.warning_count as u32)?;
-
-    let mut diagnostics = env.create_array(result.diagnostics.len() as u32)?;
-    for (index, (diagnostic, lsp)) in result
+    let diagnostics: Vec<_> = result
         .diagnostics
         .iter()
         .zip(lsp_diagnostics.iter())
-        .enumerate()
-    {
-        let mut obj = env.create_object()?;
-        obj.set("rule", diagnostic.rule_name)?;
-        obj.set(
-            "severity",
-            match diagnostic.severity {
+        .map(|(diagnostic, lsp)| {
+            let message: &str = diagnostic.message.as_ref();
+            let help = diagnostic
+                .help
+                .as_ref()
+                .map_or(Value::Null, |help| json!(help.as_ref() as &str));
+
+            json!({
+                "rule": diagnostic.rule_name,
+                "severity": match diagnostic.severity {
                 Severity::Error => "error",
                 Severity::Warning => "warning",
             },
-        )?;
-        let message: &str = diagnostic.message.as_ref();
-        obj.set("message", message)?;
-        obj.set(
-            "location",
-            create_location_object(
-                env,
-                lsp.range.start.line + 1,
-                lsp.range.start.character + 1,
-                diagnostic.start,
-                lsp.range.end.line + 1,
-                lsp.range.end.character + 1,
-                diagnostic.end,
-            )?,
-        )?;
-        if let Some(help) = diagnostic.help.as_ref() {
-            let help_text: &str = help.as_ref();
-            obj.set("help", help_text)?;
-        } else {
-            obj.set("help", env.get_null()?)?;
-        }
-        diagnostics.set(index as u32, obj)?;
-    }
+                "message": message,
+                "location": create_location_object(
+                    lsp.range.start.line + 1,
+                    lsp.range.start.character + 1,
+                    diagnostic.start,
+                    lsp.range.end.line + 1,
+                    lsp.range.end.character + 1,
+                    diagnostic.end,
+                ),
+                "help": help,
+            })
+        })
+        .collect();
 
-    output.set("diagnostics", diagnostics)?;
-    Ok(output)
+    Ok(json!({
+        "filename": result_filename,
+        "errorCount": result.error_count as u32,
+        "warningCount": result.warning_count as u32,
+        "diagnostics": diagnostics,
+    }))
 }
 
 /// Get Patina's currently registered rule metadata.
 #[napi(js_name = "getPatinaRules")]
-pub fn get_patina_rules(env: Env) -> Result<napi::bindgen_prelude::Array> {
+pub fn get_patina_rules() -> Result<Value> {
     let rule_metadata = collect_patina_rule_metadata();
-    let mut rules = env.create_array(rule_metadata.len() as u32)?;
-
-    for (index, rule) in rule_metadata.iter().enumerate() {
-        let mut obj = env.create_object()?;
-        obj.set("name", rule.name)?;
-        obj.set("description", rule.description)?;
-        obj.set("category", rule.category)?;
-        obj.set("fixable", rule.fixable)?;
-        obj.set("defaultSeverity", rule.default_severity)?;
-        let mut presets = env.create_array(rule.presets.len() as u32)?;
-        for (preset_index, preset) in rule.presets.iter().enumerate() {
-            presets.set(preset_index as u32, *preset)?;
-        }
-        obj.set("presets", presets)?;
-        rules.set(index as u32, obj)?;
-    }
-
-    Ok(rules)
+    Ok(json!(rule_metadata
+        .iter()
+        .map(|rule| json!({
+            "name": rule.name,
+            "description": rule.description,
+            "category": rule.category,
+            "fixable": rule.fixable,
+            "defaultSeverity": rule.default_severity,
+            "presets": rule.presets,
+        }))
+        .collect::<Vec<_>>()))
 }
 
 /// Lint Vue SFC files matching patterns (native multithreading, .gitignore-aware)

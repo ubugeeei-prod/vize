@@ -4,6 +4,9 @@ Opt-in Vue diagnostics and language support powered by Vize.
 
 This extension expects the `vize` CLI to be available on `PATH`, or configured through Zed settings.
 
+The extension also registers an `Art Vue` language for `*.art.vue`, so Vize can power hover,
+completion, go-to-definition, and references there without relying on a separate Zed extension.
+
 ## Enable Lint First
 
 ```json
@@ -11,6 +14,9 @@ This extension expects the `vize` CLI to be available on `PATH`, or configured t
   "languages": {
     "Vue": {
       "language_servers": ["vize", "..."]
+    },
+    "Art Vue": {
+      "language_servers": ["vize"]
     }
   },
   "lsp": {
@@ -47,6 +53,9 @@ Use this only when you are ready to let Vize overlap with the existing Vue langu
   "languages": {
     "Vue": {
       "language_servers": ["vize", "..."]
+    },
+    "Art Vue": {
+      "language_servers": ["vize"]
     }
   },
   "lsp": {
@@ -64,6 +73,9 @@ Use this only when you are ready to let Vize overlap with the existing Vue langu
 ```
 
 To make Vize the only Vue language server, replace the existing Vue server entry in your `language_servers` list with its disabled form, such as `"!server-id"`.
+
+If you only want Vize on `*.art.vue`, keep your existing `Vue` language servers unchanged and
+configure only `Art Vue`.
 
 ## Custom Binary
 

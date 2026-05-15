@@ -1,0 +1,17 @@
+/// Linter configuration for Vize.
+module vize.LinterConfig
+
+typealias RuleSeverity = "off"|"warn"|"error"
+
+typealias RuleCategory = "correctness"|"suspicious"|"style"|"perf"|"a11y"|"security"
+
+class LinterConfig {
+  /// Enable linting.
+  enabled: Boolean = true
+
+  /// Rules to enable/disable.
+  rules: Mapping<String, RuleSeverity> = new Mapping {}
+
+  /// Category-level severity overrides.
+  categories: Mapping<RuleCategory, RuleSeverity> = new Mapping {}
+}

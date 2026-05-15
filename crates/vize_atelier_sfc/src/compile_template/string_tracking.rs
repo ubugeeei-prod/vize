@@ -15,7 +15,7 @@ pub(super) struct StringTrackState {
     /// Whether we're inside a string literal (regular or template literal text portion)
     pub(super) in_string: bool,
     /// The quote character of the current string ('\'' | '"' | '`')
-    string_char: char,
+    string_char: u8,
     /// Whether the last character was a backslash escape
     escape: bool,
     /// Stack for nested template literal `${...}` expressions.
@@ -33,7 +33,7 @@ impl Default for StringTrackState {
     fn default() -> Self {
         Self {
             in_string: false,
-            string_char: '\0',
+            string_char: b'\0',
             escape: false,
             template_expr_brace_stack: Vec::new(),
             in_block_comment: false,
@@ -46,12 +46,12 @@ impl Default for StringTrackState {
 /// State is carried across lines to handle multiline template literals and comments.
 pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) -> i32 {
     let mut count: i32 = 0;
-    let chars: Vec<char> = line.chars().collect();
-    let len = chars.len();
+    let bytes = line.as_bytes();
+    let len = bytes.len();
     let mut i = 0;
 
     while i < len {
-        let ch = chars[i];
+        let ch = bytes[i];
 
         if state.escape {
             state.escape = false;
@@ -61,7 +61,7 @@ pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) 
 
         // Inside a block comment: skip everything until */
         if state.in_block_comment {
-            if ch == '*' && i + 1 < len && chars[i + 1] == '/' {
+            if ch == b'*' && i + 1 < len && bytes[i + 1] == b'/' {
                 state.in_block_comment = false;
                 i += 2; // Skip both * and /
                 continue;
@@ -71,17 +71,17 @@ pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) 
         }
 
         if state.in_string {
-            if ch == '\\' {
+            if ch == b'\\' {
                 state.escape = true;
                 i += 1;
                 continue;
             }
 
-            if state.string_char == '`' {
-                if ch == '`' {
+            if state.string_char == b'`' {
+                if ch == b'`' {
                     // Close template literal
                     state.in_string = false;
-                } else if ch == '$' && i + 1 < len && chars[i + 1] == '{' {
+                } else if ch == b'$' && i + 1 < len && bytes[i + 1] == b'{' {
                     // Enter template expression ${...}
                     // The ${ is template syntax, not a code brace
                     state.in_string = false;
@@ -96,37 +96,37 @@ pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) 
         } else {
             // Not in string - we're in code mode
             match ch {
-                '/' if i + 1 < len && chars[i + 1] == '*' => {
+                b'/' if i + 1 < len && bytes[i + 1] == b'*' => {
                     // Enter block comment /*
                     state.in_block_comment = true;
                     i += 2; // Skip both / and *
                     continue;
                 }
-                '/' if i + 1 < len && chars[i + 1] == '/' => {
+                b'/' if i + 1 < len && bytes[i + 1] == b'/' => {
                     // Line comment // -- skip rest of line
                     break;
                 }
-                '\'' | '"' => {
+                b'\'' | b'"' => {
                     state.in_string = true;
                     state.string_char = ch;
                 }
-                '`' => {
+                b'`' => {
                     state.in_string = true;
-                    state.string_char = '`';
+                    state.string_char = b'`';
                 }
-                '{' => {
+                b'{' => {
                     if let Some(depth) = state.template_expr_brace_stack.last_mut() {
                         *depth += 1;
                     }
                     count += 1;
                 }
-                '}' => {
+                b'}' => {
                     if let Some(&depth) = state.template_expr_brace_stack.last() {
                         if depth == 0 {
                             // This } closes the ${...} expression, not a code brace
                             state.template_expr_brace_stack.pop();
                             state.in_string = true;
-                            state.string_char = '`';
+                            state.string_char = b'`';
                             i += 1;
                             continue;
                         } else {
@@ -162,12 +162,12 @@ pub(super) fn count_braces_outside_strings(line: &str) -> i32 {
 /// State is carried across lines to handle multiline template literals and comments.
 pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) -> i32 {
     let mut count: i32 = 0;
-    let chars: Vec<char> = line.chars().collect();
-    let len = chars.len();
+    let bytes = line.as_bytes();
+    let len = bytes.len();
     let mut i = 0;
 
     while i < len {
-        let ch = chars[i];
+        let ch = bytes[i];
 
         if state.escape {
             state.escape = false;
@@ -177,7 +177,7 @@ pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) 
 
         // Inside a block comment: skip everything until */
         if state.in_block_comment {
-            if ch == '*' && i + 1 < len && chars[i + 1] == '/' {
+            if ch == b'*' && i + 1 < len && bytes[i + 1] == b'/' {
                 state.in_block_comment = false;
                 i += 2; // Skip both * and /
                 continue;
@@ -187,16 +187,16 @@ pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) 
         }
 
         if state.in_string {
-            if ch == '\\' {
+            if ch == b'\\' {
                 state.escape = true;
                 i += 1;
                 continue;
             }
 
-            if state.string_char == '`' {
-                if ch == '`' {
+            if state.string_char == b'`' {
+                if ch == b'`' {
                     state.in_string = false;
-                } else if ch == '$' && i + 1 < len && chars[i + 1] == '{' {
+                } else if ch == b'$' && i + 1 < len && bytes[i + 1] == b'{' {
                     state.in_string = false;
                     state.template_expr_brace_stack.push(0);
                     i += 2;
@@ -208,36 +208,36 @@ pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) 
         } else {
             // Not in string - we're in code mode
             match ch {
-                '/' if i + 1 < len && chars[i + 1] == '*' => {
+                b'/' if i + 1 < len && bytes[i + 1] == b'*' => {
                     // Enter block comment /*
                     state.in_block_comment = true;
                     i += 2; // Skip both / and *
                     continue;
                 }
-                '/' if i + 1 < len && chars[i + 1] == '/' => {
+                b'/' if i + 1 < len && bytes[i + 1] == b'/' => {
                     // Line comment // -- skip rest of line
                     break;
                 }
-                '\'' | '"' => {
+                b'\'' | b'"' => {
                     state.in_string = true;
                     state.string_char = ch;
                 }
-                '`' => {
+                b'`' => {
                     state.in_string = true;
-                    state.string_char = '`';
+                    state.string_char = b'`';
                 }
-                '{' => {
+                b'{' => {
                     // Track braces for template expression depth even though we're counting parens
                     if let Some(depth) = state.template_expr_brace_stack.last_mut() {
                         *depth += 1;
                     }
                 }
-                '}' => {
+                b'}' => {
                     if let Some(&depth) = state.template_expr_brace_stack.last() {
                         if depth == 0 {
                             state.template_expr_brace_stack.pop();
                             state.in_string = true;
-                            state.string_char = '`';
+                            state.string_char = b'`';
                             i += 1;
                             continue;
                         } else {
@@ -245,10 +245,10 @@ pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) 
                         }
                     }
                 }
-                '(' => {
+                b'(' => {
                     count += 1;
                 }
-                ')' => {
+                b')' => {
                     count -= 1;
                 }
                 _ => {}

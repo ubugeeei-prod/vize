@@ -1,7 +1,7 @@
 {
   "name": "vize",
   "displayName": "Vize",
-  "version": "0.52.0",
+  "version": "0.90.0",
   "description": "Vue Language Support powered by Vize - A high-performance language server for Vue SFC",
   "categories": [
     "Formatters",
@@ -30,22 +30,23 @@
     "vscode:prepublish": "vp pack",
     "build": "vp pack",
     "watch": "vp pack --watch",
-    "check": "tsc --noEmit && vp check src vite.config.ts",
-    "check:fix": "vp check --fix src vite.config.ts && tsc --noEmit",
+    "check": "tsgo --noEmit && vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts && tsgo --noEmit",
     "fmt": "vp fmt --write src vite.config.ts",
     "package": "vsce package --no-dependencies --out dist/vize.vsix",
     "publish": "vsce publish --no-dependencies",
     "publish:pre": "vsce publish --no-dependencies --pre-release"
   },
   "dependencies": {
-    "vscode-languageclient": "^9.0.1"
+    "vscode-languageclient": "9.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "@types/vscode": "^1.75.0",
-    "@vscode/vsce": "^3.3.2",
-    "typescript": "^5.7.0",
-    "vite-plus": "0.1.11"
+    "@types/node": "25.6.0",
+    "@types/vscode": "1.75.0",
+    "@typescript/native-preview": "7.0.0-dev.20260421.1",
+    "@vscode/vsce": "3.9.1",
+    "typescript": "6.0.3",
+    "vite-plus": "0.1.19"
   },
   "contributes": {
     "languages": [
@@ -75,8 +76,8 @@
           "source.js": "javascript",
           "source.ts": "typescript",
           "source.css": "css",
-          "source.scss": "scss",
-          "source.less": "less",
+          "source.css.scss": "scss",
+          "source.css.less": "less",
           "source.json": "json"
         }
       }
@@ -92,7 +93,7 @@
         "vize.serverPath": {
           "type": "string",
           "default": "",
-          "description": "Path to the vize language server executable. Leave empty to use bundled server."
+          "description": "Path to the vize language server executable. Leave empty to auto-detect an installed or bundled vize binary."
         },
         "vize.trace.server": {
           "type": "string",
@@ -223,11 +224,11 @@
       "commandPalette": [
         {
           "command": "vize.restartServer",
-          "when": "editorLangId == vue"
+          "when": "editorLangId == vue || editorLangId == art-vue"
         },
         {
           "command": "vize.showOutput",
-          "when": "editorLangId == vue"
+          "when": "editorLangId == vue || editorLangId == art-vue"
         }
       ]
     },
@@ -277,6 +278,7 @@
     ]
   },
   "activationEvents": [
+    "onLanguage:art-vue",
     "onLanguage:vue"
   ],
   "icon": "icons/logo.png",

@@ -1,0 +1,16 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<I18nT keypath=\"build.environment\" tag=\"span\" :plural=\"count\">node</I18nT>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("I18nT"), _mergeProps({ keypath: "build.environment", tag: "span", plural: _ctx.count }, _attrs), {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`node`)
+      } else {
+        return [_createTextVNode("node")]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

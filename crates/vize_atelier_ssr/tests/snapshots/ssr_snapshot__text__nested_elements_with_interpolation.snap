@@ -3,5 +3,5 @@ source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
 expression: "compile_full(\"<div><span>{{ foo }} bar</span><span>baz {{ qux }}</span></div>\")"
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<div><span>${_ssrInterpolate(_ctx.foo)} bar</span><span>baz ${_ssrInterpolate(_ctx.qux)}</span></div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)}><span>${_ssrInterpolate(_ctx.foo)} bar</span><span>baz ${_ssrInterpolate(_ctx.qux)}</span></div>`)
 }

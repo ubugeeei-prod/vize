@@ -2,7 +2,7 @@ use crate::types::{
     BlockLocation, SfcCustomBlock, SfcDescriptor, SfcError, SfcParseOptions, SfcScriptBlock,
     SfcStyleBlock, SfcTemplateBlock,
 };
-use memchr::{memchr, memmem::Finder};
+use memchr::{memchr, memchr_iter, memmem::Finder};
 use std::borrow::Cow;
 
 use super::block::{parse_block_fast, tag_name_eq};
@@ -11,6 +11,21 @@ use super::block::{parse_block_fast, tag_name_eq};
 const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
 const TAG_STYLE: &[u8] = b"style";
+
+#[inline]
+fn advance_line_column(bytes: &[u8], line: &mut usize, column: &mut usize) {
+    let mut last_newline = None;
+    for offset in memchr_iter(b'\n', bytes) {
+        *line += 1;
+        last_newline = Some(offset);
+    }
+
+    if let Some(offset) = last_newline {
+        *column = bytes.len() - offset;
+    } else {
+        *column += bytes.len();
+    }
+}
 
 /// Parse a Vue SFC into a descriptor with zero-copy strings
 pub fn parse_sfc<'a>(
@@ -55,14 +70,7 @@ pub fn parse_sfc<'a>(
         if bytes[pos] != b'<' {
             if let Some(next_lt) = memchr(b'<', &bytes[pos..]) {
                 // Update line/column for skipped content
-                for &b in &bytes[pos..pos + next_lt] {
-                    if b == b'\n' {
-                        line += 1;
-                        column = 1;
-                    } else {
-                        column += 1;
-                    }
-                }
+                advance_line_column(&bytes[pos..pos + next_lt], &mut line, &mut column);
                 pos += next_lt;
             } else {
                 break;
@@ -82,14 +90,7 @@ pub fn parse_sfc<'a>(
                 .unwrap_or(len); // unclosed comment: skip to EOF
 
             // Update line/column for the skipped comment
-            for &b in &bytes[pos..end] {
-                if b == b'\n' {
-                    line += 1;
-                    column = 1;
-                } else {
-                    column += 1;
-                }
-            }
+            advance_line_column(&bytes[pos..end], &mut line, &mut column);
             pos = end;
             continue;
         }
@@ -211,14 +212,7 @@ pub fn parse_sfc<'a>(
             Err((code, message)) => {
                 let mut end_line = line;
                 let mut end_column = column;
-                for &b in &bytes[pos..len] {
-                    if b == b'\n' {
-                        end_line += 1;
-                        end_column = 1;
-                    } else {
-                        end_column += 1;
-                    }
-                }
+                advance_line_column(&bytes[pos..len], &mut end_line, &mut end_column);
                 return Err(SfcError {
                     message,
                     code: Some(code.into()),

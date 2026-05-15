@@ -1,6 +1,6 @@
 {
   "name": "oxlint-plugin-vize",
-  "version": "0.52.0",
+  "version": "0.90.0",
   "description": "Oxlint JS plugin bridge for Vize Patina",
   "keywords": [
     "lint",
@@ -36,29 +36,32 @@
   },
   "scripts": {
     "build": "vp pack",
-    "test": "vp pack && node --experimental-strip-types src/test.ts",
+    "test": "vp pack && node src/test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"
   },
   "dependencies": {
-    "@oxlint/plugins": "^1.53.0"
+    "@oxlint/plugins": "catalog:linting"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
     "@vizejs/native": "workspace:*",
-    "typescript": "~5.6.0",
-    "vite-plus": "catalog:"
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
   },
   "optionalDependencies": {
-    "@vizejs/native-darwin-arm64": "0.48.0",
-    "@vizejs/native-darwin-x64": "0.48.0",
-    "@vizejs/native-linux-arm64-gnu": "0.48.0",
-    "@vizejs/native-linux-arm64-musl": "0.48.0",
-    "@vizejs/native-linux-x64-gnu": "0.48.0",
-    "@vizejs/native-linux-x64-musl": "0.48.0",
-    "@vizejs/native-win32-arm64-msvc": "0.48.0",
-    "@vizejs/native-win32-x64-msvc": "0.48.0"
+    "@vizejs/native-darwin-arm64": "catalog:native-binaries",
+    "@vizejs/native-darwin-x64": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-musl": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-musl": "catalog:native-binaries",
+    "@vizejs/native-win32-arm64-msvc": "catalog:native-binaries",
+    "@vizejs/native-win32-x64-msvc": "catalog:native-binaries"
   },
   "engines": {
     "node": ">=24"

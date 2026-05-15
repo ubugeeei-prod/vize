@@ -11,7 +11,9 @@ const TESTS_DIR = path.resolve(__dirname, "..");
 const GIT_DIR = path.join(TESTS_DIR, "_fixtures", "_git");
 const PROJECTS_DIR = path.join(TESTS_DIR, "_fixtures", "_projects");
 const MUTABLE_GIT_PROJECTS_DIR = path.join(PROJECTS_DIR, "_git-worktrees");
+const MUTABLE_GIT_WORKTREE_INSTANCE = process.env.VIZE_TEST_WORKTREE_ID ?? `pid-${process.pid}`;
 const NPM_DIR = path.resolve(__dirname, "../../npm");
+const REPO_ROOT = path.resolve(__dirname, "../..");
 
 export interface AppConfig {
   name: string;
@@ -56,11 +58,67 @@ const VIZE_SYMLINK_TARGETS: Record<string, string> = {
   "vite-plugin-musea": path.join(NPM_DIR, "vite-plugin-musea"),
   "musea-nuxt": path.join(NPM_DIR, "musea-nuxt"),
 };
+const VIZE_LOCAL_BUILD_TARGETS = [
+  {
+    name: "vize",
+    filter: "vize",
+    dir: path.join(NPM_DIR, "vize"),
+    outputs: ["dist/index.mjs", "dist/config.mjs"],
+  },
+  {
+    name: "@vizejs/vite-plugin",
+    filter: "@vizejs/vite-plugin",
+    dir: path.join(NPM_DIR, "vite-plugin-vize"),
+    outputs: ["dist/index.mjs"],
+  },
+  {
+    name: "@vizejs/nuxt",
+    filter: "@vizejs/nuxt",
+    dir: path.join(NPM_DIR, "nuxt"),
+    outputs: ["dist/index.mjs"],
+  },
+  {
+    name: "@vizejs/vite-plugin-musea",
+    filter: "@vizejs/vite-plugin-musea",
+    dir: path.join(NPM_DIR, "vite-plugin-musea"),
+    outputs: ["dist/index.mjs", "dist/cli/index.mjs"],
+  },
+  {
+    name: "@vizejs/musea-nuxt",
+    filter: "@vizejs/musea-nuxt",
+    dir: path.join(NPM_DIR, "musea-nuxt"),
+    outputs: ["dist/index.mjs"],
+  },
+] as const;
 const MISSKEY_FLUENT_EMOJI_RE = /\/fluent-emoji(?:s)?\/([0-9a-z-]+\.png)\b/g;
 const TRANSPARENT_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
   "base64",
 );
+const BUILT_VIZE_PACKAGES = new Set<string>();
+
+function hasBuildOutputs(dir: string, outputs: readonly string[]): boolean {
+  return outputs.every((output) => fs.existsSync(path.join(dir, output)));
+}
+
+function ensureLocalVizePackagesBuilt(): void {
+  for (const target of VIZE_LOCAL_BUILD_TARGETS) {
+    if (BUILT_VIZE_PACKAGES.has(target.name) && hasBuildOutputs(target.dir, target.outputs)) {
+      continue;
+    }
+
+    if (!hasBuildOutputs(target.dir, target.outputs)) {
+      console.log(`[vize:setup] building ${target.name}...`);
+      execFileSync("npx", ["-y", "pnpm@10", "--filter", target.filter, "build"], {
+        cwd: REPO_ROOT,
+        stdio: "inherit",
+        timeout: 300_000,
+      });
+    }
+
+    BUILT_VIZE_PACKAGES.add(target.name);
+  }
+}
 
 function ensureSymlink(link: string, target: string): void {
   try {
@@ -89,11 +147,15 @@ function createVizeSymlinks(nodeModulesDir: string): void {
   }
 }
 
-function patchNuxtConfig(configPath: string, opts?: { removeModules?: string[] }): void {
+function patchNuxtConfig(
+  configPath: string,
+  opts?: { enableVize?: boolean; removeModules?: string[] },
+): void {
   let config = fs.readFileSync(configPath, "utf-8");
   let changed = false;
+  const enableVize = opts?.enableVize ?? true;
 
-  if (!config.includes("@vizejs/nuxt")) {
+  if (enableVize && !config.includes("@vizejs/nuxt")) {
     config = config.replace("modules: [", "modules: [\n    '@vizejs/nuxt',");
     config = config.replace(
       "compatibilityDate:",
@@ -265,8 +327,11 @@ function getGitFixtureSourceDir(name: string): string {
   return path.join(GIT_DIR, name);
 }
 
-function getMutableGitFixtureDir(name: string): string {
-  return path.join(MUTABLE_GIT_PROJECTS_DIR, name);
+function getMutableGitFixtureDir(name: string, variant?: string): string {
+  if (variant) {
+    return path.join(MUTABLE_GIT_PROJECTS_DIR, MUTABLE_GIT_WORKTREE_INSTANCE, variant, name);
+  }
+  return path.join(MUTABLE_GIT_PROJECTS_DIR, MUTABLE_GIT_WORKTREE_INSTANCE, name);
 }
 
 function readGitHeadRevision(repoDir: string): string {
@@ -354,9 +419,9 @@ function cleanMutableWorktreeCaches(workDir: string): void {
   }
 }
 
-function syncGitFixtureWorktree(name: string): string {
+function syncGitFixtureWorktree(name: string, variant?: string): string {
   const sourceDir = getGitFixtureSourceDir(name);
-  const workDir = getMutableGitFixtureDir(name);
+  const workDir = getMutableGitFixtureDir(name, variant);
   const parentDir = path.dirname(workDir);
 
   fs.mkdirSync(parentDir, { recursive: true });
@@ -397,7 +462,7 @@ function syncGitFixtureWorktree(name: string): string {
 }
 
 const ELK_WORK_DIR = getMutableGitFixtureDir("elk");
-const MISSKEY_WORK_DIR = getMutableGitFixtureDir("misskey");
+export const MISSKEY_WORK_DIR = getMutableGitFixtureDir("misskey");
 const NPMX_WORK_DIR = getMutableGitFixtureDir("npmx.dev");
 const VUEFES_WORK_DIR = getMutableGitFixtureDir("vuefes-2025");
 
@@ -418,6 +483,8 @@ export const elkApp: AppConfig = {
   startupTimeout: 120_000,
   setup() {
     const elkDir = syncGitFixtureWorktree("elk");
+
+    ensureLocalVizePackagesBuilt();
 
     addPnpmOverrides(path.join(elkDir, "package.json"), {
       vite: "^8.0.0",
@@ -470,6 +537,8 @@ export const misskeyApp: AppConfig = {
   setup() {
     const misskeyDir = syncGitFixtureWorktree("misskey");
     const frontendDir = path.join(misskeyDir, "packages", "frontend");
+
+    ensureLocalVizePackagesBuilt();
 
     // Create .config/default.yml
     const configDir = path.join(misskeyDir, ".config");
@@ -734,11 +803,11 @@ export const misskeyApp: AppConfig = {
     readyPattern: /Local:\s+http:\/\//,
   },
   check: {
-    cwd: path.join(GIT_DIR, "misskey", "packages", "frontend"),
+    cwd: path.join(MISSKEY_WORK_DIR, "packages", "frontend"),
     patterns: ["src/**/*.vue"],
   },
   lint: {
-    cwd: path.join(GIT_DIR, "misskey", "packages", "frontend"),
+    cwd: path.join(MISSKEY_WORK_DIR, "packages", "frontend"),
     patterns: ["src/**/*.vue"],
   },
 };
@@ -760,43 +829,7 @@ export const npmxApp: AppConfig = {
   },
   startupTimeout: 120_000,
   setup() {
-    const npmxDir = syncGitFixtureWorktree("npmx.dev");
-    const nmDir = path.join(npmxDir, "node_modules");
-
-    console.log("[npmx.dev:setup] pnpm install...");
-    execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
-      cwd: npmxDir,
-      stdio: "inherit",
-      timeout: 300_000,
-      env: {
-        ...process.env,
-        NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
-      },
-    });
-
-    createVizeSymlinks(nmDir);
-    patchNuxtConfig(path.join(npmxDir, "nuxt.config.ts"), {
-      removeModules: ["@nuxtjs/html-validator"],
-    });
-    const npmxAppPath = path.join(npmxDir, "app", "app.vue");
-    const npmxAppSource = fs.readFileSync(npmxAppPath, "utf-8");
-    const nextNpmxAppSource = npmxAppSource.replace(/\n\s*<NuxtPwaAssets\s*\/>\s*/g, "\n");
-    if (nextNpmxAppSource !== npmxAppSource) {
-      fs.writeFileSync(npmxAppPath, nextNpmxAppSource);
-    }
-    hoistPnpmPackage(nmDir, "vue-i18n");
-
-    // Ensure .nuxt/tsconfig.server.json exists (vite 8 needs it at startup)
-    console.log("[npmx.dev:setup] nuxt prepare...");
-    execSync("npx -y pnpm@10 exec nuxt prepare", {
-      cwd: npmxDir,
-      stdio: "inherit",
-      timeout: 180_000,
-      env: {
-        ...process.env,
-        NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
-      },
-    });
+    setupNpmxWorktree();
   },
   build: {
     command: "npx",
@@ -820,6 +853,95 @@ export const npmxApp: AppConfig = {
   },
 };
 
+function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): string {
+  const enableVize = opts?.enableVize ?? true;
+  const npmxDir = syncGitFixtureWorktree("npmx.dev", opts?.variant);
+  const nmDir = path.join(npmxDir, "node_modules");
+
+  if (enableVize) {
+    ensureLocalVizePackagesBuilt();
+  }
+
+  addPnpmOverrides(path.join(npmxDir, "package.json"), {
+    vite: "^8.0.0",
+  });
+
+  console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
+    cwd: npmxDir,
+    stdio: "inherit",
+    timeout: 300_000,
+    env: {
+      ...process.env,
+      NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+    },
+  });
+
+  if (enableVize) {
+    createVizeSymlinks(nmDir);
+  }
+
+  patchNuxtConfig(path.join(npmxDir, "nuxt.config.ts"), {
+    enableVize,
+    removeModules: ["@nuxtjs/html-validator"],
+  });
+
+  const npmxAppPath = path.join(npmxDir, "app", "app.vue");
+  const npmxAppSource = fs.readFileSync(npmxAppPath, "utf-8");
+  const nextNpmxAppSource = npmxAppSource.replace(/\n\s*<NuxtPwaAssets\s*\/>\s*/g, "\n");
+  if (nextNpmxAppSource !== npmxAppSource) {
+    fs.writeFileSync(npmxAppPath, nextNpmxAppSource);
+  }
+  hoistPnpmPackage(nmDir, "vue-i18n");
+
+  // Ensure .nuxt/tsconfig.server.json exists (vite 8 needs it at startup)
+  console.log(`[npmx.dev:${enableVize ? "candidate" : "reference"}:setup] nuxt prepare...`);
+  execSync("npx -y pnpm@10 exec nuxt prepare", {
+    cwd: npmxDir,
+    stdio: "inherit",
+    timeout: 180_000,
+    env: {
+      ...process.env,
+      NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+    },
+  });
+
+  return npmxDir;
+}
+
+function createNpmxVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
+  const variant = `vrt-${kind}`;
+  return {
+    name: `npmx.dev:${kind}`,
+    cwd: getMutableGitFixtureDir("npmx.dev", variant),
+    command: "npx",
+    args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"],
+    port,
+    url: `http://127.0.0.1:${port}`,
+    mountSelector: "#__nuxt",
+    readyPattern: new RegExp(
+      `Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`,
+    ),
+    allowNon200: true,
+    waitUntil: "load",
+    readyDelay: 30_000,
+    env: {
+      NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+    },
+    startupTimeout: 120_000,
+    setup() {
+      setupNpmxWorktree({ enableVize: kind === "candidate", variant });
+    },
+  };
+}
+
+export function createNpmxVisualParityApps(): { candidate: AppConfig; reference: AppConfig } {
+  return {
+    reference: createNpmxVisualParityApp("reference", 5320),
+    candidate: createNpmxVisualParityApp("candidate", 5321),
+  };
+}
+
 export const vuefesApp: AppConfig = {
   name: "vuefes-2025",
   cwd: VUEFES_WORK_DIR,
@@ -835,6 +957,8 @@ export const vuefesApp: AppConfig = {
   startupTimeout: 180_000,
   setup() {
     const vuefesDir = syncGitFixtureWorktree("vuefes-2025");
+
+    ensureLocalVizePackagesBuilt();
 
     // Ensure pnpm-workspace.yaml exists so pnpm doesn't resolve the parent workspace
     const wsYaml = path.join(vuefesDir, "pnpm-workspace.yaml");

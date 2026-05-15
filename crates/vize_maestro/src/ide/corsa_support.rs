@@ -32,6 +32,11 @@ pub(crate) fn template_request_path(uri: &Url) -> String {
     cstr!("{}.template.ts", uri.path())
 }
 
+/// Build the virtual template request path for a specific art variant.
+pub(crate) fn art_template_request_path(uri: &Url, variant_index: usize) -> String {
+    cstr!("{}.art_variant_{variant_index}.template.ts", uri.path())
+}
+
 /// Build the virtual script request path used for Corsa queries.
 pub(crate) fn script_request_path(uri: &Url, is_setup: bool) -> String {
     if is_setup {
@@ -318,6 +323,12 @@ fn match_current_virtual_document<'a>(
             .template
             .as_ref()
             .map(CurrentVirtualDocument::Template);
+    }
+
+    for (variant_index, template) in virtual_docs.art_templates.iter().enumerate() {
+        if path == art_template_request_path(ctx.uri, variant_index).as_str() {
+            return template.as_ref().map(CurrentVirtualDocument::Template);
+        }
     }
 
     if path == script_request_path(ctx.uri, false).as_str() {

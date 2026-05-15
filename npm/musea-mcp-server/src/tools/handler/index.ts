@@ -14,6 +14,7 @@ import {
   handleGetComponent,
   handleGetVariant,
   handleSearchComponents,
+  handleRecommendComponents,
 } from "./registry.js";
 import {
   handleGenerateVariants,
@@ -21,6 +22,7 @@ import {
   handleGenerateDocs,
   handleGenerateCatalog,
   handleGetTokens,
+  handleSearchTokens,
 } from "./generation.js";
 
 export type { ToolResult };
@@ -48,6 +50,8 @@ export async function handleToolCall(
       return handleGetVariant(ctx, binding, args);
     case "search_components":
       return handleSearchComponents(ctx, args);
+    case "recommend_components":
+      return handleRecommendComponents(ctx, args);
 
     // --- Code generation / docs / tokens ------------------------------------
     case "generate_variants":
@@ -60,6 +64,8 @@ export async function handleToolCall(
       return handleGenerateCatalog(ctx, binding, args);
     case "get_tokens":
       return handleGetTokens(ctx, args);
+    case "search_tokens":
+      return handleSearchTokens(ctx, args);
 
     default:
       throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);

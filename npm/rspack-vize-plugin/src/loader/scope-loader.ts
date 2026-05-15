@@ -2,7 +2,7 @@
 
 import type { LoaderContext } from "@rspack/core";
 import * as native from "@vizejs/native";
-import { stripCssCommentsForScoped } from "../shared/utils.js";
+import { stripCssCommentsForScoped } from "../shared/utils.ts";
 
 const { compileCss } = native;
 

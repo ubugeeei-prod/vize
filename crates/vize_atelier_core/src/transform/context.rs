@@ -178,12 +178,15 @@ impl<'a> TransformContext<'a> {
     /// Check if a component is registered (from analysis or binding metadata)
     pub fn is_component_registered(&self, name: &str) -> bool {
         if let Some(analysis) = &self.analysis {
-            return analysis.is_component_registered(name);
+            if analysis.is_component_registered(name) {
+                return true;
+            }
         }
 
-        // Fall back to checking binding metadata
         if let Some(metadata) = &self.options.binding_metadata {
-            return metadata.bindings.contains_key(name);
+            if metadata.bindings.contains_key(name) {
+                return true;
+            }
         }
 
         false

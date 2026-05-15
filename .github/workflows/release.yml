@@ -5,12 +5,20 @@ on:
     tags:
       - "v*"
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 env:
   CARGO_INCREMENTAL: 0
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PUBLISH_RETRY_LIMIT: 6
+  PUBLISH_RETRY_DELAY: 10
+  PUBLISH_RESOLUTION_RETRY_LIMIT: 24
+  PUBLISH_RESOLUTION_RETRY_DELAY: 10
   NPM_TAG: ${{ contains(github.ref_name, '-alpha') && 'alpha' || contains(github.ref_name, '-beta') && 'beta' || contains(github.ref_name, '-rc') && 'rc' || 'latest' }}
 
 jobs:
@@ -42,6 +50,7 @@ jobs:
             archive: vize-aarch64-unknown-linux-gnu.tar.gz
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Enable long paths (Windows)
         if: runner.os == 'Windows'
@@ -54,15 +63,20 @@ jobs:
 
       - name: Install cross-compilation tools (Linux ARM64)
         if: matrix.settings.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+        run: moon run --target native - -- < tools/moon/scripts/github/install_cross_compile_tools.mbtx
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: release-cli-${{ matrix.settings.target }}
           cache-workspace-crates: "true"
+
+      - name: Tune Windows release profile
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
+          echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
 
       - name: Build CLI
         shell: bash
@@ -72,15 +86,13 @@ jobs:
 
       - name: Create archive (Unix)
         if: runner.os != 'Windows'
-        run: |
-          cd target/${{ matrix.settings.target }}/release
-          tar -czvf ../../../${{ matrix.settings.archive }} vize
+        shell: bash
+        run: moon run --target native - -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize < tools/moon/scripts/github/create_cli_archive.mbtx
 
       - name: Create archive (Windows)
         if: runner.os == 'Windows'
-        run: |
-          cd target/${{ matrix.settings.target }}/release
-          7z a ../../../${{ matrix.settings.archive }} vize.exe
+        shell: bash
+        run: moon run --target native - -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize.exe < tools/moon/scripts/github/create_cli_archive.mbtx
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -141,20 +153,25 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-editor-extensions
     environment: vscode-marketplace
+    permissions:
+      contents: read
     env:
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: "24.14.0"
+          node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Cache pnpm store for VS Code extension tooling
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
-          key: ${{ runner.os }}-pnpm-vscode-release-24.14.0-v1
+          key: ${{ runner.os }}-pnpm-vscode-release-${{ hashFiles('.node-version') }}-v1
           restore-keys: |
             ${{ runner.os }}-pnpm-vscode-release-
 
@@ -170,14 +187,7 @@ jobs:
 
       - name: Publish VS Code extension
         if: env.VSCE_PAT != ''
-        run: |
-          if [ "${NPM_TAG}" = "latest" ]; then
-            vp dlx -p @vscode/vsce@^3.3.2 \
-              vsce publish --no-dependencies --packagePath editor-extension-artifacts/vize.vsix
-          else
-            vp dlx -p @vscode/vsce@^3.3.2 \
-              vsce publish --no-dependencies --pre-release --packagePath editor-extension-artifacts/vize.vsix
-          fi
+        run: moon run --target native - -- editor-extension-artifacts/npm/vscode-vize/dist/vize.vsix < tools/moon/scripts/publish_vscode_extension.mbtx
 
   # Build release npm packages once and reuse them across publish jobs
   build-release-packages:
@@ -192,52 +202,91 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Install package build dependencies
-        run: |
-          vp install --frozen-lockfile --prefer-offline \
-            --filter './npm/vize...' \
-            --filter './npm/vite-plugin-vize...' \
-            --filter './npm/oxlint-plugin-vize...' \
-            --filter './npm/unplugin-vize...' \
-            --filter './npm/fresco...' \
-            --filter './npm/musea-mcp-server...' \
-            --filter './npm/vite-plugin-musea...' \
-            --filter './npm/rspack-vize-plugin...' \
-            --filter './npm/musea-nuxt...' \
-            --filter './npm/nuxt...'
+        run: moon run --target native - -- --filter './npm/vize...' --filter './npm/vite-plugin-vize...' --filter './npm/oxlint-plugin-vize...' --filter './npm/unplugin-vize...' --filter './npm/fresco...' --filter './npm/musea-mcp-server...' --filter './npm/vite-plugin-musea...' --filter './npm/rspack-vize-plugin...' --filter './npm/musea-nuxt...' --filter './npm/nuxt...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build release npm packages
-        run: |
-          vp run --filter './npm/vize' build
-          vp run --filter './npm/vite-plugin-vize' build
-          vp run --filter './npm/oxlint-plugin-vize' build
-          vp run --filter './npm/unplugin-vize' build
-          vp run --filter './npm/fresco' build
-          vp run --filter './npm/musea-mcp-server' build
-          vp run --filter './npm/vite-plugin-musea' build
-          vp run --filter './npm/vite-plugin-musea' build:gallery
-          vp run --filter './npm/rspack-vize-plugin' build
-          vp run --filter './npm/musea-nuxt' build
-          vp run --filter './npm/nuxt' build
+        run: moon run --target native - -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build -- vp run --filter './npm/oxlint-plugin-vize' build -- vp run --filter './npm/unplugin-vize' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/musea-mcp-server' build -- vp run --filter './npm/vite-plugin-musea' build -- vp run --filter './npm/vite-plugin-musea' build:gallery -- vp run --filter './npm/rspack-vize-plugin' build -- vp run --filter './npm/musea-nuxt' build -- vp run --filter './npm/nuxt' build < tools/moon/scripts/github/run_many.mbtx
 
-      - name: Upload prebuilt packages
+      - name: Upload vize CLI package artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-npm-packages
-          path: |
-            npm/vize
-            npm/vize-native
-            npm/fresco-native
-            npm/vite-plugin-vize
-            npm/oxlint-plugin-vize
-            npm/unplugin-vize
-            npm/fresco
-            npm/musea-mcp-server
-            npm/vite-plugin-musea
-            npm/rspack-vize-plugin
-            npm/musea-nuxt
-            npm/nuxt
+          name: release-package-vize
+          path: npm/vize
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Vite plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-vite-plugin-vize
+          path: npm/vite-plugin-vize
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Oxlint plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-oxlint-plugin-vize
+          path: npm/oxlint-plugin-vize
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload unplugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-unplugin-vize
+          path: npm/unplugin-vize
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Fresco artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-fresco
+          path: npm/fresco
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Musea MCP server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-musea-mcp-server
+          path: npm/musea-mcp-server
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Musea Vite plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-vite-plugin-musea
+          path: npm/vite-plugin-musea
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Rspack plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-rspack-vize-plugin
+          path: npm/rspack-vize-plugin
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Musea Nuxt artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-musea-nuxt
+          path: npm/musea-nuxt
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload Nuxt artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-nuxt
+          path: npm/nuxt
           if-no-files-found: error
           compression-level: 0
 
@@ -251,36 +300,28 @@ jobs:
         settings:
           - host: macos-latest
             target: x86_64-apple-darwin
-            build_vize: vp run --filter './npm/vize-native' build -- --target x86_64-apple-darwin
-            build_fresco: vp run --filter './npm/fresco-native' build -- --target x86_64-apple-darwin
+            cross_compile: false
           - host: macos-latest
             target: aarch64-apple-darwin
-            build_vize: vp run --filter './npm/vize-native' build -- --target aarch64-apple-darwin
-            build_fresco: vp run --filter './npm/fresco-native' build -- --target aarch64-apple-darwin
+            cross_compile: false
           - host: windows-latest
             target: x86_64-pc-windows-msvc
-            build_vize: vp run --filter './npm/vize-native' build -- --target x86_64-pc-windows-msvc
-            build_fresco: vp run --filter './npm/fresco-native' build -- --target x86_64-pc-windows-msvc
+            cross_compile: false
           - host: windows-latest
             target: aarch64-pc-windows-msvc
-            build_vize: vp run --filter './npm/vize-native' build -- --target aarch64-pc-windows-msvc
-            build_fresco: vp run --filter './npm/fresco-native' build -- --target aarch64-pc-windows-msvc
+            cross_compile: false
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            build_vize: vp run --filter './npm/vize-native' build -- --target x86_64-unknown-linux-gnu
-            build_fresco: vp run --filter './npm/fresco-native' build -- --target x86_64-unknown-linux-gnu
+            cross_compile: false
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            build_vize: vp run --filter './npm/vize-native' build -- --target x86_64-unknown-linux-musl --cross-compile
-            build_fresco: vp run --filter './npm/fresco-native' build -- --target x86_64-unknown-linux-musl --cross-compile
+            cross_compile: true
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            build_vize: vp run --filter './npm/vize-native' build -- --target aarch64-unknown-linux-gnu --cross-compile
-            build_fresco: vp run --filter './npm/fresco-native' build -- --target aarch64-unknown-linux-gnu --cross-compile
+            cross_compile: true
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
-            build_vize: vp run --filter './npm/vize-native' build -- --target aarch64-unknown-linux-musl --cross-compile
-            build_fresco: vp run --filter './npm/fresco-native' build -- --target aarch64-unknown-linux-musl --cross-compile
+            cross_compile: true
     steps:
       - uses: actions/checkout@v4
 
@@ -294,6 +335,7 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...' --filter './npm/fresco-native...'
@@ -309,31 +351,50 @@ jobs:
           shared-key: release-native-${{ matrix.settings.target }}
           cache-workspace-crates: "true"
 
+      - name: Tune Windows release profile
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "CARGO_PROFILE_RELEASE_LTO=thin" >> "$GITHUB_ENV"
+          echo "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16" >> "$GITHUB_ENV"
+
       - name: Setup Zig
-        if: contains(matrix.settings.build_vize, '--cross-compile')
+        if: matrix.settings.cross_compile
         uses: goto-bus-stop/setup-zig@v2
 
-      - name: Build vize-native
-        run: ${{ matrix.settings.build_vize }}
+      - name: Clean native build outputs
         shell: bash
+        run: moon run --target native - -- npm/vize-native npm/fresco-native < tools/moon/scripts/github/clean_node_binaries.mbtx
+
+      - name: Build vize-native
+        shell: bash
+        run: moon run --target native - -- npm/vize-native ../../crates/vize_vitrine/Cargo.toml vize_vitrine ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} < tools/moon/scripts/github/build_napi_package.mbtx
+
+      - name: Collect vize-native artifact
+        shell: bash
+        run: moon run --target native - -- npm/vize-native .artifacts/vize-native vize-native < tools/moon/scripts/github/collect_native_artifacts.mbtx
 
       - name: Upload vize-native artifact
         uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: npm/vize-native/*.node
+          path: .artifacts/vize-native/*.node
           if-no-files-found: error
           compression-level: 0
 
       - name: Build fresco-native
-        run: ${{ matrix.settings.build_fresco }}
         shell: bash
+        run: moon run --target native - -- npm/fresco-native ../../crates/vize_fresco/Cargo.toml vize_fresco ${{ matrix.settings.target }} ${{ matrix.settings.cross_compile == true && '--cross-compile' || '' }} < tools/moon/scripts/github/build_napi_package.mbtx
+
+      - name: Collect fresco-native artifact
+        shell: bash
+        run: moon run --target native - -- npm/fresco-native .artifacts/fresco-native fresco-native < tools/moon/scripts/github/collect_native_artifacts.mbtx
 
       - name: Upload fresco-native artifact
         uses: actions/upload-artifact@v4
         with:
           name: fresco-bindings-${{ matrix.settings.target }}
-          path: npm/fresco-native/*.node
+          path: .artifacts/fresco-native/*.node
           if-no-files-found: error
           compression-level: 0
 
@@ -355,6 +416,12 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...'
@@ -381,39 +448,10 @@ jobs:
         run: ls -R npm/vize-native/npm/
 
       - name: Publish platform packages
-        working-directory: npm/vize-native
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          for dir in npm/*/; do
-            if [ -d "$dir" ]; then
-              echo "Publishing $dir..."
-              cd "$dir"
-              publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance || echo "Failed to publish $dir (may need initial manual publish)"
-              cd ../..
-            fi
-          done
+        run: moon run --target native - -- npm/vize-native/npm --provenance < tools/moon/scripts/publish_npm_package_dirs.mbtx
 
       - name: Publish
-        working-directory: npm/vize-native
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/vize-native --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Publish fresco native packages to npm (using Trusted Publishing / OIDC)
   release-npm-fresco-native:
@@ -433,6 +471,12 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco-native...'
@@ -443,55 +487,14 @@ jobs:
           pattern: fresco-bindings-*
           path: npm/fresco-native/artifacts
 
-      - name: Create npm platform directories
-        working-directory: npm/fresco-native
-        run: vp exec napi create-npm-dirs
+      - name: Clean bundled native binaries
+        run: moon run --target native - -- npm/fresco-native < tools/moon/scripts/github/clean_node_binaries.mbtx
 
-      - name: Move artifacts
-        working-directory: npm/fresco-native
-        run: vp exec napi artifacts --output-dir artifacts
-
-      - name: Prepare for publish
-        working-directory: npm/fresco-native
-        run: vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
-
-      - name: List packages
-        run: ls -R npm/fresco-native/npm/
-
-      - name: Publish platform packages
-        working-directory: npm/fresco-native
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          for dir in npm/*/; do
-            if [ -d "$dir" ]; then
-              echo "Publishing $dir..."
-              cd "$dir"
-              publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance || echo "Failed to publish $dir (may need initial manual publish)"
-              cd ../..
-            fi
-          done
+      - name: Stage bundled native binaries
+        run: moon run --target native - -- npm/fresco-native/artifacts npm/fresco-native fresco-native < tools/moon/scripts/github/collect_native_artifacts.mbtx
 
       - name: Publish
-        working-directory: npm/fresco-native
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/fresco-native --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish WASM package (using Trusted Publishing / OIDC)
   release-npm-wasm:
@@ -503,6 +506,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -517,7 +521,7 @@ jobs:
 
       - name: Cache WASM package build
         id: cache-wasm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: npm/vize-wasm
           key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json') }}
@@ -526,15 +530,11 @@ jobs:
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@v2
         with:
-          tool: wasm-bindgen-cli@0.2.111
+          tool: wasm-bindgen-cli@0.2.121
 
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: |
-          cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown
-          wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir npm/vize-wasm --target web
-          # Restore the correct package.json (wasm-bindgen overwrites it with crate name)
-          git checkout npm/vize-wasm/package.json
+        run: moon run --target native - -- < tools/moon/scripts/build_vize_wasm_package.mbtx
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
@@ -542,19 +542,13 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
 
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
+
       - name: Publish @vizejs/wasm
-        working-directory: npm/vize-wasm
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/vize-wasm --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish Vite plugin (using Trusted Publishing / OIDC)
   release-npm-vite-plugin:
@@ -573,26 +567,21 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-vite-plugin-vize
+          path: npm/vite-plugin-vize
 
       - name: Publish @vizejs/vite-plugin
-        working-directory: npm/vite-plugin-vize
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/vite-plugin-vize --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish Oxlint plugin package (using Trusted Publishing / OIDC)
   release-npm-oxlint-plugin:
@@ -611,45 +600,24 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-oxlint-plugin-vize
+          path: npm/oxlint-plugin-vize
 
       - name: Inject native binding package versions
-        run: |
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('npm/oxlint-plugin-vize/package.json', 'utf8'));
-            const nativePkg = JSON.parse(fs.readFileSync('npm/vize-native/package.json', 'utf8'));
-            const version = nativePkg.version;
-            if (pkg.optionalDependencies) {
-              for (const dep of Object.keys(pkg.optionalDependencies)) {
-                if (dep.startsWith('@vizejs/native-')) {
-                  pkg.optionalDependencies[dep] = version;
-                }
-              }
-            }
-            fs.writeFileSync('npm/oxlint-plugin-vize/package.json', JSON.stringify(pkg, null, 2) + '\n');
-            console.log('Updated optionalDependencies to native version ' + version);
-          "
-          cat npm/oxlint-plugin-vize/package.json
+        run: moon run --target native - -- npm/oxlint-plugin-vize/package.json npm/vize-native/package.json --print < tools/moon/scripts/inject_native_optional_deps.mbtx
 
       - name: Publish oxlint-plugin-vize
-        working-directory: npm/oxlint-plugin-vize
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/oxlint-plugin-vize --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish unplugin package (using Trusted Publishing / OIDC)
   release-npm-unplugin:
@@ -668,26 +636,21 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-unplugin-vize
+          path: npm/unplugin-vize
 
       - name: Publish @vizejs/unplugin
-        working-directory: npm/unplugin-vize
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/unplugin-vize --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish Fresco package (using Trusted Publishing / OIDC)
   release-npm-fresco:
@@ -706,26 +669,21 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-fresco
+          path: npm/fresco
 
       - name: Publish @vizejs/fresco
-        working-directory: npm/fresco
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/fresco --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish Musea MCP server (using Trusted Publishing / OIDC)
   release-npm-musea-mcp-server:
@@ -744,26 +702,21 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-musea-mcp-server
+          path: npm/musea-mcp-server
 
       - name: Publish @vizejs/musea-mcp-server
-        working-directory: npm/musea-mcp-server
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/musea-mcp-server --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish Vite plugin for Musea (using Trusted Publishing / OIDC)
   release-npm-vite-plugin-musea:
@@ -782,26 +735,21 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-vite-plugin-musea
+          path: npm/vite-plugin-musea
 
       - name: Publish @vizejs/vite-plugin-musea
-        working-directory: npm/vite-plugin-musea
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/vite-plugin-musea --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish Rspack plugin (using Trusted Publishing / OIDC)
   release-npm-rspack-plugin:
@@ -820,26 +768,21 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-rspack-vize-plugin
+          path: npm/rspack-vize-plugin
 
       - name: Publish @vizejs/rspack-plugin
-        working-directory: npm/rspack-vize-plugin
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/rspack-vize-plugin --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish Musea Nuxt (using Trusted Publishing / OIDC)
   release-npm-musea-nuxt:
@@ -858,26 +801,21 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-musea-nuxt
+          path: npm/musea-nuxt
 
       - name: Publish @vizejs/musea-nuxt
-        working-directory: npm/musea-nuxt
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/musea-nuxt --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Build and publish @vizejs/nuxt (using Trusted Publishing / OIDC)
   release-npm-nuxt:
@@ -902,34 +840,33 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-nuxt
+          path: npm/nuxt
 
       - name: Publish @vizejs/nuxt
-        working-directory: npm/nuxt
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/nuxt --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
   # Publish crates to crates.io (using Trusted Publishing)
   release-crates:
     name: Release crates to crates.io
     runs-on: ubuntu-latest
     environment: crates-io
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -947,13 +884,15 @@ jobs:
       - name: Publish to crates.io
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.crates-io-auth.outputs.token }}
-        run: ./scripts/publish-crates.sh
+        run: moon run --target native - -- < tools/moon/scripts/publish_crates.mbtx
 
   # Create GitHub Release with CLI binaries
   create-github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: [build-cli, build-editor-extensions]
+    permissions:
+      contents: write
     steps:
       - name: Download CLI artifacts
         uses: actions/download-artifact@v4
@@ -972,18 +911,19 @@ jobs:
         run: ls -la cli-artifacts/
 
       - name: List editor extension artifacts
-        run: ls -la editor-extension-artifacts/
+        run: find editor-extension-artifacts -maxdepth 5 -type f | sort
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           draft: false
+          overwrite_files: true
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
           files: |
             cli-artifacts/*.tar.gz
             cli-artifacts/*.zip
-            editor-extension-artifacts/*.vsix
+            editor-extension-artifacts/npm/vscode-vize/dist/*.vsix
             editor-extension-artifacts/*.tar.gz
 
   # Publish vize CLI npm package (using Trusted Publishing / OIDC)
@@ -1004,41 +944,21 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Configure npm auth fallback
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@v4
         with:
-          name: release-npm-packages
-          path: .
+          name: release-package-vize
+          path: npm/vize
 
       - name: Inject native binding package versions
-        run: |
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('npm/vize/package.json', 'utf8'));
-            const version = pkg.version;
-            if (pkg.optionalDependencies) {
-              for (const dep of Object.keys(pkg.optionalDependencies)) {
-                if (dep.startsWith('@vizejs/native-')) {
-                  pkg.optionalDependencies[dep] = version;
-                }
-              }
-            }
-            fs.writeFileSync('npm/vize/package.json', JSON.stringify(pkg, null, 2) + '\n');
-            console.log('Updated optionalDependencies to ' + version);
-          "
-          cat npm/vize/package.json
+        run: moon run --target native - -- npm/vize/package.json --print < tools/moon/scripts/inject_native_optional_deps.mbtx
 
       - name: Publish vize CLI package
-        working-directory: npm/vize
-        run: |
-          publish_with_retry() {
-            local max_attempts=3
-            for attempt in $(seq 1 $max_attempts); do
-              echo "Attempt $attempt/$max_attempts: $@"
-              if "$@"; then return 0; fi
-              if [ $attempt -lt $max_attempts ]; then echo "Retrying in 15s..."; sleep 15; fi
-            done
-            return 1
-          }
-          publish_with_retry vp pm publish --access public --no-git-checks --tag $NPM_TAG -- --provenance
+        run: moon run --target native - -- npm/vize --provenance < tools/moon/scripts/publish_npm_package.mbtx

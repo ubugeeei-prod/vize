@@ -3,7 +3,18 @@ export interface SfcCompileOptionsNapi {
   sourceMap?: boolean;
   ssr?: boolean;
   vapor?: boolean;
+  customRenderer?: boolean;
   scopeId?: string;
+}
+
+export interface MacroArtifact {
+  kind: string;
+  name: string;
+  source: string;
+  content: string;
+  moduleCode?: string;
+  start: number;
+  end: number;
 }
 
 export interface SfcCompileResultNapi {
@@ -14,6 +25,7 @@ export interface SfcCompileResultNapi {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  macroArtifacts?: MacroArtifact[];
 }
 
 export interface VizeUnpluginOptions {
@@ -23,6 +35,7 @@ export interface VizeUnpluginOptions {
   ssr?: boolean;
   sourceMap?: boolean;
   vapor?: boolean;
+  customRenderer?: boolean;
   root?: string;
   debug?: boolean;
 }
@@ -44,6 +57,7 @@ export interface CompiledModule {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  macroArtifacts?: MacroArtifact[];
   styles: StyleBlockInfo[];
 }
 
@@ -60,6 +74,7 @@ export interface NormalizedVizeUnpluginOptions {
   ssr: boolean;
   sourceMap: boolean;
   vapor: boolean;
+  customRenderer: boolean;
   root: string;
   debug: boolean;
 }

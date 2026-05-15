@@ -20,7 +20,7 @@ impl ProviderId {
 }
 
 /// Key used for provide/inject
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ProvideKey {
     /// String key
     String(CompactString),

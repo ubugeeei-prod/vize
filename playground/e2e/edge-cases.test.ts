@@ -118,7 +118,7 @@ const value = maybeNull!.property
       expect(result.script?.code).toBeDefined();
     });
 
-    it("should handle optional chaining with types", () => {
+    it("should downcompile optional chaining type declarations by default", () => {
       const sfc = `
 <script setup lang="ts">
 interface User { name?: { first: string } }
@@ -132,8 +132,29 @@ const name = user?.name?.first
 `;
       const result = wasm!.compileSfc(sfc, {});
       expect(result.script?.code).toBeDefined();
-      // TypeScript is preserved in output (auto-detected from lang="ts")
+      expect(result.script?.code).toContain("const user = {}");
+      expect(result.script?.code).toContain("const name = user?.name?.first");
+      expect(result.script?.code).not.toContain("interface User");
+      expect(result.script?.code).not.toContain(": User");
+    });
+
+    it("should preserve optional chaining type declarations when requested", () => {
+      const sfc = `
+<script setup lang="ts">
+interface User { name?: { first: string } }
+const user: User = {}
+const name = user?.name?.first
+</script>
+
+<template>
+  <div>{{ name }}</div>
+</template>
+`;
+      const result = wasm!.compileSfc(sfc, { scriptExt: "preserve" });
+      expect(result.script?.code).toBeDefined();
       expect(result.script?.code).toContain("interface User");
+      expect(result.script?.code).toContain("const user: User = {}");
+      expect(result.script?.code).toContain("const name = user?.name?.first");
     });
 
     it("should handle enum declarations", () => {

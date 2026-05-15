@@ -22,93 +22,127 @@ members = [
 ]
 
 [workspace.package]
-version = "0.52.0"
+version = "0.90.0"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/ubugeeei/vize"
 
 [workspace.dependencies]
-# Internal crates (path for local dev, version for crates.io)
-vize_carton = { path = "crates/vize_carton", version = "0.52.0" }
-vize_relief = { path = "crates/vize_relief", version = "0.52.0" }
-vize_armature = { path = "crates/vize_armature", version = "0.52.0" }
-vize_croquis = { path = "crates/vize_croquis", version = "0.52.0" }
-vize_atelier_core = { path = "crates/vize_atelier_core", version = "0.52.0" }
-vize_atelier_dom = { path = "crates/vize_atelier_dom", version = "0.52.0" }
-vize_atelier_vapor = { path = "crates/vize_atelier_vapor", version = "0.52.0" }
-vize_atelier_ssr = { path = "crates/vize_atelier_ssr", version = "0.52.0" }
-vize_atelier_sfc = { path = "crates/vize_atelier_sfc", version = "0.52.0", default-features = false }
-vize_vitrine = { path = "crates/vize_vitrine", version = "0.52.0", default-features = false }
-vize_musea = { path = "crates/vize_musea", version = "0.52.0" }
-vize_patina = { path = "crates/vize_patina", version = "0.52.0" }
-vize_glyph = { path = "crates/vize_glyph", version = "0.52.0" }
-vize_maestro = { path = "crates/vize_maestro", version = "0.52.0" }
-vize_canon = { path = "crates/vize_canon", version = "0.52.0", default-features = false }
-vize_fresco = { path = "crates/vize_fresco", version = "0.52.0", default-features = false }
+# Publishable internal crates (path for local dev, version fallback for crates.io)
+vize_carton = { path = "crates/vize_carton", version = "=0.90.0" }
+vize_relief = { path = "crates/vize_relief", version = "=0.90.0" }
+vize_armature = { path = "crates/vize_armature", version = "=0.90.0" }
+vize_croquis = { path = "crates/vize_croquis", version = "=0.90.0" }
+vize_atelier_core = { path = "crates/vize_atelier_core", version = "=0.90.0" }
+vize_atelier_dom = { path = "crates/vize_atelier_dom", version = "=0.90.0" }
+vize_atelier_vapor = { path = "crates/vize_atelier_vapor", version = "=0.90.0" }
+vize_atelier_ssr = { path = "crates/vize_atelier_ssr", version = "=0.90.0" }
+vize_atelier_sfc = { path = "crates/vize_atelier_sfc", version = "=0.90.0", default-features = false }
+vize_musea = { path = "crates/vize_musea", version = "=0.90.0" }
+vize_patina = { path = "crates/vize_patina", version = "=0.90.0" }
+vize_canon = { path = "crates/vize_canon", version = "=0.90.0", default-features = false }
+vize_fresco = { path = "crates/vize_fresco", version = "=0.90.0", default-features = false }
 
-# OXC dependencies (git for local dev, version for crates.io publish)
-oxc_parser = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
-oxc_ast = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
-oxc_ast_visit = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
-oxc_span = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
-oxc_allocator = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
-oxc_syntax = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
-oxc_diagnostics = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
-oxc_semantic = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
-oxc_transformer = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
-oxc_codegen = { version = "0.116.0", git = "https://github.com/oxc-project/oxc", branch = "main" }
+# Workspace-only internal crates (always use the local path)
+vize_vitrine = { path = "crates/vize_vitrine", default-features = false }
+vize_glyph = { path = "crates/vize_glyph" }
+vize_maestro = { path = "crates/vize_maestro" }
+
+# OXC dependencies (pinned to a specific upstream revision for reproducibility)
+oxc_parser = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_ast = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_ast_visit = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_span = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_allocator = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_syntax = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_diagnostics = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_semantic = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_transformer = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
+oxc_codegen = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
 # oxc_formatter is not yet on crates.io, so vize_glyph is excluded from crates.io publish
-oxc_formatter = { git = "https://github.com/oxc-project/oxc", branch = "main" }
+oxc_formatter = { version = "=0.46.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
 
-# Serialization
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-toml = "0.8"
-lsp-types = "0.97"
+# Serialization and schema formats
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = "=1.0.149"
+toml = "=1.1.2"
+lsp-types = "=0.97.0"
+pklrust = "=0.9.0"
 
-# NAPI
-napi = { version = "2.14", default-features = false, features = ["napi8", "serde-json"] }
-napi-derive = "2.14"
+# CLI, async, and IDE runtime
+clap = { version = "=4.6.1", features = ["derive"] }
+tokio = "=1.52.3"
+futures = "=0.3.32"
+tower-lsp = "=0.20.0"
+async-trait = "=0.1.89"
+tracing = "=0.1.44"
+tracing-subscriber = "=0.3.23"
+parking_lot = "=0.12.5"
+ropey = "=1.6.1"
+dirs = "=6.0.0"
+which = "=8.0.2"
+walkdir = "=2.5.0"
+ignore = "=0.4.25"
+glob = "=0.3.3"
+rayon = "=1.12.0"
+regex-lite = "=0.1.9"
+tempfile = "=3.27.0"
 
-# WASM
-wasm-bindgen = "0.2"
-serde-wasm-bindgen = "0.6"
-js-sys = "0.3"
+# NAPI / WASM / Web
+napi = { version = "=3.9.0", default-features = false, features = ["napi8", "serde-json"] }
+napi-derive = "=3.5.6"
+napi-build = "=2.3.2"
+wasm-bindgen = "=0.2.121"
+serde-wasm-bindgen = "=0.6.5"
+js-sys = "=0.3.98"
+web-sys = { version = "=0.3.98", features = ["console"] }
+getrandom = { version = "=0.3.4", features = ["wasm_js"] }
 
-# Arena allocator
-bumpalo = { version = "3.16", features = ["collections", "boxed"] }
+# Arena allocation
+bumpalo = { version = "=3.20.2", features = ["collections", "boxed"] }
 
 # Utilities
-thiserror = "2.0"
-rustc-hash = "2.1"
-bitflags = { version = "2.6", features = ["serde"] }
-once_cell = "1.20"
-compact_str = { version = "0.8", features = ["serde"] }
-phf = { version = "0.11", features = ["macros"] }
-memoffset = "0.9"
-memchr = "2.7"
-regex = "1.10"
-smallvec = { version = "1.13", features = ["union"] }
-dashmap = "6.1"
-xxhash-rust = { version = "0.8", features = ["xxh3"] }
-sha2 = "0.10"
-htmlize = { version = "1.0.6", features = ["unescape"] }
+thiserror = "=2.0.18"
+rustc-hash = "=2.1.2"
+bitflags = { version = "=2.11.1", features = ["serde"] }
+once_cell = "=1.21.4"
+compact_str = { version = "=0.9.0", features = ["serde"] }
+phf = { version = "=0.13.1", features = ["macros"] }
+memoffset = "=0.9.1"
+memchr = "=2.8.0"
+regex = "=1.12.3"
+smallvec = { version = "=1.15.1", features = ["union"] }
+dashmap = "=6.1.0"
+xxhash-rust = { version = "=0.8.15", features = ["xxh3"] }
+sha2 = "=0.11.0"
+htmlize = { version = "=1.1.0", features = ["unescape"] }
+libc = "=0.2.186"
 
 # CSS
-lightningcss = "1.0.0-alpha.68"
+lightningcss = "=1.0.0-alpha.71"
 
-# Testing
-insta = { version = "1.41", features = ["toml"] }
+# Terminal / layout
+crossterm = "=0.29.0"
+taffy = "=0.10.1"
+unicode-width = "=0.2.2"
+unicode-segmentation = "=1.13.2"
 
-# Benchmarking
-criterion = "0.5"
+# Testing and benchmarking
+insta = { version = "=1.47.2", features = ["toml"] }
+criterion = "=0.8.2"
 
 # Published corsa crates
-corsa = { package = "corsa", version = "0.3.1" }
-corsa_lsp = { package = "corsa_lsp", version = "0.3.1" }
-corsa_runtime = { package = "corsa_runtime", version = "0.3.1" }
+corsa = { package = "corsa", version = "=0.7.0" }
+corsa_lsp = { package = "corsa_lsp", version = "=0.7.0" }
+corsa_runtime = { package = "corsa_runtime", version = "=0.7.0" }
 
 [profile.release]
 lto = true
 codegen-units = 1
 opt-level = 3
+
+[profile.ci]
+inherits = "dev"
+debug = false
+incremental = false
+codegen-units = 256

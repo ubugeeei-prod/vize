@@ -1,0 +1,40 @@
+///|
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+async fn run_app() -> Int {
+  let args = cli_args()
+  if args.length() > 1 {
+    println("Usage: moon run --target native - -- [target] < tools/moon/scripts/dev_app.mbtx")
+    return 1
+  }
+  let extra_env : Map[String, String] = {}
+  if args.length() == 1 {
+    extra_env["usage_target"] = args[0]
+  }
+  @process.run(
+    "node",
+    ["tests/tooling/support/dev-app.ts"],
+    extra_env=extra_env,
+  )
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

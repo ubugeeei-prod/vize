@@ -67,8 +67,10 @@ pub(crate) fn find_corsa_in_search_roots(search_roots: &[PathBuf]) -> Option<Str
     let mut fallback = None;
 
     for root in search_roots {
-        let root = root.to_string_lossy();
-        let Some(candidate) = find_corsa_candidate(Some(root.as_ref())) else {
+        let root_string = root.to_string_lossy();
+        let Some(candidate) =
+            find_corsa_candidate(Some(root_string.as_ref()), Some(root.as_path()))
+        else {
             continue;
         };
 
@@ -87,7 +89,7 @@ pub(crate) fn find_corsa_in_search_roots(search_roots: &[PathBuf]) -> Option<Str
 /// Resolve a project-local Corsa executable from the current directory or ancestors.
 #[cfg(test)]
 pub(crate) fn find_corsa_in_local_node_modules(working_dir: Option<&str>) -> Option<String> {
-    find_corsa_candidate(working_dir).map(|candidate| candidate.path)
+    find_corsa_candidate(working_dir, None).map(|candidate| candidate.path)
 }
 
 pub(crate) fn normalize_corsa_path(path: &str) -> Option<String> {
@@ -111,12 +113,17 @@ pub(crate) fn normalize_corsa_path(path: &str) -> Option<String> {
     };
 
     let original = path.to_string_lossy().into_owned();
-    find_corsa_in_search_roots(&corsa_search_roots(Some(project_root)))
+    let project_root = project_root.to_string_lossy();
+    find_corsa_candidate(Some(project_root.as_ref()), None)
+        .map(|candidate| candidate.path)
         .filter(|resolved| resolved.as_str() != original.as_str())
         .or(Some(original.into()))
 }
 
-fn find_corsa_candidate(working_dir: Option<&str>) -> Option<CorsaCandidate> {
+fn find_corsa_candidate(
+    working_dir: Option<&str>,
+    search_boundary: Option<&Path>,
+) -> Option<CorsaCandidate> {
     let base_dir = working_dir
         .map(PathBuf::from)
         .or_else(|| std::env::current_dir().ok())?;
@@ -124,29 +131,56 @@ fn find_corsa_candidate(working_dir: Option<&str>) -> Option<CorsaCandidate> {
     let mut fallback = None;
     let mut current = Some(base_dir.as_path());
     while let Some(dir) = current {
+        let at_boundary = search_boundary.is_some_and(|boundary| dir == boundary);
+
         if let Some(path) = search_project_cache(dir) {
-            return Some(CorsaCandidate {
-                path,
-                kind: CorsaCandidateKind::Native,
-            });
-        }
-        if let Some(parent) = dir.parent() {
-            if let Some(path) = search_project_cache(&parent.join("corsa-bind")) {
-                return Some(CorsaCandidate {
+            if keep_candidate(
+                &mut fallback,
+                CorsaCandidate {
                     path,
                     kind: CorsaCandidateKind::Native,
-                });
+                },
+            ) {
+                return fallback;
+            }
+        }
+        if !at_boundary {
+            if let Some(parent) = dir.parent() {
+                if let Some(path) = search_project_cache(&parent.join("corsa-bind")) {
+                    if keep_candidate(
+                        &mut fallback,
+                        CorsaCandidate {
+                            path,
+                            kind: CorsaCandidateKind::Native,
+                        },
+                    ) {
+                        return fallback;
+                    }
+                }
             }
         }
         if let Some(candidate) = search_local_install(dir) {
-            if should_replace_candidate(fallback.as_ref(), &candidate) {
-                fallback = Some(candidate);
+            if keep_candidate(&mut fallback, candidate) {
+                return fallback;
             }
+        }
+        if at_boundary {
+            break;
         }
         current = dir.parent();
     }
 
     fallback
+}
+
+fn keep_candidate(fallback: &mut Option<CorsaCandidate>, candidate: CorsaCandidate) -> bool {
+    if should_replace_candidate(fallback.as_ref(), &candidate) {
+        *fallback = Some(candidate);
+    }
+
+    fallback
+        .as_ref()
+        .is_some_and(|candidate| candidate.kind == CorsaCandidateKind::Native)
 }
 
 /// Resolve a globally installed Corsa executable from common package-manager paths.

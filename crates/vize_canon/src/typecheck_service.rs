@@ -4,12 +4,11 @@
 //! using Corsa as the TypeScript type checker backend.
 
 use crate::corsa_bridge::{CorsaBridge, CorsaBridgeError};
-use std::path::Path;
+use crate::virtual_ts::{generate_virtual_ts_with_offsets, VirtualTsOptions, VirtualTsOutput};
 #[allow(clippy::disallowed_types)]
 use std::sync::Arc;
 use vize_carton::cstr;
 use vize_carton::String;
-use vize_croquis::virtual_ts::{generate_virtual_ts, VirtualTsOutput};
 
 /// Type check service for Vue SFCs.
 #[allow(clippy::disallowed_types)]
@@ -105,7 +104,7 @@ impl TypeCheckService {
         &self,
         source: &str,
         filename: &str,
-        options: &TypeCheckServiceOptions,
+        _options: &TypeCheckServiceOptions,
     ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
         use std::time::Instant;
         use vize_atelier_core::parser::parse;
@@ -174,24 +173,24 @@ impl TypeCheckService {
         let summary = analyzer.finish();
 
         // Generate virtual TypeScript
-        let virtual_ts_output = generate_virtual_ts(
+        let virtual_ts_output = generate_virtual_ts_with_offsets(
+            &summary,
             script_content,
             template_ast.as_ref(),
-            &summary.bindings,
-            None, // import_resolver
-            options.project_root.as_ref().map(Path::new),
+            script_offset,
             template_offset,
+            &VirtualTsOptions::default(),
         );
 
-        result.virtual_ts = Some(virtual_ts_output.content.clone());
+        result.virtual_ts = Some(virtual_ts_output.code.clone());
 
         // Check with Corsa
-        if !virtual_ts_output.content.is_empty() {
+        if !virtual_ts_output.code.is_empty() {
             let virtual_uri = cstr!("vize-virtual://{filename}.ts");
 
             // Open virtual document
             self.bridge
-                .open_virtual_document(&virtual_uri, &virtual_ts_output.content)
+                .open_virtual_document(&virtual_uri, &virtual_ts_output.code)
                 .await?;
 
             // Get diagnostics
@@ -298,15 +297,22 @@ fn map_position_to_sfc(
     _template_offset: u32,
 ) -> (u32, u32) {
     // Convert line/col to offset in generated content
-    let gen_start_offset = line_col_to_offset(&virtual_ts.content, start_line, start_char);
-    let gen_end_offset = line_col_to_offset(&virtual_ts.content, end_line, end_char);
+    let gen_start_offset = line_col_to_offset(&virtual_ts.code, start_line, start_char) as usize;
+    let gen_end_offset = line_col_to_offset(&virtual_ts.code, end_line, end_char) as usize;
 
     // Try to find source mapping
-    if let Some(src_start) = virtual_ts.source_map.to_source(gen_start_offset) {
-        let src_end = virtual_ts
-            .source_map
-            .to_source(gen_end_offset)
-            .unwrap_or(src_start + (gen_end_offset - gen_start_offset));
+    if let Some(mapping) = virtual_ts
+        .mappings
+        .iter()
+        .find(|mapping| mapping.gen_range.contains(&gen_start_offset))
+    {
+        let src_start =
+            mapping.src_range.start as u32 + (gen_start_offset - mapping.gen_range.start) as u32;
+        let src_end = if mapping.gen_range.contains(&gen_end_offset) {
+            mapping.src_range.start as u32 + (gen_end_offset - mapping.gen_range.start) as u32
+        } else {
+            mapping.src_range.end as u32
+        };
         return (src_start, src_end);
     }
 

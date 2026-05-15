@@ -169,6 +169,44 @@ fn test_parse_self_closing() {
     }
 }
 
+#[test]
+fn test_parse_self_closing_textarea_keeps_following_elements() {
+    let allocator = Bump::new();
+    let source = r#"<Primitive :class="ui.root({ class: [uiProp?.root, props.class] })"><textarea :class="ui.base({ class: uiProp?.base })" /><slot :ui="ui" /><span v-if="isLeading || !!avatar || !!slots.leading"><slot><UIcon v-if="isLeading && leadingIconName" /><UAvatar v-else-if="!!avatar" /></slot></span></Primitive>"#;
+    let (root, errors) = parse(&allocator, source);
+
+    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
+    assert_eq!(root.children.len(), 1);
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.tag.as_str(), "Primitive");
+        assert_eq!(el.children.len(), 3);
+
+        if let TemplateChildNode::Element(textarea) = &el.children[0] {
+            assert_eq!(textarea.tag.as_str(), "textarea");
+            assert!(textarea.is_self_closing);
+        } else {
+            panic!("Expected textarea element");
+        }
+
+        if let TemplateChildNode::Element(slot) = &el.children[1] {
+            assert_eq!(slot.tag.as_str(), "slot");
+            assert!(slot.is_self_closing);
+        } else {
+            panic!("Expected slot element");
+        }
+
+        if let TemplateChildNode::Element(span) = &el.children[2] {
+            assert_eq!(span.tag.as_str(), "span");
+            assert_eq!(span.children.len(), 1);
+        } else {
+            panic!("Expected span element");
+        }
+    } else {
+        panic!("Expected Primitive element");
+    }
+}
+
 // ====================================================================
 // Additional tests
 // ====================================================================
@@ -189,9 +227,9 @@ fn test_parse_comment() {
 fn parser_options_svg_subtree() -> ParserOptions {
     ParserOptions {
         get_namespace: |tag, parent| {
-            if tag.eq_ignore_ascii_case("svg") {
-                Namespace::Svg
-            } else if parent.is_some_and(|p| p.eq_ignore_ascii_case("svg")) {
+            if tag.eq_ignore_ascii_case("svg")
+                || parent.is_some_and(|p| p.eq_ignore_ascii_case("svg"))
+            {
                 Namespace::Svg
             } else {
                 Namespace::Html
@@ -406,6 +444,59 @@ fn test_parse_v_for() {
             assert_eq!(dir.name.as_str(), "for");
             if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
                 assert_eq!(exp.content.as_str(), "item in items");
+            }
+        } else {
+            panic!("Expected directive");
+        }
+    }
+}
+
+#[test]
+fn test_no_value_directive_loc_excludes_trailing_whitespace() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div v-if />");
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Directive(dir) = &el.props[0] {
+            assert_eq!(dir.loc.source.as_str(), "v-if");
+        } else {
+            panic!("Expected directive");
+        }
+    }
+}
+
+#[test]
+fn test_quoted_attribute_loc_includes_closing_quote_with_spaced_equals() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div class ="w-100" />"#);
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.loc.source.as_str(), r#"class ="w-100""#);
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "w-100");
+            assert_eq!(attr.value.as_ref().unwrap().loc.source.as_str(), "w-100");
+        } else {
+            panic!("Expected attribute");
+        }
+    }
+}
+
+#[test]
+fn test_quoted_directive_loc_includes_closing_quote_with_spaced_equals() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div v-if ="ok" />"#);
+    assert!(errors.is_empty());
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Directive(dir) = &el.props[0] {
+            assert_eq!(dir.loc.source.as_str(), r#"v-if ="ok""#);
+            if let Some(ExpressionNode::Simple(exp)) = &dir.exp {
+                assert_eq!(exp.content.as_str(), "ok");
+                assert_eq!(exp.loc.source.as_str(), "ok");
+            } else {
+                panic!("Expected expression");
             }
         } else {
             panic!("Expected directive");

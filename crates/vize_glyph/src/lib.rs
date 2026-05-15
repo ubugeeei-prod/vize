@@ -146,6 +146,30 @@ const msg = 'hello'
     }
 
     #[test]
+    fn test_format_sfc_preserves_block_attrs() {
+        let source = r#"<template functional>
+  <div>{{ msg }}</div>
+</template>
+
+<script setup lang="ts" generic="T extends string">
+const msg = 'hello'
+</script>
+
+<style scoped module lang="scss">
+.container { color: red; }
+</style>
+
+<i18n global locale="en">
+{"hello":"Hello"}
+</i18n>
+"#;
+        let options = FormatOptions::default();
+        let result = format_sfc(source, &options).unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
     fn test_allocator_reuse() {
         let allocator = Allocator::with_capacity(4096);
         let options = FormatOptions::default();

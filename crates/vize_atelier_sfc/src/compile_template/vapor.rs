@@ -12,6 +12,7 @@ pub(crate) fn compile_template_block_vapor(
     scope_id: &str,
     has_scoped: bool,
     bindings: Option<&BindingMetadata>,
+    custom_renderer: bool,
 ) -> Result<String, SfcError> {
     let allocator = Bump::new();
 
@@ -19,6 +20,8 @@ pub(crate) fn compile_template_block_vapor(
     let vapor_opts = VaporCompilerOptions {
         prefix_identifiers: false,
         ssr: false,
+        binding_metadata: bindings.cloned(),
+        custom_renderer,
         ..Default::default()
     };
 
@@ -218,21 +221,34 @@ fn rewrite_bound_component_resolution(
 }
 
 fn resolve_component_binding_name(bindings: &BindingMetadata, tag: &str) -> Option<String> {
-    if bindings.bindings.contains_key(tag) {
-        return Some(tag.to_compact_string());
+    let resolve_base = |name: &str| {
+        if bindings.bindings.contains_key(name) {
+            return Some(name.to_compact_string());
+        }
+
+        let camel = camelize_component_name(name);
+        if bindings.bindings.contains_key(camel.as_str()) {
+            return Some(camel);
+        }
+
+        let pascal = capitalize_component_name(camel.as_str());
+        if bindings.bindings.contains_key(pascal.as_str()) {
+            return Some(pascal);
+        }
+
+        None
+    };
+
+    if let Some((base, suffix)) = tag.split_once('.') {
+        let resolved_base = resolve_base(base)?;
+        let mut resolved = String::with_capacity(resolved_base.len() + suffix.len() + 1);
+        resolved.push_str(resolved_base.as_str());
+        resolved.push('.');
+        resolved.push_str(suffix);
+        return Some(resolved);
     }
 
-    let camel = camelize_component_name(tag);
-    if bindings.bindings.contains_key(camel.as_str()) {
-        return Some(camel);
-    }
-
-    let pascal = capitalize_component_name(camel.as_str());
-    if bindings.bindings.contains_key(pascal.as_str()) {
-        return Some(pascal);
-    }
-
-    None
+    resolve_base(tag)
 }
 
 fn camelize_component_name(tag: &str) -> String {

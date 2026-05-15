@@ -427,7 +427,7 @@ function selectReference(path: string) {
 
 .btn--primary {
   background: var(--musea-accent);
-  color: #fff;
+  color: var(--musea-accent-contrast);
 }
 
 .btn--primary:hover {

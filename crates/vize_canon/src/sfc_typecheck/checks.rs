@@ -212,6 +212,39 @@ pub fn check_reactivity(
                 source_name,
                 target_name,
             } => cstr!("Extracting '{target_name}' from '{source_name}.value' loses reactivity"),
+            ReactivityLossKind::ReactivePropertyExtract {
+                source_name,
+                prop_name,
+                target_name,
+            } => cstr!(
+                "Extracting '{target_name}' from '{source_name}.{prop_name}' loses reactivity"
+            ),
+            ReactivityLossKind::PropsDestructure { destructured_props } => cstr!(
+                "Destructuring props loses reactivity for: {}",
+                destructured_props.join(", ")
+            ),
+            ReactivityLossKind::FunctionArgumentExtract {
+                argument_name,
+                callee_name,
+                ..
+            } => cstr!(
+                "Passing '{argument_name}' to '{callee_name}' captures a non-reactive snapshot"
+            ),
+            ReactivityLossKind::GetterCallExtract {
+                context_name,
+                getter_name,
+                target_name,
+                ..
+            } => cstr!(
+                "Assigning '{context_name}.{getter_name}()' to '{target_name}' extracts a non-reactive snapshot"
+            ),
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } => cstr!(
+                "Assigning plain snapshot '{alias_name}' to '{target_name}' keeps reactivity lost from '{source_name}'"
+            ),
             ReactivityLossKind::ReactiveSpread { source_name } => {
                 cstr!("Spreading reactive object '{source_name}' loses reactivity")
             }

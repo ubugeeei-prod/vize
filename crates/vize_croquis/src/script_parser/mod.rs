@@ -22,10 +22,11 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
-use crate::analysis::BindingMetadata;
+use crate::analysis::{BindingMetadata, Croquis};
 use crate::analysis::{ImportStatementInfo, InvalidExport, ReExportInfo, TypeExport};
 use crate::macros::MacroTracker;
 use crate::provide::ProvideInjectTracker;
+use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
 use crate::scope::{
     JsGlobalScopeData, JsRuntime, NonScriptSetupScopeData, ScopeChain, ScriptSetupScopeData,
@@ -36,12 +37,47 @@ use vize_carton::{profile, CompactString, FxHashMap, FxHashSet};
 
 pub use process::process_statement;
 
+/// Origin of a local binding that already carries a plain, non-reactive value.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum ReactiveValueOrigin {
+    PropsDestructure {
+        prop_name: CompactString,
+    },
+    ReactiveProperty {
+        source_name: CompactString,
+        prop_name: CompactString,
+    },
+    RefValue {
+        source_name: CompactString,
+    },
+    FunctionArgument {
+        source_name: CompactString,
+        callee_name: CompactString,
+    },
+    GetterCall {
+        context_name: CompactString,
+        getter_name: CompactString,
+        source_name: CompactString,
+    },
+    PlainAlias {
+        source_name: CompactString,
+    },
+}
+
+/// A returned context whose methods are backed by getter arguments.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct ReactiveGetterContext {
+    pub callee_name: CompactString,
+    pub getters: FxHashMap<CompactString, CompactString>,
+}
+
 /// Result of parsing a script setup block
 #[derive(Debug, Default)]
 pub struct ScriptParseResult {
     pub bindings: BindingMetadata,
     pub macros: MacroTracker,
     pub reactivity: ReactivityTracker,
+    pub race_conditions: RaceConditionTracker,
     pub type_exports: Vec<TypeExport>,
     pub invalid_exports: Vec<InvalidExport>,
     /// Scope chain for tracking nested JavaScript scopes
@@ -57,6 +93,10 @@ pub struct ScriptParseResult {
     /// Track aliases for reactivity APIs (e.g., const r = ref; r(0))
     /// Maps alias name to the original function name
     pub(crate) reactivity_aliases: FxHashMap<CompactString, CompactString>,
+    /// Bindings that are known plain snapshots of reactive values.
+    pub(crate) reactive_value_origins: FxHashMap<CompactString, ReactiveValueOrigin>,
+    /// Call results that were constructed from getter arguments.
+    pub(crate) reactive_getter_contexts: FxHashMap<CompactString, ReactiveGetterContext>,
     /// Setup context violation tracking
     pub setup_context: SetupContextTracker,
     /// Flag to track if we're in a non-setup script context
@@ -67,6 +107,34 @@ pub struct ScriptParseResult {
     pub re_exports: Vec<ReExportInfo>,
     /// Definition spans for bindings (name -> (start, end) offset in script)
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
+}
+
+impl ScriptParseResult {
+    /// Apply script analysis fields to an existing SFC analysis summary.
+    ///
+    /// This keeps script parsing as the single owner of script-scoped data while
+    /// allowing callers to add template analysis before or after the script pass.
+    pub fn apply_to_croquis(self, summary: &mut Croquis) {
+        summary.bindings = self.bindings;
+        summary.macros = self.macros;
+        summary.reactivity = self.reactivity;
+        summary.race_conditions = self.race_conditions;
+        summary.type_exports = self.type_exports;
+        summary.invalid_exports = self.invalid_exports;
+        summary.scopes = self.scopes;
+        summary.provide_inject = self.provide_inject;
+        summary.setup_context = self.setup_context;
+        summary.import_statements = self.import_statements;
+        summary.re_exports = self.re_exports;
+        summary.binding_spans = self.binding_spans;
+    }
+
+    /// Convert script analysis into a `Croquis` summary.
+    pub fn into_croquis(self) -> Croquis {
+        let mut summary = Croquis::new();
+        self.apply_to_croquis(&mut summary);
+        summary
+    }
 }
 
 /// Setup global scopes hierarchy:
@@ -550,6 +618,20 @@ import * as utils from './utils'
         }
     }
 
+    #[test]
+    fn test_binding_spans_stay_byte_aligned_with_unicode_comments() {
+        let source = r#"
+const before = 1
+// あいうえおかきくけこさしすせそたちつてとなにぬねの
+const heightLimit = "65vh"
+// はひふへほまみむめもやいゆえよらりるれろわをん
+"#;
+        let result = parse_script_setup(source);
+
+        let (start, end) = result.binding_spans["heightLimit"];
+        assert_eq!(&source[start as usize..end as usize], "heightLimit");
+    }
+
     // === Snapshot Tests ===
 
     #[test]
@@ -653,6 +735,185 @@ const copy = { ...state }
         }
 
         assert_snapshot!(output);
+    }
+
+    #[test]
+    fn test_props_snapshot_crossing_call_and_getter_context() {
+        use crate::reactivity::ReactivityLossKind;
+
+        let result = parse_script_setup(
+            r#"
+const { count } = defineProps<{ count: number }>()
+
+const ctx = useMyComposable(count)
+
+const ctx2 = useMyComposable(() => count)
+const a = ctx2.count()
+"#,
+        );
+
+        assert!(result.reactivity.losses().iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "count"
+                && argument_name == "count"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(result.reactivity.losses().iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::GetterCallExtract {
+                context_name,
+                getter_name,
+                target_name,
+                callee_name,
+                source_name,
+            } if context_name == "ctx2"
+                && getter_name == "count"
+                && target_name == "a"
+                && callee_name == "useMyComposable"
+                && source_name == "count"
+        )));
+    }
+
+    #[test]
+    fn test_plain_reactive_values_inside_call_arguments() {
+        use crate::reactivity::ReactivityLossKind;
+
+        let result = parse_script_setup(
+            r#"
+const props = defineProps<{ count: number }>()
+const { count: localCount } = props
+const countRef = ref(0)
+
+useMyComposable({ count: localCount })
+useMyComposable(props.count)
+useMyComposable(countRef.value)
+watch(() => localCount, () => {})
+"#,
+        );
+
+        let losses = result.reactivity.losses();
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "props.count"
+                && argument_name == "localCount"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "props.count"
+                && argument_name == "props.count"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "countRef.value"
+                && argument_name == "countRef.value"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(!losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                argument_name,
+                callee_name,
+                ..
+            } if argument_name == "localCount" && callee_name == "watch"
+        )));
+    }
+
+    #[test]
+    fn test_plain_reactive_alias_chain_crosses_calls_and_getters() {
+        use crate::reactivity::ReactivityLossKind;
+
+        let result = parse_script_setup(
+            r#"
+const { count } = defineProps<{ count: number }>()
+
+const alias = count
+const second = alias
+let assigned
+assigned = second
+
+useMyComposable(second)
+useMyComposable(assigned)
+
+const ctx = useMyComposable(() => second)
+const a = ctx.second()
+"#,
+        );
+
+        let losses = result.reactivity.losses();
+        assert!(!losses
+            .iter()
+            .any(|loss| matches!(&loss.kind, ReactivityLossKind::PropsDestructure { .. })));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } if source_name == "count" && alias_name == "count" && target_name == "alias"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } if source_name == "count" && alias_name == "alias" && target_name == "second"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::PlainValueAlias {
+                source_name,
+                alias_name,
+                target_name,
+            } if source_name == "count" && alias_name == "second" && target_name == "assigned"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "count"
+                && argument_name == "second"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                source_name,
+                argument_name,
+                callee_name,
+            } if source_name == "count"
+                && argument_name == "assigned"
+                && callee_name == "useMyComposable"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::GetterCallExtract {
+                context_name,
+                getter_name,
+                source_name,
+                ..
+            } if context_name == "ctx" && getter_name == "second" && source_name == "count"
+        )));
     }
 
     #[test]

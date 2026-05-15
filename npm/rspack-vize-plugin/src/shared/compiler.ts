@@ -3,14 +3,14 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
 import * as native from "@vizejs/native";
-import type { CompiledModule, SfcCompileOptionsNapi } from "../types/index.js";
+import type { CompiledModule, SfcCompileOptionsNapi } from "../types/index.ts";
 import {
   generateScopeId,
   extractStyleBlocks,
   extractCustomBlocks,
   collectTemplateAssetUrls,
-} from "./utils.js";
-import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.js";
+} from "./utils.ts";
+import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.ts";
 
 const { compileSfc } = native;
 
@@ -105,6 +105,7 @@ export function compileFile(
     customBlocks,
     isCustomElement,
     templateAssetUrls,
+    macroArtifacts: result.macroArtifacts ?? [],
   };
 
   // Only cache successful compilations
@@ -128,6 +129,8 @@ export function generateOutput(
     isProduction?: boolean;
     /** Project root context (for computing relative __file path) */
     rootContext?: string;
+    /** Whether Rspack native CSS is handling CSS module exports */
+    nativeCss?: boolean;
   },
 ): string {
   let output = compiled.code;
@@ -222,7 +225,9 @@ export function generateOutput(
           // Use _cssModule_<n> as binding since module name may not be a valid identifier
           const varName = `_cssModule_${style.index}`;
           cssModuleHmrEntries.push({ request, varName, bindingName });
-          return `import ${varName} from ${JSON.stringify(request)};`;
+          return options.nativeCss
+            ? `import * as ${varName} from ${JSON.stringify(request)};`
+            : `import ${varName} from ${JSON.stringify(request)};`;
         }
         return `import ${JSON.stringify(request)};`;
       })

@@ -6,13 +6,25 @@ import type { ViteDevServer } from "vite";
 import fs from "node:fs";
 import { glob } from "tinyglobby";
 
-import type { VizeOptions, CompiledModule } from "../types.js";
-import { compileBatch } from "../compiler.js";
-import { resolveCssImports, type CssAliasRule } from "../utils/css.js";
-import { hasDelegatedStyles } from "../utils/index.js";
-import { type DynamicImportAliasRule } from "../virtual.js";
-import { createLogger } from "../transform.js";
-import type { HmrUpdateType } from "../hmr.js";
+import type { VizeOptions, CompiledModule } from "../types.ts";
+import { compileBatch } from "../compiler.ts";
+import { resolveCssImports, type CssAliasRule } from "../utils/css.ts";
+import { hasDelegatedStyles } from "../utils/index.ts";
+import { type DynamicImportAliasRule } from "../virtual.ts";
+import { createLogger } from "../transform.ts";
+import type { HmrUpdateType } from "../hmr.ts";
+
+export const DEFAULT_PRECOMPILE_BATCH_SIZE = 128;
+
+export const DEFAULT_PRECOMPILE_IGNORE_PATTERNS = [
+  "node_modules/**",
+  "dist/**",
+  ".git/**",
+  ".nuxt/**",
+  ".output/**",
+  ".nitro/**",
+  "coverage/**",
+];
 
 export interface PrecompileFileMetadata {
   mtimeMs: number;
@@ -56,6 +68,25 @@ export function diffPrecompileFiles(
   return { changedFiles, deletedFiles };
 }
 
+export function normalizePrecompileBatchSize(value: number | undefined): number {
+  if (value === undefined || !Number.isFinite(value) || value <= 0) {
+    return DEFAULT_PRECOMPILE_BATCH_SIZE;
+  }
+
+  return Math.max(1, Math.floor(value));
+}
+
+export function chunkPrecompileFiles<T>(files: readonly T[], batchSize: number): T[][] {
+  const normalizedBatchSize = normalizePrecompileBatchSize(batchSize);
+  const chunks: T[][] = [];
+
+  for (let start = 0; start < files.length; start += normalizedBatchSize) {
+    chunks.push(files.slice(start, start + normalizedBatchSize));
+  }
+
+  return chunks;
+}
+
 export interface VizePluginState {
   cache: Map<string, CompiledModule>;
   ssrCache: Map<string, CompiledModule>;
@@ -69,6 +100,7 @@ export interface VizePluginState {
   server: ViteDevServer | null;
   filter: (id: string) => boolean;
   scanPatterns: string[] | null;
+  precompileBatchSize: number;
   ignorePatterns: string[];
   mergedOptions: VizeOptions;
   initialized: boolean;
@@ -90,13 +122,38 @@ export function getEnvironmentCache(
 export function getCompileOptionsForRequest(
   state: Pick<VizePluginState, "isProduction" | "mergedOptions">,
   ssr: boolean,
-): { sourceMap: boolean; ssr: boolean; vapor: boolean } {
+): {
+  sourceMap: boolean;
+  ssr: boolean;
+  vapor: boolean;
+  customRenderer: boolean;
+} {
   return {
     sourceMap: state.mergedOptions?.sourceMap ?? !state.isProduction,
     ssr,
     // Vapor runtime is client-oriented today; use VDOM for SSR and Vapor on the client.
     vapor: !ssr && (state.mergedOptions?.vapor ?? false),
+    customRenderer: state.mergedOptions?.customRenderer ?? false,
   };
+}
+
+export function syncCollectedCssForFile(
+  state: Pick<VizePluginState, "isProduction" | "collectedCss" | "cssAliasRules">,
+  filePath: string,
+  compiled: CompiledModule | undefined,
+): void {
+  if (!compiled || !state.isProduction) {
+    return;
+  }
+
+  if (compiled.css && !hasDelegatedStyles(compiled)) {
+    state.collectedCss.set(
+      filePath,
+      resolveCssImports(compiled.css, filePath, state.cssAliasRules, false),
+    );
+  } else {
+    state.collectedCss.delete(filePath);
+  }
 }
 
 /**
@@ -148,58 +205,69 @@ export async function compileAll(state: VizePluginState): Promise<void> {
     return;
   }
 
-  // Read all files
-  const fileContents: { path: string; source: string }[] = [];
-  for (const file of changedFiles) {
-    try {
-      const source = fs.readFileSync(file, "utf-8");
-      fileContents.push({ path: file, source });
-    } catch (e) {
-      state.logger.error(`Failed to read ${file}:`, e);
-    }
-  }
-
-  // Batch compile using native parallel processing
-  const result = compileBatch(fileContents, state.cache, {
-    ssr: false,
-    vapor: state.mergedOptions.vapor ?? false,
-  });
-
   for (const file of changedFiles) {
     state.collectedCss.delete(file);
     state.pendingHmrUpdateTypes.delete(file);
   }
 
-  // Collect CSS for production extraction.
-  // Skip files with delegated styles (preprocessor/CSS Modules) -- those go through
-  // Vite's CSS pipeline and are extracted by Vite itself.
-  for (const fileResult of result.results) {
-    const metadata = currentMetadata.get(fileResult.path);
+  let successCount = 0;
+  let failedCount = 0;
+  let nativeTimeMs = 0;
+  const chunks = chunkPrecompileFiles(changedFiles, state.precompileBatchSize);
 
-    if (fileResult.errors.length > 0) {
-      state.cache.delete(fileResult.path);
-      state.collectedCss.delete(fileResult.path);
-      state.precompileMetadata.delete(fileResult.path);
+  for (const chunk of chunks) {
+    const fileContents: { path: string; source: string }[] = [];
+    for (const file of chunk) {
+      try {
+        const source = fs.readFileSync(file, "utf-8");
+        fileContents.push({ path: file, source });
+      } catch (e) {
+        failedCount++;
+        state.cache.delete(file);
+        state.collectedCss.delete(file);
+        state.precompileMetadata.delete(file);
+        state.logger.error(`Failed to read ${file}:`, e);
+      }
+    }
+
+    if (fileContents.length === 0) {
       continue;
     }
 
-    if (metadata) {
-      state.precompileMetadata.set(fileResult.path, metadata);
-    }
+    const result = compileBatch(fileContents, state.cache, {
+      ssr: false,
+      vapor: state.mergedOptions.vapor ?? false,
+      customRenderer: state.mergedOptions.customRenderer ?? false,
+    });
 
-    if (state.isProduction && fileResult.css) {
-      const cached = state.cache.get(fileResult.path);
-      if (cached && !hasDelegatedStyles(cached)) {
-        state.collectedCss.set(
-          fileResult.path,
-          resolveCssImports(fileResult.css, fileResult.path, state.cssAliasRules, false),
-        );
+    successCount += result.successCount;
+    failedCount += result.failedCount;
+    nativeTimeMs += result.timeMs;
+
+    // Collect CSS for production extraction.
+    // Skip files with delegated styles (preprocessor/CSS Modules) -- those go through
+    // Vite's CSS pipeline and are extracted by Vite itself.
+    for (const fileResult of result.results) {
+      const metadata = currentMetadata.get(fileResult.path);
+
+      if (fileResult.errors.length > 0) {
+        state.cache.delete(fileResult.path);
+        state.collectedCss.delete(fileResult.path);
+        state.precompileMetadata.delete(fileResult.path);
+        continue;
       }
+
+      if (metadata) {
+        state.precompileMetadata.set(fileResult.path, metadata);
+      }
+
+      syncCollectedCssForFile(state, fileResult.path, state.cache.get(fileResult.path));
     }
   }
 
   const elapsed = (performance.now() - startTime).toFixed(2);
+  const batchLabel = chunks.length === 1 ? "batch" : "batches";
   state.logger.info(
-    `Pre-compilation complete: ${result.successCount} recompiled, ${cachedFileCount} reused, ${result.failedCount} failed (${elapsed}ms, native batch: ${result.timeMs.toFixed(2)}ms)`,
+    `Pre-compilation complete: ${successCount} recompiled, ${cachedFileCount} reused, ${failedCount} failed (${elapsed}ms, native ${batchLabel}: ${nativeTimeMs.toFixed(2)}ms)`,
   );
 }

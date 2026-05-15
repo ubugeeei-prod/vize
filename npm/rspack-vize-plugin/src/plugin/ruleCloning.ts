@@ -76,10 +76,7 @@ export function applyRuleCloning(
   const clonedStyleRules: RuleSetRule[] = [];
 
   for (const entry of cssRuleEntries) {
-    const cloned = cloneRuleForVueStyle(entry.rule, entry.lang, nativeCss);
-    if (cloned) {
-      clonedStyleRules.push(cloned);
-    }
+    clonedStyleRules.push(...cloneRulesForVueStyle(entry.rule, entry.lang, nativeCss));
   }
 
   // Ensure fallback rule for plain <style lang="css"> blocks
@@ -89,7 +86,7 @@ export function applyRuleCloning(
   );
 
   if (!hasCssFallback) {
-    clonedStyleRules.push(createFallbackStyleRule(nativeCss));
+    clonedStyleRules.push(...createFallbackStyleRules(nativeCss));
   }
 
   // Step 4: build oneOf
@@ -176,15 +173,10 @@ function detectStyleLang(rule: RuleSetRule): string | null {
 }
 
 /** Clone a CSS rule for `?vue&type=style` sub-requests, appending scope-loader + style-loader. */
-function cloneRuleForVueStyle(
-  rule: RuleSetRule,
-  lang: string,
-  nativeCss: boolean,
-): RuleSetRule | null {
+function cloneRulesForVueStyle(rule: RuleSetRule, lang: string, nativeCss: boolean): RuleSetRule[] {
   const uses = normalizeUseFromRule(rule);
-  if (uses.length === 0) return null;
+  if (uses.length === 0) return [];
 
-  const resourceQuery = new RegExp(`(?=.*type=style)(?=.*lang=${lang})`);
   // Chain (right to left): style-loader → user loaders (e.g. sass-loader) → scope-loader
   const clonedUse: RuleSetUseItem[] = [
     { loader: VIZE_SCOPE_LOADER_IDENT },
@@ -192,39 +184,56 @@ function cloneRuleForVueStyle(
     { loader: VIZE_STYLE_LOADER_IDENT },
   ];
 
-  const cloned: RuleSetRule = {
-    resourceQuery,
-    use: clonedUse,
+  const createRule = (resourceQuery: RegExp, fallbackType?: RuleSetRule["type"]): RuleSetRule => {
+    const cloned: RuleSetRule = {
+      resourceQuery,
+      use: deepCloneUse(clonedUse),
+    };
+
+    if (rule.type) {
+      cloned.type = rule.type;
+    } else if (fallbackType) {
+      cloned.type = fallbackType;
+    }
+
+    return cloned;
   };
 
-  // Preserve type or infer from nativeCss mode
-  if (rule.type) {
-    cloned.type = rule.type;
-  } else if (nativeCss) {
-    cloned.type = "css/auto";
+  if (nativeCss) {
+    return [
+      createRule(new RegExp(`(?=.*type=style)(?=.*lang=${lang})(?=.*module=)`), "css/module"),
+      createRule(new RegExp(`(?=.*type=style)(?=.*lang=${lang})`), "css/auto"),
+    ];
   }
 
-  return cloned;
+  return [createRule(new RegExp(`(?=.*type=style)(?=.*lang=${lang})`))];
 }
 
 /** Fallback rule for plain `<style>` blocks (lang=css). */
-function createFallbackStyleRule(nativeCss: boolean): RuleSetRule {
-  const resourceQuery = /(?=.*type=style)(?=.*lang=css)/;
-
+function createFallbackStyleRules(nativeCss: boolean): RuleSetRule[] {
   if (nativeCss) {
-    return {
-      resourceQuery,
-      type: "css/auto",
-      use: [{ loader: VIZE_SCOPE_LOADER_IDENT }, { loader: VIZE_STYLE_LOADER_IDENT }],
-    };
+    return [
+      {
+        resourceQuery: /(?=.*type=style)(?=.*lang=css)(?=.*module=)/,
+        type: "css/module",
+        use: [{ loader: VIZE_SCOPE_LOADER_IDENT }, { loader: VIZE_STYLE_LOADER_IDENT }],
+      },
+      {
+        resourceQuery: /(?=.*type=style)(?=.*lang=css)/,
+        type: "css/auto",
+        use: [{ loader: VIZE_SCOPE_LOADER_IDENT }, { loader: VIZE_STYLE_LOADER_IDENT }],
+      },
+    ];
   }
 
   // Non-native: extract CSS + scoped transform
-  return {
-    resourceQuery,
-    type: "javascript/auto",
-    use: [{ loader: VIZE_SCOPE_LOADER_IDENT }, { loader: VIZE_STYLE_LOADER_IDENT }],
-  };
+  return [
+    {
+      resourceQuery: /(?=.*type=style)(?=.*lang=css)/,
+      type: "javascript/auto",
+      use: [{ loader: VIZE_SCOPE_LOADER_IDENT }, { loader: VIZE_STYLE_LOADER_IDENT }],
+    },
+  ];
 }
 
 /** Exclude Vue style sub-requests from a rule via `resourceQuery: { not: [/vue/] }`. */

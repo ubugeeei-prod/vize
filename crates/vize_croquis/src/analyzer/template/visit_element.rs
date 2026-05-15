@@ -254,6 +254,9 @@ impl Analyzer {
             usage.vif_guard = self.current_vif_guard();
         }
 
+        // Collect element IDs while same-element v-for/v-slot scopes are active.
+        profile!("croquis.template.element_ids", self.collect_element_ids(el));
+
         // Second pass: process other directives AFTER entering v-for/v-slot scopes
         // This ensures expressions like `:todo="todo"` in v-for are in the correct scope
         profile!("croquis.template.element.second_pass", {
@@ -406,8 +409,5 @@ impl Analyzer {
         if let Some(usage) = component_usage {
             self.summary.component_usages.push(usage);
         }
-
-        // Collect element IDs for cross-file analysis
-        profile!("croquis.template.element_ids", self.collect_element_ids(el));
     }
 }

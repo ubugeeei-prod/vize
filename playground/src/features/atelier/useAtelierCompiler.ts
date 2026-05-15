@@ -9,7 +9,12 @@ import type {
   WasmModule,
 } from "../../wasm/index";
 import { formatCss } from "./formatters";
-import { compileCodeOutputs, createEmptyCodeOutputs, type CodeOutputTarget } from "./codeOutputs";
+import {
+  compileCodeOutputs,
+  createEmptyCodeOutputs,
+  getCodeOutputTargets,
+  type CodeOutputTarget,
+} from "./codeOutputs";
 import { mapToObject, filterAstProperties } from "./astHelpers";
 import { useClipboard } from "../../utils/useClipboard";
 
@@ -44,6 +49,7 @@ export function useAtelierCompiler(getCompiler: () => WasmModule | null) {
   const codeOutputs = ref(createEmptyCodeOutputs());
   const codeOutputVersion = ref(0);
   const activeCodeOutput = computed(() => codeOutputs.value[codeOutputTarget.value]);
+  const availableCodeOutputTargets = computed(() => getCodeOutputTargets(inputMode.value));
   const astHideLoc = ref(true);
   const astHideSource = ref(true);
   const astCollapsed = ref(false);
@@ -216,6 +222,12 @@ ${output.value?.helpers?.join("\n") || "None"}`.trim();
     { deep: true },
   );
 
+  watch(availableCodeOutputTargets, (targets) => {
+    if (!targets.includes(codeOutputTarget.value)) {
+      codeOutputTarget.value = "dom";
+    }
+  });
+
   return {
     inputMode,
     source,
@@ -232,6 +244,7 @@ ${output.value?.helpers?.join("\n") || "None"}`.trim();
     formattedCss,
     codeViewMode,
     codeOutputTarget,
+    availableCodeOutputTargets,
     codeOutputs,
     codeOutputVersion,
     activeCodeOutput,

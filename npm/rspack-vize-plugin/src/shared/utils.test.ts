@@ -5,8 +5,9 @@ import {
   extractStyleBlocks,
   collectTemplateAssetUrls,
   isImportableUrl,
+  matchesPattern,
   stripCssCommentsForScoped,
-} from "./utils.js";
+} from "./utils.ts";
 
 void describe("extractCustomBlocks", () => {
   void test("extracts a simple <i18n> custom block", () => {
@@ -226,6 +227,24 @@ void describe("stripCssCommentsForScoped", () => {
     const output = stripCssCommentsForScoped(input);
 
     assert.equal(output.includes('content: "/* :deep(.x) */"'), true);
+  });
+});
+
+void describe("matchesPattern", () => {
+  void test("keeps global regexp patterns stable across calls", () => {
+    const pattern = /\.vue$/g;
+
+    assert.equal(matchesPattern("src/App.vue", pattern, false), true);
+    assert.equal(matchesPattern("src/App.vue", pattern, false), true);
+    assert.equal(pattern.lastIndex, 0);
+  });
+
+  void test("keeps sticky regexp patterns stable across calls", () => {
+    const pattern = /^src\/.*\.vue$/y;
+
+    assert.equal(matchesPattern("src/App.vue", pattern, false), true);
+    assert.equal(matchesPattern("src/App.vue", pattern, false), true);
+    assert.equal(pattern.lastIndex, 0);
   });
 });
 

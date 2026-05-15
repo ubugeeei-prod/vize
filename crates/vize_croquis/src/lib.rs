@@ -31,6 +31,8 @@
 //! vize_atelier_core (Transform)
 //! ```
 
+#![cfg_attr(test, allow(clippy::disallowed_macros, clippy::disallowed_types))]
+
 // Core modules
 mod scope;
 mod symbol;
@@ -41,6 +43,7 @@ pub mod analyzer;
 pub mod builtins;
 pub mod call_graph;
 pub mod css;
+pub mod declaration_ts;
 pub mod display;
 pub mod hoist;
 pub mod import_resolver;
@@ -48,6 +51,7 @@ pub mod macros;
 pub mod naming;
 pub mod optimization;
 pub mod provide;
+pub mod race;
 pub mod reactivity;
 pub mod reactivity_tracking;
 pub mod script_parser;

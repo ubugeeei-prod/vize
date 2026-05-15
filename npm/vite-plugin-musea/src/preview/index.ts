@@ -6,7 +6,6 @@
  */
 
 import type { ArtFileInfo } from "../types/index.js";
-import { escapeTemplate } from "../utils.js";
 import { MUSEA_ADDONS_INIT_CODE } from "./addons.js";
 
 export { generatePreviewHtml } from "./html.js";
@@ -19,18 +18,25 @@ export function generatePreviewModule(
   previewSetup: string | null = null,
 ): string {
   const artModuleId = `virtual:musea-art:${art.path}`;
-  const escapedVariantName = escapeTemplate(variantName);
-  const cssImportStatements = cssImports.map((cssPath) => `import '${cssPath}';`).join("\n");
-  const setupImport = previewSetup ? `import __museaPreviewSetup from '${previewSetup}';` : "";
+  const artModuleIdLiteral = JSON.stringify(artModuleId);
+  const variantNameLiteral = JSON.stringify(variantName);
+  const variantComponentNameLiteral = JSON.stringify(variantComponentName);
+  const cssImportStatements = cssImports
+    .map((cssPath) => `import ${JSON.stringify(cssPath)};`)
+    .join("\n");
+  const setupImport = previewSetup
+    ? `import __museaPreviewSetup from ${JSON.stringify(previewSetup)};`
+    : "";
   const setupCall = previewSetup ? "await __museaPreviewSetup(app);" : "";
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
   const artStyleId = `musea-art-styles-${art.path.replace(/[^\w-]+/g, "_")}`;
+  const artStyleIdLiteral = JSON.stringify(artStyleId);
 
   return `
 ${cssImportStatements}
 ${setupImport}
 import { createApp, reactive, h } from 'vue';
-import * as artModule from '${artModuleId}';
+import * as artModule from ${artModuleIdLiteral};
 
 const container = document.getElementById('app');
 
@@ -41,7 +47,7 @@ const propsOverride = reactive({});
 const slotsOverride = reactive({ default: '' });
 
 function ensureArtStyles(styles) {
-  const styleId = '${artStyleId}';
+  const styleId = ${artStyleIdLiteral};
   const existing = document.getElementById(styleId);
 
   if (!Array.isArray(styles) || styles.length === 0) {
@@ -56,6 +62,30 @@ function ensureArtStyles(styles) {
   if (!existing) {
     document.head.appendChild(tag);
   }
+}
+
+function renderError(title, error) {
+  container.textContent = '';
+  const root = document.createElement('div');
+  root.className = 'musea-error';
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'musea-error-title';
+  titleEl.textContent = title;
+  root.appendChild(titleEl);
+
+  const messageEl = document.createElement('div');
+  messageEl.textContent = error instanceof Error ? error.message : String(error);
+  root.appendChild(messageEl);
+
+  const stack = error instanceof Error ? error.stack : '';
+  if (stack) {
+    const stackEl = document.createElement('pre');
+    stackEl.textContent = stack;
+    root.appendChild(stackEl);
+  }
+
+  container.appendChild(root);
 }
 
 window.__museaSetProps = (props) => {
@@ -76,11 +106,11 @@ window.__museaSetSlots = (slots) => {
 async function mount() {
   try {
     // Get the specific variant component
-    const VariantComponent = artModule['${variantComponentName}'];
+    const VariantComponent = artModule[${variantComponentNameLiteral}];
     const RawComponent = artModule.__component__;
 
     if (!VariantComponent) {
-      throw new Error('Variant component "${variantComponentName}" not found in art module');
+      throw new Error('Variant component ' + ${variantComponentNameLiteral} + ' not found in art module');
     }
 
     // Create and mount the app
@@ -92,8 +122,8 @@ async function mount() {
     app.mount(container);
     currentApp = app;
 
-    console.log('[musea-preview] Mounted variant: ${escapedVariantName}');
-    __museaInitAddons(container, '${escapedVariantName}', ${actionEvents});
+    console.log('[musea-preview] Mounted variant:', ${variantNameLiteral});
+    __museaInitAddons(container, ${variantNameLiteral}, ${actionEvents});
 
     // Override set-props to remount with raw component + props
     const TargetComponent = RawComponent || VariantComponent;
@@ -113,13 +143,7 @@ async function mount() {
     };
   } catch (error) {
     console.error('[musea-preview] Failed to mount:', error);
-    container.innerHTML = \`
-      <div class="musea-error">
-        <div class="musea-error-title">Failed to render component</div>
-        <div>\${error.message}</div>
-        <pre>\${error.stack || ''}</pre>
-      </div>
-    \`;
+    renderError('Failed to render component', error);
   }
 }
 
@@ -132,7 +156,7 @@ async function remountWithProps(Component) {
       return () => {
         const slotFns = {};
         for (const [name, content] of Object.entries(slotsOverride)) {
-          if (content) slotFns[name] = () => h('span', { innerHTML: content });
+          if (content) slotFns[name] = () => h('span', String(content));
         }
         return h(Component, { ...propsOverride }, slotFns);
       };
@@ -158,19 +182,26 @@ export function generatePreviewModuleWithProps(
   previewSetup: string | null = null,
 ): string {
   const artModuleId = `virtual:musea-art:${art.path}`;
-  const escapedVariantName = escapeTemplate(variantName);
+  const artModuleIdLiteral = JSON.stringify(artModuleId);
+  const variantNameLiteral = JSON.stringify(variantName);
+  const variantComponentNameLiteral = JSON.stringify(variantComponentName);
   const propsJson = JSON.stringify(propsOverride);
-  const cssImportStatements = cssImports.map((cssPath) => `import '${cssPath}';`).join("\n");
-  const setupImport = previewSetup ? `import __museaPreviewSetup from '${previewSetup}';` : "";
+  const cssImportStatements = cssImports
+    .map((cssPath) => `import ${JSON.stringify(cssPath)};`)
+    .join("\n");
+  const setupImport = previewSetup
+    ? `import __museaPreviewSetup from ${JSON.stringify(previewSetup)};`
+    : "";
   const setupCall = previewSetup ? "await __museaPreviewSetup(app);" : "";
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
   const artStyleId = `musea-art-styles-${art.path.replace(/[^\w-]+/g, "_")}`;
+  const artStyleIdLiteral = JSON.stringify(artStyleId);
 
   return `
 ${cssImportStatements}
 ${setupImport}
 import { createApp, h } from 'vue';
-import * as artModule from '${artModuleId}';
+import * as artModule from ${artModuleIdLiteral};
 
 const container = document.getElementById('app');
 const propsOverride = ${propsJson};
@@ -178,7 +209,7 @@ const propsOverride = ${propsJson};
 ${MUSEA_ADDONS_INIT_CODE}
 
 function ensureArtStyles(styles) {
-  const styleId = '${artStyleId}';
+  const styleId = ${artStyleIdLiteral};
   const existing = document.getElementById(styleId);
 
   if (!Array.isArray(styles) || styles.length === 0) {
@@ -195,11 +226,28 @@ function ensureArtStyles(styles) {
   }
 }
 
+function renderError(title, error) {
+  container.textContent = '';
+  const root = document.createElement('div');
+  root.className = 'musea-error';
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'musea-error-title';
+  titleEl.textContent = title;
+  root.appendChild(titleEl);
+
+  const messageEl = document.createElement('div');
+  messageEl.textContent = error instanceof Error ? error.message : String(error);
+  root.appendChild(messageEl);
+
+  container.appendChild(root);
+}
+
 async function mount() {
   try {
-    const VariantComponent = artModule['${variantComponentName}'];
+    const VariantComponent = artModule[${variantComponentNameLiteral}];
     if (!VariantComponent) {
-      throw new Error('Variant component "${variantComponentName}" not found');
+      throw new Error('Variant component ' + ${variantComponentNameLiteral} + ' not found');
     }
 
     const WrappedComponent = {
@@ -214,11 +262,11 @@ async function mount() {
     container.innerHTML = '';
     container.className = 'musea-variant';
     app.mount(container);
-    console.log('[musea-preview] Mounted variant: ${escapedVariantName} with props override');
-    __museaInitAddons(container, '${escapedVariantName}', ${actionEvents});
+    console.log('[musea-preview] Mounted variant with props override:', ${variantNameLiteral});
+    __museaInitAddons(container, ${variantNameLiteral}, ${actionEvents});
   } catch (error) {
     console.error('[musea-preview] Failed to mount:', error);
-    container.innerHTML = '<div class="musea-error"><div class="musea-error-title">Failed to render</div><div>' + error.message + '</div></div>';
+    renderError('Failed to render', error);
   }
 }
 

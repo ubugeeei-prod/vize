@@ -292,6 +292,20 @@ impl CrossFileDiagnostic {
                 out.push_str("// Option 3: Restructure to remove bidirectional dependency\n");
                 out.push_str("```\n");
             }
+            CrossFileDiagnosticKind::NonReactiveProvideValue { key } => {
+                append!(
+                    *out,
+                    "**Problem**: `provide('{key}', value)` passes a plain value to consumers.\n\n",
+                );
+                out.push_str("**Why this matters**:\n\n");
+                out.push_str("- Consumers that call `inject()` receive a snapshot-like value.\n");
+                out.push_str("- Later provider updates will not be visible unless consumers receive a ref or computed value.\n\n");
+                out.push_str("**Safer patterns**:\n\n");
+                out.push_str("```ts\n");
+                append!(*out, "provide('{key}', ref(value))\n");
+                append!(*out, "provide('{key}', computed(() => value))\n");
+                out.push_str("```\n");
+            }
             CrossFileDiagnosticKind::ProvideInjectWithoutSymbol { key, is_provide } => {
                 let action = if *is_provide { "provide" } else { "inject" };
                 append!(
@@ -401,6 +415,50 @@ impl CrossFileDiagnostic {
                 append!(*out, "  {api}  // ✅ Safe - browser only\n");
                 out.push_str("}\n");
                 out.push_str("```\n");
+            }
+            CrossFileDiagnosticKind::AsyncBoundaryCrossing {
+                variable_name,
+                async_context,
+            } => {
+                append!(
+                    *out,
+                    "**Problem**: `{variable_name}` is mutated after `{async_context}` work can be invalidated.\n\n",
+                );
+                out.push_str("**Why this can race**:\n\n");
+                out.push_str("- A slower request can finish after a newer request and overwrite fresh state.\n");
+                out.push_str("- The component may unmount before the async callback resumes.\n");
+                out.push_str("- Watch invalidation does not cancel promises unless cleanup is wired explicitly.\n\n");
+                out.push_str("**Safer pattern**:\n\n");
+                out.push_str("```ts\n");
+                out.push_str("watch(source, async (_value, _oldValue, onCleanup) => {\n");
+                out.push_str("  let cancelled = false\n");
+                out.push_str("  onCleanup(() => { cancelled = true })\n");
+                out.push_str("  const next = await load()\n");
+                out.push_str("  if (!cancelled) state.value = next\n");
+                out.push_str("})\n");
+                out.push_str("```\n");
+            }
+            CrossFileDiagnosticKind::InjectedAsyncMutationRace {
+                key,
+                target_name,
+                async_context,
+                writer_count,
+            } => {
+                append!(
+                    *out,
+                    "**Problem**: Consumer code mutates injected state `{target_name}` for key `{key}` from `{async_context}`.\n\n",
+                );
+                append!(
+                    *out,
+                    "**Writer count**: {writer_count} consumer file(s) can write this provider-owned state asynchronously.\n\n",
+                );
+                out.push_str("**Why this can race**:\n\n");
+                out.push_str("- Multiple consumers can complete async work in a different order than it was started.\n");
+                out.push_str("- Provider-owned state becomes writable from distant branches of the component tree.\n");
+                out.push_str(
+                    "- Stale consumer work can overwrite newer provider or sibling updates.\n\n",
+                );
+                out.push_str("**Safer pattern**: expose a provider-owned action that performs cancellation, request-token checks, or version checks before committing state.\n");
             }
             _ => {
                 // Default: just show the message

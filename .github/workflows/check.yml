@@ -10,14 +10,19 @@ concurrency:
   group: check-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   nix-flake:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
       - name: Cache Nix store
         uses: nix-community/cache-nix-action@v7
@@ -29,8 +34,9 @@ jobs:
 
   fmt-rust:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -39,55 +45,69 @@ jobs:
 
   check-js:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+      - uses: ./.github/actions/setup-moonbit
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Check JS/TS
+        run: vp run --workspace-root check:ci
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "native"
           cache-workspace-crates: "true"
       - name: Build vize CLI
-        run: cargo build --release -p vize
+        run: cargo build --profile ci -p vize
       - name: Install vize CLI
-        run: cp target/release/vize /usr/local/bin/vize
-      - uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version-file: ".node-version"
-          cache: true
-          run-install: false
-      - name: Install JS dependencies
-        run: vp install --frozen-lockfile --prefer-offline
+        run: cp target/ci/vize /usr/local/bin/vize
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
-      - name: Check editor extensions
-        run: vp run --workspace-root check:editor-extensions
+      - name: Check and package editor extensions
+        run: vp run --workspace-root package:editor-extensions
       - name: Build JS packages
         run: vp run --workspace-root build:packages
-      - name: Check JS/TS
-        run: vp run --workspace-root check:ci
 
   clippy-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          run-install: false
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "native"
           cache-workspace-crates: "true"
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test
         run: cargo test --workspace
 
   coverage:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: dtolnay/rust-toolchain@stable
+
+      - uses: ./.github/actions/setup-moonbit
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -95,27 +115,23 @@ jobs:
           cache-workspace-crates: "true"
 
       - name: Coverage report
-        run: |
-          cargo run -p vize_test_runner --bin coverage --release | tee coverage-report.txt
-          echo ""
-          echo "### Coverage Summary" >> $GITHUB_STEP_SUMMARY
-          tail -7 coverage-report.txt >> $GITHUB_STEP_SUMMARY
+        run: moon run --target native - -- < tools/moon/scripts/github/write_coverage_summary.mbtx
 
   playground-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
-      contents: write
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          token: ${{ github.token }}
+      - uses: actions/checkout@v6
 
       # Rust is always needed for @vizejs/native (used by vite-plugin-vize)
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
+
+      - uses: ./.github/actions/setup-moonbit
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
@@ -125,7 +141,7 @@ jobs:
 
       - name: Cache WASM build
         id: cache-wasm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: playground/src/wasm
           key: ${{ runner.os }}-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock') }}
@@ -134,13 +150,11 @@ jobs:
         if: steps.cache-wasm.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@v2
         with:
-          tool: wasm-bindgen-cli@0.2.111
+          tool: wasm-bindgen-cli@0.2.121
 
       - name: Build WASM
         if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: |
-          cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown
-          wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir playground/src/wasm --target web
+        run: moon run --target native - -- playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx
 
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@v1
@@ -150,54 +164,21 @@ jobs:
           run-install: false
 
       - name: Install JS dependencies
-        run: |
-          vp install --frozen-lockfile --prefer-offline \
-            --filter './playground...' \
-            --filter './npm/vite-plugin-vize...' \
-            --filter './npm/vize...' \
-            --filter './npm/vize-native...'
+        run: moon run --target native - -- --filter './playground...' --filter './npm/vite-plugin-vize...' --filter './npm/vize...' --filter './npm/vize-native...' < tools/moon/scripts/github/vp_install.mbtx
 
       - name: Build npm packages
-        run: |
-          vp run --filter './npm/vize-native' build
-          vp run --filter './npm/vize' build
-          vp run --filter './npm/vite-plugin-vize' build
+        run: moon run --target native - -- vp run --filter './npm/vize-native' build:ci -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        id: cache-playwright
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install Playwright browsers
-        run: |
-          VITE_PLUS_PLAYWRIGHT_CLI="$(node <<'EOF'
-          const path = require("node:path");
-
-          const vitePlusDir = path.dirname(require.resolve("vite-plus/package.json"));
-          const vitePlusTestDir = path.dirname(
-            require.resolve("@voidzero-dev/vite-plus-test/package.json", { paths: [vitePlusDir] }),
-          );
-          const playwrightPkg = require.resolve("playwright/package.json", {
-            paths: [vitePlusTestDir],
-          });
-
-          process.stdout.write(path.join(path.dirname(playwrightPkg), "cli.js"));
-          EOF
-          )"
-          PLAYGROUND_PLAYWRIGHT_CLI="$(node <<'EOF'
-          const path = require("node:path");
-
-          const playgroundDir = path.resolve("playground");
-          const playwrightPkg = require.resolve("playwright/package.json", {
-            paths: [playgroundDir],
-          });
-
-          process.stdout.write(path.join(path.dirname(playwrightPkg), "cli.js"));
-          EOF
-          )"
-          node "$VITE_PLUS_PLAYWRIGHT_CLI" install chromium --with-deps
-          node "$PLAYGROUND_PLAYWRIGHT_CLI" install chromium
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: moon run --target native - -- < tools/moon/scripts/github/install_playwright_browsers.mbtx
 
       - name: Run playground tests
         run: vp run --filter './playground' test:browser
@@ -207,25 +188,21 @@ jobs:
         continue-on-error: true
         id: vrt
 
+      - name: Upload VRT report
+        if: steps.vrt.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground-vrt-report
+          path: playground/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Update VRT snapshots
         if: steps.vrt.outcome == 'failure'
         run: vp run --filter './playground' test:vrt:update
 
-      - name: Commit updated snapshots
-        if: steps.vrt.outcome == 'failure' && github.event_name == 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add playground/e2e/vrt/__snapshots__/
-          if git diff --cached --quiet; then
-            echo "No snapshot changes"
-          else
-            git commit -m "chore: update VRT snapshots"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
-
-      - name: Fail if VRT failed and no auto-update
-        if: steps.vrt.outcome == 'failure' && github.event_name != 'pull_request'
+      - name: Fail if VRT failed
+        if: steps.vrt.outcome == 'failure'
         run: exit 1
 
       - name: Upload VRT diff artifacts
@@ -235,3 +212,42 @@ jobs:
           name: vrt-diff
           path: playground/e2e/vrt/test-results/
           retention-days: 7
+
+  test-report:
+    name: test-report
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs:
+      - nix-flake
+      - fmt-rust
+      - check-js
+      - clippy-and-test
+      - coverage
+      - playground-test
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Collect test inventory
+        run: node bench/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"
+      - name: Upload test inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-inventory
+          path: test-inventory.json
+          retention-days: 14
+      - name: Comment detailed test report
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TEST_REPORT_COMMENT_KEY: ${{ github.event.pull_request.head.sha }}
+          TEST_REPORT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          TEST_REPORT_RUN_ID: ${{ github.run_id }}
+          TEST_REPORT_RUN_ATTEMPT: ${{ github.run_attempt }}
+          TEST_REPORT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TEST_REPORT_WORKFLOW_NAME: ${{ github.workflow }}
+        run: node bench/comment-test-report.mjs --inventory test-inventory.json --summary "$GITHUB_STEP_SUMMARY"

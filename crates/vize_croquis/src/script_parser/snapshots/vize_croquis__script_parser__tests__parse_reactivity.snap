@@ -74,6 +74,9 @@ ScriptParseResult {
         losses: [],
         next_id: 3,
     },
+    race_conditions: RaceConditionTracker {
+        risks: [],
+    },
     type_exports: [],
     invalid_exports: [],
     scopes: ScopeChain {
@@ -1273,6 +1276,8 @@ ScriptParseResult {
     inject_aliases: {},
     provide_aliases: {},
     reactivity_aliases: {},
+    reactive_value_origins: {},
+    reactive_getter_contexts: {},
     setup_context: SetupContextTracker {
         violations: [],
     },

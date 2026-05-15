@@ -126,7 +126,11 @@ export interface ArtInfo {
   component?: string;
   category?: string;
   tags: string[];
+  status: string;
+  order?: number;
   variantCount: number;
+  variantNames: string[];
+  defaultVariant?: string;
 }
 
 export interface ServerContext {

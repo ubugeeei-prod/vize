@@ -1,9 +1,10 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
+assertion_line: 805
 expression: result.code.as_str()
 ---
 import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
-import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+import { createComponentWithFallback as _createComponentWithFallback } from 'vue';
 
 
 function render(_ctx, $props, $emit, $attrs, $slots) {

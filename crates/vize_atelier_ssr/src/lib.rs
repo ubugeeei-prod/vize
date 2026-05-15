@@ -61,6 +61,7 @@ pub fn compile_ssr_with_options<'a>(
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
+        custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         comments: options.comments,
@@ -91,6 +92,7 @@ pub fn compile_ssr_with_options<'a>(
         ssr: true,
         is_ts: codegen_options.is_ts,
         inline: codegen_options.inline,
+        custom_renderer: codegen_options.custom_renderer,
         binding_metadata: codegen_options.binding_metadata.clone(),
         ..Default::default()
     };

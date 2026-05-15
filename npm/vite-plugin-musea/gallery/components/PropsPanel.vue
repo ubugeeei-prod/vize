@@ -659,7 +659,7 @@ const controlKindOptions = [
 
 .props-mode-btn.active {
   background: var(--musea-accent);
-  color: #fff;
+  color: var(--musea-accent-contrast);
 }
 
 .props-mode-btn:not(.active):hover {
@@ -828,7 +828,7 @@ const controlKindOptions = [
   border: none;
   border-radius: var(--musea-radius-sm);
   background: var(--musea-accent);
-  color: #fff;
+  color: var(--musea-accent-contrast);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;

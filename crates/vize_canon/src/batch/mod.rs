@@ -8,6 +8,7 @@
 mod error;
 mod executor;
 mod import_rewriter;
+mod runtime_deps;
 mod source_map;
 mod type_checker;
 mod virtual_project;

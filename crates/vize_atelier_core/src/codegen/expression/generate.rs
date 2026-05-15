@@ -37,7 +37,7 @@ pub fn is_inline_handler(exp: &ExpressionNode<'_>) -> bool {
 
             let content = simple.loc.source.as_str();
 
-            if content.contains("=>") || content.trim().starts_with("function") {
+            if crate::transforms::transform_expression::is_function_expression(content) {
                 return false;
             }
 
@@ -71,20 +71,24 @@ pub fn generate_event_handler(
                 return;
             }
 
-            let content = &simple.content;
-
-            // Step 1: Strip TypeScript if needed
-            let ts_stripped: String = if ctx.options.is_ts && content.contains(" as ") {
-                crate::transforms::strip_typescript_from_expression(content)
+            let processed: String = if simple.is_ref_transformed {
+                simple.content.clone()
             } else {
-                content.clone()
-            };
+                let content = &simple.content;
 
-            // Step 2: Prefix identifiers if needed
-            let processed: String = if ctx.options.prefix_identifiers {
-                prefix_identifiers_with_context(&ts_stripped, ctx)
-            } else {
-                ts_stripped
+                // Step 1: Strip TypeScript if needed
+                let ts_stripped: String = if ctx.options.is_ts && content.contains(" as ") {
+                    crate::transforms::strip_typescript_from_expression(content)
+                } else {
+                    content.clone()
+                };
+
+                // Step 2: Prefix identifiers if needed
+                if ctx.options.prefix_identifiers {
+                    prefix_identifiers_with_context(&ts_stripped, ctx)
+                } else {
+                    ts_stripped
+                }
             };
             let processed = if ctx.has_slot_params() && processed.contains("_ctx.") {
                 strip_ctx_for_slot_params(ctx, &processed)
@@ -93,7 +97,7 @@ pub fn generate_event_handler(
             };
 
             // Check if it's already an arrow function or function expression
-            if processed.contains("=>") || processed.trim().starts_with("function") {
+            if crate::transforms::transform_expression::is_function_expression(&processed) {
                 ctx.push(&processed);
                 return;
             }
@@ -147,11 +151,11 @@ pub fn generate_event_handler(
 #[cfg(test)]
 mod tests {
     use super::generate_simple_expression_with_prefix;
-    use crate::ast::{SimpleExpressionNode, SourceLocation};
+    use crate::ast::{ExpressionNode, SimpleExpressionNode, SourceLocation};
     use crate::codegen::context::CodegenContext;
-    use crate::codegen::expression::generate_simple_expression;
+    use crate::codegen::expression::{generate_event_handler, generate_simple_expression};
     use crate::options::{BindingMetadata, BindingType, CodegenOptions};
-    use vize_carton::FxHashMap;
+    use vize_carton::{Bump, FxHashMap};
 
     #[test]
     fn test_shorthand_property_expansion() {
@@ -248,5 +252,49 @@ mod tests {
         generate_simple_expression(&mut ctx, &exp);
         let output = ctx.into_code();
         insta::assert_snapshot!(output.as_str());
+    }
+
+    #[test]
+    fn test_generate_event_handler_keeps_ref_transformed_arrow() {
+        let mut bindings = FxHashMap::default();
+        bindings.insert("selectedFolders".into(), BindingType::SetupRef);
+        bindings.insert("folder".into(), BindingType::SetupRef);
+        let metadata = BindingMetadata {
+            bindings,
+            props_aliases: FxHashMap::default(),
+            is_script_setup: true,
+        };
+
+        let options = CodegenOptions {
+            inline: true,
+            binding_metadata: Some(metadata),
+            prefix_identifiers: true,
+            is_ts: true,
+            ..Default::default()
+        };
+
+        let allocator = Bump::new();
+        let mut ctx = CodegenContext::new(options);
+        let exp = ExpressionNode::Simple(vize_carton::Box::new_in(
+            SimpleExpressionNode {
+                content: "$event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))".into(),
+                is_static: false,
+                const_type: crate::ast::ConstantType::NotConstant,
+                loc: SourceLocation::STUB,
+                js_ast: None,
+                hoisted: None,
+                identifiers: None,
+                is_handler_key: true,
+                is_ref_transformed: true,
+            },
+            &allocator,
+        ));
+
+        generate_event_handler(&mut ctx, &exp, true);
+        let output = ctx.into_code();
+        assert_eq!(
+            output.as_str(),
+            "$event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))"
+        );
     }
 }

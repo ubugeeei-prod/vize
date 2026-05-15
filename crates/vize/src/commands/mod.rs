@@ -9,3 +9,6 @@ pub mod lint;
 pub mod lsp;
 pub mod musea;
 pub mod profile;
+#[cfg(feature = "glyph")]
+pub mod ready;
+pub mod upgrade;

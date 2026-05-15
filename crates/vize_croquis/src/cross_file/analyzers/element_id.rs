@@ -28,6 +28,15 @@ pub struct UniqueIdIssue {
     pub kind: ElementIdKind,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct IdLocation {
+    file_id: FileId,
+    start: u32,
+    end: u32,
+    in_loop: bool,
+    kind: ElementIdKind,
+}
+
 /// Analyze element IDs across all components.
 ///
 /// Uses the pre-collected `element_ids` from each file's Croquis analysis
@@ -39,12 +48,11 @@ pub fn analyze_element_ids(
     let mut diagnostics = Vec::new();
 
     // Collect all static IDs with their locations (grouped by ID value)
-    // Key: ID value, Value: Vec<(FileId, offset, in_loop, kind)>
-    let mut static_ids: FxHashMap<CompactString, Vec<(FileId, u32, bool, ElementIdKind)>> =
-        FxHashMap::default();
+    let mut static_ids: FxHashMap<CompactString, Vec<IdLocation>> = FxHashMap::default();
 
     // Collect dynamic IDs that might not be unique
-    let mut dynamic_ids_in_loops: Vec<(FileId, CompactString, u32, ElementIdKind)> = Vec::new();
+    let mut dynamic_ids_in_loops: Vec<(FileId, CompactString, u32, u32, ElementIdKind)> =
+        Vec::new();
 
     for entry in registry.vue_components() {
         // Use the pre-collected element_ids from Croquis analysis
@@ -53,18 +61,23 @@ pub fn analyze_element_ids(
             // References will be checked for matching definitions separately
             if id_info.kind.is_definition() {
                 if id_info.is_static {
-                    static_ids.entry(id_info.value.clone()).or_default().push((
-                        entry.id,
-                        id_info.start,
-                        id_info.in_loop,
-                        id_info.kind,
-                    ));
+                    static_ids
+                        .entry(id_info.value.clone())
+                        .or_default()
+                        .push(IdLocation {
+                            file_id: entry.id,
+                            start: id_info.start,
+                            end: id_info.end,
+                            in_loop: id_info.in_loop,
+                            kind: id_info.kind,
+                        });
                 } else if id_info.in_loop {
                     // Dynamic ID in a loop - might not be unique
                     dynamic_ids_in_loops.push((
                         entry.id,
                         id_info.value.clone(),
                         id_info.start,
+                        id_info.end,
                         id_info.kind,
                     ));
                 }
@@ -78,47 +91,57 @@ pub fn analyze_element_ids(
             // Same ID used in multiple places (cross-file duplicate)
             let loc_list: Vec<_> = locations
                 .iter()
-                .map(|(file, off, _, _)| (*file, *off))
+                .map(|location| (location.file_id, location.start))
                 .collect();
 
-            let kind = locations[0].3;
+            let primary = locations[0];
+            let kind = primary.kind;
 
             issues.push(UniqueIdIssue {
                 id: id.clone(),
                 locations: loc_list.clone(),
-                in_loop: locations.iter().any(|(_, _, in_loop, _)| *in_loop),
+                in_loop: locations.iter().any(|location| location.in_loop),
                 is_dynamic: false,
                 kind,
             });
 
-            diagnostics.push(
-                CrossFileDiagnostic::new(
-                    CrossFileDiagnosticKind::DuplicateElementId {
-                        id: id.clone(),
-                        locations: loc_list,
-                    },
-                    DiagnosticSeverity::Warning,
-                    locations[0].0,
-                    locations[0].1,
-                    cstr!(
-                        "Element ID '{}' is used in {} different locations across files",
-                        id,
-                        locations.len()
-                    ),
-                )
-                .with_suggestion("Use useId() to generate unique IDs for each component instance"),
-            );
+            let mut diagnostic = CrossFileDiagnostic::new(
+                CrossFileDiagnosticKind::DuplicateElementId {
+                    id: id.clone(),
+                    locations: loc_list,
+                },
+                DiagnosticSeverity::Warning,
+                primary.file_id,
+                primary.start,
+                cstr!(
+                    "Element ID '{}' is used in {} different locations across files",
+                    id,
+                    locations.len()
+                ),
+            )
+            .with_end_offset(primary.end)
+            .with_suggestion("Use useId() to generate unique IDs for each component instance");
+
+            for related in locations.iter().skip(1) {
+                diagnostic = diagnostic.with_related(
+                    related.file_id,
+                    related.start,
+                    cstr!("duplicate id '{id}' is also defined here"),
+                );
+            }
+
+            diagnostics.push(diagnostic);
         }
 
         // Check for static IDs inside loops (will create duplicate IDs)
-        for (file_id, offset, in_loop, kind) in locations {
-            if *in_loop {
+        for location in locations {
+            if location.in_loop {
                 issues.push(UniqueIdIssue {
                     id: id.clone(),
-                    locations: vec![(*file_id, *offset)],
+                    locations: vec![(location.file_id, location.start)],
                     in_loop: true,
                     is_dynamic: false,
-                    kind: *kind,
+                    kind: location.kind,
                 });
 
                 diagnostics.push(
@@ -127,10 +150,11 @@ pub fn analyze_element_ids(
                             id_expression: id.clone(),
                         },
                         DiagnosticSeverity::Error,
-                        *file_id,
-                        *offset,
+                        location.file_id,
+                        location.start,
                         cstr!("Static ID '{id}' inside v-for will create duplicate IDs",),
                     )
+                    .with_end_offset(location.end)
                     .with_suggestion("Use a dynamic ID like `:id=\"`item-${index}`\"` or useId()"),
                 );
             }
@@ -138,12 +162,12 @@ pub fn analyze_element_ids(
     }
 
     // Check dynamic IDs in loops that might not be unique
-    for (file_id, id_expr, offset, kind) in dynamic_ids_in_loops {
+    for (file_id, id_expr, start, end, kind) in dynamic_ids_in_loops {
         // Check if the expression likely produces unique values
         if !looks_unique(&id_expr) {
             issues.push(UniqueIdIssue {
                 id: id_expr.clone(),
-                locations: vec![(file_id, offset)],
+                locations: vec![(file_id, start)],
                 in_loop: true,
                 is_dynamic: true,
                 kind,
@@ -156,9 +180,10 @@ pub fn analyze_element_ids(
                     },
                     DiagnosticSeverity::Warning,
                     file_id,
-                    offset,
+                    start,
                     cstr!("Dynamic ID '{id_expr}' may not produce unique values",),
                 )
+                .with_end_offset(end)
                 .with_suggestion("Include a unique identifier like index or item.id"),
             );
         }

@@ -80,8 +80,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_attrib_name_impl(start, end);
     }
 
-    fn on_attrib_name_end(&mut self, _end: usize) {
-        // No-op for now
+    fn on_attrib_name_end(&mut self, end: usize) {
+        self.parser.on_attrib_name_end_impl(end);
     }
 
     fn on_dir_name(&mut self, start: usize, end: usize) {

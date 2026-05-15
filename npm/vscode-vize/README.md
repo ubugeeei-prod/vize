@@ -18,9 +18,8 @@ Vue Language Support powered by Vize - A high-performance language server for Vu
 
 ## Installation
 
-### From VS Code Marketplace
-
-Search "Vize" in VS Code Extensions.
+The extension is not published to the VS Code Marketplace yet. Use a locally built VSIX while the
+editor package stabilizes.
 
 ### From VSIX
 
@@ -30,21 +29,27 @@ code --install-extension dist/vize.vsix
 
 ### Development
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then:
+
 ```bash
 cd npm/vscode-vize
-pnpm install --ignore-workspace
-pnpm run build
+vp install --ignore-workspace
+vp build
+vp exec vsce package --no-dependencies --out dist/vize.vsix
 # Press F5 to launch Extension Development Host
 ```
 
 ## Requirements
 
 - VS Code 1.75+
-- `vize` CLI installed (`cargo install vize`)
+- `vize` CLI installed (`cargo install vize`) unless you are using a build that bundles the server binary
 
 ## Configuration
 
-Vize is disabled by default. Start with lint-only mode, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
+Opening a Vue file now prompts you to apply a recommended workspace setup if the extension is still disabled or if no Vize capabilities are enabled yet.
+That quick setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, and `vize.editor.enable` for the current workspace so diagnostics, hover, and jump work immediately.
+
+If you dismissed that prompt and want a lighter rollout, start with lint-only mode, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
 
 ```json
 {
@@ -68,6 +73,9 @@ When you are ready to evaluate Vize editor assistance separately from `vuejs/lan
   "vize.hover.enable": true
 }
 ```
+
+When paired with the `Vize Art` extension, the same editor capabilities also apply to `*.art.vue`
+documents.
 
 ## Commands
 

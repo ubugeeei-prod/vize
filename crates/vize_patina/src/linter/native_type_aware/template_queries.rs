@@ -1,4 +1,4 @@
-use super::RULE_NO_UNSAFE_TEMPLATE_BINDING;
+use super::{RULE_NO_FLOATING_PROMISES, RULE_NO_UNSAFE_TEMPLATE_BINDING};
 use crate::diagnostic::LintDiagnostic;
 use vize_croquis::virtual_ts::VirtualTsOutput;
 use vize_relief::ast::{ExpressionNode, RootNode};
@@ -28,6 +28,13 @@ pub(super) struct TemplateQuery {
     pub source_end: u32,
     pub owner_start: u32,
     pub owner_end: u32,
+}
+
+pub(super) struct TemplatePromiseQuery {
+    pub context: TemplateContext,
+    pub generated_offset: u32,
+    pub source_start: u32,
+    pub source_end: u32,
 }
 
 impl TemplateQuery {
@@ -75,12 +82,55 @@ impl TemplateQuery {
     }
 }
 
-pub(super) fn collect_template_queries(
+impl TemplatePromiseQuery {
+    pub fn diagnostic(&self) -> LintDiagnostic {
+        let message = match self.context {
+            TemplateContext::Binding => {
+                "Template binding creates a Promise that is not awaited, returned, or explicitly ignored"
+            }
+            TemplateContext::Directive => {
+                "Template directive expression creates a Promise that is not awaited, returned, or explicitly ignored"
+            }
+            TemplateContext::Event => {
+                "Template event handler creates a Promise that is not awaited, returned, or explicitly ignored"
+            }
+            TemplateContext::Interpolation => {
+                "Template interpolation creates a Promise that is not awaited, returned, or explicitly ignored"
+            }
+        };
+        let help = match self.context {
+            TemplateContext::Event => {
+                "Move async work into a named handler and `await` it, or prefix the call with `void` when fire-and-forget behavior is intentional."
+            }
+            TemplateContext::Binding | TemplateContext::Directive | TemplateContext::Interpolation => {
+                "Resolve the Promise in `<script setup>` and expose settled state to the template instead of creating async work during render."
+            }
+        };
+
+        LintDiagnostic::warn(
+            RULE_NO_FLOATING_PROMISES,
+            message,
+            self.source_start,
+            self.source_end,
+        )
+        .with_help(help)
+    }
+}
+
+pub(super) fn collect_template_query_sets(
     virtual_ts: &VirtualTsOutput,
     template_ast: &RootNode<'_>,
     template_offset: u32,
-) -> Vec<TemplateQuery> {
-    collector::collect_template_queries(virtual_ts, template_ast, template_offset)
+    include_template_queries: bool,
+    include_template_promise_queries: bool,
+) -> (Vec<TemplateQuery>, Vec<TemplatePromiseQuery>) {
+    collector::collect_template_query_sets(
+        virtual_ts,
+        template_ast,
+        template_offset,
+        include_template_queries,
+        include_template_promise_queries,
+    )
 }
 
 pub(super) fn absolute_expression_range(

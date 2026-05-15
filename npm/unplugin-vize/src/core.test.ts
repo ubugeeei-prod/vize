@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import "./test/setup.ts";
-import { vizeUnplugin } from "./unplugin.js";
-import { normalizeSnapshot, packageRoot, resolveFixturePath } from "./test/helpers.js";
+import { vizeUnplugin } from "./unplugin.ts";
+import { normalizeSnapshot, packageRoot, resolveFixturePath } from "./test/helpers.ts";
 
 function createPlugin() {
   return vizeUnplugin.raw(

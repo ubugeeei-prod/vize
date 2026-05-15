@@ -38,6 +38,21 @@ export type TokenUsageMap = Record<string, TokenUsageEntry[]>;
 
 const REFERENCE_PATTERN = /^\{(.+)\}$/;
 const MAX_RESOLVE_DEPTH = 10;
+const UNSAFE_TOKEN_PATH_SEGMENTS = new Set(["__proto__", "prototype", "constructor"]);
+
+function parseTokenPath(dotPath: string): string[] {
+  const parts = dotPath.split(".");
+  if (parts.length === 0 || parts.some((part) => part.trim() === "")) {
+    throw new Error(`Invalid token path "${dotPath}"`);
+  }
+
+  const unsafeSegment = parts.find((part) => UNSAFE_TOKEN_PATH_SEGMENTS.has(part));
+  if (unsafeSegment) {
+    throw new Error(`Token path segment "${unsafeSegment}" is not allowed`);
+  }
+
+  return parts;
+}
 
 /**
  * Flatten nested categories into a flat map keyed by dot-path.
@@ -46,7 +61,7 @@ export function buildTokenMap(
   categories: TokenCategory[],
   prefix: string[] = [],
 ): Record<string, DesignToken> {
-  const map: Record<string, DesignToken> = {};
+  const map = Object.create(null) as Record<string, DesignToken>;
 
   for (const cat of categories) {
     const catKey = cat.name.toLowerCase().replace(/\s+/g, "-");
@@ -145,7 +160,7 @@ export function setTokenAtPath(
   dotPath: string,
   token: Omit<DesignToken, "$resolvedValue">,
 ): void {
-  const parts = dotPath.split(".");
+  const parts = parseTokenPath(dotPath);
   let current: Record<string, unknown> = data;
 
   for (let i = 0; i < parts.length - 1; i++) {
@@ -170,7 +185,7 @@ export function setTokenAtPath(
  * Delete a token at a dot-separated path, cleaning empty parents.
  */
 export function deleteTokenAtPath(data: Record<string, unknown>, dotPath: string): boolean {
-  const parts = dotPath.split(".");
+  const parts = parseTokenPath(dotPath);
   const parents: Array<{ obj: Record<string, unknown>; key: string }> = [];
   let current: Record<string, unknown> = data;
 

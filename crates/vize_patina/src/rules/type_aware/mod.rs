@@ -9,6 +9,7 @@
 //! - `type/require-typed-props` - Require type definition for defineProps
 //! - `type/require-typed-emits` - Require type definition for defineEmits
 //! - `type/no-floating-promises` - Disallow unhandled Promise results
+//! - `type/no-reactivity-loss` - Disallow plain snapshots of reactive values
 //!
 //! ### Template Rules
 //! - `type/no-unsafe-template-binding` - Disallow template expressions that
@@ -21,6 +22,8 @@ mod require_typed_props;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub use crate::rules::opinionated::type_aware::NoFloatingPromises;
+#[cfg(not(target_arch = "wasm32"))]
+pub use crate::rules::opinionated::type_aware::NoReactivityLoss;
 #[cfg(not(target_arch = "wasm32"))]
 pub use crate::rules::opinionated::type_aware::NoUnsafeTemplateBinding;
 #[cfg(not(target_arch = "wasm32"))]

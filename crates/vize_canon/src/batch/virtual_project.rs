@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 
 use super::error::{CorsaError, CorsaResult};
 use super::import_rewriter::ImportRewriter;
+use super::runtime_deps::materialize_runtime_dependencies;
 use super::source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
 use super::SfcBlockType;
 use crate::virtual_ts::{generate_virtual_ts_with_offsets, VirtualTsOptions};
@@ -15,8 +16,22 @@ use oxc_span::SourceType;
 use serde_json::{Map, Value};
 use vize_atelier_core::parser::parse;
 use vize_atelier_sfc::{parse_sfc, SfcDescriptor, SfcParseOptions};
-use vize_carton::{cstr, profile, Bump, FxHashMap, String as CompactString, ToCompactString};
+use vize_carton::{
+    cstr, profile, Bump, FxHashMap, FxHashSet, String as CompactString, ToCompactString,
+};
 use vize_croquis::{Analyzer, AnalyzerOptions, ImportStatementInfo, ReExportInfo, TypeExport};
+
+const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
+const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
+    "baseUrl",
+    "paths",
+    "rootDir",
+    "rootDirs",
+    "outDir",
+    "declarationDir",
+    "typeRoots",
+    "tsBuildInfoFile",
+];
 
 /// A virtual file in the project.
 #[derive(Debug)]
@@ -146,8 +161,9 @@ impl VirtualProject {
             .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
         )?;
 
-        let effective_options =
+        let mut effective_options =
             virtual_ts_options_for_descriptor(&self.virtual_ts_options, &descriptor);
+        effective_options.auto_import_stubs.clear();
         let generated = profile!(
             "canon.vue.virtual_ts",
             generate_vue_virtual_ts(path, content, &descriptor, &effective_options)
@@ -229,16 +245,29 @@ impl VirtualProject {
         )?;
 
         profile!(
+            "canon.project.runtime_deps",
+            materialize_runtime_dependencies(&self.project_root, &self.virtual_root)
+        )?;
+
+        profile!(
             "canon.project.write_files",
             (|| -> CorsaResult<()> {
+                let mut created_dirs = FxHashSet::default();
                 for file in self.virtual_files.values() {
                     if let Some(parent) = file.virtual_path.parent() {
-                        std::fs::create_dir_all(parent)?;
+                        if created_dirs.insert(parent.to_path_buf()) {
+                            std::fs::create_dir_all(parent)?;
+                        }
                     }
                     std::fs::write(&file.virtual_path, &file.content)?;
                 }
                 Ok(())
             })()
+        )?;
+
+        profile!(
+            "canon.project.write_auto_imports",
+            self.write_auto_import_stubs()
         )?;
 
         profile!(
@@ -381,6 +410,9 @@ impl VirtualProject {
         }
 
         let mut compiler_options = self.load_compiler_options(original_tsconfig.as_deref())?;
+        for option in PATH_SENSITIVE_COMPILER_OPTIONS {
+            compiler_options.remove(*option);
+        }
         compiler_options.insert("allowImportingTsExtensions".into(), Value::Bool(true));
 
         if let Some(out_dir) = out_dir {
@@ -430,8 +462,33 @@ impl VirtualProject {
             .filter_map(|path| path.strip_prefix(&self.virtual_root).ok())
             .map(|path| path.to_string_lossy().to_compact_string())
             .collect();
+        if !self.virtual_ts_options.auto_import_stubs.is_empty() {
+            includes.push(AUTO_IMPORT_STUBS_FILE.into());
+        }
         includes.sort();
         includes
+    }
+
+    fn write_auto_import_stubs(&self) -> CorsaResult<()> {
+        if self.virtual_ts_options.auto_import_stubs.is_empty() {
+            return Ok(());
+        }
+
+        let capacity = self
+            .virtual_ts_options
+            .auto_import_stubs
+            .iter()
+            .fold(64usize, |acc, stub| acc + stub.len() + 1);
+        let mut content = CompactString::with_capacity(capacity);
+        content.push_str("// @ts-nocheck\n");
+        content.push_str("// Framework-provided globals for the virtual project.\n");
+        for stub in &self.virtual_ts_options.auto_import_stubs {
+            content.push_str(stub);
+            content.push('\n');
+        }
+
+        std::fs::write(self.virtual_root.join(AUTO_IMPORT_STUBS_FILE), content)?;
+        Ok(())
     }
 
     fn common_virtual_source_dir(&self) -> PathBuf {
@@ -858,6 +915,7 @@ fn strip_trailing_commas(content: &str) -> CompactString {
 #[cfg(test)]
 mod tests {
     use super::{parse_jsonc_value, source_type_for_path, strip_json_comments, VirtualProject};
+    use crate::virtual_ts::VirtualTsOptions;
     use std::fs;
     use std::path::{Path, PathBuf};
     use vize_carton::cstr;
@@ -934,15 +992,82 @@ const message = 'Hello'
         .unwrap();
 
         let mut project = VirtualProject::new(&case_dir).unwrap();
+        let mut options = VirtualTsOptions::default();
+        options
+            .auto_import_stubs
+            .push("declare function autoGenerated(): string;".into());
+        project.set_virtual_ts_options(options);
         project.register_path(&vue_path).unwrap();
         project.materialize().unwrap();
 
-        assert!(case_dir
-            .join("node_modules/.vize/canon/src/App.vue.ts")
-            .exists());
-        assert!(case_dir
-            .join("node_modules/.vize/canon/tsconfig.json")
-            .exists());
+        let virtual_vue_path = case_dir.join("node_modules/.vize/canon/src/App.vue.ts");
+        let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+        let auto_imports_path = case_dir.join("node_modules/.vize/canon/__vize_auto_imports.d.ts");
+
+        assert!(virtual_vue_path.exists());
+        assert!(tsconfig_path.exists());
+        assert!(auto_imports_path.exists());
+        assert!(!fs::read_to_string(&virtual_vue_path)
+            .unwrap()
+            .contains("autoGenerated"));
+        assert!(fs::read_to_string(&auto_imports_path)
+            .unwrap()
+            .contains("autoGenerated"));
+        assert!(fs::read_to_string(&tsconfig_path)
+            .unwrap()
+            .contains("__vize_auto_imports.d.ts"));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn materialized_tsconfig_preserves_original_path_option_bases() {
+        let case_dir = unique_case_dir("tsconfig-path-bases");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "rootDirs": ["src", "generated"],
+    "typeRoots": ["types"]
+  }
+}"#,
+        )
+        .unwrap();
+        let vue_path = src_dir.join("App.vue");
+        fs::write(
+            &vue_path,
+            "<script setup lang=\"ts\">const count = 1</script>",
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&vue_path).unwrap();
+        project.materialize().unwrap();
+
+        let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
+        let compiler_options = value["compilerOptions"].as_object().unwrap();
+
+        assert_eq!(compiler_options["strict"], serde_json::Value::Bool(true));
+        assert_eq!(
+            compiler_options["allowImportingTsExtensions"],
+            serde_json::Value::Bool(true)
+        );
+        for option in ["baseUrl", "paths", "rootDir", "rootDirs", "typeRoots"] {
+            assert!(
+                !compiler_options.contains_key(option),
+                "{option} should remain owned by the extended tsconfig"
+            );
+        }
 
         let _ = fs::remove_dir_all(&case_dir);
     }

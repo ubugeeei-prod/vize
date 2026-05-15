@@ -2,13 +2,13 @@ import { test } from "node:test";
 import path from "node:path";
 import { rspack } from "@rspack/core";
 import "./test/setup.ts";
-import { VizePlugin } from "./plugin/index.js";
+import { VizePlugin } from "./plugin/index.ts";
 import {
   normalizeSnapshot,
   packageRoot,
   prepareOutputDir,
   resolveFixturePath,
-} from "./test/helpers.js";
+} from "./test/helpers.ts";
 
 function runCompiler(compiler: ReturnType<typeof rspack>) {
   return new Promise<NonNullable<Parameters<Parameters<typeof compiler.run>[0]>[1]>>(

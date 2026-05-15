@@ -22,6 +22,14 @@ input = '<MyComponent msg="hello" />'
 name = "component with event"
 input = '<MyComponent @update="onUpdate" />'
 
+[[cases]]
+name = "component merges static and dynamic class"
+input = '<MyComponent class="a" :class="cls" />'
+
+[[cases]]
+name = "component spread props keep override order"
+input = '<MyComponent v-bind="props" class="a" :class="cls" :to="to" />'
+
 # =============================================================================
 # Component slots
 # =============================================================================

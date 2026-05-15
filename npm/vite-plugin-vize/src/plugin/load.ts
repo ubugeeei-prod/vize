@@ -4,10 +4,15 @@ import { pathToFileURL } from "node:url";
 import type { TransformResult } from "vite";
 import { transformWithOxc } from "vite";
 
-import { getCompileOptionsForRequest, getEnvironmentCache, type VizePluginState } from "./state.js";
-import { compileFile } from "../compiler.js";
-import { generateOutput, hasDelegatedStyles } from "../utils/index.js";
-import { resolveCssImports } from "../utils/css.js";
+import {
+  getCompileOptionsForRequest,
+  getEnvironmentCache,
+  syncCollectedCssForFile,
+  type VizePluginState,
+} from "./state.ts";
+import { compileFile } from "../compiler.ts";
+import { generateOutput, hasDelegatedStyles } from "../utils/index.ts";
+import { resolveCssImports, scopeCssForPipeline } from "../utils/css.ts";
 import {
   isVizeVirtual,
   isVizeSsrVirtual,
@@ -15,8 +20,8 @@ import {
   LEGACY_VIZE_PREFIX,
   RESOLVED_CSS_MODULE,
   rewriteDynamicTemplateImports,
-} from "../virtual.js";
-import { rewriteStaticAssetUrls, applyDefineReplacements } from "../transform.js";
+} from "../virtual.ts";
+import { rewriteStaticAssetUrls, applyDefineReplacements } from "../transform.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
 export default defineComponent({
@@ -41,6 +46,82 @@ function getOxcDumpPath(root: string, realPath: string): string {
   const dumpDir = path.resolve(root || process.cwd(), "__agent_only", "oxc-dumps");
   fs.mkdirSync(dumpDir, { recursive: true });
   return path.join(dumpDir, `vize-oxc-error-${path.basename(realPath)}.ts`);
+}
+
+function getVirtualModuleDefines(
+  state: Pick<VizePluginState, "clientViteDefine" | "isProduction" | "serverViteDefine">,
+  ssr: boolean,
+): Record<string, string> {
+  return {
+    "import.meta.client": ssr ? "false" : "true",
+    "import.meta.server": ssr ? "true" : "false",
+    "import.meta.dev": state.isProduction ? "false" : "true",
+    "import.meta.test": "false",
+    "import.meta.prerender": "false",
+    ...(ssr ? state.serverViteDefine : state.clientViteDefine),
+  };
+}
+
+function hasQueryParam(id: string, name: string): boolean {
+  const query = id.split("?")[1];
+  return query ? new URLSearchParams(query).has(name) : false;
+}
+
+function hasMacroQuery(id: string): boolean {
+  const query = id.split("?")[1];
+  return query ? new URLSearchParams(query).get("macro") === "true" : false;
+}
+
+function normalizeMacroRealPath(realPath: string): string {
+  return realPath.endsWith(".vue.ts") ? realPath.slice(0, -3) : realPath;
+}
+
+function isVueSfcPath(realPath: string): boolean {
+  return normalizeMacroRealPath(realPath).endsWith(".vue");
+}
+
+function stripVirtualQuery(id: string): string {
+  return normalizeMacroRealPath(id.slice(1).split("?")[0] ?? "");
+}
+
+function findMacroArtifactModule(
+  state: VizePluginState,
+  realPath: string,
+  ssr: boolean,
+  kind: string,
+): string | null {
+  const cache = getEnvironmentCache(state, ssr);
+  realPath = normalizeMacroRealPath(realPath);
+  let compiled = cache.get(realPath) ?? state.cache.get(realPath) ?? state.ssrCache.get(realPath);
+
+  if (!compiled && fs.existsSync(realPath)) {
+    const source = fs.readFileSync(realPath, "utf-8");
+    compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, ssr), source);
+    syncCollectedCssForFile(state, realPath, compiled);
+  }
+
+  return compiled?.macroArtifacts?.find((artifact) => artifact.kind === kind)?.moduleCode ?? null;
+}
+
+function loadDefinePageArtifact(
+  state: VizePluginState,
+  realPath: string,
+  ssr: boolean,
+): { code: string; map: null } {
+  return {
+    code:
+      findMacroArtifactModule(state, realPath, ssr, "vue-router.definePage") ?? "export default {}",
+    map: null,
+  };
+}
+
+function loadDefinePageMetaArtifact(
+  state: VizePluginState,
+  realPath: string,
+  ssr: boolean,
+): { code: string; map: null } | null {
+  const code = findMacroArtifactModule(state, realPath, ssr, "nuxt.definePageMeta");
+  return code ? { code, map: null } : null;
 }
 
 export function loadHook(
@@ -87,6 +168,12 @@ export function loadHook(
       const block = fallbackCompiled.styles[blockIndex];
       let styleContent = block.content;
 
+      // Keep delegated plain CSS scoped while preserving PostCSS-only syntax
+      // such as `@apply` for the downstream CSS pipeline.
+      if (scoped && block.scoped && (!lang || lang === "css")) {
+        styleContent = scopeCssForPipeline(styleContent, scoped);
+      }
+
       // For scoped preprocessor styles, wrap content in a scope selector
       if (scoped && block.scoped && lang && lang !== "css") {
         const lines = styleContent.split("\n");
@@ -127,21 +214,36 @@ export function loadHook(
     return "";
   }
 
-  // Handle ?macro=true queries
-  if (id.startsWith("\0") && id.endsWith("?macro=true")) {
-    const realPath = id.slice(1).replace("?macro=true", "");
-    if (fs.existsSync(realPath)) {
-      const source = fs.readFileSync(realPath, "utf-8");
-      const setupMatch = source.match(/<script\s+setup[^>]*>([\s\S]*?)<\/script>/);
-      if (setupMatch) {
-        const scriptContent = setupMatch[1];
-        return {
-          code: `${scriptContent}\nexport default {}`,
-          map: null,
-        };
-      }
+  // Handle Vue Router's ?definePage query through extracted artifacts.
+  if (id.startsWith("\0") && hasQueryParam(id, "definePage")) {
+    const realPath = stripVirtualQuery(id);
+    if (isVueSfcPath(realPath)) {
+      return loadDefinePageArtifact(state, realPath, !!loadOptions?.ssr);
     }
-    return { code: "export default {}", map: null };
+  }
+
+  // Handle ?macro=true queries
+  if (id.startsWith("\0") && hasMacroQuery(id)) {
+    const realPath = stripVirtualQuery(id);
+    if (isVueSfcPath(realPath)) {
+      const artifactLoad = loadDefinePageMetaArtifact(state, realPath, !!loadOptions?.ssr);
+      if (artifactLoad) {
+        return artifactLoad;
+      }
+
+      if (fs.existsSync(realPath)) {
+        const source = fs.readFileSync(realPath, "utf-8");
+        const setupMatch = source.match(/<script\s+setup[^>]*>([\s\S]*?)<\/script>/);
+        if (setupMatch) {
+          const scriptContent = setupMatch[1];
+          return {
+            code: `${scriptContent}\nexport default {}`,
+            map: null,
+          };
+        }
+      }
+      return { code: "export default {}", map: null };
+    }
   }
 
   // Handle vize virtual modules
@@ -170,6 +272,7 @@ export function loadHook(
     if (!compiled && fs.existsSync(realPath)) {
       state.logger.log(`load: on-demand compiling ${realPath}`);
       compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, isSsr));
+      syncCollectedCssForFile(state, realPath, compiled);
     }
 
     if (compiled) {
@@ -194,6 +297,7 @@ export function loadHook(
           generateOutput(compiled, {
             isProduction: state.isProduction,
             isDev: state.server !== null && !isSsr,
+            ssr: isSsr,
             hmrUpdateType: pendingHmrUpdateType,
             extractCss: state.extractCss,
             filePath: realPath,
@@ -243,20 +347,19 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
-  const isMacro = id.startsWith("\0") && id.endsWith("?macro=true");
+  const isMacro = id.startsWith("\0") && (hasMacroQuery(id) || hasQueryParam(id, "definePage"));
   if (isVizeVirtual(id) || isMacro) {
-    const realPath = isMacro ? id.slice(1).replace("?macro=true", "") : fromVirtualId(id);
+    const realPath = isMacro ? stripVirtualQuery(id) : fromVirtualId(id);
     try {
       const result = await transformWithOxc(code, realPath, {
         lang: "ts",
+        sourcemap: false,
       });
-      const defines = options?.ssr ? state.serverViteDefine : state.clientViteDefine;
+      const defines = getVirtualModuleDefines(state, options?.ssr ?? false);
       let transformed = result.code;
-      if (Object.keys(defines).length > 0) {
-        transformed = applyDefineReplacements(transformed, defines);
-      }
+      transformed = applyDefineReplacements(transformed, defines);
 
-      return { code: transformed, map: result.map as TransformResult["map"] };
+      return { code: transformed, map: null };
     } catch (e: unknown) {
       state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
       const dumpPath = getOxcDumpPath(state.root, realPath);

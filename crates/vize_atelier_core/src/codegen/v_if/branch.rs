@@ -195,13 +195,13 @@ fn generate_if_branch_component(
     } else if let Some(builtin) = is_builtin_component(&el.tag) {
         ctx.use_helper(builtin);
         ctx.push(ctx.helper(builtin));
-    } else if ctx.is_component_in_bindings(&el.tag) {
+    } else if let Some(binding_name) = ctx.resolve_component_binding_name(&el.tag) {
         // In inline mode, components are directly in scope (imported at module level)
         // In function mode, use $setup.ComponentName to access setup bindings
         if !ctx.options.inline {
             ctx.push("$setup.");
         }
-        ctx.push(el.tag.as_str());
+        ctx.push(binding_name.as_str());
     } else {
         ctx.push(&to_valid_asset_identifier("component", &el.tag));
     }

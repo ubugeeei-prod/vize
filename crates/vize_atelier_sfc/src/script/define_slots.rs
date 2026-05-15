@@ -10,7 +10,7 @@ use super::utils::{extract_type_args, find_call_paren, find_matching_paren};
 use super::MacroCall;
 use vize_carton::String;
 
-pub const DEFINE_SLOTS: &str = "defineSlots";
+pub use vize_croquis::macros::DEFINE_SLOTS;
 
 /// Extract defineSlots call from source
 #[allow(dead_code)]

@@ -2,7 +2,7 @@
 //!
 //! Transforms element nodes and their props.
 
-use vize_carton::{capitalize, String};
+use vize_carton::{capitalize, is_native_tag, String};
 
 use crate::ast::*;
 use crate::transform::TransformContext;
@@ -15,7 +15,7 @@ pub fn resolve_element_type<'a>(
     let tag = &el.tag;
 
     // Check if it's a component
-    if is_component(tag, el) {
+    if is_component(ctx, tag, el) {
         ctx.helper(RuntimeHelper::ResolveComponent);
         ctx.add_component(tag.clone());
         ElementType::Component
@@ -29,7 +29,15 @@ pub fn resolve_element_type<'a>(
 }
 
 /// Check if tag is a component
-fn is_component(tag: &str, el: &ElementNode<'_>) -> bool {
+fn is_component(ctx: &TransformContext<'_>, tag: &str, el: &ElementNode<'_>) -> bool {
+    if is_registered_component(ctx, tag) {
+        return true;
+    }
+
+    if is_native_tag(tag) {
+        return false;
+    }
+
     // Components start with uppercase or contain -
     let first_char = tag.chars().next().unwrap_or('a');
     if first_char.is_uppercase() {
@@ -52,6 +60,39 @@ fn is_component(tag: &str, el: &ElementNode<'_>) -> bool {
         }
     }
     false
+}
+
+fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
+    if ctx.is_component_registered(tag) {
+        return true;
+    }
+
+    let camel = camelize_component_name(tag);
+    if ctx.is_component_registered(camel.as_str()) {
+        return true;
+    }
+
+    let pascal = capitalize(&camel);
+    ctx.is_component_registered(pascal.as_str())
+}
+
+fn camelize_component_name(tag: &str) -> String {
+    let mut result = String::with_capacity(tag.len());
+    let mut uppercase_next = false;
+    for ch in tag.chars() {
+        if ch == '-' || ch == '_' {
+            uppercase_next = true;
+            continue;
+        }
+
+        if uppercase_next {
+            result.push(ch.to_ascii_uppercase());
+            uppercase_next = false;
+        } else {
+            result.push(ch);
+        }
+    }
+    result
 }
 
 /// Build element props for codegen

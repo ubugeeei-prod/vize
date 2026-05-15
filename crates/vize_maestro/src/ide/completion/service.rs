@@ -188,7 +188,7 @@ impl super::CompletionService {
         bridge: &CorsaBridge,
     ) -> Vec<CompletionItem> {
         if let Some(ref virtual_docs) = ctx.virtual_docs {
-            if let Some(ref tmpl) = virtual_docs.template {
+            if let Some(tmpl) = virtual_docs.art_template(info.variant_index) {
                 // Convert the art variant relative offset through the template source map
                 let relative_offset = info.relative_offset as u32;
                 let vts_offset = tmpl
@@ -200,7 +200,8 @@ impl super::CompletionService {
                 let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
 
                 if bridge.is_initialized() {
-                    let request_path = corsa_support::template_request_path(ctx.uri);
+                    let request_path =
+                        corsa_support::art_template_request_path(ctx.uri, info.variant_index);
                     let Ok(uri) = bridge
                         .open_or_update_virtual_document(&request_path, &tmpl.content)
                         .await

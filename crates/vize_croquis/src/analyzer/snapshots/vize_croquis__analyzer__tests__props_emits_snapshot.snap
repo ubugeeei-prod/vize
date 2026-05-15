@@ -5,7 +5,7 @@ expression: output
 === Props ===
   title: required=false, has_default=false
   count: required=true, has_default=false
-  items: required=false, has_default=false
+  items: required=false, has_default=true
 
 === Emits ===
   update

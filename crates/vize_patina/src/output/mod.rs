@@ -7,7 +7,7 @@ pub use text::*;
 use crate::diagnostic::{render_help, HelpRenderTarget};
 use crate::linter::LintResult;
 use serde::Serialize;
-use vize_carton::String;
+use vize_carton::{FxHashMap, SmallVec, String};
 
 /// Output format for lint results
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -27,7 +27,7 @@ pub fn format_results(
 ) -> String {
     match format {
         OutputFormat::Text => format_text(results, sources),
-        OutputFormat::Json => format_json(results),
+        OutputFormat::Json => format_json(results, sources),
     }
 }
 
@@ -60,7 +60,12 @@ pub struct JsonMessage {
 }
 
 /// Format results as JSON
-fn format_json(results: &[LintResult]) -> String {
+fn format_json(results: &[LintResult], sources: &[(String, String)]) -> String {
+    let source_indices: FxHashMap<&str, SourceLineIndex> = sources
+        .iter()
+        .map(|(filename, source)| (filename.as_str(), SourceLineIndex::new(source.as_str())))
+        .collect();
+
     let json_results: Vec<JsonFileResult> = results
         .iter()
         .map(|r| JsonFileResult {
@@ -69,9 +74,15 @@ fn format_json(results: &[LintResult]) -> String {
                 .diagnostics
                 .iter()
                 .map(|d| {
-                    // Convert byte offsets to line/column
-                    // For now, we'll use placeholder values
-                    // In a real implementation, we'd track line info
+                    let (line, column, end_line, end_column) = source_indices
+                        .get(r.filename.as_str())
+                        .map(|source| {
+                            let (line, column) = source.offset_to_line_col(d.start);
+                            let (end_line, end_column) = source.offset_to_line_col(d.end);
+                            (line, column, end_line, end_column)
+                        })
+                        .unwrap_or((1, d.start + 1, 1, d.end + 1));
+
                     JsonMessage {
                         rule_id: d.rule_name,
                         severity: match d.severity {
@@ -80,10 +91,10 @@ fn format_json(results: &[LintResult]) -> String {
                         },
                         // Use formatted message with [vize:RULE] prefix
                         message: d.formatted_message(),
-                        line: 1, // TODO: calculate from offset
-                        column: d.start + 1,
-                        end_line: 1,
-                        end_column: d.end + 1,
+                        line,
+                        column,
+                        end_line,
+                        end_column,
                         help: d
                             .help
                             .as_ref()
@@ -99,4 +110,68 @@ fn format_json(results: &[LintResult]) -> String {
     serde_json::to_string_pretty(&json_results)
         .unwrap_or_else(|_| "[]".to_owned())
         .into()
+}
+
+struct SourceLineIndex {
+    source_len: usize,
+    line_starts: SmallVec<[usize; 64]>,
+}
+
+impl SourceLineIndex {
+    fn new(source: &str) -> Self {
+        let bytes = source.as_bytes();
+        let mut line_starts = SmallVec::new();
+        line_starts.push(0);
+
+        for (index, &byte) in bytes.iter().enumerate() {
+            if byte == b'\n' {
+                line_starts.push(index + 1);
+            }
+        }
+
+        Self {
+            source_len: bytes.len(),
+            line_starts,
+        }
+    }
+
+    fn offset_to_line_col(&self, offset: u32) -> (u32, u32) {
+        let offset = (offset as usize).min(self.source_len);
+        let line_index = self
+            .line_starts
+            .partition_point(|&line_start| line_start <= offset)
+            .saturating_sub(1);
+        let line_start = self.line_starts.get(line_index).copied().unwrap_or(0);
+        let line = line_index as u32 + 1;
+        let column = offset.saturating_sub(line_start) as u32 + 1;
+
+        (line, column)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{format_results, Linter, OutputFormat};
+
+    #[test]
+    fn json_output_uses_source_line_columns() {
+        let source = r#"<script setup lang="ts">
+const items = [1]
+</script>
+
+<template>
+  <div v-for="item in items">{{ item }}</div>
+</template>
+"#;
+        let filename = vize_carton::String::from("Component.vue");
+        let result = Linter::new().lint_sfc(source, &filename);
+        let output = format_results(
+            &[result],
+            &[(filename, vize_carton::String::from(source))],
+            OutputFormat::Json,
+        );
+
+        assert!(output.contains(r#""line": 6"#), "{output}");
+        assert!(output.contains(r#""column": 8"#), "{output}");
+    }
 }

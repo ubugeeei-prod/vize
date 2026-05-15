@@ -9,6 +9,7 @@ import {
   ensurePortFree,
   waitForHttpReady,
   killProcess,
+  getProcessLogs,
 } from "../../_helpers/server";
 import {
   collectConsoleErrors,
@@ -68,6 +69,16 @@ test.describe("vuefes-2025 dev", () => {
     const html = await verifySSRContent(page, app.url);
     expect(html).toContain("__nuxt");
     expect(html.length).toBeGreaterThan(100);
+  });
+
+  test("server logs stay clean after SSR render", async ({ page }) => {
+    await verifySSRContent(page, app.url);
+
+    const fatalLogs = getProcessLogs(devServer).filter(isFatalError);
+    if (fatalLogs.length > 0) {
+      console.log(`Fatal server logs in ${app.name}:`, fatalLogs);
+    }
+    expect(fatalLogs).toHaveLength(0);
   });
 
   test("no hydration mismatch errors", async ({ page }) => {

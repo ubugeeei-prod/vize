@@ -1,8 +1,24 @@
-import * as prettier from "prettier/standalone";
-import * as parserHtml from "prettier/plugins/html";
-
 const TEXT_PLACEHOLDER_PREFIX = "{{__VIZE_HTML_TEXT_";
 const TEXT_PLACEHOLDER_SUFFIX = "__}}";
+
+let htmlFormatterRuntimePromise: Promise<{
+  prettier: typeof import("prettier/standalone");
+  parserHtml: typeof import("prettier/plugins/html");
+}> | null = null;
+
+async function loadHtmlFormatterRuntime() {
+  if (!htmlFormatterRuntimePromise) {
+    htmlFormatterRuntimePromise = Promise.all([
+      import("prettier/standalone"),
+      import("prettier/plugins/html"),
+    ]).then(([prettier, parserHtml]) => ({
+      prettier,
+      parserHtml,
+    }));
+  }
+
+  return htmlFormatterRuntimePromise;
+}
 
 interface TextPlaceholderResult {
   html: string;
@@ -13,6 +29,7 @@ export async function formatHtmlFragment(html: string): Promise<string> {
   const placeholderResult = replaceTextNodesWithPlaceholders(html);
 
   try {
+    const { prettier, parserHtml } = await loadHtmlFormatterRuntime();
     const formattedHtml = await prettier.format(placeholderResult.html, {
       parser: "html",
       plugins: [parserHtml],

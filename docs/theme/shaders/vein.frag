@@ -55,7 +55,7 @@ void main() {
   float aspect = u_resolution.x / u_resolution.y;
   vec2 p = vec2(uv.x * aspect, uv.y);
 
-  float t = u_time * 0.008;
+  float t = u_time * 0.035;
   float scroll = u_scroll * 0.0001;
 
   vec2 mp = vec2(u_mouse.x * aspect, u_mouse.y);

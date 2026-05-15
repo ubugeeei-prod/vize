@@ -23,6 +23,7 @@ import { loadNative } from "./native.js";
 import { findArtFiles } from "./scanner.js";
 import { toolDefinitions, handleToolCall } from "./tools.js";
 import { listResources, readResource } from "./resources.js";
+import { resolveProjectPath } from "./musea.js";
 
 export function createMuseaServer(config: {
   projectRoot: string;
@@ -35,7 +36,7 @@ export function createMuseaServer(config: {
     { capabilities: { resources: {}, tools: {} } },
   );
 
-  const projectRoot = config.projectRoot;
+  const projectRoot = path.resolve(config.projectRoot);
   const include = config.include ?? ["**/*.art.vue"];
   const exclude = config.exclude ?? ["node_modules/**", "dist/**"];
   const tokensPath = config.tokensPath;
@@ -64,7 +65,11 @@ export function createMuseaServer(config: {
           component: parsed.metadata.component,
           category: parsed.metadata.category,
           tags: parsed.metadata.tags,
+          status: parsed.metadata.status,
+          order: parsed.metadata.order,
           variantCount: parsed.variants.length,
+          variantNames: parsed.variants.map((variant) => variant.name),
+          defaultVariant: parsed.variants.find((variant) => variant.is_default)?.name,
         });
       } catch (e) {
         console.error(`Failed to parse ${file}:`, e);
@@ -76,7 +81,7 @@ export function createMuseaServer(config: {
   }
 
   async function resolveTokensPath(): Promise<string | null> {
-    if (tokensPath) return path.resolve(projectRoot, tokensPath);
+    if (tokensPath) return resolveProjectPath(projectRoot, tokensPath, "tokensPath");
 
     const candidates = ["tokens", "design-tokens", "style-dictionary"];
     for (const dir of candidates) {

@@ -11,6 +11,7 @@ mod setup;
 use std::fmt::Write;
 
 use crate::ir::{BlockIRNode, OperationNode, RootIRNode};
+use vize_atelier_core::options::BindingMetadata;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString};
 
 use context::GenerateContext;
@@ -27,8 +28,15 @@ pub struct VaporGenerateResult {
 }
 
 /// Generate Vapor code from IR
-pub fn generate_vapor(ir: &RootIRNode<'_>) -> VaporGenerateResult {
-    let mut ctx = GenerateContext::new(&ir.element_template_map, &ir.standalone_text_elements);
+pub fn generate_vapor(
+    ir: &RootIRNode<'_>,
+    binding_metadata: Option<&BindingMetadata>,
+) -> VaporGenerateResult {
+    let mut ctx = GenerateContext::new(
+        &ir.element_template_map,
+        &ir.standalone_text_elements,
+        binding_metadata,
+    );
 
     // Template helper is always used if we have templates
     if !ir.templates.is_empty() {
@@ -302,7 +310,7 @@ mod tests {
         let allocator = Bump::new();
         let (root, _) = parse(&allocator, "<div>hello</div>");
         let ir = transform_to_ir(&allocator, &root);
-        let result = generate_vapor(&ir);
+        let result = generate_vapor(&ir, None);
 
         assert!(!result.code.is_empty());
         insta::assert_snapshot!(result.code.as_str());
@@ -313,7 +321,7 @@ mod tests {
         let allocator = Bump::new();
         let (root, _) = parse(&allocator, r#"<button @click="handleClick">Click</button>"#);
         let ir = transform_to_ir(&allocator, &root);
-        let result = generate_vapor(&ir);
+        let result = generate_vapor(&ir, None);
 
         insta::assert_snapshot!(result.code.as_str());
     }

@@ -1,54 +1,14 @@
-import { existsSync, readFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig } from "vite-plus";
 import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
+import { resolvePuppeteerExecutablePath } from "./browser-path.js";
 import { buildDocsBackgroundScript, createDocsBackgroundHtml } from "./theme/background";
-
-const require = createRequire(import.meta.url);
-
-function resolvePuppeteerExecutablePath(): string | undefined {
-  const configuredPath = process.env.PUPPETEER_EXECUTABLE_PATH;
-  if (configuredPath && existsSync(configuredPath)) {
-    return configuredPath;
-  }
-
-  try {
-    const { chromium } = require("playwright");
-    const executablePath = chromium?.executablePath?.();
-    if (executablePath && existsSync(executablePath)) {
-      return executablePath;
-    }
-  } catch {
-    // Fall through to common system browser paths.
-  }
-
-  const candidates = [
-    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    "/Applications/Chromium.app/Contents/MacOS/Chromium",
-    "/usr/bin/google-chrome-stable",
-    "/usr/bin/google-chrome",
-    "/usr/bin/chromium-browser",
-    "/usr/bin/chromium",
-  ];
-
-  return candidates.find((candidate) => existsSync(candidate));
-}
 
 const puppeteerExecutablePath = resolvePuppeteerExecutablePath();
 if (puppeteerExecutablePath) {
   process.env.PUPPETEER_EXECUTABLE_PATH = puppeteerExecutablePath;
 }
-
-const artVueGrammar = {
-  ...JSON.parse(
-    readFileSync(
-      resolve(import.meta.dirname, "../npm/vscode-art/syntaxes/art.tmLanguage.json"),
-      "utf-8",
-    ),
-  ),
-  name: "art-vue",
-};
 
 const themeDir = resolve(import.meta.dirname, "theme");
 const themeCss = readFileSync(resolve(themeDir, "style.css"), "utf-8");
@@ -107,8 +67,9 @@ export default defineConfig({
 
           header: {
             logo: "/logo.svg",
-            logoWidth: 32,
-            logoHeight: 32,
+            logoDark: "/logo-light.svg",
+            logoWidth: 68,
+            logoHeight: 34,
           },
 
           footer: {
@@ -123,6 +84,7 @@ export default defineConfig({
 
           embed: {
             head: [
+              '<link rel="icon" href="/mv.svg" type="image/svg+xml">',
               '<link rel="preconnect" href="https://fonts.googleapis.com">',
               '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
               '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">',
@@ -137,10 +99,10 @@ export default defineConfig({
         }),
       },
 
-      highlight: true,
-      highlightTheme: "vitesse-dark",
-      highlightLangs: [artVueGrammar],
+      highlight: false,
       mermaid: true,
+      // Keep source tree clean; this site does not use Ox Content's API docs generator.
+      docs: false,
     }),
   ],
 

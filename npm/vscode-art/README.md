@@ -2,6 +2,9 @@
 
 Syntax highlighting for Vize Art files (`*.art.vue`).
 
+Install the `Vize` extension alongside this one if you also want hover, completion,
+go-to-definition, and references inside `*.art.vue`.
+
 ## Features
 
 - Syntax highlighting for `<art>` and `<variant>` blocks
@@ -30,6 +33,9 @@ import Button from "./Button.vue";
 
 ## Installation
 
+This extension is not published to the VS Code Marketplace yet. Use a locally built VSIX while the
+editor package stabilizes.
+
 ### From VSIX
 
 ```bash
@@ -38,10 +44,12 @@ code --install-extension vize-art-0.26.0.vsix
 
 ### Development
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then:
+
 ```bash
 cd npm/vscode-art
-npm install
-npm run compile
+vp install --ignore-workspace
+vp exec tsgo -p ./
 ```
 
 Then press F5 in VS Code to launch the Extension Development Host.

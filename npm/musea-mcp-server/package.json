@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/musea-mcp-server",
-  "version": "0.52.0",
+  "version": "0.90.0",
   "description": "MCP server for building Vue.js design systems - component analysis, documentation, variant generation, and design tokens",
   "keywords": [
     "ai",
@@ -45,12 +45,15 @@
     "fmt": "vp fmt --write src vite.config.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@modelcontextprotocol/sdk": "catalog:integrations",
     "@vizejs/native": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "typescript": "^5.7.0",
-    "vite-plus": "catalog:"
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
   }
 }

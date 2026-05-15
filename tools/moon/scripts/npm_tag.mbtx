@@ -1,0 +1,38 @@
+///|
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+fn npm_tag_for_version(version : String) -> String {
+  if version.contains("-alpha") {
+    "alpha"
+  } else if version.contains("-beta") {
+    "beta"
+  } else if version.contains("-rc") {
+    "rc"
+  } else {
+    "latest"
+  }
+}
+
+///|
+fn main {
+  let args = cli_args()
+  if args.is_empty() {
+    println("Usage: moon run --target native - -- <version> < tools/moon/scripts/npm_tag.mbtx")
+    @sys.exit(1)
+  }
+  println(npm_tag_for_version(args[0]))
+}

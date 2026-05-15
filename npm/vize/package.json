@@ -1,6 +1,6 @@
 {
   "name": "vize",
-  "version": "0.52.0",
+  "version": "0.90.0",
   "description": "Vize - High-performance Vue.js toolchain in Rust",
   "keywords": [
     "cli",
@@ -45,31 +45,35 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp run generate:rule-types && vp pack",
+    "build": "vp run --workspace-root generate:rule-types && vp pack",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "generate:rule-types": "node --experimental-strip-types ../../scripts/generate-vize-rule-types.ts"
+    "generate:rule-types": "vp run --workspace-root generate:rule-types"
   },
   "dependencies": {
-    "oxc-transform": "^0.56.0"
+    "oxc-transform": "catalog:oxc"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "~5.6.0",
-    "vite-plus": "catalog:"
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
   },
   "optionalDependencies": {
-    "@vizejs/native-darwin-arm64": "0.48.0",
-    "@vizejs/native-darwin-x64": "0.48.0",
-    "@vizejs/native-linux-arm64-gnu": "0.48.0",
-    "@vizejs/native-linux-arm64-musl": "0.48.0",
-    "@vizejs/native-linux-x64-gnu": "0.48.0",
-    "@vizejs/native-linux-x64-musl": "0.48.0",
-    "@vizejs/native-win32-arm64-msvc": "0.48.0",
-    "@vizejs/native-win32-x64-msvc": "0.48.0"
+    "@pkl-community/pkl": "catalog:repo-tooling",
+    "@vizejs/native-darwin-arm64": "catalog:native-binaries",
+    "@vizejs/native-darwin-x64": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-musl": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-musl": "catalog:native-binaries",
+    "@vizejs/native-win32-arm64-msvc": "catalog:native-binaries",
+    "@vizejs/native-win32-x64-msvc": "catalog:native-binaries"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   }
 }

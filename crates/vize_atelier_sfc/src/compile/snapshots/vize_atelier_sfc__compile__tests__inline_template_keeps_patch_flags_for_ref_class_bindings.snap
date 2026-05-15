@@ -2,26 +2,32 @@
 source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass } from "vue"
-
-import { ref } from 'vue'
-
-export default /*@__PURE__*/_defineComponent({
-  __name: 'anonymous',
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass } from "vue";
+import { ref } from "vue";
+export default {
+  __name: "anonymous",
   setup(__props) {
-
-const activeTab = ref<'a' | 'b'>('a');
-
-return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", { class: "tabs" }, [ _createElementVNode("button", {
-        class: _normalizeClass(['tab', { active: activeTab.value === 'a' }]),
-        onClick: _cache[0] || (_cache[0] = ($event: any) => (activeTab.value = 'a'))
-      }, "A", 2 /* CLASS */), _createElementVNode("button", {
-        class: _normalizeClass(['tab', { active: activeTab.value === 'b' }]),
-        onClick: _cache[1] || (_cache[1] = ($event: any) => (activeTab.value = 'b'))
-      }, "B", 2 /* CLASS */) ]))
-}
-}
-
-})
+    const activeTab = ref("a");
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("div", { class: "tabs" }, [_createElementVNode(
+        "button",
+        {
+          class: _normalizeClass(["tab", { active: activeTab.value === "a" }]),
+          onClick: _cache[0] || (_cache[0] = ($event) => activeTab.value = "a")
+        },
+        "A",
+        2
+        /* CLASS */
+      ), _createElementVNode(
+        "button",
+        {
+          class: _normalizeClass(["tab", { active: activeTab.value === "b" }]),
+          onClick: _cache[1] || (_cache[1] = ($event) => activeTab.value = "b")
+        },
+        "B",
+        2
+        /* CLASS */
+      )]);
+    };
+  }
+};

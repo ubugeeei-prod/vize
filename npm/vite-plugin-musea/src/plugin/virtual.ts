@@ -33,6 +33,7 @@ export interface VirtualModuleState {
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
   getConfigRoot: () => string;
+  getScanRoots: () => string[];
   getServer: () => {
     moduleGraph: { getModulesByFile(id: string): Set<ModuleNode> | undefined };
   } | null;
@@ -112,14 +113,20 @@ export function createLoad(state: VirtualModuleState) {
       const artPath = id.slice("\0musea-art:".length).replace(/\?musea-virtual$/, "");
       const art = state.artFiles.get(artPath);
       if (art) {
-        return generateArtModule(art, artPath);
+        return generateArtModule(art, artPath, {
+          root: state.getConfigRoot(),
+          scanRoots: state.getScanRoots(),
+        });
       }
     }
     if (id.startsWith(VIRTUAL_MUSEA_PREFIX)) {
       const realPath = id.slice(VIRTUAL_MUSEA_PREFIX.length).replace(/\?musea-virtual$/, "");
       const art = state.artFiles.get(realPath);
       if (art) {
-        return generateArtModule(art, realPath);
+        return generateArtModule(art, realPath, {
+          root: state.getConfigRoot(),
+          scanRoots: state.getScanRoots(),
+        });
       }
     }
     return null;

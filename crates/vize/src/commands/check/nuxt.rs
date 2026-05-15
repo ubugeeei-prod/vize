@@ -264,6 +264,14 @@ fn collect_fallback_stubs(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<St
 
 fn fallback_stub_strings() -> Vec<String> {
     vec![
+        "type $Vue = typeof import('vue');".into(),
+        "type Composer = any;".into(),
+        "type Ref<T = any> = import('vue').Ref<T>;".into(),
+        "type ComputedRef<T = any> = import('vue').ComputedRef<T>;".into(),
+        "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;".into(),
+        "type MaybeRef<T = any> = import('vue').MaybeRef<T>;".into(),
+        "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;".into(),
+        "type Component = import('vue').Component;".into(),
         "declare function ref<T>(value: T): $Vue['Ref']<$Vue['UnwrapRef']<T>>;".into(),
         "declare function ref<T = any>(): $Vue['Ref']<T | undefined>;".into(),
         "declare function computed<T>(getter: () => T): $Vue['ComputedRef']<T>;".into(),
@@ -291,7 +299,8 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function shallowRef<T>(value: T): $Vue['ShallowRef']<T>;".into(),
         "declare function triggerRef(ref: $Vue['ShallowRef']): void;".into(),
         "declare function provide<T>(key: string | symbol, value: T): void;".into(),
-        "declare function inject<T>(key: string | symbol, defaultValue?: T): T;".into(),
+        "declare function inject<T>(key: string | symbol): T | undefined;".into(),
+        "declare function inject<T>(key: string | symbol, defaultValue: T): T;".into(),
         "declare function defineAsyncComponent(source: any): any;".into(),
         "declare function h(type: any, ...args: any[]): any;".into(),
         "declare function useAttrs(): Record<string, unknown>;".into(),
@@ -307,6 +316,7 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function useRouter(): any;".into(),
         "declare function useRoute(name?: string): any;".into(),
         "declare function definePageMeta(meta: any): void;".into(),
+        "declare function defineRouteRules(rules: any): void;".into(),
         "declare function useSeoMeta(meta: any): void;".into(),
         "declare function useFetch<T = any>(url: string | (() => string), options?: any): any;".into(),
         "declare function useAsyncData<T = any>(handler: (...args: any[]) => T | Promise<T>, options?: any): any;".into(),

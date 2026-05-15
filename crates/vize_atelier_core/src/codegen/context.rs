@@ -4,6 +4,8 @@ use crate::ast::RuntimeHelper;
 use crate::options::CodegenOptions;
 
 use super::helpers::default_helper_alias;
+use vize_carton::camelize;
+use vize_carton::capitalize;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::ToCompactString;
@@ -182,12 +184,41 @@ impl CodegenContext {
 
     /// Check if a component is in binding metadata (from script setup)
     pub fn is_component_in_bindings(&self, component: &str) -> bool {
-        if let Some(ref metadata) = self.options.binding_metadata {
-            // Check both the original name and PascalCase version
-            metadata.bindings.contains_key(component)
-        } else {
-            false
+        self.resolve_component_binding_name(component).is_some()
+    }
+
+    /// Resolve the binding name for a component tag.
+    pub fn resolve_component_binding_name(&self, component: &str) -> Option<String> {
+        let metadata = self.options.binding_metadata.as_ref()?;
+
+        let resolve_base = |name: &str| {
+            if metadata.bindings.contains_key(name) {
+                return Some(name.to_compact_string());
+            }
+
+            let camel = camelize(name);
+            if metadata.bindings.contains_key(camel.as_str()) {
+                return Some(camel);
+            }
+
+            let pascal = capitalize(&camel);
+            if metadata.bindings.contains_key(pascal.as_str()) {
+                return Some(pascal);
+            }
+
+            None
+        };
+
+        if let Some((base, suffix)) = component.split_once('.') {
+            let resolved_base = resolve_base(base)?;
+            let mut resolved = String::with_capacity(resolved_base.len() + suffix.len() + 1);
+            resolved.push_str(resolved_base.as_str());
+            resolved.push('.');
+            resolved.push_str(suffix);
+            return Some(resolved);
         }
+
+        resolve_base(component)
     }
 
     /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)

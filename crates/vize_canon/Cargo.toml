@@ -26,7 +26,7 @@ oxc_span.workspace = true
 oxc_allocator.workspace = true
 
 # File system walking (for batch type checking)
-walkdir = { version = "2.5", optional = true }
+walkdir = { workspace = true, optional = true }
 
 # Serialization
 serde.workspace = true
@@ -35,16 +35,16 @@ lsp-types = { workspace = true, optional = true }
 
 # Utilities
 dashmap.workspace = true
-tracing = "0.1"
-which = { version = "7", optional = true }
-dirs = { version = "5", optional = true }
+tracing.workspace = true
+which = { workspace = true, optional = true }
+dirs = { workspace = true, optional = true }
 thiserror.workspace = true
 corsa = { workspace = true, optional = true }
 
 [target.'cfg(unix)'.dependencies]
-libc = "0.2"
+libc.workspace = true
 
 [dev-dependencies]
-tempfile = "3.10"
-tokio = { version = "1", features = ["full", "test-util"] }
+tempfile.workspace = true
+tokio = { workspace = true, features = ["full", "test-util"] }
 insta.workspace = true

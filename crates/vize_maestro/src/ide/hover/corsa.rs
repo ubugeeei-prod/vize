@@ -121,7 +121,7 @@ impl HoverService {
         // Try to get type information from Corsa via virtual TypeScript.
         if let Some(bridge) = corsa_bridge {
             if let Some(ref virtual_docs) = ctx.virtual_docs {
-                if let Some(ref template) = virtual_docs.template {
+                if let Some(template) = virtual_docs.art_template(info.variant_index) {
                     // Convert the art variant relative offset through the template source map
                     let relative_offset = info.relative_offset as u32;
                     let vts_offset = template
@@ -135,8 +135,10 @@ impl HoverService {
 
                     // Open/update virtual document
                     if bridge.is_initialized() {
-                        #[allow(clippy::disallowed_macros)]
-                        let vdoc_uri = format!("{}.template.ts", ctx.uri.path());
+                        let vdoc_uri = crate::ide::corsa_support::art_template_request_path(
+                            ctx.uri,
+                            info.variant_index,
+                        );
                         let Ok(uri) = bridge
                             .open_or_update_virtual_document(&vdoc_uri, &template.content)
                             .await

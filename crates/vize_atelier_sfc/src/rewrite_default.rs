@@ -51,7 +51,7 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
     }
 
     // Find and rewrite the default export
-    let mut output = String::default();
+    let mut output = String::with_capacity(input.len() + as_name.len() + 32);
     let mut last_end = 0;
 
     for stmt in program.body.iter() {
@@ -64,12 +64,8 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
                     ExportDefaultDeclarationKind::ClassDeclaration(class_decl) => {
                         // export default class Foo {} -> class Foo {} \n const as_name = Foo
                         if let Some(id) = &class_decl.id {
-                            output.push_str("class ");
-                            output.push_str(id.name.as_str());
-                            // Copy the rest of the class declaration
-                            let class_body_start = id.span.end as usize;
-                            let class_body = &input[class_body_start..decl.span.end as usize];
-                            output.push_str(class_body);
+                            let class_start = class_decl.span.start as usize;
+                            output.push_str(&input[class_start..decl.span.end as usize]);
                             output.push_str("\nconst ");
                             output.push_str(as_name);
                             output.push_str(" = ");
@@ -86,12 +82,8 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
                     ExportDefaultDeclarationKind::FunctionDeclaration(func_decl) => {
                         // export default function foo() {} -> function foo() {} \n const as_name = foo
                         if let Some(id) = &func_decl.id {
-                            output.push_str("function ");
-                            output.push_str(id.name.as_str());
-                            // Copy the rest of the function
-                            let func_body_start = id.span.end as usize;
-                            let func_body = &input[func_body_start..decl.span.end as usize];
-                            output.push_str(func_body);
+                            let func_start = func_decl.span.start as usize;
+                            output.push_str(&input[func_start..decl.span.end as usize]);
                             output.push_str("\nconst ");
                             output.push_str(as_name);
                             output.push_str(" = ");
@@ -330,6 +322,17 @@ export default {
     fn test_rewrite_default_class() {
         let (result, has_default) =
             rewrite_default("export default class Foo {}", "_sfc_main", false);
+        assert!(has_default);
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_rewrite_default_async_generator_function() {
+        let (result, has_default) = rewrite_default(
+            "export default async function* load() { yield await next() }",
+            "_sfc_main",
+            false,
+        );
         assert!(has_default);
         insta::assert_snapshot!(result.as_str());
     }

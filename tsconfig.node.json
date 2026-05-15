@@ -16,9 +16,5 @@
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.cache/tsconfig.node.tsbuildinfo"
   },
-  "include": [
-    "scripts/generate-vize-rule-types.ts",
-    "scripts/generate-vize-rule-types.test.ts",
-    "vite.config.ts"
-  ]
+  "include": ["tests/tooling/**/*.ts", "vite.config.ts"]
 }

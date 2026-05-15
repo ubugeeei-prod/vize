@@ -306,11 +306,17 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
     std::fs::create_dir_all(&target)?;
 
     if let Some(ref workspace_node_modules) = workspace_node_modules {
-        for package in ["vue", "vite", "@vue"] {
-            let source = workspace_node_modules.join(package);
-            if source.exists() {
-                symlink_path(&source, &target.join(package))?;
-            }
+        link_or_stub_package(workspace_node_modules, &target, "vue", write_test_vue_stub)?;
+        link_or_stub_package(
+            workspace_node_modules,
+            &target,
+            "vite",
+            write_test_vite_stub,
+        )?;
+
+        let vue_namespace = workspace_node_modules.join("@vue");
+        if vue_namespace.exists() {
+            symlink_path(&vue_namespace, &target.join("@vue"))?;
         }
     } else {
         write_test_vue_stub(&target)?;
@@ -339,6 +345,20 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
     }
 
     Ok(())
+}
+
+fn link_or_stub_package(
+    workspace_node_modules: &Path,
+    target: &Path,
+    package: &str,
+    stub_writer: fn(&Path) -> std::io::Result<()>,
+) -> std::io::Result<()> {
+    let source = workspace_node_modules.join(package);
+    if source.exists() {
+        symlink_path(&source, &target.join(package))
+    } else {
+        stub_writer(target)
+    }
 }
 
 fn resolve_workspace_node_modules() -> Option<std::path::PathBuf> {

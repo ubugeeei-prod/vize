@@ -11,23 +11,77 @@ mod styles;
 #[cfg(test)]
 mod tests;
 
+use crate::compile_script::artifacts::{erase_artifact_macro_statements, extract_macro_artifacts};
+use crate::compile_script::lazy_hydration::transform_lazy_hydration_macros;
 use crate::compile_script::{compile_script_setup_inline_with_context, TemplateParts};
 use crate::compile_template::{
     compile_template_block, compile_template_block_vapor, extract_template_parts,
-    extract_template_parts_full,
+    extract_template_parts_full, TemplateBlockCompileContext,
 };
 use crate::rewrite_default::rewrite_default;
 use crate::script::ScriptCompileContext;
-use crate::types::{BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError};
+use crate::types::{
+    BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError, SfcMacroArtifact,
+};
 
 use self::bindings::{croquis_to_legacy_bindings, register_normal_script_bindings};
-use self::helpers::{extract_component_name, generate_scope_id};
+use self::helpers::{
+    demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
+};
 use self::normal_script::extract_normal_script_content;
 use self::styles::compile_styles;
 
 // Re-export ScriptCompileResult for public API
 pub use crate::compile_script::ScriptCompileResult;
 use vize_carton::{profile, String, ToCompactString};
+
+fn create_vapor_ssr_fallback_warning(descriptor: &SfcDescriptor) -> SfcError {
+    SfcError {
+        message: "SFC Vapor SSR is not supported yet; falling back to standard SSR output."
+            .to_compact_string(),
+        code: Some("VAPOR_SSR_FALLBACK".to_compact_string()),
+        loc: descriptor
+            .template
+            .as_ref()
+            .map(|template| template.loc.clone()),
+    }
+}
+
+fn create_v_model_reactive_const_warning(
+    script_setup: &crate::types::SfcScriptBlock<'_>,
+    binding_name: &str,
+) -> SfcError {
+    let mut message = String::from("`v-model` cannot update the const reactive binding `");
+    message.push_str(binding_name);
+    message.push_str("`. The compiler transformed it to `let` so the update can work.");
+
+    SfcError {
+        message,
+        code: Some("V_MODEL_CONST_REACTIVE_DEMOTED".to_compact_string()),
+        loc: Some(script_setup.loc.clone()),
+    }
+}
+
+fn is_ts_lang(lang: Option<&str>) -> bool {
+    matches!(lang, Some("ts" | "tsx"))
+}
+
+fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacroArtifact> {
+    let mut artifacts = Vec::new();
+
+    if let Some(script) = descriptor.script.as_ref() {
+        artifacts.extend(extract_macro_artifacts(&script.content, script.loc.start));
+    }
+    if let Some(script_setup) = descriptor.script_setup.as_ref() {
+        artifacts.extend(extract_macro_artifacts(
+            &script_setup.content,
+            script_setup.loc.start,
+        ));
+    }
+
+    artifacts.sort_by_key(|artifact| artifact.start);
+    artifacts
+}
 
 /// Compile an SFC descriptor into JavaScript and CSS
 pub fn compile_sfc(
@@ -38,6 +92,7 @@ pub fn compile_sfc(
     let mut warnings = Vec::new();
     let mut code = String::default();
     let mut css = None;
+    let macro_artifacts = extract_descriptor_macro_artifacts(descriptor);
 
     let filename = options.script.id.as_deref().unwrap_or("anonymous.vue");
 
@@ -57,39 +112,39 @@ pub fn compile_sfc(
         String::default()
     };
 
-    // Vapor components currently render on the client. For SSR we fall back to
-    // the standard VDOM compiler and let the client hydrate with Vapor output.
-    let is_vapor = !options.template.ssr
-        && (options.vapor
-            || descriptor
-                .script_setup
-                .as_ref()
-                .map(|s| s.attrs.contains_key("vapor"))
-                .unwrap_or(false)
-            || descriptor
-                .script
-                .as_ref()
-                .map(|s| s.attrs.contains_key("vapor"))
-                .unwrap_or(false));
-
-    // source_has_ts: whether source uses TypeScript (detected from lang="ts")
-    // Used for: parsing source as TS, preserving TS declarations, resolving type references
-    let source_has_ts = descriptor
-        .script_setup
-        .as_ref()
-        .and_then(|s| s.lang.as_ref())
-        .is_some_and(|l| l == "ts" || l == "tsx")
+    let vapor_requested = options.vapor
+        || descriptor
+            .script_setup
+            .as_ref()
+            .map(|s| s.attrs.contains_key("vapor"))
+            .unwrap_or(false)
         || descriptor
             .script
             .as_ref()
-            .and_then(|s| s.lang.as_ref())
-            .is_some_and(|l| l == "ts" || l == "tsx");
+            .map(|s| s.attrs.contains_key("vapor"))
+            .unwrap_or(false);
+
+    // Vapor components currently render on the client. For SSR we fall back to
+    // the standard VDOM compiler and let the client hydrate with Vapor output.
+    if descriptor.template.is_some() && options.template.ssr && vapor_requested {
+        warnings.push(create_vapor_ssr_fallback_warning(descriptor));
+    }
+    let is_vapor = !options.template.ssr && vapor_requested;
+
     // is_ts controls output format:
     // - true: output TypeScript (add `: any` annotations, defineComponent wrapper)
-    // - false: output JavaScript (no type annotations)
-    // Auto-detected from source lang, or set by explicit options.
-    // When true, TypeScript is preserved in output (downstream tools like Vite strip it via .ts suffix).
-    let is_ts = options.script.is_ts || options.template.is_ts || source_has_ts;
+    // - false: output JavaScript (strip TypeScript syntax from TS sources)
+    // Source language detection is tracked separately in the script/setup branches below.
+    let is_ts = options.script.is_ts || options.template.is_ts;
+    let template_is_ts = options.template.is_ts
+        || descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|s| is_ts_lang(s.lang.as_deref()))
+        || descriptor
+            .script
+            .as_ref()
+            .is_some_and(|s| is_ts_lang(s.lang.as_deref()));
 
     // Extract component name from filename
     let component_name = extract_component_name(filename);
@@ -105,7 +160,13 @@ pub fn compile_sfc(
         let template_result = if is_vapor {
             profile!(
                 "atelier.sfc.template.vapor",
-                compile_template_block_vapor(template, &scope_id, has_scoped, None)
+                compile_template_block_vapor(
+                    template,
+                    &scope_id,
+                    has_scoped,
+                    None,
+                    options.template.custom_renderer,
+                )
             )
         } else {
             // Enable hoisting for template-only SFCs (hoisted consts go at module level)
@@ -121,11 +182,14 @@ pub fn compile_sfc(
                 compile_template_block(
                     template,
                     &template_opts,
-                    &scope_id,
-                    options.template.ssr && has_scoped,
-                    is_ts,
-                    None,
-                    None,
+                    TemplateBlockCompileContext {
+                        scope_id: &scope_id,
+                        apply_scope_id: options.template.ssr && has_scoped,
+                        is_ts: template_is_ts,
+                        component_name: Some(&component_name),
+                        bindings: None,
+                        croquis: None,
+                    },
                 )
             )
         };
@@ -162,12 +226,20 @@ pub fn compile_sfc(
             errors,
             warnings,
             bindings: None,
+            macro_artifacts,
         });
     }
 
     // Case 2: Script (non-setup) + Template - rewrite default and compile template
     if has_script && !has_script_setup {
         let script = descriptor.script.as_ref().unwrap();
+        let lazy_hydration_transform = transform_lazy_hydration_macros(&script.content);
+        let script_source = lazy_hydration_transform
+            .as_ref()
+            .map(|result| result.code.as_str())
+            .unwrap_or(&script.content);
+        let script_content = erase_artifact_macro_statements(script_source)
+            .unwrap_or_else(|| script_source.to_compact_string());
 
         // Check if source script is TypeScript
         let source_is_ts = script
@@ -179,11 +251,11 @@ pub fn compile_sfc(
         // Parse as TypeScript if source is TypeScript
         let (rewritten_script, _has_default) = profile!(
             "atelier.sfc.normal_script.rewrite_default",
-            rewrite_default(&script.content, "_sfc_main", source_is_ts)
+            rewrite_default(&script_content, "_sfc_main", source_is_ts)
         );
 
         // Transpile TypeScript to JavaScript if needed
-        let final_script = if source_is_ts && !is_ts {
+        let mut final_script = if source_is_ts && !is_ts {
             profile!(
                 "atelier.sfc.normal_script.ts_to_js",
                 crate::compile_script::typescript::transform_typescript_to_js(&rewritten_script)
@@ -191,6 +263,11 @@ pub fn compile_sfc(
         } else {
             rewritten_script
         };
+        if let Some(transform) = lazy_hydration_transform {
+            let mut script_with_preamble = transform.preamble;
+            script_with_preamble.push_str(&final_script);
+            final_script = script_with_preamble;
+        }
 
         // Compile template if present
         if has_template {
@@ -198,7 +275,13 @@ pub fn compile_sfc(
             let template_result = if is_vapor {
                 profile!(
                     "atelier.sfc.template.vapor",
-                    compile_template_block_vapor(template, &scope_id, has_scoped, None)
+                    compile_template_block_vapor(
+                        template,
+                        &scope_id,
+                        has_scoped,
+                        None,
+                        options.template.custom_renderer,
+                    )
                 )
             } else {
                 let mut template_opts = options.template.clone();
@@ -213,11 +296,14 @@ pub fn compile_sfc(
                     compile_template_block(
                         template,
                         &template_opts,
-                        &scope_id,
-                        options.template.ssr && has_scoped,
-                        is_ts,
-                        None, // No bindings for normal scripts
-                        None, // No Croquis for normal scripts
+                        TemplateBlockCompileContext {
+                            scope_id: &scope_id,
+                            apply_scope_id: options.template.ssr && has_scoped,
+                            is_ts: template_is_ts,
+                            component_name: Some(&component_name),
+                            bindings: None,
+                            croquis: None,
+                        },
                     )
                 )
             };
@@ -247,7 +333,7 @@ pub fn compile_sfc(
                 Err(e) => {
                     errors.push(e);
                     // Fall back to just the script
-                    code = script.content.to_compact_string();
+                    code = final_script.clone();
                     code.push('\n');
                 }
             }
@@ -276,6 +362,7 @@ pub fn compile_sfc(
             errors,
             warnings,
             bindings: None,
+            macro_artifacts,
         });
     }
 
@@ -312,10 +399,16 @@ pub fn compile_sfc(
         None
     };
 
+    let lazy_hydration_transform = transform_lazy_hydration_macros(&script_setup.content);
+    let mut script_setup_content = lazy_hydration_transform
+        .as_ref()
+        .map(|result| result.code.clone())
+        .unwrap_or_else(|| script_setup.content.to_compact_string());
+
     // 1. Croquis parser: rich analysis with ReactivityTracker
-    let croquis = profile!(
+    let mut croquis = profile!(
         "atelier.sfc.script_setup.croquis",
-        crate::script::analyze_script_setup_to_summary(&script_setup.content)
+        crate::script::analyze_script_setup_to_summary(&script_setup_content)
     );
     let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings);
 
@@ -323,7 +416,7 @@ pub fn compile_sfc(
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
     let mut ctx = profile!(
         "atelier.sfc.script_context.new",
-        ScriptCompileContext::new(&script_setup.content)
+        ScriptCompileContext::new(&script_setup_content)
     );
 
     // Merge type definitions from normal <script> block so that
@@ -337,7 +430,7 @@ pub fn compile_sfc(
     }
     profile!(
         "atelier.sfc.script_context.collect_setup_import_types",
-        ctx.collect_imported_types_from_path(&script_setup.content, filename)
+        ctx.collect_imported_types_from_path(&script_setup_content, filename)
     );
     if has_script {
         let script = descriptor.script.as_ref().unwrap();
@@ -387,6 +480,27 @@ pub fn compile_sfc(
         );
     }
 
+    if let Some(template) = &descriptor.template {
+        let demoted_ids = profile!(
+            "atelier.sfc.script_setup.demote_v_model_reactive_consts",
+            demote_v_model_reactive_const_bindings(
+                &template.content,
+                script_setup.lang.as_deref(),
+                &mut script_setup_content,
+                &mut ctx,
+                &mut script_bindings,
+                &mut croquis,
+            )
+        );
+
+        for binding_name in demoted_ids {
+            warnings.push(create_v_model_reactive_const_warning(
+                script_setup,
+                &binding_name,
+            ));
+        }
+    }
+
     // Compile template with bindings (if present) to get the render function
     let template_result = if let Some(template) = &descriptor.template {
         if is_vapor {
@@ -396,7 +510,8 @@ pub fn compile_sfc(
                     template,
                     &scope_id,
                     has_scoped,
-                    Some(&script_bindings)
+                    Some(&script_bindings),
+                    options.template.custom_renderer,
                 )
             ))
         } else {
@@ -407,11 +522,14 @@ pub fn compile_sfc(
                 compile_template_block(
                     template,
                     &options.template,
-                    &scope_id,
-                    options.template.ssr && has_scoped,
-                    is_ts,
-                    Some(&script_bindings), // Pass bindings for proper ref handling
-                    Some(croquis),          // Pass Croquis for enhanced transforms
+                    TemplateBlockCompileContext {
+                        scope_id: &scope_id,
+                        apply_scope_id: options.template.ssr && has_scoped,
+                        is_ts: template_is_ts,
+                        component_name: Some(&component_name),
+                        bindings: Some(&script_bindings),
+                        croquis: Some(croquis),
+                    },
                 )
             ))
         }
@@ -493,7 +611,7 @@ pub fn compile_sfc(
         "atelier.sfc.script_setup.inline_compile",
         compile_script_setup_inline_with_context(
             ctx,
-            &script_setup.content,
+            &script_setup_content,
             &component_name,
             is_ts,
             source_is_ts,
@@ -515,6 +633,9 @@ pub fn compile_sfc(
 
     // The inline mode compile_script_setup_inline generates a complete output
     // including imports, hoisted vars, and `export default { ... }` with inline render
+    if let Some(transform) = lazy_hydration_transform {
+        code.push_str(&transform.preamble);
+    }
     code.push_str(&script_result.code);
 
     // Compile styles
@@ -533,5 +654,6 @@ pub fn compile_sfc(
         errors,
         warnings,
         bindings: script_result.bindings,
+        macro_artifacts,
     })
 }

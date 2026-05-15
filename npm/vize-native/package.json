@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/native",
-  "version": "0.52.0",
+  "version": "0.90.0",
   "description": "High-performance Vue.js compiler - Native bindings",
   "keywords": [
     "compiler",
@@ -25,12 +25,13 @@
     "access": "public"
   },
   "scripts": {
-    "build": "napi build --platform --release --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
-    "build:debug": "napi build --platform --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
+    "build": "node ./scripts/build-local.mjs --release",
+    "build:ci": "napi build --platform --profile ci --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
+    "build:debug": "node ./scripts/build-local.mjs",
     "prepublishOnly": "napi pre-publish -t npm --no-gh-release --skip-optional-publish"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.0.0"
+    "@napi-rs/cli": "catalog:integrations"
   },
   "napi": {
     "binaryName": "vize-vitrine",

@@ -513,7 +513,7 @@ watch(
   background: var(--musea-accent);
   border: none;
   border-radius: var(--musea-radius-md);
-  color: var(--musea-bg-primary);
+  color: var(--musea-accent-contrast);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;

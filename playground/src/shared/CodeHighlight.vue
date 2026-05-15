@@ -18,19 +18,43 @@ const vizeDarkTheme: ThemeRegistration = {
     "editor.foreground": "#E6E2D6",
   },
   tokenColors: [
-    { scope: ["keyword", "storage.type", "storage.modifier"], settings: { foreground: "#D4BA92" } },
-    { scope: ["entity.name.function", "support.function"], settings: { foreground: "#E2CBA6" } },
+    {
+      scope: ["keyword", "storage.type", "storage.modifier"],
+      settings: { foreground: "#D4BA92" },
+    },
+    {
+      scope: ["entity.name.function", "support.function"],
+      settings: { foreground: "#E2CBA6" },
+    },
     {
       scope: ["entity.name.tag", "punctuation.definition.tag"],
       settings: { foreground: "#D0BA9E" },
     },
-    { scope: ["entity.other.attribute-name"], settings: { foreground: "#9C9488" } },
+    {
+      scope: ["entity.other.attribute-name"],
+      settings: { foreground: "#9C9488" },
+    },
     { scope: ["string", "string.quoted"], settings: { foreground: "#A8B5A0" } },
-    { scope: ["constant.numeric", "constant.language"], settings: { foreground: "#DABA8C" } },
-    { scope: ["variable", "variable.other"], settings: { foreground: "#E6E2D6" } },
-    { scope: ["comment", "punctuation.definition.comment"], settings: { foreground: "#6B6560" } },
-    { scope: ["punctuation", "meta.brace"], settings: { foreground: "#8A8478" } },
-    { scope: ["entity.name.type", "support.type"], settings: { foreground: "#B8ADA0" } },
+    {
+      scope: ["constant.numeric", "constant.language"],
+      settings: { foreground: "#DABA8C" },
+    },
+    {
+      scope: ["variable", "variable.other"],
+      settings: { foreground: "#E6E2D6" },
+    },
+    {
+      scope: ["comment", "punctuation.definition.comment"],
+      settings: { foreground: "#6B6560" },
+    },
+    {
+      scope: ["punctuation", "meta.brace"],
+      settings: { foreground: "#8A8478" },
+    },
+    {
+      scope: ["entity.name.type", "support.type"],
+      settings: { foreground: "#B8ADA0" },
+    },
     {
       scope: ["meta.property-name", "support.type.property-name"],
       settings: { foreground: "#D0BA9E" },
@@ -50,19 +74,43 @@ const vizeLightTheme: ThemeRegistration = {
     "editor.foreground": "#121212",
   },
   tokenColors: [
-    { scope: ["keyword", "storage.type", "storage.modifier"], settings: { foreground: "#73603E" } },
-    { scope: ["entity.name.function", "support.function"], settings: { foreground: "#655232" } },
+    {
+      scope: ["keyword", "storage.type", "storage.modifier"],
+      settings: { foreground: "#73603E" },
+    },
+    {
+      scope: ["entity.name.function", "support.function"],
+      settings: { foreground: "#655232" },
+    },
     {
       scope: ["entity.name.tag", "punctuation.definition.tag"],
       settings: { foreground: "#65573E" },
     },
-    { scope: ["entity.other.attribute-name"], settings: { foreground: "#6B6050" } },
+    {
+      scope: ["entity.other.attribute-name"],
+      settings: { foreground: "#6B6050" },
+    },
     { scope: ["string", "string.quoted"], settings: { foreground: "#5A6B50" } },
-    { scope: ["constant.numeric", "constant.language"], settings: { foreground: "#735C2E" } },
-    { scope: ["variable", "variable.other"], settings: { foreground: "#121212" } },
-    { scope: ["comment", "punctuation.definition.comment"], settings: { foreground: "#9A9590" } },
-    { scope: ["punctuation", "meta.brace"], settings: { foreground: "#6B6560" } },
-    { scope: ["entity.name.type", "support.type"], settings: { foreground: "#6B5F50" } },
+    {
+      scope: ["constant.numeric", "constant.language"],
+      settings: { foreground: "#735C2E" },
+    },
+    {
+      scope: ["variable", "variable.other"],
+      settings: { foreground: "#121212" },
+    },
+    {
+      scope: ["comment", "punctuation.definition.comment"],
+      settings: { foreground: "#9A9590" },
+    },
+    {
+      scope: ["punctuation", "meta.brace"],
+      settings: { foreground: "#6B6560" },
+    },
+    {
+      scope: ["entity.name.type", "support.type"],
+      settings: { foreground: "#6B5F50" },
+    },
     {
       scope: ["meta.property-name", "support.type.property-name"],
       settings: { foreground: "#65573E" },
@@ -157,8 +205,14 @@ async function highlight(renderId: number) {
   const hl = await initHighlighter();
 
   // Tokenize with both themes so CSS can switch colors without JS re-render
-  const darkTokens = hl.codeToTokens(props.code, { lang: props.language, theme: "vize-dark" });
-  const lightTokens = hl.codeToTokens(props.code, { lang: props.language, theme: "vize-light" });
+  const darkTokens = hl.codeToTokens(props.code, {
+    lang: props.language,
+    theme: "vize-dark",
+  });
+  const lightTokens = hl.codeToTokens(props.code, {
+    lang: props.language,
+    theme: "vize-light",
+  });
 
   let darkLines = darkTokens.tokens;
   let lightLines = lightTokens.tokens;
@@ -284,7 +338,7 @@ watch(
   line-height: inherit;
 }
 
-:global(body[data-theme="dark"]) .code-highlight :deep(.code-line span) {
+body[data-theme="dark"] .code-highlight :deep(.code-line span) {
   color: var(--d);
 }
 </style>

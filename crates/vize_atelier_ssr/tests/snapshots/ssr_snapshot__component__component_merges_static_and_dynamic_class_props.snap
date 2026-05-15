@@ -1,0 +1,16 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<NuxtLink v-bind=\"props\" class=\"group/link\" :class=\"{ active }\">node</NuxtLink>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("NuxtLink"), _mergeProps(_mergeProps(_normalizeProps(_guardReactiveProps(_ctx.props)), { class: ["group/link", { active: _ctx.active }] }), _attrs), {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`node`)
+      } else {
+        return [_createTextVNode("node")]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

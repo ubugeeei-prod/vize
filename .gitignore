@@ -3,6 +3,8 @@ target/
 
 # Node.js
 node_modules/
+.mooncakes/
+_build/
 
 # npm package build outputs
 npm/*/dist/
@@ -57,3 +59,4 @@ tests/_fixtures/_projects/_git-worktrees/
 
 # Vize local data (snapshots, cache, etc.)
 .vize/
+*.pending-snap

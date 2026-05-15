@@ -1,4 +1,4 @@
-import type { ParsedVueRequest, ParsedVueRequestQuery } from "./types.js";
+import type { ParsedVueRequest, ParsedVueRequestQuery } from "./types.ts";
 
 const STYLE_MARKER = ".__vize_style_";
 

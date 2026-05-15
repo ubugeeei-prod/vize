@@ -85,8 +85,11 @@ impl<'a> Parser<'a> {
     /// Process open tag name
     pub(super) fn on_open_tag_name_impl(&mut self, start: usize, end: usize) {
         let tag = self.get_source(start, end);
-        let ns =
-            (self.options.get_namespace)(tag, self.stack.last().map(|e| e.element.tag.as_str()));
+        let ns = if self.should_force_html_namespace(tag) {
+            Namespace::Html
+        } else {
+            (self.options.get_namespace)(tag, self.stack.last().map(|e| e.element.tag.as_str()))
+        };
 
         self.current_element = Some(CurrentElement {
             tag: tag.into(),
@@ -295,6 +298,10 @@ impl<'a> Parser<'a> {
             }
         }
 
+        if self.options.custom_renderer {
+            return tag.chars().next().is_some_and(|c| c.is_uppercase()) || tag.contains('-');
+        }
+
         // Native tag check
         if let Some(is_native) = self.options.is_native_tag {
             if !is_native(tag) {
@@ -308,6 +315,28 @@ impl<'a> Parser<'a> {
         }
 
         false
+    }
+
+    fn should_force_html_namespace(&self, tag: &str) -> bool {
+        if !self.options.custom_renderer {
+            return false;
+        }
+
+        if matches!(tag, "svg" | "math") {
+            return false;
+        }
+
+        if self
+            .stack
+            .last()
+            .is_some_and(|entry| matches!(entry.element.ns, Namespace::Svg | Namespace::MathMl))
+        {
+            return false;
+        }
+
+        tag.chars().next().is_some_and(|c| c.is_lowercase())
+            && !tag.contains('-')
+            && !vize_carton::is_html_tag(tag)
     }
 
     /// Process comment

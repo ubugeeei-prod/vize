@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { transform } from "oxc-transform";
 import type {
+  LanguageServerConfig,
   VizeConfig,
   LoadConfigOptions,
   UserConfigExport,
@@ -13,10 +14,10 @@ import type {
 } from "./types/index.js";
 
 export const CONFIG_FILE_NAMES = [
+  "vize.config.pkl",
   "vize.config.ts",
   "vize.config.js",
   "vize.config.mjs",
-  "vize.config.pkl",
   "vize.config.json",
 ] as const;
 
@@ -34,6 +35,10 @@ export const VIZE_CONFIG_JSON_SCHEMA_PATH = path.join(
 );
 
 export const VIZE_CONFIG_PKL_SCHEMA_PATH = path.join(PACKAGE_ROOT, "pkl", "vize.pkl");
+
+type CompatVizeConfig = VizeConfig & {
+  lsp?: LanguageServerConfig;
+};
 
 /**
  * Define a Vize configuration with type checking.
@@ -65,38 +70,37 @@ export async function loadConfig(
   }
 
   if (mode === "auto") {
-    const configPath = findConfigFileAuto(root);
-    if (!configPath) {
-      return null;
-    }
-    return loadConfigFile(configPath, env);
+    return loadConfigFromDirAuto(root, env);
   }
 
-  const configPath = findConfigFileInDir(root);
-  if (!configPath) {
-    return null;
-  }
-
-  return loadConfigFile(configPath, env);
+  return loadConfigFromDir(root, env);
 }
 
-function findConfigFileInDir(dir: string): string | null {
+async function loadConfigFromDir(dir: string, env?: ConfigEnv): Promise<VizeConfig | null> {
   for (const name of CONFIG_FILE_NAMES) {
     const filePath = path.join(dir, name);
-    if (fs.existsSync(filePath)) {
-      return filePath;
+    if (!fs.existsSync(filePath)) {
+      continue;
+    }
+
+    const config = await loadConfigFile(filePath, env);
+    if (config !== null) {
+      return config;
     }
   }
   return null;
 }
 
-function findConfigFileAuto(startDir: string): string | null {
+async function loadConfigFromDirAuto(
+  startDir: string,
+  env?: ConfigEnv,
+): Promise<VizeConfig | null> {
   let currentDir = path.resolve(startDir);
 
   while (true) {
-    const configPath = findConfigFileInDir(currentDir);
-    if (configPath) {
-      return configPath;
+    const config = await loadConfigFromDir(currentDir, env);
+    if (config !== null) {
+      return config;
     }
 
     const parentDir = path.dirname(currentDir);
@@ -109,26 +113,81 @@ function findConfigFileAuto(startDir: string): string | null {
 }
 
 async function loadConfigFile(filePath: string, env?: ConfigEnv): Promise<VizeConfig | null> {
-  if (!fs.existsSync(filePath)) {
+  const absolutePath = path.resolve(filePath);
+  if (!fs.existsSync(absolutePath)) {
     return null;
   }
 
-  const ext = path.extname(filePath);
-
-  if (ext === ".json") {
-    const content = fs.readFileSync(filePath, "utf-8");
-    return parseJsonConfig(content, filePath);
-  }
+  const ext = path.extname(absolutePath);
 
   if (ext === ".pkl") {
-    return loadPklConfig(filePath);
+    return loadPklConfig(absolutePath);
+  }
+
+  if (ext === ".json") {
+    const content = fs.readFileSync(absolutePath, "utf-8");
+    return parseJsonConfig(content, absolutePath);
   }
 
   if (ext === ".ts") {
-    return loadTypeScriptConfig(filePath, env);
+    return loadTypeScriptConfig(absolutePath, env);
   }
 
-  return loadESMConfig(filePath, env);
+  return loadESMConfig(absolutePath, env);
+}
+
+function findPklBinary(): string | null {
+  try {
+    const pklPkgPath = import.meta.resolve?.("@pkl-community/pkl");
+    if (pklPkgPath) {
+      const pklLibDir = path.dirname(fileURLToPath(pklPkgPath));
+      const pklPackageDir = path.dirname(pklLibDir);
+      const candidates = [
+        path.join(pklLibDir, "main.js"),
+        path.join(pklPackageDir, "pkl"),
+        path.join(pklPackageDir, "pkl.exe"),
+      ];
+
+      for (const candidate of candidates) {
+        if (fs.existsSync(candidate)) {
+          return candidate;
+        }
+      }
+    }
+  } catch {
+    // Fall back to PATH below.
+  }
+
+  try {
+    execFileSync("pkl", ["--version"], { stdio: "ignore" });
+    return "pkl";
+  } catch {
+    return null;
+  }
+}
+
+function loadPklConfig(filePath: string): VizeConfig | null {
+  const pklBin = findPklBinary();
+  if (!pklBin) {
+    console.warn(
+      "[vize] pkl CLI not found. Install @pkl-community/pkl or add pkl to PATH. " +
+        "Falling back to the next config format.",
+    );
+    return null;
+  }
+
+  try {
+    const output = execFileSync(pklBin, ["eval", "-f", "json", filePath], {
+      cwd: path.dirname(filePath),
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 30_000,
+    });
+    return parseJsonConfig(output, filePath);
+  } catch (error) {
+    console.warn(`[vize] Failed to evaluate ${filePath}: ${getErrorMessage(error)}`);
+    return null;
+  }
 }
 
 async function resolveConfigExport(
@@ -136,10 +195,10 @@ async function resolveConfigExport(
   env?: ConfigEnv,
 ): Promise<VizeConfig> {
   if (typeof exported === "function") {
-    return exported(env ?? DEFAULT_CONFIG_ENV);
+    return normalizeLoadedConfig(await exported(env ?? DEFAULT_CONFIG_ENV));
   }
 
-  return exported;
+  return normalizeLoadedConfig(exported);
 }
 
 async function loadTypeScriptConfig(filePath: string, env?: ConfigEnv): Promise<VizeConfig> {
@@ -150,8 +209,11 @@ async function loadTypeScriptConfig(filePath: string, env?: ConfigEnv): Promise<
     },
   });
 
-  const tempFile = filePath.replace(/\.ts$/, `.temp.${Date.now()}.mjs`);
-  fs.writeFileSync(tempFile, result.code);
+  const tempFile = path.join(
+    path.dirname(filePath),
+    `.vize-config-${process.pid}-${Date.now()}.mjs`,
+  );
+  fs.writeFileSync(tempFile, result.code, { flag: "wx", mode: 0o600 });
 
   try {
     const module = await importFresh(tempFile);
@@ -166,21 +228,6 @@ async function loadESMConfig(filePath: string, env?: ConfigEnv): Promise<VizeCon
   const module = await importFresh(filePath);
   const exported: UserConfigExport = module.default || module;
   return resolveConfigExport(exported, env);
-}
-
-function loadPklConfig(filePath: string): VizeConfig {
-  try {
-    const output = execFileSync("pkl", ["eval", "--format", "json", filePath], {
-      cwd: path.dirname(filePath),
-      encoding: "utf-8",
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    return parseJsonConfig(output, filePath);
-  } catch (error) {
-    throw new Error(
-      `Failed to evaluate PKL config at ${filePath}. Make sure the 'pkl' CLI is installed and on PATH. ${getErrorMessage(error)}`,
-    );
-  }
 }
 
 async function importFresh(filePath: string): Promise<Record<string, unknown>> {
@@ -199,7 +246,7 @@ function parseJsonConfig(content: string, filePath: string): VizeConfig {
 
 function normalizeLoadedConfig(config: unknown): VizeConfig {
   const normalized = stripNullish(config);
-  return (normalized ?? {}) as VizeConfig;
+  return normalizeConfigAliases((normalized ?? {}) as CompatVizeConfig);
 }
 
 function stripNullish(value: unknown): unknown {
@@ -239,8 +286,16 @@ function getErrorMessage(error: unknown): string {
 export function normalizeGlobalTypes(
   config: GlobalTypesConfig,
 ): Record<string, GlobalTypeDeclaration> {
+  const resolvedConfig =
+    "types" in config &&
+    typeof config.types === "object" &&
+    config.types !== null &&
+    !Array.isArray(config.types)
+      ? config.types
+      : config;
+
   const result: Record<string, GlobalTypeDeclaration> = {};
-  for (const [key, value] of Object.entries(config)) {
+  for (const [key, value] of Object.entries(resolvedConfig)) {
     if (typeof value === "string") {
       result[key] = { type: value };
     } else {
@@ -248,4 +303,20 @@ export function normalizeGlobalTypes(
     }
   }
   return result;
+}
+
+function normalizeConfigAliases(config: CompatVizeConfig): VizeConfig {
+  if (config.lsp === undefined) {
+    return config;
+  }
+
+  const { lsp, ...rest } = config;
+  if (config.languageServer !== undefined) {
+    return rest;
+  }
+
+  return {
+    ...rest,
+    languageServer: lsp,
+  };
 }

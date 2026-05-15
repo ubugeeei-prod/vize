@@ -11,7 +11,7 @@
 //! - Early termination in path finding algorithms
 
 use super::registry::FileId;
-use vize_carton::{CompactString, FxHashMap, FxHashSet, SmallVec};
+use vize_carton::{CompactString, FxHashMap, FxHashSet, SmallVec, String};
 
 /// Edge type in the dependency graph.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -93,6 +93,8 @@ pub struct DependencyGraph {
     nodes: FxHashMap<FileId, ModuleNode>,
     /// Map from component name to file ID (for resolving template usage).
     component_index: FxHashMap<CompactString, FileId>,
+    /// Map from normalized PascalCase component name to file ID.
+    normalized_component_index: FxHashMap<CompactString, FileId>,
     /// Entry points (App.vue, main.ts, etc.).
     entries: SmallVec<[FileId; 4]>,
     /// Detected circular dependencies.
@@ -113,6 +115,8 @@ impl DependencyGraph {
         // Index component name if present
         if let Some(ref name) = node.component_name {
             self.component_index.insert(name.clone(), file_id);
+            self.normalized_component_index
+                .insert(to_pascal_case(name.as_str()), file_id);
         }
 
         // Track entry points
@@ -127,14 +131,22 @@ impl DependencyGraph {
     pub fn add_edge(&mut self, from: FileId, to: FileId, edge_type: DependencyEdge) {
         // Add to importer's imports
         if let Some(from_node) = self.nodes.get_mut(&from) {
-            if !from_node.imports.iter().any(|(id, _)| *id == to) {
+            if !from_node
+                .imports
+                .iter()
+                .any(|(id, edge)| *id == to && *edge == edge_type)
+            {
                 from_node.imports.push((to, edge_type));
             }
         }
 
         // Add to importee's importers
         if let Some(to_node) = self.nodes.get_mut(&to) {
-            if !to_node.importers.iter().any(|(id, _)| *id == from) {
+            if !to_node
+                .importers
+                .iter()
+                .any(|(id, edge)| *id == from && *edge == edge_type)
+            {
                 to_node.importers.push((from, edge_type));
             }
         }
@@ -153,9 +165,13 @@ impl DependencyGraph {
     }
 
     /// Find a file by component name.
-    #[inline]
     pub fn find_by_component(&self, name: &str) -> Option<FileId> {
-        self.component_index.get(name).copied()
+        self.component_index.get(name).copied().or_else(|| {
+            let normalized = to_pascal_case(name);
+            self.normalized_component_index
+                .get(normalized.as_str())
+                .copied()
+        })
     }
 
     /// Get all direct dependencies of a module.
@@ -421,6 +437,20 @@ impl DependencyGraph {
     }
 }
 
+fn to_pascal_case(value: &str) -> CompactString {
+    let mut normalized = String::default();
+
+    for part in value.split(['-', '_']).filter(|part| !part.is_empty()) {
+        let mut chars = part.chars();
+        if let Some(first) = chars.next() {
+            normalized.extend(first.to_uppercase());
+            normalized.push_str(chars.as_str());
+        }
+    }
+
+    normalized
+}
+
 #[cfg(test)]
 mod tests {
     use super::{DependencyEdge, DependencyGraph, FileId, ModuleNode};
@@ -460,5 +490,19 @@ mod tests {
         graph.detect_circular_dependencies();
 
         assert!(!graph.circular_dependencies().is_empty());
+    }
+
+    #[test]
+    fn test_component_lookup_uses_normalized_index() {
+        let mut graph = DependencyGraph::new();
+        let id = FileId::new(0);
+        let mut node = ModuleNode::new(id, "MyWidget.vue");
+        node.component_name = Some("MyWidget".into());
+
+        graph.add_node(node);
+
+        assert_eq!(graph.find_by_component("MyWidget"), Some(id));
+        assert_eq!(graph.find_by_component("my-widget"), Some(id));
+        assert_eq!(graph.find_by_component("my_widget"), Some(id));
     }
 }

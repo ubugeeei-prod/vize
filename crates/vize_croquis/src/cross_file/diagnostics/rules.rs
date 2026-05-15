@@ -38,6 +38,9 @@ impl CrossFileDiagnostic {
                     "vize:croquis/cf/inject-without-symbol"
                 }
             }
+            CrossFileDiagnosticKind::NonReactiveProvideValue { .. } => {
+                "vize:croquis/cf/non-reactive-provide"
+            }
             // Unique Element IDs
             CrossFileDiagnosticKind::DuplicateElementId { .. } => "vize:croquis/cf/duplicate-id",
             CrossFileDiagnosticKind::NonUniqueIdInLoop { .. } => "vize:croquis/cf/non-unique-id",
@@ -129,6 +132,9 @@ impl CrossFileDiagnostic {
             }
             CrossFileDiagnosticKind::AsyncBoundaryCrossing { .. } => {
                 "vize:croquis/cf/async-boundary"
+            }
+            CrossFileDiagnosticKind::InjectedAsyncMutationRace { .. } => {
+                "vize:croquis/cf/injected-async-mutation-race"
             }
             CrossFileDiagnosticKind::ClosureCapturesReactive { .. } => {
                 "vize:croquis/cf/closure-captures-reactive"

@@ -36,10 +36,10 @@ vp run --filter './npm/vize-native' build
 vp run --filter './npm/oxlint-plugin-vize' build
 ```
 
-Install it from npm with:
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add it with:
 
 ```bash
-pnpm add -D oxlint oxlint-plugin-vize
+vp install -D oxlint oxlint-plugin-vize
 ```
 
 `oxlint-plugin-vize` pulls the appropriate Vize native binding for the current platform through optional dependencies, so no separate `@vizejs/native` install is required for published builds.
@@ -131,7 +131,7 @@ If you want to adopt Vize one rule at a time, use `"preset": "incremental"`. In 
 For day-to-day terminal runs, the recommended command today is:
 
 ```bash
-pnpm exec oxlint-vize -c .oxlintrc.json -f stylish src
+vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
 `oxlint-vize` is a thin wrapper around `oxlint`. Until upstream JS plugin coverage improves, it appends a temporary `<script setup>` block only for scriptless `.vue` files so Oxlint's JS plugin pipeline still invokes Vize, then rewrites reported paths back to the original files.

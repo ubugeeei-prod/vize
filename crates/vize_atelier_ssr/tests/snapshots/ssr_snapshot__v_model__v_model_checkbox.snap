@@ -3,5 +3,5 @@ source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
 expression: "get_compiled_string(r#\"<input type=\"checkbox\" v-model=\"checked\">\"#)"
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<div><input type="checkbox"${(_ssrIncludeBooleanAttr(Array.isArray(_ctx.checked) ? _ssrLooseContain(_ctx.checked, null) : _ctx.checked)) ? " checked" : ""}></div>`)
+  _push(`<div${_ssrRenderAttrs(_attrs)}><input type="checkbox"${(_ssrIncludeBooleanAttr(Array.isArray(_ctx.checked) ? _ssrLooseContain(_ctx.checked, null) : _ctx.checked)) ? " checked" : ""}></div>`)
 }

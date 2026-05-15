@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, createElementVNode: _createElementVNode, renderList: _renderList, normalizeClass: _normalizeClass } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (_openBlock(), _createElementBlock(_Fragment, null, _renderList(4, (n) => {
+      return (_openBlock(), _createElementBlock(_Fragment, { key: `set-${n}` }, [
+        _createElementVNode("button"),
+        (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(icons, (icon, i) => {
+          return (_openBlock(), _createElementBlock("span", {
+            key: `${n}-${i}`,
+            class: _normalizeClass(icon)
+          }, 2 /* CLASS */))
+        }), 128 /* KEYED_FRAGMENT */))
+      ], 64 /* STABLE_FRAGMENT */))
+    }), 64 /* STABLE_FRAGMENT */))
+  ]))
+}

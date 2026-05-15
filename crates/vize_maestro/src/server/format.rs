@@ -129,10 +129,10 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(
             dir.path().join("vize.config.json"),
-            r#"{ "fmt": { "singleQuote": true } }"#,
+            r#"{ "formatter": { "singleQuote": true } }"#,
         )
         .unwrap();
-        state.load_format_config(dir.path());
+        state.load_workspace_config(dir.path());
 
         let options = state.get_format_options();
         assert!(options.single_quote);

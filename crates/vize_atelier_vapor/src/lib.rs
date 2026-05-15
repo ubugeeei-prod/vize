@@ -52,6 +52,7 @@ use vize_atelier_core::{
     options::{ParserOptions, TransformOptions},
     parser::parse_with_options,
     transform::transform,
+    Namespace,
 };
 use vize_carton::{Bump, String};
 
@@ -66,6 +67,8 @@ pub struct VaporCompilerOptions {
     pub binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
     /// Whether to inline
     pub inline: bool,
+    /// Whether the template targets a custom renderer instead of the DOM.
+    pub custom_renderer: bool,
 }
 
 /// Vapor compilation result
@@ -86,7 +89,14 @@ pub fn compile_vapor<'a>(
     options: VaporCompilerOptions,
 ) -> VaporCompileResult {
     // Parse
-    let parser_opts = ParserOptions::default();
+    let parser_opts = ParserOptions {
+        is_void_tag: vize_carton::is_void_tag,
+        is_native_tag: Some(vize_carton::is_native_tag),
+        custom_renderer: options.custom_renderer,
+        is_pre_tag: |tag| tag == "pre",
+        get_namespace,
+        ..ParserOptions::default()
+    };
     let (mut root, errors) = parse_with_options(allocator, source, parser_opts);
 
     if !errors.is_empty() {
@@ -98,12 +108,14 @@ pub fn compile_vapor<'a>(
     }
 
     // Transform to Vapor IR
+    let binding_metadata = options.binding_metadata.clone();
     let transform_opts = TransformOptions {
         prefix_identifiers: options.prefix_identifiers,
         ssr: options.ssr,
-        binding_metadata: options.binding_metadata,
+        binding_metadata: binding_metadata.clone(),
         inline: options.inline,
         vapor: true,
+        custom_renderer: options.custom_renderer,
         ..Default::default()
     };
     transform(allocator, &mut root, transform_opts, None);
@@ -112,7 +124,7 @@ pub fn compile_vapor<'a>(
     let ir = transform_to_ir(allocator, &root);
 
     // Generate Vapor code
-    let result = generate_vapor(&ir);
+    let result = generate_vapor(&ir, binding_metadata.as_ref());
 
     VaporCompileResult {
         code: result.code,
@@ -121,10 +133,35 @@ pub fn compile_vapor<'a>(
     }
 }
 
+fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
+    if vize_carton::is_svg_tag(tag) {
+        return Namespace::Svg;
+    }
+    if vize_carton::is_math_ml_tag(tag) {
+        return Namespace::MathMl;
+    }
+
+    if let Some(parent_tag) = parent {
+        if vize_carton::is_svg_tag(parent_tag) && tag != "foreignObject" {
+            return Namespace::Svg;
+        }
+        if vize_carton::is_math_ml_tag(parent_tag)
+            && tag != "annotation-xml"
+            && tag != "foreignObject"
+        {
+            return Namespace::MathMl;
+        }
+    }
+
+    Namespace::Html
+}
+
 #[cfg(test)]
 mod tests {
     use super::compile_vapor;
+    use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::Bump;
+    use vize_carton::FxHashMap;
 
     fn normalize_code(code: &str) -> String {
         code.lines()
@@ -237,6 +274,44 @@ mod tests {
     fn test_compile_nested_component_child() {
         let allocator = Bump::new();
         let result = compile_vapor(&allocator, "<div><MyComp /></div>", Default::default());
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_component_v_model_uses_update_listener_getter() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<InputBase v-model="searchQuery" />"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_component_props_are_getters() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<NuxtLink :to="to" target="_blank" @click="onClick">about</NuxtLink>"#,
+            Default::default(),
+        );
 
         assert!(
             result.error_messages.is_empty(),
@@ -502,6 +577,25 @@ mod tests {
     }
 
     #[test]
+    fn test_compile_nested_v_for_key_uses_outer_alias() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div><template v-for="n in 4" :key="`set-${n}`"><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon">{{ icon }}</span></template></div>"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
     fn test_compile_first_dynamic_child_after_static_sibling() {
         let allocator = Bump::new();
         let result = compile_vapor(
@@ -615,5 +709,36 @@ mod tests {
 
         let code = normalize_code(&result.code);
         insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_custom_renderer_intrinsics_with_bound_lowercase_component() {
+        let allocator = Bump::new();
+        let mut bindings = FxHashMap::default();
+        bindings.insert("Primitive".into(), BindingType::SetupConst);
+        let result = compile_vapor(
+            &allocator,
+            r#"<mesh><group v-if="visible"><primitive /></group></mesh>"#,
+            super::VaporCompilerOptions {
+                custom_renderer: true,
+                binding_metadata: Some(BindingMetadata {
+                    bindings,
+                    props_aliases: FxHashMap::default(),
+                    is_script_setup: true,
+                }),
+                ..Default::default()
+            },
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        let code = normalize_code(&result.code);
+        assert!(code.contains("const _component_primitive = _ctx.Primitive"));
+        assert!(!code.contains(r#"_resolveComponent("group")"#));
+        assert!(!code.contains(r#"_resolveComponent("primitive")"#));
     }
 }

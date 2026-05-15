@@ -1,11 +1,13 @@
 //! Cross-file analyzer implementation.
 
 use super::super::analyzers;
+use super::super::diagnostics::{CrossFileDiagnostic, DiagnosticSeverity};
 use super::super::graph::{DependencyEdge, DependencyGraph, ModuleNode};
 use super::super::registry::{FileId, ModuleRegistry};
 use super::types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 use crate::{Analyzer, AnalyzerOptions, Croquis};
-use std::path::Path;
+use std::path::{Component, Path, PathBuf};
+use vize_carton::{CompactString, FxHashMap, String};
 
 /// Cross-file analyzer for Vue projects.
 pub struct CrossFileAnalyzer {
@@ -77,45 +79,7 @@ impl CrossFileAnalyzer {
             self.graph.add_node(node);
         }
 
-        // Update dependencies based on imports (get from registry)
-        if let Some(entry) = self.registry.get(file_id) {
-            // Collect data we need before calling update_dependencies
-            let imports_data: Vec<_> = entry
-                .analysis
-                .scopes
-                .iter()
-                .filter(|s| s.kind == crate::scope::ScopeKind::ExternalModule)
-                .filter_map(|s| {
-                    if let crate::scope::ScopeData::ExternalModule(data) = s.data() {
-                        Some((data.source.clone(), data.is_type_only))
-                    } else {
-                        None
-                    }
-                })
-                .collect();
-
-            let used_components: Vec<_> = entry.analysis.used_components.iter().cloned().collect();
-
-            // Now update dependencies
-            for (source, is_type_only) in imports_data {
-                if let Some(target_id) = self.resolve_import(&source) {
-                    // TODO: Distinguish type-only imports when tracking is needed
-                    let edge_type = if is_type_only {
-                        DependencyEdge::TypeImport
-                    } else {
-                        DependencyEdge::Import
-                    };
-                    self.graph.add_edge(file_id, target_id, edge_type);
-                }
-            }
-
-            for component in used_components {
-                if let Some(target_id) = self.graph.find_by_component(component.as_str()) {
-                    self.graph
-                        .add_edge(file_id, target_id, DependencyEdge::ComponentUsage);
-                }
-            }
-        }
+        self.update_dependency_edges(file_id);
 
         file_id
     }
@@ -165,46 +129,21 @@ impl CrossFileAnalyzer {
             self.graph.add_node(node);
         }
 
-        // Update dependencies based on imports (get from registry)
-        if let Some(entry) = self.registry.get(file_id) {
-            // Collect data we need before calling update_dependencies
-            let imports_data: Vec<_> = entry
-                .analysis
-                .scopes
-                .iter()
-                .filter(|s| s.kind == crate::scope::ScopeKind::ExternalModule)
-                .filter_map(|s| {
-                    if let crate::scope::ScopeData::ExternalModule(data) = s.data() {
-                        Some((data.source.clone(), data.is_type_only))
-                    } else {
-                        None
-                    }
-                })
-                .collect();
-
-            let used_components: Vec<_> = entry.analysis.used_components.iter().cloned().collect();
-
-            // Now update dependencies
-            for (source, is_type_only) in imports_data {
-                if let Some(target_id) = self.resolve_import(&source) {
-                    let edge_type = if is_type_only {
-                        DependencyEdge::TypeImport
-                    } else {
-                        DependencyEdge::Import
-                    };
-                    self.graph.add_edge(file_id, target_id, edge_type);
-                }
-            }
-
-            for component in used_components {
-                if let Some(target_id) = self.graph.find_by_component(component.as_str()) {
-                    self.graph
-                        .add_edge(file_id, target_id, DependencyEdge::ComponentUsage);
-                }
-            }
-        }
+        self.update_dependency_edges(file_id);
 
         file_id
+    }
+
+    /// Rebuild import and import-backed component usage edges.
+    ///
+    /// This should be called after all files have been registered when callers
+    /// add files in an arbitrary order. A parent may be added before the file
+    /// referenced by `./Child.vue`; the first pass cannot resolve that target.
+    pub fn rebuild_import_edges(&mut self) {
+        let file_ids: Vec<_> = self.registry.iter().map(|entry| entry.id).collect();
+        for file_id in file_ids {
+            self.update_dependency_edges(file_id);
+        }
     }
 
     /// Rebuild component usage edges.
@@ -227,7 +166,7 @@ impl CrossFileAnalyzer {
         // Add ComponentUsage edges for any that were missed
         for (file_id, used_components) in component_data {
             for component in used_components {
-                if let Some(target_id) = self.graph.find_by_component(component.as_str()) {
+                if let Some(target_id) = self.find_component_by_name(component.as_str()) {
                     // add_edge checks for duplicates internally
                     self.graph
                         .add_edge(file_id, target_id, DependencyEdge::ComponentUsage);
@@ -251,6 +190,11 @@ impl CrossFileAnalyzer {
             result.circular_deps = self.graph.circular_dependencies().to_vec();
         }
 
+        let provide_inject_index = self
+            .options
+            .provide_inject
+            .then(|| analyzers::ProvideInjectIndex::new(&self.registry, &self.graph));
+
         // Run enabled analyzers
         if self.options.fallthrough_attrs {
             let (info, diags) = analyzers::analyze_fallthrough(&self.registry, &self.graph);
@@ -271,7 +215,15 @@ impl CrossFileAnalyzer {
         }
 
         if self.options.provide_inject {
-            let (matches, diags) = analyzers::analyze_provide_inject(&self.registry, &self.graph);
+            let index = provide_inject_index
+                .as_ref()
+                .expect("provide/inject index should be initialized when enabled");
+            let (matches, diags) = analyzers::analyze_provide_inject_with_index(index);
+            result.provide_inject_tree = Some(analyzers::build_provide_inject_tree_with_index(
+                &self.registry,
+                index,
+                &matches,
+            ));
             result.provide_inject_matches = matches;
             result.diagnostics.extend(diags);
         }
@@ -301,6 +253,16 @@ impl CrossFileAnalyzer {
             result.diagnostics.extend(cross_diags);
         }
 
+        if self.options.race_conditions {
+            let (issues, diags) = analyzers::analyze_race_conditions_with_index(
+                &self.registry,
+                &self.graph,
+                provide_inject_index.as_ref(),
+            );
+            result.race_condition_issues = issues;
+            result.diagnostics.extend(diags);
+        }
+
         if self.options.setup_context {
             // Setup context violation analysis (CSRP/memory leaks)
             let (issues, diags) = analyzers::analyze_setup_context(&self.registry, &self.graph);
@@ -321,6 +283,9 @@ impl CrossFileAnalyzer {
             result.props_validation_issues = issues;
             result.diagnostics.extend(diags);
         }
+
+        dedupe_diagnostics(&mut result.diagnostics);
+        sort_diagnostics(&mut result.diagnostics);
 
         // Calculate statistics
         let error_count = result.diagnostics.iter().filter(|d| d.is_error()).count();
@@ -395,23 +360,93 @@ impl CrossFileAnalyzer {
         analyzer.finish()
     }
 
-    fn resolve_import(&self, specifier: &str) -> Option<FileId> {
-        // Simple resolution - check if we have this file in the registry
-        // A full implementation would use import_resolver
+    fn update_dependency_edges(&mut self, file_id: FileId) {
+        let Some(entry) = self.registry.get(file_id) else {
+            return;
+        };
 
-        // Handle relative imports
-        if specifier.starts_with('.') {
-            // Would need current file context to resolve
-            return None;
+        let current_dir = entry.path.parent().map(Path::to_path_buf);
+        let imports_data: Vec<_> = entry
+            .analysis
+            .scopes
+            .iter()
+            .filter_map(|scope| {
+                if let crate::scope::ScopeData::ExternalModule(data) = scope.data() {
+                    Some((
+                        data.source.clone(),
+                        data.is_type_only,
+                        scope
+                            .bindings()
+                            .map(|(name, _)| CompactString::new(name))
+                            .collect::<Vec<_>>(),
+                    ))
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let used_components: Vec<_> = entry.analysis.used_components.iter().cloned().collect();
+
+        let mut import_bindings = Vec::new();
+        for (source, is_type_only, local_bindings) in imports_data {
+            let Some(target_id) = self.resolve_import(source.as_str(), current_dir.as_deref())
+            else {
+                continue;
+            };
+
+            let edge_type = if is_type_only {
+                DependencyEdge::TypeImport
+            } else {
+                DependencyEdge::Import
+            };
+            self.graph.add_edge(file_id, target_id, edge_type);
+
+            if !is_type_only {
+                for local in local_bindings {
+                    import_bindings.push((local, target_id));
+                }
+            }
         }
 
-        // Check by filename
+        for component in used_components {
+            let target_id = import_bindings
+                .iter()
+                .find(|(local, _)| component_names_match(component.as_str(), local.as_str()))
+                .map(|(_, target_id)| *target_id)
+                .or_else(|| self.find_component_by_name(component.as_str()));
+
+            if let Some(target_id) = target_id {
+                self.graph
+                    .add_edge(file_id, target_id, DependencyEdge::ComponentUsage);
+            }
+        }
+    }
+
+    fn resolve_import(&self, specifier: &str, from_dir: Option<&Path>) -> Option<FileId> {
+        for candidate in import_candidates(specifier, from_dir) {
+            if let Some(entry) = self.registry.get_by_path(&candidate) {
+                return Some(entry.id);
+            }
+        }
+
+        // Fallback for flat in-memory playground projects and non-relative
+        // imports where only the filename is meaningful.
+        let basename = specifier
+            .rsplit('/')
+            .next()
+            .filter(|name| !name.is_empty())
+            .unwrap_or(specifier);
+
+        let mut vue_basename = String::from(basename);
+        vue_basename.push_str(".vue");
+        let mut ts_basename = String::from(basename);
+        ts_basename.push_str(".ts");
+
         for entry in self.registry.iter() {
-            if entry.filename.as_str() == specifier || {
-                #[allow(clippy::disallowed_macros)]
-                let vue_name = format!("{}.vue", specifier);
-                entry.filename.as_str() == vue_name
-            } {
+            if entry.filename.as_str() == basename
+                || entry.filename.as_str() == vue_basename
+                || entry.filename.as_str() == ts_basename
+            {
                 return Some(entry.id);
             }
         }
@@ -419,9 +454,159 @@ impl CrossFileAnalyzer {
         None
     }
 
+    fn find_component_by_name(&self, name: &str) -> Option<FileId> {
+        self.graph.find_by_component(name)
+    }
+
     fn count_edges(&self) -> usize {
         self.graph.nodes().map(|n| n.imports.len()).sum()
     }
+}
+
+fn dedupe_diagnostics(diagnostics: &mut Vec<CrossFileDiagnostic>) {
+    let mut seen: FxHashMap<(&'static str, FileId, u32), usize> = FxHashMap::default();
+    let mut deduped: Vec<CrossFileDiagnostic> = Vec::with_capacity(diagnostics.len());
+
+    for diagnostic in diagnostics.drain(..) {
+        let key = (
+            diagnostic.code(),
+            diagnostic.primary_file,
+            diagnostic.primary_offset,
+        );
+
+        if let Some(index) = seen.get(&key).copied() {
+            merge_duplicate_diagnostic(&mut deduped[index], diagnostic);
+        } else {
+            seen.insert(key, deduped.len());
+            deduped.push(diagnostic);
+        }
+    }
+
+    *diagnostics = deduped;
+}
+
+fn merge_duplicate_diagnostic(existing: &mut CrossFileDiagnostic, incoming: CrossFileDiagnostic) {
+    if is_more_severe(incoming.severity, existing.severity) {
+        existing.severity = incoming.severity;
+    }
+
+    if existing.suggestion.is_none() {
+        existing.suggestion = incoming.suggestion.clone();
+    }
+
+    for related in incoming.related_files {
+        if !existing.related_files.iter().any(|entry| entry == &related) {
+            existing.related_files.push(related);
+        }
+    }
+}
+
+fn sort_diagnostics(diagnostics: &mut [CrossFileDiagnostic]) {
+    diagnostics.sort_by(|left, right| {
+        left.primary_file
+            .as_u32()
+            .cmp(&right.primary_file.as_u32())
+            .then_with(|| left.primary_offset.cmp(&right.primary_offset))
+            .then_with(|| severity_order(left.severity).cmp(&severity_order(right.severity)))
+            .then_with(|| left.code().cmp(right.code()))
+    });
+}
+
+fn is_more_severe(candidate: DiagnosticSeverity, current: DiagnosticSeverity) -> bool {
+    severity_order(candidate) < severity_order(current)
+}
+
+fn severity_order(severity: DiagnosticSeverity) -> u8 {
+    severity as u8
+}
+
+fn import_candidates(specifier: &str, from_dir: Option<&Path>) -> Vec<PathBuf> {
+    let mut bases = Vec::new();
+
+    if let Some(relative) = specifier.strip_prefix("@/") {
+        bases.push(PathBuf::from("src").join(relative));
+    } else if specifier.starts_with('.') {
+        let base = from_dir
+            .filter(|dir| !dir.as_os_str().is_empty())
+            .map_or_else(|| PathBuf::from(specifier), |dir| dir.join(specifier));
+        bases.push(base);
+    } else if let Some(stripped) = specifier.strip_prefix('/') {
+        bases.push(PathBuf::from(stripped));
+        bases.push(PathBuf::from(specifier));
+    } else {
+        bases.push(PathBuf::from(specifier));
+    }
+
+    let mut candidates = Vec::new();
+    for base in bases {
+        let has_extension = base.extension().is_some();
+        candidates.push(normalize_logical_path(base.clone()));
+
+        if !has_extension {
+            for suffix in [
+                ".vue",
+                ".ts",
+                ".tsx",
+                ".js",
+                ".jsx",
+                "/index.vue",
+                "/index.ts",
+                "/index.tsx",
+                "/index.js",
+                "/index.jsx",
+            ] {
+                candidates.push(normalize_logical_path(path_with_suffix(&base, suffix)));
+            }
+        }
+    }
+
+    candidates
+}
+
+fn path_with_suffix(base: &Path, suffix: &str) -> PathBuf {
+    if let Some(index_file) = suffix.strip_prefix('/') {
+        base.join(index_file)
+    } else {
+        let mut value = base.as_os_str().to_os_string();
+        value.push(suffix);
+        PathBuf::from(value)
+    }
+}
+
+fn normalize_logical_path(path: PathBuf) -> PathBuf {
+    let mut normalized = PathBuf::new();
+
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                normalized.pop();
+            }
+            Component::Normal(part) => normalized.push(part),
+            Component::RootDir => normalized.push(Path::new("/")),
+            Component::Prefix(prefix) => normalized.push(prefix.as_os_str()),
+        }
+    }
+
+    normalized
+}
+
+fn component_names_match(left: &str, right: &str) -> bool {
+    left == right || to_pascal_case(left) == to_pascal_case(right)
+}
+
+fn to_pascal_case(value: &str) -> String {
+    value
+        .split(['-', '_'])
+        .filter(|part| !part.is_empty())
+        .map(|part| {
+            let mut chars = part.chars();
+            match chars.next() {
+                Some(first) => first.to_uppercase().chain(chars).collect::<String>(),
+                None => String::default(),
+            }
+        })
+        .collect()
 }
 
 impl Default for CrossFileAnalyzer {

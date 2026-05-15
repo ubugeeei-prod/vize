@@ -125,6 +125,8 @@ impl VirtualDocument {
 pub struct VirtualDocuments {
     /// Template virtual document
     pub template: Option<VirtualDocument>,
+    /// Art variant template virtual documents, indexed by variant position
+    pub art_templates: Vec<Option<VirtualDocument>>,
     /// Script virtual document
     pub script: Option<VirtualDocument>,
     /// Script setup virtual document
@@ -142,8 +144,16 @@ impl VirtualDocuments {
     /// Get all virtual documents as a vector.
     pub fn all(&self) -> Vec<&VirtualDocument> {
         let mut docs = Vec::new();
-        if let Some(ref t) = self.template {
-            docs.push(t);
+        if self.art_templates.is_empty() {
+            if let Some(ref t) = self.template {
+                docs.push(t);
+            }
+        } else {
+            for art_template in &self.art_templates {
+                if let Some(template) = art_template.as_ref() {
+                    docs.push(template);
+                }
+            }
         }
         if let Some(ref s) = self.script {
             docs.push(s);
@@ -155,6 +165,17 @@ impl VirtualDocuments {
             docs.push(style);
         }
         docs
+    }
+
+    /// Get the virtual template document for a specific art variant.
+    pub fn art_template(&self, variant_index: usize) -> Option<&VirtualDocument> {
+        if self.art_templates.is_empty() {
+            return self.template.as_ref();
+        }
+
+        self.art_templates
+            .get(variant_index)
+            .and_then(Option::as_ref)
     }
 
     /// Find the virtual document containing the given source offset.

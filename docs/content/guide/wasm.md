@@ -12,8 +12,10 @@ The WASM bindings are compiled from the same Rust codebase as the CLI and NAPI b
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the package:
+
 ```bash
-npm install @vizejs/wasm
+vp install @vizejs/wasm
 ```
 
 ## API

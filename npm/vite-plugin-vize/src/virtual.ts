@@ -21,8 +21,11 @@ export interface DynamicImportAliasRule {
 
 /** Check if a module ID is a vize-compiled virtual module */
 export function isVizeVirtual(id: string): boolean {
-  const pathPart = id.startsWith(VIZE_SSR_PREFIX) ? id.slice(VIZE_SSR_PREFIX.length) : id.slice(1);
-  return id.startsWith("\0") && pathPart.endsWith(".vue.ts");
+  return isVizeVirtualVueModuleId(id);
+}
+
+export function isVizeVirtualVueModuleId(id: string): boolean {
+  return id.startsWith("\0") && /\.vue\.ts(?:\?|$)/.test(id);
 }
 
 export function isVizeSsrVirtual(id: string): boolean {
@@ -36,8 +39,12 @@ export function toVirtualId(realPath: string, ssr = false): string {
 
 /** Extract the real .vue file path from a virtual module ID */
 export function fromVirtualId(virtualId: string): string {
-  const prefix = isVizeSsrVirtual(virtualId) ? VIZE_SSR_PREFIX.length : 1;
-  return virtualId.slice(prefix, -3);
+  return normalizeVizeVirtualVueModuleId(virtualId).split("?")[0]!;
+}
+
+export function normalizeVizeVirtualVueModuleId(id: string): string {
+  const prefix = isVizeSsrVirtual(id) ? VIZE_SSR_PREFIX.length : 1;
+  return id.slice(prefix).replace(/\.ts(?=\?|$)/, "");
 }
 
 export function escapeRegExp(value: string): string {

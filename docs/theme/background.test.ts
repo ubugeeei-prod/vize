@@ -25,6 +25,6 @@ void test("buildDocsBackgroundScript inlines the shared vein bootstrap", () => {
 void test("createDocsBackgroundHtml reuses the shared canvas id", () => {
   assert.equal(
     createDocsBackgroundHtml(),
-    `<canvas id="${docsBackgroundCanvasId}" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>`,
+    `<canvas id="${docsBackgroundCanvasId}" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>`,
   );
 });

@@ -25,9 +25,10 @@ export async function stripTypeScript(
     sourcemap: sourceMap,
     sourceType: "module",
   });
+  const errors = result.errors ?? [];
 
-  if (result.errors.length > 0) {
-    throw new Error(result.errors.map(formatErrorMessage).join("\n\n"));
+  if (errors.length > 0) {
+    throw new Error(errors.map(formatErrorMessage).join("\n\n"));
   }
 
   return {

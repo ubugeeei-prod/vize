@@ -59,6 +59,39 @@ pub static VOID_TAGS: phf::Set<&'static str> = phf_set! {
     "link", "meta", "param", "source", "track", "wbr"
 };
 
+/// Boolean HTML attributes.
+///
+/// These attributes are present when their runtime value should be included,
+/// and omitted otherwise. Rendering `checked="false"` is still considered
+/// present by browsers.
+pub static BOOLEAN_ATTRS: phf::Set<&'static str> = phf_set! {
+    "allowfullscreen",
+    "async",
+    "autofocus",
+    "autoplay",
+    "checked",
+    "controls",
+    "default",
+    "defer",
+    "disabled",
+    "formnovalidate",
+    "hidden",
+    "inert",
+    "ismap",
+    "itemscope",
+    "loop",
+    "multiple",
+    "muted",
+    "nomodule",
+    "novalidate",
+    "open",
+    "playsinline",
+    "readonly",
+    "required",
+    "reversed",
+    "selected"
+};
+
 /// Check if tag is a valid HTML tag
 #[inline]
 pub fn is_html_tag(tag: &str) -> bool {
@@ -81,6 +114,12 @@ pub fn is_math_ml_tag(tag: &str) -> bool {
 #[inline]
 pub fn is_void_tag(tag: &str) -> bool {
     VOID_TAGS.contains(tag)
+}
+
+/// Check if attr is a boolean HTML attribute
+#[inline]
+pub fn is_boolean_attr(attr: &str) -> bool {
+    BOOLEAN_ATTRS.contains(attr)
 }
 
 /// Check if tag is a native tag (HTML, SVG, or MathML)
@@ -113,7 +152,7 @@ pub fn is_rcdata_tag(tag: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_html_tag, is_raw_text_tag, is_svg_tag, is_void_tag};
+    use super::{is_boolean_attr, is_html_tag, is_raw_text_tag, is_svg_tag, is_void_tag};
 
     #[test]
     fn test_html_tags() {
@@ -138,6 +177,13 @@ mod tests {
         assert!(is_void_tag("img"));
         assert!(is_void_tag("input"));
         assert!(!is_void_tag("div"));
+    }
+
+    #[test]
+    fn test_boolean_attrs() {
+        assert!(is_boolean_attr("checked"));
+        assert!(is_boolean_attr("disabled"));
+        assert!(!is_boolean_attr("aria-label"));
     }
 
     #[test]

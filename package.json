@@ -7,15 +7,22 @@
     "provenance": true
   },
   "devDependencies": {
-    "@iarna/toml": "^2.2.5",
-    "@types/node": "^25.3.3",
-    "@typescript/native-preview": "7.0.0-dev.20260124.1",
-    "glob": "^13.0.0",
-    "oxfmt": "^0.40.0",
-    "oxlint": "^1.55.0",
-    "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vue": "3.6.0-beta.1"
+    "@iarna/toml": "catalog:repo-tooling",
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "@typescript/native-preview": "catalog:typescript",
+    "glob": "catalog:repo-tooling",
+    "json-schema-to-typescript": "catalog:repo-tooling",
+    "oxfmt": "catalog:linting",
+    "oxlint": "catalog:linting",
+    "tsdown": "catalog:vite-stack",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
   },
-  "packageManager": "pnpm@10.0.0"
+  "packageManager": "pnpm@10.0.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
 }

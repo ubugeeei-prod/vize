@@ -89,8 +89,14 @@ fn should_suggest_variant_block(before: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_inside_html_comment, items, script, style, template, trigger_characters};
-    use tower_lsp::lsp_types::{CompletionItemKind, InsertTextFormat};
+    use std::fs;
+
+    use super::{
+        is_inside_html_comment, items, script, style, template, trigger_characters,
+        CompletionService,
+    };
+    use crate::{ide::IdeContext, server::ServerState};
+    use tower_lsp::lsp_types::{CompletionItemKind, CompletionResponse, InsertTextFormat, Url};
     use vize_relief::BindingType;
 
     #[test]
@@ -195,5 +201,46 @@ mod tests {
 
         assert!(is_inside_html_comment("<!-- a --> <!-- b", 17));
         assert!(!is_inside_html_comment("<!-- a --> <!-- b --> after", 26));
+    }
+
+    #[test]
+    fn test_art_variant_completion_includes_script_bindings_in_non_default_variant() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("Button.art.vue");
+        let source = r#"<script setup lang="ts">
+const primaryLabel = ref('primary')
+const secondaryLabel = ref('secondary')
+</script>
+
+<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <Button>{{ primaryLabel }}</Button>
+  </variant>
+  <variant name="Secondary">
+    <Button>{{ secondaryLabel }}</Button>
+  </variant>
+</art>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.rfind("secondaryLabel").unwrap() + "secondaryLabel".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let response = CompletionService::complete(&ctx).unwrap();
+        let items = match response {
+            CompletionResponse::Array(items) => items,
+            CompletionResponse::List(list) => list.items,
+        };
+
+        let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
+        assert!(labels.contains(&"secondaryLabel"));
+        assert!(labels.contains(&"primaryLabel"));
+        assert!(labels.contains(&"v-if"));
     }
 }

@@ -179,8 +179,10 @@ impl NoBrowserGlobalsInSsr {
     ///
     /// This method is aware of JavaScript syntax to avoid false positives:
     /// - Skips content inside string literals ('...', "...", `...`)
+    /// - Skips content inside comments and regex literals (`/window/`)
     /// - Skips property access after `.` (e.g., `obj.top` → only `obj`)
     /// - Skips object property keys (e.g., `{ top: 0 }` → skips `top`)
+    /// - Skips direct `typeof window` guards that are safe in SSR
     fn extract_identifiers(expr: &str) -> Vec<&str> {
         let mut identifiers = Vec::new();
         let bytes = expr.as_bytes();
@@ -188,12 +190,68 @@ impl NoBrowserGlobalsInSsr {
         let mut i = 0;
         // Track whether the previous token was a `.` (property access)
         let mut after_dot = false;
+        let mut after_typeof = false;
+        let mut can_start_regex = true;
 
         while i < len {
             let b = bytes[i];
 
+            // Skip comments without changing the surrounding expression state.
+            if b == b'/' && i + 1 < len && bytes[i + 1] == b'/' {
+                i += 2;
+                while i < len && !matches!(bytes[i], b'\n' | b'\r') {
+                    i += 1;
+                }
+                continue;
+            }
+            if b == b'/' && i + 1 < len && bytes[i + 1] == b'*' {
+                i += 2;
+                while i + 1 < len {
+                    if bytes[i] == b'*' && bytes[i + 1] == b'/' {
+                        i += 2;
+                        break;
+                    }
+                    i += 1;
+                }
+                continue;
+            }
+
+            if b == b'/' && can_start_regex {
+                i += 1;
+                let mut in_character_class = false;
+                while i < len {
+                    if bytes[i] == b'\\' {
+                        i += 2;
+                        continue;
+                    }
+                    if bytes[i] == b'[' {
+                        in_character_class = true;
+                        i += 1;
+                        continue;
+                    }
+                    if bytes[i] == b']' {
+                        in_character_class = false;
+                        i += 1;
+                        continue;
+                    }
+                    if bytes[i] == b'/' && !in_character_class {
+                        i += 1;
+                        while i < len && bytes[i].is_ascii_alphabetic() {
+                            i += 1;
+                        }
+                        break;
+                    }
+                    i += 1;
+                }
+                after_dot = false;
+                after_typeof = false;
+                can_start_regex = false;
+                continue;
+            }
+
             // Skip string literals
             if b == b'\'' || b == b'"' || b == b'`' {
+                after_typeof = false;
                 let quote = b;
                 i += 1;
                 while i < len {
@@ -208,12 +266,14 @@ impl NoBrowserGlobalsInSsr {
                     i += 1;
                 }
                 after_dot = false;
+                can_start_regex = false;
                 continue;
             }
 
             // Track dot for property access
             if b == b'.' {
                 after_dot = true;
+                can_start_regex = false;
                 i += 1;
                 continue;
             }
@@ -232,6 +292,8 @@ impl NoBrowserGlobalsInSsr {
                 // Skip if it's a property access (after `.`)
                 if after_dot {
                     after_dot = false;
+                    after_typeof = false;
+                    can_start_regex = false;
                     continue;
                 }
 
@@ -244,27 +306,76 @@ impl NoBrowserGlobalsInSsr {
                 if j < len && bytes[j] == b':' && (j + 1 >= len || bytes[j + 1] != b':') {
                     // This is an object key like `{ top: 0 }`, skip it
                     after_dot = false;
+                    after_typeof = false;
+                    can_start_regex = true;
                     continue;
+                }
+
+                if ident == "typeof" {
+                    after_typeof = true;
+                    after_dot = false;
+                    can_start_regex = true;
+                    continue;
+                }
+
+                if after_typeof {
+                    after_typeof = false;
+                    let mut next = i;
+                    while next < len && bytes[next].is_ascii_whitespace() {
+                        next += 1;
+                    }
+                    if next >= len || !matches!(bytes[next], b'.' | b'[') {
+                        after_dot = false;
+                        can_start_regex = false;
+                        continue;
+                    }
                 }
 
                 identifiers.push(ident);
                 after_dot = false;
+                can_start_regex = false;
                 continue;
             }
 
             // Skip digits (number literals)
             if b.is_ascii_digit() {
+                after_typeof = false;
                 i += 1;
                 while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'.') {
                     i += 1;
                 }
                 after_dot = false;
+                can_start_regex = false;
                 continue;
             }
 
             // Any other character
             if !b.is_ascii_whitespace() {
                 after_dot = false;
+                if !matches!(b, b'(' | b')') {
+                    after_typeof = false;
+                }
+                can_start_regex = matches!(
+                    b,
+                    b'(' | b'['
+                        | b'{'
+                        | b','
+                        | b':'
+                        | b';'
+                        | b'?'
+                        | b'='
+                        | b'!'
+                        | b'&'
+                        | b'|'
+                        | b'+'
+                        | b'-'
+                        | b'*'
+                        | b'%'
+                        | b'~'
+                        | b'^'
+                        | b'<'
+                        | b'>'
+                );
             }
             i += 1;
         }
@@ -362,8 +473,9 @@ mod tests {
     use crate::context::{LintContext, SsrMode};
     use crate::rule::{Rule, RuleRegistry};
     use crate::Linter;
+    use vize_carton::CompactString;
 
-    fn lint_with_ssr(source: &str) -> Vec<String> {
+    fn lint_with_ssr(source: &str) -> Vec<CompactString> {
         let mut registry = RuleRegistry::new();
         registry.add(Box::new(NoBrowserGlobalsInSsr));
         let _linter = Linter::with_registry(registry);
@@ -388,7 +500,7 @@ mod tests {
 
         ctx.into_diagnostics()
             .into_iter()
-            .map(|d| d.message.to_string())
+            .map(|d| d.message)
             .collect()
     }
 
@@ -463,5 +575,59 @@ mod tests {
         // { top: window.scrollY } - 'window' is a real global reference
         let result = lint_with_ssr(r#"<div :style="{ top: window.scrollY + 'px' }"></div>"#);
         insta::assert_debug_snapshot!(result);
+    }
+
+    #[test]
+    fn test_ignores_typeof_window_guard() {
+        let result = lint_with_ssr(r#"<div>{{ typeof window === 'undefined' }}</div>"#);
+        assert!(
+            result.is_empty(),
+            "Should not flag direct typeof guards, got: {:?}",
+            result
+        );
+    }
+
+    #[test]
+    fn test_ignores_parenthesized_typeof_document_guard_in_directive() {
+        let result = lint_with_ssr(
+            r#"<div :class="typeof (document) === 'undefined' ? 'ssr' : 'dom'"></div>"#,
+        );
+        assert!(
+            result.is_empty(),
+            "Should not flag parenthesized direct typeof guards, got: {:?}",
+            result
+        );
+    }
+
+    #[test]
+    fn test_detects_typeof_member_access() {
+        let result = lint_with_ssr(r#"<div>{{ typeof window.innerWidth }}</div>"#);
+        assert_eq!(result.len(), 1);
+    }
+
+    #[test]
+    fn test_ignores_regex_literal_with_browser_global_name() {
+        let result = lint_with_ssr(r#"<div>{{ /window|document/.test(name) }}</div>"#);
+        assert!(
+            result.is_empty(),
+            "Should not flag browser global names inside regex literals, got: {:?}",
+            result
+        );
+    }
+
+    #[test]
+    fn test_ignores_block_comment_with_browser_global_name() {
+        let result = lint_with_ssr(r#"<div>{{ value /* window */ }}</div>"#);
+        assert!(
+            result.is_empty(),
+            "Should not flag browser global names inside comments, got: {:?}",
+            result
+        );
+    }
+
+    #[test]
+    fn test_detects_division_by_browser_global() {
+        let result = lint_with_ssr(r#"<div>{{ width / window.innerWidth }}</div>"#);
+        assert_eq!(result.len(), 1);
     }
 }

@@ -11,14 +11,14 @@
     "fmt": "vp fmt --write src vite.config.ts vite.app.config.ts vize.config.ts"
   },
   "dependencies": {
-    "vue": "^3.5.13"
+    "vue": "catalog:vue-stable"
   },
   "devDependencies": {
     "@vizejs/vite-plugin": "workspace:*",
-    "typescript": "^5.8.3",
-    "vite": "catalog:",
-    "vite-plugin-inspect": "^11.0.1",
-    "vite-plus": "catalog:",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plugin-inspect": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
     "vize": "workspace:*"
   }
 }

@@ -185,6 +185,192 @@ const inputRef = useTemplateRef<HTMLInputElement>('input')
 }
 
 #[test]
+fn batch_type_checker_accepts_nested_ref_value_component_props() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case(
+        "nested-ref-value-props",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineProps<{
+  count: number
+}>()
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+const state = ref({
+  nested: ref(1),
+})
+</script>
+
+<template>
+  <Child :count="state.nested.value" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    let relevant: Vec<_> = snapshot
+        .iter()
+        .filter(|(file, code, _)| {
+            file == "src/App.vue" && matches!(*code, Some(18048) | Some(2322) | Some(2339))
+        })
+        .cloned()
+        .collect();
+
+    assert!(
+        relevant.is_empty(),
+        "unexpected nested ref prop diagnostics: {relevant:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_reports_template_handler_mismatches_without_node_modules() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "template-handler-mismatches",
+        &[
+            (
+                "src/InlineHandlerError.vue",
+                r#"<script setup lang="ts">
+import { ref } from 'vue'
+
+const count = ref(0)
+
+function processString(value: string): void {
+  console.log(value)
+}
+</script>
+
+<template>
+  <button @click="processString(count)">Click</button>
+</template>
+"#,
+            ),
+            (
+                "src/WrongEventHandler.vue",
+                r#"<script setup lang="ts">
+function handleName(name: string): void {
+  console.log(name)
+}
+</script>
+
+<template>
+  <button @click="handleName">Click me</button>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot
+            .iter()
+            .any(|(file, code, _)| { file == "src/InlineHandlerError.vue" && *code == Some(2345) }),
+        "expected InlineHandlerError.vue to report TS2345, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, message)| {
+            file == "src/WrongEventHandler.vue"
+                && *code == Some(2345)
+                && message.contains("MouseEvent")
+        }),
+        "expected WrongEventHandler.vue to report MouseEvent mismatch, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_stubs_common_vue_runtime_symbols_without_node_modules() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    let project_root = create_project_case_without_node_modules(
+        "vue-runtime-stub",
+        &[(
+            "src/UseTemplateRefError.vue",
+            r#"<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
+const inputRef = useTemplateRef<HTMLInputElement>('input')
+const count = ref(0)
+
+onMounted(() => {
+  if (inputRef.value) {
+    const num: number = inputRef.value.value
+    inputRef.value.nonExistentMethod()
+  }
+})
+</script>
+
+<template>
+  <input ref="input" />
+  <span>{{ count }}</span>
+</template>
+"#,
+        )],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.iter().all(
+            |(_, code, message)| *code != Some(2305) && !message.contains("no exported member")
+        ),
+        "unexpected vue runtime stub export diagnostic: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, _)| {
+            file == "src/UseTemplateRefError.vue" && *code == Some(2322)
+        }),
+        "expected template ref value mismatch to remain reported, got: {snapshot:#?}"
+    );
+    assert!(
+        snapshot.iter().any(|(file, code, _)| {
+            file == "src/UseTemplateRefError.vue" && *code == Some(2339)
+        }),
+        "expected template ref method mismatch to remain reported, got: {snapshot:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_snapshots_cross_file_vue_prop_error() {
     if resolve_test_tsgo_binary().is_none() {
         return;
@@ -397,6 +583,37 @@ fn create_project_case(name: &str, files: &[(&str, &str)]) -> PathBuf {
     let _ = std::fs::remove_dir_all(&project_root);
     std::fs::create_dir_all(&project_root).unwrap();
     link_workspace_node_modules(&project_root).unwrap();
+    write_project_tsconfig(&project_root);
+
+    for (path, source) in files {
+        let file_path = project_root.join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
+
+    project_root
+}
+
+fn create_project_case_without_node_modules(name: &str, files: &[(&str, &str)]) -> PathBuf {
+    let project_root = unique_case_dir(name);
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).unwrap();
+    write_project_tsconfig(&project_root);
+
+    for (path, source) in files {
+        let file_path = project_root.join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
+
+    project_root
+}
+
+fn write_project_tsconfig(project_root: &Path) {
     std::fs::write(
         project_root.join("tsconfig.json"),
         r#"{
@@ -411,16 +628,6 @@ fn create_project_case(name: &str, files: &[(&str, &str)]) -> PathBuf {
 }"#,
     )
     .unwrap();
-
-    for (path, source) in files {
-        let file_path = project_root.join(path);
-        if let Some(parent) = file_path.parent() {
-            std::fs::create_dir_all(parent).unwrap();
-        }
-        std::fs::write(file_path, source).unwrap();
-    }
-
-    project_root
 }
 
 fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {
@@ -588,11 +795,17 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
     std::fs::create_dir_all(&target)?;
 
     if let Some(ref workspace_node_modules) = workspace_node_modules {
-        for package in ["vue", "vite", "@vue"] {
-            let source = workspace_node_modules.join(package);
-            if source.exists() {
-                symlink_path(&source, &target.join(package))?;
-            }
+        link_or_stub_package(workspace_node_modules, &target, "vue", write_test_vue_stub)?;
+        link_or_stub_package(
+            workspace_node_modules,
+            &target,
+            "vite",
+            write_test_vite_stub,
+        )?;
+
+        let vue_namespace = workspace_node_modules.join("@vue");
+        if vue_namespace.exists() {
+            symlink_path(&vue_namespace, &target.join("@vue"))?;
         }
     } else {
         write_test_vue_stub(&target)?;
@@ -623,6 +836,20 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
     }
 
     Ok(())
+}
+
+fn link_or_stub_package(
+    workspace_node_modules: &Path,
+    target: &Path,
+    package: &str,
+    stub_writer: fn(&Path) -> std::io::Result<()>,
+) -> std::io::Result<()> {
+    let source = workspace_node_modules.join(package);
+    if source.exists() {
+        symlink_path(&source, &target.join(package))
+    } else {
+        stub_writer(target)
+    }
 }
 
 fn resolve_workspace_node_modules(workspace_root: &Path) -> Option<PathBuf> {

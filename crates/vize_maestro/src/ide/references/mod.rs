@@ -150,7 +150,7 @@ impl ReferencesService {
     ) -> Option<Vec<Location>> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
-        let template = virtual_docs.template.as_ref()?;
+        let template = virtual_docs.art_template(info.variant_index)?;
         let relative_offset = info.relative_offset as u32;
         let vts_offset = template
             .source_map
@@ -158,7 +158,7 @@ impl ReferencesService {
             .map(|offset| offset as usize)
             .unwrap_or(relative_offset as usize);
         let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
-        let request_path = corsa_support::template_request_path(ctx.uri);
+        let request_path = corsa_support::art_template_request_path(ctx.uri, info.variant_index);
         let uri = bridge
             .open_or_update_virtual_document(&request_path, &template.content)
             .await
@@ -215,31 +215,7 @@ impl ReferencesService {
 
     /// Get the word at an offset.
     fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
-        if offset >= content.len() {
-            return None;
-        }
-
-        let bytes = content.as_bytes();
-
-        if !Self::is_identifier_char(bytes[offset]) {
-            return None;
-        }
-
-        let mut start = offset;
-        while start > 0 && Self::is_identifier_char(bytes[start - 1]) {
-            start -= 1;
-        }
-
-        let mut end = offset;
-        while end < bytes.len() && Self::is_identifier_char(bytes[end]) {
-            end += 1;
-        }
-
-        if start == end {
-            return None;
-        }
-
-        Some(String::from_utf8_lossy(&bytes[start..end]).to_string())
+        crate::ide::token_at_offset(content, offset, Self::is_identifier_char)
     }
 
     /// Check if a byte is an identifier character.
@@ -338,7 +314,10 @@ const other = message.value
         assert_eq!(word, Some("message".to_string()));
 
         let word = ReferencesService::get_word_at_offset(content, 5);
-        assert_eq!(word, None); // space
+        assert_eq!(word, Some("const".to_string()));
+
+        let word = ReferencesService::get_word_at_offset(content, 14);
+        assert_eq!(word, None);
     }
 
     #[test]

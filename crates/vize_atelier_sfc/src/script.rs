@@ -92,24 +92,7 @@ pub fn analyze_script_setup_fast(content: &str) -> ScriptParseResult {
 /// This uses vize_croquis for the core analysis and converts
 /// the result to the shared Croquis format.
 pub fn analyze_script_setup_to_summary(content: &str) -> CroquisSummary {
-    let result = vize_croquis::script_parser::parse_script_setup(content);
-
-    let mut summary = CroquisSummary::new();
-
-    // Copy bindings
-    summary.bindings = result.bindings;
-
-    // Copy macros
-    summary.macros = result.macros;
-
-    // Copy reactivity
-    summary.reactivity = result.reactivity;
-
-    // Copy exports
-    summary.type_exports = result.type_exports;
-    summary.invalid_exports = result.invalid_exports;
-
-    summary
+    vize_croquis::script_parser::parse_script_setup(content).into_croquis()
 }
 
 /// Convert a full ScriptCompileContext analysis to Croquis.

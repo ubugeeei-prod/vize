@@ -47,7 +47,8 @@ impl Default for VirtualTsOptions {
 }
 
 /// Default plugin globals.
-/// Returns empty by default -- configure via `vize.config.json` `check.globals`.
+/// Returns empty by default. Configure via `vize.config.pkl` `globalTypes`
+/// or `typeChecker.globalsFile`.
 fn default_plugin_globals() -> Vec<TemplateGlobal> {
     vec![]
 }

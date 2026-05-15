@@ -5,8 +5,8 @@ import type {
   NormalizedVizeUnpluginOptions,
   CachedCompiledModule,
   SfcCompileResultNapi,
-} from "./types.js";
-import { extractStyleBlocks, generateScopeId } from "./style.js";
+} from "./types.ts";
+import { extractStyleBlocks, generateScopeId } from "./style.ts";
 
 const { compileSfc } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
@@ -17,6 +17,7 @@ function buildSignature(options: NormalizedVizeUnpluginOptions): string {
     options.isProduction ? "1" : "0",
     options.ssr ? "1" : "0",
     options.vapor ? "1" : "0",
+    options.customRenderer ? "1" : "0",
     options.sourceMap ? "1" : "0",
     options.root,
   ].join(":");
@@ -47,6 +48,7 @@ export function compileVueModule(
     sourceMap: options.sourceMap,
     ssr: options.ssr,
     vapor: options.vapor,
+    customRenderer: options.customRenderer,
     scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
   });
 
@@ -62,6 +64,7 @@ export function compileVueModule(
     templateHash: result.templateHash,
     styleHash: result.styleHash,
     scriptHash: result.scriptHash,
+    macroArtifacts: result.macroArtifacts ?? [],
     styles: extractStyleBlocks(source),
   };
 

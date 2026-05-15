@@ -2,24 +2,18 @@
 source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode } from "vue"
-
-import { ref } from 'vue'
-import CodeHighlight from './CodeHighlight.vue'
-
-export default /*@__PURE__*/_defineComponent({
-  __name: 'anonymous',
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode } from "vue";
+import { ref } from "vue";
+import CodeHighlight from "./CodeHighlight.vue";
+export default {
+  __name: "anonymous",
   setup(__props) {
-
-const currentCode = ref('dom');
-
-return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", { class: "wrapper" }, [ _createVNode(CodeHighlight, {
+    const currentCode = ref("dom");
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("div", { class: "wrapper" }, [_createVNode(CodeHighlight, {
         code: currentCode.value,
         language: "javascript"
-      }, null, 8 /* PROPS */, ["code"]) ]))
-}
-}
-
-})
+      }, null, 8, ["code"])]);
+    };
+  }
+};

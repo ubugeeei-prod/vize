@@ -63,7 +63,6 @@
 //!
 //! Template rules:
 //! - `vapor/no-vue-lifecycle-events` - Disallow @vue:xxx per-element lifecycle events
-//! - `vapor/no-suspense` - Warn about Suspense in Vapor-only apps
 //! - `vapor/prefer-static-class` - Prefer static class over dynamic binding
 //! - `vapor/no-inline-template` - Disallow deprecated inline-template
 //!

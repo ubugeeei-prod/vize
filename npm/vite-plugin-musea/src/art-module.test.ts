@@ -93,3 +93,41 @@ void test("generatePreviewModule injects art-scoped styles from the virtual art 
   assert.match(code, /ensureArtStyles\(artModule\.__styles__\);/);
   assert.match(code, /document\.createElement\('style'\)/);
 });
+
+void test("generated modules quote dynamic specifiers", () => {
+  const art: ArtFileInfo = {
+    path: `/repo/components/MfCard';sideEffect().art.vue`,
+    metadata: {
+      title: "Card",
+      tags: [],
+      status: "ready",
+      component: `./MfCard';sideEffect().vue`,
+    },
+    variants: [
+      {
+        name: `default';sideEffect()`,
+        template: "<Self />",
+        isDefault: true,
+        skipVrt: false,
+      },
+    ],
+    hasScriptSetup: false,
+    hasScript: false,
+    styleCount: 0,
+  };
+
+  const artCode = generateArtModule(art, art.path);
+  const previewCode = generatePreviewModule(art, "Default", art.variants[0].name, [
+    `/repo/theme';sideEffect().css`,
+  ]);
+
+  assert.match(
+    artCode,
+    /import __MuseaComponent from "\/repo\/components\/MfCard';sideEffect\(\)\.vue";/,
+  );
+  assert.match(previewCode, /import "\/repo\/theme';sideEffect\(\)\.css";/);
+  assert.match(
+    previewCode,
+    /import \* as artModule from "virtual:musea-art:\/repo\/components\/MfCard';sideEffect\(\)\.art\.vue";/,
+  );
+});

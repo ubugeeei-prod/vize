@@ -12,7 +12,7 @@ use oxc_span::GetSpan;
 
 use super::context::ScriptCompileContext;
 
-pub const DEFINE_EMITS: &str = "defineEmits";
+pub use vize_croquis::macros::DEFINE_EMITS;
 
 /// Result of processing defineEmits
 #[derive(Debug, Clone, Default)]

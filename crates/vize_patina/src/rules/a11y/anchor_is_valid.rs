@@ -23,6 +23,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::url::has_javascript_scheme;
 use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -73,7 +74,7 @@ impl Rule for AnchorIsValid {
                             &attr.loc,
                             ctx.t("a11y/anchor-is-valid.help"),
                         );
-                    } else if trimmed.starts_with("javascript:") {
+                    } else if has_javascript_scheme(trimmed) {
                         ctx.warn_with_help(
                             ctx.t("a11y/anchor-is-valid.message_javascript"),
                             &attr.loc,
@@ -149,6 +150,28 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<a href="javascript:void(0)">Link</a>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_mixed_case_javascript_href() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<a href="JaVaScRiPt:void(0)">Link</a>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_invalid_obfuscated_javascript_href() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r#"<a href="java&#x0A;script:void(0)">Link</a>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn test_valid_similar_javascript_scheme() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<a href="javascriptx:void(0)">Link</a>"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
     }
 
     #[test]

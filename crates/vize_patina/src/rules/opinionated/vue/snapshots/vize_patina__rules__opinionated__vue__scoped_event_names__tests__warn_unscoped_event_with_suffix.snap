@@ -8,7 +8,7 @@ expression: result.diagnostics
         severity: Warning,
         message: "Consider using scoped event name for better organization",
         start: 8,
-        end: 30,
+        end: 31,
         help: Some(
             "Use scoped event names like 'update:modelValue' instead of generic names",
         ),

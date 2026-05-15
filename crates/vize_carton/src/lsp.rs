@@ -33,12 +33,7 @@ impl JsonRpcRequest {
     /// Serialize to LSP message format (with Content-Length header).
     pub fn to_lsp_message(&self) -> Result<String, serde_json::Error> {
         let content = serde_json::to_string(self)?;
-        #[allow(clippy::disallowed_macros)]
-        Ok(format!(
-            "Content-Length: {}\r\n\r\n{}",
-            content.len(),
-            content
-        ))
+        Ok(lsp_message_from_json(content))
     }
 }
 
@@ -64,13 +59,19 @@ impl JsonRpcNotification {
     /// Serialize to LSP message format (with Content-Length header).
     pub fn to_lsp_message(&self) -> Result<String, serde_json::Error> {
         let content = serde_json::to_string(self)?;
-        #[allow(clippy::disallowed_macros)]
-        Ok(format!(
-            "Content-Length: {}\r\n\r\n{}",
-            content.len(),
-            content
-        ))
+        Ok(lsp_message_from_json(content))
     }
+}
+
+fn lsp_message_from_json(content: String) -> String {
+    use std::fmt::Write as _;
+
+    let mut message = String::with_capacity("Content-Length: ".len() + 20 + 4 + content.len());
+    message.push_str("Content-Length: ");
+    write!(&mut message, "{}", content.len()).expect("writing to String cannot fail");
+    message.push_str("\r\n\r\n");
+    message.push_str(&content);
+    message
 }
 
 /// JSON-RPC response.

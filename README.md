@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./playground/public/og-image.png" alt="Vize" width="600" />
+  <img src="./assets/readme-screenshot.png" alt="Vize" width="600" />
 </p>
 
 <p align="center">
@@ -26,16 +26,19 @@
 ## What Ships Today
 
 - Rust workspace crates for parsing, semantic analysis, compilation, linting, formatting, type checking, LSP, Musea art tooling, and bindings
-- A full Rust CLI via the `vize` crate (`build`, `fmt`, `lint`, `check`, `musea`, `lsp`, `ide`)
+- A full Rust CLI via the `vize` crate (`build`, `fmt`, `lint`, `check`, `ready`, `upgrade`, `musea`, `lsp`, `ide`)
 - npm packages including `@vizejs/vite-plugin`, `@vizejs/native`, `@vizejs/wasm`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, and `oxlint-plugin-vize`
-- The `vize` npm package for shared config utilities and the native `lint` command
+- The `vize` npm package for shared config utilities and native `build`, `fmt`, `lint`, `check`, `ready`, and `upgrade` commands
+- Nuxt dev integration that preserves URL-encoded asset links while removing broken or unsafe stylesheet references from rendered HTML
 
 ## Quick Start
+
+Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://viteplus.dev/guide/install).
 
 ### Vite
 
 ```bash
-pnpm add -D vize @vizejs/vite-plugin
+vp install -D vize @vizejs/vite-plugin
 ```
 
 ```ts
@@ -67,12 +70,15 @@ export default defineConfig({
 
 ### npm CLI
 
-The npm `vize` package currently exposes the native lint command plus shared config helpers:
+The npm `vize` package exposes native CLI commands plus shared config helpers:
 
 ```bash
-pnpm add -D vize
-pnpm exec vize lint src
-pnpm exec vize lint --preset opinionated --help-level short src
+vp install -D vize
+vp exec vize fmt --write src
+vp exec vize lint src
+vp exec vize check
+vp exec vize build src
+vp exec vize ready src
 ```
 
 ### Full Rust CLI
@@ -88,6 +94,8 @@ vize build src/**/*.vue
 vize fmt --check src
 vize lint --profile src
 vize check --profile src
+vize ready src
+vize upgrade
 vize lsp
 ```
 
@@ -97,16 +105,113 @@ You can also run the current workspace build directly:
 nix run github:ubugeeei/vize#vize -- --help
 ```
 
+## Static Analysis
+
+Vize shares the same parser and semantic analysis layers across linting, type checking, editor
+diagnostics, compilation, and Musea metadata.
+
+```bash
+vp exec vize lint --preset happy-path src
+vp exec vize lint --preset essential --max-warnings 0 src
+vp exec vize check src
+```
+
+Use the Rust CLI for the fuller project-backed type-checking surface:
+
+```bash
+vize check --tsconfig tsconfig.app.json
+vize check --show-virtual-ts src/components/App.vue
+vize check --declaration --declaration-dir dist/types
+```
+
+`vize lint` runs Patina rules for Vue templates, scripts, CSS, a11y, SSR, Vapor, Musea, cross-file,
+and type-aware checks. Security-oriented Vue rules include `vue/no-unsafe-url`, which checks dynamic
+URL bindings and static URL attributes for executable schemes such as `javascript:`, `vbscript:`,
+and active `data:` payloads. Anchor accessibility checks share the same scheme normalization for
+static `href` values, so case changes or HTML-decoded control characters do not hide
+`javascript:` links. `vize check` generates virtual TypeScript for Vue SFCs and maps project
+diagnostics back to the original source files.
+
+Use `vize lint --profile src` when tuning rule cost. Type-aware lint profile rows include template
+query collection and Corsa probe phases so expensive cross-rule work can be spotted quickly. When
+template unsafe-binding and floating-Promise checks are both enabled, shared expression parsing keeps
+their query collection from doing duplicate OXC work.
+SSR browser-global diagnostics also avoid common literal-boundary false positives such as strings,
+regexes, comments, and direct `typeof window` guards.
+
+## Compiler Configuration
+
+The npm CLI and Vite plugin share `vize.config.*`:
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+  },
+});
+```
+
+Direct `vize()` options override shared config for Vite. See the docs for compiler options,
+project scanning, lint presets, type-checker settings, and Musea config.
+
 ## Oxlint Integration
 
 `oxlint-plugin-vize` lets Oxlint execute Vize Patina diagnostics through Oxlint's JS plugin system.
 
 ```bash
-pnpm add -D oxlint oxlint-plugin-vize
-pnpm exec oxlint-vize -c .oxlintrc.json -f stylish src
+vp install -D oxlint oxlint-plugin-vize
+vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
 This keeps Oxlint's core JS and TS rules active while adding Vue-aware diagnostics under the `vize/*` namespace.
+
+## Musea Component Gallery
+
+Musea uses `*.art.vue` files to describe component variants with Vue-native syntax, then serves a
+gallery through Vite.
+
+```bash
+vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
+```
+
+```ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
+import { musea } from "@vizejs/vite-plugin-musea";
+
+export default defineConfig({
+  plugins: [
+    vize(),
+    musea({
+      include: ["src/**/*.art.vue"],
+      basePath: "/__musea__",
+      previewCss: ["src/styles/main.css"],
+    }),
+  ],
+});
+```
+
+```bash
+vp dev
+vp exec musea-vrt --base-url http://localhost:5173 --ci --json
+```
+
+Use Musea for component documentation, prop palettes, design token views, accessibility audits,
+visual regression snapshots, generated variants, and Storybook-compatible output.
 
 ## Editor Integration
 
@@ -147,22 +252,25 @@ The same feature names can be committed in `vize.config.json` or `vize.config.pk
 
 ## Local Development
 
-The primary local setup is `Nix + pnpm + vp`.
+The primary local setup is `Nix + vp`.
 
 ```bash
 nix develop
-pnpm install --frozen-lockfile
+vp install --frozen-lockfile
+vp check
+vp fmt
+vp dev
 vp build
-vp run --workspace-root check
 ```
 
 Useful workspace tasks:
 
 ```bash
+vp check
+vp fmt
+vp dev
 vp build
-vp run --workspace-root check
 vp run --workspace-root check:fix
-vp run --workspace-root fmt
 vp run --workspace-root bench:all
 ```
 

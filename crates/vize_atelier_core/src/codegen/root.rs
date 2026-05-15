@@ -24,6 +24,16 @@ fn imported_directive_binding_name(name: &str) -> String {
     binding
 }
 
+fn is_self_component_reference(component: &str, component_name: &str) -> bool {
+    if component == component_name {
+        return true;
+    }
+
+    let camel = camelize(component);
+    let pascal = capitalize(&camel);
+    pascal == component_name
+}
+
 /// Generate preamble from a list of helpers.
 pub(super) fn generate_preamble_from_helpers(
     ctx: &CodegenContext,
@@ -106,7 +116,7 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
     // Resolve components (only those not in binding metadata)
     for component in root.components.iter() {
         // Skip components that are in binding metadata (from script setup imports)
-        if ctx.is_component_in_bindings(component) {
+        if ctx.resolve_component_binding_name(component).is_some() {
             continue;
         }
 
@@ -128,7 +138,16 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
         ctx.push(ctx.helper(RuntimeHelper::ResolveComponent));
         ctx.push("(\"");
         ctx.push(component);
-        ctx.push("\")");
+        ctx.push("\"");
+        if ctx
+            .options
+            .component_name
+            .as_deref()
+            .is_some_and(|name| is_self_component_reference(component, name))
+        {
+            ctx.push(", true");
+        }
+        ctx.push(")");
         ctx.newline();
         has_resolved_assets = true;
     }

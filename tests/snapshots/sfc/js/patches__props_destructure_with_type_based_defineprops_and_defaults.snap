@@ -2,24 +2,30 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, normalizeClass as _normalizeClass } from "vue"
-
-
-export default /*@__PURE__*/_defineComponent({
-  __name: 'test',
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, normalizeClass as _normalizeClass } from "vue";
+export default {
+  __name: "test",
   props: {
-    color: { type: String, required: false, default: "primary" },
-    size: { type: String, required: false, default: "medium" }
+    color: {
+      type: String,
+      required: false,
+      default: "primary"
+    },
+    size: {
+      type: String,
+      required: false,
+      default: "medium"
+    }
   },
-  setup(__props: any) {
-
-
-return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", {
-      class: _normalizeClass([__props.color, __props.size])
-    }, "Styled", 2 /* CLASS */))
-}
-}
-
-})
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock(
+        "div",
+        { class: _normalizeClass([__props.color, __props.size]) },
+        "Styled",
+        2
+        /* CLASS */
+      );
+    };
+  }
+};

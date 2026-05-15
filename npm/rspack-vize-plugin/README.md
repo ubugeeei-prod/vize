@@ -23,8 +23,10 @@ High-performance Rspack plugin for Vue SFC compilation powered by [Vize](https:/
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the packages:
+
 ```bash
-pnpm add -D @vizejs/rspack-plugin @rspack/core
+vp install -D @vizejs/rspack-plugin @rspack/core
 ```
 
 ## Usage

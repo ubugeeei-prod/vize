@@ -39,6 +39,7 @@ for (const tab of TABS) {
     test(`light`, async ({ page }) => {
       await page.goto(`/?tab=${tab}`);
       await waitForReady(page, tab);
+      // GitHub Actions on Linux is the canonical baseline for these snapshots.
       await expect(page).toHaveScreenshot(`${tab}-light.png`);
     });
 

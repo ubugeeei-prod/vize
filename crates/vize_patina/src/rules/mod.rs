@@ -8,5 +8,6 @@ pub mod opinionated;
 pub mod script;
 pub mod ssr;
 pub mod type_aware;
+pub(crate) mod url;
 pub mod vapor;
 pub mod vue;

@@ -16,8 +16,10 @@ Rspack intentionally uses the dedicated `@vizejs/rspack-plugin` path instead of 
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the package:
+
 ```bash
-npm install @vizejs/unplugin
+vp install @vizejs/unplugin
 ```
 
 ## Usage

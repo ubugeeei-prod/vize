@@ -7,30 +7,30 @@
     "dev": "vp dev --config vite.app.config.ts",
     "build": "vp build --config vite.app.config.ts",
     "preview": "vp preview --config vite.app.config.ts",
-    "test": "pnpm test:node && vp test run --config vite.test.config.ts",
+    "test": "pnpm test:node && pnpm test:browser",
     "test:node": "vp test run --config vite.node.config.ts",
-    "test:browser": "vp test --config vite.test.config.ts --browser.headless",
+    "test:browser": "CI=1 vp test run --config vite.test.config.ts",
     "test:vrt": "playwright test",
     "test:vrt:update": "playwright test --update-snapshots",
     "check": "ROOT=\"$(cd .. && pwd -P)\" && vp check src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && cargo run --quiet --manifest-path \"$ROOT/Cargo.toml\" -p vize -- lint --max-warnings 0",
     "check:fix": "vp check --fix src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts",
     "fmt": "vp fmt --write src",
-    "build:wasm": "ROOT=\"$(cd .. && pwd -P)\" && cargo build --manifest-path \"$ROOT/Cargo.toml\" --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown && wasm-bindgen \"$ROOT/target/wasm32-unknown-unknown/release/vize_vitrine.wasm\" --out-dir \"$ROOT/playground/src/wasm\" --target web"
+    "build:wasm": "vp run --workspace-root build:wasm-web"
   },
   "dependencies": {
-    "@mdi/js": "^7.4.47",
-    "monaco-editor": "^0.52.0",
-    "prettier": "^3.7.4",
-    "shiki": "^1.24.0",
-    "typescript": "^5.7.0",
-    "vue": "3.6.0-beta.1"
+    "@mdi/js": "catalog:content",
+    "monaco-editor": "catalog:content",
+    "prettier": "catalog:repo-tooling",
+    "shiki": "catalog:content",
+    "typescript": "catalog:typescript",
+    "vue": "catalog:vue-beta"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "catalog:testing",
     "@vizejs/vite-plugin": "workspace:*",
-    "@vue/test-utils": "^2.4.6",
-    "playwright": "^1.58.2",
-    "vite": "catalog:",
-    "vite-plus": "catalog:"
+    "@vue/test-utils": "catalog:vue-stable",
+    "playwright": "catalog:testing",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
   }
 }

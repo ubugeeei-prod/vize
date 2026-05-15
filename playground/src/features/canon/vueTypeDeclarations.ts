@@ -46,9 +46,10 @@ declare module 'vue' {
   export function watchEffect(effect: () => void, options?: WatchOptions): () => void;
 
   // Dependency Injection
-  export function provide<T>(key: string | symbol, value: T): void;
-  export function inject<T>(key: string | symbol): T | undefined;
-  export function inject<T>(key: string | symbol, defaultValue: T): T;
+  export type InjectionKey<T> = symbol & { readonly __vize_injection?: T };
+  export function provide<T>(key: InjectionKey<T> | string | symbol, value: T): void;
+  export function inject<T>(key: InjectionKey<T> | string | symbol): T | undefined;
+  export function inject<T>(key: InjectionKey<T> | string | symbol, defaultValue: T): T;
 
   // Misc
   export function nextTick(callback?: () => void): Promise<void>;
@@ -75,13 +76,27 @@ declare module 'vue' {
 }
 
 // Vue Compiler Macros (available in <script setup>)
+type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
+type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
+type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
+type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
+type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
+type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
+type __DefaultFactory<T> = (props: any) => T;
+type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
 declare function defineProps<T>(): Readonly<T>;
-declare function defineEmits<T>(): T;
+declare function defineProps<const T extends readonly string[]>(props: T): Readonly<{ [K in T[number]]?: any }>;
+declare function defineProps<const T extends Record<string, any>>(props: T): Readonly<__RuntimePropShape<T>>;
+declare function defineEmits<T>(): __EmitFn<T>;
+declare function defineEmits<const T extends readonly string[]>(events: T): (event: T[number], ...args: any[]) => void;
+declare function defineEmits<const T extends Record<string, any>>(events: T): __EmitFn<T>;
 declare function defineExpose<T>(exposed?: T): void;
 declare function defineOptions<T>(options: T): void;
 declare function defineSlots<T>(): T;
 declare function defineModel<T>(name?: string, options?: { required?: boolean; default?: T }): import('vue').Ref<T>;
-declare function withDefaults<T, D extends Partial<T>>(props: T, defaults: D): T & D;
+declare function withDefaults<T, D extends __WithDefaultsArgs<T>>(props: T, defaults: D): __WithDefaultsResult<T, D>;
 
 // Vue Global Instance Properties (available in templates)
 declare const $attrs: Record<string, unknown>;

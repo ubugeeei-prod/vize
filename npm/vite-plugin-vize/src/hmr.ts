@@ -1,4 +1,4 @@
-import type { CompiledModule } from "./types.js";
+import type { CompiledModule } from "./types.ts";
 
 /**
  * HMR update types for granular hot module replacement.

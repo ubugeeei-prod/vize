@@ -1,6 +1,6 @@
 //! Element transformation functions.
 
-use vize_carton::{is_builtin_directive, Box, String, Vec};
+use vize_carton::{capitalize, is_builtin_directive, is_native_tag, Box, String, Vec};
 
 use crate::ast::*;
 use crate::transforms::transform_expression::process_inline_handler;
@@ -16,6 +16,8 @@ pub fn transform_element<'a>(
     ctx: &mut TransformContext<'a>,
     el: &mut Box<'a, ElementNode<'a>>,
 ) -> Option<std::vec::Vec<ExitFn<'a>>> {
+    maybe_promote_element_to_component(ctx, el);
+
     // Process props and directives
     process_element_props(ctx, el);
 
@@ -54,6 +56,64 @@ pub fn transform_element<'a>(
     }
 
     None
+}
+
+fn maybe_promote_element_to_component(
+    ctx: &TransformContext<'_>,
+    el: &mut Box<'_, ElementNode<'_>>,
+) {
+    if el.tag_type != ElementType::Element {
+        return;
+    }
+
+    let looks_like_component = is_dynamic_component_tag(&el.tag)
+        || el.tag.chars().next().is_some_and(|c| c.is_uppercase())
+        || el.tag.contains('-');
+
+    if looks_like_component {
+        el.tag_type = ElementType::Component;
+        return;
+    }
+
+    let has_is = has_is_attribute(el);
+    if has_is {
+        el.tag_type = ElementType::Component;
+        return;
+    }
+
+    if is_native_tag(&el.tag) {
+        return;
+    }
+
+    if is_registered_component(ctx, &el.tag) {
+        el.tag_type = ElementType::Component;
+    }
+}
+
+fn has_is_attribute(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) => dir.name == "is",
+        PropNode::Attribute(attr) => attr.name == "is",
+    })
+}
+
+fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
+    if ctx.is_component_registered(tag) {
+        return true;
+    }
+
+    if tag.contains('-') || tag.contains('_') {
+        let camel = vize_carton::camelize(tag);
+        if ctx.is_component_registered(camel.as_str()) {
+            return true;
+        }
+
+        let pascal = capitalize(&camel);
+        return ctx.is_component_registered(pascal.as_str());
+    }
+
+    let pascal = capitalize(tag);
+    ctx.is_component_registered(pascal.as_str())
 }
 
 /// Process directive expressions with _ctx prefix
@@ -117,6 +177,15 @@ fn process_directive_expressions<'a>(
 
 /// Process element properties and directives
 fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, ElementNode<'a>>) {
+    if el.props.is_empty()
+        || !el
+            .props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Directive(_)))
+    {
+        return;
+    }
+
     let allocator = ctx.allocator;
     let is_component = el.tag_type == ElementType::Component;
 

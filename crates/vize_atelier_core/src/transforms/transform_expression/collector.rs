@@ -70,6 +70,24 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
         false
     }
 
+    fn is_value_access_binding(&self, name: &str) -> bool {
+        if self.local_scope.contains(name) {
+            return false;
+        }
+
+        if let Some(kind) = self.ctx.get_reactive_kind(name) {
+            return kind.needs_value_access();
+        }
+
+        if let Some(bindings) = &self.ctx.options.binding_metadata {
+            if let Some(binding_type) = bindings.bindings.get(name) {
+                return matches!(binding_type, crate::options::BindingType::SetupRef);
+            }
+        }
+
+        false
+    }
+
     /// Check if an identifier needs _unref() wrapping.
     ///
     /// This applies to let/var declarations and maybe-ref bindings.
@@ -79,19 +97,24 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
             return false;
         }
 
-        // If Croquis has ReactiveKind info, type is known -- no _unref() needed
-        if self.ctx.get_reactive_kind(name).is_some() {
-            return false;
+        // In inline mode, known refs are accessed with `.value`. In function
+        // mode, setup bindings live on `$setup` and must be unwrapped when
+        // read from templates.
+        if let Some(kind) = self.ctx.get_reactive_kind(name) {
+            return !self.ctx.options.inline && kind.needs_value_access();
         }
 
-        // Fallback: SetupLet/SetupMaybeRef have unknown type, need _unref()
+        // Fallback: SetupLet/SetupMaybeRef have unknown type, need _unref().
+        // SetupRef also needs _unref in function mode because `$setup.foo`
+        // refers to the raw ref/computed object.
         if let Some(bindings) = &self.ctx.options.binding_metadata {
             if let Some(binding_type) = bindings.bindings.get(name) {
-                return matches!(
-                    binding_type,
+                return match binding_type {
+                    crate::options::BindingType::SetupRef => !self.ctx.options.inline,
                     crate::options::BindingType::SetupLet
-                        | crate::options::BindingType::SetupMaybeRef
-                );
+                    | crate::options::BindingType::SetupMaybeRef => true,
+                    _ => false,
+                };
             }
         }
         false
@@ -290,7 +313,7 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
                     // Check if object is a simple identifier that is a ref
                     if let oxc_ast_types::Expression::Identifier(ident) = &static_expr.object {
                         let name = ident.name.as_str();
-                        if self.is_ref_binding(name) {
+                        if self.is_value_access_binding(name) {
                             // Skip adding .value - it's already accessed via .value
                             // But still add _ctx. prefix if needed
                             if let Some(prefix) = get_identifier_prefix(name, self.ctx) {

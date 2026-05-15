@@ -1,10 +1,17 @@
 import assert from "node:assert/strict";
 
 import {
+  DEFAULT_PRECOMPILE_BATCH_SIZE,
+  DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
+  chunkPrecompileFiles,
   diffPrecompileFiles,
+  getCompileOptionsForRequest,
   hasFileMetadataChanged,
+  normalizePrecompileBatchSize,
+  syncCollectedCssForFile,
   type PrecompileFileMetadata,
-} from "./state.js";
+} from "./state.ts";
+import type { CompiledModule } from "../types.ts";
 
 const previousMetadata = new Map<string, PrecompileFileMetadata>([
   ["/src/unchanged.vue", { mtimeMs: 10, size: 100 }],
@@ -41,5 +48,118 @@ const diff = diffPrecompileFiles(
 );
 assert.deepEqual(diff.changedFiles, ["/src/changed.vue", "/src/new.vue"]);
 assert.deepEqual(diff.deletedFiles, ["/src/removed.vue"]);
+
+assert.equal(
+  normalizePrecompileBatchSize(undefined),
+  DEFAULT_PRECOMPILE_BATCH_SIZE,
+  "Missing precompile batch size should use the memory-safe default",
+);
+assert.equal(
+  normalizePrecompileBatchSize(3.8),
+  3,
+  "Precompile batch size should be normalized to a whole-file count",
+);
+assert.equal(
+  normalizePrecompileBatchSize(0.5),
+  1,
+  "Fractional precompile batch sizes should still compile at least one file per batch",
+);
+assert.deepEqual(
+  chunkPrecompileFiles(["a.vue", "b.vue", "c.vue", "d.vue", "e.vue"], 2),
+  [["a.vue", "b.vue"], ["c.vue", "d.vue"], ["e.vue"]],
+  "Precompile chunking should cap the number of SFCs handed to native compilation",
+);
+assert.ok(
+  DEFAULT_PRECOMPILE_IGNORE_PATTERNS.includes(".nuxt/**"),
+  "Nuxt build artifacts should be ignored by default during pre-compilation",
+);
+
+assert.deepEqual(
+  getCompileOptionsForRequest(
+    {
+      isProduction: false,
+      mergedOptions: { vapor: true },
+    },
+    false,
+  ),
+  {
+    sourceMap: true,
+    ssr: false,
+    vapor: true,
+    customRenderer: false,
+  },
+  "Client requests should keep Vapor enabled when the plugin is configured for it",
+);
+
+assert.deepEqual(
+  getCompileOptionsForRequest(
+    {
+      isProduction: true,
+      mergedOptions: { vapor: true },
+    },
+    true,
+  ),
+  {
+    sourceMap: false,
+    ssr: true,
+    vapor: false,
+    customRenderer: false,
+  },
+  "SSR requests should continue to use the VDOM compiler while client builds hydrate with Vapor",
+);
+
+const cssState = {
+  isProduction: true,
+  collectedCss: new Map<string, string>(),
+  cssAliasRules: [],
+};
+
+const plainCssModule: CompiledModule = {
+  code: "export default {}",
+  css: ".card { color: tomato; }",
+  scopeId: "plaincss",
+  hasScoped: false,
+  macroArtifacts: [],
+  styles: [
+    {
+      content: ".card { color: tomato; }",
+      lang: "css",
+      scoped: false,
+      module: false,
+      index: 0,
+    },
+  ],
+};
+
+syncCollectedCssForFile(cssState, "/src/Card.vue", plainCssModule);
+assert.equal(
+  cssState.collectedCss.get("/src/Card.vue"),
+  ".card { color: tomato; }",
+  "Production CSS collection should retain plain CSS modules",
+);
+
+const delegatedCssModule: CompiledModule = {
+  code: "export default {}",
+  css: ".button { color: red; }",
+  scopeId: "delegatedcss",
+  hasScoped: false,
+  macroArtifacts: [],
+  styles: [
+    {
+      content: ".button { color: red; }",
+      lang: "css",
+      scoped: false,
+      module: "buttonStyles",
+      index: 0,
+    },
+  ],
+};
+
+syncCollectedCssForFile(cssState, "/src/Button.vue", delegatedCssModule);
+assert.equal(
+  cssState.collectedCss.has("/src/Button.vue"),
+  false,
+  "Delegated CSS modules should stay out of the extracted plain CSS bundle",
+);
 
 console.log("✅ vite-plugin-vize state tests passed!");

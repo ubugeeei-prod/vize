@@ -8,14 +8,19 @@ title: Oxlint Plugin
 Use it when you want Oxlint's Rust-native JS and TS rules together with Vize's Vue-aware
 diagnostics in one run.
 
+For the native lint and type-checking pipeline outside Oxlint, see
+[Static Analysis](./static-analysis.md).
+
 > [!IMPORTANT]
 > The package is available on npm, but the integration is still early. For human-readable terminal
 > output, prefer `oxlint-vize -f stylish` while original SFC range fidelity continues to improve.
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the packages:
+
 ```bash
-pnpm add -D oxlint oxlint-plugin-vize
+vp install -D oxlint oxlint-plugin-vize
 ```
 
 `oxlint-plugin-vize` resolves the matching Vize native binding through optional dependencies, so
@@ -72,7 +77,7 @@ Available preset exports include:
 ## Recommended Command
 
 ```bash
-pnpm exec oxlint-vize -c .oxlintrc.json -f stylish src
+vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
 `oxlint-vize` is a thin wrapper around `oxlint` that smooths over scriptless `.vue` edge cases
@@ -115,7 +120,7 @@ Settings are passed through `settings.vize`:
 
 ```bash
 nix develop
-pnpm install --frozen-lockfile
+vp install --frozen-lockfile
 vp run --filter './npm/vize-native' build
 vp run --filter './npm/oxlint-plugin-vize' build
 ```

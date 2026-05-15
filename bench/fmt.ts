@@ -3,7 +3,7 @@
  *
  * Usage:
  *   1. Build CLI: mise run build:cli
- *   2. Run benchmark: node --experimental-strip-types bench/fmt.ts
+ *   2. Run benchmark: node bench/fmt.ts
  *
  * Input files are regenerated before each format run to ensure
  * consistent (unformatted) input.
