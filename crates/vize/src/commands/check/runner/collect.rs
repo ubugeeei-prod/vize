@@ -5,8 +5,9 @@
 
 use std::path::{Path, PathBuf};
 
+use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
-use vize_carton::FxHashSet;
+use vize_carton::{FxHashSet, String};
 
 #[allow(clippy::disallowed_types)]
 pub(super) fn collect_check_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
@@ -30,7 +31,8 @@ pub(super) fn collect_check_files(patterns: &[std::string::String]) -> Vec<PathB
         }
 
         let base_dir = base_dir_from_pattern(pattern);
-        collect_from_dir(base_dir.as_path(), &mut files, &mut seen);
+        let matcher = InputGlob::new(pattern);
+        collect_from_dir_with_matcher(base_dir.as_path(), &mut files, &mut seen, matcher.as_ref());
     }
 
     files.sort();
@@ -58,13 +60,14 @@ pub(super) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf
                 continue;
             }
             if candidate.is_dir() {
-                collect_from_dir_filtered(&candidate, &mut files, &mut seen, true);
+                collect_from_dir_filtered(&candidate, &mut files, &mut seen, true, None);
                 continue;
             }
         }
 
         let base_dir = base_dir_from_pattern(pattern);
-        collect_from_dir_filtered(&base_dir, &mut files, &mut seen, true);
+        let matcher = InputGlob::new(pattern);
+        collect_from_dir_filtered(&base_dir, &mut files, &mut seen, true, matcher.as_ref());
     }
 
     files.sort();
@@ -72,7 +75,16 @@ pub(super) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf
 }
 
 fn collect_from_dir(dir: &Path, files: &mut Vec<PathBuf>, seen: &mut FxHashSet<PathBuf>) {
-    collect_from_dir_filtered(dir, files, seen, false);
+    collect_from_dir_with_matcher(dir, files, seen, None);
+}
+
+fn collect_from_dir_with_matcher(
+    dir: &Path,
+    files: &mut Vec<PathBuf>,
+    seen: &mut FxHashSet<PathBuf>,
+    matcher: Option<&InputGlob>,
+) {
+    collect_from_dir_filtered(dir, files, seen, false, matcher);
 }
 
 fn collect_from_dir_filtered(
@@ -80,6 +92,7 @@ fn collect_from_dir_filtered(
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
     vue_only: bool,
+    matcher: Option<&InputGlob>,
 ) {
     let skip_generated = should_skip_generated_for_root(dir);
     let walker = WalkBuilder::new(dir)
@@ -95,6 +108,7 @@ fn collect_from_dir_filtered(
                 let path = entry.path();
                 if path.is_file()
                     && is_supported_collect_file(path, vue_only)
+                    && matcher.is_none_or(|matcher| matcher.matches(path))
                     && (!skip_generated || !is_generated_path(path))
                 {
                     if let Ok(mut collected) = collected.lock() {
@@ -132,6 +146,55 @@ fn base_dir_from_pattern(pattern: &str) -> PathBuf {
     } else {
         PathBuf::from(base)
     }
+}
+
+struct InputGlob {
+    pattern: Pattern,
+    cwd: PathBuf,
+    absolute: bool,
+}
+
+impl InputGlob {
+    fn new(pattern: &str) -> Option<Self> {
+        let normalized = normalize_glob_pattern(pattern);
+        let absolute = Path::new(normalized.as_str()).is_absolute();
+        Pattern::new(normalized.as_str()).ok().map(|pattern| Self {
+            pattern,
+            cwd: std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+            absolute,
+        })
+    }
+
+    fn matches(&self, path: &Path) -> bool {
+        let candidate = if self.absolute {
+            let absolute = if path.is_absolute() {
+                path.to_path_buf()
+            } else {
+                self.cwd.join(path)
+            };
+            normalize_path(&absolute)
+        } else {
+            normalize_path(path)
+        };
+
+        self.pattern.matches_with(&candidate, glob_match_options())
+    }
+}
+
+fn normalize_glob_pattern(pattern: &str) -> String {
+    strip_leading_current_dir(&pattern.replace('\\', "/"))
+}
+
+fn normalize_path(path: &Path) -> String {
+    strip_leading_current_dir(&path.to_string_lossy().replace('\\', "/"))
+}
+
+fn strip_leading_current_dir(value: &str) -> String {
+    let mut normalized = value;
+    while let Some(stripped) = normalized.strip_prefix("./") {
+        normalized = stripped;
+    }
+    normalized.into()
 }
 
 fn normalize_input_path(path: &Path) -> PathBuf {
@@ -172,6 +235,14 @@ fn is_supported_check_file(path: &Path) -> bool {
     path.extension()
         .and_then(|extension| extension.to_str())
         .is_some_and(|extension| matches!(extension, "vue" | "ts" | "tsx" | "mts" | "cts"))
+}
+
+fn glob_match_options() -> MatchOptions {
+    MatchOptions {
+        case_sensitive: !cfg!(windows),
+        require_literal_separator: true,
+        require_literal_leading_dot: false,
+    }
 }
 
 #[cfg(test)]
@@ -221,6 +292,29 @@ mod tests {
     }
 
     #[test]
+    fn collect_check_files_filters_quoted_globs() {
+        let case_dir = unique_case_dir("collect-check-glob");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src/nested")).unwrap();
+        fs::write(case_dir.join("src/App.vue"), "").unwrap();
+        fs::write(case_dir.join("src/main.ts"), "").unwrap();
+        fs::write(case_dir.join("src/nested/View.vue"), "").unwrap();
+        fs::write(case_dir.join("src/nested/model.ts"), "").unwrap();
+
+        let files = collect_check_files(&vec![case_dir.join("src/**/*.vue").display().to_string()]);
+
+        assert_eq!(
+            files,
+            vec![
+                case_dir.join("src/App.vue"),
+                case_dir.join("src/nested/View.vue"),
+            ]
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
     fn collect_vue_files_stays_vue_only() {
         let case_dir = unique_case_dir("collect-vue");
         let _ = fs::remove_dir_all(&case_dir);
@@ -231,6 +325,31 @@ mod tests {
         let files = collect_vue_files(&vec![case_dir.display().to_string()]);
 
         assert_eq!(files, vec![case_dir.join("src/App.vue")]);
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn collect_vue_files_filters_quoted_globs() {
+        let case_dir = unique_case_dir("collect-vue-glob");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src/nested")).unwrap();
+        fs::write(case_dir.join("src/App.vue"), "").unwrap();
+        fs::write(case_dir.join("src/nested/View.vue"), "").unwrap();
+        fs::write(case_dir.join("src/nested/Skip.vue"), "").unwrap();
+
+        let files = collect_vue_files(&vec![case_dir
+            .join("src/nested/*.vue")
+            .display()
+            .to_string()]);
+
+        assert_eq!(
+            files,
+            vec![
+                case_dir.join("src/nested/Skip.vue"),
+                case_dir.join("src/nested/View.vue"),
+            ]
+        );
 
         let _ = fs::remove_dir_all(&case_dir);
     }
