@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 export interface CssAliasRule {
-  find: string;
+  find: string | RegExp;
   replacement: string;
 }
 
@@ -401,9 +401,8 @@ function resolveCssPath(
 ): string | null {
   // Try alias resolution
   for (const rule of aliasRules) {
-    const suffix = matchedAliasSuffix(importPath, rule.find);
-    if (suffix !== null) {
-      const resolved = path.join(rule.replacement, suffix);
+    const resolved = resolveAliasPath(importPath, rule);
+    if (resolved !== null) {
       return path.resolve(resolved);
     }
   }
@@ -420,6 +419,24 @@ function resolveCssPath(
   }
 
   return null;
+}
+
+function resolveAliasPath(importPath: string, rule: CssAliasRule): string | null {
+  if (typeof rule.find !== "string") {
+    const pattern = stableAliasPattern(rule.find);
+    return pattern.test(importPath) ? importPath.replace(pattern, rule.replacement) : null;
+  }
+
+  const suffix = matchedAliasSuffix(importPath, rule.find);
+  if (suffix !== null) {
+    return path.join(rule.replacement, suffix);
+  }
+
+  return null;
+}
+
+function stableAliasPattern(pattern: RegExp): RegExp {
+  return new RegExp(pattern.source, pattern.flags.replace(/[gy]/g, ""));
 }
 
 function matchedAliasSuffix(importPath: string, find: string): string | null {
