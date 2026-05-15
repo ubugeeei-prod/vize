@@ -142,9 +142,11 @@ test("vize package delegates rule type generation to the workspace MoonBit task"
   const vizePackage = JSON.parse(
     fs.readFileSync(path.join(root, "npm/vize/package.json"), "utf-8"),
   ) as {
+    engines?: Record<string, string>;
     scripts?: Record<string, string>;
   };
 
+  assert.equal(vizePackage.engines?.node, ">=22");
   assert.equal(
     vizePackage.scripts?.["generate:rule-types"],
     "vp run --workspace-root generate:rule-types",
