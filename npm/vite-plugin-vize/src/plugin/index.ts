@@ -18,7 +18,13 @@ import { createFilter } from "../utils/index.ts";
 import { toBrowserImportPrefix } from "../virtual.ts";
 import { shouldApplyDefineInVirtualModule, createLogger } from "../transform.ts";
 import { loadConfig, vizeConfigStore } from "../config.ts";
-import { type VizePluginState, compileAll } from "./state.ts";
+import {
+  DEFAULT_PRECOMPILE_BATCH_SIZE,
+  DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
+  type VizePluginState,
+  compileAll,
+  normalizePrecompileBatchSize,
+} from "./state.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { loadHook, transformHook } from "./load.ts";
 import { handleHotUpdateHook, handleGenerateBundleHook } from "./hmr.ts";
@@ -41,6 +47,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     server: null,
     filter: () => true,
     scanPatterns: null,
+    precompileBatchSize: DEFAULT_PRECOMPILE_BATCH_SIZE,
     ignorePatterns: [],
     mergedOptions: options,
     initialized: false,
@@ -180,6 +187,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         include: options.include ?? viteConfig.include,
         exclude: options.exclude ?? viteConfig.exclude,
         scanPatterns: options.scanPatterns ?? viteConfig.scanPatterns,
+        precompileBatchSize: options.precompileBatchSize ?? viteConfig.precompileBatchSize,
         ignorePatterns: options.ignorePatterns ?? viteConfig.ignorePatterns,
       };
 
@@ -212,10 +220,11 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
       state.filter = createFilter(state.mergedOptions.include, state.mergedOptions.exclude);
       state.scanPatterns = state.mergedOptions.scanPatterns ?? ["**/*.vue"];
+      state.precompileBatchSize = normalizePrecompileBatchSize(
+        state.mergedOptions.precompileBatchSize,
+      );
       state.ignorePatterns = state.mergedOptions.ignorePatterns ?? [
-        "node_modules/**",
-        "dist/**",
-        ".git/**",
+        ...DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
       ];
       patchUnoCssBridge(
         resolvedConfig.plugins as Array<{

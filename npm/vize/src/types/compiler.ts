@@ -107,8 +107,15 @@ export interface VitePluginConfig {
   scanPatterns?: string[];
 
   /**
+   * Maximum number of Vue files to compile in a single native batch during
+   * pre-compilation. Lower values reduce peak V8 heap usage in large apps.
+   * @default 128
+   */
+  precompileBatchSize?: number;
+
+  /**
    * Glob patterns to ignore during pre-compilation
-   * @default ['node_modules/**', 'dist/**', '.git/**']
+   * @default ['node_modules/**', 'dist/**', '.git/**', '.nuxt/**', '.output/**', '.nitro/**', 'coverage/**']
    */
   ignorePatterns?: string[];
 }

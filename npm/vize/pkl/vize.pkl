@@ -35,6 +35,7 @@ class VitePluginConfig {
   include: FilterPattern? = null
   exclude: FilterPattern? = null
   scanPatterns: Listing<String>? = null
+  precompileBatchSize: Int? = null
   ignorePatterns: Listing<String>? = null
 }
 

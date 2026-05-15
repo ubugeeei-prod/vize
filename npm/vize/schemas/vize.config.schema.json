@@ -118,6 +118,10 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "precompileBatchSize": {
+          "type": "integer",
+          "minimum": 1
+        },
         "ignorePatterns": {
           "type": "array",
           "items": { "type": "string" }

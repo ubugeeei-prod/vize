@@ -26,6 +26,7 @@ function createState(root: string): VizePluginState {
     server: {} as never,
     filter: () => true,
     scanPatterns: ["**/*.vue"],
+    precompileBatchSize: 128,
     ignorePatterns: [],
     mergedOptions: {},
     initialized: true,

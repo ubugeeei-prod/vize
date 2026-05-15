@@ -18,6 +18,7 @@ function createState(overrides: Partial<VizePluginState> = {}): VizePluginState 
     server: null,
     filter: () => true,
     scanPatterns: ["**/*.vue"],
+    precompileBatchSize: 128,
     ignorePatterns: [],
     mergedOptions: {},
     initialized: true,

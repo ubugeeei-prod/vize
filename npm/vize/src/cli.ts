@@ -7,6 +7,16 @@ import { loadConfig } from "./config.js";
 
 const require = createRequire(import.meta.url);
 const WORKSPACE_BINDING_PATH = "../../vize-native";
+const BUILD_BATCH_SIZE = 128;
+const SKIPPED_VUE_FILE_DIRECTORIES = new Set([
+  "node_modules",
+  "dist",
+  ".git",
+  ".nuxt",
+  ".output",
+  ".nitro",
+  "coverage",
+]);
 
 // ============================================================================
 // Native binding loader (oxlint pattern)
@@ -504,44 +514,56 @@ async function runBuild(args: string[]): Promise<void> {
     process.exit(1);
   }
 
-  const inputs = files.map((file) => ({
-    path: file,
-    source: readFileSync(file, "utf8"),
-  }));
   const native = loadNative("build");
   const startedAt = performance.now();
-  const result = native.compileSfcBatchWithResults(inputs, toNativeBuildOptions(options));
-  const timeMs = result.timeMs ?? result.time_ms ?? performance.now() - startedAt;
-  const results = [...result.results].sort((left, right) => left.path.localeCompare(right.path));
 
   if (options.format !== "stats") {
     mkdirSync(options.output, { recursive: true });
   }
 
-  for (const fileResult of results) {
-    const source = inputs.find((input) => input.path === fileResult.path)?.source ?? "";
-    for (const warning of fileResult.warnings) {
-      process.stderr.write(`warning: ${displayPath(fileResult.path)} ${warning}\n`);
-    }
-    for (const error of fileResult.errors) {
-      process.stderr.write(`error: ${displayPath(fileResult.path)} ${error}\n`);
+  let nativeTimeMs = 0;
+  let failed = 0;
+  let success = 0;
+
+  for (let start = 0; start < files.length; start += BUILD_BATCH_SIZE) {
+    const inputs = files.slice(start, start + BUILD_BATCH_SIZE).map((file) => ({
+      path: file,
+      source: readFileSync(file, "utf8"),
+    }));
+    const sourceByPath = new Map(inputs.map((input) => [input.path, input.source]));
+    const chunkStartedAt = performance.now();
+    const result = native.compileSfcBatchWithResults(inputs, toNativeBuildOptions(options));
+    nativeTimeMs += result.timeMs ?? result.time_ms ?? performance.now() - chunkStartedAt;
+    const results = [...result.results].sort((left, right) => left.path.localeCompare(right.path));
+
+    for (const fileResult of results) {
+      const source = sourceByPath.get(fileResult.path) ?? "";
+      for (const warning of fileResult.warnings) {
+        process.stderr.write(`warning: ${displayPath(fileResult.path)} ${warning}\n`);
+      }
+      for (const error of fileResult.errors) {
+        process.stderr.write(`error: ${displayPath(fileResult.path)} ${error}\n`);
+      }
+
+      if (fileResult.errors.length > 0 || options.format === "stats") {
+        continue;
+      }
+
+      const extension =
+        options.format === "json" ? "json" : getOutputExtension(source, options.scriptExt);
+      const outputPath = path.join(options.output, outputFileName(fileResult.path, extension));
+      const content =
+        options.format === "json" ? JSON.stringify(fileResult, null, 2) : fileResult.code;
+      writeFileSync(outputPath, content);
     }
 
-    if (fileResult.errors.length > 0 || options.format === "stats") {
-      continue;
-    }
-
-    const extension =
-      options.format === "json" ? "json" : getOutputExtension(source, options.scriptExt);
-    const outputPath = path.join(options.output, outputFileName(fileResult.path, extension));
-    const content =
-      options.format === "json" ? JSON.stringify(fileResult, null, 2) : fileResult.code;
-    writeFileSync(outputPath, content);
+    const chunkFailed =
+      result.failedCount ?? result.failed_count ?? results.filter((r) => r.errors.length).length;
+    failed += chunkFailed;
+    success += result.successCount ?? result.success_count ?? results.length - chunkFailed;
   }
 
-  const failed =
-    result.failedCount ?? result.failed_count ?? results.filter((r) => r.errors.length).length;
-  const success = result.successCount ?? result.success_count ?? results.length - failed;
+  const timeMs = nativeTimeMs || performance.now() - startedAt;
   process.stderr.write(
     `\x1b[32mOK\x1b[0m Built ${success} Vue file(s) in ${timeMs.toFixed(2)}ms\n`,
   );
@@ -920,7 +942,7 @@ function collectVueFilesFromDirectory(directory: string, recursive: boolean): st
   for (const entry of entries) {
     const entryPath = path.join(directory, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === "node_modules" || entry.name === ".git") {
+      if (SKIPPED_VUE_FILE_DIRECTORIES.has(entry.name)) {
         continue;
       }
       if (recursive) {

@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 
 import {
+  DEFAULT_PRECOMPILE_BATCH_SIZE,
+  DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
+  chunkPrecompileFiles,
   diffPrecompileFiles,
   getCompileOptionsForRequest,
   hasFileMetadataChanged,
+  normalizePrecompileBatchSize,
   syncCollectedCssForFile,
   type PrecompileFileMetadata,
 } from "./state.ts";
@@ -44,6 +48,31 @@ const diff = diffPrecompileFiles(
 );
 assert.deepEqual(diff.changedFiles, ["/src/changed.vue", "/src/new.vue"]);
 assert.deepEqual(diff.deletedFiles, ["/src/removed.vue"]);
+
+assert.equal(
+  normalizePrecompileBatchSize(undefined),
+  DEFAULT_PRECOMPILE_BATCH_SIZE,
+  "Missing precompile batch size should use the memory-safe default",
+);
+assert.equal(
+  normalizePrecompileBatchSize(3.8),
+  3,
+  "Precompile batch size should be normalized to a whole-file count",
+);
+assert.equal(
+  normalizePrecompileBatchSize(0.5),
+  1,
+  "Fractional precompile batch sizes should still compile at least one file per batch",
+);
+assert.deepEqual(
+  chunkPrecompileFiles(["a.vue", "b.vue", "c.vue", "d.vue", "e.vue"], 2),
+  [["a.vue", "b.vue"], ["c.vue", "d.vue"], ["e.vue"]],
+  "Precompile chunking should cap the number of SFCs handed to native compilation",
+);
+assert.ok(
+  DEFAULT_PRECOMPILE_IGNORE_PATTERNS.includes(".nuxt/**"),
+  "Nuxt build artifacts should be ignored by default during pre-compilation",
+);
 
 assert.deepEqual(
   getCompileOptionsForRequest(
