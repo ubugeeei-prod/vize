@@ -259,7 +259,7 @@ fn resolve_extended_tsconfig(tsconfig_path: &Path, extends: &str) -> Option<Path
         push_node_modules_tsconfig_candidates(&mut candidates, base_dir, extends);
     }
 
-    candidates.into_iter().find(|candidate| candidate.exists())
+    candidates.into_iter().find(|candidate| candidate.is_file())
 }
 
 fn push_node_modules_tsconfig_candidates(
@@ -269,9 +269,63 @@ fn push_node_modules_tsconfig_candidates(
 ) {
     let mut current = Some(base_dir);
     while let Some(dir) = current {
-        push_tsconfig_candidates(candidates, dir.join("node_modules").join(extends));
+        let node_modules = dir.join("node_modules");
+        if let Some((package, subpath)) = split_package_specifier(extends) {
+            let package_root = node_modules.join(package);
+            if let Some(subpath) = subpath {
+                push_tsconfig_candidates(candidates, package_root.join(subpath));
+            } else {
+                push_package_json_tsconfig_candidates(candidates, &package_root);
+                candidates.push(package_root.join("tsconfig.json"));
+            }
+        } else {
+            push_tsconfig_candidates(candidates, node_modules.join(extends));
+        }
         current = dir.parent();
     }
+}
+
+fn split_package_specifier(extends: &str) -> Option<(&str, Option<&str>)> {
+    let mut parts = extends.split('/');
+    let first = parts.next()?;
+    if first.is_empty() {
+        return None;
+    }
+
+    if first.starts_with('@') {
+        let name = parts.next()?;
+        if name.is_empty() {
+            return None;
+        }
+        let package_len = first.len() + 1 + name.len();
+        let subpath = extends
+            .get(package_len + 1..)
+            .filter(|value| !value.is_empty());
+        return Some((&extends[..package_len], subpath));
+    }
+
+    let subpath = extends
+        .get(first.len() + 1..)
+        .filter(|value| !value.is_empty());
+    Some((first, subpath))
+}
+
+fn push_package_json_tsconfig_candidates(candidates: &mut Vec<PathBuf>, package_root: &Path) {
+    let package_json_path = package_root.join("package.json");
+    let Some(tsconfig) = fs::read_to_string(package_json_path)
+        .ok()
+        .and_then(|content| parse_jsonc_value(&content).ok())
+        .and_then(|value| {
+            value
+                .get("tsconfig")
+                .and_then(Value::as_str)
+                .map(str::to_owned)
+        })
+    else {
+        return;
+    };
+
+    push_tsconfig_candidates(candidates, package_root.join(tsconfig));
 }
 
 fn push_tsconfig_candidates(candidates: &mut Vec<PathBuf>, base: PathBuf) {
@@ -644,6 +698,41 @@ mod tests {
         );
 
         assert_eq!(resolved, Some(package_dir.join("tsconfig.vue.json")));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn extended_config_resolution_uses_package_json_tsconfig_field() {
+        let case_dir = unique_case_dir("tsconfig-package-json-field");
+        let _ = fs::remove_dir_all(&case_dir);
+        let app_dir = case_dir.join("packages/app");
+        let package_dir = case_dir.join("node_modules/@scope/tsconfig");
+        fs::create_dir_all(app_dir.join("src")).unwrap();
+        fs::create_dir_all(package_dir.join("configs")).unwrap();
+        fs::write(app_dir.join("tsconfig.json"), "{}").unwrap();
+        fs::write(
+            package_dir.join("package.json"),
+            r#"{
+  "name": "@scope/tsconfig",
+  "tsconfig": "configs/vue.json"
+}"#,
+        )
+        .unwrap();
+        fs::write(
+            package_dir.join("configs/vue.json"),
+            r#"{
+  "compilerOptions": {
+    "strict": true
+  }
+}"#,
+        )
+        .unwrap();
+        fs::write(package_dir.join("tsconfig.json"), "{}").unwrap();
+
+        let resolved = resolve_extended_tsconfig(&app_dir.join("tsconfig.json"), "@scope/tsconfig");
+
+        assert_eq!(resolved, Some(package_dir.join("configs/vue.json")));
 
         let _ = fs::remove_dir_all(&case_dir);
     }
