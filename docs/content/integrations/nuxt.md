@@ -19,7 +19,7 @@ vp install @vizejs/nuxt
 ```
 
 If you want to use `pkl` config with pnpm, you might need to install the `vize` package itself.
-`@vizejs/nuxt` installs `vize` which serves `vize.pkl` with default config, but the location of `vize.pkl` may differ when using pnpm. 
+`@vizejs/nuxt` installs `vize` which serves `vize.pkl` with default config, but the location of `vize.pkl` may differ when using pnpm.
 
 ```bash
 vp install vize
