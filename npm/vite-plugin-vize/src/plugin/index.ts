@@ -33,6 +33,10 @@ import { patchUnoCssBridge } from "./unocss.ts";
 
 export type { VizePluginState } from "./state.ts";
 
+function aliasSortKey(find: string | RegExp): number {
+  return typeof find === "string" ? find.length : find.source.length;
+}
+
 export function vize(options: VizeOptions = {}): Plugin[] {
   const state: VizePluginState = {
     cache: new Map(),
@@ -207,7 +211,10 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       // Build CSS alias rules for @import resolution (use filesystem paths, not browser paths)
       state.cssAliasRules = [];
       for (const alias of resolvedConfig.resolve.alias) {
-        if (typeof alias.find !== "string" || typeof alias.replacement !== "string") {
+        if (
+          !(typeof alias.find === "string" || alias.find instanceof RegExp) ||
+          typeof alias.replacement !== "string"
+        ) {
           continue;
         }
         state.cssAliasRules.push({
@@ -216,7 +223,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         });
       }
       // Prefer longer alias keys first
-      state.cssAliasRules.sort((a, b) => b.find.length - a.find.length);
+      state.cssAliasRules.sort((a, b) => aliasSortKey(b.find) - aliasSortKey(a.find));
 
       state.filter = createFilter(state.mergedOptions.include, state.mergedOptions.exclude);
       state.scanPatterns = state.mergedOptions.scanPatterns ?? ["**/*.vue"];

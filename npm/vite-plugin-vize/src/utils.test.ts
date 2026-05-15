@@ -448,6 +448,26 @@ function resolveCssTransforms(css: string): string {
   );
 }
 
+// Test 22: CSS aliases should support RegExp find rules
+{
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-regexp-alias-"));
+  const assetPath = path.join(tempDir, "src", "assets", "logo.svg");
+  fs.mkdirSync(path.dirname(assetPath), { recursive: true });
+  fs.writeFileSync(assetPath, "");
+
+  const result = resolveCssImports(
+    `.logo { background-image: url("@app/assets/logo.svg"); }`,
+    path.join(tempDir, "Component.vue"),
+    [{ find: /^@app\/(.+)$/, replacement: path.join(tempDir, "src", "$1") }],
+    true,
+  );
+
+  assert.ok(
+    result.includes(`url("/@fs${assetPath.replace(/\\/g, "/")}")`),
+    "CSS alias should resolve RegExp find rules",
+  );
+}
+
 // =============================================================================
 // Test: applyDefineReplacements
 // =============================================================================
