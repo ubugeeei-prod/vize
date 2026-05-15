@@ -1,8 +1,9 @@
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_ast::ast::{
-    CallExpression, ChainElement, Expression, ObjectExpression, ObjectPropertyKind, PropertyKey,
-    Statement,
+    CallExpression, ChainElement, Expression, ExpressionStatement, ObjectExpression,
+    ObjectPropertyKind, PropertyKey, Statement,
 };
+use oxc_ast_visit::{walk::walk_expression_statement, Visit};
 use oxc_parser::Parser as OxcParser;
 use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::operator::UnaryOperator;
@@ -89,20 +90,30 @@ pub(super) fn collect_floating_candidates(source: &str) -> Vec<FloatingCandidate
         return Vec::new();
     }
 
-    let mut candidates = Vec::new();
-    for statement in parsed.program.body.iter() {
-        if let Statement::ExpressionStatement(expression_statement) = statement {
-            if is_explicitly_handled(&expression_statement.expression) {
-                continue;
+    let mut collector = FloatingCandidateCollector::default();
+    collector.visit_program(&parsed.program);
+    collector.candidates
+}
+
+#[derive(Default)]
+struct FloatingCandidateCollector {
+    candidates: Vec<FloatingCandidate>,
+}
+
+impl<'a> Visit<'a> for FloatingCandidateCollector {
+    fn visit_expression_statement(&mut self, statement: &ExpressionStatement<'a>) {
+        if !is_explicitly_handled(&statement.expression) {
+            let span = statement.expression.span();
+            if span.end > span.start {
+                self.candidates.push(FloatingCandidate {
+                    start: span.start,
+                    end: span.end,
+                });
             }
-            let span = expression_statement.expression.span();
-            candidates.push(FloatingCandidate {
-                start: span.start,
-                end: span.end,
-            });
         }
+
+        walk_expression_statement(self, statement);
     }
-    candidates
 }
 
 fn unwrap_object_expression<'a>(

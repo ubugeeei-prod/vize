@@ -80,6 +80,30 @@ loadData()
 }
 
 #[test]
+fn no_floating_promises_reports_control_flow_calls() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+async function loadData(): Promise<number> {
+  return 1
+}
+
+const enabled = true
+if (enabled) {
+  loadData()
+}
+</script>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_FLOATING_PROMISES));
+}
+
+#[test]
 fn no_floating_promises_reports_template_event_calls() {
     if !corsa_available() {
         return;
