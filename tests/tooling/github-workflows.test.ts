@@ -55,6 +55,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     ["coverage", 10],
     ["playground-test", 30],
     ["test-report", 5],
+    ["test-report-comment", 5],
   ] as const) {
     assert.match(
       workflowJobBody(checkWorkflow, jobName),
@@ -68,14 +69,15 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
 test("check workflow comments a detailed PR test report for each head push", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const reportJob = workflowJobBody(workflow, "test-report");
+  const commentJob = workflowJobBody(workflow, "test-report-comment");
 
   assert.match(
     reportJob,
     /if:\s*\$\{\{\s*always\(\) && github\.event_name == 'pull_request'\s*\}\}/,
   );
-  assert.match(reportJob, /actions:\s*read/);
-  assert.match(reportJob, /issues:\s*write/);
-  assert.match(reportJob, /pull-requests:\s*write/);
+  assert.match(reportJob, /contents:\s*read/);
+  assert.doesNotMatch(reportJob, /issues:\s*write/);
+  assert.doesNotMatch(reportJob, /pull-requests:\s*write/);
 
   for (const jobName of [
     "nix-flake",
@@ -90,19 +92,28 @@ test("check workflow comments a detailed PR test report for each head push", () 
 
   assert.match(
     reportJob,
-    /TEST_REPORT_COMMENT_KEY:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
-  );
-  assert.match(
-    reportJob,
-    /TEST_REPORT_HEAD_SHA:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
-  );
-  assert.match(
-    reportJob,
     /node bench\/test-inventory\.mjs --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
   );
   assert.match(reportJob, /name:\s*test-inventory/);
+
+  assert.match(commentJob, /needs:\n\s+- test-report\b/);
+  assert.match(commentJob, /actions:\s*read/);
+  assert.match(commentJob, /contents:\s*read/);
+  assert.match(commentJob, /issues:\s*write/);
+  assert.doesNotMatch(commentJob, /pull-requests:\s*write/);
+  assert.match(commentJob, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
+  assert.match(commentJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v4/);
+  assert.match(commentJob, /name:\s*test-inventory/);
   assert.match(
-    reportJob,
+    commentJob,
+    /TEST_REPORT_COMMENT_KEY:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+  );
+  assert.match(
+    commentJob,
+    /TEST_REPORT_HEAD_SHA:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+  );
+  assert.match(
+    commentJob,
     /node bench\/comment-test-report\.mjs --inventory test-inventory\.json --summary "\$GITHUB_STEP_SUMMARY"/,
   );
 });
