@@ -38,12 +38,37 @@ jobs:
           path: base
           ref: ${{ github.event.pull_request.base.sha }}
 
+      - name: Check base checkout
+        id: base-integrity
+        working-directory: base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- . ':(exclude)tests/_fixtures/_git/**'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "## PR Benchmark"
+              echo
+              echo "Skipped because the base checkout contains unresolved merge conflict markers."
+              echo
+              echo "- Base: \`$BASE_SHA\`"
+              echo "- Head: \`$HEAD_SHA\`"
+            } > "$GITHUB_WORKSPACE/benchmark-summary.md"
+            printf '{"skipped":true,"reason":"base_has_conflict_markers","base":"%s","head":"%s"}\n' "$BASE_SHA" "$HEAD_SHA" > "$GITHUB_WORKSPACE/benchmark-results.json"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: "benchmark"
           cache-workspace-crates: "true"
+          workspaces: |
+            head -> target
+            base -> target
 
       - uses: voidzero-dev/setup-vp@v1
         with:
@@ -57,31 +82,35 @@ jobs:
 
       - name: Cache base CLI
         id: cache-base-cli
+        if: steps.base-integrity.outputs.skip != 'true'
         uses: actions/cache@v5
         with:
           path: base/target/ci/vize
           key: ${{ runner.os }}-benchmark-base-cli-${{ github.event.pull_request.base.sha }}
 
       - name: Build base CLI
-        if: steps.cache-base-cli.outputs.cache-hit != 'true'
+        if: steps.base-integrity.outputs.skip != 'true' && steps.cache-base-cli.outputs.cache-hit != 'true'
         run: cargo build --manifest-path base/Cargo.toml --profile ci -p vize
 
       - name: Cache head CLI
         id: cache-head-cli
+        if: steps.base-integrity.outputs.skip != 'true'
         uses: actions/cache@v5
         with:
           path: head/target/ci/vize
           key: ${{ runner.os }}-benchmark-head-cli-${{ github.event.pull_request.head.sha }}
 
       - name: Build head CLI
-        if: steps.cache-head-cli.outputs.cache-hit != 'true'
+        if: steps.base-integrity.outputs.skip != 'true' && steps.cache-head-cli.outputs.cache-hit != 'true'
         run: cargo build --manifest-path head/Cargo.toml --profile ci -p vize
 
       - name: Generate benchmark input
+        if: steps.base-integrity.outputs.skip != 'true'
         working-directory: head
         run: node bench/generate.mjs "$VIZE_BENCH_FILE_COUNT"
 
       - name: Compare base and head
+        if: steps.base-integrity.outputs.skip != 'true'
         run: |
           node head/bench/compare-pr.mjs \
             --input "$GITHUB_WORKSPACE/head/bench/__in__" \
@@ -111,4 +140,4 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           BENCHMARK_COMMENT_KEY: ${{ github.event.pull_request.head.sha }}
-        run: node base/bench/comment-pr.mjs --body benchmark-summary.md --comment-key "$BENCHMARK_COMMENT_KEY"
+        run: node head/bench/comment-pr.mjs --body benchmark-summary.md --comment-key "$BENCHMARK_COMMENT_KEY"
