@@ -1,4 +1,5 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
+import fs from "node:fs";
 import type { IncomingMessage } from "node:http";
 import path from "node:path";
 
@@ -18,24 +19,66 @@ export function createDevSessionToken(): string {
   return randomBytes(32).toString("base64url");
 }
 
-export function isPathInside(parentDir: string, candidatePath: string): boolean {
+function realpathNearest(targetPath: string): string {
+  let current = path.resolve(targetPath);
+  const missingParts: string[] = [];
+
+  while (true) {
+    try {
+      const real = fs.realpathSync.native(current);
+      return missingParts.length > 0 ? path.join(real, ...missingParts.reverse()) : real;
+    } catch {
+      const parent = path.dirname(current);
+      if (parent === current) {
+        return path.resolve(targetPath);
+      }
+      missingParts.push(path.basename(current));
+      current = parent;
+    }
+  }
+}
+
+function isResolvedPathInside(parentDir: string, candidatePath: string): boolean {
   const parent = path.resolve(parentDir);
   const candidate = path.resolve(candidatePath);
   const relative = path.relative(parent, candidate);
   return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
 }
 
+export function isPathInside(parentDir: string, candidatePath: string): boolean {
+  return isResolvedPathInside(realpathNearest(parentDir), realpathNearest(candidatePath));
+}
+
+export function isPathInsideAny(parentDirs: string[], candidatePath: string): boolean {
+  const candidate = realpathNearest(candidatePath);
+  return parentDirs.some((parentDir) =>
+    isResolvedPathInside(realpathNearest(parentDir), candidate),
+  );
+}
+
 export function resolveInside(parentDir: string, candidatePath: string, label = "path"): string {
+  return resolveInsideAny([parentDir], candidatePath, label);
+}
+
+export function resolveInsideAny(
+  parentDirs: string[],
+  candidatePath: string,
+  label = "path",
+): string {
   if (candidatePath.includes("\0")) {
     throw new HttpError(`${label} contains an invalid character`, 400);
   }
 
-  const parent = path.resolve(parentDir);
+  if (parentDirs.length === 0) {
+    throw new HttpError(`No allowed directories configured for ${label}`, 500);
+  }
+
+  const parent = path.resolve(parentDirs[0] ?? ".");
   const resolved = path.isAbsolute(candidatePath)
     ? path.resolve(candidatePath)
     : path.resolve(parent, candidatePath);
 
-  if (!isPathInside(parent, resolved)) {
+  if (!isPathInsideAny(parentDirs, resolved)) {
     throw new HttpError(`${label} escapes the allowed directory`, 400);
   }
 
