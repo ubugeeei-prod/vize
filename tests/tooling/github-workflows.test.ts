@@ -62,7 +62,53 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     );
   }
 
-  assert.match(workflowJobBody(benchmarkWorkflow, "pr-benchmark"), /timeout-minutes:\s*30\b/);
+  for (const [jobName, minutes] of [
+    ["pr-benchmark", 30],
+    ["pr-benchmark-comment", 5],
+  ] as const) {
+    assert.match(
+      workflowJobBody(benchmarkWorkflow, jobName),
+      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
+    );
+  }
+});
+
+test("benchmark workflow comments from trusted code after a read-only benchmark run", () => {
+  const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
+  const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
+  const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
+
+  assert.match(benchmarkJob, /contents:\s*read/);
+  assert.doesNotMatch(benchmarkJob, /issues:\s*write/);
+  assert.doesNotMatch(benchmarkJob, /pull-requests:\s*write/);
+  assert.match(
+    benchmarkJob,
+    /path:\s*head[\s\S]*ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+  );
+  assert.match(
+    benchmarkJob,
+    /path:\s*base[\s\S]*ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/,
+  );
+  assert.match(benchmarkJob, /name:\s*pr-benchmark/);
+  assert.doesNotMatch(benchmarkJob, /node base\/bench\/comment-pr\.mjs/);
+  assert.doesNotMatch(benchmarkJob, /node bench\/comment-pr\.mjs/);
+
+  assert.match(commentJob, /needs:\n\s+- pr-benchmark\b/);
+  assert.match(commentJob, /actions:\s*read/);
+  assert.match(commentJob, /contents:\s*read/);
+  assert.match(commentJob, /issues:\s*write/);
+  assert.match(commentJob, /pull-requests:\s*write/);
+  assert.match(commentJob, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
+  assert.match(commentJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v4/);
+  assert.match(commentJob, /name:\s*pr-benchmark/);
+  assert.match(
+    commentJob,
+    /BENCHMARK_COMMENT_KEY:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+  );
+  assert.match(
+    commentJob,
+    /node bench\/comment-pr\.mjs --body benchmark-summary\.md --comment-key "\$BENCHMARK_COMMENT_KEY"/,
+  );
 });
 
 test("check workflow comments a detailed PR test report for each head push", () => {
