@@ -13,20 +13,23 @@ use super::{
         children::{generate_children, generate_children_force_array, is_directive_comment},
         context::CodegenContext,
         expression::generate_expression,
-        helpers::is_builtin_component,
+        helpers::{is_builtin_component, to_valid_asset_identifier},
         node::generate_node,
         patch_flag::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
         props::generate_props,
-        slots::{generate_slots, has_dynamic_slots_flag, has_slot_children},
+        slots::{
+            generate_slot_outlet_name, generate_slot_outlet_props_entries, generate_slots,
+            has_dynamic_slots_flag, has_slot_children, has_slot_outlet_props,
+        },
     },
     directives::{
         generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
     },
     helpers::{
         has_custom_directives, has_renderable_props, has_vmodel_directive, has_vshow_directive,
-        is_is_prop, is_renderable_prop, is_whitespace_or_comment,
+        is_dynamic_component_tag, is_is_prop, is_renderable_prop, is_whitespace_or_comment,
     },
     v_once::generate_v_once_element,
 };
@@ -62,7 +65,6 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
-        ctx.use_helper(RuntimeHelper::ResolveDirective);
         ctx.push(ctx.helper(RuntimeHelper::WithDirectives));
         ctx.push("(");
     }
@@ -90,25 +92,17 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.use_helper(RuntimeHelper::RenderSlot);
         ctx.push(helper);
         ctx.push("(_ctx.$slots, ");
-
-        // Get slot name from props
-        let slot_name = el
-            .props
-            .iter()
-            .find_map(|p| match p {
-                PropNode::Attribute(attr) if attr.name == "name" => {
-                    attr.value.as_ref().map(|v| v.content.as_str())
-                }
-                _ => None,
-            })
-            .unwrap_or("default");
-        ctx.push("\"");
-        ctx.push(slot_name);
-        ctx.push("\"");
+        generate_slot_outlet_name(ctx, el);
 
         // Generate fallback content if present
         if !el.children.is_empty() {
-            ctx.push(", {}, () => [");
+            if has_slot_outlet_props(el) {
+                ctx.push(", {");
+                generate_slot_outlet_props_entries(ctx, el);
+                ctx.push("}, () => [");
+            } else {
+                ctx.push(", {}, () => [");
+            }
             ctx.indent();
             let filtered: Vec<_> = el
                 .children
@@ -125,6 +119,10 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.deindent();
             ctx.newline();
             ctx.push("])");
+        } else if has_slot_outlet_props(el) {
+            ctx.push(", {");
+            generate_slot_outlet_props_entries(ctx, el);
+            ctx.push("})");
         } else {
             ctx.push(")");
         }
@@ -163,7 +161,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             let (patch_flag, dynamic_props) = calculate_element_patch_info(
                 el,
                 ctx.options.binding_metadata.as_ref(),
-                ctx.options.cache_handlers,
+                ctx.cache_handlers_in_current_scope(),
             );
             let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
 
@@ -257,7 +255,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.push("(");
 
             // Check for dynamic component (<component :is="..."> or <Component is="...">)
-            let is_dynamic_component = el.tag == "component";
+            let is_dynamic_component = is_dynamic_component_tag(&el.tag);
             let (dynamic_is, static_is) = if is_dynamic_component {
                 // Check for :is="..." (dynamic binding)
                 let dynamic = el.props.iter().find_map(|p| {
@@ -304,16 +302,15 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 // Check for built-in components (Teleport, KeepAlive, Suspense)
                 ctx.use_helper(builtin);
                 ctx.push(ctx.helper(builtin));
-            } else if ctx.is_component_in_bindings(&el.tag) {
+            } else if let Some(binding_name) = ctx.resolve_component_binding_name(&el.tag) {
                 // In inline mode, components are directly in scope (imported at module level)
                 // In function mode, use $setup.ComponentName to access setup bindings
                 if !ctx.options.inline {
                     ctx.push("$setup.");
                 }
-                ctx.push(&el.tag);
+                ctx.push(&binding_name);
             } else {
-                ctx.push("_component_");
-                ctx.push(&el.tag.replace('-', "_"));
+                ctx.push(&to_valid_asset_identifier("component", &el.tag));
             }
 
             // Calculate patch flag and dynamic props for component
@@ -322,13 +319,13 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 calculate_element_patch_info_skip_is(
                     el,
                     ctx.options.binding_metadata.as_ref(),
-                    ctx.options.cache_handlers,
+                    ctx.cache_handlers_in_current_scope(),
                 )
             } else {
                 calculate_element_patch_info(
                     el,
                     ctx.options.binding_metadata.as_ref(),
-                    ctx.options.cache_handlers,
+                    ctx.cache_handlers_in_current_scope(),
                 )
             };
 
@@ -399,7 +396,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                     if is_keep_alive {
                         if let TemplateChildNode::Element(child_el) = child {
                             if child_el.tag_type == ElementType::Component
-                                && child_el.tag == "component"
+                                && is_dynamic_component_tag(&child_el.tag)
                             {
                                 generate_element_block(ctx, child_el);
                                 continue;
@@ -461,25 +458,19 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.use_helper(RuntimeHelper::RenderSlot);
             ctx.push(helper);
             ctx.push("(_ctx.$slots, ");
-
-            // Get slot name from props
-            let slot_name = el
-                .props
-                .iter()
-                .find_map(|p| match p {
-                    PropNode::Attribute(attr) if attr.name == "name" => {
-                        attr.value.as_ref().map(|v| v.content.as_str())
-                    }
-                    _ => None,
-                })
-                .unwrap_or("default");
-            ctx.push("\"");
-            ctx.push(slot_name);
-            ctx.push("\"");
+            generate_slot_outlet_name(ctx, el);
+            let has_slot_props = has_slot_outlet_props(el);
 
             // Generate fallback content if present
             if !el.children.is_empty() {
-                ctx.push(", {}, () => [");
+                if !has_slot_props {
+                    ctx.push(", {}");
+                } else {
+                    ctx.push(", {");
+                    generate_slot_outlet_props_entries(ctx, el);
+                    ctx.push("}");
+                }
+                ctx.push(", () => [");
                 ctx.indent();
                 let filtered: Vec<_> = el
                     .children
@@ -496,6 +487,10 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.deindent();
                 ctx.newline();
                 ctx.push("])");
+            } else if has_slot_props {
+                ctx.push(", {");
+                generate_slot_outlet_props_entries(ctx, el);
+                ctx.push("})");
             } else {
                 ctx.push(")");
             }

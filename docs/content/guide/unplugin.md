@@ -17,14 +17,16 @@ Its loader chain, `experiments.css`, and HMR behavior need Rspack-specific handl
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the packages:
+
 ```bash
-npm install @vizejs/unplugin
+vp install @vizejs/unplugin
 ```
 
 For Rspack:
 
 ```bash
-npm install @vizejs/rspack-plugin @rspack/core
+vp install -D @vizejs/rspack-plugin @rspack/core
 ```
 
 ## rollup
@@ -69,7 +71,7 @@ Use the dedicated `@vizejs/rspack-plugin` package instead of `@vizejs/unplugin`:
 
 ```javascript
 // rspack.config.mjs
-import { VizePlugin, createVizeVueRules } from "@vizejs/rspack-plugin";
+import { VizePlugin } from "@vizejs/rspack-plugin";
 
 export default {
   experiments: {
@@ -77,7 +79,10 @@ export default {
   },
   module: {
     rules: [
-      ...createVizeVueRules(),
+      {
+        test: /\.vue$/,
+        loader: "@vizejs/rspack-plugin/loader",
+      },
     ],
   },
   plugins: [new VizePlugin()],

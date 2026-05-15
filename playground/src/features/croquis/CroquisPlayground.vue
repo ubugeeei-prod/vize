@@ -46,10 +46,10 @@ const {
         </div>
         <div class="panel-actions">
           <label class="toggle-label">
-            <input type="checkbox" v-model="showScopeVisualization" />
+            <input v-model="showScopeVisualization" type="checkbox" />
             <span>Visualize Scopes</span>
           </label>
-          <button @click="source = ANALYSIS_PRESET" class="btn-ghost">Reset</button>
+          <button class="btn-ghost" @click="source = ANALYSIS_PRESET">Reset</button>
         </div>
       </div>
       <div class="editor-container">
@@ -181,7 +181,7 @@ const {
               </div>
             </div>
 
-            <div class="section" v-if="css">
+            <div v-if="css" class="section">
               <h3 class="section-title">CSS Analysis</h3>
               <div class="css-info">
                 <span class="css-stat">{{ css.selector_count }} selectors</span>
@@ -192,7 +192,7 @@ const {
               </div>
             </div>
 
-            <div class="section" v-if="typeExports.length > 0">
+            <div v-if="typeExports.length > 0" class="section">
               <h3 class="section-title">Type Exports <span class="badge hoisted">hoisted</span></h3>
               <div class="export-list">
                 <div
@@ -207,7 +207,7 @@ const {
               </div>
             </div>
 
-            <div class="section" v-if="invalidExports.length > 0">
+            <div v-if="invalidExports.length > 0" class="section">
               <h3 class="section-title">Invalid Exports <span class="badge error">error</span></h3>
               <div class="export-list">
                 <div

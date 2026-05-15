@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref } from "vue";
 
-const count = ref(42)
-const items = ref([1, 2, 3])
+const count = ref(42);
+const items = ref([1, 2, 3]);
 </script>
 
 <template>

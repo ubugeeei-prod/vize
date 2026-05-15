@@ -322,7 +322,7 @@ mod tests {
         let mut result = MuseaLintResult::default();
         rule.check(source, &mut result);
         assert_eq!(result.warning_count, 1, "Should detect hardcoded color");
-        assert!(result.diagnostics[0].message.contains("color.primary"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

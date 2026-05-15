@@ -1,9 +1,9 @@
 <script setup lang="ts">
 defineProps<{
-  variant?: 'default' | 'primary' | 'secondary'
-  size?: 'sm' | 'md' | 'lg'
-  disabled?: boolean
-}>()
+  variant?: "default" | "primary" | "secondary";
+  size?: "sm" | "md" | "lg";
+  disabled?: boolean;
+}>();
 </script>
 
 <template>
@@ -22,7 +22,7 @@ defineProps<{
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   transition: all 0.15s ease;
 }
 

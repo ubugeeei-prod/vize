@@ -1,10 +1,10 @@
 <script setup lang="ts">
 defineProps<{
-  title: string
-  description?: string
-  image?: string
-  variant?: 'default' | 'outlined' | 'elevated'
-}>()
+  title: string;
+  description?: string;
+  image?: string;
+  variant?: "default" | "outlined" | "elevated";
+}>();
 </script>
 
 <template>
@@ -28,9 +28,11 @@ defineProps<{
 .card {
   border-radius: 8px;
   overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
   max-width: 320px;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .card:hover {

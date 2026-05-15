@@ -42,17 +42,14 @@ describe(`${app.name} lint (linter)`, () => {
       if (e.status === 1 && e.stdout) {
         stdout = e.stdout.toString();
       } else {
-        throw new Error(
-          `vize lint crashed (exit code ${e.status}): ${e.stderr?.toString()}`,
-        );
+        throw new Error(`vize lint crashed (exit code ${e.status}): ${e.stderr?.toString()}`);
       }
     }
 
     // Re-parse and pretty-print for stable snapshot
-    const parsed = JSON.parse(stdout);
+    const parsed = JSON.parse(stdout) as LintFileResult[];
     assert.ok(Array.isArray(parsed) && parsed.length > 0, "lint should produce results");
-    const prettyOutput = JSON.stringify(parsed, null, 2)
-      .replaceAll(lintConfig.cwd, "<cwd>") + "\n";
+    const prettyOutput = JSON.stringify(parsed, null, 2).replaceAll(lintConfig.cwd, "<cwd>") + "\n";
 
     console.log(`fileCount=${parsed.length}`);
     assertSnapshot(SNAPSHOT_DIR, `${app.name}-lint`, prettyOutput);

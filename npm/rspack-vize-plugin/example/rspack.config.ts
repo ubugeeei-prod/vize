@@ -1,6 +1,6 @@
 import { defineConfig } from "@rspack/cli";
 import { rspack } from "@rspack/core";
-import { VizePlugin, createVizeVueRules } from "@vizejs/rspack-plugin";
+import { VizePlugin } from "@vizejs/rspack-plugin";
 
 const isDev = process.env.NODE_ENV === "development";
 const isProduction = !isDev;
@@ -23,12 +23,11 @@ export default defineConfig({
   },
   module: {
     rules: [
-      // Vue SFC rules (loader + style handling + TS stripping)
-      ...createVizeVueRules({
-        isProduction,
-        nativeCss: true,
-        typescript: true,
-      }),
+      // Vue SFC rule — VizePlugin auto-clones CSS rules for style sub-requests
+      {
+        test: /\.vue$/,
+        loader: "@vizejs/rspack-plugin/loader",
+      },
       // TypeScript / JavaScript via SWC
       {
         test: /\.ts$/,
@@ -46,7 +45,10 @@ export default defineConfig({
     ],
   },
   plugins: [
-    new VizePlugin(),
+    new VizePlugin({
+      isProduction,
+      css: { native: true },
+    }),
     new rspack.HtmlRspackPlugin({
       template: "./index.html",
     }),

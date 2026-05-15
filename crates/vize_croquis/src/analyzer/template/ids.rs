@@ -6,7 +6,7 @@
 //! - Expression undefined-reference checking
 
 use crate::analysis::{ElementIdInfo, ElementIdKind, UndefinedRef};
-use vize_carton::CompactString;
+use vize_carton::{profile, CompactString};
 use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
 
 use super::super::helpers::{extract_identifiers_oxc, is_keyword};
@@ -178,7 +178,10 @@ impl Analyzer {
             ExpressionNode::Compound(c) => c.loc.source.as_str(),
         };
 
-        for ident in extract_identifiers_oxc(content) {
+        for ident in profile!(
+            "croquis.template.expression.extract_identifiers",
+            extract_identifiers_oxc(content)
+        ) {
             let ident_str = ident.as_str();
 
             let in_scope_vars = scope_vars.iter().any(|v| v.as_str() == ident_str);

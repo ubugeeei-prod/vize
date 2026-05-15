@@ -12,8 +12,10 @@ The WASM bindings are compiled from the same Rust codebase as the CLI and NAPI b
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the package:
+
 ```bash
-npm install @vizejs/wasm
+vp install @vizejs/wasm
 ```
 
 ## API
@@ -23,7 +25,7 @@ npm install @vizejs/wasm
 Compile a Vue Single File Component into JavaScript:
 
 ```javascript
-import init, { compileSfc } from '@vizejs/wasm';
+import init, { compileSfc } from "@vizejs/wasm";
 
 await init();
 
@@ -35,7 +37,7 @@ const result = compileSfc(
   <script setup lang="ts">
   const msg = ref('Hello Vize!')
   </script>`,
-  { filename: 'App.vue' }
+  { filename: "App.vue" },
 );
 
 console.log(result.code);
@@ -48,13 +50,13 @@ console.log(result.code);
 Run Vue-specific lint rules on an SFC:
 
 ```javascript
-import init, { lintSfc } from '@vizejs/wasm';
+import init, { lintSfc } from "@vizejs/wasm";
 
 await init();
 
 const diagnostics = lintSfc(source, {
-  filename: 'App.vue',
-  locale: 'en', // 'en' | 'ja' | 'zh'
+  filename: "App.vue",
+  locale: "en", // 'en' | 'ja' | 'zh'
 });
 
 for (const d of diagnostics) {
@@ -67,12 +69,12 @@ for (const d of diagnostics) {
 Format a Vue SFC:
 
 ```javascript
-import init, { formatSfc } from '@vizejs/wasm';
+import init, { formatSfc } from "@vizejs/wasm";
 
 await init();
 
 const formatted = formatSfc(source, {
-  filename: 'App.vue',
+  filename: "App.vue",
 });
 
 console.log(formatted);
@@ -83,13 +85,13 @@ console.log(formatted);
 The `init()` function must be called once before using any other API. It loads and instantiates the WebAssembly module:
 
 ```javascript
-import init from '@vizejs/wasm';
+import init from "@vizejs/wasm";
 
 // Basic initialization
 await init();
 
 // With custom WASM URL (useful for CDN or bundler setups)
-await init('https://cdn.example.com/vize_vitrine_bg.wasm');
+await init("https://cdn.example.com/vize_vitrine_bg.wasm");
 ```
 
 ## Use Cases
@@ -102,7 +104,7 @@ Build interactive Vue compilation playgrounds that run entirely in the browser. 
 // React to editor changes and compile in real-time
 editor.onChange((source) => {
   const { code, errors } = compileSfc(source, {
-    filename: 'Playground.vue',
+    filename: "Playground.vue",
   });
 
   if (errors.length === 0) {
@@ -119,7 +121,7 @@ Embed live, editable Vue examples in your documentation:
 
 ```javascript
 // Compile documentation examples on the fly
-const examples = document.querySelectorAll('[data-vue-example]');
+const examples = document.querySelectorAll("[data-vue-example]");
 for (const el of examples) {
   const { code } = compileSfc(el.textContent, {
     filename: `example-${el.id}.vue`,
@@ -159,18 +161,18 @@ wasm-bindgen \
 
 All WASM APIs that produce diagnostics (lint, compile errors) support localized messages:
 
-| Code | Language |
-|------|----------|
+| Code | Language          |
+| ---- | ----------------- |
 | `en` | English (default) |
 | `ja` | Japanese (日本語) |
-| `zh` | Chinese (中文) |
+| `zh` | Chinese (中文)    |
 
 Pass the `locale` option to any API that produces diagnostics:
 
 ```javascript
 const diagnostics = lintSfc(source, {
-  filename: 'App.vue',
-  locale: 'ja', // Lint messages in Japanese
+  filename: "App.vue",
+  locale: "ja", // Lint messages in Japanese
 });
 ```
 
@@ -182,7 +184,7 @@ For production use, consider lazy-loading the WASM module:
 
 ```javascript
 // Lazy-load the compiler only when needed
-const compiler = await import('@vizejs/wasm');
+const compiler = await import("@vizejs/wasm");
 await compiler.default(); // init()
 const { code } = compiler.compileSfc(source, opts);
 ```

@@ -6,7 +6,7 @@ import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
-const _hoisted_1 = { title: "Hello &quot;World&quot;" }
+const _hoisted_1 = { title: "Hello \"World\"" }
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',

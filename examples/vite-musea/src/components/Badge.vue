@@ -1,15 +1,12 @@
 <script setup lang="ts">
 defineProps<{
-  variant?: 'default' | 'success' | 'warning' | 'error' | 'info'
-  size?: 'sm' | 'md' | 'lg'
-}>()
+  variant?: "default" | "success" | "warning" | "error" | "info";
+  size?: "sm" | "md" | "lg";
+}>();
 </script>
 
 <template>
-  <span
-    class="badge"
-    :class="[`badge--${variant ?? 'default'}`, `badge--${size ?? 'md'}`]"
-  >
+  <span class="badge" :class="[`badge--${variant ?? 'default'}`, `badge--${size ?? 'md'}`]">
     <slot />
   </span>
 </template>

@@ -13,6 +13,8 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
 
+use super::helpers::get_static_or_bound_literal_attribute_value;
+
 static META: RuleMeta = RuleMeta {
     name: "a11y/form-control-has-label",
     description: "Require form controls to have associated labels",
@@ -37,19 +39,14 @@ impl FormControlHasLabel {
             return false;
         }
 
-        for prop in &element.props {
-            if let PropNode::Attribute(attr) = prop {
-                if attr.name == "type" {
-                    if let Some(value) = &attr.value {
-                        return matches!(
-                            value.content.as_ref(),
-                            "hidden" | "submit" | "reset" | "button" | "image"
-                        );
-                    }
-                }
-            }
-        }
-        false
+        let Some(input_type) = get_static_or_bound_literal_attribute_value(element, "type") else {
+            return false;
+        };
+
+        matches!(
+            input_type,
+            "hidden" | "submit" | "reset" | "button" | "image"
+        )
     }
 
     /// Check if element has aria-label or aria-labelledby
@@ -213,6 +210,14 @@ mod tests {
     fn test_valid_hidden_input() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input type="hidden" value="token" />"#, "test.vue");
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_bound_literal_hidden_input() {
+        let linter = create_linter();
+        let result =
+            linter.lint_template(r#"<input :type="'hidden'" value="token" />"#, "test.vue");
         assert_eq!(result.warning_count, 0);
     }
 

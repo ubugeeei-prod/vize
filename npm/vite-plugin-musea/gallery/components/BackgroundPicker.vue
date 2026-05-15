@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useAddons, BG_PRESETS } from '../composables/useAddons'
+import { ref } from "vue";
+import { useAddons, BG_PRESETS } from "../composables/useAddons";
 
-const { background, setBackground, setCustomBackground } = useAddons()
-const customColor = ref('#ffffff')
+const { background, setBackground, setCustomBackground } = useAddons();
+const customColor = ref("#ffffff");
 
 function onCustomColorInput(event: Event) {
-  const value = (event.target as HTMLInputElement).value
-  customColor.value = value
-  setCustomBackground(value)
+  const value = (event.target as HTMLInputElement).value;
+  customColor.value = value;
+  setCustomBackground(value);
 }
 </script>
 
@@ -26,7 +26,7 @@ function onCustomColorInput(event: Event) {
       >
         <span
           class="bg-preset-swatch"
-          :class="{ 'checkerboard': preset.pattern === 'checkerboard' }"
+          :class="{ checkerboard: preset.pattern === 'checkerboard' }"
           :style="preset.color !== 'transparent' ? { background: preset.color } : {}"
         />
         <span class="bg-preset-label">{{ preset.name }}</span>
@@ -39,7 +39,7 @@ function onCustomColorInput(event: Event) {
         class="bg-color-input"
         title="Custom color"
         @input="onCustomColorInput"
-      >
+      />
     </div>
   </div>
 </template>
@@ -96,7 +96,11 @@ function onCustomColorInput(event: Event) {
     linear-gradient(45deg, transparent 75%, #ccc 75%),
     linear-gradient(-45deg, transparent 75%, #ccc 75%);
   background-size: 8px 8px;
-  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+  background-position:
+    0 0,
+    0 4px,
+    4px -4px,
+    -4px 0;
 }
 
 .bg-preset-label {

@@ -45,6 +45,11 @@ pub struct ParserOptions {
     pub is_native_tag: Option<fn(&str) -> bool>,
     /// Whether is a custom element
     pub is_custom_element: Option<fn(&str) -> bool>,
+    /// Whether the template targets a custom renderer instead of the DOM.
+    ///
+    /// When enabled, lowercase non-HTML tags default to renderer-native
+    /// elements instead of Vue component resolution.
+    pub custom_renderer: bool,
     /// Whether is a void tag
     pub is_void_tag: fn(&str) -> bool,
     /// Get the namespace for a tag
@@ -66,6 +71,7 @@ impl Default for ParserOptions {
             is_pre_tag: |_| false,
             is_native_tag: None,
             is_custom_element: None,
+            custom_renderer: false,
             is_void_tag: vize_carton::is_void_tag,
             get_namespace: |_, _| crate::Namespace::Html,
             on_error: None,
@@ -110,6 +116,8 @@ pub struct TransformOptions {
     pub is_ts: bool,
     /// Whether in Vapor mode (skip v-model expansion)
     pub vapor: bool,
+    /// Whether the template targets a custom renderer instead of the DOM.
+    pub custom_renderer: bool,
 }
 
 impl Default for TransformOptions {
@@ -126,6 +134,7 @@ impl Default for TransformOptions {
             inline: false,
             is_ts: false,
             vapor: false,
+            custom_renderer: false,
         }
     }
 }
@@ -234,6 +243,8 @@ pub struct CodegenOptions {
     pub source_map: bool,
     /// Filename for source map
     pub filename: String,
+    /// Current SFC component name for self-reference resolution
+    pub component_name: Option<String>,
     /// Scope ID for scoped CSS
     pub scope_id: Option<String>,
     /// Whether in SSR mode
@@ -261,6 +272,7 @@ impl Default for CodegenOptions {
             prefix_identifiers: false,
             source_map: false,
             filename: String::from("template.vue"),
+            component_name: None,
             scope_id: None,
             ssr: false,
             optimize_imports: false,

@@ -6,8 +6,9 @@
 use oxc_ast::ast::{Argument, AssignmentTarget, CallExpression, ObjectPropertyKind, Statement};
 
 use super::{
-    detect_provide_inject_call, extract_function_params, is_client_only_hook, walk_statement,
-    ClientOnlyScopeData, ClosureScopeData, CompactString, Expression, ScriptParseResult,
+    detect_call_argument_reactivity_loss, detect_provide_inject_call, detect_race_condition_call,
+    extract_function_params, is_client_only_hook, walk_statement, ClientOnlyScopeData,
+    ClosureScopeData, CompactString, Expression, ScriptParseResult,
 };
 
 /// Walk an expression to find nested scopes (arrow functions, callbacks, etc.)
@@ -209,6 +210,12 @@ pub(in crate::script_parser) fn walk_expression(
                     result
                         .reactivity
                         .record_reassign(var_name, id.span.start, assign.span.end);
+                } else {
+                    super::super::extract::check_reactive_plain_assignment_alias(
+                        result,
+                        id.name.as_str(),
+                        &assign.right,
+                    );
                 }
             }
             walk_expression(result, &assign.right, source);
@@ -242,6 +249,8 @@ pub(in crate::script_parser) fn walk_call_arguments(
 
     // Check for provide/inject calls
     detect_provide_inject_call(result, call, source);
+    detect_race_condition_call(result, call, source);
+    detect_call_argument_reactivity_loss(result, call, source);
 
     // Check if this is a client-only lifecycle hook
     let is_lifecycle_hook = if let Expression::Identifier(id) = &call.callee {

@@ -1,0 +1,5 @@
+---
+source: crates/vize_patina/src/diagnostic/mod.rs
+expression: result.as_str()
+---
+Use [36mv-model[39m directive

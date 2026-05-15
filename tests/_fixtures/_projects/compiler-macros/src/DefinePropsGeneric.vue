@@ -1,9 +1,9 @@
 <script setup lang="ts" generic="T extends string | number">
 const props = defineProps<{
-  items: T[]
-  selected: T
-}>()
-console.log(props.items, props.selected)
+  items: T[];
+  selected: T;
+}>();
+console.log(props.items, props.selected);
 </script>
 
 <template>

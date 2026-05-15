@@ -6,7 +6,7 @@
 use crate::analyzer::Analyzer;
 use crate::scope::VForScopeData;
 use crate::ScopeBinding;
-use vize_carton::{CompactString, SmallVec, String};
+use vize_carton::{profile, CompactString, SmallVec, String};
 use vize_relief::ast::{ExpressionNode, ForNode, IfNode, PropNode};
 use vize_relief::BindingType;
 
@@ -55,14 +55,20 @@ impl Analyzer {
         for branch in if_node.branches.iter() {
             if self.options.detect_undefined && self.script_analyzed {
                 if let Some(ref cond) = branch.condition {
-                    self.check_expression_refs(cond, scope_vars, branch.loc.start.offset);
+                    profile!(
+                        "croquis.template.v_if.condition_refs",
+                        self.check_expression_refs(cond, scope_vars, branch.loc.start.offset)
+                    );
                 }
             }
 
             if self.options.detect_undefined && self.script_analyzed {
                 if let Some(PropNode::Directive(dir)) = &branch.user_key {
                     if let Some(ref exp) = dir.exp {
-                        self.check_expression_refs(exp, scope_vars, dir.loc.start.offset);
+                        profile!(
+                            "croquis.template.v_if.key_refs",
+                            self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                        );
                     }
                 }
             }
@@ -81,9 +87,11 @@ impl Analyzer {
                 false
             };
 
-            for child in branch.children.iter() {
-                self.visit_template_child(child, scope_vars);
-            }
+            profile!("croquis.template.v_if.children", {
+                for child in branch.children.iter() {
+                    self.visit_template_child(child, scope_vars);
+                }
+            });
 
             // Pop v-if guard
             if guard_pushed {
@@ -102,7 +110,10 @@ impl Analyzer {
         for_node: &ForNode<'_>,
         scope_vars: &mut Vec<CompactString>,
     ) {
-        let vars_added = self.extract_for_vars(for_node);
+        let vars_added = profile!(
+            "croquis.template.v_for.extract_vars",
+            self.extract_for_vars(for_node)
+        );
         let vars_count = vars_added.len();
 
         if self.options.analyze_template_scopes && !vars_added.is_empty() {
@@ -139,12 +150,17 @@ impl Analyzer {
         }
 
         if self.options.detect_undefined && self.script_analyzed {
-            self.check_expression_refs(&for_node.source, scope_vars, for_node.loc.start.offset);
+            profile!(
+                "croquis.template.v_for.source_refs",
+                self.check_expression_refs(&for_node.source, scope_vars, for_node.loc.start.offset)
+            );
         }
 
-        for child in for_node.children.iter() {
-            self.visit_template_child(child, scope_vars);
-        }
+        profile!("croquis.template.v_for.children", {
+            for child in for_node.children.iter() {
+                self.visit_template_child(child, scope_vars);
+            }
+        });
 
         for _ in 0..vars_count {
             scope_vars.pop();

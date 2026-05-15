@@ -13,22 +13,34 @@
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import fs from "node:fs";
 
-import type { VizeOptions, ConfigEnv } from "../types.js";
-import { createFilter } from "../utils/index.js";
-import { toBrowserImportPrefix } from "../virtual.js";
-import { isBuiltinDefine, createLogger } from "../transform.js";
-import { loadConfig, vizeConfigStore } from "../config.js";
-import { type VizePluginState, compileAll } from "./state.js";
-import { resolveIdHook } from "./resolve.js";
-import { loadHook, transformHook } from "./load.js";
-import { handleHotUpdateHook, handleGenerateBundleHook } from "./hmr.js";
-import { createVueCompatPlugin, createPostTransformPlugin } from "./compat.js";
+import type { VizeOptions, ConfigEnv } from "../types.ts";
+import { createFilter } from "../utils/index.ts";
+import { toBrowserImportPrefix } from "../virtual.ts";
+import { shouldApplyDefineInVirtualModule, createLogger } from "../transform.ts";
+import { loadConfig, vizeConfigStore } from "../config.ts";
+import {
+  DEFAULT_PRECOMPILE_BATCH_SIZE,
+  DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
+  type VizePluginState,
+  compileAll,
+  normalizePrecompileBatchSize,
+} from "./state.ts";
+import { resolveIdHook } from "./resolve.ts";
+import { loadHook, transformHook } from "./load.ts";
+import { handleHotUpdateHook, handleGenerateBundleHook } from "./hmr.ts";
+import { createVueCompatPlugin, createPostTransformPlugin } from "./compat.ts";
+import { patchUnoCssBridge } from "./unocss.ts";
 
-export type { VizePluginState } from "./state.js";
+export type { VizePluginState } from "./state.ts";
+
+function aliasSortKey(find: string | RegExp): number {
+  return typeof find === "string" ? find.length : find.source.length;
+}
 
 export function vize(options: VizeOptions = {}): Plugin[] {
   const state: VizePluginState = {
     cache: new Map(),
+    ssrCache: new Map(),
     collectedCss: new Map(),
     precompileMetadata: new Map(),
     pendingHmrUpdateTypes: new Map(),
@@ -39,6 +51,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     server: null,
     filter: () => true,
     scanPatterns: null,
+    precompileBatchSize: DEFAULT_PRECOMPILE_BATCH_SIZE,
     ignorePatterns: [],
     mergedOptions: options,
     initialized: false,
@@ -103,16 +116,21 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       state.isProduction = options.isProduction ?? resolvedConfig.isProduction;
 
       const isSsrBuild = !!resolvedConfig.build?.ssr;
+      const currentBase =
+        resolvedConfig.command === "serve"
+          ? (options.devUrlBase ?? resolvedConfig.base ?? "/")
+          : (resolvedConfig.base ?? "/");
       if (isSsrBuild) {
-        state.serverViteBase = resolvedConfig.base ?? "/";
+        state.serverViteBase = currentBase;
       } else {
-        state.clientViteBase = resolvedConfig.base ?? "/";
+        state.clientViteBase = currentBase;
       }
       state.extractCss = state.isProduction;
 
-      // Capture custom Vite define values for applying to virtual modules.
-      // Vite's built-in define plugin may not process \0-prefixed virtual modules,
-      // so we apply replacements ourselves in the transform hook.
+      // Capture Vite define values for applying to virtual modules. Vite's
+      // built-in define plugin may not process \0-prefixed virtual modules, so
+      // the transform hook mirrors the environment-sensitive replacements that
+      // are safe to inline.
       // IMPORTANT: Nuxt shares the same plugin instance for client and server builds,
       // each calling configResolved with environment-specific defines. We must store
       // them separately to avoid the server's `document: "undefined"` leaking into
@@ -121,7 +139,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       const envDefine: Record<string, string> = {};
       if (resolvedConfig.define) {
         for (const [key, value] of Object.entries(resolvedConfig.define)) {
-          if (isBuiltinDefine(key)) continue;
+          if (!shouldApplyDefineInVirtualModule(key)) continue;
           if (typeof value === "string") {
             envDefine[key] = value;
           } else {
@@ -143,14 +161,21 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
       let fileConfig = null;
       if (options.configMode !== false) {
-        fileConfig = await loadConfig(state.root, {
-          mode: options.configMode ?? "root",
-          configFile: options.configFile,
-          env: configEnv,
-        });
-        if (fileConfig) {
-          state.logger.log("Loaded config from vize.config file");
-          vizeConfigStore.set(state.root, fileConfig);
+        try {
+          fileConfig = await loadConfig(state.root, {
+            mode: options.configMode ?? "root",
+            configFile: options.configFile,
+            env: configEnv,
+          });
+          if (fileConfig) {
+            state.logger.log("Loaded config from vize.config file");
+            vizeConfigStore.set(state.root, fileConfig);
+          }
+        } catch (error) {
+          state.logger.warn(
+            `Failed to load vize config from ${options.configFile ?? state.root}:`,
+            error,
+          );
         }
       }
 
@@ -162,9 +187,11 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         ssr: options.ssr ?? compilerConfig.ssr ?? false,
         sourceMap: options.sourceMap ?? compilerConfig.sourceMap,
         vapor: options.vapor ?? compilerConfig.vapor ?? false,
+        customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
         include: options.include ?? viteConfig.include,
         exclude: options.exclude ?? viteConfig.exclude,
         scanPatterns: options.scanPatterns ?? viteConfig.scanPatterns,
+        precompileBatchSize: options.precompileBatchSize ?? viteConfig.precompileBatchSize,
         ignorePatterns: options.ignorePatterns ?? viteConfig.ignorePatterns,
       };
 
@@ -184,21 +211,34 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       // Build CSS alias rules for @import resolution (use filesystem paths, not browser paths)
       state.cssAliasRules = [];
       for (const alias of resolvedConfig.resolve.alias) {
-        if (typeof alias.find !== "string" || typeof alias.replacement !== "string") {
+        if (
+          !(typeof alias.find === "string" || alias.find instanceof RegExp) ||
+          typeof alias.replacement !== "string"
+        ) {
           continue;
         }
-        state.cssAliasRules.push({ find: alias.find, replacement: alias.replacement });
+        state.cssAliasRules.push({
+          find: alias.find,
+          replacement: alias.replacement,
+        });
       }
       // Prefer longer alias keys first
-      state.cssAliasRules.sort((a, b) => b.find.length - a.find.length);
+      state.cssAliasRules.sort((a, b) => aliasSortKey(b.find) - aliasSortKey(a.find));
 
       state.filter = createFilter(state.mergedOptions.include, state.mergedOptions.exclude);
       state.scanPatterns = state.mergedOptions.scanPatterns ?? ["**/*.vue"];
+      state.precompileBatchSize = normalizePrecompileBatchSize(
+        state.mergedOptions.precompileBatchSize,
+      );
       state.ignorePatterns = state.mergedOptions.ignorePatterns ?? [
-        "node_modules/**",
-        "dist/**",
-        ".git/**",
+        ...DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
       ];
+      patchUnoCssBridge(
+        resolvedConfig.plugins as Array<{
+          name?: string;
+          transform?: Function;
+        }>,
+      );
       state.initialized = true;
     },
 
@@ -251,8 +291,8 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       state.logger.log("Cache keys:", [...state.cache.keys()].slice(0, 3));
     },
 
-    resolveId(id, importer) {
-      return resolveIdHook(this, state, id, importer);
+    resolveId(id, importer, options) {
+      return resolveIdHook(this, state, id, importer, options);
     },
 
     load(id, loadOptions) {

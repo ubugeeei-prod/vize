@@ -126,9 +126,7 @@ mod tests {
     fn test_build_text_expression_mixed() {
         let parts = vec![(true, "Hello "), (false, "name"), (true, "!")];
         let result = build_text_expression(&parts);
-        assert!(result.contains("\"Hello \""));
-        assert!(result.contains("_toDisplayString(name)"));
-        assert!(result.contains("\"!\""));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]

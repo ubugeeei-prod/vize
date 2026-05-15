@@ -396,9 +396,8 @@ mod tests {
         let mut gen = TemplateCodeGenerator::new();
         let doc = gen.generate(&ast, source);
 
-        // Should contain the expression
-        assert!(doc.content.contains("__VIZE_ctx.message"));
         assert!(!doc.source_map.is_empty());
+        insta::assert_snapshot!(doc.content.as_str());
     }
 
     #[test]
@@ -410,7 +409,6 @@ mod tests {
         let mut gen = TemplateCodeGenerator::new();
         let doc = gen.generate(&ast, source);
 
-        // Should have generated some TypeScript
-        assert!(doc.content.contains("__VIZE_"));
+        insta::assert_snapshot!(doc.content.as_str());
     }
 }

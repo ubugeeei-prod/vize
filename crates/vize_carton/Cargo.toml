@@ -27,4 +27,4 @@ default = []
 
 [dev-dependencies]
 insta.workspace = true
-tempfile = "3"
+tempfile.workspace = true

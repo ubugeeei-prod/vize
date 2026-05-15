@@ -12,6 +12,8 @@
 mod builder;
 mod resolution;
 
+use core::fmt;
+
 use vize_carton::{smallvec, CompactString, FxHashMap, SmallVec, String, ToCompactString};
 use vize_relief::BindingType;
 
@@ -23,7 +25,6 @@ use super::types::{
 };
 
 /// A single scope in the scope chain
-#[derive(Debug)]
 pub struct Scope {
     /// Unique identifier
     pub id: ScopeId,
@@ -38,6 +39,36 @@ pub struct Scope {
     data: ScopeData,
     /// Source span
     pub span: Span,
+}
+
+struct SortedBindings<'a>(&'a FxHashMap<CompactString, ScopeBinding>);
+
+impl fmt::Debug for SortedBindings<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut entries: SmallVec<[(&CompactString, &ScopeBinding); 64]> = self.0.iter().collect();
+        entries.sort_unstable_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));
+
+        f.debug_map()
+            .entries(
+                entries
+                    .iter()
+                    .map(|(name, binding)| (name.as_str(), *binding)),
+            )
+            .finish()
+    }
+}
+
+impl fmt::Debug for Scope {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Scope")
+            .field("id", &self.id)
+            .field("parents", &self.parents)
+            .field("kind", &self.kind)
+            .field("bindings", &SortedBindings(&self.bindings))
+            .field("data", &self.data)
+            .field("span", &self.span)
+            .finish()
+    }
 }
 
 impl Scope {

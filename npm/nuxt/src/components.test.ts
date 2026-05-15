@@ -32,15 +32,19 @@ assert.deepEqual(
   "Nuxt-generated d.ts should resolve module components",
 );
 
-assert.deepEqual(
-  npmxResolver.resolve("NuxtPwaAssets"),
-  {
-    exportName: "default",
-    filePath: path.join(
-      npmxFixtureRoot,
-      "node_modules/.pnpm/@vite-pwa+nuxt@1.1.1_@vite-pwa+assets-generator@1.0.2_magicast@0.5.1_vite@8.0.0-beta.10_0578499fc59b04792d0542db4407cb90/node_modules/@vite-pwa/nuxt/dist/runtime/components/NuxtPwaAssets.js",
-    ),
-  },
+const nuxtPwaAssets = npmxResolver.resolve("NuxtPwaAssets");
+
+assert.equal(
+  nuxtPwaAssets?.exportName,
+  "default",
+  "runtime component fallback should preserve the default export",
+);
+
+assert.match(
+  nuxtPwaAssets?.filePath ?? "",
+  new RegExp(
+    "node_modules[\\\\/]\\\\.pnpm[\\\\/]@vite-pwa\\+nuxt@.+[\\\\/]node_modules[\\\\/]@vite-pwa[\\\\/]nuxt[\\\\/]dist[\\\\/]runtime[\\\\/]components[\\\\/]NuxtPwaAssets\\\\.js$",
+  ),
   "runtime component fallback should resolve module-added components missing from Nuxt d.ts",
 );
 

@@ -482,6 +482,32 @@
   word-break: break-word;
 }
 
+.wasm-warning {
+  background: var(--color-warning-bg);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 35%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.wasm-warning h3 {
+  color: var(--color-warning);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.wasm-warning pre {
+  color: var(--color-warning);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.wasm-warning pre + pre {
+  margin-top: 8px;
+}
+
 .code-output h4,
 .ast-output h4,
 .helpers-output h4 {

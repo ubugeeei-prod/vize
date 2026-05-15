@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/style.rs
+expression: result.as_str()
+---
+@-webkit-keyframes fade{0%{ opacity: 0; }100%{ opacity: 1; }}

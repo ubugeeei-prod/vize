@@ -17,9 +17,11 @@
 pub mod code_action;
 pub mod code_lens;
 pub mod completion;
+mod corsa_support;
 pub mod definition;
 pub mod diagnostics;
 pub mod document_link;
+pub mod file_rename;
 pub mod hover;
 pub mod inlay_hint;
 pub mod references;
@@ -34,6 +36,7 @@ pub use completion::{trigger_characters, CompletionService, TRIGGER_CHARACTERS};
 pub use definition::{BindingKind, BindingLocation, DefinitionService};
 pub use diagnostics::{sources, DiagnosticBuilder, DiagnosticService, Severity};
 pub use document_link::DocumentLinkService;
+pub use file_rename::FileRenameService;
 pub use hover::{HoverBuilder, HoverService};
 pub use inlay_hint::InlayHintService;
 pub use references::ReferencesService;
@@ -161,6 +164,58 @@ pub fn is_component_tag(name: &str) -> bool {
     first.is_ascii_uppercase() || name.contains('-')
 }
 
+/// Resolve the token span around a cursor offset.
+///
+/// If the cursor is placed just after a token, the previous character is used
+/// so LSP requests at identifier boundaries still resolve the symbol.
+pub(crate) fn token_span_at_offset<F>(
+    content: &str,
+    offset: usize,
+    is_token_char: F,
+) -> Option<(usize, usize)>
+where
+    F: Fn(u8) -> bool,
+{
+    let bytes = content.as_bytes();
+    if bytes.is_empty() {
+        return None;
+    }
+
+    let mut cursor = offset.min(bytes.len());
+    if cursor == bytes.len() {
+        cursor = cursor.saturating_sub(1);
+    }
+
+    if !is_token_char(bytes[cursor]) {
+        if cursor > 0 && is_token_char(bytes[cursor - 1]) {
+            cursor -= 1;
+        } else {
+            return None;
+        }
+    }
+
+    let mut start = cursor;
+    while start > 0 && is_token_char(bytes[start - 1]) {
+        start -= 1;
+    }
+
+    let mut end = cursor + 1;
+    while end < bytes.len() && is_token_char(bytes[end]) {
+        end += 1;
+    }
+
+    Some((start, end))
+}
+
+/// Resolve the token string around a cursor offset.
+pub(crate) fn token_at_offset<F>(content: &str, offset: usize, is_token_char: F) -> Option<String>
+where
+    F: Fn(u8) -> bool,
+{
+    let (start, end) = token_span_at_offset(content, offset, is_token_char)?;
+    Some(content[start..end].to_string())
+}
+
 /// Context for IDE operations.
 pub struct IdeContext<'a> {
     /// Server state
@@ -253,6 +308,7 @@ impl<'a> IdeContext<'a> {
 mod tests {
     use super::{
         is_component_tag, kebab_to_pascal, offset_to_position, pascal_to_kebab, position_to_offset,
+        token_at_offset, token_span_at_offset,
     };
 
     #[test]
@@ -307,5 +363,34 @@ mod tests {
         assert!(!is_component_tag("div"));
         assert!(!is_component_tag("span"));
         assert!(!is_component_tag("button"));
+    }
+
+    #[test]
+    fn test_token_span_at_offset_allows_identifier_boundaries() {
+        let content = "const message = ref(0)";
+
+        assert_eq!(
+            token_span_at_offset(content, 5, |c| c.is_ascii_alphanumeric() || c == b'_'),
+            Some((0, 5))
+        );
+        assert_eq!(
+            token_span_at_offset(content, 13, |c| c.is_ascii_alphanumeric() || c == b'_'),
+            Some((6, 13))
+        );
+        assert_eq!(
+            token_span_at_offset(content, 15, |c| c.is_ascii_alphanumeric() || c == b'_'),
+            None
+        );
+    }
+
+    #[test]
+    fn test_token_at_offset_supports_end_of_file_boundaries() {
+        let content = "message";
+
+        assert_eq!(
+            token_at_offset(content, content.len(), |c| c.is_ascii_alphanumeric()
+                || c == b'_'),
+            Some("message".to_string())
+        );
     }
 }

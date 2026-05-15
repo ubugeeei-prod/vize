@@ -116,18 +116,18 @@ mod tests {
     #[test]
     fn test_generate_model_handler_simple() {
         let result = generate_model_handler("text", &[]);
-        assert!(result.contains("text = $event.target.value"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_generate_model_handler_with_trim() {
         let result = generate_model_handler("text", &[String::new("trim")]);
-        assert!(result.contains(".trim()"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_generate_model_handler_with_number() {
         let result = generate_model_handler("num", &[String::new("number")]);
-        assert!(result.contains("Number("));
+        insta::assert_snapshot!(result.as_str());
     }
 }

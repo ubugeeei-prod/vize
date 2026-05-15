@@ -41,9 +41,17 @@ pub struct DomCompilerOptions {
     #[serde(default)]
     pub comments: bool,
 
+    /// Current SFC component name for self-reference resolution
+    #[serde(default)]
+    pub component_name: Option<String>,
+
     /// Whether to inline template
     #[serde(default)]
     pub inline: bool,
+
+    /// Whether the template targets a custom renderer instead of the DOM.
+    #[serde(default)]
+    pub custom_renderer: bool,
 
     /// Binding metadata from script setup
     #[serde(skip)]
@@ -69,7 +77,9 @@ impl Clone for DomCompilerOptions {
             ssr: self.ssr,
             source_map: self.source_map,
             comments: self.comments,
+            component_name: self.component_name.clone(),
             inline: self.inline,
+            custom_renderer: self.custom_renderer,
             binding_metadata: self.binding_metadata.clone(),
             is_ts: self.is_ts,
             // Croquis is not cloneable; it will be consumed when passed to the compiler
@@ -89,7 +99,9 @@ impl Default for DomCompilerOptions {
             ssr: false,
             source_map: false,
             comments: false,
+            component_name: None,
             inline: false,
+            custom_renderer: false,
             binding_metadata: None,
             is_ts: false,
             croquis: None,

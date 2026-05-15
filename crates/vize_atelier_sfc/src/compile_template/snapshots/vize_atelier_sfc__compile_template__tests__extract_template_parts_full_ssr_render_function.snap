@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/compile_template/tests.rs
+expression: "(&imports, &render_fn)"
+---
+(
+    "import { ssrRenderComponent as _ssrRenderComponent } from \"vue/server-renderer\"\n",
+    "export function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_ctx.Foo, null, null, _parent))\n}\n",
+)

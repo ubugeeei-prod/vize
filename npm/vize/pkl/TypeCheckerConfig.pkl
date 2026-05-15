@@ -37,4 +37,7 @@ class TypeCheckerConfig {
 
   /// Path to a .d.ts file that declares template globals.
   globalsFile: String? = null
+
+  /// Number of parallel Corsa servers to use.
+  servers: Int? = null
 }

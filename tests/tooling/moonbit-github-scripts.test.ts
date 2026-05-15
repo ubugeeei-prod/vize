@@ -1,0 +1,341 @@
+import assert from "node:assert/strict";
+import fs, { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { tmpdir } from "node:os";
+import { test } from "node:test";
+
+import { runMoonScript } from "./_helpers/moonbit.ts";
+import { writeFakeCommand } from "./support/fake-command.ts";
+
+test("github/run_many executes command groups in order", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-run-many-"));
+  const outputPath = path.join(tempDir, "output.txt");
+
+  try {
+    const result = runMoonScript(
+      "github/run_many",
+      [
+        "node",
+        "-e",
+        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'a')`,
+        "--",
+        "node",
+        "-e",
+        `require('node:fs').appendFileSync(${JSON.stringify(outputPath)}, 'b')`,
+      ],
+      { cwd: tempDir },
+    );
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(fs.readFileSync(outputPath, "utf8"), "ab");
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("github/clean_node_binaries removes only top-level .node files", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-clean-node-"));
+  const firstDir = path.join(tempDir, "first");
+  const secondDir = path.join(tempDir, "second");
+
+  try {
+    fs.mkdirSync(firstDir, { recursive: true });
+    fs.mkdirSync(secondDir, { recursive: true });
+    writeFileSync(path.join(firstDir, "native.node"), "native");
+    writeFileSync(path.join(firstDir, "keep.txt"), "keep");
+    writeFileSync(path.join(secondDir, "addon.node"), "addon");
+
+    const result = runMoonScript("github/clean_node_binaries", [firstDir, secondDir], {
+      cwd: tempDir,
+    });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(fs.existsSync(path.join(firstDir, "native.node")), false);
+    assert.equal(fs.existsSync(path.join(secondDir, "addon.node")), false);
+    assert.equal(fs.existsSync(path.join(firstDir, "keep.txt")), true);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("github/clean_node_binaries stays free of async filesystem imports so it works on both native and JS targets", () => {
+  const script = fs.readFileSync(
+    path.join(process.cwd(), "tools", "moon", "scripts", "github", "clean_node_binaries.mbtx"),
+    "utf8",
+  );
+
+  assert.doesNotMatch(script, /moonbitlang\/async@0\.16\.8/);
+  assert.match(script, /@xfs\.remove_file/);
+});
+
+test("github/collect_native_artifacts copies .node files and skips node_modules", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-collect-node-"));
+  const sourceDir = path.join(tempDir, "source");
+  const outputDir = path.join(tempDir, "out");
+
+  try {
+    fs.mkdirSync(path.join(sourceDir, "nested"), { recursive: true });
+    fs.mkdirSync(path.join(sourceDir, "node_modules", "ignored"), { recursive: true });
+    fs.mkdirSync(outputDir, { recursive: true });
+    writeFileSync(path.join(sourceDir, "nested", "first.node"), "first");
+    writeFileSync(path.join(sourceDir, "node_modules", "ignored", "skip.node"), "skip");
+    writeFileSync(path.join(outputDir, "keep.txt"), "keep");
+
+    const result = runMoonScript(
+      "github/collect_native_artifacts",
+      [sourceDir, outputDir, "example"],
+      {
+        cwd: tempDir,
+      },
+    );
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(fs.readFileSync(path.join(outputDir, "first.node"), "utf8"), "first");
+    assert.equal(fs.existsSync(path.join(outputDir, "skip.node")), false);
+    assert.equal(fs.readFileSync(path.join(outputDir, "keep.txt"), "utf8"), "keep");
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("github/create_site_structure assembles the Pages output tree", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-site-"));
+
+  try {
+    fs.mkdirSync(path.join(tempDir, "artifacts", "docs"), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, "artifacts", "playground"), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, "artifacts", "musea-examples"), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, "playground", "public"), { recursive: true });
+
+    writeFileSync(path.join(tempDir, "artifacts", "docs", "index.html"), "docs");
+    writeFileSync(path.join(tempDir, "artifacts", "playground", "app.js"), "play");
+    writeFileSync(path.join(tempDir, "artifacts", "musea-examples", "index.html"), "musea");
+    writeFileSync(path.join(tempDir, "playground", "public", "CNAME"), "example.com");
+
+    const result = runMoonScript("github/create_site_structure", [], { cwd: tempDir });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(fs.readFileSync(path.join(tempDir, "site", "index.html"), "utf8"), "docs");
+    assert.equal(fs.readFileSync(path.join(tempDir, "site", "play", "app.js"), "utf8"), "play");
+    assert.equal(
+      fs.readFileSync(path.join(tempDir, "site", "musea-examples", "index.html"), "utf8"),
+      "musea",
+    );
+    assert.equal(fs.readFileSync(path.join(tempDir, "site", "CNAME"), "utf8"), "example.com");
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("github/install_playwright_browsers uses the playground-local Playwright CLI", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-playwright-install-"));
+  const binDir = path.join(tempDir, "bin");
+  const argsPath = path.join(tempDir, "vp-args.txt");
+
+  try {
+    fs.mkdirSync(binDir, { recursive: true });
+    writeFakeCommand(
+      binDir,
+      "vp",
+      [
+        "require('node:fs').writeFileSync(",
+        `  ${JSON.stringify(argsPath)},`,
+        "  process.argv.slice(2).join('\\n'),",
+        ");",
+      ].join("\n"),
+    );
+
+    const result = runMoonScript("github/install_playwright_browsers", [], {
+      cwd: tempDir,
+      env: {
+        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+      },
+    });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(
+      fs.readFileSync(argsPath, "utf8"),
+      [
+        "exec",
+        "--filter",
+        "./playground",
+        "--",
+        "playwright",
+        "install",
+        "chromium",
+        "--with-deps",
+      ].join("\n"),
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("github/write_coverage_summary appends the tail of coverage output", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-coverage-summary-"));
+  const binDir = path.join(tempDir, "bin");
+  const summaryPath = path.join(tempDir, "step-summary.md");
+
+  try {
+    fs.mkdirSync(binDir, { recursive: true });
+    writeFakeCommand(
+      binDir,
+      "cargo",
+      [
+        "const args = process.argv.slice(2);",
+        "if (args.join(' ') !== 'run --profile ci -p vize_test_runner --bin coverage') process.exit(99);",
+        "process.stdout.write([",
+        "  'Coverage report',",
+        "  'line-1',",
+        "  'line-2',",
+        "  'line-3',",
+        "  'line-4',",
+        "  'line-5',",
+        "  'line-6',",
+        "  'line-7',",
+        "  'line-8',",
+        "].join('\\n'));",
+      ].join("\n"),
+    );
+    writeFileSync(summaryPath, "existing\n");
+
+    const result = runMoonScript("github/write_coverage_summary", [], {
+      cwd: tempDir,
+      env: {
+        GITHUB_STEP_SUMMARY: summaryPath,
+        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+      },
+    });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(
+      fs.readFileSync(path.join(tempDir, "coverage-report.txt"), "utf8"),
+      [
+        "Coverage report",
+        "line-1",
+        "line-2",
+        "line-3",
+        "line-4",
+        "line-5",
+        "line-6",
+        "line-7",
+        "line-8",
+      ].join("\n"),
+    );
+    assert.equal(
+      fs.readFileSync(summaryPath, "utf8"),
+      [
+        "existing",
+        "### Coverage Summary",
+        "line-2",
+        "line-3",
+        "line-4",
+        "line-5",
+        "line-6",
+        "line-7",
+        "line-8",
+      ].join("\n") + "\n",
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("github/configure_npm_auth writes a fallback .npmrc when NPM_TOKEN is present", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-configure-npm-auth-"));
+  const homeDir = path.join(tempDir, "home");
+  const npmrcPath = path.join(homeDir, ".npmrc");
+
+  try {
+    fs.mkdirSync(homeDir, { recursive: true });
+    writeFileSync(npmrcPath, "legacy-setting=true\n");
+
+    const result = runMoonScript("github/configure_npm_auth", [], {
+      cwd: tempDir,
+      env: {
+        HOME: homeDir,
+        MOON_HOME: process.env.MOON_HOME ?? path.join(process.env.HOME ?? "", ".moon"),
+        NPM_TOKEN: "test-token",
+      },
+    });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(
+      fs.readFileSync(npmrcPath, "utf8"),
+      [
+        "legacy-setting=true",
+        "registry=https://registry.npmjs.org/",
+        "//registry.npmjs.org/:_authToken=test-token",
+        "always-auth=true",
+      ].join("\n") + "\n",
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("github/build_napi_package builds Apple targets with cargo and writes the expected .node artifact", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-build-napi-apple-"));
+  const binDir = path.join(tempDir, "bin");
+  const packageDir = path.join(tempDir, "npm", "vize-native");
+  const artifactPath = path.join(
+    tempDir,
+    "target",
+    "aarch64-apple-darwin",
+    "release",
+    "libvize_vitrine.dylib",
+  );
+  const commandArgsPath = path.join(tempDir, "cargo-args.txt");
+
+  try {
+    fs.mkdirSync(binDir, { recursive: true });
+    fs.mkdirSync(packageDir, { recursive: true });
+    writeFakeCommand(
+      binDir,
+      "cargo",
+      [
+        "const fs = require('node:fs');",
+        "const path = require('node:path');",
+        `const argsPath = ${JSON.stringify(commandArgsPath)};`,
+        `const artifactPath = ${JSON.stringify(artifactPath)};`,
+        "fs.writeFileSync(argsPath, process.argv.slice(2).join('\\n'));",
+        "fs.mkdirSync(path.dirname(artifactPath), { recursive: true });",
+        "fs.writeFileSync(artifactPath, 'apple-native');",
+      ].join("\n"),
+    );
+
+    const result = runMoonScript(
+      "github/build_napi_package",
+      [packageDir, "../../crates/vize_vitrine/Cargo.toml", "vize_vitrine", "aarch64-apple-darwin"],
+      {
+        cwd: tempDir,
+        env: {
+          PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+        },
+      },
+    );
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.equal(
+      fs.readFileSync(commandArgsPath, "utf8"),
+      [
+        "build",
+        "--release",
+        "--manifest-path",
+        "../../crates/vize_vitrine/Cargo.toml",
+        "-p",
+        "vize_vitrine",
+        "--features",
+        "napi",
+        "--target",
+        "aarch64-apple-darwin",
+      ].join("\n"),
+    );
+    assert.equal(
+      fs.readFileSync(path.join(packageDir, "vize-vitrine.darwin-arm64.node"), "utf8"),
+      "apple-native",
+    );
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});

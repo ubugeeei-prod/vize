@@ -150,8 +150,6 @@ mod tests {
             (true, String::new("!")),
         ];
         let result = generate_text_expression(&parts);
-        assert!(result.contains("\"Hello, \""));
-        assert!(result.contains("_toDisplayString(name)"));
-        assert!(result.contains("\"!\""));
+        insta::assert_snapshot!(result.as_str());
     }
 }

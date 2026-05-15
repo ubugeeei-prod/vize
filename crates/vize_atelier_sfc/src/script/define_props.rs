@@ -10,8 +10,7 @@ use super::utils::{extract_type_args, find_call_paren, find_matching_paren};
 use super::MacroCall;
 use vize_carton::String;
 
-pub const DEFINE_PROPS: &str = "defineProps";
-pub const WITH_DEFAULTS: &str = "withDefaults";
+pub use vize_croquis::macros::{DEFINE_PROPS, WITH_DEFAULTS};
 
 /// Extract defineProps call from source
 #[allow(dead_code)]

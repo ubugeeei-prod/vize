@@ -7,7 +7,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "declaration": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "src",
+    "paths": {
+      "@vizejs/vite-plugin-musea": ["../vite-plugin-musea/src/index.ts"]
+    }
   },
   "include": ["src"]
 }

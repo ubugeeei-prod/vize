@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { child as _child, next as _next, setClass as _setClass, createInvoker as _createInvoker, delegateEvents as _delegateEvents, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<button>\n                  Bindings\n                </button>", true)
+const t1 = _template("<section><div class=\"tabs\"><button>\n                  Code\n                </button><button>\n                  Helpers\n                </button></div></section>", true)
+_delegateEvents("click")
+export function render(_ctx) {
+const n1 = t1()
+const n0 = _child(n1)
+const n2 = _child(n0)
+const n3 = _next(n2)
+n2.$evtclick = _createInvoker(() => (_ctx.activeTab = 'code'))
+n3.$evtclick = _createInvoker(() => (_ctx.activeTab = 'helpers'))
+_setInsertionState(n0, null, true)
+const n4 = _createIf(() => (_ctx.inputMode === 'sfc'), () => {
+const n6 = t0()
+n6.$evtclick = _createInvoker(() => (_ctx.activeTab = 'bindings'))
+_renderEffect(() => _setClass(n6, ['tab', { active: _ctx.activeTab === 'bindings' }]))
+return n6
+})
+_renderEffect(() => _setClass(n2, ['tab', { active: _ctx.activeTab === 'code' }]))
+_renderEffect(() => _setClass(n3, ['tab', { active: _ctx.activeTab === 'helpers' }]))
+return n1
+}

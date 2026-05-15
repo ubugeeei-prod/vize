@@ -148,6 +148,20 @@ import Layout from './Layout.vue'
 </template>
 """
 
+[[cases]]
+name = "dynamic asset URL with import meta url"
+input = """
+<script setup>
+const getBrandLogoUrl = (type, theme) => {
+  return new URL(`../../assets/logos/brand_${type}_${theme}.svg`, import.meta.url).href
+}
+</script>
+
+<template>
+  <img :src="getBrandLogoUrl('alpha', 'light')" alt="brand logo" />
+</template>
+"""
+
 # =============================================================================
 # v-if duplicate event handlers (v_if.rs)
 # Issue: v-model transform generated duplicate event handlers
@@ -180,6 +194,223 @@ const value = ref('')
 
 <template>
   <MyInput v-if="visible" v-model="value" />
+</template>
+"""
+
+[[cases]]
+name = "v-if slot outlet with v-else"
+input = """
+<template>
+  <div>
+    <slot v-if="showing" />
+    <slot v-else name="fallback" />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+const showing = ref(false)
+</script>
+"""
+
+[[cases]]
+name = "dynamic slot outlet name in loop"
+input = """
+<script setup>
+const tabs = [
+  { key: 'basic', label: 'Basic' },
+  { key: 'parts', label: 'Parts' },
+]
+</script>
+
+<template>
+  <div>
+    <template v-for="tab in tabs" :key="tab.key">
+      <slot :name="tab.key" :tab="tab" />
+    </template>
+  </div>
+</template>
+"""
+
+[[cases]]
+name = "v for template else interpolation wraps text vnode"
+input = """
+<script setup>
+function splitByQuery(name) {
+  return [{ text: name, match: false }]
+}
+const name = 'paper'
+</script>
+
+<template>
+  <p>
+    <template v-for="(seg, i) in splitByQuery(name)" :key="i">
+      <mark v-if="seg.match">{{ seg.text }}</mark>
+      <template v-else>{{ seg.text }}</template>
+    </template>
+  </p>
+</template>
+"""
+
+[[cases]]
+name = "v if branch keeps maybe ref style patch flag"
+input = """
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const show = ref(true)
+const floatingStyles = ref({ left: '10px', top: '20px' })
+</script>
+
+<template>
+  <div v-if="show" :style="floatingStyles"></div>
+</template>
+"""
+
+[[cases]]
+name = "template ref with dynamic props in v if branch"
+input = """
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+const reference = ref<HTMLElement>()
+const floating = ref<HTMLElement>()
+const isOpen = ref(true)
+const klass = computed(() => 'x')
+const styles = computed(() => ({ left: '0px', top: '0px' }))
+function toggle() {}
+</script>
+
+<template>
+  <button
+    v-if="isOpen"
+    ref="reference"
+    :id="isOpen ? 'open' : undefined"
+    class="base"
+    :class="klass"
+    @click="toggle"
+  >
+    open
+  </button>
+  <div
+    v-if="isOpen"
+    ref="floating"
+    :style="styles"
+  >
+    panel
+  </div>
+</template>
+"""
+
+[[cases]]
+name = "options api dynamic style and class keep patch flags"
+input = """
+<script>
+export default {
+  computed: {
+    knobStyle() {
+      return { transform: 'translate(10px, 20px)' }
+    },
+  },
+}
+</script>
+
+<template>
+  <div class="map">
+    <div :style="knobStyle" :class="{ dragging }"></div>
+  </div>
+</template>
+"""
+
+[[cases]]
+name = "imported custom directive binding in script setup"
+input = """
+<script setup lang="ts">
+import { vElementHover } from '@vueuse/components'
+</script>
+
+<template>
+  <div v-element-hover="() => {}" />
+</template>
+"""
+
+[[cases]]
+name = "component event member expression handler is invoked"
+input = """
+<script setup>
+const actionHandler = useActionHandler()
+</script>
+
+<template>
+  <ActionPanel @selectItem="actionHandler.selectItem" />
+</template>
+"""
+
+[[cases]]
+name = "component event rest params stay local"
+input = """
+<script setup>
+const emit = defineEmits(['update'])
+</script>
+
+<template>
+  <Child
+    @update="(...$args) => emit('update', ...$args)"
+    @change="(...args) => emit('update', ...args)"
+  />
+</template>
+"""
+
+[[cases]]
+name = "function typed prop param does not shadow local t"
+input = """
+<script setup lang="ts">
+const { format } = useFormatter(catalog)
+const props = defineProps<{
+  renderLabel: (value: string, format: any) => string
+}>()
+</script>
+
+<template>
+  <PopupMenu>
+    <template #items="{ close }">
+      <OptionRow v-slot="{ active }">
+        <li :class="{ active }" @click="close()">
+          <span>{{ format('hello') }}</span>
+          <span>{{ renderLabel('x', format) }}</span>
+        </li>
+      </OptionRow>
+    </template>
+  </PopupMenu>
+</template>
+"""
+
+[[cases]]
+name = "nullable runtime prop types keep null"
+input = """
+<script setup lang="ts">
+defineProps<{
+  activeKey: string | null
+  items: string[] | null
+  groupName: string | null
+}>()
+</script>
+
+<template>
+  <div />
+</template>
+"""
+
+[[cases]]
+name = "v-if with custom directive on element"
+input = """
+<script setup>
+import { ref } from 'vue'
+const showHelp = ref(true)
+const helpText = ref('Help')
+</script>
+
+<template>
+  <button v-if="showHelp" v-tooltip.noDelay="helpText">Help</button>
 </template>
 """
 

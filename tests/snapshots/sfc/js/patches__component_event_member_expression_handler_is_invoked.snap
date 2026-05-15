@@ -1,0 +1,23 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: js_output.as_str()
+---
+import { openBlock as _openBlock, createBlock as _createBlock, resolveComponent as _resolveComponent, unref as _unref } from "vue"
+
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const actionHandler = useActionHandler()
+
+return (_ctx, _cache) => {
+  const _component_ActionPanel = _resolveComponent("ActionPanel")
+
+  return (_openBlock(), _createBlock(_component_ActionPanel, {
+      onSelectItem: _cache[0] || (_cache[0] = (...args) => (_unref(actionHandler).selectItem && _unref(actionHandler).selectItem(...args)))
+    }))
+}
+}
+
+}

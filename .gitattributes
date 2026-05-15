@@ -4,3 +4,11 @@
 
 # Embedded third-party repositories are fixtures, not part of the project source.
 tests/_fixtures/_git/** linguist-vendored=true
+
+# Example apps are not part of release archives.
+examples export-ignore
+examples/** export-ignore
+npm/*/example export-ignore
+npm/*/example/** export-ignore
+npm/*/examples export-ignore
+npm/*/examples/** export-ignore

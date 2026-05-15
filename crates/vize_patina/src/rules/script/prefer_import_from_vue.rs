@@ -165,7 +165,7 @@ mod tests {
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("@vue/runtime-core"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

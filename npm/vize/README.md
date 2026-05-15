@@ -1,79 +1,146 @@
 # Vize
 
-High-performance Vue.js toolchain in Rust.
+The `vize` npm package provides:
+
+- shared config utilities (`defineConfig`, `loadConfig`)
+- the native `vize build` command
+- the native `vize fmt` command
+- the native `vize lint` command
+- the native `vize check` command for package scripts
+- `vize ready` for `fmt --write -> lint -> check -> build`
+- `vize upgrade` for updating the npm package
+
+For Vite integration, pair it with `@vizejs/vite-plugin`.
+For the full Rust-native CLI (`lsp`, `ide`, project-backed `check`, and `check-server`), install
+the Rust `vize` binary with `cargo install vize`.
+
+Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://viteplus.dev/guide/install).
 
 ## Installation
 
 ```bash
-# Install from npm
-npm install -g vize
-
-# Or install from GitHub
-npm install -g github:ubugeeei/vize
+vp install -D vize
 ```
 
-## Usage
+## CLI
+
+The npm CLI exposes the common package-script commands:
 
 ```bash
-vize [COMMAND] [OPTIONS]
+vp exec vize build src
+vp exec vize fmt --write src
+vp exec vize lint --preset happy-path src
+vp exec vize check src
+vp exec vize ready src
+vp exec vize upgrade
 ```
 
-| Command | Description                            |
-| ------- | -------------------------------------- |
-| `build` | Compile Vue SFC files (default)        |
-| `fmt`   | Format Vue SFC files                   |
-| `lint`  | Lint Vue SFC files                     |
-| `check` | Type check Vue SFC files               |
-| `musea` | Start component gallery server         |
-| `lsp`   | Start Language Server Protocol server  |
+Recommended scripts:
 
-```bash
-vize --help           # Show help
-vize <command> --help # Show command-specific help
-```
-
-## Examples
-
-```bash
-vize                              # Compile ./**/*.vue to ./dist
-vize build src/**/*.vue -o out    # Custom input/output
-vize build --ssr                  # SSR mode
-vize fmt --check                  # Check formatting
-vize lint --fix                   # Auto-fix lint issues
-vize check --strict               # Strict type checking
-```
-
-## Configuration
-
-Vize CLI and IDE settings can be shared from `vize.config.pkl`.
-
-```pkl
-amends "node_modules/vize/pkl/VizeConfig.pkl"
-
-formatter {
-  singleQuote = true
-  printWidth = 88
-}
-
-typeChecker {
-  globalsFile = "./types/global.d.ts"
-}
-
-languageServer {
-  completion = false
+```json
+{
+  "scripts": {
+    "vue:build": "vize build src",
+    "vue:fmt": "vize fmt --write src",
+    "vue:lint": "vize lint --preset happy-path src",
+    "vue:check": "vize check src",
+    "vue:ready": "vize ready src"
+  }
 }
 ```
 
-The npm package ships the default Pkl modules in `node_modules/vize/pkl`, so users can extend them directly with `amends`.
-These Pkl modules are the primary distributed schema/defaults; the generated JSON Schema is secondary compatibility output.
+Shared config discovery is supported for the npm CLI:
 
-## Alternative Installation
+- `vize.config.ts`
+- `vize.config.js`
+- `vize.config.mjs`
+- `vize.config.pkl`
+- `vize.config.json`
 
-If npm installation fails, you can install via Cargo:
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+  linter: {
+    preset: "opinionated",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+  },
+});
+```
+
+Override config discovery with `--config`, or disable it with `--no-config`.
+
+## Static Analysis
+
+`vize lint` runs Vue-aware Patina diagnostics through the native binding:
 
 ```bash
-cargo install vize
+vp exec vize lint --preset essential --max-warnings 0 src
+vp exec vize lint --preset opinionated --help-level short src
+vp exec vize lint --format json src
 ```
+
+`vize check` in the npm package uses the packaged NAPI checker so it can run from `package.json`
+scripts after installing `vize`:
+
+```bash
+vp exec vize check src --strict
+vp exec vize check src --show-virtual-ts
+vp exec vize check src --declaration --declaration-dir dist/types
+```
+
+Use the Rust CLI when you need Corsa project diagnostics across Vue, TS, TSX, and `.d.ts` inputs.
+
+`vize ready` runs `fmt --write`, `lint`, `check`, and `build` in that order.
+
+## Compiler and Tool Options
+
+Important shared fields:
+
+| Field                     | Used by                | Purpose                                                 |
+| ------------------------- | ---------------------- | ------------------------------------------------------- |
+| `compiler.sourceMap`      | Vite plugin            | Enable source maps                                      |
+| `compiler.ssr`            | npm build, Vite plugin | Force SSR compilation                                   |
+| `compiler.vapor`          | npm build, Vite plugin | Enable Vapor compilation                                |
+| `compiler.customRenderer` | npm build, Vite plugin | Support custom renderer element semantics               |
+| `compiler.scriptExt`      | npm build              | Preserve TypeScript output or downcompile to JavaScript |
+| `vite.scanPatterns`       | Vite plugin            | Pre-compile matching Vue files                          |
+| `linter.preset`           | npm lint               | Select the Patina lint preset                           |
+| `typeChecker.strict`      | npm check              | Enable strict checks                                    |
+| `formatter.printWidth`    | npm fmt                | Set formatting width                                    |
+
+## Programmatic Config Helpers
+
+```ts
+import { defineConfig, loadConfig } from "vize";
+
+export default defineConfig({
+  linter: {
+    preset: "happy-path",
+  },
+});
+
+const config = await loadConfig(process.cwd());
+```
+
+## Related Packages
+
+- `@vizejs/vite-plugin`
+- `@vizejs/native`
+- `@vizejs/wasm`
+- `@vizejs/nuxt`
+- `@vizejs/vite-plugin-musea`
 
 ## License
 

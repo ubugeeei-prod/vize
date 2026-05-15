@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import native from "../../npm/vize-native/index.js";
 
 import {
@@ -38,6 +38,7 @@ describe("vite-plugin vapor options", () => {
       sourceMap: false,
       ssr: true,
       vapor: true,
+      customRenderer: false,
       scopeId: undefined,
     });
   });
@@ -46,6 +47,7 @@ describe("vite-plugin vapor options", () => {
     expect(buildCompileBatchOptions({ ssr: false, vapor: true })).toEqual({
       ssr: false,
       vapor: true,
+      customRenderer: false,
     });
   });
 
@@ -73,10 +75,34 @@ const count = ref(1);
     expect(result.code).toContain("const n0 = t0()");
     expect(result.code).toContain("const __ctx = _proxyRefs(__returned__)");
     expect(result.code).toContain("const __vaporRender = render");
-    expect(result.code).toContain(
-      "return __vaporRender(__ctx, __props, __emit, __attrs, __slots)",
-    );
+    expect(result.code).toContain("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)");
     expect(result.code).toContain("return n0");
+  });
+
+  it("warns and falls back to standard SSR when Vapor is requested for SFCs", () => {
+    const result = compileSfc(
+      `<script setup lang="ts">
+const count = 1;
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>`,
+      {
+        filename: "/src/SsrFallback.vue",
+        sourceMap: false,
+        ssr: true,
+        vapor: true,
+        isTs: true,
+      },
+    );
+
+    expect(result.code).toContain("ssrRender");
+    expect(result.code).not.toContain("__vapor");
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([
+      "SFC Vapor SSR is not supported yet; falling back to standard SSR output.",
+    ]);
   });
 
   it("compiles the playground app itself to Vapor output", () => {
@@ -94,19 +120,13 @@ const count = ref(1);
     expect(result.code).toContain("_createIf");
     expect(result.code).toContain("_setClass");
     expect(result.code).toContain('_delegateEvents("click")');
-    expect(result.code).toContain(
-      "_setInsertionState(n16, null, true)\n  const n17 = _createIf(",
-    );
-    expect(result.code).toContain(
-      "_setInsertionState(n1, null, true)\n  const n22 = _createIf(",
-    );
+    expect(result.code).toContain("_setInsertionState(n16, null, true)\n  const n17 = _createIf(");
+    expect(result.code).toContain("_setInsertionState(n1, null, true)\n  const n22 = _createIf(");
     expect(result.code).toContain(
       '<g transform=\\"translate(15, 10) skewX(-15)\\"><path d=\\"M 65 0 L 40 60 L 70 20 L 65 0 Z\\" fill=\\"currentColor\\"></path><path d=\\"M 20 0 L 40 60 L 53 13 L 20 0 Z\\" fill=\\"currentColor\\"></path></g>',
     );
     expect(result.code).toContain("const __vaporRender = render");
-    expect(result.code).toContain(
-      "return __vaporRender(__ctx, __props, __emit, __attrs, __slots)",
-    );
+    expect(result.code).toContain("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)");
     expect(result.code).not.toContain("_openBlock");
     expect(result.code).not.toContain("_createElementBlock");
     expect(result.code).not.toContain("_ctx.===");
@@ -134,9 +154,7 @@ function render() {
 
     expect(result.code).toContain("const __vaporRender = render");
     expect(result.code).toContain("render: __vaporRender");
-    expect(result.code).toContain(
-      "return __vaporRender(__ctx, __props, __emit, __attrs, __slots)",
-    );
+    expect(result.code).toContain("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)");
   });
 
   it("emits Vapor template ref setters for DOM refs used by playground components", () => {
@@ -192,6 +210,60 @@ function render() {
 
     expect(result.code).toContain("_ctx.formatHelp(_for_item0.value.help)");
     expect(result.code).not.toContain("formatHelp(diagnostic.help)");
+  });
+
+  it("treats lowercase imported Tres-style components as Vapor components", () => {
+    const result = compileSfc(
+      `<script setup lang="ts">
+import { Primitive } from "@tresjs/core";
+</script>
+
+<template>
+  <primitive />
+</template>`,
+      {
+        filename: "/src/TresPrimitive.vue",
+        sourceMap: false,
+        ssr: false,
+        vapor: true,
+        isTs: true,
+      },
+    );
+
+    expect(result.code).toContain("const _component_primitive = _ctx.Primitive");
+    expect(result.code).toContain("_createComponentWithFallback(_component_primitive");
+    expect(result.code).not.toContain('_template("<primitive></primitive>", true)');
+  });
+
+  it("keeps Tres-style custom renderer intrinsics as elements around imported lowercase components", () => {
+    const result = compileSfc(
+      `<script setup lang="ts">
+import { Primitive } from "@tresjs/core";
+const visible = true;
+</script>
+
+<template>
+  <mesh>
+    <group v-if="visible">
+      <primitive />
+    </group>
+  </mesh>
+</template>`,
+      {
+        filename: "/src/TresCustomRenderer.vue",
+        sourceMap: false,
+        ssr: false,
+        vapor: true,
+        customRenderer: true,
+        isTs: true,
+      },
+    );
+
+    expect(result.code).toContain('const t1 = _template("<mesh></mesh>", true)');
+    expect(result.code).toContain('const t0 = _template("<group></group>", true)');
+    expect(result.code).toContain("const _component_primitive = _ctx.Primitive");
+    expect(result.code).not.toContain('_resolveComponent("mesh")');
+    expect(result.code).not.toContain('_resolveComponent("group")');
   });
 
   it("keeps Atelier output tabs reactive even when v-if siblings are present", () => {

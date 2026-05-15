@@ -51,22 +51,22 @@ This principle extends to the broader ecosystem. Vize's Vite plugin is compatibl
 
 Every Vize crate is named after a concept from the visual arts — painting, sculpture, and museum curation. This is not mere whimsy. The naming convention encodes a philosophy: **code is a creative medium**, and the tools that shape it should reflect the craft involved.
 
-| Crate | Art Origin | Role |
-|-------|-----------|------|
-| **Carton** | Artist's portfolio case | Shared utilities — the toolbox |
-| **Relief** | Sculptural surface projection | AST — the structured surface of code |
-| **Armature** | Skeleton supporting a sculpture | Parser — the structural framework |
-| **Croquis** | Quick gestural sketch | Semantic analysis — capturing essence |
-| **Atelier** | Artist's workshop | Compiler — where transformation happens |
-| **Vitrine** | Glass display case | Bindings — exposing the work |
-| **Canon** | Standard of ideal proportions | Type checker — ensuring correctness |
-| **Patina** | Aged surface indicating quality | Linter — polishing the surface |
-| **Glyph** | Carved symbol or letterform | Formatter — shaping the text |
-| **Maestro** | Master conductor | LSP — orchestrating the experience |
-| **Musea** | Plural of museum | Component gallery — exhibiting the work |
-| **Fresco** | Wall painting technique | TUI framework — painting the terminal |
+| Crate        | Art Origin                      | Role                                    |
+| ------------ | ------------------------------- | --------------------------------------- |
+| **Carton**   | Artist's portfolio case         | Shared utilities — the toolbox          |
+| **Relief**   | Sculptural surface projection   | AST — the structured surface of code    |
+| **Armature** | Skeleton supporting a sculpture | Parser — the structural framework       |
+| **Croquis**  | Quick gestural sketch           | Semantic analysis — capturing essence   |
+| **Atelier**  | Artist's workshop               | Compiler — where transformation happens |
+| **Vitrine**  | Glass display case              | Bindings — exposing the work            |
+| **Canon**    | Standard of ideal proportions   | Type checker — ensuring correctness     |
+| **Patina**   | Aged surface indicating quality | Linter — polishing the surface          |
+| **Glyph**    | Carved symbol or letterform     | Formatter — shaping the text            |
+| **Maestro**  | Master conductor                | LSP — orchestrating the experience      |
+| **Musea**    | Plural of museum                | Component gallery — exhibiting the work |
+| **Fresco**   | Wall painting technique         | TUI framework — painting the terminal   |
 
-This naming system serves a practical purpose: it makes the crate hierarchy intuitive. When you see `vize_atelier_dom`, you immediately understand it is a *workshop* that produces *DOM output*. When you see `vize_patina`, you know it *polishes* your code.
+This naming system serves a practical purpose: it makes the crate hierarchy intuitive. When you see `vize_atelier_dom`, you immediately understand it is a _workshop_ that produces _DOM output_. When you see `vize_patina`, you know it _polishes_ your code.
 
 #### The Sculpture Analogy
 
@@ -74,29 +74,29 @@ The deepest analogy is between software compilation and sculpture. Consider how 
 
 1. **Armature** — The sculptor begins by constructing an armature: a wire skeleton that defines the basic structure. In Vize, the parser (`vize_armature`) constructs the structural framework (AST) from raw source text.
 
-2. **Relief** — The sculptor builds the surface on top of the armature, creating a *relief* — a structured surface that projects from a flat plane. In Vize, the AST (`vize_relief`) gives structured, three-dimensional form to what was originally flat text.
+2. **Relief** — The sculptor builds the surface on top of the armature, creating a _relief_ — a structured surface that projects from a flat plane. In Vize, the AST (`vize_relief`) gives structured, three-dimensional form to what was originally flat text.
 
-3. **Croquis** — Before committing to a final sculpture, the artist makes quick sketches (*croquis*) to understand the subject's essential character. In Vize, semantic analysis (`vize_croquis`) is a quick pass that captures the meaning of code — what variables are bound, what expressions are valid — without committing to a compilation target.
+3. **Croquis** — Before committing to a final sculpture, the artist makes quick sketches (_croquis_) to understand the subject's essential character. In Vize, semantic analysis (`vize_croquis`) is a quick pass that captures the meaning of code — what variables are bound, what expressions are valid — without committing to a compilation target.
 
-4. **Atelier** — The sculptor moves to the *atelier* (workshop) to create the final piece. Multiple ateliers may produce different renditions of the same subject. In Vize, the compilation backends (`vize_atelier_dom`, `vize_atelier_vapor`, `vize_atelier_ssr`) are different workshops that produce different renditions (DOM, Vapor, SSR) of the same analyzed AST.
+4. **Atelier** — The sculptor moves to the _atelier_ (workshop) to create the final piece. Multiple ateliers may produce different renditions of the same subject. In Vize, the compilation backends (`vize_atelier_dom`, `vize_atelier_vapor`, `vize_atelier_ssr`) are different workshops that produce different renditions (DOM, Vapor, SSR) of the same analyzed AST.
 
-5. **Vitrine** — The finished work is placed in a *vitrine* (glass display case) so others can observe it. In Vize, the bindings (`vize_vitrine`) are a transparent layer that lets JavaScript consumers access the compiled output.
+5. **Vitrine** — The finished work is placed in a _vitrine_ (glass display case) so others can observe it. In Vize, the bindings (`vize_vitrine`) are a transparent layer that lets JavaScript consumers access the compiled output.
 
-6. **Musea** — Finally, the works are exhibited in a *museum* for appreciation and study. In Vize, the component gallery (`vize_musea`) is where components are exhibited, explored, and documented.
+6. **Musea** — Finally, the works are exhibited in a _museum_ for appreciation and study. In Vize, the component gallery (`vize_musea`) is where components are exhibited, explored, and documented.
 
 #### The Quality Crafts Analogy
 
 The remaining crates follow a craftsmanship analogy:
 
-- **Canon** (type checker) — In classical sculpture, the *canon* was a standard of ideal human proportions. Polykleitos wrote the *Kanon* defining mathematical ratios for the perfect figure. In Vize, the type checker enforces the "ideal proportions" of your code — types must be correct, props must match, emissions must conform.
+- **Canon** (type checker) — In classical sculpture, the _canon_ was a standard of ideal human proportions. Polykleitos wrote the _Kanon_ defining mathematical ratios for the perfect figure. In Vize, the type checker enforces the "ideal proportions" of your code — types must be correct, props must match, emissions must conform.
 
-- **Patina** (linter) — A *patina* is the surface finish that develops on aged materials, indicating quality and care. A bronze sculpture with a rich patina has been well-maintained. In Vize, the linter examines the surface of your code, identifying issues that affect its quality.
+- **Patina** (linter) — A _patina_ is the surface finish that develops on aged materials, indicating quality and care. A bronze sculpture with a rich patina has been well-maintained. In Vize, the linter examines the surface of your code, identifying issues that affect its quality.
 
-- **Glyph** (formatter) — A *glyph* is a carved symbol or letterform — think of the precise, consistent letterforms in a font. Each glyph has exact proportions and spacing. In Vize, the formatter ensures your code has consistent, precise proportions.
+- **Glyph** (formatter) — A _glyph_ is a carved symbol or letterform — think of the precise, consistent letterforms in a font. Each glyph has exact proportions and spacing. In Vize, the formatter ensures your code has consistent, precise proportions.
 
-- **Maestro** (LSP) — A *maestro* is the master conductor who orchestrates an ensemble into a unified performance. In Vize, the LSP server orchestrates all language features (completion, diagnostics, formatting, navigation) into a unified editor experience.
+- **Maestro** (LSP) — A _maestro_ is the master conductor who orchestrates an ensemble into a unified performance. In Vize, the LSP server orchestrates all language features (completion, diagnostics, formatting, navigation) into a unified editor experience.
 
-- **Fresco** (TUI) — A *fresco* is a painting technique where pigment is applied to wet plaster, becoming part of the wall itself. In Vize, the TUI framework "paints" interfaces directly onto the terminal surface.
+- **Fresco** (TUI) — A _fresco_ is a painting technique where pigment is applied to wet plaster, becoming part of the wall itself. In Vize, the TUI framework "paints" interfaces directly onto the terminal surface.
 
 ### 5. Vapor-First Thinking
 
@@ -123,7 +123,7 @@ Vize does not exist in isolation. It is part of a broader movement to rewrite Ja
 
 - **OXC** — Vize uses the [Oxidation Compiler](https://oxc.rs/) (oxc) for JavaScript and TypeScript parsing. OXC provides the high-performance JS/TS AST parsing that powers `vize_croquis` (semantic analysis) and `vize_atelier_core` (code generation). Rather than reimplement a JS parser, Vize delegates to OXC's battle-tested implementation.
 - **oxlint** — Vize is designed with [oxlint](https://oxc.rs/docs/guide/usage/linter) in mind. While `vize_patina` handles Vue-specific template linting, the broader JavaScript linting story is best served by oxlint's Rust-native rule engine. The two tools are complementary, not competing.
-- **tsgo (TypeScript Go)** — Microsoft's [native TypeScript type checker](https://github.com/nicolo-ribaudo/tsgo) (the Go port of TypeScript, previously known as `@typescript/native-preview`) represents a future where type checking is no longer bottlenecked by JavaScript. Vize's `vize_canon` is designed with awareness of this trajectory — as tsgo matures, Vize will integrate with it for JavaScript/TypeScript type checking while continuing to provide Vue-specific template type analysis.
+- **Corsa** — Vize's native TypeScript execution layer, built around [`corsa-bind`](https://github.com/ubugeeei/corsa-bind), represents the direction Vize is taking for JavaScript/TypeScript type checking without routing everything through a JavaScript-hosted compiler. `vize_canon` uses this stack for native diagnostics while continuing to provide Vue-specific template type analysis.
 - **LightningCSS** — Vize uses [LightningCSS](https://lightningcss.dev/) for CSS parsing and transformation within `vize_atelier_sfc`, leveraging its Rust-native CSS processing for scoped styles.
 
 There are still many unsolved challenges in this space — cross-tool AST interop, incremental analysis across language boundaries, and editor integration consistency. Vize aims to be a proving ground for solutions to these problems within the Vue.js ecosystem, contributing to the broader oxidation movement.
@@ -138,10 +138,10 @@ As the author of Vize, I ([@ubugeeei](https://github.com/ubugeeei)) want to be c
 
 ## The Name
 
-**Vize** (*/viːz/*) is derived from three words:
+**Vize** (_/viːz/_) is derived from three words:
 
 - **Vizier** — a wise counselor or advisor
 - **Visor** — something that helps you see clearly
 - **Advisor** — a guide that helps you make better decisions
 
-Together, they describe a tool that *sees through your code* and *advises you wisely*. The pronunciation rhymes with "breeze" — fast, effortless, and refreshing.
+Together, they describe a tool that _sees through your code_ and _advises you wisely_. The pronunciation rhymes with "breeze" — fast, effortless, and refreshing.

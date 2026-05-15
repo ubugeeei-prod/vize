@@ -23,7 +23,7 @@ use super::{
 /// - Emits typing (defineEmits)
 /// - Template binding references
 ///
-/// For full TypeScript type checking with tsgo, use `TypeCheckService`.
+/// For full TypeScript type checking with Corsa, use `TypeCheckService`.
 pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeCheckResult {
     use vize_atelier_core::parser::parse;
     use vize_atelier_sfc::{parse_sfc, SfcParseOptions};

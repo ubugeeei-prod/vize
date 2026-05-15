@@ -5,14 +5,14 @@ import type {
   BatchFileInput,
   BatchCompileResultWithFiles,
   StyleBlockInfo,
-} from "./types.js";
+} from "./types.ts";
 import {
   buildCompileBatchOptions,
   buildCompileFileOptions,
   type CompileBatchOptions,
   type CompileFileOptions,
-} from "./compile-options.js";
-import { generateScopeId } from "./utils/index.js";
+} from "./compile-options.ts";
+import { generateScopeId } from "./utils/index.ts";
 
 const { compileSfc, compileSfcBatchWithResults } = native;
 
@@ -30,7 +30,7 @@ export function extractStyleBlocks(source: string): StyleBlockInfo[] {
     const content = match[2];
     const lang = attrs.match(/\blang=["']([^"']+)["']/)?.[1] ?? null;
     const scoped = /\bscoped\b/.test(attrs);
-    const moduleMatch = attrs.match(/\bmodule(?:=["']([^"']+)["'])?\b/);
+    const moduleMatch = attrs.match(/\bmodule(?:=["']([^"']+)["'])?/);
     const isModule = moduleMatch ? moduleMatch[1] || true : false;
     blocks.push({ content, lang, scoped, module: isModule, index });
     index++;
@@ -71,6 +71,7 @@ export function compileFile(
     templateHash: result.templateHash,
     styleHash: result.styleHash,
     scriptHash: result.scriptHash,
+    macroArtifacts: result.macroArtifacts ?? [],
     styles,
   };
 
@@ -113,6 +114,7 @@ export function compileBatch(
         templateHash: fileResult.templateHash,
         styleHash: fileResult.styleHash,
         scriptHash: fileResult.scriptHash,
+        macroArtifacts: fileResult.macroArtifacts ?? [],
         styles,
       });
     }

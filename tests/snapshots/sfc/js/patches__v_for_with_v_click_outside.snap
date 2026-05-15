@@ -2,7 +2,7 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 import { ref } from 'vue'
 
@@ -19,9 +19,11 @@ return (_ctx, _cache) => {
   const _directive_click_outside = _resolveDirective("click-outside")
 
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {
-      return (_openBlock(), _createElementBlock("div", {
+      return _withDirectives((_openBlock(), _createElementBlock("div", {
         key: item.id
-      }, _toDisplayString(item.name), 1 /* TEXT */))
+      }, _toDisplayString(item.name), 1 /* TEXT */)), [
+        [_directive_click_outside, () => closeItem(item.id)]
+      ])
     }), 128 /* KEYED_FRAGMENT */))
 }
 }

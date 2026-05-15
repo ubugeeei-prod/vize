@@ -9,10 +9,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  reporter: [["list"], ["html", { open: "never" }]],
   use: {
     baseURL: "http://localhost:5173",
+    screenshot: "only-on-failure",
     trace: "on-first-retry",
+    video: "retain-on-failure",
   },
   projects: [
     {
@@ -29,7 +31,7 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: "pnpm dev",
+    command: "vp dev --config vite.app.config.ts",
     url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

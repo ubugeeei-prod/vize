@@ -16,62 +16,79 @@ pub struct SimpleExpressionContent {
     pub loc: SourceLocation,
 }
 
-/// Check if element has a structural directive.
-/// In Vue 3, v-if has higher priority than v-for when both are on the same element.
-/// So we check for v-if/v-else-if/v-else first, then v-for.
-pub fn check_structural_directive<'a>(
-    el: &ElementNode<'a>,
-) -> Option<(
-    String,
-    Option<SimpleExpressionContent>,
-    Option<SourceLocation>,
-)> {
-    // First pass: check for v-if/v-else-if/v-else (higher priority)
-    for prop in el.props.iter() {
+#[derive(Clone, Copy)]
+pub enum StructuralDirectiveKind {
+    If,
+    ElseIf,
+    Else,
+    For,
+}
+
+fn directive_expression_to_content(exp: ExpressionNode<'_>) -> SimpleExpressionContent {
+    match exp {
+        ExpressionNode::Simple(s) => {
+            let s = Box::into_inner(s);
+            SimpleExpressionContent {
+                content: s.content,
+                is_static: s.is_static,
+                loc: s.loc,
+            }
+        }
+        ExpressionNode::Compound(c) => {
+            let c = Box::into_inner(c);
+            let loc = c.loc;
+            SimpleExpressionContent {
+                content: loc.source.clone(),
+                is_static: false,
+                loc,
+            }
+        }
+    }
+}
+
+/// Take the highest-priority structural directive from an element.
+///
+/// In Vue 3, v-if has higher priority than v-for when both are present on the same element.
+/// This removes the selected directive from the element in the same pass we discover it.
+pub fn take_structural_directive<'a>(
+    el: &mut Box<'a, ElementNode<'a>>,
+) -> Option<(StructuralDirectiveKind, Option<SimpleExpressionContent>)> {
+    let mut selected_if = None;
+    let mut selected_for = None;
+
+    for (idx, prop) in el.props.iter().enumerate() {
         if let PropNode::Directive(dir) = prop {
             match dir.name.as_str() {
-                "if" | "else-if" | "else" => {
-                    let exp_content = dir.exp.as_ref().map(|e| match e {
-                        ExpressionNode::Simple(s) => SimpleExpressionContent {
-                            content: s.content.clone(),
-                            is_static: s.is_static,
-                            loc: s.loc.clone(),
-                        },
-                        ExpressionNode::Compound(c) => SimpleExpressionContent {
-                            content: c.loc.source.clone(),
-                            is_static: false,
-                            loc: c.loc.clone(),
-                        },
-                    });
-                    let exp_loc = dir.exp.as_ref().map(|e| e.loc().clone());
-                    return Some((dir.name.clone(), exp_content, exp_loc));
+                "if" => {
+                    selected_if = Some((idx, StructuralDirectiveKind::If));
+                    break;
+                }
+                "else-if" => {
+                    selected_if = Some((idx, StructuralDirectiveKind::ElseIf));
+                    break;
+                }
+                "else" => {
+                    selected_if = Some((idx, StructuralDirectiveKind::Else));
+                    break;
+                }
+                "for" if selected_for.is_none() => {
+                    selected_for = Some((idx, StructuralDirectiveKind::For));
                 }
                 _ => {}
             }
         }
     }
-    // Second pass: check for v-for (lower priority)
-    for prop in el.props.iter() {
-        if let PropNode::Directive(dir) = prop {
-            if dir.name.as_str() == "for" {
-                let exp_content = dir.exp.as_ref().map(|e| match e {
-                    ExpressionNode::Simple(s) => SimpleExpressionContent {
-                        content: s.content.clone(),
-                        is_static: s.is_static,
-                        loc: s.loc.clone(),
-                    },
-                    ExpressionNode::Compound(c) => SimpleExpressionContent {
-                        content: c.loc.source.clone(),
-                        is_static: false,
-                        loc: c.loc.clone(),
-                    },
-                });
-                let exp_loc = dir.exp.as_ref().map(|e| e.loc().clone());
-                return Some((dir.name.clone(), exp_content, exp_loc));
-            }
-        }
-    }
-    None
+
+    let (directive_idx, directive_kind) = selected_if.or(selected_for)?;
+    let directive = match el.props.remove(directive_idx) {
+        PropNode::Directive(dir) => Box::into_inner(dir),
+        PropNode::Attribute(_) => unreachable!("structural directives are always directive props"),
+    };
+
+    Some((
+        directive_kind,
+        directive.exp.map(directive_expression_to_content),
+    ))
 }
 
 /// Extract and remove key prop from element
@@ -97,25 +114,10 @@ pub fn extract_key_prop<'a>(el: &mut ElementNode<'a>) -> Option<PropNode<'a>> {
     key_index.map(|i| el.props.remove(i))
 }
 
-/// Remove structural directive from element props
-pub fn remove_structural_directive<'a>(el: &mut Box<'a, ElementNode<'a>>, dir_name: &str) {
-    let mut i = 0;
-    while i < el.props.len() {
-        if let PropNode::Directive(dir) = &el.props[i] {
-            if dir.name.as_str() == dir_name {
-                el.props.remove(i);
-                return;
-            }
-        }
-        i += 1;
-    }
-}
-
 /// Transform v-if directive
 pub fn transform_v_if<'a>(
     ctx: &mut TransformContext<'a>,
     exp: Option<&SimpleExpressionContent>,
-    _exp_loc: Option<SourceLocation>,
     is_root: bool,
 ) -> Option<std::vec::Vec<ExitFn<'a>>> {
     let allocator = ctx.allocator;
@@ -387,7 +389,6 @@ pub fn transform_v_if<'a>(
 pub fn transform_v_for<'a>(
     ctx: &mut TransformContext<'a>,
     exp: Option<&SimpleExpressionContent>,
-    _exp_loc: Option<SourceLocation>,
 ) -> Option<std::vec::Vec<ExitFn<'a>>> {
     let allocator = ctx.allocator;
 

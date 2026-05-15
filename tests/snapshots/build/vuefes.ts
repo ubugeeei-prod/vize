@@ -5,6 +5,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { vuefesApp, VIZE_BIN } from "../../_helpers/apps.ts";
+import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = vuefesApp;
@@ -35,7 +36,8 @@ describe(`${app.name} build (compiler)`, () => {
     console.log(stdout);
 
     assert.ok(fs.existsSync(outDir), "output directory should exist");
-    const jsFiles = fs.readdirSync(outDir, { recursive: true })
+    const jsFiles = fs
+      .readdirSync(outDir, { recursive: true })
       .filter((f) => String(f).endsWith(".js"));
     console.log(`Generated ${jsFiles.length} JS files`);
     assert.ok(jsFiles.length > 0, "should produce .js output files");
@@ -47,23 +49,16 @@ describe(`${app.name} build (compiler)`, () => {
       assert.fail("output directory does not exist - run build test first");
     }
 
-    const jsFiles = fs.readdirSync(outDir, { recursive: true })
+    const jsFiles = fs
+      .readdirSync(outDir, { recursive: true })
       .filter((f) => String(f).endsWith(".js"))
       .slice(0, 10);
 
-    for (const file of jsFiles) {
-      const filePath = path.join(outDir, String(file));
+    for (const entry of jsFiles) {
+      const file = String(entry);
+      const filePath = path.join(outDir, file);
       const content = fs.readFileSync(filePath, "utf-8");
-
-      try {
-        new Function(content);
-      } catch (e: any) {
-        if (!e.message.includes("Cannot use import") &&
-            !e.message.includes("Unexpected token 'export'") &&
-            !e.message.includes("Cannot use 'import.meta'")) {
-          assert.fail(`Invalid JS in ${file}: ${e.message}`);
-        }
-      }
+      assertParsesAsModule(content, file);
       console.log(`Valid: ${file}`);
     }
   });

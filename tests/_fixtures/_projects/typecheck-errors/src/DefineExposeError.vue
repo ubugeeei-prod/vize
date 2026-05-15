@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref } from "vue";
 
-const count = ref(0)
+const count = ref(0);
 function increment() {
-  count.value++
+  count.value++;
 }
 
-const label: number = "not a number"
+const label: number = "not a number";
 
-defineExpose({ count, increment, label })
+defineExpose({ count, increment, label });
 </script>
 
 <template>

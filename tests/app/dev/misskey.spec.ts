@@ -33,7 +33,13 @@ test.describe("misskey dev", () => {
     });
 
     console.log(`Waiting for ${app.name} server to be ready (port ${app.port})...`);
-    await waitForServerReady(devServer, app.port, app.readyPattern, app.startupTimeout, app.readyDelay);
+    await waitForServerReady(
+      devServer,
+      app.port,
+      app.readyPattern,
+      app.startupTimeout,
+      app.readyDelay,
+    );
     await waitForHttpReady(app.url, app.port);
     console.log(`${app.name} server is ready`);
   });

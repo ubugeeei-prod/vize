@@ -122,6 +122,24 @@ pub fn is_valid_js_identifier(s: &str) -> bool {
     chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
 }
 
+/// Convert a component/directive asset name into a valid JavaScript identifier.
+pub fn to_valid_asset_identifier(kind: &str, name: &str) -> String {
+    let mut ident = String::with_capacity(kind.len() + name.len() + 2);
+    ident.push('_');
+    ident.push_str(kind);
+    ident.push('_');
+
+    for c in name.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' {
+            ident.push(c);
+        } else {
+            ident.push('_');
+        }
+    }
+
+    ident
+}
+
 /// Default helper alias function
 pub fn default_helper_alias(helper: RuntimeHelper) -> &'static str {
     match helper {
@@ -355,9 +373,20 @@ pub fn is_constant_simple_expression(
         return true;
     }
 
+    // Expressions that already reference runtime context/setup/props are dynamic.
+    // This keeps patch flags for transformed bindings such as `_ctx.foo`.
+    let content = exp.content.as_str();
+    if content.contains("_ctx.")
+        || content.contains("$setup.")
+        || content.contains("__props.")
+        || content.contains("$props.")
+    {
+        return false;
+    }
+
     let mut wrapped = String::with_capacity(exp.content.len() + 2);
     wrapped.push('(');
-    wrapped.push_str(exp.content.as_str());
+    wrapped.push_str(content);
     wrapped.push(')');
 
     let allocator = oxc_allocator::Allocator::default();

@@ -3,10 +3,15 @@
 //! Defines the `LintResult` output type and the `Linter` struct with its
 //! builder-pattern configuration methods.
 
+#[cfg(not(target_arch = "wasm32"))]
+use super::corsa_session::CorsaTypeAwareSession;
 use crate::{
     diagnostic::{HelpLevel, LintDiagnostic},
+    preset::{builtin_script_rule_names, LintPreset},
     rule::RuleRegistry,
 };
+#[cfg(not(target_arch = "wasm32"))]
+use std::sync::Mutex;
 use vize_carton::{i18n::Locale, FxHashSet, String};
 
 /// Lint result for a single file.
@@ -43,6 +48,8 @@ impl LintResult {
 /// - Pre-allocates vectors with expected capacity
 /// - Minimizes allocations during traversal
 pub struct Linter {
+    /// Preset used to seed the rule registry, when applicable.
+    pub(crate) preset: Option<LintPreset>,
     pub(crate) registry: RuleRegistry,
     /// Estimated initial allocator capacity (in bytes).
     pub(crate) initial_capacity: usize,
@@ -52,21 +59,47 @@ pub struct Linter {
     pub(crate) enabled_rules: Option<FxHashSet<String>>,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
+    /// Built-in script rules enabled for this linter.
+    pub(crate) script_rules: &'static [&'static str],
+    /// Lazily initialized native corsa session for type-aware lint.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) native_corsa: Mutex<Option<CorsaTypeAwareSession>>,
 }
 
 impl Linter {
     /// Default initial capacity for the arena (64KB).
     pub(crate) const DEFAULT_INITIAL_CAPACITY: usize = 64 * 1024;
 
-    /// Create a new linter with recommended rules.
+    /// Create a new linter with the default happy-path preset.
     #[inline]
     pub fn new() -> Self {
+        let preset = LintPreset::default();
         Self {
-            registry: RuleRegistry::with_recommended(),
+            preset: Some(preset),
+            registry: RuleRegistry::with_preset(preset),
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
             help_level: HelpLevel::default(),
+            script_rules: builtin_script_rule_names(preset),
+            #[cfg(not(target_arch = "wasm32"))]
+            native_corsa: Mutex::new(None),
+        }
+    }
+
+    /// Create a new linter with a named preset.
+    #[inline]
+    pub fn with_preset(preset: LintPreset) -> Self {
+        Self {
+            preset: Some(preset),
+            registry: RuleRegistry::with_preset(preset),
+            initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
+            locale: Locale::default(),
+            enabled_rules: None,
+            help_level: HelpLevel::default(),
+            script_rules: builtin_script_rule_names(preset),
+            #[cfg(not(target_arch = "wasm32"))]
+            native_corsa: Mutex::new(None),
         }
     }
 
@@ -74,11 +107,15 @@ impl Linter {
     #[inline]
     pub fn with_registry(registry: RuleRegistry) -> Self {
         Self {
+            preset: None,
             registry,
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
             help_level: HelpLevel::default(),
+            script_rules: &[],
+            #[cfg(not(target_arch = "wasm32"))]
+            native_corsa: Mutex::new(None),
         }
     }
 
@@ -102,7 +139,21 @@ impl Linter {
     /// Rules not in the list will be skipped during linting.
     #[inline]
     pub fn with_enabled_rules(mut self, rules: Option<Vec<String>>) -> Self {
+        if rules.is_some() && matches!(self.preset, Some(LintPreset::Incremental)) {
+            self.registry = RuleRegistry::with_preset(LintPreset::Opinionated);
+            self.script_rules = builtin_script_rule_names(LintPreset::Opinionated);
+        }
         self.enabled_rules = rules.map(|r| r.into_iter().collect());
+        self
+    }
+
+    /// Register an extra rule if the active preset did not already include it.
+    #[inline]
+    pub fn with_rule(mut self, rule: Box<dyn crate::rule::Rule>) -> Self {
+        let rule_name = rule.meta().name;
+        if !self.registry.has_rule(rule_name) {
+            self.registry.register(rule);
+        }
         self
     }
 

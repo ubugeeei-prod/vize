@@ -47,10 +47,8 @@ impl AnchorHasContent {
         // Check for content in children
         for child in &element.children {
             match child {
-                TemplateChildNode::Text(text) => {
-                    if !text.content.trim().is_empty() {
-                        return true;
-                    }
+                TemplateChildNode::Text(text) if !text.content.trim().is_empty() => {
+                    return true;
                 }
                 TemplateChildNode::Interpolation(_) => {
                     return true;

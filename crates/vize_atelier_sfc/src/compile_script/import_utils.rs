@@ -176,16 +176,7 @@ mod tests {
         let input = "import AtriumSegmentedTabs, { type AtriumSegmentedTabConfig } from '../AtriumSegmentedTabs/AtriumSegmentedTabs.vue'";
         let result = process_import_for_types(input);
         let output = result.expect("should produce an import");
-        assert!(
-            output.starts_with("import AtriumSegmentedTabs from"),
-            "Default import should be preserved as default import, not named. Got: {}",
-            output
-        );
-        assert!(
-            !output.contains("{ AtriumSegmentedTabs }"),
-            "Default import should NOT be inside braces. Got: {}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -194,11 +185,7 @@ mod tests {
         let input = "import Foo, { type Bar, baz } from 'module'";
         let result = process_import_for_types(input);
         let output = result.expect("should produce an import");
-        assert!(
-            output.contains("import Foo, { baz }"),
-            "Should have default + named imports. Got: {}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]

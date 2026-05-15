@@ -1,0 +1,24 @@
+---
+source: crates/vize_patina/src/rules/script/no_options_api.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-options-api",
+        severity: Error,
+        message: "Options API component declarations are not supported",
+        start: 71,
+        end: 107,
+        help: Some(
+            "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+        ),
+        labels: [
+            Label {
+                message: "props option (use defineProps())",
+                start: 75,
+                end: 80,
+            },
+        ],
+        fix: None,
+    },
+]

@@ -32,47 +32,43 @@ type RouteSnapshot = {
 
 async function readCurrentRoute(page: Page): Promise<RouteSnapshot> {
   await page.waitForFunction(() => {
-    const root = document.querySelector("#__nuxt") as
-      | {
-          __vue_app__?: {
-            config?: {
-              globalProperties?: {
-                $router?: {
-                  currentRoute?: {
-                    value?: unknown;
-                  };
-                };
+    const root = document.querySelector("#__nuxt") as {
+      __vue_app__?: {
+        config?: {
+          globalProperties?: {
+            $router?: {
+              currentRoute?: {
+                value?: unknown;
               };
             };
           };
-        }
-      | null;
+        };
+      };
+    } | null;
 
     return root?.__vue_app__?.config?.globalProperties?.$router?.currentRoute?.value !== undefined;
   });
 
   return page.evaluate(() => {
-    const root = document.querySelector("#__nuxt") as
-      | {
-          __vue_app__?: {
-            config?: {
-              globalProperties?: {
-                $router?: {
-                  currentRoute?: {
-                    value?: {
-                      fullPath?: string;
-                      meta?: Record<string, unknown>;
-                      name?: string | symbol | null;
-                      params?: Record<string, unknown>;
-                      path?: string;
-                    };
-                  };
+    const root = document.querySelector("#__nuxt") as {
+      __vue_app__?: {
+        config?: {
+          globalProperties?: {
+            $router?: {
+              currentRoute?: {
+                value?: {
+                  fullPath?: string;
+                  meta?: Record<string, unknown>;
+                  name?: string | symbol | null;
+                  params?: Record<string, unknown>;
+                  path?: string;
                 };
               };
             };
           };
-        }
-      | null;
+        };
+      };
+    } | null;
     const route = root?.__vue_app__?.config?.globalProperties?.$router?.currentRoute?.value;
     if (!route?.path || !route.fullPath) {
       throw new Error("Nuxt router currentRoute is not available");
@@ -102,7 +98,13 @@ test.describe("npmx.dev dev", () => {
     });
 
     console.log(`Waiting for ${app.name} server to be ready (port ${app.port})...`);
-    await waitForServerReady(devServer, app.port, app.readyPattern, app.startupTimeout, app.readyDelay);
+    await waitForServerReady(
+      devServer,
+      app.port,
+      app.readyPattern,
+      app.startupTimeout,
+      app.readyDelay,
+    );
     await waitForHttpReady(app.url, app.port);
     console.log(`${app.name} server is ready`);
   });
@@ -144,7 +146,8 @@ test.describe("npmx.dev dev", () => {
     expect(html).toContain("__nuxt");
     expect(html.length).toBeGreaterThan(100);
     // npmx.dev should have "npmx" text or search form in SSR output
-    const hasExpectedContent = html.toLowerCase().includes("npmx") || html.includes("search") || html.includes("form");
+    const hasExpectedContent =
+      html.toLowerCase().includes("npmx") || html.includes("search") || html.includes("form");
     expect(hasExpectedContent).toBe(true);
   });
 
@@ -200,9 +203,10 @@ test.describe("npmx.dev dev", () => {
     const newLogs = getProcessLogs(devServer).slice(logOffset);
     const runtimeWarnings = newLogs.filter((line) => {
       return (
-        line.includes('useFetch') && line.includes('must return a value')
-      ) || line.includes('Property "disabled" was accessed during render')
-        || line.includes('Property "size" was accessed during render');
+        (line.includes("useFetch") && line.includes("must return a value")) ||
+        line.includes('Property "disabled" was accessed during render') ||
+        line.includes('Property "size" was accessed during render')
+      );
     });
 
     expect(runtimeWarnings).toEqual([]);
@@ -256,14 +260,33 @@ test.describe("npmx.dev dev", () => {
       timeout: 30_000,
     });
     await page.waitForTimeout(3_000);
+    await readCurrentRoute(page);
 
     // Try to navigate to /about via client-side link
-    const aboutLink = page.locator('a[href="/about"], a[href*="about"]').first();
+    const aboutLink = page.locator('a[href="/about"]').first();
     const hasAboutLink = await aboutLink.count();
     if (hasAboutLink > 0) {
-      await aboutLink.click();
-      await page.waitForTimeout(2_000);
-      expect(page.url()).toContain("about");
+      await aboutLink.scrollIntoViewIfNeeded();
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const navigation = page.waitForURL((url) => url.pathname === "/about", {
+          timeout: 5_000,
+        });
+        await aboutLink.click();
+        try {
+          await navigation;
+          break;
+        } catch (error) {
+          if (attempt === 1) {
+            throw error;
+          }
+          await page.waitForLoadState("load", { timeout: 5_000 }).catch(() => {});
+          await page.waitForTimeout(1_000);
+        }
+      }
+
+      await expect.poll(() => new URL(page.url()).pathname).toBe("/about");
+      await expect.poll(async () => (await readCurrentRoute(page)).path).toBe("/about");
     }
   });
 
@@ -275,14 +298,39 @@ test.describe("npmx.dev dev", () => {
     await page.waitForTimeout(3_000);
 
     // Find search input
-    const searchInput = page.locator('input[type="search"], input[name="q"], input[placeholder*="earch"], input[role="searchbox"]').first();
+    const searchInput = page
+      .locator(
+        'input[type="search"], input[name="q"], input[placeholder*="earch"], input[role="searchbox"]',
+      )
+      .first();
     const hasSearchInput = await searchInput.count();
     if (hasSearchInput > 0) {
       await searchInput.fill("test-package");
+      await expect(searchInput).toHaveValue("test-package");
       await page.waitForTimeout(1_000);
-      // URL or page state should reflect the search
-      const pageContent = await page.content();
-      const urlOrContent = page.url().includes("test-package") || pageContent.includes("test-package");
+
+      // Some search UIs debounce into the URL while others require form
+      // submission. Verify the interactive state first, then exercise the
+      // user-facing submit path when needed.
+      const queryVisibleInUrlOrHtml = async () => {
+        if (page.url().includes("test-package")) return true;
+        const pageContent = await page.content().catch(() => "");
+        return pageContent.includes("test-package");
+      };
+      let urlOrContent = await queryVisibleInUrlOrHtml();
+      if (!urlOrContent) {
+        const urlWait = page
+          .waitForURL((url) => url.href.includes("test-package"), { timeout: 5_000 })
+          .catch(() => null);
+        await searchInput.press("Enter");
+        await Promise.race([
+          urlWait,
+          page.waitForLoadState("domcontentloaded", { timeout: 5_000 }).catch(() => null),
+        ]);
+        await page.waitForLoadState("networkidle", { timeout: 3_000 }).catch(() => undefined);
+        await expect.poll(queryVisibleInUrlOrHtml, { timeout: 5_000 }).toBe(true);
+        urlOrContent = true;
+      }
       expect(urlOrContent).toBe(true);
     }
   });

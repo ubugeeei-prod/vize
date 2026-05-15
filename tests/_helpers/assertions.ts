@@ -1,9 +1,26 @@
+import { spawnSync } from "node:child_process";
 import type { Page } from "@playwright/test";
 
-export async function collectConsoleErrors(
-  page: Page,
-  appName: string,
-): Promise<string[]> {
+export function assertParsesAsModule(source: string, fileLabel: string): void {
+  const result = spawnSync(process.execPath, ["--input-type=module", "--check"], {
+    encoding: "utf-8",
+    input: source,
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  if (result.status !== 0) {
+    const details =
+      result.stderr.trim() ||
+      result.stdout.trim() ||
+      `node --check exited with status ${result.status}`;
+    throw new Error(`Invalid JS in ${fileLabel}: ${details}`);
+  }
+}
+
+export async function collectConsoleErrors(page: Page, appName: string): Promise<string[]> {
   const errors: string[] = [];
 
   page.on("console", (msg) => {
@@ -25,8 +42,10 @@ export async function collectConsoleErrors(
 export function isFatalError(error: string): boolean {
   const fatalPatterns = [
     /Failed to resolve component/,
+    /is not a function/,
     /\[Vue warn\].*is not a function/,
     /Cannot read propert/,
+    /ReferenceError/,
     /Uncaught TypeError/,
     /Uncaught ReferenceError/,
     /Uncaught SyntaxError/,
@@ -67,10 +86,12 @@ export async function collectHydrationErrors(page: Page): Promise<string[]> {
 
 export async function verifyScopedCssAttributes(page: Page): Promise<number> {
   return page.evaluate(() => {
-    return document.querySelectorAll("[data-v-]").length
-      || Array.from(document.querySelectorAll("*")).filter(
-        (el) => Array.from(el.attributes).some((attr) => attr.name.startsWith("data-v-")),
-      ).length;
+    return (
+      document.querySelectorAll("[data-v-]").length ||
+      Array.from(document.querySelectorAll("*")).filter((el) =>
+        Array.from(el.attributes).some((attr) => attr.name.startsWith("data-v-")),
+      ).length
+    );
   });
 }
 

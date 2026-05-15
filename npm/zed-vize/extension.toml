@@ -1,0 +1,19 @@
+id = "vize"
+name = "Vize"
+version = "0.89.0"
+schema_version = 1
+authors = ["Vize contributors"]
+description = "Opt-in Vue diagnostics and language support powered by Vize"
+repository = "https://github.com/ubugeeei/vize"
+
+[language_servers.vize]
+name = "Vize"
+languages = ["Vue", "Art Vue"]
+
+[language_servers.vize.language_ids]
+"Vue" = "vue"
+"Art Vue" = "art-vue"
+
+[grammars.art-vue]
+repository = "https://github.com/tree-sitter-grammars/tree-sitter-vue"
+commit = "7e48557b903a9db9c38cea3b7839ef7e1f36c693"

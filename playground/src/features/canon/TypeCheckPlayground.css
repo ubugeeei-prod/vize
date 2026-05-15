@@ -303,7 +303,7 @@
   line-height: 1.4;
 }
 
-.diagnostic-message :deep(.msg-type) {
+.diagnostic-message .msg-type {
   font-family: "JetBrains Mono", monospace;
   font-size: 0.85em;
   color: #79c0ff;
@@ -345,12 +345,12 @@
   line-height: 1.6;
 }
 
-.help-content :deep(strong) {
+.help-content strong {
   color: #f59e0b;
   font-weight: 600;
 }
 
-.help-content :deep(.help-code) {
+.help-content .help-code {
   margin: 0.5rem 0;
   padding: 0.75rem;
   background: rgba(0, 0, 0, 0.3);
@@ -361,13 +361,13 @@
   line-height: 1.5;
 }
 
-.help-content :deep(.help-code code) {
+.help-content .help-code code {
   color: #a5d6ff;
   background: none;
   padding: 0;
 }
 
-.help-content :deep(.help-inline-code) {
+.help-content .help-inline-code {
   background: rgba(110, 118, 129, 0.3);
   padding: 0.15rem 0.4rem;
   border-radius: 3px;
@@ -377,48 +377,48 @@
 }
 
 /* Syntax highlighting colors */
-.help-content :deep(.hl-keyword) {
+.help-content .hl-keyword {
   color: #ff7b72;
 }
 
-.help-content :deep(.hl-vue-api) {
+.help-content .hl-vue-api {
   color: #7ee787;
 }
 
-.help-content :deep(.hl-string) {
+.help-content .hl-string {
   color: #a5d6ff;
 }
 
-.help-content :deep(.hl-comment) {
+.help-content .hl-comment {
   color: #8b949e;
   font-style: italic;
 }
 
-.help-content :deep(.hl-tag) {
+.help-content .hl-tag {
   color: #7ee787;
 }
 
-.help-content :deep(.hl-directive) {
+.help-content .hl-directive {
   color: #d2a8ff;
 }
 
-.help-content :deep(.hl-delimiter) {
+.help-content .hl-delimiter {
   color: #ffa657;
 }
 
-.help-content :deep(.hl-type) {
+.help-content .hl-type {
   color: #79c0ff;
 }
 
-.help-content :deep(.hl-number) {
+.help-content .hl-number {
   color: #79c0ff;
 }
 
-.help-content :deep(.hl-property) {
+.help-content .hl-property {
   color: #79c0ff;
 }
 
-.help-content :deep(.hl-value) {
+.help-content .hl-value {
   color: #a5d6ff;
 }
 

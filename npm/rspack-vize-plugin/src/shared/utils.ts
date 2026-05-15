@@ -1,20 +1,15 @@
-/**
- * Shared utility functions for @vizejs/rspack-plugin
- * Copied from vite-plugin-vize and adapted
- */
+/** Shared utilities for @vizejs/rspack-plugin. */
 
 import { createHash } from "node:crypto";
 import path from "node:path";
-import type { StyleBlockInfo, CustomBlockInfo, SfcSrcInfo } from "../types/index.js";
+import type {
+  StyleBlockInfo,
+  CustomBlockInfo,
+  SfcSrcInfo,
+  TemplateAssetUrl,
+} from "../types/index.ts";
 
-/**
- * Generate a unique scope ID for scoped CSS based on file path.
- * Uses SHA256 hash and takes the first 8 characters.
- *
- * Uses relative path (when rootContext is provided) for cross-environment
- * consistency (e.g. SSR hydration).  In production, mixes source content
- * into the hash to avoid collisions across packages with identically-named files.
- */
+/** Generate scope ID (8-char SHA256 prefix). Uses relative path for cross-env consistency. */
 export function generateScopeId(
   filename: string,
   rootContext?: string,
@@ -35,12 +30,7 @@ export function generateScopeId(
   return hash.slice(0, 8);
 }
 
-/**
- * Extract style block metadata from a Vue SFC source string.
- * Parses `<style>` tags to determine lang, scoped, and module attributes.
- *
- * Copied from vite-plugin-vize/src/compiler.ts
- */
+/** Extract style block metadata from SFC source. */
 export function extractStyleBlocks(source: string): StyleBlockInfo[] {
   const blocks: StyleBlockInfo[] = [];
   const styleRegex = /<style([^>]*)>([\s\S]*?)<\/style>/gi;
@@ -53,7 +43,7 @@ export function extractStyleBlocks(source: string): StyleBlockInfo[] {
     const src = attrs.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null;
     const lang = attrs.match(/\blang=["']([^"']+)["']/)?.[1] ?? null;
     const scoped = /\bscoped\b/.test(attrs);
-    const moduleMatch = attrs.match(/\bmodule(?:=["']([^"']+)["'])?\b/);
+    const moduleMatch = attrs.match(/\bmodule(?:=["']([^"']+)["'])?/);
     const isModule = moduleMatch ? moduleMatch[1] || true : false;
 
     blocks.push({ content, src, lang, scoped, module: isModule, index });
@@ -63,25 +53,11 @@ export function extractStyleBlocks(source: string): StyleBlockInfo[] {
   return blocks;
 }
 
-/**
- * Fallback scoped CSS transformer using simple regex.
- *
- * ⚠️ Known limitations:
- *   - Does not support @media / @supports nested selectors
- *   - Does not support Vue's :deep() / :global() / :slotted() pseudo-classes
- *   - Does not handle CSS comments containing { or ,
- *   - Does not support :root and other pseudo-class selectors
- *
- * Recommendation: This regex implementation is for MVP stage only;
- * production-grade scoped semantics should use native-side precise API.
- *
- * Copied from rspack-plugin-design.md
- */
+/** Fallback scoped CSS transformer using regex. Does not support @media nesting, :deep()/:global()/:slotted(). */
 export function addScopeToCssFallback(css: string, scopeId: string): string {
   const scopeAttr = `[data-v-${scopeId}]`;
 
-  // Block-aware approach: only transform selectors (before {), not property values.
-  // Walk through the CSS tracking brace depth to distinguish selectors from declarations.
+  // Block-aware: only transform selectors (before {), not property values.
   let result = "";
   let depth = 0;
   let i = 0;
@@ -92,7 +68,6 @@ export function addScopeToCssFallback(css: string, scopeId: string): string {
 
     if (ch === "{") {
       if (depth === 0) {
-        // Everything from selectorStart..i is a selector group
         const selectorGroup = css.slice(selectorStart, i);
         result += scopeSelectors(selectorGroup, scopeAttr);
         result += "{";
@@ -109,7 +84,6 @@ export function addScopeToCssFallback(css: string, scopeId: string): string {
       selectorStart = i;
     } else {
       if (depth > 0) {
-        // Inside a declaration block — emit as-is
         result += ch;
       }
       i++;
@@ -124,17 +98,73 @@ export function addScopeToCssFallback(css: string, scopeId: string): string {
   return result;
 }
 
-/**
- * Add scoped attribute to each selector in a comma-separated selector group.
- * Skips at-rules (@media, @keyframes, etc.).
- */
+/** Strip CSS block comments while preserving string literals and line positions. */
+export function stripCssCommentsForScoped(css: string): string {
+  // Fast path: no block comment
+  if (!css.includes("/*")) return css;
+
+  const len = css.length;
+  const parts: string[] = [];
+  let copyStart = 0; // start of the current non-comment segment
+  let i = 0;
+
+  while (i < len) {
+    const code = css.charCodeAt(i);
+
+    if (code === 34 /* " */ || code === 39 /* ' */) {
+      const quote = code;
+      i++;
+      while (i < len) {
+        const c = css.charCodeAt(i);
+        if (c === 92 /* \\ */) {
+          i += 2;
+          continue;
+        }
+        i++;
+        if (c === quote) break;
+      }
+      continue;
+    }
+
+    if (code === 47 /* / */ && i + 1 < len && css.charCodeAt(i + 1) === 42 /* * */) {
+      if (i > copyStart) parts.push(css.slice(copyStart, i));
+      i += 2; // skip `/*`
+      let commentBuf = "  "; // replacement for `/*`
+      while (i < len) {
+        if (
+          css.charCodeAt(i) === 42 /* * */ &&
+          i + 1 < len &&
+          css.charCodeAt(i + 1) === 47 /* / */
+        ) {
+          commentBuf += "  "; // replacement for `*/`
+          i += 2;
+          break;
+        }
+        commentBuf += css.charCodeAt(i) === 10 /* \n */ ? "\n" : " ";
+        i++;
+      }
+      parts.push(commentBuf);
+      copyStart = i;
+      continue;
+    }
+
+    i++;
+  }
+
+  // If no comment was replaced, return original.
+  if (copyStart === 0) return css;
+  if (copyStart < len) parts.push(css.slice(copyStart));
+
+  return parts.join("");
+}
+
+/** Scope selectors in a comma-separated group. Skips at-rules. */
 function scopeSelectors(group: string, scopeAttr: string): string {
   const trimmed = group.trim();
-  // At-rules pass through unchanged
+  // At-rules pass through
   if (trimmed.startsWith("@")) {
     return group;
   }
-  // Split by comma, scope each individual selector
   return group
     .split(",")
     .map((sel) => {
@@ -147,38 +177,108 @@ function scopeSelectors(group: string, scopeAttr: string): string {
     .join(",");
 }
 
-/**
- * Extract custom block metadata from a Vue SFC source string.
- * Parses root-level tags that are not <script>, <template>, or <style>.
- */
+/** Extract custom block metadata from SFC source (non-script/template/style tags). */
 export function extractCustomBlocks(source: string): CustomBlockInfo[] {
-  // First, strip the content of <script>, <template>, and <style> blocks
-  // so the regex only matches truly root-level custom blocks (not inner HTML).
-  const stripped = source.replace(/<(script|template|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
-
   const blocks: CustomBlockInfo[] = [];
-  const blockRegex = /<([a-z][a-z0-9-]*)([^>]*)>([\s\S]*?)<\/\1>/gi;
-  let match;
-  let index = 0;
+  const knownTopLevel = new Set(["script", "template", "style"]);
+  let blockIndex = 0;
+  let pos = 0;
 
-  while ((match = blockRegex.exec(stripped)) !== null) {
-    const type = match[1];
-    const attrsStr = match[2];
-    const content = match[3];
-    const src = attrsStr.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null;
-    const attrs = parseAttributes(attrsStr);
+  while (pos < source.length) {
+    const ltPos = source.indexOf("<", pos);
+    if (ltPos === -1) break;
 
-    blocks.push({ type, content, src, attrs, index });
-    index++;
+    // Skip HTML comments
+    if (source.startsWith("<!--", ltPos)) {
+      const endComment = source.indexOf("-->", ltPos + 4);
+      pos = endComment === -1 ? source.length : endComment + 3;
+      continue;
+    }
+
+    // Skip closing tags at the top level
+    if (source[ltPos + 1] === "/") {
+      const gt = source.indexOf(">", ltPos + 2);
+      pos = gt === -1 ? source.length : gt + 1;
+      continue;
+    }
+
+    const openTagMatch = /^<([a-zA-Z][a-zA-Z0-9-]*)(\s[^>]*)?\s*\/?>/.exec(source.slice(ltPos));
+    if (!openTagMatch) {
+      pos = ltPos + 1;
+      continue;
+    }
+
+    const tagName = openTagMatch[1];
+    const attrsStr = (openTagMatch[2] || "").trim();
+    const selfClosing = openTagMatch[0].trimEnd().endsWith("/>");
+    const afterOpenTag = ltPos + openTagMatch[0].length;
+
+    if (selfClosing) {
+      if (!knownTopLevel.has(tagName.toLowerCase())) {
+        blocks.push({
+          type: tagName,
+          content: "",
+          src: attrsStr.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null,
+          attrs: parseAttributes(attrsStr),
+          index: blockIndex++,
+        });
+      }
+      pos = afterOpenTag;
+      continue;
+    }
+
+    // Find the matching closing tag while tracking same-name nesting depth
+    const tagNameLower = tagName.toLowerCase();
+    let depth = 1;
+    let scanPos = afterOpenTag;
+
+    while (scanPos < source.length && depth > 0) {
+      const nextLt = source.indexOf("<", scanPos);
+      if (nextLt === -1) {
+        scanPos = source.length;
+        break;
+      }
+
+      const closeRe = new RegExp(`^</${tagName}\\s*>`, "i");
+      const closeMatch = closeRe.exec(source.slice(nextLt));
+      if (closeMatch) {
+        depth--;
+        if (depth === 0) {
+          const content = source.slice(afterOpenTag, nextLt);
+          if (!knownTopLevel.has(tagNameLower)) {
+            blocks.push({
+              type: tagName,
+              content,
+              src: attrsStr.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null,
+              attrs: parseAttributes(attrsStr),
+              index: blockIndex++,
+            });
+          }
+          scanPos = nextLt + closeMatch[0].length;
+          break;
+        }
+        scanPos = nextLt + closeMatch[0].length;
+        continue;
+      }
+
+      const openRe = new RegExp(`^<${tagName}\\b[^>]*>`, "i");
+      const openMatch = openRe.exec(source.slice(nextLt));
+      if (openMatch && !openMatch[0].trimEnd().endsWith("/>")) {
+        depth++;
+        scanPos = nextLt + openMatch[0].length;
+        continue;
+      }
+
+      scanPos = nextLt + 1;
+    }
+
+    pos = scanPos;
   }
 
   return blocks;
 }
 
-/**
- * Parse HTML-like attributes from a tag's attribute string.
- * Returns a map of attribute name → value (or `true` for boolean attributes).
- */
+/** Parse HTML-like attributes from a tag's attribute string. */
 function parseAttributes(attrsStr: string): Record<string, string | true> {
   const attrs: Record<string, string | true> = {};
   const attrRegex = /\b([a-z][a-z0-9-]*)(?:=["']([^"']*)["'])?/gi;
@@ -191,10 +291,7 @@ function parseAttributes(attrsStr: string): Record<string, string | true> {
   return attrs;
 }
 
-/**
- * Extract <script src> and <template src> references from an SFC source.
- * Returns null for each if no src attribute is present.
- */
+/** Extract <script src> and <template src> references from SFC source. */
 export function extractSrcInfo(source: string): SfcSrcInfo {
   const scriptMatch = source.match(/<script([^>]*)>/i);
   const templateMatch = source.match(/<template([^>]*)>/i);
@@ -205,11 +302,7 @@ export function extractSrcInfo(source: string): SfcSrcInfo {
   return { scriptSrc, templateSrc };
 }
 
-/**
- * Replace <script src="..."> or <template src="..."> with inline content
- * read from external files. This produces a self-contained SFC string
- * that can be passed to compileSfc.
- */
+/** Replace <script src> or <template src> with inline content from external files. */
 export function inlineSrcBlocks(
   source: string,
   scriptContent: string | null,
@@ -218,7 +311,7 @@ export function inlineSrcBlocks(
   let result = source;
 
   if (scriptContent !== null) {
-    // Replace <script ... src="..."> ... </script> with <script ...>content</script>
+    // Replace <script src> with inline content
     result = result.replace(
       /(<script)([^>]*)\bsrc=["'][^"']+["']([^>]*>)[\s\S]*?(<\/script>)/i,
       (_, open, beforeSrc, afterSrc, close) => {
@@ -230,7 +323,7 @@ export function inlineSrcBlocks(
   }
 
   if (templateContent !== null) {
-    // Replace <template ... src="..."> ... </template> with <template ...>content</template>
+    // Replace <template src> with inline content
     result = result.replace(
       /(<template)([^>]*)\bsrc=["'][^"']+["']([^>]*>)[\s\S]*?(<\/template>)/i,
       (_, open, beforeSrc, afterSrc, close) => {
@@ -243,27 +336,7 @@ export function inlineSrcBlocks(
   return result;
 }
 
-/**
- * Create a conditional logger.
- *
- * Copied from vite-plugin-vize/src/transform.ts
- */
-export function createLogger(debug: boolean) {
-  return {
-    log: (...args: unknown[]) => debug && console.log("[vize:rspack]", ...args),
-    info: (...args: unknown[]) => console.log("[vize:rspack]", ...args),
-    warn: (...args: unknown[]) => console.warn("[vize:rspack]", ...args),
-    error: (...args: unknown[]) => console.error("[vize:rspack]", ...args),
-  };
-}
-
-/**
- * Match a file path against include/exclude patterns.
- * Used by both the main loader and the plugin for consistent filtering.
- *
- * Normalizes backslashes to forward slashes before matching,
- * so patterns like /src\/.*\.vue$/ work on Windows.
- */
+/** Match a file path against include/exclude patterns. Normalizes backslashes. */
 export function matchesPattern(
   file: string,
   pattern: string | RegExp | (string | RegExp)[] | undefined,
@@ -273,7 +346,7 @@ export function matchesPattern(
     return defaultValue;
   }
 
-  // Normalize Windows backslashes to forward slashes for cross-platform matching
+  // Normalize Windows backslashes
   const normalizedFile = file.replace(/\\/g, "/");
 
   const patterns = Array.isArray(pattern) ? pattern : [pattern];
@@ -281,6 +354,151 @@ export function matchesPattern(
     if (typeof item === "string") {
       return normalizedFile.includes(item) || file.includes(item);
     }
-    return item.test(normalizedFile);
+    return testRegExp(item, normalizedFile);
   });
+}
+
+function testRegExp(pattern: RegExp, value: string): boolean {
+  pattern.lastIndex = 0;
+  const matches = pattern.test(value);
+  pattern.lastIndex = 0;
+  return matches;
+}
+
+// Template Asset URL Transformation
+
+/** Default element→attribute mapping for transformAssetUrls. */
+export const DEFAULT_ASSET_URL_TAGS: Readonly<Record<string, string[]>> = Object.freeze({
+  img: ["src"],
+  video: ["src", "poster"],
+  source: ["src"],
+  image: ["xlink:href", "href"],
+  use: ["xlink:href", "href"],
+});
+
+/** Returns true when a URL should be rewritten as an import (relative, alias, tilde). */
+export function isImportableUrl(url: string): boolean {
+  if (!url) return false;
+  // External / protocol-relative / data URIs
+  if (/^(https?:)?\/\//.test(url) || url.startsWith("data:")) return false;
+  // Relative paths
+  if (url.startsWith("./") || url.startsWith("../")) return true;
+  // Alias and tilde module paths
+  if (url.startsWith("@/") || url.startsWith("~")) return true;
+  return false;
+}
+
+/** Extract top-level `<template>` content, tracking depth for nested templates. */
+function extractSfcTemplateContent(source: string): string | null {
+  let pos = 0;
+
+  while (pos < source.length) {
+    const ltPos = source.indexOf("<", pos);
+    if (ltPos === -1) break;
+
+    // Skip HTML comments
+    if (source.startsWith("<!--", ltPos)) {
+      const end = source.indexOf("-->", ltPos + 4);
+      pos = end === -1 ? source.length : end + 3;
+      continue;
+    }
+
+    // Skip closing tags
+    if (source[ltPos + 1] === "/") {
+      const gt = source.indexOf(">", ltPos + 2);
+      pos = gt === -1 ? source.length : gt + 1;
+      continue;
+    }
+
+    const openMatch = /^<template(\s[^>]*)?>/.exec(source.slice(ltPos));
+    if (!openMatch) {
+      pos = ltPos + 1;
+      continue;
+    }
+
+    // Found the opening <template> tag — track depth to find its closing tag
+    const afterOpen = ltPos + openMatch[0].length;
+    let depth = 1;
+    let scan = afterOpen;
+
+    while (scan < source.length && depth > 0) {
+      const next = source.indexOf("<", scan);
+      if (next === -1) break;
+
+      const closeMatch = /^<\/template\s*>/i.exec(source.slice(next));
+      if (closeMatch) {
+        depth--;
+        if (depth === 0) return source.slice(afterOpen, next);
+        scan = next + closeMatch[0].length;
+        continue;
+      }
+
+      const innerOpenMatch = /^<template\b[^>]*>/i.exec(source.slice(next));
+      if (innerOpenMatch && !innerOpenMatch[0].trimEnd().endsWith("/>")) {
+        depth++;
+        scan = next + innerOpenMatch[0].length;
+        continue;
+      }
+
+      scan = next + 1;
+    }
+
+    return null; // malformed/unclosed template
+  }
+
+  return null; // no <template>
+}
+
+/** Escape a string for RegExp. */
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Scan SFC template for static asset URLs that should become import bindings. Deduplicated. */
+export function collectTemplateAssetUrls(
+  source: string,
+  tags?: boolean | Record<string, string[]>,
+): TemplateAssetUrl[] {
+  if (tags === false) return [];
+
+  const tagConfig: Record<string, string[]> =
+    tags == null || tags === true ? (DEFAULT_ASSET_URL_TAGS as Record<string, string[]>) : tags;
+
+  const templateContent = extractSfcTemplateContent(source);
+  if (!templateContent) return [];
+
+  const urlToVar = new Map<string, string>();
+  let counter = 0;
+
+  for (const [tag, attrs] of Object.entries(tagConfig)) {
+    // Match an opening tag (including self-closing).
+    // Attribute values may contain spaces, so we consume everything up to `>`,
+    // skipping over quoted attribute values that might include `>`.
+    const tagRe = new RegExp(`<${escapeRegex(tag)}((?:\\s+[^>]*)?)(?:/>|>)`, "gi");
+    let tagMatch: RegExpExecArray | null;
+
+    while ((tagMatch = tagRe.exec(templateContent)) !== null) {
+      const attrStr = tagMatch[1] ?? "";
+
+      for (const attr of attrs) {
+        // Static attribute: must be preceded by whitespace (or start of attrStr),
+        // NOT by `:` or `v-bind:` (which mark dynamic bindings).
+        const doubleQuoteRe = new RegExp(`(?:^|\\s)${escapeRegex(attr)}="([^"]+)"`, "i");
+        const singleQuoteRe = new RegExp(`(?:^|\\s)${escapeRegex(attr)}='([^']+)'`, "i");
+
+        const m = doubleQuoteRe.exec(attrStr) ?? singleQuoteRe.exec(attrStr);
+        if (m) {
+          const url = m[1];
+          if (isImportableUrl(url) && !urlToVar.has(url)) {
+            urlToVar.set(url, `_imports_${counter++}`);
+          }
+        }
+      }
+    }
+  }
+
+  return Array.from(urlToVar.entries()).map(([url, varName]) => ({
+    url,
+    varName,
+  }));
 }

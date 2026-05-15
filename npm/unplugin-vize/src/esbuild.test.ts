@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import { build } from "esbuild";
 import "./test/setup.ts";
-import vize from "./esbuild.js";
-import { normalizeSnapshot, resolveFixturePath } from "./test/helpers.js";
+import vize from "./esbuild.ts";
+import { normalizeSnapshot, resolveFixturePath } from "./test/helpers.ts";
 
 void test("esbuild bundles a basic SFC", async (t) => {
   const result = await build({

@@ -1,0 +1,13 @@
+---
+source: crates/vize_musea/src/docs/mod.rs
+expression: output
+---
+DocOutput {
+    markdown: "# Button\n\nA versatile button\n\n## Variants\n\n### Primary `default`\n\n---\n\n### Secondary\n\n---\n\n",
+    filename: "button.md",
+    title: "Button",
+    category: Some(
+        "atoms",
+    ),
+    variant_count: 2,
+}

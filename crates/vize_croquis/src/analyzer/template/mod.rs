@@ -16,7 +16,7 @@ mod visit_element;
 mod tests;
 
 use super::Analyzer;
-use vize_carton::CompactString;
+use vize_carton::{profile, CompactString};
 use vize_relief::ast::{ExpressionNode, RootNode, TemplateChildNode};
 
 impl Analyzer {
@@ -27,12 +27,15 @@ impl Analyzer {
         }
 
         // Count root-level elements
-        let mut root_element_count = 0;
-        for child in root.children.iter() {
-            if Self::is_element_child(child) {
-                root_element_count += 1;
+        let root_element_count = profile!("croquis.template.root_count", {
+            let mut root_element_count = 0;
+            for child in root.children.iter() {
+                if Self::is_element_child(child) {
+                    root_element_count += 1;
+                }
             }
-        }
+            root_element_count
+        });
         self.summary.template_info.root_element_count = root_element_count;
 
         // Store template content range
@@ -40,9 +43,11 @@ impl Analyzer {
         self.summary.template_info.content_end = root.loc.end.offset;
 
         // Single-pass template traversal
-        for child in root.children.iter() {
-            self.visit_template_child(child, &mut Vec::new());
-        }
+        profile!("croquis.template.traverse", {
+            for child in root.children.iter() {
+                self.visit_template_child(child, &mut Vec::new());
+            }
+        });
 
         self
     }
@@ -68,41 +73,58 @@ impl Analyzer {
         scope_vars: &mut Vec<CompactString>,
     ) {
         match node {
-            TemplateChildNode::Element(el) => self.visit_element(el, scope_vars),
-            TemplateChildNode::If(if_node) => self.visit_if(if_node, scope_vars),
-            TemplateChildNode::For(for_node) => self.visit_for(for_node, scope_vars),
+            TemplateChildNode::Element(el) => {
+                profile!(
+                    "croquis.template.visit_element",
+                    self.visit_element(el, scope_vars)
+                )
+            }
+            TemplateChildNode::If(if_node) => {
+                profile!(
+                    "croquis.template.visit_if",
+                    self.visit_if(if_node, scope_vars)
+                )
+            }
+            TemplateChildNode::For(for_node) => {
+                profile!(
+                    "croquis.template.visit_for",
+                    self.visit_for(for_node, scope_vars)
+                )
+            }
             TemplateChildNode::Interpolation(interp) => {
-                let content = match &interp.content {
-                    ExpressionNode::Simple(s) => s.content.as_str(),
-                    ExpressionNode::Compound(c) => c.loc.source.as_str(),
-                };
+                profile!("croquis.template.interpolation", {
+                    let content = match &interp.content {
+                        ExpressionNode::Simple(s) => s.content.as_str(),
+                        ExpressionNode::Compound(c) => c.loc.source.as_str(),
+                    };
 
-                // Track $attrs usage
-                if content.contains("$attrs") {
-                    self.summary.template_info.uses_attrs = true;
-                }
+                    // Track $attrs usage
+                    if content.contains("$attrs") {
+                        self.summary.template_info.uses_attrs = true;
+                    }
 
-                if self.options.collect_template_expressions {
-                    let loc = interp.content.loc();
-                    let scope_id = self.summary.scopes.current_id();
-                    self.summary
-                        .template_expressions
-                        .push(crate::analysis::TemplateExpression {
-                            content: CompactString::new(content),
-                            kind: crate::analysis::TemplateExpressionKind::Interpolation,
-                            start: loc.start.offset,
-                            end: loc.end.offset,
-                            scope_id,
-                            vif_guard: self.current_vif_guard(),
-                        });
-                }
-                if self.options.detect_undefined && self.script_analyzed {
-                    self.check_expression_refs(
-                        &interp.content,
-                        scope_vars,
-                        interp.content.loc().start.offset,
-                    );
-                }
+                    if self.options.collect_template_expressions {
+                        let loc = interp.content.loc();
+                        let scope_id = self.summary.scopes.current_id();
+                        self.summary.template_expressions.push(
+                            crate::analysis::TemplateExpression {
+                                content: CompactString::new(content),
+                                kind: crate::analysis::TemplateExpressionKind::Interpolation,
+                                start: loc.start.offset,
+                                end: loc.end.offset,
+                                scope_id,
+                                vif_guard: self.current_vif_guard(),
+                            },
+                        );
+                    }
+                    if self.options.detect_undefined && self.script_analyzed {
+                        self.check_expression_refs(
+                            &interp.content,
+                            scope_vars,
+                            interp.content.loc().start.offset,
+                        );
+                    }
+                })
             }
             _ => {}
         }

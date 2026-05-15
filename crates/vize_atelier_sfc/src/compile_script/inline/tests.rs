@@ -13,6 +13,7 @@ mod tests {
             imports: "",
             hoisted: "",
             render_fn: "",
+            render_fn_name: "",
             preamble: "",
             render_body: "null",
             render_is_block: false,
@@ -39,6 +40,7 @@ mod tests {
             imports: "",
             hoisted: "",
             render_fn: "",
+            render_fn_name: "",
             preamble: "",
             render_body: "null",
             render_is_block: false,
@@ -77,13 +79,7 @@ declare global {
 const x = ref(0)
 "#;
         let output = compile_setup_ts(content);
-        let setup_start = output.find("setup(").expect("should have setup function");
-        let setup_body = &output[setup_start..];
-        assert!(
-            !setup_body.contains("declare global"),
-            "declare global should NOT be inside setup function body. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -97,13 +93,7 @@ export type { FilterType }
 const x = ref(0)
 "#;
         let output = compile_setup(content);
-        let setup_start = output.find("setup(").expect("should have setup");
-        let setup_body = &output[setup_start..];
-        assert!(
-            !setup_body.contains("export type"),
-            "export type re-export should not be inside setup body. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -116,11 +106,7 @@ const identifier =
   type === 'material-symbols' ? 'name' : 'ligature'
 "#;
         let output = compile_setup(content);
-        assert!(
-            output.contains("type ==="),
-            "`type ===` continuation line should be preserved. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -146,17 +132,7 @@ const {
 const other = ref(1)
 "#;
         let output = compile_setup(content);
-        // Function call args should be part of the destructure statement, not bare statements
-        assert!(
-            output.contains("useSomething("),
-            "Function call should be present in destructure statement. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("const other = ref(1)"),
-            "Code after destructure should be present. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -176,11 +152,7 @@ watch(
 )
 "#;
         let output = compile_setup_ts(content);
-        assert!(
-            output.contains("watch("),
-            "watch() call should be in setup body. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -194,21 +166,7 @@ await client.reports.create({
 })
 "#;
         let output = compile_setup_ts(content);
-        assert!(
-            output.contains("_withAsyncContext(() => client.reports.create({"),
-            "multiline await should keep the full call expression. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("accountId: 'acc'") && output.contains("message: 'hello'"),
-            "object literal fields should remain intact. Got:\n{}",
-            output
-        );
-        assert!(
-            !output.contains("create({))"),
-            "await transform must not truncate the object literal. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -220,23 +178,7 @@ const response = await fetch('/api/report', {
 })
 "#;
         let output = compile_setup_ts(content);
-        assert!(
-            output.contains("const response =")
-                && output.contains("_withAsyncContext(() => fetch('/api/report', {"),
-            "await assignment should wrap the whole initializer. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("method: 'POST'")
-                && output.contains("body: JSON.stringify({ ok: true })"),
-            "initializer object literal should remain intact. Got:\n{}",
-            output
-        );
-        assert!(
-            !output.contains("fetch('/api/report', {))"),
-            "await assignment must not truncate multiline initializers. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -254,18 +196,7 @@ const route = useRoute()
 const heading = computed(() => route.name)
 "#;
         let output = compile_setup_ts(content);
-        assert!(
-            output.contains("export type MenuSelectorOption"),
-            "export type should be at module level. Got:\n{}",
-            output
-        );
-        let setup_start = output.find("setup(").expect("should have setup");
-        let setup_body = &output[setup_start..];
-        assert!(
-            setup_body.contains("const route = useRoute()"),
-            "const route should be inside setup body. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -282,21 +213,7 @@ const { msg } = defineProps<Props>();
 const count = ref(0)
 "#;
         let output = compile_setup(content);
-        assert!(
-            output.contains("props: {"),
-            "should generate props declaration even with trailing semicolon. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("msg:"),
-            "should include msg prop. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("const count = ref(0)"),
-            "code after defineProps should be present. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -312,16 +229,7 @@ const { label, disabled } = defineProps<{
 const x = ref(1)
 "#;
         let output = compile_setup(content);
-        assert!(
-            output.contains("props: {"),
-            "should generate props declaration for multiline defineProps with semicolon. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("const x = ref(1)"),
-            "code after defineProps should be present. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -341,16 +249,7 @@ const { msg, count } = withDefaults(defineProps<Props>(), {
 const x = ref(1)
 "#;
         let output = compile_setup(content);
-        assert!(
-            output.contains("props: {"),
-            "should generate props declaration for withDefaults with semicolon. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("const x = ref(1)"),
-            "code after withDefaults should be present. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     /// Helper to compile with no template (empty render_body)
@@ -359,6 +258,7 @@ const x = ref(1)
             imports: "",
             hoisted: "",
             render_fn: "",
+            render_fn_name: "",
             preamble: "",
             render_body: "",
             render_is_block: false,
@@ -389,21 +289,7 @@ const count = ref(0)
 const doubled = computed(() => count.value * 2)
 "#;
         let output = compile_setup_no_template(content);
-        assert!(
-            output.contains("return {"),
-            "no-template case should return setup bindings. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("count"),
-            "should return count binding. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("doubled"),
-            "should return doubled binding. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -417,11 +303,7 @@ onMounted(() => {
 })
 "#;
         let output = compile_setup_no_template(content);
-        assert!(
-            output.contains("return {") && output.contains("onMounted"),
-            "no-template case should return imported bindings too (for runtime template access). Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -436,26 +318,7 @@ export type MenuItemProps = {
 const { label, disabled, routeName } = defineProps<MenuItemProps>()
 "#;
         let output = compile_setup(content);
-        assert!(
-            output.contains("props: {"),
-            "should generate props declaration for export type. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("label:") && output.contains("String"),
-            "should include label prop. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("routeName:") && output.contains("String"),
-            "should include routeName prop. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("disabled:"),
-            "should include disabled prop. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -476,34 +339,7 @@ const { type, title, startTime } =
 const accentColor = computed(() => type === 'event' ? 'primary' : 'secondary')
 "#;
         let output = compile_setup(content);
-        assert!(
-            output.contains("props: {"),
-            "should generate props declaration for next-line defineProps. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("type:") && output.contains("String"),
-            "should include type prop. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("title:") && output.contains("String"),
-            "should include title prop. Got:\n{}",
-            output
-        );
-        // Verify props destructure references are transformed correctly in setup body
-        let setup_start = output.find("setup(").expect("should have setup");
-        let setup_body = &output[setup_start..];
-        assert!(
-            setup_body.contains("__props.type"),
-            "destructured prop 'type' should be rewritten to __props.type in setup body. Got:\n{}",
-            output
-        );
-        assert!(
-            !setup_body.contains("const { __props."),
-            "destructure declaration should NOT appear in setup body. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -522,16 +358,39 @@ const { msg, count } =
 const doubled = ref(count * 2)
 "#;
         let output = compile_setup(content);
-        assert!(
-            output.contains("props: {"),
-            "should generate props declaration. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("msg:") && output.contains("String"),
-            "should include msg prop. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
+    }
+
+    #[test]
+    fn test_define_props_assignment_value_on_next_line() {
+        let content = r#"
+import { computed } from 'vue'
+
+interface Props {
+    msg: string
+    count: number
+}
+
+const props =
+  defineProps<Props>();
+const doubled = computed(() => props.count * 2)
+"#;
+        let output = compile_setup(content);
+        insta::assert_snapshot!(output.as_str());
+    }
+
+    #[test]
+    fn test_define_slots_assignment_value_on_next_line() {
+        let content = r#"
+const slots =
+  defineSlots<{
+    default?: () => string
+  }>();
+
+const hasDefault = !!slots.default
+"#;
+        let output = compile_setup(content);
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -548,34 +407,7 @@ type DistributiveOmit<T, K extends KeyOfUnion<T>> = T extends T
 const x = computed(() => 1)
 "#;
         let output = compile_setup_ts(content);
-        // The full conditional type should be at module level, not in setup body
-        assert!(
-            output.contains("type DistributiveOmit"),
-            "Conditional type should be in output. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("? Omit<T, K>"),
-            "Conditional type true branch should be in type declaration. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains(": never;"),
-            "Conditional type false branch should be in type declaration. Got:\n{}",
-            output
-        );
-        let setup_start = output.find("setup(").expect("should have setup");
-        let setup_body = &output[setup_start..];
-        assert!(
-            !setup_body.contains("? Omit<T, K>"),
-            "Conditional type branches should NOT be in setup body. Got:\n{}",
-            output
-        );
-        assert!(
-            setup_body.contains("const x = computed(() => 1)"),
-            "Code after type should be in setup body. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 
     #[test]
@@ -591,15 +423,6 @@ const { x, y } =
 const sum = ref(x.value + y.value)
 "#;
         let output = compile_setup(content);
-        assert!(
-            output.contains("toRefs("),
-            "non-props destructure should be preserved in setup body. Got:\n{}",
-            output
-        );
-        assert!(
-            output.contains("const sum = ref("),
-            "code after destructure should be present. Got:\n{}",
-            output
-        );
+        insta::assert_snapshot!(output.as_str());
     }
 }

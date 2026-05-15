@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/rewrite_default.rs
+expression: result.as_str()
+---
+const _sfc_main = {}

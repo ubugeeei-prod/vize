@@ -13,6 +13,15 @@ export interface TokenCategory {
   subcategories?: TokenCategory[];
 }
 
+export interface FlattenedToken {
+  name: string;
+  path: string;
+  categoryPath: string[];
+  value: string | number;
+  type?: string;
+  description?: string;
+}
+
 export async function parseTokensFromPath(tokensPath: string): Promise<TokenCategory[]> {
   const stat = await fs.promises.stat(tokensPath);
 
@@ -73,6 +82,33 @@ export function generateTokensMarkdown(categories: TokenCategory[]): string {
     markdown += renderCategory(category);
   }
   return markdown;
+}
+
+export function flattenTokenCategories(
+  categories: TokenCategory[],
+  parentPath: string[] = [],
+): FlattenedToken[] {
+  const flattened: FlattenedToken[] = [];
+
+  for (const category of categories) {
+    const categoryPath = [...parentPath, category.name];
+    for (const [name, token] of Object.entries(category.tokens)) {
+      flattened.push({
+        name,
+        path: [...categoryPath, name].join("."),
+        categoryPath,
+        value: token.value,
+        type: token.type,
+        description: token.description,
+      });
+    }
+
+    if (category.subcategories) {
+      flattened.push(...flattenTokenCategories(category.subcategories, categoryPath));
+    }
+  }
+
+  return flattened;
 }
 
 function isTokenLeaf(value: unknown): boolean {

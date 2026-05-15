@@ -9,7 +9,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{smallvec, CompactString, SmallVec};
+use vize_carton::{profile, smallvec, CompactString, SmallVec};
 
 use super::is_valid_identifier_fast;
 
@@ -52,7 +52,10 @@ pub fn extract_slot_props(pattern: &str) -> SmallVec<[CompactString; 4]> {
     }
 
     // Complex case: use OXC parser
-    extract_slot_props_with_oxc(pattern)
+    profile!(
+        "croquis.helpers.slot_props.oxc",
+        extract_slot_props_with_oxc(pattern)
+    )
 }
 
 /// Parse complex slot props using OXC
@@ -66,7 +69,10 @@ fn extract_slot_props_with_oxc(pattern: &str) -> SmallVec<[CompactString; 4]> {
     if total_len > buffer.len() {
         #[allow(clippy::disallowed_macros)]
         let pattern_str = format!("let {pattern} = x");
-        return parse_slot_pattern(&pattern_str);
+        return profile!(
+            "croquis.helpers.slot_props.parse_pattern",
+            parse_slot_pattern(&pattern_str)
+        );
     }
 
     buffer[..prefix.len()].copy_from_slice(prefix);
@@ -75,14 +81,20 @@ fn extract_slot_props_with_oxc(pattern: &str) -> SmallVec<[CompactString; 4]> {
 
     // SAFETY: we only copy ASCII bytes
     let pattern_str = unsafe { std::str::from_utf8_unchecked(&buffer[..total_len]) };
-    parse_slot_pattern(pattern_str)
+    profile!(
+        "croquis.helpers.slot_props.parse_pattern",
+        parse_slot_pattern(pattern_str)
+    )
 }
 
 /// Parse slot pattern using OXC
 fn parse_slot_pattern(pattern_str: &str) -> SmallVec<[CompactString; 4]> {
     let allocator = Allocator::default();
     let source_type = SourceType::default().with_typescript(true);
-    let ret = Parser::new(&allocator, pattern_str, source_type).parse();
+    let ret = profile!(
+        "croquis.helpers.slot_props.oxc_parse",
+        Parser::new(&allocator, pattern_str, source_type).parse()
+    );
 
     let mut props = SmallVec::new();
 

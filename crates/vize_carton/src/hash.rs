@@ -24,7 +24,15 @@ pub fn hash_str(data: &str) -> u64 {
 /// Convert a hash to a hex string (16 characters).
 #[inline]
 pub fn hash_to_hex(hash: u64) -> String {
-    crate::cstr!("{hash:016x}")
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut bytes = [0u8; 16];
+    for (index, byte) in bytes.iter_mut().enumerate() {
+        let shift = (15 - index) * 4;
+        *byte = HEX[((hash >> shift) & 0xF) as usize];
+    }
+
+    // SAFETY: `HEX` only contains ASCII hex digits.
+    String::from(unsafe { std::str::from_utf8_unchecked(&bytes) })
 }
 
 /// Compute hash of a string and return as hex.

@@ -91,7 +91,12 @@ fn init_file_logging() {
         let log_dir = std::env::current_dir()
             .ok()
             .map(|p| p.join("node_modules/.vize"))
-            .unwrap_or_else(|| std::path::PathBuf::from("/tmp/vize"));
+            .or_else(|| {
+                std::env::current_dir()
+                    .ok()
+                    .map(|p| p.join("__agent_only").join("vize"))
+            })
+            .unwrap_or_else(|| std::path::PathBuf::from(".").join("__agent_only/vize"));
 
         let _ = create_dir_all(&log_dir);
 

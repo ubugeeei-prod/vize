@@ -7,16 +7,18 @@
 
 import { generateGalleryStyles } from "./styles.js";
 import { generateGalleryBody, generateGalleryScript } from "./template.js";
+import { serializeScriptValue } from "../security.js";
 
 /**
  * Generate the inline gallery HTML page.
  */
 export function generateGalleryHtml(
   basePath: string,
+  devSessionToken: string,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
 ): string {
   const themeScript = themeConfig
-    ? `window.__MUSEA_THEME_CONFIG__=${JSON.stringify(themeConfig)};`
+    ? `window.__MUSEA_THEME_CONFIG__=${serializeScriptValue(themeConfig)};`
     : "";
   return `<!DOCTYPE html>
 <html lang="en">
@@ -24,7 +26,7 @@ export function generateGalleryHtml(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Musea - Component Gallery</title>
-  <script>window.__MUSEA_BASE_PATH__='${basePath}';${themeScript}${"<"}/script>
+  <script>window.__MUSEA_BASE_PATH__=${serializeScriptValue(basePath)};window.__MUSEA_SESSION_TOKEN__=${serializeScriptValue(devSessionToken)};${themeScript}${"<"}/script>
   <style>${generateGalleryStyles()}
   </style>
 </head>
@@ -41,7 +43,7 @@ export function generateGalleryHtml(
  */
 export function generateGalleryModule(basePath: string): string {
   return `
-export const basePath = '${basePath}';
+export const basePath = ${serializeScriptValue(basePath)};
 export async function loadArts() {
   const res = await fetch(basePath + '/api/arts');
   return res.json();

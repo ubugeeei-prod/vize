@@ -59,8 +59,7 @@ mod tests {
         let allocator = Bump::new();
         let dir = create_test_directive(&allocator, "text", "msg");
         let result = generate_text_content(&dir);
-        assert!(result.contains("_toDisplayString"));
-        assert!(result.contains("msg"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -84,7 +83,7 @@ mod tests {
         let dir = create_test_directive(&allocator, "text", "msg");
         let result = generate_text_children(&dir);
         assert!(result.is_some());
-        assert!(result.unwrap().contains("_toDisplayString(msg)"));
+        insta::assert_snapshot!(result.unwrap().as_str());
     }
 
     #[test]

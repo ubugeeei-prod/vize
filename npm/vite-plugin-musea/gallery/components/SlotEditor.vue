@@ -1,60 +1,63 @@
 <script setup lang="ts">
-import { ref, watch, computed, defineAsyncComponent } from 'vue'
+import { ref, watch, computed, defineAsyncComponent } from "vue";
 
-const MonacoEditor = defineAsyncComponent(() => import('./MonacoEditor.vue'))
+const MonacoEditor = defineAsyncComponent(() => import("./MonacoEditor.vue"));
 
 const props = defineProps<{
-  slots: Record<string, string>
-  availableSlots?: string[]
-}>()
+  slots: Record<string, string>;
+  availableSlots?: string[];
+}>();
 
 const emit = defineEmits<{
-  (e: 'update', slots: Record<string, string>): void
-}>()
+  (e: "update", slots: Record<string, string>): void;
+}>();
 
-const activeSlot = ref('default')
-const localSlots = ref<Record<string, string>>({})
+const activeSlot = ref("default");
+const localSlots = ref<Record<string, string>>({});
 
 // Initialize local slots from props
-watch(() => props.slots, (newSlots) => {
-  localSlots.value = { ...newSlots }
-}, { immediate: true, deep: true })
+watch(
+  () => props.slots,
+  (newSlots) => {
+    localSlots.value = { ...newSlots };
+  },
+  { immediate: true, deep: true },
+);
 
 const slotNames = computed(() => {
-  const names = new Set(['default'])
+  const names = new Set(["default"]);
   if (props.availableSlots) {
     for (const name of props.availableSlots) {
-      names.add(name)
+      names.add(name);
     }
   }
   for (const name of Object.keys(localSlots.value)) {
-    names.add(name)
+    names.add(name);
   }
-  return Array.from(names)
-})
+  return Array.from(names);
+});
 
 const currentContent = computed({
-  get: () => localSlots.value[activeSlot.value] || '',
+  get: () => localSlots.value[activeSlot.value] || "",
   set: (value: string) => {
-    localSlots.value[activeSlot.value] = value
-    emit('update', { ...localSlots.value })
-  }
-})
+    localSlots.value[activeSlot.value] = value;
+    emit("update", { ...localSlots.value });
+  },
+});
 
 const selectSlot = (name: string) => {
-  activeSlot.value = name
-}
+  activeSlot.value = name;
+};
 
 const clearSlot = () => {
-  localSlots.value[activeSlot.value] = ''
-  emit('update', { ...localSlots.value })
-}
+  localSlots.value[activeSlot.value] = "";
+  emit("update", { ...localSlots.value });
+};
 
 const clearAllSlots = () => {
-  localSlots.value = {}
-  emit('update', {})
-}
-
+  localSlots.value = {};
+  emit("update", {});
+};
 </script>
 
 <template>
@@ -76,18 +79,19 @@ const clearAllSlots = () => {
         <button type="button" class="slot-action" @click="clearSlot" title="Clear current slot">
           Clear
         </button>
-        <button type="button" class="slot-action slot-action--danger" @click="clearAllSlots" title="Clear all slots">
+        <button
+          type="button"
+          class="slot-action slot-action--danger"
+          @click="clearAllSlots"
+          title="Clear all slots"
+        >
           Clear All
         </button>
       </div>
     </div>
 
     <div class="slot-content">
-      <MonacoEditor
-        v-model="currentContent"
-        language="html"
-        height="150px"
-      />
+      <MonacoEditor v-model="currentContent" language="html" height="150px" />
     </div>
 
     <div class="slot-footer">

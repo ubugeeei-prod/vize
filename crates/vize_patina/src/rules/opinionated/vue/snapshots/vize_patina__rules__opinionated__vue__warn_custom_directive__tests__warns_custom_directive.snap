@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/warn-custom-directive",
+        severity: Warning,
+        message: "Custom directive 'v-focus' detected. Ensure it is properly registered.",
+        start: 5,
+        end: 12,
+        help: Some(
+            "Register the directive globally or locally in the component's `directives` option",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

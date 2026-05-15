@@ -26,6 +26,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::is_html_tag;
 use vize_relief::ast::{DirectiveNode, ElementNode, ElementType, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -77,7 +78,7 @@ impl Rule for ValidVModel {
 
         // Check 2: v-model must be on valid elements
         let tag = element.tag.as_str().to_lowercase();
-        let is_component = element.tag_type == ElementType::Component;
+        let is_component = is_component_like_tag(element);
         let is_valid_element = VALID_V_MODEL_ELEMENTS.contains(&tag.as_str()) || is_component;
 
         if !is_valid_element {
@@ -103,6 +104,15 @@ impl Rule for ValidVModel {
             }
         }
     }
+}
+
+fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
+    if element.tag_type == ElementType::Component {
+        return true;
+    }
+
+    let tag = element.tag.as_str();
+    tag.contains('-') && !is_html_tag(tag)
 }
 
 /// Check if expression is empty
@@ -143,6 +153,20 @@ mod tests {
     fn test_valid_v_model_with_modifier() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<input v-model.trim="foo">"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_v_model_on_kebab_case_component() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<a-rate v-model:value="score" />"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_v_model_on_custom_element_like_component() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<my-widget v-model="value"></my-widget>"#, "test.vue");
         assert_eq!(result.error_count, 0);
     }
 

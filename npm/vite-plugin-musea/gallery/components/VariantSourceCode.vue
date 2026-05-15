@@ -1,29 +1,31 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import hljs from 'highlight.js/lib/core'
-import xml from 'highlight.js/lib/languages/xml'
+import { ref, computed } from "vue";
+import hljs from "highlight.js/lib/core";
+import xml from "highlight.js/lib/languages/xml";
 
-hljs.registerLanguage('xml', xml)
+hljs.registerLanguage("xml", xml);
 
 const props = defineProps<{
-  code: string
-}>()
+  code: string;
+}>();
 
-const copied = ref(false)
+const copied = ref(false);
 
 const highlightedCode = computed(() => {
   try {
-    return hljs.highlight(props.code, { language: 'xml' }).value
+    return hljs.highlight(props.code, { language: "xml" }).value;
   } catch {
-    return props.code
+    return props.code;
   }
-})
+});
 
 async function copyCode(code: string) {
   try {
-    await navigator.clipboard.writeText(code)
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
+    await navigator.clipboard.writeText(code);
+    copied.value = true;
+    setTimeout(() => {
+      copied.value = false;
+    }, 2000);
   } catch {
     // fallback
   }
@@ -35,14 +37,30 @@ async function copyCode(code: string) {
     <div class="source-header">
       <span class="source-label">Template</span>
       <button type="button" class="source-copy-btn" @click="copyCode(code)">
-        <svg v-if="!copied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+        <svg
+          v-if="!copied"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          width="12"
+          height="12"
+        >
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
-        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+        <svg
+          v-else
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          width="12"
+          height="12"
+        >
           <polyline points="20 6 9 17 4 12" />
         </svg>
-        {{ copied ? 'Copied!' : 'Copy' }}
+        {{ copied ? "Copied!" : "Copy" }}
       </button>
     </div>
     <pre class="source-pre"><code class="source-code-text hljs" v-html="highlightedCode" /></pre>
@@ -102,7 +120,7 @@ async function copyCode(code: string) {
 }
 
 .source-code-text {
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
   font-size: 0.75rem;
   line-height: 1.6;
   color: var(--musea-text-secondary);

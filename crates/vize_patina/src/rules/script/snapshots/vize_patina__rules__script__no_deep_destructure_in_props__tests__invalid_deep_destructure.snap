@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-deep-destructure-in-props",
+        severity: Warning,
+        message: "Avoid deeply nested destructuring in defineProps",
+        start: 6,
+        end: 24,
+        help: Some(
+            "Use simple destructuring and access nested properties via computed or direct prop access",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

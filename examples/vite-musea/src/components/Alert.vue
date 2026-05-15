@@ -1,12 +1,12 @@
 <script setup lang="ts">
 defineProps<{
-  variant?: 'default' | 'success' | 'warning' | 'error'
-  closable?: boolean
-}>()
+  variant?: "default" | "success" | "warning" | "error";
+  closable?: boolean;
+}>();
 
 const emit = defineEmits<{
-  close: []
-}>()
+  close: [];
+}>();
 </script>
 
 <template>
@@ -32,7 +32,7 @@ const emit = defineEmits<{
   padding: 0.75rem 1rem;
   border-radius: 6px;
   font-size: 0.875rem;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: 1.5;
   border: 1px solid;
 }

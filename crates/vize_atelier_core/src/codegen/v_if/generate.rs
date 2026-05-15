@@ -109,6 +109,34 @@ pub(super) fn generate_single_prop_for_if(
 ) {
     match prop {
         PropNode::Attribute(attr) => {
+            let ref_binding_type = if attr.name == "ref" && ctx.options.inline {
+                attr.value.as_ref().and_then(|v| {
+                    ctx.options
+                        .binding_metadata
+                        .as_ref()
+                        .and_then(|m| m.bindings.get(v.content.as_str()).copied())
+                })
+            } else {
+                None
+            };
+            let needs_ref_key = matches!(
+                ref_binding_type,
+                Some(
+                    crate::options::BindingType::SetupLet
+                        | crate::options::BindingType::SetupRef
+                        | crate::options::BindingType::SetupMaybeRef
+                )
+            );
+
+            if needs_ref_key {
+                let ref_name = &attr.value.as_ref().unwrap().content;
+                ctx.push("ref_key: \"");
+                ctx.push(ref_name);
+                ctx.push("\", ref: ");
+                ctx.push(ref_name);
+                return;
+            }
+
             let needs_quotes = !is_valid_js_identifier(&attr.name);
             if needs_quotes {
                 ctx.push("\"");
@@ -119,9 +147,13 @@ pub(super) fn generate_single_prop_for_if(
             }
             ctx.push(": ");
             if let Some(value) = &attr.value {
-                ctx.push("\"");
-                ctx.push(&escape_js_string(value.content.as_str()));
-                ctx.push("\"");
+                if ref_binding_type.is_some() {
+                    ctx.push(&value.content);
+                } else {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(value.content.as_str()));
+                    ctx.push("\"");
+                }
             } else {
                 ctx.push("\"\"");
             }
@@ -273,10 +305,8 @@ fn get_static_event_key(dir: &DirectiveNode<'_>) -> Option<String> {
             "capture" | "once" | "passive" => {
                 event_option_modifiers.push(mod_name);
             }
-            "left" | "right" => {
-                if !is_keyboard_event {
-                    system_modifiers.push(mod_name);
-                }
+            "left" | "right" if !is_keyboard_event => {
+                system_modifiers.push(mod_name);
             }
             "middle" => {
                 system_modifiers.push(mod_name);

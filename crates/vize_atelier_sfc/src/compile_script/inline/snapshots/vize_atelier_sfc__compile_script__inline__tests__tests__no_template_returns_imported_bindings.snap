@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { onMounted } from "vue";
+export default {
+  __name: "TestComponent",
+  setup(__props) {
+    onMounted(() => {
+      console.log("mounted");
+    });
+    return { onMounted };
+  }
+};

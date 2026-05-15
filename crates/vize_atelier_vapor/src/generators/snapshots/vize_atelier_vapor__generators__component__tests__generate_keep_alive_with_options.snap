@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_vapor/src/generators/component.rs
+expression: result.as_str()
+---
+_createKeepAlive({ include: "Component1", max: 10 })

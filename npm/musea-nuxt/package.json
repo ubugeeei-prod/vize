@@ -1,53 +1,54 @@
 {
   "name": "@vizejs/musea-nuxt",
-  "version": "0.25.0",
+  "version": "0.89.0",
   "description": "Nuxt mock layer for Musea - enables Nuxt component isolation in galleries",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "fmt": "oxfmt --write src tsdown.config.ts",
-    "fmt:check": "oxfmt src tsdown.config.ts"
-  },
   "keywords": [
-    "nuxt",
-    "musea",
-    "vite-plugin",
     "component-gallery",
-    "mock"
+    "mock",
+    "musea",
+    "nuxt",
+    "vite-plugin"
   ],
-  "author": "ubugeeei",
   "license": "MIT",
+  "author": "ubugeeei",
   "repository": {
     "type": "git",
     "url": "https://github.com/ubugeeei/vize.git",
     "directory": "npm/musea-nuxt"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "tsdown": "^0.9.0",
-    "typescript": "^5.7.0",
-    "vite": "^8.0.0-beta.0",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0"
-  },
-  "peerDependencies": {
-    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-beta.0",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0"
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    }
   },
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable",
+    "vue-router": "catalog:vue-stable"
+  },
+  "peerDependencies": {
+    "vite": "^8.0.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.5.0"
   }
 }

@@ -251,9 +251,10 @@ fn calculate_element_patch_info_inner(
                                     false
                                 };
 
-                                // Check if the handler will be cached
-                                // When cache_handlers is true, ALL handlers are cached (including simple identifiers)
-                                // Cached handlers become stable references, so no PROPS flag needed
+                                // Check if the handler will be cached.
+                                // Callers pass the effective cache setting for the current
+                                // template scope, so scoped handlers inside v-for / slots
+                                // are treated as dynamic here.
                                 let handler_is_cached = cache_handlers && dir.exp.is_some();
 
                                 // Only add PROPS flag if handler is neither const nor cached

@@ -3,14 +3,25 @@ export type {
   LoadConfigOptions,
   ConfigEnv,
   UserConfigExport,
-} from "../../vize/src/types/index.js";
+} from "../../vize/src/types/index.ts";
 
 export interface SfcCompileOptionsNapi {
   filename?: string;
   sourceMap?: boolean;
   ssr?: boolean;
   vapor?: boolean;
+  customRenderer?: boolean;
   scopeId?: string;
+}
+
+export interface MacroArtifact {
+  kind: string;
+  name: string;
+  source: string;
+  content: string;
+  moduleCode?: string;
+  start: number;
+  end: number;
 }
 
 export interface SfcCompileResultNapi {
@@ -21,6 +32,7 @@ export interface SfcCompileResultNapi {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  macroArtifacts?: MacroArtifact[];
 }
 
 export type CompileSfcFn = (
@@ -29,6 +41,12 @@ export type CompileSfcFn = (
 ) => SfcCompileResultNapi;
 
 export interface VizeOptions {
+  /**
+   * Override the public base used for dev-time asset URLs such as /@fs paths.
+   * Useful for frameworks like Nuxt that serve Vite from a subpath (e.g. /_nuxt/).
+   */
+  devUrlBase?: string;
+
   /**
    * Files to include in compilation
    * @default /\.vue$/
@@ -66,6 +84,13 @@ export interface VizeOptions {
   vapor?: boolean;
 
   /**
+   * Treat lowercase non-HTML tags as custom renderer elements instead of Vue components.
+   * Useful for TresJS and other custom renderers.
+   * @default false
+   */
+  customRenderer?: boolean;
+
+  /**
    * Root directory to scan for .vue files
    * @default Vite's root
    */
@@ -78,8 +103,15 @@ export interface VizeOptions {
   scanPatterns?: string[];
 
   /**
+   * Maximum number of Vue files to compile in a single native batch during
+   * pre-compilation. Lower values reduce peak V8 heap usage in large apps.
+   * @default 128
+   */
+  precompileBatchSize?: number;
+
+  /**
    * Glob patterns to ignore during pre-compilation
-   * @default ['node_modules/**', 'dist/**', '.git/**']
+   * @default ['node_modules/**', 'dist/**', '.git/**', '.nuxt/**', '.output/**', '.nitro/**', 'coverage/**']
    */
   ignorePatterns?: string[];
 
@@ -134,6 +166,8 @@ export interface CompiledModule {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  /** Compile-time macro artifacts extracted from the source SFC */
+  macroArtifacts?: MacroArtifact[];
   /** Per-block style metadata extracted from the source SFC */
   styles?: StyleBlockInfo[];
 }
@@ -154,6 +188,8 @@ export interface BatchFileResult {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  /** Compile-time macro artifacts extracted from the source SFC */
+  macroArtifacts?: MacroArtifact[];
   /** Per-block style metadata extracted from the source SFC */
   styles?: StyleBlockInfo[];
 }
@@ -161,6 +197,7 @@ export interface BatchFileResult {
 export interface BatchCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
+  customRenderer?: boolean;
   threads?: number;
 }
 

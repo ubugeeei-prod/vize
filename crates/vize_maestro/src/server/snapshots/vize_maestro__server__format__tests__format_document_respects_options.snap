@@ -1,0 +1,7 @@
+---
+source: crates/vize_maestro/src/server/format.rs
+expression: "edits[0].new_text.as_str()"
+---
+<script>
+const x = 1
+</script>

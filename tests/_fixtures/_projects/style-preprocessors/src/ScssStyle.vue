@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue"
-const active = ref(true)
+import { ref } from "vue";
+const active = ref(true);
 </script>
 
 <template>

@@ -15,6 +15,7 @@ vize_carton = { workspace = true }
 vize_croquis = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
+vize_atelier_ssr = { workspace = true }
 vize_atelier_vapor = { workspace = true }
 
 # OXC for JavaScript/TypeScript parsing and transformation
@@ -42,4 +43,8 @@ toml = { workspace = true }
 
 [[bench]]
 name = "sfc_parse"
+harness = false
+
+[[bench]]
+name = "sfc_compile"
 harness = false

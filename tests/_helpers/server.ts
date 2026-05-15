@@ -108,7 +108,8 @@ export function waitForServerReady(
       reject(new Error(reason));
     }
 
-    const stripAnsi = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, "");
+    const ansiPattern = new RegExp(String.raw`\u001b\[[0-9;]*m`, "g");
+    const stripAnsi = (s: string) => s.replace(ansiPattern, "");
     const onData = (data: Buffer) => {
       const text = stripAnsi(data.toString());
       if (readyPattern.test(text)) {
@@ -247,7 +248,8 @@ export async function waitForHttpReady(url: string, _port: number, maxRetries = 
         // Nuxt loading screen returns 200 but has minimal HTML - wait for real content
         const isLoadingScreen = body.includes("__nuxt-loading") || body.includes("nuxt-loading");
         // SPA pages (misskey) are small but valid; SSR pages (Nuxt) should be larger
-        const hasAppMount = body.includes("__nuxt") || body.includes("__NUXT__") || body.includes("misskey_app");
+        const hasAppMount =
+          body.includes("__nuxt") || body.includes("__NUXT__") || body.includes("misskey_app");
         if (hasAppMount && !isLoadingScreen) {
           return;
         }

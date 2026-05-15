@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, shallowRef, provide } from "vue";
+import { loadWasm } from "./wasm/index";
 import AtelierPlayground from "./features/atelier/AtelierPlayground.vue";
 import MuseaPlayground from "./features/musea/MuseaPlayground.vue";
 import PatinaPlayground from "./features/patina/PatinaPlayground.vue";
@@ -7,7 +8,6 @@ import GlyphPlayground from "./features/glyph/GlyphPlayground.vue";
 import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
 import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
 import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
-import { loadWasm } from "./wasm/index";
 
 // Theme toggle
 const isDark = ref(false);

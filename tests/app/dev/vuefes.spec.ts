@@ -9,6 +9,7 @@ import {
   ensurePortFree,
   waitForHttpReady,
   killProcess,
+  getProcessLogs,
 } from "../../_helpers/server";
 import {
   collectConsoleErrors,
@@ -34,7 +35,13 @@ test.describe("vuefes-2025 dev", () => {
     });
 
     console.log(`Waiting for ${app.name} server to be ready (port ${app.port})...`);
-    await waitForServerReady(devServer, app.port, app.readyPattern, app.startupTimeout, app.readyDelay);
+    await waitForServerReady(
+      devServer,
+      app.port,
+      app.readyPattern,
+      app.startupTimeout,
+      app.readyDelay,
+    );
     await waitForHttpReady(app.url, app.port);
     console.log(`${app.name} server is ready`);
   });
@@ -64,6 +71,16 @@ test.describe("vuefes-2025 dev", () => {
     expect(html.length).toBeGreaterThan(100);
   });
 
+  test("server logs stay clean after SSR render", async ({ page }) => {
+    await verifySSRContent(page, app.url);
+
+    const fatalLogs = getProcessLogs(devServer).filter(isFatalError);
+    if (fatalLogs.length > 0) {
+      console.log(`Fatal server logs in ${app.name}:`, fatalLogs);
+    }
+    expect(fatalLogs).toHaveLength(0);
+  });
+
   test("no hydration mismatch errors", async ({ page }) => {
     const hydrationErrors = await collectHydrationErrors(page);
 
@@ -74,9 +91,7 @@ test.describe("vuefes-2025 dev", () => {
     await page.waitForTimeout(5_000);
 
     // Filter out known harmless SSR/client hydration differences (PrimeVue Carousel, etc.)
-    const unexpectedErrors = hydrationErrors.filter(
-      (e) => !(/Hydration/i.test(e)),
-    );
+    const unexpectedErrors = hydrationErrors.filter((e) => !/Hydration/i.test(e));
     expect(unexpectedErrors).toHaveLength(0);
   });
 

@@ -1,31 +1,18 @@
-/**
- * Vize Loader - Main loader for compiling .vue files
- *
- * Responsibilities:
- * 1. Compile SFC to JavaScript using @vizejs/native
- * 2. Inject style import statements (with query parameters)
- * 3. Inject custom block import statements
- * 4. Handle <script src="..."> and <template src="..."> external references
- * 5. Detect custom element files (.ce.vue) and adjust output accordingly
- * 6. Output JS module code
- *
- * Note: Must be used with `oneOf` in Rspack config to ensure mutual exclusion
- * with the style-loader rule.
- */
+/** Main .vue SFC loader. Compiles SFC → JS; must be used with `oneOf` (mutual exclusion with style-loader). */
 
 import type { LoaderContext } from "@rspack/core";
 import fs from "node:fs";
 import path from "node:path";
-import { compileFile, generateOutput } from "../shared/compiler.js";
+import { compileFile, generateOutput } from "../shared/compiler.ts";
 import {
   matchesPattern,
   extractSrcInfo,
   inlineSrcBlocks,
   extractCustomBlocks,
-} from "../shared/utils.js";
-import type { VizeLoaderOptions } from "../types/index.js";
+} from "../shared/utils.ts";
+import type { VizeLoaderOptions } from "../types/index.ts";
 
-/** Default pattern: files ending with .ce.vue are custom elements */
+/** .ce.vue → custom element */
 const DEFAULT_CE_PATTERN = /\.ce\.vue$/;
 
 export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, source: string): void {
@@ -38,8 +25,8 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
   const isProduction = this.mode === "production" || process.env.NODE_ENV === "production";
   const isSsr = options.ssr ?? false;
   const needsHotReload = !isSsr && !isProduction && options.hotReload !== false;
+  const nativeCss = resolveNativeCss(this, options);
 
-  // Add dependency to trigger recompilation on file change
   this.addDependency(resourcePath);
 
   if (resourceQuery?.includes("type=style")) {
@@ -52,9 +39,7 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
     return;
   }
 
-  // Handle custom block sub-requests (e.g. ?vue&type=i18n&index=0).
-  // Without this guard, custom block imports would re-enter the main loader
-  // and trigger a full SFC compilation, leading to recursive imports.
+  // Custom block sub-requests (e.g. ?vue&type=i18n&index=0)
   if (
     resourceQuery &&
     resourceQuery.includes("vue") &&
@@ -68,7 +53,6 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       const customBlocks = extractCustomBlocks(source);
       const block = customBlocks[blockIndex];
       if (block) {
-        // If the block has an external src, read the external file
         if (block.src) {
           const blockPath = path.resolve(path.dirname(resourcePath), block.src);
           this.addDependency(blockPath);
@@ -104,10 +88,9 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
   }
 
   try {
-    // 0. Determine custom element mode
     const isCustomElement = resolveCustomElement(resourcePath, options.customElement);
 
-    // 1. Resolve <script src="..."> and <template src="..."> external files
+    // Resolve external src references
     const srcInfo = extractSrcInfo(source);
     let resolvedSource = source;
 
@@ -143,22 +126,21 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       }
     }
 
-    // 2. Compile SFC
     const compiled = compileFile(resourcePath, resolvedSource, {
       sourceMap: options.sourceMap ?? this.sourceMap ?? true,
       ssr: options.ssr ?? false,
+      vapor: options.vapor ?? false,
       compilerOptions: options.compilerOptions,
       isCustomElement,
       rootContext: this.rootContext,
       isProduction,
+      transformAssetUrls: options.transformAssetUrls,
     });
 
     for (const warning of compiled.warnings) {
       this.emitWarning(new Error(`[vize] ${warning}`));
     }
 
-    // Fail fast on compilation errors — returning broken code leads to
-    // confusing runtime errors that are harder to diagnose.
     if (compiled.errors.length > 0) {
       for (const error of compiled.errors) {
         this.emitError(new Error(`[vize] ${error}`));
@@ -168,19 +150,16 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       return;
     }
 
-    // 3. Generate output code (with style imports + custom block imports + HMR)
     const output = generateOutput(compiled, {
       requestPath,
       hmr: needsHotReload,
       filePath: resourcePath,
       isProduction,
       rootContext: this.rootContext,
+      nativeCss,
     });
 
-    // 4. Return the compiled JavaScript
-    // TODO: @vizejs/native compileSfc does not yet return a `map` field in
-    // SfcCompileResultNapi. Once the Rust side adds source map output, pass
-    // it here as: callback(null, output, map)
+    // TODO: pass source map when @vizejs/native exposes it
     callback(null, output);
   } catch (error) {
     callback(error as Error);
@@ -199,28 +178,33 @@ function shouldCompileFile(file: string, options: VizeLoaderOptions): boolean {
   return true;
 }
 
-/**
- * Determine if the file should be compiled in custom element mode.
- */
+function resolveNativeCss(
+  loader: LoaderContext<VizeLoaderOptions>,
+  options: VizeLoaderOptions,
+): boolean {
+  if (options.css?.native != null) {
+    return options.css.native;
+  }
+
+  return Boolean(
+    (loader as unknown as { _compiler?: { options?: { experiments?: { css?: boolean } } } })
+      ._compiler?.options?.experiments?.css,
+  );
+}
+
+/** Resolve custom element mode for a file. */
 function resolveCustomElement(
   resourcePath: string,
   customElement: boolean | RegExp | undefined,
 ): boolean {
   if (customElement === true) return true;
   if (customElement === false || customElement === undefined) {
-    // Default: detect .ce.vue pattern
     return DEFAULT_CE_PATTERN.test(resourcePath);
   }
-  // RegExp provided
   return customElement.test(resourcePath);
 }
 
-/**
- * Generate the request path for style sub-imports.
- *
- * Style imports are resolved relative to the issuing .vue file's directory,
- * so we use `./basename.vue` (self-reference) instead of a root-relative path.
- */
+/** Returns `./basename.vue` for style sub-import paths. */
 function normalizeRequestPath(
   _context: LoaderContext<VizeLoaderOptions>,
   resourcePath: string,

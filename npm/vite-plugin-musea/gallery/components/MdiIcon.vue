@@ -1,14 +1,17 @@
 <script setup lang="ts">
 defineProps<{
-  path: string
-  size?: number | string
-}>()
+  path: string;
+  size?: number | string;
+}>();
 </script>
 
 <template>
   <svg
     class="mdi-icon"
-    :style="{ width: typeof size === 'number' ? `${size}px` : size, height: typeof size === 'number' ? `${size}px` : size }"
+    :style="{
+      width: typeof size === 'number' ? `${size}px` : size,
+      height: typeof size === 'number' ? `${size}px` : size,
+    }"
     viewBox="0 0 24 24"
   >
     <path :d="path" fill="currentColor" />

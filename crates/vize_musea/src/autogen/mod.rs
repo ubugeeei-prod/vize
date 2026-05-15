@@ -166,15 +166,7 @@ mod tests {
         let config = AutogenConfig::default();
         let output = generate_art_file("./Button.vue", &props, &config);
 
-        assert_eq!(output.component_name, "Button");
-        assert!(!output.variants.is_empty());
-        assert!(output.art_file_content.contains("<art title=\"Button\""));
-        assert!(output
-            .art_file_content
-            .contains("import Button from './Button.vue'"));
-        assert!(output
-            .art_file_content
-            .contains("<variant name=\"Default\" default>"));
+        insta::assert_debug_snapshot!(output);
     }
 
     #[test]
@@ -185,8 +177,21 @@ mod tests {
         props.insert("count".to_string(), json!(42));
 
         let rendered = render_props(&props);
-        assert!(rendered.contains("label=\"Hello\""));
-        assert!(rendered.contains("disabled"));
-        assert!(rendered.contains(":count=\"42\""));
+        insta::assert_snapshot!(rendered.as_str());
+    }
+
+    #[test]
+    fn test_render_props_edge_values() {
+        let mut props = serde_json::Map::new();
+        props.insert("empty".to_string(), json!(""));
+        props.insert("disabled".to_string(), json!(false));
+        props.insert(
+            "config".to_string(),
+            json!({ "size": "sm", "nested": true }),
+        );
+        props.insert("ignored".to_string(), serde_json::Value::Null);
+
+        let rendered = render_props(&props);
+        insta::assert_snapshot!(rendered.as_str());
     }
 }

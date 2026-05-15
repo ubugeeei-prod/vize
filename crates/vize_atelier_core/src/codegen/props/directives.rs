@@ -359,9 +359,10 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
     let has_system_mods = !system_modifiers.is_empty();
     let has_key_mods = !key_modifiers.is_empty();
 
-    // Check if this handler needs caching
-    // When cache_handlers is true, handlers are cached UNLESS the handler is a
-    // setup-const binding (stable reference, no need for caching)
+    // Check if this handler needs caching.
+    // Scoped params from v-for / slots must disable caching, otherwise the
+    // cached closure captures the first scoped value and gets reused.
+    // Setup-const bindings are already stable references and also skip caching.
     // Pattern: _cache[n] || (_cache[n] = handler)
     // Simple identifiers get safety wrapper: (...args) => (_ctx.handler && _ctx.handler(...args))
     // Inline expressions get: $event => (expression)
@@ -382,7 +383,8 @@ fn generate_von_prop(ctx: &mut CodegenContext, dir: &DirectiveNode<'_>) {
         }
         false
     });
-    let needs_cache = ctx.options.cache_handlers && dir.exp.is_some() && !is_const_handler;
+    let needs_cache =
+        ctx.cache_handlers_in_current_scope() && dir.exp.is_some() && !is_const_handler;
 
     if needs_cache {
         let cache_index = ctx.next_cache_index();

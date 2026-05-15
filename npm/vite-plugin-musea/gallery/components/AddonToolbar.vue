@@ -1,33 +1,28 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
-import { mdiSquareOutline, mdiRulerSquare } from '@mdi/js'
-import { useAddons } from '../composables/useAddons'
-import ViewportSelector from './ViewportSelector.vue'
-import BackgroundPicker from './BackgroundPicker.vue'
-import MdiIcon from './MdiIcon.vue'
+import { onMounted, onUnmounted } from "vue";
+import { mdiSquareOutline, mdiRulerSquare } from "@mdi/js";
+import { useAddons } from "../composables/useAddons";
+import ViewportSelector from "./ViewportSelector.vue";
+import BackgroundPicker from "./BackgroundPicker.vue";
+import MdiIcon from "./MdiIcon.vue";
 
-const {
-  outlineEnabled,
-  measureEnabled,
-  toggleOutline,
-  toggleMeasure,
-} = useAddons()
+const { outlineEnabled, measureEnabled, toggleOutline, toggleMeasure } = useAddons();
 
 function onKeydown(e: KeyboardEvent) {
   // Alt+O: toggle outline
-  if (e.altKey && e.key === 'o') {
-    e.preventDefault()
-    toggleOutline()
+  if (e.altKey && e.key === "o") {
+    e.preventDefault();
+    toggleOutline();
   }
   // Alt+M: toggle measure
-  if (e.altKey && e.key === 'm') {
-    e.preventDefault()
-    toggleMeasure()
+  if (e.altKey && e.key === "m") {
+    e.preventDefault();
+    toggleMeasure();
   }
 }
 
-onMounted(() => document.addEventListener('keydown', onKeydown))
-onUnmounted(() => document.removeEventListener('keydown', onKeydown))
+onMounted(() => document.addEventListener("keydown", onKeydown));
+onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 </script>
 
 <template>

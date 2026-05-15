@@ -1,0 +1,17 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "plugins": ["vue"],
+  "jsPlugins": ["../../npm/oxlint-plugin-vize/dist/index.mjs"],
+  "settings": {
+    "vize": {
+      "locale": "en",
+      "helpLevel": "short"
+    }
+  },
+  "rules": {
+    "no-console": "warn",
+    "vize/vue/require-v-for-key": "error",
+    "vize/vue/no-v-html": "warn",
+    "vize/vue/no-duplicate-attributes": "error"
+  }
+}

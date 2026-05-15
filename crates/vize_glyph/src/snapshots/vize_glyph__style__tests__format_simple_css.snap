@@ -1,0 +1,9 @@
+---
+source: crates/vize_glyph/src/style.rs
+expression: result.as_str()
+---
+.container {
+  color: red;
+  display: flex;
+  gap: 8px;
+}

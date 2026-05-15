@@ -53,6 +53,8 @@ pub struct LintContext<'a> {
     enabled_rules: Option<FxHashSet<String>>,
     /// Optional semantic analysis from croquis.
     pub(crate) analysis: Option<&'a Croquis>,
+    /// Rules that should ignore semantic analysis for this lint pass.
+    analysis_excluded_rules: Option<&'static [&'static str]>,
     /// SSR mode for linting.
     ssr_mode: SsrMode,
     /// Help display level.
@@ -99,6 +101,7 @@ impl<'a> LintContext<'a> {
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             analysis: None,
+            analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
@@ -130,6 +133,7 @@ impl<'a> LintContext<'a> {
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             analysis: Some(analysis),
+            analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             help_level: HelpLevel::default(),
             expected_error_lines: FxHashSet::default(),
@@ -143,16 +147,28 @@ impl<'a> LintContext<'a> {
         self.analysis = Some(analysis);
     }
 
+    /// Exclude selected rules from seeing semantic analysis in this pass.
+    #[inline]
+    pub fn set_analysis_excluded_rules(&mut self, rules: &'static [&'static str]) {
+        self.analysis_excluded_rules = Some(rules);
+    }
+
     /// Get semantic analysis (if available).
     #[inline]
     pub fn analysis(&self) -> Option<&Croquis> {
+        if self
+            .analysis_excluded_rules
+            .is_some_and(|rules| rules.contains(&self.current_rule))
+        {
+            return None;
+        }
         self.analysis
     }
 
     /// Check if semantic analysis is available.
     #[inline]
     pub fn has_analysis(&self) -> bool {
-        self.analysis.is_some()
+        self.analysis().is_some()
     }
 
     /// Set SSR mode.

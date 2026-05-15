@@ -4,13 +4,7 @@ expression: "serde_json::to_string_pretty(&config).unwrap()"
 ---
 {
   "languageServer": {
-    "enabled": true,
-    "diagnostics": true,
     "completion": false,
-    "hover": true,
-    "definition": true,
-    "formatting": true,
-    "codeActions": true,
     "tsgo": false
   }
 }

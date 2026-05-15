@@ -20,6 +20,7 @@ pub struct TypeCheckerConfig {
     pub tsconfig: Option<String>,
     pub tsgo_path: Option<String>,
     pub globals_file: Option<String>,
+    pub servers: Option<usize>,
 }
 
 impl TypeCheckerConfig {
@@ -44,6 +45,7 @@ impl Default for TypeCheckerConfig {
             tsconfig: None,
             tsgo_path: None,
             globals_file: None,
+            servers: None,
         }
     }
 }

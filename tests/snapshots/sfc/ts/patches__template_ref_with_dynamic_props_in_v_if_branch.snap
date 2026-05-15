@@ -1,0 +1,36 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: ts_output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle } from "vue"
+
+import { computed, ref } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+const reference = ref<HTMLElement>()
+const floating = ref<HTMLElement>()
+const isOpen = ref(true)
+const klass = computed(() => 'x')
+const styles = computed(() => ({ left: '0px', top: '0px' }))
+function toggle() {}
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [ (isOpen.value) ? (_openBlock(), _createElementBlock("button", {
+          key: 0,
+          ref_key: "reference", ref: reference,
+          id: isOpen.value ? 'open' : undefined,
+          class: _normalizeClass(["base", klass.value]),
+          onClick: toggle
+        }, "\n    open\n  ", 10 /* CLASS, PROPS */, ["id"])) : _createCommentVNode("v-if", true), (isOpen.value) ? (_openBlock(), _createElementBlock("div", {
+          key: 0,
+          ref_key: "floating", ref: floating,
+          style: _normalizeStyle(styles.value)
+        }, "\n    panel\n  ", 4 /* STYLE */)) : _createCommentVNode("v-if", true) ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+})

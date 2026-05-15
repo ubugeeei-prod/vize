@@ -1,6 +1,6 @@
 //! Vapor migration lint rules.
 //!
-//! These rules help identify patterns that are NOT supported in Vue's Vapor mode.
+//! These rules help identify patterns that are not suitable for Vapor-oriented code.
 //!
 //! Based on Vue 3.6.0-beta.1 release notes:
 //! <https://github.com/vuejs/core/releases/tag/v3.6.0-beta.1>
@@ -19,35 +19,30 @@
 //! </script>
 //! ```
 //!
-//! ## NOT Supported in Vapor Mode
+//! ## Vapor-Oriented Constraints
 //!
-//! The following features are **intentionally excluded** from Vapor Mode:
+//! The following patterns are discouraged for Vapor-oriented components:
 //!
 //! - **Options API** - Composition API only
 //! - **`app.config.globalProperties`** - Not accessible
 //! - **`getCurrentInstance()`** - Returns `null` in Vapor components
+//! - **`nextTick()` / `$nextTick()`** - Avoid VDOM-style post-render scheduling
 //! - **`@vue:xxx` per-element lifecycle events** - Use lifecycle hooks instead
-//! - **Suspense** in Vapor-only mode (works when Vapor components render inside VDOM Suspense)
 //!
 //! ## Template Rules (this module)
 //!
 //! - `vapor/no-vue-lifecycle-events` - Disallow @vue:xxx per-element lifecycle events
-//! - `vapor/no-suspense` - Warn about Suspense usage in Vapor-only apps
 //! - `vapor/prefer-static-class` - Prefer static class for performance
 //!
-//! ## Script Rules (see `rules::script::vapor`)
+//! ## Script Rules (see `rules::script`)
 //!
-//! - `script/vapor/no-options-api` - Disallow Options API patterns
-//! - `script/vapor/no-get-current-instance` - Disallow getCurrentInstance() calls
+//! - `script/no-options-api` - Disallow Options API patterns
+//! - `script/no-get-current-instance` - Disallow getCurrentInstance() calls
+//! - `script/no-next-tick` - Disallow nextTick() scheduling
 
-mod no_inline_template;
-mod no_suspense;
 mod no_vue_lifecycle_events;
-mod prefer_static_class;
-mod require_vapor_attribute;
 
-pub use no_inline_template::NoInlineTemplate;
-pub use no_suspense::NoSuspense;
+pub use crate::rules::opinionated::vapor::NoInlineTemplate;
+pub use crate::rules::opinionated::vapor::PreferStaticClass;
+pub use crate::rules::opinionated::vapor::RequireVaporAttribute;
 pub use no_vue_lifecycle_events::NoVueLifecycleEvents;
-pub use prefer_static_class::PreferStaticClass;
-pub use require_vapor_attribute::RequireVaporAttribute;

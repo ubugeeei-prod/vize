@@ -1,243 +1,254 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { mdiMagnify, mdiHistory, mdiPalette, mdiDiamond, mdiHome, mdiCheckCircleOutline, mdiNavigationOutline } from '@mdi/js'
-import type { ArtFileInfo } from '../../src/types/index.js'
-import MdiIcon from './MdiIcon.vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { useRouter } from "vue-router";
+import {
+  mdiMagnify,
+  mdiHistory,
+  mdiPalette,
+  mdiDiamond,
+  mdiHome,
+  mdiCheckCircleOutline,
+  mdiNavigationOutline,
+} from "@mdi/js";
+import type { ArtFileInfo } from "../../src/types/index.js";
+import MdiIcon from "./MdiIcon.vue";
 
 const props = defineProps<{
-  arts: ArtFileInfo[]
-  isOpen: boolean
-}>()
+  arts: ArtFileInfo[];
+  isOpen: boolean;
+}>();
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'select', art: ArtFileInfo, variantName?: string): void
-}>()
+  (e: "close"): void;
+  (e: "select", art: ArtFileInfo, variantName?: string): void;
+}>();
 
-const router = useRouter()
+const router = useRouter();
 
 interface NavItem {
-  name: string
-  route: string
-  icon: string
+  name: string;
+  route: string;
+  icon: string;
 }
 
 const navItems: NavItem[] = [
-  { name: 'Home', route: '/', icon: mdiHome },
-  { name: 'Design Tokens', route: '/tokens', icon: mdiPalette },
-  { name: 'Test Summary', route: '/tests', icon: mdiCheckCircleOutline },
-]
+  { name: "Home", route: "/", icon: mdiHome },
+  { name: "Design Tokens", route: "/tokens", icon: mdiPalette },
+  { name: "Test Summary", route: "/tests", icon: mdiCheckCircleOutline },
+];
 
-const searchInput = ref<HTMLInputElement | null>(null)
-const query = ref('')
-const selectedIndex = ref(0)
-const searchHistory = ref<string[]>([])
+const searchInput = ref<HTMLInputElement | null>(null);
+const query = ref("");
+const selectedIndex = ref(0);
+const searchHistory = ref<string[]>([]);
 
 // Load search history from localStorage
 onMounted(() => {
-  const saved = localStorage.getItem('musea-search-history')
+  const saved = localStorage.getItem("musea-search-history");
   if (saved) {
     try {
-      searchHistory.value = JSON.parse(saved)
+      searchHistory.value = JSON.parse(saved);
     } catch {
       // ignore
     }
   }
-})
+});
 
 // Save search history
 const saveToHistory = (term: string) => {
-  if (!term.trim()) return
-  const history = searchHistory.value.filter(h => h !== term)
-  history.unshift(term)
-  searchHistory.value = history.slice(0, 10)
-  localStorage.setItem('musea-search-history', JSON.stringify(searchHistory.value))
-}
+  if (!term.trim()) return;
+  const history = searchHistory.value.filter((h) => h !== term);
+  history.unshift(term);
+  searchHistory.value = history.slice(0, 10);
+  localStorage.setItem("musea-search-history", JSON.stringify(searchHistory.value));
+};
 
 interface SearchResult {
-  type: 'component'
-  art: ArtFileInfo
-  matchType: 'title' | 'category' | 'tags' | 'variant' | 'description'
-  variantName?: string
-  score: number
+  type: "component";
+  art: ArtFileInfo;
+  matchType: "title" | "category" | "tags" | "variant" | "description";
+  variantName?: string;
+  score: number;
 }
 
 interface NavSearchResult {
-  type: 'nav'
-  nav: NavItem
-  score: number
+  type: "nav";
+  nav: NavItem;
+  score: number;
 }
 
-type AnyResult = SearchResult | NavSearchResult
+type AnyResult = SearchResult | NavSearchResult;
 
 // Fuzzy search with scoring
 const results = computed((): AnyResult[] => {
-  const q = query.value.toLowerCase().trim()
+  const q = query.value.toLowerCase().trim();
   if (!q) {
-    return []
+    return [];
   }
 
-  const scored: AnyResult[] = []
+  const scored: AnyResult[] = [];
 
   // Search navigation items
   for (const nav of navItems) {
     if (nav.name.toLowerCase().includes(q)) {
       scored.push({
-        type: 'nav',
+        type: "nav",
         nav,
         score: nav.name.toLowerCase().startsWith(q) ? 110 : 90,
-      })
+      });
     }
   }
 
   for (const art of props.arts) {
-    const title = art.metadata.title.toLowerCase()
-    const category = (art.metadata.category ?? '').toLowerCase()
-    const description = (art.metadata.description ?? '').toLowerCase()
-    const tags = art.metadata.tags.map(t => t.toLowerCase())
+    const title = art.metadata.title.toLowerCase();
+    const category = (art.metadata.category ?? "").toLowerCase();
+    const description = (art.metadata.description ?? "").toLowerCase();
+    const tags = art.metadata.tags.map((t) => t.toLowerCase());
 
     // Title match (highest priority)
     if (title.includes(q)) {
       scored.push({
-        type: 'component',
+        type: "component",
         art,
-        matchType: 'title',
+        matchType: "title",
         score: title.startsWith(q) ? 100 : 80,
-      })
-      continue
+      });
+      continue;
     }
 
     // Category match
     if (category.includes(q)) {
       scored.push({
-        type: 'component',
+        type: "component",
         art,
-        matchType: 'category',
+        matchType: "category",
         score: 60,
-      })
-      continue
+      });
+      continue;
     }
 
     // Tag match
-    const matchedTag = tags.find(t => t.includes(q))
+    const matchedTag = tags.find((t) => t.includes(q));
     if (matchedTag) {
       scored.push({
-        type: 'component',
+        type: "component",
         art,
-        matchType: 'tags',
+        matchType: "tags",
         score: 50,
-      })
-      continue
+      });
+      continue;
     }
 
     // Variant match
-    const matchedVariant = art.variants.find(v => v.name.toLowerCase().includes(q))
+    const matchedVariant = art.variants.find((v) => v.name.toLowerCase().includes(q));
     if (matchedVariant) {
       scored.push({
-        type: 'component',
+        type: "component",
         art,
-        matchType: 'variant',
+        matchType: "variant",
         variantName: matchedVariant.name,
         score: 40,
-      })
-      continue
+      });
+      continue;
     }
 
     // Description match (lowest priority)
     if (description.includes(q)) {
       scored.push({
-        type: 'component',
+        type: "component",
         art,
-        matchType: 'description',
+        matchType: "description",
         score: 20,
-      })
+      });
     }
   }
 
-  return scored.sort((a, b) => b.score - a.score).slice(0, 10)
-})
+  return scored.sort((a, b) => b.score - a.score).slice(0, 10);
+});
 
 // Reset selection when results change
 watch(results, () => {
-  selectedIndex.value = 0
-})
+  selectedIndex.value = 0;
+});
 
 // Focus input when modal opens
-watch(() => props.isOpen, (open) => {
-  if (open) {
-    query.value = ''
-    selectedIndex.value = 0
-    nextTick(() => {
-      searchInput.value?.focus()
-    })
-  }
-})
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      query.value = "";
+      selectedIndex.value = 0;
+      nextTick(() => {
+        searchInput.value?.focus();
+      });
+    }
+  },
+);
 
 const handleKeydown = (e: KeyboardEvent) => {
   switch (e.key) {
-    case 'ArrowDown':
-      e.preventDefault()
-      selectedIndex.value = Math.min(selectedIndex.value + 1, results.value.length - 1)
-      break
-    case 'ArrowUp':
-      e.preventDefault()
-      selectedIndex.value = Math.max(selectedIndex.value - 1, 0)
-      break
-    case 'Enter':
-      e.preventDefault()
+    case "ArrowDown":
+      e.preventDefault();
+      selectedIndex.value = Math.min(selectedIndex.value + 1, results.value.length - 1);
+      break;
+    case "ArrowUp":
+      e.preventDefault();
+      selectedIndex.value = Math.max(selectedIndex.value - 1, 0);
+      break;
+    case "Enter":
+      e.preventDefault();
       if (results.value[selectedIndex.value]) {
-        selectResult(results.value[selectedIndex.value])
+        selectResult(results.value[selectedIndex.value]);
       }
-      break
-    case 'Escape':
-      e.preventDefault()
-      emit('close')
-      break
+      break;
+    case "Escape":
+      e.preventDefault();
+      emit("close");
+      break;
   }
-}
+};
 
 const selectResult = (result: AnyResult) => {
-  saveToHistory(query.value)
-  if (result.type === 'nav') {
-    router.push(result.nav.route)
-    emit('close')
+  saveToHistory(query.value);
+  if (result.type === "nav") {
+    router.push(result.nav.route);
+    emit("close");
   } else {
-    emit('select', result.art, result.variantName)
-    emit('close')
+    emit("select", result.art, result.variantName);
+    emit("close");
   }
-}
+};
 
 const selectFromHistory = (term: string) => {
-  query.value = term
-  searchInput.value?.focus()
-}
+  query.value = term;
+  searchInput.value?.focus();
+};
 
 const clearHistory = () => {
-  searchHistory.value = []
-  localStorage.removeItem('musea-search-history')
-}
+  searchHistory.value = [];
+  localStorage.removeItem("musea-search-history");
+};
 
 // Global keyboard listener for Cmd+K / Ctrl+K
 const handleGlobalKeydown = (e: KeyboardEvent) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault()
+  if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    e.preventDefault();
     if (!props.isOpen) {
       // This should trigger parent to open
       // But handled externally
     } else {
-      emit('close')
+      emit("close");
     }
   }
-}
+};
 
 onMounted(() => {
-  document.addEventListener('keydown', handleGlobalKeydown)
-})
+  document.addEventListener("keydown", handleGlobalKeydown);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleGlobalKeydown)
-})
+  document.removeEventListener("keydown", handleGlobalKeydown);
+});
 </script>
 
 <template>
@@ -264,7 +275,11 @@ onUnmounted(() => {
             <template v-if="results.length > 0">
               <div
                 v-for="(result, index) in results"
-                :key="result.type === 'nav' ? `nav-${result.nav.route}` : `${result.art.path}-${result.variantName || ''}`"
+                :key="
+                  result.type === 'nav'
+                    ? `nav-${result.nav.route}`
+                    : `${result.art.path}-${result.variantName || ''}`
+                "
                 :class="['search-result', { 'search-result--selected': index === selectedIndex }]"
                 @click="selectResult(result)"
                 @mouseenter="selectedIndex = index"
@@ -322,27 +337,17 @@ onUnmounted(() => {
             </template>
 
             <!-- No results -->
-            <div v-else-if="query" class="search-empty">
-              No results for "{{ query }}"
-            </div>
+            <div v-else-if="query" class="search-empty">No results for "{{ query }}"</div>
 
             <!-- Initial state -->
-            <div v-else class="search-hint">
-              Start typing to search components
-            </div>
+            <div v-else class="search-hint">Start typing to search components</div>
           </div>
 
           <!-- Footer -->
           <div class="search-footer">
-            <div class="search-footer-item">
-              <kbd>↑</kbd><kbd>↓</kbd> to navigate
-            </div>
-            <div class="search-footer-item">
-              <kbd>↵</kbd> to select
-            </div>
-            <div class="search-footer-item">
-              <kbd>esc</kbd> to close
-            </div>
+            <div class="search-footer-item"><kbd>↑</kbd><kbd>↓</kbd> to navigate</div>
+            <div class="search-footer-item"><kbd>↵</kbd> to select</div>
+            <div class="search-footer-item"><kbd>esc</kbd> to close</div>
           </div>
         </div>
       </div>

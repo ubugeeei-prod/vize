@@ -23,6 +23,8 @@ pub struct CrossFileOptions {
     pub error_suspense_boundary: bool,
     /// Analyze reactivity loss.
     pub reactivity_tracking: bool,
+    /// Analyze async reactive race-condition risks.
+    pub race_conditions: bool,
     /// Analyze setup context violations (CSRP/memory leaks).
     pub setup_context: bool,
     /// Detect circular dependencies.
@@ -49,6 +51,7 @@ impl CrossFileOptions {
             server_client_boundary: true,
             error_suspense_boundary: true,
             reactivity_tracking: true,
+            race_conditions: true,
             setup_context: true,
             circular_dependencies: true,
             max_import_depth: Some(10),
@@ -120,6 +123,12 @@ impl CrossFileOptions {
         self
     }
 
+    /// Enable async reactive race-condition analysis.
+    pub fn with_race_conditions(mut self, enabled: bool) -> Self {
+        self.race_conditions = enabled;
+        self
+    }
+
     /// Enable circular dependency detection.
     pub fn with_circular_dependencies(mut self, enabled: bool) -> Self {
         self.circular_dependencies = enabled;
@@ -154,6 +163,7 @@ impl CrossFileOptions {
             || self.server_client_boundary
             || self.error_suspense_boundary
             || self.reactivity_tracking
+            || self.race_conditions
             || self.setup_context
             || self.circular_dependencies
             || self.component_resolution
@@ -185,6 +195,9 @@ pub struct CrossFileResult {
     /// Provide/inject matches.
     pub provide_inject_matches: Vec<analyzers::ProvideInjectMatch>,
 
+    /// Provide/inject tree, populated when provide/inject analysis is enabled.
+    pub provide_inject_tree: Option<analyzers::ProvideInjectTree>,
+
     /// Unique ID issues.
     pub unique_id_issues: Vec<analyzers::UniqueIdIssue>,
 
@@ -196,6 +209,9 @@ pub struct CrossFileResult {
 
     /// Cross-file reactivity issues.
     pub cross_file_reactivity_issues: Vec<analyzers::CrossFileReactivityIssue>,
+
+    /// Async race-condition issues.
+    pub race_condition_issues: Vec<analyzers::RaceConditionIssue>,
 
     /// Setup context violations (CSRP/memory leaks).
     pub setup_context_issues: Vec<analyzers::SetupContextIssue>,

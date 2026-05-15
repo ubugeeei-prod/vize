@@ -23,8 +23,20 @@ impl<'a> Parser<'a> {
             name_end: end,
             value_start: None,
             value_end: None,
+            value_content: None,
             _marker: std::marker::PhantomData,
         });
+    }
+
+    /// Process the end of a full attribute or directive head.
+    pub(super) fn on_attrib_name_end_impl(&mut self, end: usize) {
+        if let Some(ref mut attr) = self.current_attr {
+            attr.name_end = end;
+        }
+
+        if let Some(ref mut dir) = self.current_dir {
+            dir.name_end = end;
+        }
     }
 
     /// Process directive name
@@ -41,6 +53,7 @@ impl<'a> Parser<'a> {
             modifiers: Vec::new_in(self.allocator),
             value_start: None,
             value_end: None,
+            value_content: None,
             _marker: std::marker::PhantomData,
         });
     }
@@ -65,18 +78,60 @@ impl<'a> Parser<'a> {
 
     /// Process attribute data (value content)
     pub(super) fn on_attrib_data_impl(&mut self, start: usize, end: usize) {
+        let source = self.source;
+        self.accumulate_attr_or_dir_value(&source[start..end], start, end);
+    }
+
+    /// Process attribute entity
+    pub(super) fn on_attrib_entity_impl(&mut self, ch: char, start: usize, end: usize) {
+        let mut content = [0_u8; 4];
+        self.accumulate_attr_or_dir_value(ch.encode_utf8(&mut content), start, end);
+    }
+
+    /// Helper to accumulate attribute or directive value
+    fn accumulate_attr_or_dir_value(&mut self, content: &str, start: usize, end: usize) {
+        // Update current attribute
         if let Some(ref mut attr) = self.current_attr {
-            if attr.value_start.is_none() {
-                attr.value_start = Some(start);
-            }
-            attr.value_end = Some(end);
+            Self::accumulate_value(
+                &mut attr.value_content,
+                &mut attr.value_start,
+                &mut attr.value_end,
+                content,
+                start,
+                end,
+            );
         }
+
+        // Update current directive
         if let Some(ref mut dir) = self.current_dir {
-            if dir.value_start.is_none() {
-                dir.value_start = Some(start);
-            }
-            dir.value_end = Some(end);
+            Self::accumulate_value(
+                &mut dir.value_content,
+                &mut dir.value_start,
+                &mut dir.value_end,
+                content,
+                start,
+                end,
+            );
         }
+    }
+
+    /// Helper to accumulate value content
+    #[inline]
+    fn accumulate_value(
+        content_field: &mut Option<String>,
+        start_field: &mut Option<usize>,
+        end_field: &mut Option<usize>,
+        content: &str,
+        start: usize,
+        end: usize,
+    ) {
+        if content_field.is_none() {
+            *start_field = Some(start);
+            *content_field = Some(content.into());
+        } else if let Some(existing) = content_field.as_mut() {
+            existing.push_str(content);
+        }
+        *end_field = Some(end);
     }
 
     /// Process attribute end
@@ -92,22 +147,32 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn prop_loc_end(&self, quote: QuoteType, end: usize, name_end: usize) -> usize {
+        match quote {
+            QuoteType::NoValue => name_end,
+            QuoteType::Double | QuoteType::Single => (end + 1).min(self.source.len()),
+            QuoteType::Unquoted => end,
+        }
+    }
+
     /// Finish building an attribute node
     fn finish_attribute(&mut self, attr: CurrentAttribute<'a>, quote: QuoteType, end: usize) {
-        let loc = self.create_loc(attr.name_start, end);
+        let loc_end = self.prop_loc_end(quote, end, attr.name_end);
+        let loc = self.create_loc(attr.name_start, loc_end);
         let name_loc = self.create_loc(attr.name_start, attr.name_end);
 
         let mut attr_node = AttributeNode::new(attr.name.clone(), loc);
         attr_node.name_loc = name_loc;
 
         // Add value if present
-        if let (Some(v_start), Some(v_end)) = (attr.value_start, attr.value_end) {
-            let value_content = self.get_source(v_start, v_end);
+        if let (Some(v_start), Some(v_end), Some(v_content)) =
+            (attr.value_start, attr.value_end, attr.value_content)
+        {
             let value_loc = self.create_loc(v_start, v_end);
-            attr_node.value = Some(TextNode::new(value_content, value_loc));
+            attr_node.value = Some(TextNode::new(v_content, value_loc));
         } else if matches!(quote, QuoteType::Double | QuoteType::Single) {
             // alt="" or alt='' → empty string value (not boolean "true")
-            let empty_loc = self.create_loc(end, end);
+            let empty_loc: vize_relief::SourceLocation = self.create_loc(end, end);
             attr_node.value = Some(TextNode::new("", empty_loc));
         }
 
@@ -118,8 +183,9 @@ impl<'a> Parser<'a> {
     }
 
     /// Finish building a directive node
-    fn finish_directive(&mut self, dir: CurrentDirective<'a>, _quote: QuoteType, end: usize) {
-        let loc = self.create_loc(dir.name_start, end);
+    fn finish_directive(&mut self, dir: CurrentDirective<'a>, quote: QuoteType, end: usize) {
+        let loc_end = self.prop_loc_end(quote, end, dir.name_end);
+        let loc = self.create_loc(dir.name_start, loc_end);
 
         let mut dir_node = DirectiveNode::new(self.allocator, dir.name.clone(), loc);
         dir_node.raw_name = Some(dir.raw_name);
@@ -155,10 +221,11 @@ impl<'a> Parser<'a> {
         }
 
         // Add expression if present
-        if let (Some(v_start), Some(v_end)) = (dir.value_start, dir.value_end) {
-            let exp_content = self.get_source(v_start, v_end);
+        if let (Some(v_start), Some(v_end), Some(v_content)) =
+            (dir.value_start, dir.value_end, dir.value_content)
+        {
             let exp_loc = self.create_loc(v_start, v_end);
-            let exp_node = SimpleExpressionNode::new(exp_content, false, exp_loc);
+            let exp_node = SimpleExpressionNode::new(v_content, false, exp_loc);
             let exp_boxed = Box::new_in(exp_node, self.allocator);
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
         } else if let Some((camelized, s_start, s_end)) = shorthand_exp {

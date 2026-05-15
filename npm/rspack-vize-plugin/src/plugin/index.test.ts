@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import "./../test/setup.ts";
-import { VizePlugin } from "./index.js";
+import { VizePlugin } from "./index.ts";
 
 function createMockCompiler(existingDefinitions?: Record<string, unknown>) {
   let capturedDefinitions: Record<string, string> | null = null;

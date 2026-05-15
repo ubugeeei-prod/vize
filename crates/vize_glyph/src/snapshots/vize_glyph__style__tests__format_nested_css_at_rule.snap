@@ -1,0 +1,9 @@
+---
+source: crates/vize_glyph/src/style.rs
+expression: result.as_str()
+---
+@media (width >= 640px) {
+  .container {
+    color: red;
+  }
+}

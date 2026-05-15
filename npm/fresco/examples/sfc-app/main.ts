@@ -7,8 +7,8 @@
  * Run with: pnpm dev
  */
 
-import { createApp } from '@vizejs/fresco';
-import App from './App.vue';
+import { createApp } from "@vizejs/fresco";
+import App from "./App.vue";
 
 async function main() {
   const app = createApp(App, {
@@ -17,7 +17,7 @@ async function main() {
 
   await app.mount();
   await app.waitUntilExit();
-  console.log('Goodbye!');
+  console.log("Goodbye!");
 }
 
 main().catch(console.error);

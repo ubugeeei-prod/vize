@@ -9,7 +9,7 @@
 
 mod collectors;
 #[cfg(feature = "native")]
-mod tsgo;
+mod corsa;
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
 
@@ -86,18 +86,25 @@ impl DiagnosticService {
 
         let content = doc.text();
         let mut diagnostics = Vec::new();
+        let features = state.lsp_features();
+
+        if !features.has_diagnostics() {
+            return diagnostics;
+        }
 
         // Check if this is an Art file (*.art.vue)
         let path = uri.path();
         if path.ends_with(".art.vue") {
             // Musea-specific diagnostics for Art files
-            diagnostics.extend(Self::collect_musea_diagnostics(uri, &content));
-            // Don't return early - continue to collect tsgo diagnostics in collect_async()
+            if features.lint {
+                diagnostics.extend(Self::collect_musea_diagnostics(uri, &content));
+            }
+            // Don't return early here; async collection still adds Corsa diagnostics.
             return diagnostics;
         }
 
         // Standard SFC processing
-        // Collect SFC parser diagnostics
+        // Collect parser diagnostics when any diagnostic pipeline is enabled.
         let sfc_diags = Self::collect_sfc_diagnostics(uri, &content);
         tracing::info!("collect: SFC parser diagnostics: {}", sfc_diags.len());
         diagnostics.extend(sfc_diags);
@@ -110,29 +117,38 @@ impl DiagnosticService {
         );
         diagnostics.extend(template_diags);
 
-        // Collect linter diagnostics (vize_patina)
-        let lint_diags = Self::collect_lint_diagnostics(uri, &content);
-        tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
-        diagnostics.extend(lint_diags);
+        if features.lint {
+            // Collect linter diagnostics (vize_patina)
+            let lint_diags = Self::collect_lint_diagnostics(uri, &content);
+            tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
+            diagnostics.extend(lint_diags);
+        } else {
+            tracing::info!("collect: patina lint diagnostics skipped (disabled by config)");
+        }
 
-        if state.get_type_checker_config().enabled {
+        if state.is_lsp_typecheck_enabled() {
+            // Collect type checker diagnostics (vize_canon)
             let type_diags = super::TypeService::collect_diagnostics(state, uri);
             tracing::info!("collect: type checker diagnostics: {}", type_diags.len());
             diagnostics.extend(type_diags);
+        } else {
+            tracing::info!("collect: type checker diagnostics skipped (disabled by config)");
         }
 
         // Also lint inline <art> blocks in regular .vue files
-        let inline_art_diags = Self::collect_inline_art_diagnostics(uri, &content);
-        tracing::info!(
-            "collect: inline art diagnostics: {}",
-            inline_art_diags.len()
-        );
-        diagnostics.extend(inline_art_diags);
+        if features.lint {
+            let inline_art_diags = Self::collect_inline_art_diagnostics(uri, &content);
+            tracing::info!(
+                "collect: inline art diagnostics: {}",
+                inline_art_diags.len()
+            );
+            diagnostics.extend(inline_art_diags);
+        }
 
         diagnostics
     }
 
-    /// Collect diagnostics asynchronously (includes tsgo diagnostics when available).
+    /// Collect diagnostics asynchronously (includes Corsa diagnostics when available).
     #[cfg(feature = "native")]
     pub async fn collect_async(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
         tracing::info!("collect_async: {}", uri);
@@ -141,19 +157,21 @@ impl DiagnosticService {
         let mut diagnostics = Self::collect(state, uri);
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
 
-        // Try to get tsgo diagnostics (with timeout, skip on failure)
-        // Use 10s timeout - polling for diagnostics internally uses 5s
-        if state.is_tsgo_enabled() {
-            let tsgo_future = Self::collect_tsgo_diagnostics(state, uri);
-            match tokio::time::timeout(std::time::Duration::from_secs(10), tsgo_future).await {
-                Ok(tsgo_diags) => {
-                    tracing::info!("tsgo diagnostics count: {}", tsgo_diags.len());
-                    diagnostics.extend(tsgo_diags);
+        if state.is_lsp_typecheck_enabled() {
+            // Try to get Corsa diagnostics (with timeout, skip on failure).
+            // Use 10s timeout - polling for diagnostics internally uses 5s
+            let corsa_future = Self::collect_corsa_diagnostics(state, uri);
+            match tokio::time::timeout(std::time::Duration::from_secs(10), corsa_future).await {
+                Ok(corsa_diags) => {
+                    tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
+                    diagnostics.extend(corsa_diags);
                 }
                 Err(_) => {
-                    tracing::warn!("tsgo diagnostics timed out for {}", uri);
+                    tracing::warn!("corsa diagnostics timed out for {}", uri);
                 }
             }
+        } else {
+            tracing::info!("collect_async: Corsa diagnostics skipped (disabled by config)");
         }
 
         diagnostics

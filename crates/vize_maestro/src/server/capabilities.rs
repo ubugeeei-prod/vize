@@ -2,17 +2,11 @@
 #![allow(clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::*;
-use vize_carton::config::LanguageServerConfig;
+
+use super::state::LspFeatureConfig;
 
 /// Build the server capabilities to advertise to the client.
-pub fn server_capabilities(config: &LanguageServerConfig) -> ServerCapabilities {
-    let enabled = config.enabled;
-    let hover_enabled = enabled && config.hover;
-    let completion_enabled = enabled && config.completion;
-    let definition_enabled = enabled && config.definition;
-    let formatting_enabled = enabled && config.formatting;
-    let code_actions_enabled = enabled && config.code_actions;
-
+pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
     ServerCapabilities {
         // Document synchronization
         text_document_sync: Some(TextDocumentSyncCapability::Options(
@@ -28,10 +22,12 @@ pub fn server_capabilities(config: &LanguageServerConfig) -> ServerCapabilities 
         )),
 
         // Hover support
-        hover_provider: hover_enabled.then_some(HoverProviderCapability::Simple(true)),
+        hover_provider: features
+            .hover
+            .then_some(HoverProviderCapability::Simple(true)),
 
         // Completion support
-        completion_provider: completion_enabled.then_some(CompletionOptions {
+        completion_provider: features.completion.then_some(CompletionOptions {
             trigger_characters: Some(vec![
                 ".".to_string(),
                 ":".to_string(),
@@ -50,19 +46,19 @@ pub fn server_capabilities(config: &LanguageServerConfig) -> ServerCapabilities 
         }),
 
         // Go to definition
-        definition_provider: definition_enabled.then_some(OneOf::Left(true)),
+        definition_provider: features.definition.then_some(OneOf::Left(true)),
 
         // Find references
-        references_provider: enabled.then_some(OneOf::Left(true)),
+        references_provider: features.references.then_some(OneOf::Left(true)),
 
         // Document symbols (outline)
-        document_symbol_provider: enabled.then_some(OneOf::Left(true)),
+        document_symbol_provider: features.document_symbols.then_some(OneOf::Left(true)),
 
         // Workspace symbols
-        workspace_symbol_provider: enabled.then_some(OneOf::Left(true)),
+        workspace_symbol_provider: features.workspace_symbols.then_some(OneOf::Left(true)),
 
         // Code actions (quick fixes, refactoring)
-        code_action_provider: code_actions_enabled.then_some(
+        code_action_provider: (features.lint && features.code_actions).then_some(
             CodeActionProviderCapability::Options(CodeActionOptions {
                 code_action_kinds: Some(vec![
                     CodeActionKind::QUICKFIX,
@@ -75,31 +71,31 @@ pub fn server_capabilities(config: &LanguageServerConfig) -> ServerCapabilities 
         ),
 
         // Rename support
-        rename_provider: enabled.then_some(OneOf::Right(RenameOptions {
+        rename_provider: features.rename.then_some(OneOf::Right(RenameOptions {
             prepare_provider: Some(true),
             work_done_progress_options: WorkDoneProgressOptions::default(),
         })),
 
         // Document formatting
-        document_formatting_provider: formatting_enabled.then_some(OneOf::Left(true)),
+        document_formatting_provider: features.formatting.then_some(OneOf::Left(true)),
 
         // Range formatting
-        document_range_formatting_provider: formatting_enabled.then_some(OneOf::Left(true)),
+        document_range_formatting_provider: features.formatting.then_some(OneOf::Left(true)),
 
         // Signature help
-        signature_help_provider: enabled.then_some(SignatureHelpOptions {
+        signature_help_provider: features.completion.then_some(SignatureHelpOptions {
             trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
             retrigger_characters: None,
             work_done_progress_options: WorkDoneProgressOptions::default(),
         }),
 
         // Code lens
-        code_lens_provider: enabled.then_some(CodeLensOptions {
+        code_lens_provider: features.code_lens.then_some(CodeLensOptions {
             resolve_provider: Some(false),
         }),
 
         // Semantic tokens (syntax highlighting)
-        semantic_tokens_provider: enabled.then_some(
+        semantic_tokens_provider: features.semantic_tokens.then_some(
             SemanticTokensServerCapabilities::SemanticTokensOptions(SemanticTokensOptions {
                 work_done_progress_options: WorkDoneProgressOptions::default(),
                 legend: SemanticTokensLegend {
@@ -147,19 +143,23 @@ pub fn server_capabilities(config: &LanguageServerConfig) -> ServerCapabilities 
         ),
 
         // Document links
-        document_link_provider: enabled.then_some(DocumentLinkOptions {
+        document_link_provider: features.document_links.then_some(DocumentLinkOptions {
             resolve_provider: Some(true),
             work_done_progress_options: WorkDoneProgressOptions::default(),
         }),
 
         // Folding ranges
-        folding_range_provider: enabled.then_some(FoldingRangeProviderCapability::Simple(true)),
+        folding_range_provider: features
+            .folding_ranges
+            .then_some(FoldingRangeProviderCapability::Simple(true)),
 
         // Selection ranges
-        selection_range_provider: enabled.then_some(SelectionRangeProviderCapability::Simple(true)),
+        selection_range_provider: features
+            .folding_ranges
+            .then_some(SelectionRangeProviderCapability::Simple(true)),
 
         // Inlay hints
-        inlay_hint_provider: enabled.then_some(OneOf::Left(true)),
+        inlay_hint_provider: features.inlay_hints.then_some(OneOf::Left(true)),
 
         // Workspace capabilities
         workspace: Some(WorkspaceServerCapabilities {
@@ -167,7 +167,16 @@ pub fn server_capabilities(config: &LanguageServerConfig) -> ServerCapabilities 
                 supported: Some(true),
                 change_notifications: Some(OneOf::Left(true)),
             }),
-            file_operations: None,
+            file_operations: features.file_rename.then_some(
+                WorkspaceFileOperationsServerCapabilities {
+                    did_create: None,
+                    will_create: None,
+                    did_rename: Some(file_rename_registration_options()),
+                    will_rename: Some(file_rename_registration_options()),
+                    did_delete: None,
+                    will_delete: None,
+                },
+            ),
         }),
 
         // Features not yet implemented
@@ -184,5 +193,28 @@ pub fn server_capabilities(config: &LanguageServerConfig) -> ServerCapabilities 
 
         // Default for other fields
         ..Default::default()
+    }
+}
+
+fn file_rename_registration_options() -> FileOperationRegistrationOptions {
+    FileOperationRegistrationOptions {
+        filters: vec![
+            FileOperationFilter {
+                scheme: Some("file".to_string()),
+                pattern: FileOperationPattern {
+                    glob: "**/*.{vue,ts,tsx,js,jsx,mts,cts,mjs,cjs}".to_string(),
+                    matches: Some(FileOperationPatternKind::File),
+                    options: None,
+                },
+            },
+            FileOperationFilter {
+                scheme: Some("file".to_string()),
+                pattern: FileOperationPattern {
+                    glob: "**/*".to_string(),
+                    matches: Some(FileOperationPatternKind::Folder),
+                    options: None,
+                },
+            },
+        ],
     }
 }

@@ -1,37 +1,41 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import MonacoEditor from '../MonacoEditor.vue'
+import { defineAsyncComponent, ref, watch } from "vue";
+
+const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
 
 const props = defineProps<{
-  label: string
-  description?: string
-  required?: boolean
-  modelValue?: unknown
-}>()
+  label: string;
+  description?: string;
+  required?: boolean;
+  modelValue?: unknown;
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: unknown): void
-}>()
+  (e: "update:modelValue", value: unknown): void;
+}>();
 
-const jsonString = ref(JSON.stringify(props.modelValue ?? {}, null, 2))
-const parseError = ref(false)
+const jsonString = ref(JSON.stringify(props.modelValue ?? {}, null, 2));
+const parseError = ref(false);
 
-watch(() => props.modelValue, (val) => {
-  const incoming = JSON.stringify(val ?? {}, null, 2)
-  if (incoming !== jsonString.value) {
-    jsonString.value = incoming
-    parseError.value = false
-  }
-})
+watch(
+  () => props.modelValue,
+  (val) => {
+    const incoming = JSON.stringify(val ?? {}, null, 2);
+    if (incoming !== jsonString.value) {
+      jsonString.value = incoming;
+      parseError.value = false;
+    }
+  },
+);
 
 function onEditorUpdate(value: string) {
-  jsonString.value = value
+  jsonString.value = value;
   try {
-    const parsed = JSON.parse(value)
-    parseError.value = false
-    emit('update:modelValue', parsed)
+    const parsed = JSON.parse(value);
+    parseError.value = false;
+    emit("update:modelValue", parsed);
   } catch {
-    parseError.value = true
+    parseError.value = true;
   }
 }
 </script>

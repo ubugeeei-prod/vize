@@ -1,41 +1,41 @@
-import { ref } from 'vue'
-import type { TokenUsageMap, TokenUsageEntry } from '../api'
-import { fetchTokenUsage } from '../api'
+import { ref } from "vue";
+import type { TokenUsageMap, TokenUsageEntry } from "../api";
+import { fetchTokenUsage } from "../api";
 
-const usageMap = ref<TokenUsageMap>({})
-const loading = ref(false)
-const error = ref<string | null>(null)
+const usageMap = ref<TokenUsageMap>({});
+const loading = ref(false);
+const error = ref<string | null>(null);
 
-let loaded = false
+let loaded = false;
 
 export function useTokenUsage() {
   async function load() {
-    if (loaded) return
-    loading.value = true
-    error.value = null
+    if (loaded) return;
+    loading.value = true;
+    error.value = null;
     try {
-      usageMap.value = await fetchTokenUsage()
-      loaded = true
+      usageMap.value = await fetchTokenUsage();
+      loaded = true;
     } catch (e) {
-      error.value = e instanceof Error ? e.message : String(e)
+      error.value = e instanceof Error ? e.message : String(e);
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
   async function reload() {
-    loaded = false
-    await load()
+    loaded = false;
+    await load();
   }
 
   function getUsage(tokenPath: string): TokenUsageEntry[] {
-    return usageMap.value[tokenPath] ?? []
+    return usageMap.value[tokenPath] ?? [];
   }
 
   function getUsageCount(tokenPath: string): number {
-    const entries = usageMap.value[tokenPath]
-    if (!entries) return 0
-    return entries.reduce((sum, entry) => sum + entry.matches.length, 0)
+    const entries = usageMap.value[tokenPath];
+    if (!entries) return 0;
+    return entries.reduce((sum, entry) => sum + entry.matches.length, 0);
   }
 
   return {
@@ -46,5 +46,5 @@ export function useTokenUsage() {
     reload,
     getUsage,
     getUsageCount,
-  }
+  };
 }

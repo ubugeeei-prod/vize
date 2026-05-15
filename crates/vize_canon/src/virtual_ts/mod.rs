@@ -19,39 +19,29 @@ pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping};
 
 #[cfg(test)]
 mod tests {
-    use super::helpers::{
-        generate_template_context, get_dom_event_type, VUE_SETUP_COMPILER_MACROS,
-    };
+    use super::helpers::{generate_template_context, get_dom_event_type, VUE_SETUP_HELPERS};
     use super::{
         generate_virtual_ts, generate_virtual_ts_with_offsets, TemplateGlobal, VirtualTsOptions,
     };
 
+    fn assert_virtual_ts_snapshot(name: &str, value: &str) {
+        insta::with_settings!({
+            snapshot_path => "../snapshots"
+        }, {
+            insta::assert_snapshot!(name, value);
+        });
+    }
+
     #[test]
-    fn test_vue_setup_compiler_macros_are_actual_functions() {
-        // Compiler macros should be actual functions (NOT declare)
-        // This ensures they're scoped to setup only
-        // Type parameters use _ prefix to avoid "unused type parameter" warnings
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("function defineProps<_T"));
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("function defineEmits<_T"));
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("function defineExpose"));
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("function defineSlots"));
-        // Should NOT contain declare (would make them global)
-        assert!(!VUE_SETUP_COMPILER_MACROS.contains("declare function"));
-        // Should mark macros as used with void statements
-        assert!(VUE_SETUP_COMPILER_MACROS.contains("void defineProps"));
+    fn test_vue_setup_helpers_are_actual_functions() {
+        assert_virtual_ts_snapshot("virtual_ts_vue_setup_helpers", VUE_SETUP_HELPERS);
     }
 
     #[test]
     fn test_vue_template_context() {
         // Template context should contain Vue instance properties
         let ctx = generate_template_context(&VirtualTsOptions::default());
-        assert!(ctx.contains("$attrs"));
-        assert!(ctx.contains("$slots"));
-        assert!(ctx.contains("$refs"));
-        assert!(ctx.contains("$emit"));
-        // Plugin globals should NOT be included by default (configure via vize.config.pkl)
-        assert!(!ctx.contains("$t"));
-        assert!(!ctx.contains("$route"));
+        assert_virtual_ts_snapshot("virtual_ts_vue_template_context", ctx.as_str());
     }
 
     #[test]
@@ -73,8 +63,7 @@ mod tests {
             ..Default::default()
         };
         let ctx = generate_template_context(&options);
-        assert!(ctx.contains("$t"));
-        assert!(ctx.contains("$route"));
+        assert_virtual_ts_snapshot("virtual_ts_vue_template_context_with_globals", ctx.as_str());
     }
 
     #[test]
@@ -99,8 +88,10 @@ const count = 1
 
         let output = generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &options);
 
-        assert!(!output.code.contains("declare const currentUser: any;"));
-        assert!(output.code.contains("declare const useHydratedHead: any;"));
+        assert_virtual_ts_snapshot(
+            "virtual_ts_auto_import_stubs_skip_imported_names",
+            output.code.as_str(),
+        );
     }
 
     #[test]
@@ -184,11 +175,7 @@ const items = ref([{ id: 1, name: 'Hello' }])
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // v-for with destructuring should have a forEach
-        assert!(
-            output.code.contains(".forEach("),
-            "Should generate forEach for destructured v-for"
-        );
+        assert_virtual_ts_snapshot("virtual_ts_vfor_destructuring_scope", output.code.as_str());
     }
 
     #[test]
@@ -215,15 +202,7 @@ const message = ref('')
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // Should contain expressions for both v-if and v-else-if conditions
-        assert!(
-            output.code.contains("status"),
-            "Should contain status expression"
-        );
-        assert!(
-            output.code.contains("message"),
-            "Should contain message expression"
-        );
+        assert_virtual_ts_snapshot("virtual_ts_nested_vif_velse_chain", output.code.as_str());
     }
 
     #[test]
@@ -249,10 +228,46 @@ const items = ['a', 'b']
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // Should contain a v-slot scope closure
-        assert!(
-            output.code.contains("v-slot scope") || output.code.contains("slot"),
-            "Should generate v-slot scope closure"
+        assert_virtual_ts_snapshot("virtual_ts_scoped_slot_expressions", output.code.as_str());
+    }
+
+    #[test]
+    fn test_reserved_prop_and_hyphenated_slot_names() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import TrendChart from './TrendChart.vue'
+defineProps<{
+  class?: string
+}>()
+"#;
+        let template = r#"<TrendChart :class="class">
+  <template #area-gradient="{ id }">
+    {{ id }}
+  </template>
+</TrendChart>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        let expression_start = template.find("\"class\"").unwrap() + 1;
+        let expression_end = expression_start + "class".len();
+        let mapping = output
+            .mappings
+            .iter()
+            .find(|mapping| mapping.src_range == (expression_start..expression_end))
+            .expect("should map the rewritten class prop expression");
+        assert_eq!(&output.code[mapping.gen_range.clone()], "props[\"class\"]");
+
+        assert_virtual_ts_snapshot(
+            "virtual_ts_reserved_prop_and_hyphenated_slot_names",
+            output.code.as_str(),
         );
     }
 
@@ -279,20 +294,7 @@ function handleHover() {}
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // Both handlers should appear
-        assert!(
-            output.code.contains("handleClick"),
-            "Should contain click handler"
-        );
-        assert!(
-            output.code.contains("handleHover"),
-            "Should contain hover handler"
-        );
-        // Event types should be correct
-        assert!(
-            output.code.contains("MouseEvent"),
-            "Click handler should use MouseEvent type"
-        );
+        assert_virtual_ts_snapshot("virtual_ts_multiple_event_handlers", output.code.as_str());
     }
 
     #[test]
@@ -333,6 +335,87 @@ const msg = ref('Hello')
     }
 
     #[test]
+    fn test_source_mappings_target_expression_text() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import { useTemplateRef } from 'vue'
+const inputRef = useTemplateRef<HTMLInputElement>('input')
+"#;
+        let template = r#"<div :data-active="inputRef && inputRef.focus()"></div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        let expression = "inputRef && inputRef.focus()";
+        let source_start = template.find(expression).unwrap();
+        let source_end = source_start + expression.len();
+        let mapping = output
+            .mappings
+            .iter()
+            .find(|mapping| mapping.src_range == (source_start..source_end))
+            .expect("should map the template expression");
+
+        assert_eq!(&output.code[mapping.gen_range.clone()], expression);
+    }
+
+    #[test]
+    fn test_template_shadow_bindings_only_unwrap_vue_refs() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import { ref, useTemplateRef } from 'vue'
+const users = ref([{ id: 1 }])
+const inputRef = useTemplateRef<HTMLInputElement>('input')
+"#;
+        let template = r#"<div>{{ users.length }} {{ inputRef && inputRef.focus() }}</div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert_virtual_ts_snapshot("virtual_ts_template_binding_unwraps", output.code.as_str());
+    }
+
+    #[test]
+    fn test_virtual_ts_generation_survives_unicode_script_comments() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"const reasgnSubMenuOpen = debounce(() => {
+  console.log(1222222222222222222222222222222);
+}, 100);
+
+// あいうえおかきくけこさしすせそたちつてとなにぬねの
+const heightLimit = "65vh";
+// はひふへほまみむめもやいゆえよらりるれろわをん
+"#;
+        let template = r#"<div>{{ heightLimit }}</div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        assert!(output.code.contains("heightLimit"));
+    }
+
+    #[test]
     fn test_vfor_component_props_in_scope() {
         // Component inside v-for should have prop checks inside the forEach closure
         use vize_croquis::{Analyzer, AnalyzerOptions};
@@ -356,16 +439,9 @@ const todos = ref([{ id: 1, text: 'Hello' }])
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        // The component prop check for `:item="todo"` should be inside a forEach
-        // closure so that `todo` is in scope
-        assert!(
-            output.code.contains(".forEach("),
-            "Should have a forEach for v-for component props"
-        );
-        // The prop type assertion should exist (value cast to prop type)
-        assert!(
-            output.code.contains("(todo) as __TodoItem_"),
-            "Should check prop value `todo` inside forEach scope"
+        assert_virtual_ts_snapshot(
+            "virtual_ts_vfor_component_props_in_scope",
+            output.code.as_str(),
         );
     }
 
@@ -390,11 +466,9 @@ const item = ref<{ name: string } | undefined>()
 
         let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-        assert!(
-            output
-                .code
-                .contains("if (item) {\n    (item.name) as __LinkComp_0_prop_to;"),
-            "Component prop checks should be wrapped by the same-element v-if guard",
+        assert_virtual_ts_snapshot(
+            "virtual_ts_component_prop_checks_respect_same_element_vif_guard",
+            output.code.as_str(),
         );
     }
 }

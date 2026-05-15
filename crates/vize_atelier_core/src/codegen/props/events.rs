@@ -5,7 +5,7 @@ use crate::ast::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper};
 use super::super::{
     context::CodegenContext, expression::generate_event_handler, helpers::camelize,
 };
-use vize_carton::{FxHashMap, String};
+use vize_carton::String;
 
 /// Get the event key for a v-on directive (e.g., "onClick", "onKeyupEnter")
 pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>) -> Option<String> {
@@ -27,19 +27,6 @@ pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>) -> Option<String> {
     } else {
         None
     }
-}
-
-/// Count occurrences of each event name across all v-on directives
-pub(super) fn count_event_names(props: &[PropNode<'_>]) -> FxHashMap<String, usize> {
-    let mut counts = FxHashMap::default();
-    for p in props {
-        if let PropNode::Directive(dir) = p {
-            if let Some(key) = get_von_event_key(dir) {
-                *counts.entry(key).or_insert(0) += 1;
-            }
-        }
-    }
-    counts
 }
 
 /// Generate merged event handlers for the same event name as array syntax

@@ -4,6 +4,8 @@
  * Extracted from gallery.ts to keep file sizes manageable.
  */
 
+import { serializeScriptValue } from "../security.js";
+
 /**
  * Generate the gallery HTML body (header, sidebar, content, and inline script).
  */
@@ -68,7 +70,7 @@ export function generateGalleryBody(basePath: string): string {
  */
 export function generateGalleryScript(basePath: string): string {
   return `
-    const basePath = '${basePath}';
+    const basePath = ${serializeScriptValue(basePath)};
     let arts = [];
     let selectedArt = null;
     let searchQuery = '';
@@ -105,17 +107,18 @@ export function generateGalleryScript(basePath: string): string {
 
       let html = '';
       for (const [category, items] of Object.entries(categories)) {
+        const escapedCategory = escapeHtml(category);
         html += '<div class="sidebar-section">';
-        html += '<div class="category-header" data-category="' + category + '">';
+        html += '<div class="category-header" data-category="' + escapedCategory + '">';
         html += '<svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>';
-        html += '<span>' + category + '</span>';
+        html += '<span>' + escapedCategory + '</span>';
         html += '<span class="category-count">' + items.length + '</span>';
         html += '</div>';
-        html += '<ul class="art-list" data-category="' + category + '">';
+        html += '<ul class="art-list" data-category="' + escapedCategory + '">';
         for (const art of items) {
           const active = selectedArt?.path === art.path ? 'active' : '';
           const variantCount = art.variants?.length || 0;
-          html += '<li class="art-item ' + active + '" data-path="' + art.path + '">';
+          html += '<li class="art-item ' + active + '" data-path="' + escapeHtml(art.path) + '">';
           html += '<span>' + escapeHtml(art.metadata.title) + '</span>';
           html += '<span class="art-variant-count">' + variantCount + ' variant' + (variantCount !== 1 ? 's' : '') + '</span>';
           html += '</li>';
@@ -138,7 +141,7 @@ export function generateGalleryScript(basePath: string): string {
       sidebar.querySelectorAll('.category-header').forEach(header => {
         header.addEventListener('click', () => {
           header.classList.toggle('collapsed');
-          const list = sidebar.querySelector('.art-list[data-category="' + header.dataset.category + '"]');
+          const list = header.parentElement?.querySelector('.art-list');
           if (list) list.style.display = header.classList.contains('collapsed') ? 'none' : 'block';
         });
       });

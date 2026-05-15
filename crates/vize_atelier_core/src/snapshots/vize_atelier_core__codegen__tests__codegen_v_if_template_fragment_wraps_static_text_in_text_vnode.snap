@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    (ready)
+      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
+        _createTextVNode("Found packages")
+      ], 64 /* STABLE_FRAGMENT */))
+      : _createCommentVNode("v-if", true),
+    (pending)
+      ? (_openBlock(), _createElementBlock("span", { key: 0 }, "updating"))
+      : _createCommentVNode("v-if", true)
+  ]))
+}

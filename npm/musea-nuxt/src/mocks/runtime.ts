@@ -3,6 +3,7 @@
  */
 
 import { reactive, ref } from "vue";
+import type { Ref } from "vue";
 import type { NuxtMuseaOptions } from "../types.js";
 
 let _runtimeConfig: NuxtMuseaOptions["runtimeConfig"] = {};
@@ -48,11 +49,11 @@ export function useRuntimeConfig() {
 /**
  * Mock useState - returns a ref initialized from mock config or init function.
  */
-export function useState<T = unknown>(key: string, init?: () => T) {
+export function useState<T = unknown>(key: string, init?: () => T): Ref<T | undefined> {
   if (key in _stateMocks) {
     return ref(_stateMocks[key] as T);
   }
-  return ref(init ? init() : undefined) as ReturnType<typeof ref<T | undefined>>;
+  return ref(init ? init() : undefined) as Ref<T | undefined>;
 }
 
 /**
@@ -82,7 +83,10 @@ export function useRequestURL(): URL {
 /**
  * Mock useCookie - returns a ref-like cookie mock.
  */
-export function useCookie<T = unknown>(name: string, _opts?: Record<string, unknown>) {
+export function useCookie<T = unknown>(
+  _name: string,
+  _opts?: Record<string, unknown>,
+): Ref<T | undefined> {
   const value = ref<T | undefined>(undefined);
   return value;
 }

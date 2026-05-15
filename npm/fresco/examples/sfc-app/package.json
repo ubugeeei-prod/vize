@@ -5,16 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite-node main.ts",
-    "build": "vite build"
+    "build": "vp build"
   },
   "dependencies": {
     "@vizejs/fresco": "workspace:*",
-    "@vue/runtime-core": "^3.5.0"
+    "@vue/runtime-core": "catalog:vue-stable"
   },
   "devDependencies": {
     "@vizejs/vite-plugin": "workspace:*",
-    "vite": "^8.0.0-beta.0",
-    "vite-node": "^5.0.0",
-    "vue": "^3.5.0"
+    "vite": "catalog:vite-stack",
+    "vite-node": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
   }
 }

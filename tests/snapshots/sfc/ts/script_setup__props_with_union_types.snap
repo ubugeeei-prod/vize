@@ -10,7 +10,6 @@ type ButtonVariant =
   | { type: "link"; href: string }
   | { type: "button"; onClick: () => void }
 
-
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {

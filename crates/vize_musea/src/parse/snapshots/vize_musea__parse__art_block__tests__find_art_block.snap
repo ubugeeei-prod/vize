@@ -1,0 +1,9 @@
+---
+source: crates/vize_musea/src/parse/art_block.rs
+expression: block
+---
+BlockInfo {
+    attrs_str: "title=\"Test\"",
+    content: "<variant name=\"A\"></variant>",
+    content_start: 18,
+}

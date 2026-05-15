@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import {
-  mdiContentCopy,
-  mdiCheck,
-  mdiCodeTags,
-  mdiFullscreen,
-  mdiOpenInNew,
-} from "@mdi/js";
+import { mdiContentCopy, mdiCheck, mdiCodeTags, mdiFullscreen, mdiOpenInNew } from "@mdi/js";
 import type { ArtVariant } from "../../src/types/index.js";
 import { getPreviewUrl } from "../api";
 import { useAddons } from "../composables/useAddons";
@@ -29,9 +23,7 @@ function resolveSelfReferences(template: string): string {
     .replace(/<\/Self>/g, `</${props.componentName}>`);
 }
 
-const resolvedTemplate = computed(() =>
-  resolveSelfReferences(props.variant.template),
-);
+const resolvedTemplate = computed(() => resolveSelfReferences(props.variant.template));
 
 async function copyTemplate() {
   try {
@@ -45,9 +37,7 @@ async function copyTemplate() {
   }
 }
 
-const previewUrl = computed(() =>
-  getPreviewUrl(props.artPath, props.variant.name),
-);
+const previewUrl = computed(() => getPreviewUrl(props.artPath, props.variant.name));
 
 const iframeRef = ref<HTMLIFrameElement | null>(null);
 const iframeReady = ref(false);
@@ -203,13 +193,6 @@ const window = globalThis.window;
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-lg);
   overflow: hidden;
-  transition: all var(--musea-transition);
-}
-
-.variant-card:hover {
-  border-color: var(--musea-text-muted);
-  box-shadow: var(--musea-shadow);
-  transform: translateY(-2px);
 }
 
 .variant-preview {
@@ -218,6 +201,7 @@ const window = globalThis.window;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   position: relative;
   overflow: hidden;
 }
@@ -232,8 +216,12 @@ const window = globalThis.window;
 .variant-preview iframe {
   width: 70%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   border: none;
   background: white;
+  border-radius: var(--musea-radius-md);
+  box-shadow: 0 12px 30px rgba(13, 13, 13, 0.12);
 }
 
 .variant-preview.viewport-mode iframe {

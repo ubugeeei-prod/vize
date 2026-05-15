@@ -1,6 +1,23 @@
 //! Shared config helpers for the CLI.
 
+use std::path::Path;
+
 pub use vize_carton::config::*;
+
+pub const VIZE_CONFIG_SCHEMA: &str =
+    include_str!("../../../npm/vize/schemas/vize.config.schema.json");
+
+/// Write the JSON Schema to `node_modules/.vize/vize.config.schema.json`.
+pub fn write_schema(dir: Option<&Path>) {
+    let base = dir
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
+    let schema_dir = base.join("node_modules/.vize");
+    if std::fs::create_dir_all(&schema_dir).is_ok() {
+        let schema_path = schema_dir.join("vize.config.schema.json");
+        let _ = std::fs::write(&schema_path, VIZE_CONFIG_SCHEMA);
+    }
+}
 
 #[cfg(feature = "glyph")]
 #[must_use]

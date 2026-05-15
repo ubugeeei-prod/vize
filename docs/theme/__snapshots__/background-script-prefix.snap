@@ -1,0 +1,8 @@
+;(() => {
+  const initializeVeinBackground = () => {
+    if (typeof THREE === "undefined") {
+      console.warn("[vein] Three.js not loaded");
+      return;
+    }
+
+    const canvas = document.getElementById("vein-canvas");

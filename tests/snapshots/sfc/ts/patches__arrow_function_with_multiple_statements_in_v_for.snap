@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 198
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
@@ -17,11 +18,11 @@ return (_ctx: any,_cache: any) => {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {
       return (_openBlock(), _createElementBlock("div", { key: item.id }, [
         _createElementVNode("button", {
-          onClick: _cache[0] || (_cache[0] = () => {
+          onClick: () => {
         item.value++;
         console.log(item.id);
-      })
-        }, _toDisplayString(item.value), 1 /* TEXT */)
+      }
+        }, _toDisplayString(item.value), 9 /* TEXT, PROPS */, ["onClick"])
       ]))
     }), 128 /* KEYED_FRAGMENT */))
 }

@@ -1,7 +1,7 @@
 //! Functions for processing normal `<script>` blocks when both
 //! `<script>` and `<script setup>` exist.
 
-use vize_carton::{String, ToCompactString};
+use vize_carton::{profile, String, ToCompactString};
 
 /// Extract content from normal script block that should be preserved when both
 /// `<script>` and `<script setup>` exist.
@@ -32,7 +32,10 @@ pub(super) fn extract_normal_script_content(
     };
 
     let allocator = Allocator::default();
-    let ret = Parser::new(&allocator, content, source_type).parse();
+    let ret = profile!(
+        "atelier.normal_script.extract.parse",
+        Parser::new(&allocator, content, source_type).parse()
+    );
 
     if !ret.errors.is_empty() {
         // If parsing fails, return original content minus any obvious export default
@@ -111,12 +114,18 @@ pub(super) fn extract_normal_script_content(
     if source_is_ts && !output_is_ts {
         // Re-parse the extracted content
         let allocator2 = Allocator::default();
-        let ret2 = Parser::new(&allocator2, &extracted, SourceType::ts()).parse();
+        let ret2 = profile!(
+            "atelier.normal_script.extract.ts_parse",
+            Parser::new(&allocator2, &extracted, SourceType::ts()).parse()
+        );
         if ret2.errors.is_empty() {
             let mut program2 = ret2.program;
 
             // Run semantic analysis
-            let semantic_ret = SemanticBuilder::new().build(&program2);
+            let semantic_ret = profile!(
+                "atelier.normal_script.extract.ts_semantic",
+                SemanticBuilder::new().build(&program2)
+            );
             if semantic_ret.errors.is_empty() {
                 let scoping = semantic_ret.semantic.into_scoping();
 
@@ -129,13 +138,20 @@ pub(super) fn extract_normal_script_content(
                     },
                     ..Default::default()
                 };
-                let transform_ret =
+                let transform_ret = profile!(
+                    "atelier.normal_script.extract.ts_transform",
                     Transformer::new(&allocator2, std::path::Path::new(""), &transform_options)
-                        .build_with_scoping(scoping, &mut program2);
+                        .build_with_scoping(scoping, &mut program2)
+                );
 
                 if transform_ret.errors.is_empty() {
                     // Generate JavaScript code
-                    return Codegen::new().build(&program2).code.into();
+                    return profile!(
+                        "atelier.normal_script.extract.ts_codegen",
+                        Codegen::new().build(&program2)
+                    )
+                    .code
+                    .into();
                 }
             }
         }

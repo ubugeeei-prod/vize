@@ -1,40 +1,16 @@
-/**
- * @vizejs/rspack-plugin
- *
- * High-performance Rspack plugin for Vue SFC compilation powered by Vize.
- *
- * @example
- * ```js
- * // rspack.config.mjs
- * import { VizePlugin } from '@vizejs/rspack-plugin';
- *
- * export default {
- *   plugins: [new VizePlugin()],
- *   module: {
- *     rules: [
- *       {
- *         test: /\.vue$/,
- *         oneOf: [
- *           // Style rules...
- *           { resourceQuery: /vue&type=style/, use: ['@vizejs/rspack-plugin/style-loader'] },
- *           // Main rule
- *           { use: [{ loader: '@vizejs/rspack-plugin/loader' }] }
- *         ]
- *       }
- *     ]
- *   }
- * }
- * ```
- */
+/** @vizejs/rspack-plugin — Rspack plugin for Vue SFC compilation powered by Vize. */
 
 // Plugin
-export { VizePlugin } from "./plugin/index.js";
-export type { VizeRspackPluginOptions } from "./types/index.js";
+export { VizePlugin } from "./plugin/index.ts";
+export { applyRuleCloning } from "./plugin/ruleCloning.ts";
+export type { RuleCloningResult } from "./plugin/ruleCloning.ts";
+export type { VizeRspackPluginOptions } from "./types/index.ts";
 
 // Loaders (for direct import)
-export { default as vizeLoader } from "./loader/index.js";
-export { default as vizeStyleLoader } from "./loader/style-loader.js";
-export type { VizeLoaderOptions, VizeStyleLoaderOptions } from "./types/index.js";
+export { default as vizeLoader } from "./loader/index.ts";
+export { default as vizeStyleLoader } from "./loader/style-loader.ts";
+export { default as vizeScopeLoader } from "./loader/scope-loader.ts";
+export type { VizeLoaderOptions, VizeStyleLoaderOptions } from "./types/index.ts";
 
 // Shared utilities (optional export for advanced usage)
 export {
@@ -45,25 +21,20 @@ export {
   inlineSrcBlocks,
   addScopeToCssFallback,
   matchesPattern,
-  createLogger,
-} from "./shared/utils.js";
+} from "./shared/utils.ts";
 
-export { genHotReloadCode } from "./shared/hotReload.js";
+export { genHotReloadCode } from "./shared/hotReload.ts";
 
-export { compileFile, generateOutput, clearCompilationCache } from "./shared/compiler.js";
-
-// Preset API
-export { createVizeVueRules } from "./preset/rules.js";
+export { compileFile, generateOutput, clearCompilationCache } from "./shared/compiler.ts";
 
 // Types
 export type {
   CompiledModule,
+  MacroArtifact,
   StyleBlockInfo,
   CustomBlockInfo,
   SfcSrcInfo,
   SfcCompileOptionsNapi,
   SfcCompileResultNapi,
   LoaderEntry,
-  CreateVizeVueRulesOptions,
-  VizeStyleLanguage,
-} from "./types/index.js";
+} from "./types/index.ts";

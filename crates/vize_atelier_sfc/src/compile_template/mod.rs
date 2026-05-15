@@ -3,7 +3,7 @@
 //! This module handles compilation of `<template>` blocks,
 //! supporting both DOM mode and Vapor mode.
 
-use vize_carton::{String, ToCompactString};
+use vize_carton::{profile, String, ToCompactString};
 mod extraction;
 mod string_tracking;
 mod vapor;
@@ -18,23 +18,31 @@ use vize_carton::Bump;
 
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock, TemplateCompileOptions};
 
+pub(crate) struct TemplateBlockCompileContext<'a> {
+    pub(crate) scope_id: &'a str,
+    pub(crate) apply_scope_id: bool,
+    pub(crate) is_ts: bool,
+    pub(crate) component_name: Option<&'a str>,
+    pub(crate) bindings: Option<&'a BindingMetadata>,
+    pub(crate) croquis: Option<vize_croquis::analysis::Croquis>,
+}
+
 /// Compile template block
 pub(crate) fn compile_template_block(
     template: &SfcTemplateBlock,
     options: &TemplateCompileOptions,
-    scope_id: &str,
-    has_scoped: bool,
-    is_ts: bool,
-    bindings: Option<&BindingMetadata>,
-    croquis: Option<vize_croquis::analysis::Croquis>,
+    ctx: TemplateBlockCompileContext<'_>,
 ) -> Result<String, SfcError> {
+    let TemplateBlockCompileContext {
+        scope_id,
+        apply_scope_id,
+        is_ts,
+        component_name,
+        bindings,
+        croquis,
+    } = ctx;
     let allocator = Bump::new();
-
-    // Build DOM compiler options
-    let mut dom_opts = options.compiler_options.clone().unwrap_or_default();
-    dom_opts.mode = vize_atelier_core::options::CodegenMode::Module;
-    dom_opts.prefix_identifiers = true;
-    dom_opts.scope_id = if has_scoped {
+    let scope_attr = if apply_scope_id {
         let mut attr = String::with_capacity(scope_id.len() + 7);
         attr.push_str("data-v-");
         attr.push_str(scope_id);
@@ -42,8 +50,56 @@ pub(crate) fn compile_template_block(
     } else {
         None
     };
+
+    if options.ssr {
+        let ssr_opts = vize_atelier_ssr::SsrCompilerOptions {
+            scope_id: scope_attr,
+            component_name: component_name.map(|name| name.to_compact_string()),
+            comments: options
+                .compiler_options
+                .as_ref()
+                .is_some_and(|opts| opts.comments),
+            inline: false,
+            is_ts,
+            custom_renderer: options.custom_renderer,
+            ssr_css_vars: options.ssr_css_vars.clone(),
+            binding_metadata: bindings.cloned(),
+            croquis: croquis.map(Box::new),
+        };
+
+        let (_, errors, result) = profile!(
+            "atelier.sfc.template.ssr",
+            vize_atelier_ssr::compile_ssr_with_options(&allocator, &template.content, ssr_opts)
+        );
+
+        if !errors.is_empty() {
+            let mut message = String::from("Template compilation errors: ");
+            use std::fmt::Write as _;
+            let _ = write!(&mut message, "{:?}", errors);
+            return Err(SfcError {
+                message,
+                code: Some("TEMPLATE_ERROR".to_compact_string()),
+                loc: Some(template.loc.clone()),
+            });
+        }
+
+        let mut output = String::default();
+        output.push_str(&result.preamble);
+        output.push('\n');
+        output.push_str(&result.code);
+        output.push('\n');
+        return Ok(output);
+    }
+
+    // Build DOM compiler options
+    let mut dom_opts = options.compiler_options.clone().unwrap_or_default();
+    dom_opts.mode = vize_atelier_core::options::CodegenMode::Module;
+    dom_opts.prefix_identifiers = true;
+    dom_opts.scope_id = scope_attr;
     dom_opts.ssr = options.ssr;
     dom_opts.is_ts = is_ts;
+    dom_opts.custom_renderer = options.custom_renderer;
+    dom_opts.component_name = component_name.map(|name| name.to_compact_string());
 
     // For script setup, use inline mode to match Vue's actual compiler behavior
     // Inline mode generates direct closure references (e.g., msg instead of $setup.msg)
@@ -63,8 +119,10 @@ pub(crate) fn compile_template_block(
     }
 
     // Compile template
-    let (_, errors, result) =
-        vize_atelier_dom::compile_template_with_options(&allocator, &template.content, dom_opts);
+    let (_, errors, result) = profile!(
+        "atelier.sfc.template.dom",
+        vize_atelier_dom::compile_template_with_options(&allocator, &template.content, dom_opts)
+    );
 
     if !errors.is_empty() {
         let mut message = String::from("Template compilation errors: ");

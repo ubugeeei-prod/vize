@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/style.rs
+expression: result.as_str()
+---
+@keyframes spin{from{ transform: rotate(0deg); }to{ transform: rotate(360deg); }}

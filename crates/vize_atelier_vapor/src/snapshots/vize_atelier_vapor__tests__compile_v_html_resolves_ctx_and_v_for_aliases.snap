@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { child as _child, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<div><div></div></div>")
+export function render(_ctx) {
+const n0 = _createFor(() => (_ctx.diagnostics), (_for_item0) => {
+const n3 = t0()
+const n2 = _child(n3)
+_renderEffect(() => {
+n2.innerHTML = _ctx.formatHelp(_for_item0.value.help)
+})
+return n3
+})
+return n0
+}

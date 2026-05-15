@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
+expression: result.as_str()
+---
+{
+    const doubled = __props.count * 2
+    console.log(doubled)
+}

@@ -1,17 +1,21 @@
-import { onUnmounted, type Ref } from 'vue'
+import { onUnmounted, type Ref } from "vue";
 
 export interface MuseaMessage {
-  type: string
-  payload: unknown
+  type: string;
+  payload: unknown;
 }
 
 export function sendMessage(iframe: HTMLIFrameElement, type: string, payload: unknown = {}): void {
-  iframe.contentWindow?.postMessage({ type, payload }, '*')
+  iframe.contentWindow?.postMessage({ type, payload }, "*");
 }
 
-export function sendMessageToAll(iframes: Ref<HTMLIFrameElement[]>, type: string, payload: unknown = {}): void {
+export function sendMessageToAll(
+  iframes: Ref<HTMLIFrameElement[]>,
+  type: string,
+  payload: unknown = {},
+): void {
   for (const iframe of iframes.value) {
-    sendMessage(iframe, type, payload)
+    sendMessage(iframe, type, payload);
   }
 }
 
@@ -20,16 +24,16 @@ export function useMessageListener(
   callback: (payload: unknown, event: MessageEvent) => void,
 ): void {
   const handler = (event: MessageEvent) => {
-    if (event.origin !== window.location.origin) return
-    const data = event.data as MuseaMessage | undefined
-    if (!data?.type?.startsWith('musea:')) return
+    if (event.origin !== window.location.origin) return;
+    const data = event.data as MuseaMessage | undefined;
+    if (!data?.type?.startsWith("musea:")) return;
     if (data.type === type) {
-      callback(data.payload, event)
+      callback(data.payload, event);
     }
-  }
+  };
 
-  window.addEventListener('message', handler)
+  window.addEventListener("message", handler);
   onUnmounted(() => {
-    window.removeEventListener('message', handler)
-  })
+    window.removeEventListener("message", handler);
+  });
 }

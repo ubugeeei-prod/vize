@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useAddons, VIEWPORT_PRESETS } from '../composables/useAddons'
+import { ref, onMounted, onUnmounted } from "vue";
+import { useAddons, VIEWPORT_PRESETS } from "../composables/useAddons";
 
-const { viewport, viewportRotated, setViewport, rotateViewport } = useAddons()
-const showDropdown = ref(false)
-const selectorRef = ref<HTMLElement | null>(null)
+const { viewport, viewportRotated, setViewport, rotateViewport } = useAddons();
+const showDropdown = ref(false);
+const selectorRef = ref<HTMLElement | null>(null);
 
-function selectPreset(preset: typeof VIEWPORT_PRESETS[number]) {
-  setViewport(preset)
-  showDropdown.value = false
+function selectPreset(preset: (typeof VIEWPORT_PRESETS)[number]) {
+  setViewport(preset);
+  showDropdown.value = false;
 }
 
 function onClickOutside(e: MouseEvent) {
   if (selectorRef.value && !selectorRef.value.contains(e.target as Node)) {
-    showDropdown.value = false
+    showDropdown.value = false;
   }
 }
 
-onMounted(() => document.addEventListener('click', onClickOutside))
-onUnmounted(() => document.removeEventListener('click', onClickOutside))
+onMounted(() => document.addEventListener("click", onClickOutside));
+onUnmounted(() => document.removeEventListener("click", onClickOutside));
 </script>
 
 <template>
@@ -29,7 +29,14 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
       :class="{ active: viewport.width !== '100%' }"
       @click="showDropdown = !showDropdown"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        width="14"
+        height="14"
+      >
         <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
         <line x1="8" y1="21" x2="16" y2="21" />
         <line x1="12" y1="17" x2="12" y2="21" />
@@ -45,7 +52,14 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
       :class="{ active: viewportRotated }"
       @click="rotateViewport()"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        width="14"
+        height="14"
+      >
         <polyline points="1 4 1 10 7 10" />
         <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
       </svg>

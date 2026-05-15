@@ -329,7 +329,7 @@ pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContex
         if rewrites.is_empty() {
             return content.to_compact_string();
         }
-        rewrites.sort_by(|a, b| b.0.cmp(&a.0));
+        rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
         let mut result = content.to_compact_string();
         for (start, end, replacement) in rewrites {
             if start < result.len() && end <= result.len() {

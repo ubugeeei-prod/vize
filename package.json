@@ -1,32 +1,28 @@
 {
-  "name": "vize",
+  "name": "vize-workspace",
   "private": true,
-  "publishConfig": {
-    "provenance": true,
-    "access": "public"
-  },
   "type": "module",
-  "packageManager": "pnpm@10.0.0",
-  "scripts": {
-    "dev": "pnpm -C playground dev",
-    "build:plugin": "pnpm -C npm/vite-plugin-vize build",
-    "install:plugin": "pnpm -C npm/vite-plugin-vize install",
-    "test:js": "pnpm --filter './npm/vite-plugin-vize' --filter './npm/unplugin-vize' --filter './npm/rspack-vize-plugin' run test",
-    "lint": "pnpm -r --filter './npm/*' --filter './playground' run lint",
-    "lint:fix": "pnpm -r --filter './npm/*' --filter './playground' run lint:fix",
-    "fmt": "pnpm -r --filter './npm/*' --filter './npm/vite-plugin-vize/example' --filter './npm/rspack-vize-plugin/example' --filter './playground' run fmt",
-    "fmt:check": "pnpm -r --filter './npm/*' --filter './npm/vite-plugin-vize/example' --filter './npm/rspack-vize-plugin/example' --filter './playground' run fmt:check"
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "devDependencies": {
-    "@iarna/toml": "^2.2.5",
-    "@pkl-community/pkl": "^0.27.0",
-    "@typescript/native-preview": "7.0.0-dev.20260124.1",
-    "glob": "^13.0.0",
-    "json-schema-to-typescript": "^15.0.0",
-    "oxfmt": "^0.27.0",
-    "oxlint": "^1.42.0",
-    "oxlint-tsgolint": "^0.11.4",
-    "vite": "^8.0.0-beta.0",
-    "vue": "3.6.0-beta.1"
+    "@iarna/toml": "catalog:repo-tooling",
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "@typescript/native-preview": "catalog:typescript",
+    "glob": "catalog:repo-tooling",
+    "json-schema-to-typescript": "catalog:repo-tooling",
+    "oxfmt": "catalog:linting",
+    "oxlint": "catalog:linting",
+    "tsdown": "catalog:vite-stack",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "packageManager": "pnpm@10.0.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

@@ -10,18 +10,75 @@ import type { ViteDevServer } from "vite";
 import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import type { ArtFileInfo } from "./types/index.js";
 import { generateGalleryHtml } from "./gallery/index.js";
 import { generatePreviewModule, generatePreviewHtml } from "./preview/index.js";
 import { generateArtModule } from "./art-module.js";
+import { HttpError, resolveUrlPathInside, serializeScriptValue } from "./security.js";
 import { toPascalCase } from "./utils.js";
+
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+
+function resolveGalleryDistDir(): string {
+  return path.resolve(moduleDir, "gallery");
+}
+
+function resolveGallerySourceDir(): string {
+  return path.resolve(moduleDir, "../gallery");
+}
+
+function toViteFsPath(filePath: string): string {
+  return encodeURI(`/@fs${filePath.split(path.sep).join("/")}`);
+}
+
+function generateDevGlobalsScript(
+  basePath: string,
+  devSessionToken: string,
+  themeConfig?: { default: string; custom?: Record<string, unknown> },
+): string {
+  const themeScript = themeConfig
+    ? `window.__MUSEA_THEME_CONFIG__=${serializeScriptValue(themeConfig)};`
+    : "";
+  return `window.__MUSEA_BASE_PATH__=${serializeScriptValue(basePath)};window.__MUSEA_SESSION_TOKEN__=${serializeScriptValue(devSessionToken)};${themeScript}`;
+}
+
+async function tryLoadSourceGalleryHtml(
+  devServer: ViteDevServer,
+  url: string,
+  basePath: string,
+  devSessionToken: string,
+  themeConfig?: { default: string; custom?: Record<string, unknown> },
+): Promise<string | null> {
+  const gallerySourceDir = resolveGallerySourceDir();
+  const indexHtmlPath = path.join(gallerySourceDir, "index.html");
+
+  try {
+    await fs.promises.access(indexHtmlPath);
+  } catch {
+    return null;
+  }
+
+  const sourceEntryPath = toViteFsPath(path.join(gallerySourceDir, "main.ts"));
+
+  let html = await fs.promises.readFile(indexHtmlPath, "utf-8");
+  html = html.replace('src="./main.ts"', `src="${sourceEntryPath}"`);
+  html = html.replace(
+    "</head>",
+    `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig)}</script></head>`,
+  );
+
+  return devServer.transformIndexHtml(url, html);
+}
 
 /** Dependencies injected from the plugin closure. */
 export interface MiddlewareContext {
   basePath: string;
+  devSessionToken: string;
   themeConfig: { default: string; custom?: Record<string, unknown> } | undefined;
   artFiles: Map<string, ArtFileInfo>;
+  scanRoots: string[];
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
 }
@@ -38,7 +95,7 @@ export interface MiddlewareContext {
  * - Art module route
  */
 export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareContext): void {
-  const { basePath, themeConfig, artFiles } = ctx;
+  const { basePath, devSessionToken, themeConfig, artFiles } = ctx;
 
   // --- Gallery SPA route ---
   devServer.middlewares.use(basePath, async (req, res, next) => {
@@ -51,27 +108,34 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
       url.startsWith("/component/") ||
       url.startsWith("/tests")
     ) {
-      const galleryDistDir = path.resolve(
-        path.dirname(new URL(import.meta.url).pathname),
-        "gallery",
-      );
+      const galleryDistDir = resolveGalleryDistDir();
       const indexHtmlPath = path.join(galleryDistDir, "index.html");
 
       try {
         await fs.promises.access(indexHtmlPath);
         let html = await fs.promises.readFile(indexHtmlPath, "utf-8");
-        const themeScript = themeConfig
-          ? `window.__MUSEA_THEME_CONFIG__=${JSON.stringify(themeConfig)};`
-          : "";
         html = html.replace(
           "</head>",
-          `<script>window.__MUSEA_BASE_PATH__='${basePath}';${themeScript}</script></head>`,
+          `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig)}</script></head>`,
         );
         res.setHeader("Content-Type", "text/html");
         res.end(html);
         return;
       } catch {
-        const html = generateGalleryHtml(basePath, themeConfig);
+        const sourceHtml = await tryLoadSourceGalleryHtml(
+          devServer,
+          url,
+          basePath,
+          devSessionToken,
+          themeConfig,
+        );
+        if (sourceHtml) {
+          res.setHeader("Content-Type", "text/html");
+          res.end(sourceHtml);
+          return;
+        }
+
+        const html = generateGalleryHtml(basePath, devSessionToken, themeConfig);
         res.setHeader("Content-Type", "text/html");
         res.end(html);
         return;
@@ -80,12 +144,9 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
 
     // Serve gallery static assets (JS, CSS) from built SPA
     if (url.startsWith("/assets/")) {
-      const galleryDistDir = path.resolve(
-        path.dirname(new URL(import.meta.url).pathname),
-        "gallery",
-      );
-      const filePath = path.join(galleryDistDir, url);
+      const galleryDistDir = resolveGalleryDistDir();
       try {
+        const filePath = resolveUrlPathInside(galleryDistDir, url, "asset path");
         const stat = await fs.promises.stat(filePath);
         if (stat.isFile()) {
           const content = await fs.promises.readFile(filePath);
@@ -104,7 +165,12 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
           res.end(content);
           return;
         }
-      } catch {
+      } catch (error) {
+        if (error instanceof HttpError) {
+          res.statusCode = error.status;
+          res.end(error.message);
+          return;
+        }
         // File not found, fall through
       }
     }
@@ -238,13 +304,19 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
         res.setHeader("Cache-Control", "no-cache");
         res.end(result.code);
       } else {
-        const moduleCode = generateArtModule(art, artPath);
+        const moduleCode = generateArtModule(art, artPath, {
+          root: devServer.config.root,
+          scanRoots: ctx.scanRoots,
+        });
         res.setHeader("Content-Type", "application/javascript");
         res.end(moduleCode);
       }
     } catch (err) {
       console.error("[musea] Failed to transform art module:", err);
-      const moduleCode = generateArtModule(art, artPath);
+      const moduleCode = generateArtModule(art, artPath, {
+        root: devServer.config.root,
+        scanRoots: ctx.scanRoots,
+      });
       res.setHeader("Content-Type", "application/javascript");
       res.end(moduleCode);
     }

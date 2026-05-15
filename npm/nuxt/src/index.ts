@@ -9,13 +9,65 @@
  */
 
 import fs from "node:fs";
-import { defineNuxtModule, addVitePlugin } from "@nuxt/kit";
+import { addServerPlugin, addVitePlugin, createResolver, defineNuxtModule } from "@nuxt/kit";
 import vize from "@vizejs/vite-plugin";
 import { musea } from "@vizejs/vite-plugin-musea";
 import type { MuseaOptions } from "@vizejs/vite-plugin-musea";
 import type { NuxtMuseaOptions } from "@vizejs/musea-nuxt";
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
+import {
+  buildNuxtCompilerOptions,
+  isVizeVirtualVueModuleId,
+  normalizeNuxtInjectedKeysForVizeVirtualModule,
+  normalizeVizeVirtualVueModuleId,
+} from "./utils";
+
+type ViteTransformResult = string | { code?: string; map?: unknown } | null | undefined;
+
+function normalizeNuxtKeyedTransformResult(
+  id: string,
+  result: ViteTransformResult,
+): ViteTransformResult {
+  if (!isVizeVirtualVueModuleId(id) || result == null) {
+    return result;
+  }
+  if (typeof result === "string") {
+    return normalizeNuxtInjectedKeysForVizeVirtualModule(result, id);
+  }
+  if (typeof result.code !== "string") {
+    return result;
+  }
+  const code = normalizeNuxtInjectedKeysForVizeVirtualModule(result.code, id);
+  return code === result.code ? result : { ...result, code };
+}
+
+function patchNuxtKeyedFunctionsPlugin(plugin: { transform?: unknown }): void {
+  if (typeof plugin.transform === "function") {
+    const original = plugin.transform;
+    plugin.transform = async function (
+      this: unknown,
+      code: string,
+      id: string,
+      ...args: unknown[]
+    ) {
+      const result = (await original.call(this, code, id, ...args)) as ViteTransformResult;
+      return normalizeNuxtKeyedTransformResult(id, result);
+    };
+    return;
+  }
+
+  const transform = plugin.transform as { handler?: unknown } | undefined;
+  if (!transform || typeof transform.handler !== "function") {
+    return;
+  }
+
+  const original = transform.handler;
+  transform.handler = async function (this: unknown, code: string, id: string, ...args: unknown[]) {
+    const result = (await original.call(this, code, id, ...args)) as ViteTransformResult;
+    return normalizeNuxtKeyedTransformResult(id, result);
+  };
+}
 
 export interface VizeNuxtOptions {
   /**
@@ -55,11 +107,26 @@ export default defineNuxtModule<VizeNuxtOptions>({
     },
   },
   setup(options, nuxt) {
+    const resolver = createResolver(import.meta.url);
+
     nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
 
     // Compiler
     if (options.compiler !== false) {
-      nuxt.options.vite.plugins.push(vize());
+      const compilerOptions = buildNuxtCompilerOptions(
+        nuxt.options.rootDir,
+        nuxt.options.app.baseURL,
+        nuxt.options.app.buildAssetsDir,
+      );
+
+      nuxt.options.vite.plugins.push(vize(compilerOptions));
+
+      if (nuxt.options.dev) {
+        nuxt.options.nitro.virtual ||= {};
+        nuxt.options.nitro.virtual["#vizejs/nuxt/dev-stylesheet-links-config"] =
+          `export const devAssetBase = ${JSON.stringify(compilerOptions.devUrlBase)};`;
+        addServerPlugin(resolver.resolve("./runtime/server/dev-stylesheet-links"));
+      }
 
       // Remove Nuxt's built-in @vitejs/plugin-vue when vize is active.
       // Both plugins handle .vue files; if both are active, @vitejs/plugin-vue
@@ -77,6 +144,8 @@ export default defineNuxtModule<VizeNuxtOptions>({
           const name = p && typeof p === "object" && "name" in p ? p.name : "";
           if (name === "vite:vue") {
             config.plugins.splice(i, 1);
+          } else if (name === "nuxt:compiler:keyed-functions") {
+            patchNuxtKeyedFunctionsPlugin(p);
           }
         }
       });
@@ -126,7 +195,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
       enforce: "post" as const,
       async transform(code: string, id: string) {
         // Only process vize virtual modules
-        if (!id.startsWith("\0") || !id.endsWith(".vue.ts")) return;
+        if (!isVizeVirtualVueModuleId(id)) return;
 
         let result = code;
         let changed = false;
@@ -167,6 +236,12 @@ export default defineNuxtModule<VizeNuxtOptions>({
           }
         }
 
+        const stableKeyResult = normalizeNuxtInjectedKeysForVizeVirtualModule(result, id);
+        if (stableKeyResult !== result) {
+          result = stableKeyResult;
+          changed = true;
+        }
+
         if (changed) {
           return { code: result, map: null };
         }
@@ -196,11 +271,11 @@ export default defineNuxtModule<VizeNuxtOptions>({
             // causing parse errors in downstream transforms (e.g. transformWithOxc).
             const isExtractionOnly = plugin.name.startsWith("unocss:global");
             plugin.transform = function (code: string, id: string, ...args: unknown[]) {
-              if (id.startsWith("\0") && id.endsWith(".vue.ts")) {
+              if (isVizeVirtualVueModuleId(id)) {
                 // Strip \0 prefix AND .ts suffix so UnoCSS's filter accepts it.
                 // UnoCSS's defaultPipelineInclude is /\.(vue|...)($|\?)/ which
                 // requires .vue at end-of-string or before ?, not .vue.ts.
-                const normalizedId = id.slice(1).replace(/\.ts$/, "");
+                const normalizedId = normalizeVizeVirtualVueModuleId(id);
 
                 // For extraction-only plugins, append original .vue source so
                 // UnoCSS's attributify extractor can find HTML-style attribute
@@ -209,7 +284,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
                 let effectiveCode = code;
                 if (isExtractionOnly) {
                   try {
-                    const originalSource = fs.readFileSync(normalizedId, "utf-8");
+                    const originalSource = fs.readFileSync(normalizedId.split("?")[0], "utf-8");
                     effectiveCode = code + "\n" + originalSource;
                   } catch {
                     // File may not exist (virtual components, etc.)

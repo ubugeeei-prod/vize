@@ -8,7 +8,7 @@ use oxc_ast::ast::{Argument, BindingPattern, Expression, Statement, VariableDecl
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 
-use vize_carton::{String, ToCompactString};
+use vize_carton::{profile, String, ToCompactString};
 
 use crate::types::BindingType;
 
@@ -27,7 +27,10 @@ impl ScriptCompileContext {
         let allocator = Allocator::default();
         let source_type = SourceType::from_path("script.ts").unwrap_or_default();
 
-        let ret = Parser::new(&allocator, source, source_type).parse();
+        let ret = profile!(
+            "atelier.script.context.oxc_parse",
+            Parser::new(&allocator, source, source_type).parse()
+        );
 
         if ret.panicked {
             return;
@@ -86,9 +89,11 @@ impl ScriptCompileContext {
         }
 
         // Second pass: process all statements (macros, bindings, etc.)
-        for stmt in program.body.iter() {
-            self.process_statement(stmt, source);
-        }
+        profile!("atelier.script.context.process_statements", {
+            for stmt in program.body.iter() {
+                self.process_statement(stmt, source);
+            }
+        });
 
         // Update flags
         self.has_define_props_call = self.macros.define_props.is_some();
@@ -105,7 +110,10 @@ impl ScriptCompileContext {
     pub fn collect_types_from(&mut self, source: &str) {
         let allocator = Allocator::default();
         let source_type = SourceType::from_path("script.ts").unwrap_or_default();
-        let ret = Parser::new(&allocator, source, source_type).parse();
+        let ret = profile!(
+            "atelier.script.context.collect_types_parse",
+            Parser::new(&allocator, source, source_type).parse()
+        );
         if ret.panicked {
             return;
         }

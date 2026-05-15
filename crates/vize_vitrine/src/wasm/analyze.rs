@@ -7,9 +7,19 @@
     clippy::disallowed_macros
 )]
 
-use super::to_js_value;
+use super::{to_js_value, utf8_byte_to_utf16_offset};
 use vize_carton::Bump;
 use wasm_bindgen::prelude::*;
+
+#[inline]
+fn to_sfc_utf16_range(source: &str, base_offset: u32, start: u32, end: u32) -> (u32, u32) {
+    let start = base_offset.saturating_add(start);
+    let end = base_offset.saturating_add(end);
+    (
+        utf8_byte_to_utf16_offset(source, start),
+        utf8_byte_to_utf16_offset(source, end),
+    )
+}
 
 /// Analyze Vue SFC for semantic information (scopes, bindings, etc.)
 #[wasm_bindgen(js_name = "analyzeSfc")]
@@ -89,15 +99,9 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
             let (start, end) = if scope.span.start == 0 && scope.span.end == 0 {
                 (0u32, 0u32)
             } else if is_template_scope {
-                (
-                    scope.span.start + template_offset,
-                    scope.span.end + template_offset,
-                )
+                to_sfc_utf16_range(source, template_offset, scope.span.start, scope.span.end)
             } else {
-                (
-                    scope.span.start + script_offset,
-                    scope.span.end + script_offset,
-                )
+                to_sfc_utf16_range(source, script_offset, scope.span.start, scope.span.end)
             };
 
             serde_json::json!({
@@ -120,9 +124,16 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
         .bindings
         .iter()
         .map(|(name, binding_type)| {
+            let (start, end) = summary
+                .binding_spans
+                .get(name)
+                .map(|(start, end)| to_sfc_utf16_range(source, script_offset, *start, *end))
+                .unwrap_or((0, 0));
             serde_json::json!({
                 "name": name.as_str(),
                 "type": format!("{:?}", binding_type),
+                "start": start,
+                "end": end,
             })
         })
         .collect();
@@ -133,11 +144,12 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
         .all_calls()
         .iter()
         .map(|m| {
+            let (start, end) = to_sfc_utf16_range(source, script_offset, m.start, m.end);
             serde_json::json!({
                 "name": m.name.as_str(),
                 "kind": format!("{:?}", m.kind),
-                "start": m.start,
-                "end": m.end,
+                "start": start,
+                "end": end,
                 "runtimeArgs": m.runtime_args.as_ref().map(|s| s.as_str()),
                 "typeArgs": m.type_args.as_ref().map(|s| s.as_str()),
             })
@@ -179,6 +191,7 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
         .provides()
         .iter()
         .map(|p| {
+            let (start, end) = to_sfc_utf16_range(source, script_offset, p.start, p.end);
             let key = match &p.key {
                 vize_croquis::provide::ProvideKey::String(s) => serde_json::json!({
                     "type": "string",
@@ -194,8 +207,8 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
                 "value": p.value.as_str(),
                 "valueType": p.value_type.as_ref().map(|t| t.as_str()),
                 "fromComposable": p.from_composable.as_ref().map(|c| c.as_str()),
-                "start": p.start + script_offset,
-                "end": p.end + script_offset,
+                "start": start,
+                "end": end,
             })
         })
         .collect();
@@ -206,6 +219,7 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
         .injects()
         .iter()
         .map(|i| {
+            let (start, end) = to_sfc_utf16_range(source, script_offset, i.start, i.end);
             let key = match &i.key {
                 vize_croquis::provide::ProvideKey::String(s) => serde_json::json!({
                     "type": "string",
@@ -244,8 +258,8 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
                 "pattern": pattern,
                 "destructuredProps": destructured_props,
                 "fromComposable": i.from_composable.as_ref().map(|c| c.as_str()),
-                "start": i.start + script_offset,
-                "end": i.end + script_offset,
+                "start": start,
+                "end": end,
             })
         })
         .collect();
@@ -262,17 +276,22 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
             "emits": emits,
             "provides": provides,
             "injects": injects,
-            "typeExports": summary.type_exports.iter().map(|te| serde_json::json!({
+            "typeExports": summary.type_exports.iter().map(|te| {
+                let (start, end) = to_sfc_utf16_range(source, script_offset, te.start, te.end);
+                serde_json::json!({
                 "name": te.name.as_str(),
                 "kind": match te.kind {
                     vize_croquis::analysis::TypeExportKind::Type => "type",
                     vize_croquis::analysis::TypeExportKind::Interface => "interface",
                 },
-                "start": te.start,
-                "end": te.end,
+                "start": start,
+                "end": end,
                 "hoisted": true,
-            })).collect::<Vec<serde_json::Value>>(),
-            "invalidExports": summary.invalid_exports.iter().map(|ie| serde_json::json!({
+            })
+            }).collect::<Vec<serde_json::Value>>(),
+            "invalidExports": summary.invalid_exports.iter().map(|ie| {
+                let (start, end) = to_sfc_utf16_range(source, script_offset, ie.start, ie.end);
+                serde_json::json!({
                 "name": ie.name.as_str(),
                 "kind": match ie.kind {
                     vize_croquis::analysis::InvalidExportKind::Const => "const",
@@ -282,9 +301,10 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
                     vize_croquis::analysis::InvalidExportKind::Class => "class",
                     vize_croquis::analysis::InvalidExportKind::Default => "default",
                 },
-                "start": ie.start,
-                "end": ie.end,
-            })).collect::<Vec<serde_json::Value>>(),
+                "start": start,
+                "end": end,
+            })
+            }).collect::<Vec<serde_json::Value>>(),
             "diagnostics": [],
             "stats": {
                 "binding_count": bindings.len(),
@@ -302,4 +322,32 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
     });
 
     to_js_value(&result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::to_sfc_utf16_range;
+
+    #[test]
+    fn test_to_sfc_utf16_range_applies_block_offset_before_utf16_conversion() {
+        let source = "<script setup>\nconst 😀value = 1\n</script>";
+        let block_start = source.find("const").expect("script body should exist") as u32;
+        let emoji_start_in_source = source.find('😀').expect("emoji should exist");
+        let local_emoji_start = (emoji_start_in_source as u32).saturating_sub(block_start);
+        let local_emoji_end = local_emoji_start + '😀'.len_utf8() as u32;
+
+        let (start, end) =
+            to_sfc_utf16_range(source, block_start, local_emoji_start, local_emoji_end);
+
+        assert_eq!(
+            start,
+            source[..emoji_start_in_source].encode_utf16().count() as u32
+        );
+        assert_eq!(
+            end,
+            source[..emoji_start_in_source + '😀'.len_utf8()]
+                .encode_utf16()
+                .count() as u32
+        );
+    }
 }

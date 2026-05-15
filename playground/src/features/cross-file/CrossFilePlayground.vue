@@ -18,7 +18,7 @@ import {
 import { PRESETS } from "../../shared/presets/crossfile";
 import { useResizablePanel } from "./useResizablePanel";
 import { useFileManagement } from "./useFileManagement";
-import { useCrossFileAnalysis } from "./useCrossFileAnalysis";
+import { useCrossFileAnalysis, type CrossFileAnalyzerOptions } from "./useCrossFileAnalysis";
 import { getFileIcon, getSeverityIcon, getTypeLabel, getTypeColor } from "./displayHelpers";
 
 const props = defineProps<{
@@ -27,14 +27,63 @@ const props = defineProps<{
 const _injectedTheme = inject<ComputedRef<"dark" | "light">>("theme");
 const theme = computed<"dark" | "light">(() => _injectedTheme?.value ?? "light");
 
+type AnalysisProfile = "signals" | "validation" | "all";
+type SeverityFilter = "all" | "error" | "warning" | "info";
+
+const PROFILE_OPTIONS: Record<AnalysisProfile, CrossFileAnalyzerOptions> = {
+  signals: {
+    provideInject: true,
+    componentEmits: true,
+    fallthroughAttrs: true,
+    reactivityTracking: true,
+    uniqueIds: true,
+    serverClientBoundary: true,
+    setupContext: false,
+    circularDependencies: false,
+    componentResolution: false,
+    propsValidation: false,
+  },
+  validation: {
+    provideInject: false,
+    componentEmits: false,
+    fallthroughAttrs: false,
+    reactivityTracking: false,
+    uniqueIds: false,
+    serverClientBoundary: false,
+    setupContext: true,
+    circularDependencies: true,
+    componentResolution: true,
+    propsValidation: true,
+  },
+  all: {
+    provideInject: true,
+    componentEmits: true,
+    fallthroughAttrs: true,
+    reactivityTracking: true,
+    uniqueIds: true,
+    serverClientBoundary: true,
+    setupContext: true,
+    circularDependencies: true,
+    componentResolution: true,
+    propsValidation: true,
+  },
+};
+
+const analysisProfile = ref<AnalysisProfile>("all");
+const severityFilter = ref<SeverityFilter>("all");
+
 // Options
-const options = ref({
+const options = ref<CrossFileAnalyzerOptions>({
   provideInject: true,
   componentEmits: true,
   fallthroughAttrs: true,
   reactivityTracking: true,
   uniqueIds: true,
   serverClientBoundary: true,
+  setupContext: true,
+  circularDependencies: true,
+  componentResolution: true,
+  propsValidation: true,
 });
 
 // Composables
@@ -80,8 +129,15 @@ const { analyzeAll } = useCrossFileAnalysis({
 });
 
 // Computed display properties
+const visibleIssues = computed(() => {
+  if (severityFilter.value === "all") {
+    return crossFileIssues.value;
+  }
+  return crossFileIssues.value.filter((issue) => issue.severity === severityFilter.value);
+});
+
 const currentDiagnostics = computed((): Diagnostic[] => {
-  return crossFileIssues.value
+  return visibleIssues.value
     .filter((issue) => issue.file === activeFile.value)
     .map((issue) => ({
       message: `[${issue.code}] ${issue.message}${issue.suggestion ? `\n\nTip: ${issue.suggestion}` : ""}`,
@@ -94,8 +150,8 @@ const currentDiagnostics = computed((): Diagnostic[] => {
 });
 
 const issuesByFile = computed(() => {
-  const grouped: Record<string, typeof crossFileIssues.value> = {};
-  for (const issue of crossFileIssues.value) {
+  const grouped: Record<string, typeof visibleIssues.value> = {};
+  for (const issue of visibleIssues.value) {
     if (!grouped[issue.file]) grouped[issue.file] = [];
     grouped[issue.file].push(issue);
   }
@@ -103,8 +159,8 @@ const issuesByFile = computed(() => {
 });
 
 const issuesByType = computed(() => {
-  const grouped: Record<string, typeof crossFileIssues.value> = {};
-  for (const issue of crossFileIssues.value) {
+  const grouped: Record<string, typeof visibleIssues.value> = {};
+  for (const issue of visibleIssues.value) {
     if (!grouped[issue.type]) grouped[issue.type] = [];
     grouped[issue.type].push(issue);
   }
@@ -113,11 +169,42 @@ const issuesByType = computed(() => {
 
 const stats = computed(() => ({
   files: Object.keys(files.value).length,
-  totalIssues: crossFileIssues.value.length,
-  errors: crossFileIssues.value.filter((i) => i.severity === "error").length,
-  warnings: crossFileIssues.value.filter((i) => i.severity === "warning").length,
-  infos: crossFileIssues.value.filter((i) => i.severity === "info").length,
+  totalIssues: visibleIssues.value.length,
+  errors: visibleIssues.value.filter((i) => i.severity === "error").length,
+  warnings: visibleIssues.value.filter((i) => i.severity === "warning").length,
+  infos: visibleIssues.value.filter((i) => i.severity === "info").length,
 }));
+
+const analyzerCount = computed(() => Object.values(options.value).filter(Boolean).length);
+const selectedProfile = computed<AnalysisProfile | "custom">(() => {
+  for (const profile of ["signals", "validation", "all"] as const) {
+    if (optionsEqual(options.value, PROFILE_OPTIONS[profile])) {
+      return profile;
+    }
+  }
+  return "custom";
+});
+const croquisReadyCount = computed(
+  () => Object.values(croquisResults.value).filter((result) => result !== null).length,
+);
+const diagnosticsEmptyLabel = computed(() =>
+  crossFileIssues.value.length === 0 ? "No issues detected" : "No matching diagnostics",
+);
+
+function setAnalysisProfile(profile: AnalysisProfile) {
+  analysisProfile.value = profile;
+  options.value = { ...PROFILE_OPTIONS[profile] };
+}
+
+function setSeverityFilter(filter: SeverityFilter) {
+  severityFilter.value = filter;
+}
+
+function optionsEqual(left: CrossFileAnalyzerOptions, right: CrossFileAnalyzerOptions) {
+  return (Object.keys(right) as Array<keyof CrossFileAnalyzerOptions>).every(
+    (key) => left[key] === right[key],
+  );
+}
 
 // Debounced auto-analysis
 let analyzeTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -318,12 +405,33 @@ onUnmounted(() => {
 
       <div class="sidebar-section options-section">
         <div class="section-header">
-          <h3>Analyzers</h3>
-          <span
-            class="analysis-mode-badge"
-            title="Strict Static Analysis: No heuristics, all issues are based on precise AST analysis"
-            >STRICT</span
+          <h3>Scope</h3>
+          <span class="analysis-mode-badge" :title="`${analyzerCount} analyzers enabled`">{{
+            selectedProfile.toUpperCase()
+          }}</span>
+        </div>
+        <div class="profile-switch" role="group" aria-label="Analysis profile">
+          <button
+            :class="['profile-btn', { active: selectedProfile === 'signals' }]"
+            title="Relationship and reactivity signals"
+            @click="setAnalysisProfile('signals')"
           >
+            Signals
+          </button>
+          <button
+            :class="['profile-btn', { active: selectedProfile === 'validation' }]"
+            title="Project validation checks"
+            @click="setAnalysisProfile('validation')"
+          >
+            Validation
+          </button>
+          <button
+            :class="['profile-btn', { active: selectedProfile === 'all' }]"
+            title="All project diagnostics"
+            @click="setAnalysisProfile('all')"
+          >
+            All
+          </button>
         </div>
         <div class="options-grid">
           <label class="option-toggle">
@@ -349,6 +457,22 @@ onUnmounted(() => {
           <label class="option-toggle">
             <input v-model="options.serverClientBoundary" type="checkbox" />
             <span>SSR Boundary</span>
+          </label>
+          <label class="option-toggle">
+            <input v-model="options.setupContext" type="checkbox" />
+            <span>Setup Context</span>
+          </label>
+          <label class="option-toggle">
+            <input v-model="options.circularDependencies" type="checkbox" />
+            <span>Circular Deps</span>
+          </label>
+          <label class="option-toggle">
+            <input v-model="options.componentResolution" type="checkbox" />
+            <span>Component Resolution</span>
+          </label>
+          <label class="option-toggle">
+            <input v-model="options.propsValidation" type="checkbox" />
+            <span>Props Validation</span>
           </label>
         </div>
       </div>
@@ -387,6 +511,8 @@ onUnmounted(() => {
           </button>
         </div>
         <div class="editor-status">
+          <span class="status-chip">Croquis {{ croquisReadyCount }}/{{ stats.files }}</span>
+          <span class="status-chip">{{ analyzerCount }} checks</span>
           <span v-if="isAnalyzing" class="status-analyzing">Analyzing...</span>
           <span v-else class="status-time">{{ analysisTime.toFixed(1) }}ms</span>
         </div>
@@ -416,15 +542,41 @@ onUnmounted(() => {
       <div class="diagnostics-header">
         <h3>Diagnostics</h3>
         <div class="diagnostics-stats">
+          <button
+            :class="['filter-chip', { active: severityFilter === 'all' }]"
+            @click="setSeverityFilter('all')"
+          >
+            {{ crossFileIssues.length }} all
+          </button>
           <span v-if="stats.errors" class="stat-chip error">{{ stats.errors }} errors</span>
           <span v-if="stats.warnings" class="stat-chip warning">{{ stats.warnings }} warnings</span>
           <span v-if="stats.infos" class="stat-chip info">{{ stats.infos }} info</span>
         </div>
       </div>
+      <div class="severity-filters" role="group" aria-label="Severity filter">
+        <button
+          :class="['filter-btn error', { active: severityFilter === 'error' }]"
+          @click="setSeverityFilter('error')"
+        >
+          Errors
+        </button>
+        <button
+          :class="['filter-btn warning', { active: severityFilter === 'warning' }]"
+          @click="setSeverityFilter('warning')"
+        >
+          Warnings
+        </button>
+        <button
+          :class="['filter-btn info', { active: severityFilter === 'info' }]"
+          @click="setSeverityFilter('info')"
+        >
+          Info
+        </button>
+      </div>
 
-      <div v-if="crossFileIssues.length === 0" class="diagnostics-empty">
+      <div v-if="visibleIssues.length === 0" class="diagnostics-empty">
         <svg class="empty-icon" viewBox="0 0 24 24"><path :d="mdiCheck" fill="currentColor" /></svg>
-        <span>No issues detected</span>
+        <span>{{ diagnosticsEmptyLabel }}</span>
       </div>
 
       <div v-else class="diagnostics-list">

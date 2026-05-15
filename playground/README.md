@@ -15,17 +15,19 @@ A modern WASM-powered playground for testing Vize.
 ## Development
 
 ```bash
-# Install dependencies
-pnpm install
+# Enter the dev shell and install dependencies (from project root)
+nix develop
+vp env install
+vp install
 
 # Run development server
-pnpm dev
+vp run --filter './playground' dev
 
 # Build WASM (from project root)
-pnpm build:wasm
+vp run --workspace-root build:wasm
 
 # Build for production
-pnpm build
+vp run --filter './playground' build
 ```
 
 ## Tech Stack

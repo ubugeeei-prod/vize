@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref } from "vue";
 
-const items = ref([1, 2, 3])
+const items = ref([1, 2, 3]);
 </script>
 
 <template>
@@ -10,5 +10,14 @@ const items = ref([1, 2, 3])
       {{ item.toUpperCase() }}
     </li>
   </ul>
-  <button @click="() => { const x: string = 123; console.log(x) }">Bad inline</button>
+  <button
+    @click="
+      () => {
+        const x: string = 123;
+        console.log(x);
+      }
+    "
+  >
+    Bad inline
+  </button>
 </template>

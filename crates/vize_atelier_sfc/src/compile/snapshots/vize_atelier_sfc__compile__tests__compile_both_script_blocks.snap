@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
+
+
+import type { RouteLocation } from "vue-router";
+
+interface TabItem {
+  name: string;
+  label: string;
+}
+
+export type { TabItem };
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  props: {
+    items: { type: Array, required: true }
+  },
+  setup(__props: any) {
+
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.items, (item) => {
+      return (_openBlock(), _createElementBlock("div", { key: item.name }, _toDisplayString(item.label), 1 /* TEXT */))
+    }), 128 /* KEYED_FRAGMENT */))
+}
+}
+
+})

@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: ts_output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue"
+
+import { ref } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+const showHelp = ref(true)
+const helpText = ref('Help')
+
+return (_ctx: any,_cache: any) => {
+  const _directive_tooltip = _resolveDirective("tooltip")
+
+  return (showHelp.value)
+      ? _withDirectives((_openBlock(), _createElementBlock("button", { key: 0 }, "Help")), [ [_directive_tooltip, helpText.value, void 0, { noDelay: true }] ])
+      : _createCommentVNode("v-if", true)
+}
+}
+
+})

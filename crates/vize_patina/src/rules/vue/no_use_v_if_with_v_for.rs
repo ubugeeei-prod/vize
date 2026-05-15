@@ -161,7 +161,7 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("v-if"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]
@@ -172,9 +172,7 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0]
-            .message
-            .contains("does not have access"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

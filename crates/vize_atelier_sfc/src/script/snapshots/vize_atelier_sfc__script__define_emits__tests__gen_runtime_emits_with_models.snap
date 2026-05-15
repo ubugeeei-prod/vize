@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_emits.rs
+expression: emits.as_str()
+---
+["update:modelValue", "update:count"]

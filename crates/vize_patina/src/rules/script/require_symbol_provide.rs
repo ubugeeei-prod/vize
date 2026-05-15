@@ -136,7 +136,7 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint("provide('user', userData)", 0);
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("Symbol"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

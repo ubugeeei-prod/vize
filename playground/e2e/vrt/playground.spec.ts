@@ -1,14 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const TABS = [
-  "atelier",
-  "patina",
-  "glyph",
-  "canon",
-  "croquis",
-  "cross-file",
-  "musea",
-] as const;
+const TABS = ["atelier", "patina", "glyph", "canon", "croquis", "cross-file", "musea"] as const;
 
 /**
  * Selectors that confirm the tab's output has fully rendered.
@@ -47,6 +39,7 @@ for (const tab of TABS) {
     test(`light`, async ({ page }) => {
       await page.goto(`/?tab=${tab}`);
       await waitForReady(page, tab);
+      // GitHub Actions on Linux is the canonical baseline for these snapshots.
       await expect(page).toHaveScreenshot(`${tab}-light.png`);
     });
 

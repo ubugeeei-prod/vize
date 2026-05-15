@@ -326,12 +326,12 @@
   line-height: 1.6;
 }
 
-.help-content :deep(strong) {
+.help-content strong {
   color: var(--text-primary);
   font-weight: 600;
 }
 
-.help-content :deep(.help-code) {
+.help-content .help-code {
   margin: 0.5rem 0;
   padding: 0.75rem;
   background: var(--bg-secondary);
@@ -343,13 +343,13 @@
   line-height: 1.5;
 }
 
-.help-content :deep(.help-code code) {
+.help-content .help-code code {
   color: var(--text-primary);
   background: none;
   padding: 0;
 }
 
-.help-content :deep(.help-inline-code) {
+.help-content .help-inline-code {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   padding: 0.15rem 0.4rem;
@@ -360,48 +360,48 @@
 }
 
 /* Syntax highlighting colors — warm earthy tones, theme-adaptive */
-.help-content :deep(.hl-keyword) {
+.help-content .hl-keyword {
   color: var(--hl-keyword);
 }
 
-.help-content :deep(.hl-vue-api) {
+.help-content .hl-vue-api {
   color: var(--hl-function);
 }
 
-.help-content :deep(.hl-string) {
+.help-content .hl-string {
   color: var(--hl-string);
 }
 
-.help-content :deep(.hl-comment) {
+.help-content .hl-comment {
   color: var(--hl-comment);
   font-style: italic;
 }
 
-.help-content :deep(.hl-tag) {
+.help-content .hl-tag {
   color: var(--hl-tag);
 }
 
-.help-content :deep(.hl-directive) {
+.help-content .hl-directive {
   color: var(--hl-directive);
 }
 
-.help-content :deep(.hl-delimiter) {
+.help-content .hl-delimiter {
   color: var(--hl-delimiter);
 }
 
-.help-content :deep(.hl-type) {
+.help-content .hl-type {
   color: var(--hl-type);
 }
 
-.help-content :deep(.hl-number) {
+.help-content .hl-number {
   color: var(--hl-number);
 }
 
-.help-content :deep(.hl-property) {
+.help-content .hl-property {
   color: var(--hl-property);
 }
 
-.help-content :deep(.hl-value) {
+.help-content .hl-value {
   color: var(--hl-value);
 }
 
@@ -420,7 +420,14 @@
 
 .rules-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.375rem;
+}
+
+.preset-actions {
+  display: flex;
+  gap: 0.375rem;
+  margin-right: 0.5rem;
 }
 
 .btn-action {
@@ -436,6 +443,12 @@
 
 .btn-action:hover {
   background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--accent-rust);
+}
+
+.btn-preset.active {
+  background: color-mix(in srgb, var(--accent-rust) 12%, var(--bg-tertiary));
   color: var(--text-primary);
   border-color: var(--accent-rust);
 }
@@ -646,6 +659,11 @@
 
   .rules-toolbar {
     flex-direction: column;
+  }
+
+  .preset-actions {
+    width: 100%;
+    margin-right: 0;
   }
 
   .rule-main {

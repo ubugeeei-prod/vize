@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
-import type { CompiledModule, StyleBlockInfo } from "./types.js";
+import type { CompiledModule, StyleBlockInfo } from "./types.ts";
 
 const PREPROCESSOR_LANGS = new Set(["scss", "sass", "less", "stylus", "styl"]);
 
@@ -42,7 +42,7 @@ export function extractStyleBlocks(source: string): StyleBlockInfo[] {
     const src = attrs.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null;
     const lang = attrs.match(/\blang=["']([^"']+)["']/)?.[1] ?? null;
     const scoped = /\bscoped\b/.test(attrs);
-    const moduleMatch = attrs.match(/\bmodule(?:=["']([^"']+)["'])?\b/);
+    const moduleMatch = attrs.match(/\bmodule(?:=["']([^"']+)["'])?/);
     const moduleValue = moduleMatch ? moduleMatch[1] || true : false;
 
     blocks.push({

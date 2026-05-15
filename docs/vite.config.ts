@@ -1,24 +1,18 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { defineConfig } from "vite";
+import { defineConfig } from "vite-plus";
 import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
+import { resolvePuppeteerExecutablePath } from "./browser-path.js";
+import { buildDocsBackgroundScript, createDocsBackgroundHtml } from "./theme/background";
 
-const artVueGrammar = {
-  ...JSON.parse(
-    readFileSync(resolve(import.meta.dirname, "../npm/vscode-art/syntaxes/art.tmLanguage.json"), "utf-8"),
-  ),
-  name: "art-vue",
-};
+const puppeteerExecutablePath = resolvePuppeteerExecutablePath();
+if (puppeteerExecutablePath) {
+  process.env.PUPPETEER_EXECUTABLE_PATH = puppeteerExecutablePath;
+}
 
 const themeDir = resolve(import.meta.dirname, "theme");
 const themeCss = readFileSync(resolve(themeDir, "style.css"), "utf-8");
-
-const shaderDir = resolve(themeDir, "shaders");
-const vertSrc = readFileSync(resolve(shaderDir, "marble.vert"), "utf-8");
-const fragSrc = readFileSync(resolve(shaderDir, "marble.frag"), "utf-8");
-const themeJs = readFileSync(resolve(themeDir, "marble.js"), "utf-8")
-  .replace("__VERT_SRC__", vertSrc.replace(/`/g, "\\`"))
-  .replace("__FRAG_SRC__", fragSrc.replace(/`/g, "\\`"));
+const themeJs = buildDocsBackgroundScript(themeDir);
 
 export default defineConfig({
   plugins: [
@@ -73,8 +67,9 @@ export default defineConfig({
 
           header: {
             logo: "/logo.svg",
-            logoWidth: 32,
-            logoHeight: 32,
+            logoDark: "/logo-light.svg",
+            logoWidth: 68,
+            logoHeight: 34,
           },
 
           footer: {
@@ -89,14 +84,14 @@ export default defineConfig({
 
           embed: {
             head: [
+              '<link rel="icon" href="/mv.svg" type="image/svg+xml">',
               '<link rel="preconnect" href="https://fonts.googleapis.com">',
               '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
               '<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">',
-              '<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"><\/script>',
-              "<script>if(!localStorage.getItem('theme')){localStorage.setItem('theme','light')}<\/script>",
+              '<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>',
+              "<script>if(!localStorage.getItem('theme')){localStorage.setItem('theme','light')}</script>",
             ].join("\n"),
-            headerAfter:
-              '<canvas id="marble-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>',
+            headerAfter: createDocsBackgroundHtml(),
           },
 
           css: themeCss,
@@ -104,10 +99,10 @@ export default defineConfig({
         }),
       },
 
-      highlight: true,
-      highlightTheme: "vitesse-dark",
-      highlightLangs: [artVueGrammar],
+      highlight: false,
       mermaid: true,
+      // Keep source tree clean; this site does not use Ox Content's API docs generator.
+      docs: false,
     }),
   ],
 

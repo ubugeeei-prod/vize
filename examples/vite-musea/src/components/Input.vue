@@ -1,15 +1,15 @@
 <script setup lang="ts">
 defineProps<{
-  modelValue?: string
-  placeholder?: string
-  type?: 'text' | 'email' | 'password' | 'search'
-  disabled?: boolean
-  error?: string
-}>()
+  modelValue?: string;
+  placeholder?: string;
+  type?: "text" | "email" | "password" | "search";
+  disabled?: boolean;
+  error?: string;
+}>();
 
 defineEmits<{
-  'update:modelValue': [value: string]
-}>()
+  "update:modelValue": [value: string];
+}>();
 </script>
 
 <template>
@@ -22,7 +22,7 @@ defineEmits<{
       :placeholder="placeholder"
       :disabled="disabled"
       @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-    >
+    />
     <span v-if="error" class="input-error">{{ error }}</span>
   </div>
 </template>
@@ -39,9 +39,11 @@ defineEmits<{
   border: 1px solid #c8c4b8;
   border-radius: 6px;
   font-size: 0.875rem;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
   width: 100%;
   background: #e6e2d6;
   color: #121212;

@@ -13,8 +13,5 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": ["node"]
   },
-  "include": [
-    "_helpers/**/*.ts",
-    "snapshots/**/*.ts"
-  ]
+  "include": ["_helpers/**/*.ts", "snapshots/**/*.ts"]
 }

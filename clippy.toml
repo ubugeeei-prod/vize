@@ -1,15 +1,15 @@
 disallowed-macros = [
-    { path = "std::format", reason = "Use cstr!() for owned strings, append!() for buffer writes, or appends!() for concatenation" },
+  { path = "std::format", reason = "Use cstr!() for owned strings, append!() for buffer writes, or appends!() for concatenation" },
 ]
 
 disallowed-types = [
-    { path = "std::string::String", reason = "Use vize_carton::String (CompactString) instead" },
-    { path = "std::collections::HashMap", reason = "Use vize_carton::FxHashMap instead" },
-    { path = "std::collections::HashSet", reason = "Use vize_carton::FxHashSet instead" },
-    { path = "std::rc::Rc", reason = "Prefer references or bump allocation instead of Rc" },
-    { path = "std::sync::Arc", reason = "Prefer scoped references instead of Arc" },
+  { path = "std::string::String", reason = "Use vize_carton::String (CompactString) instead" },
+  { path = "std::collections::HashMap", reason = "Use vize_carton::FxHashMap instead" },
+  { path = "std::collections::HashSet", reason = "Use vize_carton::FxHashSet instead" },
+  { path = "std::rc::Rc", reason = "Prefer references or bump allocation instead of Rc" },
+  { path = "std::sync::Arc", reason = "Prefer scoped references instead of Arc" },
 ]
 
 disallowed-methods = [
-    { path = "std::string::ToString::to_string", reason = "Use cstr!() or .to_compact_string() instead" },
+  { path = "std::string::ToString::to_string", reason = "Use cstr!() or .to_compact_string() instead" },
 ]

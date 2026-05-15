@@ -1,6 +1,6 @@
 <script setup lang="ts">
-const x: number = "string"
-console.log(x)
+const x: number = "string";
+console.log(x);
 </script>
 
 <template>

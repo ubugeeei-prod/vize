@@ -1,0 +1,13 @@
+---
+source: crates/vize_canon/src/sfc_typecheck/mod.rs
+expression: stable_snapshot_result(result)
+---
+SfcTypeCheckResult {
+    diagnostics: [],
+    virtual_ts: None,
+    error_count: 0,
+    warning_count: 0,
+    analysis_time_ms: Some(
+        0.0,
+    ),
+}

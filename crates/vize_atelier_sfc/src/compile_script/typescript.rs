@@ -8,14 +8,14 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use oxc_transformer::{TransformOptions, Transformer, TypeScriptOptions};
-use vize_carton::{String, ToCompactString};
+use vize_carton::{profile, String, ToCompactString};
 
 /// Transform TypeScript code to JavaScript using OXC
 pub fn transform_typescript_to_js(code: &str) -> String {
     let allocator = Allocator::default();
     let source_type = SourceType::ts();
     let parser = Parser::new(&allocator, code, source_type);
-    let parse_result = parser.parse();
+    let parse_result = profile!("atelier.script.ts.parse", parser.parse());
 
     if !parse_result.errors.is_empty() {
         // If parsing fails, return original code
@@ -25,9 +25,12 @@ pub fn transform_typescript_to_js(code: &str) -> String {
     let mut program = parse_result.program;
 
     // Run semantic analysis to get symbols and scopes
-    let semantic_ret = SemanticBuilder::new()
-        .with_excess_capacity(2.0)
-        .build(&program);
+    let semantic_ret = profile!(
+        "atelier.script.ts.semantic",
+        SemanticBuilder::new()
+            .with_excess_capacity(2.0)
+            .build(&program)
+    );
 
     if !semantic_ret.errors.is_empty() {
         // If semantic analysis fails, return original code
@@ -45,8 +48,11 @@ pub fn transform_typescript_to_js(code: &str) -> String {
         },
         ..Default::default()
     };
-    let ret = Transformer::new(&allocator, std::path::Path::new(""), &transform_options)
-        .build_with_scoping(scoping, &mut program);
+    let ret = profile!(
+        "atelier.script.ts.transform",
+        Transformer::new(&allocator, std::path::Path::new(""), &transform_options)
+            .build_with_scoping(scoping, &mut program)
+    );
 
     if !ret.errors.is_empty() {
         // If transformation fails, return original code
@@ -55,8 +61,7 @@ pub fn transform_typescript_to_js(code: &str) -> String {
 
     // Generate JavaScript code
     // Replace tabs with 2 spaces for consistent indentation
-    Codegen::new()
-        .build(&program)
+    profile!("atelier.script.ts.codegen", Codegen::new().build(&program))
         .code
         .replace('\t', "  ")
         .into()

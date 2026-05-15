@@ -7,17 +7,15 @@ import * as path from "node:path";
  * If the snapshot doesn't exist, creates it (first run).
  * If UPDATE_SNAPSHOTS=1, overwrites existing snapshots.
  */
-export function assertSnapshot(
-  snapshotDir: string,
-  name: string,
-  actual: string,
-): void {
+export function assertSnapshot(snapshotDir: string, name: string, actual: string): void {
   fs.mkdirSync(snapshotDir, { recursive: true });
   const snapshotPath = path.join(snapshotDir, `${name}.snap`);
 
   if (process.env.UPDATE_SNAPSHOTS || !fs.existsSync(snapshotPath)) {
     fs.writeFileSync(snapshotPath, actual);
-    console.log(`Snapshot ${process.env.UPDATE_SNAPSHOTS ? "updated" : "created"}: ${snapshotPath}`);
+    console.log(
+      `Snapshot ${process.env.UPDATE_SNAPSHOTS ? "updated" : "created"}: ${snapshotPath}`,
+    );
     return;
   }
 
@@ -36,8 +34,8 @@ export function assertSnapshot(
     }
     throw new Error(
       `Snapshot mismatch: ${snapshotPath}\n` +
-      `Run with UPDATE_SNAPSHOTS=1 to update.\n\n` +
-      diffLines.slice(0, 30).join("\n"),
+        `Run with UPDATE_SNAPSHOTS=1 to update.\n\n` +
+        diffLines.slice(0, 30).join("\n"),
     );
   }
 

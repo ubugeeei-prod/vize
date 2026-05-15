@@ -25185,16 +25185,6 @@
         "help": "Supported elements:\n- <input> (text, checkbox, radio, etc.)\n- <textarea>\n- <select>\n- Custom components with modelValue prop\nExamples:\n  <input v-model=\"message\">\n  <input v-model.number=\"age\" type=\"number\">\n  <input v-model.trim=\"name\">\n  <MyComponent v-model=\"value\">"
       },
       {
-        "ruleId": "vapor/no-suspense",
-        "severity": 1,
-        "message": "[vize:vapor/no-suspense] Suspense is not supported in Vapor-only applications",
-        "line": 1,
-        "column": 534,
-        "endLine": 1,
-        "endColumn": 544,
-        "help": "Suspense only works when Vapor components render inside a VDOM Suspense boundary. Use createApp with vaporInteropPlugin for Suspense support"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
@@ -25256,6 +25246,6 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 7
+    "warningCount": 6
   }
 ]

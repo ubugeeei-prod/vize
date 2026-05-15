@@ -39,9 +39,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_text_impl(start, end);
     }
 
-    fn on_text_entity(&mut self, char: char, start: usize, end: usize) {
-        // For now, treat entities as regular text
-        let _ = (char, start, end);
+    fn on_text_entity(&mut self, ch: char, start: usize, end: usize) {
+        self.parser.on_text_entity_impl(ch, start, end);
     }
 
     fn on_interpolation(&mut self, start: usize, end: usize) {
@@ -69,8 +68,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_attrib_data_impl(start, end);
     }
 
-    fn on_attrib_entity(&mut self, _char: char, _start: usize, _end: usize) {
-        // For now, ignore entity in attributes
+    fn on_attrib_entity(&mut self, ch: char, start: usize, end: usize) {
+        self.parser.on_attrib_entity_impl(ch, start, end);
     }
 
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {
@@ -81,8 +80,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_attrib_name_impl(start, end);
     }
 
-    fn on_attrib_name_end(&mut self, _end: usize) {
-        // No-op for now
+    fn on_attrib_name_end(&mut self, end: usize) {
+        self.parser.on_attrib_name_end_impl(end);
     }
 
     fn on_dir_name(&mut self, start: usize, end: usize) {
@@ -101,8 +100,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         self.parser.on_comment_impl(start, end);
     }
 
-    fn on_cdata(&mut self, _start: usize, _end: usize) {
-        // CDATA handling
+    fn on_cdata(&mut self, start: usize, end: usize) {
+        self.parser.on_cdata_impl(start, end);
     }
 
     fn on_processing_instruction(&mut self, _start: usize, _end: usize) {

@@ -10,9 +10,9 @@
 //! - `transform`: v-bind() extraction and byte-level utilities
 //! - `scoped`: scoped CSS transformation (:deep, :slotted, :global)
 
-use vize_carton::String;
 #[cfg(not(feature = "native"))]
 use vize_carton::ToCompactString;
+use vize_carton::{FxHashMap, String};
 #[cfg(feature = "native")]
 mod parser;
 mod scoped;
@@ -59,6 +59,11 @@ pub struct CssCompileOptions {
     /// Whether to enable custom media query resolution
     #[serde(default)]
     pub custom_media: bool,
+
+    /// Enable CSS Modules — scopes class names, IDs, and keyframes.
+    /// When enabled, the result includes an `exports` map of original → hashed names.
+    #[serde(default)]
+    pub css_modules: bool,
 }
 
 /// Browser targets for CSS autoprefixing
@@ -77,6 +82,16 @@ pub struct CssTargets {
     pub ios: Option<u32>,
     #[serde(default)]
     pub android: Option<u32>,
+}
+
+/// A single CSS Modules export entry
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CssModuleExport {
+    /// The compiled (hashed) name
+    pub name: String,
+    /// Whether this export is actually referenced in the CSS
+    pub is_referenced: bool,
 }
 
 /// CSS compilation result
@@ -101,6 +116,11 @@ pub struct CssCompileResult {
     /// Warnings during compilation
     #[serde(default)]
     pub warnings: Vec<String>,
+
+    /// CSS Modules exports — original name → compiled name.
+    /// Only populated when `css_modules: true`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exports: Option<FxHashMap<String, CssModuleExport>>,
 }
 
 /// Compile CSS using LightningCSS (native feature enabled)
@@ -131,20 +151,22 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         .unwrap_or_default();
 
     // Parse and process CSS
-    let (code, errors) = parser::compile_css_internal(
+    let result = parser::compile_css_internal(
         scoped_css,
         filename,
         options.minify,
         targets,
         options.custom_media,
+        options.css_modules,
     );
 
     CssCompileResult {
-        code,
+        code: result.code,
         map: None,
         css_vars,
-        errors,
+        errors: result.errors,
         warnings: vec![],
+        exports: result.exports,
     }
 }
 
@@ -173,6 +195,51 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
         css_vars,
         errors: vec![],
         warnings: vec![],
+        exports: None,
+    }
+}
+
+/// Bundle a CSS file and all its `@import` dependencies into a single stylesheet.
+///
+/// Unlike `compile_css` which takes CSS source as a string, this reads the entry
+/// file and all imported files from disk, resolving `@import` rules recursively.
+/// The result is a single merged stylesheet with all imports inlined.
+#[cfg(feature = "native")]
+pub fn bundle_css(entry_path: &str, options: &CssCompileOptions) -> CssCompileResult {
+    let targets = options
+        .targets
+        .as_ref()
+        .map(|t| t.to_lightningcss_targets())
+        .unwrap_or_default();
+
+    let result = parser::bundle_css_internal(
+        entry_path,
+        options.minify,
+        targets,
+        options.css_modules,
+        options.custom_media,
+    );
+
+    CssCompileResult {
+        code: result.code,
+        map: None,
+        css_vars: vec![],
+        errors: result.errors,
+        warnings: vec![],
+        exports: result.exports,
+    }
+}
+
+/// Bundle CSS is only available with the native LightningCSS backend.
+#[cfg(not(feature = "native"))]
+pub fn bundle_css(_entry_path: &str, _options: &CssCompileOptions) -> CssCompileResult {
+    CssCompileResult {
+        code: String::default(),
+        map: None,
+        css_vars: vec![],
+        errors: vec![String::from("CSS bundling requires the `native` feature")],
+        warnings: vec![],
+        exports: None,
     }
 }
 

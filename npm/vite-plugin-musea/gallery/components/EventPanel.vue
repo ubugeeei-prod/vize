@@ -1,97 +1,97 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { mdiChevronDown } from '@mdi/js'
-import type { CapturedEvent } from '../composables/useEventCapture'
-import MdiIcon from './MdiIcon.vue'
+import { ref, computed } from "vue";
+import { mdiChevronDown } from "@mdi/js";
+import type { CapturedEvent } from "../composables/useEventCapture";
+import MdiIcon from "./MdiIcon.vue";
 
 const props = defineProps<{
-  events: CapturedEvent[]
-  eventTypes: string[]
-  eventCounts: Record<string, number>
-  filterType: string
-  isPaused: boolean
-  currentVariantId?: string
-}>()
+  events: CapturedEvent[];
+  eventTypes: string[];
+  eventCounts: Record<string, number>;
+  filterType: string;
+  isPaused: boolean;
+  currentVariantId?: string;
+}>();
 
 const emit = defineEmits<{
-  (e: 'clear'): void
-  (e: 'filter', type: string): void
-  (e: 'toggle-pause'): void
-  (e: 'toggle-panel'): void
-}>()
+  (e: "clear"): void;
+  (e: "filter", type: string): void;
+  (e: "toggle-pause"): void;
+  (e: "toggle-panel"): void;
+}>();
 
-const selectedEvent = ref<CapturedEvent | null>(null)
-const isCollapsed = ref(false)
-const detailTab = ref<'info' | 'raw'>('info')
+const selectedEvent = ref<CapturedEvent | null>(null);
+const isCollapsed = ref(false);
+const detailTab = ref<"info" | "raw">("info");
 
 const displayEvents = computed(() => {
-  return [...props.events].reverse()
-})
+  return [...props.events].reverse();
+});
 
 const formatTimestamp = (ts: number) => {
-  const date = new Date(ts)
-  return date.toLocaleTimeString('en-US', {
+  const date = new Date(ts);
+  return date.toLocaleTimeString("en-US", {
     hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
     fractionalSecondDigits: 3,
-  })
-}
+  });
+};
 
 const formatPayload = (payload: unknown) => {
-  if (payload === undefined || payload === null) return ''
+  if (payload === undefined || payload === null) return "";
   try {
-    return JSON.stringify(payload, null, 2)
+    return JSON.stringify(payload, null, 2);
   } catch {
-    return String(payload)
+    return String(payload);
   }
-}
+};
 
 const getEventTypeColor = (type: string) => {
   const colors: Record<string, string> = {
-    click: '#60a5fa',
-    input: '#4ade80',
-    change: '#fbbf24',
-    focus: '#a78bfa',
-    blur: '#f472b6',
-    keydown: '#f87171',
-    keyup: '#fb923c',
-    submit: '#22d3d8',
-  }
-  return colors[type] || '#9ca3af'
-}
+    click: "#60a5fa",
+    input: "#4ade80",
+    change: "#fbbf24",
+    focus: "#a78bfa",
+    blur: "#f472b6",
+    keydown: "#f87171",
+    keyup: "#fb923c",
+    submit: "#22d3d8",
+  };
+  return colors[type] || "#9ca3af";
+};
 
 const toggleCollapse = () => {
-  isCollapsed.value = !isCollapsed.value
-  emit('toggle-panel')
-}
+  isCollapsed.value = !isCollapsed.value;
+  emit("toggle-panel");
+};
 
 const selectEvent = (event: CapturedEvent) => {
   if (selectedEvent.value?.id === event.id) {
-    selectedEvent.value = null
+    selectedEvent.value = null;
   } else {
-    selectedEvent.value = event
-    detailTab.value = 'info'
+    selectedEvent.value = event;
+    detailTab.value = "info";
   }
-}
+};
 
 const formatRawValue = (value: unknown): string => {
-  if (value === null) return 'null'
-  if (value === undefined) return 'undefined'
-  if (typeof value === 'boolean') return value ? 'true' : 'false'
-  if (typeof value === 'number') return String(value)
-  if (typeof value === 'string') return `"${value}"`
-  return String(value)
-}
+  if (value === null) return "null";
+  if (value === undefined) return "undefined";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "string") return `"${value}"`;
+  return String(value);
+};
 
 const getRawValueClass = (value: unknown): string => {
-  if (value === null || value === undefined) return 'raw-value--null'
-  if (typeof value === 'boolean') return value ? 'raw-value--true' : 'raw-value--false'
-  if (typeof value === 'number') return 'raw-value--number'
-  if (typeof value === 'string') return 'raw-value--string'
-  return ''
-}
+  if (value === null || value === undefined) return "raw-value--null";
+  if (typeof value === "boolean") return value ? "raw-value--true" : "raw-value--false";
+  if (typeof value === "number") return "raw-value--number";
+  if (typeof value === "string") return "raw-value--string";
+  return "";
+};
 </script>
 
 <template>
@@ -99,8 +99,17 @@ const getRawValueClass = (value: unknown): string => {
     <!-- Header -->
     <div class="event-header">
       <div class="header-left">
-        <button type="button" class="collapse-btn" @click="toggleCollapse" :title="isCollapsed ? 'Expand' : 'Collapse'">
-          <MdiIcon :class="['collapse-icon', { 'collapse-icon--collapsed': isCollapsed }]" :path="mdiChevronDown" :size="14" />
+        <button
+          type="button"
+          class="collapse-btn"
+          @click="toggleCollapse"
+          :title="isCollapsed ? 'Expand' : 'Collapse'"
+        >
+          <MdiIcon
+            :class="['collapse-icon', { 'collapse-icon--collapsed': isCollapsed }]"
+            :path="mdiChevronDown"
+            :size="14"
+          />
         </button>
         <span class="header-title">Events</span>
         <span v-if="currentVariantId" class="current-variant-badge">{{ currentVariantId }}</span>
@@ -127,7 +136,7 @@ const getRawValueClass = (value: unknown): string => {
           @click="emit('toggle-pause')"
           :title="isPaused ? 'Resume' : 'Pause'"
         >
-          {{ isPaused ? '▶' : '⏸' }}
+          {{ isPaused ? "▶" : "⏸" }}
         </button>
 
         <!-- Clear -->
@@ -152,13 +161,10 @@ const getRawValueClass = (value: unknown): string => {
           @click="selectEvent(event)"
         >
           <span class="event-time">{{ formatTimestamp(event.timestamp) }}</span>
-          <span
-            class="event-type"
-            :style="{ '--event-color': getEventTypeColor(event.type) }"
-          >
+          <span class="event-type" :style="{ '--event-color': getEventTypeColor(event.type) }">
             {{ event.type }}
           </span>
-          <span class="event-target">{{ event.target || '(unknown)' }}</span>
+          <span class="event-target">{{ event.target || "(unknown)" }}</span>
         </div>
 
         <div v-if="!events.length" class="event-empty">
@@ -192,11 +198,17 @@ const getRawValueClass = (value: unknown): string => {
           <template v-if="detailTab === 'info'">
             <div class="detail-row">
               <span class="detail-label">Type</span>
-              <span class="detail-value detail-value--type" :style="{ '--event-color': getEventTypeColor(selectedEvent.type) }">{{ selectedEvent.type }}</span>
+              <span
+                class="detail-value detail-value--type"
+                :style="{ '--event-color': getEventTypeColor(selectedEvent.type) }"
+                >{{ selectedEvent.type }}</span
+              >
             </div>
             <div class="detail-row">
               <span class="detail-label">Target</span>
-              <span class="detail-value detail-value--mono">{{ selectedEvent.target || '(unknown)' }}</span>
+              <span class="detail-value detail-value--mono">{{
+                selectedEvent.target || "(unknown)"
+              }}</span>
             </div>
             <div class="detail-row">
               <span class="detail-label">Time</span>
@@ -216,13 +228,13 @@ const getRawValueClass = (value: unknown): string => {
               <template v-for="(value, key) in selectedEvent.rawEvent" :key="key">
                 <div v-if="value !== undefined" class="raw-event-item">
                   <span class="raw-event-key">{{ key }}</span>
-                  <span class="raw-event-value" :class="getRawValueClass(value)">{{ formatRawValue(value) }}</span>
+                  <span class="raw-event-value" :class="getRawValueClass(value)">{{
+                    formatRawValue(value)
+                  }}</span>
                 </div>
               </template>
             </div>
-            <div v-else class="raw-event-empty">
-              No raw event data available
-            </div>
+            <div v-else class="raw-event-empty">No raw event data available</div>
           </template>
         </div>
       </div>

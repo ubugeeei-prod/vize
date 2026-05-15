@@ -8,25 +8,48 @@ title: Nuxt
 
 Vize provides first-class Nuxt integration through the `@vizejs/nuxt` module. This replaces Nuxt's default Vue compiler with Vize's Rust-native compiler, providing the same speed improvements in Nuxt projects.
 
-## Installation
+## Getting Started
+
+### 1. Install the Module
+
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the module:
 
 ```bash
-npm install @vizejs/nuxt
+vp install @vizejs/nuxt
 ```
 
-## Setup
+If you want to use `pkl` config with pnpm, you might need to install the `vize` package itself.
+`@vizejs/nuxt` installs `vize` which serves `vize.pkl` with default config, but the location of `vize.pkl` may differ when using pnpm.
 
-### Using the Nuxt Module (Recommended)
+```bash
+vp install vize
+```
+
+### 2. Register the Nuxt Module
 
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['@vizejs/nuxt'],
+  modules: ["@vizejs/nuxt"],
   vize: {
     compiler: true,
   },
 });
 ```
+
+### 3. Start Nuxt
+
+Start the dev server as usual:
+
+```bash
+vp run dev
+```
+
+The module injects `@vizejs/vite-plugin` into Nuxt's Vite config and keeps Nuxt-specific transforms
+in the pipeline, so auto-imports, components, middleware, and SSR behavior continue to work through
+Nuxt.
+
+## Advanced Setup
 
 ### Using the Vite Plugin Directly
 
@@ -34,7 +57,7 @@ Alternatively, you can use the Vite plugin directly. Since Nuxt uses Vite under 
 
 ```typescript
 // nuxt.config.ts
-import vize from '@vizejs/vite-plugin';
+import vize from "@vizejs/vite-plugin";
 
 export default defineNuxtConfig({
   vite: {
@@ -50,20 +73,17 @@ The Nuxt module also supports Musea (component gallery) integration:
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['@vizejs/nuxt'],
+  modules: ["@vizejs/nuxt"],
   vize: {
     compiler: true,
     musea: {
-      include: ['**/*.art.vue'],
-      tokensPath: 'assets/tokens.json',
-      previewCss: [
-        'assets/styles/main.css',
-        'assets/styles/musea-preview.css',
-      ],
-      previewSetup: 'musea.preview.ts',
+      include: ["**/*.art.vue"],
+      tokensPath: "assets/tokens.json",
+      previewCss: ["assets/styles/main.css", "assets/styles/musea-preview.css"],
+      previewSetup: "musea.preview.ts",
     },
     nuxtMusea: {
-      route: { path: '/' }, // Musea UI route within __musea__
+      route: { path: "/" }, // Musea UI route within __musea__
     },
   },
 });
@@ -77,36 +97,47 @@ Nuxt projects often use features that need to be mocked in the Musea preview env
 
 ```typescript
 // musea.preview.ts
-import { createI18n } from 'vue-i18n'
-import { createRouter, createMemoryHistory } from 'vue-router'
-import type { MuseaPreviewSetup } from '@vizejs/vite-plugin-musea'
+import { createI18n } from "vue-i18n";
+import { createRouter, createMemoryHistory } from "vue-router";
+import type { MuseaPreviewSetup } from "@vizejs/vite-plugin-musea";
 
 export default ((app) => {
   // Mock vue-i18n
   const i18n = createI18n({
-    locale: 'ja',
-    messages: { ja: { /* ... */ }, en: { /* ... */ } },
-  })
-  app.use(i18n)
+    locale: "ja",
+    messages: {
+      ja: {
+        /* ... */
+      },
+      en: {
+        /* ... */
+      },
+    },
+  });
+  app.use(i18n);
 
   // Mock vue-router (for NuxtLink compatibility)
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/', component: { template: '<div />' } },
-      { path: '/about', component: { template: '<div />' } },
+      { path: "/", component: { template: "<div />" } },
+      { path: "/about", component: { template: "<div />" } },
     ],
-  })
-  app.use(router)
+  });
+  app.use(router);
 
   // Register NuxtLink as RouterLink
-  app.component('NuxtLink', app.component('RouterLink'))
+  app.component("NuxtLink", app.component("RouterLink"));
 
   // Mock useNuxtApp if needed
-  app.provide('nuxt-app', {
-    $config: { public: { /* ... */ } },
-  })
-}) satisfies MuseaPreviewSetup
+  app.provide("nuxt-app", {
+    $config: {
+      public: {
+        /* ... */
+      },
+    },
+  });
+}) satisfies MuseaPreviewSetup;
 ```
 
 ## How It Works
@@ -125,18 +156,15 @@ The [Vue Fes Japan 2026](https://vuefes.jp/2026) conference website uses Vize wi
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['@vizejs/nuxt'],
+  modules: ["@vizejs/nuxt"],
   vize: {
     compiler: false, // compiler disabled (using Nuxt's default)
     musea: {
-      include: ['**/*.art.vue'],
+      include: ["**/*.art.vue"],
       inlineArt: false,
-      tokensPath: 'assets/tokens.json',
-      previewCss: [
-        'assets/styles/main.css',
-        'assets/styles/musea-preview.css',
-      ],
-      previewSetup: 'musea.preview.ts',
+      tokensPath: "assets/tokens.json",
+      previewCss: ["assets/styles/main.css", "assets/styles/musea-preview.css"],
+      previewSetup: "musea.preview.ts",
     },
   },
 });

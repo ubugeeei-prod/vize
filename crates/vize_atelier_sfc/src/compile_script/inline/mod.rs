@@ -10,3 +10,4 @@ mod tests;
 pub(crate) mod type_handling;
 
 pub use compiler::compile_script_setup_inline;
+pub(crate) use compiler::compile_script_setup_inline_with_context;

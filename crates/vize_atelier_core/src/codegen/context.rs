@@ -4,6 +4,8 @@ use crate::ast::RuntimeHelper;
 use crate::options::CodegenOptions;
 
 use super::helpers::default_helper_alias;
+use vize_carton::camelize;
+use vize_carton::capitalize;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::ToCompactString;
@@ -31,7 +33,8 @@ pub struct CodegenContext {
     pub(super) used_helpers: FxHashSet<RuntimeHelper>,
     /// Cache index for v-once
     pub(super) cache_index: usize,
-    /// Slot parameters (identifiers that should not be prefixed with _ctx.)
+    /// Template-scope parameters (slot props and v-for aliases) that should
+    /// not be prefixed with `_ctx.`
     pub(super) slot_params: FxHashSet<String>,
     /// When true, skip `is` prop in generate_props (used for dynamic components)
     pub(super) skip_is_prop: bool,
@@ -78,29 +81,36 @@ impl CodegenContext {
         }
     }
 
-    /// Add slot parameters (identifiers that should not be prefixed)
+    /// Add template-scope parameters (identifiers that should not be prefixed)
     pub fn add_slot_params(&mut self, params: &[String]) {
         for param in params {
             self.slot_params.insert(param.clone());
         }
     }
 
-    /// Remove slot parameters (when exiting slot scope)
+    /// Remove template-scope parameters when exiting their scope
     pub fn remove_slot_params(&mut self, params: &[String]) {
         for param in params {
             self.slot_params.remove(param);
         }
     }
 
-    /// Check if an identifier is a slot parameter
+    /// Check if an identifier is a template-scope parameter
     pub fn is_slot_param(&self, name: &str) -> bool {
         self.slot_params.contains(name)
     }
 
-    /// Check if there are any slot parameters registered (fast path check)
+    /// Check if there are any template-scope parameters registered
     #[inline]
     pub fn has_slot_params(&self) -> bool {
         !self.slot_params.is_empty()
+    }
+
+    /// Event handler caching is unsafe while template-scope params are in play,
+    /// because a cached closure would capture the first scoped value.
+    #[inline]
+    pub fn cache_handlers_in_current_scope(&self) -> bool {
+        self.options.cache_handlers && !self.has_slot_params()
     }
 
     /// Get next cache index for v-once
@@ -174,12 +184,41 @@ impl CodegenContext {
 
     /// Check if a component is in binding metadata (from script setup)
     pub fn is_component_in_bindings(&self, component: &str) -> bool {
-        if let Some(ref metadata) = self.options.binding_metadata {
-            // Check both the original name and PascalCase version
-            metadata.bindings.contains_key(component)
-        } else {
-            false
+        self.resolve_component_binding_name(component).is_some()
+    }
+
+    /// Resolve the binding name for a component tag.
+    pub fn resolve_component_binding_name(&self, component: &str) -> Option<String> {
+        let metadata = self.options.binding_metadata.as_ref()?;
+
+        let resolve_base = |name: &str| {
+            if metadata.bindings.contains_key(name) {
+                return Some(name.to_compact_string());
+            }
+
+            let camel = camelize(name);
+            if metadata.bindings.contains_key(camel.as_str()) {
+                return Some(camel);
+            }
+
+            let pascal = capitalize(&camel);
+            if metadata.bindings.contains_key(pascal.as_str()) {
+                return Some(pascal);
+            }
+
+            None
+        };
+
+        if let Some((base, suffix)) = component.split_once('.') {
+            let resolved_base = resolve_base(base)?;
+            let mut resolved = String::with_capacity(resolved_base.len() + suffix.len() + 1);
+            resolved.push_str(resolved_base.as_str());
+            resolved.push('.');
+            resolved.push_str(suffix);
+            return Some(resolved);
         }
+
+        resolve_base(component)
     }
 
     /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)

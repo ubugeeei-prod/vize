@@ -3,29 +3,64 @@
 //! Contains utility functions for type declarations, event type mapping,
 //! identifier conversion, and template context generation.
 
+use std::ops::Range;
+
 use super::types::VirtualTsOptions;
 use vize_carton::append;
 use vize_carton::String;
+use vize_croquis::macros::{
+    DEFINE_EMITS, DEFINE_EXPOSE, DEFINE_MODEL, DEFINE_PROPS, DEFINE_SLOTS, WITH_DEFAULTS,
+};
 
-/// Vue compiler macros - these are defined inside setup scope, NOT globally.
-/// This ensures they're only valid within <script setup>.
+pub(crate) const USE_TEMPLATE_REF: &str = "useTemplateRef";
+
+/// Names declared by the generated setup-scope helper block.
+///
+/// This includes Vue compiler macros plus runtime helper shims that are modeled
+/// inside `__setup()`. It is intentionally broader than `COMPILER_MACRO_NAMES`.
+pub(crate) const SETUP_SCOPE_HELPER_NAMES: &[&str] = &[
+    DEFINE_PROPS,
+    DEFINE_EMITS,
+    DEFINE_EXPOSE,
+    DEFINE_MODEL,
+    DEFINE_SLOTS,
+    WITH_DEFAULTS,
+    USE_TEMPLATE_REF,
+];
+
+/// Shared type helpers used by generated virtual modules and setup-scope macros.
+pub(crate) const VUE_TYPE_HELPERS: &str = r#"type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
+type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
+type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
+type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
+type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
+type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
+type __DefaultFactory<T> = (props: any) => T;
+type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
+type __Ref<T> = import('vue').Ref<T>;
+type __ShallowRef<T> = import('vue').ShallowRef<T>;"#;
+
+/// Vue setup-scope helpers - these are defined inside setup scope, NOT globally.
+/// Compiler macros stay setup-only, while runtime helper shims model Vue APIs.
 /// Parameters and type parameters are prefixed with _ to avoid "unused" warnings.
-pub(crate) const VUE_SETUP_COMPILER_MACROS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
-  // Emit type helper: converts { event: [args] } to callable emit function
-  type __EmitFn<T> = T extends (...args: any[]) => any ? T : (<K extends keyof T>(event: K, ...args: T[K] extends any[] ? T[K] : any[]) => void);
-  // Vue ref type aliases (resolved from node_modules/vue)
-  type __Ref<T> = import('vue').Ref<T>;
-  type __ShallowRef<T> = import('vue').ShallowRef<T>;
-  function defineProps<_T = unknown>(_props?: any): _T { void _props; return undefined as unknown as _T; }
-  function defineEmits<_T = unknown>(): __EmitFn<_T> { return (() => {}) as any; }
-  function defineEmits<_T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void { void _events; return (() => {}) as any; }
-  function defineEmits<_T extends Record<string, any>>(_events: _T): (event: keyof _T, ...args: any[]) => void { void _events; return (() => {}) as any; }
+pub(crate) const VUE_SETUP_HELPERS: &str = r#"  // Compiler macros (only valid in setup scope, not global)
+  function defineProps<_T = unknown>(): _T;
+  function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
+  function defineProps<const _T extends Record<string, any>>(_props: _T): __RuntimePropShape<_T>;
+  function defineProps(_props?: any) { void _props; return undefined as any; }
+  function defineEmits<_T = unknown>(): __EmitFn<_T>;
+  function defineEmits<const _T extends readonly string[]>(_events: _T): (event: _T[number], ...args: any[]) => void;
+  function defineEmits<const _T extends Record<string, any>>(_events: _T): __EmitFn<_T>;
+  function defineEmits(_events?: any) { void _events; return (() => {}) as any; }
   function defineExpose<_T = unknown>(_exposed?: _T): void { void _exposed; }
-  function defineModel<_T = unknown>(): __Ref<_T | undefined> { return undefined as unknown as __Ref<_T | undefined>; }
-  function defineModel<_T = unknown>(_options: any): __Ref<_T> { void _options; return undefined as unknown as __Ref<_T>; }
-  function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T> { void _name; void _options; return undefined as unknown as __Ref<_T>; }
+  function defineModel<_T = unknown>(): __Ref<_T | undefined>;
+  function defineModel<_T = unknown>(_options: any): __Ref<_T>;
+  function defineModel<_T = unknown>(_name: string, _options?: any): __Ref<_T>;
+  function defineModel(_name_or_options?: any, _options?: any) { void _name_or_options; void _options; return undefined as any; }
   function defineSlots<_T = unknown>(): _T { return undefined as unknown as _T; }
-  function withDefaults<_T = unknown, _D = unknown>(_props: _T, _defaults: _D): _T & _D { void _props; void _defaults; return undefined as unknown as _T & _D; }
+  function withDefaults<_T, _D extends __WithDefaultsArgs<_T>>(_props: _T, _defaults: _D): __WithDefaultsResult<_T, _D> { void _props; void _defaults; return undefined as unknown as __WithDefaultsResult<_T, _D>; }
   function useTemplateRef<_T = any>(_key: string): __ShallowRef<_T | null> { void _key; return undefined as unknown as __ShallowRef<_T | null>; }
   // Mark compiler macros as used
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;"#;
@@ -50,7 +85,7 @@ declare global {
 /// Generate Vue template context declarations dynamically.
 ///
 /// Derives `$`-prefixed globals from `ComponentPublicInstance` so that
-/// type resolution is delegated to tsgo via Vue's type system
+/// type resolution is delegated to Corsa via Vue's type system
 /// (including `ComponentCustomProperties` augmentations from plugins).
 pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
     let mut ctx = String::default();
@@ -60,7 +95,7 @@ pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
 
     // Instance type + conditional accessor helper
     ctx.push_str("    // Vue template context (delegates to ComponentPublicInstance)\n");
-    ctx.push_str("    type __Ctx = $Vue['ComponentPublicInstance'];\n");
+    ctx.push_str("    type __Ctx = import('vue').ComponentPublicInstance;\n");
     if needs_global_helper {
         ctx.push_str("    type __Global<K extends string, F = unknown> = K extends keyof __Ctx ? __Ctx[K] : F;\n");
     }
@@ -125,6 +160,24 @@ pub(crate) fn generate_template_context(options: &VirtualTsOptions) -> String {
     ctx
 }
 
+/// Get the generated subrange that corresponds to a specific source expression.
+///
+/// This keeps source maps anchored to the actual expression text instead of
+/// any wrapping code we emit around it (`void (...)`, `as Foo`, handler shims).
+pub(crate) fn generated_text_range(
+    generated_segment: &str,
+    mapped_text: &str,
+    generated_start: usize,
+) -> Range<usize> {
+    if mapped_text.is_empty() {
+        return generated_start..generated_start + generated_segment.len();
+    }
+
+    let relative_start = generated_segment.find(mapped_text).unwrap_or(0);
+    let start = generated_start + relative_start;
+    start..start + mapped_text.len()
+}
+
 /// Strip TypeScript `as Type` assertion from a v-for source expression.
 /// Returns (source_expression, Option<type_annotation>).
 /// e.g., "(expr) as OptionSponsor[]" -> ("(expr)", Some("OptionSponsor[]"))
@@ -143,11 +196,8 @@ pub(crate) fn strip_as_assertion(source: &str) -> (&str, Option<&str>) {
         match bytes[i] {
             b'(' => paren_depth += 1,
             b')' => paren_depth -= 1,
-            b' ' if paren_depth == 0 => {
-                // Check for " as "
-                if i + 4 <= bytes.len() && &bytes[i..i + 4] == b" as " {
-                    last_as_pos = Some(i);
-                }
+            b' ' if paren_depth == 0 && i + 4 <= bytes.len() && &bytes[i..i + 4] == b" as " => {
+                last_as_pos = Some(i);
             }
             _ => {}
         }
@@ -267,16 +317,98 @@ pub(crate) fn to_camel_case(s: &str) -> String {
 }
 
 /// Sanitize a string to be a valid TypeScript identifier.
-/// Replaces invalid characters (like ':') with underscores.
+/// Replaces invalid characters (like ':') with underscores and prefixes
+/// reserved words.
 /// Examples: "update:title" -> "update_title", "my-event" -> "my_event"
 pub(crate) fn to_safe_identifier(s: &str) -> String {
-    s.chars()
-        .map(|c| {
-            if c.is_alphanumeric() || c == '_' {
-                c
-            } else {
-                '_'
-            }
-        })
-        .collect()
+    let mut result = to_safe_identifier_fragment(s);
+
+    if !result
+        .chars()
+        .next()
+        .is_some_and(|c| c.is_ascii_alphabetic() || c == '_' || c == '$')
+    {
+        result.insert(0, '_');
+    }
+    if is_reserved_identifier(result.as_str()) {
+        result.insert(0, '_');
+    }
+
+    result
+}
+
+/// Sanitize a string for use inside a generated identifier that already has a
+/// safe prefix (for example `_slot_{name}`).
+pub(crate) fn to_safe_identifier_fragment(s: &str) -> String {
+    let mut result = String::with_capacity(s.len().max(1));
+
+    for c in s.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' || c == '$' {
+            result.push(c);
+        } else {
+            result.push('_');
+        }
+    }
+
+    if result.is_empty() {
+        result.push('_');
+    }
+
+    result
+}
+
+#[inline]
+pub(crate) fn is_reserved_identifier(s: &str) -> bool {
+    matches!(
+        s,
+        "await"
+            | "break"
+            | "case"
+            | "catch"
+            | "class"
+            | "const"
+            | "continue"
+            | "debugger"
+            | "default"
+            | "delete"
+            | "do"
+            | "else"
+            | "enum"
+            | "export"
+            | "extends"
+            | "false"
+            | "finally"
+            | "for"
+            | "function"
+            | "if"
+            | "import"
+            | "in"
+            | "instanceof"
+            | "new"
+            | "null"
+            | "return"
+            | "super"
+            | "switch"
+            | "this"
+            | "throw"
+            | "true"
+            | "try"
+            | "typeof"
+            | "var"
+            | "void"
+            | "while"
+            | "with"
+            | "yield"
+            | "let"
+            | "static"
+            | "implements"
+            | "interface"
+            | "package"
+            | "private"
+            | "protected"
+            | "public"
+            | "as"
+            | "from"
+            | "of"
+    )
 }

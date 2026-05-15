@@ -49,18 +49,18 @@ Override the severity of diagnostics on the next line.
 ```vue
 <template>
   <!-- @vize:level(warn) -->
-  <img src="/photo.png">
+  <img src="/photo.png" />
 
   <!-- @vize:level(off) -->
   <li v-for="item in items">{{ item }}</li>
 </template>
 ```
 
-| Value | Effect |
-|-------|--------|
-| `warn` | Downgrade to warning |
-| `error` | Upgrade to error |
-| `off` | Suppress entirely |
+| Value   | Effect               |
+| ------- | -------------------- |
+| `warn`  | Downgrade to warning |
+| `error` | Upgrade to error     |
+| `off`   | Suppress entirely    |
 
 ### `@vize:todo`
 
@@ -119,16 +119,16 @@ Mark a node to be stripped in production builds, kept in development.
 
 ### Summary
 
-| Directive | Effect | Severity |
-|-----------|--------|----------|
-| `@vize:expected` | Expect diagnostic on next line | — |
-| `@vize:ignore-start/end` | Suppress all diagnostics in region | — |
-| `@vize:level(...)` | Override next-line severity | — |
-| `@vize:todo <msg>` | Emit TODO | Warning |
-| `@vize:fixme <msg>` | Emit FIXME | Error |
-| `@vize:deprecated <msg>` | Emit deprecation notice | Warning |
-| `@vize:docs <text>` | Documentation (no lint effect) | — |
-| `@vize:dev-only` | Strip in production | — |
+| Directive                | Effect                             | Severity |
+| ------------------------ | ---------------------------------- | -------- |
+| `@vize:expected`         | Expect diagnostic on next line     | —        |
+| `@vize:ignore-start/end` | Suppress all diagnostics in region | —        |
+| `@vize:level(...)`       | Override next-line severity        | —        |
+| `@vize:todo <msg>`       | Emit TODO                          | Warning  |
+| `@vize:fixme <msg>`      | Emit FIXME                         | Error    |
+| `@vize:deprecated <msg>` | Emit deprecation notice            | Warning  |
+| `@vize:docs <text>`      | Documentation (no lint effect)     | —        |
+| `@vize:dev-only`         | Strip in production                | —        |
 
 ## Script Suppression (`@vize forget`)
 
@@ -149,10 +149,10 @@ A **reason is required** — you must explain why the suppression is needed.
 
 ```vue
 <script setup>
-import { inject } from 'vue'
+import { inject } from "vue";
 
 // @vize forget: intentionally destructuring for one-time read
-const { count } = inject('state')
+const { count } = inject("state");
 </script>
 ```
 
@@ -160,12 +160,12 @@ Without the annotation, Vize would warn that destructuring a reactive `inject()`
 
 ### Rules
 
-| Rule | Description |
-|------|-------------|
-| Reason required | `// @vize forget` without a reason is an error |
-| Colon required | Must use `// @vize forget: <reason>` (colon before reason) |
-| Next line only | Applies to the next non-comment, non-empty line |
-| No orphans | A suppression at the end of a file with no code after it is an error |
+| Rule            | Description                                                          |
+| --------------- | -------------------------------------------------------------------- |
+| Reason required | `// @vize forget` without a reason is an error                       |
+| Colon required  | Must use `// @vize forget: <reason>` (colon before reason)           |
+| Next line only  | Applies to the next non-comment, non-empty line                      |
+| No orphans      | A suppression at the end of a file with no code after it is an error |
 
 ### Multiple Suppressions
 
@@ -173,13 +173,13 @@ Each `@vize forget` applies independently to the next code line:
 
 ```vue
 <script setup>
-import { inject } from 'vue'
+import { inject } from "vue";
 
 // @vize forget: one-time read for display name
-const { name } = inject('user')
+const { name } = inject("user");
 
 // @vize forget: static config value
-const { theme } = inject('config')
+const { theme } = inject("config");
 </script>
 ```
 
@@ -191,31 +191,31 @@ The suppression targets the next **code** line, skipping over comments and blank
 <script setup>
 // @vize forget: read-only access
 // This comment is skipped
-const { count } = inject('state')
+const { count } = inject("state");
 </script>
 ```
 
 ### Common Reasons
 
-| Reason | When to Use |
-|--------|-------------|
-| `intentionally non-reactive` | Value doesn't need to be reactive |
-| `read-only access` | Only reading, not tracking changes |
-| `legacy code` | Known issue, will refactor later |
-| `third-party integration` | Required by external library |
+| Reason                       | When to Use                        |
+| ---------------------------- | ---------------------------------- |
+| `intentionally non-reactive` | Value doesn't need to be reactive  |
+| `read-only access`           | Only reading, not tracking changes |
+| `legacy code`                | Known issue, will refactor later   |
+| `third-party integration`    | Required by external library       |
 
 ### Invalid Examples
 
 ```typescript
 // @vize forget
-const { count } = inject('state')
+const { count } = inject("state");
 // ^ Error: requires a reason
 
 // @vize forget because I said so
-const { count } = inject('state')
+const { count } = inject("state");
 // ^ Error: requires a colon before the reason
 
 // @vize forget:
-const { count } = inject('state')
+const { count } = inject("state");
 // ^ Error: reason cannot be empty
 ```

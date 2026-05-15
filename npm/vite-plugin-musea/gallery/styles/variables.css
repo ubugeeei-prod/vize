@@ -1,11 +1,12 @@
 /* Default (light) — applied at :root to avoid FOUC */
 :root {
-  --musea-bg-primary: #E6E2D6;
+  --musea-bg-primary: #e6e2d6;
   --musea-bg-secondary: #ddd9cd;
   --musea-bg-tertiary: #d4d0c4;
-  --musea-bg-elevated: #E6E2D6;
+  --musea-bg-elevated: #e6e2d6;
   --musea-accent: #121212;
   --musea-accent-hover: #2a2a2a;
+  --musea-accent-contrast: #e6e2d6;
   --musea-accent-subtle: rgba(18, 18, 18, 0.08);
   --musea-text: #121212;
   --musea-text-secondary: #3a3a3a;
@@ -22,20 +23,21 @@
   --musea-radius-md: 6px;
   --musea-radius-lg: 8px;
   --musea-transition: 0.15s ease;
-  --musea-font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --musea-font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --musea-font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --musea-font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
   --musea-sidebar-width: 260px;
   --musea-header-height: 56px;
 }
 
 /* Explicit light theme */
 [data-musea-theme="light"] {
-  --musea-bg-primary: #E6E2D6;
+  --musea-bg-primary: #e6e2d6;
   --musea-bg-secondary: #ddd9cd;
   --musea-bg-tertiary: #d4d0c4;
-  --musea-bg-elevated: #E6E2D6;
+  --musea-bg-elevated: #e6e2d6;
   --musea-accent: #121212;
   --musea-accent-hover: #2a2a2a;
+  --musea-accent-contrast: #e6e2d6;
   --musea-accent-subtle: rgba(18, 18, 18, 0.08);
   --musea-text: #121212;
   --musea-text-secondary: #3a3a3a;
@@ -56,10 +58,11 @@
   --musea-bg-secondary: #1a1a1a;
   --musea-bg-tertiary: #242424;
   --musea-bg-elevated: #2a2a2a;
-  --musea-accent: #E6E2D6;
+  --musea-accent: #e6e2d6;
   --musea-accent-hover: #d4d0c4;
+  --musea-accent-contrast: #121212;
   --musea-accent-subtle: rgba(230, 226, 214, 0.1);
-  --musea-text: #E6E2D6;
+  --musea-text: #e6e2d6;
   --musea-text-secondary: #c4c1b6;
   --musea-text-muted: #8a8880;
   --musea-border: #2e2e2e;
@@ -79,10 +82,11 @@
     --musea-bg-secondary: #1a1a1a;
     --musea-bg-tertiary: #242424;
     --musea-bg-elevated: #2a2a2a;
-    --musea-accent: #E6E2D6;
+    --musea-accent: #e6e2d6;
     --musea-accent-hover: #d4d0c4;
+    --musea-accent-contrast: #121212;
     --musea-accent-subtle: rgba(230, 226, 214, 0.1);
-    --musea-text: #E6E2D6;
+    --musea-text: #e6e2d6;
     --musea-text-secondary: #c4c1b6;
     --musea-text-muted: #8a8880;
     --musea-border: #2e2e2e;

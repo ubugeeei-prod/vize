@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from "vue";
 
-const model = defineModel<string>({ default: '' })
-const inputRef = ref<HTMLInputElement | null>(null)
+const model = defineModel<string>({ default: "" });
+const inputRef = ref<HTMLInputElement | null>(null);
 
 function onKeydown(e: KeyboardEvent) {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault()
-    inputRef.value?.focus()
+  if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    e.preventDefault();
+    inputRef.value?.focus();
   }
-  if (e.key === 'Escape' && document.activeElement === inputRef.value) {
-    model.value = ''
-    inputRef.value?.blur()
+  if (e.key === "Escape" && document.activeElement === inputRef.value) {
+    model.value = "";
+    inputRef.value?.blur();
   }
 }
 
 onMounted(() => {
-  document.addEventListener('keydown', onKeydown)
-})
+  document.addEventListener("keydown", onKeydown);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', onKeydown)
-})
+  document.removeEventListener("keydown", onKeydown);
+});
 </script>
 
 <template>
@@ -44,7 +44,7 @@ onUnmounted(() => {
       type="text"
       class="search-input"
       placeholder="Search components... (⌘K)"
-    >
+    />
     <kbd v-if="!model" class="search-kbd">⌘K</kbd>
   </div>
 </template>
@@ -64,7 +64,9 @@ onUnmounted(() => {
   color: var(--musea-text);
   font-size: 0.8125rem;
   outline: none;
-  transition: border-color var(--musea-transition), background var(--musea-transition);
+  transition:
+    border-color var(--musea-transition),
+    background var(--musea-transition);
 }
 
 .search-input::placeholder {

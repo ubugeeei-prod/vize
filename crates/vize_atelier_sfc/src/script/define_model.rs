@@ -10,7 +10,7 @@ use super::utils::{extract_type_args, find_call_paren, find_matching_paren};
 use super::MacroCall;
 use vize_carton::String;
 
-pub const DEFINE_MODEL: &str = "defineModel";
+pub use vize_croquis::macros::DEFINE_MODEL;
 
 /// Extract all defineModel calls from source (can appear multiple times)
 #[allow(dead_code)]
@@ -84,6 +84,6 @@ const lastName = defineModel('lastName')
         let content = "const count = defineModel('count', { type: Number, default: 0 })";
         let result = extract_define_model(content);
         assert_eq!(result.len(), 1);
-        assert!(result[0].args.contains("'count'"));
+        insta::assert_debug_snapshot!(result);
     }
 }

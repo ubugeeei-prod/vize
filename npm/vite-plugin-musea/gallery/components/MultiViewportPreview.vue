@@ -1,20 +1,16 @@
 <script setup lang="ts">
-import { MULTI_VIEWPORT_PRESETS } from '../composables/useAddons'
-import { getPreviewUrl } from '../api'
+import { MULTI_VIEWPORT_PRESETS } from "../composables/useAddons";
+import { getPreviewUrl } from "../api";
 
 defineProps<{
-  artPath: string
-  variantName: string
-}>()
+  artPath: string;
+  variantName: string;
+}>();
 </script>
 
 <template>
   <div class="multi-viewport">
-    <div
-      v-for="preset in MULTI_VIEWPORT_PRESETS"
-      :key="preset.name"
-      class="multi-viewport-item"
-    >
+    <div v-for="preset in MULTI_VIEWPORT_PRESETS" :key="preset.name" class="multi-viewport-item">
       <div class="multi-viewport-label">
         <span class="multi-viewport-name">{{ preset.name }}</span>
         <span class="multi-viewport-size">{{ preset.width }} x {{ preset.height }}</span>

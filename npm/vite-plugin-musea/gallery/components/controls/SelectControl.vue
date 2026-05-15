@@ -1,12 +1,12 @@
 <script setup lang="ts">
-const model = defineModel<unknown>()
+const model = defineModel<unknown>();
 
 defineProps<{
-  label: string
-  description?: string
-  required?: boolean
-  options: Array<{ label: string; value: unknown }>
-}>()
+  label: string;
+  description?: string;
+  required?: boolean;
+  options: Array<{ label: string; value: unknown }>;
+}>();
 </script>
 
 <template>
@@ -20,11 +20,7 @@ defineProps<{
       :value="JSON.stringify(model)"
       @change="model = JSON.parse(($event.target as HTMLSelectElement).value)"
     >
-      <option
-        v-for="opt in options"
-        :key="String(opt.value)"
-        :value="JSON.stringify(opt.value)"
-      >
+      <option v-for="opt in options" :key="String(opt.value)" :value="JSON.stringify(opt.value)">
         {{ opt.label }}
       </option>
     </select>

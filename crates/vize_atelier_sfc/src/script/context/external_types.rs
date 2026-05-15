@@ -28,6 +28,10 @@ const INDEX_CANDIDATES: &[&str] = &[
 
 impl ScriptCompileContext {
     pub fn collect_imported_types_from_path(&mut self, source: &str, filename: &str) {
+        if !source.contains("import") || !source.contains("type") {
+            return;
+        }
+
         let owned_base = canonicalize_or_original(PathBuf::from(filename))
             .unwrap_or_else(|| PathBuf::from(filename));
         let base_file = owned_base.as_path();

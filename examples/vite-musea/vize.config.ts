@@ -1,4 +1,4 @@
-import { defineConfig } from '@vizejs/vite-plugin'
+import { defineConfig } from "vize";
 
 export default defineConfig({
   compiler: {
@@ -7,16 +7,16 @@ export default defineConfig({
     sourceMap: true,
   },
   vite: {
-    scanPatterns: ['src/**/*.vue'],
-    ignorePatterns: ['node_modules/**', 'dist/**'],
+    scanPatterns: ["src/**/*.vue"],
+    ignorePatterns: ["node_modules/**", "dist/**"],
   },
   musea: {
-    include: ['src/**/*.vue'],
-    basePath: '/__musea__',
+    include: ["src/**/*.vue"],
+    basePath: "/__musea__",
     inlineArt: true,
     vrt: {
       threshold: 0.1,
-      viewports: [{ width: 1280, height: 720, name: 'desktop' }],
+      viewports: [{ width: 1280, height: 720, name: "desktop" }],
     },
   },
-})
+});

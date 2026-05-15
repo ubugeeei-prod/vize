@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/no_reactive_destructure.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-reactive-destructure",
+        severity: Warning,
+        message: "Destructuring reactive object loses reactivity",
+        start: 56,
+        end: 79,
+        help: Some(
+            "Use toRefs() to maintain reactivity or access properties directly",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

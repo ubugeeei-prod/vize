@@ -107,17 +107,9 @@ pub const PALPABLE_CONTENT_ELEMENTS: &[&str] = &[
 pub fn has_palpable_content(element: &ElementNode) -> bool {
     for child in &element.children {
         match child {
-            TemplateChildNode::Text(text) => {
-                if !text.content.trim().is_empty() {
-                    return true;
-                }
-            }
+            TemplateChildNode::Text(text) if !text.content.trim().is_empty() => return true,
             TemplateChildNode::Interpolation(_) => return true,
-            TemplateChildNode::Element(el) => {
-                if el.tag_type != ElementType::Template {
-                    return true;
-                }
-            }
+            TemplateChildNode::Element(el) if el.tag_type != ElementType::Template => return true,
             _ => {}
         }
     }

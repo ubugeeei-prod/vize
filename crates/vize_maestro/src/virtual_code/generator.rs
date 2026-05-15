@@ -437,8 +437,8 @@ const message = ref('hello')
 
         // Check template virtual code
         let template = docs.template.unwrap();
-        assert!(template.content.contains("__VIZE_ctx.message"));
         assert!(!template.source_map.is_empty());
+        insta::assert_snapshot!(template.content.as_str());
     }
 
     #[test]

@@ -1,0 +1,28 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { computed } from "vue";
+export default {
+  __name: "TestComponent",
+  props: {
+    type: {
+      type: String,
+      required: true
+    },
+    title: {
+      type: String,
+      required: true
+    },
+    startTime: {
+      type: String,
+      required: true
+    }
+  },
+  setup(__props) {
+    const accentColor = computed(() => __props.type === "event" ? "primary" : "secondary");
+    return (_ctx, _cache) => {
+      return null;
+    };
+  }
+};

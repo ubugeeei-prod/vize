@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import Button from './components/Button.vue'
-import Input from './components/Input.vue'
-import Card from './components/Card.vue'
-import Badge from './components/Badge.vue'
-import Alert from './components/Alert.vue'
-import Avatar from './components/Avatar.vue'
+import Button from "./components/Button.vue";
+import Input from "./components/Input.vue";
+import Card from "./components/Card.vue";
+import Badge from "./components/Badge.vue";
+import Alert from "./components/Alert.vue";
+import Avatar from "./components/Avatar.vue";
 </script>
 
 <template>
   <div class="app">
     <h1>Vite + Vue + Musea Example</h1>
-    <p>
-      Visit <a href="/__musea__">/__musea__</a> to see the component gallery.
-    </p>
+    <p>Visit <a href="/__musea__">/__musea__</a> to see the component gallery.</p>
 
     <section class="section">
       <h2>Buttons</h2>
@@ -99,7 +97,7 @@ body {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 h1 {

@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import type { DesignToken, TokenUsageEntry } from '../../api'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import type { DesignToken, TokenUsageEntry } from "../../api";
 
 defineProps<{
-  isOpen: boolean
-  tokenPath: string
-  token?: DesignToken
-  usages: TokenUsageEntry[]
-}>()
+  isOpen: boolean;
+  tokenPath: string;
+  token?: DesignToken;
+  usages: TokenUsageEntry[];
+}>();
 
 const emit = defineEmits<{
-  close: []
-  editSource: [artPath: string]
-}>()
+  close: [];
+  editSource: [artPath: string];
+}>();
 
-const router = useRouter()
-const expandedArts = ref<Set<string>>(new Set())
+const router = useRouter();
+const expandedArts = ref<Set<string>>(new Set());
 
 function toggleExpand(artPath: string) {
   if (expandedArts.value.has(artPath)) {
-    expandedArts.value.delete(artPath)
+    expandedArts.value.delete(artPath);
   } else {
-    expandedArts.value.add(artPath)
+    expandedArts.value.add(artPath);
   }
 }
 
 function viewComponent(artPath: string) {
-  emit('close')
-  router.push({ name: 'component', params: { path: artPath } })
+  emit("close");
+  router.push({ name: "component", params: { path: artPath } });
 }
 </script>
 
@@ -42,11 +42,20 @@ function viewComponent(artPath: string) {
               <h2 class="modal-title">Token Usage</h2>
               <p class="modal-subtitle">
                 <code>{{ tokenPath }}</code>
-                <span v-if="token" class="modal-value">&mdash; {{ token.$resolvedValue ?? token.value }}</span>
+                <span v-if="token" class="modal-value"
+                  >&mdash; {{ token.$resolvedValue ?? token.value }}</span
+                >
               </p>
             </div>
             <button type="button" class="modal-close" @click="emit('close')">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -55,12 +64,24 @@ function viewComponent(artPath: string) {
 
           <div class="modal-body">
             <div v-if="token?.$tier === 'primitive' && usages.length > 0" class="primitive-warning">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                />
                 <line x1="12" y1="9" x2="12" y2="13" />
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
-              <span>Components are referencing this primitive value directly. Consider using a semantic token instead.</span>
+              <span
+                >Components are referencing this primitive value directly. Consider using a semantic
+                token instead.</span
+              >
             </div>
             <div v-if="usages.length === 0" class="no-usage">
               No component usage found for this token value.
@@ -70,13 +91,24 @@ function viewComponent(artPath: string) {
                 <div class="usage-entry-header" @click="toggleExpand(entry.artPath)">
                   <div class="usage-entry-info">
                     <span class="usage-entry-title">{{ entry.artTitle }}</span>
-                    <span v-if="entry.artCategory" class="usage-category-badge">{{ entry.artCategory }}</span>
-                    <span class="usage-match-count">{{ entry.matches.length }} match{{ entry.matches.length !== 1 ? 'es' : '' }}</span>
+                    <span v-if="entry.artCategory" class="usage-category-badge">{{
+                      entry.artCategory
+                    }}</span>
+                    <span class="usage-match-count"
+                      >{{ entry.matches.length }} match{{
+                        entry.matches.length !== 1 ? "es" : ""
+                      }}</span
+                    >
                   </div>
                   <svg
                     class="expand-icon"
                     :class="{ 'expand-icon--open': expandedArts.has(entry.artPath) }"
-                    width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
                   >
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
@@ -91,10 +123,18 @@ function viewComponent(artPath: string) {
                 </div>
 
                 <div class="usage-entry-actions">
-                  <button type="button" class="usage-action-btn" @click="viewComponent(entry.artPath)">
+                  <button
+                    type="button"
+                    class="usage-action-btn"
+                    @click="viewComponent(entry.artPath)"
+                  >
                     View Component
                   </button>
-                  <button type="button" class="usage-action-btn usage-action-btn--edit" @click="emit('editSource', entry.artPath)">
+                  <button
+                    type="button"
+                    class="usage-action-btn usage-action-btn--edit"
+                    @click="emit('editSource', entry.artPath)"
+                  >
                     Edit Source
                   </button>
                 </div>
@@ -111,8 +151,8 @@ function viewComponent(artPath: string) {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: var(--musea-overlay);
-  backdrop-filter: blur(4px);
+  background: color-mix(in srgb, var(--musea-overlay) 84%, #000 16%);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,8 +161,8 @@ function viewComponent(artPath: string) {
 }
 
 .modal-panel {
-  background: var(--musea-bg);
-  border: 1px solid var(--musea-border);
+  background: var(--musea-bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--musea-border) 78%, var(--musea-text) 22%);
   border-radius: var(--musea-radius-lg, 12px);
   width: 100%;
   max-width: 640px;
@@ -130,7 +170,9 @@ function viewComponent(artPath: string) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: var(--musea-shadow);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--musea-bg-primary) 35%, transparent),
+    0 24px 64px rgba(0, 0, 0, 0.24);
 }
 
 .modal-header {
@@ -193,10 +235,10 @@ function viewComponent(artPath: string) {
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   margin-bottom: 0.75rem;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: color-mix(in srgb, var(--musea-warning) 16%, var(--musea-bg-secondary) 84%);
+  border: 1px solid color-mix(in srgb, var(--musea-warning) 42%, var(--musea-border) 58%);
   border-radius: var(--musea-radius-md);
-  color: #f59e0b;
+  color: var(--musea-text-secondary);
   font-size: 0.8125rem;
   line-height: 1.4;
 }
@@ -204,6 +246,7 @@ function viewComponent(artPath: string) {
 .primitive-warning svg {
   flex-shrink: 0;
   margin-top: 0.125rem;
+  color: var(--musea-warning);
 }
 
 .no-usage {
@@ -327,7 +370,9 @@ function viewComponent(artPath: string) {
   background: transparent;
   color: var(--musea-text-muted);
   cursor: pointer;
-  transition: border-color var(--musea-transition), color var(--musea-transition);
+  transition:
+    border-color var(--musea-transition),
+    color var(--musea-transition);
 }
 
 .usage-action-btn:hover {

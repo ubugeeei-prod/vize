@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import { rollup } from "rollup";
 import "./test/setup.ts";
-import vize from "./rollup.js";
-import { normalizeSnapshot, resolveFixturePath } from "./test/helpers.js";
+import vize from "./rollup.ts";
+import { normalizeSnapshot, resolveFixturePath } from "./test/helpers.ts";
 
 void test("rollup bundles a basic SFC", async (t) => {
   const bundle = await rollup({

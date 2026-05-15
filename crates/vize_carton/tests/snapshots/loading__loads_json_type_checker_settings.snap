@@ -38,6 +38,7 @@ expression: "serde_json::to_string_pretty(&config).unwrap()"
     "checkFallthroughAttrs": true,
     "tsconfig": null,
     "tsgoPath": null,
-    "globalsFile": "./globals.d.ts"
+    "globalsFile": "./globals.d.ts",
+    "servers": null
   }
 }

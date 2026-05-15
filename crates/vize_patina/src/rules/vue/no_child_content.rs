@@ -57,10 +57,8 @@ impl NoChildContent {
     fn has_child_content(element: &ElementNode) -> bool {
         for child in &element.children {
             match child {
-                TemplateChildNode::Text(text) => {
-                    if !text.content.trim().is_empty() {
-                        return true;
-                    }
+                TemplateChildNode::Text(text) if !text.content.trim().is_empty() => {
+                    return true;
                 }
                 TemplateChildNode::Element(_)
                 | TemplateChildNode::Interpolation(_)

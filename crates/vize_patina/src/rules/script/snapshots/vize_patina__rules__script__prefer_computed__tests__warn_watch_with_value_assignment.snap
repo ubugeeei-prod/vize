@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/prefer_computed.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/prefer-computed",
+        severity: Warning,
+        message: "Consider using computed() instead of watch() for derived state",
+        start: 45,
+        end: 50,
+        help: Some(
+            "If the watch callback only assigns to a ref based on the watched value, use computed() instead: `const derived = computed(() => source.value * 2)`",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

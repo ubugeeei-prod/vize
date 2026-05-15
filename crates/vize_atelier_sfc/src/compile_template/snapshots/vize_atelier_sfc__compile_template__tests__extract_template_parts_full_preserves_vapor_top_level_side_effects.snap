@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/compile_template/tests.rs
+expression: "(&hoisted, &render_fn)"
+---
+(
+    "const t0 = _template(\"<button>ok</button>\", true)\n_delegateEvents(\"click\")\n",
+    "function render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\n",
+)

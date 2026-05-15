@@ -1,39 +1,36 @@
 {
   "name": "vize-playground",
-  "private": true,
   "version": "0.1.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "pnpm test:node && vitest run",
-    "test:node": "vitest run --config vitest.node.config.ts",
-    "test:browser": "vitest --browser.headless",
+    "dev": "vp dev --config vite.app.config.ts",
+    "build": "vp build --config vite.app.config.ts",
+    "preview": "vp preview --config vite.app.config.ts",
+    "test": "pnpm test:node && pnpm test:browser",
+    "test:node": "vp test run --config vite.node.config.ts",
+    "test:browser": "CI=1 vp test run --config vite.test.config.ts",
     "test:vrt": "playwright test",
     "test:vrt:update": "playwright test --update-snapshots",
-    "lint": "oxlint --deny-warnings --type-aware --tsconfig tsconfig.json src e2e vite.config.ts vitest.config.ts vitest.node.config.ts playwright.config.ts && vize lint",
-    "lint:fix": "oxlint --type-aware --tsconfig tsconfig.json --fix",
-    "fmt": "oxfmt --write src",
-    "fmt:check": "oxfmt src",
-    "build:wasm": "cd .. && cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown && wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir playground/src/wasm --target web"
+    "check": "ROOT=\"$(cd .. && pwd -P)\" && vp check src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && cargo run --quiet --manifest-path \"$ROOT/Cargo.toml\" -p vize -- lint --max-warnings 0",
+    "check:fix": "vp check --fix src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts",
+    "fmt": "vp fmt --write src",
+    "build:wasm": "vp run --workspace-root build:wasm-web"
   },
   "dependencies": {
-    "@mdi/js": "^7.4.47",
-    "monaco-editor": "^0.52.0",
-    "prettier": "^3.7.4",
-    "shiki": "^1.24.0",
-    "typescript": "^5.7.0",
-    "vue": "3.6.0-beta.1"
+    "@mdi/js": "catalog:content",
+    "monaco-editor": "catalog:content",
+    "prettier": "catalog:repo-tooling",
+    "shiki": "catalog:content",
+    "typescript": "catalog:typescript",
+    "vue": "catalog:vue-beta"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
-    "@vitest/browser": "^4.0.0",
-    "@vitest/browser-playwright": "^4.0.0",
+    "@playwright/test": "catalog:testing",
     "@vizejs/vite-plugin": "workspace:*",
-    "@vue/test-utils": "^2.4.6",
-    "playwright": "^1.58.2",
-    "vite": "^8.0.0-beta.0",
-    "vitest": "^4.0.0"
+    "@vue/test-utils": "catalog:vue-stable",
+    "playwright": "catalog:testing",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
   }
 }

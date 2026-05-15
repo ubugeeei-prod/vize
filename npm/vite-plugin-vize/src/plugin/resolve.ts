@@ -1,16 +1,18 @@
 import path from "node:path";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 
-import type { VizePluginState } from "./state.js";
+import type { VizePluginState } from "./state.ts";
 import {
   LEGACY_VIZE_PREFIX,
   VIRTUAL_CSS_MODULE,
   RESOLVED_CSS_MODULE,
   isVizeVirtual,
+  isVizeSsrVirtual,
   toVirtualId,
   fromVirtualId,
   normalizeFsIdForBuild,
-} from "../virtual.js";
+} from "../virtual.ts";
 
 export function resolveVuePath(state: VizePluginState, id: string, importer?: string): string {
   let resolved: string;
@@ -47,18 +49,237 @@ interface ResolveContext {
   ): Promise<{ id: string } | null>;
 }
 
+function hasQueryParam(id: string, name: string): boolean {
+  const query = id.split("?")[1];
+  return query ? new URLSearchParams(query).has(name) : false;
+}
+
+function hasMacroQuery(id: string): boolean {
+  const query = id.split("?")[1];
+  return query ? new URLSearchParams(query).get("macro") === "true" : false;
+}
+
+function isMacroVirtualId(id: string): boolean {
+  return id.startsWith("\0") && (hasMacroQuery(id) || hasQueryParam(id, "definePage"));
+}
+
+function isVueSfcPath(id: string): boolean {
+  return (id.split("?")[0] ?? id).endsWith(".vue");
+}
+
+function normalizeRequireBase(importer?: string): string | null {
+  if (!importer) {
+    return null;
+  }
+
+  let normalized = importer;
+  if (isVizeVirtual(normalized)) {
+    normalized = fromVirtualId(normalized);
+  } else if (isMacroVirtualId(normalized)) {
+    normalized = normalized.slice(1).split("?")[0] ?? "";
+  }
+
+  return normalized.split("?")[0] ?? null;
+}
+
+function splitIdQuery(id: string): [request: string, querySuffix: string] {
+  const queryStart = id.indexOf("?");
+  if (queryStart === -1) {
+    return [id, ""];
+  }
+  return [id.slice(0, queryStart), id.slice(queryStart)];
+}
+
+function isBareSpecifier(id: string): boolean {
+  const [request] = splitIdQuery(id);
+  return (
+    request !== "" &&
+    !request.startsWith("./") &&
+    !request.startsWith("../") &&
+    !request.startsWith("/") &&
+    !request.startsWith("\0") &&
+    !request.includes(":")
+  );
+}
+
+function resolveAliasRequest(
+  state: Pick<VizePluginState, "cssAliasRules">,
+  id: string,
+): string | null {
+  const [request, querySuffix] = splitIdQuery(id);
+  for (const rule of state.cssAliasRules) {
+    if (rule.find instanceof RegExp) {
+      const pattern = stableAliasPattern(rule.find);
+      if (pattern.test(request)) {
+        return request.replace(pattern, rule.replacement) + querySuffix;
+      }
+      continue;
+    }
+
+    if (request === rule.find) {
+      return rule.replacement + querySuffix;
+    }
+
+    const findPrefix = rule.find.endsWith("/") ? rule.find : rule.find + "/";
+    if (request.startsWith(findPrefix)) {
+      const replacementPrefix = rule.replacement.endsWith("/")
+        ? rule.replacement
+        : rule.replacement + "/";
+      return replacementPrefix + request.slice(findPrefix.length) + querySuffix;
+    }
+  }
+  return null;
+}
+
+function stableAliasPattern(pattern: RegExp): RegExp {
+  return new RegExp(pattern.source, pattern.flags.replace(/[gy]/g, ""));
+}
+
+function pushPnpmHoistBases(
+  candidates: string[],
+  start: string | null,
+  isDirectory: boolean,
+): void {
+  if (!start) {
+    return;
+  }
+
+  let dir = isDirectory ? start : path.dirname(start);
+  for (;;) {
+    const pnpmHoist = path.join(dir, "node_modules", ".pnpm", "node_modules");
+    if (fs.existsSync(pnpmHoist)) {
+      candidates.push(path.join(pnpmHoist, "package.json"));
+      break;
+    }
+
+    const parent = path.dirname(dir);
+    if (parent === dir) {
+      break;
+    }
+    dir = parent;
+  }
+}
+
+function resolveBareImportWithNode(
+  state: Pick<VizePluginState, "root">,
+  id: string,
+  importer?: string,
+): string | null {
+  const [request, querySuffix] = splitIdQuery(id);
+  const candidates = [normalizeRequireBase(importer), path.join(state.root, "package.json")].filter(
+    (candidate): candidate is string => candidate != null,
+  );
+  pushPnpmHoistBases(candidates, importer ?? null, false);
+  pushPnpmHoistBases(candidates, state.root, true);
+
+  const seen = new Set<string>();
+  for (const candidate of candidates) {
+    if (seen.has(candidate)) {
+      continue;
+    }
+    seen.add(candidate);
+
+    try {
+      const requireFromBase = createRequire(candidate);
+      const resolved = requireFromBase.resolve(request);
+      return `${resolved}${querySuffix}`;
+    } catch {
+      // Continue to the next base candidate.
+    }
+  }
+
+  return null;
+}
+
+function resolveBareImportCandidatesWithNode(
+  state: Pick<VizePluginState, "root" | "cssAliasRules">,
+  id: string,
+  importer?: string,
+  resolvedId?: string,
+): string | null {
+  const candidates = [resolvedId, resolveAliasRequest(state, id), id].filter(
+    (candidate): candidate is string => candidate != null && isBareSpecifier(candidate),
+  );
+
+  const seen = new Set<string>();
+  for (const candidate of candidates) {
+    if (seen.has(candidate)) {
+      continue;
+    }
+    seen.add(candidate);
+
+    const resolved = resolveBareImportWithNode(state, candidate, importer);
+    if (resolved) {
+      return resolved;
+    }
+  }
+
+  return null;
+}
+
+function normalizeResolvedVuePath(id: string): string | null {
+  const [pathPart] = splitIdQuery(id);
+  if (!pathPart?.endsWith(".vue")) {
+    return null;
+  }
+  return pathPart.startsWith("/@fs/") ? pathPart.slice(4) : pathPart;
+}
+
+async function resolveAliasedVueImport(
+  ctx: ResolveContext,
+  state: VizePluginState,
+  id: string,
+  importer: string | undefined,
+  isSsrRequest: boolean,
+  handleNodeModules: boolean,
+): Promise<string | null> {
+  if (path.isAbsolute(id)) {
+    return null;
+  }
+
+  const viteImporter = normalizeRequireBase(importer) ?? importer;
+  const viteResolved = await ctx.resolve(id, viteImporter, { skipSelf: true });
+  const realPath = viteResolved ? normalizeResolvedVuePath(viteResolved.id) : null;
+  if (!realPath) {
+    return null;
+  }
+
+  const isResolvedNodeModules = realPath.includes("node_modules");
+  if (!handleNodeModules && isResolvedNodeModules) {
+    state.logger.log(`resolveId: skipping resolved node_modules path ${realPath}`);
+    return null;
+  }
+
+  if (!isResolvedNodeModules && state.filter && !state.filter(realPath)) {
+    state.logger.log(`resolveId: skipping filtered resolved path ${realPath}`);
+    return null;
+  }
+
+  if (state.cache.has(realPath) || fs.existsSync(realPath)) {
+    state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
+    return toVirtualId(realPath, isSsrRequest);
+  }
+
+  return null;
+}
+
 export async function resolveIdHook(
   ctx: ResolveContext,
   state: VizePluginState,
   id: string,
   importer?: string,
+  options?: { ssr?: boolean },
 ): Promise<string | { id: string } | null | undefined> {
   const isBuild = state.server === null;
+  const isSsrRequest = !!options?.ssr || (importer ? isVizeSsrVirtual(importer) : false);
 
   // Skip all virtual module IDs
   if (id.startsWith("\0")) {
     // This is one of our .vue.ts virtual modules -- pass through
     if (isVizeVirtual(id)) {
+      if (isSsrRequest && !isVizeSsrVirtual(id)) {
+        return toVirtualId(fromVirtualId(id), true);
+      }
       return null;
     }
     // Legacy: handle old \0vize: prefixed non-vue files
@@ -111,15 +332,18 @@ export async function resolveIdHook(
     return normalizeFsIdForBuild(id);
   }
 
-  // Handle ?macro=true queries (Nuxt page macros: defineRouteRules, definePageMeta, etc.)
+  // Handle route macro queries.
+  // - ?macro=true is used by Nuxt page macros.
+  // - ?definePage is used by Vue Router file-based routing.
   // Nuxt's router generates `import { default } from "page.vue?macro=true"` to extract
-  // route metadata. Without @vitejs/plugin-vue, Vize must handle this query and return
-  // the compiled script output so Vite's OXC transform can process it as JS.
-  if (id.includes("?macro=true")) {
+  // route metadata. Without @vitejs/plugin-vue, Vize must resolve this query so the
+  // load hook can return compile-time macro artifact modules.
+  if ((hasMacroQuery(id) || hasQueryParam(id, "definePage")) && isVueSfcPath(id)) {
     const filePath = id.split("?")[0];
+    const querySuffix = id.slice(id.indexOf("?"));
     const resolved = resolveVuePath(state, filePath, importer);
     if (resolved && fs.existsSync(resolved)) {
-      return `\0${resolved}?macro=true`;
+      return `\0${resolved}${querySuffix}`;
     }
   }
 
@@ -140,10 +364,10 @@ export async function resolveIdHook(
   }
 
   // If importer is a vize virtual module or macro module, resolve imports against the real path
-  const isMacroImporter = importer?.startsWith("\0") && importer?.endsWith("?macro=true");
+  const isMacroImporter = importer ? isMacroVirtualId(importer) : false;
   if (importer && (isVizeVirtual(importer) || isMacroImporter)) {
     const cleanImporter = isMacroImporter
-      ? importer.slice(1).replace("?macro=true", "")
+      ? importer.slice(1).split("?")[0]!
       : fromVirtualId(importer);
 
     state.logger.log(`resolveId from virtual: id=${id}, cleanImporter=${cleanImporter}`);
@@ -163,25 +387,97 @@ export async function resolveIdHook(
       // resolve them from the real importer path so that Vite can find
       // packages in the correct node_modules directory.
       if (!id.startsWith("./") && !id.startsWith("../") && !id.startsWith("/")) {
-        const matchesAlias = state.cssAliasRules.some(
-          (rule) => id === rule.find || id.startsWith(rule.find + "/"),
-        );
-        if (!matchesAlias) {
+        const aliasRequest = resolveAliasRequest(state, id);
+        if (aliasRequest && isBareSpecifier(aliasRequest)) {
+          const nodeResolved = resolveBareImportCandidatesWithNode(state, id, cleanImporter);
+          if (nodeResolved) {
+            state.logger.log(
+              `resolveId: resolved aliased bare ${id} to ${nodeResolved} via Node fallback`,
+            );
+            return nodeResolved;
+          }
+        }
+
+        try {
+          const resolved = await ctx.resolve(id, cleanImporter, { skipSelf: true });
+          if (resolved) {
+            state.logger.log(`resolveId: resolved bare ${id} to ${resolved.id} via Vite resolver`);
+            if (isBuild && resolved.id.startsWith("/@fs/")) {
+              return { ...resolved, id: normalizeFsIdForBuild(resolved.id) };
+            }
+
+            const nodeResolved = resolveBareImportCandidatesWithNode(
+              state,
+              id,
+              cleanImporter,
+              resolved.id,
+            );
+            if (nodeResolved) {
+              state.logger.log(
+                `resolveId: normalized bare ${id} to ${nodeResolved} via Node fallback`,
+              );
+              return nodeResolved;
+            }
+            if (isBareSpecifier(resolved.id)) {
+              return null;
+            }
+            return resolved;
+          }
+        } catch {
+          // Fall through
+        }
+
+        const nodeResolved = resolveBareImportCandidatesWithNode(state, id, cleanImporter);
+        if (nodeResolved) {
+          state.logger.log(`resolveId: resolved bare ${id} to ${nodeResolved} via Node fallback`);
+          return nodeResolved;
+        }
+
+        if (aliasRequest && aliasRequest !== id && !isBareSpecifier(aliasRequest)) {
           try {
-            const resolved = await ctx.resolve(id, cleanImporter, { skipSelf: true });
+            const resolved = await ctx.resolve(aliasRequest, cleanImporter, { skipSelf: true });
             if (resolved) {
               state.logger.log(
-                `resolveId: resolved bare ${id} to ${resolved.id} via Vite resolver`,
+                `resolveId: resolved aliased bare ${id} to ${resolved.id} via Vite resolver`,
               );
               if (isBuild && resolved.id.startsWith("/@fs/")) {
                 return { ...resolved, id: normalizeFsIdForBuild(resolved.id) };
+              }
+
+              const nodeResolved = resolveBareImportCandidatesWithNode(
+                state,
+                id,
+                cleanImporter,
+                resolved.id,
+              );
+              if (nodeResolved) {
+                state.logger.log(
+                  `resolveId: normalized aliased bare ${id} to ${nodeResolved} via Node fallback`,
+                );
+                return nodeResolved;
+              }
+              if (isBareSpecifier(resolved.id)) {
+                return null;
               }
               return resolved;
             }
           } catch {
             // Fall through
           }
+
+          const nodeResolved = resolveBareImportCandidatesWithNode(
+            state,
+            aliasRequest,
+            cleanImporter,
+          );
+          if (nodeResolved) {
+            state.logger.log(
+              `resolveId: resolved aliased bare ${id} to ${nodeResolved} via Node fallback`,
+            );
+            return nodeResolved;
+          }
         }
+
         return null;
       }
 
@@ -241,6 +537,21 @@ export async function resolveIdHook(
     }
 
     const resolved = resolveVuePath(state, id, importer);
+    const fileExists = fs.existsSync(resolved);
+    if (!fileExists) {
+      const aliased = await resolveAliasedVueImport(
+        ctx,
+        state,
+        id,
+        importer,
+        isSsrRequest,
+        handleNodeModules,
+      );
+      if (aliased) {
+        return aliased;
+      }
+    }
+
     const isNodeModulesPath = resolved.includes("node_modules");
 
     if (!handleNodeModules && isNodeModulesPath) {
@@ -254,30 +565,13 @@ export async function resolveIdHook(
     }
 
     const hasCache = state.cache.has(resolved);
-    const fileExists = fs.existsSync(resolved);
     state.logger.log(
       `resolveId: id=${id}, resolved=${resolved}, hasCache=${hasCache}, fileExists=${fileExists}, importer=${importer ?? "none"}`,
     );
 
     // Return virtual module ID: \0/path/to/Component.vue.ts
     if (hasCache || fileExists) {
-      return toVirtualId(resolved);
-    }
-
-    // Vite fallback for aliased imports
-    if (!fileExists && !path.isAbsolute(id)) {
-      const viteResolved = await ctx.resolve(id, importer, { skipSelf: true });
-      if (viteResolved && viteResolved.id.endsWith(".vue")) {
-        const realPath = viteResolved.id;
-        const isResolvedNodeModules = realPath.includes("node_modules");
-        if (
-          (isResolvedNodeModules ? handleNodeModules : state.filter(realPath)) &&
-          (state.cache.has(realPath) || fs.existsSync(realPath))
-        ) {
-          state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
-          return toVirtualId(realPath);
-        }
-      }
+      return toVirtualId(resolved, isSsrRequest);
     }
   }
 

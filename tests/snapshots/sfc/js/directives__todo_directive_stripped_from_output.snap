@@ -2,7 +2,7 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: js_output.as_str()
 ---
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, toDisplayString as _toDisplayString } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
 
 const count = 0
 
@@ -12,7 +12,7 @@ export default {
 
 
 return (_ctx, _cache) => {
-  return (_openBlock(), _createElementBlock(_Fragment, null, [ , _createElementVNode("span", null, _toDisplayString(count)) ], 64 /* STABLE_FRAGMENT */))
+  return (_openBlock(), _createElementBlock("span", null, _toDisplayString(count)))
 }
 }
 

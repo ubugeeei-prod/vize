@@ -3,10 +3,13 @@ target/
 
 # Node.js
 node_modules/
+.mooncakes/
+_build/
 
 # npm package build outputs
 npm/*/dist/
 npm/vite-plugin-vize/wasm/
+npm/zed-vize/target/
 
 # Native (NAPI) build output
 *.node
@@ -30,6 +33,8 @@ examples/*/.vite/
 *.swo
 .DS_Store
 *.tgz
+*.vsix
+zed-vize-extension.tar.gz
 
 # Benchmark input/output files
 bench/__in__/
@@ -45,10 +50,13 @@ npm-debug.log*
 .env.*.local
 
 # Playwright test outputs
+.cache/
 tests/app/results/
 tests/app/screenshots/
 playground/e2e/vrt/test-results/
 playground/playwright-report/
+tests/_fixtures/_projects/_git-worktrees/
 
 # Vize local data (snapshots, cache, etc.)
 .vize/
+*.pending-snap

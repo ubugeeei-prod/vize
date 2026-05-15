@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import GalleryLayout from './components/GalleryLayout.vue'
+import GalleryLayout from "./components/GalleryLayout.vue";
 </script>
 
 <template>

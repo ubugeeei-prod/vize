@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/src/parse/tests.rs
+expression: script
+---
+SfcScriptBlock {
+    content: "\nconst code = `<script setup>\nconsole.log('hello')\n</script>`\nconst x = 1\n",
+    loc: BlockLocation {
+        start: 24,
+        end: 98,
+        tag_start: 0,
+        tag_end: 107,
+        start_line: 1,
+        start_column: 1,
+        end_line: 6,
+        end_column: 10,
+    },
+    lang: Some(
+        "ts",
+    ),
+    src: None,
+    setup: true,
+    attrs: {
+        "lang": "ts",
+        "setup": "",
+    },
+    bindings: None,
+}

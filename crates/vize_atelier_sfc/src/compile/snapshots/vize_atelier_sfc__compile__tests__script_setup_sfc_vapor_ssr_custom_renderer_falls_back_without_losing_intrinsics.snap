@@ -1,0 +1,34 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+
+function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+  _push(`<mesh${_ssrRenderAttrs(_attrs)}>`)
+  if ($setup.visible) {
+    _push(`<group>`)
+    _push(_ssrRenderComponent($setup.Primitive, null, null, _parent))
+    _push(`</group>`)
+  } else {
+    _push(`<!---->`)
+  }
+  _push(`</mesh>`)
+}
+import { Primitive } from '@tresjs/core'
+const visible = true
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  ssrRender: ssrRender,
+  setup(__props) {
+
+
+const __returned__ = { visible, Primitive }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+return __returned__
+}
+
+})

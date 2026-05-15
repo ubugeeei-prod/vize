@@ -7,7 +7,7 @@
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
  *   2. Build vite-plugin: mise run build:vite-plugin
- *   3. Run benchmark: node --experimental-strip-types bench/vite.ts [count]
+ *   3. Run benchmark: node bench/vite.ts [count]
  */
 
 import {
@@ -31,17 +31,13 @@ const CPU_COUNT = os.cpus().length;
 
 // Check input files
 if (!existsSync(INPUT_DIR)) {
-  console.error(
-    `Error: Input directory not found: ${INPUT_DIR}\nRun 'node generate.mjs' first.`
-  );
+  console.error(`Error: Input directory not found: ${INPUT_DIR}\nRun 'node generate.mjs' first.`);
   process.exit(1);
 }
 
 const allVueFiles = readdirSync(INPUT_DIR).filter((f) => f.endsWith(".vue"));
 if (allVueFiles.length === 0) {
-  console.error(
-    `Error: No .vue files found in ${INPUT_DIR}\nRun 'node generate.mjs' first.`
-  );
+  console.error(`Error: No .vue files found in ${INPUT_DIR}\nRun 'node generate.mjs' first.`);
   process.exit(1);
 }
 
@@ -57,10 +53,7 @@ for (const f of vueFiles) {
   copyFileSync(join(INPUT_DIR, f), join(WORK_DIR, f));
 }
 
-const totalSize = vueFiles.reduce(
-  (sum, f) => sum + statSync(join(WORK_DIR, f)).size,
-  0
-);
+const totalSize = vueFiles.reduce((sum, f) => sum + statSync(join(WORK_DIR, f)).size, 0);
 
 // Generate entry that imports all files in the working directory
 const entryImports = vueFiles.map((f, i) => {
@@ -85,8 +78,7 @@ function formatTime(ms: number): string {
 
 function formatThroughput(fileCount: number, ms: number): string {
   const filesPerSec = (fileCount / ms) * 1000;
-  if (filesPerSec >= 1000)
-    return `${(filesPerSec / 1000).toFixed(1)}k files/s`;
+  if (filesPerSec >= 1000) return `${(filesPerSec / 1000).toFixed(1)}k files/s`;
   return `${filesPerSec.toFixed(0)} files/s`;
 }
 
@@ -123,9 +115,7 @@ async function buildWithVizePlugin(): Promise<number> {
   let vizePlugin: any;
   try {
     vizePlugin = (
-      await import(
-        join(__dirname, "..", "npm", "vite-plugin-vize", "dist", "index.js")
-      )
+      await import(join(__dirname, "..", "npm", "vite-plugin-vize", "dist", "index.mjs"))
     ).default;
   } catch {
     return -1;
@@ -159,14 +149,10 @@ async function buildWithVizePlugin(): Promise<number> {
 // Main
 console.log();
 console.log("=".repeat(65));
-console.log(
-  " Vite Plugin Benchmark: @vizejs/vite-plugin vs @vitejs/plugin-vue"
-);
+console.log(" Vite Plugin Benchmark: @vizejs/vite-plugin vs @vitejs/plugin-vue");
 console.log("=".repeat(65));
 console.log();
-console.log(
-  ` Files     : ${vueFiles.length.toLocaleString()} SFC files (all imported in entry)`
-);
+console.log(` Files     : ${vueFiles.length.toLocaleString()} SFC files (all imported in entry)`);
 console.log(` Total Size: ${(totalSize / 1024 / 1024).toFixed(1)} MB`);
 console.log(` CPU Cores : ${CPU_COUNT}`);
 console.log();
@@ -188,18 +174,18 @@ console.log();
 
 const officialTime = await buildWithOfficialPlugin();
 console.log(
-  `   @vitejs/plugin-vue  : ${formatTime(officialTime).padStart(8)}  (${formatThroughput(vueFiles.length, officialTime)})`
+  `   @vitejs/plugin-vue  : ${formatTime(officialTime).padStart(8)}  (${formatThroughput(vueFiles.length, officialTime)})`,
 );
 
 const vizeTime = await buildWithVizePlugin();
 if (vizeTime >= 0) {
   const speedup = (officialTime / vizeTime).toFixed(1);
   console.log(
-    `   @vizejs/vite-plugin : ${formatTime(vizeTime).padStart(8)}  (${formatThroughput(vueFiles.length, vizeTime)})  ${speedup}x faster`
+    `   @vizejs/vite-plugin : ${formatTime(vizeTime).padStart(8)}  (${formatThroughput(vueFiles.length, vizeTime)})  ${speedup}x faster`,
   );
 } else {
   console.log(
-    "   @vizejs/vite-plugin : SKIPPED (plugin not built, run 'mise run build:vite-plugin')"
+    "   @vizejs/vite-plugin : SKIPPED (plugin not built, run 'vp run --workspace-root build:vite-plugin')",
   );
 }
 
@@ -219,9 +205,7 @@ if (vizeTime >= 0) {
   console.log(" Summary:");
   console.log();
   const speedup = (officialTime / vizeTime).toFixed(1);
-  console.log(
-    `   @vitejs/plugin-vue vs @vizejs/vite-plugin : ${speedup}x`
-  );
+  console.log(`   @vitejs/plugin-vue vs @vizejs/vite-plugin : ${speedup}x`);
 }
 
 console.log();

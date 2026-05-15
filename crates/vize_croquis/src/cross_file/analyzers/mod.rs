@@ -19,6 +19,7 @@ mod event_bubbling;
 mod fallthrough;
 mod props_validation;
 mod provide_inject;
+mod race_conditions;
 mod reactivity;
 mod setup_context;
 
@@ -30,10 +31,17 @@ pub use emit::{analyze_emits, EmitFlow};
 pub use event_bubbling::{analyze_event_bubbling, EventBubble};
 pub use fallthrough::{analyze_fallthrough, FallthroughInfo};
 pub use props_validation::{analyze_props_validation, PropsValidationIssue};
-pub use provide_inject::{analyze_provide_inject, ProvideInjectMatch};
+pub(crate) use provide_inject::{
+    analyze_provide_inject_with_index, build_provide_inject_tree_with_index, ProvideInjectIndex,
+};
+pub use provide_inject::{ProvideInjectMatch, ProvideInjectTree};
+pub(crate) use race_conditions::analyze_race_conditions_with_index;
+pub use race_conditions::RaceConditionIssue;
 pub use reactivity::{analyze_reactivity, ReactivityIssue, ReactivityIssueKind};
 
 // Cross-file reactivity tracking
+#[cfg(test)]
+pub(crate) use cross_file_reactivity::CrossFileReactivityIssueKind;
 pub use cross_file_reactivity::{analyze_cross_file_reactivity, CrossFileReactivityIssue};
 
 // Setup context violation tracking

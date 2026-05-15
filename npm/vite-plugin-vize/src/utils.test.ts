@@ -7,7 +7,11 @@
  */
 
 import assert from "node:assert";
-import { generateOutput } from "./utils/index.js";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { generateOutput } from "./utils/index.ts";
+import { resolveCssImports } from "./utils/css.ts";
 
 // =============================================================================
 // Test: Non-script-setup SFC _sfc_main duplication fix
@@ -86,6 +90,34 @@ assert.strictEqual(
   "Template-only components should still expose a default export",
 );
 
+// Test 3b-ssr: SSR template-only SFCs need an ssrRender default export shim
+{
+  const output = generateOutput(
+    {
+      code: `
+export function ssrRender() {
+  return null
+}
+`,
+      scopeId: "ssrtemplate",
+      hasScoped: false,
+      styles: [],
+    },
+    {
+      isProduction: true,
+      isDev: false,
+    },
+  );
+  assert.ok(
+    output.includes("_sfc_main.ssrRender = ssrRender"),
+    "SSR template-only output should attach ssrRender to the default export",
+  );
+  assert.ok(
+    output.includes("export default _sfc_main;"),
+    "SSR template-only output should expose a default export",
+  );
+}
+
 // Test 3c: Inline-template script setup must not claim template-only HMR
 {
   const output = generateOutput(
@@ -139,6 +171,44 @@ export default _sfc_main
   assert.ok(
     output.includes('__hmrUpdateType = "template-only"'),
     "Standalone render output should preserve template-only HMR",
+  );
+}
+
+// Test 3e: CSS Modules bindings should be injected even when export default has no semicolon
+{
+  const output = generateOutput(
+    {
+      code: `
+const _sfc_main = { name: "ModuleButton" }
+export default _sfc_main
+`,
+      scopeId: "cssmodule",
+      hasScoped: false,
+      styles: [
+        {
+          content: ".root { color: red; }",
+          lang: "css",
+          scoped: false,
+          module: "buttonStyles",
+          index: 0,
+        },
+      ],
+    },
+    {
+      isProduction: false,
+      isDev: false,
+      filePath: "/src/ModuleButton.vue",
+    },
+  );
+  assert.ok(
+    output.includes(
+      'import buttonStyles from "/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=buttonStyles";',
+    ),
+    "CSS Modules should emit a virtual style import with the original binding name",
+  );
+  assert.ok(
+    output.includes('_sfc_main.__cssModules["buttonStyles"] = buttonStyles;'),
+    "CSS Modules should attach bindings even when export default omits a semicolon",
   );
 }
 
@@ -325,6 +395,77 @@ function resolveCssTransforms(css: string): string {
   const css = `.foo { color: red; }\n@media (max-width: 768px) { .foo { font-size: 12px; } }`;
   const result = resolveCssTransforms(css);
   assert.strictEqual(result, css, "CSS without @custom-media should pass through unchanged");
+}
+
+// Test 20: dev asset URLs honor configured base path
+{
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-"));
+  const assetPath = path.join(tempDir, "assets", "noise.png");
+  fs.mkdirSync(path.dirname(assetPath), { recursive: true });
+  fs.writeFileSync(assetPath, "");
+
+  const result = resolveCssImports(
+    `.hero { background-image: url("~/assets/noise.png"); }`,
+    path.join(tempDir, "Component.vue"),
+    [{ find: "~/", replacement: `${tempDir}/` }],
+    true,
+    "/_nuxt/",
+  );
+
+  assert.ok(
+    result.includes(`url("/_nuxt/@fs${assetPath.replace(/\\/g, "/")}")`),
+    "dev CSS asset URLs should be prefixed with the configured base path",
+  );
+}
+
+// Test 21: CSS aliases should not match package prefixes
+{
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-alias-"));
+  const srcAssetPath = path.join(tempDir, "src", "assets", "logo.svg");
+  const packageAssetPath = path.join(tempDir, "node_modules", "@scope", "icons", "logo.svg");
+  fs.mkdirSync(path.dirname(srcAssetPath), { recursive: true });
+  fs.mkdirSync(path.dirname(packageAssetPath), { recursive: true });
+  fs.writeFileSync(srcAssetPath, "");
+  fs.writeFileSync(packageAssetPath, "");
+
+  const result = resolveCssImports(
+    `
+.local { background-image: url("@/assets/logo.svg"); }
+.package { background-image: url("@scope/icons/logo.svg"); }
+`,
+    path.join(tempDir, "Component.vue"),
+    [{ find: "@", replacement: path.join(tempDir, "src") }],
+    true,
+  );
+
+  assert.ok(
+    result.includes(`url("/@fs${srcAssetPath.replace(/\\/g, "/")}")`),
+    "CSS alias should resolve @/ URLs",
+  );
+  assert.ok(
+    result.includes('url("@scope/icons/logo.svg")'),
+    "CSS alias should not rewrite package specifiers that only share the first character",
+  );
+}
+
+// Test 22: CSS aliases should support RegExp find rules
+{
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-regexp-alias-"));
+  const assetPath = path.join(tempDir, "src", "assets", "logo.svg");
+  fs.mkdirSync(path.dirname(assetPath), { recursive: true });
+  fs.writeFileSync(assetPath, "");
+
+  const result = resolveCssImports(
+    `.logo { background-image: url("@app/assets/logo.svg"); }`,
+    path.join(tempDir, "Component.vue"),
+    [{ find: /^@app\/(.+)$/, replacement: path.join(tempDir, "src", "$1") }],
+    true,
+  );
+
+  assert.ok(
+    result.includes(`url("/@fs${assetPath.replace(/\\/g, "/")}")`),
+    "CSS alias should resolve RegExp find rules",
+  );
 }
 
 // =============================================================================

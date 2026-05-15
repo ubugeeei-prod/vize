@@ -36,9 +36,11 @@ use crate::{CompileResult, CompilerOptions};
 use vize_atelier_core::options::CodegenMode;
 use vize_atelier_core::parser::parse;
 use vize_atelier_dom::{compile_template_with_options, DomCompilerOptions};
+use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
     compile_sfc as sfc_compile, parse_sfc, CssCompileOptions, CssTargets, ScriptCompileOptions,
-    SfcCompileOptions, SfcDescriptor, SfcParseOptions, StyleCompileOptions, TemplateCompileOptions,
+    SfcCompileOptions, SfcDescriptor, SfcMacroArtifact, SfcParseOptions, StyleCompileOptions,
+    TemplateCompileOptions,
 };
 use vize_atelier_ssr::compile_ssr as ssr_compile;
 use vize_atelier_vapor::{compile_vapor as vapor_compile, VaporCompilerOptions};
@@ -96,22 +98,42 @@ fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions {
             filename: get_string("filename"),
             output_mode: get_string("outputMode"),
             is_ts: get_bool("isTs"),
+            custom_renderer: get_bool("customRenderer"),
             script_ext: get_string("scriptExt"),
         },
         binding_metadata,
     }
 }
 
-/// Convert UTF-8 byte offset to character (code point) offset.
-/// OXC uses UTF-8 byte offsets, but JavaScript strings use UTF-16 code units.
-/// For most cases (ASCII + BMP characters), this converts to character count.
-pub(crate) fn utf8_byte_to_char_offset(content: &str, byte_offset: u32) -> u32 {
+/// Convert a UTF-8 byte offset to a JavaScript string offset (UTF-16 code units).
+/// OXC and the SFC parser report byte offsets, while Monaco/JS consumers expect
+/// UTF-16 offsets.
+pub(crate) fn utf8_byte_to_utf16_offset(content: &str, byte_offset: u32) -> u32 {
     let byte_offset = byte_offset as usize;
     if byte_offset >= content.len() {
-        return content.chars().count() as u32;
+        return content.encode_utf16().count() as u32;
     }
-    // Count characters up to the byte offset
-    content[..byte_offset].chars().count() as u32
+    content[..byte_offset].encode_utf16().count() as u32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::utf8_byte_to_utf16_offset;
+
+    #[test]
+    fn test_utf8_byte_to_utf16_offset_handles_multibyte_and_astral_chars() {
+        let source = "aあ😀b";
+
+        let hiragana_start = source.find('あ').expect("hiragana should exist") as u32;
+        let emoji_start = source.find('😀').expect("emoji should exist") as u32;
+        let latin_b_start = source.find('b').expect("latin b should exist") as u32;
+
+        assert_eq!(utf8_byte_to_utf16_offset(source, 0), 0);
+        assert_eq!(utf8_byte_to_utf16_offset(source, hiragana_start), 1);
+        assert_eq!(utf8_byte_to_utf16_offset(source, emoji_start), 2);
+        assert_eq!(utf8_byte_to_utf16_offset(source, latin_b_start), 4);
+        assert_eq!(utf8_byte_to_utf16_offset(source, source.len() as u32), 5);
+    }
 }
 
 /// Parse CSS options from JsValue
@@ -132,6 +154,16 @@ pub(crate) fn parse_css_options(options: JsValue) -> CssCompileOptions {
         .unwrap_or(false);
 
     let source_map = js_sys::Reflect::get(&options, &JsValue::from_str("sourceMap"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let css_modules = js_sys::Reflect::get(&options, &JsValue::from_str("cssModules"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let custom_media = js_sys::Reflect::get(&options, &JsValue::from_str("customMedia"))
         .ok()
         .and_then(|v| v.as_bool())
         .unwrap_or(false);
@@ -183,7 +215,8 @@ pub(crate) fn parse_css_options(options: JsValue) -> CssCompileOptions {
         source_map,
         targets,
         filename,
-        custom_media: false,
+        custom_media,
+        css_modules,
     }
 }
 
@@ -200,6 +233,8 @@ pub struct SfcWasmResult {
     pub warnings: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none", rename = "bindingMetadata")]
     pub binding_metadata: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Vec::is_empty", rename = "macroArtifacts")]
+    pub macro_artifacts: Vec<SfcMacroArtifactWasm>,
 }
 
 /// Script compilation result
@@ -208,6 +243,19 @@ pub struct SfcScriptResult {
     pub code: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bindings: Option<serde_json::Value>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcMacroArtifactWasm {
+    pub kind: String,
+    pub name: String,
+    pub source: String,
+    pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module_code: Option<String>,
+    pub start: usize,
+    pub end: usize,
 }
 
 #[derive(Serialize)]
@@ -375,6 +423,18 @@ fn descriptor_to_wasm(descriptor: &SfcDescriptor<'_>) -> SfcDescriptorWasm {
     }
 }
 
+fn macro_artifact_to_wasm(artifact: &SfcMacroArtifact) -> SfcMacroArtifactWasm {
+    SfcMacroArtifactWasm {
+        kind: artifact.kind.to_string(),
+        name: artifact.name.to_string(),
+        source: artifact.source.to_string(),
+        content: artifact.content.to_string(),
+        module_code: artifact.module_code.as_ref().map(ToString::to_string),
+        start: artifact.start,
+        end: artifact.end,
+    }
+}
+
 /// WASM Compiler instance
 #[wasm_bindgen]
 pub struct Compiler;
@@ -518,7 +578,7 @@ impl Compiler {
         }
 
         // Compile template if present
-        let template_result = if let Some(template) = &descriptor.template {
+        let mut template_result = if let Some(template) = &descriptor.template {
             match compile_internal(&template.content, &opts, use_vapor, None) {
                 Ok(r) => Some(r),
                 Err(e) => return Err(JsValue::from_str(&e)),
@@ -544,6 +604,7 @@ impl Compiler {
                 scoped: descriptor.styles.iter().any(|s| s.scoped),
                 ssr: opts.ssr.unwrap_or(false),
                 is_ts: output_is_ts,
+                custom_renderer: opts.custom_renderer.unwrap_or(false),
                 ..Default::default()
             },
             style: StyleCompileOptions {
@@ -561,18 +622,36 @@ impl Compiler {
             Err(e) => return Err(JsValue::from_str(&e.message)),
         };
 
+        let script_code = if source_is_ts && !output_is_ts {
+            transform_typescript_to_js(&sfc_result.code).to_string()
+        } else {
+            sfc_result.code.to_string()
+        };
+
+        if source_is_ts && !output_is_ts {
+            if let Some(template_result) = template_result.as_mut() {
+                template_result.code =
+                    transform_typescript_to_js(&template_result.code).to_string();
+            }
+        }
+
         // Build result with compiled script code
         // Convert descriptor to owned for serialization
         let binding_metadata = sfc_result
             .bindings
             .as_ref()
             .and_then(|b| serde_json::to_value(&b.bindings).ok());
+        let macro_artifacts = sfc_result
+            .macro_artifacts
+            .iter()
+            .map(macro_artifact_to_wasm)
+            .collect();
 
         let result = SfcWasmResult {
             descriptor: descriptor_to_wasm(&descriptor),
             template: template_result,
             script: SfcScriptResult {
-                code: sfc_result.code.into(),
+                code: script_code,
                 bindings: sfc_result
                     .bindings
                     .map(|b| serde_json::to_value(&b).unwrap_or_default()),
@@ -589,6 +668,7 @@ impl Compiler {
                 .map(|e| e.message.into())
                 .collect(),
             binding_metadata,
+            macro_artifacts,
         };
 
         to_json_js_value(&result)
@@ -639,6 +719,8 @@ fn compile_internal(
         let vapor_opts = VaporCompilerOptions {
             prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
             ssr: opts.ssr.unwrap_or(false),
+            custom_renderer: opts.custom_renderer.unwrap_or(false),
+            binding_metadata,
             ..Default::default()
         };
         let result = vapor_compile(&allocator, template, vapor_opts);
@@ -682,6 +764,7 @@ fn compile_internal(
         ssr: opts.ssr.unwrap_or(false),
         source_map: opts.source_map.unwrap_or(false),
         is_ts: opts.is_ts.unwrap_or(false),
+        custom_renderer: opts.custom_renderer.unwrap_or(false),
         binding_metadata,
         inline: has_binding_metadata,
         ..Default::default()

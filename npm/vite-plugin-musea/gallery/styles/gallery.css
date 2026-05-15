@@ -1,4 +1,4 @@
-@import './variables.css';
+@import "./variables.css";
 
 * {
   box-sizing: border-box;
@@ -6,7 +6,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
 }
@@ -44,4 +45,9 @@ a {
 
 button {
   font-family: inherit;
+}
+
+body.musea-actions-resizing iframe,
+body.musea-sidebar-resizing iframe {
+  pointer-events: none !important;
 }

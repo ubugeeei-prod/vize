@@ -70,7 +70,7 @@ pub(crate) fn rewrite_expression(
             }
 
             // Sort by position descending so we can replace from end to start
-            all_rewrites.sort_by(|a, b| b.0.cmp(&a.0));
+            all_rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
             // Apply rewrites
             let mut result = js_content.clone();
@@ -117,7 +117,7 @@ pub(crate) fn rewrite_expression(
                     all_rewrites.push((pos, String::default(), suffix));
                 }
 
-                all_rewrites.sort_by(|a, b| b.0.cmp(&a.0));
+                all_rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
                 let mut result = js_content.clone();
                 for (pos, prefix, suffix) in all_rewrites {

@@ -26,6 +26,10 @@ input = "<MyComponent />"
 name = "kebab-case component"
 input = "<my-component />"
 
+[[cases]]
+name = "component name with colon"
+input = '<global:head title="Page Title" />'
+
 # =============================================================================
 # Component props
 # =============================================================================

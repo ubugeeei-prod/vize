@@ -4,6 +4,6 @@ export const SELECT_SIZES = {
 } as const;
 
 export type SelectBaseProps = {
-  disabled?: boolean
-  size?: keyof typeof SELECT_SIZES
-}
+  disabled?: boolean;
+  size?: keyof typeof SELECT_SIZES;
+};

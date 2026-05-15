@@ -25,6 +25,7 @@ expression: output
   models: 1
 
 === Reactivity ===
+  props: kind=Readonly, needs_value=false
   model: kind=Ref, needs_value=true
   counter: kind=Ref, needs_value=true
   doubled: kind=Computed, needs_value=true

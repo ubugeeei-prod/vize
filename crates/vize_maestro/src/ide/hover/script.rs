@@ -16,12 +16,10 @@ use vize_relief::BindingType;
 use std::sync::Arc;
 
 #[cfg(feature = "native")]
-use vize_canon::TsgoBridge;
+use vize_canon::CorsaBridge;
 
 use super::HoverService;
 use crate::ide::IdeContext;
-use vize_carton::cstr;
-
 impl HoverService {
     /// Get hover for script context.
     pub(super) fn hover_script(ctx: &IdeContext, is_setup: bool) -> Option<Hover> {
@@ -51,12 +49,12 @@ impl HoverService {
         None
     }
 
-    /// Get hover for script context with tsgo support.
+    /// Get hover for script context with Corsa support.
     #[cfg(feature = "native")]
-    pub(super) async fn hover_script_with_tsgo(
+    pub(super) async fn hover_script_with_corsa(
         ctx: &IdeContext<'_>,
         is_setup: bool,
-        tsgo_bridge: Option<Arc<TsgoBridge>>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Hover> {
         let word = Self::get_word_at_offset(&ctx.content, ctx.offset);
 
@@ -75,8 +73,8 @@ impl HoverService {
             }
         }
 
-        // Try to get type information from tsgo via virtual TypeScript
-        if let Some(bridge) = tsgo_bridge {
+        // Try to get type information from Corsa via virtual TypeScript.
+        if let Some(bridge) = corsa_bridge {
             if let Some(ref virtual_docs) = ctx.virtual_docs {
                 let script_doc = if is_setup {
                     virtual_docs.script_setup.as_ref()
@@ -91,16 +89,19 @@ impl HoverService {
                         let (line, character) =
                             crate::ide::offset_to_position(&script.content, vts_offset);
                         let suffix = if is_setup { "setup.ts" } else { "script.ts" };
-                        let uri = cstr!("vize-virtual://{}.{suffix}", ctx.uri.path());
 
                         // Open/update virtual document
                         if bridge.is_initialized() {
-                            let doc_path = cstr!("{}.{suffix}", ctx.uri.path());
-                            let _ = bridge
+                            #[allow(clippy::disallowed_macros)]
+                            let doc_path = format!("{}.{suffix}", ctx.uri.path());
+                            let Ok(uri) = bridge
                                 .open_or_update_virtual_document(&doc_path, &script.content)
-                                .await;
+                                .await
+                            else {
+                                return Self::hover_script(ctx, is_setup);
+                            };
 
-                            // Request hover from tsgo
+                            // Request hover from Corsa.
                             if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
                                 return Some(Self::convert_lsp_hover(hover));
                             }

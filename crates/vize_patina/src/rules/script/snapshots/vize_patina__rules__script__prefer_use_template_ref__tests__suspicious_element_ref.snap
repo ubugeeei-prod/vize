@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/prefer_use_template_ref.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/prefer-use-template-ref",
+        severity: Warning,
+        message: "Use useTemplateRef() for DOM element references (Vue 3.5+)",
+        start: 14,
+        end: 48,
+        help: Some(
+            "Replace with: `const el = useTemplateRef<ElementType>('refName')`",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

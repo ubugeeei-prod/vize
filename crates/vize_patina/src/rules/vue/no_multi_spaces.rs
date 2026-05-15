@@ -49,37 +49,71 @@ impl Rule for NoMultiSpaces {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Check spacing between attributes
         let props: Vec<_> = element.props.iter().collect();
+        if props.is_empty() {
+            return;
+        }
 
-        for i in 0..props.len() {
-            if i > 0 {
-                let prev_end = props[i - 1].loc().end.offset;
-                let curr_start = props[i].loc().start.offset;
+        let first_prop_start = props[0].loc().start.offset as usize;
+        let tag_end = element.loc.start.offset as usize + 1 + element.tag.len();
+        self.check_gap(ctx, tag_end, first_prop_start);
 
-                // Note: end.offset is inclusive (points AT the last char, not after it)
-                // So the gap = curr_start - prev_end - 1 represents actual whitespace
-                // Example: prev_end=15 (quote), curr_start=17 (i in id) -> gap = 1 space at pos 16
-                if curr_start > prev_end + 2 {
-                    // More than one space between attributes
-                    let fix = Fix::new(
-                        "Replace multiple spaces with single space",
-                        TextEdit::replace(prev_end + 1, curr_start, " "),
-                    );
-
-                    ctx.report(
-                        LintDiagnostic::warn(
-                            META.name,
-                            "Multiple consecutive spaces",
-                            prev_end + 1,
-                            curr_start,
-                        )
-                        .with_fix(fix),
-                    );
-                }
-            }
+        for pair in props.windows(2) {
+            let prev_end = pair[0].loc().end.offset as usize;
+            let curr_start = pair[1].loc().start.offset as usize;
+            self.check_gap(ctx, prev_end, curr_start);
         }
     }
+}
+
+impl NoMultiSpaces {
+    fn check_gap<'a>(&self, ctx: &mut LintContext<'a>, gap_start: usize, gap_end: usize) {
+        let gap_start = first_whitespace_offset(ctx.source, gap_start, gap_end);
+        if gap_end <= gap_start {
+            return;
+        }
+
+        let gap = &ctx.source[gap_start..gap_end];
+        if !is_invalid_gap(gap) {
+            return;
+        }
+
+        let fix = Fix::new(
+            "Replace multiple spaces with single space",
+            TextEdit::replace(gap_start as u32, gap_end as u32, " "),
+        );
+
+        ctx.report(
+            LintDiagnostic::warn(
+                META.name,
+                "Multiple consecutive spaces",
+                gap_start as u32,
+                gap_end as u32,
+            )
+            .with_fix(fix),
+        );
+    }
+}
+
+fn is_invalid_gap(gap: &str) -> bool {
+    gap.len() > 1
+        && gap
+            .as_bytes()
+            .iter()
+            .all(|byte| matches!(byte, b' ' | b'\t'))
+        && !gap
+            .as_bytes()
+            .iter()
+            .any(|byte| matches!(byte, b'\n' | b'\r'))
+}
+
+fn first_whitespace_offset(source: &str, start: usize, end: usize) -> usize {
+    let mut offset = start;
+    let bytes = source.as_bytes();
+    while offset < end && !matches!(bytes[offset], b' ' | b'\t' | b'\n' | b'\r') {
+        offset += 1;
+    }
+    offset
 }
 
 #[cfg(test)]
@@ -107,5 +141,27 @@ mod tests {
         let result = linter.lint_template(r#"<div class="foo"  id="bar"></div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
         assert!(result.diagnostics[0].has_fix());
+    }
+
+    #[test]
+    fn test_invalid_multiple_spaces_before_first_attribute() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div  class="foo"></div>"#, "test.vue");
+        assert_eq!(result.warning_count, 1);
+        assert!(result.diagnostics[0].has_fix());
+    }
+
+    #[test]
+    fn test_valid_multiline_attributes() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<button
+  class="btn"
+  :disabled="isDisabled"
+>
+</button>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0);
     }
 }

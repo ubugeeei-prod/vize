@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
@@ -16,9 +16,11 @@ return (_ctx: any,_cache: any) => {
   const _directive_focus = _resolveDirective("focus")
 
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (n) => {
-      return (_openBlock(), _createElementBlock("span", {
+      return _withDirectives((_openBlock(), _createElementBlock("span", {
         key: n
-      }, _toDisplayString(n), 1 /* TEXT */))
+      }, _toDisplayString(n), 1 /* TEXT */)), [
+        [_directive_focus]
+      ])
     }), 128 /* KEYED_FRAGMENT */))
 }
 }

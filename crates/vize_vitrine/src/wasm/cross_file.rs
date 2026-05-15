@@ -7,7 +7,7 @@
     clippy::disallowed_macros
 )]
 
-use super::{to_js_value, utf8_byte_to_char_offset};
+use super::{to_js_value, utf8_byte_to_utf16_offset};
 use vize_carton::Bump;
 use wasm_bindgen::prelude::*;
 
@@ -151,8 +151,9 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
         }
     }
 
-    // Rebuild component usage edges after all files are added
-    // This ensures edges are created even when files are processed out of order
+    // Rebuild import and component usage edges after all files are added.
+    // This ensures edges are created even when files are processed out of order.
+    analyzer.rebuild_import_edges();
     analyzer.rebuild_component_edges();
 
     // Run cross-file analysis
@@ -235,8 +236,8 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                     let utf8_end = d.primary_end_offset + script_offset;
 
                     // Convert to character offsets (handles emojis and multi-byte chars)
-                    let char_start = utf8_byte_to_char_offset(file_content, utf8_start);
-                    let char_end = utf8_byte_to_char_offset(file_content, utf8_end);
+                    let char_start = utf8_byte_to_utf16_offset(file_content, utf8_start);
+                    let char_end = utf8_byte_to_utf16_offset(file_content, utf8_end);
 
                     (char_start, char_end)
                 };
@@ -267,7 +268,7 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                             .map(|s| s.as_str())
                             .unwrap_or("");
                         let adjusted_offset =
-                            utf8_byte_to_char_offset(related_content, utf8_offset);
+                            utf8_byte_to_utf16_offset(related_content, utf8_offset);
 
                         serde_json::json!({
                             "file": file_path,
@@ -352,6 +353,7 @@ fn parse_cross_file_options(options: &JsValue) -> vize_croquis::cross_file::Cros
         server_client_boundary: get_bool("serverClientBoundary"),
         error_suspense_boundary: get_bool("errorSuspenseBoundary"),
         reactivity_tracking: get_bool("reactivityTracking"),
+        race_conditions: get_bool("raceConditions"),
         setup_context: get_bool("setupContext"),
         circular_dependencies: get_bool("circularDependencies"),
         max_import_depth: js_sys::Reflect::get(options, &JsValue::from_str("maxImportDepth"))
@@ -385,6 +387,7 @@ fn diagnostic_kind_to_string(
         UnusedProvide { .. } => "provide-inject",
         ProvideInjectTypeMismatch { .. } => "provide-inject",
         ProvideInjectWithoutSymbol { .. } => "provide-inject",
+        NonReactiveProvideValue { .. } => "provide-inject",
         // Unique IDs
         DuplicateElementId { .. } => "unique-ids",
         NonUniqueIdInLoop { .. } => "unique-ids",
@@ -436,6 +439,7 @@ fn diagnostic_kind_to_string(
         TemplateRefAccessedBeforeMount { .. } => "template-ref-timing",
         // Ultra-strict: async boundary
         AsyncBoundaryCrossing { .. } => "async-boundary",
+        InjectedAsyncMutationRace { .. } => "race-condition",
         // Ultra-strict: closure capture
         ClosureCapturesReactive { .. } => "closure-capture",
         // Ultra-strict: object identity

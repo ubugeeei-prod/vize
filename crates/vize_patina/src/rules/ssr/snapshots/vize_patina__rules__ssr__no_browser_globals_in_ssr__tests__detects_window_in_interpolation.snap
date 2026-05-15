@@ -1,0 +1,7 @@
+---
+source: crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs
+expression: result
+---
+[
+    "'window' is a browser-only global and is not available in SSR",
+]

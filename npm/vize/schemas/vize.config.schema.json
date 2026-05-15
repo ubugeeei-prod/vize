@@ -257,6 +257,10 @@
         "globalsFile": {
           "description": "Path to a .d.ts file that declares template globals",
           "type": "string"
+        },
+        "servers": {
+          "description": "Number of parallel Corsa servers to use",
+          "type": "integer"
         }
       },
       "additionalProperties": false
@@ -407,42 +411,90 @@
       "properties": {
         "enabled": {
           "description": "Enable the language server",
-          "default": true,
+          "type": "boolean"
+        },
+        "lint": {
+          "description": "Enable lint diagnostics",
           "type": "boolean"
         },
         "diagnostics": {
-          "description": "Enable diagnostics",
-          "default": true,
+          "description": "Deprecated alias for lint",
+          "type": "boolean"
+        },
+        "typecheck": {
+          "description": "Enable project type checking diagnostics",
+          "type": "boolean"
+        },
+        "editor": {
+          "description": "Enable editor-oriented IDE features",
           "type": "boolean"
         },
         "completion": {
           "description": "Enable completions",
-          "default": true,
           "type": "boolean"
         },
         "hover": {
           "description": "Enable hover information",
-          "default": true,
           "type": "boolean"
         },
         "definition": {
           "description": "Enable go-to-definition",
-          "default": true,
+          "type": "boolean"
+        },
+        "references": {
+          "description": "Enable reference search",
+          "type": "boolean"
+        },
+        "documentSymbols": {
+          "description": "Enable document symbols",
+          "type": "boolean"
+        },
+        "workspaceSymbols": {
+          "description": "Enable workspace symbols",
           "type": "boolean"
         },
         "formatting": {
           "description": "Enable formatting via the language server",
-          "default": true,
           "type": "boolean"
         },
         "codeActions": {
           "description": "Enable code actions",
-          "default": true,
+          "type": "boolean"
+        },
+        "rename": {
+          "description": "Enable rename support",
+          "type": "boolean"
+        },
+        "codeLens": {
+          "description": "Enable code lenses",
+          "type": "boolean"
+        },
+        "semanticTokens": {
+          "description": "Enable semantic tokens",
+          "type": "boolean"
+        },
+        "documentLinks": {
+          "description": "Enable document links",
+          "type": "boolean"
+        },
+        "foldingRanges": {
+          "description": "Enable folding ranges",
+          "type": "boolean"
+        },
+        "inlayHints": {
+          "description": "Enable inlay hints",
+          "type": "boolean"
+        },
+        "fileRename": {
+          "description": "Enable file rename edits",
+          "type": "boolean"
+        },
+        "corsa": {
+          "description": "Enable Corsa-backed IDE features",
           "type": "boolean"
         },
         "tsgo": {
-          "description": "Use tsgo for language-server-backed IDE features",
-          "default": true,
+          "description": "Deprecated alias for corsa",
           "type": "boolean"
         }
       },
@@ -632,6 +684,9 @@
       "$ref": "#/definitions/FormatterConfig"
     },
     "languageServer": {
+      "$ref": "#/definitions/LanguageServerConfig"
+    },
+    "lsp": {
       "$ref": "#/definitions/LanguageServerConfig"
     },
     "musea": {

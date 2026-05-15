@@ -83,7 +83,7 @@ impl SemanticTokensService {
         }
 
         // Sort by position
-        tokens.sort_by(|a, b| a.line.cmp(&b.line).then(a.start.cmp(&b.start)));
+        tokens.sort_by_key(|token| (token.line, token.start));
 
         // Convert to delta encoding
         let semantic_tokens = encode_tokens(&tokens);
@@ -107,7 +107,7 @@ impl SemanticTokensService {
         Self::collect_art_script_tokens(content, &mut tokens);
 
         // Sort by position
-        tokens.sort_by(|a, b| a.line.cmp(&b.line).then(a.start.cmp(&b.start)));
+        tokens.sort_by_key(|token| (token.line, token.start));
 
         // Convert to delta encoding
         let semantic_tokens = encode_tokens(&tokens);

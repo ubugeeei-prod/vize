@@ -34,7 +34,7 @@ pub use helpers::{
 };
 
 use crate::analysis::Croquis;
-use vize_carton::CompactString;
+use vize_carton::{profile, CompactString};
 
 /// Analysis options for controlling what gets analyzed.
 ///
@@ -180,20 +180,12 @@ impl Analyzer {
         self.script_analyzed = true;
 
         // Use OXC-based parser for accurate AST analysis
-        let result = crate::script_parser::parse_script_setup_with_generic(source, generic);
+        let result = profile!(
+            "croquis.analyzer.script_setup",
+            crate::script_parser::parse_script_setup_with_generic(source, generic)
+        );
 
-        // Merge results into summary
-        self.summary.bindings = result.bindings;
-        self.summary.macros = result.macros;
-        self.summary.reactivity = result.reactivity;
-        self.summary.type_exports = result.type_exports;
-        self.summary.invalid_exports = result.invalid_exports;
-        self.summary.scopes = result.scopes;
-        self.summary.provide_inject = result.provide_inject;
-        self.summary.import_statements = result.import_statements;
-        self.summary.re_exports = result.re_exports;
-        self.summary.binding_spans = result.binding_spans;
-        self.summary.setup_context = result.setup_context;
+        result.apply_to_croquis(&mut self.summary);
 
         self
     }
@@ -207,20 +199,12 @@ impl Analyzer {
         self.script_analyzed = true;
 
         // Use OXC-based parser for non-script-setup
-        let result = crate::script_parser::parse_script(source);
+        let result = profile!(
+            "croquis.analyzer.script_plain",
+            crate::script_parser::parse_script(source)
+        );
 
-        // Merge results into summary
-        self.summary.bindings = result.bindings;
-        self.summary.macros = result.macros;
-        self.summary.reactivity = result.reactivity;
-        self.summary.type_exports = result.type_exports;
-        self.summary.invalid_exports = result.invalid_exports;
-        self.summary.scopes = result.scopes;
-        self.summary.provide_inject = result.provide_inject;
-        self.summary.import_statements = result.import_statements;
-        self.summary.re_exports = result.re_exports;
-        self.summary.binding_spans = result.binding_spans;
-        self.summary.setup_context = result.setup_context;
+        result.apply_to_croquis(&mut self.summary);
 
         self
     }
@@ -230,7 +214,7 @@ impl Analyzer {
     /// Consumes the analyzer.
     #[inline]
     pub fn finish(self) -> Croquis {
-        self.summary
+        profile!("croquis.analyzer.finish", self.summary)
     }
 
     /// Get a reference to the current summary (without consuming).
@@ -274,13 +258,9 @@ mod tests {
         );
 
         let summary = analyzer.finish();
-        assert!(summary.bindings.contains("count"));
-        assert!(summary.bindings.contains("name"));
-        assert!(summary.bindings.contains("flag"));
-        assert!(summary.bindings.contains("handleClick"));
-
         assert!(summary.reactivity.is_reactive("count"));
         assert!(summary.reactivity.needs_value_access("count"));
+        insta::assert_debug_snapshot!(summary);
     }
 
     #[test]
@@ -626,32 +606,6 @@ const { name, id } = inject('user') as { name: string; id: number }
             })
             .collect();
 
-        assert_eq!(expressions.len(), 2, "Should have 2 interpolations");
-
-        // First interpolation is inside v-if, should have guard
-        let inside_vif = expressions
-            .iter()
-            .find(|e| e.content.contains("unwrapDescription"))
-            .expect("Should find unwrapDescription interpolation");
-        assert!(
-            inside_vif.vif_guard.is_some(),
-            "Interpolation inside v-if should have vif_guard, got: {:?}",
-            inside_vif.vif_guard
-        );
-        assert_eq!(
-            inside_vif.vif_guard.as_deref(),
-            Some("todo.description"),
-            "vif_guard should be the v-if condition"
-        );
-
-        // Second interpolation is outside v-if, should NOT have guard
-        let outside_vif = expressions
-            .iter()
-            .find(|e| e.content.contains("todo.title"))
-            .expect("Should find todo.title interpolation");
-        assert!(
-            outside_vif.vif_guard.is_none(),
-            "Interpolation outside v-if should NOT have vif_guard"
-        );
+        insta::assert_debug_snapshot!(expressions);
     }
 }

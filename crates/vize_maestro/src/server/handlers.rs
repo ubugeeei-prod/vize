@@ -15,9 +15,9 @@ use tower_lsp::{
         FoldingRangeKind, FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover,
         HoverParams, InitializeParams, InitializeResult, InitializedParams, InlayHint,
         InlayHintParams, Location, MessageType, Position, PrepareRenameResponse, Range,
-        ReferenceParams, RenameParams, SemanticTokensParams, SemanticTokensResult, ServerInfo,
-        SymbolInformation, SymbolKind, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
-        WorkspaceSymbolParams,
+        ReferenceParams, RenameFilesParams, RenameParams, SemanticTokensParams,
+        SemanticTokensResult, ServerInfo, SymbolInformation, SymbolKind,
+        TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
     },
     LanguageServer,
 };
@@ -25,8 +25,8 @@ use tower_lsp::{
 use super::{server_capabilities, MaestroServer};
 use crate::ide::{
     CodeActionService, CodeLensService, CompletionService, DefinitionService, DocumentLinkService,
-    HoverService, IdeContext, InlayHintService, ReferencesService, RenameService,
-    SemanticTokensService, WorkspaceSymbolsService,
+    FileRenameService, HoverService, IdeContext, InlayHintService, ReferencesService,
+    RenameService, SemanticTokensService, WorkspaceSymbolsService,
 };
 
 #[tower_lsp::async_trait]
@@ -45,12 +45,15 @@ impl LanguageServer for MaestroServer {
                     .and_then(|f| f.uri.to_file_path().ok())
             });
 
-        // Load workspace config from workspace root before advertising capabilities.
+        // Load format config from workspace root (always, regardless of feature)
         if let Some(ref path) = workspace_path {
             self.state.load_workspace_config(path);
         }
 
-        // Set workspace root for native features (tsgo, batch checker)
+        self.state
+            .apply_lsp_initialization_options(params.initialization_options.as_ref());
+
+        // Set workspace root for native features (Corsa, batch checker)
         #[cfg(feature = "native")]
         if let Some(path) = workspace_path {
             tracing::info!("Setting workspace root: {:?}", path);
@@ -58,7 +61,7 @@ impl LanguageServer for MaestroServer {
         }
 
         Ok(InitializeResult {
-            capabilities: server_capabilities(&self.state.get_language_server_config()),
+            capabilities: server_capabilities(self.state.lsp_features()),
             server_info: Some(ServerInfo {
                 name: "vize-maestro".to_string(),
                 version: Some(env!("CARGO_PKG_VERSION").to_string()),
@@ -126,8 +129,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
-        let language_server = self.state.get_language_server_config();
-        if !language_server.enabled || !language_server.hover {
+        if !self.state.lsp_features().hover {
             return Ok(None);
         }
 
@@ -148,8 +150,8 @@ impl LanguageServer for MaestroServer {
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
             {
-                let tsgo_bridge = self.state.get_tsgo_bridge().await;
-                hover_result = HoverService::hover_with_tsgo(&ctx, tsgo_bridge).await;
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                hover_result = HoverService::hover_with_corsa(&ctx, corsa_bridge).await;
             }
 
             #[cfg(not(feature = "native"))]
@@ -167,8 +169,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
-        let language_server = self.state.get_language_server_config();
-        if !language_server.enabled || !language_server.completion {
+        if !self.state.lsp_features().completion {
             return Ok(None);
         }
 
@@ -184,8 +185,21 @@ impl LanguageServer for MaestroServer {
             crate::utils::position_to_offset_str(&content, position.line, position.character);
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
-            if let Some(response) = CompletionService::complete(&ctx) {
-                return Ok(Some(response));
+            #[cfg(feature = "native")]
+            {
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                if let Some(response) =
+                    CompletionService::complete_with_corsa(&ctx, corsa_bridge).await
+                {
+                    return Ok(Some(response));
+                }
+            }
+
+            #[cfg(not(feature = "native"))]
+            {
+                if let Some(response) = CompletionService::complete(&ctx) {
+                    return Ok(Some(response));
+                }
             }
         }
 
@@ -205,8 +219,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Option<GotoDefinitionResponse>> {
-        let language_server = self.state.get_language_server_config();
-        if !language_server.enabled || !language_server.definition {
+        if !self.state.lsp_features().definition {
             return Ok(None);
         }
 
@@ -224,9 +237,9 @@ impl LanguageServer for MaestroServer {
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
             {
-                let tsgo_bridge = self.state.get_tsgo_bridge().await;
+                let corsa_bridge = self.state.get_corsa_bridge().await;
                 if let Some(response) =
-                    DefinitionService::definition_with_tsgo(&ctx, tsgo_bridge).await
+                    DefinitionService::definition_with_corsa(&ctx, corsa_bridge).await
                 {
                     return Ok(Some(response));
                 }
@@ -242,7 +255,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().references {
             return Ok(None);
         }
 
@@ -259,8 +272,25 @@ impl LanguageServer for MaestroServer {
             crate::utils::position_to_offset_str(&content, position.line, position.character);
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
-            if let Some(locations) = ReferencesService::references(&ctx, include_declaration) {
-                return Ok(Some(locations));
+            #[cfg(feature = "native")]
+            {
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                if let Some(locations) = ReferencesService::references_with_corsa(
+                    &ctx,
+                    include_declaration,
+                    corsa_bridge,
+                )
+                .await
+                {
+                    return Ok(Some(locations));
+                }
+            }
+
+            #[cfg(not(feature = "native"))]
+            {
+                if let Some(locations) = ReferencesService::references(&ctx, include_declaration) {
+                    return Ok(Some(locations));
+                }
             }
         }
 
@@ -272,7 +302,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentSymbolParams,
     ) -> Result<Option<DocumentSymbolResponse>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().document_symbols {
             return Ok(None);
         }
 
@@ -431,8 +461,8 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
-        let language_server = self.state.get_language_server_config();
-        if !language_server.enabled || !language_server.code_actions {
+        let features = self.state.lsp_features();
+        if !features.lint || !features.code_actions {
             return Ok(None);
         }
 
@@ -461,7 +491,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().rename {
             return Ok(None);
         }
 
@@ -477,14 +507,23 @@ impl LanguageServer for MaestroServer {
             crate::utils::position_to_offset_str(&content, position.line, position.character);
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
-            return Ok(RenameService::prepare_rename(&ctx));
+            #[cfg(feature = "native")]
+            {
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                return Ok(RenameService::prepare_rename_with_corsa(&ctx, corsa_bridge).await);
+            }
+
+            #[cfg(not(feature = "native"))]
+            {
+                return Ok(RenameService::prepare_rename(&ctx));
+            }
         }
 
         Ok(None)
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().rename {
             return Ok(None);
         }
 
@@ -501,7 +540,16 @@ impl LanguageServer for MaestroServer {
             crate::utils::position_to_offset_str(&content, position.line, position.character);
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
-            return Ok(RenameService::rename(&ctx, new_name));
+            #[cfg(feature = "native")]
+            {
+                let corsa_bridge = self.state.get_corsa_bridge().await;
+                return Ok(RenameService::rename_with_corsa(&ctx, new_name, corsa_bridge).await);
+            }
+
+            #[cfg(not(feature = "native"))]
+            {
+                return Ok(RenameService::rename(&ctx, new_name));
+            }
         }
 
         Ok(None)
@@ -511,7 +559,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: SemanticTokensParams,
     ) -> Result<Option<SemanticTokensResult>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().semantic_tokens {
             return Ok(None);
         }
 
@@ -526,7 +574,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_lens(&self, params: CodeLensParams) -> Result<Option<Vec<CodeLens>>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().code_lens {
             return Ok(None);
         }
 
@@ -550,7 +598,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: WorkspaceSymbolParams,
     ) -> Result<Option<Vec<SymbolInformation>>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().workspace_symbols {
             return Ok(None);
         }
 
@@ -564,8 +612,29 @@ impl LanguageServer for MaestroServer {
         }
     }
 
+    async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
+        if !self.state.lsp_features().file_rename {
+            return Ok(None);
+        }
+
+        Ok(FileRenameService::will_rename_files(&self.state, &params).await)
+    }
+
+    async fn did_rename_files(&self, params: RenameFilesParams) {
+        if !self.state.lsp_features().file_rename {
+            return;
+        }
+
+        let renamed = FileRenameService::did_rename_files(&self.state, &params).await;
+
+        for (old_uri, new_uri) in renamed {
+            self.client.publish_diagnostics(old_uri, vec![], None).await;
+            self.publish_diagnostics(&new_uri).await;
+        }
+    }
+
     async fn document_link(&self, params: DocumentLinkParams) -> Result<Option<Vec<DocumentLink>>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().document_links {
             return Ok(None);
         }
 
@@ -586,7 +655,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().inlay_hints {
             return Ok(None);
         }
 
@@ -608,7 +677,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn folding_range(&self, params: FoldingRangeParams) -> Result<Option<Vec<FoldingRange>>> {
-        if !self.state.is_lsp_enabled() {
+        if !self.state.lsp_features().folding_ranges {
             return Ok(None);
         }
 
@@ -688,8 +757,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
-        let language_server = self.state.get_language_server_config();
-        if !language_server.enabled || !language_server.formatting {
+        if !self.state.lsp_features().formatting {
             return Ok(None);
         }
 
@@ -713,8 +781,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentRangeFormattingParams,
     ) -> Result<Option<Vec<TextEdit>>> {
-        let language_server = self.state.get_language_server_config();
-        if !language_server.enabled || !language_server.formatting {
+        if !self.state.lsp_features().formatting {
             return Ok(None);
         }
 

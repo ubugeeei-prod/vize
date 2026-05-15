@@ -9,8 +9,14 @@ use super::context::CodegenContext;
 use super::expression::generate_expression;
 use super::helpers::{escape_js_string, is_valid_js_identifier};
 use super::node::generate_node;
+use super::props::{generate_directive_prop_with_static, is_supported_directive};
 use vize_carton::String;
 use vize_carton::ToCompactString;
+
+pub(crate) enum SlotOutletName<'a> {
+    Static(String),
+    Dynamic(&'a ExpressionNode<'a>),
+}
 
 /// Get slot props expression as raw source (not transformed)
 fn get_slot_props(dir: &DirectiveNode<'_>) -> Option<vize_carton::String> {
@@ -82,6 +88,161 @@ fn extract_slot_params(props_str: &str) -> Vec<String> {
     params
 }
 
+fn is_slot_name_bind(dir: &DirectiveNode<'_>) -> bool {
+    if dir.name.as_str() != "bind" {
+        return false;
+    }
+
+    match dir.arg.as_ref() {
+        Some(ExpressionNode::Simple(exp)) => exp.is_static && exp.content.as_str() == "name",
+        _ => false,
+    }
+}
+
+fn is_slot_name_prop(prop: &PropNode<'_>) -> bool {
+    match prop {
+        PropNode::Attribute(attr) => attr.name.as_str() == "name",
+        PropNode::Directive(dir) => is_slot_name_bind(dir),
+    }
+}
+
+pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletName<'a> {
+    for prop in &el.props {
+        match prop {
+            PropNode::Attribute(attr) if attr.name.as_str() == "name" => {
+                let name = attr
+                    .value
+                    .as_ref()
+                    .map(|v| v.content.clone())
+                    .unwrap_or_else(|| String::new("default"));
+                return SlotOutletName::Static(name);
+            }
+            PropNode::Directive(dir) if is_slot_name_bind(dir) => {
+                if let Some(exp) = dir.exp.as_ref() {
+                    return SlotOutletName::Dynamic(exp);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    SlotOutletName::Static(String::new("default"))
+}
+
+pub(crate) fn generate_slot_outlet_name(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    match get_slot_outlet_name(el) {
+        SlotOutletName::Static(name) => {
+            ctx.push("\"");
+            ctx.push(&escape_js_string(name.as_str()));
+            ctx.push("\"");
+        }
+        SlotOutletName::Dynamic(exp) => generate_expression(ctx, exp),
+    }
+}
+
+pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| !is_slot_name_prop(prop))
+}
+
+pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    let static_class = el.props.iter().find_map(|prop| {
+        if is_slot_name_prop(prop) {
+            return None;
+        }
+        if let PropNode::Attribute(attr) = prop {
+            if attr.name.as_str() == "class" {
+                return attr.value.as_ref().map(|v| v.content.as_str());
+            }
+        }
+        None
+    });
+
+    let static_style = el.props.iter().find_map(|prop| {
+        if is_slot_name_prop(prop) {
+            return None;
+        }
+        if let PropNode::Attribute(attr) = prop {
+            if attr.name.as_str() == "style" {
+                return attr.value.as_ref().map(|v| v.content.as_str());
+            }
+        }
+        None
+    });
+
+    let has_dynamic_class = el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
+            matches!(
+                dir.arg.as_ref(),
+                Some(ExpressionNode::Simple(exp))
+                    if exp.is_static && exp.content.as_str() == "class"
+            )
+        }
+        _ => false,
+    });
+
+    let has_dynamic_style = el.props.iter().any(|prop| match prop {
+        PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
+            matches!(
+                dir.arg.as_ref(),
+                Some(ExpressionNode::Simple(exp))
+                    if exp.is_static && exp.content.as_str() == "style"
+            )
+        }
+        _ => false,
+    });
+
+    let mut first = true;
+    for prop in &el.props {
+        if is_slot_name_prop(prop) {
+            continue;
+        }
+
+        match prop {
+            PropNode::Attribute(attr) => {
+                if (attr.name.as_str() == "class" && has_dynamic_class)
+                    || (attr.name.as_str() == "style" && has_dynamic_style)
+                {
+                    continue;
+                }
+
+                if !first {
+                    ctx.push(", ");
+                }
+
+                if is_valid_js_identifier(&attr.name) {
+                    ctx.push(&attr.name);
+                } else {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(&attr.name));
+                    ctx.push("\"");
+                }
+                ctx.push(": ");
+                if let Some(value) = &attr.value {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(value.content.as_str()));
+                    ctx.push("\"");
+                } else {
+                    ctx.push("\"\"");
+                }
+                first = false;
+            }
+            PropNode::Directive(dir) => {
+                if !is_supported_directive(dir)
+                    || (dir.name.as_str() == "bind" && dir.arg.is_none())
+                {
+                    continue;
+                }
+
+                if !first {
+                    ctx.push(", ");
+                }
+                generate_directive_prop_with_static(ctx, dir, static_class, static_style);
+                first = false;
+            }
+        }
+    }
+}
+
 /// Check if component has slot children that need to be generated as slots object
 pub fn has_slot_children(el: &ElementNode<'_>) -> bool {
     if el.children.is_empty() {
@@ -127,8 +288,48 @@ pub fn has_dynamic_slots_flag(el: &ElementNode<'_>) -> bool {
     if collected_slots.iter().any(|s| s.is_dynamic) {
         return true;
     }
+    if has_forwarded_slot_outlet(el) {
+        return true;
+    }
+    if has_dynamic_default_slot_children(el) {
+        return true;
+    }
     // Also check for v-if/v-for on slot templates (they become IfNode/ForNode children)
     has_conditional_or_loop_slots(el)
+}
+
+/// Check if the implicit default slot contains structural nodes that depend on
+/// parent state and therefore must force slot updates.
+fn has_dynamic_default_slot_children(el: &ElementNode<'_>) -> bool {
+    el.children
+        .iter()
+        .any(|child| matches!(child, TemplateChildNode::If(_) | TemplateChildNode::For(_)))
+}
+
+/// Check whether this component forwards an incoming slot to another component,
+/// e.g. `<Inner><slot /></Inner>`.
+fn has_forwarded_slot_outlet(el: &ElementNode<'_>) -> bool {
+    el.children.iter().any(child_contains_slot_outlet)
+}
+
+fn child_contains_slot_outlet(child: &TemplateChildNode<'_>) -> bool {
+    match child {
+        TemplateChildNode::Element(el) => {
+            if el.tag_type == ElementType::Slot || el.tag.as_str() == "slot" {
+                return true;
+            }
+            el.children.iter().any(child_contains_slot_outlet)
+        }
+        TemplateChildNode::If(if_node) => if_node
+            .branches
+            .iter()
+            .flat_map(|branch| branch.children.iter())
+            .any(child_contains_slot_outlet),
+        TemplateChildNode::For(for_node) => {
+            for_node.children.iter().any(child_contains_slot_outlet)
+        }
+        _ => false,
+    }
 }
 
 /// Check if children have conditional (v-if) or looped (v-for) slot templates.
@@ -155,6 +356,37 @@ fn has_conditional_or_loop_slots(el: &ElementNode<'_>) -> bool {
     })
 }
 
+fn child_is_slot_template(child: &TemplateChildNode<'_>) -> bool {
+    match child {
+        TemplateChildNode::Element(el) => el.tag.as_str() == "template" && has_v_slot(el),
+        TemplateChildNode::If(if_node) => if_node.branches.iter().any(|branch| {
+            branch.children.iter().any(|child| {
+                matches!(
+                    child,
+                    TemplateChildNode::Element(el)
+                        if el.tag.as_str() == "template" && has_v_slot(el)
+                )
+            })
+        }),
+        TemplateChildNode::For(for_node) => for_node.children.iter().any(|child| {
+            matches!(
+                child,
+                TemplateChildNode::Element(el)
+                    if el.tag.as_str() == "template" && has_v_slot(el)
+            )
+        }),
+        _ => false,
+    }
+}
+
+fn slot_children_have_meaningful_content(children: &[&TemplateChildNode<'_>]) -> bool {
+    children.iter().any(|child| match child {
+        TemplateChildNode::Text(text) => !text.content.trim().is_empty(),
+        TemplateChildNode::Comment(_) => false,
+        _ => true,
+    })
+}
+
 /// Generate slots object for component
 pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Note: WithCtx helper is registered at each _withCtx() output site,
@@ -171,7 +403,11 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     });
 
     let collected_slots = collect_slots(el);
-    let has_dynamic_slots = ctx.in_v_for || collected_slots.iter().any(|s| s.is_dynamic);
+    let has_forwarded_slots = has_forwarded_slot_outlet(el);
+    let has_dynamic_slots = ctx.in_v_for
+        || collected_slots.iter().any(|s| s.is_dynamic)
+        || has_forwarded_slots
+        || has_dynamic_default_slot_children(el);
     let has_conditional_slots = has_conditional_or_loop_slots(el);
 
     // If there are conditional (v-if) or looped (v-for) slots, use createSlots
@@ -347,7 +583,9 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     // Add slot stability flag
     ctx.push(",");
     ctx.newline();
-    if has_dynamic_slots {
+    if has_forwarded_slots {
+        ctx.push("_: 3 /* FORWARDED */");
+    } else if has_dynamic_slots {
         ctx.push("_: 2 /* DYNAMIC */");
     } else {
         ctx.push("_: 1 /* STABLE */");
@@ -362,7 +600,9 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.use_helper(RuntimeHelper::CreateSlots);
     ctx.push(ctx.helper(RuntimeHelper::CreateSlots));
-    ctx.push("({ _: 2 /* DYNAMIC */ }, [");
+    ctx.push("(");
+    generate_create_slots_base(ctx, el);
+    ctx.push(", [");
     ctx.indent();
 
     let mut first = true;
@@ -386,17 +626,17 @@ fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.newline();
                 generate_looped_slot(ctx, for_node);
             }
-            TemplateChildNode::Element(template_el) => {
-                if template_el.tag.as_str() == "template" && has_v_slot(template_el) {
-                    // Regular named slot (no v-if/v-for)
-                    if !first {
-                        ctx.push(",");
-                    }
-                    first = false;
-                    ctx.newline();
-                    // Generate as static slot entry
-                    generate_static_slot_entry(ctx, template_el);
+            TemplateChildNode::Element(template_el)
+                if template_el.tag.as_str() == "template" && has_v_slot(template_el) =>
+            {
+                // Regular named slot (no v-if/v-for)
+                if !first {
+                    ctx.push(",");
                 }
+                first = false;
+                ctx.newline();
+                // Generate as static slot entry
+                generate_static_slot_entry(ctx, template_el);
             }
             _ => {}
         }
@@ -405,6 +645,47 @@ fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.deindent();
     ctx.newline();
     ctx.push("])");
+}
+
+fn generate_create_slots_base(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    let default_children: Vec<_> = el
+        .children
+        .iter()
+        .filter(|child| !child_is_slot_template(child))
+        .collect();
+    let has_default_children = slot_children_have_meaningful_content(&default_children);
+
+    if !has_default_children {
+        ctx.push("{ _: 2 /* DYNAMIC */ }");
+        return;
+    }
+
+    ctx.push("{");
+    ctx.indent();
+
+    ctx.newline();
+    ctx.push("default: ");
+    ctx.use_helper(RuntimeHelper::WithCtx);
+    ctx.push(ctx.helper(RuntimeHelper::WithCtx));
+    ctx.push("(() => [");
+    ctx.indent();
+    for (i, child) in default_children.iter().enumerate() {
+        if i > 0 {
+            ctx.push(",");
+        }
+        ctx.newline();
+        generate_slot_child_node(ctx, child);
+    }
+    ctx.deindent();
+    ctx.newline();
+    ctx.push("]),");
+
+    ctx.newline();
+    ctx.push("_: 2 /* DYNAMIC */");
+
+    ctx.deindent();
+    ctx.newline();
+    ctx.push("}");
 }
 
 /// Generate a conditional slot entry (v-if on slot template)

@@ -2,15 +2,15 @@
  * CSS theme variables and style definitions for the Musea gallery.
  *
  * CSS is split into separate .css files and imported as text
- * via tsdown's `loader: { '.css': 'text' }` configuration.
+ * via tsdown's `?inline` support.
  */
 
-// @ts-expect-error -- CSS imported as text via tsdown loader
-import stylesBase from "./styles-base.css";
-// @ts-expect-error -- CSS imported as text via tsdown loader
-import stylesLayout from "./styles-layout.css";
-// @ts-expect-error -- CSS imported as text via tsdown loader
-import stylesComponents from "./styles-components.css";
+// @ts-expect-error -- CSS imported as text via tsdown `?inline`
+import stylesBase from "./styles-base.css?inline";
+// @ts-expect-error -- CSS imported as text via tsdown `?inline`
+import stylesLayout from "./styles-layout.css?inline";
+// @ts-expect-error -- CSS imported as text via tsdown `?inline`
+import stylesComponents from "./styles-components.css?inline";
 
 /**
  * Generate the full gallery CSS styles string.

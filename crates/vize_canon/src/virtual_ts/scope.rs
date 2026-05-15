@@ -4,6 +4,7 @@
 //! including v-for, v-slot, and event handler scopes. Uses recursive
 //! tree-based generation so nested scopes are properly contained.
 
+use vize_carton::profile;
 use vize_carton::FxHashMap;
 use vize_carton::FxHashSet;
 use vize_carton::String;
@@ -15,7 +16,10 @@ use vize_croquis::{
 
 use super::{
     expressions::{generate_component_prop_checks, generate_expression},
-    helpers::{get_dom_event_type, strip_as_assertion, to_camel_case, to_safe_identifier},
+    helpers::{
+        generated_text_range, get_dom_event_type, strip_as_assertion, to_camel_case,
+        to_safe_identifier, to_safe_identifier_fragment,
+    },
     types::VizeMapping,
 };
 use vize_carton::append;
@@ -26,6 +30,7 @@ pub(crate) struct ScopeGenContext<'a> {
     pub(crate) summary: &'a Croquis,
     pub(crate) expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
+    pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
 }
 
@@ -34,7 +39,16 @@ pub(crate) struct VForPropsContext<'a> {
     pub(crate) summary: &'a Croquis,
     pub(crate) components_by_scope: &'a FxHashMap<u32, Vec<(usize, &'a ComponentUsage)>>,
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
+    pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
+}
+
+struct EventHandlerExprContext<'a> {
+    expressions_by_scope: &'a FxHashMap<u32, Vec<&'a vize_croquis::TemplateExpression>>,
+    data: &'a EventHandlerScopeData,
+    event_type: &'a str,
+    template_offset: u32,
+    indent: &'a str,
 }
 
 /// Generate scope closures from Croquis scope chain.
@@ -44,43 +58,54 @@ pub(crate) fn generate_scope_closures(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
+    template_prop_names: &FxHashSet<String>,
     template_offset: u32,
 ) {
     // Group expressions by scope_id
-    let mut expressions_by_scope: FxHashMap<u32, Vec<_>> = FxHashMap::default();
-    for expr in &summary.template_expressions {
-        expressions_by_scope
-            .entry(expr.scope_id.as_u32())
-            .or_default()
-            .push(expr);
-    }
+    let expressions_by_scope: FxHashMap<u32, Vec<_>> =
+        profile!("canon.virtual_ts.group_template_expressions", {
+            let mut expressions_by_scope: FxHashMap<u32, Vec<_>> = FxHashMap::default();
+            for expr in &summary.template_expressions {
+                expressions_by_scope
+                    .entry(expr.scope_id.as_u32())
+                    .or_default()
+                    .push(expr);
+            }
+            expressions_by_scope
+        });
 
     // Build scope tree: parent_scope_id -> Vec<child ScopeId>
-    let mut children_map: FxHashMap<u32, Vec<ScopeId>> = FxHashMap::default();
-    for scope in summary.scopes.iter() {
-        if let Some(parent_id) = scope.parent() {
+    let children_map: FxHashMap<u32, Vec<ScopeId>> =
+        profile!("canon.virtual_ts.build_scope_tree", {
+            let mut children_map: FxHashMap<u32, Vec<ScopeId>> = FxHashMap::default();
+            for scope in summary.scopes.iter() {
+                if let Some(parent_id) = scope.parent() {
+                    children_map
+                        .entry(parent_id.as_u32())
+                        .or_default()
+                        .push(scope.id);
+                }
+            }
             children_map
-                .entry(parent_id.as_u32())
-                .or_default()
-                .push(scope.id);
-        }
-    }
+        });
 
     // Determine which scopes are nested inside a closure scope (VFor/VSlot).
     // These will be generated recursively inside their parent, not at top level.
-    let nested_scope_ids: FxHashSet<ScopeId> = summary
-        .scopes
-        .iter()
-        .filter(|scope| {
-            scope.parent().is_some_and(|pid| {
-                summary
-                    .scopes
-                    .iter()
-                    .any(|s| s.id == pid && matches!(s.kind, ScopeKind::VFor | ScopeKind::VSlot))
-            })
-        })
-        .map(|scope| scope.id)
-        .collect();
+    let nested_scope_ids: FxHashSet<ScopeId> =
+        profile!("canon.virtual_ts.collect_nested_scope_ids", {
+            summary
+                .scopes
+                .iter()
+                .filter(|scope| {
+                    scope.parent().is_some_and(|pid| {
+                        summary.scopes.iter().any(|s| {
+                            s.id == pid && matches!(s.kind, ScopeKind::VFor | ScopeKind::VSlot)
+                        })
+                    })
+                })
+                .map(|scope| scope.id)
+                .collect()
+        });
 
     // Process non-nested scopes at template level
     for scope in summary.scopes.iter() {
@@ -101,7 +126,17 @@ pub(crate) fn generate_scope_closures(
         ) {
             if let Some(exprs) = expressions_by_scope.get(&scope_id) {
                 for expr in exprs {
-                    generate_expression(ts, mappings, expr, template_offset, "  ");
+                    profile!(
+                        "canon.virtual_ts.generate_expression",
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            template_prop_names,
+                            template_offset,
+                            "  "
+                        )
+                    );
                 }
             }
             continue;
@@ -111,16 +146,33 @@ pub(crate) fn generate_scope_closures(
             summary,
             expressions_by_scope: &expressions_by_scope,
             children_map: &children_map,
+            template_prop_names,
             template_offset,
         };
-        generate_scope_node(ts, mappings, &ctx, scope, "  ");
+        profile!(
+            "canon.virtual_ts.scope_node",
+            generate_scope_node(ts, mappings, &ctx, scope, "  ")
+        );
     }
 
     // Handle undefined references
-    generate_undefined_refs(ts, mappings, summary, template_offset);
+    profile!(
+        "canon.virtual_ts.undefined_refs",
+        generate_undefined_refs(ts, mappings, summary, template_offset)
+    );
 
     // Generate component props type checks (scope-aware)
-    generate_component_props(ts, mappings, summary, &children_map, template_offset);
+    profile!(
+        "canon.virtual_ts.component_props",
+        generate_component_props(
+            ts,
+            mappings,
+            summary,
+            &children_map,
+            template_prop_names,
+            template_offset
+        )
+    );
 }
 
 /// Handle undefined references from template.
@@ -174,6 +226,18 @@ fn generate_undefined_refs(
     }
 }
 
+fn append_v_for_comment(ts: &mut String, indent: &str, label: &str, alias: &str, source: &str) {
+    append!(*ts, "\n{indent}// {label}: {alias} in ");
+    for c in source.chars() {
+        if c == '\n' || c == '\r' {
+            ts.push(' ');
+        } else {
+            ts.push(c);
+        }
+    }
+    ts.push('\n');
+}
+
 /// Generate component props type checks (scope-aware).
 /// Type declarations are at template level, value checks are in their scope.
 fn generate_component_props(
@@ -181,6 +245,7 @@ fn generate_component_props(
     mappings: &mut Vec<VizeMapping>,
     summary: &Croquis,
     children_map: &FxHashMap<u32, Vec<ScopeId>>,
+    template_prop_names: &FxHashSet<String>,
     template_offset: u32,
 ) {
     if summary.component_usages.is_empty() {
@@ -268,7 +333,18 @@ fn generate_component_props(
         if closure_scope_ids.contains(&usage.scope_id.as_u32()) {
             continue; // Will be emitted inside v-for/v-slot scope
         }
-        generate_component_prop_checks(ts, mappings, usage, idx, template_offset, "  ");
+        profile!(
+            "canon.virtual_ts.component_prop_checks",
+            generate_component_prop_checks(
+                ts,
+                mappings,
+                usage,
+                idx,
+                template_prop_names,
+                template_offset,
+                "  "
+            )
+        );
     }
 
     // Emit value checks for components in closure scopes (v-for and v-slot)
@@ -284,9 +360,13 @@ fn generate_component_props(
             summary,
             components_by_scope: &components_by_scope,
             children_map,
+            template_prop_names,
             template_offset,
         };
-        generate_closure_component_props_recursive(ts, mappings, &props_ctx, scope, "  ");
+        profile!(
+            "canon.virtual_ts.closure_component_props",
+            generate_closure_component_props_recursive(ts, mappings, &props_ctx, scope, "  ")
+        );
     }
 }
 
@@ -303,11 +383,12 @@ fn generate_scope_node(
 
     match scope.data() {
         ScopeData::VFor(data) => {
-            append!(
-                *ts,
-                "\n{indent}// v-for scope: {} in {}\n",
-                data.value_alias,
-                data.source
+            append_v_for_comment(
+                ts,
+                indent,
+                "v-for scope",
+                data.value_alias.as_str(),
+                data.source.as_str(),
             );
 
             // Strip TypeScript `as Type` assertion from v-for source expression.
@@ -367,12 +448,25 @@ fn generate_scope_node(
             // Generate expressions in this scope
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
                 for expr in exprs {
-                    generate_expression(ts, mappings, expr, ctx.template_offset, &inner_indent);
+                    profile!(
+                        "canon.virtual_ts.generate_expression",
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            &inner_indent
+                        )
+                    );
                 }
             }
 
             // Recursively generate child scopes inside this closure
-            generate_child_scopes(ts, mappings, ctx, scope_id, &inner_indent);
+            profile!(
+                "canon.virtual_ts.child_scopes",
+                generate_child_scopes(ts, mappings, ctx, scope_id, &inner_indent)
+            );
 
             ts.push_str(indent);
             ts.push_str("});\n");
@@ -381,10 +475,10 @@ fn generate_scope_node(
             append!(*ts, "\n{indent}// v-slot scope: #{}\n", data.name);
 
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
+            let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
             append!(
                 *ts,
-                "{indent}void function _slot_{}({props_pattern}: any) {{\n",
-                data.name,
+                "{indent}void function _slot_{safe_slot_name}({props_pattern}: any) {{\n",
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
@@ -399,12 +493,25 @@ fn generate_scope_node(
 
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
                 for expr in exprs {
-                    generate_expression(ts, mappings, expr, ctx.template_offset, &inner_indent);
+                    profile!(
+                        "canon.virtual_ts.generate_expression",
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            &inner_indent
+                        )
+                    );
                 }
             }
 
             // Recursively generate child scopes inside this closure
-            generate_child_scopes(ts, mappings, ctx, scope_id, &inner_indent);
+            profile!(
+                "canon.virtual_ts.child_scopes",
+                generate_child_scopes(ts, mappings, ctx, scope_id, &inner_indent)
+            );
 
             ts.push_str(indent);
             ts.push_str("};\n");
@@ -447,14 +554,20 @@ fn generate_scope_node(
                 let event_type = cstr!("__{component_name}_{scope_id}_{safe_event_name}_event");
                 append!(*ts, "{indent}(($event: {event_type}) => {{\n");
 
-                generate_event_handler_expressions(
-                    ts,
-                    mappings,
-                    ctx.expressions_by_scope,
-                    scope_id,
-                    data,
-                    ctx.template_offset,
-                    &inner_indent,
+                profile!(
+                    "canon.virtual_ts.event_handler_expressions",
+                    generate_event_handler_expressions(
+                        ts,
+                        mappings,
+                        scope_id,
+                        &EventHandlerExprContext {
+                            expressions_by_scope: ctx.expressions_by_scope,
+                            data,
+                            event_type: event_type.as_str(),
+                            template_offset: ctx.template_offset,
+                            indent: &inner_indent,
+                        },
+                    )
                 );
 
                 append!(*ts, "{indent}}})({{}} as {event_type});\n");
@@ -462,14 +575,20 @@ fn generate_scope_node(
                 let event_type = get_dom_event_type(data.event_name.as_str());
                 append!(*ts, "{indent}(($event: {event_type}) => {{\n");
 
-                generate_event_handler_expressions(
-                    ts,
-                    mappings,
-                    ctx.expressions_by_scope,
-                    scope_id,
-                    data,
-                    ctx.template_offset,
-                    &inner_indent,
+                profile!(
+                    "canon.virtual_ts.event_handler_expressions",
+                    generate_event_handler_expressions(
+                        ts,
+                        mappings,
+                        scope_id,
+                        &EventHandlerExprContext {
+                            expressions_by_scope: ctx.expressions_by_scope,
+                            data,
+                            event_type,
+                            template_offset: ctx.template_offset,
+                            indent: &inner_indent,
+                        },
+                    )
                 );
 
                 append!(*ts, "{indent}}})({{}} as {event_type});\n");
@@ -478,7 +597,17 @@ fn generate_scope_node(
         _ => {
             if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
                 for expr in exprs {
-                    generate_expression(ts, mappings, expr, ctx.template_offset, indent);
+                    profile!(
+                        "canon.virtual_ts.generate_expression",
+                        generate_expression(
+                            ts,
+                            mappings,
+                            expr,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            indent
+                        )
+                    );
                 }
             }
         }
@@ -489,39 +618,76 @@ fn generate_scope_node(
 fn generate_event_handler_expressions(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
-    expressions_by_scope: &FxHashMap<u32, Vec<&vize_croquis::TemplateExpression>>,
     scope_id: u32,
-    data: &EventHandlerScopeData,
-    template_offset: u32,
-    indent: &str,
+    ctx: &EventHandlerExprContext<'_>,
 ) {
-    if let Some(exprs) = expressions_by_scope.get(&scope_id) {
+    if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
         for expr in exprs {
             let content = expr.content.as_str();
-            let is_simple_identifier = content
-                .chars()
-                .all(|c| c.is_alphanumeric() || c == '_' || c == '$');
+            let is_implicit_reference =
+                ctx.data.has_implicit_event && is_callable_handler_reference(content);
+            let src_start = (ctx.template_offset + expr.start) as usize;
+            let src_end = (ctx.template_offset + expr.end) as usize;
 
-            let src_start = (template_offset + expr.start) as usize;
-            let src_end = (template_offset + expr.end) as usize;
-
-            let gen_start = ts.len();
-            if data.has_implicit_event && is_simple_identifier && !content.is_empty() {
-                append!(*ts, "{indent}({content} as (...args: any[]) => any)($event);  // handler expression\n",);
+            let gen_stmt_start = ts.len();
+            if is_implicit_reference {
+                let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
+                append!(
+                    *ts,
+                    "{indent}const {handler_name} = ((handler: ($event: {event_type}) => unknown) => handler)(({content}));\n",
+                    indent = ctx.indent,
+                    event_type = ctx.event_type,
+                );
+                append!(
+                    *ts,
+                    "{indent}{handler_name}($event);  // handler expression\n",
+                    indent = ctx.indent,
+                );
             } else {
-                append!(*ts, "{indent}{content};  // handler expression\n");
+                append!(
+                    *ts,
+                    "{indent}{content};  // handler expression\n",
+                    indent = ctx.indent
+                );
             }
-            let gen_end = ts.len();
+            let gen_stmt_end = ts.len();
             mappings.push(VizeMapping {
-                gen_range: gen_start..gen_end,
+                gen_range: if is_implicit_reference {
+                    gen_stmt_start..gen_stmt_end
+                } else {
+                    generated_text_range(&ts[gen_stmt_start..gen_stmt_end], content, gen_stmt_start)
+                },
                 src_range: src_start..src_end,
             });
             append!(
                 *ts,
                 "{indent}// @vize-map: handler -> {src_start}:{src_end}\n",
+                indent = ctx.indent,
             );
         }
     }
+}
+
+fn is_callable_handler_reference(content: &str) -> bool {
+    let trimmed = content.trim();
+    if trimmed.is_empty() {
+        return false;
+    }
+
+    trimmed.split('.').all(is_identifier_segment)
+}
+
+fn is_identifier_segment(segment: &str) -> bool {
+    let mut chars = segment.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+
+    if !(first == '_' || first == '$' || first.is_alphabetic()) {
+        return false;
+    }
+
+    chars.all(|ch| ch == '_' || ch == '$' || ch.is_alphanumeric())
 }
 
 /// Recursively generate child scopes that are VFor/VSlot/EventHandler.
@@ -539,7 +705,10 @@ fn generate_child_scopes(
                     child_scope.kind,
                     ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::EventHandler
                 ) {
-                    generate_scope_node(ts, mappings, ctx, child_scope, indent);
+                    profile!(
+                        "canon.virtual_ts.scope_node",
+                        generate_scope_node(ts, mappings, ctx, child_scope, indent)
+                    );
                 }
             }
         }
@@ -574,11 +743,12 @@ fn generate_closure_component_props_recursive(
                 "any".into()
             };
 
-            append!(
-                *ts,
-                "\n{indent}// Component props in v-for scope: {} in {}\n",
-                data.value_alias,
-                data.source
+            append_v_for_comment(
+                ts,
+                indent,
+                "Component props in v-for scope",
+                data.value_alias.as_str(),
+                data.source.as_str(),
             );
             if is_numeric {
                 append!(
@@ -616,13 +786,17 @@ fn generate_closure_component_props_recursive(
             // Emit component prop checks for this scope
             if let Some(usages) = ctx.components_by_scope.get(&scope_id) {
                 for &(idx, usage) in usages {
-                    generate_component_prop_checks(
-                        ts,
-                        mappings,
-                        usage,
-                        idx,
-                        ctx.template_offset,
-                        &inner_indent,
+                    profile!(
+                        "canon.virtual_ts.component_prop_checks",
+                        generate_component_prop_checks(
+                            ts,
+                            mappings,
+                            usage,
+                            idx,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            &inner_indent,
+                        )
                     );
                 }
             }
@@ -632,12 +806,15 @@ fn generate_closure_component_props_recursive(
                 for &child_id in child_ids {
                     if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id) {
                         if matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot) {
-                            generate_closure_component_props_recursive(
-                                ts,
-                                mappings,
-                                ctx,
-                                child_scope,
-                                &inner_indent,
+                            profile!(
+                                "canon.virtual_ts.closure_component_props",
+                                generate_closure_component_props_recursive(
+                                    ts,
+                                    mappings,
+                                    ctx,
+                                    child_scope,
+                                    &inner_indent,
+                                )
                             );
                         }
                     }
@@ -649,6 +826,7 @@ fn generate_closure_component_props_recursive(
         }
         ScopeData::VSlot(data) => {
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
+            let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
             append!(
                 *ts,
                 "\n{indent}// Component props in v-slot scope: #{}\n",
@@ -656,8 +834,7 @@ fn generate_closure_component_props_recursive(
             );
             append!(
                 *ts,
-                "{indent}void function _slot_props_{}({props_pattern}: any) {{\n",
-                data.name,
+                "{indent}void function _slot_props_{safe_slot_name}({props_pattern}: any) {{\n",
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
@@ -671,13 +848,17 @@ fn generate_closure_component_props_recursive(
             // Emit component prop checks for this scope
             if let Some(usages) = ctx.components_by_scope.get(&scope_id) {
                 for &(idx, usage) in usages {
-                    generate_component_prop_checks(
-                        ts,
-                        mappings,
-                        usage,
-                        idx,
-                        ctx.template_offset,
-                        &inner_indent,
+                    profile!(
+                        "canon.virtual_ts.component_prop_checks",
+                        generate_component_prop_checks(
+                            ts,
+                            mappings,
+                            usage,
+                            idx,
+                            ctx.template_prop_names,
+                            ctx.template_offset,
+                            &inner_indent,
+                        )
                     );
                 }
             }
@@ -687,12 +868,15 @@ fn generate_closure_component_props_recursive(
                 for &child_id in child_ids {
                     if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id) {
                         if matches!(child_scope.kind, ScopeKind::VFor | ScopeKind::VSlot) {
-                            generate_closure_component_props_recursive(
-                                ts,
-                                mappings,
-                                ctx,
-                                child_scope,
-                                &inner_indent,
+                            profile!(
+                                "canon.virtual_ts.closure_component_props",
+                                generate_closure_component_props_recursive(
+                                    ts,
+                                    mappings,
+                                    ctx,
+                                    child_scope,
+                                    &inner_indent,
+                                )
                             );
                         }
                     }

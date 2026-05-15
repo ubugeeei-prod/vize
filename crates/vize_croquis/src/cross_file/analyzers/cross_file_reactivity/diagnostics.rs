@@ -16,7 +16,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
         let mut diagnostics = Vec::new();
 
         for issue in &self.issues {
-            let diag = match &issue.kind {
+            let mut diag = match &issue.kind {
                 CrossFileReactivityIssueKind::ComposableReturnDestructured {
                     composable_name,
                     destructured_props,
@@ -105,9 +105,8 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
 
                 CrossFileReactivityIssueKind::NonReactiveProvide { key } => {
                     CrossFileDiagnostic::new(
-                        CrossFileDiagnosticKind::ReactivityOutsideSetup {
-                            api_name: CompactString::new("provide"),
-                            context_description: CompactString::new("non-reactive value"),
+                        CrossFileDiagnosticKind::NonReactiveProvideValue {
+                            key: key.clone(),
                         },
                         issue.severity,
                         issue.file_id,
@@ -117,8 +116,32 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                             key
                         ),
                     )
-                    .with_suggestion("provide('key', ref(value)) or provide('key', reactive({...}))")
+                    .with_suggestion("provide('key', ref(value)) or provide('key', computed(() => value))")
                 }
+
+                CrossFileReactivityIssueKind::ReactivityLostInPropChain {
+                    prop_name,
+                    parent_component,
+                } => CrossFileDiagnostic::new(
+                    CrossFileDiagnosticKind::DestructuringBreaksReactivity {
+                        source_name: prop_name.clone(),
+                        destructured_keys: vec![prop_name.clone()],
+                        suggestion: CompactString::new("toRef"),
+                    },
+                    issue.severity,
+                    issue.file_id,
+                    issue.offset,
+                    cstr!(
+                        "Reactive prop '{}' from <{}> loses reactivity in the child",
+                        prop_name,
+                        parent_component
+                    ),
+                )
+                .with_suggestion(cstr!(
+                    "Use toRef(props, '{}'), toRefs(props), or access props.{} directly",
+                    prop_name,
+                    prop_name
+                )),
 
                 CrossFileReactivityIssueKind::CircularReactiveDependency { cycle } => {
                     CrossFileDiagnostic::new(
@@ -143,6 +166,18 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                     cstr!("{:?}", issue.kind),
                 ),
             };
+
+            if let (
+                CrossFileReactivityIssueKind::ReactivityLostInPropChain { .. },
+                Some(related_file),
+            ) = (&issue.kind, issue.related_file)
+            {
+                diag = diag.with_related(
+                    related_file,
+                    0,
+                    CompactString::new("Reactive value flows from here"),
+                );
+            }
 
             diagnostics.push(diag);
         }

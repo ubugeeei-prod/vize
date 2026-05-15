@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
+expression: result.as_str()
+---
+const first = __props.items[0]

@@ -2,219 +2,200 @@
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use std::sync::Mutex;
+use std::cell::RefCell;
 
 use crate::layout::{FlexStyle, LayoutEngine};
 
 use super::types::{FlexStyleNapi, LayoutResultNapi};
 
-// Global layout engine
-static LAYOUT: Mutex<Option<LayoutEngine>> = Mutex::new(None);
+thread_local! {
+    // Taffy's tree is not Send, so keep the native layout state scoped to the
+    // thread running the NAPI calls instead of placing it behind a shared static.
+    static LAYOUT: RefCell<Option<LayoutEngine>> = const { RefCell::new(None) };
+}
+
+fn with_layout_mut<T>(f: impl FnOnce(&mut LayoutEngine) -> Result<T>) -> Result<T> {
+    LAYOUT.with(|layout| {
+        let mut guard = layout.try_borrow_mut().map_err(|e| {
+            Error::new(
+                Status::GenericFailure,
+                format!("Layout borrow error: {}", e),
+            )
+        })?;
+        let engine = guard
+            .as_mut()
+            .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
+
+        f(engine)
+    })
+}
+
+fn with_layout<T>(f: impl FnOnce(&LayoutEngine) -> Result<T>) -> Result<T> {
+    LAYOUT.with(|layout| {
+        let guard = layout.try_borrow().map_err(|e| {
+            Error::new(
+                Status::GenericFailure,
+                format!("Layout borrow error: {}", e),
+            )
+        })?;
+        let engine = guard
+            .as_ref()
+            .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
+
+        f(engine)
+    })
+}
 
 /// Initialize layout engine.
 #[napi(js_name = "initLayout")]
 #[allow(clippy::disallowed_macros)]
 pub fn init_layout() -> Result<()> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    *guard = Some(LayoutEngine::new());
-    Ok(())
+    LAYOUT.with(|layout| {
+        *layout.try_borrow_mut().map_err(|e| {
+            Error::new(
+                Status::GenericFailure,
+                format!("Layout borrow error: {}", e),
+            )
+        })? = Some(LayoutEngine::new());
+        Ok(())
+    })
 }
 
 /// Create a new layout node.
 #[napi(js_name = "createLayoutNode")]
 #[allow(clippy::disallowed_macros)]
 pub fn create_layout_node(style: Option<FlexStyleNapi>) -> Result<i64> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    let engine = guard
-        .as_mut()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    let flex_style = style.map(convert_flex_style).unwrap_or_default();
-    let id = engine.new_node(&flex_style);
-    Ok(id as i64)
+    with_layout_mut(|engine| {
+        let flex_style = style.map(convert_flex_style).unwrap_or_default();
+        let id = engine.new_node(&flex_style);
+        Ok(id as i64)
+    })
 }
 
 /// Create a new leaf layout node with measured size.
 #[napi(js_name = "createLayoutLeaf")]
 #[allow(clippy::disallowed_macros)]
 pub fn create_layout_leaf(width: f64, height: f64, style: Option<FlexStyleNapi>) -> Result<i64> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    let engine = guard
-        .as_mut()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    let flex_style = style.map(convert_flex_style).unwrap_or_default();
-    let id = engine.new_leaf(&flex_style, width as f32, height as f32);
-    Ok(id as i64)
+    with_layout_mut(|engine| {
+        let flex_style = style.map(convert_flex_style).unwrap_or_default();
+        let id = engine.new_leaf(&flex_style, width as f32, height as f32);
+        Ok(id as i64)
+    })
 }
 
 /// Set layout root node.
 #[napi(js_name = "setLayoutRoot")]
 #[allow(clippy::disallowed_macros)]
 pub fn set_layout_root(id: i64) -> Result<()> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    let engine = guard
-        .as_mut()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    engine.set_root(id as u64);
-    Ok(())
+    with_layout_mut(|engine| {
+        engine.set_root(id as u64);
+        Ok(())
+    })
 }
 
 /// Add child to parent node.
 #[napi(js_name = "addLayoutChild")]
 #[allow(clippy::disallowed_macros)]
 pub fn add_layout_child(parent: i64, child: i64) -> Result<()> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    let engine = guard
-        .as_mut()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    engine.add_child(parent as u64, child as u64);
-    Ok(())
+    with_layout_mut(|engine| {
+        engine.add_child(parent as u64, child as u64);
+        Ok(())
+    })
 }
 
 /// Remove child from parent node.
 #[napi(js_name = "removeLayoutChild")]
 #[allow(clippy::disallowed_macros)]
 pub fn remove_layout_child(parent: i64, child: i64) -> Result<()> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    let engine = guard
-        .as_mut()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    engine.remove_child(parent as u64, child as u64);
-    Ok(())
+    with_layout_mut(|engine| {
+        engine.remove_child(parent as u64, child as u64);
+        Ok(())
+    })
 }
 
 /// Update node style.
 #[napi(js_name = "setLayoutStyle")]
 #[allow(clippy::disallowed_macros)]
 pub fn set_layout_style(id: i64, style: FlexStyleNapi) -> Result<()> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    let engine = guard
-        .as_mut()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    let flex_style = convert_flex_style(style);
-    engine.set_style(id as u64, &flex_style);
-    Ok(())
+    with_layout_mut(|engine| {
+        let flex_style = convert_flex_style(style);
+        engine.set_style(id as u64, &flex_style);
+        Ok(())
+    })
 }
 
 /// Remove a node.
 #[napi(js_name = "removeLayoutNode")]
 #[allow(clippy::disallowed_macros)]
 pub fn remove_layout_node(id: i64) -> Result<()> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    let engine = guard
-        .as_mut()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    engine.remove(id as u64);
-    Ok(())
+    with_layout_mut(|engine| {
+        engine.remove(id as u64);
+        Ok(())
+    })
 }
 
 /// Compute layout.
 #[napi(js_name = "computeLayout")]
 #[allow(clippy::disallowed_macros)]
 pub fn compute_layout(width: i32, height: i32) -> Result<()> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    let engine = guard
-        .as_mut()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    engine.compute(width as f32, height as f32);
-    Ok(())
+    with_layout_mut(|engine| {
+        engine.compute(width as f32, height as f32);
+        Ok(())
+    })
 }
 
 /// Get layout result for a node.
 #[napi(js_name = "getLayout")]
 #[allow(clippy::disallowed_macros)]
 pub fn get_layout(id: i64) -> Result<Option<LayoutResultNapi>> {
-    let guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
-
-    let engine = guard
-        .as_ref()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    Ok(engine.layout(id as u64).map(|rect| LayoutResultNapi {
-        id,
-        x: rect.x as i32,
-        y: rect.y as i32,
-        width: rect.width as i32,
-        height: rect.height as i32,
-    }))
+    with_layout(|engine| {
+        Ok(engine.layout(id as u64).map(|rect| LayoutResultNapi {
+            id,
+            x: rect.x as i32,
+            y: rect.y as i32,
+            width: rect.width as i32,
+            height: rect.height as i32,
+        }))
+    })
 }
 
 /// Get all layout results.
 #[napi(js_name = "getAllLayouts")]
 #[allow(clippy::disallowed_macros)]
 pub fn get_all_layouts() -> Result<Vec<LayoutResultNapi>> {
-    let guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
+    with_layout(|engine| {
+        let results: Vec<_> = engine
+            .layouts()
+            .iter()
+            .map(|(&id, &rect)| LayoutResultNapi {
+                id: id as i64,
+                x: rect.x as i32,
+                y: rect.y as i32,
+                width: rect.width as i32,
+                height: rect.height as i32,
+            })
+            .collect();
 
-    let engine = guard
-        .as_ref()
-        .ok_or_else(|| Error::new(Status::GenericFailure, "Layout not initialized"))?;
-
-    let results: Vec<_> = engine
-        .layouts()
-        .iter()
-        .map(|(&id, &rect)| LayoutResultNapi {
-            id: id as i64,
-            x: rect.x as i32,
-            y: rect.y as i32,
-            width: rect.width as i32,
-            height: rect.height as i32,
-        })
-        .collect();
-
-    Ok(results)
+        Ok(results)
+    })
 }
 
 /// Clear layout engine.
 #[napi(js_name = "clearLayout")]
 #[allow(clippy::disallowed_macros)]
 pub fn clear_layout() -> Result<()> {
-    let mut guard = LAYOUT
-        .lock()
-        .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
+    LAYOUT.with(|layout| {
+        if let Some(ref mut engine) = *layout.try_borrow_mut().map_err(|e| {
+            Error::new(
+                Status::GenericFailure,
+                format!("Layout borrow error: {}", e),
+            )
+        })? {
+            engine.clear();
+        }
 
-    if let Some(ref mut engine) = *guard {
-        engine.clear();
-    }
-
-    Ok(())
+        Ok(())
+    })
 }
 
 /// Convert FlexStyleNapi to FlexStyle.

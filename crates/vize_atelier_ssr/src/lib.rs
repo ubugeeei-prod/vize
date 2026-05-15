@@ -39,7 +39,7 @@ use vize_atelier_core::{
     parser::parse_with_options,
     transform::transform as do_transform,
 };
-use vize_carton::{Bump, String};
+use vize_carton::{profile, Bump, String};
 
 /// Compile a Vue template for SSR with default options
 pub fn compile_ssr<'a>(
@@ -55,10 +55,13 @@ pub fn compile_ssr_with_options<'a>(
     source: &'a str,
     options: SsrCompilerOptions,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    let codegen_options = options.clone();
+
     // Create parser options
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
+        custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         comments: options.comments,
@@ -66,7 +69,10 @@ pub fn compile_ssr_with_options<'a>(
     };
 
     // Parse
-    let (mut root, errors) = parse_with_options(allocator, source, parser_opts);
+    let (mut root, errors) = profile!(
+        "atelier.ssr.template.parse",
+        parse_with_options(allocator, source, parser_opts)
+    );
 
     if !errors.is_empty() {
         let codegen_result = SsrCodegenResult {
@@ -82,17 +88,23 @@ pub fn compile_ssr_with_options<'a>(
         prefix_identifiers: true, // SSR always uses prefix
         hoist_static: false,      // No hoisting in SSR
         cache_handlers: false,    // No caching in SSR
-        scope_id: options.scope_id.clone(),
+        scope_id: codegen_options.scope_id.clone(),
         ssr: true,
-        is_ts: options.is_ts,
-        inline: options.inline,
+        is_ts: codegen_options.is_ts,
+        inline: codegen_options.inline,
+        custom_renderer: codegen_options.custom_renderer,
+        binding_metadata: codegen_options.binding_metadata.clone(),
         ..Default::default()
     };
-    do_transform(allocator, &mut root, transform_opts, None);
+    let analysis = options.croquis.map(|c| &*allocator.alloc(*c));
+    profile!(
+        "atelier.ssr.template.transform",
+        do_transform(allocator, &mut root, transform_opts, analysis)
+    );
 
     // SSR codegen
-    let codegen_ctx = SsrCodegenContext::new(allocator, &options);
-    let codegen_result = codegen_ctx.generate(&root);
+    let codegen_ctx = SsrCodegenContext::new(allocator, &codegen_options);
+    let codegen_result = profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root));
 
     (root, errors.to_vec(), codegen_result)
 }
@@ -133,12 +145,7 @@ mod tests {
 
         assert!(errors.is_empty());
         assert_eq!(root.children.len(), 1);
-        // SSR output should contain _push and template literal
-        assert!(
-            result.code.contains("_push"),
-            "Expected output to contain _push, got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -147,11 +154,6 @@ mod tests {
         let (_, errors, result) = compile_ssr(&allocator, "<div>{{ msg }}</div>");
 
         assert!(errors.is_empty());
-        // Should use ssrInterpolate for dynamic content
-        assert!(
-            result.code.contains("ssrInterpolate") || result.code.contains("_ssrInterpolate"),
-            "Expected ssrInterpolate, got:\n{}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

@@ -1,0 +1,60 @@
+///|
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+fn cli_args() -> Array[String] {
+  let raw = @env.args()
+  let args = []
+  for i in 1..<raw.length() {
+    args.push(raw[i])
+  }
+  args
+}
+
+///|
+fn bench_script(task : String) -> String? {
+  match task {
+    "run" => Some("bench/run.ts")
+    "generate" => Some("bench/generate.mjs")
+    "lint" => Some("bench/lint.ts")
+    "fmt" => Some("bench/fmt.ts")
+    "check" => Some("bench/check.ts")
+    "vite" => Some("bench/vite.ts")
+    _ => None
+  }
+}
+
+///|
+async fn run_app() -> Int {
+  let args = cli_args()
+  if args.is_empty() {
+    println(
+      "Usage: moon run --target native - -- <run|generate|lint|fmt|check|vite> [args...] < tools/moon/scripts/bench.mbtx",
+    )
+    return 1
+  }
+
+  match bench_script(args[0]) {
+    Some(script) => {
+      let node_args = [script]
+      for i in 1..<args.length() {
+        node_args.push(args[i])
+      }
+      @process.run("node", node_args)
+    }
+    None => {
+      println("Unknown benchmark task: \{args[0]}")
+      1
+    }
+  }
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

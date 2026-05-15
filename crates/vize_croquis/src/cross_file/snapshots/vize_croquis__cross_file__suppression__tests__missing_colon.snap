@@ -1,0 +1,11 @@
+---
+source: crates/vize_croquis/src/cross_file/suppression.rs
+expression: map.errors
+---
+[
+    SuppressionError {
+        message: "@vize forget requires a colon before the reason. Use: // @vize forget: <reason>",
+        line: 1,
+        offset: 1,
+    },
+]

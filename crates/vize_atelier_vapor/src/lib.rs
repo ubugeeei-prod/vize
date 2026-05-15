@@ -52,6 +52,7 @@ use vize_atelier_core::{
     options::{ParserOptions, TransformOptions},
     parser::parse_with_options,
     transform::transform,
+    Namespace,
 };
 use vize_carton::{Bump, String};
 
@@ -66,6 +67,8 @@ pub struct VaporCompilerOptions {
     pub binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
     /// Whether to inline
     pub inline: bool,
+    /// Whether the template targets a custom renderer instead of the DOM.
+    pub custom_renderer: bool,
 }
 
 /// Vapor compilation result
@@ -86,7 +89,14 @@ pub fn compile_vapor<'a>(
     options: VaporCompilerOptions,
 ) -> VaporCompileResult {
     // Parse
-    let parser_opts = ParserOptions::default();
+    let parser_opts = ParserOptions {
+        is_void_tag: vize_carton::is_void_tag,
+        is_native_tag: Some(vize_carton::is_native_tag),
+        custom_renderer: options.custom_renderer,
+        is_pre_tag: |tag| tag == "pre",
+        get_namespace,
+        ..ParserOptions::default()
+    };
     let (mut root, errors) = parse_with_options(allocator, source, parser_opts);
 
     if !errors.is_empty() {
@@ -98,12 +108,14 @@ pub fn compile_vapor<'a>(
     }
 
     // Transform to Vapor IR
+    let binding_metadata = options.binding_metadata.clone();
     let transform_opts = TransformOptions {
         prefix_identifiers: options.prefix_identifiers,
         ssr: options.ssr,
-        binding_metadata: options.binding_metadata,
+        binding_metadata: binding_metadata.clone(),
         inline: options.inline,
         vapor: true,
+        custom_renderer: options.custom_renderer,
         ..Default::default()
     };
     transform(allocator, &mut root, transform_opts, None);
@@ -112,7 +124,7 @@ pub fn compile_vapor<'a>(
     let ir = transform_to_ir(allocator, &root);
 
     // Generate Vapor code
-    let result = generate_vapor(&ir);
+    let result = generate_vapor(&ir, binding_metadata.as_ref());
 
     VaporCompileResult {
         code: result.code,
@@ -121,10 +133,35 @@ pub fn compile_vapor<'a>(
     }
 }
 
+fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
+    if vize_carton::is_svg_tag(tag) {
+        return Namespace::Svg;
+    }
+    if vize_carton::is_math_ml_tag(tag) {
+        return Namespace::MathMl;
+    }
+
+    if let Some(parent_tag) = parent {
+        if vize_carton::is_svg_tag(parent_tag) && tag != "foreignObject" {
+            return Namespace::Svg;
+        }
+        if vize_carton::is_math_ml_tag(parent_tag)
+            && tag != "annotation-xml"
+            && tag != "foreignObject"
+        {
+            return Namespace::MathMl;
+        }
+    }
+
+    Namespace::Html
+}
+
 #[cfg(test)]
 mod tests {
     use super::compile_vapor;
+    use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::Bump;
+    use vize_carton::FxHashMap;
 
     fn normalize_code(code: &str) -> String {
         code.lines()
@@ -143,31 +180,7 @@ mod tests {
 
         let code = normalize_code(&result.code);
 
-        // Check import statement
-        assert!(code.starts_with("import {"), "Should start with import");
-        assert!(
-            code.contains("template as _template"),
-            "Should import template"
-        );
-        assert!(code.contains("from 'vue'"), "Should import from vue");
-
-        // Check template declaration
-        assert!(
-            code.contains("const t0 = _template(\"<div>hello</div>\", true)"),
-            "Should declare template with full element: {}",
-            code
-        );
-
-        // Check function structure
-        assert!(
-            code.contains("export function render(_ctx)"),
-            "Should export render function"
-        );
-        assert!(
-            code.contains("const n0 = t0()"),
-            "Should instantiate template"
-        );
-        assert!(code.contains("return n0"), "Should return element");
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -179,25 +192,7 @@ mod tests {
 
         let code = normalize_code(&result.code);
 
-        // Check imports include renderEffect and setText
-        assert!(
-            code.contains("renderEffect as _renderEffect"),
-            "Should import renderEffect: {}",
-            code
-        );
-        assert!(
-            code.contains("setText as _setText"),
-            "Should import setText"
-        );
-
-        // Check effect for reactive text (single-line format)
-        assert!(
-            code.contains("_renderEffect(() =>"),
-            "Should have render effect: {}",
-            code
-        );
-        assert!(code.contains("_setText("), "Should set text inside effect");
-        assert!(code.contains("msg"), "Should reference msg variable");
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -213,26 +208,7 @@ mod tests {
 
         let code = normalize_code(&result.code);
 
-        // Check imports
-        assert!(
-            code.contains("createInvoker as _createInvoker"),
-            "Should import createInvoker helper: {}",
-            code
-        );
-
-        // Check template
-        assert!(
-            code.contains("_template(\"<button>Click</button>\", true)"),
-            "Should have button template: {}",
-            code
-        );
-
-        // Check event binding
-        assert!(
-            code.contains("$evtclick = _createInvoker"),
-            "Should bind click event with invoker: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -252,13 +228,7 @@ mod tests {
 
         let code = normalize_code(&result.code);
 
-        // v-if should generate createIf
-        assert!(
-            code.contains("_createIf"),
-            "Should use createIf for v-if: {}",
-            code
-        );
-        assert!(code.contains("show"), "Should reference show condition");
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -278,13 +248,7 @@ mod tests {
 
         let code = normalize_code(&result.code);
 
-        // v-for should generate createFor
-        assert!(
-            code.contains("_createFor"),
-            "Should use createFor for v-for: {}",
-            code
-        );
-        assert!(code.contains("items"), "Should reference items source");
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -303,21 +267,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("setClass as _setClass"),
-            "Should import setClass for nested dynamic child: {}",
-            code
-        );
-        assert!(
-            code.contains("_setClass(n0"),
-            "Should update nested child class via child ref: {}",
-            code
-        );
-        assert!(
-            code.contains("createInvoker as _createInvoker"),
-            "Should keep nested child event binding: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -332,21 +282,45 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_createComponentWithFallback"),
-            "Should create nested component at runtime: {}",
-            code
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_component_v_model_uses_update_listener_getter() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<InputBase v-model="searchQuery" />"#,
+            Default::default(),
         );
+
         assert!(
-            code.contains("_setInsertionState"),
-            "Should set insertion state for nested component child: {}",
-            code
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
         );
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_component_props_are_getters() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<NuxtLink :to="to" target="_blank" @click="onClick">about</NuxtLink>"#,
+            Default::default(),
+        );
+
         assert!(
-            code.contains("_template(\"<div></div>\", true)"),
-            "Should not inline component tag into static template: {}",
-            code
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
         );
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -365,21 +339,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_setInsertionState(n"),
-            "Should set insertion state for branch component insertion: {}",
-            code
-        );
-        assert!(
-            code.contains("_createIf"),
-            "Should keep v-if branch: {}",
-            code
-        );
-        assert!(
-            code.contains("_createComponentWithFallback"),
-            "Should create component inside branch: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -404,13 +364,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        let resolve_stmt = r#"const _component_CodeHighlight = _resolveComponent("CodeHighlight")"#;
-        assert_eq!(
-            code.matches(resolve_stmt).count(),
-            3,
-            "Each branch callback should resolve its own component binding: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -434,13 +388,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        let resolve_stmt = r#"const _component_CodeHighlight = _resolveComponent("CodeHighlight")"#;
-        assert_eq!(
-            code.matches(resolve_stmt).count(),
-            1,
-            "Outer component resolution should remain visible inside branch callbacks: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -459,17 +407,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_createIf"),
-            "Should keep nested child v-if: {}",
-            code
-        );
-        assert_eq!(
-            code.matches("_setInsertionState(n0, null, true)").count(),
-            1,
-            "Static branch roots should only need the fragment insertion state: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -497,18 +435,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert_eq!(
-            code.matches("_setInsertionState(n0, null, true)").count(),
-            1,
-            "Static branch roots should only emit the fragment insertion state: {}",
-            code
-        );
-        assert_eq!(
-            code.matches("_setInsertionState(n1, null, true)").count(),
-            2,
-            "Component branches still need fragment and component insertion state: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -536,18 +463,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert_eq!(
-            code.matches("_setInsertionState(n0, null, true)").count(),
-            1,
-            "Outer fragment parent should not leak an extra insertion state into the branch body: {}",
-            code
-        );
-        assert_eq!(
-            code.matches("_setInsertionState(n3, null, true)").count(),
-            2,
-            "Nested branch container should only emit insertion state for each child fragment: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -562,28 +478,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("createTemplateRefSetter as _createTemplateRefSetter"),
-            "Should import template ref setter helper: {}",
-            code
-        );
-        assert!(
-            code.contains(
-                "const _setRef = _ctx.vaporTemplateRefSetter || _createTemplateRefSetter()"
-            ),
-            "Should create a template ref setter once per render: {}",
-            code
-        );
-        assert!(
-            code.contains("_setRef(n0, \"el\")"),
-            "Should assign the static template ref: {}",
-            code
-        );
-        assert!(
-            code.contains("_template(\"<div></div>\", true)"),
-            "Should not serialize ref as a DOM attribute in the static template: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -602,11 +497,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_setRef(n0, _ctx.setEl)"),
-            "Should resolve dynamic template ref expressions through render context: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -625,11 +516,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_ctx.formatHelp(_for_item0.value.help)"),
-            "Should resolve v-html expressions through render context and v-for aliases: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -648,21 +535,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_child(n1)"),
-            "Should create a child ref for nested template refs: {}",
-            code
-        );
-        assert!(
-            code.contains("_setRef(n0, \"inner\")"),
-            "Should assign the nested template ref to the child node: {}",
-            code
-        );
-        assert!(
-            code.contains("_template(\"<div><span></span></div>\", true)"),
-            "Should keep the nested ref out of serialized HTML: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -681,16 +554,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_ctx.tab === 'atelier'"),
-            "Should preserve comparison operators while prefixing identifiers: {}",
-            code
-        );
-        assert!(
-            !code.contains("_ctx.==="),
-            "Should not corrupt comparison operators: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -709,21 +573,26 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_ctx.selected.has(_for_item0.value.id)"),
-            "Should resolve v-for aliases inside call expressions: {}",
-            code
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_nested_v_for_key_uses_outer_alias() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<div><template v-for="n in 4" :key="`set-${n}`"><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon">{{ icon }}</span></template></div>"#,
+            Default::default(),
         );
+
         assert!(
-            code.contains("`kind-${_for_item0.value.kind}`"),
-            "Should resolve v-for aliases inside template literals: {}",
-            code
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
         );
-        assert!(
-            code.contains("_ctx.pick(_for_item0.value.id)"),
-            "Should resolve v-for aliases inside inline handlers: {}",
-            code
-        );
+
+        let code = normalize_code(&result.code);
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -742,11 +611,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_next(_child(n1))"),
-            "Should navigate past static siblings before the first dynamic child: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -765,16 +630,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_next(_next(_child(n1)))"),
-            "Should chain sibling traversal for offsets greater than one: {}",
-            code
-        );
-        assert!(
-            !code.contains("_next(_child(n1), 2)"),
-            "Should not emit unsupported offset arguments for _next: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -793,11 +649,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_next(_child(n0))"),
-            "Should navigate past static text nodes before the first dynamic child: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -816,13 +668,7 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains(
-                "_template(\"<svg><path d=\\\"a\\\"></path><path d=\\\"b\\\"></path></svg>\", true, 1)"
-            ),
-            "Self-closing SVG children should remain siblings in static templates: {}",
-            code
-        );
+        insta::assert_snapshot!(code.as_str());
     }
 
     #[test]
@@ -862,30 +708,37 @@ mod tests {
         );
 
         let code = normalize_code(&result.code);
-        assert!(
-            code.contains("_ctx.activeTab === 'code'"),
-            "Leading dynamic siblings should keep their class expression: {}",
-            code
+        insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_custom_renderer_intrinsics_with_bound_lowercase_component() {
+        let allocator = Bump::new();
+        let mut bindings = FxHashMap::default();
+        bindings.insert("Primitive".into(), BindingType::SetupConst);
+        let result = compile_vapor(
+            &allocator,
+            r#"<mesh><group v-if="visible"><primitive /></group></mesh>"#,
+            super::VaporCompilerOptions {
+                custom_renderer: true,
+                binding_metadata: Some(BindingMetadata {
+                    bindings,
+                    props_aliases: FxHashMap::default(),
+                    is_script_setup: true,
+                }),
+                ..Default::default()
+            },
         );
+
         assert!(
-            code.contains("_ctx.activeTab === 'helpers'"),
-            "Trailing dynamic siblings should keep their class expression: {}",
-            code
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
         );
-        assert!(
-            code.contains("_createInvoker(() => (_ctx.activeTab = 'code'))"),
-            "Leading dynamic siblings should keep click handlers: {}",
-            code
-        );
-        assert!(
-            code.contains("_createInvoker(() => (_ctx.activeTab = 'helpers'))"),
-            "Trailing dynamic siblings should keep click handlers: {}",
-            code
-        );
-        assert!(
-            code.contains("_createIf(() => (_ctx.inputMode === 'sfc')"),
-            "Mixed control-flow children should still compile their branch nodes: {}",
-            code
-        );
+
+        let code = normalize_code(&result.code);
+        assert!(code.contains("const _component_primitive = _ctx.Primitive"));
+        assert!(!code.contains(r#"_resolveComponent("group")"#));
+        assert!(!code.contains(r#"_resolveComponent("primitive")"#));
     }
 }

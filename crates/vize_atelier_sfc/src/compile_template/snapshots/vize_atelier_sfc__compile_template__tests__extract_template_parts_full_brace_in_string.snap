@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/compile_template/tests.rs
+expression: "(&imports, &render_fn)"
+---
+(
+    "import { toDisplayString as _toDisplayString } from 'vue'\n",
+    "export function render(_ctx, _cache) {\n  return _toDisplayString(isArray.value ? ']' : '}')\n}\n",
+)

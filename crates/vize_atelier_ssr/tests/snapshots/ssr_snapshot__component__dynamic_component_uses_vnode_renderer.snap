@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<component :is=\"headingLevel\" class=\"title\">node</component>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _ssrRenderVNode(_push, _createVNode(_resolveDynamicComponent(_ctx.headingLevel), _mergeProps({ class: "title" }, _attrs), { default: _withCtx(() => [_createTextVNode("node")]), _: 1 }), _parent)
+}

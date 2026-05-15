@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./playground/public/og-image.png" alt="Vize" width="600" />
+  <img src="./assets/readme-screenshot.png" alt="Vize" width="600" />
 </p>
 
 <p align="center">
@@ -16,106 +16,267 @@
   <a href="https://github.com/sponsors/ubugeeei"><strong>Sponsor</strong></a>
 </p>
 
-<p align="center">
-  <a href="https://crates.io/crates/vize"><img src="https://img.shields.io/crates/v/vize.svg" alt="crates.io" /></a>
-  <a href="https://www.npmjs.com/package/vize"><img src="https://img.shields.io/npm/v/vize.svg?label=vize" alt="npm" /></a>
-  <a href="https://www.npmjs.com/package/@vizejs/vite-plugin"><img src="https://img.shields.io/npm/v/@vizejs/vite-plugin.svg?label=@vizejs/vite-plugin" alt="npm" /></a>
-  <a href="https://www.npmjs.com/package/@vizejs/wasm"><img src="https://img.shields.io/npm/v/@vizejs/wasm.svg?label=@vizejs/wasm" alt="npm" /></a>
-  <a href="https://github.com/ubugeeei/vize/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a>
-</p>
-
 > [!WARNING]
-> This project is under active development and is not yet ready for production use.
-> APIs and features may change without notice.
+> Vize is under active development. APIs, package boundaries, and editor features are still moving.
 
-> [!NOTE]
-> `@vizejs/vite-plugin` is the recommended bundler integration today.
-> `@vizejs/unplugin` (rollup / webpack / esbuild) and `@vizejs/rspack-plugin` are available, but non-Vite integrations are still unstable and should be tested carefully before adoption.
-> Rspack intentionally keeps a dedicated package because its loader chain, `experiments.css`, and HMR behavior need Rspack-specific handling instead of the shared unplugin path.
+> [!IMPORTANT]
+> For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
+> Vize's VS Code extension, Zed extension, and `vize lsp` default to opt-in capabilities so teams can adopt them gradually.
 
----
+## What Ships Today
 
-## Features
-
-- **Compile** — Vue SFC compiler (DOM / Vapor / SSR)
-- **Lint** — Vue.js linter with i18n diagnostics
-- **Format** — Vue.js formatter
-- **Type Check** — TypeScript type checker for Vue
-- **LSP** — Language Server Protocol for editor integration
-- **Musea** — Component gallery (Storybook-like)
-- **MCP** — AI integration via Model Context Protocol
+- Rust workspace crates for parsing, semantic analysis, compilation, linting, formatting, type checking, LSP, Musea art tooling, and bindings
+- A full Rust CLI via the `vize` crate (`build`, `fmt`, `lint`, `check`, `ready`, `upgrade`, `musea`, `lsp`, `ide`)
+- npm packages including `@vizejs/vite-plugin`, `@vizejs/native`, `@vizejs/wasm`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, and `oxlint-plugin-vize`
+- The `vize` npm package for shared config utilities and native `build`, `fmt`, `lint`, `check`, `ready`, and `upgrade` commands
 
 ## Quick Start
 
-```bash
-npm install -g vize
-```
+Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://viteplus.dev/guide/install).
+
+### Vite
 
 ```bash
-vize build src/**/*.vue    # Compile
-vize fmt --check           # Format check
-vize lint --fix            # Lint & auto-fix
-vize check --strict        # Type check
+vp install -D vize @vizejs/vite-plugin
 ```
 
-Shared CLI and IDE settings can live in `vize.config.pkl`:
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
 
-```pkl
-amends "node_modules/vize/pkl/VizeConfig.pkl"
+export default defineConfig({
+  plugins: [vize()],
+});
+```
 
-formatter {
-  singleQuote = true
-}
+```ts
+// vize.config.ts
+import { defineConfig } from "vize";
 
-languageServer {
-  completion = false
+export default defineConfig({
+  linter: {
+    preset: "opinionated",
+  },
+  lsp: {
+    lint: true,
+    typecheck: false,
+    editor: false,
+    formatting: false,
+  },
+});
+```
+
+### npm CLI
+
+The npm `vize` package exposes native CLI commands plus shared config helpers:
+
+```bash
+vp install -D vize
+vp exec vize fmt --write src
+vp exec vize lint src
+vp exec vize check
+vp exec vize build src
+vp exec vize ready src
+```
+
+### Full Rust CLI
+
+For the full native CLI, install the Rust binary:
+
+```bash
+cargo install vize
+```
+
+```bash
+vize build src/**/*.vue
+vize fmt --check src
+vize lint --profile src
+vize check --profile src
+vize ready src
+vize upgrade
+vize lsp
+```
+
+You can also run the current workspace build directly:
+
+```bash
+nix run github:ubugeeei/vize#vize -- --help
+```
+
+## Static Analysis
+
+Vize shares the same parser and semantic analysis layers across linting, type checking, editor
+diagnostics, compilation, and Musea metadata.
+
+```bash
+vp exec vize lint --preset happy-path src
+vp exec vize lint --preset essential --max-warnings 0 src
+vp exec vize check src
+```
+
+Use the Rust CLI for the fuller project-backed type-checking surface:
+
+```bash
+vize check --tsconfig tsconfig.app.json
+vize check --show-virtual-ts src/components/App.vue
+vize check --declaration --declaration-dir dist/types
+```
+
+`vize lint` runs Patina rules for Vue templates, scripts, CSS, a11y, SSR, Vapor, Musea, cross-file,
+and type-aware checks. `vize check` generates virtual TypeScript for Vue SFCs and maps project
+diagnostics back to the original source files.
+
+## Compiler Configuration
+
+The npm CLI and Vite plugin share `vize.config.*`:
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+  },
+});
+```
+
+Direct `vize()` options override shared config for Vite. See the docs for compiler options,
+project scanning, lint presets, type-checker settings, and Musea config.
+
+## Oxlint Integration
+
+`oxlint-plugin-vize` lets Oxlint execute Vize Patina diagnostics through Oxlint's JS plugin system.
+
+```bash
+vp install -D oxlint oxlint-plugin-vize
+vp exec oxlint-vize -c .oxlintrc.json -f stylish src
+```
+
+This keeps Oxlint's core JS and TS rules active while adding Vue-aware diagnostics under the `vize/*` namespace.
+
+## Musea Component Gallery
+
+Musea uses `*.art.vue` files to describe component variants with Vue-native syntax, then serves a
+gallery through Vite.
+
+```bash
+vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
+```
+
+```ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
+import { musea } from "@vizejs/vite-plugin-musea";
+
+export default defineConfig({
+  plugins: [
+    vize(),
+    musea({
+      include: ["src/**/*.art.vue"],
+      basePath: "/__musea__",
+      previewCss: ["src/styles/main.css"],
+    }),
+  ],
+});
+```
+
+```bash
+vp dev
+vp exec musea-vrt --base-url http://localhost:5173 --ci --json
+```
+
+Use Musea for component documentation, prop palettes, design token views, accessibility audits,
+visual regression snapshots, generated variants, and Storybook-compatible output.
+
+## Editor Integration
+
+Vize editor support is designed for incremental adoption alongside `vuejs/language-tools`.
+
+Start with lint-only mode in VS Code:
+
+```json
+{
+  "vize.enable": true,
+  "vize.lint.enable": true,
+  "vize.typecheck.enable": false,
+  "vize.editor.enable": false,
+  "vize.formatting.enable": false
 }
 ```
 
-The packaged Pkl modules under `node_modules/vize/pkl` are the primary config schema/defaults. Generated JSON Schema is kept only as a secondary compatibility artifact.
+Zed can enable the same capabilities through LSP initialization options:
 
-See the [documentation](https://vizejs.dev) for detailed usage, Vite plugin setup, experimental bundler integrations, WASM bindings, and more.
+```json
+{
+  "languages": {
+    "Vue": {
+      "language_servers": ["vize", "..."]
+    }
+  },
+  "lsp": {
+    "vize": {
+      "initialization_options": {
+        "lint": true
+      }
+    }
+  }
+}
+```
 
-## Performance
+The same feature names can be committed in `vize.config.json` or `vize.config.pkl` under `lsp`.
 
-Benchmarks with **15,000 Vue SFC files** (36.9 MB). "User-facing speedup" = traditional tool (single-thread) vs Vize (multi-thread).
+## Local Development
 
-| Tool | Traditional (ST) | Vize (MT) | User-facing Speedup |
-|------|-----------------|-----------|---------------------|
-| **Compiler** | @vue/compiler-sfc 10.52s | 380ms | **27.7x** |
-| **Linter** | eslint-plugin-vue 65.30s | patina 5.48s | **11.9x** |
-| **Formatter** | Prettier 82.69s | glyph 23ms | **3,666x** |
-| **Type Checker** | vue-tsc 35.69s | canon 472ms | **75.5x** * |
-| **Vite Plugin** | @vitejs/plugin-vue 16.98s | @vizejs/vite-plugin 6.90s | **2.5x** ** |
+The primary local setup is `Nix + vp`.
 
-<details>
-<summary>Detailed compiler benchmark</summary>
+```bash
+nix develop
+vp install --frozen-lockfile
+vp check
+vp fmt
+vp dev
+vp build
+```
 
-|  | @vue/compiler-sfc | Vize | Speedup |
-|--|-------------------|------|---------|
-| **Single Thread** | 10.52s | 3.82s | **2.8x** |
-| **Multi Thread** | 3.71s | 380ms | **9.8x** |
+Useful workspace tasks:
 
-</details>
-
-\* canon is still in early development and does not yet cover the full feature set of vue-tsc. The speedup partly reflects the difference in work performed.
-
-\*\* Vite Plugin benchmark uses Vite v8.0.0-beta.15 (Rolldown). The plugin replaces only the SFC compilation step; all other Vite internals are unchanged.
-
-Run `mise run bench:all` to reproduce all benchmarks.
-
-## Contributing
-
-See the [documentation](https://vizejs.dev) for architecture overview and development setup.
+```bash
+vp check
+vp fmt
+vp dev
+vp build
+vp run --workspace-root check:fix
+vp run --workspace-root bench:all
+```
 
 ## Credits
 
-This project is inspired by and builds upon the work of these amazing projects:
-[Volar.js](https://github.com/volarjs/volar.js) ・ [vuejs/language-tools](https://github.com/vuejs/language-tools) ・ [eslint-plugin-vue](https://github.com/vuejs/eslint-plugin-vue) ・ [eslint-plugin-vuejs-accessibility](https://github.com/vue-a11y/eslint-plugin-vuejs-accessibility) ・ [Lightning CSS](https://github.com/parcel-bundler/lightningcss) ・ [Storybook](https://github.com/storybookjs/storybook) ・ [OXC](https://github.com/oxc-project/oxc)
+This project draws inspiration from:
+[Volar.js](https://github.com/volarjs/volar.js) ・
+[vuejs/language-tools](https://github.com/vuejs/language-tools) ・
+[eslint-plugin-vue](https://github.com/vuejs/eslint-plugin-vue) ・
+[eslint-plugin-vuejs-accessibility](https://github.com/vue-a11y/eslint-plugin-vuejs-accessibility) ・
+[Lightning CSS](https://github.com/parcel-bundler/lightningcss) ・
+[Storybook](https://github.com/storybookjs/storybook) ・
+[OXC](https://github.com/oxc-project/oxc)
 
 ## Sponsors
 
-This project is maintained by [@ubugeeei](https://github.com/ubugeeei). If you find Vize useful, please consider [sponsoring](https://github.com/sponsors/ubugeeei).
+Vize is maintained by [@ubugeeei](https://github.com/ubugeeei). If you find it useful, please consider
+[sponsoring](https://github.com/sponsors/ubugeeei).
 
 ## License
 

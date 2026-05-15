@@ -603,9 +603,8 @@ mod disable_tests {
         let source = r#".foo { color: red; } /* vize-disable css/no-important */
 .bar { color: blue !important; }
 /* regular comment */
-.baz { color: green; }"#;
+        .baz { color: green; }"#;
         let stripped = strip_vize_comments(source);
-        assert!(!stripped.contains("vize-disable"));
-        assert!(stripped.contains("regular comment"));
+        insta::assert_snapshot!(stripped.as_str());
     }
 }

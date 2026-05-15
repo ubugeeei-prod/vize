@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_sfc/src/css/tests.rs
+expression: result
+---
+CssCompileResult {
+    code: ".theme {\n  color: #00f;\n}\n\n.base {\n  display: flex;\n}\n\n.entry {\n  color: red;\n}\n",
+    map: None,
+    css_vars: [],
+    errors: [],
+    warnings: [],
+    exports: None,
+}

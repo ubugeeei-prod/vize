@@ -1,50 +1,50 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { mdiHome, mdiPalette, mdiCheckCircleOutline, mdiChevronRight } from '@mdi/js'
-import type { ArtFileInfo } from '../../src/types/index.js'
-import MdiIcon from './MdiIcon.vue'
+import { ref, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { mdiHome, mdiPalette, mdiCheckCircleOutline, mdiChevronRight } from "@mdi/js";
+import type { ArtFileInfo } from "../../src/types/index.js";
+import MdiIcon from "./MdiIcon.vue";
 
 const props = defineProps<{
-  arts: ArtFileInfo[]
-}>()
+  arts: ArtFileInfo[];
+}>();
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
 // Track expanded categories
-const expandedCategories = ref<Set<string>>(new Set())
+const expandedCategories = ref<Set<string>>(new Set());
 
 const categoryList = computed(() => {
-  const map = new Map<string, ArtFileInfo[]>()
+  const map = new Map<string, ArtFileInfo[]>();
   for (const art of props.arts) {
-    const cat = art.metadata.category || 'Components'
-    if (!map.has(cat)) map.set(cat, [])
-    map.get(cat)!.push(art)
+    const cat = art.metadata.category || "Components";
+    if (!map.has(cat)) map.set(cat, []);
+    map.get(cat)!.push(art);
   }
   // Auto-expand all categories initially
   for (const cat of map.keys()) {
-    expandedCategories.value.add(cat)
+    expandedCategories.value.add(cat);
   }
-  return Array.from(map.entries())
-})
+  return Array.from(map.entries());
+});
 
-const selectedPath = computed(() => route.params.path as string | undefined)
+const selectedPath = computed(() => route.params.path as string | undefined);
 
 function toggleCategory(category: string) {
   if (expandedCategories.value.has(category)) {
-    expandedCategories.value.delete(category)
+    expandedCategories.value.delete(category);
   } else {
-    expandedCategories.value.add(category)
+    expandedCategories.value.add(category);
   }
 }
 
 function isCategoryExpanded(category: string) {
-  return expandedCategories.value.has(category)
+  return expandedCategories.value.has(category);
 }
 
 function selectArt(art: ArtFileInfo) {
-  router.push({ name: 'component', params: { path: art.path } })
+  router.push({ name: "component", params: { path: art.path } });
 }
 </script>
 
@@ -79,11 +79,7 @@ function selectArt(art: ArtFileInfo) {
       </router-link>
     </div>
 
-    <div
-      v-for="[category, items] in categoryList"
-      :key="category"
-      class="sidebar-section"
-    >
+    <div v-for="[category, items] in categoryList" :key="category" class="sidebar-section">
       <div
         class="category-header"
         :class="{ 'category-header--expanded': isCategoryExpanded(category) }"
@@ -107,9 +103,7 @@ function selectArt(art: ArtFileInfo) {
       </ul>
     </div>
 
-    <div v-if="arts.length === 0" class="sidebar-empty">
-      No components found
-    </div>
+    <div v-if="arts.length === 0" class="sidebar-empty">No components found</div>
   </aside>
 </template>
 
@@ -202,14 +196,14 @@ function selectArt(art: ArtFileInfo) {
   list-style: none;
   margin: 0;
   margin-top: 0.25rem;
-  padding: 0;
+  padding: 0 0 0 1rem;
 }
 
 .art-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.375rem 0.75rem 0.375rem 2.25rem;
+  padding: 0.375rem 0.75rem 0.375rem 1.75rem;
   border-radius: var(--musea-radius-sm);
   cursor: pointer;
   font-size: 0.8125rem;
@@ -219,9 +213,9 @@ function selectArt(art: ArtFileInfo) {
 }
 
 .art-item::before {
-  content: '';
+  content: "";
   position: absolute;
-  left: 1.25rem;
+  left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   width: 5px;

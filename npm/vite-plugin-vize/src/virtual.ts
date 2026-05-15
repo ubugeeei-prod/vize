@@ -10,6 +10,7 @@ import fs from "node:fs";
 
 // Virtual module prefixes and constants
 export const LEGACY_VIZE_PREFIX = "\0vize:";
+export const VIZE_SSR_PREFIX = "\0vize-ssr:";
 export const VIRTUAL_CSS_MODULE = "virtual:vize-styles";
 export const RESOLVED_CSS_MODULE = "\0vize:all-styles.css";
 
@@ -20,18 +21,30 @@ export interface DynamicImportAliasRule {
 
 /** Check if a module ID is a vize-compiled virtual module */
 export function isVizeVirtual(id: string): boolean {
-  return id.startsWith("\0") && id.endsWith(".vue.ts");
+  return isVizeVirtualVueModuleId(id);
+}
+
+export function isVizeVirtualVueModuleId(id: string): boolean {
+  return id.startsWith("\0") && /\.vue\.ts(?:\?|$)/.test(id);
+}
+
+export function isVizeSsrVirtual(id: string): boolean {
+  return id.startsWith(VIZE_SSR_PREFIX);
 }
 
 /** Create a virtual module ID from a real .vue file path */
-export function toVirtualId(realPath: string): string {
-  return "\0" + realPath + ".ts";
+export function toVirtualId(realPath: string, ssr = false): string {
+  return ssr ? `${VIZE_SSR_PREFIX}${realPath}.ts` : "\0" + realPath + ".ts";
 }
 
 /** Extract the real .vue file path from a virtual module ID */
 export function fromVirtualId(virtualId: string): string {
-  // Strip \0 prefix and .ts suffix
-  return virtualId.slice(1, -3);
+  return normalizeVizeVirtualVueModuleId(virtualId).split("?")[0]!;
+}
+
+export function normalizeVizeVirtualVueModuleId(id: string): string {
+  const prefix = isVizeSsrVirtual(id) ? VIZE_SSR_PREFIX.length : 1;
+  return id.slice(prefix).replace(/\.ts(?=\?|$)/, "");
 }
 
 export function escapeRegExp(value: string): string {

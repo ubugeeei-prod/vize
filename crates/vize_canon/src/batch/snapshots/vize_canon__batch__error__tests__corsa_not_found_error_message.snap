@@ -1,0 +1,11 @@
+---
+source: crates/vize_canon/src/batch/error.rs
+expression: msg.as_str()
+---
+error: corsa not found
+
+vize check requires '@typescript/native-preview' to be installed.
+
+To install, run:
+
+  pnpm add -D @typescript/native-preview

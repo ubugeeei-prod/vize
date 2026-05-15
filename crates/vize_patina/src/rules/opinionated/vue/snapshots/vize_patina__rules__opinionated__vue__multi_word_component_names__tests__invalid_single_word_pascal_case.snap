@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vue/multi-word-component-names",
+        severity: Error,
+        message: "Component name \"{name}\" should be multi-word to avoid conflicts with HTML elements",
+        start: 0,
+        end: 0,
+        help: Some(
+            "Rename the component to use multiple words (e.g., \"TodoItem\" instead of \"Item\")",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

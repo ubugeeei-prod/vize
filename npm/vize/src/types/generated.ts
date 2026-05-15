@@ -19,6 +19,7 @@ export interface VizeConfig {
   typeChecker?: TypeCheckerConfig;
   formatter?: FormatterConfig;
   languageServer?: LanguageServerConfig;
+  lsp?: LanguageServerConfig;
   musea?: MuseaConfig;
   globalTypes?: GlobalTypesConfig;
 }
@@ -170,6 +171,10 @@ export interface TypeCheckerConfig {
    * Path to a .d.ts file that declares template globals
    */
   globalsFile?: string;
+  /**
+   * Number of parallel Corsa servers to use
+   */
+  servers?: number;
 }
 /**
  * Formatter options
@@ -269,9 +274,21 @@ export interface LanguageServerConfig {
    */
   enabled?: boolean;
   /**
-   * Enable diagnostics
+   * Enable lint diagnostics
+   */
+  lint?: boolean;
+  /**
+   * Deprecated alias for lint
    */
   diagnostics?: boolean;
+  /**
+   * Enable project type checking diagnostics
+   */
+  typecheck?: boolean;
+  /**
+   * Enable editor-oriented IDE features
+   */
+  editor?: boolean;
   /**
    * Enable completions
    */
@@ -285,6 +302,18 @@ export interface LanguageServerConfig {
    */
   definition?: boolean;
   /**
+   * Enable reference search
+   */
+  references?: boolean;
+  /**
+   * Enable document symbols
+   */
+  documentSymbols?: boolean;
+  /**
+   * Enable workspace symbols
+   */
+  workspaceSymbols?: boolean;
+  /**
    * Enable formatting via the language server
    */
   formatting?: boolean;
@@ -293,7 +322,39 @@ export interface LanguageServerConfig {
    */
   codeActions?: boolean;
   /**
-   * Use tsgo for language-server-backed IDE features
+   * Enable rename support
+   */
+  rename?: boolean;
+  /**
+   * Enable code lenses
+   */
+  codeLens?: boolean;
+  /**
+   * Enable semantic tokens
+   */
+  semanticTokens?: boolean;
+  /**
+   * Enable document links
+   */
+  documentLinks?: boolean;
+  /**
+   * Enable folding ranges
+   */
+  foldingRanges?: boolean;
+  /**
+   * Enable inlay hints
+   */
+  inlayHints?: boolean;
+  /**
+   * Enable file rename edits
+   */
+  fileRename?: boolean;
+  /**
+   * Enable Corsa-backed IDE features
+   */
+  corsa?: boolean;
+  /**
+   * Deprecated alias for corsa
    */
   tsgo?: boolean;
 }

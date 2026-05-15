@@ -203,6 +203,10 @@ local typeCheckerConfigDef: JsonSchema = new JsonSchema {
       type = "string"
       description = "Path to a .d.ts file that declares template globals"
     }
+    ["servers"] = new JsonSchema {
+      type = "integer"
+      description = "Number of parallel Corsa servers to use"
+    }
   }
   additionalProperties = false
 }
@@ -334,42 +338,90 @@ local languageServerConfigDef: JsonSchema = new JsonSchema {
     ["enabled"] = new JsonSchema {
       type = "boolean"
       description = "Enable the language server"
-      default = true
+    }
+    ["lint"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable lint diagnostics"
     }
     ["diagnostics"] = new JsonSchema {
       type = "boolean"
-      description = "Enable diagnostics"
-      default = true
+      description = "Deprecated alias for lint"
+    }
+    ["typecheck"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable project type checking diagnostics"
+    }
+    ["editor"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable editor-oriented IDE features"
     }
     ["completion"] = new JsonSchema {
       type = "boolean"
       description = "Enable completions"
-      default = true
     }
     ["hover"] = new JsonSchema {
       type = "boolean"
       description = "Enable hover information"
-      default = true
     }
     ["definition"] = new JsonSchema {
       type = "boolean"
       description = "Enable go-to-definition"
-      default = true
+    }
+    ["references"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable reference search"
+    }
+    ["documentSymbols"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable document symbols"
+    }
+    ["workspaceSymbols"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable workspace symbols"
     }
     ["formatting"] = new JsonSchema {
       type = "boolean"
       description = "Enable formatting via the language server"
-      default = true
     }
     ["codeActions"] = new JsonSchema {
       type = "boolean"
       description = "Enable code actions"
-      default = true
+    }
+    ["rename"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable rename support"
+    }
+    ["codeLens"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable code lenses"
+    }
+    ["semanticTokens"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable semantic tokens"
+    }
+    ["documentLinks"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable document links"
+    }
+    ["foldingRanges"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable folding ranges"
+    }
+    ["inlayHints"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable inlay hints"
+    }
+    ["fileRename"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable file rename edits"
+    }
+    ["corsa"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable Corsa-backed IDE features"
     }
     ["tsgo"] = new JsonSchema {
       type = "boolean"
-      description = "Use tsgo for language-server-backed IDE features"
-      default = true
+      description = "Deprecated alias for corsa"
     }
   }
   additionalProperties = false
@@ -550,6 +602,7 @@ output {
       ["typeChecker"] = new JsonSchema { `$ref` = "#/definitions/TypeCheckerConfig" }
       ["formatter"] = new JsonSchema { `$ref` = "#/definitions/FormatterConfig" }
       ["languageServer"] = new JsonSchema { `$ref` = "#/definitions/LanguageServerConfig" }
+      ["lsp"] = new JsonSchema { `$ref` = "#/definitions/LanguageServerConfig" }
       ["musea"] = new JsonSchema { `$ref` = "#/definitions/MuseaConfig" }
       ["globalTypes"] = new JsonSchema { `$ref` = "#/definitions/GlobalTypesConfig" }
     }

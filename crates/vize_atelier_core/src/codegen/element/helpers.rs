@@ -119,6 +119,11 @@ pub(crate) fn is_is_prop(p: &PropNode<'_>) -> bool {
     }
 }
 
+/// Check if a tag is Vue's dynamic component special tag.
+pub(crate) fn is_dynamic_component_tag(tag: &str) -> bool {
+    matches!(tag, "component" | "Component")
+}
+
 /// Check if a single prop is renderable (not v-show or unsupported directive)
 pub(crate) fn is_renderable_prop(prop: &PropNode<'_>) -> bool {
     match prop {

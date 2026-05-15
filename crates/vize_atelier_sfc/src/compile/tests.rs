@@ -34,7 +34,6 @@ fn test_extract_component_name() {
 }
 
 #[test]
-#[ignore = "TODO: fix v-model prop quoting"]
 fn test_v_model_on_component_in_sfc() {
     let source = r#"<script setup>
 import { ref } from 'vue'
@@ -50,27 +49,251 @@ const msg = ref('')
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    // Should NOT contain /* v-model */ comment
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_self_component_resolves_for_recursion() {
+    let source = r#"<script setup lang="ts">
+const items = [{ name: 'dist', children: [{ name: 'file.js', children: [] }] }]
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" :key="item.name">
+      <FileTree v-if="item.children.length" />
+    </li>
+  </ul>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some("src/components/diff/FileTree.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
     assert!(
-        !result.code.contains("/* v-model */"),
-        "Should not contain v-model comment. Got:\n{}",
-        result.code
-    );
-    // Should contain modelValue and onUpdate:modelValue
-    assert!(
-        result.code.contains("\"modelValue\":"),
-        "Should have modelValue prop. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("\"onUpdate:modelValue\":"),
-        "Should have onUpdate:modelValue prop. Got:\n{}",
+        result
+            .code
+            .contains(r#"_resolveComponent("FileTree", true)"#),
+        "recursive SFC should resolve its own component name with maybeSelfReference. Got:\n{}",
         result.code
     );
 }
 
 #[test]
-#[ignore = "TODO: fix inline mode ref handling"]
+fn test_script_setup_define_page_is_compile_time_only() {
+    let source = r#"<script setup lang="ts">
+definePage({
+  name: 'home',
+  meta: {
+    requiresAuth: true,
+  },
+})
+
+const msg = 'ready'
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("definePage"),
+        "definePage should be removed from runtime output:\n{}",
+        result.code
+    );
+    assert!(result.code.contains("ready"));
+    assert_eq!(result.macro_artifacts.len(), 1);
+
+    let artifact = &result.macro_artifacts[0];
+    assert_eq!(artifact.kind.as_str(), "vue-router.definePage");
+    assert_eq!(artifact.name.as_str(), "definePage");
+    assert!(artifact.source.contains("definePage"));
+    assert!(artifact.content.contains("requiresAuth"));
+    assert!(artifact
+        .module_code
+        .as_ref()
+        .is_some_and(|code| code.starts_with("export default {")));
+}
+
+#[test]
+fn test_script_setup_imported_define_page_stays_runtime() {
+    let source = r#"<script setup lang="ts">
+import { definePage } from '@/page.js'
+
+definePage(() => ({
+  title: 'runtime page',
+}))
+
+const msg = 'ready'
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result
+            .code
+            .contains("import { definePage } from \"@/page.js\";"),
+        "runtime definePage import should be preserved:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("definePage(() =>"),
+        "runtime definePage call should be preserved:\n{}",
+        result.code
+    );
+    assert!(result.macro_artifacts.is_empty());
+}
+
+#[test]
+fn test_script_setup_define_page_meta_is_compile_time_only() {
+    let source = r#"<script setup lang="ts">
+definePageMeta({
+  name: 'docs',
+  meta: {
+    scrollMargin: 180,
+  },
+})
+
+const msg = 'ready'
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("definePageMeta"),
+        "definePageMeta should be removed from runtime output:\n{}",
+        result.code
+    );
+    assert!(result.code.contains("ready"));
+    assert_eq!(result.macro_artifacts.len(), 1);
+
+    let artifact = &result.macro_artifacts[0];
+    assert_eq!(artifact.kind.as_str(), "nuxt.definePageMeta");
+    assert_eq!(artifact.name.as_str(), "definePageMeta");
+    assert!(artifact.source.contains("definePageMeta"));
+    assert!(artifact.content.contains("scrollMargin"));
+    assert!(artifact
+        .module_code
+        .as_ref()
+        .is_some_and(|code| code.starts_with("export default {")));
+}
+
+#[test]
+fn test_script_setup_define_route_rules_is_compile_time_only() {
+    let source = r#"<script setup lang="ts">
+defineRouteRules({
+  prerender: true,
+  cache: {
+    maxAge: 60,
+  },
+})
+
+const msg = 'ready'
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("defineRouteRules"),
+        "defineRouteRules should be removed from runtime output:\n{}",
+        result.code
+    );
+    assert!(result.code.contains("ready"));
+    assert_eq!(result.macro_artifacts.len(), 1);
+
+    let artifact = &result.macro_artifacts[0];
+    assert_eq!(artifact.kind.as_str(), "nuxt.defineRouteRules");
+    assert_eq!(artifact.name.as_str(), "defineRouteRules");
+    assert!(artifact.source.contains("defineRouteRules"));
+    assert!(artifact.content.contains("prerender"));
+    assert!(artifact
+        .module_code
+        .as_ref()
+        .is_some_and(|code| code.starts_with("export default {")));
+}
+
+#[test]
+fn test_script_setup_define_lazy_hydration_component_expands() {
+    let source = r#"<script setup lang="ts">
+const LazyHydrationMyComponent = defineLazyHydrationComponent(
+  'visible',
+  () => import('./components/MyComponent.vue'),
+)
+</script>
+<template>
+  <LazyHydrationMyComponent :hydrate-on-visible="{ rootMargin: '100px' }" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some("/src/pages/Home.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("defineLazyHydrationComponent"),
+        "defineLazyHydrationComponent should be expanded from runtime output:\n{}",
+        result.code
+    );
+    assert!(result.code.contains("__vizeCreateLazyVisibleComponent"));
+    assert!(result.code.contains("useNuxtApp as __vizeUseNuxtApp"));
+    assert!(result.code.contains("./components/MyComponent.vue"));
+    assert!(result.code.contains("LazyHydrationMyComponent"));
+}
+
+#[test]
+fn test_normal_script_define_page_outputs_artifact_and_is_erased() {
+    let source = r#"<script>
+definePage({
+  name: 'legacy-page',
+})
+
+export default {
+  data() {
+    return { msg: 'ready' }
+  },
+}
+</script>
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions::default();
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("definePage"),
+        "definePage should be removed from normal script runtime output:\n{}",
+        result.code
+    );
+    assert_eq!(result.macro_artifacts.len(), 1);
+    assert_eq!(
+        result.macro_artifacts[0].kind.as_str(),
+        "vue-router.definePage"
+    );
+    assert!(result.macro_artifacts[0].content.contains("legacy-page"));
+}
+
+#[test]
 fn test_bindings_passed_to_template() {
     let source = r#"<script setup lang="ts">
 import { ref } from 'vue';
@@ -92,42 +315,10 @@ function handleChange(val: string) { selectedPreset.value = val; }
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== COMPILED OUTPUT ===\n{}", result.code);
-
-    // In non-inline mode with binding metadata, setup bindings are accessed via $setup
-    // This is the correct Vue 3 behavior when binding metadata is passed to the template compiler
-    assert!(
-        result.code.contains("$setup.selectedPreset"),
-        "selectedPreset should have $setup prefix in non-inline mode with bindings. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("$setup.handleChange"),
-        "handleChange should have $setup prefix in non-inline mode with bindings. Got:\n{}",
-        result.code
-    );
-    // Verify options is in __returned__
-    assert!(
-        result.code.contains("options"),
-        "options should be in __returned__. Got:\n{}",
-        result.code
-    );
-    // Verify options.ssr access has $setup prefix
-    assert!(
-        result.code.contains("$setup.options"),
-        "options.ssr should have $setup prefix. Got:\n{}",
-        result.code
-    );
-    // Verify MonacoEditor is in __returned__ (imported component used in template)
-    assert!(
-        result.code.contains("MonacoEditor"),
-        "MonacoEditor should be in __returned__. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
-#[ignore = "TODO: fix nested v-if prefix"]
 fn test_nested_v_if_no_double_prefix() {
     // Test with a component inside nested v-if to prevent hoisting
     let source = r#"<script setup lang="ts">
@@ -147,28 +338,7 @@ const output = ref(null);
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== NESTED V-IF OUTPUT ===\n{}", result.code);
-
-    // Should NOT contain double $setup prefix
-    assert!(
-        !result.code.contains("$setup.$setup"),
-        "Should NOT have double $setup prefix. Got:\n{}",
-        result.code
-    );
-
-    // Should contain single $setup prefix for output
-    assert!(
-        result.code.contains("$setup.output"),
-        "Should have single $setup prefix for output. Got:\n{}",
-        result.code
-    );
-
-    // Should contain CodeHighlight component with :code prop
-    assert!(
-        result.code.contains("CodeHighlight"),
-        "Should contain CodeHighlight. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -196,27 +366,7 @@ function handlePresetChange(key: PresetKey) {}
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    // Print output for debugging
-    eprintln!("TypeScript SFC output:\n{}", result.code);
-
-    // TypeScript type alias should be preserved at module level
-    assert!(
-        result.code.contains("type PresetKey"),
-        "Should preserve type alias with lang='ts'. Got:\n{}",
-        result.code
-    );
-    // TypeScript function parameter types should be preserved in setup body
-    assert!(
-        result.code.contains("key: PresetKey"),
-        "Should preserve function parameter type with lang='ts'. Got:\n{}",
-        result.code
-    );
-    // Should have the event handler expression
-    assert!(
-        result.code.contains("handlePresetChange"),
-        "Should have event handler. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -242,22 +392,7 @@ const editDashboard = ref()
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("Multi-statement event handler output:\n{}", result.code);
-
-    // Multi-statement handler should use block body { ... }, not ( ... )
-    // The concise body (editDashboard = 'test'; console.log('done');) is invalid JS
-    assert!(
-        result.code.contains("($event: any) => { "),
-        "Multi-statement handler should use block body ($event: any) => {{ ... }}. Got:\n{}",
-        result.code
-    );
-
-    // SetupRef assignment in template event handler should add .value
-    assert!(
-        result.code.contains("editDashboard.value"),
-        "SetupRef assignment in event handler should add .value. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -298,26 +433,7 @@ function processData(data: Record<string, unknown>): void {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("TypeScript function types output:\n{}", result.code);
-
-    // TypeScript interface should be preserved at module level
-    assert!(
-        result.code.contains("interface Item"),
-        "Should preserve interface with lang='ts'. Got:\n{}",
-        result.code
-    );
-    // TypeScript annotations should be preserved in setup body
-    assert!(
-        result.code.contains(": Item[]"),
-        "Should preserve array type annotation with lang='ts'. Got:\n{}",
-        result.code
-    );
-    // Should contain the runtime logic
-    assert!(
-        result.code.contains("foo"),
-        "Should have variable foo. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -339,16 +455,7 @@ const activeTab = ref<'a' | 'b'>('a');
     let result =
         compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("2 /* CLASS */"),
-        "Expected inline SFC output to preserve CLASS patch flags. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("activeTab.value === 'a'"),
-        "Expected ref access to stay reactive in class binding. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -370,25 +477,94 @@ const currentCode = ref('dom');
     let result =
         compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_demotes_reactive_const_used_in_v_model() {
+    let source = r#"<template>
+  <Comp v-model="reactiveObject" />
+</template>
+
+<script lang="ts" setup>
+import { reactive } from 'vue';
+
+const reactiveObject = reactive({ foo: 'bar' });
+</script>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
     assert!(
-        result.code.contains("_createVNode(CodeHighlight"),
-        "Expected inline component vnode output. Got:\n{}",
-        result.code
+        result
+            .code
+            .contains("let reactiveObject = reactive({ foo: \"bar\" });"),
+        "compiled output should demote the binding to let"
     );
     assert!(
-        result.code.contains("code: currentCode.value"),
-        "Expected inline component prop to stay reactive. Got:\n{}",
-        result.code
+        result.code.contains("reactiveObject = $event"),
+        "compiled output should assign directly to the demoted binding"
+    );
+    assert_eq!(result.warnings.len(), 1, "expected exactly one warning");
+    assert_eq!(
+        result.warnings[0].code.as_deref(),
+        Some("V_MODEL_CONST_REACTIVE_DEMOTED")
     );
     assert!(
-        result.code.contains("8 /* PROPS */"),
-        "Expected inline component output to preserve PROPS patch flag for dynamic prop. Got:\n{}",
-        result.code
+        result.warnings[0]
+            .message
+            .contains("const reactive binding `reactiveObject`"),
+        "warning should explain the reactive const demotion"
     );
+
+    let bindings = result
+        .bindings
+        .as_ref()
+        .expect("script setup output should include bindings");
     assert!(
-        result.code.contains("[\"code\"]"),
-        "Expected inline component dynamic props list to include code. Got:\n{}",
-        result.code
+        matches!(
+            bindings.bindings.get("reactiveObject"),
+            Some(BindingType::SetupLet)
+        ),
+        "reactiveObject should be exposed as SetupLet after demotion"
+    );
+}
+
+#[test]
+fn test_ssr_vapor_request_falls_back_with_warning() {
+    let source = r#"<script setup>
+const count = 1
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            template: TemplateCompileOptions {
+                ssr: true,
+                ..Default::default()
+            },
+            vapor: true,
+            ..Default::default()
+        },
+    )
+    .expect("Failed to compile SFC");
+
+    assert!(result.code.contains("ssrRender"));
+    assert!(!result.code.contains("__vapor"));
+    assert_eq!(result.warnings.len(), 1);
+    assert_eq!(
+        result.warnings[0].code.as_deref(),
+        Some("VAPOR_SSR_FALLBACK")
+    );
+    assert_eq!(
+        result.warnings[0].message.as_str(),
+        "SFC Vapor SSR is not supported yet; falling back to standard SSR output."
     );
 }
 
@@ -412,26 +588,7 @@ const currentCode = ref('dom');
     let result =
         compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("_createBlock(CodeHighlight"),
-        "Expected v-if branch component block output. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("code: currentCode.value"),
-        "Expected v-if branch component prop to stay reactive. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("8 /* PROPS */"),
-        "Expected v-if branch component output to preserve PROPS patch flag. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("[\"code\"]"),
-        "Expected v-if branch component dynamic props list to include code. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -464,14 +621,7 @@ const doubled = computed(() => count * 2)
     compile_opts.script.id = Some("test.vue".to_compact_string());
     let result = compile_sfc(&descriptor, compile_opts).unwrap();
 
-    eprintln!("=== Full SFC props destructure output ===\n{}", result.code);
-
-    // Props should use __props. prefix in template
-    assert!(
-        result.code.contains("__props.name") || result.code.contains("name"),
-        "Should have name access. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -495,14 +645,8 @@ var c = 3
     compile_opts.script.id = Some("test.vue".to_compact_string());
     let result = compile_sfc(&descriptor, compile_opts).unwrap();
 
-    eprintln!("Let/var unref test output:\n{}", result.code);
-
     // Check that bindings are correctly identified
     if let Some(bindings) = &result.bindings {
-        eprintln!("Bindings:");
-        for (name, binding_type) in &bindings.bindings {
-            eprintln!("  {} => {:?}", name, binding_type);
-        }
         assert!(
             matches!(bindings.bindings.get("a"), Some(BindingType::LiteralConst)),
             "a should be LiteralConst"
@@ -517,25 +661,7 @@ var c = 3
         );
     }
 
-    // Check for _unref import
-    assert!(
-        result.code.contains("unref as _unref"),
-        "Should import _unref. Got:\n{}",
-        result.code
-    );
-
-    // Check that let/var variables are wrapped with _unref
-    // In inline mode, setup bindings are accessed directly (no $setup. prefix)
-    assert!(
-        result.code.contains("_unref(b)"),
-        "b should be wrapped with _unref. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_unref(c)"),
-        "c should be wrapped with _unref. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -555,33 +681,7 @@ export default {
 "#;
     // Test preserving TypeScript output
     let result = normal_script::extract_normal_script_content(input, true, true);
-    eprintln!("Extracted normal script content (preserve TS):\n{}", result);
-
-    // Should contain imports
-    assert!(
-        result.contains("import type { NuxtRoute }"),
-        "Should contain type import"
-    );
-    assert!(
-        result.contains("import { useBreakpoint }"),
-        "Should contain named import"
-    );
-    assert!(
-        result.contains("import Button"),
-        "Should contain default import"
-    );
-
-    // Should contain interface
-    assert!(
-        result.contains("interface TabItem"),
-        "Should contain interface"
-    );
-
-    // Should NOT contain export default
-    assert!(
-        !result.contains("export default"),
-        "Should NOT contain export default"
-    );
+    insta::assert_snapshot!(result.as_str());
 }
 
 #[test]
@@ -610,14 +710,6 @@ const { items } = defineProps<{
 </template>"#;
 
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    eprintln!(
-        "Descriptor script: {:?}",
-        descriptor.script.as_ref().map(|s| &s.content)
-    );
-    eprintln!(
-        "Descriptor script_setup: {:?}",
-        descriptor.script_setup.as_ref().map(|s| &s.content)
-    );
 
     // Use is_ts = true to preserve TypeScript output
     let opts = SfcCompileOptions {
@@ -633,12 +725,49 @@ const { items } = defineProps<{
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== COMPILED OUTPUT ===\n{}", result.code);
+    insta::assert_snapshot!(result.code.as_str());
+}
 
-    // Should contain the type import (when is_ts = true, TypeScript is preserved)
+#[test]
+fn test_script_setup_typescript_downcompiles_to_javascript_by_default() {
+    let source = r#"<script setup lang="ts">
+const props = withDefaults(defineProps<{
+  first?: boolean;
+}>(), {
+  first: false,
+});
+
+async function updatePasswordLessLogin(value: boolean): Promise<void> {
+  console.log(value);
+}
+</script>
+
+<template>
+  <div>{{ props.first }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result =
+        compile_sfc(&descriptor, SfcCompileOptions::default()).expect("Failed to compile SFC");
+
     assert!(
-        result.code.contains("RouteLocation") || result.code.contains("interface TabItem"),
-        "Should contain type definitions from normal script. Got:\n{}",
+        result.code.contains("setup(__props)"),
+        "default JS output should not preserve typed setup params: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("__props: any"),
+        "default JS output should strip typed setup params: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("(_ctx: any,_cache: any)"),
+        "default JS output should strip typed render params: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains(": Promise<void>"),
+        "default JS output should strip TypeScript return types: {}",
         result.code
     );
 }
@@ -657,35 +786,7 @@ const model = defineModel()
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== defineModel OUTPUT ===\n{}", result.code);
-
-    // Should have useModel import
-    assert!(
-        result.code.contains("useModel as _useModel"),
-        "Should import useModel. Got:\n{}",
-        result.code
-    );
-
-    // Should have modelValue prop
-    assert!(
-        result.code.contains("modelValue"),
-        "Should have modelValue prop. Got:\n{}",
-        result.code
-    );
-
-    // Should have update:modelValue emit
-    assert!(
-        result.code.contains("update:modelValue"),
-        "Should have update:modelValue emit. Got:\n{}",
-        result.code
-    );
-
-    // Should have _useModel call in setup
-    assert!(
-        result.code.contains("_useModel(__props"),
-        "Should use _useModel in setup. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -702,21 +803,7 @@ const title = defineModel('title')
     let opts = SfcCompileOptions::default();
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== defineModel with name OUTPUT ===\n{}", result.code);
-
-    // Should have title prop
-    assert!(
-        result.code.contains("title:") || result.code.contains("\"title\""),
-        "Should have title prop. Got:\n{}",
-        result.code
-    );
-
-    // Should have update:title emit
-    assert!(
-        result.code.contains("update:title"),
-        "Should have update:title emit. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -757,22 +844,7 @@ export default {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!("=== Non-script-setup TS output ===\n{}", result.code);
-
-    // TypeScript should be preserved when is_ts=true
-    assert!(
-        result.code.contains("interface Props") || result.code.contains(": Props"),
-        "Should preserve TypeScript with is_ts=true. Got:\n{}",
-        result.code
-    );
-
-    // Should still contain the component logic
-    assert!(
-        result.code.contains("name: 'MyComponent'")
-            || result.code.contains("name: \"MyComponent\""),
-        "Should have component name. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -808,17 +880,7 @@ export default {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    eprintln!(
-        "=== Non-script-setup TS preserved output ===\n{}",
-        result.code
-    );
-
-    // Should still contain TypeScript syntax when is_ts = true
-    assert!(
-        result.code.contains("interface Props") || result.code.contains("as Props"),
-        "Should preserve TypeScript when is_ts = true. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -831,27 +893,7 @@ fn test_define_props_imported_type_alias_is_exposed_to_template() {
 
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("disabled: { type: Boolean")
-            || result.code.contains("disabled: { type: null"),
-        "Imported disabled prop should exist in runtime props. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("size: {"),
-        "Imported size prop should exist in runtime props. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_ctx.disabled"),
-        "Imported disabled prop should not fall back to _ctx. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_ctx.size"),
-        "Imported size prop should not fall back to _ctx. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -864,22 +906,7 @@ fn test_define_props_interface_extends_imported_type_alias() {
 
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("disabled: { type: Boolean")
-            || result.code.contains("disabled: { type: null"),
-        "Extended imported disabled prop should exist in runtime props. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("size: {"),
-        "Extended imported size prop should exist in runtime props. Got:\n{}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_ctx.disabled"),
-        "Extended imported disabled prop should not fall back to _ctx. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -893,21 +920,7 @@ fn test_template_only_sfc_vapor_output_mode() {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("const t0 = _template"),
-        "Template-only Vapor output should keep template declarations. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("__vapor: true"),
-        "Template-only Vapor output should mark the component as Vapor. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_sfc_main.render = render"),
-        "Template-only Vapor output should attach render to the component. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -938,49 +951,374 @@ const doubled = computed(() => count.value * 2)
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_uses_setup_bindings_for_kebab_case_imported_components() {
+    let source = r#"<script setup lang="ts">
+import DashTest from './dash-test.vue'
+</script>
+
+<template>
+  <dash-test />
+  <DashTest />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_uses_setup_member_bindings_for_dotted_components() {
+    let source = r#"<script setup lang="ts">
+import { Form, Input } from 'ant-design-vue'
+</script>
+
+<template>
+  <Form.Item label="Teacher">
+    <Input />
+  </Form.Item>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_uses_server_renderer_output() {
+    let source = r#"<script setup lang="ts">
+const msg = 'hello'
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        vapor: true,
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_uses_setup_bindings_for_components_and_slots() {
+    let source = r##"<script setup lang="ts">
+import { NuxtLayout, NuxtPage } from "#components"
+</script>
+
+<template>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
+</template>"##;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_uses_setup_bindings_for_kebab_case_imported_components() {
+    let source = r#"<script setup lang="ts">
+import DashTest from './dash-test.vue'
+</script>
+
+<template>
+  <dash-test />
+  <DashTest />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_uses_setup_member_bindings_for_dotted_components() {
+    let source = r#"<script setup lang="ts">
+import { Form, Input } from 'ant-design-vue'
+</script>
+
+<template>
+  <Form.Item label="Teacher">
+    <Input />
+  </Form.Item>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_uses_setup_bindings_for_lowercase_imported_components() {
+    let source = r#"<script setup lang="ts">
+import { Primitive } from '@tresjs/core'
+</script>
+
+<template>
+  <primitive />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_returns_template_only_imports_used_in_expressions() {
+    let source = r#"<script setup lang="ts">
+import { valibotResolver } from '@primevue/forms/resolvers/valibot'
+const schema = {}
+</script>
+
+<template>
+  <Form :resolver="schema ? valibotResolver(schema) : undefined" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(result.code.contains("resolver:"), "{}", result.code);
     assert!(
-        result.code.contains("_defineVaporComponent"),
-        "Script setup Vapor output should use defineVaporComponent. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("const t0 = _template"),
-        "Script setup Vapor output should include template declarations. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_renderEffect"),
-        "Script setup Vapor output should retain Vapor render effects. Got:\n{}",
+        result
+            .code
+            .contains("_unref($setup.valibotResolver)($setup.schema)"),
+        "{}",
         result.code
     );
     assert!(
         result
             .code
-            .contains("getCurrentInstance as _getCurrentInstance"),
-        "Script setup Vapor output should import current instance access for production-safe setupState wiring. Got:\n{}",
+            .contains("const __returned__ = { valibotResolver, schema }"),
+        "{}",
         result.code
     );
     assert!(
         result
             .code
-            .contains("const __ctx = _proxyRefs(__returned__)"),
-        "Script setup Vapor output should build a proxyRefs render context. Got:\n{}",
+            .contains("Object.defineProperty(__returned__, '__isScriptSetup'"),
+        "{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_script_setup_sfc_ssr_returns_normal_script_imports_used_in_template_expressions() {
+    let source = r#"<script lang="ts">
+import {
+  type FormFieldState,
+  Form as PForm,
+} from '@primevue/forms'
+import { valibotResolver } from '@primevue/forms/resolvers/valibot'
+
+export interface FormProps {
+  schema?: unknown
+}
+</script>
+
+<script setup lang="ts">
+const { schema } = defineProps<FormProps>()
+const emit = defineEmits<{ submit: [] }>()
+</script>
+
+<template>
+  <PForm :resolver="schema ? valibotResolver(schema) : undefined" @submit="emit('submit')" />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+    let setup_return = result
+        .code
+        .split("const __returned__ = {")
+        .nth(1)
+        .expect("setup should return bindings");
+
+    assert!(setup_return.contains("emit"), "{}", result.code);
+    assert!(setup_return.contains("PForm"), "{}", result.code);
+    assert!(setup_return.contains("valibotResolver"), "{}", result.code);
+    assert!(
+        result
+            .code
+            .contains("Object.defineProperty(__returned__, '__isScriptSetup'"),
+        "{}",
         result.code
     );
     assert!(
         result
             .code
-            .contains("const __vaporRender = render"),
-        "Script setup Vapor output should alias the template render to avoid local binding collisions. Got:\n{}",
+            .contains("$setup.valibotResolver($props.schema)")
+            || result
+                .code
+                .contains("_unref($setup.valibotResolver)($props.schema)"),
+        "{}",
         result.code
     );
-    assert!(
-        result
-            .code
-            .contains("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)"),
-        "Script setup Vapor output should return a Vapor block directly from setup. Got:\n{}",
-        result.code
-    );
+}
+
+#[test]
+fn test_normal_script_sfc_ssr_attaches_ssr_render() {
+    let source = r#"<script lang="ts">
+export default {
+  name: 'HelloSsr'
+}
+</script>
+
+<template>
+  <div>Hello</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_template_only_sfc_ssr_exports_default_component() {
+    let source = r#"<template>
+  <div>Hello</div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        template: TemplateCompileOptions {
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1010,23 +1348,7 @@ function render() {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("const __vaporRender = render"),
-        "Vapor output should create a module-scope render alias. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("render: __vaporRender"),
-        "Vapor component options should use the alias to keep template render stable. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result
-            .code
-            .contains("return __vaporRender(__ctx, __props, __emit, __attrs, __slots)"),
-        "Vapor setup should call the aliased template render instead of a local binding. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1056,16 +1378,7 @@ const count = ref(1)
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("const n0 = t0()"),
-        "Script setup Vapor output should keep render block statements. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("return n0"),
-        "Script setup Vapor output should return the Vapor root node. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1093,18 +1406,109 @@ import FooPanel from './FooPanel.vue'
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result
-            .code
-            .contains("const _component_FooPanel = _ctx.FooPanel"),
-        "Imported script setup components should be read from _ctx in Vapor mode. Got:\n{}",
-        result.code
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_vapor_uses_ctx_bindings_for_lowercase_imported_components() {
+    let source = r#"<script setup lang="ts">
+import { Primitive } from '@tresjs/core'
+</script>
+
+<template>
+  <primitive />
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        vapor: true,
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_vapor_custom_renderer_preserves_intrinsics_and_lowercase_imports() {
+    let source = r#"<script setup lang="ts">
+import { Primitive } from '@tresjs/core'
+const visible = true
+</script>
+
+<template>
+  <mesh>
+    <group v-if="visible">
+      <primitive />
+    </group>
+  </mesh>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        vapor: true,
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            custom_renderer: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_script_setup_sfc_vapor_ssr_custom_renderer_falls_back_without_losing_intrinsics() {
+    let source = r#"<script setup lang="ts" vapor>
+import { Primitive } from '@tresjs/core'
+const visible = true
+</script>
+
+<template>
+  <mesh>
+    <group v-if="visible">
+      <primitive />
+    </group>
+  </mesh>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        vapor: true,
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            custom_renderer: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert_eq!(result.warnings.len(), 1);
+    assert_eq!(
+        result.warnings[0].code.as_deref(),
+        Some("VAPOR_SSR_FALLBACK")
     );
-    assert!(
-        !result.code.contains("_resolveComponent(\"FooPanel\")"),
-        "Imported script setup components should not go through resolveComponent. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }
 
 #[test]
@@ -1126,19 +1530,5 @@ export default {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("const t0 = _template"),
-        "Normal script Vapor output should keep template declarations. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_sfc_main.__vapor = true"),
-        "Normal script Vapor output should mark the component as Vapor. Got:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("export default _sfc_main"),
-        "Normal script Vapor output should continue exporting _sfc_main. Got:\n{}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 }

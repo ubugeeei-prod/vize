@@ -1,81 +1,134 @@
-/**
- * Type definitions for @vizejs/rspack-plugin
- * Copied and adapted from vite-plugin-vize
- */
+/** Type definitions for @vizejs/rspack-plugin. */
 
-// ============================================================================
 // Native API Types
-// ============================================================================
 
 export interface SfcCompileOptionsNapi {
   filename?: string;
   sourceMap?: boolean;
   ssr?: boolean;
+  /** Enable Vapor mode compilation */
+  vapor?: boolean;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   /** Scope ID for scoped CSS (e.g., "data-v-abc123") */
   scopeId?: string;
 }
 
+export interface MacroArtifact {
+  kind: string;
+  name: string;
+  source: string;
+  content: string;
+  moduleCode?: string;
+  start: number;
+  end: number;
+}
+
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
-  /** Source map JSON string (when implemented in @vizejs/native) */
+  /** Source map JSON (when implemented) */
   map?: string;
   errors: string[];
   warnings: string[];
+  macroArtifacts?: MacroArtifact[];
 }
 
-// ============================================================================
+// CSS Compile API Types
+
+export interface CssCompileTargets {
+  chrome?: number;
+  firefox?: number;
+  safari?: number;
+  edge?: number;
+  ios?: number;
+  android?: number;
+}
+
+export interface CssCompileOptions {
+  /** Filename for error reporting */
+  filename?: string;
+  /** Whether to apply scoped CSS transformation */
+  scoped?: boolean;
+  /**
+   * Scope ID for scoped CSS. Must be the full attribute (e.g., "data-v-abc123").
+   */
+  scopeId?: string;
+  /** Whether to generate source maps */
+  sourceMap?: boolean;
+  /** Whether to minify the output */
+  minify?: boolean;
+  /** Whether to enable custom media query resolution */
+  customMedia?: boolean;
+  /** Browser targets for autoprefixing */
+  targets?: CssCompileTargets;
+}
+
+export interface CssCompileResult {
+  /** Compiled CSS code */
+  code: string;
+  /** Source map (null until implemented) */
+  map?: string | null;
+  /** CSS variables found (v-bind() expressions) */
+  cssVars: string[];
+  /** Errors during compilation */
+  errors: string[];
+  /** Warnings during compilation */
+  warnings: string[];
+}
+
 // Style Block Types
-// ============================================================================
 
 export interface StyleBlockInfo {
-  /** Raw style content (uncompiled for preprocessor langs) */
+  /** Raw style content */
   content: string;
-  /** External style source path from `<style src="...">` */
+  /** External source from `<style src="...">` */
   src?: string | null;
   /** Language of the style block (e.g., "css", "scss", "less", "sass", "stylus") */
   lang: string | null;
-  /** Whether the style block has the scoped attribute */
+  /** Whether scoped */
   scoped: boolean;
-  /** CSS Modules: true for unnamed `module`, or the binding name for `module="name"` */
+  /** CSS Modules: true for unnamed, or binding name for named */
   module: boolean | string;
-  /** Index of this style block in the SFC */
+  /** Block index in the SFC */
   index: number;
 }
 
-// ============================================================================
 // Custom Block Types
-// ============================================================================
 
 export interface CustomBlockInfo {
-  /** Tag name of the custom block (e.g., "i18n", "docs") */
+  /** Tag name (e.g., "i18n", "docs") */
   type: string;
-  /** Raw content of the custom block */
+  /** Raw content */
   content: string;
-  /** External source path from `<block src="...">` */
+  /** External source from `<block src="...">` */
   src?: string | null;
-  /** All attributes on the custom block tag */
+  /** All attributes on the tag */
   attrs: Record<string, string | true>;
-  /** Index of this custom block in the SFC */
+  /** Block index in the SFC */
   index: number;
 }
 
-// ============================================================================
 // SFC Block Src Info
-// ============================================================================
 
 export interface SfcSrcInfo {
-  /** Whether <script> has a src attribute */
+  /** <script src> path, or null */
   scriptSrc?: string | null;
-  /** Whether <template> has a src attribute */
+  /** <template src> path, or null */
   templateSrc?: string | null;
 }
 
-// ============================================================================
+// Template Asset URL Types
+
+/** Static asset URL in template to be rewritten as an import binding. */
+export interface TemplateAssetUrl {
+  /** Raw URL as in template (e.g., "./logo.png") */
+  url: string;
+  /** JS identifier for the import (e.g., "_imports_0") */
+  varName: string;
+}
+
 // Compiled Module Types
-// ============================================================================
 
 export interface CompiledModule {
   code: string;
@@ -84,235 +137,115 @@ export interface CompiledModule {
   warnings: string[];
   scopeId: string;
   hasScoped: boolean;
-  /** Per-block style metadata extracted from the source SFC */
+  /** Per-block style metadata */
   styles: StyleBlockInfo[];
-  /** Custom blocks extracted from the source SFC */
+  /** Custom blocks from the SFC */
   customBlocks: CustomBlockInfo[];
-  /** Whether this is a custom element SFC (e.g., .ce.vue) */
+  /** Whether custom element (e.g., .ce.vue) */
   isCustomElement: boolean;
+  /** Static asset URLs needing import rewrite. Empty when transformAssetUrls is false. */
+  templateAssetUrls: TemplateAssetUrl[];
+  /** Compile-time macro artifacts extracted from the source SFC. */
+  macroArtifacts?: MacroArtifact[];
 }
 
-// ============================================================================
 // Loader Options Types
-// ============================================================================
 
 export interface VizeLoaderOptions {
-  /**
-   * Enable source map generation
-   * @default true
-   */
+  /** Source maps @default true */
   sourceMap?: boolean;
 
-  /**
-   * Enable SSR mode
-   * @default false
-   */
+  /** SSR mode @default false */
   ssr?: boolean;
 
-  /**
-   * Project root directory
-   */
+  /** Project root */
   root?: string;
 
-  /**
-   * Files to include in compilation (safe filter)
-   */
+  /** Include filter */
   include?: string | RegExp | (string | RegExp)[];
 
-  /**
-   * Files to exclude from compilation (safe filter)
-   */
+  /** Exclude filter */
   exclude?: string | RegExp | (string | RegExp)[];
 
-  /**
-   * Additional low-level compiler options passed to @vizejs/native compileSfc
-   */
+  /** Low-level compiler options for @vizejs/native compileSfc */
   compilerOptions?: SfcCompileOptionsNapi;
 
-  /**
-   * Transform Vue SFCs into custom elements.
-   * - `true`: all `*.vue` imports are converted into custom elements
-   * - `RegExp`: matched files are converted into custom elements
-   *
-   * @default /\.ce\.vue$/
-   */
+  /** Custom element mode. true=all, RegExp=matched. @default /\.ce\.vue$/ */
   customElement?: boolean | RegExp;
 
-  /**
-   * Enable HMR (Hot Module Replacement) for Vue SFCs.
-   * Set to `false` to explicitly disable HMR even in development mode.
-   *
-   * @default true (enabled in development, disabled in production/SSR)
-   */
-  hotReload?: boolean;
-}
-
-export interface VizeStyleLoaderOptions {
-  /**
-   * Whether to use native CSS mode (experiments.css)
-   * In both modes, the loader outputs pure CSS
-   * @default false
-   */
-  native?: boolean;
-}
-
-// ============================================================================
-// Preset API Types
-// ============================================================================
-
-export type VizeStyleLanguage = "css" | "scss" | "sass" | "less" | "styl" | "stylus";
-
-export interface CreateVizeVueRulesOptions {
-  /**
-   * Production mode flag
-   * @default false
-   */
-  isProduction?: boolean;
-
-  /**
-   * Use Rspack native CSS pipeline (`experiments.css`)
-   * @default true
-   */
-  nativeCss?: boolean;
-
-  /**
-   * Extra languages to handle automatically in addition to `css`
-   * @default ["scss", "sass", "less", "stylus", "styl"]
-   */
-  styleLanguages?: VizeStyleLanguage[];
-
-  /**
-   * Loader entry for the main `.vue` compiler loader
-   * @default "@vizejs/rspack-plugin/loader"
-   */
-  vizeLoader?: string;
-
-  /**
-   * Loader entry for the `.vue` style extractor loader
-   * @default "@vizejs/rspack-plugin/style-loader"
-   */
-  vizeStyleLoader?: string;
-
-  /**
-   * Dev style injector / prod extractor loader entry used in non-native CSS mode
-   * @default "style-loader"
-   */
-  styleInjectLoader?: LoaderEntry;
-
-  /**
-   * Production CSS extractor loader entry used in non-native CSS mode
-   * (e.g. `rspack.CssExtractRspackPlugin.loader`)
-   */
-  styleExtractLoader?: LoaderEntry;
-
-  /**
-   * css-loader entry used in non-native CSS mode
-   * @default "css-loader"
-   */
-  cssLoader?: LoaderEntry;
-
-  /**
-   * Main vize loader options
-   */
-  loaderOptions?: VizeLoaderOptions;
-
-  /**
-   * Vize style loader options
-   */
-  styleLoaderOptions?: VizeStyleLoaderOptions;
-
-  /**
-   * Add a post-processing rule to strip TypeScript type annotations from
-   * the compiled `.vue` output.
-   *
-   * This is needed because `@vizejs/native compileSfc` preserves TypeScript
-   * syntax in its output (same as `@vue/compiler-sfc`), and a downstream
-   * transpiler must strip the types before the browser/runtime can execute it.
-   *
-   * - `true`:  use Rspack built-in SWC loader (`builtin:swc-loader`)
-   * - `LoaderEntry`: use a custom loader (e.g. `esbuild-loader`)
-   * - `false` / omitted: no post-processing (user handles it separately)
-   *
-   * @default false
-   */
-  typescript?: boolean | LoaderEntry;
-}
-
-// ============================================================================
-// Plugin Options Types
-// ============================================================================
-
-export interface VizeRspackPluginOptions {
-  /**
-   * Files to include in compilation
-   * @default /\.vue$/
-   */
-  include?: string | RegExp | (string | RegExp)[];
-
-  /**
-   * Files to exclude from compilation
-   * @default /node_modules/
-   */
-  exclude?: string | RegExp | (string | RegExp)[];
-
-  /**
-   * Force production mode
-   * @default auto-detected from Rspack config
-   */
-  isProduction?: boolean;
-
-  /**
-   * Enable SSR mode
-   * @default false
-   */
-  ssr?: boolean;
-
-  /**
-   * Enable source map generation
-   * @default true in development, false in production
-   */
-  sourceMap?: boolean;
-
-  /**
-   * Enable Vapor mode compilation
-   * @default false
-   */
+  /** Vapor mode @default false */
   vapor?: boolean;
 
-  /**
-   * Root directory to scan for .vue files
-   * @default Rspack's root
-   */
-  root?: string;
+  /** HMR. false to disable in dev. @default true (dev), false (prod/SSR) */
+  hotReload?: boolean;
 
-  /**
-   * CSS configuration
-   */
+  /** CSS handling config */
   css?: {
-    /**
-     * Use Rspack native CSS processing (experiments.css)
-     * When enabled, no need for css-loader/style-loader/CssExtractRspackPlugin
-     * Handled by Rust-side LightningCSS, better performance
-     * @default false
-     */
+    /** Native CSS (experiments.css), uses LightningCSS @default auto-detected */
     native?: boolean;
   };
 
   /**
-   * Custom compiler options
+   * Transform static asset URLs in templates into import bindings.
+   * true=built-in tags, false=disabled, object=custom map. @default true
    */
-  compilerOptions?: SfcCompileOptionsNapi;
-
-  /**
-   * Enable debug logging
-   * @default false
-   */
-  debug?: boolean;
+  transformAssetUrls?: boolean | Record<string, string[]>;
 }
 
-// ============================================================================
+export interface VizeStyleLoaderOptions {
+  /** Native CSS mode (experiments.css) @default false */
+  native?: boolean;
+}
+
+// Plugin Options Types
+
+export interface VizeRspackPluginOptions {
+  /** Include filter @default /\.vue$/ */
+  include?: string | RegExp | (string | RegExp)[];
+
+  /** Exclude filter @default /node_modules/ */
+  exclude?: string | RegExp | (string | RegExp)[];
+
+  /** Force production mode @default auto-detected */
+  isProduction?: boolean;
+
+  /** SSR mode @default false */
+  ssr?: boolean;
+
+  /** Source maps @default true (dev), false (prod) */
+  sourceMap?: boolean;
+
+  /** Vapor mode @default false */
+  vapor?: boolean;
+
+  /** Root directory @default Rspack's root */
+  root?: string;
+
+  /** CSS config */
+  css?: {
+    /** Native CSS (experiments.css), uses LightningCSS @default false */
+    native?: boolean;
+  };
+
+  /** Compiler options */
+  compilerOptions?: SfcCompileOptionsNapi;
+
+  /** Debug logging @default false */
+  debug?: boolean;
+
+  /** Auto-clone CSS rules for Vue style sub-requests (like VueLoaderPlugin). @default true */
+  autoRules?: boolean;
+
+  /**
+   * Auto-inject a `builtin:swc-loader` post-processing rule to strip TypeScript
+   * annotations from compiled `.vue` output. Safe for non-TS SFCs (SWC passes
+   * plain JS through unchanged). Set to `false` to handle TS stripping yourself.
+   * @default true
+   */
+  typescript?: boolean;
+}
+
 // Utility Types
-// ============================================================================
 
 /** Loader entry: either a string (loader name/path) or an object with loader + options */
 export type LoaderEntry = string | { loader: string; options?: Record<string, unknown> };

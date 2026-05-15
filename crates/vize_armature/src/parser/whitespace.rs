@@ -7,7 +7,10 @@ use vize_carton::Vec;
 use vize_relief::ast::TemplateChildNode;
 
 /// Condense whitespace in children
-pub(super) fn condense_whitespace<'a>(children: &mut Vec<'a, TemplateChildNode<'a>>) {
+pub(super) fn condense_whitespace<'a>(
+    children: &mut Vec<'a, TemplateChildNode<'a>>,
+    is_pre_tag: fn(&str) -> bool,
+) {
     // First pass: remove leading whitespace-only text nodes
     while !children.is_empty() {
         if let TemplateChildNode::Text(ref text) = children[0] {
@@ -33,52 +36,45 @@ pub(super) fn condense_whitespace<'a>(children: &mut Vec<'a, TemplateChildNode<'
 
     let mut i = 0;
     while i < children.len() {
-        // Determine what action to take for whitespace-only text nodes
-        let action = if let TemplateChildNode::Text(ref text) = children[i] {
-            let content = text.content.as_str();
-            if content.chars().all(char::is_whitespace) {
-                let prev_is_text = i > 0
-                    && matches!(
-                        children[i - 1],
-                        TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-                    );
-                let next_is_text = i + 1 < children.len()
-                    && matches!(
-                        children[i + 1],
-                        TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-                    );
+        let action = if is_whitespace_text(&children[i]) {
+            let mut run_end = i + 1;
+            let mut has_newline = whitespace_has_newline(&children[i]);
+            while run_end < children.len() && is_whitespace_text(&children[run_end]) {
+                has_newline |= whitespace_has_newline(&children[run_end]);
+                run_end += 1;
+            }
 
-                if !prev_is_text && !next_is_text {
-                    // Between non-text nodes (e.g. two elements):
-                    // If whitespace contains a newline, remove it entirely
-                    // (this handles indentation between block-level elements).
-                    // If it's just spaces (no newline), condense to single space
-                    // to preserve inline spacing (vuejs/core #7542).
-                    let has_newline = content.contains('\n');
-                    if has_newline {
-                        WhitespaceAction::Remove
-                    } else {
-                        WhitespaceAction::Condense
-                    }
-                } else {
-                    WhitespaceAction::Keep
-                }
+            let prev = (0..i)
+                .rev()
+                .find(|&idx| !is_whitespace_text(&children[idx]));
+            let next = (run_end..children.len()).find(|&idx| !is_whitespace_text(&children[idx]));
+
+            let prev_is_text = prev.is_some_and(|idx| is_text_like(&children[idx]));
+            let next_is_text = next.is_some_and(|idx| is_text_like(&children[idx]));
+
+            if !prev_is_text && !next_is_text && has_newline {
+                WhitespaceAction::Remove(run_end - i)
             } else {
-                WhitespaceAction::Keep
+                WhitespaceAction::Condense(run_end - i)
             }
         } else {
             WhitespaceAction::Keep
         };
 
         match action {
-            WhitespaceAction::Remove => {
-                children.remove(i);
+            WhitespaceAction::Remove(len) => {
+                for _ in 0..len {
+                    children.remove(i);
+                }
                 continue;
             }
-            WhitespaceAction::Condense => {
-                // Condense whitespace between two elements to a single space
+            WhitespaceAction::Condense(len) => {
+                // Condense whitespace runs to a single space.
                 if let TemplateChildNode::Text(ref mut text) = children[i] {
                     text.content = " ".into();
+                }
+                for _ in 1..len {
+                    children.remove(i + 1);
                 }
             }
             WhitespaceAction::Keep => {}
@@ -86,10 +82,34 @@ pub(super) fn condense_whitespace<'a>(children: &mut Vec<'a, TemplateChildNode<'
 
         // Recurse into elements
         if let TemplateChildNode::Element(ref mut el) = children[i] {
-            condense_whitespace(&mut el.children);
+            if !is_pre_tag(el.tag.as_str()) {
+                condense_whitespace(&mut el.children, is_pre_tag);
+            }
         }
 
         i += 1;
+    }
+}
+
+#[inline]
+fn is_whitespace_text(child: &TemplateChildNode<'_>) -> bool {
+    matches!(child, TemplateChildNode::Text(text) if text.content.chars().all(char::is_whitespace))
+}
+
+#[inline]
+fn whitespace_has_newline(child: &TemplateChildNode<'_>) -> bool {
+    matches!(
+        child,
+        TemplateChildNode::Text(text) if text.content.contains('\n') || text.content.contains('\r')
+    )
+}
+
+#[inline]
+fn is_text_like(child: &TemplateChildNode<'_>) -> bool {
+    match child {
+        TemplateChildNode::Interpolation(_) => true,
+        TemplateChildNode::Text(text) => !text.content.chars().all(char::is_whitespace),
+        _ => false,
     }
 }
 
@@ -98,7 +118,7 @@ enum WhitespaceAction {
     /// Keep the node as-is
     Keep,
     /// Remove the node entirely
-    Remove,
-    /// Condense to a single space
-    Condense,
+    Remove(usize),
+    /// Condense a run to a single space
+    Condense(usize),
 }

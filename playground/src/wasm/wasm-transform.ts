@@ -66,7 +66,7 @@ export function createTransformAnalyzeSfc(
 
     // Transform bindings to match BindingDisplay interface
     const bindings: BindingDisplay[] = (croquis.bindings || []).map(
-      (b: { name: string; type: string }, i: number) => ({
+      (b: { name: string; type: string; start?: number; end?: number }) => ({
         name: b.name,
         kind: b.type,
         source: "script" as BindingSource,
@@ -81,8 +81,8 @@ export function createTransformAnalyzeSfc(
           scopeDepth: 0,
         },
         typeAnnotation: undefined,
-        start: i * 10,
-        end: i * 10 + 5,
+        start: b.start ?? 0,
+        end: b.end ?? 0,
         isUsed: true,
         isMutated: false,
         referenceCount: 1,
@@ -94,11 +94,19 @@ export function createTransformAnalyzeSfc(
 
     // Transform macros from WASM
     const macros: MacroDisplay[] = (croquis.macros || []).map(
-      (m: { name: string; kind: string; start: number; end: number; typeArgs?: string }) => ({
+      (m: {
+        name: string;
+        kind: string;
+        start: number;
+        end: number;
+        typeArgs?: string;
+        runtimeArgs?: string;
+      }) => ({
         name: m.name,
         start: m.start,
         end: m.end,
         type_args: m.typeArgs,
+        args: m.runtimeArgs,
       }),
     );
 

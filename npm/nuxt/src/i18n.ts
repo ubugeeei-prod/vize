@@ -16,18 +16,20 @@ function getLocalAlias(specifier: string): string {
   return (colon === -1 ? specifier : specifier.slice(colon + 1)).trim();
 }
 
-function collectUsedI18nSpecifiers(code: string): string[] {
+function collectUsedI18nSpecifiers(code: string): { firstUseIndex: number; specifiers: string[] } {
   const used = new Set<string>();
+  let firstUseIndex = Number.POSITIVE_INFINITY;
 
   for (const match of code.matchAll(I18N_FN_RE)) {
     const fnName = `$${match[1]}`;
     const specifier = I18N_FN_MAP[fnName];
     if (specifier) {
       used.add(specifier);
+      firstUseIndex = Math.min(firstUseIndex, match.index ?? firstUseIndex);
     }
   }
 
-  return Array.from(used);
+  return { firstUseIndex, specifiers: Array.from(used) };
 }
 
 function collectDestructuredLocalNames(destructure: string): Set<string> {
@@ -50,11 +52,6 @@ function collectDestructuredLocalNames(destructure: string): Set<string> {
 }
 
 export function injectNuxtI18nHelpers(code: string): string {
-  const usedSpecifiers = collectUsedI18nSpecifiers(code);
-  if (usedSpecifiers.length === 0) {
-    return code;
-  }
-
   const setupMatch = code.match(SETUP_FN_RE);
   if (!setupMatch || setupMatch.index === undefined) {
     return code;
@@ -62,6 +59,11 @@ export function injectNuxtI18nHelpers(code: string): string {
 
   const setupBodyStart = setupMatch.index + setupMatch[0].length;
   const setupBody = code.slice(setupBodyStart);
+  const { firstUseIndex, specifiers: usedSpecifiers } = collectUsedI18nSpecifiers(setupBody);
+  if (usedSpecifiers.length === 0) {
+    return code;
+  }
+
   const existingMatch = setupBody.match(USE_I18N_DESTRUCTURE_RE);
 
   if (existingMatch && existingMatch.index !== undefined) {
@@ -72,6 +74,14 @@ export function injectNuxtI18nHelpers(code: string): string {
 
     if (missingSpecifiers.length === 0) {
       return code;
+    }
+
+    if (existingMatch.index > firstUseIndex) {
+      return (
+        code.slice(0, setupBodyStart) +
+        `\nconst { ${missingSpecifiers.join(", ")} } = useI18n();\n` +
+        code.slice(setupBodyStart)
+      );
     }
 
     const merged = existingMatch[1].trim();

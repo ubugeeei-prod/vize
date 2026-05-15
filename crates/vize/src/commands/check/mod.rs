@@ -1,12 +1,13 @@
 //! Check command - Type check Vue SFC files
 //!
-//! Generates Virtual TypeScript from Vue SFCs and uses tsgo LSP for type checking.
+//! Generates Virtual TypeScript from Vue SFCs and uses Corsa project sessions for type checking.
 //! Can connect to a running check-server via Unix socket for faster repeated checks.
 
 mod dts;
 mod nuxt;
 mod reporting;
 mod runner;
+mod tsconfig_inputs;
 
 use clap::Args;
 use std::path::PathBuf;
@@ -14,8 +15,8 @@ use std::path::PathBuf;
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct CheckArgs {
-    /// Glob pattern(s) to match .vue files
-    #[arg(default_value = "./**/*.vue")]
+    /// Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.d.ts`).
+    /// When omitted, `tsconfig.json` include/exclude/files are used if available.
     pub patterns: Vec<String>,
 
     /// Connect to check-server via Unix socket (faster for repeated checks, Unix only)
@@ -43,18 +44,21 @@ pub struct CheckArgs {
     #[arg(long)]
     pub profile: bool,
 
-    /// Path to tsgo executable (can also use TSGO_PATH env var)
+    /// Path to the Corsa executable (can also use `CORSA_PATH`)
     #[arg(long)]
-    pub tsgo_path: Option<String>,
-}
+    pub corsa_path: Option<String>,
 
-/// Intermediate representation of a generated virtual TypeScript file.
-#[allow(clippy::disallowed_types)]
-pub(crate) struct GeneratedFile {
-    pub original: String,
-    pub virtual_ts: String,
-    pub source_map: Vec<vize_canon::virtual_ts::VizeMapping>,
-    pub original_content: String,
+    /// Number of parallel Corsa servers to use (defaults to an auto-tuned value)
+    #[arg(long)]
+    pub servers: Option<usize>,
+
+    /// Emit `.d.ts` files using the materialized Corsa project
+    #[arg(long)]
+    pub declaration: bool,
+
+    /// Output directory for emitted `.d.ts` files
+    #[arg(long)]
+    pub declaration_dir: Option<PathBuf>,
 }
 
 /// Serde types for check-server JSON-RPC communication (Unix only).
@@ -107,6 +111,6 @@ pub fn run(args: CheckArgs) {
         return;
     }
 
-    // Otherwise, fall back to direct tsgo execution
+    // Otherwise, fall back to direct Corsa execution.
     runner::run_direct(&args);
 }

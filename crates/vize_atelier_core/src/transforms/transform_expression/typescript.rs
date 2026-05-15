@@ -210,21 +210,12 @@ mod tests {
     fn test_strip_typescript_from_expression() {
         // Simple as assertion
         let result = strip_typescript_from_expression("$event.target as HTMLSelectElement");
-        assert!(
-            !result.contains(" as "),
-            "Expected no 'as' keyword, got: {}",
-            result
-        );
-        assert!(result.contains("$event.target"));
+        insta::assert_snapshot!(result.as_str());
 
         // Chained as assertions
         let result =
             strip_typescript_from_expression("($event.target as HTMLInputElement).value as string");
-        assert!(
-            !result.contains(" as "),
-            "Expected no 'as' keyword, got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
 
         // No TypeScript - should return as-is
         let result = strip_typescript_from_expression("foo.bar.baz");
@@ -235,19 +226,7 @@ mod tests {
             "handlePresetChange(($event.target as HTMLSelectElement).value as PresetKey)",
         );
         eprintln!("Complex expression result: {}", result);
-        assert!(
-            !result.contains(" as "),
-            "Expected no 'as' keyword, got: {}",
-            result
-        );
-        assert!(
-            result.contains("handlePresetChange"),
-            "Should contain function call"
-        );
-        assert!(
-            result.contains("$event.target"),
-            "Should contain event target"
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -300,7 +279,7 @@ mod tests {
 
         // "as" assertions are stripped:
         let result = strip_typescript_from_expression("foo as string");
-        assert!(!result.contains(" as "), "as assertions should be stripped");
+        insta::assert_snapshot!(result.as_str());
 
         // Generics in expressions MAY or MAY NOT be stripped depending on context
         // This is expected behavior - complex cases are handled elsewhere
@@ -313,8 +292,6 @@ mod tests {
     fn test_strip_typescript_arrow_param_types() {
         let result = strip_typescript_from_expression("items.filter((x: number) => x > 1)");
         eprintln!("Arrow param stripped: {}", result);
-        // Note: This may or may not strip depending on the OXC parser's handling
-        // The important thing is that it doesn't crash
-        assert!(result.contains("filter"));
+        insta::assert_snapshot!(result.as_str());
     }
 }

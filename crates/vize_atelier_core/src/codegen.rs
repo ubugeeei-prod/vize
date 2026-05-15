@@ -20,7 +20,9 @@ use crate::{
     ast::{RootNode, RuntimeHelper, TemplateChildNode},
     options::CodegenOptions,
 };
+use vize_carton::profile;
 
+use children::is_directive_comment;
 pub use context::{CodegenContext, CodegenResult};
 use element::generate_root_node;
 use generate::{collect_hoist_helpers, generate_hoists};
@@ -36,18 +38,21 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
         .children
         .iter()
-        .filter(|child| !is_ignorable_root_text(child))
+        .filter(|child| !is_ignorable_root_text(child) && !is_directive_comment(child))
         .collect();
 
     // Generate function signature
-    generate_function_signature(&mut ctx);
+    profile!(
+        "atelier.codegen.function_signature",
+        generate_function_signature(&mut ctx)
+    );
 
     // Generate body
     ctx.indent();
     ctx.newline();
 
     // Generate component/directive resolution
-    generate_assets(&mut ctx, root);
+    profile!("atelier.codegen.assets", generate_assets(&mut ctx, root));
 
     // Generate return statement
     ctx.push("return ");
@@ -57,7 +62,10 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         ctx.push("null");
     } else if root_children.len() == 1 {
         // Single root child - wrap in block
-        generate_root_node(&mut ctx, root_children[0]);
+        profile!(
+            "atelier.codegen.root_node",
+            generate_root_node(&mut ctx, root_children[0])
+        );
     } else {
         // Multiple root children - wrap in fragment block
         ctx.use_helper(RuntimeHelper::OpenBlock);
@@ -76,7 +84,10 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
                 ctx.push(",");
             }
             ctx.newline();
-            generate_node(&mut ctx, child);
+            profile!(
+                "atelier.codegen.fragment_child",
+                generate_node(&mut ctx, child)
+            );
         }
         ctx.deindent();
         ctx.newline();
@@ -99,15 +110,21 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     }
     // Collect helpers from hoisted nodes - generate_hoists() takes &CodegenContext (immutable)
     // so helpers used in hoisted VNodes aren't tracked via use_helper(). Pre-scan them here.
-    collect_hoist_helpers(root, &mut all_helpers);
+    profile!(
+        "atelier.codegen.collect_hoist_helpers",
+        collect_hoist_helpers(root, &mut all_helpers)
+    );
     // Sort helpers for consistent output order
     all_helpers.sort();
     all_helpers.dedup();
 
-    let mut preamble = generate_preamble_from_helpers(&ctx, &all_helpers);
+    let mut preamble = profile!(
+        "atelier.codegen.preamble",
+        generate_preamble_from_helpers(&ctx, &all_helpers)
+    );
 
     // Generate hoisted variable declarations (appended to preamble)
-    let hoists_code = generate_hoists(&ctx, root);
+    let hoists_code = profile!("atelier.codegen.hoists", generate_hoists(&ctx, root));
     if !hoists_code.is_empty() {
         preamble.push('\n');
         preamble.push_str(&hoists_code);
@@ -122,41 +139,142 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::{assert_codegen, compile};
+    use crate::compile;
+
+    fn result_output(result: &super::CodegenResult) -> vize_carton::String {
+        let mut output =
+            vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);
+        output.push_str(&result.preamble);
+        output.push('\n');
+        output.push_str(&result.code);
+        output
+    }
+
+    macro_rules! assert_codegen_snapshot {
+        ($result:expr) => {{
+            let output = result_output(&$result);
+            insta::assert_snapshot!(output.as_str());
+        }};
+    }
 
     #[test]
     fn test_codegen_simple_element() {
-        assert_codegen!("<div>hello</div>" => contains: [
-            "_createElementBlock",
-            "\"div\"",
-            "\"hello\""
-        ]);
+        let result = compile!("<div>hello</div>");
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_interpolation() {
         // When prefix_identifiers is false (default), expressions are not prefixed with _ctx.
-        assert_codegen!("<div>{{ msg }}</div>" => contains: [
-            "_toDisplayString",
-            "msg"
-        ]);
+        let result = compile!("<div>{{ msg }}</div>");
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_with_props() {
-        assert_codegen!(r#"<div id="app" class="container"></div>"# => contains: [
-            "id: \"app\"",
-            "class: \"container\""
-        ]);
+        let result = compile!(r#"<div id="app" class="container"></div>"#);
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_component() {
-        assert_codegen!("<MyComponent />" => contains: [
-            "_resolveComponent",
-            "_createBlock",
-            "_component_MyComponent"
-        ]);
+        let result = compile!("<MyComponent />");
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_component_name_with_colon_uses_valid_identifier() {
+        let allocator = bumpalo::Bump::new();
+        let parser_opts = crate::ParserOptions {
+            is_native_tag: Some(vize_carton::is_native_tag),
+            ..Default::default()
+        };
+        let (mut root, errors) = crate::parse_with_options(
+            &allocator,
+            r#"<global:head title="Page Title" />"#,
+            parser_opts,
+        );
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        crate::transform::transform(
+            &allocator,
+            &mut root,
+            crate::TransformOptions::default(),
+            None,
+        );
+        let output = result_output(&super::generate(&root, crate::CodegenOptions::default()));
+
+        assert!(
+            output.contains(r#"const _component_global_head = _resolveComponent("global:head")"#)
+        );
+        assert!(output.contains("_createBlock(_component_global_head"));
+        assert!(!output.contains("_component_global:head"));
+    }
+
+    #[test]
+    fn test_codegen_self_component_resolve_marks_maybe_self_reference() {
+        let result = compile!(
+            "<FileTree />",
+            super::CodegenOptions {
+                component_name: Some("FileTree".into()),
+                ..Default::default()
+            }
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains(r#"const _component_FileTree = _resolveComponent("FileTree", true)"#),
+            "self component resolution should pass maybeSelfReference. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_root_directive_comment_does_not_create_fragment_hole() {
+        let result =
+            compile!("<!-- @vize:forget sections are labeled by their headings --><section />");
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_root_only_directive_comment_compiles_to_null() {
+        let result = compile!("<!-- @vize:forget no render output -->");
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_pascal_case_dynamic_component() {
+        let result = compile!(r#"<Component :is="current" :active-class="klass" />"#);
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_pascal_case_dynamic_component_inside_v_for() {
+        let result =
+            compile!(r#"<Component :is="item.component" v-for="item in items" :key="item.id" />"#);
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_v_if_template_fragment_wraps_interpolation_in_text_vnode() {
+        let result = compile!(
+            r#"<p><template v-if="ready">{{ count }}</template><span v-if="pending">updating</span></p>"#
+        );
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_v_if_template_fragment_wraps_static_text_in_text_vnode() {
+        let result = compile!(
+            r#"<div><template v-if="ready">Found packages</template><span v-if="pending">updating</span></div>"#
+        );
+
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
@@ -167,104 +285,45 @@ mod tests {
             ..Default::default()
         };
         let result = compile!("<div>hello</div>", options);
-        assert!(result.preamble.contains("import {"));
-        assert!(result.preamble.contains("from \"vue\""));
+        insta::assert_snapshot!(result.preamble.as_str());
     }
 
     #[test]
     fn test_codegen_v_model_on_component() {
-        // v-model on component should expand to modelValue + onUpdate:modelValue
-        assert_codegen!(r#"<MyComponent v-model="msg" />"# => contains: [
-            "_createBlock",
-            "_component_MyComponent",
-            "modelValue:",
-            "msg",
-            "\"onUpdate:modelValue\":"
-        ]);
+        let result = compile!(r#"<MyComponent v-model="msg" />"#);
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_v_model_with_arg() {
-        // v-model:title should expand to title + onUpdate:title
-        assert_codegen!(r#"<MyComponent v-model:title="pageTitle" />"# => contains: [
-            "title:",
-            "pageTitle",
-            "\"onUpdate:title\":"
-        ]);
+        let result = compile!(r#"<MyComponent v-model:title="pageTitle" />"#);
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_v_model_on_input() {
-        // v-model on input uses withDirectives + vModelText
-        assert_codegen!(r#"<input v-model="inputValue" />"# => contains: [
-            "_withDirectives",
-            "_vModelText",
-            "inputValue",
-            "\"onUpdate:modelValue\":"
-        ]);
+        let result = compile!(r#"<input v-model="inputValue" />"#);
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_v_model_with_other_props() {
         // v-model with other props should not produce comments
         let result = compile!(r#"<MonacoEditor v-model="source" :language="editorLanguage" />"#);
-        // Should NOT contain /* v-model */
-        assert!(
-            !result.code.contains("/* v-model */"),
-            "Should not contain v-model comment"
-        );
-        // Should contain the expanded props
-        assert!(
-            result.code.contains("modelValue:"),
-            "Should have modelValue prop"
-        );
-        assert!(
-            result.code.contains("\"onUpdate:modelValue\":"),
-            "Should have onUpdate:modelValue prop"
-        );
-        assert!(
-            result.code.contains("language:"),
-            "Should have language prop"
-        );
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_slot_fallback() {
-        // Slot element with fallback content should include fallback function
-        assert_codegen!(r#"<slot name="label">{{ label }}</slot>"# => contains: [
-            "_renderSlot",
-            "\"label\"",
-            "{}"
-        ]);
-        // Check that the fallback function is present
         let result = compile!(r#"<slot name="label">{{ label }}</slot>"#);
-        assert!(
-            result.code.contains("() => ["),
-            "Should have fallback function: {}",
-            result.code
-        );
-        assert!(
-            result.code.contains("_toDisplayString"),
-            "Should have toDisplayString for interpolation: {}",
-            result.code
-        );
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_slot_without_fallback() {
         // Slot element without fallback should not have empty object or function
         let result = compile!(r#"<slot name="header"></slot>"#);
-        assert!(
-            result.code.contains("_renderSlot"),
-            "Should have renderSlot"
-        );
-        assert!(result.code.contains("\"header\""), "Should have slot name");
-        // Should not have fallback function
-        assert!(
-            !result.code.contains("() => ["),
-            "Should not have fallback function for empty slot: {}",
-            result.code
-        );
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -275,16 +334,81 @@ mod tests {
   <template v-else #header>Second</template>
 </MyDialog>"#
         );
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_conditional_named_slot_preserves_implicit_default_slot() {
+        let result = compile!(
+            r#"<Parent>
+  Not rendering!
+  <template v-if="showNamed" #named>
+    Named content
+  </template>
+</Parent>"#
+        );
+        let output = result_output(&result);
+
         assert!(
-            result.code.contains("_createSlots"),
-            "conditional slots should use createSlots. Got:\n{}",
+            output.contains("default: _withCtx(() => ["),
+            "implicit default slot should be generated when createSlots is used:\n{}",
+            output
+        );
+        assert!(
+            output.contains("Not rendering!"),
+            "default slot text should be preserved:\n{}",
+            output
+        );
+        assert!(
+            output.contains("name: \"named\""),
+            "conditional named slot should still be dynamic:\n{}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_codegen_default_slot_with_v_if_is_marked_dynamic() {
+        let result = compile!(
+            r#"<PageWithHeader>
+  <div v-if="tab === 'overview'">Overview</div>
+  <div v-else-if="tab === 'emojis'">Emojis</div>
+  <div v-else>Charts</div>
+</PageWithHeader>"#
+        );
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_forwarded_default_slot_is_marked_forwarded() {
+        let result = compile!(r#"<MkSwiper><slot /></MkSwiper>"#);
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_v_if_branch_mixed_children_wrap_interpolations_in_text_vnodes() {
+        let result = compile!(
+            r#"<p v-if="speaker.affiliation || speaker.title">{{ speaker.affiliation }}<br v-if="speaker.affiliation && speaker.title" />{{ speaker.title }}</p>"#
+        );
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_if_branch_mixed_children_wraps_interpolation_in_text_vnode() {
+        let result = compile!(
+            r#"<div><label v-if="show">{{ msg }}<span v-if="required">*</span></label></div>"#
+        );
+
+        assert!(
+            result.code.contains("_createTextVNode(_toDisplayString(msg), 1 /* TEXT */)"),
+            "mixed children inside v-if branch should wrap interpolation in createTextVNode. Got:\n{}",
             result.code
         );
         assert!(
-            !result.code.contains(": undefined ])")
-                && !result.code.contains(": undefined ]")
-                && !result.code.contains(": undefined ],"),
-            "final else branch should not emit an extra undefined arm. Got:\n{}",
+            !result.code.contains("[_toDisplayString(msg),"),
+            "v-if branch should not emit raw string children inside arrays. Got:\n{}",
             result.code
         );
     }
@@ -320,34 +444,56 @@ mod tests {
             },
         );
 
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_numeric_template_v_for_uses_fragment() {
+        let result = compile!(
+            r#"<div><template v-for="n in 4" :key="`set-${n}`"><button /><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon" /></template></div>"#
+        );
+
         assert!(
-            result
-                .code
-                .contains("_renderList(_ctx.items, (item, index) => {"),
-            "expected split aliases in renderList callback, got:\n{}",
+            !result.code.contains("\"template\""),
+            "template v-for must not create a DOM template element. Got:\n{}",
             result.code
         );
-        assert!(
-            !result.code.contains("_ctx.item.")
-                && !result.code.contains("_ctx.item,")
-                && !result.code.contains("_ctx.item)")
-                && !result.code.contains("_ctx.item]"),
-            "v-for value alias should stay local, got:\n{}",
-            result.code
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_v_for_scope_handlers_are_not_cached() {
+        use crate::options::{CodegenOptions, TransformOptions};
+        use crate::parser::parse;
+        use crate::transform::transform;
+        use bumpalo::Bump;
+
+        let allocator = Bump::new();
+        let (mut root, _) = parse(
+            &allocator,
+            r#"<button v-for="tab in tabs" :key="tab.id" @click="select(tab)">{{ tab.label }}</button>"#,
         );
-        assert!(
-            !result.code.contains("_ctx.index.")
-                && !result.code.contains("_ctx.index,")
-                && !result.code.contains("_ctx.index)")
-                && !result.code.contains("_ctx.index]"),
-            "v-for key/index alias should stay local, got:\n{}",
-            result.code
+
+        transform(
+            &allocator,
+            &mut root,
+            TransformOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+            None,
         );
-        assert!(
-            result.code.contains("user: item"),
-            "component prop should reference local alias, got:\n{}",
-            result.code
+
+        let result = super::generate(
+            &root,
+            CodegenOptions {
+                prefix_identifiers: true,
+                cache_handlers: true,
+                ..Default::default()
+            },
         );
+
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
@@ -382,38 +528,12 @@ mod tests {
             &root,
             CodegenOptions {
                 prefix_identifiers: true,
+                cache_handlers: true,
                 ..Default::default()
             },
         );
 
-        assert!(
-            result.code.contains("_ctx.showHistory(item)")
-                || result.code.contains("_ctx.showHistory(item))"),
-            "scoped slot item should stay local in direct handler, got:\n{}",
-            result.code
-        );
-        assert!(
-            result.code.contains("() => _ctx.edit(item.id)")
-                || result.code.contains("() => _ctx.edit(item.id))"),
-            "scoped slot item should stay local in arrow handler, got:\n{}",
-            result.code
-        );
-        assert!(
-            result.code.contains("_toDisplayString(index)")
-                || result.code.contains("toDisplayString(index)"),
-            "scoped slot index should stay local in interpolation, got:\n{}",
-            result.code
-        );
-        assert!(
-            !result.code.contains("_ctx.item."),
-            "scoped slot item should not be prefixed with _ctx, got:\n{}",
-            result.code
-        );
-        assert!(
-            !result.code.contains("_ctx.index"),
-            "scoped slot index should not be prefixed with _ctx, got:\n{}",
-            result.code
-        );
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
@@ -425,30 +545,14 @@ mod tests {
             background: blue;
         "></div>"#
         );
-        // Should have properly escaped newlines
-        assert!(
-            result.code.contains("\\n"),
-            "Should escape newlines in attribute values. Got:\n{}",
-            result.code
-        );
-        // Should NOT have raw newlines inside string literals
-        assert!(
-            !result.code.contains("style: \"\n"),
-            "Should not have raw newlines in string. Got:\n{}",
-            result.code
-        );
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_escape_special_chars_in_attribute() {
         // Attribute values should escape backslashes and quotes
         let result = compile!(r#"<div data-value="line1\nline2"></div>"#);
-        // Backslash should be escaped
-        assert!(
-            result.code.contains(r#"\\n"#),
-            "Should escape backslashes in attribute values. Got:\n{}",
-            result.code
-        );
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
@@ -460,26 +564,6 @@ mod tests {
             flex-direction: column;
         "></div>"#
         );
-        // Should produce valid JavaScript
-        assert!(
-            result.code.contains("style:"),
-            "Should have style property. Got:\n{}",
-            result.code
-        );
-        // All newlines should be escaped
-        let style_start = result.code.find("style:").unwrap_or(0);
-        let code_after_style = &result.code[style_start..];
-        // Find the string value - should not contain raw newlines
-        if let Some(quote_pos) = code_after_style.find('"') {
-            let remaining = &code_after_style[quote_pos + 1..];
-            if let Some(end_quote) = remaining.find('"') {
-                let style_value = &remaining[..end_quote];
-                assert!(
-                    !style_value.contains('\n'),
-                    "Style value should not contain raw newlines. Got:\n{}",
-                    style_value
-                );
-            }
-        }
+        assert_codegen_snapshot!(result);
     }
 }

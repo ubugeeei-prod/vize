@@ -186,10 +186,12 @@ fn push_pkl_command_candidates(commands: &mut Vec<PathBuf>, path: &Path) {
     }
 }
 
-fn local_pkl_candidates(base: &Path) -> [PathBuf; 4] {
+fn local_pkl_candidates(base: &Path) -> [PathBuf; 6] {
     [
         base.join("node_modules/.bin/pkl"),
         base.join("node_modules/.bin/pkl.cmd"),
+        base.join("node_modules/.pnpm/node_modules/.bin/pkl"),
+        base.join("node_modules/.pnpm/node_modules/.bin/pkl.cmd"),
         base.join("node_modules/@pkl-community/pkl/pkl"),
         base.join("node_modules/@pkl-community/pkl/pkl.exe"),
     ]

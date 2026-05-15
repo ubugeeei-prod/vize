@@ -4,9 +4,8 @@
 
 use crate::context::{ElementContext, LintContext};
 use crate::rule::Rule;
-use vize_carton::cstr;
 use vize_carton::directive::{parse_level_severity, parse_vize_directive, DirectiveKind};
-use vize_carton::CompactString;
+use vize_carton::{cstr, profile, CompactString};
 use vize_relief::ast::{
     CommentNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
@@ -36,7 +35,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run template-level checks
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.run_on_template(self.ctx, root);
+            profile!(
+                "patina.rule.run_on_template",
+                rule.run_on_template(self.ctx, root)
+            );
         }
 
         // Visit children
@@ -60,7 +62,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             TemplateChildNode::Interpolation(interp) => {
                 for rule in self.rules.iter() {
                     self.ctx.current_rule = rule.meta().name;
-                    rule.check_interpolation(self.ctx, interp);
+                    profile!(
+                        "patina.rule.check_interpolation",
+                        rule.check_interpolation(self.ctx, interp)
+                    );
                 }
             }
             TemplateChildNode::If(if_node) => {
@@ -193,7 +198,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Enter element - run rules
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.enter_element(self.ctx, el);
+            profile!(
+                "patina.rule.enter_element",
+                rule.enter_element(self.ctx, el)
+            );
         }
 
         // Check directives
@@ -201,7 +209,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             if let PropNode::Directive(dir) = prop {
                 for rule in self.rules.iter() {
                     self.ctx.current_rule = rule.meta().name;
-                    rule.check_directive(self.ctx, el, dir);
+                    profile!(
+                        "patina.rule.check_directive",
+                        rule.check_directive(self.ctx, el, dir)
+                    );
                 }
             }
         }
@@ -214,7 +225,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Exit element - run rules
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.exit_element(self.ctx, el);
+            profile!("patina.rule.exit_element", rule.exit_element(self.ctx, el));
         }
 
         self.ctx.pop_element();
@@ -225,7 +236,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run if checks
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.check_if(self.ctx, if_node);
+            profile!("patina.rule.check_if", rule.check_if(self.ctx, if_node));
         }
 
         // Visit branches
@@ -241,7 +252,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run for checks
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.check_for(self.ctx, for_node);
+            profile!("patina.rule.check_for", rule.check_for(self.ctx, for_node));
         }
 
         // Visit children

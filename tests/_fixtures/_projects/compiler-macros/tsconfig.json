@@ -8,8 +8,8 @@
     "noEmit": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "paths": {
-      "vue": ["../../../../node_modules/vue"],
-      "vue/*": ["../../../../node_modules/vue/*"]
+      "vue": ["../../../node_modules/vue"],
+      "vue/*": ["../../../node_modules/vue/*"]
     }
   },
   "include": ["src/**/*.vue"]

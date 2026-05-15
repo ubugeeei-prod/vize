@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { child as _child, setClass as _setClass, createInvoker as _createInvoker, delegateEvents as _delegateEvents, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div><button>x</button></div>", true)
+_delegateEvents("click")
+export function render(_ctx) {
+const n1 = t0()
+const n0 = _child(n1)
+n0.$evtclick = _createInvoker(e => _ctx.onClick(e))
+_renderEffect(() => _setClass(n0, _ctx.cls))
+return n1
+}

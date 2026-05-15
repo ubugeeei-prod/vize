@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref } from "vue";
 
-const count = ref(0)
+const count = ref(0);
 function increment() {
-  count.value++
+  count.value++;
 }
 
-defineExpose({ count, increment })
+defineExpose({ count, increment });
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-console.log(nonExistent)
+console.log(nonExistent);
 </script>
 
 <template>

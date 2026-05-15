@@ -8,7 +8,7 @@
 use crate::analyzer::helpers::extract_inline_callback_params;
 use crate::analyzer::Analyzer;
 use crate::scope::EventHandlerScopeData;
-use vize_carton::{smallvec, CompactString};
+use vize_carton::{profile, smallvec, CompactString};
 use vize_relief::ast::ExpressionNode;
 
 impl Analyzer {
@@ -26,7 +26,10 @@ impl Analyzer {
             };
 
             // Check for inline arrow/function
-            if let Some(params) = extract_inline_callback_params(content) {
+            if let Some(params) = profile!(
+                "croquis.template.callback.extract_params",
+                extract_inline_callback_params(content)
+            ) {
                 let event_name = dir
                     .arg
                     .as_ref()
@@ -76,7 +79,10 @@ impl Analyzer {
                 }
 
                 if self.options.detect_undefined && self.script_analyzed {
-                    self.check_expression_refs(exp, scope_vars, dir.loc.start.offset);
+                    profile!(
+                        "croquis.template.v_on.refs",
+                        self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                    );
                 }
 
                 for _ in &params_added {
@@ -129,7 +135,10 @@ impl Analyzer {
                     scope_vars.push(CompactString::const_new("$event"));
 
                     if self.options.detect_undefined && self.script_analyzed {
-                        self.check_expression_refs(exp, scope_vars, dir.loc.start.offset);
+                        profile!(
+                            "croquis.template.v_on.refs",
+                            self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                        );
                     }
 
                     scope_vars.pop();
@@ -150,7 +159,10 @@ impl Analyzer {
                     }
 
                     if self.options.detect_undefined && self.script_analyzed {
-                        self.check_expression_refs(exp, scope_vars, dir.loc.start.offset);
+                        profile!(
+                            "croquis.template.v_on.refs",
+                            self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                        );
                     }
                 }
             }

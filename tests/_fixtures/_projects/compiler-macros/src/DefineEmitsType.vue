@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const emit = defineEmits<{
-  change: [value: string]
-  update: [id: number, value: string]
-}>()
+  change: [value: string];
+  update: [id: number, value: string];
+}>();
 
 function handleClick() {
-  emit("change", "hello")
-  emit("update", 1, "world")
+  emit("change", "hello");
+  emit("update", 1, "world");
 }
 </script>
 

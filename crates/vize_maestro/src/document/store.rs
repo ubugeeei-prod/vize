@@ -105,6 +105,17 @@ impl DocumentStore {
         self.documents.remove(uri);
     }
 
+    /// Rename an open document while preserving its content and version.
+    pub fn rename(&self, old_uri: &Url, new_uri: Url) -> bool {
+        let Some((_, mut document)) = self.documents.remove(old_uri) else {
+            return false;
+        };
+
+        document.uri = new_uri.clone();
+        self.documents.insert(new_uri, document);
+        true
+    }
+
     /// Get a document by URI.
     pub fn get(&self, uri: &Url) -> Option<dashmap::mapref::one::Ref<'_, Url, Document>> {
         self.documents.get(uri)
@@ -258,5 +269,22 @@ mod tests {
         store.close(&test_uri());
         assert!(!store.contains(&test_uri()));
         assert!(store.is_empty());
+    }
+
+    #[test]
+    fn test_document_store_rename() {
+        let store = DocumentStore::new();
+        let old_uri = test_uri();
+        let new_uri = Url::parse("file:///renamed.vue").unwrap();
+
+        store.open(old_uri.clone(), "content".to_string(), 3, "vue".to_string());
+
+        assert!(store.rename(&old_uri, new_uri.clone()));
+        assert!(!store.contains(&old_uri));
+        assert!(store.contains(&new_uri));
+
+        let doc = store.get(&new_uri).unwrap();
+        assert_eq!(doc.text(), "content");
+        assert_eq!(doc.version, 3);
     }
 }

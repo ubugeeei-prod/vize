@@ -1,78 +1,76 @@
 {
   "name": "@vizejs/unplugin",
-  "version": "0.25.0",
+  "version": "0.89.0",
   "description": "Experimental unplugin-based Vue SFC integration for rollup, webpack, and esbuild powered by Vize",
-  "publishConfig": {
-    "access": "public"
-  },
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
-    "./esbuild": {
-      "types": "./dist/esbuild.d.ts",
-      "import": "./dist/esbuild.js",
-      "default": "./dist/esbuild.js"
-    },
-    "./rollup": {
-      "types": "./dist/rollup.d.ts",
-      "import": "./dist/rollup.js",
-      "default": "./dist/rollup.js"
-    },
-    "./webpack": {
-      "types": "./dist/webpack.d.ts",
-      "import": "./dist/webpack.js",
-      "default": "./dist/webpack.js"
-    }
-  },
-  "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "lint": "oxlint --deny-warnings --type-aware --tsconfig tsconfig.json",
-    "lint:fix": "oxlint --type-aware --tsconfig tsconfig.json --fix",
-    "fmt": "oxfmt --write src tsdown.config.ts",
-    "fmt:check": "oxfmt src tsdown.config.ts",
-    "test": "node --import tsx --test src/*.test.ts src/**/*.test.ts",
-    "test:update": "node --import tsx --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
-  },
-  "files": [
-    "dist"
-  ],
   "keywords": [
-    "unplugin",
-    "rollup",
-    "webpack",
-    "esbuild",
-    "vue",
-    "plugin",
     "compiler",
+    "esbuild",
+    "fast",
     "native",
-    "fast"
+    "plugin",
+    "rollup",
+    "unplugin",
+    "vue",
+    "webpack"
   ],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/ubugeeei/vize",
     "directory": "npm/unplugin-vize"
   },
-  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./esbuild": {
+      "types": "./dist/esbuild.d.mts",
+      "import": "./dist/esbuild.mjs",
+      "default": "./dist/esbuild.mjs"
+    },
+    "./rollup": {
+      "types": "./dist/rollup.d.mts",
+      "import": "./dist/rollup.mjs",
+      "default": "./dist/rollup.mjs"
+    },
+    "./webpack": {
+      "types": "./dist/webpack.d.mts",
+      "import": "./dist/webpack.mjs",
+      "default": "./dist/webpack.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts",
+    "test": "node --test src/*.test.ts src/**/*.test.ts",
+    "test:update": "node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
+  },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "oxc-transform": "^0.116.0",
-    "unplugin": "^3.0.0"
+    "oxc-transform": "catalog:oxc",
+    "unplugin": "catalog:vite-stack"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "esbuild": "^0.25.11",
-    "rollup": "^4.52.4",
-    "tsdown": "^0.9.0",
-    "tsx": "^4.21.0",
-    "typescript": "~5.6.0",
-    "vue": "3.6.0-beta.1",
-    "webpack": "^5.101.3"
+    "@types/node": "catalog:typescript",
+    "esbuild": "catalog:bundlers",
+    "rollup": "catalog:bundlers",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-beta",
+    "webpack": "catalog:bundlers"
   }
 }

@@ -72,6 +72,24 @@ export interface SfcStyleBlock extends SfcBlock {
   module?: string | true;
 }
 
+/** Compile-time macro artifact extracted from an SFC */
+export interface MacroArtifact {
+  /** Stable artifact kind */
+  kind: string;
+  /** Macro call name */
+  name: string;
+  /** Full macro call source */
+  source: string;
+  /** Extracted macro payload source */
+  content: string;
+  /** Ready-to-load virtual module code */
+  moduleCode?: string;
+  /** Absolute start offset in the SFC source */
+  start: number;
+  /** Absolute end offset in the SFC source */
+  end: number;
+}
+
 /** SFC descriptor (parsed .vue file) */
 export interface SfcDescriptor {
   /** Filename */
@@ -125,6 +143,8 @@ export interface SfcCompileResult {
   errors: string[];
   /** Compilation warnings */
   warnings: string[];
+  /** Compile-time macro artifacts */
+  macroArtifacts?: MacroArtifact[];
 }
 
 /** CSS compile options */

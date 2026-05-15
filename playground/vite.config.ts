@@ -1,19 +1,22 @@
-import { defineConfig } from "vite";
-import { vize } from "@vizejs/vite-plugin";
-
+import { defineConfig } from "vite-plus";
 export default defineConfig({
-  base: process.env.CI ? "/play/" : "/",
-  plugins: [vize({ vapor: true })],
-  server: {
-    port: 5180,
-    strictPort: false,
-    headers: {
-      "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "require-corp",
+  lint: {
+    ignorePatterns: [
+      "dist/**",
+      "node_modules/**",
+      "src/wasm/**",
+      "playwright-report/**",
+      "e2e/vrt/test-results/**",
+    ],
+    options: {
+      typeAware: true,
+    },
+    rules: {
+      "no-unused-vars": "warn",
+      "no-console": "off",
     },
   },
-  optimizeDeps: {
-    include: ["monaco-editor", "shiki", "prettier/plugins/html"],
-    exclude: ["vize-wasm"],
+  fmt: {
+    ignorePatterns: ["dist/**", "playwright-report/**", "e2e/vrt/test-results/**"],
   },
 });

@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
 const items = ref([
-  { id: 1, name: 'Apple' },
-  { id: 2, name: 'Banana' },
-  { id: 3, name: 'Cherry' },
-])
+  { id: 1, name: "Apple" },
+  { id: 2, name: "Banana" },
+  { id: 3, name: "Cherry" },
+]);
 
 const users = ref([
-  { id: 1, name: 'Alice', active: true },
-  { id: 2, name: 'Bob', active: false },
-  { id: 3, name: 'Charlie', active: true },
-])
+  { id: 1, name: "Alice", active: true },
+  { id: 2, name: "Bob", active: false },
+  { id: 3, name: "Charlie", active: true },
+]);
 </script>
 
 <template>

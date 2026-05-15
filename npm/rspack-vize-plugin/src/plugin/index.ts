@@ -1,19 +1,9 @@
-/**
- * Vize Rspack Plugin
- *
- * Responsibilities (minimal):
- * 1. Inject Vue feature flags via DefinePlugin
- * 2. Development mode logging/debugging
- *
- * NOT responsible for:
- * - Style processing (handled by Loader chain)
- * - CSS extraction (handled by Rspack native or CssExtractRspackPlugin)
- * - HMR (handled by Rspack watch mode automatically)
- */
+/** Vize Rspack Plugin — injects Vue feature flags, auto-clones style rules, dev logging. */
 
-import type { Compiler } from "@rspack/core";
-import type { VizeRspackPluginOptions } from "../types/index.js";
-import { matchesPattern } from "../shared/utils.js";
+import type { Compiler, RuleSetRule } from "@rspack/core";
+import type { VizeRspackPluginOptions } from "../types/index.ts";
+import { matchesPattern } from "../shared/utils.ts";
+import { applyRuleCloning } from "./ruleCloning.ts";
 
 export class VizePlugin {
   static readonly name = "VizePlugin";
@@ -28,14 +18,8 @@ export class VizePlugin {
     const logger = compiler.getInfrastructureLogger(VizePlugin.name);
     const isProduction = this.options.isProduction ?? compiler.options.mode === "production";
 
-    // Vapor mode: SFC-level compilation is not yet supported in @vizejs/native compileSfc.
-    // Template-level compileVapor exists, but full SFC Vapor output requires Rust-side changes.
-    if (this.options.vapor) {
-      logger.warn(
-        "Vapor mode is enabled but SFC-level Vapor compilation is not yet supported by @vizejs/native. " +
-          "Only `__VUE_PROD_HYDRATION_MISMATCH_DETAILS__` will be set. " +
-          "Track https://github.com/nicepkg/vize for updates.",
-      );
+    if (this.options.vapor && !isProduction) {
+      logger.debug("Vapor mode is enabled.");
     }
 
     const isCssNativeEnabled = Boolean(
@@ -48,11 +32,59 @@ export class VizePlugin {
       );
     }
 
-    // 1. Inject Vue feature flags (only if not already defined by another plugin)
-    // Use compiler.webpack to get DefinePlugin for webpack/Rspack compatibility
-    const { DefinePlugin } = compiler.webpack;
+    // 1. Auto-inject style sub-request rules
+    const autoRules = this.options.autoRules ?? true;
+    if (autoRules) {
+      const rules = compiler.options.module?.rules;
+      if (rules) {
+        const result = applyRuleCloning(rules as (RuleSetRule | "...")[], isCssNativeEnabled);
+        if (result.applied) {
+          logger.debug(
+            `Auto-injected ${result.clonedCount} style rule(s) for Vue SFC sub-requests.`,
+          );
+        }
+        for (const w of result.warnings) {
+          logger.warn(w);
+        }
+      }
+    }
 
-    // Collect existing definitions from all DefinePlugin instances
+    // 2. Auto-inject TypeScript post-processing for .vue files
+    const autoTs = this.options.typescript ?? true;
+    if (autoTs) {
+      const rules = compiler.options.module?.rules;
+      if (rules) {
+        const alreadyHasPostRule = rules.some((r) => {
+          if (r === "..." || typeof r !== "object" || r === null) return false;
+          const rule = r as RuleSetRule;
+          if (rule.enforce !== "post") return false;
+          const t = rule.test;
+          if (t instanceof RegExp) return t.test("App.vue");
+          if (typeof t === "string") return t.includes(".vue");
+          return false;
+        });
+        if (!alreadyHasPostRule) {
+          rules.push({
+            test: /\.vue$/,
+            resourceQuery: { not: [/type=/] },
+            enforce: "post" as const,
+            loader: "builtin:swc-loader",
+            options: {
+              jsc: {
+                parser: {
+                  syntax: "typescript",
+                },
+              },
+            },
+            type: "javascript/auto",
+          });
+          logger.debug("Auto-injected TypeScript post-processing rule for .vue files.");
+        }
+      }
+    }
+
+    // 3. Inject Vue feature flags (skip already-defined)
+    const { DefinePlugin } = compiler.webpack;
     const existingDefines = new Set<string>();
     for (const plugin of compiler.options.plugins ?? []) {
       const defs = (plugin as unknown as { definitions?: Record<string, unknown> })?.definitions;
@@ -78,7 +110,7 @@ export class VizePlugin {
       new DefinePlugin(vueDefines).apply(compiler);
     }
 
-    // 2. Development mode logging (using Rspack infrastructure logger)
+    // 4. Dev mode file-change logging
     if (!isProduction) {
       compiler.hooks.watchRun.tap(VizePlugin.name, (comp) => {
         const changed = comp.modifiedFiles;
@@ -88,9 +120,6 @@ export class VizePlugin {
           for (const file of changed) {
             if (file.endsWith(".vue") && this.shouldHandleFile(file)) {
               logger.debug(`Vue file changed: ${file}`);
-              // Rspack will automatically re-run the loader matching this file,
-              // and the style imports injected by the loader will be re-resolved.
-              // No need to manually operate virtual modules or trigger recompilation.
             }
           }
         }

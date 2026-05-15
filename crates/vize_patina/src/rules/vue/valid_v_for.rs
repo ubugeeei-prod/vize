@@ -197,7 +197,7 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-for></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("expression"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

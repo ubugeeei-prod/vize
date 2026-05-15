@@ -1,34 +1,31 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps<{
-  value: string | number
-}>()
+  value: string | number;
+}>();
 
 const numericValue = computed(() => {
-  if (typeof props.value === 'number') return props.value
-  const parsed = parseFloat(props.value)
-  return isNaN(parsed) ? 0 : parsed
-})
+  if (typeof props.value === "number") return props.value;
+  const parsed = parseFloat(props.value);
+  return isNaN(parsed) ? 0 : parsed;
+});
 
 const label = computed(() => {
-  if (typeof props.value === 'number') return `${props.value}px`
-  return String(props.value)
-})
+  if (typeof props.value === "number") return `${props.value}px`;
+  return String(props.value);
+});
 
 const barWidth = computed(() => {
-  const px = numericValue.value
+  const px = numericValue.value;
   // Cap at 200px for display
-  return Math.min(Math.max(px, 2), 200)
-})
+  return Math.min(Math.max(px, 2), 200);
+});
 </script>
 
 <template>
   <div class="spacing-preview">
-    <div
-      class="spacing-bar"
-      :style="{ width: barWidth + 'px' }"
-    />
+    <div class="spacing-bar" :style="{ width: barWidth + 'px' }" />
     <span class="spacing-label">{{ label }}</span>
   </div>
 </template>

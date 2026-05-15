@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { SelectBaseProps } from './types'
+import type { SelectBaseProps } from "./types";
 
 interface SelectFieldProps extends SelectBaseProps {
-  items: { label: string; value: string }[]
+  items: { label: string; value: string }[];
 }
 
-const model = defineModel<string | undefined>({ default: undefined })
+const model = defineModel<string | undefined>({ default: undefined });
 
 withDefaults(defineProps<SelectFieldProps>(), {
-  size: 'md',
-})
+  size: "md",
+});
 </script>
 
 <template>

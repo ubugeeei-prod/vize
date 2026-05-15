@@ -1,6 +1,6 @@
-//! Completion service entry point and tsgo integration.
+//! Completion service entry point and Corsa integration.
 //!
-//! Provides the main `complete` and `complete_with_tsgo` methods
+//! Provides the main `complete` and `complete_with_corsa` methods
 //! that dispatch to block-specific handlers.
 #![allow(clippy::disallowed_types)]
 
@@ -13,12 +13,13 @@ use tower_lsp::lsp_types::{
 };
 
 #[cfg(feature = "native")]
-use vize_canon::{LspCompletionItem, LspDocumentation, TsgoBridge};
+use vize_canon::{CorsaBridge, LspCompletionItem, LspDocumentation};
 
 use super::{is_inside_html_comment, script, style, template};
+#[cfg(feature = "native")]
+use crate::ide::corsa_support;
 use crate::ide::IdeContext;
 use crate::virtual_code::{ArtCursorPosition, BlockType};
-use vize_carton::cstr;
 
 impl super::CompletionService {
     /// Get completions for the given context.
@@ -75,19 +76,19 @@ impl super::CompletionService {
         }
     }
 
-    /// Get completions with tsgo support (async version).
+    /// Get completions with Corsa support (async version).
     #[cfg(feature = "native")]
-    pub async fn complete_with_tsgo(
+    pub async fn complete_with_corsa(
         ctx: &IdeContext<'_>,
-        tsgo_bridge: Option<Arc<TsgoBridge>>,
+        corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<CompletionResponse> {
         // Art file: route by cursor position within art structure
         if ctx.uri.path().ends_with(".art.vue") {
             return match ctx.block_type {
                 Some(BlockType::Art(ArtCursorPosition::VariantTemplate(ref info))) => {
-                    // Try tsgo template completion for variant template
-                    if let Some(ref bridge) = tsgo_bridge {
-                        let items = Self::complete_art_variant_with_tsgo(ctx, info, bridge).await;
+                    // Try Corsa template completion for variant template.
+                    if let Some(ref bridge) = corsa_bridge {
+                        let items = Self::complete_art_variant_with_corsa(ctx, info, bridge).await;
                         if !items.is_empty() {
                             let mut all = items;
                             all.extend(template::directive_completions());
@@ -98,9 +99,9 @@ impl super::CompletionService {
                     Self::complete(ctx)
                 }
                 Some(BlockType::ScriptSetup) => {
-                    // Script setup in art file: use normal script completion with tsgo
-                    if let Some(ref bridge) = tsgo_bridge {
-                        let items = Self::complete_script_with_tsgo(ctx, true, bridge).await;
+                    // Script setup in art file: use normal script completion with Corsa.
+                    if let Some(ref bridge) = corsa_bridge {
+                        let items = Self::complete_script_with_corsa(ctx, true, bridge).await;
                         if !items.is_empty() {
                             let mut all = items;
                             let mut v = script::composition_api_completions();
@@ -112,8 +113,8 @@ impl super::CompletionService {
                     Self::complete(ctx)
                 }
                 Some(BlockType::Script) => {
-                    if let Some(ref bridge) = tsgo_bridge {
-                        let items = Self::complete_script_with_tsgo(ctx, false, bridge).await;
+                    if let Some(ref bridge) = corsa_bridge {
+                        let items = Self::complete_script_with_corsa(ctx, false, bridge).await;
                         if !items.is_empty() {
                             let mut all = items;
                             all.extend(script::composition_api_completions());
@@ -145,18 +146,20 @@ impl super::CompletionService {
             };
         }
 
-        // Try tsgo completion first
-        if let Some(bridge) = tsgo_bridge {
-            let tsgo_items = match block_type {
-                BlockType::Template => Self::complete_template_with_tsgo(ctx, &bridge).await,
-                BlockType::Script => Self::complete_script_with_tsgo(ctx, false, &bridge).await,
-                BlockType::ScriptSetup => Self::complete_script_with_tsgo(ctx, true, &bridge).await,
+        // Try Corsa completion first.
+        if let Some(bridge) = corsa_bridge {
+            let corsa_items = match block_type {
+                BlockType::Template => Self::complete_template_with_corsa(ctx, &bridge).await,
+                BlockType::Script => Self::complete_script_with_corsa(ctx, false, &bridge).await,
+                BlockType::ScriptSetup => {
+                    Self::complete_script_with_corsa(ctx, true, &bridge).await
+                }
                 BlockType::Style(_) => vec![],
                 BlockType::Art(_) => vec![],
             };
 
-            if !tsgo_items.is_empty() {
-                let mut items = tsgo_items;
+            if !corsa_items.is_empty() {
+                let mut items = corsa_items;
                 items.extend(match block_type {
                     BlockType::Template => template::directive_completions(),
                     BlockType::Script => script::composition_api_completions(),
@@ -177,15 +180,15 @@ impl super::CompletionService {
         Self::complete(ctx)
     }
 
-    /// Get completions for an art variant template with tsgo.
+    /// Get completions for an art variant template with Corsa.
     #[cfg(feature = "native")]
-    async fn complete_art_variant_with_tsgo(
+    async fn complete_art_variant_with_corsa(
         ctx: &IdeContext<'_>,
         info: &crate::virtual_code::ArtVariantInfo,
-        bridge: &TsgoBridge,
+        bridge: &CorsaBridge,
     ) -> Vec<CompletionItem> {
         if let Some(ref virtual_docs) = ctx.virtual_docs {
-            if let Some(ref tmpl) = virtual_docs.template {
+            if let Some(tmpl) = virtual_docs.art_template(info.variant_index) {
                 // Convert the art variant relative offset through the template source map
                 let relative_offset = info.relative_offset as u32;
                 let vts_offset = tmpl
@@ -195,15 +198,16 @@ impl super::CompletionService {
                     .unwrap_or(relative_offset as usize);
 
                 let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
-                let uri = cstr!("vize-virtual://{}.template.ts", ctx.uri.path());
 
                 if bridge.is_initialized() {
-                    let _ = bridge
-                        .open_or_update_virtual_document(
-                            &cstr!("{}.template.ts", ctx.uri.path()),
-                            &tmpl.content,
-                        )
-                        .await;
+                    let request_path =
+                        corsa_support::art_template_request_path(ctx.uri, info.variant_index);
+                    let Ok(uri) = bridge
+                        .open_or_update_virtual_document(&request_path, &tmpl.content)
+                        .await
+                    else {
+                        return vec![];
+                    };
 
                     if let Ok(items) = bridge.completion(&uri, line, character).await {
                         return items
@@ -218,11 +222,11 @@ impl super::CompletionService {
         vec![]
     }
 
-    /// Get completions for template with tsgo.
+    /// Get completions for template with Corsa.
     #[cfg(feature = "native")]
-    async fn complete_template_with_tsgo(
+    async fn complete_template_with_corsa(
         ctx: &IdeContext<'_>,
-        bridge: &TsgoBridge,
+        bridge: &CorsaBridge,
     ) -> Vec<CompletionItem> {
         if let Some(ref virtual_docs) = ctx.virtual_docs {
             if let Some(ref tmpl) = virtual_docs.template {
@@ -231,15 +235,15 @@ impl super::CompletionService {
                 {
                     let (line, character) =
                         crate::ide::offset_to_position(&tmpl.content, vts_offset);
-                    let uri = cstr!("vize-virtual://{}.template.ts", ctx.uri.path());
 
                     if bridge.is_initialized() {
-                        let _ = bridge
-                            .open_or_update_virtual_document(
-                                &cstr!("{}.template.ts", ctx.uri.path()),
-                                &tmpl.content,
-                            )
-                            .await;
+                        let request_path = corsa_support::template_request_path(ctx.uri);
+                        let Ok(uri) = bridge
+                            .open_or_update_virtual_document(&request_path, &tmpl.content)
+                            .await
+                        else {
+                            return vec![];
+                        };
 
                         if let Ok(items) = bridge.completion(&uri, line, character).await {
                             return items
@@ -255,12 +259,12 @@ impl super::CompletionService {
         vec![]
     }
 
-    /// Get completions for script with tsgo.
+    /// Get completions for script with Corsa.
     #[cfg(feature = "native")]
-    async fn complete_script_with_tsgo(
+    async fn complete_script_with_corsa(
         ctx: &IdeContext<'_>,
         is_setup: bool,
-        bridge: &TsgoBridge,
+        bridge: &CorsaBridge,
     ) -> Vec<CompletionItem> {
         if let Some(ref virtual_docs) = ctx.virtual_docs {
             let script_doc = if is_setup {
@@ -276,16 +280,15 @@ impl super::CompletionService {
                     )
                 {
                     let (line, character) = crate::ide::offset_to_position(&s.content, vts_offset);
-                    let suffix = if is_setup { "setup.ts" } else { "script.ts" };
-                    let uri = cstr!("vize-virtual://{}.{suffix}", ctx.uri.path());
 
                     if bridge.is_initialized() {
-                        let _ = bridge
-                            .open_or_update_virtual_document(
-                                &cstr!("{}.{suffix}", ctx.uri.path()),
-                                &s.content,
-                            )
-                            .await;
+                        let request_path = corsa_support::script_request_path(ctx.uri, is_setup);
+                        let Ok(uri) = bridge
+                            .open_or_update_virtual_document(&request_path, &s.content)
+                            .await
+                        else {
+                            return vec![];
+                        };
 
                         if let Ok(items) = bridge.completion(&uri, line, character).await {
                             return items
@@ -301,7 +304,7 @@ impl super::CompletionService {
         vec![]
     }
 
-    /// Convert tsgo LspCompletionItem to tower-lsp CompletionItem.
+    /// Convert a Corsa completion item to tower-lsp CompletionItem.
     #[cfg(feature = "native")]
     fn convert_lsp_completion(item: LspCompletionItem) -> CompletionItem {
         CompletionItem {

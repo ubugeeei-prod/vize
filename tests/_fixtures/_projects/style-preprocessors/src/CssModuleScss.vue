@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue"
-const label = ref("Hello CSS Modules")
+import { ref } from "vue";
+const label = ref("Hello CSS Modules");
 </script>
 
 <template>

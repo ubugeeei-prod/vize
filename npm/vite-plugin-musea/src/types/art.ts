@@ -9,6 +9,8 @@ export interface ArtMetadata {
   tags: string[];
   status: "draft" | "ready" | "deprecated";
   order?: number;
+  /** Additional DOM events to capture in the Actions panel, e.g. ["mousemove"] */
+  actionEvents?: string[];
 }
 
 /**
@@ -40,6 +42,8 @@ export interface ArtFileInfo {
   hasScript: boolean;
   /** Number of style blocks */
   styleCount: number;
+  /** Raw CSS blocks extracted from the Art file for preview injection */
+  styleBlocks?: string[];
   /** Whether this art comes from an inline <art> block in a regular .vue file */
   isInline?: boolean;
   /** For inline art: absolute path to the host .vue component file */

@@ -1,19 +1,22 @@
 {
   "name": "vize-art",
   "displayName": "Vize Art",
+  "version": "0.89.0",
   "description": "Syntax highlighting for Vize Art files (*.art.vue)",
-  "version": "0.25.0",
-  "publisher": "vize",
+  "categories": [
+    "Programming Languages"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ubugeeei/vize"
   },
-  "engines": {
-    "vscode": "^1.75.0"
+  "publisher": "vize",
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsgo -p ./",
+    "watch": "tsgo -watch -p ./"
   },
-  "categories": [
-    "Programming Languages"
-  ],
   "contributes": {
     "languages": [
       {
@@ -34,11 +37,13 @@
         "scopeName": "source.art.vue",
         "path": "./syntaxes/art.tmLanguage.json",
         "embeddedLanguages": {
+          "text.html.basic": "html",
           "source.js": "javascript",
           "source.ts": "typescript",
           "source.css": "css",
-          "source.scss": "scss",
-          "text.html.vue-html": "vue-html"
+          "source.css.scss": "scss",
+          "source.css.less": "less",
+          "source.json": "json"
         }
       }
     ]
@@ -46,10 +51,7 @@
   "activationEvents": [
     "onLanguage:art-vue"
   ],
-  "main": "./out/extension.js",
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+  "engines": {
+    "vscode": "^1.75.0"
   }
 }

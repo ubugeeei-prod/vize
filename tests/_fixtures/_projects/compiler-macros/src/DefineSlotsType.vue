@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const slots = defineSlots<{
-  default(props: { message: string }): any
-  header(props: { title: string }): any
-}>()
-console.log(slots)
+  default(props: { message: string }): any;
+  header(props: { title: string }): any;
+}>();
+console.log(slots);
 </script>
 
 <template>

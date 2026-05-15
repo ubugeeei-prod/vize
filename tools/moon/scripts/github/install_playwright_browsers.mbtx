@@ -1,0 +1,43 @@
+///|
+/// Installs the Chromium browser used by the playground browser test jobs.
+///
+/// The previous implementation parsed `pnpm-lock.yaml` and tried to bootstrap a
+/// transient Playwright CLI via `vp dlx`. That was fragile in CI because the
+/// temporary package was not guaranteed to expose the `playwright` binary the
+/// script expected, which led to intermittent `spawn playwright ENOENT`
+/// failures.
+///
+/// This version intentionally uses the workspace package that already owns the
+/// browser tests: `./playground`. After `vp install`, that package has a local
+/// `playwright` binary in `node_modules/.bin`, and `vp exec --filter` resolves
+/// it deterministically. Installing via the real test package also keeps the
+/// browser version aligned with the lockfile without having to parse it here.
+import {
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/process",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+/// Runs the package-local Playwright installer used by both browser tests and
+/// VRT in the playground workflow.
+async fn run_app() -> Int {
+  @process.run(
+    "vp",
+    [
+      "exec",
+      "--filter",
+      "./playground",
+      "--",
+      "playwright",
+      "install",
+      "chromium",
+      "--with-deps",
+    ],
+  )
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

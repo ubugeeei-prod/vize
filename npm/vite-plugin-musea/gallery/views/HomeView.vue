@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useArts } from '../composables/useArts'
-import StatusBadge from '../components/StatusBadge.vue'
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+import { useArts } from "../composables/useArts";
+import StatusBadge from "../components/StatusBadge.vue";
 
-const { arts, categories } = useArts()
-const router = useRouter()
+const { arts, categories } = useArts();
+const router = useRouter();
 
-const categoryList = computed(() => Array.from(categories.value.entries()))
+const categoryList = computed(() => Array.from(categories.value.entries()));
 
 const stats = computed(() => ({
   total: arts.value.length,
   variants: arts.value.reduce((sum, a) => sum + a.variants.length, 0),
   categories: categories.value.size,
-}))
+}));
 
 function goToArt(path: string) {
-  router.push({ name: 'component', params: { path } })
+  router.push({ name: "component", params: { path } });
 }
 </script>
 
@@ -24,9 +24,7 @@ function goToArt(path: string) {
   <div class="home">
     <div class="home-header">
       <h1 class="home-title">Component Gallery</h1>
-      <p class="home-description">
-        Browse, preview, and interact with your components
-      </p>
+      <p class="home-description">Browse, preview, and interact with your components</p>
       <div class="home-stats">
         <div class="home-stat">
           <span class="home-stat-value">{{ stats.total }}</span>
@@ -43,19 +41,10 @@ function goToArt(path: string) {
       </div>
     </div>
 
-    <div
-      v-for="[category, items] in categoryList"
-      :key="category"
-      class="home-category"
-    >
+    <div v-for="[category, items] in categoryList" :key="category" class="home-category">
       <h2 class="home-category-title">{{ category }}</h2>
       <div class="home-category-grid">
-        <div
-          v-for="art in items"
-          :key="art.path"
-          class="home-card"
-          @click="goToArt(art.path)"
-        >
+        <div v-for="art in items" :key="art.path" class="home-card" @click="goToArt(art.path)">
           <div class="home-card-header">
             <span class="home-card-title">{{ art.metadata.title }}</span>
             <StatusBadge :status="art.metadata.status" />
@@ -65,14 +54,10 @@ function goToArt(path: string) {
           </p>
           <div class="home-card-footer">
             <span class="home-card-meta">
-              {{ art.variants.length }} variant{{ art.variants.length !== 1 ? 's' : '' }}
+              {{ art.variants.length }} variant{{ art.variants.length !== 1 ? "s" : "" }}
             </span>
             <div class="home-card-tags">
-              <span
-                v-for="tag in art.metadata.tags.slice(0, 3)"
-                :key="tag"
-                class="home-card-tag"
-              >
+              <span v-for="tag in art.metadata.tags.slice(0, 3)" :key="tag" class="home-card-tag">
                 #{{ tag }}
               </span>
             </div>

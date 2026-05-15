@@ -1,14 +1,14 @@
 <script setup lang="ts">
-const model = defineModel<number>({ default: 0 })
+const model = defineModel<number>({ default: 0 });
 
 defineProps<{
-  label: string
-  description?: string
-  required?: boolean
-  min?: number
-  max?: number
-  step?: number
-}>()
+  label: string;
+  description?: string;
+  required?: boolean;
+  min?: number;
+  max?: number;
+  step?: number;
+}>();
 </script>
 
 <template>
@@ -25,7 +25,7 @@ defineProps<{
       :min="min ?? 0"
       :max="max ?? 100"
       :step="step ?? 1"
-    >
+    />
     <span v-if="description" class="control-desc">{{ description }}</span>
   </div>
 </template>

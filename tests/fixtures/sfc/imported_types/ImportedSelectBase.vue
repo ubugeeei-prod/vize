@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { SelectBaseProps } from './types'
+import type { SelectBaseProps } from "./types";
 
 const props = withDefaults(defineProps<SelectBaseProps>(), {
-  size: 'md',
-})
+  size: "md",
+});
 </script>
 
 <template>

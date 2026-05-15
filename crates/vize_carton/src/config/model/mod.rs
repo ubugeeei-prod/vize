@@ -71,14 +71,18 @@ pub(crate) struct RawVizeConfig {
 #[serde(default)]
 struct LegacyCheckConfig {
     globals: Option<String>,
+    servers: Option<usize>,
 }
 
 impl From<RawVizeConfig> for VizeConfig {
     fn from(raw: RawVizeConfig) -> Self {
         let mut type_checker = raw.type_checker;
-        if type_checker.globals_file.is_none() {
-            if let Some(legacy_check) = raw.legacy_check {
+        if let Some(legacy_check) = raw.legacy_check {
+            if type_checker.globals_file.is_none() {
                 type_checker.globals_file = legacy_check.globals;
+            }
+            if type_checker.servers.is_none() {
+                type_checker.servers = legacy_check.servers;
             }
         }
 

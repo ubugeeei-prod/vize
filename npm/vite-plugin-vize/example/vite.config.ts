@@ -1,7 +1,9 @@
-import { defineConfig } from "vite";
-import { vize } from "@vizejs/vite-plugin";
-import Inspect from "vite-plugin-inspect";
-
+import { defineConfig } from "vite-plus";
 export default defineConfig({
-  plugins: [vize(), Inspect()],
+  fmt: {
+    ignorePatterns: ["dist/**"],
+  },
+  lint: {
+    ignorePatterns: ["dist/**"],
+  },
 });

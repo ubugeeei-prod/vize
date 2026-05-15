@@ -1,7 +1,8 @@
 //! Code generation context that tracks state during Vapor code emission.
 
 use super::expression;
-use vize_carton::{cstr, FxHashMap, FxHashSet, String, ToCompactString};
+use vize_atelier_core::options::BindingMetadata;
+use vize_carton::{camelize, capitalize, cstr, FxHashMap, FxHashSet, String, ToCompactString};
 use vize_croquis::builtins::is_global_allowed;
 
 /// For-loop scope entry
@@ -57,12 +58,15 @@ pub(crate) struct GenerateContext<'a> {
     resolved_component_scopes: std::vec::Vec<std::vec::Vec<String>>,
     /// Element IDs that are standalone text nodes (no _txt needed)
     pub(crate) standalone_text_elements: &'a FxHashSet<usize>,
+    /// Binding metadata from script setup imports.
+    pub(crate) binding_metadata: Option<&'a BindingMetadata>,
 }
 
 impl<'a> GenerateContext<'a> {
     pub(crate) fn new(
         element_template_map: &'a FxHashMap<usize, usize>,
         standalone_text_elements: &'a FxHashSet<usize>,
+        binding_metadata: Option<&'a BindingMetadata>,
     ) -> Self {
         Self {
             code: String::with_capacity(4096),
@@ -79,6 +83,7 @@ impl<'a> GenerateContext<'a> {
             resolved_components: FxHashSet::default(),
             resolved_component_scopes: std::vec::Vec::new(),
             standalone_text_elements,
+            binding_metadata,
         }
     }
 
@@ -297,6 +302,35 @@ impl<'a> GenerateContext<'a> {
 
     pub(crate) fn is_component_resolved(&self, component: &str) -> bool {
         self.resolved_components.contains(component)
+    }
+
+    pub(crate) fn resolve_component_binding_expr(&self, component: &str) -> Option<String> {
+        let bindings = self.binding_metadata?;
+
+        let resolve_base = |name: &str| {
+            if bindings.bindings.contains_key(name) {
+                return Some(name.to_compact_string());
+            }
+
+            let camel = camelize(name);
+            if bindings.bindings.contains_key(camel.as_str()) {
+                return Some(camel);
+            }
+
+            let pascal = capitalize(&camel);
+            if bindings.bindings.contains_key(pascal.as_str()) {
+                return Some(pascal);
+            }
+
+            None
+        };
+
+        if let Some((base, suffix)) = component.split_once('.') {
+            let resolved_base = resolve_base(base)?;
+            return Some(cstr!("_ctx.{}.{}", resolved_base, suffix));
+        }
+
+        resolve_base(component).map(|binding| cstr!("_ctx.{}", binding))
     }
 
     pub(crate) fn mark_component_resolved(&mut self, component: &str) {

@@ -1,80 +1,112 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { DesignToken } from '../../api'
-import SpacingPreview from './SpacingPreview.vue'
-import TypographyPreview from './TypographyPreview.vue'
+import { computed } from "vue";
+import type { DesignToken } from "../../api";
+import SpacingPreview from "./SpacingPreview.vue";
+import TypographyPreview from "./TypographyPreview.vue";
 
-const props = withDefaults(defineProps<{
-  name: string
-  token: DesignToken
-  categoryPath?: string
-  usageCount?: number
-}>(), {
-  usageCount: 0,
-})
+const props = withDefaults(
+  defineProps<{
+    name: string;
+    token: DesignToken;
+    categoryPath?: string;
+    usageCount?: number;
+  }>(),
+  {
+    usageCount: 0,
+  },
+);
 
 const emit = defineEmits<{
-  edit: []
-  delete: []
-  showUsage: []
-}>()
+  edit: [];
+  delete: [];
+  showUsage: [];
+}>();
 
 const isColor = computed(() => {
-  if (props.token.type === 'color') return true
-  if (typeof props.token.value !== 'string') return false
+  if (props.token.type === "color") return true;
+  if (typeof props.token.value !== "string") return false;
   return (
-    props.token.value.startsWith('#') ||
-    props.token.value.startsWith('rgb') ||
-    props.token.value.startsWith('hsl')
-  )
-})
+    props.token.value.startsWith("#") ||
+    props.token.value.startsWith("rgb") ||
+    props.token.value.startsWith("hsl")
+  );
+});
 
 const displayValue = computed(() => {
-  if (props.token.$tier === 'semantic' && props.token.$resolvedValue !== undefined) {
-    return props.token.$resolvedValue
+  if (props.token.$tier === "semantic" && props.token.$resolvedValue !== undefined) {
+    return props.token.$resolvedValue;
   }
-  return props.token.value
-})
+  return props.token.value;
+});
 
-const previewType = computed<'color' | 'spacing' | 'fontSize' | 'fontWeight' | 'lineHeight' | 'shadow' | 'borderRadius' | 'generic'>(() => {
-  if (isColor.value) return 'color'
+const previewType = computed<
+  | "color"
+  | "spacing"
+  | "fontSize"
+  | "fontWeight"
+  | "lineHeight"
+  | "shadow"
+  | "borderRadius"
+  | "generic"
+>(() => {
+  if (isColor.value) return "color";
 
-  const path = props.categoryPath?.toLowerCase() ?? ''
-  const type = props.token.type?.toLowerCase() ?? ''
-  const name = props.name.toLowerCase()
+  const path = props.categoryPath?.toLowerCase() ?? "";
+  const type = props.token.type?.toLowerCase() ?? "";
+  const name = props.name.toLowerCase();
 
-  if (type === 'dimension' || type === 'spacing') {
-    if (path.includes('spacing') || name.includes('spacing') || name.includes('gap') || name.includes('padding') || name.includes('margin')) {
-      return 'spacing'
+  if (type === "dimension" || type === "spacing") {
+    if (
+      path.includes("spacing") ||
+      name.includes("spacing") ||
+      name.includes("gap") ||
+      name.includes("padding") ||
+      name.includes("margin")
+    ) {
+      return "spacing";
     }
-    if (path.includes('font-size') || path.includes('fontsize') || name.includes('font-size') || name.includes('fontsize')) {
-      return 'fontSize'
+    if (
+      path.includes("font-size") ||
+      path.includes("fontsize") ||
+      name.includes("font-size") ||
+      name.includes("fontsize")
+    ) {
+      return "fontSize";
     }
-    if (path.includes('border-radius') || path.includes('borderradius') || name.includes('radius')) {
-      return 'borderRadius'
+    if (
+      path.includes("border-radius") ||
+      path.includes("borderradius") ||
+      name.includes("radius")
+    ) {
+      return "borderRadius";
     }
   }
 
-  if (type === 'fontweight' || name.includes('font-weight') || name.includes('fontweight') || name.includes('weight')) {
-    return 'fontWeight'
+  if (
+    type === "fontweight" ||
+    name.includes("font-weight") ||
+    name.includes("fontweight") ||
+    name.includes("weight")
+  ) {
+    return "fontWeight";
   }
 
-  if (type === 'lineheight' || name.includes('line-height') || name.includes('lineheight')) {
-    return 'lineHeight'
+  if (type === "lineheight" || name.includes("line-height") || name.includes("lineheight")) {
+    return "lineHeight";
   }
 
-  if (type === 'shadow' || name.includes('shadow')) {
-    return 'shadow'
+  if (type === "shadow" || name.includes("shadow")) {
+    return "shadow";
   }
 
-  return 'generic'
-})
+  return "generic";
+});
 
 const tierLabel = computed(() => {
-  if (props.token.$tier === 'semantic') return 'Semantic'
-  if (props.token.$tier === 'primitive') return 'Primitive'
-  return null
-})
+  if (props.token.$tier === "semantic") return "Semantic";
+  if (props.token.$tier === "primitive") return "Primitive";
+  return null;
+});
 </script>
 
 <template>
@@ -87,10 +119,7 @@ const tierLabel = computed(() => {
         :style="{ background: String(displayValue) }"
       />
       <div v-else class="preview-compact">
-        <SpacingPreview
-          v-if="previewType === 'spacing'"
-          :value="displayValue"
-        />
+        <SpacingPreview v-if="previewType === 'spacing'" :value="displayValue" />
         <TypographyPreview
           v-else-if="previewType === 'fontSize'"
           :value="displayValue"
@@ -147,15 +176,37 @@ const tierLabel = computed(() => {
         type="button"
         class="usage-badge"
         :class="{ 'usage-badge--warn': token.$tier === 'primitive' }"
-        :title="token.$tier === 'primitive' ? 'Primitive token used directly — consider using a semantic token' : 'View component usage'"
+        :title="
+          token.$tier === 'primitive'
+            ? 'Primitive token used directly — consider using a semantic token'
+            : 'View component usage'
+        "
         @click.stop="emit('showUsage')"
       >
-        <svg v-if="token.$tier === 'primitive'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+        <svg
+          v-if="token.$tier === 'primitive'"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          />
           <line x1="12" y1="9" x2="12" y2="13" />
           <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
-        <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          v-else
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
         </svg>
@@ -165,15 +216,36 @@ const tierLabel = computed(() => {
 
       <div class="token-actions">
         <button type="button" class="action-btn" title="Edit" @click.stop="emit('edit')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
           </svg>
         </button>
-        <button type="button" class="action-btn action-btn--danger" title="Delete" @click.stop="emit('delete')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button
+          type="button"
+          class="action-btn action-btn--danger"
+          title="Delete"
+          @click.stop="emit('delete')"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            <path
+              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+            />
           </svg>
         </button>
       </div>
@@ -363,7 +435,9 @@ const tierLabel = computed(() => {
   font-size: 0.6875rem;
   font-family: var(--musea-font-mono);
   cursor: pointer;
-  transition: border-color var(--musea-transition), color var(--musea-transition);
+  transition:
+    border-color var(--musea-transition),
+    color var(--musea-transition);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -402,7 +476,9 @@ const tierLabel = computed(() => {
   color: var(--musea-text-muted);
   border-radius: var(--musea-radius-sm, 4px);
   cursor: pointer;
-  transition: background var(--musea-transition), color var(--musea-transition);
+  transition:
+    background var(--musea-transition),
+    color var(--musea-transition);
 }
 
 .action-btn:hover {

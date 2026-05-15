@@ -21,7 +21,9 @@ use crate::ScopeBinding;
 use vize_carton::CompactString;
 use vize_relief::BindingType;
 
-use super::extract::detect_provide_inject_call;
+use super::extract::{
+    detect_call_argument_reactivity_loss, detect_provide_inject_call, detect_race_condition_call,
+};
 use super::ScriptParseResult;
 
 pub(in crate::script_parser) use expressions::{walk_call_arguments, walk_expression};

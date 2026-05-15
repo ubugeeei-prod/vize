@@ -1,23 +1,23 @@
 <script setup lang="ts">
 const props = defineProps<{
-  name?: string
-  src?: string
-  size?: 'sm' | 'md' | 'lg'
-}>()
+  name?: string;
+  src?: string;
+  size?: "sm" | "md" | "lg";
+}>();
 
 const initials = computed(() => {
-  if (!props.name) return '?'
+  if (!props.name) return "?";
   return props.name
-    .split(' ')
+    .split(" ")
     .map((w) => w[0])
-    .join('')
+    .join("")
     .slice(0, 2)
-    .toUpperCase()
-})
+    .toUpperCase();
+});
 </script>
 
 <script lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 </script>
 
 <template>
@@ -35,7 +35,7 @@ import { computed } from 'vue'
   border-radius: 50%;
   background: #6b5090;
   color: #e6e2d6;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 600;
   overflow: hidden;
   flex-shrink: 0;

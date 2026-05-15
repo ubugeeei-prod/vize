@@ -26,9 +26,19 @@ export type {
   ConfigEnv,
   UserConfigExport,
   MaybePromise,
+  LintPreset,
   RuleSeverity,
   RuleCategory,
+  LintRuleName,
+  LintRulesConfig,
 } from "./types/index.js";
 
 // Config utilities
-export { defineConfig, loadConfig, normalizeGlobalTypes } from "./config.js";
+export {
+  CONFIG_FILE_NAMES,
+  VIZE_CONFIG_JSON_SCHEMA_PATH,
+  VIZE_CONFIG_PKL_SCHEMA_PATH,
+  defineConfig,
+  loadConfig,
+  normalizeGlobalTypes,
+} from "./config.js";
