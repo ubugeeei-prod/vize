@@ -25,6 +25,7 @@ type LspInitializationOptions = {
 };
 
 type LspDiagnostic = {
+  code?: unknown;
   source?: string;
   severity?: number;
   message?: string;
@@ -511,6 +512,63 @@ test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
   }
 });
 
+test("vize lsp keeps type diagnostics disabled by initialization options", async () => {
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-typecheck-disabled");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      lint: true,
+      typecheck: false,
+    });
+
+    const typeErrorPath = path.join(workspaceDir, "TypeError.vue");
+    const typeErrorUri = pathToFileURL(typeErrorPath).href;
+    const typeErrorSource = `<script setup lang="ts">
+const label: string = 1
+const items = [1, 2]
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items">{{ item }}</li>
+  </ul>
+</template>
+`;
+    fs.writeFileSync(typeErrorPath, typeErrorSource, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: typeErrorUri,
+        languageId: "vue",
+        version: 1,
+        text: typeErrorSource,
+      },
+    });
+
+    const publish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, typeErrorUri),
+    )) as PublishDiagnosticsParams;
+
+    assertNoDiagnosticSource(publish.diagnostics, "vize/types");
+    assertNoDiagnosticSource(publish.diagnostics, "vize/corsa");
+    assert.ok(
+      publish.diagnostics.some(
+        (diagnostic) =>
+          diagnostic.source === "vize/lint" && diagnostic.code === "vue/require-v-for-key",
+      ),
+      JSON.stringify(publish.diagnostics),
+    );
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+  }
+});
+
 function resolveVizeLaunchCommand(): string[] {
   const candidates = [
     [path.join(root, "target/release/vize"), "lsp"],
@@ -558,6 +616,14 @@ function assertDiagnosticRange(diagnostic: LspDiagnostic): void {
   assert.equal(typeof range.end.line, "number");
   assert.equal(typeof range.end.character, "number");
   assert.ok((range.end.line ?? 0) >= (range.start.line ?? 0));
+}
+
+function assertNoDiagnosticSource(diagnostics: LspDiagnostic[], source: string): void {
+  assert.equal(
+    diagnostics.some((diagnostic) => diagnostic.source === source),
+    false,
+    `unexpected ${source} diagnostic: ${JSON.stringify(diagnostics)}`,
+  );
 }
 
 function offsetToPosition(source: string, offset: number): { line: number; character: number } {
