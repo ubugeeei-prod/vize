@@ -1,4 +1,5 @@
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -150,15 +151,16 @@ async function loadTypeScriptConfig(filePath: string, env?: ConfigEnv): Promise<
     },
   });
 
-  const tempFile = filePath.replace(/\.ts$/, `.temp.${Date.now()}.mjs`);
-  fs.writeFileSync(tempFile, result.code);
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-config-"));
+  const tempFile = path.join(tempDir, "config.mjs");
+  fs.writeFileSync(tempFile, result.code, { flag: "wx", mode: 0o600 });
 
   try {
     const module = await importFresh(tempFile);
     const exported: UserConfigExport = module.default || module;
     return resolveConfigExport(exported, env);
   } finally {
-    fs.rmSync(tempFile, { force: true });
+    fs.rmSync(tempDir, { recursive: true, force: true });
   }
 }
 
