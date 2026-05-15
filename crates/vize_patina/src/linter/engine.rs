@@ -16,6 +16,7 @@ use super::config::{LintResult, Linter};
 
 const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
     "vue/no-unused-vars",
+    "vue/no-unused-components",
     "vue/no-undefined-refs",
     "vue/no-mutating-props",
     "a11y/no-refer-to-non-existent-id",

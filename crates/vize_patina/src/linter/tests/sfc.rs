@@ -77,6 +77,65 @@ defineProps<{ count: number }>()
 }
 
 #[test]
+fn test_lint_sfc_no_unused_components_reports_unused_vue_import() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup>
+import MyButton from './MyButton.vue'
+</script>
+
+<template>
+  <div>Hello</div>
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "vue/no-unused-components");
+    assert!(result.diagnostics[0].message.contains("MyButton"));
+}
+
+#[test]
+fn test_lint_sfc_no_unused_components_allows_local_pascal_case_constants() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup lang="ts">
+const GapList = [4, 3, 2, 1]
+const gap = GapList[0]
+</script>
+
+<template>
+  <div :data-gap="gap" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "local PascalCase constants are not component registrations: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_sfc_no_unused_components_matches_kebab_case_vue_import() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script setup>
+import MyButton from './MyButton.vue'
+</script>
+
+<template>
+  <my-button />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "kebab-case component usage should mark the import as used: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_lint_sfc_offset_line_conversion() {
     let linter = Linter::new();
     let sfc = r#"<script setup lang="ts">

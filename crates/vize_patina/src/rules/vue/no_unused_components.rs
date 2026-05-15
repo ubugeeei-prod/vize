@@ -33,7 +33,8 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::String;
 use vize_carton::ToCompactString;
-use vize_croquis::naming::is_pascal_case;
+use vize_croquis::naming::{is_pascal_case, to_pascal_case};
+use vize_croquis::{Croquis, ScopeData};
 use vize_relief::ast::RootNode;
 use vize_relief::BindingType;
 
@@ -70,12 +71,44 @@ impl NoUnusedComponents {
         false
     }
 
-    /// Check if a binding type indicates a component
-    fn is_component_binding(binding_type: &BindingType) -> bool {
-        matches!(
-            binding_type,
-            BindingType::SetupConst | BindingType::ExternalModule
-        )
+    /// Check if an import source should be treated as a Vue component module.
+    fn is_component_import_source(source: &str) -> bool {
+        let path = source.split(['?', '#']).next().unwrap_or(source);
+        path.ends_with(".vue")
+    }
+
+    /// Check if an imported binding type indicates a runtime component value.
+    fn is_component_binding(binding_type: BindingType) -> bool {
+        matches!(binding_type, BindingType::SetupConst)
+    }
+
+    fn imported_component_names<'a>(analysis: &'a Croquis) -> Vec<&'a str> {
+        let mut names: Vec<_> = analysis
+            .scopes
+            .iter()
+            .filter_map(|scope| match scope.data() {
+                ScopeData::ExternalModule(data)
+                    if !data.is_type_only
+                        && Self::is_component_import_source(data.source.as_str()) =>
+                {
+                    Some(scope)
+                }
+                _ => None,
+            })
+            .flat_map(|scope| {
+                scope.bindings().filter_map(|(name, binding)| {
+                    if Self::is_component_binding(binding.binding_type) && is_pascal_case(name) {
+                        Some(name)
+                    } else {
+                        None
+                    }
+                })
+            })
+            .collect();
+
+        names.sort_unstable();
+        names.dedup();
+        names
     }
 }
 
@@ -94,33 +127,26 @@ impl Rule for NoUnusedComponents {
         let unused_components: Vec<String> = {
             let analysis = ctx.analysis().unwrap();
 
-            // Collect registered components (PascalCase bindings that could be components)
-            let registered_components: Vec<_> = analysis
-                .bindings
-                .iter()
-                .filter(|(name, binding_type)| {
-                    // Must be a component-like binding type
-                    Self::is_component_binding(binding_type)
-                        // Must be PascalCase (component naming convention)
-                        && is_pascal_case(name)
-                        // Not ignored
-                        && !self.should_ignore(name)
-                })
-                .collect();
+            let registered_components = Self::imported_component_names(analysis);
 
             // Find unused components
             registered_components
                 .into_iter()
-                .filter(|(name, _)| {
+                .filter(|name| {
+                    if self.should_ignore(name) {
+                        return false;
+                    }
+
                     // Check if used in template (case-insensitive matching for kebab-case)
                     !analysis.used_components.iter().any(|used| {
                         // Exact match
                         used.as_str() == *name
                             // kebab-case match (MyComponent -> my-component)
                             || vize_croquis::naming::names_match(used.as_str(), name)
+                            || to_pascal_case(used.as_str()).as_str() == *name
                     })
                 })
-                .map(|(name, _)| name.to_compact_string())
+                .map(|name| name.to_compact_string())
                 .collect()
         };
 
