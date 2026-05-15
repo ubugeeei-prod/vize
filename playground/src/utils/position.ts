@@ -3,10 +3,18 @@ export function offsetToLineColumn(
   source: string,
   offset: number,
 ): { line: number; column: number } {
-  const beforeOffset = source.substring(0, offset);
-  const lines = beforeOffset.split("\n");
-  return {
-    line: lines.length,
-    column: lines[lines.length - 1].length + 1,
-  };
+  const end = Math.max(0, Math.min(offset, source.length));
+  let line = 1;
+  let column = 1;
+
+  for (let index = 0; index < end; index++) {
+    if (source.charCodeAt(index) === 10) {
+      line++;
+      column = 1;
+    } else {
+      column++;
+    }
+  }
+
+  return { line, column };
 }

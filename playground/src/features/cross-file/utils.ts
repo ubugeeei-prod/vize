@@ -1,21 +1,10 @@
 import type { CrossFileIssue } from "./types";
+export { offsetToLineColumn } from "../../utils/position";
 
 let _issueIdCounter = 0;
 
 export function resetIssueIdCounter() {
   _issueIdCounter = 0;
-}
-
-export function offsetToLineColumn(
-  source: string,
-  offset: number,
-): { line: number; column: number } {
-  const beforeOffset = source.substring(0, offset);
-  const lines = beforeOffset.split("\n");
-  return {
-    line: lines.length,
-    column: lines[lines.length - 1].length + 1,
-  };
 }
 
 export function parseSuppressions(source: string): Set<number> {
