@@ -6,16 +6,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { runMoonScript } from "./_helpers/moonbit.ts";
-
-function writeFakeCommand(binDir: string, name: string, body: string): void {
-  const unixPath = path.join(binDir, name);
-  writeFileSync(unixPath, `#!/usr/bin/env node\n${body}`);
-  fs.chmodSync(unixPath, 0o755);
-
-  if (process.platform === "win32") {
-    writeFileSync(path.join(binDir, `${name}.cmd`), `@echo off\r\nnode "%~dp0\\${name}" %*\r\n`);
-  }
-}
+import { writeFakeCommand } from "./support/fake-command.ts";
 
 test("npm_tag script maps prerelease versions to npm dist-tags", () => {
   const cases = [

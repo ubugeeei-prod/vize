@@ -89,6 +89,19 @@ if (buildResult.status !== 0) {
   process.exit(buildResult.status ?? 1);
 }
 
+const signDarwinBinary = (filePath) => {
+  if (process.platform !== "darwin") {
+    return;
+  }
+
+  const signResult = spawnSync("codesign", ["--force", "--sign", "-", filePath], {
+    stdio: "inherit",
+  });
+  if (signResult.status !== 0) {
+    process.exit(signResult.status ?? 1);
+  }
+};
+
 for (const file of readdirSync(packageDir)) {
   if (file.startsWith("vize-vitrine.") && file.endsWith(".node")) {
     rmSync(path.join(packageDir, file), { force: true });
@@ -99,5 +112,7 @@ for (const file of readdirSync(outputDir)) {
   if (!file.endsWith(".node")) {
     continue;
   }
-  copyFileSync(path.join(outputDir, file), path.join(packageDir, file));
+  const destination = path.join(packageDir, file);
+  copyFileSync(path.join(outputDir, file), destination);
+  signDarwinBinary(destination);
 }

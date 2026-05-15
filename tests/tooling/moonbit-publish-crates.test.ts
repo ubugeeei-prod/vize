@@ -4,9 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
+import { writeFakeCommand } from "./support/fake-command.ts";
 
 type CargoMetadata = {
   packages: CargoPackage[];
@@ -21,16 +22,6 @@ type CargoDependency = {
   kind: "dev" | "build" | null;
   name: string;
 };
-
-function writeFakeCommand(binDir: string, name: string, body: string): void {
-  const unixPath = path.join(binDir, name);
-  writeFileSync(unixPath, `#!/usr/bin/env node\n${body}`);
-  fs.chmodSync(unixPath, 0o755);
-
-  if (process.platform === "win32") {
-    writeFileSync(path.join(binDir, `${name}.cmd`), `@echo off\r\nnode "%~dp0\\${name}" %*\r\n`);
-  }
-}
 
 function getPublishedCrates(): string[] {
   const scriptPath = path.join(repoRoot, "tools", "moon", "scripts", "publish_crates.mbtx");
