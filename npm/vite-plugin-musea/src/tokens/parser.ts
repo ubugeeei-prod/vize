@@ -94,7 +94,7 @@ export async function parseTokens(tokensPath: string): Promise<TokenCategory[]> 
  * Parse tokens from a directory.
  */
 async function parseTokenDirectory(dirPath: string): Promise<TokenCategory[]> {
-  const mergedTokens: Record<string, unknown> = {};
+  const mergedTokens = createRecord<unknown>();
   await mergeTokenDirectory(mergedTokens, dirPath);
   return flattenTokens(mergedTokens);
 }
@@ -143,7 +143,7 @@ function deepMergeTokenTrees(
       continue;
     }
 
-    target[key] = value;
+    target[key] = cloneTokenTree(value);
   }
 }
 
@@ -180,7 +180,7 @@ function flattenTokens(tokens: Record<string, unknown>, prefix: string[] = []): 
  * Extract token values from an object.
  */
 function extractTokens(obj: Record<string, unknown>): Record<string, DesignToken> {
-  const tokens: Record<string, DesignToken> = {};
+  const tokens = createRecord<DesignToken>();
 
   for (const [key, value] of Object.entries(obj)) {
     if (isTokenValue(value)) {
@@ -189,6 +189,22 @@ function extractTokens(obj: Record<string, unknown>): Record<string, DesignToken
   }
 
   return tokens;
+}
+
+function cloneTokenTree(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(cloneTokenTree);
+  }
+
+  if (isPlainObject(value)) {
+    const cloned = createRecord<unknown>();
+    for (const [key, child] of Object.entries(value)) {
+      cloned[key] = cloneTokenTree(child);
+    }
+    return cloned;
+  }
+
+  return value;
 }
 
 /**
@@ -206,6 +222,10 @@ function isTokenValue(value: unknown): boolean {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function createRecord<T>(): Record<string, T> {
+  return Object.create(null) as Record<string, T>;
 }
 
 /**

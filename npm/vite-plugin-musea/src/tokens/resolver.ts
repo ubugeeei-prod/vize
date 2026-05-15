@@ -61,7 +61,7 @@ export function buildTokenMap(
   categories: TokenCategory[],
   prefix: string[] = [],
 ): Record<string, DesignToken> {
-  const map: Record<string, DesignToken> = {};
+  const map = Object.create(null) as Record<string, DesignToken>;
 
   for (const cat of categories) {
     const catKey = cat.name.toLowerCase().replace(/\s+/g, "-");
