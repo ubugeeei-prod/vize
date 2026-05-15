@@ -126,7 +126,9 @@ vize check --declaration --declaration-dir dist/types
 `vize lint` runs Patina rules for Vue templates, scripts, CSS, a11y, SSR, Vapor, Musea, cross-file,
 and type-aware checks. Security-oriented Vue rules include `vue/no-unsafe-url`, which checks dynamic
 URL bindings and static URL attributes for executable schemes such as `javascript:`, `vbscript:`,
-and active `data:` payloads. `vize check` generates virtual TypeScript for Vue SFCs and maps project
+and active `data:` payloads. Anchor accessibility checks share the same scheme normalization for
+static `href` values, so case changes or HTML-decoded control characters do not hide
+`javascript:` links. `vize check` generates virtual TypeScript for Vue SFCs and maps project
 diagnostics back to the original source files.
 
 Use `vize lint --profile src` when tuning rule cost. Type-aware lint profile rows include template
