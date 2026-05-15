@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import type { IncomingMessage } from "node:http";
+import os from "node:os";
 import path from "node:path";
 
 import {
@@ -21,6 +23,22 @@ void test("resolveInside keeps filesystem reads under the allowed directory", ()
   assert.equal(resolveInside(root, "src/Button.vue"), path.join(root, "src/Button.vue"));
   assert.throws(() => resolveInside(root, "../outside.txt"), HttpError);
   assert.throws(() => resolveUrlPathInside(root, "/assets/../../outside.txt"), HttpError);
+});
+
+void test("resolveInside follows links before accepting a path", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-path-"));
+  const root = path.join(tempDir, "root");
+  const outside = path.join(tempDir, "outside");
+
+  try {
+    await fs.promises.mkdir(root);
+    await fs.promises.mkdir(outside);
+    await fs.promises.symlink(outside, path.join(root, "linked"), "dir");
+
+    assert.throws(() => resolveInside(root, "linked/file.txt"), HttpError);
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
 });
 
 void test("validateDevApiRequest requires same-origin JSON mutations with the session token", () => {

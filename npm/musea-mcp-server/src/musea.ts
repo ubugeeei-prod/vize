@@ -93,15 +93,34 @@ function tokenize(query: string): string[] {
 }
 
 function toProjectPath(projectRoot: string, absolutePath: string): string {
-  const root = path.resolve(projectRoot);
-  const resolved = path.resolve(absolutePath);
+  const root = realpathNearest(projectRoot);
+  const resolved = realpathNearest(absolutePath);
   const relativePath = path.relative(root, resolved);
   return isProjectPath(root, resolved) ? relativePath || "." : resolved;
 }
 
+function realpathNearest(targetPath: string): string {
+  let current = path.resolve(targetPath);
+  const missingParts: string[] = [];
+
+  while (true) {
+    try {
+      const real = fs.realpathSync.native(current);
+      return missingParts.length > 0 ? path.join(real, ...missingParts.reverse()) : real;
+    } catch {
+      const parent = path.dirname(current);
+      if (parent === current) {
+        return path.resolve(targetPath);
+      }
+      missingParts.push(path.basename(current));
+      current = parent;
+    }
+  }
+}
+
 export function isProjectPath(projectRoot: string, candidatePath: string): boolean {
-  const root = path.resolve(projectRoot);
-  const candidate = path.resolve(candidatePath);
+  const root = realpathNearest(projectRoot);
+  const candidate = realpathNearest(candidatePath);
   const relativePath = path.relative(root, candidate);
   return relativePath === "" || (!relativePath.startsWith("..") && !path.isAbsolute(relativePath));
 }

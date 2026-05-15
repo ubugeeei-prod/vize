@@ -135,6 +135,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     resolvedPreviewCss,
     resolvedPreviewSetup,
     getConfigRoot: () => config.root,
+    getScanRoots: () => scanRoots,
     getServer: () => server,
     processArtFile,
   };
@@ -208,6 +209,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         devSessionToken,
         themeConfig,
         artFiles,
+        scanRoots,
         resolvedPreviewCss,
         resolvedPreviewSetup,
       });
@@ -218,6 +220,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         createApiMiddleware({
           config,
           artFiles,
+          scanRoots,
           tokensPath,
           basePath,
           resolvedPreviewCss,

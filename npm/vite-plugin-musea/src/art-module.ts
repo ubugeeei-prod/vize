@@ -7,8 +7,9 @@
 
 import path from "node:path";
 
+import { allowedSourceRoots, resolveComponentSourcePath } from "./component-source.js";
 import type { ArtFileInfo } from "./types/index.js";
-import { toPascalCase } from "./utils.js";
+import { escapeHtml, toPascalCase } from "./utils.js";
 
 /**
  * Extract the content of the first <script setup> block from a Vue SFC source.
@@ -38,6 +39,10 @@ function rewriteRelativeImportStatement(statement: string, artDir: string): stri
     (_match, prefix: string, quote: string, specifier: string, suffix: string) =>
       `${prefix}${quote}${resolveRelativeSpecifier(specifier, artDir)}${quote}${suffix}`,
   );
+}
+
+function escapeTemplateLiteral(str: string): string {
+  return str.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$/g, "\\$");
 }
 
 function countCharBalance(source: string, openChar: string, closeChar: string): number {
@@ -340,19 +345,42 @@ export function parseScriptSetupForArt(content: string): {
   };
 }
 
-export function generateArtModule(art: ArtFileInfo, filePath: string): string {
+interface GenerateArtModuleOptions {
+  root?: string;
+  scanRoots?: string[];
+}
+
+export function generateArtModule(
+  art: ArtFileInfo,
+  filePath: string,
+  options: GenerateArtModuleOptions = {},
+): string {
   let componentImportPath: string | undefined;
-  let componentName: string | undefined;
+  let componentTagName: string | undefined;
+  const componentBindingName = "__MuseaComponent";
 
   if (art.isInline && art.componentPath) {
     // Inline art: import the host .vue file itself as the component
-    componentImportPath = art.componentPath;
-    componentName = path.basename(art.componentPath, ".vue");
+    componentImportPath = options.root
+      ? (resolveComponentSourcePath(
+          art,
+          filePath,
+          allowedSourceRoots(options.root, options.scanRoots ?? []),
+        ) ?? undefined)
+      : art.componentPath;
+    componentTagName = "MuseaComponent";
   } else if (art.metadata.component) {
     // Traditional .art.vue: resolve component from the component attribute
-    const comp = art.metadata.component;
-    componentImportPath = path.isAbsolute(comp) ? comp : path.resolve(path.dirname(filePath), comp);
-    componentName = path.basename(comp, ".vue");
+    componentImportPath = options.root
+      ? (resolveComponentSourcePath(
+          art,
+          filePath,
+          allowedSourceRoots(options.root, options.scanRoots ?? []),
+        ) ?? undefined)
+      : path.isAbsolute(art.metadata.component)
+        ? art.metadata.component
+        : path.resolve(path.dirname(filePath), art.metadata.component);
+    componentTagName = "MuseaComponent";
   }
 
   // Parse script setup if present
@@ -375,22 +403,15 @@ import { defineComponent, h } from 'vue';
     }
   }
 
-  if (componentImportPath && componentName) {
+  if (componentImportPath && componentTagName) {
     // Only add component import if not already imported by script setup
-    const alreadyImported = scriptSetup?.imports.some((imp) => {
-      // Check against the original relative path and the resolved absolute path
-      if (
-        imp.includes(`from '${componentImportPath}'`) ||
-        imp.includes(`from "${componentImportPath}"`)
-      )
-        return true;
-      // Also check by component name as default import (handles relative vs absolute path mismatch)
-      return new RegExp(`^import\\s+${componentName}[\\s,]`).test(imp.trim());
-    });
+    const alreadyImported = scriptSetup?.imports.some((imp) =>
+      new RegExp(`^import\\s+${componentBindingName}[\\s,]`).test(imp.trim()),
+    );
     if (!alreadyImported) {
-      code += `import ${componentName} from '${componentImportPath}';\n`;
+      code += `import ${componentBindingName} from ${JSON.stringify(componentImportPath)};\n`;
     }
-    code += `export const __component__ = ${componentName};\n`;
+    code += `export const __component__ = ${componentBindingName};\n`;
   }
 
   code += `
@@ -406,35 +427,37 @@ export const __styles__ = ${JSON.stringify(art.styleBlocks ?? [])};
     let template = variant.template;
 
     // Replace <Self> with the actual component name (for inline art)
-    if (componentName) {
+    if (componentTagName) {
       template = template
-        .replace(/<Self/g, `<${componentName}`)
-        .replace(/<\/Self>/g, `</${componentName}>`);
+        .replace(/<Self/g, `<${componentTagName}`)
+        .replace(/<\/Self>/g, `</${componentTagName}>`);
     }
 
     // Escape the template for use in a JS string
-    const escapedTemplate = template
-      .replace(/\\/g, "\\\\")
-      .replace(/`/g, "\\`")
-      .replace(/\$/g, "\\$");
+    const escapedTemplate = escapeTemplateLiteral(template);
+    const escapedVariantName = escapeTemplateLiteral(escapeHtml(variant.name));
 
     // Wrap template with the variant container (no .musea-variant class -- the
     // outer mount container already carries it; duplicating causes double padding)
-    const fullTemplate = `<div data-variant="${variant.name}">${escapedTemplate}</div>`;
+    const fullTemplate = `<div data-variant="${escapedVariantName}">${escapedTemplate}</div>`;
 
     // Collect component names for the `components` option.
     // Runtime-compiled templates use resolveComponent() which checks the
     // `components` option, NOT setup return values.
-    const componentNames = new Set<string>();
-    if (componentName) componentNames.add(componentName);
+    const componentNames = new Map<string, string>();
+    if (componentTagName) componentNames.set(componentTagName, componentBindingName);
     if (scriptSetup) {
       for (const name of scriptSetup.returnNames) {
         // PascalCase names starting with uppercase are likely components
-        if (/^[A-Z]/.test(name)) componentNames.add(name);
+        if (/^[A-Z]/.test(name)) componentNames.set(name, name);
       }
     }
     const components =
-      componentNames.size > 0 ? `  components: { ${[...componentNames].join(", ")} },\n` : "";
+      componentNames.size > 0
+        ? `  components: { ${[...componentNames]
+            .map(([name, value]) => `${JSON.stringify(name)}: ${value}`)
+            .join(", ")} },\n`
+        : "";
 
     const hasSetupBody = scriptSetup?.setupBody.some((line) => line.trim().length > 0) ?? false;
 
@@ -450,7 +473,7 @@ ${scriptSetup.setupBody.map((l) => `    ${l}`).join("\n")}
   template: \`${fullTemplate}\`,
 });
 `;
-    } else if (componentName) {
+    } else if (componentTagName) {
       code += `
 export const ${variantComponentName} = {
   name: '${variantComponentName}',
