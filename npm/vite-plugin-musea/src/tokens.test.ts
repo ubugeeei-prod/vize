@@ -61,6 +61,30 @@ void test("token mutations reject prototype-polluting paths", () => {
   assert.equal(({} as Record<string, unknown>).polluted, undefined);
 });
 
+void test("token parsing keeps prototype-like token names as data", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-tokens-"));
+
+  try {
+    await fs.promises.writeFile(
+      path.join(tempDir, "colors.tokens.json"),
+      '{"color":{"__proto__":{"value":"#fff","type":"color"}}}',
+      "utf-8",
+    );
+
+    const categories = await parseTokens(tempDir);
+    const tokenMap = buildTokenMap(categories);
+    const colorCategory = categories[0];
+
+    assert.ok(colorCategory);
+    assert.equal(Object.getPrototypeOf(colorCategory.tokens), null);
+    assert.equal(Object.getPrototypeOf(tokenMap), null);
+    assert.equal(tokenMap["color.__proto__"]?.value, "#fff");
+    assert.equal(({} as Record<string, unknown>).value, undefined);
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
 void test("generateTokensHtml escapes untrusted token text and filters unsafe color styles", () => {
   const html = generateTokensHtml([
     {
