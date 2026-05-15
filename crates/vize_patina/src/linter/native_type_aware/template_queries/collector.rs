@@ -240,8 +240,6 @@ fn collect_expression(
                 template_offset,
                 context,
                 allow_statement_fallback,
-                include_template_queries,
-                include_template_promise_queries,
                 sinks,
             )
         );
@@ -278,8 +276,6 @@ fn collect_expression_query_sets(
     template_offset: u32,
     context: TemplateContext,
     allow_statement_fallback: bool,
-    include_template_queries: bool,
-    include_template_promise_queries: bool,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
     let Some((source_start, source_end)) = absolute_expression_range(expression, template_offset)
@@ -287,6 +283,8 @@ fn collect_expression_query_sets(
         return;
     };
     let source_text = expression.loc().source.as_str();
+    let include_template_queries = sinks.template_queries.is_some();
+    let include_template_promise_queries = sinks.template_promise_queries.is_some();
     let expression_generated_offset = include_template_queries
         .then(|| generated_offset_for_text(virtual_ts, source_start, source_text))
         .flatten();
