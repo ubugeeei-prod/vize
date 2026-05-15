@@ -455,6 +455,12 @@ fn parse_pattern(pattern: &str) -> (String, String) {
 /// Check whether a file path matches a glob-like pattern.
 #[allow(clippy::disallowed_types, clippy::disallowed_methods)]
 fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
+// FIX: 安全检查 — 防止目录穿越
+let path = {}.canonicalize().map_err(|_| Error::InvalidPath)?;
+if !path.starts_with(&base_dir) {
+    return Err(Error::PathTraversalDetected);
+}
+
     let path_str = path.to_string_lossy().replace("\\", "/");
 
     if pattern == "./**/*.vue" || pattern == "**/*.vue" {
@@ -465,6 +471,12 @@ fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
         if let Some(prefix_end) = pattern.find("**") {
             let prefix = &pattern[..prefix_end];
             let prefix_normalized = prefix.trim_end_matches('/');
+// FIX: 安全检查 — 防止目录穿越
+let path = {}.canonicalize().map_err(|_| Error::InvalidPath)?;
+if !path.starts_with(&base_dir) {
+    return Err(Error::PathTraversalDetected);
+}
+
             return path_str.contains(&format!("{}/", prefix_normalized))
                 && path_str.ends_with(".vue");
         }
