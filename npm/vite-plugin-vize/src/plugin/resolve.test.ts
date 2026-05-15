@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,6 +10,8 @@ import { toVirtualId } from "../virtual.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const workspaceRoot = path.resolve(__dirname, "../../../..");
+const agentTestRoot = path.join(workspaceRoot, "__agent_only", "tests", "vite-plugin-vize");
+fs.mkdirSync(agentTestRoot, { recursive: true });
 
 function createState(root: string): VizePluginState {
   return {
@@ -52,6 +53,10 @@ function hasFixtureProject(projectRoot: string): boolean {
   return fs.existsSync(path.join(projectRoot, "package.json"));
 }
 
+function createTempRoot(prefix: string): string {
+  return fs.mkdtempSync(path.join(agentTestRoot, prefix + "-"));
+}
+
 function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): string {
   assert.notEqual(resolved, null);
   assert.notEqual(resolved, undefined);
@@ -66,7 +71,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-resolve-define-page-"));
+  const tempRoot = createTempRoot("define-page");
   const source = path.join(tempRoot, "Home.vue");
   fs.writeFileSync(source, "<script setup>definePage({})</script>");
 
@@ -86,7 +91,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-resolve-js-macro-"));
+  const tempRoot = createTempRoot("js-macro");
   const importer = path.join(tempRoot, "App.vue");
   const stub = path.join(tempRoot, "component-stub.js");
   fs.writeFileSync(importer, "<template><div /></template>");
@@ -108,7 +113,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-resolve-alias-"));
+  const tempRoot = createTempRoot("alias-vue");
   const importer = path.join(tempRoot, "src", "App.vue");
   const aliased = path.join(tempRoot, "src", "views", "Aliased.vue");
   fs.mkdirSync(path.dirname(importer), { recursive: true });
@@ -142,6 +147,64 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     expectResolvedId(resolved),
     toVirtualId(aliased),
     "Aliased Vue imports should be filtered after Vite resolves the real file path",
+  );
+}
+
+{
+  const tempRoot = createTempRoot("bare-alias");
+  const viteRoot = path.join(tempRoot, "app");
+  const importer = path.join(tempRoot, "app", "pages", "index.vue");
+  const packageRoot = path.join(
+    tempRoot,
+    "node_modules",
+    ".pnpm",
+    "vue-i18n@0.0.0",
+    "node_modules",
+    "vue-i18n",
+  );
+  const pnpmHoistRoot = path.join(tempRoot, "node_modules", ".pnpm", "node_modules");
+  const entry = path.join(packageRoot, "dist", "vue-i18n.esm-bundler.js");
+
+  fs.mkdirSync(path.dirname(importer), { recursive: true });
+  fs.mkdirSync(path.dirname(entry), { recursive: true });
+  fs.mkdirSync(pnpmHoistRoot, { recursive: true });
+  fs.writeFileSync(importer, "<template><div /></template>");
+  fs.writeFileSync(path.join(packageRoot, "package.json"), '{"name":"vue-i18n","version":"0.0.0"}');
+  fs.writeFileSync(entry, "export const I18nInjectionKey = Symbol();");
+  fs.symlinkSync(packageRoot, path.join(pnpmHoistRoot, "vue-i18n"), "dir");
+
+  const state = createState(viteRoot);
+  state.server = null;
+  state.cssAliasRules = [
+    {
+      find: "vue-i18n",
+      replacement: "vue-i18n/dist/vue-i18n.esm-bundler.js",
+    },
+  ];
+
+  let resolverCalled = false;
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => {
+        resolverCalled = true;
+        return null;
+      },
+    },
+    state,
+    "vue-i18n",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    resolverCalled,
+    false,
+    "Bare package aliases should avoid Vite alias recursion when Node can resolve them",
+  );
+  assert.equal(
+    expectResolvedId(resolved),
+    entry,
+    "Aliased package subpaths from virtual modules should resolve to loadable files",
   );
 }
 
