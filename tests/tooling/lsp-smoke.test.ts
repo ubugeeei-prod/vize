@@ -443,6 +443,67 @@ const secondaryLabel = ref('secondary')
   }
 });
 
+test("vize lsp returns empty results for unopened and closed editor documents", async () => {
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-empty-editor-docs");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      editor: true,
+      lint: true,
+      typecheck: true,
+    });
+
+    const unopenedUri = pathToFileURL(path.join(workspaceDir, "NeverOpened.vue")).href;
+    await assertEmptyEditorRequests(session, unopenedUri, "an unopened document");
+
+    const closedSource = `<script setup lang="ts">
+const message = 'hello'
+</script>
+
+<template>
+  {{ message }}
+</template>
+`;
+    const closedPath = path.join(workspaceDir, "Closed.vue");
+    const closedUri = pathToFileURL(closedPath).href;
+    fs.writeFileSync(closedPath, closedSource, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: closedUri,
+        languageId: "vue",
+        version: 1,
+        text: closedSource,
+      },
+    });
+
+    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+      isDiagnosticsForUri(params, closedUri),
+    );
+
+    session.notify("textDocument/didClose", {
+      textDocument: {
+        uri: closedUri,
+      },
+    });
+
+    const closePublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, closedUri),
+    )) as PublishDiagnosticsParams;
+    assert.deepEqual(closePublish.diagnostics, []);
+
+    await assertEmptyEditorRequests(session, closedUri, "a closed document");
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+  }
+});
+
 test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
   const agentOnlyDir = path.join(root, "__agent_only", "lsp-malformed");
   fs.mkdirSync(agentOnlyDir, { recursive: true });
@@ -558,6 +619,136 @@ function assertDiagnosticRange(diagnostic: LspDiagnostic): void {
   assert.equal(typeof range.end.line, "number");
   assert.equal(typeof range.end.character, "number");
   assert.ok((range.end.line ?? 0) >= (range.start.line ?? 0));
+}
+
+async function assertEmptyEditorRequests(
+  session: LspSession,
+  uri: string,
+  label: string,
+): Promise<void> {
+  const position = { line: 0, character: 0 };
+  const range = { start: position, end: position };
+  const requests: Array<[method: string, params: unknown]> = [
+    [
+      "textDocument/hover",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/definition",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/references",
+      {
+        textDocument: { uri },
+        position,
+        context: {
+          includeDeclaration: true,
+        },
+      },
+    ],
+    [
+      "textDocument/completion",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/documentSymbol",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/documentLink",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/semanticTokens/full",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/codeLens",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/inlayHint",
+      {
+        textDocument: { uri },
+        range,
+      },
+    ],
+    [
+      "textDocument/foldingRange",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/codeAction",
+      {
+        textDocument: { uri },
+        range,
+        context: {
+          diagnostics: [],
+        },
+      },
+    ],
+    [
+      "textDocument/prepareRename",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/rename",
+      {
+        textDocument: { uri },
+        position,
+        newName: "renamedSymbol",
+      },
+    ],
+    [
+      "textDocument/formatting",
+      {
+        textDocument: { uri },
+        options: {
+          tabSize: 2,
+          insertSpaces: true,
+        },
+      },
+    ],
+    [
+      "textDocument/rangeFormatting",
+      {
+        textDocument: { uri },
+        range,
+        options: {
+          tabSize: 2,
+          insertSpaces: true,
+        },
+      },
+    ],
+  ];
+
+  for (const [method, params] of requests) {
+    const response = await session.request(method, params);
+    assert.equal(response, null, `${method} should return null for ${label}`);
+  }
 }
 
 function offsetToPosition(source: string, offset: number): { line: number; character: number } {
