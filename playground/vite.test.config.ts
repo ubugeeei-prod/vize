@@ -5,6 +5,7 @@ import { vize } from "@vizejs/vite-plugin";
 export default defineConfig({
   plugins: [vize()],
   resolve: {
+    alias: [{ find: "vue", replacement: "vue/dist/vue.runtime.esm-bundler.js" }],
     dedupe: ["vue"],
   },
   optimizeDeps: {

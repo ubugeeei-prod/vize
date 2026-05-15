@@ -4,6 +4,14 @@ import { vize } from "@vizejs/vite-plugin";
 export default defineConfig({
   base: process.env.CI ? "/play/" : "/",
   plugins: [vize({ vapor: true })],
+  resolve: {
+    alias: [
+      { find: "@mdi/js", replacement: "@mdi/js/mdi.js" },
+      { find: /^monaco-editor$/, replacement: "monaco-editor/esm/vs/editor/editor.main.js" },
+      { find: "vue", replacement: "vue/dist/vue.runtime.esm-bundler.js" },
+    ],
+    dedupe: ["vue"],
+  },
   build: {
     // The playground intentionally ships Monaco workers, the TypeScript compiler,
     // and the Vize WASM bundle. After route- and formatter-level code splitting,
