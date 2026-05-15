@@ -32,6 +32,8 @@ export interface SfcCompileResultNapi {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  hasScoped: boolean;
+  styles: NativeStyleBlockInfo[];
   macroArtifacts?: MacroArtifact[];
 }
 
@@ -158,6 +160,21 @@ export interface StyleBlockInfo {
   index: number;
 }
 
+export interface NativeStyleBlockInfo {
+  /** Raw style content (uncompiled for preprocessor langs) */
+  content: string;
+  /** Language of the style block (e.g., "css", "scss", "less", "sass", "stylus") */
+  lang?: string | null;
+  /** Whether the style block has the scoped attribute */
+  scoped: boolean;
+  /** Whether the style block has the module attribute */
+  module: boolean;
+  /** CSS Modules binding name for named module attributes */
+  moduleName?: string | null;
+  /** Index of this style block in the SFC */
+  index: number;
+}
+
 export interface CompiledModule {
   code: string;
   css?: string;
@@ -191,7 +208,7 @@ export interface BatchFileResult {
   /** Compile-time macro artifacts extracted from the source SFC */
   macroArtifacts?: MacroArtifact[];
   /** Per-block style metadata extracted from the source SFC */
-  styles?: StyleBlockInfo[];
+  styles?: NativeStyleBlockInfo[];
 }
 
 export interface BatchCompileOptionsNapi {

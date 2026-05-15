@@ -91,6 +91,62 @@ assert.doesNotMatch(
   "Batch SSR compilation should also drop the Vapor marker when falling back to VDOM",
 );
 
+const styleMetadataSource = `<template><div class="root">Styled</div></template>
+<style scoped module lang="scss">
+.root { color: red; }
+</style>
+<style module="tokens">
+.token { color: blue; }
+</style>`;
+
+const styleMetadataCompiled = compileFile(
+  "/src/Styled.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  styleMetadataSource,
+);
+
+assert.equal(
+  styleMetadataCompiled.hasScoped,
+  true,
+  "Single-file compilation should use native scoped style metadata",
+);
+assert.deepEqual(
+  styleMetadataCompiled.styles?.map(({ lang, scoped, module, index }) => ({
+    lang,
+    scoped,
+    module,
+    index,
+  })),
+  [
+    { lang: "scss", scoped: true, module: true, index: 0 },
+    { lang: null, scoped: false, module: "tokens", index: 1 },
+  ],
+  "Single-file compilation should normalize native style metadata for delegated CSS imports",
+);
+
+const styleBatchCache = new Map();
+const styleBatchResult = compileBatch(
+  [{ path: "/src/Styled.vue", source: styleMetadataSource }],
+  styleBatchCache,
+  { ssr: false, vapor: false },
+);
+
+assert.equal(styleBatchResult.failedCount, 0, "Batch style metadata compilation should succeed");
+assert.deepEqual(
+  styleBatchCache.get("/src/Styled.vue")?.styles?.map(({ lang, scoped, module, index }) => ({
+    lang,
+    scoped,
+    module,
+    index,
+  })),
+  [
+    { lang: "scss", scoped: true, module: true, index: 0 },
+    { lang: null, scoped: false, module: "tokens", index: 1 },
+  ],
+  "Batch compilation should cache style metadata emitted by native SFC parsing",
+);
+
 const definePageSource = `<script setup lang="ts">
 definePage({
   name: "home",

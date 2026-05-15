@@ -99,6 +99,15 @@ export interface BatchFileInputNapi {
   source: string;
 }
 
+export interface StyleBlockNapi {
+  content: string;
+  lang?: string;
+  scoped: boolean;
+  module: boolean;
+  moduleName?: string;
+  index: number;
+}
+
 /** Per-file result from batch compilation */
 export interface BatchFileResultNapi {
   /** File path */
@@ -121,6 +130,8 @@ export interface BatchFileResultNapi {
   styleHash?: string;
   /** Hash of script content (for HMR) */
   scriptHash?: string;
+  /** Per-block style metadata */
+  styles: Array<StyleBlockNapi>;
   /** Compile-time macro artifacts */
   macroArtifacts: Array<MacroArtifactNapi>;
 }
@@ -569,6 +580,10 @@ export interface SfcCompileResultNapi {
   styleHash?: string;
   /** Hash of script content (for HMR) */
   scriptHash?: string;
+  /** Whether the file has scoped styles */
+  hasScoped: boolean;
+  /** Per-block style metadata */
+  styles: Array<StyleBlockNapi>;
   /** Compile-time macro artifacts */
   macroArtifacts: Array<MacroArtifactNapi>;
 }

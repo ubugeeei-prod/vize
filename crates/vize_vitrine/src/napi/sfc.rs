@@ -22,6 +22,16 @@ use std::{
 use vize_carton::cstr;
 
 #[napi(object)]
+pub struct StyleBlockNapi {
+    pub content: String,
+    pub lang: Option<String>,
+    pub scoped: bool,
+    pub module: bool,
+    pub module_name: Option<String>,
+    pub index: u32,
+}
+
+#[napi(object)]
 pub struct MacroArtifactNapi {
     pub kind: String,
     pub name: String,
@@ -45,6 +55,33 @@ fn macro_artifacts_to_napi(
             module_code: artifact.module_code.map(Into::into),
             start: artifact.start as u32,
             end: artifact.end as u32,
+        })
+        .collect()
+}
+
+fn style_blocks_to_napi(styles: &[vize_atelier_sfc::SfcStyleBlock]) -> Vec<StyleBlockNapi> {
+    styles
+        .iter()
+        .enumerate()
+        .map(|(index, style)| {
+            let module_attr = style.attrs.get("module");
+            let module_name = module_attr.and_then(|value| {
+                let value = value.as_ref();
+                if value.is_empty() {
+                    None
+                } else {
+                    Some(value.into())
+                }
+            });
+
+            StyleBlockNapi {
+                content: style.content.as_ref().into(),
+                lang: style.lang.as_deref().map(Into::into),
+                scoped: style.scoped,
+                module: module_attr.is_some(),
+                module_name,
+                index: index as u32,
+            }
         })
         .collect()
 }
@@ -88,6 +125,10 @@ pub struct SfcCompileResultNapi {
     pub style_hash: Option<String>,
     /// Hash of script content (for HMR)
     pub script_hash: Option<String>,
+    /// Whether the file has scoped styles
+    pub has_scoped: bool,
+    /// Per-block style metadata
+    pub styles: Vec<StyleBlockNapi>,
     /// Compile-time macro artifacts
     pub macro_artifacts: Vec<MacroArtifactNapi>,
 }
@@ -151,6 +192,8 @@ pub struct BatchFileResultNapi {
     pub style_hash: Option<String>,
     /// Hash of script content (for HMR)
     pub script_hash: Option<String>,
+    /// Per-block style metadata
+    pub styles: Vec<StyleBlockNapi>,
     /// Compile-time macro artifacts
     pub macro_artifacts: Vec<MacroArtifactNapi>,
 }
@@ -284,6 +327,8 @@ pub fn compile_sfc(
                 template_hash: None,
                 style_hash: None,
                 script_hash: None,
+                has_scoped: false,
+                styles: vec![],
                 macro_artifacts: vec![],
             });
         }
@@ -292,6 +337,7 @@ pub fn compile_sfc(
     let template_hash: Option<String> = descriptor.template_hash().map(Into::into);
     let style_hash: Option<String> = descriptor.style_hash().map(Into::into);
     let script_hash: Option<String> = descriptor.script_hash().map(Into::into);
+    let styles = style_blocks_to_napi(&descriptor.styles);
 
     // Compile
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
@@ -363,6 +409,8 @@ pub fn compile_sfc(
                 template_hash: template_hash.clone(),
                 style_hash: style_hash.clone(),
                 script_hash: script_hash.clone(),
+                has_scoped,
+                styles,
                 macro_artifacts,
             })
         }
@@ -374,6 +422,8 @@ pub fn compile_sfc(
             template_hash,
             style_hash,
             script_hash,
+            has_scoped,
+            styles,
             macro_artifacts: vec![],
         }),
     }
@@ -592,8 +642,6 @@ pub fn compile_sfc_batch_with_results(
             )
         };
 
-        let has_scoped = source.contains("<style") && source.contains("scoped");
-
         let filename_cs: vize_carton::CompactString = filename.clone().into();
 
         // Parse
@@ -612,12 +660,13 @@ pub fn compile_sfc_batch_with_results(
                     code: String::new(),
                     css: None,
                     scope_id: scope_id.clone().into(),
-                    has_scoped,
+                    has_scoped: false,
                     errors: vec![e.message.into()],
                     warnings: vec![],
                     template_hash: None,
                     style_hash: None,
                     script_hash: None,
+                    styles: vec![],
                     macro_artifacts: vec![],
                 });
                 return;
@@ -628,6 +677,7 @@ pub fn compile_sfc_batch_with_results(
         let template_hash: Option<String> = descriptor.template_hash().map(Into::into);
         let style_hash: Option<String> = descriptor.style_hash().map(Into::into);
         let script_hash: Option<String> = descriptor.script_hash().map(Into::into);
+        let styles = style_blocks_to_napi(&descriptor.styles);
 
         // Compile
         // Preserve TypeScript in output - let Vite/esbuild handle TS transformation
@@ -694,6 +744,7 @@ pub fn compile_sfc_batch_with_results(
                     template_hash: template_hash.clone(),
                     style_hash: style_hash.clone(),
                     script_hash: script_hash.clone(),
+                    styles,
                     macro_artifacts,
                 });
             }
@@ -711,6 +762,7 @@ pub fn compile_sfc_batch_with_results(
                     template_hash,
                     style_hash,
                     script_hash,
+                    styles,
                     macro_artifacts: vec![],
                 });
             }
