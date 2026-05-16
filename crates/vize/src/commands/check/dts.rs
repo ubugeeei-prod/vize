@@ -1,14 +1,25 @@
 //! Helpers for lightweight `.d.ts` parsing used by `vize check`.
 
+#![allow(clippy::disallowed_macros)]
+
 use std::{fs, path::Path};
 
-use vize_carton::{String, ToCompactString};
+use vize_carton::{String, ToCompactString, profile, profiler::global_profiler};
 
 pub(super) fn parse_interface_members(
     path: &Path,
     interface_name: &str,
 ) -> Result<Vec<(String, String)>, std::io::Error> {
-    let content = fs::read_to_string(path)?;
+    let content = match profile!("cli.check.dts.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            content
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(error);
+        }
+    };
     Ok(parse_interface_members_content(&content, interface_name))
 }
 
@@ -68,7 +79,16 @@ pub(super) fn parse_interface_members_content(
 pub(super) fn parse_declared_global_values(
     path: &Path,
 ) -> Result<Vec<(String, String)>, std::io::Error> {
-    let content = fs::read_to_string(path)?;
+    let content = match profile!("cli.check.dts.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            content
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(error);
+        }
+    };
     let base_dir = path.parent().unwrap_or_else(|| Path::new("."));
     Ok(parse_declared_global_values_content(&content, base_dir))
 }

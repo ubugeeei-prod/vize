@@ -22,7 +22,7 @@ use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_carton::profiler::global_profiler;
+use vize_carton::profiler::{allocation_snapshot, global_profiler};
 
 use crate::commands::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
@@ -121,12 +121,19 @@ pub(crate) fn run(args: BuildArgs) {
     match args.format {
         OutputFormat::Stats => {}
         OutputFormat::Js | OutputFormat::Json => {
-            if let Err(error) = fs::create_dir_all(&args.output) {
-                eprintln!(
-                    "Failed to create output directory {}: {error}",
-                    args.output.display()
-                );
-                std::process::exit(1);
+            match profile!(
+                "cli.build.output.create_dir_all",
+                fs::create_dir_all(&args.output)
+            ) {
+                Ok(()) => global_profiler().record_fs_create_dir_all(),
+                Err(error) => {
+                    global_profiler().record_fs_create_dir_all_failure();
+                    eprintln!(
+                        "Failed to create output directory {}: {error}",
+                        args.output.display()
+                    );
+                    std::process::exit(1);
+                }
             }
 
             for (path, output) in results.into_iter().flatten() {
@@ -142,14 +149,21 @@ pub(crate) fn run(args: BuildArgs) {
                     .unwrap_or_else(|| PathBuf::from("output").with_extension(ext));
                 let out_path = args.output.join(filename);
 
-                if let Some(parent) = out_path.parent()
-                    && let Err(error) = fs::create_dir_all(parent)
-                {
-                    eprintln!(
-                        "Failed to create output subdirectory {}: {error}",
-                        parent.display()
-                    );
-                    continue;
+                if let Some(parent) = out_path.parent() {
+                    match profile!(
+                        "cli.build.output.create_dir_all",
+                        fs::create_dir_all(parent)
+                    ) {
+                        Ok(()) => global_profiler().record_fs_create_dir_all(),
+                        Err(error) => {
+                            global_profiler().record_fs_create_dir_all_failure();
+                            eprintln!(
+                                "Failed to create output subdirectory {}: {error}",
+                                parent.display()
+                            );
+                            continue;
+                        }
+                    }
                 }
 
                 let content: String = match args.format {
@@ -164,9 +178,17 @@ pub(crate) fn run(args: BuildArgs) {
                     OutputFormat::Stats => unreachable!(),
                 };
 
-                fs::write(&out_path, content).unwrap_or_else(|e| {
-                    eprintln!("Failed to write {}: {}", out_path.display(), e);
-                });
+                let bytes = content.len();
+                match profile!(
+                    "cli.build.output.write",
+                    fs::write(&out_path, content.as_str())
+                ) {
+                    Ok(()) => global_profiler().record_fs_write(bytes),
+                    Err(error) => {
+                        global_profiler().record_fs_write_failure(bytes);
+                        eprintln!("Failed to write {}: {}", out_path.display(), error);
+                    }
+                }
             }
         }
     }
@@ -272,6 +294,8 @@ pub(crate) fn run(args: BuildArgs) {
     // Profile breakdown
     if args.profile {
         let profiler = global_profiler();
+        let allocation_summary = allocation_snapshot();
+        let counter_summary = profiler.counter_summary();
         let operation_summary = profiler.summary();
         profiler.disable();
         let total_parse = stats.total_parse_time();
@@ -386,6 +410,8 @@ pub(crate) fn run(args: BuildArgs) {
             slow_threshold,
             throughput_bytes: Some(total_bytes),
             operations: Some(&operation_summary),
+            counters: Some(&counter_summary),
+            allocations: Some(allocation_summary),
             recommendations: &recommendations,
         };
         print_profile_report(&report);
@@ -504,11 +530,20 @@ fn compile_file_with_profile(
     let file_start = Instant::now();
 
     // Read file
-    let source = fs::read_to_string(path).map_err(|e| CompileError {
-        path: path.clone(),
-        error: cstr!("Failed to read file: {}", e),
-        phase: ErrorPhase::Read,
-    })?;
+    let source = match profile!("cli.build.file.read", fs::read_to_string(path)) {
+        Ok(source) => {
+            global_profiler().record_fs_read_to_string(source.len());
+            source
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(CompileError {
+                path: path.clone(),
+                error: cstr!("Failed to read file: {}", error),
+                phase: ErrorPhase::Read,
+            });
+        }
+    };
 
     let file_size = source.len();
     stats.total_bytes.fetch_add(file_size, Ordering::Relaxed);

@@ -13,7 +13,8 @@ use std::time::Instant;
 use vize_armature::Parser;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::{
-    Allocator, CompactString, FxHashMap, String, ToCompactString, cstr, profiler::global_profiler,
+    Allocator, CompactString, FxHashMap, String, ToCompactString, cstr, profile,
+    profiler::{allocation_snapshot, global_profiler},
 };
 use vize_croquis::cross_file::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
@@ -158,9 +159,13 @@ pub fn run(args: LintArgs) {
         .filter_map(|path| {
             let file_start = args.profile.then(Instant::now);
             let read_start = args.profile.then(Instant::now);
-            let source = match fs::read_to_string(path) {
-                Ok(s) => s,
+            let source = match profile!("cli.lint.file.read", fs::read_to_string(path)) {
+                Ok(s) => {
+                    global_profiler().record_fs_read_to_string(s.len());
+                    s
+                }
                 Err(e) => {
+                    global_profiler().record_fs_read_to_string_failure();
                     eprintln!("Failed to read {}: {}", path.display(), e);
                     return None;
                 }
@@ -171,7 +176,10 @@ pub fn run(args: LintArgs) {
 
             let filename = path.to_string_lossy().to_compact_string();
             let lint_file_start = args.profile.then(Instant::now);
-            let result = linter.lint_sfc(&source, &filename);
+            let result = profile!(
+                "cli.lint.file.lint_sfc",
+                linter.lint_sfc(&source, &filename)
+            );
             let lint_time = lint_file_start
                 .map(|start| start.elapsed())
                 .unwrap_or(Duration::ZERO);
@@ -212,27 +220,23 @@ pub fn run(args: LintArgs) {
             .iter()
             .map(|(path, _, source, _)| (path.clone(), source.as_str()))
             .collect();
-        let cross_file_output =
-            build_cross_file_lint_output(&cross_file_inputs, help_level, args.cross_file_tree);
+        let cross_file_output = profile!(
+            "cli.lint.cross_file.build",
+            build_cross_file_lint_output(&cross_file_inputs, help_level, args.cross_file_tree)
+        );
         cross_file_tree = cross_file_output.provide_inject_tree;
 
-        for (index, cross_result) in cross_file_output.results.into_iter().enumerate() {
-            if let Some((_, _, _, result)) = results.get_mut(index) {
-                merge_lint_result(result, cross_result);
+        profile!("cli.lint.cross_file.merge", {
+            for (index, cross_result) in cross_file_output.results.into_iter().enumerate() {
+                if let Some((_, _, _, result)) = results.get_mut(index) {
+                    merge_lint_result(result, cross_result);
+                }
             }
-        }
+        });
     }
     let cross_file_time = cross_file_start
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
-    let operation_summary = if args.profile {
-        let profiler = global_profiler();
-        let summary = profiler.summary();
-        profiler.disable();
-        Some(summary)
-    } else {
-        None
-    };
 
     let total_errors: usize = results
         .iter()
@@ -246,18 +250,37 @@ pub fn run(args: LintArgs) {
     // Format and print results
     let output_start = Instant::now();
     if render_details {
-        let lint_results: Vec<_> = results.iter().map(|(_, _, _, r)| r).cloned().collect();
-        let sources: Vec<_> = results
-            .iter()
-            .map(|(_, f, s, _)| (f.clone(), vize_carton::String::from(s.as_str())))
-            .collect();
+        let lint_results: Vec<_> = profile!(
+            "cli.lint.output.clone_results",
+            results.iter().map(|(_, _, _, r)| r).cloned().collect()
+        );
+        let sources: Vec<_> = profile!(
+            "cli.lint.output.clone_sources",
+            results
+                .iter()
+                .map(|(_, f, s, _)| (f.clone(), vize_carton::String::from(s.as_str())))
+                .collect()
+        );
 
-        let output = format_results(&lint_results, &sources, format);
+        let output = profile!(
+            "cli.lint.output.format_results",
+            format_results(&lint_results, &sources, format)
+        );
         if !output.trim().is_empty() {
             print!("{}", output);
         }
     }
     let output_time = output_start.elapsed();
+    let (operation_summary, counter_summary, allocation_summary) = if args.profile {
+        let profiler = global_profiler();
+        let allocation = allocation_snapshot();
+        let counters = profiler.counter_summary();
+        let operations = profiler.summary();
+        profiler.disable();
+        (Some(operations), Some(counters), Some(allocation))
+    } else {
+        (None, None, None)
+    };
 
     // Print summary
     let elapsed = start.elapsed();
@@ -377,6 +400,8 @@ pub fn run(args: LintArgs) {
             slow_threshold,
             throughput_bytes: Some(total_bytes),
             operations: operation_summary.as_ref(),
+            counters: counter_summary.as_ref(),
+            allocations: allocation_summary,
             recommendations: &recommendations,
         };
         print_profile_report(&report);

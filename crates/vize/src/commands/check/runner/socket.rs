@@ -12,7 +12,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-use vize_carton::{String, cstr};
+use vize_carton::{
+    String, cstr, profile,
+    profiler::{allocation_snapshot, global_profiler},
+};
 
 use crate::commands::{
     check::{CheckArgs, JsonRpcResponse, ServerCheckResult},
@@ -24,6 +27,12 @@ use super::collect::collect_vue_files;
 /// Run type checking via Unix socket connection to check-server.
 pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     let start = Instant::now();
+    if args.profile {
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
+    }
+
     let collect_start = Instant::now();
     #[allow(clippy::disallowed_types)]
     let default_patterns = vec![std::string::String::from(".")];
@@ -67,9 +76,13 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     let request_start = Instant::now();
     for path in &files {
         #[allow(clippy::disallowed_types)]
-        let source = match fs::read_to_string(path) {
-            Ok(source) => source,
+        let source = match profile!("cli.check.socket.file.read", fs::read_to_string(path)) {
+            Ok(source) => {
+                global_profiler().record_fs_read_to_string(source.len());
+                source
+            }
             Err(error) => {
+                global_profiler().record_fs_read_to_string_failure();
                 eprintln!("Failed to read {}: {}", path.display(), error);
                 continue;
             }
@@ -88,18 +101,44 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
             }
         });
 
-        if writeln!(stream, "{}", request).is_err() || stream.flush().is_err() {
+        let request_payload = match serde_json::to_string(&request) {
+            Ok(payload) => payload,
+            Err(error) => {
+                eprintln!("Failed to encode request: {}", error);
+                continue;
+            }
+        };
+        let request_bytes = request_payload.len() + 1;
+        if writeln!(stream, "{request_payload}").is_err() || stream.flush().is_err() {
+            global_profiler().record_counter("io.socket.write.calls", 1);
+            global_profiler()
+                .record_counter("io.socket.write.attempted_bytes", request_bytes as u64);
+            global_profiler().record_counter("io.socket.write.failures", 1);
+            global_profiler().record_counter("syscall.socket.write.calls", 1);
+            global_profiler().record_counter("syscall.socket.write.failures", 1);
             eprintln!("Failed to send request");
             break;
         }
+        global_profiler().record_counter("io.socket.write.calls", 1);
+        global_profiler().record_counter("io.socket.write.attempted_bytes", request_bytes as u64);
+        global_profiler().record_counter("io.socket.write.bytes", request_bytes as u64);
+        global_profiler().record_counter("syscall.socket.write.calls", 1);
+        global_profiler().record_counter("syscall.socket.flush.calls", 1);
 
         let mut reader = BufReader::new(&stream);
         #[allow(clippy::disallowed_types)]
         let mut response_line = std::string::String::new();
         if reader.read_line(&mut response_line).is_err() {
+            global_profiler().record_counter("io.socket.read.calls", 1);
+            global_profiler().record_counter("io.socket.read.failures", 1);
+            global_profiler().record_counter("syscall.socket.read.calls", 1);
+            global_profiler().record_counter("syscall.socket.read.failures", 1);
             eprintln!("Failed to read response");
             break;
         }
+        global_profiler().record_counter("io.socket.read.calls", 1);
+        global_profiler().record_counter("io.socket.read.bytes", response_line.len() as u64);
+        global_profiler().record_counter("syscall.socket.read.calls", 1);
 
         let response: JsonRpcResponse = match serde_json::from_str(&response_line) {
             Ok(response) => response,
@@ -170,6 +209,11 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
         total_time
     );
     if args.profile {
+        let profiler = global_profiler();
+        let allocation_summary = allocation_snapshot();
+        let counter_summary = profiler.counter_summary();
+        let operation_summary = profiler.summary();
+        profiler.disable();
         let phases = [
             ProfilePhase {
                 name: "collect files",
@@ -217,7 +261,9 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
             files: &[],
             slow_threshold: Duration::from_millis(0),
             throughput_bytes: None,
-            operations: None,
+            operations: Some(&operation_summary),
+            counters: Some(&counter_summary),
+            allocations: Some(allocation_summary),
             recommendations: &recommendations,
         };
         print_profile_report(&report);

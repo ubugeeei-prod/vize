@@ -14,6 +14,10 @@ mod config;
 
 use clap::{Parser, Subcommand};
 
+#[global_allocator]
+static GLOBAL_ALLOCATOR: vize_carton::profiler::ProfilingAllocator =
+    vize_carton::profiler::ProfilingAllocator::new();
+
 #[derive(Parser)]
 #[command(name = "vize")]
 #[command(about = "High-performance Vue.js toolchain in Rust", long_about = None)]

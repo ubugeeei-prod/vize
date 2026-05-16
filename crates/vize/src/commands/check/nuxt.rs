@@ -1,5 +1,7 @@
 //! Nuxt-specific auto-import and plugin injection helpers.
 
+#![allow(clippy::disallowed_macros)]
+
 use std::{fs, path::Path};
 
 use ignore::WalkBuilder;
@@ -10,7 +12,7 @@ use oxc_ast::ast::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_carton::{FxHashSet, String, ToCompactString, cstr};
+use vize_carton::{FxHashSet, String, ToCompactString, cstr, profile, profiler::global_profiler};
 
 use super::dts::{parse_declared_global_values, rewrite_relative_specifier};
 
@@ -92,7 +94,7 @@ fn collect_generated_stubs(
         return;
     }
 
-    if let Ok(content) = fs::read_to_string(&imports_path) {
+    if let Ok(content) = tracked_read_to_string(&imports_path) {
         let base_dir = imports_path.parent().unwrap_or_else(|| Path::new("."));
         for line in content.lines() {
             let trimmed = line.trim();
@@ -161,7 +163,7 @@ fn collect_plugin_injection_stubs(
                 continue;
             }
 
-            if let Ok(source) = fs::read_to_string(path) {
+            if let Ok(source) = tracked_read_to_string(path) {
                 plugin_keys.extend(extract_plugin_provide_keys_from_source(&source));
             }
         }
@@ -204,6 +206,20 @@ fn push_declared_const(
         seen_names,
         cstr!("declare const {name}: {type_annotation};"),
     );
+}
+
+#[allow(clippy::disallowed_types)]
+fn tracked_read_to_string(path: &Path) -> Result<std::string::String, std::io::Error> {
+    match profile!("cli.check.nuxt.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            Ok(content)
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            Err(error)
+        }
+    }
 }
 
 fn push_stub(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<String>, stub: String) {

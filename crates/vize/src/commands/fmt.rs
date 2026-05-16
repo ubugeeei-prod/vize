@@ -11,7 +11,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
-use vize_carton::cstr;
+use vize_carton::{
+    cstr, profile,
+    profiler::{allocation_snapshot, global_profiler},
+};
 use vize_glyph::{Allocator, FormatOptions, format_sfc_with_allocator};
 
 use crate::commands::profile::{
@@ -104,6 +107,11 @@ pub fn run(args: FmtArgs) {
     let files_unchanged = AtomicUsize::new(0);
     let files_errored = AtomicUsize::new(0);
     let profile_rows = args.profile.then(|| Mutex::new(Vec::new()));
+    if args.profile {
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
+    }
 
     // Process files in parallel, each thread gets its own allocator for maximum performance
     let process_start = Instant::now();
@@ -268,6 +276,12 @@ pub fn run(args: FmtArgs) {
             unchanged,
             errored
         );
+        let profiler = global_profiler();
+        let allocation_summary = allocation_snapshot();
+        let counter_summary = profiler.counter_summary();
+        let operation_summary = profiler.summary();
+        profiler.disable();
+
         let report = ProfileReport {
             title: "fmt",
             summary: summary.as_str(),
@@ -276,7 +290,9 @@ pub fn run(args: FmtArgs) {
             files: &file_rows,
             slow_threshold,
             throughput_bytes: Some(total_bytes),
-            operations: None,
+            operations: Some(&operation_summary),
+            counters: Some(&counter_summary),
+            allocations: Some(allocation_summary),
             recommendations: &recommendations,
         };
         print_profile_report(&report);
@@ -470,15 +486,27 @@ fn process_file(
 
     // Read the file
     let read_start = profile.then(Instant::now);
-    let source = fs::read_to_string(path).map_err(|e| format!("Failed to read file: {}", e))?;
+    let source = match profile!("cli.fmt.file.read", fs::read_to_string(path)) {
+        Ok(source) => {
+            global_profiler().record_fs_read_to_string(source.len());
+            source
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(format!("Failed to read file: {}", error));
+        }
+    };
     let read_time = read_start
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
 
     // Format the source using the provided allocator
     let format_start = profile.then(Instant::now);
-    let result = format_sfc_with_allocator(&source, options, allocator)
-        .map_err(|e| format!("Format error: {}", e))?;
+    let result = profile!(
+        "cli.fmt.file.format_sfc",
+        format_sfc_with_allocator(&source, options, allocator)
+    )
+    .map_err(|e| format!("Format error: {}", e))?;
     let format_time = format_start
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
@@ -490,7 +518,12 @@ fn process_file(
             eprintln!("Would reformat: {}", path.display());
         } else if write {
             // Write the formatted output
-            fs::write(path, &result.code).map_err(|e| format!("Failed to write file: {}", e))?;
+            let bytes = result.code.len();
+            if let Err(error) = profile!("cli.fmt.file.write", fs::write(path, &result.code)) {
+                global_profiler().record_fs_write_failure(bytes);
+                return Err(format!("Failed to write file: {}", error));
+            }
+            global_profiler().record_fs_write(bytes);
             eprintln!("Reformatted: {}", path.display());
         } else {
             // Print the diff or formatted output

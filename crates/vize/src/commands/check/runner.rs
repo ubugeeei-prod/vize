@@ -16,7 +16,10 @@ use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, DeclarationEmitOptions,
     batch::TypeChecker as BatchTypeCheckerTrait,
 };
-use vize_carton::{String, cstr, profiler::global_profiler};
+use vize_carton::{
+    String, cstr, profile,
+    profiler::{allocation_snapshot, global_profiler},
+};
 
 use crate::commands::profile::{
     ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
@@ -170,6 +173,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
 
     if args.profile {
         let profiler = global_profiler();
+        let allocation_summary = allocation_snapshot();
+        let counter_summary = profiler.counter_summary();
         let operation_summary = profiler.summary();
         profiler.disable();
         let mut phases = vec![
@@ -251,6 +256,8 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             slow_threshold: Duration::from_millis(0),
             throughput_bytes: Some(virtual_bytes),
             operations: Some(&operation_summary),
+            counters: Some(&counter_summary),
+            allocations: Some(allocation_summary),
             recommendations: &recommendations,
         };
         print_profile_report(&report);
@@ -421,20 +428,34 @@ fn render_diagnostics(
 
 fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
     let profile_dir = PathBuf::from("node_modules/.vize/check-profile");
-    if profile_dir.exists()
-        && let Err(error) = fs::remove_dir_all(&profile_dir)
-    {
-        eprintln!(
-            "Failed to clean profile directory {}: {}",
-            profile_dir.display(),
-            error
-        );
-        return;
+    if profile_dir.exists() {
+        match profile!(
+            "cli.check.profile_artifact.remove_dir_all",
+            fs::remove_dir_all(&profile_dir)
+        ) {
+            Ok(()) => global_profiler().record_fs_remove_dir_all(),
+            Err(error) => {
+                global_profiler().record_fs_remove_dir_all_failure();
+                eprintln!(
+                    "Failed to clean profile directory {}: {}",
+                    profile_dir.display(),
+                    error
+                );
+                return;
+            }
+        }
     }
 
-    if let Err(error) = fs::create_dir_all(&profile_dir) {
-        eprintln!("Failed to create profile directory: {}", error);
-        return;
+    match profile!(
+        "cli.check.profile_artifact.create_dir_all",
+        fs::create_dir_all(&profile_dir)
+    ) {
+        Ok(()) => global_profiler().record_fs_create_dir_all(),
+        Err(error) => {
+            global_profiler().record_fs_create_dir_all_failure();
+            eprintln!("Failed to create profile directory: {}", error);
+            return;
+        }
     }
 
     for file in files {
@@ -445,8 +466,16 @@ fn write_profile_virtual_ts(files: &[&vize_canon::VirtualFile]) {
             .map(|name| cstr!("{name}.ts"))
             .unwrap_or_else(|| "unknown.ts".into());
         let target = profile_dir.join(file_name.as_str());
-        if let Err(error) = fs::write(&target, &file.content) {
-            eprintln!("Failed to write {}: {}", target.display(), error);
+        let bytes = file.content.len();
+        match profile!(
+            "cli.check.profile_artifact.write",
+            fs::write(&target, &file.content)
+        ) {
+            Ok(()) => global_profiler().record_fs_write(bytes),
+            Err(error) => {
+                global_profiler().record_fs_write_failure(bytes);
+                eprintln!("Failed to write {}: {}", target.display(), error);
+            }
         }
     }
 

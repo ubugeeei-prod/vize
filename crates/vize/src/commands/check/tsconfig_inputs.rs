@@ -4,7 +4,7 @@
 //! project's configured `files` / `include` / `exclude` fields instead of
 //! recursively scanning every TypeScript file under the working directory.
 
-#![allow(clippy::disallowed_types)]
+#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
 
 use std::{
     fs,
@@ -14,7 +14,7 @@ use std::{
 use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
 use serde_json::Value;
-use vize_carton::FxHashSet;
+use vize_carton::{FxHashSet, profile, profiler::global_profiler};
 
 #[derive(Debug, Clone, Default)]
 struct TsconfigInputSpec {
@@ -201,7 +201,7 @@ fn load_tsconfig_inputs_inner(
         return Ok(TsconfigInputSpec::default());
     }
 
-    let content = fs::read_to_string(&resolved)?;
+    let content = tracked_read_to_string(&resolved)?;
     let value = parse_jsonc_value(&content).unwrap_or(Value::Null);
     let dir = resolved.parent().unwrap_or(Path::new("."));
 
@@ -311,7 +311,7 @@ fn split_package_specifier(extends: &str) -> Option<(&str, Option<&str>)> {
 
 fn push_package_json_tsconfig_candidates(candidates: &mut Vec<PathBuf>, package_root: &Path) {
     let package_json_path = package_root.join("package.json");
-    let Some(tsconfig) = fs::read_to_string(package_json_path)
+    let Some(tsconfig) = tracked_read_to_string(&package_json_path)
         .ok()
         .and_then(|content| parse_jsonc_value(&content).ok())
         .and_then(|value| {
@@ -325,6 +325,19 @@ fn push_package_json_tsconfig_candidates(candidates: &mut Vec<PathBuf>, package_
     };
 
     push_tsconfig_candidates(candidates, package_root.join(tsconfig));
+}
+
+fn tracked_read_to_string(path: &Path) -> Result<std::string::String, std::io::Error> {
+    match profile!("cli.check.tsconfig.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            Ok(content)
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            Err(error)
+        }
+    }
 }
 
 fn push_tsconfig_candidates(candidates: &mut Vec<PathBuf>, base: PathBuf) {

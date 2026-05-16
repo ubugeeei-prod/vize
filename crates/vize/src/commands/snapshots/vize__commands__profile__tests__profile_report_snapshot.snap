@@ -15,6 +15,30 @@ expression: render_profile_report(&report)
   cumulative work         42.000ms (0.8x wall)   [36mparallel/nested [0m
   slow files              1 / 1                  [33mthreshold hit   [0m
   internal spans          25 call(s), 14.000ms   [32mcaptured        [0m
+  internal self           13.000ms (92.9%)       [32mexclusive cost  [0m
+  nested span tax         1.000ms (7.1%)         [36mnested visible  [0m
+  alloc pressure          48 call(s),   92.00 KiB [32mtracked         [0m
+  heap delta                32.00 KiB (1962.7 B/call) [33mgrowth window   [0m
+  I/O bytes               read    2.00 KiB, wrote       0 B [32mtracked         [0m
+  syscall sites           1 call-site hit(s), 0 failed [32mclean           [0m
+
+[1mAllocation pressure[0m
+[90m  kind             calls       bytes          failures  note[0m
+  alloc                    42      68.00 KiB         0  [90mfresh allocations[0m
+  realloc in                6      12.00 KiB         0  [90mold layouts replaced[0m
+  realloc out               6      24.00 KiB         0  [90mnew requested sizes[0m
+  dealloc                  35      48.00 KiB         0  [90mreleased layouts[0m
+  net delta        n/a             32.00 KiB         0  profile-window requested minus released
+
+[1mI/O counters[0m
+[90m  counter                                samples    total        avg         min         max[0m
+  io.read.bytes                                1     2.00 KiB        2.00 KiB     2.00 KiB     2.00 KiB
+  io.read.calls                                1           1         1.0           1           1
+
+[1mSystem calls[0m
+[90m  std::fs call-site hits tracked by Vize; this is not a kernel trace.[0m
+[90m  counter                                samples    total        avg         min         max[0m
+  syscall.fs.read_to_string.calls              1           1         1.0           1           1
 
 [1mTiming breakdown[0m
 [90m  phase                         time        share  kind        note[0m
@@ -23,13 +47,23 @@ expression: render_profile_report(&report)
 
 [1mHot files[0m
 [90m  slow threshold: 30.000ms[0m
-[90m  #  total       share   breakdown                          size      rate       status       file[0m
-   1  [33m  31.000ms[0m    62.0%  parse     8.000ms   25.8%  compile  20.000ms   64.5%     2.00 KiB  64.52 KiB/s  [33mSLOW x1.0   [0m src/App.vue[90m  1 style block[0m
+[90m  #  total       share   breakdown                                      gap        size      rate       status       file[0m
+   1  [33m  31.000ms[0m    62.0%  parse     8.000ms   25.8%  compile  20.000ms   64.5%    3.000ms    9.7%     2.00 KiB  64.52 KiB/s  [33mSLOW x1.0   [0m src/App.vue[90m  1 style block[0m
 
 [1mInternal operations[0m
-[90m  operation                         count   total       share   avg         min         max       max/avg  status[0m
-  atelier.sfc.parse                     1     8.000ms    16.0%     8.000ms     8.000ms     8.000ms      1.0x  [32mok      [0m
-  atelier.transform.element            24     6.000ms    12.0%     0.250ms     0.100ms     0.600ms      2.4x  [32mok      [0m
+[90m  operation                         count   total       self        child       wall%   self%   avg         self/call   max/avg  status[0m
+  atelier.sfc.parse                     1     8.000ms     7.000ms     1.000ms    16.0%    14.0%     8.000ms     7.000ms      1.0x  [32mok      [0m
+  atelier.transform.element            24     6.000ms     6.000ms     0.000ms    12.0%    12.0%     0.250ms     0.250ms      2.4x  [32mok      [0m
+
+[1mTail latency[0m
+[90m  operation                         count   p50         p95         p99         min         max         >=1ms  >=10ms >=100ms[0m
+  atelier.sfc.parse                     1     8.000ms     8.000ms     8.000ms     8.000ms     8.000ms      1      0       0
+  atelier.transform.element            24     0.256ms     0.512ms     1.024ms     0.100ms     0.600ms      0      0       0
+
+[1mCall volume[0m
+[90m  operation                         count     calls/ms  total       self        avg         self/call[0m
+  atelier.transform.element              24       0.48     6.000ms     6.000ms     0.250ms     0.250ms
+  atelier.sfc.parse                       1       0.02     8.000ms     7.000ms     8.000ms     7.000ms
 
 [1mNotes[0m
   [36m- [0msrc/App.vue spent most of its time in compile; inspect template complexity.
