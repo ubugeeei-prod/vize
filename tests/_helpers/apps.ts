@@ -1143,7 +1143,15 @@ export const stylePreprocessorsApp: AppConfig = {
 };
 
 export const SCREENSHOT_DIR = path.resolve(TESTS_DIR, "app", "screenshots");
-export const VIZE_BIN = path.resolve(TESTS_DIR, "../target/release/vize");
+const BIN_EXT = process.platform === "win32" ? ".exe" : "";
+const VIZE_BIN_CANDIDATES = [
+  path.resolve(TESTS_DIR, `../target/ci/vize${BIN_EXT}`),
+  path.resolve(TESTS_DIR, `../target/release/vize${BIN_EXT}`),
+];
+export const VIZE_BIN =
+  process.env.VIZE_BIN ??
+  VIZE_BIN_CANDIDATES.find((candidate) => fs.existsSync(candidate)) ??
+  VIZE_BIN_CANDIDATES[1]!;
 const CORSA_PRIMARY_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/corsa");
 const CORSA_LEGACY_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/tsgo");
 export const CORSA_BIN = fs.existsSync(CORSA_PRIMARY_BIN) ? CORSA_PRIMARY_BIN : CORSA_LEGACY_BIN;

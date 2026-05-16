@@ -54,6 +54,9 @@ jobs:
       - name: Build native package
         run: vp run --filter './npm/vize-native' build:ci
 
+      - name: Build vize CLI
+        run: cargo build --profile ci -p vize
+
       - name: Cache Playwright browsers
         id: cache-playwright
         uses: actions/cache@v5

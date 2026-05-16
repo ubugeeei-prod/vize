@@ -16,6 +16,8 @@ test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
   assert.match(config, /e2e:\s*\[/);
   assert.match(config, /"tests\/app\/\*\*"/);
   assert.match(config, /"tests\/_helpers\/\*\*"/);
+  assert.match(config, /"tests\/_fixtures\/\*\*"/);
+  assert.match(config, /"tests\/snapshots\/\*\*"/);
   assert.match(
     config,
     /"test:e2e":\s*noCacheTask\(runTasks\("test:e2e:dev", "test:e2e:preview"\)\)/,
