@@ -98,6 +98,46 @@ const props = defineProps<{ user: { name: string }, count: number }>()
 }
 
 #[test]
+fn test_lint_sfc_reports_dynamic_props_object_v_model_mutation() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-mutating-props".into()]));
+    let sfc = r#"<script setup lang="ts">
+const props = defineProps<{ user: { name: string } }>()
+const key = 'user' as keyof typeof props
+</script>
+
+<template>
+  <input v-model="props[key].name" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.error_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "vue/no-mutating-props");
+}
+
+#[test]
+fn test_lint_sfc_reports_unlisted_props_object_v_model_mutation() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-mutating-props".into()]));
+    let sfc = r#"<script setup lang="ts">
+const props = defineProps<Record<string, string>>()
+const field = 'title'
+</script>
+
+<template>
+  <input v-model="props.title" />
+  <input v-model="props[field]" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.error_count, 2);
+    assert!(result
+        .diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule_name == "vue/no-mutating-props"));
+}
+
+#[test]
 fn test_lint_sfc_reports_destructured_prop_member_v_model_mutation() {
     let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-mutating-props".into()]));
     let sfc = r#"<script setup lang="ts">

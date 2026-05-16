@@ -193,8 +193,8 @@ impl Rule for NoMutatingProps {
             (names, has_props_object_binding)
         };
 
-        // If no props, nothing to check
-        if prop_names.is_empty() {
+        // If no props binding is visible, nothing to check.
+        if prop_names.is_empty() && !has_props_object_binding {
             return;
         }
 
@@ -224,8 +224,7 @@ fn is_prop_mutation_target(
     if has_props_object_binding
         && content
             .strip_prefix("props")
-            .and_then(props_member_root)
-            .is_some_and(|name| prop_names.contains(name))
+            .is_some_and(|rest| is_props_object_member_mutation(rest, prop_names))
     {
         return true;
     }
@@ -239,6 +238,27 @@ fn is_prop_mutation_target(
 
 fn is_member_access_suffix(rest: &str) -> bool {
     rest.starts_with('.') || rest.starts_with('[') || rest.starts_with("?.")
+}
+
+fn is_props_object_member_mutation(rest: &str, prop_names: &FxHashSet<&str>) -> bool {
+    if let Some(name) = props_member_root(rest) {
+        return prop_names.is_empty() || prop_names.contains(name);
+    }
+
+    is_dynamic_props_member_access(rest)
+}
+
+fn is_dynamic_props_member_access(rest: &str) -> bool {
+    let mut rest = rest.trim_start();
+    if let Some(after_optional) = rest.strip_prefix("?.") {
+        rest = after_optional.trim_start();
+    }
+
+    let Some(after_bracket) = rest.strip_prefix('[') else {
+        return false;
+    };
+    let after_bracket = after_bracket.trim_start();
+    !after_bracket.starts_with('\'') && !after_bracket.starts_with('"')
 }
 
 fn props_member_root(rest: &str) -> Option<&str> {
@@ -305,12 +325,23 @@ mod tests {
             true
         ));
         assert!(is_prop_mutation_target("props['count']", &prop_names, true));
+        assert!(is_prop_mutation_target("props[key]", &prop_names, true));
+        assert!(is_prop_mutation_target(
+            "props[key].name",
+            &prop_names,
+            true
+        ));
         assert!(is_prop_mutation_target(
             "props?.user.name",
             &prop_names,
             true
         ));
         assert!(!is_prop_mutation_target("props.extra", &prop_names, true));
+        assert!(!is_prop_mutation_target(
+            "props['extra']",
+            &prop_names,
+            true
+        ));
         assert!(!is_prop_mutation_target(
             "props.user.name",
             &prop_names,
@@ -324,6 +355,18 @@ mod tests {
         assert!(!is_prop_mutation_target(
             "propsState.count",
             &prop_names,
+            true
+        ));
+
+        let unknown_prop_names = FxHashSet::default();
+        assert!(is_prop_mutation_target(
+            "props.title",
+            &unknown_prop_names,
+            true
+        ));
+        assert!(is_prop_mutation_target(
+            "props[field]",
+            &unknown_prop_names,
             true
         ));
     }
