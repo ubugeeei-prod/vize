@@ -242,6 +242,31 @@ mod tests {
     }
 
     #[test]
+    fn test_incremental_change_uses_utf16_positions() {
+        let mut doc = Document::new(test_uri(), "a😀b".to_string(), 1, "vue".to_string());
+
+        let change = TextDocumentContentChangeEvent {
+            range: Some(Range {
+                start: Position {
+                    line: 0,
+                    character: 3,
+                },
+                end: Position {
+                    line: 0,
+                    character: 4,
+                },
+            }),
+            range_length: None,
+            text: "c".to_string(),
+        };
+
+        doc.apply_change(&change, 2);
+
+        assert_eq!(doc.text(), "a😀c");
+        assert_eq!(doc.version, 2);
+    }
+
+    #[test]
     fn test_full_content_change() {
         let mut doc = Document::new(test_uri(), "hello world".to_string(), 1, "vue".to_string());
 
