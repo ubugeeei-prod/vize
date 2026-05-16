@@ -1,0 +1,177 @@
+///|
+/// Post-processes TypeScript declarations generated from Vize's JSON Schema.
+///
+/// The schema stays the source of truth for the public config shape, but a few
+/// TypeScript-facing details cannot be expressed precisely by the current
+/// schema-to-types pipeline:
+///
+/// - `RegExp` inputs are runtime values, not JSON Schema values.
+/// - Public lint preset and rule metadata should be exposed as narrow string
+///   unions instead of being inferred from generic schema fragments.
+/// - `$schema` helps editor JSON files, but it is not useful on the TypeScript
+///   configuration object that users import from the package.
+///
+/// Keeping this as a small MoonBit script lets generation stay inside the
+/// repository toolchain while avoiding another TypeScript-only maintenance path.
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/x@0.4.41/fs" @xfs,
+  "moonbitlang/x@0.4.41/path",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+/// Joins two path fragments using MoonBit's path implementation instead of
+/// manual string concatenation.
+fn join_path(base : String, child : String) -> String {
+  let path : @path.Path = base
+  path.join(child).to_string()
+}
+
+///|
+/// Checks path existence through a tiny wrapper so repository discovery reads
+/// like a sequence of domain checks rather than low-level filesystem calls.
+fn safe_path_exists(path : String) -> Bool {
+  @xfs.path_exists(path)
+}
+
+///|
+/// Reads a UTF-8 file and collapses IO failures into `None`.
+///
+/// The CLI entry point owns user-facing diagnostics, so helper functions keep
+/// the control flow compact and leave error wording in one place.
+fn read_file_to_string(path : String) -> String? {
+  try {
+    Some(@xfs.read_file_to_string(path))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+/// Writes a complete file and reports success as a boolean.
+///
+/// The generated declaration is rewritten atomically from the caller's point of
+/// view: either the replacement content was accepted by the filesystem helper,
+/// or the script exits with a clear failure message.
+fn write_string_to_file(path : String, content : String) -> Bool {
+  try {
+    @xfs.write_string_to_file(path, content)
+    true
+  } catch {
+    _ => false
+  }
+}
+
+///|
+/// Walks upward from `start` until it finds the Vize repository root.
+///
+/// Two markers are checked to avoid accidentally treating a nested fixture or
+/// package directory as the root. Tests can bypass this search by setting
+/// `VIZE_REPO_ROOT` to an isolated fixture workspace.
+fn find_repo_root(start : String) -> String? {
+  let current : @path.Path = start
+  let current_path = current.resolve().to_string()
+  if safe_path_exists(join_path(current_path, "Cargo.toml")) &&
+    safe_path_exists(join_path(current_path, "npm/vize/package.json")) {
+    return Some(current_path)
+  }
+  let parent = current.dirname().to_string()
+  if parent == current_path {
+    None
+  } else {
+    find_repo_root(parent)
+  }
+}
+
+///|
+/// Returns the generated TypeScript declaration path relative to the repository
+/// root.
+fn generated_types_path(root : String) -> String {
+  join_path(root, "npm/vize/src/types/generated.ts")
+}
+
+///|
+/// Applies Vize-specific declaration patches that are intentionally kept out of
+/// the generic JSON Schema generation step.
+///
+/// The transform is idempotent. That property matters because release and local
+/// generation tasks may be rerun after a partial failure; repeated execution
+/// should converge on the same file rather than stacking duplicate aliases.
+fn postprocess_generated_types(content : String) -> String {
+  let content = content.replace_all(old="MuseaA11YConfig", new="MuseaA11yConfig")
+  let content = content.replace_all(
+    old="include?: string | string[];",
+    new="include?: string | RegExp | (string | RegExp)[];",
+  )
+  let content = content.replace_all(
+    old="exclude?: string | string[];",
+    new="exclude?: string | RegExp | (string | RegExp)[];",
+  )
+  let schema_property =
+    "  /**\n" +
+    "   * JSON Schema reference for editor autocompletion\n" +
+    "   */\n" +
+    "  $schema?: string;\n"
+  let content = content.replace(old=schema_property, new="")
+
+  if content.contains("export type LintPreset = ") {
+    return content
+  }
+
+  let marker = "regenerate this file.\n */\n"
+  let type_aliases =
+    "\n" +
+    "export type LintPreset = \"happy-path\" | \"opinionated\" | \"essential\" | \"incremental\" | \"nuxt\";\n" +
+    "\n" +
+    "export type RuleSeverity = \"off\" | \"warn\" | \"error\";\n" +
+    "\n" +
+    "export type RuleCategory = \"correctness\" | \"suspicious\" | \"style\" | \"perf\" | \"a11y\" | \"security\";\n"
+
+  content.replace(old=marker, new=marker + type_aliases)
+}
+
+///|
+/// Main command implementation for generated config type post-processing.
+///
+/// The function resolves the repository root, reads the generated declaration,
+/// applies the deterministic declaration patches, and writes the result back to
+/// disk. Returning an exit code keeps `main` trivial and makes tests exercise the
+/// same control flow as the CLI invocation.
+fn run_app() -> Int {
+  let repo_root = match @sys.get_env_var("VIZE_REPO_ROOT") {
+    Some(value) => {
+      let path : @path.Path = value
+      path.resolve().to_string()
+    }
+    None =>
+      match find_repo_root(@env.current_dir().unwrap_or(".")) {
+        Some(path) => path
+        None => {
+          println("Failed to locate the repository root for postprocess_types")
+          return 1
+        }
+      }
+  }
+  let output_path = generated_types_path(repo_root)
+  let content = match read_file_to_string(output_path) {
+    Some(content) => content
+    None => {
+      println("Failed to read \{output_path}")
+      return 1
+    }
+  }
+  let next_content = postprocess_generated_types(content)
+  if !write_string_to_file(output_path, next_content) {
+    println("Failed to write \{output_path}")
+    return 1
+  }
+  println("Post-processed generated types: \{output_path}")
+  0
+}
+
+///|
+/// Script entry point.
+fn main {
+  @sys.exit(run_app())
+}

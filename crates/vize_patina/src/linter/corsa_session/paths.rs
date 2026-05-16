@@ -200,13 +200,7 @@ fn resolve_node_modules_executable(root: &Path) -> Option<PathBuf> {
 }
 
 fn resolve_home_executable(home: &Path) -> Option<PathBuf> {
-    const HOME_PREFIXES: [&str; 5] = [
-        ".local/share/mise/shims",
-        ".asdf/shims",
-        ".volta/bin",
-        ".npm-global/bin",
-        ".npm/bin",
-    ];
+    const HOME_PREFIXES: [&str; 4] = [".asdf/shims", ".volta/bin", ".npm-global/bin", ".npm/bin"];
 
     for prefix in HOME_PREFIXES {
         for executable in EXECUTABLE_NAMES {

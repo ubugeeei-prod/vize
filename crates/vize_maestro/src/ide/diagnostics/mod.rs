@@ -106,8 +106,13 @@ impl DiagnosticService {
         // Standard SFC processing
         // Collect parser diagnostics when any diagnostic pipeline is enabled.
         let sfc_diags = Self::collect_sfc_diagnostics(uri, &content);
+        let has_sfc_parse_error = !sfc_diags.is_empty();
         tracing::info!("collect: SFC parser diagnostics: {}", sfc_diags.len());
         diagnostics.extend(sfc_diags);
+        if has_sfc_parse_error {
+            tracing::info!("collect: skipping dependent diagnostics after SFC parse error");
+            return diagnostics;
+        }
 
         // Collect template parser diagnostics
         let template_diags = Self::collect_template_diagnostics(uri, &content);
@@ -156,6 +161,13 @@ impl DiagnosticService {
         // Start with sync diagnostics (patina, etc.)
         let mut diagnostics = Self::collect(state, uri);
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
+        if diagnostics.iter().any(|diagnostic| {
+            diagnostic.source.as_deref() == Some(sources::SFC_PARSER)
+                && diagnostic.severity == Some(DiagnosticSeverity::ERROR)
+        }) {
+            tracing::info!("collect_async: Corsa diagnostics skipped after SFC parse error");
+            return diagnostics;
+        }
 
         if state.is_lsp_typecheck_enabled() {
             // Try to get Corsa diagnostics (with timeout, skip on failure).
@@ -299,8 +311,18 @@ pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
 
 #[cfg(test)]
 mod tests {
-    use super::{DiagnosticBuilder, Severity};
-    use tower_lsp::lsp_types::{DiagnosticSeverity, NumberOrString};
+    use super::{sources, DiagnosticBuilder, DiagnosticService, Severity};
+    use crate::server::ServerState;
+    use tower_lsp::lsp_types::{DiagnosticSeverity, NumberOrString, Url};
+
+    fn state_with_lsp_diagnostics(lint: bool, typecheck: bool) -> ServerState {
+        let state = ServerState::new();
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({
+            "lint": lint,
+            "typecheck": typecheck
+        })));
+        state
+    }
 
     #[test]
     fn test_diagnostic_builder() {
@@ -334,5 +356,46 @@ mod tests {
             DiagnosticSeverity::from(Severity::Hint),
             DiagnosticSeverity::HINT
         );
+    }
+
+    #[test]
+    fn collect_short_circuits_dependent_diagnostics_after_sfc_parse_error() {
+        let state = state_with_lsp_diagnostics(true, true);
+        let uri = Url::parse("file:///Broken.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<template><div></div>".to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+        let diagnostic_sources: Vec<_> = diagnostics
+            .iter()
+            .filter_map(|diagnostic| diagnostic.source.as_deref())
+            .collect();
+
+        assert_eq!(diagnostic_sources, vec![sources::SFC_PARSER]);
+    }
+
+    #[test]
+    fn collect_keeps_type_diagnostics_for_parseable_sfc() {
+        let state = state_with_lsp_diagnostics(false, true);
+        let uri = Url::parse("file:///Component.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup>const props = defineProps(['count'])</script><template>{{ props.count }}</template>".to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::TYPE_CHECKER)));
+        assert!(!diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SFC_PARSER)));
     }
 }
