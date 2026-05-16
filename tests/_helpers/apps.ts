@@ -1143,10 +1143,12 @@ export const stylePreprocessorsApp: AppConfig = {
 };
 
 export const SCREENSHOT_DIR = path.resolve(TESTS_DIR, "app", "screenshots");
-const VIZE_RELEASE_BIN = path.resolve(TESTS_DIR, "../target/release/vize");
-const VIZE_DEBUG_BIN = path.resolve(TESTS_DIR, "../target/debug/vize");
+const BIN_EXT = process.platform === "win32" ? ".exe" : "";
+const VIZE_CI_BIN = path.resolve(TESTS_DIR, `../target/ci/vize${BIN_EXT}`);
+const VIZE_RELEASE_BIN = path.resolve(TESTS_DIR, `../target/release/vize${BIN_EXT}`);
+const VIZE_DEBUG_BIN = path.resolve(TESTS_DIR, `../target/debug/vize${BIN_EXT}`);
 const VIZE_BIN_OVERRIDE = process.env.VIZE_BIN;
-const VIZE_BIN_FALLBACKS = [VIZE_RELEASE_BIN, VIZE_DEBUG_BIN];
+const VIZE_BIN_FALLBACKS = [VIZE_CI_BIN, VIZE_RELEASE_BIN, VIZE_DEBUG_BIN];
 export const VIZE_BIN =
   VIZE_BIN_OVERRIDE && VIZE_BIN_OVERRIDE.length > 0
     ? VIZE_BIN_OVERRIDE
@@ -1156,7 +1158,7 @@ const CORSA_LEGACY_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/tsgo");
 export const CORSA_BIN = fs.existsSync(CORSA_PRIMARY_BIN) ? CORSA_PRIMARY_BIN : CORSA_LEGACY_BIN;
 
 export function requireVizeBin(): void {
-  requireFile(VIZE_BIN, "vize CLI", "Build it with `cargo build --release -p vize`.");
+  requireFile(VIZE_BIN, "vize CLI", "Build it with `cargo build --profile ci -p vize`.");
 }
 
 export function requireVizeAndCorsaBins(): void {

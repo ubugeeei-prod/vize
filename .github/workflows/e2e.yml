@@ -52,14 +52,24 @@ jobs:
           cache: true
           run-install: false
 
+      - uses: ./.github/actions/setup-moonbit
+
       - name: Install JS dependencies
-        run: vp install --workspace-root --frozen-lockfile --prefer-offline
+        run: |
+          vp install --frozen-lockfile --prefer-offline \
+            --filter './tests...' \
+            --filter './npm/vize-native...' \
+            --filter './npm/vize...' \
+            --filter './npm/vite-plugin-vize...' \
+            --filter './npm/nuxt...' \
+            --filter './npm/vite-plugin-musea...' \
+            --filter './npm/musea-nuxt...'
 
       - name: Build native package
         run: vp run --filter './npm/vize-native' build:ci
 
       - name: Build vize CLI
-        run: cargo build --release -p vize
+        run: cargo build --profile ci -p vize
 
       - name: Cache Playwright browsers
         id: cache-playwright
@@ -70,31 +80,31 @@ jobs:
 
       - name: Install Playwright browsers
         if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: pnpm --dir tests exec playwright install --with-deps chromium
+        run: vp exec --filter './tests' -- playwright install --with-deps chromium
 
       - name: Run selected app e2e suite
         run: |
           case "${{ inputs.suite }}" in
             dev)
-              pnpm --dir tests run test:dev
+              vp run --filter './tests' test:dev
               ;;
             vrt)
-              pnpm --dir tests run test:vrt
+              vp run --filter './tests' test:vrt
               ;;
             preview)
-              RUN_BUILD_TESTS=1 pnpm --dir tests run test:preview
+              RUN_BUILD_TESTS=1 vp run --filter './tests' test:preview
               ;;
             check)
-              pnpm --dir tests run test:check
+              vp run --filter './tests' test:check
               ;;
             lint)
-              pnpm --dir tests run test:lint
+              vp run --filter './tests' test:lint
               ;;
             build)
-              pnpm --dir tests run test:build
+              vp run --filter './tests' test:build
               ;;
             check-fixtures)
-              pnpm --dir tests run test:check:fixtures
+              vp run --filter './tests' test:check:fixtures
               ;;
           esac
 

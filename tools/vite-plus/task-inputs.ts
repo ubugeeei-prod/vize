@@ -126,6 +126,8 @@ export const cacheInputs = {
     "tests/package.json",
     "tests/app/**",
     "tests/_helpers/**",
+    "tests/_fixtures/**",
+    "tests/snapshots/**",
     "npm/vize*/**",
     "npm/vite-plugin-vize/**",
     "npm/nuxt/**",

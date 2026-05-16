@@ -308,7 +308,7 @@ pub fn generate_virtual_ts_with_offsets(
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
 
             // Collect ref bindings for auto-unwrapping in template
-            let ref_bindings: Vec<&str> = summary
+            let mut ref_bindings: Vec<&str> = summary
                 .bindings
                 .bindings
                 .iter()
@@ -319,6 +319,7 @@ pub fn generate_virtual_ts_with_offsets(
                 })
                 .map(|(name, _)| name.as_str())
                 .collect();
+            ref_bindings.sort_unstable();
 
             // Capture ref types BEFORE template scope to avoid circular references.
             // `typeof count` here refers to the setup-scope Ref<number>.
@@ -406,10 +407,17 @@ pub fn generate_virtual_ts_with_offsets(
             if !summary.bindings.bindings.is_empty() {
                 ts.push_str("\n  // Reference setup bindings (used in template/CSS v-bind)\n  ");
                 let mut first = true;
-                for name in summary.bindings.bindings.keys() {
+                let mut binding_names: Vec<&str> = summary
+                    .bindings
+                    .bindings
+                    .keys()
+                    .map(|name| name.as_str())
+                    .collect();
+                binding_names.sort_unstable();
+                for name in binding_names {
                     // Skip bindings that are JS keywords or would cause syntax errors
                     if matches!(
-                        name.as_str(),
+                        name,
                         "default"
                             | "class"
                             | "new"
