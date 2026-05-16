@@ -6,14 +6,35 @@
 
 import { serializeScriptValue } from "../security.js";
 
+function escapeHtmlAttribute(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&#39;";
+      default:
+        return char;
+    }
+  });
+}
+
 /**
  * Generate the gallery HTML body (header, sidebar, content, and inline script).
  */
 export function generateGalleryBody(basePath: string): string {
+  const escapedBasePath = escapeHtmlAttribute(basePath);
+
   return `
   <header class="header">
     <div class="header-left">
-      <a href="${basePath}" class="logo">
+      <a href="${escapedBasePath}" class="logo">
         <svg class="logo-svg" width="32" height="32" viewBox="0 0 200 200" fill="none">
           <g transform="translate(30, 25) scale(1.2)">
             <g transform="translate(15, 10) skewX(-15)">
@@ -190,10 +211,11 @@ export function generateGalleryScript(basePath: string): string {
       html += '<div class="gallery">';
       for (const variant of selectedArt.variants) {
         const previewUrl = basePath + '/preview?art=' + encodeURIComponent(selectedArt.path) + '&variant=' + encodeURIComponent(variant.name);
+        const escapedPreviewUrl = escapeHtml(previewUrl);
 
         html += '<div class="variant-card">';
         html += '<div class="variant-preview">';
-        html += '<iframe src="' + previewUrl + '" loading="lazy" title="' + escapeHtml(variant.name) + '"></iframe>';
+        html += '<iframe src="' + escapedPreviewUrl + '" loading="lazy" title="' + escapeHtml(variant.name) + '"></iframe>';
         html += '</div>';
         html += '<div class="variant-info">';
         html += '<div>';
@@ -201,7 +223,7 @@ export function generateGalleryScript(basePath: string): string {
         if (variant.isDefault) html += ' <span class="variant-badge">Default</span>';
         html += '</div>';
         html += '<div class="variant-actions">';
-        html += '<button class="variant-action-btn" title="Open in new tab" onclick="window.open(\\'' + previewUrl + '\\', \\'_blank\\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>';
+        html += '<button class="variant-action-btn" title="Open in new tab" data-preview-url="' + escapedPreviewUrl + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>';
         html += '</div>';
         html += '</div>';
         html += '</div>';
@@ -210,11 +232,18 @@ export function generateGalleryScript(basePath: string): string {
       html += '</div>';
 
       content.innerHTML = html;
+
+      content.querySelectorAll('.variant-action-btn[data-preview-url]').forEach(button => {
+        button.addEventListener('click', () => {
+          const previewUrl = button.dataset.previewUrl;
+          if (previewUrl) window.open(previewUrl, '_blank', 'noopener');
+        });
+      });
     }
 
     function escapeHtml(str) {
       if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     // Search
