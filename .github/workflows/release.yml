@@ -179,7 +179,7 @@ jobs:
             ${{ runner.os }}-pnpm-vscode-release-
 
       - name: Download editor extension artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: editor-extensions
           path: editor-extension-artifacts
@@ -433,7 +433,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...'
 
       - name: Download all artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: bindings-*
           path: npm/vize-native/artifacts
@@ -488,7 +488,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco-native...'
 
       - name: Download all artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: fresco-bindings-*
           path: npm/fresco-native/artifacts
@@ -581,7 +581,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-vite-plugin-vize
           path: npm/vite-plugin-vize
@@ -614,7 +614,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-oxlint-plugin-vize
           path: npm/oxlint-plugin-vize
@@ -650,7 +650,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-unplugin-vize
           path: npm/unplugin-vize
@@ -683,7 +683,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-fresco
           path: npm/fresco
@@ -716,7 +716,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-musea-mcp-server
           path: npm/musea-mcp-server
@@ -749,7 +749,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-vite-plugin-musea
           path: npm/vite-plugin-musea
@@ -782,7 +782,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-rspack-vize-plugin
           path: npm/rspack-vize-plugin
@@ -815,7 +815,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-musea-nuxt
           path: npm/musea-nuxt
@@ -854,7 +854,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-nuxt
           path: npm/nuxt
@@ -901,14 +901,14 @@ jobs:
       contents: write
     steps:
       - name: Download CLI artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: cli-*
           path: cli-artifacts
           merge-multiple: true
 
       - name: Download editor extension artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: editor-extensions
           path: editor-extension-artifacts
@@ -958,7 +958,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release-package-vize
           path: npm/vize

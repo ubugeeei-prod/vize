@@ -65,6 +65,18 @@ test("GitHub workflows use the current cache action", () => {
   }
 });
 
+test("GitHub workflows use Node 24-compatible artifact downloads", () => {
+  const violations: string[] = [];
+
+  for (const { relativePath, content } of readGithubYamlFiles()) {
+    if (/uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*#\s*v[1-6](?:\b|\.)/.test(content)) {
+      violations.push(`${relativePath} still uses a Node 20 artifact downloader`);
+    }
+  }
+
+  assert.deepEqual(violations, []);
+});
+
 test("GitHub workflow actions are pinned by full commit SHA", () => {
   const violations: string[] = [];
   const usePattern = /^(\s*-?\s*uses:\s*)(["']?)([^\s"']+)\2\s*(?:#.*)?$/gm;
@@ -171,7 +183,7 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   assert.match(commentJob, /issues:\s*write/);
   assert.match(commentJob, /pull-requests:\s*write/);
   assert.match(commentJob, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
-  assert.match(commentJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v4/);
+  assert.match(commentJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v8\.0\.1/);
   assert.match(commentJob, /name:\s*pr-benchmark/);
   assert.match(
     commentJob,
@@ -219,7 +231,7 @@ test("check workflow comments a detailed PR test report for each head push", () 
   assert.match(commentJob, /issues:\s*write/);
   assert.match(commentJob, /pull-requests:\s*write/);
   assert.match(commentJob, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
-  assert.match(commentJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v4/);
+  assert.match(commentJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v8\.0\.1/);
   assert.match(commentJob, /name:\s*test-inventory/);
   assert.match(
     commentJob,
