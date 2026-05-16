@@ -68,7 +68,7 @@ fn lsp_message_from_json(content: String) -> String {
 
     let mut message = String::with_capacity("Content-Length: ".len() + 20 + 4 + content.len());
     message.push_str("Content-Length: ");
-    write!(&mut message, "{}", content.len()).expect("writing to String cannot fail");
+    let _ = write!(&mut message, "{}", content.len());
     message.push_str("\r\n\r\n");
     message.push_str(&content);
     message

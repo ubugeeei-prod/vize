@@ -10,7 +10,7 @@ pub use vize_carton::{String, camelize, capitalize, hyphenate, is_simple_identif
 
 use once_cell::sync::Lazy;
 use rustc_hash::FxHashMap;
-use std::sync::RwLock;
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use vize_carton::CompactString;
 
 // =============================================================================
@@ -20,6 +20,22 @@ use vize_carton::CompactString;
 /// Cache for to_pascal_case conversions
 static PASCAL_CASE_CACHE: Lazy<RwLock<FxHashMap<CompactString, CompactString>>> =
     Lazy::new(|| RwLock::new(FxHashMap::default()));
+
+#[inline]
+fn read_pascal_case_cache() -> RwLockReadGuard<'static, FxHashMap<CompactString, CompactString>> {
+    match PASCAL_CASE_CACHE.read() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    }
+}
+
+#[inline]
+fn write_pascal_case_cache() -> RwLockWriteGuard<'static, FxHashMap<CompactString, CompactString>> {
+    match PASCAL_CASE_CACHE.write() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    }
+}
 
 /// Convert kebab-case or camelCase to PascalCase
 ///
@@ -38,7 +54,7 @@ pub fn to_pascal_case(s: &str) -> CompactString {
 
     // Check cache first
     {
-        let cache = PASCAL_CASE_CACHE.read().unwrap();
+        let cache = read_pascal_case_cache();
         if let Some(cached) = cache.get(s) {
             return cached.clone();
         }
@@ -48,7 +64,7 @@ pub fn to_pascal_case(s: &str) -> CompactString {
 
     // Store in cache
     {
-        let mut cache = PASCAL_CASE_CACHE.write().unwrap();
+        let mut cache = write_pascal_case_cache();
         cache.insert(CompactString::new(s), result.clone());
     }
 
@@ -99,7 +115,9 @@ pub fn is_camel_case(s: &str) -> bool {
     }
 
     let mut chars = s.chars();
-    let first = chars.next().unwrap();
+    let Some(first) = chars.next() else {
+        return false;
+    };
 
     // Must start with lowercase
     if !first.is_ascii_lowercase() {
@@ -140,7 +158,9 @@ pub fn is_camel_case_loose(s: &str) -> bool {
         return false;
     }
 
-    let first = s.chars().next().unwrap();
+    let Some(first) = s.chars().next() else {
+        return false;
+    };
 
     // Must start with lowercase
     if !first.is_ascii_lowercase() {
@@ -171,7 +191,9 @@ pub fn is_pascal_case(s: &str) -> bool {
         return false;
     }
 
-    let first = s.chars().next().unwrap();
+    let Some(first) = s.chars().next() else {
+        return false;
+    };
 
     // Must start with uppercase
     if !first.is_ascii_uppercase() {

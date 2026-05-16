@@ -161,7 +161,9 @@ pub fn is_component_tag(name: &str) -> bool {
     if name.is_empty() {
         return false;
     }
-    let first = name.chars().next().unwrap();
+    let Some(first) = name.chars().next() else {
+        return false;
+    };
     first.is_ascii_uppercase() || name.contains('-')
 }
 

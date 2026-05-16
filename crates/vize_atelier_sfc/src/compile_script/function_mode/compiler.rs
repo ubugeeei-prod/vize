@@ -326,9 +326,9 @@ fn emit_props_definition(
     needs_prop_type: bool,
     _is_ts: bool,
 ) {
-    if has_props_destructure {
-        let destructure = ctx.macros.props_destructure.as_ref().unwrap();
-
+    if let (true, Some(destructure)) =
+        (has_props_destructure, ctx.macros.props_destructure.as_ref())
+    {
         // Check if there are any defaults
         let has_defaults = destructure.bindings.values().any(|b| b.default.is_some());
 
@@ -446,7 +446,7 @@ fn collect_model_names(ctx: &ScriptCompileContext) -> Vec<String> {
             } else {
                 let args_trimmed = m.args.trim();
                 if args_trimmed.starts_with('\'') || args_trimmed.starts_with('"') {
-                    let quote_char = args_trimmed.chars().next().unwrap();
+                    let quote_char = args_trimmed.as_bytes()[0] as char;
                     if let Some(end_pos) = args_trimmed[1..].find(quote_char) {
                         String::from(&args_trimmed[1..end_pos + 1])
                     } else {
@@ -543,7 +543,7 @@ fn emit_model_bindings(
                 let args_trimmed = model_call.args.trim();
                 if args_trimmed.starts_with('\'') || args_trimmed.starts_with('"') {
                     // Extract string content
-                    let quote_char = args_trimmed.chars().next().unwrap();
+                    let quote_char = args_trimmed.as_bytes()[0] as char;
                     if let Some(end_pos) = args_trimmed[1..].find(quote_char) {
                         String::from(&args_trimmed[1..end_pos + 1])
                     } else {

@@ -156,7 +156,10 @@ impl<'a> Parser<'a> {
             condense_whitespace(&mut root.children, self.options.is_pre_tag);
         }
 
-        let root = self.root.take().unwrap();
+        let root = match self.root.take() {
+            Some(root) => root,
+            None => RootNode::new(self.allocator, self.source),
+        };
         (root, self.errors)
     }
 

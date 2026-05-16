@@ -284,7 +284,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             file_count: virtual_files.len(),
             declarations,
         };
-        println!("{}", serde_json::to_string_pretty(&json_output).unwrap());
+        match serde_json::to_string_pretty(&json_output) {
+            Ok(output) => println!("{output}"),
+            Err(error) => {
+                eprintln!("Failed to serialize check output: {error}");
+                std::process::exit(1);
+            }
+        }
         if total_errors > 0 {
             std::process::exit(1);
         }

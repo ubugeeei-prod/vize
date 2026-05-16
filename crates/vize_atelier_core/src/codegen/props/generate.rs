@@ -328,13 +328,16 @@ fn generate_props_object_inner(
                 first = false;
 
                 // Check if this is a ref attribute that needs ref_key generation
-                let ref_binding_type = if attr.name == "ref" && ctx.options.inline {
-                    attr.value.as_ref().and_then(|v| {
-                        ctx.options
-                            .binding_metadata
-                            .as_ref()
-                            .and_then(|m| m.bindings.get(v.content.as_str()).copied())
-                    })
+                let ref_value = if attr.name == "ref" && ctx.options.inline {
+                    attr.value.as_ref()
+                } else {
+                    None
+                };
+                let ref_binding_type = if let Some(value) = ref_value {
+                    ctx.options
+                        .binding_metadata
+                        .as_ref()
+                        .and_then(|m| m.bindings.get(value.content.as_str()).copied())
                 } else {
                     None
                 };
@@ -345,11 +348,11 @@ fn generate_props_object_inner(
                     )
                 );
 
-                if needs_ref_key {
+                if let (true, Some(ref_value)) = (needs_ref_key, ref_value) {
                     // Emit ref_key + ref pair for setup-let/ref/maybe-ref bindings.
                     // Vue's runtime setRef() needs ref_key to write to instance.refs,
                     // which is essential for useTemplateRef to receive the element.
-                    let ref_name = &attr.value.as_ref().unwrap().content;
+                    let ref_name = &ref_value.content;
                     ctx.push("ref_key: \"");
                     ctx.push(ref_name);
                     ctx.push("\", ref: ");

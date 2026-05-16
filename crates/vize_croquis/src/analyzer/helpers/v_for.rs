@@ -238,12 +238,13 @@ fn parse_v_for_with_oxc(
     buffer[prefix.len()..prefix.len() + inner.len()].copy_from_slice(inner.as_bytes());
     buffer[prefix.len() + inner.len()..total_len].copy_from_slice(suffix);
 
-    // SAFETY: we only copy ASCII bytes
-    let pattern_str = unsafe { std::str::from_utf8_unchecked(&buffer[..total_len]) };
-    profile!(
-        "croquis.helpers.v_for.parse_pattern",
-        parse_v_for_pattern(pattern_str, source)
-    )
+    match std::str::from_utf8(&buffer[..total_len]) {
+        Ok(pattern_str) => profile!(
+            "croquis.helpers.v_for.parse_pattern",
+            parse_v_for_pattern(pattern_str, source)
+        ),
+        Err(_) => (SmallVec::new(), source),
+    }
 }
 
 /// Parse v-for pattern using OXC

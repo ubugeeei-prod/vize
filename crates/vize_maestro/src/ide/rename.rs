@@ -518,7 +518,9 @@ impl RenameService {
         }
 
         let mut chars = s.chars();
-        let first = chars.next().unwrap();
+        let Some(first) = chars.next() else {
+            return false;
+        };
 
         if !Self::is_ident_start(first) {
             return false;

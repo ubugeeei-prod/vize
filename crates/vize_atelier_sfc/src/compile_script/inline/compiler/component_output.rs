@@ -35,7 +35,7 @@ pub(super) fn emit_component_definition(
         .is_some_and(|emits| emits.binding_name.is_some());
     let has_expose = ctx.macros.define_expose.is_some();
 
-    if has_options {
+    if let (true, Some(define_options)) = (has_options, ctx.macros.define_options.as_ref()) {
         // Use Object.assign for defineOptions
         if is_vapor {
             output.extend_from_slice(
@@ -44,7 +44,7 @@ pub(super) fn emit_component_definition(
         } else {
             output.extend_from_slice(b"export default /*@__PURE__*/Object.assign(");
         }
-        let options_args = ctx.macros.define_options.as_ref().unwrap().args.trim();
+        let options_args = define_options.args.trim();
         output.extend_from_slice(options_args.as_bytes());
         output.extend_from_slice(b", {\n");
     } else if has_default_export {

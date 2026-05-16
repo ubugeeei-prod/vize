@@ -214,7 +214,11 @@ impl<'a> Parser<'a> {
                 let mut elements: vize_carton::Vec<'a, ParserStackEntry<'a>> =
                     vize_carton::Vec::new_in(self.allocator);
                 while self.stack.len() > i {
-                    elements.push(self.stack.pop().unwrap());
+                    if let Some(entry) = self.stack.pop() {
+                        elements.push(entry);
+                    } else {
+                        break;
+                    }
                 }
 
                 // Report errors for unclosed elements (except the matching one)

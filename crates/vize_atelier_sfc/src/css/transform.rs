@@ -26,8 +26,11 @@ pub(crate) fn extract_and_transform_v_bind<'a>(
                 result.extend_from_slice(&css_bytes[pos..actual_pos]);
 
                 // Extract expression
-                let expr_bytes = &css_bytes[start..start + end];
-                let expr_str = unsafe { std::str::from_utf8_unchecked(expr_bytes) }.trim();
+                let Some(expr_str) = css.get(start..start + end).map(str::trim) else {
+                    pos = start + end + 1;
+                    result.extend_from_slice(&css_bytes[actual_pos..pos]);
+                    continue;
+                };
                 let expr_str = expr_str.trim_matches(|c| c == '"' || c == '\'');
                 vars.push(expr_str.to_compact_string());
 

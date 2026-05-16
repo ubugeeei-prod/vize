@@ -329,8 +329,8 @@ fn ts_type_to_js_type(ts_type: &str) -> String {
     let ts_type = ts_type.trim();
 
     // Strip `readonly` prefix: `readonly T[]` → `T[]`
-    let ts_type = if ts_type.starts_with("readonly ") {
-        ts_type.strip_prefix("readonly ").unwrap().trim()
+    let ts_type = if let Some(rest) = ts_type.strip_prefix("readonly ") {
+        rest.trim()
     } else {
         ts_type
     };
@@ -385,8 +385,10 @@ fn ts_type_to_js_type(ts_type: &str) -> String {
                 }
             }
 
-            if js_types.len() == 1 {
-                return js_types.into_iter().next().unwrap();
+            if js_types.len() == 1
+                && let Some(only) = js_types.pop()
+            {
+                return only;
             }
 
             // Multiple distinct types → array form: [String, Number]

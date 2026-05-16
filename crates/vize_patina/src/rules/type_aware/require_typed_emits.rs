@@ -90,7 +90,9 @@ impl Rule for RequireTypedEmits {
             return;
         }
 
-        let analysis = ctx.analysis().unwrap();
+        let Some(analysis) = ctx.analysis() else {
+            return;
+        };
         let emits = analysis.macros.emits();
 
         // Check if there are any emits

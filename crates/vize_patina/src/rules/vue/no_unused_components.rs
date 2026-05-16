@@ -138,7 +138,9 @@ impl Rule for NoUnusedComponents {
 
         // Collect unused components first (to avoid borrow conflicts)
         let unused_components: Vec<String> = {
-            let analysis = ctx.analysis().unwrap();
+            let Some(analysis) = ctx.analysis() else {
+                return;
+            };
 
             let registered_components = Self::imported_component_names(analysis);
 

@@ -470,15 +470,16 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     }
 
     #[inline]
-    fn current_sequence_with_bytes(&self) -> (Sequence, &'static [u8]) {
-        let sequence = self
-            .current_sequence
-            .expect("current_sequence must be set in this state");
-        (sequence, sequence.bytes())
+    fn current_sequence_with_bytes(&self) -> Option<(Sequence, &'static [u8])> {
+        self.current_sequence
+            .map(|sequence| (sequence, sequence.bytes()))
     }
 
     pub(super) fn state_in_comment_like(&mut self, c: u8) {
-        let (sequence, sequence_bytes) = self.current_sequence_with_bytes();
+        let Some((sequence, sequence_bytes)) = self.current_sequence_with_bytes() else {
+            self.state = State::Text;
+            return;
+        };
 
         if c == sequence_bytes[self.sequence_index] {
             self.sequence_index += 1;
@@ -534,7 +535,11 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     }
 
     pub(super) fn state_special_start_sequence(&mut self, c: u8) {
-        let (_, sequence_bytes) = self.current_sequence_with_bytes();
+        let Some((_, sequence_bytes)) = self.current_sequence_with_bytes() else {
+            self.state = State::InTagName;
+            self.state_in_tag_name(c);
+            return;
+        };
 
         let is_end = self.sequence_index == sequence_bytes.len();
         let is_match = if is_end {
@@ -558,7 +563,11 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     // Look for an end tag. For `<title>` and `<textarea>`, also decode entities and handle
     // interpolation
     pub(super) fn state_in_rcdata(&mut self, c: u8) {
-        let (sequence, sequence_bytes) = self.current_sequence_with_bytes();
+        let Some((sequence, sequence_bytes)) = self.current_sequence_with_bytes() else {
+            self.state = State::Text;
+            self.state_text(c);
+            return;
+        };
 
         if self.sequence_index == sequence_bytes.len() {
             if c == GT || is_whitespace(c) {

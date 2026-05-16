@@ -101,7 +101,9 @@ impl Rule for NoUnusedVars {
             return;
         }
 
-        let analysis = ctx.analysis().unwrap();
+        let Some(analysis) = ctx.analysis() else {
+            return;
+        };
         let unused_vars = analysis.unused_template_vars();
 
         for unused in unused_vars {

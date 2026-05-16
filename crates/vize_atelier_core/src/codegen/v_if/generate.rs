@@ -106,16 +106,17 @@ pub(super) fn generate_single_prop_for_if(
 ) {
     match prop {
         PropNode::Attribute(attr) => {
-            let ref_binding_type = if attr.name == "ref" && ctx.options.inline {
-                attr.value.as_ref().and_then(|v| {
-                    ctx.options
-                        .binding_metadata
-                        .as_ref()
-                        .and_then(|m| m.bindings.get(v.content.as_str()).copied())
-                })
+            let ref_value = if attr.name == "ref" && ctx.options.inline {
+                attr.value.as_ref()
             } else {
                 None
             };
+            let ref_binding_type = ref_value.and_then(|v| {
+                ctx.options
+                    .binding_metadata
+                    .as_ref()
+                    .and_then(|m| m.bindings.get(v.content.as_str()).copied())
+            });
             let needs_ref_key = matches!(
                 ref_binding_type,
                 Some(
@@ -125,8 +126,8 @@ pub(super) fn generate_single_prop_for_if(
                 )
             );
 
-            if needs_ref_key {
-                let ref_name = &attr.value.as_ref().unwrap().content;
+            if let (true, Some(ref_value)) = (needs_ref_key, ref_value) {
+                let ref_name = &ref_value.content;
                 ctx.push("ref_key: \"");
                 ctx.push(ref_name);
                 ctx.push("\", ref: ");

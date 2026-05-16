@@ -9,6 +9,7 @@ use vize_carton::{FxHashSet, String, ToCompactString};
 
 use oxc_ast::ast::{CallExpression, Expression, TSSignature, TSType, TSTypeLiteral};
 use oxc_span::GetSpan;
+use std::sync::LazyLock;
 
 use super::context::ScriptCompileContext;
 
@@ -197,24 +198,31 @@ fn extract_event_name_from_function_type(type_str: &str) -> Option<String> {
 
 /// Extract events from a type literal (object type)
 fn extract_events_from_type_literal(type_str: &str, emits: &mut FxHashSet<String>) {
+    static CALL_SIG_RE: LazyLock<Result<regex::Regex, regex::Error>> = LazyLock::new(|| {
+        regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*(?:,\s*[^)]+)?\)\s*:"#)
+    });
+    static PROP_RE: LazyLock<Result<regex::Regex, regex::Error>> =
+        LazyLock::new(|| regex::Regex::new(r#"(?:^|[{;,])\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:"#));
+
     // Handle call signatures: { (e: 'click'): void; (e: 'update'): void }
-    let call_sig_re =
-        regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*(?:,\s*[^)]+)?\)\s*:"#).unwrap();
-    for cap in call_sig_re.captures_iter(type_str) {
-        if let Some(event_name) = cap.get(1) {
-            emits.insert(event_name.as_str().to_compact_string());
+    if let Ok(call_sig_re) = &*CALL_SIG_RE {
+        for cap in call_sig_re.captures_iter(type_str) {
+            if let Some(event_name) = cap.get(1) {
+                emits.insert(event_name.as_str().to_compact_string());
+            }
         }
     }
 
     // Handle property syntax: { click: [...], update: [...] }
     // This is for the newer emit type syntax
-    let prop_re = regex::Regex::new(r#"(?:^|[{;,])\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:"#).unwrap();
-    for cap in prop_re.captures_iter(type_str) {
-        if let Some(prop_name) = cap.get(1) {
-            let name = prop_name.as_str();
-            // Skip common type keywords
-            if !matches!(name, "type" | "required" | "default" | "validator") {
-                emits.insert(name.to_compact_string());
+    if let Ok(prop_re) = &*PROP_RE {
+        for cap in prop_re.captures_iter(type_str) {
+            if let Some(prop_name) = cap.get(1) {
+                let name = prop_name.as_str();
+                // Skip common type keywords
+                if !matches!(name, "type" | "required" | "default" | "validator") {
+                    emits.insert(name.to_compact_string());
+                }
             }
         }
     }

@@ -50,7 +50,9 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
 
         if in_comment {
             if c == '*' && chars.peek() == Some(&'/') {
-                current.push(chars.next().unwrap());
+                if let Some(next) = chars.next() {
+                    current.push(next);
+                }
                 in_comment = false;
             }
             continue;
@@ -75,7 +77,9 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
                 }
             }
             '/' if chars.peek() == Some(&'*') => {
-                current.push(chars.next().unwrap());
+                if let Some(next) = chars.next() {
+                    current.push(next);
+                }
                 in_comment = true;
             }
             '{' => {

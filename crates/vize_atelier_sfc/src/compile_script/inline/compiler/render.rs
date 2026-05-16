@@ -169,8 +169,9 @@ fn append_usize(target: &mut String, value: usize) {
         }
     }
 
-    let digits = std::str::from_utf8(&buffer[index..]).expect("usize digits should be ASCII");
-    target.push_str(digits);
+    for digit in &buffer[index..] {
+        target.push(*digit as char);
+    }
 }
 
 fn collect_setup_bindings(

@@ -69,11 +69,11 @@ pub fn process_inline_handler<'a>(
                 },
                 allocator,
             ));
-        } else if ctx.options.is_ts {
+        } else if let Some(ts_stripped_content) = &ts_stripped_content {
             // Strip TypeScript type annotations even without prefix_identifiers
             return ExpressionNode::Simple(Box::new_in(
                 SimpleExpressionNode {
-                    content: String::new(ts_stripped_content.as_ref().unwrap()),
+                    content: String::new(ts_stripped_content),
                     is_static: false,
                     const_type: ConstantType::NotConstant,
                     loc: normalized.loc.clone(),

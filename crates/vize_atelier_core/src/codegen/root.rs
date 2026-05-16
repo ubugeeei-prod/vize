@@ -45,43 +45,42 @@ pub(super) fn generate_preamble_from_helpers(
 
     // Pre-calculate capacity: each helper needs ~20 chars on average
     let estimated_capacity = 32 + helpers.len() * 24;
-    let mut preamble = Vec::with_capacity(estimated_capacity);
+    let mut preamble = String::with_capacity(estimated_capacity);
 
     match ctx.options.mode {
         crate::options::CodegenMode::Module => {
             // ES module imports - build string directly without intermediate Vec
-            preamble.extend_from_slice(b"import { ");
+            preamble.push_str("import { ");
             for (i, h) in helpers.iter().enumerate() {
                 if i > 0 {
-                    preamble.extend_from_slice(b", ");
+                    preamble.push_str(", ");
                 }
-                preamble.extend_from_slice(h.name().as_bytes());
-                preamble.extend_from_slice(b" as ");
-                preamble.extend_from_slice(ctx.helper(*h).as_bytes());
+                preamble.push_str(h.name());
+                preamble.push_str(" as ");
+                preamble.push_str(ctx.helper(*h));
             }
-            preamble.extend_from_slice(b" } from \"");
-            preamble.extend_from_slice(ctx.runtime_module_name.as_bytes());
-            preamble.extend_from_slice(b"\"\n");
+            preamble.push_str(" } from \"");
+            preamble.push_str(ctx.runtime_module_name.as_str());
+            preamble.push_str("\"\n");
         }
         crate::options::CodegenMode::Function => {
             // Destructuring from global - build string directly without intermediate Vec
-            preamble.extend_from_slice(b"const { ");
+            preamble.push_str("const { ");
             for (i, h) in helpers.iter().enumerate() {
                 if i > 0 {
-                    preamble.extend_from_slice(b", ");
+                    preamble.push_str(", ");
                 }
-                preamble.extend_from_slice(h.name().as_bytes());
-                preamble.extend_from_slice(b": ");
-                preamble.extend_from_slice(ctx.helper(*h).as_bytes());
+                preamble.push_str(h.name());
+                preamble.push_str(": ");
+                preamble.push_str(ctx.helper(*h));
             }
-            preamble.extend_from_slice(b" } = ");
-            preamble.extend_from_slice(ctx.runtime_global_name.as_bytes());
-            preamble.push(b'\n');
+            preamble.push_str(" } = ");
+            preamble.push_str(ctx.runtime_global_name.as_str());
+            preamble.push('\n');
         }
     }
 
-    // SAFETY: We only push valid UTF-8 strings
-    unsafe { String::from_utf8_unchecked(preamble) }
+    preamble
 }
 
 /// Generate function signature.

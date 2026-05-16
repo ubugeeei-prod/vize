@@ -64,7 +64,7 @@ impl GenerateContext {
     pub fn push_line_fmt(&mut self, args: std::fmt::Arguments<'_>) {
         self.push_indent();
         use std::fmt::Write as _;
-        self.write_fmt(args).unwrap();
+        let _ = self.write_fmt(args);
         self.code.push('\n');
     }
 }

@@ -131,7 +131,9 @@ pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) 
                             continue;
                         } else {
                             // Nested brace inside ${...} expression
-                            *state.template_expr_brace_stack.last_mut().unwrap() -= 1;
+                            if let Some(depth) = state.template_expr_brace_stack.last_mut() {
+                                *depth -= 1;
+                            }
                             count -= 1;
                         }
                     } else {
@@ -241,7 +243,9 @@ pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) 
                             i += 1;
                             continue;
                         } else {
-                            *state.template_expr_brace_stack.last_mut().unwrap() -= 1;
+                            if let Some(depth) = state.template_expr_brace_stack.last_mut() {
+                                *depth -= 1;
+                            }
                         }
                     }
                 }

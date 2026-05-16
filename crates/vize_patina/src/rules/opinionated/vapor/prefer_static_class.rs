@@ -122,14 +122,15 @@ fn is_string_literal(s: &str) -> bool {
         return false;
     }
 
-    let first = s.chars().next().unwrap();
-    let last = s.chars().last().unwrap();
+    let bytes = s.as_bytes();
+    let first = bytes[0];
+    let last = bytes[bytes.len() - 1];
 
     // Check for 'string', "string", or `string`
     // But not template literals with expressions like `${foo}`
     match (first, last) {
-        ('\'', '\'') | ('"', '"') => true,
-        ('`', '`') => !s.contains("${"),
+        (b'\'', b'\'') | (b'"', b'"') => true,
+        (b'`', b'`') => !s.contains("${"),
         _ => false,
     }
 }

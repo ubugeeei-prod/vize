@@ -19,7 +19,13 @@ pub struct LspArgs {
 
 pub fn run(args: LspArgs) {
     // Create tokio runtime for async LSP server
-    let runtime = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
+    let runtime = match tokio::runtime::Runtime::new() {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            eprintln!("Failed to create tokio runtime: {error}");
+            std::process::exit(1);
+        }
+    };
 
     runtime.block_on(async {
         let result = if let Some(port) = args.port {

@@ -35,18 +35,19 @@ impl EventNameCounts {
             return;
         }
 
-        if let Some(first_key) = &self.first_key {
+        if let Some(first_key) = self.first_key.as_ref() {
             if first_key.as_str() == key.as_str() {
                 self.first_count += 1;
                 return;
             }
 
-            let first_key = self.first_key.take().expect("first event key");
-            let mut counts = FxHashMap::default();
-            counts.insert(first_key, self.first_count);
-            counts.insert(key, 1);
-            self.first_count = 0;
-            self.many = Some(counts);
+            if let Some(first_key) = self.first_key.take() {
+                let mut counts = FxHashMap::default();
+                counts.insert(first_key, self.first_count);
+                counts.insert(key, 1);
+                self.first_count = 0;
+                self.many = Some(counts);
+            }
             return;
         }
 

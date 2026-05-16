@@ -211,7 +211,9 @@ impl Croquis {
             }
 
             for scope in &self.scopes {
-                let (prefix, display_id) = display_id_map.get(&scope.id).unwrap();
+                let Some((prefix, display_id)) = display_id_map.get(&scope.id) else {
+                    continue;
+                };
                 // Format: prefix+display_id kind @start:end {bindings} $ parent_refs
                 append!(
                     output,

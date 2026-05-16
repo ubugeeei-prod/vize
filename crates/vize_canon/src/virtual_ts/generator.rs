@@ -262,10 +262,12 @@ pub fn generate_virtual_ts_with_offsets(
                     && !trimmed_line.starts_with("export interface ")
                 {
                     let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
-                    let rest = trimmed_line.strip_prefix("export ").unwrap();
-                    #[allow(clippy::disallowed_types)]
-                    {
-                        output_line = std::borrow::Cow::Owned(cstr!("{leading_ws}{rest}").into());
+                    if let Some(rest) = trimmed_line.strip_prefix("export ") {
+                        #[allow(clippy::disallowed_types)]
+                        {
+                            output_line =
+                                std::borrow::Cow::Owned(cstr!("{leading_ws}{rest}").into());
+                        }
                     }
                 }
 
@@ -503,18 +505,10 @@ pub fn generate_virtual_ts_with_offsets(
 
     // Return exposed object from __setup() so its type can be extracted at module level.
     // This keeps the runtime args expression in scope (where the bindings are defined).
-    let has_runtime_expose = summary
-        .macros
-        .define_expose()
-        .is_some_and(|e| e.type_args.is_none() && e.runtime_args.is_some());
-    if has_runtime_expose {
-        let runtime_args = summary
-            .macros
-            .define_expose()
-            .unwrap()
-            .runtime_args
-            .as_ref()
-            .unwrap();
+    if let Some(expose) = summary.macros.define_expose()
+        && expose.type_args.is_none()
+        && let Some(runtime_args) = expose.runtime_args.as_ref()
+    {
         append!(ts, "\n  return ({runtime_args});\n");
     }
 

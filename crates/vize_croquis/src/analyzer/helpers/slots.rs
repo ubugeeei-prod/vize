@@ -79,12 +79,13 @@ fn extract_slot_props_with_oxc(pattern: &str) -> SmallVec<[CompactString; 4]> {
     buffer[prefix.len()..prefix.len() + pattern.len()].copy_from_slice(pattern.as_bytes());
     buffer[prefix.len() + pattern.len()..total_len].copy_from_slice(suffix);
 
-    // SAFETY: we only copy ASCII bytes
-    let pattern_str = unsafe { std::str::from_utf8_unchecked(&buffer[..total_len]) };
-    profile!(
-        "croquis.helpers.slot_props.parse_pattern",
-        parse_slot_pattern(pattern_str)
-    )
+    match std::str::from_utf8(&buffer[..total_len]) {
+        Ok(pattern_str) => profile!(
+            "croquis.helpers.slot_props.parse_pattern",
+            parse_slot_pattern(pattern_str)
+        ),
+        Err(_) => SmallVec::new(),
+    }
 }
 
 /// Parse slot pattern using OXC

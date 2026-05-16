@@ -59,7 +59,13 @@ pub fn run(args: IdeArgs) {
 
 /// Run LSP server (default behavior)
 fn run_lsp(args: IdeArgs) {
-    let runtime = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
+    let runtime = match tokio::runtime::Runtime::new() {
+        Ok(runtime) => runtime,
+        Err(error) => {
+            eprintln!("Failed to create tokio runtime: {error}");
+            std::process::exit(1);
+        }
+    };
 
     runtime.block_on(async {
         let result = if let Some(port) = args.port {

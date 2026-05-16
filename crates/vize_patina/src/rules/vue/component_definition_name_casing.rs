@@ -41,7 +41,9 @@ fn is_pascal_case(s: &str) -> bool {
     if s.is_empty() {
         return false;
     }
-    let first = s.chars().next().unwrap();
+    let Some(first) = s.chars().next() else {
+        return false;
+    };
     if !first.is_ascii_uppercase() {
         return false;
     }

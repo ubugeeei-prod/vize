@@ -115,8 +115,9 @@ pub(super) fn build_props_emits(
                 props_emits_buf.extend_from_slice(b"  },\n");
             }
         } else if !props_macro.args.is_empty() {
-            if needs_merge_defaults {
-                let destructure = ctx.macros.props_destructure.as_ref().unwrap();
+            if let (true, Some(destructure)) =
+                (needs_merge_defaults, ctx.macros.props_destructure.as_ref())
+            {
                 props_emits_buf.extend_from_slice(b"  props: /*@__PURE__*/_mergeDefaults(");
                 props_emits_buf.extend_from_slice(props_macro.args.as_bytes());
                 props_emits_buf.extend_from_slice(b", {\n");

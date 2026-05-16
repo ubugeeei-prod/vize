@@ -4,7 +4,7 @@ use crate::String;
 use once_cell::sync::Lazy;
 use phf::phf_set;
 use rustc_hash::FxHashMap;
-use std::sync::RwLock;
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 /// Reserved props that should not be passed to components
 pub static RESERVED_PROPS: phf::Set<&'static str> = phf_set! {
@@ -73,12 +73,32 @@ static HYPHENATE_CACHE: Lazy<RwLock<FxHashMap<String, String>>> =
 static CAPITALIZE_CACHE: Lazy<RwLock<FxHashMap<String, String>>> =
     Lazy::new(|| RwLock::new(FxHashMap::default()));
 
+#[inline]
+fn read_cache(
+    cache: &RwLock<FxHashMap<String, String>>,
+) -> RwLockReadGuard<'_, FxHashMap<String, String>> {
+    match cache.read() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    }
+}
+
+#[inline]
+fn write_cache(
+    cache: &RwLock<FxHashMap<String, String>>,
+) -> RwLockWriteGuard<'_, FxHashMap<String, String>> {
+    match cache.write() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    }
+}
+
 /// Convert kebab-case to camelCase
 /// Example: "foo-bar" -> "fooBar"
 pub fn camelize(s: &str) -> String {
     // Check cache first
     {
-        let cache = CAMELIZE_CACHE.read().unwrap();
+        let cache = read_cache(&CAMELIZE_CACHE);
         if let Some(cached) = cache.get(s) {
             return cached.clone();
         }
@@ -88,7 +108,7 @@ pub fn camelize(s: &str) -> String {
 
     // Store in cache
     {
-        let mut cache = CAMELIZE_CACHE.write().unwrap();
+        let mut cache = write_cache(&CAMELIZE_CACHE);
         cache.insert(String::from(s), result.clone());
     }
 
@@ -118,7 +138,7 @@ fn camelize_uncached(s: &str) -> String {
 pub fn hyphenate(s: &str) -> String {
     // Check cache first
     {
-        let cache = HYPHENATE_CACHE.read().unwrap();
+        let cache = read_cache(&HYPHENATE_CACHE);
         if let Some(cached) = cache.get(s) {
             return cached.clone();
         }
@@ -128,7 +148,7 @@ pub fn hyphenate(s: &str) -> String {
 
     // Store in cache
     {
-        let mut cache = HYPHENATE_CACHE.write().unwrap();
+        let mut cache = write_cache(&HYPHENATE_CACHE);
         cache.insert(String::from(s), result.clone());
     }
 
@@ -159,7 +179,7 @@ pub fn capitalize(s: &str) -> String {
 
     // Check cache first
     {
-        let cache = CAPITALIZE_CACHE.read().unwrap();
+        let cache = read_cache(&CAPITALIZE_CACHE);
         if let Some(cached) = cache.get(s) {
             return cached.clone();
         }
@@ -169,7 +189,7 @@ pub fn capitalize(s: &str) -> String {
 
     // Store in cache
     {
-        let mut cache = CAPITALIZE_CACHE.write().unwrap();
+        let mut cache = write_cache(&CAPITALIZE_CACHE);
         cache.insert(String::from(s), result.clone());
     }
 
@@ -236,11 +256,46 @@ pub fn is_simple_identifier(s: &str) -> bool {
 /// Generate a props access expression
 pub fn gen_props_access_exp(name: &str) -> String {
     if is_simple_identifier(name) {
-        crate::cstr!("__props.{name}")
+        let mut result = String::with_capacity("__props.".len() + name.len());
+        result.push_str("__props.");
+        result.push_str(name);
+        result
     } else {
-        let key = serde_json::to_string(name).unwrap();
-        crate::cstr!("__props[{key}]")
+        let mut result = String::with_capacity("__props[]".len() + name.len() + 2);
+        result.push_str("__props[");
+        push_json_string_literal(&mut result, name);
+        result.push(']');
+        result
     }
+}
+
+#[inline]
+fn push_hex_digit(out: &mut String, value: u8) {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    out.push(HEX[value as usize] as char);
+}
+
+fn push_json_string_literal(out: &mut String, value: &str) {
+    out.push('"');
+    for ch in value.chars() {
+        match ch {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            '\u{08}' => out.push_str("\\b"),
+            '\u{0c}' => out.push_str("\\f"),
+            ch if (ch as u32) < 0x20 => {
+                let byte = ch as u8;
+                out.push_str("\\u00");
+                push_hex_digit(out, byte >> 4);
+                push_hex_digit(out, byte & 0x0f);
+            }
+            ch => out.push(ch),
+        }
+    }
+    out.push('"');
 }
 
 /// Check if a tag can have its value set directly
@@ -250,7 +305,10 @@ pub fn can_set_value_directly(tag_name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{camelize, capitalize, hyphenate, is_on, is_simple_identifier, to_handler_key};
+    use super::{
+        camelize, capitalize, gen_props_access_exp, hyphenate, is_on, is_simple_identifier,
+        to_handler_key,
+    };
 
     #[test]
     fn test_is_on() {
@@ -297,5 +355,15 @@ mod tests {
         assert!(!is_simple_identifier("123foo"));
         assert!(!is_simple_identifier("foo-bar"));
         assert!(!is_simple_identifier(""));
+    }
+
+    #[test]
+    fn test_gen_props_access_exp_escapes_keys() {
+        assert_eq!(gen_props_access_exp("foo"), "__props.foo");
+        assert_eq!(gen_props_access_exp("foo-bar"), "__props[\"foo-bar\"]");
+        assert_eq!(
+            gen_props_access_exp("quote\"slash\\line\n"),
+            "__props[\"quote\\\"slash\\\\line\\n\"]"
+        );
     }
 }

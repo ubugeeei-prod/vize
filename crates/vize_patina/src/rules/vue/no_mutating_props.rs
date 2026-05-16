@@ -169,7 +169,9 @@ impl Rule for NoMutatingProps {
 
         // Collect prop names first (to avoid borrow conflicts)
         let (prop_names, has_props_object_binding): (FxHashSet<String>, bool) = {
-            let analysis = ctx.analysis().unwrap();
+            let Some(analysis) = ctx.analysis() else {
+                return;
+            };
 
             let mut names: FxHashSet<String> = FxHashSet::default();
 

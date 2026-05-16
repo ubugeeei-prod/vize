@@ -13,6 +13,13 @@ use super::scoped::{
 use super::transform::extract_and_transform_v_bind;
 use super::{CssCompileOptions, bundle_css, compile_css};
 
+fn test_utf8(bytes: &[u8]) -> &str {
+    match std::str::from_utf8(bytes) {
+        Ok(value) => value,
+        Err(error) => panic!("CSS helper emitted invalid UTF-8: {error}"),
+    }
+}
+
 #[test]
 fn test_compile_simple_css() {
     let css = ".foo { color: red; }";
@@ -67,7 +74,7 @@ fn test_scope_deep() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_deep(&mut out, ":deep(.child)", 0, b"[data-v-123]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, "[data-v-123] .child");
 }
 
@@ -76,7 +83,7 @@ fn test_scope_global() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_global(&mut out, ":global(.foo)", 0);
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".foo");
 }
 
@@ -85,7 +92,7 @@ fn test_scope_slotted() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_slotted(&mut out, ":slotted(.child)", 0, b"[data-v-123]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".child[data-v-123-s]");
 }
 
@@ -94,7 +101,7 @@ fn test_scope_slotted_with_pseudo() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_slotted(&mut out, ":slotted(.child):hover", 0, b"[data-v-abc]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".child[data-v-abc-s]:hover");
 }
 
@@ -103,7 +110,7 @@ fn test_scope_slotted_complex() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     transform_slotted(&mut out, ":slotted(div.foo)", 0, b"[data-v-12345678]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, "div.foo[data-v-12345678-s]");
 }
 
@@ -112,7 +119,7 @@ fn test_scope_with_pseudo_element() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     add_scope_to_element(&mut out, ".foo::before", b"[data-v-123]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".foo[data-v-123]::before");
 }
 
@@ -121,7 +128,7 @@ fn test_scope_with_pseudo_class() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);
     add_scope_to_element(&mut out, ".foo:hover", b"[data-v-123]");
-    let result = unsafe { std::str::from_utf8_unchecked(&out) };
+    let result = test_utf8(&out);
     assert_eq!(result, ".foo[data-v-123]:hover");
 }
 
