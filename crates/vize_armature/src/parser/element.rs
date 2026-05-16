@@ -3,7 +3,7 @@
 //! Handles text, interpolation, open/close tags, element type determination,
 //! comments, and error reporting.
 
-use vize_carton::{Box, directive::parse_vize_directive};
+use vize_carton::{Box, String, directive::parse_vize_directive};
 use vize_relief::{
     ast::*,
     errors::{CompilerError, ErrorCode},
@@ -391,19 +391,19 @@ impl<'a> Parser<'a> {
         self.errors.push(error);
     }
 
-    fn recovery_error_message(&self, code: ErrorCode) -> Option<std::string::String> {
+    fn recovery_error_message(&self, code: ErrorCode) -> Option<String> {
         match code {
             ErrorCode::EofBeforeTagName => Some(
                 "Unexpected end of input after `<`; treating it as text so parsing can continue."
-                    .to_string(),
+                    .into(),
             ),
             ErrorCode::EofInTag => Some(
                 "Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue."
-                    .to_string(),
+                    .into(),
             ),
             ErrorCode::InvalidFirstCharacterOfTagName => Some(
                 "Tag name starts with an invalid character; treating the malformed tag as text."
-                    .to_string(),
+                    .into(),
             ),
             ErrorCode::MissingAttributeValue => {
                 let name = self
@@ -412,41 +412,41 @@ impl<'a> Parser<'a> {
                     .map(|attr| attr.name.as_str())
                     .or_else(|| self.current_dir.as_ref().map(|dir| dir.raw_name.as_str()))
                     .unwrap_or("attribute");
-                Some(format!(
+                Some(vize_carton::cstr!(
                     "Attribute `{name}` is missing a value after `=`; continuing without the value."
                 ))
             }
             ErrorCode::MissingDynamicDirectiveArgumentEnd => Some(
                 "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary."
-                    .to_string(),
+                    .into(),
             ),
-            ErrorCode::MissingInterpolationEnd => Some(format!(
+            ErrorCode::MissingInterpolationEnd => Some(vize_carton::cstr!(
                 "Interpolation is missing its closing delimiter `{}`; treating the unfinished interpolation as text.",
                 self.options.delimiters.1
             )),
             ErrorCode::UnexpectedCharacterInAttributeName => Some(
                 "Attribute name contains an invalid character; inferred the nearest attribute boundary and continued."
-                    .to_string(),
+                    .into(),
             ),
             ErrorCode::UnexpectedCharacterInUnquotedAttributeValue => Some(
                 "Unquoted attribute value contains a character that should be quoted; keeping it in the value and continuing."
-                    .to_string(),
+                    .into(),
             ),
             ErrorCode::UnexpectedEqualsSignBeforeAttributeName => Some(
                 "Unexpected `=` before an attribute name; skipping it and continuing with the next attribute."
-                    .to_string(),
+                    .into(),
             ),
             ErrorCode::MissingWhitespaceBetweenAttributes => Some(
                 "Missing whitespace between attributes; inferred a new attribute boundary."
-                    .to_string(),
+                    .into(),
             ),
             ErrorCode::IncorrectlyClosedComment => Some(
                 "Comment was closed as `--!>`; treating it as `-->` so parsing can continue."
-                    .to_string(),
+                    .into(),
             ),
             ErrorCode::IncorrectlyOpenedComment => Some(
                 "Declaration or comment syntax is malformed; skipping it until the next `>`."
-                    .to_string(),
+                    .into(),
             ),
             _ => None,
         }

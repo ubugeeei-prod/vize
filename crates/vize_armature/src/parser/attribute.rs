@@ -184,7 +184,7 @@ impl<'a> Parser<'a> {
         if self.has_duplicate_attribute(attr.name.as_str()) {
             self.errors.push(CompilerError::with_message(
                 ErrorCode::DuplicateAttribute,
-                format!(
+                vize_carton::cstr!(
                     "Duplicate attribute `{}`. Keeping the repeated attribute so parsing can continue.",
                     attr.name
                 ),
@@ -221,7 +221,7 @@ impl<'a> Parser<'a> {
         if dir.name.is_empty() {
             self.errors.push(CompilerError::with_message(
                 ErrorCode::MissingDirectiveName,
-                format!(
+                vize_carton::cstr!(
                     "Directive `{}` is missing a name. Ignoring it so the rest of the tag can be parsed.",
                     dir.raw_name
                 ),

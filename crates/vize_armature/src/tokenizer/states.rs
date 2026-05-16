@@ -152,12 +152,10 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 self.emit_unclosed_attr_value(QuoteType::Unquoted);
                 self.callbacks.on_open_tag_end(inferred_tag_end);
             }
-            State::InClosingTagName => {
-                if self.section_start < self.index {
-                    self.callbacks.on_close_tag(self.section_start, self.index);
-                }
+            State::InClosingTagName if self.section_start < self.index => {
+                self.callbacks.on_close_tag(self.section_start, self.index);
             }
-            State::BeforeClosingTagName | State::AfterClosingTagName => {}
+            State::InClosingTagName | State::BeforeClosingTagName | State::AfterClosingTagName => {}
             _ => {}
         }
 
