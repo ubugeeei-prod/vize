@@ -189,9 +189,7 @@ function selectReference(path: string) {
                 <input
                   v-model="reference"
                   class="form-input"
-                  :placeholder="
-                    tier === 'component' ? 'e.g. color.primary' : 'e.g. color.blue.500'
-                  "
+                  :placeholder="tier === 'component' ? 'e.g. color.primary' : 'e.g. color.blue.500'"
                 />
                 <div v-if="referenceOptions.length > 0" class="reference-list">
                   <button

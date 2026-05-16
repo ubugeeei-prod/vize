@@ -174,10 +174,7 @@ const tierLabel = computed(() => {
         v-if="(token.$tier === 'semantic' || token.$tier === 'component') && token.$reference"
         class="token-reference"
       >
-        <span
-          class="ref-arrow"
-          :class="{ 'ref-arrow--component': token.$tier === 'component' }"
-        >
+        <span class="ref-arrow" :class="{ 'ref-arrow--component': token.$tier === 'component' }">
           &rarr;
         </span>
         {{ token.$reference }}
