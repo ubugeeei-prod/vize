@@ -3,7 +3,7 @@
  *
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
- *   2. Build CLI: mise run build:cli
+ *   2. Build CLI: vp run --workspace-root build:cli
  *   3. Run benchmark: node bench/lint.ts
  */
 

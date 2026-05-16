@@ -1,0 +1,50 @@
+---
+source: crates/vize_patina/src/rules/css/mod.rs
+expression: "serde_json::to_string_pretty(&css_result_snapshot(&result)).unwrap()"
+---
+{
+  "diagnostics": [
+    {
+      "end": 29,
+      "help": "Replace with a class selector for lower specificity",
+      "message": "Avoid ID selectors - use class selectors for better reusability",
+      "rule": "css/no-id-selectors",
+      "severity": "warning",
+      "start": 24
+    },
+    {
+      "end": 37,
+      "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+      "message": "Consider using v-show directive instead of display: none",
+      "rule": "css/no-display-none",
+      "severity": "warning",
+      "start": 24
+    },
+    {
+      "end": 34,
+      "help": "Use var(--color-name) for consistent theming",
+      "message": "Consider using a CSS variable for this color value",
+      "rule": "css/no-hardcoded-values",
+      "severity": "warning",
+      "start": 24
+    },
+    {
+      "end": 35,
+      "help": "Use logical properties like margin-inline-start instead of margin-left",
+      "message": "Consider using logical properties for better RTL support",
+      "rule": "css/prefer-logical-properties",
+      "severity": "warning",
+      "start": 24
+    },
+    {
+      "end": 34,
+      "help": "Add `font-display: swap;` to prevent FOIT (Flash of Invisible Text)",
+      "message": "@font-face rule is missing font-display property",
+      "rule": "css/require-font-display",
+      "severity": "warning",
+      "start": 24
+    }
+  ],
+  "error_count": 0,
+  "warning_count": 5
+}
