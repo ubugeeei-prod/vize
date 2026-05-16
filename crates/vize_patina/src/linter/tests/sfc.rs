@@ -77,6 +77,69 @@ defineProps<{ count: number }>()
 }
 
 #[test]
+fn test_lint_sfc_reports_nested_prop_v_model_mutation() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-mutating-props".into()]));
+    let sfc = r#"<script setup lang="ts">
+const props = defineProps<{ user: { name: string }, count: number }>()
+</script>
+
+<template>
+  <input v-model="props.user.name" />
+  <input v-model="props['count']" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.error_count, 2);
+    assert!(result
+        .diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule_name == "vue/no-mutating-props"));
+}
+
+#[test]
+fn test_lint_sfc_reports_destructured_prop_member_v_model_mutation() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-mutating-props".into()]));
+    let sfc = r#"<script setup lang="ts">
+const { user } = defineProps<{ user: { name: string } }>()
+</script>
+
+<template>
+  <input v-model="user.name" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.error_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "vue/no-mutating-props");
+}
+
+#[test]
+fn test_lint_sfc_allows_local_v_model_names_that_start_like_props() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-mutating-props".into()]));
+    let sfc = r#"<script setup lang="ts">
+import { reactive } from 'vue'
+
+defineProps<{ count: number }>()
+const propsState = reactive({ count: 0 })
+const counter = reactive({ value: 0 })
+</script>
+
+<template>
+  <input v-model="propsState.count" />
+  <input v-model="counter.value" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "local state should not be treated as prop mutation: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_lint_sfc_no_unused_components_reports_unused_vue_import() {
     let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
     let sfc = r#"<script setup>

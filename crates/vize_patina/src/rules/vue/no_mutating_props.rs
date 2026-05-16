@@ -82,12 +82,7 @@ impl NoMutatingProps {
                 vize_relief::ast::ExpressionNode::Compound(c) => c.loc.source.as_str(),
             };
 
-            // Check if the expression references a prop
-            // Simple check: v-model="propName" or v-model="props.propName"
-            let is_prop_mutation = prop_names.contains(content)
-                || content.starts_with("props.") && prop_names.contains(&content[6..]);
-
-            if is_prop_mutation {
+            if is_prop_mutation_target(content, prop_names) {
                 ctx.report(
                     crate::diagnostic::LintDiagnostic::error(
                         ctx.current_rule,
@@ -192,11 +187,36 @@ impl Rule for NoMutatingProps {
     }
 }
 
+fn is_prop_mutation_target(content: &str, prop_names: &FxHashSet<&str>) -> bool {
+    let content = content.trim();
+    if prop_names.contains(content) {
+        return true;
+    }
+
+    if content
+        .strip_prefix("props")
+        .is_some_and(is_member_access_suffix)
+    {
+        return true;
+    }
+
+    prop_names.iter().any(|name| {
+        content
+            .strip_prefix(*name)
+            .is_some_and(is_member_access_suffix)
+    })
+}
+
+fn is_member_access_suffix(rest: &str) -> bool {
+    rest.starts_with('.') || rest.starts_with('[') || rest.starts_with("?.")
+}
+
 #[cfg(test)]
 mod tests {
-    use super::NoMutatingProps;
+    use super::{is_prop_mutation_target, NoMutatingProps};
     use crate::diagnostic::Severity;
     use crate::rule::{Rule, RuleCategory};
+    use vize_carton::FxHashSet;
 
     #[test]
     fn test_meta() {
@@ -204,5 +224,19 @@ mod tests {
         assert_eq!(rule.meta().name, "vue/no-mutating-props");
         assert_eq!(rule.meta().category, RuleCategory::Essential);
         assert_eq!(rule.meta().default_severity, Severity::Error);
+    }
+
+    #[test]
+    fn prop_mutation_target_matches_member_roots() {
+        let prop_names = FxHashSet::from_iter(["count", "user"]);
+
+        assert!(is_prop_mutation_target("count", &prop_names));
+        assert!(is_prop_mutation_target("user.name", &prop_names));
+        assert!(is_prop_mutation_target("user?.name", &prop_names));
+        assert!(is_prop_mutation_target("props.count", &prop_names));
+        assert!(is_prop_mutation_target("props.user.name", &prop_names));
+        assert!(is_prop_mutation_target("props['count']", &prop_names));
+        assert!(!is_prop_mutation_target("counter.value", &prop_names));
+        assert!(!is_prop_mutation_target("propsState.count", &prop_names));
     }
 }
