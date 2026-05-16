@@ -923,6 +923,14 @@ function parseCheckCommand(args: string[]): ParsedCheckCommand {
   return { patterns, options, sharedConfig };
 }
 
+export function shouldRetainCheckSource(options: {
+  declaration?: boolean;
+  format?: string;
+  quiet?: boolean;
+}): boolean {
+  return Boolean(options.declaration || (options.format !== "json" && !options.quiet));
+}
+
 function hasGlobSyntax(pattern: string): boolean {
   return pattern.includes("*") || pattern.includes("?") || pattern.includes("[");
 }
@@ -1330,11 +1338,12 @@ async function runCheck(args: string[]): Promise<void> {
 
   const native = loadNative("check");
   const start = performance.now();
+  const retainSource = shouldRetainCheckSource(options);
   const results = files.map((file) => {
     const source = readFileSync(file, "utf8");
     return {
       file,
-      source,
+      source: retainSource ? source : "",
       result: native.typeCheck(source, toNativeTypeCheckOptions(file, options)),
     };
   });

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import * as path from "node:path";
-import { displayPath, sanitizeTerminalText, shouldPreferWorkspaceBinding } from "./cli";
+import {
+  displayPath,
+  sanitizeTerminalText,
+  shouldPreferWorkspaceBinding,
+  shouldRetainCheckSource,
+} from "./cli";
 
 describe("shouldPreferWorkspaceBinding", () => {
   it("detects the local workspace native package", () => {
@@ -41,5 +46,17 @@ describe("sanitizeTerminalText", () => {
     const unsafePath = path.join(process.cwd(), "bad\x1b[31m.vue");
 
     expect(displayPath(unsafePath)).toBe("bad.vue");
+  });
+});
+
+describe("shouldRetainCheckSource", () => {
+  it("drops source retention for JSON and quiet check output", () => {
+    expect(shouldRetainCheckSource({ format: "json" })).toBe(false);
+    expect(shouldRetainCheckSource({ quiet: true })).toBe(false);
+  });
+
+  it("keeps source retention when diagnostics or declarations need it", () => {
+    expect(shouldRetainCheckSource({})).toBe(true);
+    expect(shouldRetainCheckSource({ format: "json", declaration: true })).toBe(true);
   });
 });
