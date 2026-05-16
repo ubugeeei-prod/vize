@@ -383,6 +383,72 @@ impl<'a> Parser<'a> {
         let start = index.min(len);
         let end = (index + 1).min(len);
         let loc = self.create_loc(start, end);
-        self.errors.push(CompilerError::new(code, Some(loc)));
+        let error = if let Some(message) = self.recovery_error_message(code) {
+            CompilerError::with_message(code, message, Some(loc))
+        } else {
+            CompilerError::new(code, Some(loc))
+        };
+        self.errors.push(error);
+    }
+
+    fn recovery_error_message(&self, code: ErrorCode) -> Option<std::string::String> {
+        match code {
+            ErrorCode::EofBeforeTagName => Some(
+                "Unexpected end of input after `<`; treating it as text so parsing can continue."
+                    .to_string(),
+            ),
+            ErrorCode::EofInTag => Some(
+                "Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue."
+                    .to_string(),
+            ),
+            ErrorCode::InvalidFirstCharacterOfTagName => Some(
+                "Tag name starts with an invalid character; treating the malformed tag as text."
+                    .to_string(),
+            ),
+            ErrorCode::MissingAttributeValue => {
+                let name = self
+                    .current_attr
+                    .as_ref()
+                    .map(|attr| attr.name.as_str())
+                    .or_else(|| self.current_dir.as_ref().map(|dir| dir.raw_name.as_str()))
+                    .unwrap_or("attribute");
+                Some(format!(
+                    "Attribute `{name}` is missing a value after `=`; continuing without the value."
+                ))
+            }
+            ErrorCode::MissingDynamicDirectiveArgumentEnd => Some(
+                "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary."
+                    .to_string(),
+            ),
+            ErrorCode::MissingInterpolationEnd => Some(format!(
+                "Interpolation is missing its closing delimiter `{}`; treating the unfinished interpolation as text.",
+                self.options.delimiters.1
+            )),
+            ErrorCode::UnexpectedCharacterInAttributeName => Some(
+                "Attribute name contains an invalid character; inferred the nearest attribute boundary and continued."
+                    .to_string(),
+            ),
+            ErrorCode::UnexpectedCharacterInUnquotedAttributeValue => Some(
+                "Unquoted attribute value contains a character that should be quoted; keeping it in the value and continuing."
+                    .to_string(),
+            ),
+            ErrorCode::UnexpectedEqualsSignBeforeAttributeName => Some(
+                "Unexpected `=` before an attribute name; skipping it and continuing with the next attribute."
+                    .to_string(),
+            ),
+            ErrorCode::MissingWhitespaceBetweenAttributes => Some(
+                "Missing whitespace between attributes; inferred a new attribute boundary."
+                    .to_string(),
+            ),
+            ErrorCode::IncorrectlyClosedComment => Some(
+                "Comment was closed as `--!>`; treating it as `-->` so parsing can continue."
+                    .to_string(),
+            ),
+            ErrorCode::IncorrectlyOpenedComment => Some(
+                "Declaration or comment syntax is malformed; skipping it until the next `>`."
+                    .to_string(),
+            ),
+            _ => None,
+        }
     }
 }

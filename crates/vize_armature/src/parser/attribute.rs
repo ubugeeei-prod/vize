@@ -4,9 +4,12 @@
 //! attribute data (values), and finalization of attribute and directive nodes.
 
 use vize_carton::{Box, String, Vec};
-use vize_relief::ast::{
-    AttributeNode, ConstantType, DirectiveNode, ExpressionNode, PropNode, SimpleExpressionNode,
-    TextNode,
+use vize_relief::{
+    ast::{
+        AttributeNode, ConstantType, DirectiveNode, ExpressionNode, PropNode, SimpleExpressionNode,
+        TextNode,
+    },
+    errors::{CompilerError, ErrorCode},
 };
 
 use crate::tokenizer::QuoteType;
@@ -70,6 +73,15 @@ impl<'a> Parser<'a> {
 
     /// Process directive modifier
     pub(super) fn on_dir_modifier_impl(&mut self, start: usize, end: usize) {
+        if start >= end {
+            let loc = self.create_loc(start, end);
+            self.errors.push(CompilerError::new(
+                ErrorCode::MissingDirectiveModifier,
+                Some(loc),
+            ));
+            return;
+        }
+
         let modifier: String = self.get_source(start, end).into();
         if let Some(ref mut dir) = self.current_dir {
             dir.modifiers.push((modifier, start, end));
@@ -155,11 +167,30 @@ impl<'a> Parser<'a> {
         }
     }
 
+    fn has_duplicate_attribute(&self, name: &str) -> bool {
+        self.current_element.as_ref().is_some_and(|current| {
+            current.props.iter().any(|prop| {
+                matches!(prop, PropNode::Attribute(existing) if existing.name.as_str() == name)
+            })
+        })
+    }
+
     /// Finish building an attribute node
     fn finish_attribute(&mut self, attr: CurrentAttribute<'a>, quote: QuoteType, end: usize) {
         let loc_end = self.prop_loc_end(quote, end, attr.name_end);
         let loc = self.create_loc(attr.name_start, loc_end);
         let name_loc = self.create_loc(attr.name_start, attr.name_end);
+
+        if self.has_duplicate_attribute(attr.name.as_str()) {
+            self.errors.push(CompilerError::with_message(
+                ErrorCode::DuplicateAttribute,
+                format!(
+                    "Duplicate attribute `{}`. Keeping the repeated attribute so parsing can continue.",
+                    attr.name
+                ),
+                Some(name_loc.clone()),
+            ));
+        }
 
         let mut attr_node = AttributeNode::new(attr.name.clone(), loc);
         attr_node.name_loc = name_loc;
@@ -186,6 +217,18 @@ impl<'a> Parser<'a> {
     fn finish_directive(&mut self, dir: CurrentDirective<'a>, quote: QuoteType, end: usize) {
         let loc_end = self.prop_loc_end(quote, end, dir.name_end);
         let loc = self.create_loc(dir.name_start, loc_end);
+
+        if dir.name.is_empty() {
+            self.errors.push(CompilerError::with_message(
+                ErrorCode::MissingDirectiveName,
+                format!(
+                    "Directive `{}` is missing a name. Ignoring it so the rest of the tag can be parsed.",
+                    dir.raw_name
+                ),
+                Some(loc),
+            ));
+            return;
+        }
 
         let mut dir_node = DirectiveNode::new(self.allocator, dir.name.clone(), loc);
         dir_node.raw_name = Some(dir.raw_name);

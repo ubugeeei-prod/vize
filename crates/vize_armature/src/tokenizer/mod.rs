@@ -50,6 +50,12 @@ pub struct Tokenizer<'a, C: Callbacks> {
 
     /// For special parsing behavior inside of script and style tags.
     in_rcdata: bool,
+
+    /// True immediately after a quoted attribute value ended.
+    ///
+    /// The tokenizer needs this one-token memory to report `<div a="b"c>` as
+    /// recoverable missing whitespace instead of silently starting `c`.
+    after_quoted_attr_value: bool,
 }
 
 impl<'a, C: Callbacks> Tokenizer<'a, C> {
@@ -81,6 +87,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             current_sequence: None,
             sequence_index: 0,
             in_rcdata: false,
+            after_quoted_attr_value: false,
         }
     }
 

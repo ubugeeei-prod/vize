@@ -6,8 +6,8 @@ use crate::tokenizer::sequences::Sequence;
 use super::{
     Tokenizer,
     char_codes::{
-        AT, COLON, DASH, DOT, DOUBLE_QUOTE, EQ, EXCLAMATION_MARK, GT, LEFT_SQUARE, LOWER_V, LT,
-        NUMBER, QUESTION_MARK, RIGHT_SQUARE, SINGLE_QUOTE, SLASH,
+        AT, COLON, DASH, DOT, DOUBLE_QUOTE, EQ, EXCLAMATION_MARK, GRAVE_ACCENT, GT, LEFT_SQUARE,
+        LOWER_V, LT, NUMBER, QUESTION_MARK, RIGHT_SQUARE, SINGLE_QUOTE, SLASH,
     },
     types::{Callbacks, QuoteType, State, is_end_of_tag_section, is_tag_start_char, is_whitespace},
 };
@@ -19,30 +19,44 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub(super) fn cleanup(&mut self) {
         let has_section = self.section_start < self.index;
 
-        if has_section {
-            match self.state {
-                State::Text | State::Interpolation => {
-                    self.callbacks.on_text(self.section_start, self.index);
-                }
-                State::InTagName
-                | State::InSFCRootTagName
-                | State::BeforeClosingTagName
-                | State::InClosingTagName
-                | State::BeforeAttrName
-                | State::InAttrName
-                | State::InDirName
-                | State::InDirArg
-                | State::InDirDynamicArg
-                | State::InDirModifier
-                | State::AfterAttrName
-                | State::BeforeAttrValue
-                | State::InAttrValueDq
-                | State::InAttrValueSq
-                | State::InAttrValueNq => {
-                    self.callbacks.on_error(ErrorCode::EofInTag, self.index);
-                }
-                _ => {}
+        match self.state {
+            State::Text if has_section => {
+                self.callbacks.on_text(self.section_start, self.index);
             }
+            State::Interpolation | State::InterpolationClose if has_section => {
+                self.callbacks
+                    .on_error(ErrorCode::MissingInterpolationEnd, self.index);
+                let start = self.section_start.saturating_sub(self.delimiter_open.len());
+                self.callbacks.on_text(start, self.index);
+            }
+            State::BeforeTagName if has_section => {
+                self.callbacks
+                    .on_error(ErrorCode::EofBeforeTagName, self.index);
+                self.callbacks.on_text(self.section_start, self.index);
+            }
+            State::InTagName
+            | State::InSFCRootTagName
+            | State::BeforeSpecialS
+            | State::BeforeSpecialT
+            | State::SpecialStartSequence
+            | State::BeforeClosingTagName
+            | State::InClosingTagName
+            | State::AfterClosingTagName
+            | State::BeforeAttrName
+            | State::InAttrName
+            | State::InDirName
+            | State::InDirArg
+            | State::InDirDynamicArg
+            | State::InDirModifier
+            | State::AfterAttrName
+            | State::BeforeAttrValue
+            | State::InAttrValueDq
+            | State::InAttrValueSq
+            | State::InAttrValueNq => {
+                self.callbacks.on_error(ErrorCode::EofInTag, self.index);
+                self.recover_incomplete_tag_at_eof();
+            }
+            _ => {}
         }
 
         if self.state == State::InCommentLike {
@@ -60,6 +74,103 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 }
             }
         }
+    }
+
+    fn recover_incomplete_tag_at_eof(&mut self) {
+        let inferred_tag_end = self.index.saturating_sub(1);
+
+        match self.state {
+            State::InTagName
+            | State::InSFCRootTagName
+            | State::BeforeSpecialS
+            | State::BeforeSpecialT
+            | State::SpecialStartSequence => {
+                self.callbacks
+                    .on_open_tag_name(self.section_start, self.index);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::BeforeAttrName => {
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InAttrName => {
+                self.callbacks
+                    .on_attrib_name(self.section_start, self.index);
+                self.callbacks.on_attrib_name_end(self.index);
+                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InDirName => {
+                self.callbacks.on_dir_name(self.section_start, self.index);
+                self.callbacks.on_attrib_name_end(self.index);
+                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InDirArg => {
+                if self.section_start < self.index {
+                    self.callbacks.on_dir_arg(self.section_start, self.index);
+                }
+                self.callbacks.on_attrib_name_end(self.index);
+                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InDirDynamicArg => {
+                self.callbacks
+                    .on_error(ErrorCode::MissingDynamicDirectiveArgumentEnd, self.index);
+                if self.section_start < self.index {
+                    self.callbacks.on_dir_arg(self.section_start, self.index);
+                }
+                self.callbacks.on_attrib_name_end(self.index);
+                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InDirModifier => {
+                self.callbacks
+                    .on_dir_modifier(self.section_start, self.index);
+                self.callbacks.on_attrib_name_end(self.index);
+                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::AfterAttrName => {
+                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::BeforeAttrValue => {
+                self.callbacks
+                    .on_error(ErrorCode::MissingAttributeValue, self.index);
+                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InAttrValueDq => {
+                self.emit_unclosed_attr_value(QuoteType::Double);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InAttrValueSq => {
+                self.emit_unclosed_attr_value(QuoteType::Single);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InAttrValueNq => {
+                self.emit_unclosed_attr_value(QuoteType::Unquoted);
+                self.callbacks.on_open_tag_end(inferred_tag_end);
+            }
+            State::InClosingTagName => {
+                if self.section_start < self.index {
+                    self.callbacks.on_close_tag(self.section_start, self.index);
+                }
+            }
+            State::BeforeClosingTagName | State::AfterClosingTagName => {}
+            _ => {}
+        }
+
+        self.state = State::Text;
+        self.section_start = self.index;
+    }
+
+    fn emit_unclosed_attr_value(&mut self, quote: QuoteType) {
+        if self.section_start < self.index {
+            self.callbacks
+                .on_attrib_data(self.section_start, self.index);
+        }
+        self.callbacks.on_attrib_end(quote, self.index);
     }
 
     // ========== State handlers ==========
@@ -149,6 +260,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         } else if c == SLASH {
             self.state = State::BeforeClosingTagName;
         } else {
+            self.callbacks
+                .on_error(ErrorCode::InvalidFirstCharacterOfTagName, self.index);
             self.state = State::Text;
             self.state_text(c);
         }
@@ -186,6 +299,11 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 .on_error(ErrorCode::MissingEndTagName, self.index);
             self.state = State::Text;
             self.section_start = self.index + 1;
+        } else if !is_tag_start_char(c) {
+            self.callbacks
+                .on_error(ErrorCode::InvalidFirstCharacterOfTagName, self.index);
+            self.state = State::InClosingTagName;
+            self.section_start = self.index;
         } else {
             self.state = State::InClosingTagName;
             self.section_start = self.index;
@@ -208,11 +326,18 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         if c == GT {
             self.state = State::Text;
             self.section_start = self.index + 1;
+        } else if c == SLASH {
+            self.callbacks
+                .on_error(ErrorCode::EndTagWithTrailingSolidus, self.index);
+        } else if !is_whitespace(c) {
+            self.callbacks
+                .on_error(ErrorCode::EndTagWithAttributes, self.index);
         }
     }
 
     pub(super) fn state_before_attr_name(&mut self, c: u8) {
         if c == GT {
+            self.after_quoted_attr_value = false;
             self.callbacks.on_open_tag_end(self.index);
             if self.in_rcdata {
                 self.state = State::InRCDATA;
@@ -221,8 +346,22 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             }
             self.section_start = self.index + 1;
         } else if c == SLASH {
+            self.after_quoted_attr_value = false;
             self.state = State::InSelfClosingTag;
+        } else if is_whitespace(c) {
+            self.after_quoted_attr_value = false;
+        } else if c == EQ {
+            self.after_quoted_attr_value = false;
+            self.callbacks.on_error(
+                ErrorCode::UnexpectedEqualsSignBeforeAttributeName,
+                self.index,
+            );
         } else if !is_whitespace(c) {
+            if self.after_quoted_attr_value {
+                self.callbacks
+                    .on_error(ErrorCode::MissingWhitespaceBetweenAttributes, self.index);
+            }
+            self.after_quoted_attr_value = false;
             self.handle_attr_start(c);
         }
     }
@@ -254,6 +393,21 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.section_start = self.index;
             self.state = State::AfterAttrName;
             self.state_after_attr_name(c);
+        } else if c == DOUBLE_QUOTE || c == SINGLE_QUOTE {
+            self.callbacks
+                .on_error(ErrorCode::UnexpectedCharacterInAttributeName, self.index);
+            self.callbacks
+                .on_attrib_name(self.section_start, self.index);
+            self.callbacks.on_attrib_name_end(self.index);
+            self.section_start = self.index + 1;
+            self.state = if c == DOUBLE_QUOTE {
+                State::InAttrValueDq
+            } else {
+                State::InAttrValueSq
+            };
+        } else if c == LT {
+            self.callbacks
+                .on_error(ErrorCode::UnexpectedCharacterInAttributeName, self.index);
         }
     }
 
@@ -308,6 +462,16 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.callbacks.on_dir_arg(self.section_start, self.index);
             self.state = State::InDirArg;
             self.section_start = self.index + 1;
+        } else if c == EQ || is_end_of_tag_section(c) {
+            self.callbacks
+                .on_error(ErrorCode::MissingDynamicDirectiveArgumentEnd, self.index);
+            if self.section_start < self.index {
+                self.callbacks.on_dir_arg(self.section_start, self.index);
+            }
+            self.callbacks.on_attrib_name_end(self.index);
+            self.section_start = self.index;
+            self.state = State::AfterAttrName;
+            self.state_after_attr_name(c);
         }
     }
 
@@ -346,6 +510,17 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         } else if c == SINGLE_QUOTE {
             self.state = State::InAttrValueSq;
             self.section_start = self.index + 1;
+        } else if c == EQ {
+            self.callbacks.on_error(
+                ErrorCode::UnexpectedEqualsSignBeforeAttributeName,
+                self.index,
+            );
+        } else if c == GT || c == SLASH {
+            self.callbacks
+                .on_error(ErrorCode::MissingAttributeValue, self.index);
+            self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+            self.state = State::BeforeAttrName;
+            self.state_before_attr_name(c);
         } else if !is_whitespace(c) {
             self.section_start = self.index;
             self.state = State::InAttrValueNq;
@@ -377,6 +552,11 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.emit_attr_value(QuoteType::Unquoted);
         } else if c == AMP {
             self.start_entity();
+        } else if matches!(c, DOUBLE_QUOTE | SINGLE_QUOTE | LT | EQ | GRAVE_ACCENT) {
+            self.callbacks.on_error(
+                ErrorCode::UnexpectedCharacterInUnquotedAttributeValue,
+                self.index,
+            );
         }
     }
 
@@ -388,6 +568,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         self.callbacks.on_attrib_end(quote, self.index);
         self.section_start = self.index + 1;
         self.state = State::BeforeAttrName;
+        self.after_quoted_attr_value = matches!(quote, QuoteType::Double | QuoteType::Single);
     }
 
     pub(super) fn state_before_declaration(&mut self, c: u8) {
@@ -399,6 +580,10 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state = State::CDATASequence;
             self.section_start = self.index + 1;
         } else {
+            self.callbacks.on_error(
+                ErrorCode::IncorrectlyOpenedComment,
+                self.section_start.saturating_sub(2),
+            );
             self.state = State::InDeclaration;
         }
     }
@@ -491,6 +676,12 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             if self.fast_forward_to(sequence_bytes[0]) {
                 self.sequence_index = 1;
             }
+        } else if sequence == Sequence::CommentEnd
+            && self.sequence_index == 2
+            && c == EXCLAMATION_MARK
+        {
+            self.callbacks
+                .on_error(ErrorCode::IncorrectlyClosedComment, self.index);
         } else if c != sequence_bytes[self.sequence_index - 1] {
             // Allow long sequences, eg. --->, ]]]>
             self.sequence_index = 0;

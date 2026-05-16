@@ -589,12 +589,14 @@ fn test_parse_error_missing_end_tag() {
 fn test_parse_error_duplicate_attribute() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, r#"<div id="a" id="b"></div>"#);
-    // Parser doesn't error on duplicate attrs, it just adds both
-    // Verify both are present
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::DuplicateAttribute)
+    );
     if let TemplateChildNode::Element(el) = &root.children[0] {
         assert_eq!(el.props.len(), 2);
     }
-    let _ = errors;
 }
 
 #[test]
@@ -705,6 +707,190 @@ fn test_parse_open_tag_at_eof_does_not_panic() {
     let (_root, errors) = parse(&allocator, "<template>\n  <div>\n  <div\n");
     // Should return errors (EofInTag / MissingEndTag), not panic.
     assert!(!errors.is_empty());
+}
+
+#[test]
+fn test_parse_recovers_open_tag_at_eof() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div class="a""#);
+
+    assert!(errors.iter().any(|e| e.code == ErrorCode::EofInTag));
+    assert!(errors.iter().any(|e| e.code == ErrorCode::MissingEndTag));
+    assert_eq!(root.children.len(), 1);
+
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.tag.as_str(), "div");
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "class");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "a");
+        } else {
+            panic!("Expected recovered attribute");
+        }
+    } else {
+        panic!("Expected recovered element");
+    }
+}
+
+#[test]
+fn test_parse_recovers_missing_attribute_value() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div id=></div>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingAttributeValue)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "id");
+            assert!(attr.value.is_none());
+        } else {
+            panic!("Expected recovered attribute");
+        }
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_recovers_missing_equals_before_quoted_attribute_value() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div id"foo"></div>"#);
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::UnexpectedCharacterInAttributeName)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Attribute(attr) = &el.props[0] {
+            assert_eq!(attr.name.as_str(), "id");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "foo");
+        } else {
+            panic!("Expected recovered attribute");
+        }
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_reports_missing_whitespace_between_attributes_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div id="a"class="b"></div>"#);
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingWhitespaceBetweenAttributes)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert_eq!(el.props.len(), 2);
+        if let PropNode::Attribute(attr) = &el.props[1] {
+            assert_eq!(attr.name.as_str(), "class");
+            assert_eq!(attr.value.as_ref().unwrap().content.as_str(), "b");
+        } else {
+            panic!("Expected recovered second attribute");
+        }
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_recovers_missing_dynamic_directive_argument_end() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, r#"<div :[foo="bar"></div>"#);
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingDynamicDirectiveArgumentEnd)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        if let PropNode::Directive(dir) = &el.props[0] {
+            assert_eq!(dir.name.as_str(), "bind");
+            if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
+                assert_eq!(arg.content.as_str(), "foo");
+                assert!(!arg.is_static);
+            } else {
+                panic!("Expected recovered directive argument");
+            }
+        } else {
+            panic!("Expected recovered directive");
+        }
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_reports_missing_directive_name_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<div v->ok</div>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingDirectiveName)
+    );
+    if let TemplateChildNode::Element(el) = &root.children[0] {
+        assert!(el.props.is_empty());
+        assert_eq!(el.children.len(), 1);
+    } else {
+        panic!("Expected element");
+    }
+}
+
+#[test]
+fn test_parse_unfinished_interpolation_reports_error_but_keeps_text() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "{{ unfinished");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::MissingInterpolationEnd)
+    );
+    assert_eq!(root.children.len(), 1);
+    if let TemplateChildNode::Text(text) = &root.children[0] {
+        assert_eq!(text.content.as_str(), "{{ unfinished");
+    } else {
+        panic!("Expected recovered text");
+    }
+}
+
+#[test]
+fn test_parse_invalid_tag_name_reports_error_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<1div></1div><span></span>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::InvalidFirstCharacterOfTagName)
+    );
+    assert!(
+        root.children.iter().any(
+            |child| matches!(child, TemplateChildNode::Element(el) if el.tag.as_str() == "span")
+        )
+    );
+}
+
+#[test]
+fn test_parse_incorrectly_closed_comment_reports_error_and_continues() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "<!-- note --!><div></div>");
+
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.code == ErrorCode::IncorrectlyClosedComment)
+    );
+    assert_eq!(root.children.len(), 2);
+    assert!(matches!(&root.children[0], TemplateChildNode::Comment(_)));
+    assert!(matches!(&root.children[1], TemplateChildNode::Element(_)));
 }
 
 #[test]
