@@ -336,5 +336,14 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-options-api",
     "script/no-get-current-instance",
     "script/no-next-tick"
+  ],
+  "opt_in": [
+    "ecosystem/router-link-require-to",
+    "ecosystem/vue-router-prefer-named-link",
+    "ecosystem/nuxt-prefer-nuxt-link",
+    "ecosystem/vue-i18n-no-missing-key",
+    "ecosystem/pinia-prefer-store-to-refs",
+    "ecosystem/vue-router-prefer-named-push",
+    "ecosystem/vue-test-utils-no-html-snapshot"
   ]
 }

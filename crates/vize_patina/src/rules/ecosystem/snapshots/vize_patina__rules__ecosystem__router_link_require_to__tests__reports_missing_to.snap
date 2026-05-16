@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "ecosystem/router-link-require-to",
+        severity: Error,
+        message: "RouterLink components must declare a `to` target",
+        start: 0,
+        end: 10,
+        help: Some(
+            "Add `to` or `:to` so navigation is explicit and typed-route tooling can infer the target.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

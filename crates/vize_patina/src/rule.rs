@@ -24,6 +24,8 @@ pub enum RuleCategory {
     HtmlConformance,
     /// Type-aware rules (require semantic analysis)
     TypeAware,
+    /// Vue ecosystem integration rules (Nuxt, Vue Router, Pinia, vue-i18n, and test utilities).
+    Ecosystem,
 }
 
 /// Rule metadata
@@ -146,6 +148,19 @@ impl RuleRegistry {
     /// Create an empty registry for host-driven, rule-by-rule adoption.
     pub fn with_incremental() -> Self {
         Self::with_capacity(0)
+    }
+
+    /// Create a registry containing rules that are exposed only for explicit
+    /// opt-in. These rules do not belong to any preset.
+    pub fn with_opt_in_rules() -> Self {
+        let mut registry = Self::with_capacity(8);
+        crate::rules::ecosystem::register_opt_in(&mut registry);
+        registry
+    }
+
+    /// Register explicit opt-in rules into an existing registry.
+    pub fn register_opt_in_rules(&mut self) {
+        crate::rules::ecosystem::register_opt_in(self);
     }
 
     /// Create the default happy-path registry.

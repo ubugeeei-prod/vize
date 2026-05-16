@@ -74,7 +74,11 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
 
           const settings = getVizeSettings(context);
           const activePreset = getActivePreset(settings);
-          if (!isIncrementalPreset(settings) && !ruleMeta.presets.includes(activePreset)) {
+          if (
+            ruleMeta.presets.length > 0 &&
+            !isIncrementalPreset(settings) &&
+            !ruleMeta.presets.includes(activePreset)
+          ) {
             return;
           }
 

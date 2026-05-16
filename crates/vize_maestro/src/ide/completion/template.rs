@@ -277,14 +277,38 @@ pub(crate) fn vize_directive_completions() -> Vec<CompletionItem> {
 /// Built-in Vue component completions.
 pub(crate) fn builtin_component_completions() -> Vec<CompletionItem> {
     vec![
-        items::component_item("Transition", "Animate enter/leave", "<Transition name=\"$1\">\n\t$0\n</Transition>"),
-        items::component_item("TransitionGroup", "Animate list", "<TransitionGroup name=\"$1\" tag=\"$2\">\n\t$0\n</TransitionGroup>"),
-        items::component_item("KeepAlive", "Cache components", "<KeepAlive>\n\t$0\n</KeepAlive>"),
-        items::component_item("Teleport", "Teleport content", "<Teleport to=\"$1\">\n\t$0\n</Teleport>"),
-        items::component_item("Suspense", "Async dependencies", "<Suspense>\n\t<template #default>\n\t\t$0\n\t</template>\n\t<template #fallback>\n\t\tLoading...\n\t</template>\n</Suspense>"),
+        items::component_item(
+            "Transition",
+            "Animate enter/leave",
+            "<Transition name=\"$1\">\n\t$0\n</Transition>",
+        ),
+        items::component_item(
+            "TransitionGroup",
+            "Animate list",
+            "<TransitionGroup name=\"$1\" tag=\"$2\">\n\t$0\n</TransitionGroup>",
+        ),
+        items::component_item(
+            "KeepAlive",
+            "Cache components",
+            "<KeepAlive>\n\t$0\n</KeepAlive>",
+        ),
+        items::component_item(
+            "Teleport",
+            "Teleport content",
+            "<Teleport to=\"$1\">\n\t$0\n</Teleport>",
+        ),
+        items::component_item(
+            "Suspense",
+            "Async dependencies",
+            "<Suspense>\n\t<template #default>\n\t\t$0\n\t</template>\n\t<template #fallback>\n\t\tLoading...\n\t</template>\n</Suspense>",
+        ),
         items::component_item("component", "Dynamic component", "<component :is=\"$1\" />"),
         items::component_item("slot", "Slot outlet", "<slot name=\"$1\">$0</slot>"),
-        items::component_item("template", "Template fragment", "<template #$1>\n\t$0\n</template>"),
+        items::component_item(
+            "template",
+            "Template fragment",
+            "<template #$1>\n\t$0\n</template>",
+        ),
     ]
 }
 

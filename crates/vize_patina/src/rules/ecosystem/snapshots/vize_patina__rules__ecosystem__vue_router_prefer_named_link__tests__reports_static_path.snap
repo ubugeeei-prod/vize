@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/ecosystem/vue_router_prefer_named_link.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "ecosystem/vue-router-prefer-named-link",
+        severity: Warning,
+        message: "Prefer a named route object for RouterLink targets",
+        start: 12,
+        end: 23,
+        help: Some(
+            "Use `:to=\"{ name: 'route-name' }\"` so route params and Vue Router 5 typed routes stay visible to the editor.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

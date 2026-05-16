@@ -146,6 +146,7 @@ const fn rule_category_name(category: vize_patina::RuleCategory) -> &'static str
         vize_patina::RuleCategory::Accessibility => "Accessibility",
         vize_patina::RuleCategory::HtmlConformance => "HtmlConformance",
         vize_patina::RuleCategory::TypeAware => "TypeAware",
+        vize_patina::RuleCategory::Ecosystem => "Ecosystem",
     }
 }
 
@@ -206,6 +207,23 @@ fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>> {
             }
         })
         .collect();
+
+    rules.extend(
+        RuleRegistry::with_opt_in_rules()
+            .rules()
+            .iter()
+            .map(|rule| {
+                let meta = rule.meta();
+                PatinaRuleMetaNapi {
+                    name: meta.name,
+                    description: meta.description,
+                    category: rule_category_name(meta.category),
+                    fixable: meta.fixable,
+                    default_severity: severity_name(meta.default_severity),
+                    presets: Vec::new(),
+                }
+            }),
+    );
 
     for script_rule in builtin_script_rules() {
         rules.push(PatinaRuleMetaNapi {

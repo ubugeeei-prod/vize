@@ -76,5 +76,11 @@ if (import.meta.vitest) {
       expect(configs.opinionated["vize/type/require-typed-props"]).toBeUndefined();
       expect(configs.opinionatedWithTypeAware["vize/type/require-typed-props"]).toBe("warn");
     });
+
+    it("keeps ecosystem rules out of named presets until explicitly selected", () => {
+      expect(configs.recommended["vize/ecosystem/router-link-require-to"]).toBeUndefined();
+      expect(configs.nuxt["vize/ecosystem/nuxt-prefer-nuxt-link"]).toBeUndefined();
+      expect(configs.all["vize/ecosystem/router-link-require-to"]).toBe("error");
+    });
   });
 }

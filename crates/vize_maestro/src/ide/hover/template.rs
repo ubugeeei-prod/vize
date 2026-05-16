@@ -211,19 +211,58 @@ impl HoverService {
     /// Get hover for Vue directives.
     pub(super) fn hover_directive(word: &str) -> Option<Hover> {
         let (title, description) = match word {
-            "v-if" => ("v-if", "Conditionally render the element based on the truthy-ness of the expression value."),
-            "v-else-if" => ("v-else-if", "Denote the \"else if block\" for `v-if`. Can be chained."),
-            "v-else" => ("v-else", "Denote the \"else block\" for `v-if` or `v-if`/`v-else-if` chain."),
-            "v-for" => ("v-for", "Render the element or template block multiple times based on the source data."),
-            "v-on" | "@" => ("v-on", "Attach an event listener to the element. The event type is denoted by the argument."),
-            "v-bind" | ":" => ("v-bind", "Dynamically bind one or more attributes, or a component prop to an expression."),
-            "v-model" => ("v-model", "Create a two-way binding on a form input element or a component."),
-            "v-slot" | "#" => ("v-slot", "Denote named slots or scoped slots that expect to receive props."),
-            "v-pre" => ("v-pre", "Skip compilation for this element and all its children."),
-            "v-once" => ("v-once", "Render the element and component once only, and skip future updates."),
-            "v-memo" => ("v-memo", "Memoize a sub-tree of the template. Can be used on both elements and components."),
-            "v-cloak" => ("v-cloak", "Used to hide un-compiled template until it is ready."),
-            "v-show" => ("v-show", "Toggle the element's visibility based on the truthy-ness of the expression value."),
+            "v-if" => (
+                "v-if",
+                "Conditionally render the element based on the truthy-ness of the expression value.",
+            ),
+            "v-else-if" => (
+                "v-else-if",
+                "Denote the \"else if block\" for `v-if`. Can be chained.",
+            ),
+            "v-else" => (
+                "v-else",
+                "Denote the \"else block\" for `v-if` or `v-if`/`v-else-if` chain.",
+            ),
+            "v-for" => (
+                "v-for",
+                "Render the element or template block multiple times based on the source data.",
+            ),
+            "v-on" | "@" => (
+                "v-on",
+                "Attach an event listener to the element. The event type is denoted by the argument.",
+            ),
+            "v-bind" | ":" => (
+                "v-bind",
+                "Dynamically bind one or more attributes, or a component prop to an expression.",
+            ),
+            "v-model" => (
+                "v-model",
+                "Create a two-way binding on a form input element or a component.",
+            ),
+            "v-slot" | "#" => (
+                "v-slot",
+                "Denote named slots or scoped slots that expect to receive props.",
+            ),
+            "v-pre" => (
+                "v-pre",
+                "Skip compilation for this element and all its children.",
+            ),
+            "v-once" => (
+                "v-once",
+                "Render the element and component once only, and skip future updates.",
+            ),
+            "v-memo" => (
+                "v-memo",
+                "Memoize a sub-tree of the template. Can be used on both elements and components.",
+            ),
+            "v-cloak" => (
+                "v-cloak",
+                "Used to hide un-compiled template until it is ready.",
+            ),
+            "v-show" => (
+                "v-show",
+                "Toggle the element's visibility based on the truthy-ness of the expression value.",
+            ),
             "v-text" => ("v-text", "Update the element's text content."),
             "v-html" => ("v-html", "Update the element's innerHTML."),
             _ => return None,
@@ -233,7 +272,10 @@ impl HoverService {
             contents: HoverContents::Markup(MarkupContent {
                 kind: MarkupKind::Markdown,
                 #[allow(clippy::disallowed_macros)]
-                value: format!("**{}**\n\n{}\n\n[Vue Documentation](https://vuejs.org/api/built-in-directives.html)", title, description),
+                value: format!(
+                    "**{}**\n\n{}\n\n[Vue Documentation](https://vuejs.org/api/built-in-directives.html)",
+                    title, description
+                ),
             }),
             range: None,
         })

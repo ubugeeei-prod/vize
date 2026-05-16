@@ -139,9 +139,12 @@ impl Linter {
     /// Rules not in the list will be skipped during linting.
     #[inline]
     pub fn with_enabled_rules(mut self, rules: Option<Vec<String>>) -> Self {
-        if rules.is_some() && matches!(self.preset, Some(LintPreset::Incremental)) {
-            self.registry = RuleRegistry::with_preset(LintPreset::Opinionated);
-            self.script_rules = builtin_script_rule_names(LintPreset::Opinionated);
+        if rules.is_some() {
+            if matches!(self.preset, Some(LintPreset::Incremental)) {
+                self.registry = RuleRegistry::with_preset(LintPreset::Opinionated);
+            }
+            self.registry.register_opt_in_rules();
+            self.script_rules = super::script_rules::all_builtin_script_rule_names();
         }
         self.enabled_rules = rules.map(|r| r.into_iter().collect());
         self

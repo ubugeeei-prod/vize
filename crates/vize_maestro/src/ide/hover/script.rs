@@ -348,11 +348,21 @@ impl HoverService {
     /// Convert BindingType to human-readable description.
     pub(super) fn binding_type_to_description(binding_type: BindingType) -> &'static str {
         match binding_type {
-            BindingType::SetupRef => "Reactive reference created with `ref()`. Access `.value` in script, auto-unwrapped in template.",
-            BindingType::SetupMaybeRef => "Value that may be a ref. Use `unref()` or `toValue()` to access in script.",
-            BindingType::SetupReactiveConst => "Reactive object created with `reactive()`. Properties are reactive.",
-            BindingType::SetupConst => "Constant binding from script setup. Non-reactive unless wrapped.",
-            BindingType::SetupLet => "Mutable binding from script setup. Changes won't trigger reactivity.",
+            BindingType::SetupRef => {
+                "Reactive reference created with `ref()`. Access `.value` in script, auto-unwrapped in template."
+            }
+            BindingType::SetupMaybeRef => {
+                "Value that may be a ref. Use `unref()` or `toValue()` to access in script."
+            }
+            BindingType::SetupReactiveConst => {
+                "Reactive object created with `reactive()`. Properties are reactive."
+            }
+            BindingType::SetupConst => {
+                "Constant binding from script setup. Non-reactive unless wrapped."
+            }
+            BindingType::SetupLet => {
+                "Mutable binding from script setup. Changes won't trigger reactivity."
+            }
             BindingType::Props => "Component prop. Read-only in the component.",
             BindingType::PropsAliased => "Destructured prop with alias. Read-only.",
             BindingType::Data => "Reactive data from Options API `data()` function.",

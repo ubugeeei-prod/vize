@@ -12,6 +12,8 @@ mod template;
 use tower_lsp::lsp_types::{InlayHint, Position, Range, Url};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
+use crate::ide::ecosystem;
+
 /// Inlay hint service.
 pub struct InlayHintService;
 
@@ -28,6 +30,8 @@ impl InlayHintService {
         let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
             return hints;
         };
+
+        ecosystem::i18n::collect_inlay_hints(content, &descriptor, range, &mut hints);
 
         // Use vize_croquis analyzer for proper scope analysis
         let Some(ref script_setup) = descriptor.script_setup else {
@@ -335,5 +339,41 @@ console.log(props.title)
             !template_hints.is_empty(),
             "Should have hints for props in template even without destructuring"
         );
+    }
+
+    #[test]
+    fn test_i18n_message_preview_without_script_setup() {
+        let content = r#"<template>
+  <p>{{ $t("auth.login") }}</p>
+</template>
+<i18n lang="json">
+{
+  "en": { "auth": { "login": "Log in" } }
+}
+</i18n>
+"#;
+
+        let uri = Url::parse("file:///test.vue").unwrap();
+        let range = Range {
+            start: Position {
+                line: 0,
+                character: 0,
+            },
+            end: Position {
+                line: 100,
+                character: 0,
+            },
+        };
+
+        let hints = InlayHintService::get_hints(content, &uri, range);
+        let labels: Vec<&str> = hints
+            .iter()
+            .filter_map(|hint| match &hint.label {
+                InlayHintLabel::String(label) => Some(label.as_str()),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(labels, vec!["= Log in"]);
     }
 }

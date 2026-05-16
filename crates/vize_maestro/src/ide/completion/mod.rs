@@ -298,6 +298,45 @@ const secondaryLabel = ref('secondary')
         assert!(labels.contains(&"v-if"));
     }
 
+    #[test]
+    fn test_i18n_key_completion_from_same_file_json_block() {
+        let source = r#"<template>
+  <p>{{ $t("auth.") }}</p>
+</template>
+<i18n lang="json">
+{
+  "en": {
+    "auth": { "login": "Log in" }
+  }
+}
+</i18n>
+"#;
+        let (state, uri) = state_with_document("I18nCompletion.vue", source);
+        let offset = source.find("auth.").unwrap() + "auth.".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert_eq!(labels, vec!["auth.login"]);
+    }
+
+    #[test]
+    fn test_route_name_completion_from_same_file_route_sources() {
+        let source = r#"<script setup>
+definePage({ name: "settings" })
+router.push({ name: "" })
+</script>
+<route lang="json">
+{ "name": "home" }
+</route>
+"#;
+        let (state, uri) = state_with_document("RouteCompletion.vue", source);
+        let offset = source.find("name: \"\"").unwrap() + "name: \"".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert_eq!(labels, vec!["home", "settings"]);
+    }
+
     fn completion_labels(response: CompletionResponse) -> Vec<String> {
         let items = match response {
             CompletionResponse::Array(items) => items,

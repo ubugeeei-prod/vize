@@ -32,6 +32,7 @@ mod no_reactive_destructure;
 mod no_reserved_identifiers;
 mod no_top_level_ref_in_script;
 mod no_with_defaults;
+mod pinia_prefer_store_to_refs;
 mod prefer_computed;
 mod prefer_import_from_vue;
 mod prefer_ref_over_reactive;
@@ -41,6 +42,8 @@ mod prefer_use_slots;
 mod prefer_use_template_ref;
 mod require_function_return_type;
 mod require_symbol_provide;
+mod vue_router_prefer_named_push;
+mod vue_test_utils_no_html_snapshot;
 
 use memchr::memmem;
 
@@ -58,6 +61,7 @@ pub use no_reactive_destructure::NoReactiveDestructure;
 pub use no_reserved_identifiers::NoReservedIdentifiers;
 pub use no_top_level_ref_in_script::NoTopLevelRefInScript;
 pub use no_with_defaults::NoWithDefaults;
+pub use pinia_prefer_store_to_refs::PiniaPreferStoreToRefs;
 pub use prefer_computed::PreferComputed;
 pub use prefer_import_from_vue::PreferImportFromVue;
 pub use prefer_ref_over_reactive::PreferRefOverReactive;
@@ -67,6 +71,8 @@ pub use prefer_use_slots::PreferUseSlots;
 pub use prefer_use_template_ref::PreferUseTemplateRef;
 pub use require_function_return_type::RequireFunctionReturnType;
 pub use require_symbol_provide::RequireSymbolProvide;
+pub use vue_router_prefer_named_push::VueRouterPreferNamedPush;
+pub use vue_test_utils_no_html_snapshot::VueTestUtilsNoHtmlSnapshot;
 
 /// Metadata for a script-level rule
 pub struct ScriptRuleMeta {

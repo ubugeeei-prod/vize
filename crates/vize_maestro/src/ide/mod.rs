@@ -21,6 +21,7 @@ mod corsa_support;
 pub mod definition;
 pub mod diagnostics;
 pub mod document_link;
+pub(crate) mod ecosystem;
 pub mod file_rename;
 pub mod hover;
 pub mod inlay_hint;

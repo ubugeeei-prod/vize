@@ -19,6 +19,8 @@ manual.
   accessible media checks.
 - [SSR rules](./ssr.md): server rendering and hydration hazards.
 - [Vapor rules](./vapor.md): Vapor-only template constraints.
+- [Ecosystem rules](./ecosystem.md): opt-in checks for Nuxt, Vue Router, Pinia, vue-i18n, and
+  Vue Test Utils.
 - [Musea and CSS rules](./musea-and-css.md): Musea art-block checks and style diagnostics.
 - [Cross-file analyzer rules](./cross-file.md): project-graph diagnostics emitted by
   `vize lint --cross-file`.

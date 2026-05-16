@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/vue_router_prefer_named_push.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "ecosystem/vue-router-prefer-named-push",
+        severity: Warning,
+        message: "Prefer a named route object for router navigation",
+        start: 12,
+        end: 20,
+        help: Some(
+            "Use `router.push({ name: 'route-name' })` or `router.replace({ name: 'route-name' })` so typed routes can validate params and editor completions.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]
