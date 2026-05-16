@@ -120,10 +120,8 @@ fn flatten_message_root(value: &Value, keys: &mut FxHashSet<CompactString>) {
 
 fn flatten_message_value(prefix: &str, value: &Value, keys: &mut FxHashSet<CompactString>) {
     match value {
-        Value::String(_) => {
-            if !prefix.is_empty() {
-                keys.insert(CompactString::new(prefix));
-            }
+        Value::String(_) if !prefix.is_empty() => {
+            keys.insert(CompactString::new(prefix));
         }
         Value::Object(object) => {
             for (segment, child) in object {
