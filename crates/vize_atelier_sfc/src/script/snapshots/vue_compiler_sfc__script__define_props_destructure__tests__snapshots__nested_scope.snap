@@ -1,8 +1,0 @@
----
-source: crates/vue_compiler_sfc/src/script/define_props_destructure.rs
-expression: result
----
-function test(foo) {
-    console.log(foo)
-    console.log(__props.bar)
-}

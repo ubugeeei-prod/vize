@@ -1,7 +1,0 @@
----
-source: crates/vue_compiler_sfc/src/script/define_props_destructure.rs
-expression: result
----
-const name = __props.user.profile.name
-const email = user?.contact?.email
-const id = __props.user['id']

@@ -1,0 +1,13 @@
+---
+source: crates/vize_croquis/src/script_parser.rs
+expression: output
+---
+=== Scope Structure ===
+Total scopes: 12
+
+Closure scopes: 5
+ClientOnly scopes: 1
+ExternalModule scopes: 0
+ScriptSetup scopes: 1
+Module scopes: 1
+JsGlobal scopes: 3

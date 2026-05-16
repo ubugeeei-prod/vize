@@ -1,6 +1,6 @@
 ---
-source: crates/vize_canon/src/virtual_ts.rs
-expression: value
+source: crates/vize_canon/src/sfc_typecheck.rs
+expression: virtual_ts.as_str()
 ---
 /// <reference lib="es2022" />
 /// <reference lib="dom" />
@@ -36,13 +36,9 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
-import { currentUser } from './users'
-
-// Auto-import stubs (framework-provided globals)
-declare const useHydratedHead: any;
 
 // ========== Exported Types ==========
-export type Props = {};
+export type Props = { count: number };
 
 // ========== Setup Scope ==========
 function __setup() {
@@ -67,10 +63,43 @@ function __setup() {
   void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 
   // User setup code
-  const count = 1
   
-  // @vize-map: 4316:4337 -> 0:54
+  const props = defineProps<{ count: number }>();
+  const message = ref('Hello');
+  
+  // @vize-map: 4206:4294 -> 0:79
 
+  // ========== Template Scope (inherits from setup) ==========
+  // Ref type captures (before template scope shadows them)
+  type __R_message = typeof message;
+  ;(function __template() {
+    // Auto-unwrap Vue refs in template scope
+    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;
+    var message: __U<__R_message> = undefined as any;
+    // Vue template context (delegates to ComponentPublicInstance)
+    type __Ctx = import('vue').ComponentPublicInstance;
+    const __ctx = undefined as unknown as __Ctx;
+    const $attrs = __ctx.$attrs;
+    const $slots = __ctx.$slots;
+    const $refs = __ctx.$refs;
+    const $emit = __ctx.$emit;
+    void __ctx; void $attrs; void $slots; void $refs; void $emit;
+
+  // Props are available in template as variables
+  // Access via `propName` or `props.propName`
+  const props: Props = {} as Props;
+  void props; // Mark as used to avoid TS6133
+  const count = props["count"];
+  void count;
+
+  void (props.count); // Interpolation
+  // @vize-map: expr -> 136:147
+  void (message); // Interpolation
+  // @vize-map: expr -> 156:163
+
+  // Reference setup bindings (used in template/CSS v-bind)
+  void count; void message; void props;
+  })();
 }
 
 // Invoke setup to verify types

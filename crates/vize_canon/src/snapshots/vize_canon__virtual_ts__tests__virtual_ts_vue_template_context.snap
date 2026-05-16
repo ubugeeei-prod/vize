@@ -1,5 +1,5 @@
 ---
-source: crates/vize_canon/src/virtual_ts/mod.rs
+source: crates/vize_canon/src/virtual_ts.rs
 expression: value
 ---
     // Vue template context (delegates to ComponentPublicInstance)
