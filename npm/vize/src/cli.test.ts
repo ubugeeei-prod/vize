@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as path from "node:path";
-import {
-  createBoundedFileBatches,
-  displayPath,
-  sanitizeTerminalText,
-  shouldPreferWorkspaceBinding,
-  shouldRetainCheckSource,
-} from "./cli";
+import { sanitizeTerminalText, shouldPreferWorkspaceBinding } from "./cli";
 
 describe("shouldPreferWorkspaceBinding", () => {
   it("detects the local workspace native package", () => {
@@ -43,47 +37,9 @@ describe("sanitizeTerminalText", () => {
     expect(sanitizeTerminalText("line 1\n\tline 2\r\n")).toBe("line 1\n\tline 2\r\n");
   });
 
-  it("sanitizes displayed path segments", () => {
+  it("strips escape sequences from path-like text", () => {
     const unsafePath = path.join(process.cwd(), "bad\x1b[31m.vue");
 
-    expect(displayPath(unsafePath)).toBe("bad.vue");
-  });
-});
-
-describe("createBoundedFileBatches", () => {
-  it("splits batches by file count and total source bytes", () => {
-    const batches = createBoundedFileBatches(["a.vue", "b.vue", "c.vue", "d.vue"], {
-      maxFiles: 3,
-      maxBytes: 10,
-      sizeOf(file) {
-        return file === "c.vue" ? 9 : 4;
-      },
-    });
-
-    expect(batches).toEqual([["a.vue", "b.vue"], ["c.vue"], ["d.vue"]]);
-  });
-
-  it("keeps a single oversized file processable", () => {
-    const batches = createBoundedFileBatches(["huge.vue", "small.vue"], {
-      maxFiles: 4,
-      maxBytes: 10,
-      sizeOf(file) {
-        return file === "huge.vue" ? 100 : 1;
-      },
-    });
-
-    expect(batches).toEqual([["huge.vue"], ["small.vue"]]);
-  });
-});
-
-describe("shouldRetainCheckSource", () => {
-  it("drops source retention for JSON and quiet check output", () => {
-    expect(shouldRetainCheckSource({ format: "json" })).toBe(false);
-    expect(shouldRetainCheckSource({ quiet: true })).toBe(false);
-  });
-
-  it("keeps source retention when diagnostics or declarations need it", () => {
-    expect(shouldRetainCheckSource({})).toBe(true);
-    expect(shouldRetainCheckSource({ format: "json", declaration: true })).toBe(true);
+    expect(sanitizeTerminalText(path.relative(process.cwd(), unsafePath))).toBe("bad.vue");
   });
 });

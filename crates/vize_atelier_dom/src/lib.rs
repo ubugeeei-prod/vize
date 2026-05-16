@@ -8,6 +8,10 @@
 //! - Style and class binding handling
 
 #![allow(clippy::collapsible_match)]
+#![cfg_attr(
+    test,
+    allow(clippy::disallowed_macros, clippy::field_reassign_with_default)
+)]
 
 pub mod options;
 pub mod transforms;

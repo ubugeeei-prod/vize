@@ -1,6 +1,11 @@
 //! DOM compiler snapshot tests.
 //!
 //! These tests compare the DOM compiler output against expected snapshots.
+#![allow(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods
+)]
 
 use vize_atelier_dom::compile_template;
 use vize_carton::Bump;

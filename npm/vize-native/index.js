@@ -780,5 +780,6 @@ module.exports.lintPatinaSfc = nativeBinding.lintPatinaSfc;
 module.exports.parseArt = nativeBinding.parseArt;
 module.exports.parseSfc = nativeBinding.parseSfc;
 module.exports.parseTemplate = nativeBinding.parseTemplate;
+module.exports.runCli = nativeBinding.runCli;
 module.exports.typeCheck = nativeBinding.typeCheck;
 module.exports.typeCheckBatch = nativeBinding.typeCheckBatch;

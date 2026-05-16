@@ -384,17 +384,17 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
         }
 
         // Force root's direct child to have width: 100% to prevent centering
-        if let Some(first) = nodes.first() {
-            if let Some(ref children) = first.children {
-                for &child_id in children {
-                    let child_id_u64 = child_id as u64;
-                    if let Some(node) = tree.get(child_id_u64) {
-                        if matches!(node.style.width, Dimension::Auto) {
-                            let mut style = node.style.clone();
-                            style.width = Dimension::Percent(100.0);
-                            tree.set_style(child_id_u64, style);
-                        }
-                    }
+        if let Some(first) = nodes.first()
+            && let Some(ref children) = first.children
+        {
+            for &child_id in children {
+                let child_id_u64 = child_id as u64;
+                if let Some(node) = tree.get(child_id_u64)
+                    && matches!(node.style.width, Dimension::Auto)
+                {
+                    let mut style = node.style.clone();
+                    style.width = Dimension::Percent(100.0);
+                    tree.set_style(child_id_u64, style);
                 }
             }
         }
@@ -410,36 +410,35 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
         // Find focused input and position cursor for IME
         let mut found_focused = false;
         for node in &nodes {
-            if node.node_type == "input" && node.focused.unwrap_or(false) {
-                if let Some(render_node) = tree.get(node.id as u64) {
-                    if let Some(layout) = render_node.layout {
-                        // Calculate cursor position considering character widths and wrapping
-                        let value = node.value.as_deref().unwrap_or("");
-                        let cursor_idx = node.cursor.unwrap_or(0) as usize;
+            if node.node_type == "input"
+                && node.focused.unwrap_or(false)
+                && let Some(render_node) = tree.get(node.id as u64)
+                && let Some(layout) = render_node.layout
+            {
+                // Calculate cursor position considering character widths and wrapping
+                let value = node.value.as_deref().unwrap_or("");
+                let cursor_idx = node.cursor.unwrap_or(0) as usize;
 
-                        // Get display width up to cursor position
-                        use crate::text::SegmentedText;
-                        let st = SegmentedText::new(value);
-                        let cursor_col = st.column_at_index(cursor_idx.min(st.grapheme_count));
-                        let area_width = layout.width as usize;
+                // Get display width up to cursor position
+                use crate::text::SegmentedText;
+                let st = SegmentedText::new(value);
+                let cursor_col = st.column_at_index(cursor_idx.min(st.grapheme_count));
+                let area_width = layout.width as usize;
 
-                        // Calculate cursor line and column with text wrapping
-                        let cursor_line = cursor_col / area_width;
-                        let cursor_col_in_line = cursor_col % area_width;
+                // Calculate cursor line and column with text wrapping
+                let cursor_line = cursor_col / area_width;
+                let cursor_col_in_line = cursor_col % area_width;
 
-                        let cursor_x = layout.x + cursor_col_in_line as u16;
-                        let cursor_y =
-                            layout.y + (cursor_line as u16).min(layout.height.saturating_sub(1));
-                        backend.cursor_mut().move_to(cursor_x, cursor_y);
-                        backend
-                            .cursor_mut()
-                            .set_shape(crate::terminal::CursorShape::Bar);
-                        backend.cursor_mut().set_blinking(true);
-                        backend.cursor_mut().show();
-                        found_focused = true;
-                        break;
-                    }
-                }
+                let cursor_x = layout.x + cursor_col_in_line as u16;
+                let cursor_y = layout.y + (cursor_line as u16).min(layout.height.saturating_sub(1));
+                backend.cursor_mut().move_to(cursor_x, cursor_y);
+                backend
+                    .cursor_mut()
+                    .set_shape(crate::terminal::CursorShape::Bar);
+                backend.cursor_mut().set_blinking(true);
+                backend.cursor_mut().show();
+                found_focused = true;
+                break;
             }
         }
         if !found_focused {
@@ -456,10 +455,10 @@ fn parse_dimension(s: &str) -> crate::layout::Dimension {
         return Dimension::Auto;
     }
 
-    if let Some(percent) = s.strip_suffix('%') {
-        if let Ok(v) = percent.parse::<f32>() {
-            return Dimension::Percent(v);
-        }
+    if let Some(percent) = s.strip_suffix('%')
+        && let Ok(v) = percent.parse::<f32>()
+    {
+        return Dimension::Percent(v);
     }
 
     if let Ok(v) = s.parse::<f32>() {

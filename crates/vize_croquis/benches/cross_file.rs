@@ -2,6 +2,13 @@
 //!
 //! Run with: cargo bench -p vize_croquis --bench cross_file
 
+#![allow(
+    deprecated,
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::disallowed_types
+)]
+
 use criterion::{BatchSize, Criterion, black_box, criterion_group, criterion_main};
 use std::path::Path;
 use vize_carton::{CompactString, cstr};

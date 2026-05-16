@@ -1,6 +1,6 @@
 //! Type diagnostic collection.
 //!
-//! Converts vize_vitrine type check results into LSP diagnostics,
+//! Converts vize_canon type check results into LSP diagnostics,
 //! including support for the legacy vize_canon type checker and
 //! batch type checking via Corsa.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
@@ -9,7 +9,9 @@ use tower_lsp::lsp_types::{
     CodeDescription, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, Location,
     NumberOrString, Position, Range, Url,
 };
-use vize_vitrine::{TypeCheckOptions, TypeSeverity, type_check_sfc};
+use vize_canon::{
+    SfcTypeCheckOptions as TypeCheckOptions, SfcTypeSeverity as TypeSeverity, type_check_sfc,
+};
 
 use super::{LspTypeCheckOptions, TypeService};
 use crate::server::ServerState;
@@ -46,7 +48,7 @@ impl TypeService {
 
         let content = doc.text();
 
-        // Use vize_vitrine's strict type checker
+        // Use vize_canon's strict type checker
         let options = TypeCheckOptions {
             filename: uri.path().to_string().into(),
             strict: lsp_options.strict,
@@ -163,9 +165,7 @@ impl TypeService {
 
     /// Collect diagnostics using the legacy vize_canon type checker.
     /// This is kept for backwards compatibility and can be removed later.
-    #[deprecated(
-        note = "Use collect_diagnostics which uses the stricter vize_vitrine type checker"
-    )]
+    #[deprecated(note = "Use collect_diagnostics which uses the stricter vize_canon type checker")]
     pub fn collect_diagnostics_legacy(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
         let Some(doc) = state.documents.get(uri) else {
             return vec![];

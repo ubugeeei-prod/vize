@@ -1,0 +1,74 @@
+---
+source: crates/vize/src/cli.rs
+expression: "command_help(\"fmt\")"
+---
+Format Vue SFC files
+
+Usage: fmt [OPTIONS] [PATTERNS]...
+
+Arguments:
+  [PATTERNS]...
+          Glob pattern(s) to match .vue files
+
+          [default: ./**/*.vue]
+
+Options:
+      --check
+          Check formatting without writing (exit with error if files need formatting)
+
+  -w, --write
+          Write formatted output to files
+
+  -c, --config <CONFIG>
+          Config file path
+
+      --no-config
+          Do not load a config file
+
+      --single-quote[=<SINGLE_QUOTE>]
+          Use single quotes instead of double quotes
+
+          [possible values: true, false]
+
+      --print-width <PRINT_WIDTH>
+          Print width (line length) for formatting
+
+      --tab-width <TAB_WIDTH>
+          Number of spaces per indentation level
+
+      --use-tabs[=<USE_TABS>]
+          Use tabs instead of spaces for indentation
+
+          [possible values: true, false]
+
+      --no-semi
+          Do not print semicolons at the ends of statements
+
+      --sort-attributes[=<SORT_ATTRIBUTES>]
+          Sort HTML attributes in template
+
+          [possible values: true, false]
+
+      --single-attribute-per-line[=<SINGLE_ATTRIBUTE_PER_LINE>]
+          Put each HTML attribute on its own line
+
+          [possible values: true, false]
+
+      --max-attributes-per-line <MAX_ATTRIBUTES_PER_LINE>
+          Maximum number of attributes per line before wrapping
+
+      --normalize-directive-shorthands[=<NORMALIZE_DIRECTIVE_SHORTHANDS>]
+          Normalize directive shorthands (v-bind: → :, v-on: → @, v-slot: → #)
+
+          [possible values: true, false]
+
+      --profile
+          Show detailed timing profile
+
+      --slow-threshold <SLOW_THRESHOLD>
+          Slow file threshold in milliseconds for profile output
+
+          [default: 100]
+
+  -h, --help
+          Print help

@@ -281,10 +281,10 @@ fn parse_dimension(s: &str) -> crate::layout::Dimension {
         return Dimension::Auto;
     }
 
-    if let Some(pct) = s.strip_suffix('%') {
-        if let Ok(v) = pct.parse::<f32>() {
-            return Dimension::Percent(v);
-        }
+    if let Some(pct) = s.strip_suffix('%')
+        && let Ok(v) = pct.parse::<f32>()
+    {
+        return Dimension::Percent(v);
     }
 
     if let Ok(v) = s.parse::<f32>() {

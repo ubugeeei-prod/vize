@@ -1,4 +1,5 @@
 //! Tests for the Vue template parser.
+#![allow(clippy::disallowed_macros)]
 
 use super::{parse, parse_with_options};
 use vize_carton::Bump;
@@ -8,9 +9,7 @@ use vize_relief::{
     options::ParserOptions,
 };
 
-fn error_recovery_snapshot<'a>(
-    errors: &'a [CompilerError],
-) -> std::vec::Vec<(ErrorCode, &'a str, &'a str)> {
+fn error_recovery_snapshot(errors: &[CompilerError]) -> std::vec::Vec<(ErrorCode, &str, &str)> {
     errors
         .iter()
         .map(|error| {

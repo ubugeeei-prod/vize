@@ -41,8 +41,12 @@ pub struct FmtArgs {
     #[arg(short, long)]
     pub config: Option<PathBuf>,
 
-    /// Use single quotes instead of double quotes
+    /// Do not load a config file
     #[arg(long)]
+    pub no_config: bool,
+
+    /// Use single quotes instead of double quotes
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub single_quote: Option<bool>,
 
     /// Print width (line length) for formatting
@@ -54,7 +58,7 @@ pub struct FmtArgs {
     pub tab_width: Option<u8>,
 
     /// Use tabs instead of spaces for indentation
-    #[arg(long)]
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub use_tabs: Option<bool>,
 
     /// Do not print semicolons at the ends of statements
@@ -62,11 +66,11 @@ pub struct FmtArgs {
     pub no_semi: bool,
 
     /// Sort HTML attributes in template
-    #[arg(long)]
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub sort_attributes: Option<bool>,
 
     /// Put each HTML attribute on its own line
-    #[arg(long)]
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub single_attribute_per_line: Option<bool>,
 
     /// Maximum number of attributes per line before wrapping
@@ -74,7 +78,7 @@ pub struct FmtArgs {
     pub max_attributes_per_line: Option<u32>,
 
     /// Normalize directive shorthands (v-bind: → :, v-on: → @, v-slot: → #)
-    #[arg(long)]
+    #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub normalize_directive_shorthands: Option<bool>,
 
     /// Show detailed timing profile
@@ -307,7 +311,11 @@ pub fn run(args: FmtArgs) {
 #[inline]
 fn build_format_options(args: &FmtArgs) -> FormatOptions {
     // Load config file as base (zero-cost if no file exists)
-    let cfg = config::load_config(args.config.as_deref());
+    let cfg = if args.no_config {
+        config::VizeConfig::default()
+    } else {
+        config::load_config(args.config.as_deref())
+    };
     let mut opts = config::to_glyph_format_options(&cfg.formatter);
 
     // CLI flags override config values

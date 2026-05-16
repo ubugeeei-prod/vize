@@ -40,6 +40,14 @@ pub struct BuildArgs {
     #[arg(short, long, default_value = "./dist")]
     pub output: PathBuf,
 
+    /// Config file path (accepted for npm CLI compatibility)
+    #[arg(short, long)]
+    pub config: Option<PathBuf>,
+
+    /// Do not load a config file
+    #[arg(long)]
+    pub no_config: bool,
+
     /// Output format
     #[arg(short, long, value_enum, default_value = "js")]
     pub format: OutputFormat,
@@ -47,6 +55,14 @@ pub struct BuildArgs {
     /// Enable SSR mode
     #[arg(long)]
     pub ssr: bool,
+
+    /// Enable Vapor mode
+    #[arg(long)]
+    pub vapor: bool,
+
+    /// Target a custom renderer instead of DOM runtime helpers
+    #[arg(long)]
+    pub custom_renderer: bool,
 
     /// Script extension handling: 'preserve' keeps original extension (.ts/.tsx/.jsx), 'downcompile' converts to .js
     #[arg(long, value_enum, default_value = "downcompile")]

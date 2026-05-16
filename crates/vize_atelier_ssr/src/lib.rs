@@ -14,6 +14,7 @@
 //! VNode trees.
 
 #![allow(clippy::collapsible_match)]
+#![cfg_attr(test, allow(clippy::disallowed_macros))]
 
 pub mod codegen;
 pub mod errors;

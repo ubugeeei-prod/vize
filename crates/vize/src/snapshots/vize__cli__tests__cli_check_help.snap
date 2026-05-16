@@ -1,0 +1,83 @@
+---
+source: crates/vize/src/cli.rs
+expression: "command_help(\"check\")"
+---
+Type check Vue SFC files
+
+Usage: check [OPTIONS] [PATTERNS]...
+
+Arguments:
+  [PATTERNS]...
+          Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.d.ts`). When omitted, `tsconfig.json` include/exclude/files are used if available
+
+Options:
+  -c, --config <CONFIG>
+          Config file path
+
+      --no-config
+          Do not load a config file
+
+  -s, --socket <SOCKET>
+          Connect to check-server via Unix socket (faster for repeated checks, Unix only)
+
+      --tsconfig <TSCONFIG>
+          tsconfig.json path
+
+  -f, --format <FORMAT>
+          Output format (text, json)
+
+          [default: text]
+
+      --show-virtual-ts
+          Show generated virtual TypeScript
+
+      --strict
+          Enable strict Vue SFC checks where supported
+
+      --no-strict
+          Disable strict Vue SFC checks where supported
+
+      --max-warnings <MAX_WARNINGS>
+          Maximum number of warnings before failing
+
+      --no-check-props
+          Disable prop type checks where supported
+
+      --no-check-emits
+          Disable emit type checks where supported
+
+      --no-check-template-bindings
+          Disable template binding checks where supported
+
+      --no-check-reactivity
+          Disable reactivity checks where supported
+
+      --no-check-setup-context
+          Disable setup context checks where supported
+
+      --no-check-invalid-exports
+          Disable invalid export checks where supported
+
+      --no-check-fallthrough-attrs
+          Disable fallthrough attrs checks where supported
+
+  -q, --quiet
+          Quiet mode - only show summary
+
+      --profile
+          Profile mode - output Virtual TS and timing to node_modules/.vize directory
+
+      --corsa-path <CORSA_PATH>
+          Path to the Corsa executable (can also use `CORSA_PATH`)
+
+      --servers <SERVERS>
+          Number of parallel Corsa servers to use (defaults to an auto-tuned value)
+
+      --declaration
+          Emit `.d.ts` files using the materialized Corsa project
+
+      --declaration-dir <DECLARATION_DIR>
+          Output directory for emitted `.d.ts` files
+
+  -h, --help
+          Print help

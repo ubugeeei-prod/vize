@@ -19,6 +19,14 @@ pub struct CheckArgs {
     /// When omitted, `tsconfig.json` include/exclude/files are used if available.
     pub patterns: Vec<String>,
 
+    /// Config file path
+    #[arg(short, long)]
+    pub config: Option<PathBuf>,
+
+    /// Do not load a config file
+    #[arg(long)]
+    pub no_config: bool,
+
     /// Connect to check-server via Unix socket (faster for repeated checks, Unix only)
     #[cfg(unix)]
     #[arg(long, short)]
@@ -33,8 +41,48 @@ pub struct CheckArgs {
     pub format: String,
 
     /// Show generated virtual TypeScript
-    #[arg(long)]
+    #[arg(long, alias = "include-virtual-ts")]
     pub show_virtual_ts: bool,
+
+    /// Enable strict Vue SFC checks where supported
+    #[arg(long)]
+    pub strict: bool,
+
+    /// Disable strict Vue SFC checks where supported
+    #[arg(long)]
+    pub no_strict: bool,
+
+    /// Maximum number of warnings before failing
+    #[arg(long)]
+    pub max_warnings: Option<usize>,
+
+    /// Disable prop type checks where supported
+    #[arg(long)]
+    pub no_check_props: bool,
+
+    /// Disable emit type checks where supported
+    #[arg(long)]
+    pub no_check_emits: bool,
+
+    /// Disable template binding checks where supported
+    #[arg(long)]
+    pub no_check_template_bindings: bool,
+
+    /// Disable reactivity checks where supported
+    #[arg(long)]
+    pub no_check_reactivity: bool,
+
+    /// Disable setup context checks where supported
+    #[arg(long)]
+    pub no_check_setup_context: bool,
+
+    /// Disable invalid export checks where supported
+    #[arg(long)]
+    pub no_check_invalid_exports: bool,
+
+    /// Disable fallthrough attrs checks where supported
+    #[arg(long)]
+    pub no_check_fallthrough_attrs: bool,
 
     /// Quiet mode - only show summary
     #[arg(short, long)]

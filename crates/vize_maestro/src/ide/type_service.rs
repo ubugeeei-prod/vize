@@ -1,6 +1,6 @@
 //! Type checking service for Vue SFC files.
 //!
-//! Integrates vize_vitrine's strict type checker with the LSP server.
+//! Integrates vize_canon's strict type checker with the LSP server.
 //! Uses croquis for semantic analysis and provides comprehensive type diagnostics.
 //! Also supports batch type checking via the Corsa CLI.
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]

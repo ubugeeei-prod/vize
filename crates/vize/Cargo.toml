@@ -16,8 +16,9 @@ name = "vize"
 path = "src/lib.rs"
 
 [features]
-default = ["glyph"]
-glyph = ["dep:vize_glyph", "vize_maestro/glyph"]
+default = ["glyph", "maestro"]
+glyph = ["dep:vize_glyph", "vize_maestro?/glyph"]
+maestro = ["dep:vize_maestro"]
 
 [dependencies]
 # Vize crates (re-exported for unified documentation)
@@ -33,7 +34,7 @@ vize_patina = { workspace = true }
 vize_canon = { workspace = true, features = ["native"] }
 vize_croquis = { workspace = true }
 vize_musea = { workspace = true }
-vize_maestro = { workspace = true }
+vize_maestro = { workspace = true, optional = true }
 
 # CLI
 clap.workspace = true

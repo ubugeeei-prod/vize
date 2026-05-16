@@ -1,0 +1,70 @@
+---
+source: crates/vize/src/cli.rs
+expression: "command_help(\"build\")"
+---
+Compile Vue SFC files (default command)
+
+Usage: build [OPTIONS] [PATTERNS]...
+
+Arguments:
+  [PATTERNS]...
+          Glob pattern(s) to match .vue files (default: ./**/*.vue)
+
+          [default: ./**/*.vue]
+
+Options:
+  -o, --output <OUTPUT>
+          Output directory (default: ./dist)
+
+          [default: ./dist]
+
+  -c, --config <CONFIG>
+          Config file path (accepted for npm CLI compatibility)
+
+      --no-config
+          Do not load a config file
+
+  -f, --format <FORMAT>
+          Output format
+
+          Possible values:
+          - js:    Output compiled JavaScript
+          - json:  Output JSON with code and metadata
+          - stats: Only show statistics (no output)
+
+          [default: js]
+
+      --ssr
+          Enable SSR mode
+
+      --vapor
+          Enable Vapor mode
+
+      --custom-renderer
+          Target a custom renderer instead of DOM runtime helpers
+
+      --script-ext <SCRIPT_EXT>
+          Script extension handling: 'preserve' keeps original extension (.ts/.tsx/.jsx), 'downcompile' converts to .js
+
+          Possible values:
+          - preserve:    Preserve original script language extension (.ts -> .ts, .tsx -> .tsx, .jsx -> .jsx)
+          - downcompile: Downcompile all scripts to JavaScript (.ts -> .js, .tsx -> .js, .jsx -> .js)
+
+          [default: downcompile]
+
+  -j, --threads <THREADS>
+          Number of threads (default: number of CPUs)
+
+      --profile
+          Show timing profile breakdown
+
+      --slow-threshold <SLOW_THRESHOLD>
+          Slow file threshold in milliseconds (default: 100)
+
+          [default: 100]
+
+      --continue-on-error
+          Continue on errors (collect all errors and show at end)
+
+  -h, --help
+          Print help (see a summary with '-h')

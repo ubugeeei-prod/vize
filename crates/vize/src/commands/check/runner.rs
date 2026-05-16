@@ -53,15 +53,31 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     crate::config::write_schema(None);
 
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let loaded_config = crate::config::load_config_with_source(None);
+    let loaded_config = if args.no_config {
+        crate::config::LoadedConfig {
+            config: crate::config::VizeConfig::default(),
+            source_path: None,
+        }
+    } else {
+        crate::config::load_config_with_source(args.config.as_deref())
+    };
     let config = loaded_config.config;
     let config_dir = loaded_config
         .source_path
         .as_deref()
         .and_then(Path::parent)
         .unwrap_or(cwd.as_path());
-    let project_root = resolve_project_root(args.tsconfig.as_deref(), &cwd, &[]);
-    let tsconfig_path = resolve_tsconfig_path(args.tsconfig.as_deref(), &cwd, &project_root, &[]);
+    if !config.type_checker.enabled {
+        eprintln!("[vize] Skipping check because typeChecker.enabled is false in vize.config.");
+        return;
+    }
+    let effective_tsconfig = args
+        .tsconfig
+        .clone()
+        .or_else(|| config.type_checker.tsconfig.as_ref().map(PathBuf::from));
+    let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
+    let tsconfig_path =
+        resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
     let collect_start = Instant::now();
     let files = if args.patterns.is_empty() {
         collect_default_check_files(&project_root, tsconfig_path.as_deref())
@@ -78,9 +94,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         return;
     }
 
-    let project_root = resolve_project_root(args.tsconfig.as_deref(), &cwd, &files);
+    let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let tsconfig_path =
-        resolve_tsconfig_path(args.tsconfig.as_deref(), &cwd, &project_root, &files);
+        resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
 
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &cwd);
@@ -170,6 +186,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let diagnostics_render_time = diagnostics_render_start.elapsed();
     let total_time = start.elapsed();
     let total_errors = result.error_count();
+    let total_warnings = result.warning_count();
 
     if args.profile {
         let profiler = global_profiler();
@@ -288,6 +305,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         let json_output = JsonOutput {
             files: files_json,
             error_count: total_errors,
+            warning_count: total_warnings,
             file_count: virtual_files.len(),
             declarations,
         };
@@ -359,6 +377,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         println!("  \x1b[32mNo type errors found!\x1b[0m");
     }
+    if total_warnings > 0 {
+        println!("  \x1b[33m{} warning(s)\x1b[0m", total_warnings);
+    }
 
     if let Some((declaration_dir, emit_result)) = emitted_declarations {
         println!(
@@ -369,6 +390,12 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     }
 
     if total_errors > 0 {
+        std::process::exit(1);
+    }
+    if let Some(max_warnings) = args.max_warnings
+        && total_warnings > max_warnings
+    {
+        eprintln!("\nToo many warnings ({total_warnings} > max {max_warnings})");
         std::process::exit(1);
     }
 }

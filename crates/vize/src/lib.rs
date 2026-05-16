@@ -19,6 +19,12 @@
 //! - [`musea`] - Musea art parsing and documentation core
 //! - [`maestro`] - Language Server Protocol (LSP) implementation
 
+mod commands;
+mod config;
+
+/// Shared native CLI entrypoint.
+pub mod cli;
+
 /// Shared allocator, string, hash, and utility types.
 pub use vize_carton as carton;
 
@@ -54,4 +60,5 @@ pub use vize_canon as canon;
 pub use vize_musea as musea;
 
 /// Language Server Protocol (LSP) implementation.
+#[cfg(feature = "maestro")]
 pub use vize_maestro as maestro;

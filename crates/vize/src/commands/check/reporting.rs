@@ -9,6 +9,8 @@ pub(crate) struct JsonOutput {
     pub files: Vec<JsonFileResult>,
     #[serde(rename = "errorCount")]
     pub error_count: usize,
+    #[serde(rename = "warningCount")]
+    pub warning_count: usize,
     #[serde(rename = "fileCount")]
     pub file_count: usize,
     #[serde(rename = "declarations", skip_serializing_if = "Option::is_none")]

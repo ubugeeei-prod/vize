@@ -37,6 +37,13 @@ use super::{
 pub(crate) fn run(args: BuildArgs) {
     let start = Instant::now();
     let slow_threshold = Duration::from_millis(args.slow_threshold);
+    if let Some(config) = args.config.as_ref()
+        && !args.no_config
+        && !config.exists()
+    {
+        eprintln!("Could not find config file: {}", config.display());
+        std::process::exit(1);
+    }
 
     if let Some(threads) = args.threads
         && let Err(error) = rayon::ThreadPoolBuilder::new()
@@ -79,7 +86,15 @@ pub(crate) fn run(args: BuildArgs) {
     let results: Vec<_> = files
         .par_iter()
         .map(|path| {
-            match compile_file_with_profile(path, args.ssr, args.script_ext, &stats, args.profile) {
+            match compile_file_with_profile(
+                path,
+                args.ssr,
+                args.vapor,
+                args.custom_renderer,
+                args.script_ext,
+                &stats,
+                args.profile,
+            ) {
                 Ok((output, profile)) => {
                     stats.success.fetch_add(1, Ordering::Relaxed);
                     stats
@@ -541,6 +556,8 @@ fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
 fn compile_file_with_profile(
     path: &PathBuf,
     ssr: bool,
+    vapor: bool,
+    custom_renderer: bool,
     script_ext: ScriptExtension,
     stats: &CompileStats,
     record_profile_totals: bool,
@@ -637,6 +654,7 @@ fn compile_file_with_profile(
             scoped: has_scoped,
             ssr,
             is_ts,
+            custom_renderer,
             ..Default::default()
         },
         style: StyleCompileOptions {
@@ -644,7 +662,7 @@ fn compile_file_with_profile(
             scoped: has_scoped,
             ..Default::default()
         },
-        vapor: false,
+        vapor,
         scope_id: None,
     };
 

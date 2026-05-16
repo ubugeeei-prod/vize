@@ -628,11 +628,11 @@ impl Compiler {
             sfc_result.code.to_string()
         };
 
-        if source_is_ts && !output_is_ts {
-            if let Some(template_result) = template_result.as_mut() {
-                template_result.code =
-                    transform_typescript_to_js(&template_result.code).to_string();
-            }
+        if source_is_ts
+            && !output_is_ts
+            && let Some(template_result) = template_result.as_mut()
+        {
+            template_result.code = transform_typescript_to_js(&template_result.code).to_string();
         }
 
         // Build result with compiled script code

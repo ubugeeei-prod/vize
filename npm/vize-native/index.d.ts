@@ -537,6 +537,9 @@ export interface PropDefinitionNapi {
   defaultValue?: any;
 }
 
+/** Run the Rust Vize CLI with argv-style arguments. */
+export declare function runCli(args: Array<string>): void;
+
 /** Range config for NAPI */
 export interface RangeConfigNapi {
   min: number;

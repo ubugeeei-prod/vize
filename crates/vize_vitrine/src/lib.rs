@@ -1,4 +1,8 @@
 //! NAPI and WASM bindings for Vue compiler.
+#![cfg_attr(
+    feature = "napi",
+    allow(clippy::disallowed_macros, clippy::disallowed_methods)
+)]
 
 #[cfg(feature = "napi")]
 pub mod napi;

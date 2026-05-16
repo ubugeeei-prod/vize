@@ -8,6 +8,7 @@
 //! - `lint`: Vue SFC linting
 
 mod art;
+mod cli;
 mod format;
 mod lint;
 mod plugin;
@@ -19,6 +20,7 @@ mod napi_typecheck;
 pub use napi_typecheck::*;
 
 pub use art::*;
+pub use cli::*;
 pub use format::*;
 pub use lint::*;
 pub use plugin::*;

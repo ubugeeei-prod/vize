@@ -45,6 +45,10 @@ pub struct LintArgs {
     #[arg(short, long)]
     pub config: Option<PathBuf>,
 
+    /// Do not load a config file
+    #[arg(long)]
+    pub no_config: bool,
+
     /// Output format (text, json)
     #[arg(short, long, default_value = "text")]
     pub format: String,
