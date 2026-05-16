@@ -3,11 +3,13 @@
 //! Provides simple timing and metrics collection for tracking
 //! type checking and compilation performance.
 
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{RwLockReadGuard, RwLockWriteGuard};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::time::{Duration, Instant};
 
 use rustc_hash::FxHashMap;
+
+const PROFILER_SHARDS: usize = 32;
 
 /// A lightweight timer for measuring durations.
 #[derive(Debug)]
@@ -95,18 +97,22 @@ impl Default for Metrics {
 }
 
 /// Performance profiler for collecting metrics.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Profiler {
-    /// Metrics by operation name
-    metrics: std::sync::RwLock<FxHashMap<&'static str, Metrics>>,
+    /// Metrics by operation name, split into shards to keep parallel profile runs from
+    /// funnelling every span through the same lock.
+    metrics: [RwLock<FxHashMap<&'static str, Metrics>>; PROFILER_SHARDS],
     /// Whether profiling is enabled
-    enabled: std::sync::atomic::AtomicBool,
+    enabled: AtomicBool,
 }
 
 impl Profiler {
     /// Create a new profiler.
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            metrics: std::array::from_fn(|_| RwLock::new(FxHashMap::default())),
+            enabled: AtomicBool::new(false),
+        }
     }
 
     /// Create an enabled profiler.
@@ -154,39 +160,60 @@ impl Profiler {
     /// Record a duration after the caller has already checked that profiling is enabled.
     #[doc(hidden)]
     pub fn record_enabled(&self, name: &'static str, duration: Duration) {
-        let mut metrics = self.metrics_write();
+        let mut metrics = self.metrics_write(Self::shard_index(name));
         metrics.entry(name).or_default().record(duration);
     }
 
     /// Get metrics for the given operation.
     pub fn get(&self, name: &str) -> Option<Metrics> {
-        self.metrics_read().get(name).cloned()
+        self.metrics_read(Self::shard_index(name))
+            .get(name)
+            .cloned()
     }
 
     /// Get all metrics.
     pub fn all(&self) -> FxHashMap<&'static str, Metrics> {
-        self.metrics_read().clone()
+        let mut all = FxHashMap::default();
+        for shard in &self.metrics {
+            let metrics = shard
+                .read()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            all.extend(
+                metrics
+                    .iter()
+                    .map(|(name, metrics)| (*name, metrics.clone())),
+            );
+        }
+        all
     }
 
     /// Clear all metrics.
     pub fn clear(&self) {
-        self.metrics_write().clear();
+        for shard in &self.metrics {
+            shard
+                .write()
+                .unwrap_or_else(|poisoned| poisoned.into_inner())
+                .clear();
+        }
     }
 
     /// Generate a summary report.
     pub fn summary(&self) -> ProfileSummary {
-        let metrics = self.metrics_read();
-        let mut entries: Vec<_> = metrics
-            .iter()
-            .map(|(name, m)| ProfileEntry {
+        let mut entries = Vec::new();
+        for shard in &self.metrics {
+            let metrics = shard
+                .read()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            entries.reserve(metrics.len());
+            entries.extend(metrics.iter().map(|(name, m)| ProfileEntry {
                 name,
                 count: m.count,
                 total: m.total_duration,
                 average: m.average(),
                 min: m.min_duration,
                 max: m.max_duration,
-            })
-            .collect();
+            }));
+        }
 
         // Sort by total time descending
         entries.sort_by_key(|entry| std::cmp::Reverse(entry.total));
@@ -195,17 +222,38 @@ impl Profiler {
     }
 
     #[inline]
-    fn metrics_read(&self) -> RwLockReadGuard<'_, FxHashMap<&'static str, Metrics>> {
-        self.metrics
+    fn metrics_read(&self, shard: usize) -> RwLockReadGuard<'_, FxHashMap<&'static str, Metrics>> {
+        self.metrics[shard]
             .read()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 
     #[inline]
-    fn metrics_write(&self) -> RwLockWriteGuard<'_, FxHashMap<&'static str, Metrics>> {
-        self.metrics
+    fn metrics_write(
+        &self,
+        shard: usize,
+    ) -> RwLockWriteGuard<'_, FxHashMap<&'static str, Metrics>> {
+        self.metrics[shard]
             .write()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    #[inline]
+    fn shard_index(name: &str) -> usize {
+        debug_assert!(PROFILER_SHARDS.is_power_of_two());
+
+        let mut hash = 0xcbf2_9ce4_8422_2325u64;
+        for byte in name.as_bytes() {
+            hash ^= u64::from(*byte);
+            hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+        (hash as usize) & (PROFILER_SHARDS - 1)
+    }
+}
+
+impl Default for Profiler {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -431,8 +479,9 @@ mod tests {
     fn profiler_recovers_from_poisoned_metrics_lock() {
         let profiler = Arc::new(Profiler::enabled());
         let cloned = Arc::clone(&profiler);
+        let shard = Profiler::shard_index("after_poison");
         let _ = std::thread::spawn(move || {
-            let _guard = cloned.metrics.write().unwrap();
+            let _guard = cloned.metrics[shard].write().unwrap();
             panic!("poison profiler metrics lock");
         })
         .join();
@@ -440,6 +489,30 @@ mod tests {
         profiler.record("after_poison", Duration::from_millis(1));
 
         assert_eq!(profiler.get("after_poison").unwrap().count, 1);
+    }
+
+    #[test]
+    fn profiler_summarizes_records_across_shards() {
+        let profiler = Profiler::enabled();
+        for index in 0..128 {
+            let name = match index % 4 {
+                0 => "profile.shard.a",
+                1 => "profile.shard.b",
+                2 => "profile.shard.c",
+                _ => "profile.shard.d",
+            };
+            profiler.record(name, Duration::from_micros(index + 1));
+        }
+
+        let all = profiler.all();
+        assert_eq!(all.len(), 4);
+
+        let summary = profiler.summary();
+        assert_eq!(summary.entries.len(), 4);
+        assert_eq!(
+            summary.entries.iter().map(|entry| entry.count).sum::<u64>(),
+            128
+        );
     }
 
     #[test]

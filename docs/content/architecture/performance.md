@@ -126,7 +126,11 @@ template Promise queries in one AST walk before the Corsa probe phase. Query col
 the OXC expression parse for unsafe-template and floating-Promise checks, so one template expression
 does not pay duplicate parse cost when both rules are enabled.
 
-Run `vize lint --profile --preset opinionated src` to see these rows in a local project.
+Run `vize lint --profile --preset opinionated src` to see these rows in a local project. The
+profile report also includes a strict audit section that checks wall-time coverage, cumulative
+worker time, slow-threshold hits, and captured internal spans before listing hot files and internal
+operations. Hot-file rows show per-stage share and throughput, and operation rows flag dominant
+spans or max/avg spikes.
 
 ## Benchmark: Formatter — glyph vs Prettier
 
