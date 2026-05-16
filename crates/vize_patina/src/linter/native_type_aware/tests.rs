@@ -567,6 +567,29 @@ const anyHandler: any = () => {}
 }
 
 #[test]
+fn no_unsafe_template_binding_reports_event_statement_calls_after_prefix() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const safe = () => {}
+const anyHandler: any = () => {}
+</script>
+
+<template>
+  <button @click="safe(); anyHandler()">Save</button>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "TypeAwareFixture.vue");
+
+    assert!(result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING));
+}
+
+#[test]
 fn no_unsafe_template_binding_reports_computed_member_template_bindings() {
     if !corsa_available() {
         return;

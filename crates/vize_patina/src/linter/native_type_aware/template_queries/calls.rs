@@ -57,13 +57,32 @@ pub(super) fn collect_template_call_ranges(
         OxcParser::new(&allocator, source, source_type).parse_expression()
     ) {
         ranges.probe_expression_binding = expression_prefers_binding_probe(&expression);
-        if include_callees {
-            let mut collector = CallCalleeCollector::default();
-            profile!(
-                "patina.type_aware.template_calls.visit_expression",
-                collector.visit_expression(&expression)
+        let expression_consumes_source = expression.span().end as usize == source.trim_end().len();
+        if allow_statement_fallback && !expression_consumes_source {
+            let statement_ranges = collect_statement_template_call_ranges(
+                &allocator,
+                source_type,
+                source,
+                include_callees,
+                include_floating_promises,
             );
-            ranges.callees = collector.into_relative_ranges(0, source.len() as u32);
+            if include_callees {
+                ranges.callees = if statement_ranges.callees.is_empty() {
+                    collect_expression_call_callee_ranges(&expression, source.len() as u32)
+                } else {
+                    statement_ranges.callees
+                };
+            }
+            if include_floating_promises {
+                ranges.floating_promises = statement_ranges.floating_promises;
+            }
+
+            return ranges;
+        }
+
+        if include_callees {
+            ranges.callees =
+                collect_expression_call_callee_ranges(&expression, source.len() as u32);
         }
         if include_floating_promises {
             if allow_statement_fallback {
@@ -71,18 +90,13 @@ pub(super) fn collect_template_call_ranges(
                     ranges.floating_promises.push(range);
                 }
             }
-            if expression.span().end as usize == source.trim_end().len() {
-                profile!(
-                    "patina.type_aware.template_floating.visit_expression",
-                    collect_floating_promise_ranges_for_expression(
-                        &expression,
-                        &mut ranges.floating_promises
-                    )
-                );
-            } else if allow_statement_fallback {
-                ranges.floating_promises =
-                    collect_statement_floating_promise_ranges(&allocator, source_type, source);
-            }
+            profile!(
+                "patina.type_aware.template_floating.visit_expression",
+                collect_floating_promise_ranges_for_expression(
+                    &expression,
+                    &mut ranges.floating_promises
+                )
+            );
         }
         return ranges;
     }
@@ -91,15 +105,13 @@ pub(super) fn collect_template_call_ranges(
         return ranges;
     }
 
-    if include_callees {
-        ranges.callees = collect_statement_call_callee_ranges(&allocator, source_type, source);
-    }
-    if include_floating_promises {
-        ranges.floating_promises =
-            collect_statement_floating_promise_ranges(&allocator, source_type, source);
-    }
-
-    ranges
+    collect_statement_template_call_ranges(
+        &allocator,
+        source_type,
+        source,
+        include_callees,
+        include_floating_promises,
+    )
 }
 
 fn expression_prefers_binding_probe(expression: &Expression<'_>) -> bool {
@@ -219,11 +231,25 @@ fn floating_promise_range_from_span_with_target(
     }
 }
 
-fn collect_statement_call_callee_ranges(
+fn collect_expression_call_callee_ranges(
+    expression: &Expression<'_>,
+    source_len: u32,
+) -> Vec<RelativeRange> {
+    let mut collector = CallCalleeCollector::default();
+    profile!(
+        "patina.type_aware.template_calls.visit_expression",
+        collector.visit_expression(expression)
+    );
+    collector.into_relative_ranges(0, source_len)
+}
+
+fn collect_statement_template_call_ranges(
     allocator: &OxcAllocator,
     source_type: SourceType,
     source: &str,
-) -> Vec<RelativeRange> {
+    include_callees: bool,
+    include_floating_promises: bool,
+) -> TemplateCallRanges {
     let mut wrapped = String::with_capacity(TEMPLATE_HANDLER_PREFIX.len() + source.len() + 4);
     wrapped.push_str(TEMPLATE_HANDLER_PREFIX);
     wrapped.push_str(source);
@@ -234,41 +260,30 @@ fn collect_statement_call_callee_ranges(
         OxcParser::new(allocator, wrapped.as_str(), source_type).parse()
     );
     if parsed.panicked || !parsed.errors.is_empty() {
-        return Vec::new();
+        return TemplateCallRanges::default();
     }
 
-    let mut collector = CallCalleeCollector::default();
-    profile!(
-        "patina.type_aware.template_calls.visit_program",
-        collector.visit_program(&parsed.program)
-    );
-    collector.into_relative_ranges(TEMPLATE_HANDLER_PREFIX.len() as u32, source.len() as u32)
-}
-
-fn collect_statement_floating_promise_ranges(
-    allocator: &OxcAllocator,
-    source_type: SourceType,
-    source: &str,
-) -> Vec<FloatingPromiseRange> {
-    let mut wrapped = String::with_capacity(TEMPLATE_HANDLER_PREFIX.len() + source.len() + 4);
-    wrapped.push_str(TEMPLATE_HANDLER_PREFIX);
-    wrapped.push_str(source);
-    wrapped.push_str("\n}");
-
-    let parsed = profile!(
-        "patina.type_aware.template_floating.parse_statement",
-        OxcParser::new(allocator, wrapped.as_str(), source_type).parse()
-    );
-    if parsed.panicked || !parsed.errors.is_empty() {
-        return Vec::new();
+    let mut ranges = TemplateCallRanges::default();
+    if include_callees {
+        let mut collector = CallCalleeCollector::default();
+        profile!(
+            "patina.type_aware.template_calls.visit_program",
+            collector.visit_program(&parsed.program)
+        );
+        ranges.callees = collector
+            .into_relative_ranges(TEMPLATE_HANDLER_PREFIX.len() as u32, source.len() as u32);
+    }
+    if include_floating_promises {
+        let mut collector = FloatingPromiseCollector::default();
+        profile!(
+            "patina.type_aware.template_floating.visit_program",
+            collector.visit_program(&parsed.program)
+        );
+        ranges.floating_promises = collector
+            .into_relative_ranges(TEMPLATE_HANDLER_PREFIX.len() as u32, source.len() as u32);
     }
 
-    let mut collector = FloatingPromiseCollector::default();
-    profile!(
-        "patina.type_aware.template_floating.visit_program",
-        collector.visit_program(&parsed.program)
-    );
-    collector.into_relative_ranges(TEMPLATE_HANDLER_PREFIX.len() as u32, source.len() as u32)
+    ranges
 }
 
 #[derive(Default)]
@@ -559,6 +574,18 @@ mod tests {
         let ranges = collect_template_call_ranges(source, true, true, false);
 
         assert_eq!(range_slices(source, &ranges.callees), vec!["save", "track"]);
+        assert!(ranges.floating_promises.is_empty());
+    }
+
+    #[test]
+    fn collects_statement_fallback_callees_after_expression_prefix() {
+        let source = "safe(); anyHandler()";
+        let ranges = collect_template_call_ranges(source, true, true, false);
+
+        assert_eq!(
+            range_slices(source, &ranges.callees),
+            vec!["safe", "anyHandler"]
+        );
         assert!(ranges.floating_promises.is_empty());
     }
 
