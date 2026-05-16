@@ -190,7 +190,7 @@ test("workspace TypeScript package builds use vp pack", () => {
   };
   assert.equal(oxlintPackage.scripts?.test, "vp pack && node src/test.ts");
 
-  const rootTasks = fs.readFileSync(path.join(root, "vite.config.ts"), "utf-8");
+  const rootTasks = fs.readFileSync(path.join(root, "tools/vite-plus/tasks/build.ts"), "utf-8");
   assert.match(rootTasks, /pnpm exec vp pack/);
 });
 

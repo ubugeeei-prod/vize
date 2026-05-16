@@ -7,7 +7,7 @@ import {
 import {
   assertOfficialCompilerAccepts,
   assertVueTscDiagnosticSurface,
-  hasToolchainParityBinaries,
+  requireToolchainParityBinaries,
 } from "../../_helpers/toolchain-parity.ts";
 
 const fixtureApps = [
@@ -17,12 +17,7 @@ const fixtureApps = [
 ] as const;
 
 describe("check fixture parity with Vue toolchain", () => {
-  before(() => {
-    if (!hasToolchainParityBinaries()) {
-      console.log("Skipping: vize, checker, or vue-tsc binary was not found");
-      process.exit(0);
-    }
-  });
+  before(requireToolchainParityBinaries);
 
   for (const { app, expectErrors } of fixtureApps) {
     it(`${app.name} matches vue-tsc diagnostic surface`, () => {
