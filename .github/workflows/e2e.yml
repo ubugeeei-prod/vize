@@ -53,7 +53,15 @@ jobs:
           run-install: false
 
       - name: Install JS dependencies
-        run: vp install --workspace-root --frozen-lockfile --prefer-offline
+        run: |
+          vp install --frozen-lockfile --prefer-offline \
+            --filter './tests...' \
+            --filter './npm/vize-native...' \
+            --filter './npm/vize...' \
+            --filter './npm/vite-plugin-vize...' \
+            --filter './npm/nuxt...' \
+            --filter './npm/vite-plugin-musea...' \
+            --filter './npm/musea-nuxt...'
 
       - name: Build native package
         run: vp run --filter './npm/vize-native' build:ci

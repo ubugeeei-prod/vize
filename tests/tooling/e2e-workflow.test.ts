@@ -20,6 +20,9 @@ test("app e2e workflow is manually selectable and uploads failure artifacts", ()
     assert.match(workflow, new RegExp(`${suite}\\)\\n\\s+`));
   }
 
+  assert.match(workflow, /--filter '\.\/tests\.\.\.'/);
+  assert.match(workflow, /--filter '\.\/npm\/vize-native\.\.\.'/);
+  assert.match(workflow, /--filter '\.\/npm\/vite-plugin-vize\.\.\.'/);
   assert.match(workflow, /Build native package/);
   assert.match(workflow, /Build vize CLI/);
   assert.match(workflow, /cargo build --profile ci -p vize/);

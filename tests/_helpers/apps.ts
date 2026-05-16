@@ -1148,11 +1148,7 @@ const VIZE_CI_BIN = path.resolve(TESTS_DIR, `../target/ci/vize${BIN_EXT}`);
 const VIZE_RELEASE_BIN = path.resolve(TESTS_DIR, `../target/release/vize${BIN_EXT}`);
 const VIZE_DEBUG_BIN = path.resolve(TESTS_DIR, `../target/debug/vize${BIN_EXT}`);
 const VIZE_BIN_OVERRIDE = process.env.VIZE_BIN;
-const VIZE_BIN_FALLBACKS = [
-  VIZE_CI_BIN,
-  VIZE_RELEASE_BIN,
-  VIZE_DEBUG_BIN,
-];
+const VIZE_BIN_FALLBACKS = [VIZE_CI_BIN, VIZE_RELEASE_BIN, VIZE_DEBUG_BIN];
 export const VIZE_BIN =
   VIZE_BIN_OVERRIDE && VIZE_BIN_OVERRIDE.length > 0
     ? VIZE_BIN_OVERRIDE
