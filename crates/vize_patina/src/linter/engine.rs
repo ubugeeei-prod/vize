@@ -53,10 +53,12 @@ impl Linter {
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_help_level(self.help_level);
 
-        for rule in self.registry.rules() {
-            ctx.current_rule = rule.meta().name;
-            profile!("patina.sfc.rule.run_on_sfc", rule.run_on_sfc(&mut ctx));
-        }
+        profile!("patina.sfc.rules.run_on_sfc", {
+            for rule in self.registry.rules() {
+                ctx.current_rule = rule.meta().name;
+                rule.run_on_sfc(&mut ctx);
+            }
+        });
 
         let error_count = ctx.error_count();
         let warning_count = ctx.warning_count();
