@@ -425,6 +425,47 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_define_emits_runtime_object() {
+        let result = parse_script_setup(
+            r#"
+            type SavePayload = { id: number }
+            const emit = defineEmits({
+                save: (payload: SavePayload) => payload.id > 0,
+                close() { return true },
+                cancel: null,
+            })
+        "#,
+        );
+
+        assert_eq!(result.macros.all_calls().len(), 1);
+        assert_eq!(result.macros.emits().len(), 3);
+
+        let save = result
+            .macros
+            .emits()
+            .iter()
+            .find(|emit| emit.name == "save")
+            .expect("save emit should be extracted");
+        assert_eq!(save.payload_type.as_deref(), Some("[payload: SavePayload]"));
+
+        let close = result
+            .macros
+            .emits()
+            .iter()
+            .find(|emit| emit.name == "close")
+            .expect("close emit should be extracted");
+        assert_eq!(close.payload_type.as_deref(), Some("[]"));
+
+        let cancel = result
+            .macros
+            .emits()
+            .iter()
+            .find(|emit| emit.name == "cancel")
+            .expect("cancel emit should be extracted");
+        assert_eq!(cancel.payload_type, None);
+    }
+
+    #[test]
     fn test_parse_reactivity() {
         let result = parse_script_setup(
             r#"

@@ -199,6 +199,50 @@ const emit = defineEmits<{
     }
 
     #[test]
+    fn test_type_check_with_runtime_emits_object_validators() {
+        let source = r#"<script setup lang="ts">
+interface SavePayload {
+    id: number;
+}
+const emit = defineEmits({
+    save: (payload: SavePayload) => payload.id > 0,
+    close() { return true },
+});
+</script>
+<template>
+    <button @click="emit('close')">Close</button>
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue");
+        let result = type_check_sfc(source, &options);
+        assert!(!result
+            .diagnostics
+            .iter()
+            .any(|d| matches!(d.code.as_deref(), Some("untyped-emits" | "untyped-emit"))));
+    }
+
+    #[test]
+    fn test_type_check_with_untyped_runtime_emits_object_value() {
+        let source = r#"<script setup lang="ts">
+const emit = defineEmits({
+    save: null,
+});
+</script>
+<template>
+    <button @click="emit('save')">Save</button>
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue");
+        let result = type_check_sfc(source, &options);
+        assert!(result
+            .diagnostics
+            .iter()
+            .any(|d| d.code.as_deref() == Some("untyped-emit")));
+        assert!(!result
+            .diagnostics
+            .iter()
+            .any(|d| d.code.as_deref() == Some("untyped-emits")));
+    }
+
+    #[test]
     fn test_type_check_disabled_props_check() {
         let source = r#"<script setup>
 const props = defineProps(['count']);
