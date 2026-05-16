@@ -140,6 +140,29 @@ const counter = reactive({ value: 0 })
 }
 
 #[test]
+fn test_lint_sfc_allows_local_props_object_v_model_member() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-mutating-props".into()]));
+    let sfc = r#"<script setup lang="ts">
+import { reactive } from 'vue'
+
+defineProps<{ user: { name: string } }>()
+const props = reactive({ user: { name: '' } })
+</script>
+
+<template>
+  <input v-model="props.user.name" />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "local props object should not be treated as defineProps output: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_lint_sfc_no_unused_components_reports_unused_vue_import() {
     let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
     let sfc = r#"<script setup>
