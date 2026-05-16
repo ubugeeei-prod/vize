@@ -48,7 +48,7 @@ function requireValue(value, name) {
   return value;
 }
 
-function markerForKey(key) {
+export function markerForKey(key) {
   const trimmed = key?.trim();
   if (!trimmed) {
     return `<!-- ${MARKER_NAME} -->`;
@@ -57,6 +57,14 @@ function markerForKey(key) {
     throw new Error("Invalid test report comment key");
   }
   return `<!-- ${MARKER_NAME}:${trimmed} -->`;
+}
+
+export function isManagedComment(comment, marker) {
+  const body = comment.body ?? "";
+  return (
+    comment.user?.login === "github-actions[bot]" &&
+    (body === marker || body.startsWith(`${marker}\n`))
+  );
 }
 
 function parseNextLink(linkHeader) {
@@ -447,9 +455,7 @@ async function commentOnPr({ repo, prNumber, marker, body }) {
     `/repos/${repo}/issues/${prNumber}/comments?per_page=100`,
     (data) => data,
   );
-  const existing = comments.find(
-    (comment) => comment.user?.type === "Bot" && comment.body?.includes(marker),
-  );
+  const existing = comments.find((comment) => isManagedComment(comment, marker));
 
   if (existing) {
     await githubRequest(`/repos/${repo}/issues/comments/${existing.id}`, {

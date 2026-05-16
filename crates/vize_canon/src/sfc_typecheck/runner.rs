@@ -82,10 +82,38 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
     };
 
     // Analyze template and get AST
+    let mut has_template_parse_errors = false;
     let (template_offset, template_ast) = if let Some(ref template) = descriptor.template {
-        let (root, _errors) = parse(&allocator, &template.content);
-        analyzer.analyze_template(&root);
-        (template.loc.start as u32, Some(root))
+        let template_offset = template.loc.start as u32;
+        let (root, errors) = parse(&allocator, &template.content);
+        if errors.is_empty() {
+            analyzer.analyze_template(&root);
+            (template_offset, Some(root))
+        } else {
+            has_template_parse_errors = true;
+            for error in errors {
+                let (start, end) = error
+                    .loc
+                    .as_ref()
+                    .map(|loc| {
+                        (
+                            template_offset + loc.start.offset,
+                            template_offset + loc.end.offset,
+                        )
+                    })
+                    .unwrap_or((template_offset, template_offset));
+                result.add_diagnostic(SfcTypeDiagnostic {
+                    severity: SfcTypeSeverity::Error,
+                    message: cstr!("Template parse error: {}", error.message),
+                    start,
+                    end: end.max(start + 1),
+                    code: Some("template-parse-error".into()),
+                    help: None,
+                    related: Vec::new(),
+                });
+            }
+            (template_offset, None)
+        }
     } else {
         (0, None)
     };
@@ -104,7 +132,7 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
     }
 
     // Check template bindings
-    if options.check_template_bindings {
+    if options.check_template_bindings && !has_template_parse_errors {
         check_template_bindings(&summary, template_offset, &mut result, options.strict);
     }
 
@@ -129,7 +157,7 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
     }
 
     // Generate virtual TypeScript with scope information if requested
-    if options.include_virtual_ts {
+    if options.include_virtual_ts && !has_template_parse_errors {
         result.virtual_ts = Some(generate_virtual_ts_with_scopes(
             &summary,
             script_content,

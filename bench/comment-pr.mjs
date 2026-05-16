@@ -5,6 +5,7 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const MARKER_NAME = "vize-pr-benchmark";
 
@@ -34,7 +35,7 @@ function requireValue(value, name) {
   return value;
 }
 
-function markerForKey(key) {
+export function markerForKey(key) {
   const trimmed = key?.trim();
   if (!trimmed) {
     return `<!-- ${MARKER_NAME} -->`;
@@ -43,6 +44,14 @@ function markerForKey(key) {
     throw new Error("Invalid benchmark comment key");
   }
   return `<!-- ${MARKER_NAME}:${trimmed} -->`;
+}
+
+export function isManagedComment(comment, marker) {
+  const body = comment.body ?? "";
+  return (
+    comment.user?.login === "github-actions[bot]" &&
+    (body === marker || body.startsWith(`${marker}\n`))
+  );
 }
 
 async function githubRequest(path, options = {}) {
@@ -79,9 +88,7 @@ async function main() {
   const body = `${marker}\n${benchmarkBody}`;
 
   const comments = await githubRequest(`/repos/${repo}/issues/${prNumber}/comments?per_page=100`);
-  const existing = comments.find(
-    (comment) => comment.user?.type === "Bot" && comment.body?.includes(marker),
-  );
+  const existing = comments.find((comment) => isManagedComment(comment, marker));
 
   if (existing) {
     await githubRequest(`/repos/${repo}/issues/comments/${existing.id}`, {
@@ -98,9 +105,11 @@ async function main() {
   }
 }
 
-try {
-  await main();
-} catch (error) {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    await main();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
 }

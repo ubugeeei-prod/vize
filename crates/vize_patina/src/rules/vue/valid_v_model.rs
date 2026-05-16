@@ -112,7 +112,7 @@ fn is_component_like_tag(element: &ElementNode<'_>) -> bool {
     }
 
     let tag = element.tag.as_str();
-    tag.contains('-') && !is_html_tag(tag)
+    tag == "component" || (tag.contains('-') && !is_html_tag(tag))
 }
 
 /// Check if expression is empty
@@ -167,6 +167,16 @@ mod tests {
     fn test_valid_v_model_on_custom_element_like_component() {
         let linter = create_linter();
         let result = linter.lint_template(r#"<my-widget v-model="value"></my-widget>"#, "test.vue");
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_v_model_on_dynamic_component() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<component :is="overlay" v-model:open="open" />"#,
+            "test.vue",
+        );
         assert_eq!(result.error_count, 0);
     }
 

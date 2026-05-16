@@ -109,6 +109,20 @@ impl NoUnusedComponents {
         names.dedup();
         names
     }
+
+    fn component_name_matches(used: &str, registered: &str) -> bool {
+        used == registered
+            || vize_croquis::naming::names_match(used, registered)
+            || to_pascal_case(used).as_str() == registered
+    }
+
+    fn matches_registered_alias(analysis: &Croquis, used: &str, local_name: &str) -> bool {
+        analysis
+            .component_registrations
+            .iter()
+            .filter(|registration| registration.local_name == local_name)
+            .any(|registration| Self::component_name_matches(used, registration.name.as_str()))
+    }
 }
 
 impl Rule for NoUnusedComponents {
@@ -138,11 +152,8 @@ impl Rule for NoUnusedComponents {
 
                     // Check if used in template (case-insensitive matching for kebab-case)
                     !analysis.used_components.iter().any(|used| {
-                        // Exact match
-                        used.as_str() == *name
-                            // kebab-case match (MyComponent -> my-component)
-                            || vize_croquis::naming::names_match(used.as_str(), name)
-                            || to_pascal_case(used.as_str()).as_str() == *name
+                        Self::component_name_matches(used.as_str(), name)
+                            || Self::matches_registered_alias(analysis, used.as_str(), name)
                     })
                 })
                 .map(|name| name.to_compact_string())

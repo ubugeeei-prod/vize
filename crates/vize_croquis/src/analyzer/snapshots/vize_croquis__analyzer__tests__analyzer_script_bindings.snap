@@ -1276,6 +1276,7 @@ Croquis {
         content_end: 0,
     },
     used_components: {},
+    component_registrations: [],
     component_usages: [],
     used_directives: {},
     undefined_refs: [],

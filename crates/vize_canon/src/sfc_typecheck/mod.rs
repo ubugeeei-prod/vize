@@ -482,6 +482,53 @@ const count = ref(0)
     }
 
     #[test]
+    fn test_type_check_malformed_template_reports_parse_error_without_virtual_ts() {
+        let source = r#"<script setup lang="ts">
+const count = 1
+</script>
+<template><div>{{ count }}</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+
+        let template_parse_errors = result
+            .diagnostics
+            .iter()
+            .filter(|d| d.code.as_deref() == Some("template-parse-error"))
+            .count();
+
+        assert_eq!(template_parse_errors, 1);
+        assert!(result.has_errors());
+        assert!(result.virtual_ts.is_none());
+        assert!(!result
+            .diagnostics
+            .iter()
+            .any(|d| d.code.as_deref() == Some("undefined-binding")));
+    }
+
+    #[test]
+    fn test_type_check_malformed_template_keeps_script_diagnostics() {
+        let source = r#"<script setup>
+const props = defineProps(['count'])
+</script>
+<template><div>{{ missing }}</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue");
+        let result = type_check_sfc(source, &options);
+
+        assert!(result
+            .diagnostics
+            .iter()
+            .any(|d| d.code.as_deref() == Some("template-parse-error")));
+        assert!(result
+            .diagnostics
+            .iter()
+            .any(|d| d.code.as_deref() == Some("untyped-prop")));
+        assert!(!result
+            .diagnostics
+            .iter()
+            .any(|d| d.code.as_deref() == Some("undefined-binding")));
+    }
+
+    #[test]
     fn test_type_check_component_with_props_and_events() {
         let source = r#"<script setup lang="ts">
 interface Props {

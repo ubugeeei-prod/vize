@@ -22,7 +22,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
-use crate::analysis::{BindingMetadata, Croquis};
+use crate::analysis::{BindingMetadata, ComponentRegistration, Croquis};
 use crate::analysis::{ImportStatementInfo, InvalidExport, ReExportInfo, TypeExport};
 use crate::macros::MacroTracker;
 use crate::provide::ProvideInjectTracker;
@@ -105,6 +105,8 @@ pub struct ScriptParseResult {
     pub import_statements: Vec<ImportStatementInfo>,
     /// Re-export statement spans (`export { ... } from "..."`)
     pub re_exports: Vec<ReExportInfo>,
+    /// Components registered through Options API `components`.
+    pub component_registrations: Vec<ComponentRegistration>,
     /// Definition spans for bindings (name -> (start, end) offset in script)
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
 }
@@ -126,6 +128,7 @@ impl ScriptParseResult {
         summary.setup_context = self.setup_context;
         summary.import_statements = self.import_statements;
         summary.re_exports = self.re_exports;
+        summary.component_registrations = self.component_registrations;
         summary.binding_spans = self.binding_spans;
     }
 
@@ -371,7 +374,7 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_script_setup;
+    use super::{parse_script, parse_script_setup};
     use vize_carton::{append, cstr, CompactString};
 
     #[test]
@@ -447,6 +450,41 @@ mod tests {
         );
 
         insta::assert_debug_snapshot!(result);
+    }
+
+    #[test]
+    fn test_parse_options_api_component_registrations() {
+        let result = parse_script(
+            r#"
+            import Style from './style.vue'
+            import Basic from './basic.vue'
+            import { defineComponent } from 'vue'
+
+            export default defineComponent({
+                components: {
+                    FourStyle: Style,
+                    Basic,
+                    'string-name': Basic,
+                    Ignored: defineComponent({}),
+                },
+            })
+        "#,
+        );
+
+        let registrations: Vec<_> = result
+            .component_registrations
+            .iter()
+            .map(|registration| (registration.name.as_str(), registration.local_name.as_str()))
+            .collect();
+
+        assert_eq!(
+            registrations,
+            vec![
+                ("FourStyle", "Style"),
+                ("Basic", "Basic"),
+                ("string-name", "Basic")
+            ]
+        );
     }
 
     #[test]

@@ -37,6 +37,15 @@ impl TemplateInfo {
     }
 }
 
+/// Component registration from an Options API `components` option.
+#[derive(Debug, Clone)]
+pub struct ComponentRegistration {
+    /// Public component name registered for template usage.
+    pub name: CompactString,
+    /// Local script binding referenced by the registration.
+    pub local_name: CompactString,
+}
+
 /// Information about element IDs in template (for cross-file uniqueness checking).
 #[derive(Debug, Clone)]
 pub struct ElementIdInfo {

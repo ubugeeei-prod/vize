@@ -104,7 +104,7 @@ function __setup() {
   // @vize-map: expr -> 335:358
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void props; void emit;
+  void emit; void props;
   })();
 }
 

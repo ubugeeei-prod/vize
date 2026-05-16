@@ -162,15 +162,49 @@ impl TypeCheckService {
         };
 
         // Analyze template
+        let mut has_template_parse_errors = false;
         let (template_offset, template_ast) = if let Some(ref template) = descriptor.template {
-            let (root, _errors) = parse(&allocator, &template.content);
-            analyzer.analyze_template(&root);
-            (template.loc.start as u32, Some(root))
+            let template_offset = template.loc.start as u32;
+            let (root, errors) = parse(&allocator, &template.content);
+            if errors.is_empty() {
+                analyzer.analyze_template(&root);
+                (template_offset, Some(root))
+            } else {
+                has_template_parse_errors = true;
+                for error in errors {
+                    let (start, end) = error
+                        .loc
+                        .as_ref()
+                        .map(|loc| {
+                            (
+                                template_offset + loc.start.offset,
+                                template_offset + loc.end.offset,
+                            )
+                        })
+                        .unwrap_or((template_offset, template_offset));
+
+                    result.diagnostics.push(SfcDiagnostic {
+                        message: cstr!("Template parse error: {}", error.message),
+                        severity: SfcDiagnosticSeverity::Error,
+                        start,
+                        end: end.max(start + 1),
+                        code: Some("template-parse-error".into()),
+                        related: Vec::new(),
+                    });
+                    result.error_count += 1;
+                }
+                (template_offset, None)
+            }
         } else {
             (0, None)
         };
 
         let summary = analyzer.finish();
+
+        if has_template_parse_errors {
+            result.analysis_time_ms = Some(start_time.elapsed().as_secs_f64() * 1000.0);
+            return Ok(result);
+        }
 
         // Generate virtual TypeScript
         let virtual_ts_output = generate_virtual_ts_with_offsets(

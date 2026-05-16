@@ -13,11 +13,15 @@
 mod bindings;
 mod macros;
 
-use oxc_ast::ast::{Declaration, Expression, Statement};
+use oxc_ast::ast::{
+    Argument, CallExpression, Declaration, ExportDefaultDeclarationKind, Expression,
+    ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
+};
 use oxc_span::GetSpan;
 
 use crate::analysis::{
-    ImportStatementInfo, InvalidExport, InvalidExportKind, ReExportInfo, TypeExport, TypeExportKind,
+    ComponentRegistration, ImportStatementInfo, InvalidExport, InvalidExportKind, ReExportInfo,
+    TypeExport, TypeExportKind,
 };
 use crate::scope::{BlockKind, BlockScopeData, ClosureScopeData, ExternalModuleScopeData};
 use crate::ScopeBinding;
@@ -222,6 +226,10 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
         }
 
         Statement::ExportDefaultDeclaration(export) => {
+            if result.is_non_setup_script {
+                collect_options_api_component_registrations(result, &export.declaration);
+            }
+
             // Default exports are invalid in script setup
             result.invalid_exports.push(InvalidExport {
                 name: CompactString::new("default"),
@@ -272,6 +280,148 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
         }
 
         _ => {}
+    }
+}
+
+fn collect_options_api_component_registrations(
+    result: &mut ScriptParseResult,
+    declaration: &ExportDefaultDeclarationKind<'_>,
+) {
+    let Some(options) = component_options_from_export(declaration) else {
+        return;
+    };
+
+    let Some(components) = option_object_property(options, "components") else {
+        return;
+    };
+
+    for property in &components.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.computed {
+            continue;
+        }
+
+        let Some(name) = property_key_name(&property.key) else {
+            continue;
+        };
+
+        let local_name = if property.shorthand {
+            name
+        } else {
+            let Expression::Identifier(identifier) = &property.value else {
+                continue;
+            };
+            identifier.name.as_str()
+        };
+
+        result.component_registrations.push(ComponentRegistration {
+            name: CompactString::new(name),
+            local_name: CompactString::new(local_name),
+        });
+    }
+}
+
+fn component_options_from_export<'a>(
+    declaration: &'a ExportDefaultDeclarationKind<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match declaration {
+        ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object),
+        ExportDefaultDeclarationKind::CallExpression(call) => component_options_from_call(call),
+        ExportDefaultDeclarationKind::ParenthesizedExpression(parenthesized) => {
+            component_options_from_expression(&parenthesized.expression)
+        }
+        ExportDefaultDeclarationKind::TSAsExpression(ts_as) => {
+            component_options_from_expression(&ts_as.expression)
+        }
+        ExportDefaultDeclarationKind::TSSatisfiesExpression(ts_satisfies) => {
+            component_options_from_expression(&ts_satisfies.expression)
+        }
+        ExportDefaultDeclarationKind::TSNonNullExpression(ts_non_null) => {
+            component_options_from_expression(&ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
+fn component_options_from_expression<'a>(
+    expression: &'a Expression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match expression {
+        Expression::ObjectExpression(object) => Some(object),
+        Expression::CallExpression(call) => component_options_from_call(call),
+        Expression::ParenthesizedExpression(parenthesized) => {
+            component_options_from_expression(&parenthesized.expression)
+        }
+        Expression::TSAsExpression(ts_as) => component_options_from_expression(&ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            component_options_from_expression(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            component_options_from_expression(&ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
+fn component_options_from_call<'a>(
+    call: &'a CallExpression<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    let Expression::Identifier(callee) = &call.callee else {
+        return None;
+    };
+    if !matches!(callee.name.as_str(), "defineComponent" | "_defineComponent") {
+        return None;
+    }
+
+    let first_arg = call.arguments.first()?;
+    component_options_from_argument(first_arg)
+}
+
+fn component_options_from_argument<'a>(
+    argument: &'a Argument<'a>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match argument {
+        Argument::ObjectExpression(object) => Some(object),
+        Argument::CallExpression(call) => component_options_from_call(call),
+        Argument::ParenthesizedExpression(parenthesized) => {
+            component_options_from_expression(&parenthesized.expression)
+        }
+        Argument::TSAsExpression(ts_as) => component_options_from_expression(&ts_as.expression),
+        Argument::TSSatisfiesExpression(ts_satisfies) => {
+            component_options_from_expression(&ts_satisfies.expression)
+        }
+        Argument::TSNonNullExpression(ts_non_null) => {
+            component_options_from_expression(&ts_non_null.expression)
+        }
+        _ => None,
+    }
+}
+
+fn option_object_property<'a>(
+    object: &'a ObjectExpression<'a>,
+    key_name: &str,
+) -> Option<&'a ObjectExpression<'a>> {
+    object.properties.iter().find_map(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return None;
+        };
+        if property.computed || property_key_name(&property.key) != Some(key_name) {
+            return None;
+        }
+        match &property.value {
+            Expression::ObjectExpression(object) => Some(object.as_ref()),
+            _ => None,
+        }
+    })
+}
+
+fn property_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+        PropertyKey::StringLiteral(string) => Some(string.value.as_str()),
+        _ => None,
     }
 }
 
