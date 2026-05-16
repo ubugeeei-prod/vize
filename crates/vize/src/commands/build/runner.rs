@@ -40,14 +40,13 @@ pub(crate) fn run(args: BuildArgs) {
     let start = Instant::now();
     let slow_threshold = Duration::from_millis(args.slow_threshold);
 
-    if let Some(threads) = args.threads {
-        if let Err(error) = rayon::ThreadPoolBuilder::new()
+    if let Some(threads) = args.threads
+        && let Err(error) = rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
             .build_global()
-        {
-            eprintln!("Failed to configure thread pool: {error}");
-            std::process::exit(1);
-        }
+    {
+        eprintln!("Failed to configure thread pool: {error}");
+        std::process::exit(1);
     }
 
     let files = collect_files(&args.patterns);
@@ -143,14 +142,14 @@ pub(crate) fn run(args: BuildArgs) {
                     .unwrap_or_else(|| PathBuf::from("output").with_extension(ext));
                 let out_path = args.output.join(filename);
 
-                if let Some(parent) = out_path.parent() {
-                    if let Err(error) = fs::create_dir_all(parent) {
-                        eprintln!(
-                            "Failed to create output subdirectory {}: {error}",
-                            parent.display()
-                        );
-                        continue;
-                    }
+                if let Some(parent) = out_path.parent()
+                    && let Err(error) = fs::create_dir_all(parent)
+                {
+                    eprintln!(
+                        "Failed to create output subdirectory {}: {error}",
+                        parent.display()
+                    );
+                    continue;
                 }
 
                 let content: String = match args.format {

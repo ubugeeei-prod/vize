@@ -214,17 +214,17 @@ impl CrossFileAnalyzer {
             result.diagnostics.extend(diags);
         }
 
-        if self.options.provide_inject {
-            if let Some(index) = provide_inject_index.as_ref() {
-                let (matches, diags) = analyzers::analyze_provide_inject_with_index(index);
-                result.provide_inject_tree = Some(analyzers::build_provide_inject_tree_with_index(
-                    &self.registry,
-                    index,
-                    &matches,
-                ));
-                result.provide_inject_matches = matches;
-                result.diagnostics.extend(diags);
-            }
+        if self.options.provide_inject
+            && let Some(index) = provide_inject_index.as_ref()
+        {
+            let (matches, diags) = analyzers::analyze_provide_inject_with_index(index);
+            result.provide_inject_tree = Some(analyzers::build_provide_inject_tree_with_index(
+                &self.registry,
+                index,
+                &matches,
+            ));
+            result.provide_inject_matches = matches;
+            result.diagnostics.extend(diags);
         }
 
         if self.options.unique_ids {

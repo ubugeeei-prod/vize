@@ -4,7 +4,6 @@ use crate::ast::RuntimeHelper;
 use crate::options::CodegenOptions;
 
 use super::helpers::default_helper_alias;
-use std::string::String as StdString;
 use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::ToCompactString;
@@ -14,7 +13,7 @@ use vize_carton::capitalize;
 /// Code generation context using a UTF-8 string buffer for performance.
 pub struct CodegenContext {
     /// Generated code buffer
-    pub(super) code: StdString,
+    pub(super) code: String,
     /// Current indentation level
     pub(super) indent_level: u32,
     /// Whether we're in SSR mode
@@ -63,7 +62,7 @@ impl CodegenContext {
     /// Create a new codegen context
     pub fn new(options: CodegenOptions) -> Self {
         Self {
-            code: StdString::with_capacity(4096),
+            code: String::with_capacity(4096),
             indent_level: 0,
             ssr: options.ssr,
             helper_alias: default_helper_alias,
@@ -234,7 +233,7 @@ impl CodegenContext {
 
     /// Get the generated code as a String
     pub fn into_code(self) -> String {
-        self.code.into()
+        self.code
     }
 
     /// Get the generated code as a reference (for temporary use)

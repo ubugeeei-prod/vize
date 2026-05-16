@@ -9,13 +9,12 @@ use crate::ast::{
 };
 
 use super::{context::CodegenContext, helpers::escape_js_string};
-use std::string::String as StdString;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
 /// Generate hoisted variable declarations.
 pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> String {
-    let mut hoists_code = StdString::new();
+    let mut hoists_code = String::default();
 
     for (i, hoist) in root.hoists.iter().enumerate() {
         if let Some(node) = hoist {
@@ -31,7 +30,7 @@ pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> Stri
         }
     }
 
-    hoists_code.into()
+    hoists_code
 }
 
 /// Collect runtime helpers needed by hoisted nodes.
@@ -91,11 +90,7 @@ fn collect_helpers_from_props(props: &PropsExpression<'_>, helpers: &mut Vec<Run
 }
 
 /// Generate `JsChildNode` to bytes.
-fn generate_js_child_node_to_bytes(
-    ctx: &CodegenContext,
-    node: &JsChildNode<'_>,
-    out: &mut StdString,
-) {
+fn generate_js_child_node_to_bytes(ctx: &CodegenContext, node: &JsChildNode<'_>, out: &mut String) {
     match node {
         JsChildNode::VNodeCall(vnode) => generate_vnode_call_to_bytes(ctx, vnode, out),
         JsChildNode::SimpleExpression(exp) => {
@@ -142,7 +137,7 @@ fn generate_js_child_node_to_bytes(
 }
 
 /// Generate `VNodeCall` to bytes.
-fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out: &mut StdString) {
+fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out: &mut String) {
     // Block nodes use openBlock + createBlock/createElementBlock
     if vnode.is_block {
         out.push('(');
@@ -224,7 +219,7 @@ fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out
 fn generate_props_expression_to_bytes(
     ctx: &CodegenContext,
     props: &PropsExpression<'_>,
-    out: &mut StdString,
+    out: &mut String,
 ) {
     match props {
         PropsExpression::Object(obj) => {
@@ -272,7 +267,7 @@ fn generate_props_expression_to_bytes(
 fn generate_vnode_children_to_bytes(
     _ctx: &CodegenContext,
     children: &VNodeChildren<'_>,
-    out: &mut StdString,
+    out: &mut String,
 ) {
     match children {
         VNodeChildren::Single(text_child) => match text_child {
