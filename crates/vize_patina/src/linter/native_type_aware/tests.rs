@@ -567,6 +567,52 @@ const anyHandler: any = () => {}
 }
 
 #[test]
+fn no_unsafe_template_binding_reports_computed_member_template_bindings() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const key = 'label' as const
+const payload: Record<string, any> = { label: 'unsafe' }
+</script>
+
+<template>
+  <div>{{ payload[key] }}</div>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "TypeAwareFixture.vue");
+
+    assert!(result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING));
+}
+
+#[test]
+fn typed_computed_template_members_are_ignored() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const key = 'label' as const
+const payload: { label: string } = { label: 'safe' }
+</script>
+
+<template>
+  <div :title="payload[key]" />
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "TypeAwareFixture.vue");
+
+    assert!(!result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING));
+}
+
+#[test]
 fn no_reactivity_loss_tracks_props_calls_and_getter_returns() {
     if !corsa_available() {
         return;

@@ -34,6 +34,7 @@ pub(super) enum FloatingPromiseProbeTarget {
 pub(super) struct TemplateCallRanges {
     pub callees: Vec<RelativeRange>,
     pub floating_promises: Vec<FloatingPromiseRange>,
+    pub probe_expression_binding: bool,
 }
 
 const TEMPLATE_HANDLER_PREFIX: &str = "function __vize_template_handler(){\n";
@@ -55,6 +56,7 @@ pub(super) fn collect_template_call_ranges(
         "patina.type_aware.template_queries.parse_expression",
         OxcParser::new(&allocator, source, source_type).parse_expression()
     ) {
+        ranges.probe_expression_binding = expression_prefers_binding_probe(&expression);
         if include_callees {
             let mut collector = CallCalleeCollector::default();
             profile!(
@@ -98,6 +100,30 @@ pub(super) fn collect_template_call_ranges(
     }
 
     ranges
+}
+
+fn expression_prefers_binding_probe(expression: &Expression<'_>) -> bool {
+    match expression {
+        Expression::ComputedMemberExpression(_) => true,
+        Expression::ChainExpression(chain) => match &chain.expression {
+            ChainElement::ComputedMemberExpression(_) => true,
+            ChainElement::TSNonNullExpression(non_null) => {
+                expression_prefers_binding_probe(&non_null.expression)
+            }
+            _ => false,
+        },
+        Expression::ParenthesizedExpression(paren) => {
+            expression_prefers_binding_probe(&paren.expression)
+        }
+        Expression::TSAsExpression(ts_as) => expression_prefers_binding_probe(&ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            expression_prefers_binding_probe(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            expression_prefers_binding_probe(&ts_non_null.expression)
+        }
+        _ => false,
+    }
 }
 
 fn bare_handler_reference_range_for_expression(
@@ -613,6 +639,19 @@ mod tests {
             promise_slices(source, &ranges.floating_promises),
             vec!["actions?.[method]"]
         );
+    }
+
+    #[test]
+    fn computed_member_expressions_prefer_binding_probes() {
+        let computed = collect_template_call_ranges("payload[key]", false, true, false);
+        let optional = collect_template_call_ranges("payload?.[key]", false, true, false);
+        let call = collect_template_call_ranges("payload[key]()", false, true, false);
+        let static_member = collect_template_call_ranges("payload.key", false, true, false);
+
+        assert!(computed.probe_expression_binding);
+        assert!(optional.probe_expression_binding);
+        assert!(!call.probe_expression_binding);
+        assert!(!static_member.probe_expression_binding);
     }
 
     #[test]

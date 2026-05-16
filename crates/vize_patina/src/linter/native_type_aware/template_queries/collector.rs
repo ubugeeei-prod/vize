@@ -305,6 +305,12 @@ fn collect_expression_query_sets(
         sinks.template_queries.as_deref_mut(),
         expression_generated_offset,
     ) {
+        let generated_offset = if call_ranges.probe_expression_binding {
+            expression_binding_generated_offset(&virtual_ts.content, generated_offset)
+                .unwrap_or(generated_offset)
+        } else {
+            generated_offset
+        };
         queries.push(TemplateQuery {
             kind: TemplateQueryKind::Expression,
             context,
