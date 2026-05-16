@@ -82,18 +82,17 @@ impl NoUnusedComponents {
         matches!(binding_type, BindingType::SetupConst)
     }
 
-    fn imported_component_names<'a>(analysis: &'a Croquis) -> Vec<&'a str> {
+    fn imported_component_names(analysis: &Croquis) -> Vec<&str> {
         let mut names: Vec<_> = analysis
             .scopes
             .iter()
-            .filter_map(|scope| match scope.data() {
-                ScopeData::ExternalModule(data)
-                    if !data.is_type_only
-                        && Self::is_component_import_source(data.source.as_str()) =>
-                {
-                    Some(scope)
-                }
-                _ => None,
+            .filter(|scope| {
+                matches!(
+                    scope.data(),
+                    ScopeData::ExternalModule(data)
+                        if !data.is_type_only
+                            && Self::is_component_import_source(data.source.as_str())
+                )
             })
             .flat_map(|scope| {
                 scope.bindings().filter_map(|(name, binding)| {
