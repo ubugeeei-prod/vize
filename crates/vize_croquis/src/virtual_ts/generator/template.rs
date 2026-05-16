@@ -549,7 +549,7 @@ fn extract_var_names(vars_part: &str) -> Vec<String> {
 }
 
 fn push_unique_alias(aliases: &mut Vec<String>, alias: String) {
-    if !aliases.iter().any(|existing| existing == &alias) {
+    if !aliases.contains(&alias) {
         aliases.push(alias);
     }
 }
