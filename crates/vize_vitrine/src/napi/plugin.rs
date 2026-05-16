@@ -11,6 +11,14 @@ use napi_derive::napi;
 pub use request::VitePluginRequestNapi;
 
 #[napi(object)]
+pub struct CssAliasRuleNapi {
+    pub find: String,
+    pub replacement: String,
+    pub is_regex: bool,
+    pub flags: Option<String>,
+}
+
+#[napi(object)]
 pub struct DynamicImportAliasRuleNapi {
     pub from_prefix: String,
     pub to_prefix: String,
@@ -38,6 +46,17 @@ impl From<DynamicImportAliasRuleNapi> for vize_atelier_sfc::vite_plugin::Dynamic
     }
 }
 
+impl From<CssAliasRuleNapi> for vize_atelier_sfc::vite_plugin::CssAliasRule {
+    fn from(rule: CssAliasRuleNapi) -> Self {
+        Self {
+            find: rule.find.into(),
+            replacement: rule.replacement.into(),
+            is_regex: rule.is_regex,
+            flags: rule.flags.map(Into::into),
+        }
+    }
+}
+
 impl From<DefineReplacementNapi> for vize_atelier_sfc::vite_plugin::DefineReplacement {
     fn from(define: DefineReplacementNapi) -> Self {
         Self {
@@ -60,6 +79,30 @@ impl From<HmrHashesNapi> for vize_atelier_sfc::vite_plugin::HmrHashes {
 #[napi(js_name = "classifyVitePluginRequest")]
 pub fn classify_vite_plugin_request(id: String) -> VitePluginRequestNapi {
     vize_atelier_sfc::vite_plugin::classify_vite_plugin_request(&id).into()
+}
+
+#[napi(js_name = "scopeViteCssForPipeline")]
+pub fn scope_vite_css_for_pipeline(css: String, scope_id: String) -> String {
+    vize_atelier_sfc::vite_plugin::scope_css_for_pipeline(&css, &scope_id).into()
+}
+
+#[napi(js_name = "resolveViteCssImports")]
+pub fn resolve_vite_css_imports(
+    css: String,
+    importer: String,
+    alias_rules: Vec<CssAliasRuleNapi>,
+    is_dev: Option<bool>,
+    dev_url_base: Option<String>,
+) -> String {
+    let alias_rules = alias_rules.into_iter().map(Into::into).collect::<Vec<_>>();
+    vize_atelier_sfc::vite_plugin::resolve_css_imports(
+        &css,
+        &importer,
+        &alias_rules,
+        is_dev.unwrap_or(false),
+        dev_url_base.as_deref(),
+    )
+    .into()
 }
 
 #[napi(js_name = "createViteVirtualId")]

@@ -790,9 +790,11 @@ module.exports.normalizeViteVirtualVueModuleId = nativeBinding.normalizeViteVirt
 module.exports.parseArt = nativeBinding.parseArt;
 module.exports.parseSfc = nativeBinding.parseSfc;
 module.exports.parseTemplate = nativeBinding.parseTemplate;
+module.exports.resolveViteCssImports = nativeBinding.resolveViteCssImports;
 module.exports.rewriteViteDynamicTemplateImports = nativeBinding.rewriteViteDynamicTemplateImports;
 module.exports.rewriteViteStaticAssetUrls = nativeBinding.rewriteViteStaticAssetUrls;
 module.exports.runCli = nativeBinding.runCli;
+module.exports.scopeViteCssForPipeline = nativeBinding.scopeViteCssForPipeline;
 module.exports.shouldApplyViteDefineInVirtualModule =
   nativeBinding.shouldApplyViteDefineInVirtualModule;
 module.exports.toViteBrowserImportPrefix = nativeBinding.toViteBrowserImportPrefix;

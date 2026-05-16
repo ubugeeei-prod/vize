@@ -171,6 +171,13 @@ export interface DefineReplacementNapi {
   value: string;
 }
 
+export interface CssAliasRuleNapi {
+  find: string;
+  replacement: string;
+  isRegex: boolean;
+  flags?: string;
+}
+
 export interface DynamicImportAliasRuleNapi {
   fromPrefix: string;
   toPrefix: string;
@@ -182,6 +189,16 @@ export interface DynamicImportAliasRuleNapi {
  * JavaScript keeps Vite hook orchestration and filesystem interactions.
  */
 export declare function classifyVitePluginRequest(id: string): VitePluginRequestNapi;
+
+export declare function scopeViteCssForPipeline(css: string, scopeId: string): string;
+
+export declare function resolveViteCssImports(
+  css: string,
+  importer: string,
+  aliasRules: Array<CssAliasRuleNapi>,
+  isDev?: boolean | undefined | null,
+  devUrlBase?: string | undefined | null,
+): string;
 
 export declare function createViteVirtualId(
   realPath: string,

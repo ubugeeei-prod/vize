@@ -6,6 +6,8 @@
 //! normalization, style virtual suffixes, and Vue boundary detection.
 
 mod boundary;
+mod css;
+mod css_scope;
 mod hmr;
 mod js_string;
 mod query;
@@ -16,6 +18,7 @@ mod transform;
 #[cfg(test)]
 mod tests;
 
+pub use css::{CssAliasRule, resolve_css_imports, scope_css_for_pipeline};
 pub use hmr::{HmrHashes, detect_hmr_update_type, generate_hmr_code, has_hmr_changes};
 pub use request::{
     VitePluginRequest, classify_vite_plugin_request, create_virtual_id, from_virtual_id,
