@@ -72,6 +72,19 @@ mod tests {
     }
 
     #[test]
+    fn test_type_check_malformed_sfc_reports_single_parse_error() {
+        let source = "<template><div></div>";
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+
+        assert_eq!(result.error_count, 1);
+        assert_eq!(result.warning_count, 0);
+        assert!(result.virtual_ts.is_none());
+        assert_eq!(result.diagnostics.len(), 1);
+        assert_eq!(result.diagnostics[0].code.as_deref(), Some("parse-error"));
+    }
+
+    #[test]
     fn test_type_check_result() {
         let mut result = SfcTypeCheckResult::empty();
         assert_eq!(result.error_count, 0);

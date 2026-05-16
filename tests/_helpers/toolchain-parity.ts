@@ -4,7 +4,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { compileScript, compileTemplate, parse as parseSfc } from "@vue/compiler-sfc";
-import { CORSA_BIN, VIZE_BIN, type AppConfig } from "./apps.ts";
+import { CORSA_BIN, VIZE_BIN, requireVizeAndCorsaBins, type AppConfig } from "./apps.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,8 +24,12 @@ interface VizeCheckJson {
   }>;
 }
 
-export function hasToolchainParityBinaries(): boolean {
-  return fs.existsSync(VIZE_BIN) && fs.existsSync(CORSA_BIN) && resolveBin("vue-tsc") != null;
+export function requireToolchainParityBinaries(): void {
+  requireVizeAndCorsaBins();
+  assert.ok(
+    resolveBin("vue-tsc"),
+    "vue-tsc binary should exist. Install JS dependencies with `vp install`.",
+  );
 }
 
 export function assertOfficialCompilerAccepts(app: AppConfig): void {

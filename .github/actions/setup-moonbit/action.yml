@@ -6,7 +6,7 @@ runs:
   steps:
     - name: Cache MoonBit toolchain
       id: cache-moonbit
-      uses: actions/cache@v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: |
           ${{ runner.temp }}/moonbit
@@ -15,7 +15,7 @@ runs:
 
     - name: Setup MSVC toolchain (Windows)
       if: runner.os == 'Windows'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
       with:
         arch: amd64
 
