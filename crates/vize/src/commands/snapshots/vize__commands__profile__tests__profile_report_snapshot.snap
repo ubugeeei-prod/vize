@@ -8,6 +8,14 @@ expression: render_profile_report(&report)
 
 [1mTotal wall time[0m: 50.000ms[90m  throughput 40.00 KiB/s[0m
 
+[1mStrict audit[0m
+[90m  metric                  value                  status[0m
+  wall accounted          10.000ms (20.0%)       [33mprofile gap     [0m
+  untracked wall          40.000ms (80.0%)       [33munprofiled work [0m
+  cumulative work         42.000ms (0.8x wall)   [36mparallel/nested [0m
+  slow files              1 / 1                  [33mthreshold hit   [0m
+  internal spans          25 call(s), 14.000ms   [32mcaptured        [0m
+
 [1mTiming breakdown[0m
 [90m  phase                         time        share  kind        note[0m
   collect files                  10.000ms   20.0%  wall        [####..............]  [90mwalked inputs[0m
@@ -15,13 +23,13 @@ expression: render_profile_report(&report)
 
 [1mHot files[0m
 [90m  slow threshold: 30.000ms[0m
-[90m  total       breakdown                 size      file[0m
-  [33m  31.000ms[0m  parse     8.000ms  compile  20.000ms     2.00 KiB  src/App.vue[90m  1 style block[0m
+[90m  #  total       share   breakdown                          size      rate       status       file[0m
+   1  [33m  31.000ms[0m    62.0%  parse     8.000ms   25.8%  compile  20.000ms   64.5%     2.00 KiB  64.52 KiB/s  [33mSLOW x1.0   [0m src/App.vue[90m  1 style block[0m
 
 [1mInternal operations[0m
-[90m  operation                         count   total       avg         min         max[0m
-  atelier.sfc.parse                     1     8.000ms     8.000ms     8.000ms     8.000ms
-  atelier.transform.element            24     6.000ms     0.250ms     0.100ms     0.600ms
+[90m  operation                         count   total       share   avg         min         max       max/avg  status[0m
+  atelier.sfc.parse                     1     8.000ms    16.0%     8.000ms     8.000ms     8.000ms      1.0x  [32mok      [0m
+  atelier.transform.element            24     6.000ms    12.0%     0.250ms     0.100ms     0.600ms      2.4x  [32mok      [0m
 
 [1mNotes[0m
   [36m- [0msrc/App.vue spent most of its time in compile; inspect template complexity.

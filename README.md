@@ -132,10 +132,13 @@ static `href` values, so case changes or HTML-decoded control characters do not 
 `javascript:` links. `vize check` generates virtual TypeScript for Vue SFCs and maps project
 diagnostics back to the original source files.
 
-Use `vize lint --profile src` when tuning rule cost. Type-aware lint profile rows include template
-query collection and Corsa probe phases so expensive cross-rule work can be spotted quickly. When
-template unsafe-binding and floating-Promise checks are both enabled, shared expression parsing keeps
-their query collection from doing duplicate OXC work.
+Use `vize lint --profile src` when tuning rule cost. Profile output now starts with a strict audit
+that calls out untracked wall time, slow-threshold hits, cumulative worker time, and captured
+internal spans. Hot-file rows include wall share, per-stage share, throughput, and slow-threshold
+status, while internal operation rows include wall share and max/avg spike detection. Type-aware
+lint profile rows include template query collection and Corsa probe phases so expensive cross-rule
+work can be spotted quickly. When template unsafe-binding and floating-Promise checks are both
+enabled, shared expression parsing keeps their query collection from doing duplicate OXC work.
 SSR browser-global diagnostics also avoid common literal-boundary false positives such as strings,
 regexes, comments, and direct `typeof window` guards.
 

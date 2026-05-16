@@ -206,6 +206,7 @@ pub fn run(args: LintArgs) {
 
     let mut cross_file_tree = None;
     let cross_file_enabled = args.cross_file || args.cross_file_tree;
+    let cross_file_start = args.profile.then(Instant::now);
     if cross_file_enabled {
         let cross_file_inputs: Vec<_> = results
             .iter()
@@ -221,6 +222,9 @@ pub fn run(args: LintArgs) {
             }
         }
     }
+    let cross_file_time = cross_file_start
+        .map(|start| start.elapsed())
+        .unwrap_or(Duration::ZERO);
     let operation_summary = if args.profile {
         let profiler = global_profiler();
         let summary = profiler.summary();
@@ -288,7 +292,7 @@ pub fn run(args: LintArgs) {
             .iter()
             .fold(Duration::ZERO, |acc, row| acc + row.secondary);
         let total_bytes = file_rows.iter().fold(0usize, |acc, row| acc + row.bytes);
-        let phases = [
+        let mut phases = vec![
             ProfilePhase {
                 name: "collect files",
                 duration: collect_time,
@@ -313,13 +317,21 @@ pub fn run(args: LintArgs) {
                 kind: ProfilePhaseKind::Cumulative,
                 note: "sum across worker threads",
             },
-            ProfilePhase {
-                name: "render output",
-                duration: output_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "diagnostic formatting",
-            },
         ];
+        if cross_file_enabled {
+            phases.push(ProfilePhase {
+                name: "cross-file lint",
+                duration: cross_file_time,
+                kind: ProfilePhaseKind::Wall,
+                note: "project graph diagnostics",
+            });
+        }
+        phases.push(ProfilePhase {
+            name: "render output",
+            duration: output_time,
+            kind: ProfilePhaseKind::Wall,
+            note: "diagnostic formatting",
+        });
         let slow_threshold = Duration::from_millis(args.slow_threshold);
         let mut recommendations: Vec<String> = Vec::new();
         if let Some(summary) = operation_summary.as_ref()
@@ -360,7 +372,7 @@ pub fn run(args: LintArgs) {
             title: "lint",
             summary: summary.as_str(),
             total: elapsed,
-            phases: &phases,
+            phases: phases.as_slice(),
             files: &file_rows,
             slow_threshold,
             throughput_bytes: Some(total_bytes),
