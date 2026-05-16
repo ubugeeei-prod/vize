@@ -109,7 +109,11 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
   for (const [jobName, minutes] of [
     ["nix-flake", 30],
     ["fmt-rust", 10],
-    ["check-js", 30],
+    ["check-js", 15],
+    ["check-vize-apps", 20],
+    ["test-scripts", 15],
+    ["editor-extensions", 15],
+    ["build-js-packages", 30],
     ["clippy-and-test", 30],
     ["coverage", 10],
     ["playground-test", 30],
@@ -212,6 +216,10 @@ test("check workflow comments a detailed PR test report for each head push", () 
     "nix-flake",
     "fmt-rust",
     "check-js",
+    "check-vize-apps",
+    "test-scripts",
+    "editor-extensions",
+    "build-js-packages",
     "clippy-and-test",
     "coverage",
     "playground-test",
@@ -545,6 +553,26 @@ test("check workflow only installs Playwright browsers on cache misses", () => {
     workflow,
     /- name: Install Playwright browsers\s+if: steps\.cache-playwright\.outputs\.cache-hit != 'true'/,
   );
+});
+
+test("check workflow keeps JS checks separate from native and packaging work", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const checkJsJob = workflowJobBody(workflow, "check-js");
+  const buildJob = workflowJobBody(workflow, "build-js-packages");
+  const playgroundJob = workflowJobBody(workflow, "playground-test");
+
+  assert.match(checkJsJob, /vp run --workspace-root check:ci/);
+  assert.doesNotMatch(checkJsJob, /cargo build/);
+  assert.doesNotMatch(checkJsJob, /setup-moonbit/);
+  assert.doesNotMatch(checkJsJob, /build:packages/);
+
+  assert.match(buildJob, /vp run --filter '\.\/npm\/vize-native' build:ci/);
+  assert.match(buildJob, /vp run --workspace-root build:packages/);
+  assert.match(buildJob, /name:\s*shared-js-build/);
+
+  assert.match(playgroundJob, /needs:\n\s+- build-js-packages\b/);
+  assert.match(playgroundJob, /name:\s*shared-js-build/);
+  assert.doesNotMatch(playgroundJob, /name: Build npm packages/);
 });
 
 test("check workflow uploads the VRT HTML report when snapshots fail", () => {
