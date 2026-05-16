@@ -970,6 +970,32 @@ const actions = {
 }
 
 #[test]
+fn narrowed_template_bindings_inside_v_if_are_ignored() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const payload: unknown = 'safe'
+</script>
+
+<template>
+  <p v-if="typeof payload === 'string'">{{ payload.toUpperCase() }}</p>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "NarrowedTemplate.vue");
+
+    assert!(
+        !result
+            .diagnostics
+            .iter()
+            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
+        "v-if narrowing should keep template binding safe: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn type_aware_diagnostics_snapshot() {
     if !corsa_available() {
         return;

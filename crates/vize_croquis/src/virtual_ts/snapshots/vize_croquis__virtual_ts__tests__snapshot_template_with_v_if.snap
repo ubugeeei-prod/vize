@@ -10,5 +10,7 @@ declare const __ctx: { isVisible: any, isAlternate: any };
 const { isVisible, isAlternate } = __ctx;
 
 // Template expressions
-const __expr_0 = isVisible;
-const __expr_1 = isAlternate;
+if (isVisible) {
+}
+if (isAlternate) {
+}

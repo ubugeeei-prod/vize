@@ -149,6 +149,20 @@ impl VirtualTsGenerator {
 
     /// Visit an element node.
     fn visit_element(&mut self, element: &ElementNode) {
+        if let Some(condition) = element_control_flow_condition(element) {
+            if self.emit_mapped_expression_line(condition, "if (", ") {") {
+                self.indent_level += 1;
+                self.visit_element_inner(element);
+                self.indent_level = self.indent_level.saturating_sub(1);
+                self.emit_line("}");
+                return;
+            }
+        }
+
+        self.visit_element_inner(element);
+    }
+
+    fn visit_element_inner(&mut self, element: &ElementNode) {
         // Check if this element has a v-for directive
         let v_for_exp = element.props.iter().find_map(|prop| {
             if let PropNode::Directive(dir) = prop {
@@ -164,7 +178,7 @@ impl VirtualTsGenerator {
             self.emit_v_for_scope(exp, |this| {
                 for prop in &element.props {
                     if let PropNode::Directive(dir) = prop {
-                        if dir.name != "for" {
+                        if dir.name != "for" && !is_control_flow_directive(&dir.name) {
                             profile!(
                                 "croquis.virtual_ts.template.directive",
                                 this.visit_directive(dir)
@@ -180,10 +194,12 @@ impl VirtualTsGenerator {
         } else {
             for prop in &element.props {
                 if let PropNode::Directive(dir) = prop {
-                    profile!(
-                        "croquis.virtual_ts.template.directive",
-                        self.visit_directive(dir)
-                    );
+                    if !is_control_flow_directive(&dir.name) {
+                        profile!(
+                            "croquis.virtual_ts.template.directive",
+                            self.visit_directive(dir)
+                        );
+                    }
                 }
             }
             profile!(
@@ -256,11 +272,38 @@ impl VirtualTsGenerator {
 
     /// Visit an if node.
     fn visit_if(&mut self, if_node: &IfNode) {
+        let mut control_flow_open = false;
         for branch in &if_node.branches {
             if let Some(ref cond) = branch.condition {
-                self.emit_expression(cond, "v-if");
+                if control_flow_open {
+                    self.indent_level = self.indent_level.saturating_sub(1);
+                }
+
+                let prefix = if control_flow_open {
+                    "} else if ("
+                } else {
+                    "if ("
+                };
+                if self.emit_mapped_expression_line(cond, prefix, ") {") {
+                    control_flow_open = true;
+                    self.indent_level += 1;
+                } else {
+                    if control_flow_open {
+                        self.emit_line("}");
+                        control_flow_open = false;
+                    }
+                    self.emit_expression(cond, "v-if");
+                }
+            } else if control_flow_open {
+                self.indent_level = self.indent_level.saturating_sub(1);
+                self.emit_line("} else {");
+                self.indent_level += 1;
             }
             self.visit_children(&branch.children);
+        }
+        if control_flow_open {
+            self.indent_level = self.indent_level.saturating_sub(1);
+            self.emit_line("}");
         }
     }
 
@@ -414,6 +457,40 @@ impl VirtualTsGenerator {
             }
         });
     }
+
+    fn emit_mapped_expression_line(
+        &mut self,
+        expr: &ExpressionNode,
+        prefix: &str,
+        suffix: &str,
+    ) -> bool {
+        let ExpressionNode::Simple(simple) = expr else {
+            return false;
+        };
+        if simple.content.is_empty() {
+            return false;
+        }
+
+        let expr_start = self.gen_offset + (self.indent_level * 2 + prefix.len()) as u32;
+        let expr_end = expr_start + simple.content.len() as u32;
+        let source_start = simple.loc.start.offset + self.block_offset;
+        let source_end = simple.loc.end.offset + self.block_offset;
+
+        self.mappings.push(SourceMapping::with_data(
+            SourceRange::new(source_start, source_end),
+            SourceRange::new(expr_start, expr_end),
+            MappingData::Expression {
+                text: simple.content.to_compact_string(),
+            },
+        ));
+
+        self.emit_generated_line(|output| {
+            output.push_str(prefix);
+            output.push_str(simple.content.as_str());
+            output.push_str(suffix);
+        });
+        true
+    }
 }
 
 fn decimal_len(mut value: u32) -> usize {
@@ -423,4 +500,21 @@ fn decimal_len(mut value: u32) -> usize {
         len += 1;
     }
     len
+}
+
+fn element_control_flow_condition<'a>(
+    element: &'a ElementNode<'a>,
+) -> Option<&'a ExpressionNode<'a>> {
+    element.props.iter().find_map(|prop| {
+        let PropNode::Directive(dir) = prop else {
+            return None;
+        };
+        matches!(dir.name.as_str(), "if" | "else-if")
+            .then_some(dir.exp.as_ref())
+            .flatten()
+    })
+}
+
+fn is_control_flow_directive(name: &str) -> bool {
+    matches!(name, "if" | "else-if" | "else")
 }
