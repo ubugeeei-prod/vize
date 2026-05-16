@@ -114,13 +114,25 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        // Collect template parser diagnostics
+        // Collect parser diagnostics for script and template blocks before
+        // dependent analyzers, so broken blocks do not fan out into noisy
+        // lint/type/Corsa diagnostics.
+        let script_diags = Self::collect_script_diagnostics(uri, &content);
+        let has_script_parse_error = !script_diags.is_empty();
+        tracing::info!("collect: script parser diagnostics: {}", script_diags.len());
+        diagnostics.extend(script_diags);
+
         let template_diags = Self::collect_template_diagnostics(uri, &content);
+        let has_template_parse_error = !template_diags.is_empty();
         tracing::info!(
             "collect: template parser diagnostics: {}",
             template_diags.len()
         );
         diagnostics.extend(template_diags);
+        if has_script_parse_error || has_template_parse_error {
+            tracing::info!("collect: skipping dependent diagnostics after block parse error");
+            return diagnostics;
+        }
 
         if features.lint {
             // Collect linter diagnostics (vize_patina)
@@ -161,11 +173,8 @@ impl DiagnosticService {
         // Start with sync diagnostics (patina, etc.)
         let mut diagnostics = Self::collect(state, uri);
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
-        if diagnostics.iter().any(|diagnostic| {
-            diagnostic.source.as_deref() == Some(sources::SFC_PARSER)
-                && diagnostic.severity == Some(DiagnosticSeverity::ERROR)
-        }) {
-            tracing::info!("collect_async: Corsa diagnostics skipped after SFC parse error");
+        if has_blocking_parser_error(&diagnostics) {
+            tracing::info!("collect_async: Corsa diagnostics skipped after parser error");
             return diagnostics;
         }
 
@@ -206,6 +215,16 @@ impl DiagnosticService {
             ..Default::default()
         }
     }
+}
+
+#[cfg(feature = "native")]
+fn has_blocking_parser_error(diagnostics: &[Diagnostic]) -> bool {
+    diagnostics.iter().any(|diagnostic| {
+        matches!(
+            diagnostic.source.as_deref(),
+            Some(sources::SFC_PARSER | sources::SCRIPT_PARSER | sources::TEMPLATE_PARSER)
+        ) && diagnostic.severity == Some(DiagnosticSeverity::ERROR)
+    })
 }
 
 /// Builder for creating diagnostics.
@@ -397,5 +416,108 @@ mod tests {
         assert!(!diagnostics
             .iter()
             .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SFC_PARSER)));
+    }
+
+    #[test]
+    fn collect_short_circuits_dependent_diagnostics_after_script_parse_error() {
+        let state = state_with_lsp_diagnostics(true, true);
+        let uri = Url::parse("file:///BrokenScript.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup lang=\"ts\">\nconst count =</script>\n<template>{{ count }}</template>"
+                .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+        let diagnostic_sources: Vec<_> = diagnostics
+            .iter()
+            .filter_map(|diagnostic| diagnostic.source.as_deref())
+            .collect();
+
+        assert_eq!(diagnostic_sources, vec![sources::SCRIPT_PARSER]);
+        assert_eq!(
+            diagnostics[0].code,
+            Some(NumberOrString::String("script-parse-error".to_string()))
+        );
+        assert_eq!(diagnostics[0].range.start.line, 1);
+    }
+
+    #[test]
+    fn collect_accepts_jsx_script_without_false_parse_diagnostic() {
+        let state = state_with_lsp_diagnostics(false, false);
+        let uri = Url::parse("file:///JsxScript.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup lang=\"jsx\">\nconst count = 1\nconst vnode = <button>{count}</button>\n</script>"
+                .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+
+        assert!(!diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER)));
+    }
+
+    #[test]
+    fn collect_accepts_tsx_script_without_false_parse_diagnostic() {
+        let state = state_with_lsp_diagnostics(false, false);
+        let uri = Url::parse("file:///TsxScript.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup lang=\"tsx\">\nconst count = 1\nconst vnode = <button>{count}</button>\n</script>"
+                .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+
+        assert!(!diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER)));
+    }
+
+    #[test]
+    fn collect_skips_unsupported_script_language() {
+        let state = state_with_lsp_diagnostics(false, false);
+        let uri = Url::parse("file:///CoffeeScript.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup lang=\"coffee\">\ncount = ->\n</script>".to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+
+        assert!(!diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SCRIPT_PARSER)));
+    }
+
+    #[test]
+    fn collect_short_circuits_dependent_diagnostics_after_template_parse_error() {
+        let state = state_with_lsp_diagnostics(true, true);
+        let uri = Url::parse("file:///BrokenTemplate.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup lang=\"ts\">const count = 1</script>\n<template><div>{{ count }}</template>"
+                .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+        let diagnostic_sources: Vec<_> = diagnostics
+            .iter()
+            .filter_map(|diagnostic| diagnostic.source.as_deref())
+            .collect();
+
+        assert_eq!(diagnostic_sources, vec![sources::TEMPLATE_PARSER]);
     }
 }

@@ -9,6 +9,9 @@ use tower_lsp::lsp_types::{
     CodeDescription, Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url,
 };
 
+use oxc_allocator::Allocator as OxcAllocator;
+use oxc_parser::Parser as OxcParser;
+use oxc_span::SourceType;
 use vize_patina::{render_help, HelpRenderTarget};
 
 use super::{offset_to_line_col, sources, DiagnosticService};
@@ -294,6 +297,40 @@ impl DiagnosticService {
             .collect()
     }
 
+    /// Collect script parser diagnostics.
+    pub(super) fn collect_script_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+        let options = vize_atelier_sfc::SfcParseOptions {
+            filename: uri.path().to_string().into(),
+            ..Default::default()
+        };
+
+        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+            return vec![];
+        };
+
+        let mut diagnostics = Vec::new();
+
+        if let Some(ref script) = descriptor.script {
+            diagnostics.extend(collect_script_block_diagnostics(
+                content,
+                &script.content,
+                script.loc.start,
+                script.lang.as_deref(),
+            ));
+        }
+
+        if let Some(ref script_setup) = descriptor.script_setup {
+            diagnostics.extend(collect_script_block_diagnostics(
+                content,
+                &script_setup.content,
+                script_setup.loc.start,
+                script_setup.lang.as_deref(),
+            ));
+        }
+
+        diagnostics
+    }
+
     /// Collect linter diagnostics from vize_patina.
     pub(super) fn collect_lint_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
         let options = vize_atelier_sfc::SfcParseOptions {
@@ -374,4 +411,78 @@ impl DiagnosticService {
             })
             .collect()
     }
+}
+
+fn collect_script_block_diagnostics(
+    sfc_content: &str,
+    script_content: &str,
+    script_offset: usize,
+    lang: Option<&str>,
+) -> Vec<Diagnostic> {
+    let Some(source_type) = script_source_type(lang) else {
+        return vec![];
+    };
+
+    let allocator = OxcAllocator::default();
+    let parsed = OxcParser::new(&allocator, script_content, source_type).parse();
+
+    parsed
+        .errors
+        .iter()
+        .map(|error| {
+            let (local_start, local_end) = diagnostic_span(error, script_content.len());
+            let start = script_offset + local_start;
+            let end = script_offset + local_end;
+            let (start_line, start_col) = offset_to_line_col(sfc_content, start);
+            let (end_line, end_col) = offset_to_line_col(sfc_content, end);
+
+            Diagnostic {
+                range: Range {
+                    start: Position {
+                        line: start_line,
+                        character: start_col,
+                    },
+                    end: Position {
+                        line: end_line,
+                        character: end_col,
+                    },
+                },
+                severity: Some(DiagnosticSeverity::ERROR),
+                code: Some(NumberOrString::String("script-parse-error".to_string())),
+                source: Some(sources::SCRIPT_PARSER.to_string()),
+                message: format!("Script parse error: {}", error),
+                ..Default::default()
+            }
+        })
+        .collect()
+}
+
+fn script_source_type(lang: Option<&str>) -> Option<SourceType> {
+    let extension = match lang.map(|value| value.trim().to_ascii_lowercase()) {
+        None => "js".to_string(),
+        Some(value) if value.is_empty() => "js".to_string(),
+        Some(value) if matches!(value.as_str(), "js" | "javascript") => "js".to_string(),
+        Some(value) if matches!(value.as_str(), "jsx") => "jsx".to_string(),
+        Some(value) if matches!(value.as_str(), "ts" | "typescript") => "ts".to_string(),
+        Some(value) if matches!(value.as_str(), "tsx") => "tsx".to_string(),
+        Some(_) => return None,
+    };
+
+    SourceType::from_path(format!("script.{extension}")).ok()
+}
+
+fn diagnostic_span(error: &oxc_diagnostics::OxcDiagnostic, source_len: usize) -> (usize, usize) {
+    let fallback_end = source_len.max(1);
+    let Some(label) = error.labels.as_ref().and_then(|labels| {
+        labels
+            .iter()
+            .find(|label| label.primary())
+            .or_else(|| labels.first())
+    }) else {
+        return (0, fallback_end);
+    };
+
+    let start = label.offset().min(source_len);
+    let end = start.saturating_add(label.len().max(1)).min(fallback_end);
+    (start, end.max(start + 1))
 }

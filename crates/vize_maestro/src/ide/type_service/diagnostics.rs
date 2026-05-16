@@ -208,11 +208,11 @@ impl TypeService {
                 Diagnostic {
                     range: Range {
                         start: Position {
-                            line: template_start_line + start_line - 1,
+                            line: template_start_line.saturating_sub(1) + start_line,
                             character: start_col,
                         },
                         end: Position {
-                            line: template_start_line + end_line - 1,
+                            line: template_start_line.saturating_sub(1) + end_line,
                             character: end_col,
                         },
                     },
@@ -278,9 +278,9 @@ impl TypeService {
     }
 }
 
-/// Convert byte offset to (line, column) - line is 1-indexed, column is 0-indexed.
+/// Convert byte offset to (line, column), both 0-indexed for LSP.
 pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
-    let mut line = 1u32;
+    let mut line = 0u32;
     let mut col = 0u32;
     let mut current_offset = 0;
 
@@ -298,4 +298,42 @@ pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
     }
 
     (line, col)
+}
+
+#[cfg(test)]
+mod diagnostics_tests {
+    use super::{offset_to_line_col, TypeService};
+    use crate::server::ServerState;
+    use tower_lsp::lsp_types::{DiagnosticSeverity, Url};
+
+    #[test]
+    fn offset_to_line_col_is_zero_indexed_for_lsp() {
+        assert_eq!(offset_to_line_col("one\ntwo", 0), (0, 0));
+        assert_eq!(offset_to_line_col("one\ntwo", 4), (1, 0));
+        assert_eq!(offset_to_line_col("one\ntwo", 6), (1, 2));
+    }
+
+    #[test]
+    fn collect_diagnostics_uses_zero_indexed_lsp_lines() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///Component.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<script setup>\nconst props = defineProps(['count'])\n</script>\n<template>{{ props.count }}</template>"
+                .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = TypeService::collect_diagnostics(&state, &uri);
+        let diagnostic = diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.code.as_ref().is_some_and(|code| {
+                matches!(code, tower_lsp::lsp_types::NumberOrString::String(value) if value == "untyped-prop")
+            }))
+            .expect("untyped prop diagnostic should be present");
+
+        assert_eq!(diagnostic.range.start.line, 1);
+        assert_eq!(diagnostic.severity, Some(DiagnosticSeverity::WARNING));
+    }
 }
