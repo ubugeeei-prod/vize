@@ -4,9 +4,24 @@ use super::{parse, parse_with_options};
 use vize_carton::Bump;
 use vize_relief::{
     ast::{ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode},
-    errors::ErrorCode,
+    errors::{CompilerError, ErrorCode},
     options::ParserOptions,
 };
+
+fn error_recovery_snapshot<'a>(
+    errors: &'a [CompilerError],
+) -> std::vec::Vec<(ErrorCode, &'a str, &'a str)> {
+    errors
+        .iter()
+        .map(|error| {
+            (
+                error.code,
+                error.message.as_str(),
+                error.loc.as_ref().map_or("", |loc| loc.source.as_str()),
+            )
+        })
+        .collect()
+}
 
 #[test]
 fn test_parse_simple_element() {
@@ -891,6 +906,30 @@ fn test_parse_incorrectly_closed_comment_reports_error_and_continues() {
     assert_eq!(root.children.len(), 2);
     assert!(matches!(&root.children[0], TemplateChildNode::Comment(_)));
     assert!(matches!(&root.children[1], TemplateChildNode::Element(_)));
+}
+
+#[test]
+fn test_parse_unclosed_comment_reports_error_without_losing_comment() {
+    let allocator = Bump::new();
+    let (root, errors) = parse(&allocator, "before<!-- open");
+
+    insta::assert_debug_snapshot!(error_recovery_snapshot(&errors), @r###"
+    [
+        (
+            EofInComment,
+            "Comment is missing its closing `-->`; preserving the unfinished comment so parsing can finish.",
+            "<",
+        ),
+    ]
+    "###);
+    assert_eq!(root.children.len(), 2);
+    assert!(matches!(&root.children[0], TemplateChildNode::Text(_)));
+    if let TemplateChildNode::Comment(comment) = &root.children[1] {
+        assert_eq!(comment.content.as_str(), " open");
+        assert_eq!(comment.loc.source.as_str(), "<!-- open");
+    } else {
+        panic!("Expected recovered comment");
+    }
 }
 
 #[test]

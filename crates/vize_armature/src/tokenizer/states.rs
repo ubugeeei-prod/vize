@@ -64,7 +64,11 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 Some(Sequence::CdataEnd) => ErrorCode::EofInCdata,
                 _ => ErrorCode::EofInComment,
             };
-            self.callbacks.on_error(code, self.index);
+            let error_index = match self.current_sequence {
+                Some(Sequence::CdataEnd) => self.section_start.saturating_sub(9),
+                _ => self.section_start.saturating_sub(4),
+            };
+            self.callbacks.on_error(code, error_index);
             match self.current_sequence {
                 Some(Sequence::CdataEnd) => {
                     self.callbacks.on_cdata(self.section_start, self.index);

@@ -345,7 +345,9 @@ impl<'a> Parser<'a> {
     /// Process comment
     pub(super) fn on_comment_impl(&mut self, start: usize, end: usize) {
         let content = self.get_source(start, end);
-        let loc = self.create_loc(start - 4, end + 3); // Include <!-- and -->
+        let loc_start = start.saturating_sub(4);
+        let loc_end = end.saturating_add(3).min(self.source.len());
+        let loc = self.create_loc(loc_start, loc_end); // Include <!-- and --> when present.
 
         // Check for @vize: directive
         let directive = parse_vize_directive(content, loc.start.line, loc.start.offset);
@@ -399,6 +401,10 @@ impl<'a> Parser<'a> {
             ),
             ErrorCode::EofInTag => Some(
                 "Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue."
+                    .into(),
+            ),
+            ErrorCode::EofInComment => Some(
+                "Comment is missing its closing `-->`; preserving the unfinished comment so parsing can finish."
                     .into(),
             ),
             ErrorCode::InvalidFirstCharacterOfTagName => Some(

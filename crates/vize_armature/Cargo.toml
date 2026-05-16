@@ -14,3 +14,6 @@ compact_str = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
 htmlize = { workspace = true }
+
+[dev-dependencies]
+insta = { workspace = true }

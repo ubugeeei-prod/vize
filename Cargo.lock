@@ -3413,6 +3413,7 @@ version = "0.96.0"
 dependencies = [
  "compact_str 0.9.0",
  "htmlize",
+ "insta",
  "serde",
  "thiserror",
  "vize_carton",
