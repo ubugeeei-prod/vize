@@ -52,6 +52,8 @@ jobs:
           cache: true
           run-install: false
 
+      - uses: ./.github/actions/setup-moonbit
+
       - name: Install JS dependencies
         run: |
           vp install --frozen-lockfile --prefer-offline \
