@@ -21,6 +21,13 @@ pub(super) struct FloatingPromiseRange {
     pub end: u32,
     pub probe_start: u32,
     pub probe_end: u32,
+    pub probe_target: FloatingPromiseProbeTarget,
+}
+
+#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
+pub(super) enum FloatingPromiseProbeTarget {
+    SourceText,
+    ExpressionBinding,
 }
 
 #[derive(Default)]
@@ -100,6 +107,13 @@ fn bare_handler_reference_range_for_expression(
         Expression::Identifier(_) => Some(floating_promise_range_from_span(expression.span())),
         Expression::StaticMemberExpression(member) => is_member_handler_reference(&member.object)
             .then(|| floating_promise_range_from_span(expression.span())),
+        Expression::ComputedMemberExpression(member) => is_member_handler_reference(&member.object)
+            .then(|| {
+                floating_promise_range_from_span_with_target(
+                    expression.span(),
+                    FloatingPromiseProbeTarget::ExpressionBinding,
+                )
+            }),
         Expression::ChainExpression(chain) => {
             chain_member_handler_reference_range(chain, expression.span())
         }
@@ -126,6 +140,14 @@ fn chain_member_handler_reference_range(
     match &chain.expression {
         ChainElement::StaticMemberExpression(member) => is_member_handler_reference(&member.object)
             .then(|| floating_promise_range_from_span(span)),
+        ChainElement::ComputedMemberExpression(member) => {
+            is_member_handler_reference(&member.object).then(|| {
+                floating_promise_range_from_span_with_target(
+                    span,
+                    FloatingPromiseProbeTarget::ExpressionBinding,
+                )
+            })
+        }
         ChainElement::TSNonNullExpression(non_null) => {
             bare_handler_reference_range_for_expression(&non_null.expression)
         }
@@ -137,8 +159,12 @@ fn is_member_handler_reference(expression: &Expression<'_>) -> bool {
     match expression {
         Expression::Identifier(_) | Expression::ThisExpression(_) => true,
         Expression::StaticMemberExpression(member) => is_member_handler_reference(&member.object),
+        Expression::ComputedMemberExpression(member) => is_member_handler_reference(&member.object),
         Expression::ChainExpression(chain) => match &chain.expression {
             ChainElement::StaticMemberExpression(member) => {
+                is_member_handler_reference(&member.object)
+            }
+            ChainElement::ComputedMemberExpression(member) => {
                 is_member_handler_reference(&member.object)
             }
             ChainElement::TSNonNullExpression(non_null) => {
@@ -151,11 +177,19 @@ fn is_member_handler_reference(expression: &Expression<'_>) -> bool {
 }
 
 fn floating_promise_range_from_span(span: Span) -> FloatingPromiseRange {
+    floating_promise_range_from_span_with_target(span, FloatingPromiseProbeTarget::SourceText)
+}
+
+fn floating_promise_range_from_span_with_target(
+    span: Span,
+    probe_target: FloatingPromiseProbeTarget,
+) -> FloatingPromiseRange {
     FloatingPromiseRange {
         start: span.start,
         end: span.end,
         probe_start: span.start,
         probe_end: span.end,
+        probe_target,
     }
 }
 
@@ -257,13 +291,20 @@ impl FloatingPromiseCollector {
     ) -> Vec<FloatingPromiseRange> {
         let mut ranges = Vec::with_capacity(self.ranges.len());
         let limit = base_offset + source_len;
-        self.ranges
-            .sort_unstable_by_key(|range| (range.start, range.end, range.probe_start));
+        self.ranges.sort_unstable_by_key(|range| {
+            (
+                range.start,
+                range.end,
+                range.probe_start,
+                range.probe_target,
+            )
+        });
         self.ranges.dedup_by(|left, right| {
             left.start == right.start
                 && left.end == right.end
                 && left.probe_start == right.probe_start
                 && left.probe_end == right.probe_end
+                && left.probe_target == right.probe_target
         });
         for range in self.ranges {
             if range.end <= range.start
@@ -280,6 +321,7 @@ impl FloatingPromiseCollector {
                 end: range.end - base_offset,
                 probe_start: range.probe_start - base_offset,
                 probe_end: range.probe_end - base_offset,
+                probe_target: range.probe_target,
             });
         }
         ranges
@@ -305,6 +347,7 @@ fn floating_promise_range_for_expression(
                 end: span.end,
                 probe_start: probe.start,
                 probe_end: probe.end,
+                probe_target: FloatingPromiseProbeTarget::SourceText,
             })
         }
         Expression::NewExpression(_) => {
@@ -314,6 +357,7 @@ fn floating_promise_range_for_expression(
                 end: span.end,
                 probe_start: span.start,
                 probe_end: span.end,
+                probe_target: FloatingPromiseProbeTarget::SourceText,
             })
         }
         Expression::ChainExpression(chain) => match &chain.expression {
@@ -325,6 +369,7 @@ fn floating_promise_range_for_expression(
                     end: span.end,
                     probe_start: probe.start,
                     probe_end: probe.end,
+                    probe_target: FloatingPromiseProbeTarget::SourceText,
                 })
             }
             ChainElement::TSNonNullExpression(non_null) => {
@@ -545,6 +590,28 @@ mod tests {
         assert_eq!(
             promise_slices(source, &ranges.floating_promises),
             vec!["actions?.save"]
+        );
+    }
+
+    #[test]
+    fn collects_computed_member_event_handler_references_as_floating_candidates() {
+        let source = "actions[method]";
+        let ranges = collect_template_call_ranges(source, true, false, true);
+
+        assert_eq!(
+            promise_slices(source, &ranges.floating_promises),
+            vec!["actions[method]"]
+        );
+    }
+
+    #[test]
+    fn collects_optional_computed_member_event_handler_references_as_floating_candidates() {
+        let source = "actions?.[method]";
+        let ranges = collect_template_call_ranges(source, true, false, true);
+
+        assert_eq!(
+            promise_slices(source, &ranges.floating_promises),
+            vec!["actions?.[method]"]
         );
     }
 
