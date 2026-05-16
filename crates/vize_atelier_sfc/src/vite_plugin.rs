@@ -12,6 +12,7 @@ mod hmr;
 mod js_string;
 mod query;
 mod request;
+mod resolver;
 mod style;
 mod transform;
 
@@ -23,6 +24,11 @@ pub use hmr::{HmrHashes, detect_hmr_update_type, generate_hmr_code, has_hmr_chan
 pub use request::{
     VitePluginRequest, classify_vite_plugin_request, create_virtual_id, from_virtual_id,
     normalize_fs_id_for_build, normalize_virtual_vue_module_id,
+};
+pub use resolver::{
+    ViteIdParts, create_bare_import_bases, create_bare_import_candidates, is_bare_specifier,
+    normalize_require_base, normalize_resolved_vue_path, resolve_alias_request,
+    resolve_relative_import, resolve_vue_path, split_id_query,
 };
 pub use transform::{
     DefineReplacement, DynamicImportAliasRule, apply_define_replacements, is_builtin_define,

@@ -37,6 +37,12 @@ pub struct HmrHashesNapi {
     pub style_hash: Option<String>,
 }
 
+#[napi(object)]
+pub struct ViteIdPartsNapi {
+    pub request: String,
+    pub query_suffix: String,
+}
+
 impl From<DynamicImportAliasRuleNapi> for vize_atelier_sfc::vite_plugin::DynamicImportAliasRule {
     fn from(rule: DynamicImportAliasRuleNapi) -> Self {
         Self {
@@ -76,6 +82,15 @@ impl From<HmrHashesNapi> for vize_atelier_sfc::vite_plugin::HmrHashes {
     }
 }
 
+impl From<vize_atelier_sfc::vite_plugin::ViteIdParts> for ViteIdPartsNapi {
+    fn from(parts: vize_atelier_sfc::vite_plugin::ViteIdParts) -> Self {
+        Self {
+            request: parts.request.into(),
+            query_suffix: parts.query_suffix.into(),
+        }
+    }
+}
+
 #[napi(js_name = "classifyVitePluginRequest")]
 pub fn classify_vite_plugin_request(id: String) -> VitePluginRequestNapi {
     vize_atelier_sfc::vite_plugin::classify_vite_plugin_request(&id).into()
@@ -103,6 +118,70 @@ pub fn resolve_vite_css_imports(
         dev_url_base.as_deref(),
     )
     .into()
+}
+
+#[napi(js_name = "splitViteIdQuery")]
+pub fn split_vite_id_query(id: String) -> ViteIdPartsNapi {
+    vize_atelier_sfc::vite_plugin::split_id_query(&id).into()
+}
+
+#[napi(js_name = "isViteBareSpecifier")]
+pub fn is_vite_bare_specifier(id: String) -> bool {
+    vize_atelier_sfc::vite_plugin::is_bare_specifier(&id)
+}
+
+#[napi(js_name = "normalizeViteRequireBase")]
+pub fn normalize_vite_require_base(importer: Option<String>) -> Option<String> {
+    vize_atelier_sfc::vite_plugin::normalize_require_base(importer.as_deref()).map(Into::into)
+}
+
+#[napi(js_name = "resolveViteAliasRequest")]
+pub fn resolve_vite_alias_request(
+    id: String,
+    alias_rules: Vec<CssAliasRuleNapi>,
+) -> Option<String> {
+    let alias_rules = alias_rules.into_iter().map(Into::into).collect::<Vec<_>>();
+    vize_atelier_sfc::vite_plugin::resolve_alias_request(&id, &alias_rules).map(Into::into)
+}
+
+#[napi(js_name = "normalizeViteResolvedVuePath")]
+pub fn normalize_vite_resolved_vue_path(id: String) -> Option<String> {
+    vize_atelier_sfc::vite_plugin::normalize_resolved_vue_path(&id).map(Into::into)
+}
+
+#[napi(js_name = "resolveViteVuePath")]
+pub fn resolve_vite_vue_path(root: String, id: String, importer: Option<String>) -> String {
+    vize_atelier_sfc::vite_plugin::resolve_vue_path(&root, &id, importer.as_deref()).into()
+}
+
+#[napi(js_name = "createViteBareImportBases")]
+pub fn create_vite_bare_import_bases(root: String, importer: Option<String>) -> Vec<String> {
+    vize_atelier_sfc::vite_plugin::create_bare_import_bases(&root, importer.as_deref())
+        .into_iter()
+        .map(Into::into)
+        .collect()
+}
+
+#[napi(js_name = "createViteBareImportCandidates")]
+pub fn create_vite_bare_import_candidates(
+    id: String,
+    alias_rules: Vec<CssAliasRuleNapi>,
+    resolved_id: Option<String>,
+) -> Vec<String> {
+    let alias_rules = alias_rules.into_iter().map(Into::into).collect::<Vec<_>>();
+    vize_atelier_sfc::vite_plugin::create_bare_import_candidates(
+        &id,
+        &alias_rules,
+        resolved_id.as_deref(),
+    )
+    .into_iter()
+    .map(Into::into)
+    .collect()
+}
+
+#[napi(js_name = "resolveViteRelativeImport")]
+pub fn resolve_vite_relative_import(id: String, importer: String) -> Option<String> {
+    vize_atelier_sfc::vite_plugin::resolve_relative_import(&id, &importer).map(Into::into)
 }
 
 #[napi(js_name = "createViteVirtualId")]

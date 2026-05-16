@@ -183,6 +183,11 @@ export interface DynamicImportAliasRuleNapi {
   toPrefix: string;
 }
 
+export interface ViteIdPartsNapi {
+  request: string;
+  querySuffix: string;
+}
+
 /**
  * Classify a Vite plugin module request using the native Vize request model.
  * This keeps pure query parsing and virtual module categorization in Rust while
@@ -199,6 +204,40 @@ export declare function resolveViteCssImports(
   isDev?: boolean | undefined | null,
   devUrlBase?: string | undefined | null,
 ): string;
+
+export declare function splitViteIdQuery(id: string): ViteIdPartsNapi;
+
+export declare function isViteBareSpecifier(id: string): boolean;
+
+export declare function normalizeViteRequireBase(
+  importer?: string | undefined | null,
+): string | null;
+
+export declare function resolveViteAliasRequest(
+  id: string,
+  aliasRules: Array<CssAliasRuleNapi>,
+): string | null;
+
+export declare function normalizeViteResolvedVuePath(id: string): string | null;
+
+export declare function resolveViteVuePath(
+  root: string,
+  id: string,
+  importer?: string | undefined | null,
+): string;
+
+export declare function createViteBareImportBases(
+  root: string,
+  importer?: string | undefined | null,
+): Array<string>;
+
+export declare function createViteBareImportCandidates(
+  id: string,
+  aliasRules: Array<CssAliasRuleNapi>,
+  resolvedId?: string | undefined | null,
+): Array<string>;
+
+export declare function resolveViteRelativeImport(id: string, importer: string): string | null;
 
 export declare function createViteVirtualId(
   realPath: string,

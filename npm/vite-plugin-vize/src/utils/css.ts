@@ -5,7 +5,7 @@ export interface CssAliasRule {
   replacement: string;
 }
 
-interface NativeCssAliasRule {
+export interface NativeCssAliasRule {
   find: string;
   replacement: string;
   isRegex: boolean;
@@ -36,7 +36,7 @@ export function resolveCssImports(
   );
 }
 
-function toNativeCssAliasRule(rule: CssAliasRule): NativeCssAliasRule {
+export function toNativeCssAliasRule(rule: CssAliasRule): NativeCssAliasRule {
   return typeof rule.find === "string"
     ? {
         find: rule.find,
