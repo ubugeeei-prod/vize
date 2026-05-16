@@ -27,8 +27,9 @@ test("app e2e workflow is manually selectable and uploads failure artifacts", ()
   assert.match(workflow, /Build vize CLI/);
   assert.match(workflow, /cargo build --profile ci -p vize/);
   assert.match(workflow, /Cache Playwright browsers/);
-  assert.match(workflow, /pnpm --dir tests exec playwright install --with-deps chromium/);
-  assert.match(workflow, /RUN_BUILD_TESTS=1 pnpm --dir tests run test:preview/);
+  assert.match(workflow, /vp exec --filter '\.\/tests' -- playwright install --with-deps chromium/);
+  assert.match(workflow, /RUN_BUILD_TESTS=1 vp run --filter '\.\/tests' test:preview/);
+  assert.doesNotMatch(workflow, /pnpm --dir tests/);
   assert.match(workflow, /- name: Upload app e2e artifacts\s+if: failure\(\)/);
   assert.match(workflow, /tests\/app\/results\//);
   assert.match(workflow, /tests\/app\/screenshots\//);

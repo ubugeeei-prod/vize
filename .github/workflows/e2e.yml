@@ -78,31 +78,31 @@ jobs:
 
       - name: Install Playwright browsers
         if: steps.cache-playwright.outputs.cache-hit != 'true'
-        run: pnpm --dir tests exec playwright install --with-deps chromium
+        run: vp exec --filter './tests' -- playwright install --with-deps chromium
 
       - name: Run selected app e2e suite
         run: |
           case "${{ inputs.suite }}" in
             dev)
-              pnpm --dir tests run test:dev
+              vp run --filter './tests' test:dev
               ;;
             vrt)
-              pnpm --dir tests run test:vrt
+              vp run --filter './tests' test:vrt
               ;;
             preview)
-              RUN_BUILD_TESTS=1 pnpm --dir tests run test:preview
+              RUN_BUILD_TESTS=1 vp run --filter './tests' test:preview
               ;;
             check)
-              pnpm --dir tests run test:check
+              vp run --filter './tests' test:check
               ;;
             lint)
-              pnpm --dir tests run test:lint
+              vp run --filter './tests' test:lint
               ;;
             build)
-              pnpm --dir tests run test:build
+              vp run --filter './tests' test:build
               ;;
             check-fixtures)
-              pnpm --dir tests run test:check:fixtures
+              vp run --filter './tests' test:check:fixtures
               ;;
           esac
 
