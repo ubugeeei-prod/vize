@@ -14,6 +14,28 @@ function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(root, ...segments), "utf8");
 }
 
+function readGithubYamlFiles(): Array<{ relativePath: string; content: string }> {
+  const files: Array<{ relativePath: string; content: string }> = [];
+  const visit = (directory: string) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        visit(fullPath);
+        continue;
+      }
+      if (!/\.(ya?ml)$/.test(entry.name)) {
+        continue;
+      }
+      files.push({
+        relativePath: path.relative(root, fullPath),
+        content: fs.readFileSync(fullPath, "utf8"),
+      });
+    }
+  };
+  visit(path.join(root, ".github"));
+  return files.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
+}
+
 function workflowJobBody(workflow: string, jobName: string): string {
   const jobStart = workflow.indexOf(`\n  ${jobName}:\n`);
   assert.notEqual(jobStart, -1, `missing job ${jobName}`);
@@ -41,6 +63,31 @@ test("GitHub workflows use the current cache action", () => {
     const file = readRepoFile(...relativePath.split("/"));
     assert.doesNotMatch(file, /uses:\s*actions\/cache@v4/, `${relativePath} still uses cache v4`);
   }
+});
+
+test("GitHub workflow actions are pinned by full commit SHA", () => {
+  const violations: string[] = [];
+  const usePattern = /^(\s*-?\s*uses:\s*)(["']?)([^\s"']+)\2\s*(?:#.*)?$/gm;
+
+  for (const { relativePath, content } of readGithubYamlFiles()) {
+    for (const match of content.matchAll(usePattern)) {
+      const spec = match[3];
+      if (spec.startsWith("./")) {
+        continue;
+      }
+      const atIndex = spec.lastIndexOf("@");
+      if (atIndex === -1) {
+        violations.push(`${relativePath}: ${spec} has no ref`);
+        continue;
+      }
+      const ref = spec.slice(atIndex + 1);
+      if (!/^[0-9a-f]{40}$/.test(ref)) {
+        violations.push(`${relativePath}: ${spec} is not pinned to a full SHA`);
+      }
+    }
+  }
+
+  assert.deepEqual(violations, []);
 });
 
 test("PR CI jobs cap runtime with explicit timeouts", () => {
