@@ -3,8 +3,6 @@
 //! Contains the main compilation pipeline, file collection, pattern matching,
 //! and per-file compilation with profiling.
 
-#![allow(clippy::disallowed_macros)]
-
 use std::{
     fs,
     path::PathBuf,
@@ -133,6 +131,10 @@ pub(crate) fn run(args: BuildArgs) {
                 let ext = match args.format {
                     OutputFormat::Js => get_output_extension(&output.script_lang, args.script_ext),
                     OutputFormat::Json => "json",
+                    // Panic path by control-flow invariant: this match is inside
+                    // the `OutputFormat::Js | OutputFormat::Json` arm above.
+                    // Keeping the enum match explicit lets the compiler keep
+                    // checking newly added output formats here.
                     OutputFormat::Stats => unreachable!(),
                 };
 
@@ -161,6 +163,7 @@ pub(crate) fn run(args: BuildArgs) {
                             .unwrap_or_default()
                             .into()
                     }
+                    // Panic path by the same outer-match invariant as `ext`.
                     OutputFormat::Stats => unreachable!(),
                 };
 
@@ -481,13 +484,28 @@ fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
     {
         let prefix = &pattern[..prefix_end];
         let prefix_normalized = prefix.trim_end_matches('/');
-        return path_str.contains(&format!("{}/", prefix_normalized)) && path_str.ends_with(".vue");
+        let has_prefix_dir = prefix_normalized.is_empty()
+            || path_str.match_indices(prefix_normalized).any(|(idx, _)| {
+                path_str.as_bytes().get(idx + prefix_normalized.len()) == Some(&b'/')
+            });
+        return has_prefix_dir && path_str.ends_with(".vue");
     }
 
     if pattern.ends_with(".vue") {
         let pattern_normalized = pattern.replace("\\", "/");
-        return path_str == pattern_normalized
-            || path_str.ends_with(&format!("/{}", pattern_normalized));
+        if path_str == pattern_normalized {
+            return true;
+        }
+
+        if !path_str.ends_with(pattern_normalized.as_str()) {
+            return false;
+        }
+
+        let prefix_len = path_str.len() - pattern_normalized.len();
+        let Some(separator_idx) = prefix_len.checked_sub(1) else {
+            return false;
+        };
+        return path_str.as_bytes().get(separator_idx) == Some(&b'/');
     }
 
     path_str.ends_with(".vue")

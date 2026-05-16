@@ -404,15 +404,15 @@ fn test_parse_dynamic_directive_arg() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, r#"<div v-bind:[attr]="val"></div>"#);
     assert!(errors.is_empty());
-    if let TemplateChildNode::Element(el) = &root.children[0] {
-        if let PropNode::Directive(dir) = &el.props[0] {
-            assert_eq!(dir.name.as_str(), "bind");
-            if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
-                assert_eq!(arg.content.as_str(), "attr");
-                assert!(!arg.is_static); // dynamic args are not static
-            } else {
-                panic!("Expected arg");
-            }
+    if let TemplateChildNode::Element(el) = &root.children[0]
+        && let PropNode::Directive(dir) = &el.props[0]
+    {
+        assert_eq!(dir.name.as_str(), "bind");
+        if let Some(ExpressionNode::Simple(arg)) = &dir.arg {
+            assert_eq!(arg.content.as_str(), "attr");
+            assert!(!arg.is_static); // dynamic args are not static
+        } else {
+            panic!("Expected arg");
         }
     }
 }

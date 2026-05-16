@@ -117,7 +117,12 @@ impl<'a> SsrCodegenContext<'a> {
         let preamble = self.build_preamble();
 
         SsrCodegenResult {
-            // SAFETY: We only push valid UTF-8 strings
+            // SAFETY: `self.code` is filled exclusively through `push(&str)`,
+            // `push_indent`, and helpers that append ASCII punctuation around
+            // already-valid template/source strings. No caller can inject raw
+            // bytes into the buffer, so the Vec<u8> invariant is "always valid
+            // UTF-8". Keeping this unchecked conversion avoids validating the
+            // complete generated SSR module after every compile.
             code: unsafe { String::from_utf8_unchecked(self.code) },
             preamble,
         }

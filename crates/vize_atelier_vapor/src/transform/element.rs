@@ -413,7 +413,10 @@ pub(crate) fn transform_element<'a>(
             block.operation.push(OperationNode::SlotOutlet(slot_outlet));
         }
         ElementType::Template => {
-            // Handled at top of function, unreachable
+            // Panic path by transform invariant: `transform_element` peels
+            // template nodes at function entry because they do not create DOM
+            // elements. Reaching this arm means that guard was bypassed in a
+            // future edit, so continuing would emit an invalid Vapor operation.
             unreachable!("Template elements handled at top of transform_element");
         }
     }

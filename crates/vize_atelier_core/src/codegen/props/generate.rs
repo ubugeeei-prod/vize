@@ -180,6 +180,10 @@ fn try_generate_static_attrs(
     let mut first = true;
     for prop in props {
         let PropNode::Attribute(attr) = prop else {
+            // Panic path by invariant: the preflight `all(Attribute)` check above
+            // has already rejected directive props. Reaching this arm would mean
+            // `props` was mutated while iterating, which is impossible through the
+            // shared slice used by codegen.
             unreachable!("checked above");
         };
 

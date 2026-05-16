@@ -324,6 +324,9 @@ impl Backend {
 
 impl Default for Backend {
     fn default() -> Self {
+        // Panic path by trait-contract limitation: `Default` cannot return an
+        // I/O error. Callers that need recoverable terminal initialization should
+        // use `Backend::new`; this impl is kept for ergonomic tests and builders.
         Self::new().expect("Failed to create backend")
     }
 }

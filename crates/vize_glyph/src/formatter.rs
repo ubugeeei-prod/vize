@@ -130,7 +130,11 @@ impl<'a> GlyphFormatter<'a> {
         }
         output.extend_from_slice(newline);
 
-        // SAFETY: We only wrote valid UTF-8 bytes
+        // SAFETY: `output` is composed from the original UTF-8 SFC source plus
+        // formatter output returned as `&str` and ASCII whitespace/newlines. All
+        // byte slicing uses block ranges produced by the SFC parser, which are
+        // source-owned UTF-8 boundaries. We keep the conversion unchecked to avoid
+        // revalidating the full formatted document on every format run.
         let code = unsafe { String::from_utf8_unchecked(output) };
         let changed = code != source;
 

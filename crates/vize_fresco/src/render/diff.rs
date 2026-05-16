@@ -167,7 +167,12 @@ impl DiffEngine {
                 (Some(old_id), None) => {
                     Self::collect_removes(old, old_id, result);
                 }
-                (None, None) => unreachable!(),
+                (None, None) => {
+                    // Panic path by loop bound invariant: `i` is always below
+                    // `max(old_children.len(), new_children.len())`, so at least
+                    // one side must contain a node at this index.
+                    unreachable!()
+                }
             }
         }
     }

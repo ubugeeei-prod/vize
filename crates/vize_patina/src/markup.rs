@@ -626,29 +626,36 @@ fn element_children_relief<'a>(element: MarkupElement<'a>) -> &'a [TemplateChild
 
 #[inline]
 fn jsx_element_ref<'a>(node: *const JSXElement<'a>) -> &'a JSXElement<'a> {
-    // SAFETY: pointers are created from nodes borrowed from a parsed OXC program,
-    // and the owning program outlives all markup wrappers constructed for it.
+    // SAFETY: the pointer is captured while walking an `oxc_ast::Program`
+    // borrowed for the same `'a` lifetime used by the returned markup facade.
+    // Markup wrappers are never stored beyond the lint pass that owns the OXC
+    // allocator, and the pass is single-threaded, so the pointed JSX node cannot
+    // move, be freed, or be mutably aliased while this shared reference exists.
     unsafe { &*node }
 }
 
 #[inline]
 fn jsx_fragment_ref<'a>(node: *const JSXFragment<'a>) -> &'a JSXFragment<'a> {
-    // SAFETY: pointers are created from nodes borrowed from a parsed OXC program,
-    // and the owning program outlives all markup wrappers constructed for it.
+    // SAFETY: same OXC-program lifetime invariant as `jsx_element_ref`. Fragment
+    // pointers originate from visitor callbacks and are dereferenced only while
+    // the source program and allocator are still alive for the current lint pass.
     unsafe { &*node }
 }
 
 #[inline]
 fn jsx_attribute_ref<'a>(node: *const JSXAttribute<'a>) -> &'a JSXAttribute<'a> {
-    // SAFETY: pointers are created from nodes borrowed from a parsed OXC program,
-    // and the owning program outlives all markup wrappers constructed for it.
+    // SAFETY: attribute pointers are copied from JSX element attributes during
+    // traversal and keep the OXC AST lifetime. The wrapper is read-only and does
+    // not outlive the program, so dereferencing avoids a clone without changing
+    // aliasing semantics.
     unsafe { &*node }
 }
 
 #[inline]
 fn jsx_text_ref<'a>(node: *const JSXText<'a>) -> &'a JSXText<'a> {
-    // SAFETY: pointers are created from nodes borrowed from a parsed OXC program,
-    // and the owning program outlives all markup wrappers constructed for it.
+    // SAFETY: text pointers are borrowed from immutable JSX children owned by the
+    // OXC allocator for the current program. The markup adapter only exposes
+    // shared reads, and all adapters are dropped before the program is dropped.
     unsafe { &*node }
 }
 

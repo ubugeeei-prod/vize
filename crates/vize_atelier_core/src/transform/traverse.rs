@@ -112,6 +112,13 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
 
                 // If node was replaced (e.g., by v-if transform), we need to traverse the new node
                 if let Some(current_ptr) = ctx.current_node {
+                    // SAFETY: `ctx.current_node` is written immediately before
+                    // transforms run and points at the child slot currently owned
+                    // by the traversal loop. Structural transforms may replace
+                    // that slot, but they do not free the bump-allocated storage
+                    // or retain another mutable reference to it. We reborrow here
+                    // only after the transform call returns so we can inspect the
+                    // replacement without cloning the AST node.
                     let current = unsafe { &mut *current_ptr };
                     match current {
                         TemplateChildNode::If(if_node) => {

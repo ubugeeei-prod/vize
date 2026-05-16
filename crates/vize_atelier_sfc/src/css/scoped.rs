@@ -174,7 +174,12 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Bump, css: &str, scope_id: &str) ->
         output.extend_from_slice(&css_bytes[last_selector_end..]);
     }
 
-    // SAFETY: input is valid UTF-8, we only add ASCII bytes
+    // SAFETY: `output` is built by copying selector/content ranges from the
+    // original UTF-8 `css` string and injecting ASCII-only scope attributes and
+    // punctuation. Ranges are advanced at `char_indices` boundaries or ASCII
+    // delimiter positions, so copied slices cannot split a code point. The arena
+    // copy owns the bytes for the returned lifetime, and skipping revalidation
+    // keeps scoped-style rewriting linear with minimal overhead.
     unsafe { std::str::from_utf8_unchecked(bump.alloc_slice_copy(&output)) }
 }
 

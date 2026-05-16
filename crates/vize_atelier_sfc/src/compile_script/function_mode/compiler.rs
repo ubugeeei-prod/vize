@@ -293,7 +293,12 @@ pub fn compile_script_setup(
         output.extend_from_slice(b"});\n"); // Close _defineComponent(
     }
 
-    // Convert arena Vec<u8> to String - SAFETY: we only push valid UTF-8
+    // SAFETY: this byte buffer is a fast append target for valid UTF-8 script
+    // fragments: original source ranges, OXC codegen output, and ASCII component
+    // wrapper text. There is no API in this module that appends arbitrary binary
+    // data, so the generated script remains valid UTF-8 by construction.
+    // Avoiding a second full-buffer validation matters for large script-setup
+    // blocks in function mode.
     #[allow(clippy::disallowed_types)]
     let output_str: std::string::String =
         unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };

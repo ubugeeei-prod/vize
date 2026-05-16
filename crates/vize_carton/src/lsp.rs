@@ -446,6 +446,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::disallowed_macros)]
     fn test_lsp_message_format() {
         let req = JsonRpcRequest::new(1, "test", None);
         let msg = req.to_lsp_message().unwrap();

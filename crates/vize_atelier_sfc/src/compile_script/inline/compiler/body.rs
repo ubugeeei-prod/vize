@@ -149,6 +149,11 @@ pub(super) fn compile_script_setup_inline_body(
         output.extend_from_slice(b"}\n");
     }
 
+    // SAFETY: `output` is assembled from UTF-8 source slices, OXC-generated
+    // strings, and ASCII glue emitted by this compiler. The buffer type is bytes
+    // only because we need cheap `extend_from_slice` during script assembly. No
+    // raw non-UTF-8 bytes are ever appended, so validating the whole script again
+    // would only add work to the hot SFC compile path.
     #[allow(clippy::disallowed_types)]
     let output_str: std::string::String =
         unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };

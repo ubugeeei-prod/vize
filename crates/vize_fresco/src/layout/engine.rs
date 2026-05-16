@@ -43,6 +43,10 @@ impl LayoutEngine {
         let node_id = self
             .tree
             .new_leaf(taffy_style)
+            // Panic path by backend invariant: Fresco only constructs leaf nodes
+            // with a locally generated style, so Taffy should reject this only if
+            // its internal storage is inconsistent. Returning a synthetic id here
+            // would corrupt `node_map` and make later layout reads unsound.
             .expect("Failed to create node");
 
         self.node_map.insert(id, node_id);
@@ -65,6 +69,9 @@ impl LayoutEngine {
         let node_id = self
             .tree
             .new_leaf(taffy_style)
+            // Panic path by backend invariant: measured leaves are created from a
+            // normalized `FlexStyle` plus finite dimensions supplied by Fresco's
+            // renderer. Failing here means the layout tree is unusable.
             .expect("Failed to create leaf");
 
         self.node_map.insert(id, node_id);
@@ -90,6 +97,10 @@ impl LayoutEngine {
         {
             self.tree
                 .add_child(parent_id, child_id)
+                // Panic path by mapping invariant: both ids came from
+                // `node_map`, so Taffy should know each node. If it rejects the
+                // edge, the mirrored maps are already inconsistent and continuing
+                // would cache wrong layouts.
                 .expect("Failed to add child");
         }
     }
@@ -101,6 +112,9 @@ impl LayoutEngine {
         {
             self.tree
                 .remove_child(parent_id, child_id)
+                // Panic path by mapping invariant: callers can request unknown
+                // ids, but those are filtered above. Once both ids are mapped,
+                // failure means our mirrored Taffy tree has diverged.
                 .expect("Failed to remove child");
         }
     }
@@ -111,6 +125,9 @@ impl LayoutEngine {
             let taffy_style = style.to_taffy();
             self.tree
                 .set_style(node_id, taffy_style)
+                // Panic path by mapping invariant: `node_id` is only read from
+                // `node_map`, so Taffy should still own it. A failure indicates
+                // internal tree corruption rather than user input.
                 .expect("Failed to set style");
         }
     }
@@ -120,6 +137,9 @@ impl LayoutEngine {
         if let Some(node_id) = self.node_map.remove(&id) {
             self.reverse_map.remove(&node_id);
             self.layout_cache.remove(&id);
+            // Panic path by mapping invariant: after a successful lookup in
+            // `node_map`, Taffy must contain the node. Losing it would mean the
+            // mirrored maps and layout tree diverged earlier.
             self.tree.remove(node_id).expect("Failed to remove node");
         }
     }
@@ -134,6 +154,10 @@ impl LayoutEngine {
 
             self.tree
                 .compute_layout(root_id, available)
+                // Panic path by mapping invariant: `root_id` is taken from
+                // `node_map`, and all children are added through the same map.
+                // If Taffy cannot compute this tree, Fresco should fail loudly
+                // instead of rendering stale or partial geometry.
                 .expect("Failed to compute layout");
 
             // Cache all layouts
@@ -144,6 +168,10 @@ impl LayoutEngine {
     /// Cache layout results recursively.
     /// Uses taffy's computed sizes but computes positions manually (top-left aligned).
     fn cache_layouts(&mut self, node_id: NodeId, parent_x: f32, parent_y: f32) {
+        // Panic path by compute invariant: `cache_layouts` is called only after
+        // `compute_layout` succeeds for `root_id`, and recursive calls use
+        // children returned by Taffy itself. Missing layout/style data would mean
+        // Taffy accepted an internally inconsistent tree.
         let layout = self.tree.layout(node_id).expect("Failed to get layout");
         let style = self.tree.style(node_id).expect("Failed to get style");
 
@@ -169,6 +197,9 @@ impl LayoutEngine {
         let child_info: Vec<(NodeId, f32, f32, f32, f32, f32, f32)> = children
             .iter()
             .map(|&cid| {
+                // Panic path by child invariant: `cid` came directly from
+                // `tree.children(node_id)`, so layout/style lookup should be
+                // available after the successful compute pass above.
                 let cl = self.tree.layout(cid).expect("child layout");
                 let cs = self.tree.style(cid).expect("child style");
                 // Get margin from style (not layout) to avoid auto-margin issues

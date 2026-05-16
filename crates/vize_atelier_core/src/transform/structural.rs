@@ -82,7 +82,13 @@ pub fn take_structural_directive<'a>(
     let (directive_idx, directive_kind) = selected_if.or(selected_for)?;
     let directive = match el.props.remove(directive_idx) {
         PropNode::Directive(dir) => Box::into_inner(dir),
-        PropNode::Attribute(_) => unreachable!("structural directives are always directive props"),
+        PropNode::Attribute(_) => {
+            // Panic path by invariant: `directive_idx` is selected only while
+            // iterating over `PropNode::Directive`. Hitting this means the prop
+            // vector was mutated between selection and removal, which would be a
+            // transform bug rather than malformed user input.
+            unreachable!("structural directives are always directive props")
+        }
     };
 
     Some((

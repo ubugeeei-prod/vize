@@ -196,7 +196,12 @@ impl<'a> TemplateFormatter<'a> {
             output.pop();
         }
 
-        // SAFETY: We only wrote valid UTF-8 bytes
+        // SAFETY: `output` contains only copied ranges from the UTF-8 template
+        // source, formatter-produced `&str` fragments, and ASCII indentation or
+        // line breaks. The cursor moves across UTF-8 using the parser's byte
+        // ranges and ASCII delimiter checks, so the buffer cannot contain an
+        // invalid byte sequence. Skipping validation preserves formatter
+        // throughput for large templates.
         Ok(unsafe { String::from_utf8_unchecked(output) })
     }
 

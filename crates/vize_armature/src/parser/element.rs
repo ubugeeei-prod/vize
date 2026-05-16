@@ -3,7 +3,7 @@
 //! Handles text, interpolation, open/close tags, element type determination,
 //! comments, and error reporting.
 
-use vize_carton::{Box, String, directive::parse_vize_directive};
+use vize_carton::{Box, String, appends, directive::parse_vize_directive};
 use vize_relief::{
     ast::*,
     errors::{CompilerError, ErrorCode},
@@ -402,8 +402,7 @@ impl<'a> Parser<'a> {
                     .into(),
             ),
             ErrorCode::InvalidFirstCharacterOfTagName => Some(
-                "Tag name starts with an invalid character; treating the malformed tag as text."
-                    .into(),
+                "Tag name starts with an invalid character; treating the malformed tag as text.".into(),
             ),
             ErrorCode::MissingAttributeValue => {
                 let name = self
@@ -412,18 +411,30 @@ impl<'a> Parser<'a> {
                     .map(|attr| attr.name.as_str())
                     .or_else(|| self.current_dir.as_ref().map(|dir| dir.raw_name.as_str()))
                     .unwrap_or("attribute");
-                Some(vize_carton::cstr!(
-                    "Attribute `{name}` is missing a value after `=`; continuing without the value."
-                ))
+                let mut message = String::with_capacity(name.len() + 70);
+                appends!(
+                    message,
+                    "Attribute `",
+                    name,
+                    "` is missing a value after `=`; continuing without the value."
+                );
+                Some(message)
             }
             ErrorCode::MissingDynamicDirectiveArgumentEnd => Some(
                 "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary."
                     .into(),
             ),
-            ErrorCode::MissingInterpolationEnd => Some(vize_carton::cstr!(
-                "Interpolation is missing its closing delimiter `{}`; treating the unfinished interpolation as text.",
-                self.options.delimiters.1
-            )),
+            ErrorCode::MissingInterpolationEnd => {
+                let delimiter = self.options.delimiters.1.as_str();
+                let mut message = String::with_capacity(delimiter.len() + 97);
+                appends!(
+                    message,
+                    "Interpolation is missing its closing delimiter `",
+                    delimiter,
+                    "`; treating the unfinished interpolation as text."
+                );
+                Some(message)
+            }
             ErrorCode::UnexpectedCharacterInAttributeName => Some(
                 "Attribute name contains an invalid character; inferred the nearest attribute boundary and continued."
                     .into(),
@@ -437,16 +448,14 @@ impl<'a> Parser<'a> {
                     .into(),
             ),
             ErrorCode::MissingWhitespaceBetweenAttributes => Some(
-                "Missing whitespace between attributes; inferred a new attribute boundary."
-                    .into(),
+                "Missing whitespace between attributes; inferred a new attribute boundary.".into(),
             ),
             ErrorCode::IncorrectlyClosedComment => Some(
                 "Comment was closed as `--!>`; treating it as `-->` so parsing can continue."
                     .into(),
             ),
             ErrorCode::IncorrectlyOpenedComment => Some(
-                "Declaration or comment syntax is malformed; skipping it until the next `>`."
-                    .into(),
+                "Declaration or comment syntax is malformed; skipping it until the next `>`.".into(),
             ),
             _ => None,
         }

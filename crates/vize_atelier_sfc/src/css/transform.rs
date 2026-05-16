@@ -50,7 +50,12 @@ pub(crate) fn extract_and_transform_v_bind<'a>(
         }
     }
 
-    // SAFETY: input is valid UTF-8, we only add ASCII bytes
+    // SAFETY: `result` is assembled from byte slices borrowed from `css` plus
+    // ASCII-only delimiters, hashes, and sanitized v-bind suffixes. Every copied
+    // slice boundary comes from `str::find`/byte scans over ASCII tokens, so it
+    // never cuts through a UTF-8 code point. The bump copy keeps the returned
+    // `&str` alive for the caller's arena lifetime while avoiding a second UTF-8
+    // validation pass on this hot CSS transform path.
     let result_str = unsafe { std::str::from_utf8_unchecked(bump.alloc_slice_copy(&result)) };
     (result_str, vars)
 }

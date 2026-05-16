@@ -3,7 +3,7 @@
 //! Handles attribute names, directive names/arguments/modifiers,
 //! attribute data (values), and finalization of attribute and directive nodes.
 
-use vize_carton::{Box, String, Vec};
+use vize_carton::{Box, String, Vec, appends};
 use vize_relief::{
     ast::{
         AttributeNode, ConstantType, DirectiveNode, ExpressionNode, PropNode, SimpleExpressionNode,
@@ -182,12 +182,16 @@ impl<'a> Parser<'a> {
         let name_loc = self.create_loc(attr.name_start, attr.name_end);
 
         if self.has_duplicate_attribute(attr.name.as_str()) {
+            let mut message = String::with_capacity(attr.name.len() + 79);
+            appends!(
+                message,
+                "Duplicate attribute `",
+                attr.name.as_str(),
+                "`. Keeping the repeated attribute so parsing can continue."
+            );
             self.errors.push(CompilerError::with_message(
                 ErrorCode::DuplicateAttribute,
-                vize_carton::cstr!(
-                    "Duplicate attribute `{}`. Keeping the repeated attribute so parsing can continue.",
-                    attr.name
-                ),
+                message,
                 Some(name_loc.clone()),
             ));
         }
@@ -219,12 +223,16 @@ impl<'a> Parser<'a> {
         let loc = self.create_loc(dir.name_start, loc_end);
 
         if dir.name.is_empty() {
+            let mut message = String::with_capacity(dir.raw_name.len() + 80);
+            appends!(
+                message,
+                "Directive `",
+                dir.raw_name.as_str(),
+                "` is missing a name. Ignoring it so the rest of the tag can be parsed."
+            );
             self.errors.push(CompilerError::with_message(
                 ErrorCode::MissingDirectiveName,
-                vize_carton::cstr!(
-                    "Directive `{}` is missing a name. Ignoring it so the rest of the tag can be parsed.",
-                    dir.raw_name
-                ),
+                message,
                 Some(loc),
             ));
             return;
