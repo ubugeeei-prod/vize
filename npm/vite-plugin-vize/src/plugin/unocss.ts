@@ -1,7 +1,5 @@
 import fs from "node:fs";
 
-import { VIZE_SSR_PREFIX } from "../virtual.ts";
-
 type UnoCssLikePlugin = {
   name?: string;
   transform?: (...args: unknown[]) => unknown;
@@ -10,7 +8,9 @@ type UnoCssLikePlugin = {
 
 const bridgePatched = Symbol("vize.unocssBridgePatched");
 
+const VIZE_SSR_PREFIX = "\0vize-ssr:";
 const plainSsrPrefix = VIZE_SSR_PREFIX.slice(1);
+export const MAX_UNOCSS_ORIGINAL_SOURCE_BYTES = 2 * 1024 * 1024;
 
 function stripBridgePrefix(id: string): string {
   if (id.startsWith(VIZE_SSR_PREFIX)) {
@@ -31,6 +31,27 @@ function isUnoCssBridgeModuleId(id: string): boolean {
 
 function normalizeUnoCssBridgeModuleId(id: string): string {
   return stripBridgePrefix(id).replace(/\.ts(?=\?|$)/, "");
+}
+
+function appendOriginalVueSourceForUnoCss(code: string, normalizedId: string): string {
+  const sourcePath = normalizedId.split("?")[0];
+  if (!sourcePath) {
+    return code;
+  }
+
+  try {
+    if (fs.statSync(sourcePath).size > MAX_UNOCSS_ORIGINAL_SOURCE_BYTES) {
+      return code;
+    }
+  } catch {
+    return code;
+  }
+
+  try {
+    return `${code}\n${fs.readFileSync(sourcePath, "utf-8")}`;
+  } catch {
+    return code;
+  }
 }
 
 export function patchUnoCssBridge(plugins: UnoCssLikePlugin[]): void {
@@ -60,12 +81,7 @@ export function patchUnoCssBridge(plugins: UnoCssLikePlugin[]): void {
       let effectiveCode = code;
 
       if (isExtractionOnly) {
-        try {
-          const originalSource = fs.readFileSync(normalizedId.split("?")[0]!, "utf-8");
-          effectiveCode = `${code}\n${originalSource}`;
-        } catch {
-          // Ignore missing virtual sources and keep the compiled code path.
-        }
+        effectiveCode = appendOriginalVueSourceForUnoCss(code, normalizedId);
       }
 
       return originalTransform.call(this, effectiveCode, normalizedId, ...args);

@@ -121,7 +121,10 @@ export function handleGenerateBundleHook(
     return;
   }
 
-  const allCss = Array.from(state.collectedCss.values()).join("\n\n");
+  let allCss = "";
+  for (const css of state.collectedCss.values()) {
+    allCss += allCss ? `\n\n${css}` : css;
+  }
   if (allCss.trim()) {
     emitFile({
       type: "asset",

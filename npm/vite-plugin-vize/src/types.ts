@@ -100,6 +100,7 @@ export interface VizeOptions {
 
   /**
    * Glob patterns to scan for .vue files during pre-compilation
+   * Use an empty array to disable startup pre-compilation and compile on demand.
    * @default ['**\/*.vue']
    */
   scanPatterns?: string[];

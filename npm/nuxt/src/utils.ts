@@ -18,10 +18,11 @@ export function buildNuxtCompilerOptions(
   rootDir: string,
   baseURL = "/",
   buildAssetsDir = "/_nuxt/",
-): Pick<VizeOptions, "devUrlBase" | "root"> {
+): Pick<VizeOptions, "devUrlBase" | "root" | "scanPatterns"> {
   return {
     devUrlBase: buildNuxtDevAssetBase(baseURL, buildAssetsDir),
     root: rootDir,
+    scanPatterns: [],
   };
 }
 

@@ -8,7 +8,6 @@
  * - Type Checker: `vize check` CLI command (via `vize` bin)
  */
 
-import fs from "node:fs";
 import { addServerPlugin, addVitePlugin, createResolver, defineNuxtModule } from "@nuxt/kit";
 import vize from "@vizejs/vite-plugin";
 import { musea } from "@vizejs/vite-plugin-musea";
@@ -22,6 +21,7 @@ import {
   normalizeNuxtInjectedKeysForVizeVirtualModule,
   normalizeVizeVirtualVueModuleId,
 } from "./utils";
+import { appendOriginalVueSourceForUnoCss } from "./unocss";
 
 type ViteTransformResult = string | { code?: string; map?: unknown } | null | undefined;
 
@@ -283,12 +283,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
                 // template-to-render-function compilation.
                 let effectiveCode = code;
                 if (isExtractionOnly) {
-                  try {
-                    const originalSource = fs.readFileSync(normalizedId.split("?")[0], "utf-8");
-                    effectiveCode = code + "\n" + originalSource;
-                  } catch {
-                    // File may not exist (virtual components, etc.)
-                  }
+                  effectiveCode = appendOriginalVueSourceForUnoCss(code, normalizedId);
                 }
 
                 return origTransform.call(this, effectiveCode, normalizedId, ...args);

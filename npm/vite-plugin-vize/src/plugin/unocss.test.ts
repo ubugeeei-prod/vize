@@ -1,13 +1,19 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 
 import { patchUnoCssBridge } from "./unocss.ts";
 
-const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-unocss-"));
+const testRoot = path.resolve(process.cwd(), "__agent_only", "vite-plugin-unocss-tests");
+fs.mkdirSync(testRoot, { recursive: true });
+const tempRoot = fs.mkdtempSync(path.join(testRoot, "fixture-"));
+process.once("exit", () => {
+  fs.rmSync(tempRoot, { recursive: true, force: true });
+});
 const sourcePath = path.join(tempRoot, "App.vue");
+const hugeSourcePath = path.join(tempRoot, "Huge.vue");
 const virtualId = `\0${sourcePath}.ts`;
+const hugeVirtualId = `\0${hugeSourcePath}.ts`;
 const plainBuildId = `${sourcePath}.ts`;
 const queriedClientVirtualId = `${virtualId}?macro=true`;
 const queriedSsrVirtualId = `\0vize-ssr:${sourcePath}.ts?vue&type=template`;
@@ -18,6 +24,7 @@ fs.writeFileSync(
   `<template><div flex="~ col gap-2" text="sm slate-700">hello</div></template>\n`,
   "utf-8",
 );
+fs.writeFileSync(hugeSourcePath, " ".repeat(2 * 1024 * 1024 + 1), "utf-8");
 
 {
   let receivedCode = "";
@@ -203,6 +210,29 @@ fs.writeFileSync(
   assert.equal(receivedId, `${sourcePath}?vue&type=template`);
   assert.match(receivedCode, /export default \{\}/);
   assert.match(receivedCode, /text="sm slate-700"/);
+}
+
+{
+  let receivedCode = "";
+
+  const plugins = [
+    {
+      name: "unocss:global:build:scan",
+      transform(code: string) {
+        receivedCode = code;
+        return null;
+      },
+    },
+  ];
+
+  patchUnoCssBridge(plugins);
+  plugins[0]!.transform!("export default {}", hugeVirtualId);
+
+  assert.equal(
+    receivedCode,
+    "export default {}",
+    "oversized SFC sources should not be copied into UnoCSS extraction input",
+  );
 }
 
 console.log("✅ vite-plugin-vize UnoCSS bridge tests passed!");

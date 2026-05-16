@@ -78,12 +78,10 @@ export function compileBatch(
   cache: Map<string, CompiledModule>,
   options: CompileBatchOptions,
 ): BatchCompileResultWithFiles {
-  const inputs: BatchFileInput[] = files.map((f) => ({
-    path: f.path,
-    source: f.source,
-  }));
-
-  const result = compileSfcBatchWithResults(inputs, buildCompileBatchOptions(options));
+  const result = compileSfcBatchWithResults(
+    files satisfies BatchFileInput[],
+    buildCompileBatchOptions(options),
+  );
 
   // Update cache with results
   for (const fileResult of result.results) {

@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
@@ -10,6 +9,8 @@ type Fixture = {
   rootDir: string;
   buildDir: string;
 };
+
+const TEST_TMP_ROOT = path.resolve(process.cwd(), "__agent_only", "nuxt-components-tests");
 
 function writeFile(filePath: string, content = ""): string {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -24,7 +25,8 @@ function writePackage(rootDir: string, name: string): string {
 }
 
 function createFixture(): Fixture {
-  const rootDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-nuxt-components-")));
+  fs.mkdirSync(TEST_TMP_ROOT, { recursive: true });
+  const rootDir = fs.realpathSync(fs.mkdtempSync(path.join(TEST_TMP_ROOT, "fixture-")));
   const buildDir = path.join(rootDir, ".nuxt");
   fs.mkdirSync(buildDir, { recursive: true });
   writeFile(path.join(rootDir, "package.json"), JSON.stringify({ private: true }));

@@ -112,7 +112,10 @@ export function loadHook(
 
   // Handle virtual CSS module for production extraction
   if (id === RESOLVED_CSS_MODULE) {
-    const allCss = Array.from(state.collectedCss.values()).join("\n\n");
+    let allCss = "";
+    for (const css of state.collectedCss.values()) {
+      allCss += allCss ? `\n\n${css}` : css;
+    }
     return allCss;
   }
 

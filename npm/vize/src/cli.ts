@@ -8,6 +8,7 @@ import { loadConfig } from "./config.js";
 const require = createRequire(import.meta.url);
 const WORKSPACE_BINDING_PATH = "../../vize-native";
 const BUILD_BATCH_SIZE = 128;
+const BUILD_BATCH_MAX_BYTES = 32 * 1024 * 1024;
 const SKIPPED_VUE_FILE_DIRECTORIES = new Set([
   "node_modules",
   "dist",
@@ -518,6 +519,10 @@ async function runBuild(args: string[]): Promise<void> {
 
   const native = loadNative("build");
   const startedAt = performance.now();
+  const batches = createBoundedFileBatches(files, {
+    maxFiles: BUILD_BATCH_SIZE,
+    maxBytes: BUILD_BATCH_MAX_BYTES,
+  });
 
   if (options.format !== "stats") {
     mkdirSync(options.output, { recursive: true });
@@ -527,12 +532,10 @@ async function runBuild(args: string[]): Promise<void> {
   let failed = 0;
   let success = 0;
 
-  for (let start = 0; start < files.length; start += BUILD_BATCH_SIZE) {
-    const end = Math.min(start + BUILD_BATCH_SIZE, files.length);
+  for (const batch of batches) {
     const inputs: { path: string; source: string }[] = [];
     const extensionByPath = new Map<string, string>();
-    for (let index = start; index < end; index++) {
-      const file = files[index]!;
+    for (const file of batch) {
       const source = readFileSync(file, "utf8");
       extensionByPath.set(file, getOutputExtension(source, options.scriptExt));
       inputs.push({ path: file, source });
@@ -850,12 +853,6 @@ interface ParsedCheckCommand {
   sharedConfig: SharedConfigOptions;
 }
 
-interface CheckedFileResult {
-  file: string;
-  source: string;
-  result: TypeCheckResult;
-}
-
 interface EmittedDeclaration {
   file: string;
   path: string;
@@ -1019,8 +1016,11 @@ function isVueFile(filePath: string): boolean {
   return path.extname(filePath) === ".vue";
 }
 
-function collectVueFilesFromDirectory(directory: string, recursive: boolean): string[] {
-  const files: string[] = [];
+function collectVueFilesFromDirectory(
+  directory: string,
+  recursive: boolean,
+  files: string[] = [],
+): string[] {
   const entries = readdirSync(directory, { withFileTypes: true });
 
   for (const entry of entries) {
@@ -1030,7 +1030,7 @@ function collectVueFilesFromDirectory(directory: string, recursive: boolean): st
         continue;
       }
       if (recursive) {
-        files.push(...collectVueFilesFromDirectory(entryPath, true));
+        collectVueFilesFromDirectory(entryPath, true, files);
       }
     } else if (entry.isFile() && isVueFile(entryPath)) {
       files.push(entryPath);
@@ -1144,11 +1144,55 @@ function collectVueFiles(patterns: string[]): string[] {
   return Array.from(files).sort();
 }
 
-function commonSourceDirectory(results: CheckedFileResult[]): string {
-  let common = path.dirname(results[0]?.file ?? process.cwd());
+interface BoundedFileBatchOptions {
+  maxFiles: number;
+  maxBytes: number;
+  sizeOf?: (file: string) => number;
+}
 
-  for (let i = 1; i < results.length; i++) {
-    const directory = path.dirname(results[i].file);
+function statFileSize(file: string): number {
+  try {
+    return statSync(file).size;
+  } catch {
+    return 0;
+  }
+}
+
+export function createBoundedFileBatches(
+  files: readonly string[],
+  options: BoundedFileBatchOptions,
+): string[][] {
+  const maxFiles = Math.max(1, Math.floor(options.maxFiles));
+  const maxBytes = Math.max(1, Math.floor(options.maxBytes));
+  const sizeOf = options.sizeOf ?? statFileSize;
+  const batches: string[][] = [];
+  let current: string[] = [];
+  let currentBytes = 0;
+
+  for (const file of files) {
+    const fileBytes = Math.max(0, sizeOf(file));
+    if (current.length > 0 && (current.length >= maxFiles || currentBytes + fileBytes > maxBytes)) {
+      batches.push(current);
+      current = [];
+      currentBytes = 0;
+    }
+
+    current.push(file);
+    currentBytes += fileBytes;
+  }
+
+  if (current.length > 0) {
+    batches.push(current);
+  }
+
+  return batches;
+}
+
+function commonSourceDirectory(files: readonly string[]): string {
+  let common = path.dirname(files[0] ?? process.cwd());
+
+  for (let i = 1; i < files.length; i++) {
+    const directory = path.dirname(files[i]!);
     while (common !== path.dirname(common)) {
       const relative = path.relative(common, directory);
       if (relative !== ".." && !relative.startsWith(`..${path.sep}`)) {
@@ -1161,37 +1205,25 @@ function commonSourceDirectory(results: CheckedFileResult[]): string {
   return common;
 }
 
-function emitCheckDeclarations(
-  results: CheckedFileResult[],
+function emitCheckDeclaration(
+  file: string,
+  source: string,
+  sourceRoot: string,
   native: NativeBinding,
   options: CheckOptions,
-): EmittedDeclaration[] {
-  if (!options.declaration) {
-    return [];
-  }
-
-  if (typeof native.generateDeclaration !== "function") {
-    throw new Error("The loaded native binding does not support declaration generation.");
-  }
-
+): EmittedDeclaration {
   const outDir = path.resolve(process.cwd(), options.declarationDir ?? "dist/types");
-  const sourceRoot = commonSourceDirectory(results);
-  const declarations: EmittedDeclaration[] = [];
+  const relative = normalizePath(path.relative(sourceRoot, file));
+  const outputPath = path.join(outDir, `${relative}.d.ts`);
+  mkdirSync(path.dirname(outputPath), { recursive: true });
 
-  for (const { file, source } of results) {
-    const relative = normalizePath(path.relative(sourceRoot, file));
-    const outputPath = path.join(outDir, `${relative}.d.ts`);
-    mkdirSync(path.dirname(outputPath), { recursive: true });
+  const declaration = native.generateDeclaration!(source, { filename: file });
+  writeFileSync(outputPath, declaration.code);
 
-    const declaration = native.generateDeclaration(source, { filename: file });
-    writeFileSync(outputPath, declaration.code);
-    declarations.push({
-      file: displayPath(outputPath),
-      path: outputPath,
-    });
-  }
-
-  return declarations;
+  return {
+    file: displayPath(outputPath),
+    path: outputPath,
+  };
 }
 
 function lineStarts(source: string): number[] {
@@ -1246,47 +1278,47 @@ function toNativeTypeCheckOptions(file: string, options: CheckOptions): NativeTy
   };
 }
 
-function renderCheckText(
-  results: CheckedFileResult[],
+function renderCheckFileText(
+  file: string,
+  source: string,
+  result: TypeCheckResult,
   options: CheckOptions,
-  timeMs: number,
-  declarations: EmittedDeclaration[] = [],
 ): void {
-  let totalErrors = 0;
-  let totalWarnings = 0;
-
-  for (const { file, source, result } of results) {
-    totalErrors += result.errorCount;
-    totalWarnings += result.warningCount;
-
-    if (options.includeVirtualTs && result.virtualTs) {
-      process.stderr.write(
-        `\n=== ${displayPath(file)} ===\n${sanitizeTerminalText(result.virtualTs)}\n`,
-      );
-    }
-
-    if (options.quiet || result.diagnostics.length === 0) {
-      continue;
-    }
-
-    const starts = lineStarts(source);
-    process.stdout.write(`\n\x1b[4m${displayPath(file)}\x1b[0m\n`);
-    for (const diagnostic of result.diagnostics) {
-      const color = diagnostic.severity === "error" ? "\x1b[31m" : "\x1b[33m";
-      const location = offsetToLineColumn(starts, diagnostic.start);
-      const code = diagnostic.code ? ` [${sanitizeTerminalText(diagnostic.code)}]` : "";
-      process.stdout.write(
-        `  ${color}${diagnostic.severity}:${location.line}:${location.column}\x1b[0m${code} ${sanitizeTerminalText(diagnostic.message)}\n`,
-      );
-      if (diagnostic.help) {
-        process.stdout.write(`    help: ${sanitizeTerminalText(diagnostic.help)}\n`);
-      }
-    }
+  if (options.includeVirtualTs && result.virtualTs) {
+    process.stderr.write(
+      `\n=== ${displayPath(file)} ===\n${sanitizeTerminalText(result.virtualTs)}\n`,
+    );
   }
 
+  if (options.quiet || result.diagnostics.length === 0) {
+    return;
+  }
+
+  const starts = lineStarts(source);
+  process.stdout.write(`\n\x1b[4m${displayPath(file)}\x1b[0m\n`);
+  for (const diagnostic of result.diagnostics) {
+    const color = diagnostic.severity === "error" ? "\x1b[31m" : "\x1b[33m";
+    const location = offsetToLineColumn(starts, diagnostic.start);
+    const code = diagnostic.code ? ` [${sanitizeTerminalText(diagnostic.code)}]` : "";
+    process.stdout.write(
+      `  ${color}${diagnostic.severity}:${location.line}:${location.column}\x1b[0m${code} ${sanitizeTerminalText(diagnostic.message)}\n`,
+    );
+    if (diagnostic.help) {
+      process.stdout.write(`    help: ${sanitizeTerminalText(diagnostic.help)}\n`);
+    }
+  }
+}
+
+function renderCheckSummary(
+  totalErrors: number,
+  totalWarnings: number,
+  fileCount: number,
+  timeMs: number,
+  declarations: readonly EmittedDeclaration[],
+): void {
   const status = totalErrors > 0 ? "\x1b[31mERR\x1b[0m" : "\x1b[32mOK\x1b[0m";
   process.stdout.write(
-    `\n${status} Type checked ${results.length} Vue files in ${timeMs.toFixed(2)}ms\n`,
+    `\n${status} Type checked ${fileCount} Vue files in ${timeMs.toFixed(2)}ms\n`,
   );
   if (totalErrors > 0) {
     process.stdout.write(`  \x1b[31m${totalErrors} error(s)\x1b[0m\n`);
@@ -1299,6 +1331,49 @@ function renderCheckText(
   if (declarations.length > 0) {
     process.stdout.write(`  \x1b[32mEmitted ${declarations.length} declaration file(s)\x1b[0m\n`);
   }
+}
+
+function indentJson(value: unknown, spaces: number): string {
+  const padding = " ".repeat(spaces);
+  return JSON.stringify(value, null, 2)
+    .split("\n")
+    .map((line) => `${padding}${line}`)
+    .join("\n");
+}
+
+function writeCheckJsonFile(index: number, file: string, result: TypeCheckResult): void {
+  if (index > 0) {
+    process.stdout.write(",\n");
+  }
+  process.stdout.write(
+    indentJson(
+      {
+        file: displayPath(file),
+        diagnostics: result.diagnostics,
+        virtualTs: result.virtualTs,
+      },
+      4,
+    ),
+  );
+}
+
+function writeCheckJsonEnd(
+  totalErrors: number,
+  totalWarnings: number,
+  fileCount: number,
+  declarations: readonly EmittedDeclaration[],
+): void {
+  process.stdout.write("\n  ],\n");
+  process.stdout.write(`  "errorCount": ${totalErrors},\n`);
+  process.stdout.write(`  "warningCount": ${totalWarnings},\n`);
+  process.stdout.write(`  "fileCount": ${fileCount},\n`);
+  process.stdout.write(
+    `  "declarations": ${indentJson(
+      declarations.map(({ file }) => file),
+      2,
+    ).trimStart()}\n`,
+  );
+  process.stdout.write("}\n");
 }
 
 async function runCheck(args: string[]): Promise<void> {
@@ -1342,41 +1417,46 @@ async function runCheck(args: string[]): Promise<void> {
   }
 
   const native = loadNative("check");
-  const start = performance.now();
+  if (options.declaration && typeof native.generateDeclaration !== "function") {
+    throw new Error("The loaded native binding does not support declaration generation.");
+  }
+
+  const sourceRoot = options.declaration ? commonSourceDirectory(files) : "";
+  const checkStartedAt = performance.now();
   const retainSource = shouldRetainCheckSource(options);
-  const results = files.map((file) => {
-    const source = readFileSync(file, "utf8");
-    return {
-      file,
-      source: retainSource ? source : "",
-      result: native.typeCheck(source, toNativeTypeCheckOptions(file, options)),
-    };
-  });
-  const timeMs = performance.now() - start;
-  const declarations = emitCheckDeclarations(results, native, options);
-  const totalErrors = results.reduce((sum, { result }) => sum + result.errorCount, 0);
-  const totalWarnings = results.reduce((sum, { result }) => sum + result.warningCount, 0);
+  const declarations: EmittedDeclaration[] = [];
+  let totalErrors = 0;
+  let totalWarnings = 0;
+  let checkedCount = 0;
 
   if (options.format === "json") {
-    process.stdout.write(
-      `${JSON.stringify(
-        {
-          files: results.map(({ file, result }) => ({
-            file: displayPath(file),
-            diagnostics: result.diagnostics,
-            virtualTs: result.virtualTs,
-          })),
-          errorCount: totalErrors,
-          warningCount: totalWarnings,
-          fileCount: results.length,
-          declarations: declarations.map(({ file }) => file),
-        },
-        null,
-        2,
-      )}\n`,
-    );
+    process.stdout.write('{\n  "files": [\n');
+  }
+
+  for (const file of files) {
+    const source = readFileSync(file, "utf8");
+    const result = native.typeCheck(source, toNativeTypeCheckOptions(file, options));
+    totalErrors += result.errorCount;
+    totalWarnings += result.warningCount;
+    checkedCount++;
+
+    if (options.declaration) {
+      declarations.push(emitCheckDeclaration(file, source, sourceRoot, native, options));
+    }
+
+    if (options.format === "json") {
+      writeCheckJsonFile(checkedCount - 1, file, result);
+    } else {
+      renderCheckFileText(file, retainSource ? source : "", result, options);
+    }
+  }
+
+  const timeMs = performance.now() - checkStartedAt;
+
+  if (options.format === "json") {
+    writeCheckJsonEnd(totalErrors, totalWarnings, checkedCount, declarations);
   } else {
-    renderCheckText(results, options, timeMs, declarations);
+    renderCheckSummary(totalErrors, totalWarnings, checkedCount, timeMs, declarations);
   }
 
   if (totalErrors > 0) {

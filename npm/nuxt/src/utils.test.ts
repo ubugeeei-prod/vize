@@ -30,8 +30,9 @@ assert.deepStrictEqual(
   {
     devUrlBase: "/2026/_nuxt/",
     root: "/repo/app",
+    scanPatterns: [],
   },
-  "Nuxt compiler options should pin Vize root to the app root so vize.config.ts is discovered",
+  "Nuxt compiler options should use on-demand compilation to avoid retaining every SFC in large Nuxt apps",
 );
 
 assert.equal(

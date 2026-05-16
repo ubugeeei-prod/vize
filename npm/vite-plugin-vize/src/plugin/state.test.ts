@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import {
+  DEFAULT_PRECOMPILE_BATCH_MAX_BYTES,
   DEFAULT_PRECOMPILE_BATCH_SIZE,
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
   chunkPrecompileFiles,
@@ -68,6 +69,23 @@ assert.deepEqual(
   chunkPrecompileFiles(["a.vue", "b.vue", "c.vue", "d.vue", "e.vue"], 2),
   [["a.vue", "b.vue"], ["c.vue", "d.vue"], ["e.vue"]],
   "Precompile chunking should cap the number of SFCs handed to native compilation",
+);
+assert.deepEqual(
+  chunkPrecompileFiles(["a.vue", "b.vue", "c.vue"], 10, {
+    maxBytes: 10,
+    metadata: new Map<string, PrecompileFileMetadata>([
+      ["a.vue", { mtimeMs: 1, size: 4 }],
+      ["b.vue", { mtimeMs: 1, size: 4 }],
+      ["c.vue", { mtimeMs: 1, size: 9 }],
+    ]),
+  }),
+  [["a.vue", "b.vue"], ["c.vue"]],
+  "Precompile chunking should cap the total source bytes retained per native batch",
+);
+assert.equal(
+  DEFAULT_PRECOMPILE_BATCH_MAX_BYTES,
+  32 * 1024 * 1024,
+  "Default precompile byte cap should leave headroom in Node heap",
 );
 assert.ok(
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS.includes(".nuxt/**"),

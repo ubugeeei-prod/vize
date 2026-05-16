@@ -282,9 +282,10 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     },
 
     async buildStart() {
-      if (!state.scanPatterns) {
+      if (!state.scanPatterns || state.scanPatterns.length === 0) {
         // Running in standalone rolldown context (e.g., ox-content OG image)
-        // where configResolved is not called. Skip pre-compilation.
+        // where configResolved is not called, or a framework integration has
+        // opted into on-demand compilation. Skip pre-compilation.
         return;
       }
       await compileAll(state);

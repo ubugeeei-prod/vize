@@ -15,6 +15,7 @@ import { createLogger } from "../transform.ts";
 import type { HmrUpdateType } from "../hmr.ts";
 
 export const DEFAULT_PRECOMPILE_BATCH_SIZE = 128;
+export const DEFAULT_PRECOMPILE_BATCH_MAX_BYTES = 32 * 1024 * 1024;
 
 export const DEFAULT_PRECOMPILE_IGNORE_PATTERNS = [
   "node_modules/**",
@@ -76,12 +77,39 @@ export function normalizePrecompileBatchSize(value: number | undefined): number 
   return Math.max(1, Math.floor(value));
 }
 
-export function chunkPrecompileFiles<T>(files: readonly T[], batchSize: number): T[][] {
-  const normalizedBatchSize = normalizePrecompileBatchSize(batchSize);
-  const chunks: T[][] = [];
+export interface PrecompileChunkOptions {
+  maxBytes?: number;
+  metadata?: ReadonlyMap<string, PrecompileFileMetadata>;
+}
 
-  for (let start = 0; start < files.length; start += normalizedBatchSize) {
-    chunks.push(files.slice(start, start + normalizedBatchSize));
+export function chunkPrecompileFiles(
+  files: readonly string[],
+  batchSize: number,
+  options: PrecompileChunkOptions = {},
+): string[][] {
+  const normalizedBatchSize = normalizePrecompileBatchSize(batchSize);
+  const maxBytes = Math.max(1, Math.floor(options.maxBytes ?? DEFAULT_PRECOMPILE_BATCH_MAX_BYTES));
+  const chunks: string[][] = [];
+  let current: string[] = [];
+  let currentBytes = 0;
+
+  for (const file of files) {
+    const fileBytes = Math.max(0, options.metadata?.get(file)?.size ?? 0);
+    if (
+      current.length > 0 &&
+      (current.length >= normalizedBatchSize || currentBytes + fileBytes > maxBytes)
+    ) {
+      chunks.push(current);
+      current = [];
+      currentBytes = 0;
+    }
+
+    current.push(file);
+    currentBytes += fileBytes;
+  }
+
+  if (current.length > 0) {
+    chunks.push(current);
   }
 
   return chunks;
@@ -213,7 +241,9 @@ export async function compileAll(state: VizePluginState): Promise<void> {
   let successCount = 0;
   let failedCount = 0;
   let nativeTimeMs = 0;
-  const chunks = chunkPrecompileFiles(changedFiles, state.precompileBatchSize);
+  const chunks = chunkPrecompileFiles(changedFiles, state.precompileBatchSize, {
+    metadata: currentMetadata,
+  });
 
   for (const chunk of chunks) {
     const fileContents: { path: string; source: string }[] = [];
