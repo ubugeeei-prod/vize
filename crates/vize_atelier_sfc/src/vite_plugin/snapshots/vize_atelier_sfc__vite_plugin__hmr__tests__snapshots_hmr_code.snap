@@ -1,0 +1,38 @@
+---
+source: crates/vize_atelier_sfc/src/vite_plugin/hmr.rs
+expression: "generate_hmr_code(\"abc123\", \"template-only\")"
+---
+
+if (import.meta.hot) {
+  _sfc_main.__hmrId = "abc123";
+  _sfc_main.__hmrUpdateType = "template-only";
+
+  import.meta.hot.accept((mod) => {
+    if (!mod) return;
+    const { default: updated } = mod;
+    if (typeof __VUE_HMR_RUNTIME__ !== 'undefined') {
+      const updateType = updated.__hmrUpdateType || 'full-reload';
+      if (updateType === 'template-only') {
+        __VUE_HMR_RUNTIME__.rerender(updated.__hmrId, updated.render);
+      } else {
+        __VUE_HMR_RUNTIME__.reload(updated.__hmrId, updated);
+      }
+    }
+  });
+
+  import.meta.hot.on('vize:update', (data) => {
+    if (data.id !== _sfc_main.__hmrId) return;
+
+    if (data.type === 'style-only') {
+      const styleId = 'vize-style-' + _sfc_main.__hmrId;
+      const styleEl = document.getElementById(styleId);
+      if (styleEl && data.css) {
+        styleEl.textContent = data.css;
+      }
+    }
+  });
+
+  if (typeof __VUE_HMR_RUNTIME__ !== 'undefined') {
+    __VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main);
+  }
+}

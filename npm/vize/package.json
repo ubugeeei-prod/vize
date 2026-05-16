@@ -52,6 +52,7 @@
     "generate:rule-types": "vp run --workspace-root generate:rule-types"
   },
   "dependencies": {
+    "@vizejs/native": "workspace:*",
     "oxc-transform": "catalog:oxc"
   },
   "devDependencies": {
@@ -63,15 +64,7 @@
     "vite-plus": "catalog:vite-stack"
   },
   "optionalDependencies": {
-    "@pkl-community/pkl": "catalog:repo-tooling",
-    "@vizejs/native-darwin-arm64": "catalog:native-binaries",
-    "@vizejs/native-darwin-x64": "catalog:native-binaries",
-    "@vizejs/native-linux-arm64-gnu": "catalog:native-binaries",
-    "@vizejs/native-linux-arm64-musl": "catalog:native-binaries",
-    "@vizejs/native-linux-x64-gnu": "catalog:native-binaries",
-    "@vizejs/native-linux-x64-musl": "catalog:native-binaries",
-    "@vizejs/native-win32-arm64-msvc": "catalog:native-binaries",
-    "@vizejs/native-win32-x64-msvc": "catalog:native-binaries"
+    "@pkl-community/pkl": "catalog:repo-tooling"
   },
   "engines": {
     "node": ">=22"

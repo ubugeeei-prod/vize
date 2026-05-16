@@ -87,6 +87,57 @@ pub fn classify_vite_plugin_request(id: &str) -> VitePluginRequest {
     }
 }
 
+/// Create the Vize virtual module ID for a real Vue SFC path.
+pub fn create_virtual_id(real_path: &str, ssr: bool) -> String {
+    let suffix = ".ts";
+    let mut virtual_id = String::with_capacity(
+        real_path.len() + suffix.len() + if ssr { VIZE_SSR_PREFIX.len() } else { 1 },
+    );
+    if ssr {
+        virtual_id.push_str(VIZE_SSR_PREFIX);
+    } else {
+        virtual_id.push('\0');
+    }
+    virtual_id.push_str(real_path);
+    virtual_id.push_str(suffix);
+    virtual_id
+}
+
+/// Extract the real Vue path from a Vize virtual module ID.
+pub fn from_virtual_id(virtual_id: &str) -> String {
+    let request = classify_vite_plugin_request(virtual_id);
+    if let Some(path) = request.vize_virtual_path {
+        return path;
+    }
+    let normalized = normalize_virtual_vue_module_id(virtual_id);
+    let split = super::query::split_request(&normalized);
+    String::from(split.path)
+}
+
+/// Normalize Vize virtual Vue IDs to their real Vue path plus query suffix.
+pub fn normalize_virtual_vue_module_id(id: &str) -> String {
+    let request = classify_vite_plugin_request(id);
+    if let Some(path) = request.vize_virtual_path {
+        let mut normalized = String::with_capacity(path.len() + request.query_suffix.len());
+        normalized.push_str(path.as_str());
+        normalized.push_str(request.query_suffix.as_str());
+        return normalized;
+    }
+
+    let mut normalized =
+        String::with_capacity(request.normalized_vue_path.len() + request.query_suffix.len());
+    normalized.push_str(request.normalized_vue_path.as_str());
+    normalized.push_str(request.query_suffix.as_str());
+    normalized
+}
+
+/// Normalize Vite `/@fs` IDs for build output.
+pub fn normalize_fs_id_for_build(id: &str) -> String {
+    classify_vite_plugin_request(id)
+        .normalized_fs_id
+        .unwrap_or_else(|| String::from(id))
+}
+
 fn normalize_vue_path(path: &str) -> &str {
     path.strip_suffix(".ts")
         .filter(|normalized| normalized.ends_with(".vue"))

@@ -1,4 +1,5 @@
 import type { CompiledModule } from "./types.ts";
+import { detectViteHmrUpdateType, generateViteHmrCode, hasViteHmrChanges } from "@vizejs/native";
 
 /**
  * HMR update types for granular hot module replacement.
@@ -9,20 +10,8 @@ import type { CompiledModule } from "./types.ts";
  */
 export type HmrUpdateType = "template-only" | "style-only" | "full-reload";
 
-function didHashChange(prevHash: string | undefined, nextHash: string | undefined): boolean {
-  return prevHash !== nextHash;
-}
-
 export function hasHmrChanges(prev: CompiledModule | undefined, next: CompiledModule): boolean {
-  if (!prev) {
-    return true;
-  }
-
-  return (
-    didHashChange(prev.scriptHash, next.scriptHash) ||
-    didHashChange(prev.templateHash, next.templateHash) ||
-    didHashChange(prev.styleHash, next.styleHash)
-  );
+  return hasViteHmrChanges(toHmrHashes(prev), toHmrHashes(next));
 }
 
 /**
@@ -36,74 +25,22 @@ export function detectHmrUpdateType(
   prev: CompiledModule | undefined,
   next: CompiledModule,
 ): HmrUpdateType {
-  // First compile always requires full reload
-  if (!prev) {
-    return "full-reload";
-  }
-
-  // Check for script changes (requires full reload)
-  const scriptChanged = didHashChange(prev.scriptHash, next.scriptHash);
-  if (scriptChanged) {
-    return "full-reload";
-  }
-
-  // Check for template changes (can use rerender)
-  const templateChanged = didHashChange(prev.templateHash, next.templateHash);
-
-  // Check for style changes
-  const styleChanged = didHashChange(prev.styleHash, next.styleHash);
-
-  // If only style changed, we can do style-only update
-  if (styleChanged && !templateChanged) {
-    return "style-only";
-  }
-
-  // If only template changed (or template + style), use rerender
-  if (templateChanged) {
-    return "template-only";
-  }
-
-  // No changes detected (shouldn't happen in practice)
-  return "full-reload";
+  return detectViteHmrUpdateType(toHmrHashes(prev), toHmrHashes(next)) as HmrUpdateType;
 }
 
 /**
  * Generate HMR-aware code output based on update type.
  */
 export function generateHmrCode(scopeId: string, updateType: HmrUpdateType): string {
-  return `
-if (import.meta.hot) {
-  _sfc_main.__hmrId = ${JSON.stringify(scopeId)};
-  _sfc_main.__hmrUpdateType = ${JSON.stringify(updateType)};
+  return generateViteHmrCode(scopeId, updateType);
+}
 
-  import.meta.hot.accept((mod) => {
-    if (!mod) return;
-    const { default: updated } = mod;
-    if (typeof __VUE_HMR_RUNTIME__ !== 'undefined') {
-      const updateType = updated.__hmrUpdateType || 'full-reload';
-      if (updateType === 'template-only') {
-        __VUE_HMR_RUNTIME__.rerender(updated.__hmrId, updated.render);
-      } else {
-        __VUE_HMR_RUNTIME__.reload(updated.__hmrId, updated);
+function toHmrHashes(module: CompiledModule | undefined) {
+  return module
+    ? {
+        scriptHash: module.scriptHash,
+        templateHash: module.templateHash,
+        styleHash: module.styleHash,
       }
-    }
-  });
-
-  import.meta.hot.on('vize:update', (data) => {
-    if (data.id !== _sfc_main.__hmrId) return;
-
-    if (data.type === 'style-only') {
-      // Update styles without remounting component
-      const styleId = 'vize-style-' + _sfc_main.__hmrId;
-      const styleEl = document.getElementById(styleId);
-      if (styleEl && data.css) {
-        styleEl.textContent = data.css;
-      }
-    }
-  });
-
-  if (typeof __VUE_HMR_RUNTIME__ !== 'undefined') {
-    __VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main);
-  }
-}`;
+    : undefined;
 }

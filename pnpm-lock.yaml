@@ -704,6 +704,9 @@ importers:
 
   npm/vize:
     dependencies:
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../vize-native
       oxc-transform:
         specifier: catalog:oxc
         version: 0.130.0
@@ -730,6 +733,13 @@ importers:
       '@pkl-community/pkl':
         specifier: catalog:repo-tooling
         version: 0.27.2
+
+  npm/vize-native:
+    devDependencies:
+      '@napi-rs/cli':
+        specifier: catalog:integrations
+        version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.7.0)(node-addon-api@7.1.1)
+    optionalDependencies:
       '@vizejs/native-darwin-arm64':
         specifier: catalog:native-binaries
         version: 0.100.0
@@ -754,12 +764,6 @@ importers:
       '@vizejs/native-win32-x64-msvc':
         specifier: catalog:native-binaries
         version: 0.100.0
-
-  npm/vize-native:
-    devDependencies:
-      '@napi-rs/cli':
-        specifier: catalog:integrations
-        version: 3.6.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.7.0)(node-addon-api@7.1.1)
 
   npm/vize-wasm: {}
 

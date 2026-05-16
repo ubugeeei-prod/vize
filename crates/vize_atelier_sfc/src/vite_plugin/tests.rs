@@ -1,4 +1,7 @@
-use super::classify_vite_plugin_request;
+use super::{
+    classify_vite_plugin_request, create_virtual_id, from_virtual_id, normalize_fs_id_for_build,
+    normalize_virtual_vue_module_id,
+};
 
 #[test]
 fn snapshots_macro_define_page_request() {
@@ -71,6 +74,10 @@ fn normalizes_fs_ids_for_build() {
         request.normalized_fs_id.as_deref(),
         Some("/src/entry.js?import")
     );
+    assert_eq!(
+        normalize_fs_id_for_build("/@fs/src/entry.js?import").as_str(),
+        "/src/entry.js?import"
+    );
 }
 
 #[test]
@@ -131,5 +138,20 @@ fn classifies_vue_boundaries() {
         classify_vite_plugin_request("/src/Foo.vue")
             .boundary_kind
             .is_none()
+    );
+}
+
+#[test]
+fn creates_and_normalizes_virtual_ids() {
+    let client = create_virtual_id("/src/Foo.vue", false);
+    let ssr = create_virtual_id("/src/Foo.vue", true);
+
+    assert_eq!(client.as_str(), "\0/src/Foo.vue.ts");
+    assert_eq!(ssr.as_str(), "\0vize-ssr:/src/Foo.vue.ts");
+    assert_eq!(from_virtual_id(client.as_str()).as_str(), "/src/Foo.vue");
+    assert_eq!(from_virtual_id(ssr.as_str()).as_str(), "/src/Foo.vue");
+    assert_eq!(
+        normalize_virtual_vue_module_id("\0/src/Foo.vue.ts?macro=true").as_str(),
+        "/src/Foo.vue?macro=true"
     );
 }
