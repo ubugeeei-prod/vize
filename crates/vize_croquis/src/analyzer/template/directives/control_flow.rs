@@ -88,11 +88,9 @@ impl Analyzer {
                 false
             };
 
-            profile!("croquis.template.v_if.children", {
-                for child in branch.children.iter() {
-                    self.visit_template_child(child, scope_vars);
-                }
-            });
+            for child in branch.children.iter() {
+                self.visit_template_child(child, scope_vars);
+            }
 
             // Pop v-if guard
             if guard_pushed {
@@ -158,11 +156,9 @@ impl Analyzer {
             );
         }
 
-        profile!("croquis.template.v_for.children", {
-            for child in for_node.children.iter() {
-                self.visit_template_child(child, scope_vars);
-            }
-        });
+        for child in for_node.children.iter() {
+            self.visit_template_child(child, scope_vars);
+        }
 
         for _ in 0..vars_count {
             scope_vars.pop();

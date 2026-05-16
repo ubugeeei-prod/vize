@@ -357,11 +357,9 @@ impl Analyzer {
         });
 
         // Visit children
-        profile!("croquis.template.element.children", {
-            for child in el.children.iter() {
-                self.visit_template_child(child, scope_vars);
-            }
-        });
+        for child in el.children.iter() {
+            self.visit_template_child(child, scope_vars);
+        }
 
         // Pop v-if guard after visiting children
         if vif_guard_pushed {
