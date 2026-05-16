@@ -139,7 +139,7 @@ function resolveWorkspaceBindingPath(): string | null {
   }
 }
 
-function shouldPreferWorkspaceBinding(resolvedPath: string | null): boolean {
+export function shouldPreferWorkspaceBinding(resolvedPath: string | null): boolean {
   const override = process.env.VIZE_PREFER_WORKSPACE_BINDING;
   if (override === "1" || override === "true") {
     return true;
@@ -510,7 +510,9 @@ async function runBuild(args: string[]): Promise<void> {
 
   const files = collectVueFiles(patterns);
   if (files.length === 0) {
-    process.stderr.write(`No Vue files found matching inputs: ${JSON.stringify(patterns)}\n`);
+    process.stderr.write(
+      `No Vue files found matching inputs: ${sanitizeTerminalText(JSON.stringify(patterns))}\n`,
+    );
     process.exit(1);
   }
 
@@ -539,10 +541,14 @@ async function runBuild(args: string[]): Promise<void> {
     for (const fileResult of results) {
       const source = sourceByPath.get(fileResult.path) ?? "";
       for (const warning of fileResult.warnings) {
-        process.stderr.write(`warning: ${displayPath(fileResult.path)} ${warning}\n`);
+        process.stderr.write(
+          `warning: ${displayPath(fileResult.path)} ${sanitizeTerminalText(warning)}\n`,
+        );
       }
       for (const error of fileResult.errors) {
-        process.stderr.write(`error: ${displayPath(fileResult.path)} ${error}\n`);
+        process.stderr.write(
+          `error: ${displayPath(fileResult.path)} ${sanitizeTerminalText(error)}\n`,
+        );
       }
 
       if (fileResult.errors.length > 0 || options.format === "stats") {
@@ -716,7 +722,9 @@ async function runFmt(args: string[]): Promise<void> {
 
   const files = collectVueFiles(patterns);
   if (files.length === 0) {
-    process.stderr.write(`No Vue files found matching inputs: ${JSON.stringify(patterns)}\n`);
+    process.stderr.write(
+      `No Vue files found matching inputs: ${sanitizeTerminalText(JSON.stringify(patterns))}\n`,
+    );
     return;
   }
 
@@ -743,7 +751,7 @@ async function runFmt(args: string[]): Promise<void> {
     } catch (error) {
       errored++;
       process.stderr.write(
-        `Error formatting ${displayPath(file)}: ${error instanceof Error ? error.message : String(error)}\n`,
+        `Error formatting ${displayPath(file)}: ${sanitizeTerminalText(error instanceof Error ? error.message : String(error))}\n`,
       );
     }
   }
@@ -923,12 +931,75 @@ function normalizePath(filePath: string): string {
   return filePath.split(path.sep).join("/");
 }
 
-function displayPath(filePath: string): string {
+export function sanitizeTerminalText(value: unknown): string {
+  const text = String(value);
+  let sanitized = "";
+
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code === 0x1b) {
+      i = skipTerminalEscapeSequence(text, i);
+      continue;
+    }
+    if (isUnsafeTerminalControl(code)) {
+      continue;
+    }
+    sanitized += text[i];
+  }
+
+  return sanitized;
+}
+
+function skipTerminalEscapeSequence(text: string, escapeIndex: number): number {
+  const introducer = text.charCodeAt(escapeIndex + 1);
+  if (introducer === 0x5b) {
+    return skipUntilAnsiFinalByte(text, escapeIndex + 2);
+  }
+  if (introducer === 0x5d || introducer === 0x50 || introducer === 0x5e || introducer === 0x5f) {
+    return skipUntilStringTerminator(text, escapeIndex + 2);
+  }
+  if (Number.isNaN(introducer)) {
+    return escapeIndex;
+  }
+  return escapeIndex + 1;
+}
+
+function skipUntilAnsiFinalByte(text: string, index: number): number {
+  for (let i = index; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code >= 0x40 && code <= 0x7e) {
+      return i;
+    }
+  }
+  return text.length - 1;
+}
+
+function skipUntilStringTerminator(text: string, index: number): number {
+  for (let i = index; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code === 0x07) {
+      return i;
+    }
+    if (code === 0x1b && text.charCodeAt(i + 1) === 0x5c) {
+      return i + 1;
+    }
+  }
+  return text.length - 1;
+}
+
+function isUnsafeTerminalControl(code: number): boolean {
+  if (code === 0x09 || code === 0x0a || code === 0x0d) {
+    return false;
+  }
+  return (code >= 0x00 && code <= 0x1f) || (code >= 0x7f && code <= 0x9f);
+}
+
+export function displayPath(filePath: string): string {
   const relative = path.relative(process.cwd(), filePath);
   if (relative && !relative.startsWith("..") && !path.isAbsolute(relative)) {
-    return normalizePath(relative);
+    return sanitizeTerminalText(normalizePath(relative));
   }
-  return normalizePath(filePath);
+  return sanitizeTerminalText(normalizePath(filePath));
 }
 
 function isVueFile(filePath: string): boolean {
@@ -1176,7 +1247,9 @@ function renderCheckText(
     totalWarnings += result.warningCount;
 
     if (options.includeVirtualTs && result.virtualTs) {
-      process.stderr.write(`\n=== ${displayPath(file)} ===\n${result.virtualTs}\n`);
+      process.stderr.write(
+        `\n=== ${displayPath(file)} ===\n${sanitizeTerminalText(result.virtualTs)}\n`,
+      );
     }
 
     if (options.quiet || result.diagnostics.length === 0) {
@@ -1188,12 +1261,12 @@ function renderCheckText(
     for (const diagnostic of result.diagnostics) {
       const color = diagnostic.severity === "error" ? "\x1b[31m" : "\x1b[33m";
       const location = offsetToLineColumn(starts, diagnostic.start);
-      const code = diagnostic.code ? ` [${diagnostic.code}]` : "";
+      const code = diagnostic.code ? ` [${sanitizeTerminalText(diagnostic.code)}]` : "";
       process.stdout.write(
-        `  ${color}${diagnostic.severity}:${location.line}:${location.column}\x1b[0m${code} ${diagnostic.message}\n`,
+        `  ${color}${diagnostic.severity}:${location.line}:${location.column}\x1b[0m${code} ${sanitizeTerminalText(diagnostic.message)}\n`,
       );
       if (diagnostic.help) {
-        process.stdout.write(`    help: ${diagnostic.help}\n`);
+        process.stdout.write(`    help: ${sanitizeTerminalText(diagnostic.help)}\n`);
       }
     }
   }
@@ -1249,7 +1322,9 @@ async function runCheck(args: string[]): Promise<void> {
 
   const files = collectVueFiles(patterns);
   if (files.length === 0) {
-    process.stderr.write(`No Vue files found matching inputs: ${JSON.stringify(patterns)}\n`);
+    process.stderr.write(
+      `No Vue files found matching inputs: ${sanitizeTerminalText(JSON.stringify(patterns))}\n`,
+    );
     return;
   }
 
@@ -1337,7 +1412,7 @@ async function runLint(args: string[]): Promise<void> {
   });
 
   if (result.output) {
-    process.stdout.write(result.output);
+    process.stdout.write(sanitizeTerminalText(result.output));
     if (!result.output.endsWith("\n")) {
       process.stdout.write("\n");
     }
@@ -1630,7 +1705,7 @@ async function main(): Promise<void> {
     }
   } else {
     printUsage();
-    console.error(`Unknown command: ${command}`);
+    console.error(`Unknown command: ${sanitizeTerminalText(command)}`);
     console.error(
       "For commands not yet available via NAPI, install from source: cargo install vize",
     );
@@ -1638,35 +1713,12 @@ async function main(): Promise<void> {
   }
 }
 
-if (!import.meta.vitest) {
+const isTestRuntime =
+  Boolean(import.meta.vitest) || process.env.VITEST === "true" || process.env.NODE_ENV === "test";
+
+if (!isTestRuntime) {
   void main().catch((error) => {
-    console.error(error instanceof Error ? error.message : String(error));
+    console.error(sanitizeTerminalText(error instanceof Error ? error.message : String(error)));
     process.exit(1);
-  });
-}
-
-if (import.meta.vitest) {
-  const { describe, expect, it } = import.meta.vitest;
-
-  describe("shouldPreferWorkspaceBinding", () => {
-    it("detects the local workspace native package", () => {
-      expect(
-        shouldPreferWorkspaceBinding(
-          `${path.sep}Users${path.sep}example${path.sep}repo${path.sep}npm${path.sep}vize-native${path.sep}index.js`,
-        ),
-      ).toBe(true);
-    });
-
-    it("ignores published platform packages", () => {
-      expect(
-        shouldPreferWorkspaceBinding(
-          `${path.sep}repo${path.sep}node_modules${path.sep}.pnpm${path.sep}@vizejs+native-darwin-arm64${path.sep}node_modules${path.sep}@vizejs${path.sep}native-darwin-arm64${path.sep}index.js`,
-        ),
-      ).toBe(false);
-    });
-
-    it("returns false when the fallback package cannot be resolved", () => {
-      expect(shouldPreferWorkspaceBinding(null)).toBe(false);
-    });
   });
 }
