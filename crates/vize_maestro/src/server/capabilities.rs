@@ -82,12 +82,8 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         // Range formatting
         document_range_formatting_provider: features.formatting.then_some(OneOf::Left(true)),
 
-        // Signature help
-        signature_help_provider: features.completion.then_some(SignatureHelpOptions {
-            trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
-            retrigger_characters: None,
-            work_done_progress_options: WorkDoneProgressOptions::default(),
-        }),
+        // Signature help is not implemented yet.
+        signature_help_provider: None,
 
         // Code lens
         code_lens_provider: features.code_lens.then_some(CodeLensOptions {
@@ -144,7 +140,7 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
 
         // Document links
         document_link_provider: features.document_links.then_some(DocumentLinkOptions {
-            resolve_provider: Some(true),
+            resolve_provider: Some(false),
             work_done_progress_options: WorkDoneProgressOptions::default(),
         }),
 
@@ -153,10 +149,8 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
             .folding_ranges
             .then_some(FoldingRangeProviderCapability::Simple(true)),
 
-        // Selection ranges
-        selection_range_provider: features
-            .folding_ranges
-            .then_some(SelectionRangeProviderCapability::Simple(true)),
+        // Selection ranges are not implemented yet.
+        selection_range_provider: None,
 
         // Inlay hints
         inlay_hint_provider: features.inlay_hints.then_some(OneOf::Left(true)),
@@ -216,5 +210,76 @@ fn file_rename_registration_options() -> FileOperationRegistrationOptions {
                 },
             },
         ],
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn all_features() -> LspFeatureConfig {
+        LspFeatureConfig {
+            lint: true,
+            typecheck: true,
+            completion: true,
+            hover: true,
+            definition: true,
+            references: true,
+            document_symbols: true,
+            workspace_symbols: true,
+            code_actions: true,
+            rename: true,
+            formatting: true,
+            code_lens: true,
+            semantic_tokens: true,
+            document_links: true,
+            folding_ranges: true,
+            inlay_hints: true,
+            file_rename: true,
+        }
+    }
+
+    #[test]
+    fn default_features_do_not_advertise_unimplemented_providers() {
+        let capabilities = server_capabilities(LspFeatureConfig::default());
+
+        assert!(capabilities.signature_help_provider.is_none());
+        assert!(capabilities.selection_range_provider.is_none());
+        assert!(capabilities.document_link_provider.is_none());
+    }
+
+    #[test]
+    fn all_features_skip_unimplemented_providers_and_keep_implemented_ones() {
+        let capabilities = server_capabilities(all_features());
+
+        assert!(capabilities.signature_help_provider.is_none());
+        assert!(capabilities.selection_range_provider.is_none());
+        assert_eq!(
+            capabilities
+                .document_link_provider
+                .as_ref()
+                .and_then(|provider| provider.resolve_provider),
+            Some(false)
+        );
+
+        assert!(capabilities.completion_provider.is_some());
+        assert!(capabilities.hover_provider.is_some());
+        assert!(capabilities.definition_provider.is_some());
+        assert!(capabilities.references_provider.is_some());
+        assert!(capabilities.document_symbol_provider.is_some());
+        assert!(capabilities.workspace_symbol_provider.is_some());
+        assert!(capabilities.code_action_provider.is_some());
+        assert!(capabilities.rename_provider.is_some());
+        assert!(capabilities.document_formatting_provider.is_some());
+        assert!(capabilities.document_range_formatting_provider.is_some());
+        assert!(capabilities.code_lens_provider.is_some());
+        assert!(capabilities.semantic_tokens_provider.is_some());
+        assert!(capabilities.document_link_provider.is_some());
+        assert!(capabilities.folding_range_provider.is_some());
+        assert!(capabilities.inlay_hint_provider.is_some());
+        assert!(capabilities
+            .workspace
+            .and_then(|workspace| workspace.file_operations)
+            .is_some());
     }
 }
