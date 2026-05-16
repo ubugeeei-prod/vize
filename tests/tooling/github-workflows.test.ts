@@ -193,7 +193,7 @@ test("deploy-docs deploy job keeps a full checkout so local actions and scripts 
   const workflow = readRepoFile(".github", "workflows", "deploy-docs.yml");
   const deployJob = workflow.slice(workflow.indexOf("\n  deploy:\n"));
 
-  assert.match(deployJob, /- uses: actions\/checkout@v4/);
+  assert.match(deployJob, /- uses: actions\/checkout@[0-9a-f]{40}\s*# v6/);
   assert.doesNotMatch(deployJob, /sparse-checkout:/);
 });
 
@@ -235,9 +235,9 @@ test("setup-moonbit defines explicit Windows and Unix execution paths", () => {
   const action = readRepoFile(".github", "actions", "setup-moonbit", "action.yml");
 
   assert.match(action, /Cache MoonBit toolchain/);
-  assert.match(action, /uses: actions\/cache@v5/);
+  assert.match(action, /uses: actions\/cache@[0-9a-f]{40}\s*# v5/);
   assert.match(action, /Setup MSVC toolchain \(Windows\)/);
-  assert.match(action, /uses: ilammy\/msvc-dev-cmd@v1/);
+  assert.match(action, /uses: ilammy\/msvc-dev-cmd@[0-9a-f]{40}\s*# v1/);
   assert.match(action, /Install MoonBit \(Windows\)/);
   assert.match(action, /if: runner\.os == 'Windows'/);
   assert.match(action, /shell: pwsh/);
@@ -274,7 +274,10 @@ test("release workflow does not pin a separate hard-coded Node version for VS Co
 test("release workflow overwrites existing GitHub release assets when a tag is re-driven", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
 
-  assert.match(workflow, /uses: softprops\/action-gh-release@v2[\s\S]*overwrite_files:\s*true/);
+  assert.match(
+    workflow,
+    /uses: softprops\/action-gh-release@[0-9a-f]{40}\s*# v2[\s\S]*overwrite_files:\s*true/,
+  );
 });
 
 test("release workflow configures npm auth fallback for every npm publish job", () => {
