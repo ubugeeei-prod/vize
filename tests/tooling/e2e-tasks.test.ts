@@ -11,20 +11,21 @@ function readRepoFile(...segments: string[]): string {
 }
 
 test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
-  const config = readRepoFile("vite.config.ts");
+  const taskInputs = readRepoFile("tools/vite-plus/task-inputs.ts");
+  const taskGroups = readRepoFile("tools/vite-plus/tasks/test-benchmark.ts");
 
-  assert.match(config, /e2e:\s*\[/);
-  assert.match(config, /"tests\/app\/\*\*"/);
-  assert.match(config, /"tests\/_helpers\/\*\*"/);
+  assert.match(taskInputs, /e2e:\s*\[/);
+  assert.match(taskInputs, /"tests\/app\/\*\*"/);
+  assert.match(taskInputs, /"tests\/_helpers\/\*\*"/);
   assert.match(
-    config,
+    taskGroups,
     /"test:e2e":\s*noCacheTask\(runTasks\("test:e2e:dev", "test:e2e:preview"\)\)/,
   );
-  assert.match(config, /"test:e2e:dev":\s*task\(runInPackages\("test:dev", \["\.\/tests"\]\)/);
+  assert.match(taskGroups, /"test:e2e:dev":\s*task\(runInPackages\("test:dev", \["\.\/tests"\]\)/);
   assert.match(
-    config,
+    taskGroups,
     /"test:e2e:preview":\s*task\(runInPackages\("test:preview", \["\.\/tests"\]\)/,
   );
-  assert.match(config, /"test:e2e:vrt":\s*task\(runInPackages\("test:vrt", \["\.\/tests"\]\)/);
-  assert.match(config, /input:\s*cacheInputs\.e2e/);
+  assert.match(taskGroups, /"test:e2e:vrt":\s*task\(runInPackages\("test:vrt", \["\.\/tests"\]\)/);
+  assert.match(taskGroups, /input:\s*cacheInputs\.e2e/);
 });
