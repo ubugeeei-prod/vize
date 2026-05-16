@@ -5,11 +5,16 @@
 //! - Whether a directive is built-in to Vue
 //! - Whether a string is a JavaScript keyword
 
+use crate::builtins::is_builtin_component;
 use vize_carton::is_native_tag;
 
 /// Check if a tag is a component or custom element.
 #[inline]
 pub fn is_component_tag(tag: &str) -> bool {
+    if is_builtin_component(tag) {
+        return false;
+    }
+
     tag.contains('-')
         || tag.chars().next().is_some_and(|c| c.is_ascii_uppercase())
         || !is_native_tag(tag)
@@ -94,6 +99,9 @@ mod tests {
         assert!(is_component_tag("MyComponent"));
         assert!(is_component_tag("my-component"));
         assert!(is_component_tag("basic"));
+        assert!(!is_component_tag("component"));
+        assert!(!is_component_tag("slot"));
+        assert!(!is_component_tag("transition-group"));
         assert!(!is_component_tag("div"));
         assert!(!is_component_tag("span"));
     }
