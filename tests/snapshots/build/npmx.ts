@@ -4,7 +4,7 @@ import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { npmxApp, VIZE_BIN } from "../../_helpers/apps.ts";
+import { npmxApp, VIZE_BIN, requireVizeBin } from "../../_helpers/apps.ts";
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -12,10 +12,7 @@ const app = npmxApp;
 
 describe(`${app.name} build (compiler)`, () => {
   before(() => {
-    if (!fs.existsSync(VIZE_BIN)) {
-      console.log(`Skipping: vize binary not found at ${VIZE_BIN}`);
-      process.exit(0);
-    }
+    requireVizeBin();
   });
 
   it("vize build compiles without errors", () => {
