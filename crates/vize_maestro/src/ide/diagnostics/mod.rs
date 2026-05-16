@@ -419,6 +419,31 @@ mod tests {
     }
 
     #[test]
+    fn collect_surfaces_sfc_level_lint_diagnostics() {
+        let state = state_with_lsp_diagnostics(true, false);
+        let uri = Url::parse("file:///OutOfOrder.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<template><div /></template>\n<script setup>const count = 1</script>".to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+        let diagnostic = diagnostics
+            .iter()
+            .find(|diagnostic| {
+                diagnostic.source.as_deref() == Some(sources::LINTER)
+                    && diagnostic.code
+                        == Some(NumberOrString::String("vue/sfc-element-order".to_string()))
+            })
+            .expect("SFC-level lint diagnostic");
+
+        assert_eq!(diagnostic.range.start.line, 1);
+        assert!(diagnostic.message.contains("<script> should come before"));
+    }
+
+    #[test]
     fn collect_short_circuits_dependent_diagnostics_after_script_parse_error() {
         let state = state_with_lsp_diagnostics(true, true);
         let uri = Url::parse("file:///BrokenScript.vue").unwrap();

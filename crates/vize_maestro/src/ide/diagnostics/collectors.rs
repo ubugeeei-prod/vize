@@ -338,32 +338,23 @@ impl DiagnosticService {
             ..Default::default()
         };
 
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+        if vize_atelier_sfc::parse_sfc(content, options).is_err() {
             return vec![];
-        };
+        }
 
-        let Some(ref template) = descriptor.template else {
-            return vec![];
-        };
-
-        // Create linter and lint the template content
+        // Create linter and lint the full SFC so editor diagnostics match the CLI.
         let linter = vize_patina::Linter::new();
-        let result = linter.lint_template(&template.content, uri.path());
+        let result = linter.lint_sfc(content, uri.path());
 
         // Convert lint diagnostics to LSP diagnostics
         result
             .diagnostics
             .into_iter()
             .map(|lint_diag| {
-                // Convert byte offset to line/column within template
-                let (start_line, start_col) =
-                    offset_to_line_col(&template.content, lint_diag.start as usize);
-                let (end_line, end_col) =
-                    offset_to_line_col(&template.content, lint_diag.end as usize);
-
-                // Adjust line numbers based on template block position in SFC
-                let sfc_start_line = template.loc.start_line as u32 + start_line;
-                let sfc_end_line = template.loc.start_line as u32 + end_line;
+                // Convert byte offsets directly in the SFC. vize_patina::lint_sfc
+                // already maps template diagnostics back to source coordinates.
+                let (start_line, start_col) = offset_to_line_col(content, lint_diag.start as usize);
+                let (end_line, end_col) = offset_to_line_col(content, lint_diag.end as usize);
 
                 // Build the diagnostic message with help text (render as plain text for LSP)
                 #[allow(clippy::disallowed_macros)]
@@ -381,11 +372,11 @@ impl DiagnosticService {
                 Diagnostic {
                     range: Range {
                         start: Position {
-                            line: sfc_start_line.saturating_sub(1),
+                            line: start_line,
                             character: start_col,
                         },
                         end: Position {
-                            line: sfc_end_line.saturating_sub(1),
+                            line: end_line,
                             character: end_col,
                         },
                     },
