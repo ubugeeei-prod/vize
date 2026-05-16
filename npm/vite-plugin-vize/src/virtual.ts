@@ -7,6 +7,7 @@
 
 import path from "node:path";
 import fs from "node:fs";
+import { classifyVitePluginRequest } from "@vizejs/native";
 
 // Virtual module prefixes and constants
 export const LEGACY_VIZE_PREFIX = "\0vize:";
@@ -21,15 +22,15 @@ export interface DynamicImportAliasRule {
 
 /** Check if a module ID is a vize-compiled virtual module */
 export function isVizeVirtual(id: string): boolean {
-  return isVizeVirtualVueModuleId(id);
+  return classifyVitePluginRequest(id).isVizeVirtual;
 }
 
 export function isVizeVirtualVueModuleId(id: string): boolean {
-  return id.startsWith("\0") && /\.vue\.ts(?:\?|$)/.test(id);
+  return classifyVitePluginRequest(id).isVizeVirtual;
 }
 
 export function isVizeSsrVirtual(id: string): boolean {
-  return id.startsWith(VIZE_SSR_PREFIX);
+  return classifyVitePluginRequest(id).isVizeSsrVirtual;
 }
 
 /** Create a virtual module ID from a real .vue file path */
@@ -39,12 +40,21 @@ export function toVirtualId(realPath: string, ssr = false): string {
 
 /** Extract the real .vue file path from a virtual module ID */
 export function fromVirtualId(virtualId: string): string {
-  return normalizeVizeVirtualVueModuleId(virtualId).split("?")[0]!;
+  const request = classifyVitePluginRequest(virtualId);
+  if (request.vizeVirtualPath) {
+    return request.vizeVirtualPath;
+  }
+  const normalized = normalizeVizeVirtualVueModuleId(virtualId);
+  const queryStart = normalized.indexOf("?");
+  return queryStart === -1 ? normalized : normalized.slice(0, queryStart);
 }
 
 export function normalizeVizeVirtualVueModuleId(id: string): string {
-  const prefix = isVizeSsrVirtual(id) ? VIZE_SSR_PREFIX.length : 1;
-  return id.slice(prefix).replace(/\.ts(?=\?|$)/, "");
+  const request = classifyVitePluginRequest(id);
+  if (request.vizeVirtualPath) {
+    return request.vizeVirtualPath + request.querySuffix;
+  }
+  return request.normalizedVuePath + request.querySuffix;
 }
 
 export function escapeRegExp(value: string): string {
