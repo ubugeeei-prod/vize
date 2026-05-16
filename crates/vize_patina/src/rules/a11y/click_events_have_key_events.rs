@@ -10,7 +10,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
+
+use super::helpers::is_component_like_element;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/click-events-have-key-events",
@@ -111,7 +113,7 @@ impl Rule for ClickEventsHaveKeyEvents {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         // Skip Vue custom components - they handle their own a11y internally
         // Components like <MkButton>, <NuxtLink> may render as interactive elements
-        if element.tag_type == ElementType::Component {
+        if is_component_like_element(element) {
             return;
         }
 
@@ -211,6 +213,19 @@ mod tests {
         assert_eq!(
             result.warning_count, 0,
             "Should not flag NuxtLink component"
+        );
+    }
+
+    #[test]
+    fn test_valid_kebab_case_component_with_click() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<a-button type="primary" @click="handleClick">Click</a-button>"#,
+            "test.vue",
+        );
+        assert_eq!(
+            result.warning_count, 0,
+            "Should not flag kebab-case Vue components with @click"
         );
     }
 }

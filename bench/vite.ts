@@ -6,7 +6,7 @@
  *
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
- *   2. Build vite-plugin: mise run build:vite-plugin
+ *   2. Build vite-plugin: vp run --workspace-root build:vite-plugin
  *   3. Run benchmark: node bench/vite.ts [count]
  */
 

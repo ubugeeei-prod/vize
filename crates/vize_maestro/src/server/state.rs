@@ -579,11 +579,14 @@ impl ServerState {
             ..Default::default()
         };
 
-        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) {
-            let base_uri = uri.path();
-            let virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
-            self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
-        }
+        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+            self.remove_virtual_docs(uri);
+            return;
+        };
+
+        let base_uri = uri.path();
+        let virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
+        self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
     }
 
     /// Generate and cache virtual documents for an art file (*.art.vue).
@@ -597,6 +600,7 @@ impl ServerState {
         let Ok(art_desc) =
             vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default())
         else {
+            self.remove_virtual_docs(uri);
             return;
         };
 
@@ -977,6 +981,44 @@ const secondaryLabel = ref('secondary')
             .source_map
             .to_generated(info.relative_offset as u32);
         assert!(generated_offset.is_some());
+    }
+
+    #[test]
+    fn update_virtual_docs_removes_cache_after_sfc_parse_failure() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///Broken.vue").unwrap();
+        let valid_source = r#"<script setup lang="ts">
+const message = 'ok'
+</script>
+
+<template>
+  <div>{{ message }}</div>
+</template>
+"#;
+
+        state.update_virtual_docs(&uri, valid_source);
+        assert!(state.get_virtual_docs(&uri).is_some());
+
+        state.update_virtual_docs(&uri, "<template><div></div>");
+        assert!(state.get_virtual_docs(&uri).is_none());
+    }
+
+    #[test]
+    fn update_virtual_docs_removes_cache_after_art_parse_failure() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///Broken.art.vue").unwrap();
+        let valid_source = r#"<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <Button />
+  </variant>
+</art>
+"#;
+
+        state.update_virtual_docs(&uri, valid_source);
+        assert!(state.get_virtual_docs(&uri).is_some());
+
+        state.update_virtual_docs(&uri, "<template><div>not an art file</div></template>");
+        assert!(state.get_virtual_docs(&uri).is_none());
     }
 
     #[test]

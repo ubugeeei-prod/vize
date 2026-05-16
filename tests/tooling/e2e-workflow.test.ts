@@ -20,10 +20,17 @@ test("app e2e workflow is manually selectable and uploads failure artifacts", ()
     assert.match(workflow, new RegExp(`${suite}\\)\\n\\s+`));
   }
 
+  assert.match(workflow, /--filter '\.\/tests\.\.\.'/);
+  assert.match(workflow, /--filter '\.\/npm\/vize-native\.\.\.'/);
+  assert.match(workflow, /--filter '\.\/npm\/vite-plugin-vize\.\.\.'/);
   assert.match(workflow, /Build native package/);
+  assert.match(workflow, /Build vize CLI/);
+  assert.match(workflow, /cargo build --profile ci -p vize/);
+  assert.match(workflow, /uses: \.\/\.github\/actions\/setup-moonbit/);
   assert.match(workflow, /Cache Playwright browsers/);
-  assert.match(workflow, /pnpm --dir tests exec playwright install --with-deps chromium/);
-  assert.match(workflow, /RUN_BUILD_TESTS=1 pnpm --dir tests run test:preview/);
+  assert.match(workflow, /vp exec --filter '\.\/tests' -- playwright install --with-deps chromium/);
+  assert.match(workflow, /RUN_BUILD_TESTS=1 vp run --filter '\.\/tests' test:preview/);
+  assert.doesNotMatch(workflow, /pnpm --dir tests/);
   assert.match(workflow, /- name: Upload app e2e artifacts\s+if: failure\(\)/);
   assert.match(workflow, /tests\/app\/results\//);
   assert.match(workflow, /tests\/app\/screenshots\//);

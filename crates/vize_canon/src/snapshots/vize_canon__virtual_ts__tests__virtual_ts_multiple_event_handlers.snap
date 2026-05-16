@@ -104,7 +104,7 @@ function __setup() {
   })({} as MouseEvent);
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void ref; void count; void handleHover; void handleClick;
+  void count; void handleClick; void handleHover; void ref;
   })();
 }
 

@@ -118,7 +118,7 @@ function __setup() {
   });
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void ref; void selected; void items; void props; void emit; void activeItem;
+  void activeItem; void emit; void items; void props; void ref; void selected;
   })();
 }
 
