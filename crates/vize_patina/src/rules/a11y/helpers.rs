@@ -3,7 +3,21 @@
 //! These helpers are extracted from common patterns used across a11y rules
 //! to avoid code duplication.
 
-use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
+use vize_carton::is_native_tag;
+use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
+
+/// Check if an element should be treated as a component or custom element.
+///
+/// Lint rules run on the parsed template before compiler transforms promote
+/// kebab-case component tags such as `<a-button>` to `ElementType::Component`.
+/// Accessibility rules cannot know what those tags render to, so they should
+/// avoid DOM-specific diagnostics for non-native tags.
+pub fn is_component_like_element(element: &ElementNode) -> bool {
+    matches!(
+        element.tag_type,
+        ElementType::Component | ElementType::Slot | ElementType::Template
+    ) || !is_native_tag(element.tag.as_str())
+}
 
 /// Check if an element is natively interactive (has implicit keyboard support)
 pub fn is_interactive_element(tag: &str) -> bool {

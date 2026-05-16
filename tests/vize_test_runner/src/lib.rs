@@ -617,7 +617,7 @@ mod tests {
     macro_rules! test_fixture {
         ($name:ident, $path:expr) => {
             #[test]
-            #[ignore = "Use `mise run coverage` instead"]
+            #[ignore = "Use `vp run --workspace-root coverage` instead"]
             fn $name() {
                 let fixture = fixtures_path().join(concat!($path, ".toml"));
                 let expected = expected_path().join(concat!($path, ".snap"));
