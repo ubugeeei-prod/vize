@@ -108,7 +108,7 @@ async fn run_app() -> Int {
   if package_obj.get("optionalDependencies") is Some(Object(optional_dependencies)) {
     for dependency_name, dependency_value in optional_dependencies {
       ignore(dependency_value)
-      if dependency_name.starts_with("@vizejs/native-") {
+      if dependency_name.has_prefix("@vizejs/native-") {
         optional_dependencies[dependency_name] = Json::string(version)
       }
     }

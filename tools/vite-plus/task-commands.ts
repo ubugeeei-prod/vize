@@ -75,7 +75,7 @@ export const moonCommandForEnvironment = (
   }
 
   if (pathExists(workspaceMoonBin)) {
-    return `env MOON_HOME=${workspaceMoonHome} ${workspaceMoonBin}`;
+    return `env MOON_HOME=${workspaceMoonHome} MOON_BIN=${workspaceMoonBin} ${workspaceMoonBin}`;
   }
 
   return "moon";

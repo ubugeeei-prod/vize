@@ -103,7 +103,12 @@ async fn build_apple_package(
     package_dir,
     "\{binary_name(crate_name)}.\{platform_tag}.node",
   )
-  @afs.write_file(output_path, @afs.read_file(built_library), create=0o755)
+  @afs.write_file(
+    output_path,
+    @afs.read_file(built_library),
+    create_mode=CreateOrTruncate,
+    permission=0o755,
+  )
   0
 }
 

@@ -58,7 +58,7 @@ fn snapshot_json_body(snapshot : String) -> String? {
   guard snapshot.has_prefix("---\n") else { return None }
   let parts : Array[String] = snapshot
     .split("\n---\n")
-    .map(StringView::to_string)
+    .map(view => view.to_owned())
     .collect()
   guard parts.length() >= 2 else { return None }
   let body : Array[String] = []

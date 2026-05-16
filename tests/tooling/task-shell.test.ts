@@ -68,7 +68,7 @@ test("Rust task environments preserve forwarded arguments", () => {
 test("MoonBit task commands prefer the workspace toolchain cache", () => {
   assert.equal(
     moonCommandForEnvironment({}, (candidate) => candidate === ".cache/moonbit/bin/moon"),
-    "env MOON_HOME=.cache/moonbit .cache/moonbit/bin/moon",
+    "env MOON_HOME=.cache/moonbit MOON_BIN=.cache/moonbit/bin/moon .cache/moonbit/bin/moon",
   );
 });
 

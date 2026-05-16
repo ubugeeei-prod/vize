@@ -27,7 +27,7 @@ fn join_path(base : String, child : String) -> String {
 ///|
 fn basename(path_string : String) -> String {
   let path : @path.Path = path_string
-  path.basename().to_string()
+  path.basename().to_owned()
 }
 
 ///|
@@ -105,7 +105,12 @@ async fn run_app() -> Int {
   let copied = []
   for file in collected {
     let destination = join_path(args[1], basename(file))
-    @afs.write_file(destination, @afs.read_file(file), create=0o644)
+    @afs.write_file(
+      destination,
+      @afs.read_file(file),
+      create_mode=CreateOrTruncate,
+      permission=0o644,
+    )
     copied.push(destination)
   }
   copied.sort()

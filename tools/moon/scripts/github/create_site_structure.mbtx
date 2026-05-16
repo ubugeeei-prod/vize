@@ -23,7 +23,12 @@ async fn copy_tree(source : String, destination : String) -> Unit {
     if @xfs.is_dir(source_path) {
       copy_tree(source_path, destination_path)
     } else {
-      @afs.write_file(destination_path, @afs.read_file(source_path), create=0o644)
+      @afs.write_file(
+        destination_path,
+        @afs.read_file(source_path),
+        create_mode=CreateOrTruncate,
+        permission=0o644,
+      )
     }
   }
 }
@@ -36,7 +41,8 @@ async fn main {
   @afs.write_file(
     "site/CNAME",
     @afs.read_file("playground/public/CNAME"),
-    create=0o644,
+    create_mode=CreateOrTruncate,
+    permission=0o644,
   )
   @sys.exit(0)
 }

@@ -13,7 +13,7 @@ fn last_lines(text : String, count : Int) -> String {
   if trimmed == "" {
     return ""
   }
-  let lines : Array[String] = trimmed.split("\n").map(StringView::to_string).collect()
+  let lines : Array[String] = trimmed.split("\n").map(view => view.to_owned()).collect()
   let start = if lines.length() > count { lines.length() - count } else { 0 }
   let summary_lines : Array[String] = []
   for i in start..<lines.length() {
@@ -46,7 +46,12 @@ async fn run_app() -> Int {
   if exit_code != 0 {
     return exit_code
   }
-  @afs.write_file("coverage-report.txt", stdout, create=0o644)
+  @afs.write_file(
+    "coverage-report.txt",
+    stdout,
+    create_mode=CreateOrTruncate,
+    permission=0o644,
+  )
   let summary = last_lines(stdout, 7)
   let summary_text = if summary == "" {
     "### Coverage Summary\n\n"
@@ -57,8 +62,8 @@ async fn run_app() -> Int {
     summary_path,
     summary_text,
     append=true,
-    create=0o644,
-    truncate=false,
+    create_mode=OpenOrCreate,
+    permission=0o644,
   )
   0
 }

@@ -111,7 +111,7 @@ fn package_version(json : Json) -> String? {
 
 ///|
 fn yaml_scalar(value : String) -> String {
-  value.trim().to_string().replace_all(old="\"", new="")
+  value.trim().to_owned().replace_all(old="\"", new="")
 }
 
 ///|
@@ -164,7 +164,7 @@ fn parse_catalog_versions(content : String) -> Map[String, String] {
   let versions : Map[String, String] = {}
   let mut in_catalogs = false
   let mut current_catalog = ""
-  let lines : Array[String] = content.split("\n").map(StringView::to_string).collect()
+  let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
   for line in lines {
     let trimmed = line.trim()
     if trimmed == "" || trimmed.has_prefix("#") {
@@ -180,13 +180,13 @@ fn parse_catalog_versions(content : String) -> Map[String, String] {
       break
     }
     if line.has_prefix("  ") && !line.has_prefix("    ") && trimmed.has_suffix(":") {
-      current_catalog = trimmed.to_string().replace(old=":", new="")
+      current_catalog = trimmed.to_owned().replace(old=":", new="")
       continue
     }
     if current_catalog == "" || !line.has_prefix("    ") {
       continue
     }
-    let parts : Array[String] = trimmed.split(": ").map(StringView::to_string).collect()
+    let parts : Array[String] = trimmed.split(": ").map(view => view.to_owned()).collect()
     guard parts.length() >= 2 else { continue }
     let key = yaml_scalar(parts[0])
     let value = yaml_scalar(parts[1])

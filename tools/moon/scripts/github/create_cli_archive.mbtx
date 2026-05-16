@@ -40,7 +40,7 @@ async fn run_app() -> Int {
   }
   let cwd = release_dir(args[0])
   let archive_path = resolve_path(args[1])
-  if args[1].ends_with(".zip") {
+  if args[1].has_suffix(".zip") {
     return @process.run("7z", ["a", archive_path, args[2]], cwd=cwd)
   }
   @process.run("tar", ["-czvf", archive_path, args[2]], cwd=cwd)

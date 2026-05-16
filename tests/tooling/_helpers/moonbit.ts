@@ -4,6 +4,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const workspaceMoonHome = path.join(repoRoot, ".cache", "moonbit");
+const workspaceMoonCommand = path.join(
+  workspaceMoonHome,
+  "bin",
+  process.platform === "win32" ? "moon.cmd" : "moon",
+);
+const agentTempDir = path.join(repoRoot, "__agent_only", "moonbit-tmp");
 
 export function moonScriptPath(name: string): string {
   return path.join(repoRoot, "tools", "moon", "scripts", `${name}.mbtx`);
@@ -30,6 +37,9 @@ function resolveMoonCommand(env: NodeJS.ProcessEnv): string {
   if (runnerShim) {
     return runnerShim;
   }
+  if (fs.existsSync(workspaceMoonCommand)) {
+    return workspaceMoonCommand;
+  }
   return "moon";
 }
 
@@ -37,20 +47,53 @@ function stripMoonCacheLogs(output: string): string {
   return output.replace(/^(Using cached|Downloading) .*\n/gm, "");
 }
 
+function hasExplicitEnvValue(env: NodeJS.ProcessEnv | undefined, name: string): boolean {
+  return Object.prototype.hasOwnProperty.call(env ?? {}, name);
+}
+
 export function runMoonScript(
   name: string,
   args: string[] = [],
   options: {
+    buildOnly?: boolean;
     cwd?: string;
+    denyWarn?: boolean;
     env?: NodeJS.ProcessEnv;
   } = {},
 ) {
+  fs.mkdirSync(agentTempDir, { recursive: true });
   const env = {
     ...process.env,
     ...options.env,
   };
+  if (!hasExplicitEnvValue(options.env, "TMPDIR")) {
+    env.TMPDIR = agentTempDir;
+  }
+  if (!hasExplicitEnvValue(options.env, "TEMP")) {
+    env.TEMP = agentTempDir;
+  }
+  if (!hasExplicitEnvValue(options.env, "TMP")) {
+    env.TMP = agentTempDir;
+  }
   const moonCommand = resolveMoonCommand(env);
-  const result = spawnSync(moonCommand, ["run", "-q", "--target", "native", "-", "--", ...args], {
+  if (moonCommand === workspaceMoonCommand && !hasExplicitEnvValue(options.env, "MOON_HOME")) {
+    env.MOON_HOME = workspaceMoonHome;
+  }
+  if (moonCommand === workspaceMoonCommand && !hasExplicitEnvValue(options.env, "MOON_BIN")) {
+    env.MOON_BIN = workspaceMoonCommand;
+  }
+  const runArgs = [
+    "run",
+    "-q",
+    ...(options.buildOnly ? ["--build-only"] : []),
+    ...(options.denyWarn ? ["--deny-warn"] : []),
+    "--target",
+    "native",
+    "-",
+    "--",
+    ...args,
+  ];
+  const result = spawnSync(moonCommand, runArgs, {
     cwd: options.cwd ?? repoRoot,
     env,
     encoding: "utf8",
