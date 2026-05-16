@@ -623,6 +623,14 @@ pub fn compile_sfc_batch_with_results(
 
     let start = Instant::now();
 
+    let push_result = |result: BatchFileResultNapi| {
+        let mut guard = match results.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => poisoned.into_inner(),
+        };
+        guard.push(result);
+    };
+
     // Compile files in parallel using rayon
     files.par_iter().for_each(|file| {
         let filename = &file.path;
@@ -654,8 +662,7 @@ pub fn compile_sfc_batch_with_results(
             Ok(d) => d,
             Err(e) => {
                 failed_count.fetch_add(1, Ordering::Relaxed);
-                let mut guard = results.lock().unwrap();
-                guard.push(BatchFileResultNapi {
+                push_result(BatchFileResultNapi {
                     path: filename.clone(),
                     code: String::new(),
                     css: None,
@@ -724,8 +731,7 @@ pub fn compile_sfc_batch_with_results(
             Ok(result) => {
                 let macro_artifacts = macro_artifacts_to_napi(result.macro_artifacts);
                 success_count.fetch_add(1, Ordering::Relaxed);
-                let mut guard = results.lock().unwrap();
-                guard.push(BatchFileResultNapi {
+                push_result(BatchFileResultNapi {
                     path: filename.clone(),
                     code: result.code.into(),
                     css: result.css.map(Into::into),
@@ -750,8 +756,7 @@ pub fn compile_sfc_batch_with_results(
             }
             Err(e) => {
                 failed_count.fetch_add(1, Ordering::Relaxed);
-                let mut guard = results.lock().unwrap();
-                guard.push(BatchFileResultNapi {
+                push_result(BatchFileResultNapi {
                     path: filename.clone(),
                     code: String::new(),
                     css: None,
@@ -770,7 +775,10 @@ pub fn compile_sfc_batch_with_results(
     });
 
     let elapsed = start.elapsed();
-    let final_results = results.into_inner().unwrap();
+    let final_results = match results.into_inner() {
+        Ok(results) => results,
+        Err(poisoned) => poisoned.into_inner(),
+    };
 
     Ok(BatchCompileResultWithFilesNapi {
         results: final_results,
