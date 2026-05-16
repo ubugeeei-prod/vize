@@ -65,9 +65,8 @@ pub(crate) fn definition_in_style(ctx: &IdeContext) -> Option<GotoDefinitionResp
         return None;
     }
 
-    // Check for v-bind() references to script variables
-    let before_cursor = &ctx.content[..ctx.offset];
-    if before_cursor.contains("v-bind(") {
+    // Check for v-bind() references to script variables.
+    if is_inside_style_v_bind_argument(&ctx.content, ctx.offset) {
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: ctx.uri.path().to_string().into(),
             ..Default::default()
@@ -96,6 +95,20 @@ pub(crate) fn definition_in_style(ctx: &IdeContext) -> Option<GotoDefinitionResp
     }
 
     None
+}
+
+fn is_inside_style_v_bind_argument(content: &str, offset: usize) -> bool {
+    let mut offset = offset.min(content.len());
+    while offset > 0 && !content.is_char_boundary(offset) {
+        offset -= 1;
+    }
+
+    let Some(v_bind_start) = content[..offset].rfind("v-bind(") else {
+        return false;
+    };
+    let arg_start = v_bind_start + "v-bind(".len();
+
+    !content[arg_start..offset].contains(')')
 }
 
 /// Find the location of a binding definition in raw script content (not virtual code).

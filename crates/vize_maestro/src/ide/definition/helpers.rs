@@ -287,73 +287,7 @@ pub(crate) fn find_prop_in_define_props(content: &str, property_name: &str) -> O
 
 /// Check if the cursor is inside a Vue directive expression.
 pub(crate) fn is_in_vue_directive_expression(ctx: &IdeContext) -> bool {
-    let content = &ctx.content;
-    let offset = ctx.offset;
-
-    // Check if we're inside a mustache expression {{ ... }}
-    let before = &content[..offset];
-    let after = &content[offset..];
-
-    if let Some(mustache_start) = before.rfind("{{") {
-        let between = &content[mustache_start + 2..offset];
-        if !between.contains("}}") && after.contains("}}") {
-            return true;
-        }
-    }
-
-    // Check if we're inside an attribute value
-    let mut pos = offset;
-    let mut in_quotes = false;
-    let mut quote_char = '"';
-
-    while pos > 0 {
-        let c = content.as_bytes()[pos - 1] as char;
-        if c == '"' || c == '\'' {
-            in_quotes = true;
-            quote_char = c;
-            pos -= 1;
-            break;
-        }
-        if c == '>' || c == '<' {
-            return false;
-        }
-        pos -= 1;
-    }
-
-    if !in_quotes {
-        return false;
-    }
-
-    // Skip the = sign
-    while pos > 0 && content.as_bytes()[pos - 1] == b'=' {
-        pos -= 1;
-    }
-
-    // Get the attribute name by scanning backwards
-    let attr_end = pos;
-    while pos > 0 {
-        let c = content.as_bytes()[pos - 1] as char;
-        if c.is_whitespace() || c == '<' || c == '>' {
-            break;
-        }
-        pos -= 1;
-    }
-
-    let attr_name = &content[pos..attr_end];
-
-    if attr_name.starts_with(':')
-        || attr_name.starts_with('@')
-        || attr_name.starts_with('#')
-        || attr_name.starts_with("v-")
-    {
-        let quote_start = attr_end + 1;
-        if let Some(quote_end) = content[quote_start + 1..].find(quote_char) {
-            let abs_quote_end = quote_start + 1 + quote_end;
-            return offset <= abs_quote_end;
-        }
-    }
-
-    false
+    crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
 }
 
 /// Find the import path for a given component name.

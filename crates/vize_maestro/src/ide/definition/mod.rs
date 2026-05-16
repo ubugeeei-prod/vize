@@ -352,6 +352,33 @@ const msg = 'hello'
         assert_eq!(value_location.range.start.character, character);
     }
 
+    #[test]
+    fn test_definition_ignores_static_attribute_value() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("StaticAttribute.vue");
+        let source = r#"<script setup lang="ts">
+const message = 'hello'
+</script>
+
+<template>
+  <div title="message" />
+</template>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let value_offset = source.rfind("message\"").unwrap() + "message".len();
+        let value_ctx = IdeContext::new(&state, &uri, value_offset).unwrap();
+
+        assert!(DefinitionService::definition(&value_ctx).is_none());
+    }
+
     #[cfg(feature = "native")]
     #[tokio::test]
     async fn test_definition_with_corsa_fallback_resolves_template_binding_at_boundary() {
@@ -425,6 +452,64 @@ const secondaryLabel = ref('secondary')
         assert_eq!(location.uri, uri);
         assert_eq!(location.range.start.line, line);
         assert_eq!(location.range.start.character, character);
+    }
+
+    #[test]
+    fn test_definition_in_style_resolves_inside_v_bind_argument() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("Styled.vue");
+        let source = r#"<script setup lang="ts">
+const color = 'red'
+</script>
+<style>
+.foo { color: v-bind(color); }
+</style>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.find("v-bind(color").unwrap() + "v-bind(".len() + "color".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let location = scalar_location(DefinitionService::definition(&ctx).unwrap());
+        let expected_binding_offset = source.find("const color").unwrap() + "const ".len();
+        let (line, character) = crate::ide::offset_to_position(source, expected_binding_offset);
+
+        assert_eq!(location.uri, uri);
+        assert_eq!(location.range.start.line, line);
+        assert_eq!(location.range.start.character, character);
+    }
+
+    #[test]
+    fn test_definition_in_style_ignores_same_word_after_closed_v_bind() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("Styled.vue");
+        let source = r#"<script setup lang="ts">
+const color = 'red'
+</script>
+<style>
+.foo { color: v-bind(color); }
+.bar { background: color; }
+</style>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.rfind("background: color").unwrap() + "background: ".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+
+        assert!(DefinitionService::definition(&ctx).is_none());
     }
 
     fn scalar_location(response: GotoDefinitionResponse) -> Location {

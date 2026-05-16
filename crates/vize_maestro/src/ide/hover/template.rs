@@ -36,6 +36,10 @@ impl HoverService {
             return Some(hover);
         }
 
+        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
+            return None;
+        }
+
         // Try to get TypeScript type information from croquis analysis
         if let Some(hover) = Self::hover_ts_binding(ctx, &word) {
             return Some(hover);
@@ -103,6 +107,10 @@ impl HoverService {
         // Check for Vue directives first; these do not need Corsa.
         if let Some(hover) = Self::hover_directive(&word) {
             return Some(hover);
+        }
+
+        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
+            return None;
         }
 
         // Try to get type information from Corsa via virtual TypeScript.

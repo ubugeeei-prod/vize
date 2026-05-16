@@ -71,6 +71,10 @@ impl super::DefinitionService {
             }
         }
 
+        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
+            return None;
+        }
+
         // Try Corsa definition lookup first.
         if let Some(bridge) = corsa_bridge {
             if let Some(ref virtual_docs) = ctx.virtual_docs {
@@ -132,6 +136,10 @@ impl super::DefinitionService {
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
         if word.is_empty() {
+            return None;
+        }
+
+        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
             return None;
         }
 

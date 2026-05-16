@@ -32,6 +32,10 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         return None;
     }
 
+    if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
+        return None;
+    }
+
     // Check if this is a props property access (e.g., props.title -> defineProps)
     if let Some(def) = find_props_property_definition(ctx, &word) {
         return Some(def);
