@@ -16,5 +16,5 @@
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.cache/tsconfig.node.tsbuildinfo"
   },
-  "include": ["tests/tooling/**/*.ts", "vite.config.ts"]
+  "include": ["tests/tooling/**/*.ts", "tools/vite-plus/**/*.ts", "vite.config.ts"]
 }

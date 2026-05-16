@@ -1143,7 +1143,34 @@ export const stylePreprocessorsApp: AppConfig = {
 };
 
 export const SCREENSHOT_DIR = path.resolve(TESTS_DIR, "app", "screenshots");
-export const VIZE_BIN = path.resolve(TESTS_DIR, "../target/release/vize");
+const VIZE_RELEASE_BIN = path.resolve(TESTS_DIR, "../target/release/vize");
+const VIZE_DEBUG_BIN = path.resolve(TESTS_DIR, "../target/debug/vize");
+const VIZE_BIN_OVERRIDE = process.env.VIZE_BIN;
+const VIZE_BIN_FALLBACKS = [VIZE_RELEASE_BIN, VIZE_DEBUG_BIN];
+export const VIZE_BIN =
+  VIZE_BIN_OVERRIDE && VIZE_BIN_OVERRIDE.length > 0
+    ? VIZE_BIN_OVERRIDE
+    : (VIZE_BIN_FALLBACKS.find((candidate) => fs.existsSync(candidate)) ?? VIZE_RELEASE_BIN);
 const CORSA_PRIMARY_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/corsa");
 const CORSA_LEGACY_BIN = path.resolve(TESTS_DIR, "../node_modules/.bin/tsgo");
 export const CORSA_BIN = fs.existsSync(CORSA_PRIMARY_BIN) ? CORSA_PRIMARY_BIN : CORSA_LEGACY_BIN;
+
+export function requireVizeBin(): void {
+  requireFile(VIZE_BIN, "vize CLI", "Build it with `cargo build --release -p vize`.");
+}
+
+export function requireVizeAndCorsaBins(): void {
+  requireVizeBin();
+  requireFile(
+    CORSA_BIN,
+    "Corsa/tsgo",
+    "Install JS dependencies with `vp install` so node_modules/.bin/corsa is available.",
+  );
+}
+
+function requireFile(filePath: string, label: string, hint: string): void {
+  if (fs.existsSync(filePath)) {
+    return;
+  }
+  throw new Error(`${label} binary not found at ${filePath}. ${hint}`);
+}
