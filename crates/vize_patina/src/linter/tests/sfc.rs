@@ -136,6 +136,58 @@ import MyButton from './MyButton.vue'
 }
 
 #[test]
+fn test_lint_sfc_no_unused_components_matches_options_api_component_alias() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script lang="ts">
+import Style from './style.vue'
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  components: {
+    FourStyle: Style,
+  },
+})
+</script>
+
+<template>
+  <four-style />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "Options API component aliases should be matched by registered name: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn test_lint_sfc_no_unused_components_reports_unused_options_api_component_alias() {
+    let linter = Linter::new().with_enabled_rules(Some(vec!["vue/no-unused-components".into()]));
+    let sfc = r#"<script lang="ts">
+import Style from './style.vue'
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  components: {
+    FourStyle: Style,
+  },
+})
+</script>
+
+<template>
+  <div />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "test.vue");
+
+    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.diagnostics[0].rule_name, "vue/no-unused-components");
+    assert!(result.diagnostics[0].message.contains("Style"));
+}
+
+#[test]
 fn test_lint_sfc_offset_line_conversion() {
     let linter = Linter::new();
     let sfc = r#"<script setup lang="ts">

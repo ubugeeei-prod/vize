@@ -41,8 +41,8 @@ pub use bindings::{
 };
 pub use croquis::AnalysisStats;
 pub use template::{
-    ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp, SlotUsage,
-    TemplateExpression, TemplateExpressionKind, TemplateInfo,
+    ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp,
+    SlotUsage, TemplateExpression, TemplateExpressionKind, TemplateInfo,
 };
 
 use crate::hoist::HoistTracker;
@@ -96,6 +96,9 @@ pub struct Croquis {
 
     /// Components used in template (names only, for quick lookup)
     pub used_components: FxHashSet<CompactString>,
+
+    /// Components registered through Options API `components`.
+    pub component_registrations: Vec<ComponentRegistration>,
 
     /// Detailed component usage information (props, events, slots)
     pub component_usages: Vec<ComponentUsage>,
