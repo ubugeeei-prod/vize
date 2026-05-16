@@ -4,6 +4,7 @@
 //! using Corsa as the TypeScript type checker backend.
 
 use crate::corsa_bridge::{CorsaBridge, CorsaBridgeError};
+use crate::script_parse::{collect_script_parse_diagnostics, ScriptParseDiagnostic};
 use crate::virtual_ts::{generate_virtual_ts_with_offsets, VirtualTsOptions, VirtualTsOutput};
 #[allow(clippy::disallowed_types)]
 use std::sync::Arc;
@@ -151,15 +152,36 @@ impl TypeCheckService {
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
 
         // Analyze script
-        let script_offset: u32 = if let Some(ref script_setup) = descriptor.script_setup {
-            analyzer.analyze_script_setup(&script_setup.content);
-            script_setup.loc.start as u32
-        } else if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
-            script.loc.start as u32
-        } else {
-            0
-        };
+        let mut has_script_parse_errors = false;
+        let mut script_offset: u32 = 0;
+        if let Some(ref script) = descriptor.script {
+            if descriptor.script_setup.is_none() {
+                script_offset = script.loc.start as u32;
+            }
+            let script_diagnostics =
+                collect_script_parse_diagnostics(&script.content, script.loc.start as u32);
+            if script_diagnostics.is_empty() {
+                if descriptor.script_setup.is_none() {
+                    analyzer.analyze_script_plain(&script.content);
+                }
+            } else {
+                has_script_parse_errors = true;
+                add_script_parse_diagnostics(script_diagnostics, &mut result);
+            }
+        }
+        if let Some(ref script_setup) = descriptor.script_setup {
+            script_offset = script_setup.loc.start as u32;
+            let script_diagnostics = collect_script_parse_diagnostics(
+                &script_setup.content,
+                script_setup.loc.start as u32,
+            );
+            if script_diagnostics.is_empty() {
+                analyzer.analyze_script_setup(&script_setup.content);
+            } else {
+                has_script_parse_errors = true;
+                add_script_parse_diagnostics(script_diagnostics, &mut result);
+            }
+        }
 
         // Analyze template
         let mut has_template_parse_errors = false;
@@ -201,7 +223,7 @@ impl TypeCheckService {
 
         let summary = analyzer.finish();
 
-        if has_template_parse_errors {
+        if has_template_parse_errors || has_script_parse_errors {
             result.analysis_time_ms = Some(start_time.elapsed().as_secs_f64() * 1000.0);
             return Ok(result);
         }
@@ -318,6 +340,23 @@ fn line_col_to_offset(content: &str, line: u32, col: u32) -> u32 {
     }
 
     offset + col
+}
+
+fn add_script_parse_diagnostics(
+    diagnostics: Vec<ScriptParseDiagnostic>,
+    result: &mut SfcTypeCheckResult,
+) {
+    for diagnostic in diagnostics {
+        result.diagnostics.push(SfcDiagnostic {
+            message: cstr!("Script parse error: {}", diagnostic.message),
+            severity: SfcDiagnosticSeverity::Error,
+            start: diagnostic.start,
+            end: diagnostic.end,
+            code: Some("script-parse-error".into()),
+            related: Vec::new(),
+        });
+        result.error_count += 1;
+    }
 }
 
 /// Map position from virtual TypeScript to original SFC.

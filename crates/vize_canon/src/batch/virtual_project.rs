@@ -10,7 +10,8 @@ use super::error::{CorsaError, CorsaResult};
 use super::import_rewriter::ImportRewriter;
 use super::runtime_deps::materialize_runtime_dependencies;
 use super::source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
-use super::SfcBlockType;
+use super::{Diagnostic, SfcBlockType};
+use crate::script_parse::collect_script_parse_diagnostics;
 use crate::virtual_ts::{generate_virtual_ts_with_offsets, VirtualTsOptions};
 use oxc_span::SourceType;
 use serde_json::{Map, Value};
@@ -76,6 +77,9 @@ pub struct VirtualProject {
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
 
+    /// Parser diagnostics collected before Corsa runs.
+    diagnostics: Vec<Diagnostic>,
+
     /// Import rewriter for `.vue` specifiers inside TypeScript sources.
     rewriter: ImportRewriter,
 }
@@ -97,6 +101,7 @@ impl VirtualProject {
             tsconfig_path: None,
             virtual_ts_options: VirtualTsOptions::default(),
             virtual_files: FxHashMap::default(),
+            diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
         })
     }
@@ -168,12 +173,18 @@ impl VirtualProject {
             "canon.vue.virtual_ts",
             generate_vue_virtual_ts(path, content, &descriptor, &effective_options)
         )?;
+        let GeneratedVueFile {
+            code,
+            mappings,
+            diagnostics,
+        } = generated;
+        self.diagnostics.extend(diagnostics);
         let rewritten = profile!(
             "canon.import.rewrite.vue",
-            self.rewriter.rewrite(&generated.code, SourceType::ts())
+            self.rewriter.rewrite(&code, SourceType::ts())
         );
         let source_map = CompositeSourceMap::new_vue(
-            SfcSourceMap::new(generated.mappings, collect_sfc_block_ranges(&descriptor)),
+            SfcSourceMap::new(mappings, collect_sfc_block_ranges(&descriptor)),
             rewritten.source_map,
         );
         let virtual_path = virtual_vue_path(&self.project_root, &self.virtual_root, path)?;
@@ -308,6 +319,11 @@ impl VirtualProject {
         let mut files: Vec<_> = self.virtual_files.values().collect();
         files.sort_by(|left, right| left.original_path.cmp(&right.original_path));
         files
+    }
+
+    /// Parser diagnostics collected while registering source files.
+    pub fn diagnostics(&self) -> &[Diagnostic] {
+        &self.diagnostics
     }
 
     /// Map a virtual position to the original position.
@@ -549,6 +565,7 @@ impl VirtualProject {
 struct GeneratedVueFile {
     code: CompactString,
     mappings: Vec<crate::virtual_ts::VizeMapping>,
+    diagnostics: Vec<Diagnostic>,
 }
 
 fn generate_vue_virtual_ts(
@@ -562,12 +579,27 @@ fn generate_vue_virtual_ts(
 
     let allocator = Bump::new();
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    let mut diagnostics = Vec::new();
     let has_both_scripts = descriptor.script.is_some() && descriptor.script_setup.is_some();
 
     if let Some(ref script) = descriptor.script {
-        profile!("canon.croquis.analyze_script", {
-            analyzer.analyze_script_plain(&script.content);
-        });
+        let script_diagnostics =
+            collect_script_parse_diagnostics(&script.content, script.loc.start as u32);
+        if script_diagnostics.is_empty() {
+            profile!("canon.croquis.analyze_script", {
+                analyzer.analyze_script_plain(&script.content);
+            });
+        } else {
+            diagnostics.extend(script_diagnostics.into_iter().map(|diagnostic| {
+                diagnostic_for_offset(
+                    path,
+                    source,
+                    diagnostic.start,
+                    cstr!("Script parse error: {}", diagnostic.message),
+                    SfcBlockType::Script,
+                )
+            }));
+        }
     }
 
     let plain_spans: Option<(Vec<ImportStatementInfo>, Vec<ReExportInfo>, Vec<TypeExport>)> =
@@ -586,9 +618,23 @@ fn generate_vue_virtual_ts(
             .attrs
             .get("generic")
             .map(|value| value.as_ref());
-        profile!("canon.croquis.analyze_script_setup", {
-            analyzer.analyze_script_setup_with_generic(&script_setup.content, generic);
-        });
+        let script_diagnostics =
+            collect_script_parse_diagnostics(&script_setup.content, script_setup.loc.start as u32);
+        if script_diagnostics.is_empty() {
+            profile!("canon.croquis.analyze_script_setup", {
+                analyzer.analyze_script_setup_with_generic(&script_setup.content, generic);
+            });
+        } else {
+            diagnostics.extend(script_diagnostics.into_iter().map(|diagnostic| {
+                diagnostic_for_offset(
+                    path,
+                    source,
+                    diagnostic.start,
+                    cstr!("Script parse error: {}", diagnostic.message),
+                    SfcBlockType::ScriptSetup,
+                )
+            }));
+        }
     }
 
     let template_offset = descriptor
@@ -596,13 +642,39 @@ fn generate_vue_virtual_ts(
         .as_ref()
         .map(|template| template.loc.start as u32)
         .unwrap_or(0);
-    let template_ast = descriptor.template.as_ref().map(|template| {
+    let template_ast = descriptor.template.as_ref().and_then(|template| {
         profile!("canon.template.parse_and_analyze", {
-            let (root, _) = parse(&allocator, &template.content);
-            analyzer.analyze_template(&root);
-            root
+            let (root, errors) = parse(&allocator, &template.content);
+            if errors.is_empty() {
+                analyzer.analyze_template(&root);
+                Some(root)
+            } else {
+                diagnostics.extend(errors.into_iter().map(|error| {
+                    let start = error
+                        .loc
+                        .as_ref()
+                        .map(|loc| template_offset + loc.start.offset)
+                        .unwrap_or(template_offset);
+                    diagnostic_for_offset(
+                        path,
+                        source,
+                        start,
+                        cstr!("Template parse error: {}", error.message),
+                        SfcBlockType::Template,
+                    )
+                }));
+                None
+            }
         })
     });
+
+    if !diagnostics.is_empty() {
+        return Ok(GeneratedVueFile {
+            code: invalid_sfc_fallback_virtual_ts(),
+            mappings: Vec::new(),
+            diagnostics,
+        });
+    }
 
     let mut summary = profile!("canon.croquis.finish", analyzer.finish());
 
@@ -636,7 +708,49 @@ fn generate_vue_virtual_ts(
     Ok(GeneratedVueFile {
         code: output.code,
         mappings: output.mappings,
+        diagnostics,
     })
+}
+
+fn invalid_sfc_fallback_virtual_ts() -> CompactString {
+    "declare const __vize_component: any;\nexport default __vize_component;\n".into()
+}
+
+fn diagnostic_for_offset(
+    path: &Path,
+    source: &str,
+    start: u32,
+    message: CompactString,
+    block_type: SfcBlockType,
+) -> Diagnostic {
+    let (line, column) = line_column_for_offset(source, start);
+    Diagnostic {
+        file: path.to_path_buf(),
+        line,
+        column,
+        message,
+        code: None,
+        severity: 1,
+        block_type: Some(block_type),
+    }
+}
+
+fn line_column_for_offset(source: &str, offset: u32) -> (u32, u32) {
+    let target = (offset as usize).min(source.len());
+    let mut line = 0;
+    let mut line_start = 0;
+
+    for (index, character) in source.char_indices() {
+        if index >= target {
+            break;
+        }
+        if character == '\n' {
+            line += 1;
+            line_start = index + 1;
+        }
+    }
+
+    (line, target.saturating_sub(line_start) as u32)
 }
 
 fn shift_module_spans<T>(items: &mut [T], delta: u32)
@@ -915,6 +1029,7 @@ fn strip_trailing_commas(content: &str) -> CompactString {
 #[cfg(test)]
 mod tests {
     use super::{parse_jsonc_value, source_type_for_path, strip_json_comments, VirtualProject};
+    use crate::batch::SfcBlockType;
     use crate::virtual_ts::VirtualTsOptions;
     use std::fs;
     use std::path::{Path, PathBuf};
@@ -967,6 +1082,70 @@ const count = 1
 
         let virtual_file = project.find_by_original(&vue_path).unwrap();
         insta::assert_snapshot!(virtual_file.content.as_str());
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn test_register_vue_file_reports_script_parse_error_with_fallback() {
+        let case_dir = unique_case_dir("script-parse-error");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let vue_path = src_dir.join("Broken.vue");
+        let vue_content = r#"<script setup lang="ts">
+const count =
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#;
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_vue_file(&vue_path, vue_content).unwrap();
+
+        let diagnostics = project.diagnostics();
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Script parse error"));
+        assert_eq!(diagnostics[0].block_type, Some(SfcBlockType::ScriptSetup));
+
+        let virtual_file = project.find_by_original(&vue_path).unwrap();
+        assert!(virtual_file
+            .content
+            .contains("export default __vize_component"));
+        assert!(!virtual_file.content.contains("const count ="));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn test_register_vue_file_reports_template_parse_error_with_fallback() {
+        let case_dir = unique_case_dir("template-parse-error");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let vue_path = src_dir.join("BrokenTemplate.vue");
+        let vue_content = r#"<script setup lang="ts">
+const count = 1
+</script>
+
+<template><div>{{ count }}</template>
+"#;
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_vue_file(&vue_path, vue_content).unwrap();
+
+        let diagnostics = project.diagnostics();
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Template parse error"));
+        assert_eq!(diagnostics[0].block_type, Some(SfcBlockType::Template));
+
+        let virtual_file = project.find_by_original(&vue_path).unwrap();
+        assert!(virtual_file
+            .content
+            .contains("export default __vize_component"));
+        assert!(!virtual_file.content.contains("__vize_check_template"));
 
         let _ = fs::remove_dir_all(&case_dir);
     }

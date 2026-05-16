@@ -6,6 +6,8 @@
 use vize_carton::cstr;
 use vize_carton::Bump;
 
+use crate::script_parse::collect_script_parse_diagnostics;
+
 use super::{
     analysis::{SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity},
     checks::{
@@ -71,15 +73,34 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
 
     // Analyze script and get offset
-    let script_offset: u32 = if let Some(ref script_setup) = descriptor.script_setup {
-        analyzer.analyze_script_setup(&script_setup.content);
-        script_setup.loc.start as u32
-    } else if let Some(ref script) = descriptor.script {
-        analyzer.analyze_script_plain(&script.content);
-        script.loc.start as u32
-    } else {
-        0
-    };
+    let mut has_script_parse_errors = false;
+    let mut script_offset: u32 = 0;
+    if let Some(ref script) = descriptor.script {
+        if descriptor.script_setup.is_none() {
+            script_offset = script.loc.start as u32;
+        }
+        let script_diagnostics =
+            collect_script_parse_diagnostics(&script.content, script.loc.start as u32);
+        if script_diagnostics.is_empty() {
+            if descriptor.script_setup.is_none() {
+                analyzer.analyze_script_plain(&script.content);
+            }
+        } else {
+            has_script_parse_errors = true;
+            add_script_parse_diagnostics(script_diagnostics, &mut result);
+        }
+    }
+    if let Some(ref script_setup) = descriptor.script_setup {
+        script_offset = script_setup.loc.start as u32;
+        let script_diagnostics =
+            collect_script_parse_diagnostics(&script_setup.content, script_setup.loc.start as u32);
+        if script_diagnostics.is_empty() {
+            analyzer.analyze_script_setup(&script_setup.content);
+        } else {
+            has_script_parse_errors = true;
+            add_script_parse_diagnostics(script_diagnostics, &mut result);
+        }
+    }
 
     // Analyze template and get AST
     let mut has_template_parse_errors = false;
@@ -122,32 +143,32 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
     let summary = analyzer.finish();
 
     // Check props typing
-    if options.check_props {
+    if options.check_props && !has_script_parse_errors {
         check_props_typing(&summary, script_offset, &mut result, options.strict);
     }
 
     // Check emits typing
-    if options.check_emits {
+    if options.check_emits && !has_script_parse_errors {
         check_emits_typing(&summary, script_offset, &mut result, options.strict);
     }
 
     // Check template bindings
-    if options.check_template_bindings && !has_template_parse_errors {
+    if options.check_template_bindings && !has_template_parse_errors && !has_script_parse_errors {
         check_template_bindings(&summary, template_offset, &mut result, options.strict);
     }
 
     // Check reactivity loss
-    if options.check_reactivity {
+    if options.check_reactivity && !has_script_parse_errors {
         check_reactivity(&summary, script_offset, &mut result, options.strict);
     }
 
     // Check setup context violations
-    if options.check_setup_context {
+    if options.check_setup_context && !has_script_parse_errors {
         check_setup_context(&summary, script_offset, &mut result);
     }
 
     // Check invalid exports in <script setup>
-    if options.check_invalid_exports {
+    if options.check_invalid_exports && !has_script_parse_errors {
         check_invalid_exports(&summary, script_offset, &mut result);
     }
 
@@ -157,7 +178,7 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
     }
 
     // Generate virtual TypeScript with scope information if requested
-    if options.include_virtual_ts && !has_template_parse_errors {
+    if options.include_virtual_ts && !has_template_parse_errors && !has_script_parse_errors {
         result.virtual_ts = Some(generate_virtual_ts_with_scopes(
             &summary,
             script_content,
@@ -174,4 +195,21 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
     }
 
     result
+}
+
+fn add_script_parse_diagnostics(
+    diagnostics: Vec<crate::script_parse::ScriptParseDiagnostic>,
+    result: &mut SfcTypeCheckResult,
+) {
+    for diagnostic in diagnostics {
+        result.add_diagnostic(SfcTypeDiagnostic {
+            severity: SfcTypeSeverity::Error,
+            message: cstr!("Script parse error: {}", diagnostic.message),
+            start: diagnostic.start,
+            end: diagnostic.end,
+            code: Some("script-parse-error".into()),
+            help: None,
+            related: Vec::new(),
+        });
+    }
 }

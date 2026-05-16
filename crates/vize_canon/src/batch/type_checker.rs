@@ -208,7 +208,15 @@ impl TypeChecker for BatchTypeChecker {
             return Err(CorsaError::NotInitialized);
         }
 
-        self.executor.check(&self.project)
+        let mut result = self.executor.check(&self.project)?;
+        result
+            .diagnostics
+            .extend(self.project.diagnostics().iter().cloned());
+        if result.has_errors() {
+            result.success = false;
+            result.exit_code = result.exit_code.max(1);
+        }
+        Ok(result)
     }
 
     fn check_file(&self, path: &Path, content: &str) -> CorsaResult<Vec<Diagnostic>> {
@@ -217,7 +225,10 @@ impl TypeChecker for BatchTypeChecker {
         let mut temp_project = VirtualProject::new(project_root)?;
         temp_project.register_path_with_content(path, content)?;
 
-        let result = self.executor.check(&temp_project)?;
+        let mut result = self.executor.check(&temp_project)?;
+        result
+            .diagnostics
+            .extend(temp_project.diagnostics().iter().cloned());
         Ok(result.diagnostics)
     }
 

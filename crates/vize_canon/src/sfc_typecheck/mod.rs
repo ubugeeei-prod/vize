@@ -506,6 +506,74 @@ const count = 1
     }
 
     #[test]
+    fn test_type_check_malformed_script_setup_reports_parse_error_without_noise() {
+        let source = r#"<script setup lang="ts">
+const count =
+</script>
+<template><div>{{ count }}</div></template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+
+        assert!(result
+            .diagnostics
+            .iter()
+            .any(|d| d.code.as_deref() == Some("script-parse-error")));
+        assert!(result.has_errors());
+        assert!(result.virtual_ts.is_none());
+        assert!(!result
+            .diagnostics
+            .iter()
+            .any(|d| d.code.as_deref() == Some("undefined-binding")));
+    }
+
+    #[test]
+    fn test_type_check_malformed_plain_script_reports_parse_error_without_virtual_ts() {
+        let source = r#"<script lang="ts">
+export default {
+  setup() {
+    const count =
+  }
+}
+</script>
+<template><div>Hello</div></template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+
+        assert_eq!(
+            result
+                .diagnostics
+                .iter()
+                .filter(|d| d.code.as_deref() == Some("script-parse-error"))
+                .count(),
+            1
+        );
+        assert!(result.virtual_ts.is_none());
+    }
+
+    #[test]
+    fn test_type_check_malformed_plain_script_with_setup_reports_parse_error() {
+        let source = r#"<script lang="ts">
+export default {
+  setup() {
+    const broken =
+  }
+}
+</script>
+<script setup lang="ts">
+const count = 1
+</script>
+<template><div>{{ count }}</div></template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+
+        assert!(result
+            .diagnostics
+            .iter()
+            .any(|d| d.code.as_deref() == Some("script-parse-error")));
+        assert!(result.virtual_ts.is_none());
+    }
+
+    #[test]
     fn test_type_check_malformed_template_keeps_script_diagnostics() {
         let source = r#"<script setup>
 const props = defineProps(['count'])

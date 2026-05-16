@@ -116,6 +116,52 @@ void props
 }
 
 #[test]
+fn check_json_reports_broken_sfc_parse_errors_without_secondary_noise() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "json-broken-sfc",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count =
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#,
+        )],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let diagnostics = json["files"][0]["diagnostics"].as_array().unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(json["errorCount"], 1);
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0]
+        .as_str()
+        .unwrap()
+        .contains("Script parse error"));
+    assert!(!diagnostics[0]
+        .as_str()
+        .unwrap()
+        .contains("Cannot find name"));
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_can_emit_declarations() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

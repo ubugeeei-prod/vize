@@ -48,6 +48,7 @@ mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
 pub mod intelligence;
+mod script_parse;
 pub mod sfc_typecheck;
 pub mod source_map;
 mod types;
