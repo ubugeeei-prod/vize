@@ -894,6 +894,53 @@ fn test_parse_invalid_tag_name_reports_error_and_continues() {
 }
 
 #[test]
+fn test_parse_mixed_broken_input_keeps_later_nodes() {
+    let allocator = Bump::new();
+    let source = "<div v-><1bad></1bad><span id=a>ok</span></div>{{ broken";
+    let (root, errors) = parse(&allocator, source);
+
+    insta::assert_debug_snapshot!(error_recovery_snapshot(&errors), @r###"
+    [
+        (
+            MissingDirectiveName,
+            "Directive `v-` is missing a name. Ignoring it so the rest of the tag can be parsed.",
+            "v-",
+        ),
+        (
+            InvalidFirstCharacterOfTagName,
+            "Tag name starts with an invalid character; treating the malformed tag as text.",
+            "1",
+        ),
+        (
+            InvalidFirstCharacterOfTagName,
+            "Tag name starts with an invalid character; treating the malformed tag as text.",
+            "1",
+        ),
+        (
+            InvalidEndTag,
+            "Invalid end tag.",
+            "</1bad>",
+        ),
+        (
+            MissingInterpolationEnd,
+            "Interpolation is missing its closing delimiter `}}`; treating the unfinished interpolation as text.",
+            "",
+        ),
+    ]
+    "###);
+
+    let TemplateChildNode::Element(div) = &root.children[0] else {
+        panic!("Expected recovered div element");
+    };
+    assert_eq!(div.tag.as_str(), "div");
+    assert!(
+        div.children.iter().any(
+            |child| matches!(child, TemplateChildNode::Element(el) if el.tag.as_str() == "span")
+        )
+    );
+}
+
+#[test]
 fn test_parse_incorrectly_closed_comment_reports_error_and_continues() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, "<!-- note --!><div></div>");
