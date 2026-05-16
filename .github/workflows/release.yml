@@ -49,7 +49,7 @@ jobs:
             target: aarch64-unknown-linux-gnu
             archive: vize-aarch64-unknown-linux-gnu.tar.gz
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
 
       - name: Enable long paths (Windows)
@@ -57,7 +57,7 @@ jobs:
         run: git config --system core.longpaths true
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: ${{ matrix.settings.target }}
 
@@ -66,7 +66,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/install_cross_compile_tools.mbtx
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: release-cli-${{ matrix.settings.target }}
           cache-workspace-crates: "true"
@@ -95,7 +95,7 @@ jobs:
         run: moon run --target native - -- ${{ matrix.settings.target }} ${{ matrix.settings.archive }} vize.exe < tools/moon/scripts/github/create_cli_archive.mbtx
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: cli-${{ matrix.settings.target }}
           path: ${{ matrix.settings.archive }}
@@ -107,10 +107,10 @@ jobs:
     name: Build Editor Extensions
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           cache: true
@@ -120,10 +120,10 @@ jobs:
         run: vp install --workspace-root --frozen-lockfile --prefer-offline
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: release-tools
           cache-workspace-crates: "true"
@@ -138,7 +138,7 @@ jobs:
         run: vp run --workspace-root package:zed-extension
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: editor-extensions
           path: |
@@ -158,17 +158,17 @@ jobs:
     env:
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
 
       - name: Cache pnpm store for VS Code extension tooling
-        uses: actions/cache@v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: ~/.local/share/pnpm/store
           key: ${{ runner.os }}-pnpm-vscode-release-${{ hashFiles('.node-version') }}-v1
@@ -176,7 +176,7 @@ jobs:
             ${{ runner.os }}-pnpm-vscode-release-
 
       - name: Download editor extension artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: editor-extensions
           path: editor-extension-artifacts
@@ -194,10 +194,10 @@ jobs:
     name: Build release npm packages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           cache: true
@@ -211,7 +211,7 @@ jobs:
         run: moon run --target native - -- vp run --filter './npm/vize' build -- vp run --filter './npm/vite-plugin-vize' build -- vp run --filter './npm/oxlint-plugin-vize' build -- vp run --filter './npm/unplugin-vize' build -- vp run --filter './npm/fresco' build -- vp run --filter './npm/musea-mcp-server' build -- vp run --filter './npm/vite-plugin-musea' build -- vp run --filter './npm/vite-plugin-musea' build:gallery -- vp run --filter './npm/rspack-vize-plugin' build -- vp run --filter './npm/musea-nuxt' build -- vp run --filter './npm/nuxt' build < tools/moon/scripts/github/run_many.mbtx
 
       - name: Upload vize CLI package artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-vize
           path: npm/vize
@@ -219,7 +219,7 @@ jobs:
           compression-level: 0
 
       - name: Upload Vite plugin artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-vite-plugin-vize
           path: npm/vite-plugin-vize
@@ -227,7 +227,7 @@ jobs:
           compression-level: 0
 
       - name: Upload Oxlint plugin artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-oxlint-plugin-vize
           path: npm/oxlint-plugin-vize
@@ -235,7 +235,7 @@ jobs:
           compression-level: 0
 
       - name: Upload unplugin artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-unplugin-vize
           path: npm/unplugin-vize
@@ -243,7 +243,7 @@ jobs:
           compression-level: 0
 
       - name: Upload Fresco artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-fresco
           path: npm/fresco
@@ -251,7 +251,7 @@ jobs:
           compression-level: 0
 
       - name: Upload Musea MCP server artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-musea-mcp-server
           path: npm/musea-mcp-server
@@ -259,7 +259,7 @@ jobs:
           compression-level: 0
 
       - name: Upload Musea Vite plugin artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-vite-plugin-musea
           path: npm/vite-plugin-musea
@@ -267,7 +267,7 @@ jobs:
           compression-level: 0
 
       - name: Upload Rspack plugin artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-rspack-vize-plugin
           path: npm/rspack-vize-plugin
@@ -275,7 +275,7 @@ jobs:
           compression-level: 0
 
       - name: Upload Musea Nuxt artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-musea-nuxt
           path: npm/musea-nuxt
@@ -283,7 +283,7 @@ jobs:
           compression-level: 0
 
       - name: Upload Nuxt artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-nuxt
           path: npm/nuxt
@@ -323,14 +323,14 @@ jobs:
             target: aarch64-unknown-linux-musl
             cross_compile: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Enable long paths (Windows)
         if: runner.os == 'Windows'
         run: git config --system core.longpaths true
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           cache: true
@@ -341,12 +341,12 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...' --filter './npm/fresco-native...'
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: ${{ matrix.settings.target }}
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: release-native-${{ matrix.settings.target }}
           cache-workspace-crates: "true"
@@ -360,7 +360,7 @@ jobs:
 
       - name: Setup Zig
         if: matrix.settings.cross_compile
-        uses: goto-bus-stop/setup-zig@v2
+        uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
 
       - name: Clean native build outputs
         shell: bash
@@ -375,7 +375,7 @@ jobs:
         run: moon run --target native - -- npm/vize-native .artifacts/vize-native vize-native < tools/moon/scripts/github/collect_native_artifacts.mbtx
 
       - name: Upload vize-native artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: bindings-${{ matrix.settings.target }}
           path: .artifacts/vize-native/*.node
@@ -391,7 +391,7 @@ jobs:
         run: moon run --target native - -- npm/fresco-native .artifacts/fresco-native fresco-native < tools/moon/scripts/github/collect_native_artifacts.mbtx
 
       - name: Upload fresco-native artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: fresco-bindings-${{ matrix.settings.target }}
           path: .artifacts/fresco-native/*.node
@@ -408,10 +408,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           cache: true
@@ -427,7 +427,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...'
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: bindings-*
           path: npm/vize-native/artifacts
@@ -463,10 +463,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           cache: true
@@ -482,7 +482,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco-native...'
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: fresco-bindings-*
           path: npm/fresco-native/artifacts
@@ -505,30 +505,30 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: wasm32-unknown-unknown
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: release-wasm
           cache-workspace-crates: "true"
 
       - name: Cache WASM package build
         id: cache-wasm
-        uses: actions/cache@v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: npm/vize-wasm
           key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json') }}
 
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: wasm-bindgen-cli@0.2.121
 
@@ -537,7 +537,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/build_vize_wasm_package.mbtx
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -560,10 +560,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -575,7 +575,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-vite-plugin-vize
           path: npm/vite-plugin-vize
@@ -593,10 +593,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -608,7 +608,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-oxlint-plugin-vize
           path: npm/oxlint-plugin-vize
@@ -629,10 +629,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -644,7 +644,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-unplugin-vize
           path: npm/unplugin-vize
@@ -662,10 +662,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -677,7 +677,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-fresco
           path: npm/fresco
@@ -695,10 +695,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -710,7 +710,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-musea-mcp-server
           path: npm/musea-mcp-server
@@ -728,10 +728,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -743,7 +743,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-vite-plugin-musea
           path: npm/vite-plugin-musea
@@ -761,10 +761,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -776,7 +776,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-rspack-vize-plugin
           path: npm/rspack-vize-plugin
@@ -794,10 +794,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -809,7 +809,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-musea-nuxt
           path: npm/musea-nuxt
@@ -833,10 +833,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -848,7 +848,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-nuxt
           path: npm/nuxt
@@ -865,21 +865,21 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
       - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
           shared-key: release-crates
           cache-workspace-crates: "true"
 
       - name: Get crates.io token via Trusted Publishing
         id: crates-io-auth
-        uses: rust-lang/crates-io-auth-action@v1
+        uses: rust-lang/crates-io-auth-action@b7e9a28eded4986ec6b1fa40eeee8f8f165559ec # v1
 
       - name: Publish to crates.io
         env:
@@ -895,14 +895,14 @@ jobs:
       contents: write
     steps:
       - name: Download CLI artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: cli-*
           path: cli-artifacts
           merge-multiple: true
 
       - name: Download editor extension artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: editor-extensions
           path: editor-extension-artifacts
@@ -914,7 +914,7 @@ jobs:
         run: find editor-extension-artifacts -maxdepth 5 -type f | sort
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           generate_release_notes: true
           draft: false
@@ -937,10 +937,10 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+ and Node.js
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
@@ -952,7 +952,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-vize
           path: npm/vize
