@@ -38,6 +38,7 @@
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
+    "test": "node --test src/*.test.ts src/**/*.test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"

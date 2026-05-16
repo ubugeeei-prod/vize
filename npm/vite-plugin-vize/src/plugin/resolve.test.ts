@@ -13,6 +13,25 @@ const workspaceRoot = path.resolve(__dirname, "../../../..");
 const agentTestRoot = path.join(workspaceRoot, "__agent_only", "tests", "vite-plugin-vize");
 fs.mkdirSync(agentTestRoot, { recursive: true });
 
+function writeFixtureFile(filePath: string, content = ""): void {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, content);
+}
+
+function createTempRoot(prefix: string): string {
+  return fs.mkdtempSync(path.join(agentTestRoot, prefix + "-"));
+}
+
+function createTempProject(prefix: string): string {
+  const root = createTempRoot(prefix);
+  writeFixtureFile(
+    path.join(root, "package.json"),
+    JSON.stringify({ name: "resolve-fixture", private: true }, null, 2),
+  );
+  writeFixtureFile(path.join(root, "app", "pages", "index.vue"), "<template />\n");
+  return root;
+}
+
 function createState(root: string): VizePluginState {
   return {
     cache: new Map(),
@@ -51,10 +70,6 @@ const nullResolveContext = {
 
 function hasFixtureProject(projectRoot: string): boolean {
   return fs.existsSync(path.join(projectRoot, "package.json"));
-}
-
-function createTempRoot(prefix: string): string {
-  return fs.mkdtempSync(path.join(agentTestRoot, prefix + "-"));
 }
 
 function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): string {
@@ -260,6 +275,114 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("vue-data-ui");
+  writeFixtureFile(
+    path.join(projectRoot, "node_modules", "vue-data-ui", "package.json"),
+    JSON.stringify(
+      {
+        name: "vue-data-ui",
+        exports: {
+          "./style.css": "./dist/style.css",
+        },
+      },
+      null,
+      2,
+    ),
+  );
+  writeFixtureFile(path.join(projectRoot, "node_modules", "vue-data-ui", "dist", "style.css"));
+
+  const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    "vue-data-ui/style.css",
+    importer,
+    undefined,
+  );
+
+  assert.match(expectResolvedId(resolved), /node_modules[\\/]vue-data-ui[\\/]dist[\\/]style\.css$/);
+}
+
+{
+  const projectRoot = createTempProject("primevue-forms");
+  writeFixtureFile(
+    path.join(projectRoot, "node_modules", "@primevue", "forms", "package.json"),
+    JSON.stringify(
+      {
+        name: "@primevue/forms",
+        exports: {
+          "./resolvers/valibot": "./resolvers/valibot/index.mjs",
+        },
+      },
+      null,
+      2,
+    ),
+  );
+  writeFixtureFile(
+    path.join(
+      projectRoot,
+      "node_modules",
+      "@primevue",
+      "forms",
+      "resolvers",
+      "valibot",
+      "index.mjs",
+    ),
+    "export default {};",
+  );
+
+  const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    "@primevue/forms/resolvers/valibot?nuxt_component=async",
+    importer,
+    undefined,
+  );
+
+  assert.match(
+    expectResolvedId(resolved),
+    /node_modules[\\/]@primevue[\\/]forms[\\/]resolvers[\\/]valibot[\\/]index\.mjs\?nuxt_component=async$/,
+  );
+}
+
+{
+  const projectRoot = createTempProject("ssr-entry");
+  const source = path.join(projectRoot, "app", "pages", "index.vue");
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    source,
+    undefined,
+    { isEntry: true, ssr: true },
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    toVirtualId(source, true),
+    "SSR resolves should use a dedicated virtual module ID",
+  );
+}
+
+{
+  const projectRoot = createTempProject("ssr-upgrade");
+  const source = path.join(projectRoot, "app", "pages", "index.vue");
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    toVirtualId(source),
+    undefined,
+    { isEntry: false, ssr: true },
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    toVirtualId(source, true),
+    "SSR resolution should upgrade client virtual IDs to SSR-specific virtual IDs",
+  );
+}
+
+{
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "npmx.dev");
   if (hasFixtureProject(projectRoot)) {
     const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));
@@ -334,4 +457,4 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   }
 }
 
-console.log("✅ vite-plugin-vize resolve tests passed!");
+console.log("vite-plugin-vize resolve tests passed!");

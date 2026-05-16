@@ -136,7 +136,7 @@ function __setup() {
   })({} as MouseEvent);
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void emit; void count; void props; void doubled; void increment; void computed; void ref; void watch;
+  void computed; void count; void doubled; void emit; void increment; void props; void ref; void watch;
   })();
 }
 

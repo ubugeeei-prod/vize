@@ -93,7 +93,7 @@ function __setup() {
 
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void buttonEl; void ref; void inputRef; void useTemplateRef;
+  void buttonEl; void inputRef; void ref; void useTemplateRef;
   })();
 }
 

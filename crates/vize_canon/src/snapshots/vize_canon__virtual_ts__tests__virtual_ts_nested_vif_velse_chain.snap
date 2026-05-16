@@ -71,13 +71,13 @@ function __setup() {
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
-  type __R_status = typeof status;
   type __R_message = typeof message;
+  type __R_status = typeof status;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
     type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;
-    var status: __U<__R_status> = undefined as any;
     var message: __U<__R_message> = undefined as any;
+    var status: __U<__R_status> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = undefined as unknown as __Ctx;
@@ -101,7 +101,7 @@ function __setup() {
   }
 
   // Reference setup bindings (used in template/CSS v-bind)
-  void ref; void status; void message;
+  void message; void ref; void status;
   })();
 }
 
