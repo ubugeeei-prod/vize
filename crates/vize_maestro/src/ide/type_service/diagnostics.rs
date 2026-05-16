@@ -304,7 +304,7 @@ pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
 mod diagnostics_tests {
     use super::{offset_to_line_col, TypeService};
     use crate::server::ServerState;
-    use tower_lsp::lsp_types::{DiagnosticSeverity, Url};
+    use tower_lsp::lsp_types::{DiagnosticSeverity, NumberOrString, Url};
 
     #[test]
     fn offset_to_line_col_is_zero_indexed_for_lsp() {
@@ -335,5 +335,40 @@ mod diagnostics_tests {
 
         assert_eq!(diagnostic.range.start.line, 1);
         assert_eq!(diagnostic.severity, Some(DiagnosticSeverity::WARNING));
+    }
+
+    #[test]
+    fn collect_diagnostics_does_not_report_regex_literals_as_undefined_bindings() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///RegexLiteral.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            r#"<script setup lang="ts">
+const message = 'hello'
+const bar = 'baz'
+</script>
+<template>
+  {{ message.match(/foo/) }}
+  {{ /foo/.test(message) }}
+  {{ message.replace(/foo/g, bar) }}
+</template>"#
+                .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = TypeService::collect_diagnostics(&state, &uri);
+
+        assert!(
+            diagnostics
+                .iter()
+                .filter(|diagnostic| matches!(
+                    diagnostic.code,
+                    Some(NumberOrString::String(ref code)) if code == "undefined-binding"
+                ))
+                .collect::<Vec<_>>()
+                .is_empty(),
+            "regex literals should not produce undefined-binding diagnostics: {diagnostics:#?}"
+        );
     }
 }

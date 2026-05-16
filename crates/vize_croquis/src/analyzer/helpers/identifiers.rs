@@ -129,7 +129,8 @@ pub fn extract_identifiers_oxc(expr: &str) -> Vec<CompactString> {
     // - Object literals: { }
     // - Type assertions: as Type
     // - Arrow functions: () =>
-    if expr.contains('{') || expr.contains(" as ") || expr.contains("=>") {
+    // - Regex literals and division: /
+    if expr.contains('{') || expr.contains(" as ") || expr.contains("=>") || expr.contains('/') {
         return profile!(
             "croquis.helpers.identifiers.slow",
             extract_identifiers_oxc_slow(expr)
@@ -592,5 +593,24 @@ mod tests {
             "/** comment words should disappear */ disabled ? true : undefined",
         ));
         assert_eq!(ids, vec!["disabled", "true", "undefined"]);
+    }
+
+    #[test]
+    fn test_extract_identifiers_ignores_regex_literals() {
+        fn to_strings(ids: Vec<CompactString>) -> Vec<CompactString> {
+            ids
+        }
+
+        let ids = to_strings(extract_identifiers_oxc("message.match(/foo/)"));
+        assert_eq!(ids, vec!["message"]);
+
+        let ids = to_strings(extract_identifiers_oxc("/foo/.test(message)"));
+        assert_eq!(ids, vec!["message"]);
+
+        let ids = to_strings(extract_identifiers_oxc("message.replace(/foo/g, bar)"));
+        assert_eq!(ids, vec!["message", "bar"]);
+
+        let ids = to_strings(extract_identifiers_oxc("count / divisor"));
+        assert_eq!(ids, vec!["count", "divisor"]);
     }
 }
