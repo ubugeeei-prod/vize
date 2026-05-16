@@ -18,14 +18,14 @@ napi = ["dep:napi", "dep:napi-derive"]
 vize_carton = { workspace = true }
 
 # Terminal control
-crossterm = "0.28"
+crossterm.workspace = true
 
 # Layout engine
-taffy = "0.6"
+taffy.workspace = true
 
 # Text processing
-unicode-width = "0.2"
-unicode-segmentation = "1.11"
+unicode-width.workspace = true
+unicode-segmentation.workspace = true
 
 # Efficient string handling
 compact_str = { workspace = true }
@@ -46,7 +46,7 @@ napi = { workspace = true, optional = true }
 napi-derive = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.build-dependencies]
-napi-build = "2.0"
+napi-build.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

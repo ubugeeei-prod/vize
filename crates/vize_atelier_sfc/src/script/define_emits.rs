@@ -5,14 +5,14 @@
 //! Based on Vue.js official implementation:
 //! https://github.com/vuejs/core/blob/main/packages/compiler-sfc/src/script/defineEmits.ts
 
-use std::collections::HashSet;
+use vize_carton::{FxHashSet, String, ToCompactString};
 
 use oxc_ast::ast::{CallExpression, Expression, TSSignature, TSType, TSTypeLiteral};
 use oxc_span::GetSpan;
 
 use super::context::ScriptCompileContext;
 
-pub const DEFINE_EMITS: &str = "defineEmits";
+pub use vize_croquis::macros::DEFINE_EMITS;
 
 /// Result of processing defineEmits
 #[derive(Debug, Clone, Default)]
@@ -53,21 +53,21 @@ pub fn process_define_emits(
         let arg = &call.arguments[0];
         let start = arg.span().start as usize;
         let end = arg.span().end as usize;
-        Some(source[start..end].trim().to_string())
+        Some(String::from(source[start..end].trim()))
     } else {
         None
     };
 
     // Store type declaration (type parameter)
-    let type_decl = call.type_parameters.as_ref().map(|params| {
+    let type_decl = call.type_arguments.as_ref().map(|params| {
         let start = params.span.start as usize;
         let end = params.span.end as usize;
         let type_str = &source[start..end];
         // Remove the < and > from type params
         if type_str.starts_with('<') && type_str.ends_with('>') {
-            type_str[1..type_str.len() - 1].to_string()
+            String::from(&type_str[1..type_str.len() - 1])
         } else {
-            type_str.to_string()
+            String::from(type_str)
         }
     });
 
@@ -93,16 +93,16 @@ pub fn process_define_emits(
 #[allow(dead_code)]
 pub fn gen_runtime_emits(ctx: &ScriptCompileContext, model_names: &[String]) -> Option<String> {
     fn debug_string<T: std::fmt::Debug>(value: &T) -> String {
-        let mut out = String::new();
+        let mut out = String::default();
         use std::fmt::Write as _;
         let _ = write!(&mut out, "{:?}", value);
         out
     }
 
-    let mut emits_decl = String::new();
+    let mut emits_decl = String::default();
 
     if let Some(ref runtime_decl) = ctx.emits_runtime_decl {
-        emits_decl = runtime_decl.trim().to_string();
+        emits_decl = runtime_decl.trim().to_compact_string();
     } else if ctx.emits_type_decl.is_some() {
         let type_declared_emits = extract_runtime_emits(ctx);
         if !type_declared_emits.is_empty() {
@@ -161,8 +161,8 @@ pub fn gen_runtime_emits(ctx: &ScriptCompileContext, model_names: &[String]) -> 
 ///
 /// Parses the type declaration to extract event names.
 #[allow(dead_code)]
-pub fn extract_runtime_emits(ctx: &ScriptCompileContext) -> HashSet<String> {
-    let mut emits = HashSet::new();
+pub fn extract_runtime_emits(ctx: &ScriptCompileContext) -> FxHashSet<String> {
+    let mut emits = FxHashSet::default();
 
     let type_decl = match &ctx.emits_type_decl {
         Some(decl) => decl,
@@ -192,17 +192,17 @@ fn extract_event_name_from_function_type(type_str: &str) -> Option<String> {
     // Look for pattern like (e: 'eventName') or (e: "eventName")
     let re = regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*[,)]"#).ok()?;
     re.captures(type_str)
-        .and_then(|cap| cap.get(1).map(|m| m.as_str().to_string()))
+        .and_then(|cap| cap.get(1).map(|m| m.as_str().to_compact_string()))
 }
 
 /// Extract events from a type literal (object type)
-fn extract_events_from_type_literal(type_str: &str, emits: &mut HashSet<String>) {
+fn extract_events_from_type_literal(type_str: &str, emits: &mut FxHashSet<String>) {
     // Handle call signatures: { (e: 'click'): void; (e: 'update'): void }
     let call_sig_re =
         regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*(?:,\s*[^)]+)?\)\s*:"#).unwrap();
     for cap in call_sig_re.captures_iter(type_str) {
         if let Some(event_name) = cap.get(1) {
-            emits.insert(event_name.as_str().to_string());
+            emits.insert(event_name.as_str().to_compact_string());
         }
     }
 
@@ -214,7 +214,7 @@ fn extract_events_from_type_literal(type_str: &str, emits: &mut HashSet<String>)
             let name = prop_name.as_str();
             // Skip common type keywords
             if !matches!(name, "type" | "required" | "default" | "validator") {
-                emits.insert(name.to_string());
+                emits.insert(name.to_compact_string());
             }
         }
     }
@@ -224,14 +224,14 @@ fn extract_events_from_type_literal(type_str: &str, emits: &mut HashSet<String>)
 #[allow(dead_code)]
 pub fn extract_event_names_from_ts_type(
     ts_type: &TSType<'_>,
-    emits: &mut HashSet<String>,
+    emits: &mut FxHashSet<String>,
     #[allow(clippy::only_used_in_recursion)] source: &str,
 ) {
     match ts_type {
         TSType::TSFunctionType(func_type) => {
             // Extract from first parameter's type annotation
             if let Some(first_param) = func_type.params.items.first() {
-                if let Some(type_ann) = &first_param.pattern.type_annotation {
+                if let Some(type_ann) = &first_param.type_annotation {
                     extract_literal_values_from_ts_type(&type_ann.type_annotation, emits, source);
                 }
             }
@@ -259,7 +259,7 @@ pub fn extract_event_names_from_ts_type(
 /// Extract from TSTypeLiteral (object type with properties and call signatures)
 fn extract_from_ts_type_literal(
     type_lit: &TSTypeLiteral<'_>,
-    emits: &mut HashSet<String>,
+    emits: &mut FxHashSet<String>,
     source: &str,
 ) {
     let mut has_property = false;
@@ -292,7 +292,7 @@ fn extract_from_ts_type_literal(
         for member in type_lit.members.iter() {
             if let TSSignature::TSCallSignatureDeclaration(call) = member {
                 if let Some(first_param) = call.params.items.first() {
-                    if let Some(type_ann) = &first_param.pattern.type_annotation {
+                    if let Some(type_ann) = &first_param.type_annotation {
                         extract_literal_values_from_ts_type(
                             &type_ann.type_annotation,
                             emits,
@@ -308,17 +308,17 @@ fn extract_from_ts_type_literal(
 /// Extract literal string values from a TSType (for event names)
 fn extract_literal_values_from_ts_type(
     ts_type: &TSType<'_>,
-    emits: &mut HashSet<String>,
+    emits: &mut FxHashSet<String>,
     #[allow(clippy::only_used_in_recursion)] source: &str,
 ) {
     match ts_type {
         TSType::TSLiteralType(lit_type) => {
             match &lit_type.literal {
                 oxc_ast::ast::TSLiteral::StringLiteral(s) => {
-                    emits.insert(s.value.to_string());
+                    emits.insert(s.value.to_compact_string());
                 }
                 oxc_ast::ast::TSLiteral::NumericLiteral(n) => {
-                    emits.insert(n.value.to_string());
+                    emits.insert(n.value.to_compact_string());
                 }
                 // Skip UnaryExpression and TemplateLiteral as per Vue's implementation
                 _ => {}
@@ -339,9 +339,9 @@ fn extract_literal_values_from_ts_type(
 /// Get property key name from a PropertyKey
 fn get_property_key_name(key: &oxc_ast::ast::PropertyKey<'_>, _source: &str) -> Option<String> {
     match key {
-        oxc_ast::ast::PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
-        oxc_ast::ast::PropertyKey::StringLiteral(s) => Some(s.value.to_string()),
-        oxc_ast::ast::PropertyKey::NumericLiteral(n) => Some(n.value.to_string()),
+        oxc_ast::ast::PropertyKey::StaticIdentifier(id) => Some(id.name.to_compact_string()),
+        oxc_ast::ast::PropertyKey::StringLiteral(s) => Some(s.value.to_compact_string()),
+        oxc_ast::ast::PropertyKey::NumericLiteral(n) => Some(n.value.to_compact_string()),
         _ => None,
     }
 }
@@ -356,30 +356,40 @@ fn is_call_of(call: &CallExpression<'_>, name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use vize_carton::{CompactString, FxHashSet, ToCompactString};
+
+    use super::{
+        extract_event_name_from_function_type, extract_events_from_type_literal, gen_runtime_emits,
+        ScriptCompileContext,
+    };
+
+    fn snapshot_emits(emits: &FxHashSet<CompactString>) -> Vec<&str> {
+        let mut emits: Vec<_> = emits.iter().map(|event| event.as_str()).collect();
+        emits.sort_unstable();
+        emits
+    }
 
     #[test]
     fn test_extract_event_name_from_function_type() {
         let result = extract_event_name_from_function_type("(e: 'click') => void");
-        assert_eq!(result, Some("click".to_string()));
+        assert_eq!(result, Some("click".to_compact_string()));
 
         let result = extract_event_name_from_function_type("(e: \"update\") => void");
-        assert_eq!(result, Some("update".to_string()));
+        assert_eq!(result, Some("update".to_compact_string()));
     }
 
     #[test]
     fn test_extract_events_from_type_literal() {
-        let mut emits = HashSet::new();
+        let mut emits = FxHashSet::default();
         extract_events_from_type_literal("{ (e: 'click'): void; (e: 'update'): void }", &mut emits);
-        assert!(emits.contains("click"));
-        assert!(emits.contains("update"));
+        insta::assert_debug_snapshot!(snapshot_emits(&emits));
     }
 
     #[test]
     fn test_extract_events_call_signature_with_payload() {
-        let mut emits = HashSet::new();
+        let mut emits = FxHashSet::default();
         extract_events_from_type_literal("{ (e: 'click', payload: MouseEvent): void }", &mut emits);
-        assert!(emits.contains("click"));
+        insta::assert_debug_snapshot!(snapshot_emits(&emits));
     }
 
     #[test]
@@ -392,10 +402,15 @@ mod tests {
     #[test]
     fn test_gen_runtime_emits_with_models() {
         let ctx = ScriptCompileContext::new("");
-        let result = gen_runtime_emits(&ctx, &["modelValue".to_string(), "count".to_string()]);
+        let result = gen_runtime_emits(
+            &ctx,
+            &[
+                "modelValue".to_compact_string(),
+                "count".to_compact_string(),
+            ],
+        );
         assert!(result.is_some());
         let emits = result.unwrap();
-        assert!(emits.contains("update:modelValue"));
-        assert!(emits.contains("update:count"));
+        insta::assert_snapshot!(emits.as_str());
     }
 }

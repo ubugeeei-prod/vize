@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_sfc/src/parse/tests.rs
+expression: script
+---
+SfcScriptBlock {
+    content: "\nconst name = 'world'\nconst code = `Hello ${name}! </script> ${1 + 2}`\nconst c = 3\n",
+    loc: BlockLocation {
+        start: 14,
+        end: 97,
+        tag_start: 0,
+        tag_end: 106,
+        start_line: 1,
+        start_column: 1,
+        end_line: 5,
+        end_column: 10,
+    },
+    lang: None,
+    src: None,
+    setup: true,
+    attrs: {
+        "setup": "",
+    },
+    bindings: None,
+}

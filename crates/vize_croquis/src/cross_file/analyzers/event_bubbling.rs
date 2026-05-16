@@ -9,7 +9,7 @@ use crate::cross_file::diagnostics::{
 };
 use crate::cross_file::graph::{DependencyEdge, DependencyGraph};
 use crate::cross_file::registry::{FileId, ModuleRegistry};
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_carton::{cstr, CompactString, FxHashMap, FxHashSet};
 
 /// Information about event bubbling.
 #[derive(Debug, Clone)]
@@ -80,9 +80,10 @@ pub fn analyze_event_bubbling(
                         DiagnosticSeverity::Info,
                         source_id,
                         *offset,
-                        format!(
+                        cstr!(
                             "Event '{}' propagates {} levels without being handled",
-                            event_name, bubble.depth
+                            event_name,
+                            bubble.depth
                         ),
                     )
                     .with_suggestion("Add an event handler or consider if this event is needed"),
@@ -104,7 +105,7 @@ pub fn analyze_event_bubbling(
                                         DiagnosticSeverity::Info,
                                         *file_id,
                                         0,
-                                        format!(
+                                        cstr!(
                                             "Event '{}' has .{} modifier which may prevent handling",
                                             event_name, modifier
                                         ),
@@ -238,7 +239,8 @@ fn extract_modifiers(expr: &str) -> Vec<CompactString> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::extract_modifiers;
+    use vize_carton::CompactString;
 
     #[test]
     fn test_extract_modifiers() {

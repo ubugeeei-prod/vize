@@ -121,7 +121,7 @@ impl Rule for ValidVSlot {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::ValidVSlot;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

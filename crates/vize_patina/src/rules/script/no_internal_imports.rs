@@ -140,7 +140,7 @@ fn contains_vue(bytes: &[u8]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{NoInternalImports, ScriptLintResult, ScriptRule};
 
     #[test]
     fn test_valid_vue_import() {

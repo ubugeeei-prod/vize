@@ -1,0 +1,6 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+const fn = ({ x, y }) => x + y
+console.log(__props.data)

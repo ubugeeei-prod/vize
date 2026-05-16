@@ -335,7 +335,7 @@ fn find_protected_components(boundary_id: FileId, graph: &DependencyGraph) -> Ve
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::BoundaryKind;
 
     #[test]
     fn test_boundary_kind() {

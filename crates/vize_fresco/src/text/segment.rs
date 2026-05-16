@@ -1,6 +1,6 @@
 //! Text segmentation using grapheme clusters.
 
-use compact_str::CompactString;
+use compact_str::{CompactString, ToCompactString};
 use smallvec::SmallVec;
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -25,7 +25,7 @@ impl TextSegment {
 
     /// Create a segment from a single character.
     pub fn from_char(c: char) -> Self {
-        Self::new(c.to_string())
+        Self::new(c.to_compact_string())
     }
 
     /// Check if this segment is empty.
@@ -126,7 +126,7 @@ impl SegmentedText {
     }
 
     /// Slice the segmented text by grapheme indices.
-    pub fn slice(&self, start: usize, end: usize) -> String {
+    pub fn slice(&self, start: usize, end: usize) -> CompactString {
         self.segments
             .iter()
             .skip(start)
@@ -136,8 +136,8 @@ impl SegmentedText {
     }
 
     /// Slice by column positions.
-    pub fn slice_columns(&self, start_col: usize, end_col: usize) -> String {
-        let mut result = String::new();
+    pub fn slice_columns(&self, start_col: usize, end_col: usize) -> CompactString {
+        let mut result = CompactString::default();
         let mut col = 0;
 
         for seg in &self.segments {
@@ -156,7 +156,7 @@ impl SegmentedText {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{segment, SegmentedText};
 
     #[test]
     fn test_segment_ascii() {

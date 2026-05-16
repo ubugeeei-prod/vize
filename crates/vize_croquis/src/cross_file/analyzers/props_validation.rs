@@ -6,8 +6,9 @@ use crate::cross_file::diagnostics::{
     CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity,
 };
 use crate::cross_file::graph::DependencyGraph;
-use crate::cross_file::registry::{FileId, ModuleRegistry};
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use crate::cross_file::registry::{FileId, ModuleEntry, ModuleRegistry};
+use std::path::{Component, Path, PathBuf};
+use vize_carton::{cstr, CompactString, FxHashMap, FxHashSet, String};
 
 /// Information about a props validation issue.
 #[derive(Debug, Clone)]
@@ -114,9 +115,11 @@ pub fn analyze_props_validation(
         // Get props passed by parent
         // This requires parsing the template to find the actual props passed
         // For now, we focus on checking required props from the child's perspective
+        let aliases = imported_aliases_for_child(parent_entry, child_entry);
         let passed_props = extract_passed_props_for_component(
             &parent_entry.analysis,
             child_component_name.as_str(),
+            &aliases,
         );
 
         // Check for missing required props
@@ -141,16 +144,17 @@ pub fn analyze_props_validation(
                     DiagnosticSeverity::Error,
                     parent_id,
                     0,
-                    format!(
+                    cstr!(
                         "**Missing Required Prop**: `{}` must be passed to `<{}>`\n\n\
                         This prop is declared as required in the component's `defineProps`.",
-                        prop_name, child_component_name
+                        prop_name,
+                        child_component_name
                     ),
                 )
                 .with_related(
                     child_id,
                     0,
-                    format!("Prop `{}` is declared as required here", prop_name),
+                    cstr!("Prop `{prop_name}` is declared as required here"),
                 );
 
                 diagnostics.push(diagnostic);
@@ -192,14 +196,14 @@ pub fn analyze_props_validation(
                     DiagnosticSeverity::Warning, // Warning since it might be intentional $attrs
                     parent_id,
                     0,
-                    format!(
+                    cstr!(
                         "**Undeclared Prop**: `{}` is passed to `<{}>` but not declared\n\n\
                         The prop is not defined in the component's `defineProps`.\n\
                         If intentional, it will fall through to the root element via `$attrs`.",
                         passed_prop, child_component_name
                     ),
                 )
-                .with_suggestion(format!(
+                .with_suggestion(cstr!(
                     "Add to defineProps:\n```typescript\ndefineProps<{{\n  {}: unknown\n}}>()\n```\n\n\
                     Or use `v-bind=\"$attrs\"` in the child component for fallthrough.",
                     passed_prop
@@ -219,13 +223,16 @@ pub fn analyze_props_validation(
 fn extract_passed_props_for_component<'a>(
     analysis: &'a crate::Croquis,
     component_name: &str,
+    aliases: &[CompactString],
 ) -> FxHashSet<&'a str> {
     let mut props = FxHashSet::default();
 
     for usage in &analysis.component_usages {
         // Match component name (case-insensitive for kebab-case vs PascalCase)
-        if usage.name.as_str().eq_ignore_ascii_case(component_name)
-            || to_pascal_case(usage.name.as_str()).eq_ignore_ascii_case(component_name)
+        if component_names_match(usage.name.as_str(), component_name)
+            || aliases
+                .iter()
+                .any(|alias| component_names_match(usage.name.as_str(), alias.as_str()))
         {
             for prop in &usage.props {
                 props.insert(prop.name.as_str());
@@ -236,6 +243,110 @@ fn extract_passed_props_for_component<'a>(
     props
 }
 
+fn imported_aliases_for_child(
+    parent_entry: &ModuleEntry,
+    child_entry: &ModuleEntry,
+) -> Vec<CompactString> {
+    let parent_dir = parent_entry.path.parent();
+    let mut aliases = Vec::new();
+
+    for scope in parent_entry.analysis.scopes.iter() {
+        let crate::scope::ScopeData::ExternalModule(data) = scope.data() else {
+            continue;
+        };
+
+        if !import_targets_path(data.source.as_str(), parent_dir, child_entry.path.as_path()) {
+            continue;
+        }
+
+        aliases.extend(scope.bindings().map(|(name, _)| CompactString::new(name)));
+    }
+
+    aliases
+}
+
+fn import_targets_path(specifier: &str, from_dir: Option<&Path>, target: &Path) -> bool {
+    let normalized_target = normalize_logical_path(target.to_path_buf());
+    import_candidates(specifier, from_dir)
+        .into_iter()
+        .any(|candidate| candidate == normalized_target || normalized_target.ends_with(&candidate))
+}
+
+fn import_candidates(specifier: &str, from_dir: Option<&Path>) -> Vec<PathBuf> {
+    let mut bases = Vec::new();
+
+    if let Some(relative) = specifier.strip_prefix("@/") {
+        bases.push(PathBuf::from("src").join(relative));
+    } else if specifier.starts_with('.') {
+        let base = from_dir
+            .filter(|dir| !dir.as_os_str().is_empty())
+            .map_or_else(|| PathBuf::from(specifier), |dir| dir.join(specifier));
+        bases.push(base);
+    } else if let Some(stripped) = specifier.strip_prefix('/') {
+        bases.push(PathBuf::from(stripped));
+        bases.push(PathBuf::from(specifier));
+    } else {
+        bases.push(PathBuf::from(specifier));
+    }
+
+    let mut candidates = Vec::new();
+    for base in bases {
+        let has_extension = base.extension().is_some();
+        candidates.push(normalize_logical_path(base.clone()));
+
+        if !has_extension {
+            for suffix in [
+                ".vue",
+                ".ts",
+                ".tsx",
+                ".js",
+                ".jsx",
+                "/index.vue",
+                "/index.ts",
+                "/index.tsx",
+                "/index.js",
+                "/index.jsx",
+            ] {
+                candidates.push(normalize_logical_path(path_with_suffix(&base, suffix)));
+            }
+        }
+    }
+
+    candidates
+}
+
+fn path_with_suffix(base: &Path, suffix: &str) -> PathBuf {
+    if let Some(index_file) = suffix.strip_prefix('/') {
+        base.join(index_file)
+    } else {
+        let mut value = base.as_os_str().to_os_string();
+        value.push(suffix);
+        PathBuf::from(value)
+    }
+}
+
+fn normalize_logical_path(path: PathBuf) -> PathBuf {
+    let mut normalized = PathBuf::new();
+
+    for component in path.components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                normalized.pop();
+            }
+            Component::Normal(part) => normalized.push(part),
+            Component::RootDir => normalized.push(Path::new("/")),
+            Component::Prefix(prefix) => normalized.push(prefix.as_os_str()),
+        }
+    }
+
+    normalized
+}
+
+fn component_names_match(left: &str, right: &str) -> bool {
+    left == right || to_pascal_case(left) == to_pascal_case(right)
+}
+
 /// Convert kebab-case to PascalCase.
 #[inline]
 fn to_pascal_case(s: &str) -> String {
@@ -243,7 +354,7 @@ fn to_pascal_case(s: &str) -> String {
         .map(|part| {
             let mut chars = part.chars();
             match chars.next() {
-                None => String::new(),
+                None => String::default(),
                 Some(c) => c.to_uppercase().chain(chars).collect(),
             }
         })
@@ -283,7 +394,7 @@ fn is_builtin_attr(name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::is_builtin_attr;
 
     #[test]
     fn test_is_builtin_attr() {

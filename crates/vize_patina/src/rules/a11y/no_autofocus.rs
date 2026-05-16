@@ -51,7 +51,7 @@ impl Rule for NoAutofocus {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoAutofocus;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

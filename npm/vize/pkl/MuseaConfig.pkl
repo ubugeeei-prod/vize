@@ -1,0 +1,38 @@
+/// Musea component gallery configuration for Vize.
+module vize.MuseaConfig
+
+class Viewport {
+  width: Int
+  height: Int
+  name: String? = null
+}
+
+class VrtConfig {
+  threshold: Float = 0.1
+  outDir: String = "__musea_snapshots__"
+  viewports: Listing<Viewport> = new Listing {}
+}
+
+class A11yConfig {
+  enabled: Boolean = false
+  rules: Mapping<String, Boolean> = new Mapping {}
+}
+
+class AutogenConfig {
+  enabled: Boolean = false
+  maxVariants: Int = 10
+}
+
+class MuseaConfig {
+  include: Listing<String> = new Listing { "**/*.art.vue" }
+  exclude: Listing<String> = new Listing {
+    "node_modules/**"
+    "dist/**"
+  }
+  basePath: String = "/__musea__"
+  storybookCompat: Boolean = false
+  inlineArt: Boolean = false
+  vrt: VrtConfig = new VrtConfig {}
+  a11y: A11yConfig = new A11yConfig {}
+  autogen: AutogenConfig = new AutogenConfig {}
+}

@@ -1,5 +1,6 @@
 //! IME state management.
 
+use compact_str::CompactString;
 use serde::{Deserialize, Serialize};
 
 use super::candidate::CandidateList;
@@ -143,18 +144,18 @@ pub enum ImeEvent {
     /// Preedit text updated
     PreeditUpdate {
         /// The preedit text
-        text: String,
+        text: CompactString,
         /// Cursor position within preedit
         cursor: usize,
     },
     /// Text was committed
-    Commit(String),
+    Commit(CompactString),
     /// Composition ended
     CompositionEnd,
     /// Candidate list updated
     CandidatesUpdate {
         /// Current candidates
-        candidates: Vec<String>,
+        candidates: Vec<CompactString>,
         /// Selected index
         selected: usize,
     },
@@ -162,7 +163,7 @@ pub enum ImeEvent {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{ImeMode, ImeState};
 
     #[test]
     fn test_ime_state_new() {

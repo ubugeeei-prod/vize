@@ -3,6 +3,7 @@
 //! Provides clickable links for:
 //! - Import statements in script blocks
 //! - src attributes on script/style/template blocks
+#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! - CSS @import statements
 
 use std::path::Path;
@@ -20,7 +21,7 @@ impl DocumentLinkService {
         let mut links = Vec::new();
 
         let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string(),
+            filename: uri.path().to_string().into(),
             ..Default::default()
         };
 
@@ -355,7 +356,7 @@ impl DocumentLinkService {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::DocumentLinkService;
 
     #[test]
     fn test_extract_import_path() {

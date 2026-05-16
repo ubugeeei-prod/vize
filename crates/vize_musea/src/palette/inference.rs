@@ -6,7 +6,7 @@
 //! - Multiple values across variants (for select inference)
 
 use super::{ControlKind, PaletteOptions, RangeConfig, SelectOption};
-use vize_carton::FxHashSet;
+use vize_carton::{FxHashSet, String};
 
 /// Infer control type from a single value.
 #[inline]
@@ -47,34 +47,40 @@ fn is_color_value(s: &str) -> bool {
             && hex.chars().all(|c| c.is_ascii_hexdigit());
     }
 
-    // RGB/RGBA/HSL/HSLA functions
-    let lower = s.to_lowercase();
-    if lower.starts_with("rgb(")
-        || lower.starts_with("rgba(")
-        || lower.starts_with("hsl(")
-        || lower.starts_with("hsla(")
+    // RGB/RGBA/HSL/HSLA functions (case-insensitive prefix check)
     {
-        return true;
+        let s_bytes = s.as_bytes();
+        let starts_with_ci = |prefix: &[u8]| {
+            s_bytes.len() >= prefix.len()
+                && s_bytes[..prefix.len()]
+                    .iter()
+                    .zip(prefix)
+                    .all(|(a, b)| a.to_ascii_lowercase() == *b)
+        };
+        if starts_with_ci(b"rgb(")
+            || starts_with_ci(b"rgba(")
+            || starts_with_ci(b"hsl(")
+            || starts_with_ci(b"hsla(")
+        {
+            return true;
+        }
     }
 
     // Named colors (common ones)
-    matches!(
-        lower.as_str(),
-        "red"
-            | "green"
-            | "blue"
-            | "white"
-            | "black"
-            | "yellow"
-            | "orange"
-            | "purple"
-            | "pink"
-            | "gray"
-            | "grey"
-            | "cyan"
-            | "magenta"
-            | "transparent"
-    )
+    s.eq_ignore_ascii_case("red")
+        || s.eq_ignore_ascii_case("green")
+        || s.eq_ignore_ascii_case("blue")
+        || s.eq_ignore_ascii_case("white")
+        || s.eq_ignore_ascii_case("black")
+        || s.eq_ignore_ascii_case("yellow")
+        || s.eq_ignore_ascii_case("orange")
+        || s.eq_ignore_ascii_case("purple")
+        || s.eq_ignore_ascii_case("pink")
+        || s.eq_ignore_ascii_case("gray")
+        || s.eq_ignore_ascii_case("grey")
+        || s.eq_ignore_ascii_case("cyan")
+        || s.eq_ignore_ascii_case("magenta")
+        || s.eq_ignore_ascii_case("transparent")
 }
 
 /// Check if string looks like a date value.
@@ -147,14 +153,15 @@ pub fn infer_control_from_values(
 }
 
 /// Collect unique string values.
+#[allow(clippy::disallowed_types)]
 fn collect_unique_strings(values: &[serde_json::Value]) -> Vec<String> {
-    let mut seen = FxHashSet::default();
+    let mut seen: FxHashSet<std::string::String> = FxHashSet::default();
     let mut result = Vec::new();
 
     for value in values {
         if let serde_json::Value::String(s) = value {
             if seen.insert(s.clone()) {
-                result.push(s.clone());
+                result.push(String::from(s.as_str()));
             }
         }
     }
@@ -205,7 +212,7 @@ fn humanize_label(s: &str) -> String {
     let result = s
         // camelCase to spaces
         .chars()
-        .fold(String::new(), |mut acc, c| {
+        .fold(String::default(), |mut acc, c| {
             if c.is_uppercase() && !acc.is_empty() {
                 acc.push(' ');
             }
@@ -214,19 +221,21 @@ fn humanize_label(s: &str) -> String {
         });
 
     // snake_case/kebab-case to spaces
-    let result = result.replace(['_', '-'], " ");
+    let result: String = result.replace(['_', '-'], " ").into();
 
     // Capitalize first letter
     let mut chars = result.chars();
     match chars.next() {
         Some(first) => first.to_uppercase().chain(chars).collect(),
-        None => String::new(),
+        None => String::default(),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        humanize_label, infer_control_from_values, infer_control_type, ControlKind, PaletteOptions,
+    };
 
     #[test]
     fn test_infer_boolean() {

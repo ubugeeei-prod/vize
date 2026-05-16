@@ -1,19 +1,32 @@
 [package]
 name = "vize_vitrine"
 version.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/ubugeeei/vize"
 description = "Vitrine - The display case for Vize (Node.js/WASM bindings)"
+publish = false
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
 
 [lib]
 name = "vize_vitrine"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = []
-napi = ["dep:napi", "dep:napi-derive", "dep:glob", "dep:rayon", "vize_atelier_sfc/native"]
-wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:js-sys", "dep:web-sys"]
+default = ["glyph"]
+glyph = ["dep:vize_glyph"]
+napi = [
+  "dep:napi",
+  "dep:napi-derive",
+  "dep:glob",
+  "dep:rayon",
+  "dep:ignore",
+  "vize_atelier_sfc/native",
+  "glyph",
+]
+wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:js-sys", "dep:web-sys", "glyph"]
 
 [dependencies]
 vize_carton = { workspace = true }
@@ -25,35 +38,39 @@ vize_atelier_ssr = { workspace = true }
 vize_atelier_sfc = { workspace = true, default-features = false }
 vize_musea = { workspace = true }
 vize_patina = { workspace = true }
-vize_glyph = { workspace = true }
+vize_glyph = { workspace = true, optional = true }
 vize_croquis = { workspace = true }
 vize_canon = { workspace = true }
 
 serde = { workspace = true }
 serde_json = { workspace = true }
+sha2 = { workspace = true }
 
 # NAPI (optional)
 napi = { workspace = true, optional = true }
 napi-derive = { workspace = true, optional = true }
 
 # Glob pattern (for batch compile)
-glob = { version = "0.3", optional = true }
+glob = { workspace = true, optional = true }
 
 # Multithreading (for batch compile)
-rayon = { version = "1.10", optional = true }
+rayon = { workspace = true, optional = true }
+
+# Directory walking with .gitignore support (for lint)
+ignore = { workspace = true, optional = true }
 
 # WASM (optional)
 wasm-bindgen = { workspace = true, optional = true }
 serde-wasm-bindgen = { workspace = true, optional = true }
 js-sys = { workspace = true, optional = true }
-web-sys = { version = "0.3", features = ["console"], optional = true }
+web-sys = { workspace = true, optional = true }
 
 # For WASM compatibility with getrandom
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-getrandom = { version = "0.3", features = ["wasm_js"] }
+getrandom = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.build-dependencies]
-napi-build = "2.0"
+napi-build.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

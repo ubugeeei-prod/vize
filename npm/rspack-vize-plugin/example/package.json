@@ -1,0 +1,23 @@
+{
+  "name": "rspack-vize-plugin-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "rspack dev",
+    "build": "rspack build",
+    "preview": "rspack preview",
+    "check": "vp check src rspack.config.ts vite.config.ts",
+    "check:fix": "vp check --fix src rspack.config.ts vite.config.ts",
+    "fmt": "vp fmt --write src rspack.config.ts vite.config.ts"
+  },
+  "dependencies": {
+    "vue": "catalog:vue-stable"
+  },
+  "devDependencies": {
+    "@rspack/cli": "catalog:bundlers",
+    "@rspack/core": "catalog:bundlers",
+    "@vizejs/rspack-plugin": "workspace:*",
+    "typescript": "catalog:typescript",
+    "vize": "workspace:*"
+  }
+}

@@ -1,0 +1,45 @@
+---
+source: crates/vize_croquis/src/cross_file/diagnostics/diagnostics_tests.rs
+expression: markdown.as_str()
+---
+🟡 **WARNING** `vize:croquis/cf/reference-escapes-scope`
+
+### Reactive reference escapes scope
+
+**Problem**: Reactive reference `state` escapes its scope via function call.
+
+**Escaped to**: `processState`
+
+**Why this is implicit** (like Rust's move semantics):
+
+```
+┌─ setup() ─────────────────────────────┐
+│  const state = reactive({...})          │
+│  someFunction(state)  ←── reference escapes │
+│          │                              │
+│          ▼                              │
+│  ┌─ someFunction() ─────────────────┐  │
+│  │  // state is now accessible here    │  │
+│  │  // mutations affect original     │  │
+│  └────────────────────────────────────┘  │
+└──────────────────────────────────────────┘
+```
+
+**Issues**:
+
+- 🔍 **Hidden Data Flow**: Mutations happen "at a distance" - hard to trace.
+- 🐛 **Unexpected Side Effects**: Function may modify your reactive state.
+- 📦 **Ownership Unclear**: Who "owns" this reactive object now?
+
+**Explicit alternatives**:
+
+```ts
+// Option 1: Pass a readonly version
+someFunction(readonly(state))
+
+// Option 2: Pass a snapshot (non-reactive copy)
+someFunction({ ...state })
+
+// Option 3: Pass specific values explicitly
+someFunction(state.id, state.name)
+```

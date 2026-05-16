@@ -130,7 +130,9 @@ fn parse_status(attrs: &str) -> ArtStatus {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{find_art_block, parse_metadata, parse_status};
+    use crate::types::ArtStatus;
+    use vize_carton::Bump;
 
     #[test]
     fn test_find_art_block() {
@@ -139,8 +141,7 @@ mod tests {
         assert!(result.is_ok());
 
         let block = result.unwrap();
-        assert!(block.attrs_str.contains("title"));
-        assert!(block.content.contains("variant"));
+        insta::assert_debug_snapshot!(block);
     }
 
     #[test]

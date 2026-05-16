@@ -1,13 +1,12 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createBlock as _createBlock } from "vue"
 
-import { ref } from 'vue';
-import MyInput from './MyInput.vue';
+import { ref } from 'vue'
+import MyInput from './MyInput.vue'
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -16,7 +15,10 @@ export default /*@__PURE__*/_defineComponent({
 const message = ref('hello');
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createBlock(MyInput, { modelValue: message.value, "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((message).value = $event)) }, null, 8 /* PROPS */, ["modelValue"]))
+  return (_openBlock(), _createBlock(MyInput, {
+      modelValue: message.value,
+      "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((message).value = $event))
+    }, null, 8 /* PROPS */, ["modelValue"]))
 }
 }
 

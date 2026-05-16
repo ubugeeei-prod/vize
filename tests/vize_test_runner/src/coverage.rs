@@ -1,3 +1,4 @@
+#![allow(clippy::disallowed_macros)]
 //! Coverage report generator for Vue compiler tests
 //!
 //! Usage:
@@ -6,10 +7,11 @@
 //!   cargo run -p vize_test_runner --bin coverage -- -vv   # Show diffs
 
 use std::path::PathBuf;
+use vize_carton::String;
 use vize_test_runner::{run_fixture_tests, CompilerMode};
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
+    let args: Vec<String> = std::env::args().map(String::from).collect();
     let verbose = args.iter().any(|a| a == "-v" || a == "--verbose");
     let show_diff = args.iter().any(|a| a == "-vv");
 

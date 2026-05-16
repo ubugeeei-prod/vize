@@ -57,10 +57,8 @@ impl NoChildContent {
     fn has_child_content(element: &ElementNode) -> bool {
         for child in &element.children {
             match child {
-                TemplateChildNode::Text(text) => {
-                    if !text.content.trim().is_empty() {
-                        return true;
-                    }
+                TemplateChildNode::Text(text) if !text.content.trim().is_empty() => {
+                    return true;
                 }
                 TemplateChildNode::Element(_)
                 | TemplateChildNode::Interpolation(_)
@@ -98,7 +96,7 @@ impl Rule for NoChildContent {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoChildContent;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

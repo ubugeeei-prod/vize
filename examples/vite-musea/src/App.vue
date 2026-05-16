@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import Button from './components/Button.vue'
-import Input from './components/Input.vue'
-import Card from './components/Card.vue'
-import Badge from './components/Badge.vue'
+import Button from "./components/Button.vue";
+import Input from "./components/Input.vue";
+import Card from "./components/Card.vue";
+import Badge from "./components/Badge.vue";
+import Alert from "./components/Alert.vue";
+import Avatar from "./components/Avatar.vue";
 </script>
 
 <template>
   <div class="app">
     <h1>Vite + Vue + Musea Example</h1>
-    <p>
-      Visit <a href="/__musea__">/__musea__</a> to see the component gallery.
-    </p>
+    <p>Visit <a href="/__musea__">/__musea__</a> to see the component gallery.</p>
 
     <section class="section">
       <h2>Buttons</h2>
@@ -51,32 +51,74 @@ import Badge from './components/Badge.vue'
         <Card
           title="Featured"
           description="A card with image header."
-          image="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+          image="#6b5090"
           variant="elevated"
         >
           <Button variant="primary">View</Button>
         </Card>
       </div>
     </section>
+
+    <section class="section">
+      <h2>Alerts</h2>
+      <div class="demo demo--column" style="max-width: 480px">
+        <Alert>This is a default informational alert.</Alert>
+        <Alert variant="success">Operation completed successfully.</Alert>
+        <Alert variant="warning">Please review before proceeding.</Alert>
+        <Alert variant="error">Something went wrong. Please try again.</Alert>
+        <Alert variant="success" closable>This alert can be dismissed.</Alert>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Avatars</h2>
+      <div class="demo" style="align-items: center">
+        <Avatar name="Jane Doe" size="sm" />
+        <Avatar name="Jane Doe" />
+        <Avatar name="Jane Doe" size="lg" />
+        <div style="display: flex">
+          <Avatar name="Alice" style="border: 2px solid #e6e2d6" />
+          <Avatar name="Bob" style="margin-left: -8px; border: 2px solid #e6e2d6" />
+          <Avatar name="Charlie" style="margin-left: -8px; border: 2px solid #e6e2d6" />
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <style>
+body {
+  background: #e6e2d6;
+  color: #121212;
+  margin: 0;
+}
+
 .app {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 h1 {
-  color: #333;
+  color: #121212;
+  font-weight: 700;
 }
 
 h2 {
-  color: #555;
+  color: #3a3a3a;
   font-size: 1.125rem;
+  font-weight: 600;
   margin-bottom: 0.75rem;
+}
+
+a {
+  color: #121212;
+  font-weight: 500;
+}
+
+a:hover {
+  color: #6b5090;
 }
 
 .section {

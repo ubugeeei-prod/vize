@@ -105,7 +105,7 @@ impl Rule for HtmlQuotes {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{HtmlQuotes, HtmlQuotesOption};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

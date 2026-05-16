@@ -3,6 +3,7 @@
 //! v-html sets the element's innerHTML.
 
 use vize_atelier_core::DirectiveNode;
+use vize_carton::{String, ToCompactString};
 
 /// Check if directive is v-html
 pub fn is_v_html(dir: &DirectiveNode<'_>) -> bool {
@@ -12,7 +13,10 @@ pub fn is_v_html(dir: &DirectiveNode<'_>) -> bool {
 /// Generate innerHTML prop for v-html
 pub fn generate_html_prop(dir: &DirectiveNode<'_>) -> Option<(String, String)> {
     if let Some(vize_atelier_core::ExpressionNode::Simple(simple)) = &dir.exp {
-        return Some((String::from("innerHTML"), simple.content.to_string()));
+        return Some((
+            String::from("innerHTML"),
+            simple.content.to_compact_string(),
+        ));
     }
     None
 }
@@ -24,10 +28,9 @@ pub fn generate_html_warning() -> &'static str {
 
 #[cfg(test)]
 mod tests {
+    use super::{generate_html_prop, generate_html_warning, is_v_html};
     use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
     use vize_carton::{Box, Bump};
-
-    use super::*;
 
     fn create_test_directive<'a>(allocator: &'a Bump, name: &str, exp: &str) -> DirectiveNode<'a> {
         let mut dir = DirectiveNode::new(allocator, name, SourceLocation::STUB);
@@ -72,7 +75,6 @@ mod tests {
     #[test]
     fn test_generate_html_warning() {
         let warning = generate_html_warning();
-        assert!(warning.contains("XSS"));
-        assert!(warning.contains("innerHTML"));
+        insta::assert_snapshot!(warning);
     }
 }

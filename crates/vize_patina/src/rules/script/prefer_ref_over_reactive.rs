@@ -105,7 +105,7 @@ impl ScriptRule for PreferRefOverReactive {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::PreferRefOverReactive;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -133,7 +133,7 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint("const state = reactive({ count: 0 })", 0);
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("ref()"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

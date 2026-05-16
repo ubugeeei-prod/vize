@@ -4,6 +4,8 @@
 //! The canonical implementation provides proper scope hierarchy and structured
 //! source mappings (VizeMapping).
 
+use vize_carton::String;
+
 /// Generate virtual TypeScript using croquis scope information.
 ///
 /// Delegates to `crate::virtual_ts::generate_virtual_ts_with_offsets` which

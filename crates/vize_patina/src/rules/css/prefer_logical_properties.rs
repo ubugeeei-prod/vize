@@ -108,7 +108,7 @@ impl PreferLogicalProperties {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::PreferLogicalProperties;
     use crate::rules::css::CssLinter;
 
     fn create_linter() -> CssLinter {

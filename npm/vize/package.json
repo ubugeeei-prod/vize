@@ -1,64 +1,79 @@
 {
   "name": "vize",
-  "version": "0.0.1-alpha.84",
+  "version": "0.90.0",
   "description": "Vize - High-performance Vue.js toolchain in Rust",
-  "publishConfig": {
-    "provenance": true,
-    "access": "public"
-  },
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./config": {
-      "import": "./dist/config.js",
-      "types": "./dist/config.d.ts"
-    }
+  "keywords": [
+    "cli",
+    "compiler",
+    "formatter",
+    "linter",
+    "rust",
+    "vize",
+    "vue"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei/vize"
   },
   "bin": {
     "vize": "bin/vize"
   },
   "files": [
     "bin",
-    "scripts",
     "dist",
-    "src"
+    "src",
+    "schemas",
+    "pkl"
   ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    },
+    "./config": {
+      "import": "./dist/config.mjs",
+      "types": "./dist/config.d.mts"
+    },
+    "./schemas/vize.config.schema.json": "./schemas/vize.config.schema.json",
+    "./pkl/vize.pkl": "./pkl/vize.pkl"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "tsdown",
-    "postinstall": "node scripts/postinstall.js",
-    "lint": "oxlint --deny-warnings --type-aware --tsconfig tsconfig.json",
-    "lint:fix": "oxlint --type-aware --tsconfig tsconfig.json --fix",
-    "fmt": "oxfmt --write src",
-    "fmt:check": "oxfmt src"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ubugeeei/vize"
-  },
-  "keywords": [
-    "vue",
-    "compiler",
-    "rust",
-    "cli",
-    "vize",
-    "formatter",
-    "linter"
-  ],
-  "license": "MIT",
-  "engines": {
-    "node": ">=18"
+    "build": "vp run --workspace-root generate:rule-types && vp pack",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts",
+    "generate:rule-types": "vp run --workspace-root generate:rule-types"
   },
   "dependencies": {
-    "oxc-transform": "^0.56.0"
+    "oxc-transform": "catalog:oxc"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "tsdown": "^0.9.0",
-    "typescript": "~5.6.0"
+    "@tsdown/css": "catalog:content",
+    "@types/node": "catalog:typescript",
+    "tsdown": "catalog:vite-stack",
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack"
+  },
+  "optionalDependencies": {
+    "@pkl-community/pkl": "catalog:repo-tooling",
+    "@vizejs/native-darwin-arm64": "catalog:native-binaries",
+    "@vizejs/native-darwin-x64": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-arm64-musl": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-gnu": "catalog:native-binaries",
+    "@vizejs/native-linux-x64-musl": "catalog:native-binaries",
+    "@vizejs/native-win32-arm64-msvc": "catalog:native-binaries",
+    "@vizejs/native-win32-x64-msvc": "catalog:native-binaries"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

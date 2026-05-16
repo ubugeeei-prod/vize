@@ -88,7 +88,7 @@ pub use vize_carton::camelize;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::camelize;
 
     #[test]
     fn test_camelize() {

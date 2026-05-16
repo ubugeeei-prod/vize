@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: js_output.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { class: "map" }, [
+    _createElementVNode("div", {
+      style: _normalizeStyle(_ctx.knobStyle),
+      class: _normalizeClass({ dragging: _ctx.dragging })
+    }, null, 6 /* CLASS, STYLE */)
+  ]))
+}
+
+const _sfc_main = {
+  computed: {
+    knobStyle() {
+      return { transform: 'translate(10px, 20px)' }
+    },
+  },
+}
+
+_sfc_main.render = render
+export default _sfc_main

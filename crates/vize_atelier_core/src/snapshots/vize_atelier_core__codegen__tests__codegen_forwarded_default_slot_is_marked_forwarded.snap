@@ -1,0 +1,16 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { openBlock: _openBlock, createBlock: _createBlock, resolveComponent: _resolveComponent, renderSlot: _renderSlot, withCtx: _withCtx } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_MkSwiper = _resolveComponent("MkSwiper")
+  
+  return (_openBlock(), _createBlock(_component_MkSwiper, null, {
+    default: _withCtx(() => [
+      _renderSlot(_ctx.$slots, "default")
+    ]),
+    _: 3 /* FORWARDED */
+  }, 1024 /* DYNAMIC_SLOTS */))
+}

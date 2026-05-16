@@ -14,6 +14,8 @@ use oxc_ast::ast::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
+use vize_carton::{CompactString, ToCompactString};
+
 use crate::types::{BindingMetadata, BindingType};
 
 /// Analyze bindings in normal `<script>` block
@@ -56,7 +58,7 @@ fn analyze_bindings_from_options(node: &ObjectExpression<'_>, source: &str) -> B
                 }
 
                 let key_name = match &prop.key {
-                    PropertyKey::StaticIdentifier(id) => id.name.to_string(),
+                    PropertyKey::StaticIdentifier(id) => id.name.to_compact_string(),
                     _ => continue,
                 };
 
@@ -95,7 +97,7 @@ fn analyze_bindings_from_options(node: &ObjectExpression<'_>, source: &str) -> B
         if let ObjectPropertyKind::ObjectProperty(prop) = property {
             if let Expression::FunctionExpression(func) = &prop.value {
                 let key_name = match &prop.key {
-                    PropertyKey::StaticIdentifier(id) => id.name.to_string(),
+                    PropertyKey::StaticIdentifier(id) => id.name.to_compact_string(),
                     _ => continue,
                 };
 
@@ -130,7 +132,7 @@ fn analyze_bindings_from_options(node: &ObjectExpression<'_>, source: &str) -> B
 }
 
 /// Get keys from an object expression
-fn get_object_expression_keys(node: &ObjectExpression<'_>, source: &str) -> Vec<String> {
+fn get_object_expression_keys(node: &ObjectExpression<'_>, source: &str) -> Vec<CompactString> {
     let mut keys = Vec::new();
 
     for prop in node.properties.iter() {
@@ -150,12 +152,12 @@ fn get_object_expression_keys(node: &ObjectExpression<'_>, source: &str) -> Vec<
 }
 
 /// Get keys from an array expression (string literals only)
-fn get_array_expression_keys(node: &ArrayExpression<'_>) -> Vec<String> {
+fn get_array_expression_keys(node: &ArrayExpression<'_>) -> Vec<CompactString> {
     let mut keys = Vec::new();
 
     for element in node.elements.iter() {
         if let ArrayExpressionElement::StringLiteral(s) = element {
-            keys.push(s.value.to_string());
+            keys.push(s.value.to_compact_string());
         }
     }
 
@@ -163,7 +165,10 @@ fn get_array_expression_keys(node: &ArrayExpression<'_>) -> Vec<String> {
 }
 
 /// Get keys from either an object or array expression
-pub fn get_object_or_array_expression_keys(value: &Expression<'_>, source: &str) -> Vec<String> {
+pub fn get_object_or_array_expression_keys(
+    value: &Expression<'_>,
+    source: &str,
+) -> Vec<CompactString> {
     match value {
         Expression::ArrayExpression(arr) => get_array_expression_keys(arr),
         Expression::ObjectExpression(obj) => get_object_expression_keys(obj, source),
@@ -172,7 +177,11 @@ pub fn get_object_or_array_expression_keys(value: &Expression<'_>, source: &str)
 }
 
 /// Resolve object key to a string
-fn resolve_object_key(key: &PropertyKey<'_>, computed: bool, _source: &str) -> Option<String> {
+fn resolve_object_key(
+    key: &PropertyKey<'_>,
+    computed: bool,
+    _source: &str,
+) -> Option<CompactString> {
     if computed {
         // For computed keys, we'd need to evaluate the expression
         // For now, just return None for computed keys
@@ -180,9 +189,9 @@ fn resolve_object_key(key: &PropertyKey<'_>, computed: bool, _source: &str) -> O
     }
 
     match key {
-        PropertyKey::StaticIdentifier(id) => Some(id.name.to_string()),
-        PropertyKey::StringLiteral(s) => Some(s.value.to_string()),
-        PropertyKey::NumericLiteral(n) => Some(n.value.to_string()),
+        PropertyKey::StaticIdentifier(id) => Some(id.name.to_compact_string()),
+        PropertyKey::StringLiteral(s) => Some(s.value.to_compact_string()),
+        PropertyKey::NumericLiteral(n) => Some(n.value.to_compact_string()),
         PropertyKey::PrivateIdentifier(_) => None,
         _ => {
             // For other expression types, try to extract from source
@@ -194,7 +203,7 @@ fn resolve_object_key(key: &PropertyKey<'_>, computed: bool, _source: &str) -> O
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{analyze_script_bindings, BindingType};
 
     #[test]
     fn test_analyze_props_array() {

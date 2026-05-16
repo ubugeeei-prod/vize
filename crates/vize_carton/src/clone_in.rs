@@ -106,7 +106,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::CloneIn;
+    use crate::{Allocator, Box, Vec};
 
     #[test]
     fn test_clone_in_primitives() {

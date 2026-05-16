@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+function test(foo) {
+    console.log(foo)
+    console.log(__props.bar)
+}

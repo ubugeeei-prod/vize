@@ -8,9 +8,11 @@ use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 
+use vize_carton::ToCompactString;
+
 /// Process import statement to remove TypeScript type-only imports using OXC
 /// Returns None if the entire import should be removed, Some(processed) otherwise
-pub fn process_import_for_types(import: &str) -> Option<String> {
+pub fn process_import_for_types(import: &str) -> Option<vize_carton::String> {
     let import = import.trim();
 
     // Parse the import statement with OXC
@@ -48,42 +50,62 @@ pub fn process_import_for_types(import: &str) -> Option<String> {
                     if value_specifiers.len() != specifiers.len() {
                         // Some specifiers were filtered out, rebuild the import
                         let source = decl.source.value.as_str();
-                        let specifier_strs: Vec<String> = value_specifiers
-                            .iter()
-                            .map(|spec| match spec {
+
+                        // Separate default/namespace imports from named imports
+                        let mut default_part: Option<vize_carton::String> = None;
+                        let mut named_parts: Vec<vize_carton::String> = Vec::new();
+
+                        for spec in &value_specifiers {
+                            match spec {
                                 ImportDeclarationSpecifier::ImportSpecifier(s) => {
                                     let imported = s.imported.name().as_str();
                                     let local = s.local.name.as_str();
                                     if imported == local {
-                                        imported.to_string()
+                                        named_parts.push(imported.to_compact_string());
                                     } else {
-                                        let mut name =
-                                            String::with_capacity(imported.len() + local.len() + 4);
+                                        let mut name = vize_carton::String::with_capacity(
+                                            imported.len() + local.len() + 4,
+                                        );
                                         name.push_str(imported);
                                         name.push_str(" as ");
                                         name.push_str(local);
-                                        name
+                                        named_parts.push(name);
                                     }
                                 }
                                 ImportDeclarationSpecifier::ImportDefaultSpecifier(s) => {
-                                    s.local.name.to_string()
+                                    default_part = Some(s.local.name.to_compact_string());
                                 }
                                 ImportDeclarationSpecifier::ImportNamespaceSpecifier(s) => {
                                     let local = s.local.name.as_str();
-                                    let mut name = String::with_capacity(local.len() + 5);
+                                    let mut name =
+                                        vize_carton::String::with_capacity(local.len() + 5);
                                     name.push_str("* as ");
                                     name.push_str(local);
-                                    name
+                                    default_part = Some(name);
                                 }
-                            })
-                            .collect();
+                            }
+                        }
 
-                        let joined = specifier_strs.join(", ");
-                        let mut new_import =
-                            String::with_capacity(joined.len() + source.len() + 15);
-                        new_import.push_str("import { ");
-                        new_import.push_str(&joined);
-                        new_import.push_str(" } from '");
+                        let mut new_import = vize_carton::String::with_capacity(source.len() + 30);
+                        new_import.push_str("import ");
+                        if let Some(ref def) = default_part {
+                            new_import.push_str(def);
+                            if !named_parts.is_empty() {
+                                new_import.push_str(", ");
+                            }
+                        }
+                        if !named_parts.is_empty() {
+                            new_import.push_str("{ ");
+                            // [CompactString].join() returns std String, convert back
+                            let joined = named_parts
+                                .iter()
+                                .map(|s| s.as_str())
+                                .collect::<Vec<_>>()
+                                .join(", ");
+                            new_import.push_str(&joined);
+                            new_import.push_str(" }");
+                        }
+                        new_import.push_str(" from '");
                         new_import.push_str(source);
                         new_import.push_str("'\n");
                         return Some(new_import);
@@ -94,11 +116,13 @@ pub fn process_import_for_types(import: &str) -> Option<String> {
     }
 
     // Regular import or parse failed, return as-is
-    Some(import.to_string() + "\n")
+    let mut result = import.to_compact_string();
+    result.push('\n');
+    Some(result)
 }
 
 /// Extract all identifiers from an import statement (including default imports)
-pub fn extract_import_identifiers(import: &str) -> Vec<String> {
+pub fn extract_import_identifiers(import: &str) -> Vec<vize_carton::String> {
     let import = import.trim();
     let mut identifiers = Vec::new();
 
@@ -122,14 +146,14 @@ pub fn extract_import_identifiers(import: &str) -> Vec<String> {
                             ImportDeclarationSpecifier::ImportSpecifier(s) => {
                                 // Skip type-only specifiers
                                 if !s.import_kind.is_type() {
-                                    identifiers.push(s.local.name.to_string());
+                                    identifiers.push(s.local.name.to_compact_string());
                                 }
                             }
                             ImportDeclarationSpecifier::ImportDefaultSpecifier(s) => {
-                                identifiers.push(s.local.name.to_string());
+                                identifiers.push(s.local.name.to_compact_string());
                             }
                             ImportDeclarationSpecifier::ImportNamespaceSpecifier(s) => {
-                                identifiers.push(s.local.name.to_string());
+                                identifiers.push(s.local.name.to_compact_string());
                             }
                         }
                     }
@@ -139,4 +163,52 @@ pub fn extract_import_identifiers(import: &str) -> Vec<String> {
     }
 
     identifiers
+}
+
+#[cfg(test)]
+mod tests {
+    use super::process_import_for_types;
+
+    #[test]
+    fn test_default_import_with_type_named_import() {
+        // `import Foo, { type Bar }` should become `import Foo from '...'`
+        // NOT `import { Foo } from '...'`
+        let input = "import AtriumSegmentedTabs, { type AtriumSegmentedTabConfig } from '../AtriumSegmentedTabs/AtriumSegmentedTabs.vue'";
+        let result = process_import_for_types(input);
+        let output = result.expect("should produce an import");
+        insta::assert_snapshot!(output.as_str());
+    }
+
+    #[test]
+    fn test_default_import_with_mixed_named_imports() {
+        // `import Foo, { type Bar, baz }` should become `import Foo, { baz } from '...'`
+        let input = "import Foo, { type Bar, baz } from 'module'";
+        let result = process_import_for_types(input);
+        let output = result.expect("should produce an import");
+        insta::assert_snapshot!(output.as_str());
+    }
+
+    #[test]
+    fn test_type_only_import_returns_none() {
+        let input = "import type { Foo } from 'bar'";
+        let result = process_import_for_types(input);
+        assert!(result.is_none(), "Type-only import should return None");
+    }
+
+    #[test]
+    fn test_all_named_type_imports_returns_none() {
+        let input = "import { type Foo, type Bar } from 'baz'";
+        let result = process_import_for_types(input);
+        assert!(
+            result.is_none(),
+            "All type-only named imports should return None"
+        );
+    }
+
+    #[test]
+    fn test_normal_import_unchanged() {
+        let input = "import { foo, bar } from 'module'";
+        let result = process_import_for_types(input);
+        assert!(result.is_some(), "Normal import should be returned as-is");
+    }
 }

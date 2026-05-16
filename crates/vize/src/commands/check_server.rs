@@ -1,17 +1,18 @@
 //! Check server command - Start JSON-RPC server for type checking
 
 use clap::Args;
-use vize_canon::{ServerConfig, TsgoServer};
+use vize_canon::{CorsaServer, ServerConfig};
 
 #[derive(Args)]
+#[allow(clippy::disallowed_types)]
 pub struct CheckServerArgs {
     /// Unix socket path (if not specified, uses stdin/stdout)
     #[arg(long, short)]
     pub socket: Option<String>,
 
-    /// Path to tsgo executable
+    /// Path to the Corsa executable
     #[arg(long)]
-    pub tsgo_path: Option<String>,
+    pub corsa_path: Option<String>,
 
     /// Working directory
     #[arg(long)]
@@ -20,11 +21,11 @@ pub struct CheckServerArgs {
 
 pub fn run(args: CheckServerArgs) {
     let config = ServerConfig {
-        tsgo_path: args.tsgo_path,
-        working_dir: args.working_dir,
+        corsa_path: args.corsa_path.map(Into::into),
+        working_dir: args.working_dir.map(Into::into),
     };
 
-    let mut server = TsgoServer::with_config(config);
+    let mut server = CorsaServer::with_config(config);
 
     if let Some(socket_path) = args.socket {
         // Unix socket mode

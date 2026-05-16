@@ -1,6 +1,7 @@
 //! Error types for vize_glyph formatter.
 
 use thiserror::Error;
+use vize_carton::String;
 
 /// Errors that can occur during formatting
 #[derive(Debug, Error)]

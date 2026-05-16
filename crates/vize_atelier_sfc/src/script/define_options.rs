@@ -8,8 +8,9 @@
 #[allow(dead_code)]
 use super::utils::{extract_type_args, find_call_paren, find_matching_paren};
 use super::MacroCall;
+use vize_carton::String;
 
-pub const DEFINE_OPTIONS: &str = "defineOptions";
+pub use vize_croquis::macros::DEFINE_OPTIONS;
 
 /// Extract defineOptions call from source
 #[allow(dead_code)]
@@ -18,7 +19,7 @@ pub fn extract_define_options(content: &str) -> Option<MacroCall> {
         let after = &content[start..];
         if let Some(paren_start) = find_call_paren(after) {
             if let Some(paren_end) = find_matching_paren(&after[paren_start..]) {
-                let args = after[paren_start + 1..paren_start + paren_end].to_string();
+                let args = String::from(&after[paren_start + 1..paren_start + paren_end]);
                 let type_args = extract_type_args(&after[..paren_start]);
                 return Some(MacroCall {
                     start,
@@ -35,7 +36,7 @@ pub fn extract_define_options(content: &str) -> Option<MacroCall> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::extract_define_options;
 
     #[test]
     fn test_extract_define_options() {
@@ -43,7 +44,6 @@ mod tests {
         let result = extract_define_options(content);
         assert!(result.is_some());
         let call = result.unwrap();
-        assert!(call.args.contains("name"));
-        assert!(call.args.contains("inheritAttrs"));
+        insta::assert_debug_snapshot!(call);
     }
 }

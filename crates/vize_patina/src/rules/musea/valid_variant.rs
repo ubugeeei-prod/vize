@@ -52,7 +52,7 @@ impl MuseaRule for ValidVariant {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{MuseaLintResult, MuseaRule, ValidVariant};
 
     #[test]
     fn test_valid_variant() {

@@ -224,13 +224,12 @@ fn extract_expression<'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::has_v_slot;
+    use vize_atelier_core::{parser::parse, TemplateChildNode};
+    use vize_carton::Bump;
 
     #[test]
     fn test_has_v_slot() {
-        use vize_atelier_core::parser::parse;
-        use vize_carton::Bump;
-
         let allocator = Bump::new();
         let (root, _) = parse(&allocator, r#"<template v-slot:header>content</template>"#);
 

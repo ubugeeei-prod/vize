@@ -1,84 +1,33 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <!-- Background gradient -->
-    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1a1d24"/>
-      <stop offset="50%" stop-color="#252a35"/>
-      <stop offset="100%" stop-color="#2d3340"/>
-    </linearGradient>
-
-    <!-- Logo gradients -->
-    <linearGradient id="metal-grad" x1="0%" y1="0%" x2="100%" y2="20%">
-      <stop offset="0%" stop-color="#f0f2f5"/>
-      <stop offset="50%" stop-color="#9ca3b0"/>
-      <stop offset="100%" stop-color="#e07048"/>
-    </linearGradient>
-
-    <linearGradient id="metal-grad-dark" x1="0%" y1="0%" x2="100%" y2="30%">
-      <stop offset="0%" stop-color="#d0d4dc"/>
-      <stop offset="60%" stop-color="#6b7280"/>
-      <stop offset="100%" stop-color="#c45530"/>
-    </linearGradient>
-
-    <linearGradient id="speed-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#e07048" stop-opacity="0.7"/>
-      <stop offset="100%" stop-color="#f0f2f5" stop-opacity="0"/>
-    </linearGradient>
-
-    <!-- Text gradient -->
-    <linearGradient id="text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#f0f2f5"/>
-      <stop offset="60%" stop-color="#d0d4dc"/>
-      <stop offset="100%" stop-color="#e07048"/>
-    </linearGradient>
-  </defs>
-
   <!-- Background -->
-  <rect width="1200" height="630" fill="url(#bg-grad)"/>
+  <rect width="1200" height="630" fill="#E6E2D6"/>
 
-  <!-- Subtle grid pattern -->
-  <g opacity="0.05">
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#f0f2f5" stroke-width="1"/>
-    </pattern>
-    <rect width="1200" height="630" fill="url(#grid)"/>
-  </g>
-
-  <!-- Speed lines (background decoration) -->
-  <g transform="translate(750, 200)" opacity="0.5">
+  <!-- Speed lines -->
+  <g transform="translate(750, 260)">
     <g transform="skewX(-20)">
-      <rect x="0" y="0" width="400" height="3" fill="url(#speed-grad)" rx="1.5"/>
-      <rect x="50" y="40" width="300" height="2" fill="url(#speed-grad)" rx="1"/>
-      <rect x="20" y="-40" width="250" height="2" fill="url(#speed-grad)" rx="1"/>
-      <rect x="80" y="80" width="200" height="2" fill="url(#speed-grad)" rx="1"/>
-      <rect x="30" y="-80" width="180" height="1.5" fill="url(#speed-grad)" rx="0.75"/>
+      <rect x="0" y="0" width="400" height="3" fill="#121212" rx="1.5"/>
+      <rect x="50" y="40" width="300" height="2" fill="#121212" rx="1"/>
+      <rect x="20" y="-40" width="250" height="2" fill="#121212" rx="1"/>
+      <rect x="80" y="80" width="200" height="2" fill="#121212" rx="1"/>
+      <rect x="30" y="-80" width="180" height="1.5" fill="#121212" rx="0.75"/>
     </g>
   </g>
 
   <!-- Logo -->
-  <g transform="translate(200, 180)">
+  <g transform="translate(200, 210)">
     <g transform="skewX(-15)">
-      <!-- Dark V part -->
-      <path d="M 200 0 L 120 180 L 210 60 L 200 0 Z" fill="url(#metal-grad-dark)" stroke="#4b5563" stroke-width="1"/>
-      <!-- Light V part -->
-      <path d="M 60 0 L 120 180 L 160 40 L 60 0 Z" fill="url(#metal-grad)" stroke-width="1.5" stroke-opacity="0.6"/>
-      <!-- Center line highlight -->
-      <path d="M 60 0 L 120 180" stroke="#f0f2f5" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+      <path d="M 200 0 L 120 180 L 210 60 L 200 0 Z" fill="#121212"/>
+      <path d="M 60 0 L 120 180 L 160 40 L 60 0 Z" fill="#121212"/>
+      <path d="M 60 0 L 120 180" stroke="#121212" stroke-width="1" stroke-linecap="round"/>
     </g>
   </g>
 
   <!-- Title: Vize -->
-  <text x="480" y="300" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="120" font-weight="700" fill="url(#text-grad)">Vize</text>
-
-  <!-- Subtitle: Playground -->
-  <text x="485" y="370" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="48" font-weight="500" fill="#b0b8c4">Playground</text>
+  <text x="480" y="335" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="120" font-weight="500" fill="#121212" letter-spacing="6">Vize</text>
 
   <!-- Tagline -->
-  <text x="485" y="440" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" font-size="24" font-weight="400" fill="#8890a0">High-Performance Vue.js Toolchain in Rust</text>
+  <text x="485" y="410" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="24" font-weight="400" fill="#121212" letter-spacing="2">Vue.js Toolchain in Rust</text>
 
-  <!-- Bottom accent line -->
-  <rect x="485" y="470" width="400" height="3" rx="1.5" fill="url(#metal-grad)" opacity="0.7"/>
-
-  <!-- Border -->
-  <rect x="0" y="0" width="1200" height="630" fill="none" stroke="#4b5563" stroke-width="2" opacity="0.4"/>
+  <!-- Accent line -->
+  <rect x="485" y="435" width="200" height="1" fill="#121212"/>
 </svg>

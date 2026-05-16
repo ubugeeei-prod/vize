@@ -2,6 +2,7 @@
 
 use super::block::GenerateContext;
 use crate::ir::{BlockIRNode, IfIRNode, NegativeBranch};
+use vize_carton::{cstr, String};
 
 /// Generate if node code
 pub fn generate_if<F>(ctx: &mut GenerateContext, if_node: &IfIRNode<'_>, generate_block: F)
@@ -9,12 +10,12 @@ where
     F: Fn(&mut GenerateContext, &BlockIRNode<'_>) + Copy,
 {
     let condition = if if_node.condition.is_static {
-        format!("\"{}\"", if_node.condition.content)
+        cstr!("\"{}\"", if_node.condition.content)
     } else {
-        if_node.condition.content.to_string()
+        vize_carton::CompactString::from(if_node.condition.content.as_str())
     };
 
-    ctx.push_line(&format!("_createIf(() => {}, () => {{", condition));
+    ctx.push_line_fmt(format_args!("_createIf(() => {condition}, () => {{"));
     ctx.indent();
     generate_block(ctx, &if_node.positive);
     ctx.deindent();
@@ -35,9 +36,9 @@ where
 /// Generate simple if expression (for inline conditionals)
 pub fn generate_if_expression(condition: &str, then_expr: &str, else_expr: Option<&str>) -> String {
     if let Some(else_val) = else_expr {
-        format!("{} ? {} : {}", condition, then_expr, else_val)
+        cstr!("{condition} ? {then_expr} : {else_val}")
     } else {
-        format!("{} ? {} : null", condition, then_expr)
+        cstr!("{condition} ? {then_expr} : null")
     }
 }
 
@@ -53,7 +54,7 @@ pub fn can_use_ternary(if_node: &IfIRNode<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::generate_if_expression;
 
     #[test]
     fn test_generate_if_expression() {

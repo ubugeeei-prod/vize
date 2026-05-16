@@ -47,10 +47,8 @@ impl AnchorHasContent {
         // Check for content in children
         for child in &element.children {
             match child {
-                TemplateChildNode::Text(text) => {
-                    if !text.content.trim().is_empty() {
-                        return true;
-                    }
+                TemplateChildNode::Text(text) if !text.content.trim().is_empty() => {
+                    return true;
                 }
                 TemplateChildNode::Interpolation(_) => {
                     return true;
@@ -103,7 +101,7 @@ impl Rule for AnchorHasContent {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::AnchorHasContent;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

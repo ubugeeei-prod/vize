@@ -4,7 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
-use vize_carton::FxHashMap;
+use vize_carton::{FxHashMap, String};
 
 // Re-export from vize_relief to avoid duplication
 pub use vize_atelier_core::options::{BindingMetadata, BindingType};
@@ -94,7 +94,7 @@ impl<'a> SfcDescriptor<'a> {
 
     /// Compute hash of the template block content.
     /// Returns None if there is no template block.
-    pub fn template_hash(&self) -> Option<String> {
+    pub fn template_hash(&self) -> Option<vize_carton::String> {
         self.template
             .as_ref()
             .map(|t| vize_carton::hash::content_hash(&t.content))
@@ -102,11 +102,11 @@ impl<'a> SfcDescriptor<'a> {
 
     /// Compute hash of all style blocks content.
     /// Returns None if there are no style blocks.
-    pub fn style_hash(&self) -> Option<String> {
+    pub fn style_hash(&self) -> Option<vize_carton::String> {
         if self.styles.is_empty() {
             return None;
         }
-        let mut combined = String::new();
+        let mut combined = vize_carton::String::default();
         for style in &self.styles {
             combined.push_str(&style.content);
             combined.push('\0'); // Separator
@@ -116,7 +116,7 @@ impl<'a> SfcDescriptor<'a> {
 
     /// Compute hash of the script blocks (script + script_setup) content.
     /// Returns None if there are no script blocks.
-    pub fn script_hash(&self) -> Option<String> {
+    pub fn script_hash(&self) -> Option<vize_carton::String> {
         let script_content = self.script.as_ref().map(|s| s.content.as_ref());
         let script_setup_content = self.script_setup.as_ref().map(|s| s.content.as_ref());
 
@@ -125,7 +125,7 @@ impl<'a> SfcDescriptor<'a> {
             (Some(s), None) => Some(vize_carton::hash::content_hash(s)),
             (None, Some(ss)) => Some(vize_carton::hash::content_hash(ss)),
             (Some(s), Some(ss)) => {
-                let mut combined = String::with_capacity(s.len() + ss.len() + 1);
+                let mut combined = vize_carton::String::with_capacity(s.len() + ss.len() + 1);
                 combined.push_str(s);
                 combined.push('\0');
                 combined.push_str(ss);
@@ -389,6 +389,14 @@ pub struct SfcCompileOptions {
 
     /// Style compile options
     pub style: StyleCompileOptions,
+
+    /// Whether to compile the SFC in Vapor mode
+    pub vapor: bool,
+
+    /// External scope ID (8-char hex, without "data-v-" prefix).
+    /// When provided, this scope ID is used instead of generating one from the filename.
+    /// This ensures consistency with the JS-side scope ID generation (SHA-256).
+    pub scope_id: Option<String>,
 }
 
 /// Script compile options
@@ -446,6 +454,9 @@ pub struct TemplateCompileOptions {
     /// Whether TypeScript mode
     pub is_ts: bool,
 
+    /// Whether the template targets a custom renderer instead of the DOM.
+    pub custom_renderer: bool,
+
     /// Compiler options
     pub compiler_options: Option<vize_atelier_dom::DomCompilerOptions>,
 }
@@ -493,6 +504,37 @@ pub struct SfcCompileResult {
 
     /// Binding metadata
     pub bindings: Option<BindingMetadata>,
+
+    /// Compile-time macro artifacts extracted from script blocks.
+    #[serde(default)]
+    pub macro_artifacts: Vec<SfcMacroArtifact>,
+}
+
+/// Compile-time macro artifact extracted from an SFC.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcMacroArtifact {
+    /// Stable artifact kind.
+    pub kind: String,
+
+    /// Macro call name.
+    pub name: String,
+
+    /// Full macro call source.
+    pub source: String,
+
+    /// Extracted macro payload source.
+    pub content: String,
+
+    /// Ready-to-load virtual module code, when applicable.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub module_code: Option<String>,
+
+    /// Absolute start offset in the original SFC source.
+    pub start: usize,
+
+    /// Absolute end offset in the original SFC source.
+    pub end: usize,
 }
 
 /// SFC error/warning
@@ -512,7 +554,7 @@ pub struct SfcError {
 
 impl From<vize_atelier_core::CompilerError> for SfcError {
     fn from(err: vize_atelier_core::CompilerError) -> Self {
-        let mut code = String::new();
+        let mut code = vize_carton::String::default();
         use std::fmt::Write as _;
         let _ = write!(&mut code, "{:?}", err.code);
         Self {

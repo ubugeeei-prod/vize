@@ -1,0 +1,122 @@
+name: App E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: App e2e suite to run
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - vrt
+          - preview
+          - check
+          - lint
+          - build
+          - check-fixtures
+
+concurrency:
+  group: app-e2e-${{ github.ref }}-${{ inputs.suite }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  app-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          submodules: recursive
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2.9.1
+        with:
+          shared-key: "native"
+          cache-workspace-crates: "true"
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Install JS dependencies
+        run: |
+          vp install --frozen-lockfile --prefer-offline \
+            --filter './tests...' \
+            --filter './npm/vize-native...' \
+            --filter './npm/vize...' \
+            --filter './npm/vite-plugin-vize...' \
+            --filter './npm/nuxt...' \
+            --filter './npm/vite-plugin-musea...' \
+            --filter './npm/musea-nuxt...'
+
+      - name: Build native package
+        run: vp run --filter './npm/vize-native' build:ci
+
+      - name: Build vize CLI
+        run: cargo build --profile ci -p vize
+
+      - name: Cache Playwright browsers
+        id: cache-playwright
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: vp exec --filter './tests' -- playwright install --with-deps chromium
+
+      - name: Run selected app e2e suite
+        run: |
+          case "${{ inputs.suite }}" in
+            dev)
+              vp run --filter './tests' test:dev
+              ;;
+            vrt)
+              vp run --filter './tests' test:vrt
+              ;;
+            preview)
+              RUN_BUILD_TESTS=1 vp run --filter './tests' test:preview
+              ;;
+            check)
+              vp run --filter './tests' test:check
+              ;;
+            lint)
+              vp run --filter './tests' test:lint
+              ;;
+            build)
+              vp run --filter './tests' test:build
+              ;;
+            check-fixtures)
+              vp run --filter './tests' test:check:fixtures
+              ;;
+          esac
+
+      - name: Upload app e2e artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: app-e2e-artifacts-${{ inputs.suite }}
+          path: |
+            tests/app/results/
+            tests/app/screenshots/
+            tests/app/playwright-report/
+            tests/playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7

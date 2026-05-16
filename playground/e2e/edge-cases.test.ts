@@ -1,33 +1,33 @@
-import { describe, it, expect, beforeAll } from 'vitest'
-import { loadWasm, type WasmModule } from '../src/wasm/index'
+import { describe, it, expect, beforeAll } from "vite-plus/test";
+import { loadWasm, type WasmModule } from "../src/wasm/index";
 
-describe('Edge Cases', () => {
-  let wasm: WasmModule | null = null
+describe("Edge Cases", () => {
+  let wasm: WasmModule | null = null;
 
   beforeAll(async () => {
-    wasm = await loadWasm()
-  })
+    wasm = await loadWasm();
+  });
 
-  describe('Empty/Minimal SFC', () => {
-    it('should handle empty template', () => {
+  describe("Empty/Minimal SFC", () => {
+    it("should handle empty template", () => {
       const sfc = `
 <template></template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
 
-    it('should handle template with only whitespace', () => {
+    it("should handle template with only whitespace", () => {
       const sfc = `
 <template>
 
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
 
-    it('should handle empty script setup', () => {
+    it("should handle empty script setup", () => {
       const sfc = `
 <script setup>
 </script>
@@ -35,14 +35,14 @@ describe('Edge Cases', () => {
 <template>
   <div>Hello</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
-  })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
+  });
 
-  describe('Complex TypeScript', () => {
-    it('should handle generic function declarations', () => {
+  describe("Complex TypeScript", () => {
+    it("should handle generic function declarations", () => {
       const sfc = `
 <script setup lang="ts">
 function identity<T>(value: T): T {
@@ -54,16 +54,16 @@ const result = identity<string>('test')
 <template>
   <div>{{ result }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      const code = result.script?.code
-      expect(code).toBeDefined()
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      const code = result.script?.code;
+      expect(code).toBeDefined();
       // The compiled code should contain the function and call
-      expect(code).toContain('identity')
-      expect(code).toContain('result')
-    })
+      expect(code).toContain("identity");
+      expect(code).toContain("result");
+    });
 
-    it('should handle async/await with types', () => {
+    it("should handle async/await with types", () => {
       const sfc = `
 <script setup lang="ts">
 async function fetchData(): Promise<string> {
@@ -75,16 +75,16 @@ const data = await fetchData()
 <template>
   <div>{{ data }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      const code = result.script?.code
-      expect(code).toBeDefined()
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      const code = result.script?.code;
+      expect(code).toBeDefined();
       // The compiled code should contain async function
-      expect(code).toContain('fetchData')
-      expect(code).toContain('data')
-    })
+      expect(code).toContain("fetchData");
+      expect(code).toContain("data");
+    });
 
-    it('should handle type assertions', () => {
+    it("should handle type assertions", () => {
       const sfc = `
 <script setup lang="ts">
 const element = document.querySelector('.test') as HTMLDivElement
@@ -94,16 +94,16 @@ const value = (someValue as unknown) as number
 <template>
   <div>Test</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      const code = result.script?.code
-      expect(code).toBeDefined()
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      const code = result.script?.code;
+      expect(code).toBeDefined();
       // The compiled code should contain the variables
-      expect(code).toContain('element')
-      expect(code).toContain('document.querySelector')
-    })
+      expect(code).toContain("element");
+      expect(code).toContain("document.querySelector");
+    });
 
-    it('should handle non-null assertions', () => {
+    it("should handle non-null assertions", () => {
       const sfc = `
 <script setup lang="ts">
 const element = document.querySelector('.test')!
@@ -113,12 +113,12 @@ const value = maybeNull!.property
 <template>
   <div>Test</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+    });
 
-    it('should handle optional chaining with types', () => {
+    it("should downcompile optional chaining type declarations by default", () => {
       const sfc = `
 <script setup lang="ts">
 interface User { name?: { first: string } }
@@ -129,14 +129,35 @@ const name = user?.name?.first
 <template>
   <div>{{ name }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-      // TypeScript is preserved in output (auto-detected from lang="ts")
-      expect(result.script?.code).toContain('interface User')
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+      expect(result.script?.code).toContain("const user = {}");
+      expect(result.script?.code).toContain("const name = user?.name?.first");
+      expect(result.script?.code).not.toContain("interface User");
+      expect(result.script?.code).not.toContain(": User");
+    });
 
-    it('should handle enum declarations', () => {
+    it("should preserve optional chaining type declarations when requested", () => {
+      const sfc = `
+<script setup lang="ts">
+interface User { name?: { first: string } }
+const user: User = {}
+const name = user?.name?.first
+</script>
+
+<template>
+  <div>{{ name }}</div>
+</template>
+`;
+      const result = wasm!.compileSfc(sfc, { scriptExt: "preserve" });
+      expect(result.script?.code).toBeDefined();
+      expect(result.script?.code).toContain("interface User");
+      expect(result.script?.code).toContain("const user: User = {}");
+      expect(result.script?.code).toContain("const name = user?.name?.first");
+    });
+
+    it("should handle enum declarations", () => {
       const sfc = `
 <script setup lang="ts">
 enum Status {
@@ -149,12 +170,12 @@ const status = Status.Active
 <template>
   <div>{{ status }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+    });
 
-    it('should handle const enum declarations', () => {
+    it("should handle const enum declarations", () => {
       const sfc = `
 <script setup lang="ts">
 const enum Direction {
@@ -169,12 +190,12 @@ const dir = Direction.Up
 <template>
   <div>{{ dir }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+    });
 
-    it('should handle class with decorators pattern', () => {
+    it("should handle class with decorators pattern", () => {
       const sfc = `
 <script setup lang="ts">
 class MyClass {
@@ -192,19 +213,19 @@ const instance = new MyClass('test')
 <template>
   <div>{{ instance.getName() }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      const code = result.script?.code
-      expect(code).toBeDefined()
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      const code = result.script?.code;
+      expect(code).toBeDefined();
       // The compiled code should contain the class
-      expect(code).toContain('MyClass')
-      expect(code).toContain('instance')
-      expect(code).toContain('constructor')
-    })
-  })
+      expect(code).toContain("MyClass");
+      expect(code).toContain("instance");
+      expect(code).toContain("constructor");
+    });
+  });
 
-  describe('Complex Templates', () => {
-    it('should handle deeply nested templates', () => {
+  describe("Complex Templates", () => {
+    it("should handle deeply nested templates", () => {
       const sfc = `
 <script setup>
 const items = [[1, 2], [3, 4], [5, 6]]
@@ -219,12 +240,12 @@ const items = [[1, 2], [3, 4], [5, 6]]
     </div>
   </div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.template?.code).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.template?.code).toBeDefined();
+    });
 
-    it('should handle multiple root elements (fragments)', () => {
+    it("should handle multiple root elements (fragments)", () => {
       const sfc = `
 <script setup>
 </script>
@@ -234,12 +255,12 @@ const items = [[1, 2], [3, 4], [5, 6]]
   <main>Main</main>
   <footer>Footer</footer>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
 
-    it('should handle component self-reference', () => {
+    it("should handle component self-reference", () => {
       const sfc = `
 <script setup>
 defineProps(['depth'])
@@ -253,12 +274,12 @@ defineProps(['depth'])
     </template>
   </div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
 
-    it('should handle teleport', () => {
+    it("should handle teleport", () => {
       const sfc = `
 <script setup>
 </script>
@@ -268,12 +289,12 @@ defineProps(['depth'])
     <div class="modal">Modal content</div>
   </Teleport>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
 
-    it('should handle suspense', () => {
+    it("should handle suspense", () => {
       const sfc = `
 <script setup>
 import AsyncComponent from './AsyncComponent.vue'
@@ -289,12 +310,12 @@ import AsyncComponent from './AsyncComponent.vue'
     </template>
   </Suspense>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
 
-    it('should handle keep-alive', () => {
+    it("should handle keep-alive", () => {
       const sfc = `
 <script setup>
 import { ref } from 'vue'
@@ -306,14 +327,14 @@ const currentTab = ref('A')
     <component :is="currentTab" />
   </KeepAlive>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
-  })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
+  });
 
-  describe('Special Characters', () => {
-    it('should handle template literals', () => {
+  describe("Special Characters", () => {
+    it("should handle template literals", () => {
       const sfc = `
 <script setup>
 const name = 'World'
@@ -323,12 +344,12 @@ const greeting = \`Hello, \${name}!\`
 <template>
   <div>{{ greeting }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+    });
 
-    it('should handle unicode in template', () => {
+    it("should handle unicode in template", () => {
       const sfc = `
 <script setup>
 const emoji = '🎉'
@@ -338,24 +359,24 @@ const japanese = 'こんにちは'
 <template>
   <div>{{ emoji }} {{ japanese }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
 
-    it('should handle special HTML entities', () => {
+    it("should handle special HTML entities", () => {
       const sfc = `
 <template>
   <div>&lt;div&gt; &amp; &quot;test&quot;</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result).toBeDefined()
-    })
-  })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result).toBeDefined();
+    });
+  });
 
-  describe('defineModel', () => {
-    it('should handle defineModel', () => {
+  describe("defineModel", () => {
+    it("should handle defineModel", () => {
       const sfc = `
 <script setup lang="ts">
 const modelValue = defineModel<string>()
@@ -364,12 +385,12 @@ const modelValue = defineModel<string>()
 <template>
   <input :value="modelValue" @input="modelValue = $event.target.value" />
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-    })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+    });
 
-    it('should handle defineModel with options', () => {
+    it("should handle defineModel with options", () => {
       const sfc = `
 <script setup lang="ts">
 const count = defineModel<number>('count', { default: 0 })
@@ -378,14 +399,14 @@ const count = defineModel<number>('count', { default: 0 })
 <template>
   <div>{{ count }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-    })
-  })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+    });
+  });
 
-  describe('defineExpose', () => {
-    it('should handle defineExpose', () => {
+  describe("defineExpose", () => {
+    it("should handle defineExpose", () => {
       const sfc = `
 <script setup>
 import { ref } from 'vue'
@@ -401,14 +422,14 @@ defineExpose({
 <template>
   <div>{{ count }}</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-    })
-  })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+    });
+  });
 
-  describe('defineOptions', () => {
-    it('should handle defineOptions', () => {
+  describe("defineOptions", () => {
+    it("should handle defineOptions", () => {
       const sfc = `
 <script setup>
 defineOptions({
@@ -420,14 +441,14 @@ defineOptions({
 <template>
   <div>Hello</div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-    })
-  })
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+    });
+  });
 
-  describe('defineSlots', () => {
-    it('should handle defineSlots with types', () => {
+  describe("defineSlots", () => {
+    it("should handle defineSlots with types", () => {
       const sfc = `
 <script setup lang="ts">
 const slots = defineSlots<{
@@ -442,9 +463,9 @@ const slots = defineSlots<{
     <slot :msg="'hello'"></slot>
   </div>
 </template>
-`
-      const result = wasm!.compileSfc(sfc, {})
-      expect(result.script?.code).toBeDefined()
-    })
-  })
-})
+`;
+      const result = wasm!.compileSfc(sfc, {});
+      expect(result.script?.code).toBeDefined();
+    });
+  });
+});

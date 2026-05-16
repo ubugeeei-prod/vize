@@ -1,0 +1,5 @@
+---
+source: crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs
+expression: result
+---
+[]

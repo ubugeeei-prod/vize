@@ -82,7 +82,7 @@ impl Rule for RequireComponentIs {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::RequireComponentIs;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

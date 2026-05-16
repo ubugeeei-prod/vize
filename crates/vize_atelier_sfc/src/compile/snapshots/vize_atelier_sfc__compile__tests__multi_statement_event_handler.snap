@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  setup(__props) {
+
+const editDashboard = ref()
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", {
+      onClick: _cache[0] || (_cache[0] = ($event: any) => { 
+      editDashboard.value = 'test';
+      console.log('done');
+     })
+    }))
+}
+}
+
+})

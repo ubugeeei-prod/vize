@@ -109,7 +109,10 @@ pub fn create_on_name(event: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        camelize, create_on_name, needs_guard, parse_event_modifiers, EventModifiers,
+        SimpleExpressionNode, SourceLocation,
+    };
 
     #[test]
     fn test_parse_modifiers() {

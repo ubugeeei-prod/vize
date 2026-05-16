@@ -90,7 +90,7 @@ impl Rule for ValidVMemo {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::ValidVMemo;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

@@ -72,7 +72,7 @@ impl Rule for NoRedundantRoles {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoRedundantRoles;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

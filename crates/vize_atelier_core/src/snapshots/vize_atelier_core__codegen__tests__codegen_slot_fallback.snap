@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { renderSlot: _renderSlot, toDisplayString: _toDisplayString } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _renderSlot(_ctx.$slots, "label", {}, () => [
+    _toDisplayString(label)
+  ])
+}

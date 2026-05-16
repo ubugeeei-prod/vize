@@ -61,7 +61,7 @@ impl Rule for ImgAlt {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::ImgAlt;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

@@ -1,6 +1,9 @@
 //! Types for variant auto-generation.
 
+#![allow(clippy::disallowed_types)]
+
 use serde::{Deserialize, Serialize};
+use vize_carton::String;
 
 /// Configuration for variant auto-generation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -69,13 +72,14 @@ pub struct PropDefinition {
 /// A generated variant definition.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[allow(clippy::disallowed_types)]
 pub struct GeneratedVariant {
     /// Variant name (e.g., "Default", "Primary", "Disabled").
     pub name: String,
     /// Whether this should be the default variant.
     pub is_default: bool,
     /// Props to apply to the component.
-    pub props: serde_json::Map<String, serde_json::Value>,
+    pub props: serde_json::Map<std::string::String, serde_json::Value>,
     /// Description of what this variant tests.
     pub description: Option<String>,
 }

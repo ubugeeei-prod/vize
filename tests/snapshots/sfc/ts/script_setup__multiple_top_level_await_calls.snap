@@ -1,18 +1,29 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
+import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
-  setup(__props) {
+  async setup(__props) {
 
-const user = await fetchUser()
-const posts = await fetchPosts(user.id)
+let __temp: any, __restore: any
+
+const user =  (
+  ([__temp,__restore] = _withAsyncContext(() => fetchUser())),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
+const posts =  (
+  ([__temp,__restore] = _withAsyncContext(() => fetchPosts(user.id))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(user).name) + " has " + _toDisplayString(_unref(posts).length) + " posts", 1 /* TEXT */))

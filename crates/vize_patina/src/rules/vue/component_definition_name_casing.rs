@@ -66,7 +66,7 @@ impl Rule for ComponentDefinitionNameCasing {
         &META
     }
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         let filename = ctx.filename;
         if !filename.ends_with(".vue") {
             return;
@@ -103,7 +103,7 @@ impl Rule for ComponentDefinitionNameCasing {
                     "vue/component-definition-name-casing.message",
                     &[("name", stem)],
                 ),
-                &_root.loc,
+                &root.loc,
                 ctx.t("vue/component-definition-name-casing.help"),
             );
         }
@@ -112,7 +112,7 @@ impl Rule for ComponentDefinitionNameCasing {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::ComponentDefinitionNameCasing;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

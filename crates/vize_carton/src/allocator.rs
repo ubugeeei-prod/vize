@@ -87,7 +87,7 @@ impl AsRef<Bump> for Allocator {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::Allocator;
 
     #[test]
     fn test_allocator_new() {

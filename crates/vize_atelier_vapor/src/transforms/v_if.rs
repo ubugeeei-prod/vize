@@ -170,7 +170,9 @@ fn extract_expression<'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::extract_condition;
+    use vize_atelier_core::{DirectiveNode, SourceLocation};
+    use vize_carton::Bump;
 
     #[test]
     fn test_extract_condition() {

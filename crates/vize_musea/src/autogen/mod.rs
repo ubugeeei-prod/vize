@@ -4,6 +4,8 @@
 //! Uses intelligent strategies instead of cartesian product to produce
 //! meaningful, manageable variant sets.
 
+#![allow(clippy::disallowed_macros)]
+
 pub mod strategy;
 pub mod types;
 
@@ -11,6 +13,7 @@ pub use strategy::generate_variants;
 pub use types::{AutogenConfig, AutogenOutput, GeneratedVariant, PropDefinition};
 
 use std::path::Path;
+use vize_carton::{append, String, ToCompactString};
 
 /// Generate an `.art.vue` file from prop definitions.
 pub fn generate_art_file(
@@ -36,7 +39,7 @@ fn extract_component_name(component_path: &str) -> String {
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("Component")
-        .to_string()
+        .to_compact_string()
 }
 
 /// Render the `.art.vue` file content from generated variants.
@@ -45,12 +48,13 @@ fn render_art_file(
     component_path: &str,
     variants: &[GeneratedVariant],
 ) -> String {
-    let mut output = String::new();
+    let mut output = String::default();
 
     // <art> block
-    output.push_str(&format!(
+    append!(
+        output,
         "<art title=\"{component_name}\" component=\"{component_path}\">\n"
-    ));
+    );
 
     // Variants
     for variant in variants {
@@ -60,14 +64,14 @@ fn render_art_file(
             format!("name=\"{}\"", variant.name)
         };
 
-        output.push_str(&format!("  <variant {attrs}>\n"));
+        append!(output, "  <variant {attrs}>\n");
 
         // Build component tag with props
         let props_str = render_props(&variant.props);
         if props_str.is_empty() {
-            output.push_str(&format!("    <{component_name} />\n"));
+            append!(output, "    <{component_name} />\n");
         } else {
-            output.push_str(&format!("    <{component_name}\n"));
+            append!(output, "    <{component_name}\n");
             output.push_str(&props_str);
             output.push_str("    />\n");
         }
@@ -79,20 +83,19 @@ fn render_art_file(
 
     // Script setup
     output.push_str("<script setup lang=\"ts\">\n");
-    output.push_str(&format!(
-        "import {component_name} from '{component_path}'\n"
-    ));
+    append!(output, "import {component_name} from '{component_path}'\n");
     output.push_str("</script>\n");
 
     output
 }
 
 /// Render props as Vue template attributes.
-fn render_props(props: &serde_json::Map<String, serde_json::Value>) -> String {
+#[allow(clippy::disallowed_types)]
+fn render_props(props: &serde_json::Map<std::string::String, serde_json::Value>) -> String {
     let mut lines = Vec::new();
 
     for (name, value) in props {
-        let attr = match value {
+        let attr: std::string::String = match value {
             serde_json::Value::String(s) => format!("      {name}=\"{s}\""),
             serde_json::Value::Bool(true) => format!("      {name}"),
             serde_json::Value::Bool(false) => format!("      :{name}=\"false\""),
@@ -108,15 +111,23 @@ fn render_props(props: &serde_json::Map<String, serde_json::Value>) -> String {
     }
 
     if lines.is_empty() {
-        String::new()
+        String::default()
     } else {
-        lines.join("\n") + "\n"
+        let joined: std::string::String = lines.join("\n") + "\n";
+        joined.into()
     }
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::disallowed_methods,
+    clippy::disallowed_types,
+    clippy::disallowed_macros
+)]
 mod tests {
-    use super::*;
+    use super::{
+        extract_component_name, generate_art_file, render_props, AutogenConfig, PropDefinition,
+    };
     use serde_json::json;
 
     #[test]
@@ -133,20 +144,20 @@ mod tests {
     fn test_generate_art_file() {
         let props = vec![
             PropDefinition {
-                name: "variant".to_string(),
-                prop_type: "'primary' | 'secondary'".to_string(),
+                name: "variant".into(),
+                prop_type: "'primary' | 'secondary'".into(),
                 required: true,
                 default_value: Some(json!("primary")),
             },
             PropDefinition {
-                name: "label".to_string(),
-                prop_type: "string".to_string(),
+                name: "label".into(),
+                prop_type: "string".into(),
                 required: true,
                 default_value: Some(json!("Click me")),
             },
             PropDefinition {
-                name: "disabled".to_string(),
-                prop_type: "boolean".to_string(),
+                name: "disabled".into(),
+                prop_type: "boolean".into(),
                 required: false,
                 default_value: Some(json!(false)),
             },
@@ -155,15 +166,7 @@ mod tests {
         let config = AutogenConfig::default();
         let output = generate_art_file("./Button.vue", &props, &config);
 
-        assert_eq!(output.component_name, "Button");
-        assert!(!output.variants.is_empty());
-        assert!(output.art_file_content.contains("<art title=\"Button\""));
-        assert!(output
-            .art_file_content
-            .contains("import Button from './Button.vue'"));
-        assert!(output
-            .art_file_content
-            .contains("<variant name=\"Default\" default>"));
+        insta::assert_debug_snapshot!(output);
     }
 
     #[test]
@@ -174,8 +177,21 @@ mod tests {
         props.insert("count".to_string(), json!(42));
 
         let rendered = render_props(&props);
-        assert!(rendered.contains("label=\"Hello\""));
-        assert!(rendered.contains("disabled"));
-        assert!(rendered.contains(":count=\"42\""));
+        insta::assert_snapshot!(rendered.as_str());
+    }
+
+    #[test]
+    fn test_render_props_edge_values() {
+        let mut props = serde_json::Map::new();
+        props.insert("empty".to_string(), json!(""));
+        props.insert("disabled".to_string(), json!(false));
+        props.insert(
+            "config".to_string(),
+            json!({ "size": "sm", "nested": true }),
+        );
+        props.insert("ignored".to_string(), serde_json::Value::Null);
+
+        let rendered = render_props(&props);
+        insta::assert_snapshot!(rendered.as_str());
     }
 }

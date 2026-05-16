@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 
 use crate::text::{SegmentedText, TextWidth};
+use vize_carton::cstr;
 
 /// Preedit text with cursor and segments.
 #[derive(Debug, Clone, Default)]
@@ -123,9 +124,9 @@ impl Preedit {
                 .unwrap_or(0)
         };
 
-        let mut new_text = self.text.to_string();
-        new_text.insert_str(byte_pos, text);
-        self.text = CompactString::from(new_text);
+        let before = &self.text[..byte_pos];
+        let after = &self.text[byte_pos..];
+        self.text = cstr!("{before}{text}{after}");
         self.cursor += SegmentedText::new(text).grapheme_count;
     }
 
@@ -140,7 +141,7 @@ impl Preedit {
             // Get the text without the character before cursor
             let before = st.slice(0, self.cursor - 1);
             let after = st.slice(self.cursor, st.grapheme_count);
-            self.text = CompactString::from(format!("{}{}", before, after));
+            self.text = cstr!("{before}{after}");
             self.cursor -= 1;
         }
     }
@@ -154,7 +155,7 @@ impl Preedit {
 
         let before = st.slice(0, self.cursor);
         let after = st.slice(self.cursor + 1, st.grapheme_count);
-        self.text = CompactString::from(format!("{}{}", before, after));
+        self.text = cstr!("{before}{after}");
     }
 
     /// Move cursor left.
@@ -226,7 +227,7 @@ pub enum SegmentStyle {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{Preedit, PreeditSegment, SegmentStyle};
 
     #[test]
     fn test_preedit_new() {

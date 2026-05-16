@@ -45,7 +45,7 @@ const height = ref(50)
   <div :style="{ width, height }">Styled</div>
 </template>
 --- OUTPUT ---
-import { normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 import { ref } from 'vue'
 
@@ -58,7 +58,7 @@ const height = ref(50)
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", {
-    style: _normalizeStyle({ width: width.value, height: height.value })
+    style: { width: width.value, height: height.value }
   }, "Styled", 4 /* STYLE */))
 }
 }
@@ -105,10 +105,10 @@ const name = ref('test')
 </script>
 
 <template>
-  <Component :options="{ name, extra: 'value' }" />
+  <MyComponent :options="{ name, extra: 'value' }" />
 </template>
 --- OUTPUT ---
-import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+import { openBlock as _openBlock, createBlock as _createBlock, resolveComponent as _resolveComponent } from "vue"
 
 import { ref } from 'vue'
 
@@ -119,11 +119,9 @@ export default {
 const name = ref('test')
 
 return (_ctx, _cache) => {
-  const _component_Component = _resolveComponent("Component")
+  const _component_MyComponent = _resolveComponent("MyComponent")
 
-  return (_openBlock(), _createBlock(_component_Component, {
-    options: { name: name.value, extra: 'value' }
-  }, null, 8 /* PROPS */, ["options"]))
+  return (_openBlock(), _createBlock(_component_MyComponent, { options: { name: name.value, extra: 'value' } }, null, 8 /* PROPS */, ["options"]))
 }
 }
 
@@ -140,7 +138,7 @@ let count = $ref(0)
   <button @click="count = count + 1">{{ count }}</button>
 </template>
 --- OUTPUT ---
-import { unref as _unref, toDisplayString as _toDisplayString, isRef as _isRef, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
 
 export default {
@@ -151,7 +149,7 @@ let count = $ref(0)
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("button", {
-    onClick: _cache[0] || (_cache[0] = $event => (_isRef(count) ? count.value = _unref(count) + 1 : count = _unref(count) + 1))
+    onClick: _cache[0] || (_cache[0] = $event => (count.value = _unref(count) + 1))
   }, _toDisplayString(_unref(count)), 1 /* TEXT */))
 }
 }
@@ -169,7 +167,7 @@ let value = $ref(10)
   <button @click="value++">{{ value }}</button>
 </template>
 --- OUTPUT ---
-import { unref as _unref, toDisplayString as _toDisplayString, isRef as _isRef, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
 
 export default {
@@ -180,7 +178,7 @@ let value = $ref(10)
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("button", {
-    onClick: _cache[0] || (_cache[0] = $event => (_isRef(value) ? value.value++ : value++))
+    onClick: _cache[0] || (_cache[0] = $event => (value.value++))
   }, _toDisplayString(_unref(value)), 1 /* TEXT */))
 }
 }
@@ -238,7 +236,7 @@ import Card from './Card.vue'
   </Card>
 </template>
 --- OUTPUT ---
-import { createTextVNode as _createTextVNode, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+import { openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 
 import Card from './Card.vue'
 
@@ -249,15 +247,15 @@ export default {
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createBlock(Card, null, {
-    "card-header": _withCtx(() => [...(_cache[0] || (_cache[0] = [
-      _createTextVNode("Header", -1 /* CACHED */)
-    ]))]),
-    "card-body": _withCtx(() => [...(_cache[1] || (_cache[1] = [
-      _createTextVNode("Body", -1 /* CACHED */)
-    ]))]),
-    "card-footer": _withCtx(() => [...(_cache[2] || (_cache[2] = [
-      _createTextVNode("Footer", -1 /* CACHED */)
-    ]))]),
+    "card-header": _withCtx(() => [
+      _createTextVNode("Header")
+    ]),
+    "card-body": _withCtx(() => [
+      _createTextVNode("Body")
+    ]),
+    "card-footer": _withCtx(() => [
+      _createTextVNode("Footer")
+    ]),
     _: 1 /* STABLE */
   }))
 }
@@ -280,7 +278,7 @@ import Layout from './Layout.vue'
   </Layout>
 </template>
 --- OUTPUT ---
-import { createTextVNode as _createTextVNode, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+import { openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
 
 import Layout from './Layout.vue'
 
@@ -291,15 +289,15 @@ export default {
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createBlock(Layout, null, {
-    header: _withCtx(() => [...(_cache[0] || (_cache[0] = [
-      _createTextVNode("Regular", -1 /* CACHED */)
-    ]))]),
-    "main-content": _withCtx(() => [...(_cache[1] || (_cache[1] = [
-      _createTextVNode("Hyphenated", -1 /* CACHED */)
-    ]))]),
-    footer: _withCtx(() => [...(_cache[2] || (_cache[2] = [
-      _createTextVNode("Regular Again", -1 /* CACHED */)
-    ]))]),
+    header: _withCtx(() => [
+      _createTextVNode("Regular")
+    ]),
+    "main-content": _withCtx(() => [
+      _createTextVNode("Hyphenated")
+    ]),
+    footer: _withCtx(() => [
+      _createTextVNode("Regular Again")
+    ]),
     _: 1 /* STABLE */
   }))
 }
@@ -320,7 +318,7 @@ const text = ref('')
   <input v-if="show" v-model="text" />
 </template>
 --- OUTPUT ---
-import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
 
 import { ref } from 'vue'
 
@@ -333,12 +331,10 @@ const text = ref('')
 
 return (_ctx, _cache) => {
   return (show.value)
-    ? _withDirectives((_openBlock(), _createElementBlock("input", {
+    ? (_openBlock(), _createElementBlock("input", {
         key: 0,
         "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((text).value = $event))
-      }, null, 512 /* NEED_PATCH */)), [
-        [_vModelText, text.value]
-      ])
+      }))
     : _createCommentVNode("v-if", true)
 }
 }
@@ -377,7 +373,7 @@ return (_ctx, _cache) => {
         key: 0,
         modelValue: value.value,
         "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((value).value = $event))
-      }, null, 8 /* PROPS */, ["modelValue"]))
+      }))
     : _createCommentVNode("v-if", true)
 }
 }
@@ -438,7 +434,7 @@ const buttonProps = computed(() => ({ disabled: false, type: 'primary' }))
   </Button>
 </template>
 --- OUTPUT ---
-import { createTextVNode as _createTextVNode, mergeProps as _mergeProps, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode } from "vue"
+import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, mergeProps as _mergeProps, withCtx as _withCtx } from "vue"
 
 import { ref, computed } from 'vue'
 import Button from './Button.vue'
@@ -452,12 +448,15 @@ const buttonProps = computed(() => ({ disabled: false, type: 'primary' }))
 
 return (_ctx, _cache) => {
   return (isActive.value)
-    ? (_openBlock(), _createBlock(Button, _mergeProps({ key: 0 }, buttonProps.value, { onClick: _ctx.handleClick }), {
-        default: _withCtx(() => [...(_cache[0] || (_cache[0] = [
-          _createTextVNode(" Click me ", -1 /* CACHED */)
-        ]))]),
+    ? (_openBlock(), _createBlock(Button, _mergeProps(buttonProps.value, {
+        key: 0,
+        onClick: _cache[0] || (_cache[0] = (...args) => (_ctx.handleClick && _ctx.handleClick(...args)))
+      }), {
+        default: _withCtx(() => [
+          _createTextVNode("\n    Click me\n  ")
+        ]),
         _: 1 /* STABLE */
-      }, 16 /* FULL_PROPS */, ["onClick"]))
+      }))
     : _createCommentVNode("v-if", true)
 }
 }
@@ -499,11 +498,14 @@ return (_ctx, _cache) => {
         name: "eye"
       }))
     : (mode.value === 'edit')
-      ? (_openBlock(), _createBlock(Icon, _mergeProps({ key: 1 }, iconProps, { name: "pencil" }), null, 16 /* FULL_PROPS */))
-      : (_openBlock(), _createBlock(Icon, {
-          key: 2,
-          name: "default"
-        }))
+      ? (_openBlock(), _createBlock(Icon, _mergeProps(iconProps, {
+          key: 1,
+          name: "pencil"
+        })))
+    : (_openBlock(), _createBlock(Icon, {
+        key: 2,
+        name: "default"
+      }))
 }
 }
 
@@ -526,7 +528,7 @@ function closeItem(id) {
   </div>
 </template>
 --- OUTPUT ---
-import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 import { ref } from 'vue'
 
@@ -543,13 +545,9 @@ return (_ctx, _cache) => {
   const _directive_click_outside = _resolveDirective("click-outside")
 
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {
-    return _withDirectives((_openBlock(), _createElementBlock("div", {
+    return (_openBlock(), _createElementBlock("div", {
       key: item.id
-    }, [
-      _createTextVNode(_toDisplayString(item.name), 1 /* TEXT */)
-    ])), [
-      [_directive_click_outside, () => closeItem(item.id)]
-    ])
+    }, _toDisplayString(item.name), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
 }
@@ -567,7 +565,7 @@ const list = [1, 2, 3]
   <span v-for="n in list" :key="n" v-focus>{{ n }}</span>
 </template>
 --- OUTPUT ---
-import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 
 export default {
@@ -579,13 +577,11 @@ const list = [1, 2, 3]
 return (_ctx, _cache) => {
   const _directive_focus = _resolveDirective("focus")
 
-  return (_openBlock(), _createElementBlock(_Fragment, null, _renderList(list, (n) => {
-    return _withDirectives(_createElementVNode("span", { key: n }, [
-      _createTextVNode(_toDisplayString(n), 1 /* TEXT */)
-    ]), [
-      [_directive_focus]
-    ])
-  }), 64 /* STABLE_FRAGMENT */))
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (n) => {
+    return (_openBlock(), _createElementBlock("span", {
+      key: n
+    }, _toDisplayString(n), 1 /* TEXT */))
+  }), 128 /* KEYED_FRAGMENT */))
 }
 }
 
@@ -655,15 +651,31 @@ const {
   </div>
 </template>
 --- OUTPUT ---
-Compile error: Error: [@vue/compiler-sfc] Default value of prop "items" does not match declared type.
+import { defineComponent as _defineComponent } from 'vue'
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass } from "vue"
 
-test.vue
-4  |    count = 0,
-5  |    disabled = false,
-6  |    items = () => []
-   |            ^^^^^^^^
-7  |  } = defineProps<{
-8  |    title: string;
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  props: {
+    title: { type: String, required: true },
+    count: { type: Number, required: false, default: 0 },
+    disabled: { type: Boolean, required: false, default: false },
+    items: { type: Array, required: false, default: () => [] }
+  },
+  setup(__props: any) {
+
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass({ disabled: __props.disabled })
+  }, [ _createElementVNode("h1", null, _toDisplayString(__props.title), 1 /* TEXT */), _createElementVNode("span", null, _toDisplayString(__props.count), 1 /* TEXT */), _createElementVNode("ul", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.items, (item) => {
+      return (_openBlock(), _createElementBlock("li", { key: item }, _toDisplayString(item), 1 /* TEXT */))
+    }), 128 /* KEYED_FRAGMENT */)) ]) ], 2 /* CLASS */))
+}
+}
+
+})
 ===
 name: duplicate imports should be filtered
 options: sfc
@@ -680,15 +692,25 @@ const double = computed(() => count.value * 2)
   <div>{{ count }} {{ double }}</div>
 </template>
 --- OUTPUT ---
-Compile error: SyntaxError: [vue/compiler-sfc] Identifier 'ref' has already been declared. (3:9)
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
 
-test.vue
-1  |  <script setup lang="ts">
-2  |  import { ref } from 'vue'
-3  |  import { ref } from 'vue'
-   |           ^
-4  |  import { computed } from 'vue'
-5  |  const count = ref(0)
+import { ref } from 'vue'
+import { computed } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+const count = ref(0)
+const double = computed(() => count.value * 2)
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(count.value) + " " + _toDisplayString(double.value), 1 /* TEXT */))
+}
+}
+
+})
 ===
 name: duplicate named imports should be filtered
 options: sfc
@@ -704,15 +726,24 @@ const data = cloneDeep({ value: 1 })
   <div>{{ data.value }}</div>
 </template>
 --- OUTPUT ---
-Compile error: SyntaxError: [vue/compiler-sfc] Identifier 'cloneDeep' has already been declared. (3:9)
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
-test.vue
-1  |  <script setup lang="ts">
-2  |  import { cloneDeep } from 'lodash-es'
-3  |  import { cloneDeep } from 'lodash-es'
-   |           ^
-4  |  import { merge } from 'lodash-es'
-5  |  const data = cloneDeep({ value: 1 })
+import { cloneDeep } from 'lodash-es'
+import { merge } from 'lodash-es'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+const data = cloneDeep({ value: 1 })
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data).value), 1 /* TEXT */))
+}
+}
+
+})
 ===
 name: top-level await generates async setup
 options: sfc
@@ -727,7 +758,7 @@ const data = await response.json()
 </template>
 --- OUTPUT ---
 import { withAsyncContext as _withAsyncContext } from 'vue'
-import { unref as _unref, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
 
 export default {
@@ -736,18 +767,8 @@ export default {
 
 let __temp, __restore
 
-const response = (
-  ([__temp,__restore] = _withAsyncContext(() => fetch('/api/data'))),
-  __temp = await __temp,
-  __restore(),
-  __temp
-)
-const data = (
-  ([__temp,__restore] = _withAsyncContext(() => response.json())),
-  __temp = await __temp,
-  __restore(),
-  __temp
-)
+const response = await fetch('/api/data')
+const data = await response.json()
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data)), 1 /* TEXT */))
@@ -826,13 +847,7 @@ const isLink = props.type !== 'link'
   <a v-else-if="!isLink" href="#">Link</a>
 </template>
 --- OUTPUT ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
-
-const _hoisted_1 = { key: 0 }
-const _hoisted_2 = {
-  key: 1,
-  href: "#"
-}
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, unref as _unref } from "vue"
 
 
 export default {
@@ -845,11 +860,14 @@ const isButton = props.type === 'button'
 const isLink = props.type !== 'link'
 
 return (_ctx, _cache) => {
-  return isButton
-    ? (_openBlock(), _createElementBlock("button", _hoisted_1, "Button"))
-    : (!isLink)
-      ? (_openBlock(), _createElementBlock("a", _hoisted_2, "Link"))
-      : _createCommentVNode("v-if", true)
+  return (_unref(isButton))
+    ? (_openBlock(), _createElementBlock("button", { key: 0 }, "Button"))
+    : (!_unref(isLink))
+      ? (_openBlock(), _createElementBlock("a", {
+          key: 1,
+          href: "#"
+        }, "Link"))
+    : _createCommentVNode("v-if", true)
 }
 }
 
@@ -871,9 +889,8 @@ const props = defineProps<{ item: Item }>()
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString } from "vue"
 
-const _hoisted_1 = { key: 0 }
 
 interface Item {
   type: string;
@@ -883,7 +900,7 @@ interface Item {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    item: { type: Object, required: true }
+    item: { type: null, required: true }
   },
   setup(__props: any) {
 
@@ -891,7 +908,7 @@ const props = __props
 
 return (_ctx: any,_cache: any) => {
   return (__props.item.type === 'special')
-    ? (_openBlock(), _createElementBlock("div", _hoisted_1, _toDisplayString(__props.item.value), 1 /* TEXT */))
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(__props.item.value), 1 /* TEXT */))
     : _createCommentVNode("v-if", true)
 }
 }
@@ -911,16 +928,16 @@ Line 3`
   <pre>{{ multiline }}</pre>
 </template>
 --- OUTPUT ---
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
 
-const multiline = `Line 1
-Line 2
-Line 3`
 
 export default {
   __name: 'test',
   setup(__props) {
 
+const multiline = `Line 1
+Line 2
+Line 3`
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("pre", null, _toDisplayString(multiline)))
@@ -941,10 +958,19 @@ options: sfc
 --- OUTPUT ---
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-const _hoisted_1 = { title: "Hello \"World\"" }
 
-export function render(_ctx, _cache) {
+const _hoisted_1 = { title: "Hello &quot;World&quot;" }
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+
+return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", _hoisted_1, "Content"))
+}
+}
+
 }
 ===
 name: v-model on native input with ref
@@ -995,8 +1021,11 @@ const selected = ref('option1')
   </select>
 </template>
 --- OUTPUT ---
-import { createElementVNode as _createElementVNode, vModelSelect as _vModelSelect, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, withDirectives as _withDirectives, vModelSelect as _vModelSelect } from "vue"
 
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("option", { value: "option1" }, "Option 1")
+const _hoisted_2 = /*#__PURE__*/ _createElementVNode("option", { value: "option2" }, "Option 2")
 import { ref } from 'vue'
 
 export default {
@@ -1008,12 +1037,7 @@ const selected = ref('option1')
 return (_ctx, _cache) => {
   return _withDirectives((_openBlock(), _createElementBlock("select", {
     "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((selected).value = $event))
-  }, [...(_cache[1] || (_cache[1] = [
-    _createElementVNode("option", { value: "option1" }, "Option 1", -1 /* CACHED */),
-    _createElementVNode("option", { value: "option2" }, "Option 2", -1 /* CACHED */)
-  ]))], 512 /* NEED_PATCH */)), [
-    [_vModelSelect, selected.value]
-  ])
+  }, [ _hoisted_1, _hoisted_2 ], 512 /* NEED_PATCH */)), [ [_vModelSelect, selected.value] ])
 }
 }
 
@@ -1042,7 +1066,7 @@ export default {
 --- OUTPUT ---
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-export function render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg) + " - " + _toDisplayString(_ctx.count), 1 /* TEXT */))
 }
 
@@ -1082,7 +1106,7 @@ export default {
 --- OUTPUT ---
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-export function render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.count), 1 /* TEXT */))
 }
 
@@ -1159,9 +1183,7 @@ const users = ref<User[]>([])
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
-
-const _hoisted_1 = { key: 0 }
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString } from "vue"
 
 import { ref } from 'vue'
 
@@ -1169,7 +1191,6 @@ interface User {
   name: string
   age: number
 }
-
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -1180,7 +1201,7 @@ const users = ref<User[]>([])
 
 return (_ctx: any,_cache: any) => {
   return (user.value)
-    ? (_openBlock(), _createElementBlock("div", _hoisted_1, _toDisplayString(user.value.name), 1 /* TEXT */))
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(user.value.name), 1 /* TEXT */))
     : _createCommentVNode("v-if", true)
 }
 }
@@ -1239,6 +1260,7 @@ const items: Item[] = []
 import { defineComponent as _defineComponent } from 'vue'
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+
 interface Item {
   id: number
   name: string
@@ -1286,10 +1308,10 @@ const count = ref(0)
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("button", {
     onClick: _cache[0] || (_cache[0] = () => {
-    const newValue = count.value.value + 1;
-    count.value.value = newValue;
-    console.log('incremented');
-  })
+      const newValue = count.value + 1;
+      count.value = _ctx.newValue;
+      console.log('incremented');
+    })
   }, "Increment"))
 }
 }
@@ -1313,9 +1335,7 @@ const items = ref([{ id: 1, value: 0 }])
   </div>
 </template>
 --- OUTPUT ---
-import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode } from "vue"
-
-const _hoisted_1 = ["onClick"]
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 import { ref } from 'vue'
 
@@ -1327,17 +1347,240 @@ const items = ref([{ id: 1, value: 0 }])
 
 return (_ctx, _cache) => {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {
-    return (_openBlock(), _createElementBlock("div", {
-      key: item.id
-    }, [
+    return (_openBlock(), _createElementBlock("div", { key: item.id }, [
       _createElementVNode("button", {
-        onClick: () => {
-      item.value++;
-      console.log(item.id);
-    }
-      }, _toDisplayString(item.value), 9 /* TEXT, PROPS */, _hoisted_1)
+        onClick: _cache[0] || (_cache[0] = () => {
+        item.value++;
+        console.log(item.id);
+      })
+      }, _toDisplayString(item.value), 1 /* TEXT */)
     ]))
   }), 128 /* KEYED_FRAGMENT */))
+}
+}
+
+}
+===
+name: dynamic component with v-slot destructure
+options: sfc
+--- INPUT ---
+<script setup>
+import { RouterView } from 'vue-router'
+</script>
+
+<template>
+  <RouterView v-slot="{ Component }">
+    <component :is="Component" />
+  </RouterView>
+</template>
+--- OUTPUT ---
+import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent, withCtx as _withCtx } from "vue"
+
+import { RouterView } from 'vue-router'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createBlock(RouterView, null, {
+    default: _withCtx(({ Component }) => [
+      _createVNode(_resolveDynamicComponent(Component))
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+}
+
+}
+===
+name: transition inside v-if should use builtin
+options: sfc
+--- INPUT ---
+<script setup>
+import { ref } from 'vue'
+const show = ref(true)
+</script>
+
+<template>
+  <transition v-if="show" name="fade">
+    <div>content</div>
+  </transition>
+</template>
+--- OUTPUT ---
+import { Transition as _Transition, openBlock as _openBlock, createBlock as _createBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, withCtx as _withCtx } from "vue"
+
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("div", null, "content")
+import { ref } from 'vue'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const show = ref(true)
+
+return (_ctx, _cache) => {
+  return (show.value)
+    ? (_openBlock(), _createBlock(_Transition, {
+        key: 0,
+        name: "fade"
+      }, {
+        default: _withCtx(() => [
+          _hoisted_1
+        ]),
+        _: 1 /* STABLE */
+      }))
+    : _createCommentVNode("v-if", true)
+}
+}
+
+}
+===
+name: keep-alive inside v-for should use builtin
+options: sfc
+--- INPUT ---
+<script setup>
+import { ref } from 'vue'
+const tabs = ref([{ id: 1, component: 'TabA' }])
+</script>
+
+<template>
+  <keep-alive v-for="tab in tabs" :key="tab.id">
+    <component :is="tab.component" />
+  </keep-alive>
+</template>
+--- OUTPUT ---
+import { Fragment as _Fragment, KeepAlive as _KeepAlive, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent, renderList as _renderList } from "vue"
+
+import { ref } from 'vue'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const tabs = ref([{ id: 1, component: 'TabA' }])
+
+return (_ctx, _cache) => {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(tabs.value, (tab) => {
+    return (_openBlock(), _createBlock(_KeepAlive, { key: tab.id }, [
+      _createVNode(_resolveDynamicComponent(tab.component))
+    ]))
+  }), 128 /* KEYED_FRAGMENT */))
+}
+}
+
+}
+===
+name: hyphenated component name in v-if
+options: sfc
+--- INPUT ---
+<script setup>
+import { ref } from 'vue'
+const show = ref(true)
+</script>
+
+<template>
+  <router-link v-if="show" to="/">Home</router-link>
+</template>
+--- OUTPUT ---
+import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx } from "vue"
+
+import { ref } from 'vue'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const show = ref(true)
+
+return (_ctx, _cache) => {
+  const _component_router_link = _resolveComponent("router-link")
+
+  return (show.value)
+    ? (_openBlock(), _createBlock(_component_router_link, {
+        key: 0,
+        to: "/"
+      }, {
+        default: _withCtx(() => [
+          _createTextVNode("Home")
+        ]),
+        _: 1 /* STABLE */
+      }))
+    : _createCommentVNode("v-if", true)
+}
+}
+
+}
+===
+name: hyphenated component in v-if v-else chain
+options: sfc
+--- INPUT ---
+<script setup>
+import { ref } from 'vue'
+const mode = ref('link')
+</script>
+
+<template>
+  <router-link v-if="mode === 'link'" to="/">Link</router-link>
+  <router-view v-else />
+</template>
+--- OUTPUT ---
+import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, withCtx as _withCtx } from "vue"
+
+import { ref } from 'vue'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const mode = ref('link')
+
+return (_ctx, _cache) => {
+  const _component_router_link = _resolveComponent("router-link")
+  const _component_router_view = _resolveComponent("router-view")
+
+  return (mode.value === 'link')
+    ? (_openBlock(), _createBlock(_component_router_link, {
+        key: 0,
+        to: "/"
+      }, {
+        default: _withCtx(() => [
+          _createTextVNode("Link")
+        ]),
+        _: 1 /* STABLE */
+      }))
+    : (_openBlock(), _createBlock(_component_router_view, { key: 1 }))
+}
+}
+
+}
+===
+name: component should not receive scope_id in props
+options: sfc
+--- INPUT ---
+<script setup>
+import MyComponent from './MyComponent.vue'
+</script>
+
+<template>
+  <div class="wrapper">
+    <MyComponent class="child" />
+  </div>
+</template>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode } from "vue"
+
+import MyComponent from './MyComponent.vue'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", { class: "wrapper" }, [ _createVNode(MyComponent, { class: "child" }) ]))
 }
 }
 

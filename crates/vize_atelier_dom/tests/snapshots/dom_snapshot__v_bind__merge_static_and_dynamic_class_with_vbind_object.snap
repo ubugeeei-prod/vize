@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_dom/tests/dom_snapshot.rs
+expression: "get_compiled(r#\"<input v-bind=\"attrs\" class=\"base\" :class=\"stateClass\" />\"#)"
+---
+const { openBlock: _openBlock, createElementBlock: _createElementBlock, mergeProps: _mergeProps } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("input", _mergeProps(attrs, {
+    class: ["base", stateClass]
+  }), null, 16 /* FULL_PROPS */))
+}

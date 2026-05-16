@@ -2,20 +2,21 @@
 
 use crate::SourceLocation;
 use thiserror::Error;
+use vize_carton::{CompactString, ToCompactString};
 
 /// Compiler error
 #[derive(Debug, Clone, Error)]
 #[error("{message}")]
 pub struct CompilerError {
     pub code: ErrorCode,
-    pub message: String,
+    pub message: CompactString,
     pub loc: Option<SourceLocation>,
 }
 
 impl CompilerError {
     pub fn new(code: ErrorCode, loc: Option<SourceLocation>) -> Self {
         Self {
-            message: code.message().to_string(),
+            message: code.message().to_compact_string(),
             code,
             loc,
         }
@@ -23,7 +24,7 @@ impl CompilerError {
 
     pub fn with_message(
         code: ErrorCode,
-        message: impl Into<String>,
+        message: impl Into<CompactString>,
         loc: Option<SourceLocation>,
     ) -> Self {
         Self {
@@ -198,7 +199,7 @@ pub type CompilerResult<T> = Result<T, CompilerError>;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{CompilerError, ErrorCode};
 
     #[test]
     fn compiler_error_new() {

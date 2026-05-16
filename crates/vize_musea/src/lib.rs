@@ -92,7 +92,9 @@ pub fn serve() {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        parse_art, transform_to_csf, transform_to_vue, ArtDescriptorOwned, ArtParseOptions, Bump,
+    };
 
     #[test]
     fn test_full_workflow() {
@@ -126,7 +128,7 @@ import Button from './Button.vue'
             &allocator,
             source,
             ArtParseOptions {
-                filename: "Button.art.vue".to_string(),
+                filename: "Button.art.vue".into(),
             },
         )
         .unwrap();
@@ -144,18 +146,11 @@ import Button from './Button.vue'
 
         // Transform to CSF
         let csf = transform_to_csf(&art);
-        assert!(csf.code.contains("import type { Meta, StoryObj }"));
-        assert!(csf.code.contains("title: 'atoms/Button'"));
-        assert!(csf.code.contains("export const Primary: Story"));
-        assert!(csf.code.contains("export const Secondary: Story"));
-        assert!(csf.code.contains("export const WithIcon: Story"));
-        assert_eq!(csf.filename, "Button.stories.ts");
+        insta::assert_debug_snapshot!(csf);
 
         // Transform to Vue
         let vue = transform_to_vue(&art);
-        assert!(vue.code.contains("export const Primary"));
-        assert!(vue.code.contains("export const metadata"));
-        assert!(vue.metadata_code.contains("variantCount: 3"));
+        insta::assert_debug_snapshot!(vue);
     }
 
     #[test]

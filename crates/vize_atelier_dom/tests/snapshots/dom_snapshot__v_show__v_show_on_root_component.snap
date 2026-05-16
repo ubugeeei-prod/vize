@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_dom/tests/dom_snapshot.rs
+expression: "get_compiled(r#\"<MyComponent v-show=\"visible\" />\"#)"
+---
+const { openBlock: _openBlock, createBlock: _createBlock, resolveComponent: _resolveComponent, withDirectives: _withDirectives, vShow: _vShow } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+  
+  return _withDirectives((_openBlock(), _createBlock(_component_MyComponent, null, null, 512 /* NEED_PATCH */)), [
+    [_vShow, visible]
+  ])
+}

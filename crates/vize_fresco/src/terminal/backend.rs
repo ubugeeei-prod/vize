@@ -336,7 +336,7 @@ impl Drop for Backend {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::Backend;
 
     #[test]
     fn test_backend_size() {

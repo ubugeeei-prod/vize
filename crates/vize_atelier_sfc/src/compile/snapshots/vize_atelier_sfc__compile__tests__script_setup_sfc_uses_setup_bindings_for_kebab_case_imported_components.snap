@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode } from "vue"
+
+import DashTest from './dash-test.vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  setup(__props) {
+
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [ _createVNode(DashTest), _createVNode(DashTest) ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+})

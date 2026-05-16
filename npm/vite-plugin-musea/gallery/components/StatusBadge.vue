@@ -1,14 +1,11 @@
 <script setup lang="ts">
 defineProps<{
-  status: 'draft' | 'ready' | 'deprecated'
-}>()
+  status: "draft" | "ready" | "deprecated";
+}>();
 </script>
 
 <template>
-  <span
-    class="status-badge"
-    :class="'status-' + status"
-  >
+  <span class="status-badge" :class="'status-' + status">
     {{ status }}
   </span>
 </template>

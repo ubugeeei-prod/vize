@@ -1,0 +1,77 @@
+---
+source: crates/vize_croquis/src/scope/chain/chain_tests.rs
+assertion_line: 655
+expression: output
+---
+Scope 0 (JsGlobalUniversal): 66 bindings
+  - NaN: JsGlobalUniversal
+  - Array: JsGlobalUniversal
+  - WeakMap: JsGlobalUniversal
+  - decodeURIComponent: JsGlobalUniversal
+  - Date: JsGlobalUniversal
+  - Number: JsGlobalUniversal
+  - JSON: JsGlobalUniversal
+  - encodeURI: JsGlobalUniversal
+  - Float64Array: JsGlobalUniversal
+  - TypeError: JsGlobalUniversal
+  - RangeError: JsGlobalUniversal
+  - Reflect: JsGlobalUniversal
+  - WeakSet: JsGlobalUniversal
+  - Iterator: JsGlobalUniversal
+  - arguments: JsGlobalUniversal
+  - AggregateError: JsGlobalUniversal
+  - Boolean: JsGlobalUniversal
+  - Uint32Array: JsGlobalUniversal
+  - Uint16Array: JsGlobalUniversal
+  - Infinity: JsGlobalUniversal
+  - Int8Array: JsGlobalUniversal
+  - Set: JsGlobalUniversal
+  - isFinite: JsGlobalUniversal
+  - decodeURI: JsGlobalUniversal
+  - Function: JsGlobalUniversal
+  - Symbol: JsGlobalUniversal
+  - BigUint64Array: JsGlobalUniversal
+  - AsyncFunction: JsGlobalUniversal
+  - AsyncIterator: JsGlobalUniversal
+  - Object: JsGlobalUniversal
+  - Float32Array: JsGlobalUniversal
+  - RegExp: JsGlobalUniversal
+  - AsyncGenerator: JsGlobalUniversal
+  - Error: JsGlobalUniversal
+  - EvalError: JsGlobalUniversal
+  - BigInt: JsGlobalUniversal
+  - ArrayBuffer: JsGlobalUniversal
+  - BigInt64Array: JsGlobalUniversal
+  - this: JsGlobalUniversal
+  - encodeURIComponent: JsGlobalUniversal
+  - Uint8Array: JsGlobalUniversal
+  - Uint8ClampedArray: JsGlobalUniversal
+  - Int32Array: JsGlobalUniversal
+  - eval: JsGlobalUniversal
+  - SyntaxError: JsGlobalUniversal
+  - ReferenceError: JsGlobalUniversal
+  - Math: JsGlobalUniversal
+  - console: JsGlobalUniversal
+  - Proxy: JsGlobalUniversal
+  - Generator: JsGlobalUniversal
+  - DataView: JsGlobalUniversal
+  - globalThis: JsGlobalUniversal
+  - URIError: JsGlobalUniversal
+  - String: JsGlobalUniversal
+  - Atomics: JsGlobalUniversal
+  - undefined: JsGlobalUniversal
+  - GeneratorFunction: JsGlobalUniversal
+  - Intl: JsGlobalUniversal
+  - parseFloat: JsGlobalUniversal
+  - AsyncGeneratorFunction: JsGlobalUniversal
+  - Promise: JsGlobalUniversal
+  - Int16Array: JsGlobalUniversal
+  - isNaN: JsGlobalUniversal
+  - parseInt: JsGlobalUniversal
+  - SharedArrayBuffer: JsGlobalUniversal
+  - Map: JsGlobalUniversal
+Scope 1 (ScriptSetup): 1 bindings
+  - count: SetupRef
+Scope 2 (VFor): 2 bindings
+  - item: SetupConst
+  - key: SetupConst

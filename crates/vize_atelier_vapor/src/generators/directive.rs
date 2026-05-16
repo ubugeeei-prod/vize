@@ -3,99 +3,96 @@
 use super::block::GenerateContext;
 use crate::ir::DirectiveIRNode;
 use vize_atelier_core::ExpressionNode;
+use vize_carton::{cstr, String, ToCompactString};
 
 /// Generate Directive code
 pub fn generate_directive(ctx: &mut GenerateContext, directive: &DirectiveIRNode<'_>) {
-    let element = format!("_n{}", directive.element);
+    let element = cstr!("_n{}", directive.element);
     let name = &directive.name;
 
     let arg = if let Some(ref arg) = directive.dir.arg {
         match arg {
             ExpressionNode::Simple(exp) => {
                 if exp.is_static {
-                    format!("\"{}\"", exp.content)
+                    cstr!("\"{}\"", exp.content)
                 } else {
-                    exp.content.to_string()
+                    vize_carton::CompactString::from(exp.content.as_str())
                 }
             }
-            ExpressionNode::Compound(c) => c.loc.source.to_string(),
+            ExpressionNode::Compound(c) => vize_carton::CompactString::from(c.loc.source.as_str()),
         }
     } else {
-        String::from("undefined")
+        vize_carton::CompactString::from("undefined")
     };
 
     let value = if let Some(ref exp) = directive.dir.exp {
         match exp {
             ExpressionNode::Simple(e) => {
                 if e.is_static {
-                    format!("\"{}\"", e.content)
+                    cstr!("\"{}\"", e.content)
                 } else {
-                    e.content.to_string()
+                    vize_carton::CompactString::from(e.content.as_str())
                 }
             }
-            ExpressionNode::Compound(c) => c.loc.source.to_string(),
+            ExpressionNode::Compound(c) => vize_carton::CompactString::from(c.loc.source.as_str()),
         }
     } else {
-        String::from("undefined")
+        vize_carton::CompactString::from("undefined")
     };
 
     // Generate modifiers object
     let modifiers = if directive.dir.modifiers.is_empty() {
-        String::from("{}")
+        vize_carton::CompactString::from("{}")
     } else {
-        let mod_strs: Vec<String> = directive
+        let mod_strs: Vec<vize_carton::CompactString> = directive
             .dir
             .modifiers
             .iter()
-            .map(|m| format!("{}: true", m.content))
+            .map(|m| cstr!("{}: true", m.content))
             .collect();
-        format!("{{ {} }}", mod_strs.join(", "))
+        cstr!("{{ {} }}", mod_strs.join(", "))
     };
 
     if directive.builtin {
         // Built-in directive
         match name.as_str() {
             "show" => {
-                ctx.push_line(&format!(
-                    "_withDirectives({}, [[_vShow, {}]])",
-                    element, value
+                ctx.push_line_fmt(format_args!(
+                    "_withDirectives({element}, [[_vShow, {value}]])"
                 ));
             }
             "model" => {
-                ctx.push_line(&format!(
-                    "_withDirectives({}, [[_vModel, {}, {}, {}]])",
-                    element, value, arg, modifiers
+                ctx.push_line_fmt(format_args!(
+                    "_withDirectives({element}, [[_vModel, {value}, {arg}, {modifiers}]])"
                 ));
             }
             _ => {
-                ctx.push_line(&format!(
-                    "_withDirectives({}, [[_{}, {}, {}, {}]])",
-                    element, name, value, arg, modifiers
+                ctx.push_line_fmt(format_args!(
+                    "_withDirectives({element}, [[_{name}, {value}, {arg}, {modifiers}]])"
                 ));
             }
         }
     } else {
         // Custom directive
-        ctx.push_line(&format!(
-            "_withDirectives({}, [[_directive_{}, {}, {}, {}]])",
-            element, name, value, arg, modifiers
+        ctx.push_line_fmt(format_args!(
+            "_withDirectives({element}, [[_directive_{name}, {value}, {arg}, {modifiers}]])"
         ));
     }
 }
 
 /// Generate directive resolution
 pub fn generate_resolve_directive(name: &str) -> String {
-    format!("_resolveDirective(\"{}\")", name)
+    cstr!("_resolveDirective(\"{name}\")")
 }
 
 /// Generate v-show directive
 pub fn generate_v_show(element_var: &str, value: &str) -> String {
-    format!("{}.style.display = {} ? '' : 'none'", element_var, value)
+    cstr!("{element_var}.style.display = {value} ? '' : 'none'")
 }
 
 /// Generate v-cloak removal
 pub fn generate_v_cloak_removal(element_var: &str) -> String {
-    format!("{}.removeAttribute('v-cloak')", element_var)
+    cstr!("{element_var}.removeAttribute('v-cloak')")
 }
 
 /// Generate v-pre handling (skip compilation marker)
@@ -106,9 +103,8 @@ pub fn is_v_pre_element(_element: &str) -> bool {
 
 /// Generate withDirectives call
 pub fn generate_with_directives(element_var: &str, directives: &[String]) -> String {
-    format!(
-        "_withDirectives({}, [{}])",
-        element_var,
+    cstr!(
+        "_withDirectives({element_var}, [{}])",
         directives.join(", ")
     )
 }
@@ -120,24 +116,24 @@ pub fn generate_directive_array(
     arg: Option<&str>,
     modifiers: Option<&str>,
 ) -> String {
-    let mut parts = vec![directive.to_string(), value.to_string()];
+    let mut parts = vec![directive.to_compact_string(), value.to_compact_string()];
 
     if let Some(a) = arg {
-        parts.push(a.to_string());
+        parts.push(a.to_compact_string());
         if let Some(m) = modifiers {
-            parts.push(m.to_string());
+            parts.push(m.to_compact_string());
         }
     } else if let Some(m) = modifiers {
         parts.push(String::from("undefined"));
-        parts.push(m.to_string());
+        parts.push(m.to_compact_string());
     }
 
-    format!("[{}]", parts.join(", "))
+    cstr!("[{}]", parts.join(", "))
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{generate_directive_array, generate_resolve_directive, generate_v_show};
 
     #[test]
     fn test_generate_resolve_directive() {

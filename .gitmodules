@@ -1,0 +1,27 @@
+[submodule "tests/_fixtures/_git/elk"]
+	path = tests/_fixtures/_git/elk
+	url = https://github.com/elk-zone/elk
+
+[submodule "tests/_fixtures/_git/misskey"]
+	path = tests/_fixtures/_git/misskey
+	url = https://github.com/misskey-dev/misskey
+
+[submodule "tests/_fixtures/_git/npmx.dev"]
+	path = tests/_fixtures/_git/npmx.dev
+	url = https://github.com/npmx-dev/npmx.dev
+
+[submodule "tests/_fixtures/_git/vuefes-2025"]
+	path = tests/_fixtures/_git/vuefes-2025
+	url = https://github.com/vuejs-jp/vuefes-2025-website.git
+
+[submodule "tests/_fixtures/_git/ant-design-vue"]
+	path = tests/_fixtures/_git/ant-design-vue
+	url = https://github.com/vueComponent/ant-design-vue
+
+[submodule "tests/_fixtures/_git/nuxt-ui"]
+	path = tests/_fixtures/_git/nuxt-ui
+	url = https://github.com/nuxt/ui
+
+[submodule "tests/_fixtures/_git/reka-ui"]
+	path = tests/_fixtures/_git/reka-ui
+	url = https://github.com/unovue/reka-ui

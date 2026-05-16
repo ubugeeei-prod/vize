@@ -1,12 +1,14 @@
 //! Style virtual code generation.
 //!
 //! Preserves style content with 1:1 source mapping for CSS features.
+#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use vize_atelier_sfc::SfcStyleBlock;
 
 use super::{
     MappingFeatures, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage,
 };
+use vize_carton::cstr;
 
 /// Style code generator.
 pub struct StyleCodeGenerator {
@@ -51,7 +53,7 @@ impl StyleCodeGenerator {
         let extension = style.lang.as_ref().map(|l| l.as_ref()).unwrap_or("css");
 
         VirtualDocument {
-            uri: format!("__style_{}.{}", index, extension),
+            uri: cstr!("__style_{index}.{extension}").to_string(),
             content: content.to_string(),
             language: VirtualLanguage::Style,
             source_map,
@@ -113,9 +115,9 @@ impl StyleMetadata {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{StyleCodeGenerator, StyleMetadata};
     use std::borrow::Cow;
-    use vize_atelier_sfc::BlockLocation;
+    use vize_atelier_sfc::{BlockLocation, SfcStyleBlock};
 
     fn make_style_block(content: &str, scoped: bool) -> SfcStyleBlock<'static> {
         SfcStyleBlock {

@@ -1,18 +1,29 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 196
-expression: ts_output
+expression: ts_output.as_str()
 ---
-import { defineComponent as _defineComponent } from 'vue'
+import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
-  setup(__props) {
+  async setup(__props) {
 
-const response = await fetch('/api/data')
-const data = await response.json()
+let __temp: any, __restore: any
+
+const response =  (
+  ([__temp,__restore] = _withAsyncContext(() => fetch('/api/data'))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
+const data =  (
+  ([__temp,__restore] = _withAsyncContext(() => response.json())),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data)), 1 /* TEXT */))

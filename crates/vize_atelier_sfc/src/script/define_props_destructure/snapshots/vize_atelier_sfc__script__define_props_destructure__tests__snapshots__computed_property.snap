@@ -1,0 +1,6 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+const double = computed(() => __props.count * 2)
+const triple = computed(function() { return __props.count * 3 })

@@ -86,7 +86,7 @@ impl NoIdSelectors {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoIdSelectors;
     use crate::rules::css::CssLinter;
 
     fn create_linter() -> CssLinter {

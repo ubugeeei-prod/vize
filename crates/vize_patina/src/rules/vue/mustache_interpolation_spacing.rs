@@ -117,7 +117,7 @@ impl Rule for MustacheInterpolationSpacing {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::MustacheInterpolationSpacing;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

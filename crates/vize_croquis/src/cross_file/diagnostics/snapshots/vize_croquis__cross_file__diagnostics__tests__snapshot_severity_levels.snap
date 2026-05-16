@@ -1,0 +1,45 @@
+---
+source: crates/vize_croquis/src/cross_file/diagnostics/diagnostics_tests.rs
+assertion_line: 541
+expression: output
+---
+=== Severity Levels ===
+
+== ERROR ==
+is_error: true
+is_warning: false
+
+Markdown:
+🔴 **ERROR** `vize:croquis/cf/unmatched-inject`
+
+### Example diagnostic
+
+
+== WARNING ==
+is_error: false
+is_warning: true
+
+Markdown:
+🟡 **WARNING** `vize:croquis/cf/unmatched-inject`
+
+### Example diagnostic
+
+
+== INFO ==
+is_error: false
+is_warning: false
+
+Markdown:
+🔵 **INFO** `vize:croquis/cf/unmatched-inject`
+
+### Example diagnostic
+
+
+== HINT ==
+is_error: false
+is_warning: false
+
+Markdown:
+💡 **HINT** `vize:croquis/cf/unmatched-inject`
+
+### Example diagnostic

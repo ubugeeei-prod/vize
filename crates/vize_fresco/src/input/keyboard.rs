@@ -212,7 +212,7 @@ impl From<crossterm::event::KeyModifiers> for KeyModifiers {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{Key, KeyEvent, KeyModifiers};
 
     #[test]
     fn test_key_event_new() {

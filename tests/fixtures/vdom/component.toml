@@ -26,6 +26,10 @@ input = "<MyComponent />"
 name = "kebab-case component"
 input = "<my-component />"
 
+[[cases]]
+name = "component name with colon"
+input = '<global:head title="Page Title" />'
+
 # =============================================================================
 # Component props
 # =============================================================================
@@ -77,6 +81,30 @@ input = '<Transition name="fade"><div v-if="show">content</div></Transition>'
 [[cases]]
 name = "TransitionGroup"
 input = '<TransitionGroup tag="ul"><li v-for="item in items" :key="item">{{ item }}</li></TransitionGroup>'
+
+# =============================================================================
+# Built-in components (kebab-case) - Bug-27
+# =============================================================================
+
+[[cases]]
+name = "keep-alive kebab-case"
+input = "<keep-alive><Component /></keep-alive>"
+
+[[cases]]
+name = "transition kebab-case"
+input = '<transition name="fade"><div v-if="show">content</div></transition>'
+
+[[cases]]
+name = "transition-group kebab-case"
+input = '<transition-group tag="ul"><li v-for="item in items" :key="item">{{ item }}</li></transition-group>'
+
+[[cases]]
+name = "teleport kebab-case"
+input = '<teleport to="body"><div>content</div></teleport>'
+
+[[cases]]
+name = "suspense kebab-case"
+input = "<suspense><Component /></suspense>"
 
 # =============================================================================
 # Dynamic components

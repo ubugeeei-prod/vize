@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import Counter from './Counter.vue';
+import { ref } from "vue";
+import ExampleCounter from "./ExampleCounter.vue";
 
-const message = ref('Hello from Vize!');
+const message = ref("Hello from Vize!");
 </script>
 
 <template>
   <div class="app">
-    <h1>{{ message }}</h1>
-    <Counter />
+    <h1>
+      {{ message }}
+    </h1>
+    <ExampleCounter />
   </div>
 </template>
 

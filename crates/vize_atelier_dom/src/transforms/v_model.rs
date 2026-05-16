@@ -3,7 +3,7 @@
 //! Handles v-model on form elements: input, textarea, select.
 
 use vize_atelier_core::{DirectiveNode, ElementNode, RuntimeHelper};
-use vize_carton::String;
+use vize_carton::{cstr, String};
 
 /// v-model modifier flags
 #[derive(Debug, Default, Clone)]
@@ -105,17 +105,14 @@ pub fn generate_model_props(
             props.push((String::from("value"), model_value.clone()));
 
             // Build event handler expression
-            let mut handler = format!("$event => (({}) = $event.target.value)", model_value);
+            let mut handler = cstr!("$event => (({model_value}) = $event.target.value)");
 
             // Apply modifiers
             if modifiers.trim {
-                handler = format!("$event => (({}) = $event.target.value.trim())", model_value);
+                handler = cstr!("$event => (({model_value}) = $event.target.value.trim())");
             }
             if modifiers.number {
-                handler = format!(
-                    "$event => (({}) = Number($event.target.value))",
-                    model_value
-                );
+                handler = cstr!("$event => (({model_value}) = Number($event.target.value))");
             }
 
             // Add event handler
@@ -124,7 +121,7 @@ pub fn generate_model_props(
             } else {
                 "onInput"
             };
-            props.push((String::from(event_name), String::from(handler)));
+            props.push((String::from(event_name), handler));
         }
     }
 
@@ -133,7 +130,7 @@ pub fn generate_model_props(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{generate_model_props, get_model_event, get_model_prop, VModelModifiers};
 
     #[test]
     fn test_modifiers() {
@@ -206,7 +203,7 @@ mod tests {
         assert_eq!(props[0].0.as_str(), "value");
         assert_eq!(props[0].1.as_str(), "modelValue");
         assert_eq!(props[1].0.as_str(), "onInput");
-        assert!(props[1].1.contains("$event.target.value"));
+        insta::assert_debug_snapshot!(props);
     }
 
     #[test]

@@ -10,10 +10,31 @@ pub use core::CrossFileAnalyzer;
 pub use types::{CrossFileOptions, CrossFileResult, CrossFileStats};
 
 #[cfg(test)]
+#[path = "tests_element_id.rs"]
+mod tests_element_id;
+
+#[cfg(test)]
+#[path = "tests_provide_inject.rs"]
+mod tests_provide_inject;
+
+#[cfg(test)]
+#[path = "tests_reactivity_props.rs"]
+mod tests_reactivity_props;
+
+#[cfg(test)]
+#[path = "tests_race_conditions.rs"]
+mod tests_race_conditions;
+
+#[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{CrossFileAnalyzer, CrossFileOptions};
+    use crate::analysis::ComponentUsage;
+    use crate::cross_file::diagnostics::{CrossFileDiagnosticKind, DiagnosticSeverity};
+    use crate::cross_file::DependencyEdge;
     use crate::AnalyzerOptions;
     use std::path::Path;
+    use vize_carton::append;
+    use vize_carton::{CompactString, SmallVec};
 
     #[test]
     fn test_cross_file_options() {
@@ -24,6 +45,7 @@ mod tests {
         assert!(options.any_enabled());
         assert!(options.fallthrough_attrs);
         assert!(options.reactivity_tracking);
+        assert!(options.race_conditions);
         assert!(options.component_resolution);
         assert!(options.props_validation);
     }
@@ -76,6 +98,139 @@ mod tests {
         // For now, just verify the analysis runs without crashing
         let result = analyzer.analyze();
         assert!(result.circular_deps.is_empty());
+    }
+
+    #[test]
+    fn test_rebuild_import_edges_resolves_relative_imports_added_out_of_order() {
+        let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
+
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        parent_analyzer.analyze_script_setup("import Child from './components/Child.vue'");
+        let parent_id = analyzer.add_file_with_analysis(
+            Path::new("src/Parent.vue"),
+            "",
+            parent_analyzer.finish(),
+        );
+
+        let mut child_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        child_analyzer.analyze_script_setup("const child = true");
+        let child_id = analyzer.add_file_with_analysis(
+            Path::new("src/components/Child.vue"),
+            "",
+            child_analyzer.finish(),
+        );
+
+        assert!(!analyzer
+            .graph()
+            .dependencies(parent_id)
+            .any(|(id, edge)| id == child_id && edge == DependencyEdge::Import));
+
+        analyzer.rebuild_import_edges();
+
+        assert!(analyzer
+            .graph()
+            .dependencies(parent_id)
+            .any(|(id, edge)| id == child_id && edge == DependencyEdge::Import));
+    }
+
+    #[test]
+    fn test_import_and_component_usage_edges_can_share_same_target() {
+        let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
+
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        parent_analyzer.analyze_script_setup("import Widget from './Child.vue'");
+        parent_analyzer
+            .croquis_mut()
+            .used_components
+            .insert(CompactString::new("Widget"));
+        parent_analyzer
+            .croquis_mut()
+            .component_usages
+            .push(ComponentUsage {
+                name: CompactString::new("Widget"),
+                start: 0,
+                end: 8,
+                props: SmallVec::new(),
+                events: SmallVec::new(),
+                slots: SmallVec::new(),
+                has_spread_attrs: false,
+                scope_id: crate::scope::ScopeId::ROOT,
+                vif_guard: None,
+            });
+        let parent_id =
+            analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analyzer.finish());
+
+        let mut child_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        child_analyzer.analyze_script_setup(
+            r#"defineProps<{
+  title: string
+}>()"#,
+        );
+        let child_id =
+            analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analyzer.finish());
+
+        analyzer.rebuild_import_edges();
+        analyzer.rebuild_component_edges();
+
+        let edges: Vec<_> = analyzer.graph().dependencies(parent_id).collect();
+        assert!(edges
+            .iter()
+            .any(|(id, edge)| *id == child_id && *edge == DependencyEdge::Import));
+        assert!(edges
+            .iter()
+            .any(|(id, edge)| *id == child_id && *edge == DependencyEdge::ComponentUsage));
+
+        let result = analyzer.analyze();
+        assert!(result.diagnostics.iter().any(|diagnostic| matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::MissingRequiredProp { .. }
+        )));
+    }
+
+    #[test]
+    fn test_component_resolution_requires_local_registration() {
+        let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
+
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        parent_analyzer
+            .croquis_mut()
+            .used_components
+            .insert(CompactString::new("Child"));
+        analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analyzer.finish());
+
+        let mut child_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        child_analyzer.analyze_script_setup("const child = true");
+        analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child_analyzer.finish());
+        analyzer.rebuild_component_edges();
+
+        let result = analyzer.analyze();
+        assert!(result.diagnostics.iter().any(|diagnostic| matches!(
+            diagnostic.kind,
+            CrossFileDiagnosticKind::UnregisteredComponent { .. }
+        )));
+    }
+
+    #[test]
+    fn test_component_resolution_skips_kebab_case_builtins() {
+        let mut analyzer = CrossFileAnalyzer::new(CrossFileOptions::strict());
+
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        for component in ["router-view", "router-link", "nuxt-link", "client-only"] {
+            parent_analyzer
+                .croquis_mut()
+                .used_components
+                .insert(CompactString::new(component));
+        }
+        analyzer.add_file_with_analysis(Path::new("Parent.vue"), "", parent_analyzer.finish());
+
+        let result = analyzer.analyze();
+        assert!(
+            result.diagnostics.iter().all(|diagnostic| !matches!(
+                diagnostic.kind,
+                CrossFileDiagnosticKind::UnregisteredComponent { .. }
+            )),
+            "kebab-case framework built-ins should not require local registration"
+        );
     }
 
     // === Provide/Inject Tests ===
@@ -817,6 +972,313 @@ const state = inject('globalState')"#,
         assert_eq!(errors.len(), 0, "Should have no provide/inject errors");
     }
 
+    #[test]
+    fn test_defaulted_unmatched_inject_is_warning() {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+        analyzer.add_file(
+            Path::new("Child.vue"),
+            r#"import { inject } from 'vue'
+const theme = inject('theme', 'light')"#,
+        );
+
+        let result = analyzer.analyze();
+        let diagnostic = result
+            .diagnostics
+            .iter()
+            .find(|d| matches!(&d.kind, CrossFileDiagnosticKind::UnmatchedInject { key } if key == "theme"))
+            .expect("defaulted unmatched inject should be reported");
+
+        assert_eq!(diagnostic.severity, DiagnosticSeverity::Warning);
+    }
+
+    #[test]
+    fn test_string_provide_inject_keys_warn() {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+
+        analyzer.add_file(
+            Path::new("Component.vue"),
+            r#"import { inject, provide } from 'vue'
+
+const ThemeKey = Symbol('theme')
+provide('theme', 'dark')
+provide(ThemeKey, 'dark')
+const theme = inject('theme')
+const typedTheme = inject(ThemeKey)"#,
+        );
+
+        let result = analyzer.analyze();
+        let string_key_warnings: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|d| {
+                matches!(
+                    d.kind,
+                    CrossFileDiagnosticKind::ProvideInjectWithoutSymbol { .. }
+                )
+            })
+            .collect();
+
+        assert_eq!(string_key_warnings.len(), 2);
+        assert!(string_key_warnings.iter().all(|d| d.is_warning()));
+        assert!(string_key_warnings.iter().any(|d| {
+            matches!(
+                &d.kind,
+                CrossFileDiagnosticKind::ProvideInjectWithoutSymbol {
+                    key,
+                    is_provide: true,
+                } if key == "theme"
+            )
+        }));
+        assert!(string_key_warnings.iter().any(|d| {
+            matches!(
+                &d.kind,
+                CrossFileDiagnosticKind::ProvideInjectWithoutSymbol {
+                    key,
+                    is_provide: false,
+                } if key == "theme"
+            )
+        }));
+    }
+
+    #[test]
+    fn test_inject_alias_array_destructure_is_reactivity_error() {
+        use crate::provide::InjectPattern;
+
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
+
+        analyzer.add_file(
+            Path::new("Child.vue"),
+            r#"import { inject } from 'vue'
+const useInject = inject
+const [first, second] = useInject('items') as [number, number]"#,
+        );
+
+        let result = analyzer.analyze();
+        let analysis = analyzer
+            .get_analysis(analyzer.registry().iter().next().unwrap().id)
+            .unwrap();
+
+        let injects = analysis.provide_inject.injects();
+        assert_eq!(injects.len(), 1);
+        match &injects[0].pattern {
+            InjectPattern::ArrayDestructure(items) => {
+                assert!(items.contains(&vize_carton::CompactString::new("first")));
+                assert!(items.contains(&vize_carton::CompactString::new("second")));
+            }
+            other => panic!("Expected ArrayDestructure pattern, got {:?}", other),
+        }
+
+        let diagnostic = result
+            .diagnostics
+            .iter()
+            .find(|d| {
+                matches!(
+                    d.kind,
+                    CrossFileDiagnosticKind::DestructuringBreaksReactivity { .. }
+                )
+            })
+            .expect("array destructured inject should be reported as reactivity loss");
+        assert_eq!(diagnostic.severity, DiagnosticSeverity::Error);
+    }
+
+    #[test]
+    fn test_duplicate_reactivity_diagnostics_are_collapsed() {
+        let mut analyzer = CrossFileAnalyzer::new(
+            CrossFileOptions::default()
+                .with_provide_inject(true)
+                .with_reactivity_tracking(true),
+        );
+
+        let mut parent_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        parent_analyzer.analyze_script_setup(
+            r#"import { provide, reactive } from 'vue'
+import Child from './Child.vue'
+
+const state = reactive({ count: 0 })
+provide('state', state)"#,
+        );
+        parent_analyzer
+            .croquis_mut()
+            .used_components
+            .insert(vize_carton::CompactString::new("Child"));
+        let parent_analysis = parent_analyzer.finish();
+
+        let mut child_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        child_analyzer.analyze_script_setup(
+            r#"import { inject } from 'vue'
+const { count } = inject('state') as { count: number }"#,
+        );
+        let child_analysis = child_analyzer.finish();
+
+        analyzer.add_file_with_analysis(Path::new("Parent.vue"), "script content", parent_analysis);
+        analyzer.add_file_with_analysis(Path::new("Child.vue"), "script content", child_analysis);
+        analyzer.rebuild_component_edges();
+
+        let result = analyzer.analyze();
+        let diagnostics: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|d| d.code() == "vize:croquis/cf/destructuring-breaks-reactivity")
+            .collect();
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].severity, DiagnosticSeverity::Error);
+        assert!(
+            diagnostics[0].message.contains("inject('state')"),
+            "should preserve the provide/inject-specific message"
+        );
+        assert_eq!(diagnostics[0].related_files.len(), 1);
+        assert!(
+            diagnostics[0].related_files[0]
+                .2
+                .as_str()
+                .contains("provide('state') source"),
+            "should point back to the provider"
+        );
+        assert_eq!(
+            result.stats.error_count,
+            result.diagnostics.iter().filter(|d| d.is_error()).count()
+        );
+    }
+
+    #[test]
+    fn test_diagnostics_are_sorted_by_location() {
+        let mut analyzer = CrossFileAnalyzer::new(
+            CrossFileOptions::default()
+                .with_provide_inject(true)
+                .with_reactivity_tracking(true),
+        );
+
+        analyzer.add_file(
+            Path::new("Mixed.vue"),
+            r#"import { inject, reactive } from 'vue'
+
+const state = reactive({ count: 0 })
+const { count } = state
+const missing = inject('missing')"#,
+        );
+
+        let result = analyzer.analyze();
+        assert!(result.diagnostics.len() >= 2);
+
+        for pair in result.diagnostics.windows(2) {
+            let left = &pair[0];
+            let right = &pair[1];
+            let left_key = (
+                left.primary_file.as_u32(),
+                left.primary_offset,
+                left.severity as u8,
+                left.code(),
+            );
+            let right_key = (
+                right.primary_file.as_u32(),
+                right.primary_offset,
+                right.severity as u8,
+                right.code(),
+            );
+            assert!(left_key <= right_key);
+        }
+    }
+
+    #[test]
+    fn test_reactivity_loss_diagnostics_are_errors() {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
+
+        analyzer.add_file(
+            Path::new("State.vue"),
+            r#"import { reactive, ref } from 'vue'
+
+const state = reactive({ count: 0, name: 'Ada' })
+const { count } = state
+const snapshot = { ...state }
+
+const countRef = ref(1)
+const plainCount = countRef.value"#,
+        );
+
+        let result = analyzer.analyze();
+        let strict_loss_kinds = [
+            "vize:croquis/cf/destructuring-breaks-reactivity",
+            "vize:croquis/cf/spread-breaks-reactivity",
+            "vize:croquis/cf/value-extraction-breaks-reactivity",
+        ];
+
+        for code in strict_loss_kinds {
+            let diagnostic = result
+                .diagnostics
+                .iter()
+                .find(|d| d.code() == code)
+                .unwrap_or_else(|| panic!("missing diagnostic {code}"));
+            assert_eq!(diagnostic.severity, DiagnosticSeverity::Error);
+        }
+    }
+
+    #[test]
+    fn test_non_reactive_provide_is_warning_but_reactive_calls_are_preserved() {
+        let mut analyzer =
+            CrossFileAnalyzer::new(CrossFileOptions::default().with_reactivity_tracking(true));
+
+        let provider_script = r#"import { provide, reactive } from 'vue'
+import Consumer from './Consumer.vue'
+
+provide('config', { debug: true })
+provide('state', reactive({ count: 0 }))"#;
+        let mut provider_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        provider_analyzer.analyze_script_setup(provider_script);
+        provider_analyzer
+            .croquis_mut()
+            .used_components
+            .insert(vize_carton::CompactString::new("Consumer"));
+        let provider_analysis = provider_analyzer.finish();
+
+        let consumer_script = r#"import { inject } from 'vue'
+
+const config = inject('config')
+const state = inject('state')"#;
+        let mut consumer_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
+        consumer_analyzer.analyze_script_setup(consumer_script);
+        let consumer_analysis = consumer_analyzer.finish();
+
+        analyzer.add_file_with_analysis(
+            Path::new("Provider.vue"),
+            provider_script,
+            provider_analysis,
+        );
+        analyzer.add_file_with_analysis(
+            Path::new("Consumer.vue"),
+            consumer_script,
+            consumer_analysis,
+        );
+        analyzer.rebuild_component_edges();
+
+        let result = analyzer.analyze();
+        let non_reactive_provides: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|d| {
+                matches!(
+                    d.kind,
+                    CrossFileDiagnosticKind::NonReactiveProvideValue { .. }
+                )
+            })
+            .collect();
+
+        assert_eq!(non_reactive_provides.len(), 1);
+        assert_eq!(
+            non_reactive_provides[0].severity,
+            DiagnosticSeverity::Warning
+        );
+        assert!(matches!(
+            &non_reactive_provides[0].kind,
+            CrossFileDiagnosticKind::NonReactiveProvideValue { key } if key == "config"
+        ));
+    }
+
     // === Snapshot Tests ===
 
     #[test]
@@ -829,6 +1291,7 @@ const state = inject('globalState')"#,
         let mut app_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
         app_analyzer.analyze_script_setup(
             r#"import { provide, ref, computed } from 'vue'
+import Dashboard from './Dashboard.vue'
 
 const theme = ref('dark')
 const user = ref({ name: 'Alice', role: 'admin' })
@@ -848,6 +1311,7 @@ const isAdmin = computed(() => user.value.role === 'admin')"#,
         let mut dashboard_analyzer = crate::Analyzer::with_options(AnalyzerOptions::full());
         dashboard_analyzer.analyze_script_setup(
             r#"import { inject, provide, ref } from 'vue'
+import Widget from './Widget.vue'
 
 const theme = inject('theme')
 const user = inject('user')
@@ -877,6 +1341,7 @@ const displayCount = computed(() => dashboardState.value.count)"#,
         analyzer.add_file_with_analysis(Path::new("Dashboard.vue"), "", dashboard_analysis);
         analyzer.add_file_with_analysis(Path::new("Widget.vue"), "", widget_analysis);
 
+        analyzer.rebuild_import_edges();
         analyzer.rebuild_component_edges();
         let result = analyzer.analyze();
 
@@ -886,25 +1351,20 @@ const displayCount = computed(() => dashboardState.value.count)"#,
         output.push_str("=== Cross-File Analysis Result ===\n\n");
 
         output.push_str("== Statistics ==\n");
-        output.push_str(&std::format!(
-            "Files analyzed: {}\n",
-            result.stats.files_analyzed
-        ));
-        output.push_str(&std::format!(
-            "Vue components: {}\n",
-            result.stats.vue_components
-        ));
-        output.push_str(&std::format!(
+        append!(output, "Files analyzed: {}\n", result.stats.files_analyzed);
+        append!(output, "Vue components: {}\n", result.stats.vue_components);
+        append!(
+            output,
             "Dependency edges: {}\n",
             result.stats.dependency_edges
-        ));
-        output.push_str(&std::format!("Errors: {}\n", result.stats.error_count));
-        output.push_str(&std::format!("Warnings: {}\n", result.stats.warning_count));
+        );
+        append!(output, "Errors: {}\n", result.stats.error_count);
+        append!(output, "Warnings: {}\n", result.stats.warning_count);
 
         output.push_str("\n== Provide/Inject Matches ==\n");
         for m in &result.provide_inject_matches {
-            output.push_str(&std::format!("  {:?} -> {:?}\n", m.provider, m.consumer));
-            output.push_str(&std::format!("    key: {:?}\n", m.key));
+            append!(output, "  {:?} -> {:?}\n", m.provider, m.consumer);
+            append!(output, "    key: {:?}\n", m.key);
         }
 
         output.push_str("\n== Diagnostics ==\n");
@@ -912,7 +1372,8 @@ const displayCount = computed(() => dashboardState.value.count)"#,
         let mut sorted_diags = result.diagnostics.clone();
         sorted_diags.sort_by(|a, b| a.message.cmp(&b.message));
         for d in &sorted_diags {
-            output.push_str(&std::format!(
+            append!(
+                output,
                 "  [{}] {:?}: {}\n",
                 if d.is_error() {
                     "ERROR"
@@ -923,7 +1384,7 @@ const displayCount = computed(() => dashboardState.value.count)"#,
                 },
                 d.primary_file,
                 d.message
-            ));
+            );
         }
 
         assert_snapshot!(output);
@@ -993,13 +1454,10 @@ const b = inject('b')"#,
         nodes.sort_by(|a, b| a.path.cmp(&b.path));
 
         for node in nodes {
-            output.push_str(&std::format!("Node: {}\n", node.path));
-            output.push_str(&std::format!(
-                "  component_name: {:?}\n",
-                node.component_name
-            ));
-            output.push_str(&std::format!("  is_entry: {}\n", node.is_entry));
-            output.push_str(&std::format!("  imports: {:?}\n", node.imports));
+            append!(output, "Node: {}\n", node.path);
+            append!(output, "  component_name: {:?}\n", node.component_name);
+            append!(output, "  is_entry: {}\n", node.is_entry);
+            append!(output, "  imports: {:?}\n", node.imports);
             output.push('\n');
         }
 
@@ -1041,20 +1499,17 @@ const localCount = ref(0)"#,
 
         output.push_str("== Reactivity Issues ==\n");
         for issue in &result.reactivity_issues {
-            output.push_str(&std::format!("  File: {:?}\n", issue.file_id));
-            output.push_str(&std::format!("    kind: {:?}\n", issue.kind));
-            output.push_str(&std::format!("    source: {:?}\n", issue.source));
+            append!(output, "  File: {:?}\n", issue.file_id);
+            append!(output, "    kind: {:?}\n", issue.kind);
+            append!(output, "    source: {:?}\n", issue.source);
             output.push('\n');
         }
 
         output.push_str("== Cross-File Reactivity Issues ==\n");
         for issue in &result.cross_file_reactivity_issues {
-            output.push_str(&std::format!("  File: {:?}\n", issue.file_id));
-            output.push_str(&std::format!("    kind: {:?}\n", issue.kind));
-            output.push_str(&std::format!(
-                "    related_file: {:?}\n",
-                issue.related_file
-            ));
+            append!(output, "  File: {:?}\n", issue.file_id);
+            append!(output, "    kind: {:?}\n", issue.kind);
+            append!(output, "    related_file: {:?}\n", issue.related_file);
             output.push('\n');
         }
 
@@ -1113,25 +1568,22 @@ const comp = inject('computedValue')"#,
         output.push_str("=== Provide/Inject Patterns ===\n\n");
 
         for entry in analyzer.registry().iter() {
-            output.push_str(&std::format!("File: {}\n", entry.filename));
+            append!(output, "File: {}\n", entry.filename);
 
             if !entry.analysis.provide_inject.provides().is_empty() {
                 output.push_str("  Provides:\n");
                 for p in entry.analysis.provide_inject.provides() {
-                    output.push_str(&std::format!("    - key: {:?}\n", p.key));
-                    output.push_str(&std::format!("      value: {}\n", p.value));
+                    append!(output, "    - key: {:?}\n", p.key);
+                    append!(output, "      value: {}\n", p.value);
                 }
             }
 
             if !entry.analysis.provide_inject.injects().is_empty() {
                 output.push_str("  Injects:\n");
                 for i in entry.analysis.provide_inject.injects() {
-                    output.push_str(&std::format!("    - key: {:?}\n", i.key));
-                    output.push_str(&std::format!(
-                        "      has_default: {}\n",
-                        i.default_value.is_some()
-                    ));
-                    output.push_str(&std::format!("      pattern: {:?}\n", i.pattern));
+                    append!(output, "    - key: {:?}\n", i.key);
+                    append!(output, "      has_default: {}\n", i.default_value.is_some());
+                    append!(output, "      pattern: {:?}\n", i.pattern);
                 }
             }
             output.push('\n');

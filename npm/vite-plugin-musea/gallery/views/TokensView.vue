@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import type { DesignToken, TokenUsageEntry } from '../api'
-import { useTokens } from '../composables/useTokens'
-import { useTokenUsage } from '../composables/useTokenUsage'
-import TokenCategorySection from '../components/tokens/TokenCategorySection.vue'
-import TokenFormModal from '../components/tokens/TokenFormModal.vue'
-import TokenDeleteConfirm from '../components/tokens/TokenDeleteConfirm.vue'
-import TokenUsageModal from '../components/tokens/TokenUsageModal.vue'
-import SourceEditModal from '../components/tokens/SourceEditModal.vue'
+import { ref, computed, onMounted } from "vue";
+import type { DesignToken, TokenUsageEntry } from "../api";
+import { useTokens } from "../composables/useTokens";
+import { useTokenUsage } from "../composables/useTokenUsage";
+import TokenCategorySection from "../components/tokens/TokenCategorySection.vue";
+import TokenFormModal from "../components/tokens/TokenFormModal.vue";
+import TokenDeleteConfirm from "../components/tokens/TokenDeleteConfirm.vue";
+import TokenUsageModal from "../components/tokens/TokenUsageModal.vue";
+import SourceEditModal from "../components/tokens/SourceEditModal.vue";
 
 const {
   loading,
@@ -23,120 +23,115 @@ const {
   addToken,
   editToken,
   removeToken,
-} = useTokens()
+} = useTokens();
 
-const {
-  usageMap,
-  load: loadUsage,
-  reload: reloadUsage,
-  getUsage,
-} = useTokenUsage()
+const { usageMap, load: loadUsage, reload: reloadUsage, getUsage } = useTokenUsage();
 
 // Usage modal state
-const showUsageModal = ref(false)
-const usageTokenPath = ref('')
-const usageTokenData = ref<DesignToken | undefined>()
-const usageEntries = ref<TokenUsageEntry[]>([])
+const showUsageModal = ref(false);
+const usageTokenPath = ref("");
+const usageTokenData = ref<DesignToken | undefined>();
+const usageEntries = ref<TokenUsageEntry[]>([]);
 
 // Source editor modal state
-const showSourceEditor = ref(false)
-const sourceEditorArtPath = ref('')
-const sourceEditorArtTitle = ref('')
+const showSourceEditor = ref(false);
+const sourceEditorArtPath = ref("");
+const sourceEditorArtTitle = ref("");
 
 // Modal state
-const showFormModal = ref(false)
-const formMode = ref<'create' | 'edit'>('create')
-const editPath = ref('')
-const editTokenData = ref<DesignToken | undefined>()
+const showFormModal = ref(false);
+const formMode = ref<"create" | "edit">("create");
+const editPath = ref("");
+const editTokenData = ref<DesignToken | undefined>();
 
-const showDeleteConfirm = ref(false)
-const deletePath = ref('')
-const deleteTokenData = ref<DesignToken | undefined>()
-const deleteDependents = ref<string[]>([])
+const showDeleteConfirm = ref(false);
+const deletePath = ref("");
+const deleteTokenData = ref<DesignToken | undefined>();
+const deleteDependents = ref<string[]>([]);
 
-const existingPaths = computed(() => Object.keys(tokenMap.value))
+const existingPaths = computed(() => Object.keys(tokenMap.value));
 
 const tabs = [
-  { key: 'all' as const, label: 'All' },
-  { key: 'primitive' as const, label: 'Primitive' },
-  { key: 'semantic' as const, label: 'Semantic' },
-  { key: 'component' as const, label: 'Component' },
-] as const
+  { key: "all" as const, label: "All" },
+  { key: "primitive" as const, label: "Primitive" },
+  { key: "semantic" as const, label: "Semantic" },
+  { key: "component" as const, label: "Component" },
+] as const;
 
 onMounted(() => {
-  load()
-  loadUsage()
-})
+  load();
+  loadUsage();
+});
 
 function openCreateModal() {
-  formMode.value = 'create'
-  editPath.value = ''
-  editTokenData.value = undefined
-  showFormModal.value = true
+  formMode.value = "create";
+  editPath.value = "";
+  editTokenData.value = undefined;
+  showFormModal.value = true;
 }
 
 function openEditModal(path: string, token: DesignToken) {
-  formMode.value = 'edit'
-  editPath.value = path
-  editTokenData.value = token
-  showFormModal.value = true
+  formMode.value = "edit";
+  editPath.value = path;
+  editTokenData.value = token;
+  showFormModal.value = true;
 }
 
 function openDeleteConfirm(path: string, token: DesignToken) {
-  deletePath.value = path
-  deleteTokenData.value = token
+  deletePath.value = path;
+  deleteTokenData.value = token;
   // Find dependents from tokenMap
-  const deps: string[] = []
+  const deps: string[] = [];
   for (const [p, t] of Object.entries(tokenMap.value)) {
     if (t.$reference === path) {
-      deps.push(p)
+      deps.push(p);
     }
   }
-  deleteDependents.value = deps
-  showDeleteConfirm.value = true
+  deleteDependents.value = deps;
+  showDeleteConfirm.value = true;
 }
 
-async function handleFormSubmit(path: string, token: Omit<DesignToken, '$resolvedValue'>) {
+async function handleFormSubmit(path: string, token: Omit<DesignToken, "$resolvedValue">) {
   try {
-    if (formMode.value === 'create') {
-      await addToken(path, token)
+    if (formMode.value === "create") {
+      await addToken(path, token);
     } else {
-      await editToken(path, token)
+      await editToken(path, token);
     }
-    showFormModal.value = false
+    showFormModal.value = false;
   } catch (e) {
     // Error is handled inside the modal via validation
-    console.error('[musea] Token save error:', e)
+    console.error("[musea] Token save error:", e);
   }
 }
 
 async function handleDeleteConfirm() {
   try {
-    await removeToken(deletePath.value)
-    showDeleteConfirm.value = false
+    await removeToken(deletePath.value);
+    showDeleteConfirm.value = false;
   } catch (e) {
-    console.error('[musea] Token delete error:', e)
+    console.error("[musea] Token delete error:", e);
   }
 }
 
 function openUsageModal(tokenPath: string) {
-  usageTokenPath.value = tokenPath
-  usageTokenData.value = tokenMap.value[tokenPath]
-  usageEntries.value = getUsage(tokenPath)
-  showUsageModal.value = true
+  usageTokenPath.value = tokenPath;
+  usageTokenData.value = tokenMap.value[tokenPath];
+  usageEntries.value = getUsage(tokenPath);
+  showUsageModal.value = true;
 }
 
 function openSourceEditor(artPath: string) {
   // Find art title from usage entries
-  const entry = usageEntries.value.find(e => e.artPath === artPath)
-  sourceEditorArtPath.value = artPath
-  sourceEditorArtTitle.value = entry?.artTitle ?? artPath.split('/').pop() ?? artPath
-  showUsageModal.value = false
-  showSourceEditor.value = true
+  const entry = usageEntries.value.find((e) => e.artPath === artPath);
+  sourceEditorArtPath.value = artPath;
+  sourceEditorArtTitle.value = entry?.artTitle ?? artPath.split("/").pop() ?? artPath;
+  showUsageModal.value = false;
+  showSourceEditor.value = true;
 }
 
 async function handleSourceSaved() {
-  await reloadUsage()
+  await reloadUsage();
 }
 </script>
 
@@ -150,8 +145,15 @@ async function handleSourceSaved() {
             Browse and manage design tokens from your Style Dictionary configuration
           </p>
         </div>
-        <button class="add-token-btn" @click="openCreateModal">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button type="button" class="add-token-btn" @click="openCreateModal">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
@@ -164,24 +166,28 @@ async function handleSourceSaved() {
           <button
             v-for="tab in tabs"
             :key="tab.key"
+            type="button"
             class="tab-btn"
             :class="{ 'tab-btn--active': activeTab === tab.key }"
             @click="activeTab = tab.key"
           >
             {{ tab.label }}
-            <span v-if="tab.key === 'all' && meta.tokenCount" class="tab-count">{{ meta.tokenCount }}</span>
-            <span v-else-if="tab.key === 'primitive' && meta.primitiveCount" class="tab-count">{{ meta.primitiveCount }}</span>
-            <span v-else-if="tab.key === 'semantic' && meta.semanticCount" class="tab-count">{{ meta.semanticCount }}</span>
-            <span v-else-if="tab.key === 'component' && meta.componentCount" class="tab-count">{{ meta.componentCount }}</span>
+            <span v-if="tab.key === 'all' && meta.tokenCount" class="tab-count">{{
+              meta.tokenCount
+            }}</span>
+            <span v-else-if="tab.key === 'primitive' && meta.primitiveCount" class="tab-count">{{
+              meta.primitiveCount
+            }}</span>
+            <span v-else-if="tab.key === 'semantic' && meta.semanticCount" class="tab-count">{{
+              meta.semanticCount
+            }}</span>
+            <span v-else-if="tab.key === 'component' && meta.componentCount" class="tab-count">{{
+              meta.componentCount
+            }}</span>
           </button>
         </div>
 
-        <input
-          v-model="filter"
-          type="text"
-          class="tokens-filter"
-          placeholder="Filter tokens..."
-        >
+        <input v-model="filter" type="text" class="tokens-filter" placeholder="Filter tokens..." />
       </div>
     </div>
 
@@ -191,7 +197,14 @@ async function handleSourceSaved() {
     </div>
 
     <div v-else-if="error" class="tokens-empty">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <svg
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+      >
         <circle cx="12" cy="12" r="5" />
         <line x1="12" y1="1" x2="12" y2="3" />
         <line x1="12" y1="21" x2="12" y2="23" />
@@ -204,7 +217,14 @@ async function handleSourceSaved() {
     </div>
 
     <div v-else-if="filteredCategories.length === 0" class="tokens-empty">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <svg
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+      >
         <circle cx="12" cy="12" r="5" />
         <line x1="12" y1="1" x2="12" y2="3" />
         <line x1="12" y1="21" x2="12" y2="23" />
@@ -306,7 +326,7 @@ async function handleSourceSaved() {
   gap: 0.375rem;
   padding: 0.5rem 1rem;
   background: var(--musea-accent);
-  color: #fff;
+  color: var(--musea-accent-contrast);
   border: none;
   border-radius: var(--musea-radius-md);
   font-size: 0.8125rem;
@@ -411,7 +431,9 @@ async function handleSourceSaved() {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .tokens-empty {

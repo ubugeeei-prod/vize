@@ -3,8 +3,11 @@
 //! Instead of cartesian product (which explodes combinatorially),
 //! we use intelligent strategies that produce meaningful variants.
 
+#![allow(clippy::disallowed_macros)]
+
 use super::types::{AutogenConfig, GeneratedVariant, PropDefinition};
 use serde_json::{json, Map, Value};
+use vize_carton::{cstr, FxHashSet, String, ToCompactString};
 
 /// Generate variants from prop definitions using the configured strategy.
 pub fn generate_variants(
@@ -18,10 +21,10 @@ pub fn generate_variants(
     if config.include_default {
         let default_props = build_default_props(props);
         variants.push(GeneratedVariant {
-            name: "Default".to_string(),
+            name: "Default".to_compact_string(),
             is_default: true,
             props: default_props,
-            description: Some(format!("{component_name} with default props")),
+            description: Some(cstr!("{component_name} with default props")),
         });
     }
 
@@ -33,13 +36,13 @@ pub fn generate_variants(
                 for value in &union_values {
                     let variant_name = format_variant_name(&prop.name, value);
                     let mut variant_props = build_default_props(props);
-                    variant_props.insert(prop.name.clone(), value.clone());
+                    variant_props.insert(prop.name.clone().into(), value.clone());
 
                     variants.push(GeneratedVariant {
                         name: variant_name,
                         is_default: false,
                         props: variant_props,
-                        description: Some(format!(
+                        description: Some(cstr!(
                             "{} = {}",
                             prop.name,
                             serde_json::to_string(value).unwrap_or_default()
@@ -62,17 +65,17 @@ pub fn generate_variants(
                 let variant_name = if non_default == json!(true) {
                     to_pascal_case(&prop.name)
                 } else {
-                    format!("No{}", to_pascal_case(&prop.name))
+                    cstr!("No{}", to_pascal_case(&prop.name))
                 };
 
                 let mut variant_props = build_default_props(props);
-                variant_props.insert(prop.name.clone(), non_default.clone());
+                variant_props.insert(prop.name.clone().into(), non_default.clone());
 
                 variants.push(GeneratedVariant {
                     name: variant_name,
                     is_default: false,
                     props: variant_props,
-                    description: Some(format!(
+                    description: Some(cstr!(
                         "{} = {}",
                         prop.name,
                         serde_json::to_string(&non_default).unwrap_or_default()
@@ -88,15 +91,15 @@ pub fn generate_variants(
             if is_number_type(&prop.prop_type) {
                 let boundaries = infer_number_boundaries(prop);
                 for (label, value) in boundaries {
-                    let variant_name = format!("{}_{}", to_pascal_case(&prop.name), label);
+                    let variant_name = cstr!("{}_{}", to_pascal_case(&prop.name), label);
                     let mut variant_props = build_default_props(props);
-                    variant_props.insert(prop.name.clone(), value);
+                    variant_props.insert(prop.name.clone().into(), value);
 
                     variants.push(GeneratedVariant {
                         name: variant_name,
                         is_default: false,
                         props: variant_props,
-                        description: Some(format!("{} at {} boundary", prop.name, label)),
+                        description: Some(cstr!("{} at {} boundary", prop.name, label)),
                     });
                 }
             }
@@ -107,15 +110,15 @@ pub fn generate_variants(
     if config.include_empty_strings {
         for prop in props {
             if is_string_type(&prop.prop_type) && !prop.required {
-                let variant_name = format!("Empty{}", to_pascal_case(&prop.name));
+                let variant_name = cstr!("Empty{}", to_pascal_case(&prop.name));
                 let mut variant_props = build_default_props(props);
-                variant_props.insert(prop.name.clone(), json!(""));
+                variant_props.insert(prop.name.clone().into(), json!(""));
 
                 variants.push(GeneratedVariant {
                     name: variant_name,
                     is_default: false,
                     props: variant_props,
-                    description: Some(format!("{} with empty string", prop.name)),
+                    description: Some(cstr!("{} with empty string", prop.name)),
                 });
             }
         }
@@ -125,20 +128,24 @@ pub fn generate_variants(
     variants.truncate(config.max_variants);
 
     // Deduplicate by name
-    let mut seen = std::collections::HashSet::new();
+    let mut seen = FxHashSet::default();
     variants.retain(|v| seen.insert(v.name.clone()));
 
     variants
 }
 
 /// Build a props map with all default values.
-fn build_default_props(props: &[PropDefinition]) -> Map<String, Value> {
+#[allow(clippy::disallowed_types)]
+fn build_default_props(props: &[PropDefinition]) -> Map<std::string::String, Value> {
     let mut map = Map::new();
     for prop in props {
         if let Some(ref default) = prop.default_value {
-            map.insert(prop.name.clone(), default.clone());
+            map.insert(prop.name.clone().into(), default.clone());
         } else if prop.required {
-            map.insert(prop.name.clone(), infer_placeholder_value(&prop.prop_type));
+            map.insert(
+                prop.name.clone().into(),
+                infer_placeholder_value(&prop.prop_type),
+            );
         }
     }
     map
@@ -180,37 +187,43 @@ fn parse_union_type(type_str: &str) -> Vec<Value> {
 
 /// Check if type is boolean.
 fn is_boolean_type(type_str: &str) -> bool {
-    let t = type_str.trim().to_lowercase();
-    t == "boolean" || t == "bool"
+    type_str.trim().eq_ignore_ascii_case("boolean") || type_str.trim().eq_ignore_ascii_case("bool")
 }
 
 /// Check if type is number.
 fn is_number_type(type_str: &str) -> bool {
-    let t = type_str.trim().to_lowercase();
-    t == "number" || t == "int" || t == "float" || t == "integer"
+    let t = type_str.trim();
+    t.eq_ignore_ascii_case("number")
+        || t.eq_ignore_ascii_case("int")
+        || t.eq_ignore_ascii_case("float")
+        || t.eq_ignore_ascii_case("integer")
 }
 
 /// Check if type is string.
 fn is_string_type(type_str: &str) -> bool {
-    let t = type_str.trim().to_lowercase();
-    t == "string"
+    type_str.trim().eq_ignore_ascii_case("string")
 }
 
 /// Infer placeholder value for a required prop with no default.
 fn infer_placeholder_value(type_str: &str) -> Value {
-    let t = type_str.trim().to_lowercase();
-    match t.as_str() {
-        "string" => json!("Sample text"),
-        "number" | "int" | "float" | "integer" => json!(0),
-        "boolean" | "bool" => json!(false),
-        _ => {
-            // Check for union type first
-            let union = parse_union_type(type_str);
-            if let Some(first) = union.first() {
-                return first.clone();
-            }
-            json!(null)
+    let t = type_str.trim();
+    if t.eq_ignore_ascii_case("string") {
+        json!("Sample text")
+    } else if t.eq_ignore_ascii_case("number")
+        || t.eq_ignore_ascii_case("int")
+        || t.eq_ignore_ascii_case("float")
+        || t.eq_ignore_ascii_case("integer")
+    {
+        json!(0)
+    } else if t.eq_ignore_ascii_case("boolean") || t.eq_ignore_ascii_case("bool") {
+        json!(false)
+    } else {
+        // Check for union type first
+        let union = parse_union_type(type_str);
+        if let Some(first) = union.first() {
+            return first.clone();
         }
+        json!(null)
     }
 }
 
@@ -223,9 +236,9 @@ fn infer_number_boundaries(prop: &PropDefinition) -> Vec<(String, Value)> {
         .unwrap_or(0.0);
 
     vec![
-        ("Min".to_string(), json!(0)),
-        ("Mid".to_string(), json!(default_val.max(50.0))),
-        ("Max".to_string(), json!(100)),
+        ("Min".to_compact_string(), json!(0)),
+        ("Mid".to_compact_string(), json!(default_val.max(50.0))),
+        ("Max".to_compact_string(), json!(100)),
     ]
 }
 
@@ -233,39 +246,41 @@ fn infer_number_boundaries(prop: &PropDefinition) -> Vec<(String, Value)> {
 fn format_variant_name(prop_name: &str, value: &Value) -> String {
     match value {
         Value::String(s) => to_pascal_case(s),
-        Value::Number(n) => format!("{}_{}", to_pascal_case(prop_name), n),
+        Value::Number(n) => cstr!("{}_{}", to_pascal_case(prop_name), n),
         Value::Bool(b) => {
             if *b {
                 to_pascal_case(prop_name)
             } else {
-                format!("No{}", to_pascal_case(prop_name))
+                cstr!("No{}", to_pascal_case(prop_name))
             }
         }
-        _ => format!("{}_{}", to_pascal_case(prop_name), "Custom"),
+        _ => cstr!("{}_{}", to_pascal_case(prop_name), "Custom"),
     }
 }
 
 /// Convert a string to PascalCase.
 fn to_pascal_case(s: &str) -> String {
-    s.split(['-', '_', ' '])
-        .filter(|w| !w.is_empty())
-        .map(|word| {
-            let mut chars = word.chars();
-            match chars.next() {
-                None => String::new(),
-                Some(c) => {
-                    let mut s = c.to_uppercase().to_string();
-                    s.extend(chars);
-                    s
-                }
+    let mut result = String::default();
+    for word in s.split(['-', '_', ' ']).filter(|w| !w.is_empty()) {
+        let mut chars = word.chars();
+        if let Some(c) = chars.next() {
+            for uc in c.to_uppercase() {
+                result.push(uc);
             }
-        })
-        .collect()
+            for ch in chars {
+                result.push(ch);
+            }
+        }
+    }
+    result
 }
 
 #[cfg(test)]
+#[allow(clippy::disallowed_methods, clippy::disallowed_macros)]
 mod tests {
-    use super::*;
+    use super::super::types::{AutogenConfig, PropDefinition};
+    use super::{generate_variants, parse_union_type, to_pascal_case};
+    use serde_json::json;
 
     #[test]
     fn test_parse_string_union() {
@@ -292,8 +307,8 @@ mod tests {
     #[test]
     fn test_generate_default_variant() {
         let props = vec![PropDefinition {
-            name: "label".to_string(),
-            prop_type: "string".to_string(),
+            name: "label".into(),
+            prop_type: "string".into(),
             required: true,
             default_value: Some(json!("Click me")),
         }];
@@ -310,14 +325,14 @@ mod tests {
     fn test_generate_enum_variants() {
         let props = vec![
             PropDefinition {
-                name: "variant".to_string(),
-                prop_type: "'primary' | 'secondary' | 'danger'".to_string(),
+                name: "variant".into(),
+                prop_type: "'primary' | 'secondary' | 'danger'".into(),
                 required: true,
                 default_value: Some(json!("primary")),
             },
             PropDefinition {
-                name: "label".to_string(),
-                prop_type: "string".to_string(),
+                name: "label".into(),
+                prop_type: "string".into(),
                 required: true,
                 default_value: Some(json!("Click me")),
             },
@@ -336,8 +351,8 @@ mod tests {
     #[test]
     fn test_generate_boolean_variants() {
         let props = vec![PropDefinition {
-            name: "disabled".to_string(),
-            prop_type: "boolean".to_string(),
+            name: "disabled".into(),
+            prop_type: "boolean".into(),
             required: false,
             default_value: Some(json!(false)),
         }];
@@ -353,8 +368,8 @@ mod tests {
         let mut props = Vec::new();
         for i in 0..30 {
             props.push(PropDefinition {
-                name: format!("prop_{i}"),
-                prop_type: "boolean".to_string(),
+                name: vize_carton::cstr!("prop_{i}"),
+                prop_type: "boolean".into(),
                 required: false,
                 default_value: Some(json!(false)),
             });

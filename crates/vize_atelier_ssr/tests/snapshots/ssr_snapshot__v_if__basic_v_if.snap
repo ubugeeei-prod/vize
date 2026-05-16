@@ -4,7 +4,7 @@ expression: "compile_full(r#\"<div v-if=\"foo\">hello</div>\"#)"
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
   if (_ctx.foo) {
-    _push(`<div>hello</div>`)
+    _push(`<div${_ssrRenderAttrs(_attrs)}>hello</div>`)
   } else {
     _push(`<!---->`)
   }

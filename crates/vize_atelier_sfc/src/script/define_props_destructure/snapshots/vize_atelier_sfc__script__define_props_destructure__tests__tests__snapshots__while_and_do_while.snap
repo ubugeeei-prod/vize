@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
+assertion_line: 620
+expression: result
+---
+while (__props.count > 0) {
+    console.log(__props.count)
+}
+do {
+    console.log(__props.count)
+} while (__props.count > 0)

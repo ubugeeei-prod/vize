@@ -1,0 +1,6 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
+assertion_line: 508
+expression: result
+---
+const obj = { foo: __props.foo, bar: __props.bar, baz: 123 }

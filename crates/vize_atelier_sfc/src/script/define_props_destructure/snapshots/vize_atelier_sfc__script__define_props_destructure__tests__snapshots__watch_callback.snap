@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+watch(() => __props.count, (newVal, oldVal) => {
+    console.log('changed from', oldVal, 'to', newVal)
+})

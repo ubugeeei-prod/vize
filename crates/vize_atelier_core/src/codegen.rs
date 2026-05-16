@@ -6,45 +6,66 @@ mod children;
 mod context;
 mod element;
 mod expression;
+mod generate;
 mod helpers;
 mod node;
 mod patch_flag;
 mod props;
+mod root;
 mod slots;
 mod v_for;
 mod v_if;
 
-use crate::ast::*;
-use crate::options::CodegenOptions;
+use crate::{
+    ast::{RootNode, RuntimeHelper, TemplateChildNode},
+    options::CodegenOptions,
+};
+use vize_carton::profile;
 
+use children::is_directive_comment;
 pub use context::{CodegenContext, CodegenResult};
 use element::generate_root_node;
-use helpers::escape_js_string;
+use generate::{collect_hoist_helpers, generate_hoists};
 use node::generate_node;
+use root::{
+    generate_assets, generate_function_signature, generate_preamble_from_helpers,
+    is_ignorable_root_text,
+};
 
-/// Generate code from root AST
+/// Generate code from root AST.
 pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     let mut ctx = CodegenContext::new(options);
+    let root_children: std::vec::Vec<&TemplateChildNode<'_>> = root
+        .children
+        .iter()
+        .filter(|child| !is_ignorable_root_text(child) && !is_directive_comment(child))
+        .collect();
 
     // Generate function signature
-    generate_function_signature(&mut ctx);
+    profile!(
+        "atelier.codegen.function_signature",
+        generate_function_signature(&mut ctx)
+    );
 
     // Generate body
     ctx.indent();
     ctx.newline();
 
     // Generate component/directive resolution
-    generate_assets(&mut ctx, root);
+    profile!("atelier.codegen.assets", generate_assets(&mut ctx, root));
 
     // Generate return statement
     ctx.push("return ");
 
     // Generate root node
-    if root.children.is_empty() {
+    if root_children.is_empty() {
         ctx.push("null");
-    } else if root.children.len() == 1 {
+    } else if root_children.len() == 1 {
         // Single root child - wrap in block
-        generate_root_node(&mut ctx, &root.children[0]);
+        profile!(
+            "atelier.codegen.root_node",
+            generate_root_node(&mut ctx, root_children[0])
+        );
     } else {
         // Multiple root children - wrap in fragment block
         ctx.use_helper(RuntimeHelper::OpenBlock);
@@ -58,12 +79,15 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         ctx.push(ctx.helper(RuntimeHelper::Fragment));
         ctx.push(", null, [");
         ctx.indent();
-        for (i, child) in root.children.iter().enumerate() {
+        for (i, child) in root_children.iter().enumerate() {
             if i > 0 {
                 ctx.push(",");
             }
             ctx.newline();
-            generate_node(&mut ctx, child);
+            profile!(
+                "atelier.codegen.fragment_child",
+                generate_node(&mut ctx, child)
+            );
         }
         ctx.deindent();
         ctx.newline();
@@ -84,13 +108,23 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     {
         all_helpers.push(RuntimeHelper::Unref);
     }
+    // Collect helpers from hoisted nodes - generate_hoists() takes &CodegenContext (immutable)
+    // so helpers used in hoisted VNodes aren't tracked via use_helper(). Pre-scan them here.
+    profile!(
+        "atelier.codegen.collect_hoist_helpers",
+        collect_hoist_helpers(root, &mut all_helpers)
+    );
     // Sort helpers for consistent output order
     all_helpers.sort();
+    all_helpers.dedup();
 
-    let mut preamble = generate_preamble_from_helpers(&ctx, &all_helpers);
+    let mut preamble = profile!(
+        "atelier.codegen.preamble",
+        generate_preamble_from_helpers(&ctx, &all_helpers)
+    );
 
     // Generate hoisted variable declarations (appended to preamble)
-    let hoists_code = generate_hoists(&ctx, root);
+    let hoists_code = profile!("atelier.codegen.hoists", generate_hoists(&ctx, root));
     if !hoists_code.is_empty() {
         preamble.push('\n');
         preamble.push_str(&hoists_code);
@@ -103,399 +137,144 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
     }
 }
 
-/// Generate preamble from a list of helpers
-fn generate_preamble_from_helpers(ctx: &CodegenContext, helpers: &[RuntimeHelper]) -> String {
-    if helpers.is_empty() {
-        return String::new();
-    }
-
-    // Pre-calculate capacity: each helper needs ~20 chars on average
-    let estimated_capacity = 32 + helpers.len() * 24;
-    let mut preamble = Vec::with_capacity(estimated_capacity);
-
-    match ctx.options.mode {
-        crate::options::CodegenMode::Module => {
-            // ES module imports - build string directly without intermediate Vec
-            preamble.extend_from_slice(b"import { ");
-            for (i, h) in helpers.iter().enumerate() {
-                if i > 0 {
-                    preamble.extend_from_slice(b", ");
-                }
-                preamble.extend_from_slice(h.name().as_bytes());
-                preamble.extend_from_slice(b" as ");
-                preamble.extend_from_slice(ctx.helper(*h).as_bytes());
-            }
-            preamble.extend_from_slice(b" } from \"");
-            preamble.extend_from_slice(ctx.runtime_module_name.as_bytes());
-            preamble.extend_from_slice(b"\"\n");
-        }
-        crate::options::CodegenMode::Function => {
-            // Destructuring from global - build string directly without intermediate Vec
-            preamble.extend_from_slice(b"const { ");
-            for (i, h) in helpers.iter().enumerate() {
-                if i > 0 {
-                    preamble.extend_from_slice(b", ");
-                }
-                preamble.extend_from_slice(h.name().as_bytes());
-                preamble.extend_from_slice(b": ");
-                preamble.extend_from_slice(ctx.helper(*h).as_bytes());
-            }
-            preamble.extend_from_slice(b" } = ");
-            preamble.extend_from_slice(ctx.runtime_global_name.as_bytes());
-            preamble.push(b'\n');
-        }
-    }
-
-    // SAFETY: We only push valid UTF-8 strings
-    unsafe { String::from_utf8_unchecked(preamble) }
-}
-
-/// Generate function signature
-fn generate_function_signature(ctx: &mut CodegenContext) {
-    if ctx.options.ssr {
-        ctx.push("function ssrRender(_ctx, _push, _parent, _attrs) {");
-    } else {
-        match ctx.options.mode {
-            crate::options::CodegenMode::Module => {
-                // Module mode: include $props and $setup when binding_metadata is present
-                // This is needed when script setup is used with non-inline template
-                if ctx.options.binding_metadata.is_some() {
-                    ctx.push(
-                        "export function render(_ctx, _cache, $props, $setup, $data, $options) {",
-                    );
-                } else {
-                    ctx.push("export function render(_ctx, _cache) {");
-                }
-            }
-            crate::options::CodegenMode::Function => {
-                // Function mode: include $props and $setup
-                ctx.push("function render(_ctx, _cache, $props, $setup, $data, $options) {");
-            }
-        }
-    }
-}
-
-/// Generate hoisted variable declarations
-fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> String {
-    let mut hoists_code: Vec<u8> = Vec::new();
-
-    for (i, hoist) in root.hoists.iter().enumerate() {
-        if let Some(node) = hoist {
-            hoists_code.extend_from_slice(b"const _hoisted_");
-            hoists_code.extend_from_slice((i + 1).to_string().as_bytes());
-            hoists_code.extend_from_slice(b" = ");
-            // Only add /*#__PURE__*/ for VNodeCall (createElementVNode calls)
-            if matches!(node, JsChildNode::VNodeCall(_)) {
-                hoists_code.extend_from_slice(b"/*#__PURE__*/ ");
-            }
-            generate_js_child_node_to_bytes(ctx, node, &mut hoists_code);
-            hoists_code.push(b'\n');
-        }
-    }
-
-    // SAFETY: We only push valid UTF-8 strings
-    unsafe { String::from_utf8_unchecked(hoists_code) }
-}
-
-/// Generate JsChildNode to bytes
-fn generate_js_child_node_to_bytes(
-    ctx: &CodegenContext,
-    node: &JsChildNode<'_>,
-    out: &mut Vec<u8>,
-) {
-    match node {
-        JsChildNode::VNodeCall(vnode) => generate_vnode_call_to_bytes(ctx, vnode, out),
-        JsChildNode::SimpleExpression(exp) => {
-            if exp.is_static {
-                out.push(b'"');
-                out.extend_from_slice(exp.content.as_bytes());
-                out.push(b'"');
-            } else {
-                // Expression should already be processed by transform
-                out.extend_from_slice(exp.content.as_bytes());
-            }
-        }
-        JsChildNode::Object(obj) => {
-            out.extend_from_slice(b"{ ");
-            for (i, prop) in obj.properties.iter().enumerate() {
-                if i > 0 {
-                    out.extend_from_slice(b", ");
-                }
-                // Key - quote if contains special characters like hyphens
-                match &prop.key {
-                    ExpressionNode::Simple(exp) => {
-                        let key = &exp.content;
-                        // Check if key needs quoting (contains hyphen or other non-identifier chars)
-                        let needs_quote = key.contains('-')
-                            || key.chars().next().is_some_and(|c| c.is_ascii_digit());
-                        if needs_quote {
-                            out.push(b'"');
-                            out.extend_from_slice(key.as_bytes());
-                            out.push(b'"');
-                        } else {
-                            out.extend_from_slice(key.as_bytes());
-                        }
-                        out.extend_from_slice(b": ");
-                    }
-                    ExpressionNode::Compound(_) => out.extend_from_slice(b"null: "),
-                }
-                // Value
-                generate_js_child_node_to_bytes(ctx, &prop.value, out);
-            }
-            out.extend_from_slice(b" }");
-        }
-        _ => out.extend_from_slice(b"null /* unsupported */"),
-    }
-}
-
-/// Generate VNodeCall to bytes
-fn generate_vnode_call_to_bytes(ctx: &CodegenContext, vnode: &VNodeCall<'_>, out: &mut Vec<u8>) {
-    // Block nodes use openBlock + createBlock/createElementBlock
-    if vnode.is_block {
-        out.push(b'(');
-        out.extend_from_slice(ctx.helper(RuntimeHelper::OpenBlock).as_bytes());
-        out.extend_from_slice(b"(), ");
-        if vnode.is_component {
-            out.extend_from_slice(ctx.helper(RuntimeHelper::CreateBlock).as_bytes());
-        } else {
-            out.extend_from_slice(ctx.helper(RuntimeHelper::CreateElementBlock).as_bytes());
-        }
-    } else if vnode.is_component {
-        out.extend_from_slice(ctx.helper(RuntimeHelper::CreateVNode).as_bytes());
-    } else {
-        out.extend_from_slice(ctx.helper(RuntimeHelper::CreateElementVNode).as_bytes());
-    }
-    out.push(b'(');
-
-    // Tag
-    match &vnode.tag {
-        VNodeTag::String(s) => {
-            out.push(b'"');
-            out.extend_from_slice(s.as_bytes());
-            out.push(b'"');
-        }
-        VNodeTag::Symbol(helper) => out.extend_from_slice(ctx.helper(*helper).as_bytes()),
-        VNodeTag::Call(_) => out.extend_from_slice(b"null"),
-    }
-
-    // Props
-    if let Some(props) = &vnode.props {
-        out.extend_from_slice(b", ");
-        generate_props_expression_to_bytes(ctx, props, out);
-    } else if vnode.children.is_some() || vnode.patch_flag.is_some() {
-        out.extend_from_slice(b", null");
-    }
-
-    // Children
-    if let Some(children) = &vnode.children {
-        out.extend_from_slice(b", ");
-        generate_vnode_children_to_bytes(ctx, children, out);
-    } else if vnode.patch_flag.is_some() {
-        out.extend_from_slice(b", null");
-    }
-
-    // Patch flag
-    if let Some(patch_flag) = &vnode.patch_flag {
-        out.extend_from_slice(b", ");
-        out.extend_from_slice(patch_flag.bits().to_string().as_bytes());
-        out.extend_from_slice(b" /* ");
-        let mut debug = String::new();
-        use std::fmt::Write as _;
-        let _ = write!(&mut debug, "{:?}", patch_flag);
-        out.extend_from_slice(debug.as_bytes());
-        out.extend_from_slice(b" */");
-    }
-
-    // Dynamic props
-    if let Some(dynamic_props) = &vnode.dynamic_props {
-        out.extend_from_slice(b", ");
-        match dynamic_props {
-            DynamicProps::String(s) => {
-                out.extend_from_slice(s.as_bytes());
-            }
-            DynamicProps::Simple(exp) => {
-                out.extend_from_slice(exp.content.as_bytes());
-            }
-        }
-    }
-
-    out.push(b')');
-
-    // Close block wrapper
-    if vnode.is_block {
-        out.push(b')');
-    }
-}
-
-/// Generate PropsExpression to bytes
-fn generate_props_expression_to_bytes(
-    ctx: &CodegenContext,
-    props: &PropsExpression<'_>,
-    out: &mut Vec<u8>,
-) {
-    match props {
-        PropsExpression::Object(obj) => {
-            out.extend_from_slice(b"{ ");
-            for (i, prop) in obj.properties.iter().enumerate() {
-                if i > 0 {
-                    out.extend_from_slice(b", ");
-                }
-                // Key - quote if contains special characters like hyphens
-                match &prop.key {
-                    ExpressionNode::Simple(exp) => {
-                        let key = &exp.content;
-                        // Check if key needs quoting (contains hyphen or other non-identifier chars)
-                        let needs_quote = key.contains('-')
-                            || key.chars().next().is_some_and(|c| c.is_ascii_digit());
-                        if needs_quote {
-                            out.push(b'"');
-                            out.extend_from_slice(key.as_bytes());
-                            out.push(b'"');
-                        } else {
-                            out.extend_from_slice(key.as_bytes());
-                        }
-                        out.extend_from_slice(b": ");
-                    }
-                    ExpressionNode::Compound(_) => out.extend_from_slice(b"null: "),
-                }
-                // Value
-                generate_js_child_node_to_bytes(ctx, &prop.value, out);
-            }
-            out.extend_from_slice(b" }");
-        }
-        PropsExpression::Simple(exp) => {
-            if exp.is_static {
-                out.push(b'"');
-                out.extend_from_slice(exp.content.as_bytes());
-                out.push(b'"');
-            } else {
-                // Expression should already be processed by transform
-                out.extend_from_slice(exp.content.as_bytes());
-            }
-        }
-        PropsExpression::Call(_) => out.extend_from_slice(b"null"),
-    }
-}
-
-/// Generate VNodeChildren to bytes
-fn generate_vnode_children_to_bytes(
-    _ctx: &CodegenContext,
-    children: &VNodeChildren<'_>,
-    out: &mut Vec<u8>,
-) {
-    match children {
-        VNodeChildren::Single(text_child) => match text_child {
-            TemplateTextChildNode::Text(text) => {
-                out.push(b'"');
-                out.extend_from_slice(escape_js_string(&text.content).as_bytes());
-                out.push(b'"');
-            }
-            TemplateTextChildNode::Interpolation(_) => out.extend_from_slice(b"null"),
-            TemplateTextChildNode::Compound(_) => out.extend_from_slice(b"null"),
-        },
-        VNodeChildren::Simple(exp) => {
-            if exp.is_static {
-                out.push(b'"');
-                out.extend_from_slice(escape_js_string(&exp.content).as_bytes());
-                out.push(b'"');
-            } else {
-                // Expression should already be processed by transform
-                out.extend_from_slice(exp.content.as_bytes());
-            }
-        }
-        _ => out.extend_from_slice(b"null"),
-    }
-}
-
-/// Generate asset resolution (components, directives)
-fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
-    let mut has_resolved_assets = false;
-
-    // Resolve components (only those not in binding metadata)
-    for component in root.components.iter() {
-        // Skip components that are in binding metadata (from script setup imports)
-        if ctx.is_component_in_bindings(component) {
-            continue;
-        }
-
-        // Skip built-in components - they are imported directly, not resolved
-        if helpers::is_builtin_component(component).is_some() {
-            continue;
-        }
-
-        // Skip dynamic component (<component :is="...">) - it uses resolveDynamicComponent
-        if component == "component" {
-            continue;
-        }
-
-        ctx.use_helper(RuntimeHelper::ResolveComponent);
-        ctx.push("const _component_");
-        ctx.push(&component.replace('-', "_"));
-        ctx.push(" = ");
-        ctx.push(ctx.helper(RuntimeHelper::ResolveComponent));
-        ctx.push("(\"");
-        ctx.push(component);
-        ctx.push("\")");
-        ctx.newline();
-        has_resolved_assets = true;
-    }
-
-    // Resolve directives
-    for directive in root.directives.iter() {
-        ctx.use_helper(RuntimeHelper::ResolveDirective);
-        ctx.push("const _directive_");
-        ctx.push(&directive.replace('-', "_"));
-        ctx.push(" = ");
-        ctx.push(ctx.helper(RuntimeHelper::ResolveDirective));
-        ctx.push("(\"");
-        ctx.push(directive);
-        ctx.push("\")");
-        ctx.newline();
-        has_resolved_assets = true;
-    }
-
-    if has_resolved_assets {
-        ctx.newline();
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::{assert_codegen, compile};
+    use crate::compile;
+
+    fn result_output(result: &super::CodegenResult) -> vize_carton::String {
+        let mut output =
+            vize_carton::String::with_capacity(result.preamble.len() + result.code.len() + 1);
+        output.push_str(&result.preamble);
+        output.push('\n');
+        output.push_str(&result.code);
+        output
+    }
+
+    macro_rules! assert_codegen_snapshot {
+        ($result:expr) => {{
+            let output = result_output(&$result);
+            insta::assert_snapshot!(output.as_str());
+        }};
+    }
 
     #[test]
     fn test_codegen_simple_element() {
-        assert_codegen!("<div>hello</div>" => contains: [
-            "_createElementBlock",
-            "\"div\"",
-            "\"hello\""
-        ]);
+        let result = compile!("<div>hello</div>");
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_interpolation() {
         // When prefix_identifiers is false (default), expressions are not prefixed with _ctx.
-        assert_codegen!("<div>{{ msg }}</div>" => contains: [
-            "_toDisplayString",
-            "msg"
-        ]);
+        let result = compile!("<div>{{ msg }}</div>");
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_with_props() {
-        assert_codegen!(r#"<div id="app" class="container"></div>"# => contains: [
-            "id: \"app\"",
-            "class: \"container\""
-        ]);
+        let result = compile!(r#"<div id="app" class="container"></div>"#);
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_component() {
-        assert_codegen!("<MyComponent />" => contains: [
-            "_resolveComponent",
-            "_createBlock",
-            "_component_MyComponent"
-        ]);
+        let result = compile!("<MyComponent />");
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_component_name_with_colon_uses_valid_identifier() {
+        let allocator = bumpalo::Bump::new();
+        let parser_opts = crate::ParserOptions {
+            is_native_tag: Some(vize_carton::is_native_tag),
+            ..Default::default()
+        };
+        let (mut root, errors) = crate::parse_with_options(
+            &allocator,
+            r#"<global:head title="Page Title" />"#,
+            parser_opts,
+        );
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        crate::transform::transform(
+            &allocator,
+            &mut root,
+            crate::TransformOptions::default(),
+            None,
+        );
+        let output = result_output(&super::generate(&root, crate::CodegenOptions::default()));
+
+        assert!(
+            output.contains(r#"const _component_global_head = _resolveComponent("global:head")"#)
+        );
+        assert!(output.contains("_createBlock(_component_global_head"));
+        assert!(!output.contains("_component_global:head"));
+    }
+
+    #[test]
+    fn test_codegen_self_component_resolve_marks_maybe_self_reference() {
+        let result = compile!(
+            "<FileTree />",
+            super::CodegenOptions {
+                component_name: Some("FileTree".into()),
+                ..Default::default()
+            }
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains(r#"const _component_FileTree = _resolveComponent("FileTree", true)"#),
+            "self component resolution should pass maybeSelfReference. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_root_directive_comment_does_not_create_fragment_hole() {
+        let result =
+            compile!("<!-- @vize:forget sections are labeled by their headings --><section />");
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_root_only_directive_comment_compiles_to_null() {
+        let result = compile!("<!-- @vize:forget no render output -->");
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_pascal_case_dynamic_component() {
+        let result = compile!(r#"<Component :is="current" :active-class="klass" />"#);
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_pascal_case_dynamic_component_inside_v_for() {
+        let result =
+            compile!(r#"<Component :is="item.component" v-for="item in items" :key="item.id" />"#);
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_v_if_template_fragment_wraps_interpolation_in_text_vnode() {
+        let result = compile!(
+            r#"<p><template v-if="ready">{{ count }}</template><span v-if="pending">updating</span></p>"#
+        );
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_v_if_template_fragment_wraps_static_text_in_text_vnode() {
+        let result = compile!(
+            r#"<div><template v-if="ready">Found packages</template><span v-if="pending">updating</span></div>"#
+        );
+
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
@@ -506,104 +285,255 @@ mod tests {
             ..Default::default()
         };
         let result = compile!("<div>hello</div>", options);
-        assert!(result.preamble.contains("import {"));
-        assert!(result.preamble.contains("from \"vue\""));
+        insta::assert_snapshot!(result.preamble.as_str());
     }
 
     #[test]
     fn test_codegen_v_model_on_component() {
-        // v-model on component should expand to modelValue + onUpdate:modelValue
-        assert_codegen!(r#"<MyComponent v-model="msg" />"# => contains: [
-            "_createBlock",
-            "_component_MyComponent",
-            "modelValue:",
-            "msg",
-            "\"onUpdate:modelValue\":"
-        ]);
+        let result = compile!(r#"<MyComponent v-model="msg" />"#);
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_v_model_with_arg() {
-        // v-model:title should expand to title + onUpdate:title
-        assert_codegen!(r#"<MyComponent v-model:title="pageTitle" />"# => contains: [
-            "title:",
-            "pageTitle",
-            "\"onUpdate:title\":"
-        ]);
+        let result = compile!(r#"<MyComponent v-model:title="pageTitle" />"#);
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_v_model_on_input() {
-        // v-model on input uses withDirectives + vModelText
-        assert_codegen!(r#"<input v-model="inputValue" />"# => contains: [
-            "_withDirectives",
-            "_vModelText",
-            "inputValue",
-            "\"onUpdate:modelValue\":"
-        ]);
+        let result = compile!(r#"<input v-model="inputValue" />"#);
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_v_model_with_other_props() {
         // v-model with other props should not produce comments
         let result = compile!(r#"<MonacoEditor v-model="source" :language="editorLanguage" />"#);
-        // Should NOT contain /* v-model */
-        assert!(
-            !result.code.contains("/* v-model */"),
-            "Should not contain v-model comment"
-        );
-        // Should contain the expanded props
-        assert!(
-            result.code.contains("modelValue:"),
-            "Should have modelValue prop"
-        );
-        assert!(
-            result.code.contains("\"onUpdate:modelValue\":"),
-            "Should have onUpdate:modelValue prop"
-        );
-        assert!(
-            result.code.contains("language:"),
-            "Should have language prop"
-        );
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_slot_fallback() {
-        // Slot element with fallback content should include fallback function
-        assert_codegen!(r#"<slot name="label">{{ label }}</slot>"# => contains: [
-            "_renderSlot",
-            "\"label\"",
-            "{}"
-        ]);
-        // Check that the fallback function is present
         let result = compile!(r#"<slot name="label">{{ label }}</slot>"#);
-        assert!(
-            result.code.contains("() => ["),
-            "Should have fallback function: {}",
-            result.code
-        );
-        assert!(
-            result.code.contains("_toDisplayString"),
-            "Should have toDisplayString for interpolation: {}",
-            result.code
-        );
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_slot_without_fallback() {
         // Slot element without fallback should not have empty object or function
         let result = compile!(r#"<slot name="header"></slot>"#);
-        assert!(
-            result.code.contains("_renderSlot"),
-            "Should have renderSlot"
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_codegen_conditional_slot_with_else_does_not_append_undefined() {
+        let result = compile!(
+            r#"<MyDialog>
+  <template v-if="step === 1" #header>First</template>
+  <template v-else #header>Second</template>
+</MyDialog>"#
         );
-        assert!(result.code.contains("\"header\""), "Should have slot name");
-        // Should not have fallback function
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_conditional_named_slot_preserves_implicit_default_slot() {
+        let result = compile!(
+            r#"<Parent>
+  Not rendering!
+  <template v-if="showNamed" #named>
+    Named content
+  </template>
+</Parent>"#
+        );
+        let output = result_output(&result);
+
         assert!(
-            !result.code.contains("() => ["),
-            "Should not have fallback function for empty slot: {}",
+            output.contains("default: _withCtx(() => ["),
+            "implicit default slot should be generated when createSlots is used:\n{}",
+            output
+        );
+        assert!(
+            output.contains("Not rendering!"),
+            "default slot text should be preserved:\n{}",
+            output
+        );
+        assert!(
+            output.contains("name: \"named\""),
+            "conditional named slot should still be dynamic:\n{}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_codegen_default_slot_with_v_if_is_marked_dynamic() {
+        let result = compile!(
+            r#"<PageWithHeader>
+  <div v-if="tab === 'overview'">Overview</div>
+  <div v-else-if="tab === 'emojis'">Emojis</div>
+  <div v-else>Charts</div>
+</PageWithHeader>"#
+        );
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_forwarded_default_slot_is_marked_forwarded() {
+        let result = compile!(r#"<MkSwiper><slot /></MkSwiper>"#);
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_v_if_branch_mixed_children_wrap_interpolations_in_text_vnodes() {
+        let result = compile!(
+            r#"<p v-if="speaker.affiliation || speaker.title">{{ speaker.affiliation }}<br v-if="speaker.affiliation && speaker.title" />{{ speaker.title }}</p>"#
+        );
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_if_branch_mixed_children_wraps_interpolation_in_text_vnode() {
+        let result = compile!(
+            r#"<div><label v-if="show">{{ msg }}<span v-if="required">*</span></label></div>"#
+        );
+
+        assert!(
+            result.code.contains("_createTextVNode(_toDisplayString(msg), 1 /* TEXT */)"),
+            "mixed children inside v-if branch should wrap interpolation in createTextVNode. Got:\n{}",
             result.code
         );
+        assert!(
+            !result.code.contains("[_toDisplayString(msg),"),
+            "v-if branch should not emit raw string children inside arrays. Got:\n{}",
+            result.code
+        );
+    }
+
+    #[test]
+    fn test_codegen_v_for_aliases_without_parentheses_stay_local() {
+        use crate::options::{CodegenOptions, TransformOptions};
+        use crate::parser::parse;
+        use crate::transform::transform;
+        use bumpalo::Bump;
+
+        let allocator = Bump::new();
+        let (mut root, _) = parse(
+            &allocator,
+            r#"<div><template v-for="item, index of items" :key="index"><UserCard :user="item" :data-index="index" /></template></div>"#,
+        );
+
+        transform(
+            &allocator,
+            &mut root,
+            TransformOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+            None,
+        );
+
+        let result = super::generate(
+            &root,
+            CodegenOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_numeric_template_v_for_uses_fragment() {
+        let result = compile!(
+            r#"<div><template v-for="n in 4" :key="`set-${n}`"><button /><span v-for="(icon, i) in icons" :key="`${n}-${i}`" :class="icon" /></template></div>"#
+        );
+
+        assert!(
+            !result.code.contains("\"template\""),
+            "template v-for must not create a DOM template element. Got:\n{}",
+            result.code
+        );
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_v_for_scope_handlers_are_not_cached() {
+        use crate::options::{CodegenOptions, TransformOptions};
+        use crate::parser::parse;
+        use crate::transform::transform;
+        use bumpalo::Bump;
+
+        let allocator = Bump::new();
+        let (mut root, _) = parse(
+            &allocator,
+            r#"<button v-for="tab in tabs" :key="tab.id" @click="select(tab)">{{ tab.label }}</button>"#,
+        );
+
+        transform(
+            &allocator,
+            &mut root,
+            TransformOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+            None,
+        );
+
+        let result = super::generate(
+            &root,
+            CodegenOptions {
+                prefix_identifiers: true,
+                cache_handlers: true,
+                ..Default::default()
+            },
+        );
+
+        assert_codegen_snapshot!(result);
+    }
+
+    #[test]
+    fn test_codegen_scoped_slot_params_stay_local_in_handlers() {
+        use crate::options::{CodegenOptions, TransformOptions};
+        use crate::parser::parse;
+        use crate::transform::transform;
+        use bumpalo::Bump;
+
+        let allocator = Bump::new();
+        let (mut root, _) = parse(
+            &allocator,
+            r#"<CommonPaginator>
+  <template #default="{ item, index }">
+    <button @click="showHistory(item)">{{ index }}</button>
+    <button @click="() => edit(item.id)">{{ item.id }}</button>
+  </template>
+</CommonPaginator>"#,
+        );
+
+        transform(
+            &allocator,
+            &mut root,
+            TransformOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+            None,
+        );
+
+        let result = super::generate(
+            &root,
+            CodegenOptions {
+                prefix_identifiers: true,
+                cache_handlers: true,
+                ..Default::default()
+            },
+        );
+
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
@@ -615,30 +545,14 @@ mod tests {
             background: blue;
         "></div>"#
         );
-        // Should have properly escaped newlines
-        assert!(
-            result.code.contains("\\n"),
-            "Should escape newlines in attribute values. Got:\n{}",
-            result.code
-        );
-        // Should NOT have raw newlines inside string literals
-        assert!(
-            !result.code.contains("style: \"\n"),
-            "Should not have raw newlines in string. Got:\n{}",
-            result.code
-        );
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
     fn test_codegen_escape_special_chars_in_attribute() {
         // Attribute values should escape backslashes and quotes
         let result = compile!(r#"<div data-value="line1\nline2"></div>"#);
-        // Backslash should be escaped
-        assert!(
-            result.code.contains(r#"\\n"#),
-            "Should escape backslashes in attribute values. Got:\n{}",
-            result.code
-        );
+        assert_codegen_snapshot!(result);
     }
 
     #[test]
@@ -650,26 +564,6 @@ mod tests {
             flex-direction: column;
         "></div>"#
         );
-        // Should produce valid JavaScript
-        assert!(
-            result.code.contains("style:"),
-            "Should have style property. Got:\n{}",
-            result.code
-        );
-        // All newlines should be escaped
-        let style_start = result.code.find("style:").unwrap_or(0);
-        let code_after_style = &result.code[style_start..];
-        // Find the string value - should not contain raw newlines
-        if let Some(quote_pos) = code_after_style.find('"') {
-            let remaining = &code_after_style[quote_pos + 1..];
-            if let Some(end_quote) = remaining.find('"') {
-                let style_value = &remaining[..end_quote];
-                assert!(
-                    !style_value.contains('\n'),
-                    "Style value should not contain raw newlines. Got:\n{}",
-                    style_value
-                );
-            }
-        }
+        assert_codegen_snapshot!(result);
     }
 }

@@ -1,13 +1,15 @@
 //! Style block processing and scoped CSS.
 
-use crate::types::*;
+use vize_carton::{String, ToCompactString};
+
+use crate::types::{SfcError, SfcStyleBlock, StyleCompileOptions};
 
 /// Compile a style block
 pub fn compile_style(
     style: &SfcStyleBlock,
     options: &StyleCompileOptions,
 ) -> Result<String, SfcError> {
-    let mut output: String = style.content.to_string();
+    let mut output: String = style.content.to_compact_string();
 
     // Apply scoped transformation if needed
     if style.scoped || options.scoped {
@@ -16,7 +18,7 @@ pub fn compile_style(
 
     // Trim if requested
     if options.trim {
-        output = output.trim().to_string();
+        output = output.trim().to_compact_string();
     }
 
     Ok(output)
@@ -35,10 +37,13 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
     let mut string_char = '"';
     let mut in_comment = false;
     let mut in_at_rule = false; // Track if we're in an at-rule header
-    let mut brace_depth = 0;
-    let mut at_rule_depth = 0; // Track nested at-rule depth
+    let mut brace_depth: u32 = 0;
+    let mut at_rule_depth: u32 = 0; // Track nested at-rule depth
     let mut last_selector_end = 0;
-    let mut current = String::new();
+    let mut current = String::default();
+    let mut pending_keyframes = false;
+    let mut keyframes_brace_depth: Option<u32> = None;
+    let mut saved_at_rule_depth: Option<u32> = None;
 
     while let Some(c) = chars.next() {
         current.push(c);
@@ -81,8 +86,20 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
                     output.push_str(at_rule_part.trim());
                     output.push('{');
                     in_at_rule = false;
+                    if pending_keyframes {
+                        saved_at_rule_depth = Some(at_rule_depth);
+                        keyframes_brace_depth = Some(brace_depth);
+                        pending_keyframes = false;
+                    }
                     at_rule_depth = brace_depth;
                     in_selector = true;
+                    last_selector_end = current.len();
+                } else if keyframes_brace_depth.is_some_and(|d| brace_depth > d) {
+                    // Inside @keyframes: stops (from/to/0%/100%) are not selectors
+                    let kf_part = &current[last_selector_end..current.len() - 1];
+                    output.push_str(kf_part.trim());
+                    output.push('{');
+                    in_selector = false;
                     last_selector_end = current.len();
                 } else if in_selector && brace_depth == 1 {
                     // End of selector at root level, apply scope
@@ -105,6 +122,13 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
             '}' => {
                 brace_depth -= 1;
                 output.push(c);
+                // Check @keyframes block end — restore parent at_rule_depth
+                if keyframes_brace_depth.is_some_and(|d| brace_depth < d) {
+                    keyframes_brace_depth = None;
+                    if let Some(saved) = saved_at_rule_depth.take() {
+                        at_rule_depth = saved;
+                    }
+                }
                 if brace_depth == 0 {
                     in_selector = true;
                     at_rule_depth = 0;
@@ -119,6 +143,23 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
                 // Start of at-rule (e.g., @media, @keyframes, @supports)
                 in_at_rule = true;
                 in_selector = false;
+                // Look ahead to detect @keyframes (including vendor prefixes)
+                let css_remaining = &css[current.len()..];
+                pending_keyframes = css_remaining.starts_with("keyframes")
+                    || css_remaining.starts_with("-webkit-keyframes")
+                    || css_remaining.starts_with("-moz-keyframes")
+                    || css_remaining.starts_with("-o-keyframes");
+            }
+            ';' if in_at_rule => {
+                // Statement at-rule (e.g., @import, @charset, @namespace)
+                // Flush the entire at-rule including the semicolon
+                let stmt = &current[last_selector_end..];
+                output.push_str(stmt.trim());
+                output.push('\n');
+                in_at_rule = false;
+                in_selector = true;
+                pending_keyframes = false;
+                last_selector_end = current.len();
             }
             _ if in_selector || in_at_rule => {
                 // Still building selector or at-rule header
@@ -145,12 +186,13 @@ fn scope_selector(selector: &str, attr_selector: &str) -> String {
         .map(|s| scope_single_selector(s.trim(), attr_selector))
         .collect::<Vec<_>>()
         .join(", ")
+        .into()
 }
 
 /// Add scope attribute to a single selector
 fn scope_single_selector(selector: &str, attr_selector: &str) -> String {
     if selector.is_empty() {
-        return selector.to_string();
+        return selector.to_compact_string();
     }
 
     // Handle :deep(), :slotted(), :global()
@@ -169,11 +211,11 @@ fn scope_single_selector(selector: &str, attr_selector: &str) -> String {
     // Find the last simple selector to append the attribute
     let parts: Vec<&str> = selector.split_whitespace().collect();
     if parts.is_empty() {
-        return selector.to_string();
+        return selector.to_compact_string();
     }
 
     // Add scope to the last part
-    let mut result = String::new();
+    let mut result = String::default();
     for (i, part) in parts.iter().enumerate() {
         if i > 0 {
             result.push(' ');
@@ -234,7 +276,7 @@ fn transform_deep(selector: &str, attr_selector: &str) -> String {
             let rest = &after[end + 1..];
 
             let scoped_before = if before.is_empty() {
-                attr_selector.to_string()
+                attr_selector.to_compact_string()
             } else {
                 let trimmed = before.trim();
                 let mut result = String::with_capacity(trimmed.len() + attr_selector.len());
@@ -253,7 +295,7 @@ fn transform_deep(selector: &str, attr_selector: &str) -> String {
         }
     }
 
-    selector.to_string()
+    selector.to_compact_string()
 }
 
 /// Transform :slotted() for slot content
@@ -276,7 +318,7 @@ fn transform_slotted(selector: &str, attr_selector: &str) -> String {
         }
     }
 
-    selector.to_string()
+    selector.to_compact_string()
 }
 
 /// Transform :global() to unscoped
@@ -298,7 +340,7 @@ fn transform_global(selector: &str) -> String {
         }
     }
 
-    selector.to_string()
+    selector.to_compact_string()
 }
 
 /// Extract CSS v-bind() expressions
@@ -312,7 +354,7 @@ pub fn extract_css_vars(css: &str) -> Vec<String> {
             let expr = css[start..start + end].trim();
             // Remove quotes if present
             let expr = expr.trim_matches(|c| c == '"' || c == '\'');
-            vars.push(expr.to_string());
+            vars.push(expr.to_compact_string());
             search_from = start + end + 1;
         } else {
             break;
@@ -324,7 +366,9 @@ pub fn extract_css_vars(css: &str) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        apply_scoped_css, extract_css_vars, scope_selector, transform_deep, transform_global,
+    };
 
     #[test]
     fn test_scope_simple_selector() {
@@ -367,45 +411,64 @@ mod tests {
     fn test_scope_media_query() {
         let css = "@media (max-width: 768px) { .foo { color: red; } }";
         let result = apply_scoped_css(css, "data-v-123");
-        // @media rule should not have scope, but selectors inside should
-        assert!(
-            result.contains("@media (max-width: 768px)"),
-            "Should preserve media query. Got: {}",
-            result
-        );
-        assert!(
-            result.contains(".foo[data-v-123]"),
-            "Should scope selector inside media query. Got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_scope_media_query_with_comment() {
         let css = "/* Mobile responsive */\n@media (max-width: 768px) {\n  .glyph-playground {\n    grid-template-columns: 1fr;\n  }\n}";
         let result = apply_scoped_css(css, "data-v-123");
-        // Should not produce invalid CSS like @media...[data-v-123]
-        assert!(
-            !result.contains("@media (max-width: 768px)[data-v-123]"),
-            "Should not scope the media query itself. Got: {}",
-            result
-        );
-        assert!(
-            result.contains(".glyph-playground[data-v-123]"),
-            "Should scope selector inside media query. Got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_scope_keyframes() {
         let css = "@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }";
         let result = apply_scoped_css(css, "data-v-123");
-        // @keyframes should not have its contents scoped (from/to are not selectors)
-        assert!(
-            result.contains("@keyframes spin"),
-            "Should preserve keyframes. Got: {}",
-            result
-        );
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_scope_webkit_keyframes() {
+        let css = "@-webkit-keyframes fade { 0% { opacity: 0; } 100% { opacity: 1; } }";
+        let result = apply_scoped_css(css, "data-v-123");
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_nested_css_media_passthrough() {
+        // CSS nesting: @media (--mobile) inside a selector should pass through
+        let css = "#pages-store {\n  display: grid;\n  row-gap: 1.5rem;\n  @media (--mobile) {\n    row-gap: 1rem;\n  }\n  h1 {\n    padding: 7.5rem 0;\n    @media (--mobile) {\n      padding: 2.5rem 0.75rem;\n    }\n  }\n}";
+        let result = apply_scoped_css(css, "data-v-123");
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_root_level_media_with_custom_query() {
+        // Root-level @media with custom media query
+        let css = ".foo { color: red; }\n@media (--mobile) { .foo { font-size: 12px; } }";
+        let result = apply_scoped_css(css, "data-v-abc");
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_apply_scoped_css_at_import() {
+        let css = "@import \"~/assets/styles/custom-media-query.css\";\n\nfooter { width: 100%; }";
+        let result = apply_scoped_css(css, "data-v-123");
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_apply_scoped_css_at_import_with_nested_css() {
+        let css = "@import \"custom.css\";\n\nfooter {\n  width: 100%;\n  @media (--mobile) {\n    padding: 1rem;\n  }\n}";
+        let result = apply_scoped_css(css, "data-v-abc");
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_scope_keyframes_inside_media() {
+        let css = "@media (prefers-reduced-motion: no-preference) { @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .foo { color: red; } }";
+        let result = apply_scoped_css(css, "data-v-123");
+        insta::assert_snapshot!(result.as_str());
     }
 }

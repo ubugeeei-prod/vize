@@ -51,7 +51,7 @@ impl Rule for NoAccessKey {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoAccessKey;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

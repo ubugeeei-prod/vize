@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div"))
+}
+
+interface Props {
+    name: string;
+}
+
+const _sfc_main = {
+    props: {} as Props
+}
+
+_sfc_main.render = render
+export default _sfc_main

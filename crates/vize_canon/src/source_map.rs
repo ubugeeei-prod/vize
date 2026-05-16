@@ -462,7 +462,9 @@ pub fn position_to_offset(source: &str, pos: Position) -> Option<u32> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        offset_to_position, position_to_offset, Mapping, MappingFlags, Position, SourceMap, Span,
+    };
 
     #[test]
     fn test_span_contains() {

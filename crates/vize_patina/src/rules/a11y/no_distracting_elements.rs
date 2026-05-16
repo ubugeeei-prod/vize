@@ -51,7 +51,7 @@ impl Rule for NoDistractingElements {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoDistractingElements;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

@@ -1,0 +1,5 @@
+---
+source: crates/vize_maestro/src/ide/hover/mod.rs
+expression: desc
+---
+Component prop. Read-only in the component.

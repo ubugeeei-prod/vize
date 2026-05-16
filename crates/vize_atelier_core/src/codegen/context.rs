@@ -4,6 +4,11 @@ use crate::ast::RuntimeHelper;
 use crate::options::CodegenOptions;
 
 use super::helpers::default_helper_alias;
+use vize_carton::camelize;
+use vize_carton::capitalize;
+use vize_carton::FxHashSet;
+use vize_carton::String;
+use vize_carton::ToCompactString;
 
 /// Code generation context using byte buffer for performance
 pub struct CodegenContext {
@@ -25,15 +30,22 @@ pub struct CodegenContext {
     /// Pure annotation for tree-shaking
     pub(super) pure: bool,
     /// Helpers used during codegen
-    pub(super) used_helpers: std::collections::HashSet<RuntimeHelper>,
+    pub(super) used_helpers: FxHashSet<RuntimeHelper>,
     /// Cache index for v-once
     pub(super) cache_index: usize,
-    /// Slot parameters (identifiers that should not be prefixed with _ctx.)
-    pub(super) slot_params: std::collections::HashSet<String>,
+    /// Template-scope parameters (slot props and v-for aliases) that should
+    /// not be prefixed with `_ctx.`
+    pub(super) slot_params: FxHashSet<String>,
     /// When true, skip `is` prop in generate_props (used for dynamic components)
     pub(super) skip_is_prop: bool,
+    /// When true, skip scope_id attribute in props (used for component/slot elements)
+    pub(super) skip_scope_id: bool,
     /// When true, skip normalizeClass/normalizeStyle wrappers (inside mergeProps)
     pub(super) skip_normalize: bool,
+    /// When true, we are inside a v-for loop (affects slot stability flags)
+    pub(super) in_v_for: bool,
+    /// When true, skip v-memo wrapping (already handled by v-for + v-memo)
+    pub(super) skip_v_memo: bool,
 }
 
 /// Code generation result
@@ -54,41 +66,51 @@ impl CodegenContext {
             indent_level: 0,
             ssr: options.ssr,
             helper_alias: default_helper_alias,
-            runtime_global_name: options.runtime_global_name.to_string(),
-            runtime_module_name: options.runtime_module_name.to_string(),
+            runtime_global_name: options.runtime_global_name.to_compact_string(),
+            runtime_module_name: options.runtime_module_name.to_compact_string(),
             options,
             pure: false,
-            used_helpers: std::collections::HashSet::new(),
+            used_helpers: FxHashSet::default(),
             cache_index: 0,
-            slot_params: std::collections::HashSet::new(),
+            slot_params: FxHashSet::default(),
             skip_is_prop: false,
+            skip_scope_id: false,
             skip_normalize: false,
+            in_v_for: false,
+            skip_v_memo: false,
         }
     }
 
-    /// Add slot parameters (identifiers that should not be prefixed)
+    /// Add template-scope parameters (identifiers that should not be prefixed)
     pub fn add_slot_params(&mut self, params: &[String]) {
         for param in params {
             self.slot_params.insert(param.clone());
         }
     }
 
-    /// Remove slot parameters (when exiting slot scope)
+    /// Remove template-scope parameters when exiting their scope
     pub fn remove_slot_params(&mut self, params: &[String]) {
         for param in params {
             self.slot_params.remove(param);
         }
     }
 
-    /// Check if an identifier is a slot parameter
+    /// Check if an identifier is a template-scope parameter
     pub fn is_slot_param(&self, name: &str) -> bool {
         self.slot_params.contains(name)
     }
 
-    /// Check if there are any slot parameters registered (fast path check)
+    /// Check if there are any template-scope parameters registered
     #[inline]
     pub fn has_slot_params(&self) -> bool {
         !self.slot_params.is_empty()
+    }
+
+    /// Event handler caching is unsafe while template-scope params are in play,
+    /// because a cached closure would capture the first scoped value.
+    #[inline]
+    pub fn cache_handlers_in_current_scope(&self) -> bool {
+        self.options.cache_handlers && !self.has_slot_params()
     }
 
     /// Get next cache index for v-once
@@ -162,12 +184,57 @@ impl CodegenContext {
 
     /// Check if a component is in binding metadata (from script setup)
     pub fn is_component_in_bindings(&self, component: &str) -> bool {
-        if let Some(ref metadata) = self.options.binding_metadata {
-            // Check both the original name and PascalCase version
-            metadata.bindings.contains_key(component)
-        } else {
-            false
+        self.resolve_component_binding_name(component).is_some()
+    }
+
+    /// Resolve the binding name for a component tag.
+    pub fn resolve_component_binding_name(&self, component: &str) -> Option<String> {
+        let metadata = self.options.binding_metadata.as_ref()?;
+
+        let resolve_base = |name: &str| {
+            if metadata.bindings.contains_key(name) {
+                return Some(name.to_compact_string());
+            }
+
+            let camel = camelize(name);
+            if metadata.bindings.contains_key(camel.as_str()) {
+                return Some(camel);
+            }
+
+            let pascal = capitalize(&camel);
+            if metadata.bindings.contains_key(pascal.as_str()) {
+                return Some(pascal);
+            }
+
+            None
+        };
+
+        if let Some((base, suffix)) = component.split_once('.') {
+            let resolved_base = resolve_base(base)?;
+            let mut resolved = String::with_capacity(resolved_base.len() + suffix.len() + 1);
+            resolved.push_str(resolved_base.as_str());
+            resolved.push('.');
+            resolved.push_str(suffix);
+            return Some(resolved);
         }
+
+        resolve_base(component)
+    }
+
+    /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)
+    #[inline]
+    #[allow(dead_code)]
+    pub fn push_str(&mut self, code: &str) {
+        self.code.extend_from_slice(code.as_bytes());
+    }
+
+    /// Push formatted line (format_args! + newline with indentation)
+    #[inline]
+    #[allow(dead_code)]
+    pub fn push_line_fmt(&mut self, args: std::fmt::Arguments<'_>) {
+        use std::fmt::Write as _;
+        self.write_fmt(args).unwrap();
+        self.newline();
     }
 
     /// Get the generated code as a String
@@ -180,5 +247,13 @@ impl CodegenContext {
     pub fn code_as_str(&self) -> &str {
         // SAFETY: We only push valid UTF-8 strings
         unsafe { std::str::from_utf8_unchecked(&self.code) }
+    }
+}
+
+impl std::fmt::Write for CodegenContext {
+    #[inline]
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        self.code.extend_from_slice(s.as_bytes());
+        Ok(())
     }
 }

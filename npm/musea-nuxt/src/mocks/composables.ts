@@ -2,7 +2,7 @@
  * Mock Nuxt routing composables.
  */
 
-import { ref, reactive, computed } from "vue";
+import { reactive, computed } from "vue";
 import type { NuxtMuseaOptions } from "../types.js";
 
 let _routeConfig: NuxtMuseaOptions["route"] = {};

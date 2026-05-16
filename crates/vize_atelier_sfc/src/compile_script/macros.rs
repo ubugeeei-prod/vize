@@ -3,7 +3,7 @@
 //! This module provides utilities for detecting Vue compiler macro calls
 //! in script setup code.
 
-use vize_croquis::macros::BUILTIN_MACROS;
+use vize_croquis::macros::runtime_erased_macro_names;
 
 /// Check if a line is a compiler macro call (not just containing the macro name as a string)
 pub fn is_macro_call_line(line: &str) -> bool {
@@ -14,7 +14,7 @@ pub fn is_macro_call_line(line: &str) -> bool {
     }
 
     // Check if line contains a macro that is being called (not just mentioned in a string)
-    for macro_name in BUILTIN_MACROS {
+    for macro_name in runtime_erased_macro_names() {
         if let Some(pos) = line.find(macro_name) {
             // Check that this is an actual call, not just a substring or string literal
             // 1. Check that macro is followed by '(' or '<' (with optional whitespace)
@@ -70,7 +70,7 @@ pub fn is_paren_macro_start(line: &str) -> bool {
     }
 
     // Check if line contains a macro call that isn't complete on the same line
-    for macro_name in BUILTIN_MACROS {
+    for macro_name in runtime_erased_macro_names() {
         if let Some(pos) = line.find(macro_name) {
             // Check that this is an actual call, not a string literal
             let after = &line[pos + macro_name.len()..];
@@ -111,7 +111,7 @@ pub fn is_multiline_macro_start(line: &str) -> bool {
     }
 
     // Check if line contains a macro with type args that spans multiple lines
-    for macro_name in BUILTIN_MACROS {
+    for macro_name in runtime_erased_macro_names() {
         if let Some(pos) = line.find(macro_name) {
             // Check that this is an actual call, not a string literal
             let after = &line[pos + macro_name.len()..];
@@ -138,14 +138,15 @@ pub fn is_multiline_macro_start(line: &str) -> bool {
                 if open_count > close_count {
                     return true;
                 }
-                // If balanced but no () at the end, might still be multi-line
-                if open_count == close_count && !line.contains("()") && !line.ends_with(')') {
-                    // Check if this is a complete single-line call
-                    // e.g., defineEmits<(e: 'click') => void>() - this has ()
-                    // vs defineEmits<{ - this doesn't have () yet
-                    if !trimmed.ends_with("()") && !trimmed.ends_with(')') {
-                        return true;
-                    }
+                // If balanced, check if the call is complete on this line.
+                // Strip trailing semicolons before checking for closing paren,
+                // since `defineModel<Type>('arg', { opts });` is a complete call.
+                let trimmed_no_semi = trimmed.trim_end_matches(';').trim_end();
+                if open_count == close_count
+                    && !trimmed_no_semi.ends_with("()")
+                    && !trimmed_no_semi.ends_with(')')
+                {
+                    return true;
                 }
             }
         }
@@ -159,4 +160,77 @@ pub fn is_props_destructure_line(line: &str) -> bool {
     // Match: const { ... } = defineProps or const { ... } = withDefaults
     (trimmed.starts_with("const {") || trimmed.starts_with("let {") || trimmed.starts_with("var {"))
         && (trimmed.contains("defineProps") || trimmed.contains("withDefaults"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_macro_call_line, is_multiline_macro_start, is_paren_macro_start};
+
+    #[test]
+    fn test_multiline_macro_start_complete_with_semicolon() {
+        // Complete single-line calls ending with `;` should NOT be multi-line
+        assert!(
+            !is_multiline_macro_start(
+                "const layer = defineModel<ImageEffectorLayer>('layer', { required: true });"
+            ),
+            "complete defineModel<Type>(args); should not be multi-line"
+        );
+        assert!(
+            !is_multiline_macro_start(
+                "const model = defineModel<string | number>({ required: true });"
+            ),
+            "complete defineModel<union>(opts); should not be multi-line"
+        );
+        assert!(
+            !is_multiline_macro_start(
+                "const layer = defineModel<WatermarkPreset['layers'][number]>('layer', { required: true });"
+            ),
+            "complete defineModel<indexed type>(args); should not be multi-line"
+        );
+    }
+
+    #[test]
+    fn test_multiline_macro_start_genuinely_multiline() {
+        // Unbalanced angle brackets → truly multi-line
+        assert!(
+            is_multiline_macro_start("defineEmits<{"),
+            "unbalanced angle bracket should be multi-line"
+        );
+        assert!(
+            is_multiline_macro_start("const emit = defineEmits<{"),
+            "unbalanced with const should be multi-line"
+        );
+    }
+
+    #[test]
+    fn test_multiline_macro_start_complete_with_empty_parens() {
+        // Complete calls with empty parens should not be multi-line
+        assert!(!is_multiline_macro_start(
+            "defineEmits<{ (e: 'click'): void }>()"
+        ));
+        assert!(!is_multiline_macro_start("defineModel<string>()"));
+    }
+
+    #[test]
+    fn test_macro_call_line() {
+        assert!(is_macro_call_line(
+            "const layer = defineModel<Layer>('layer', { required: true });"
+        ));
+        assert!(is_macro_call_line("defineExpose({})"));
+        assert!(is_macro_call_line("definePage({ name: 'home' })"));
+        assert!(is_macro_call_line("defineRouteRules({ prerender: true })"));
+        assert!(!is_macro_call_line("import { defineModel } from 'vue'"));
+        assert!(!is_macro_call_line("const fx = FXS[layer.value.fxId];"));
+        // Note: string-embedded macro names ARE detected (pre-existing limitation)
+        assert!(!is_macro_call_line("const x = 'defineModel(test)'"));
+    }
+
+    #[test]
+    fn test_paren_macro_start() {
+        // Balanced parens on one line → NOT multi-line
+        assert!(!is_paren_macro_start("defineExpose({})"));
+        assert!(!is_paren_macro_start("defineExpose({ foo: 'bar' })"));
+        // Unbalanced parens → multi-line
+        assert!(is_paren_macro_start("defineExpose({"));
+    }
 }

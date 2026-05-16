@@ -30,11 +30,11 @@ mod template;
 
 pub use helpers::{
     extract_identifiers_oxc, extract_inline_callback_params, extract_slot_props,
-    is_builtin_directive, is_component_tag, is_keyword, parse_v_for_expression,
+    is_builtin_directive, is_component_tag, is_keyword, parse_v_for_expression, strip_js_comments,
 };
 
 use crate::analysis::Croquis;
-use vize_carton::CompactString;
+use vize_carton::{profile, CompactString};
 
 /// Analysis options for controlling what gets analyzed.
 ///
@@ -162,6 +162,17 @@ impl Analyzer {
 
     /// Analyze script setup source code.
     pub fn analyze_script_setup(&mut self, source: &str) -> &mut Self {
+        self.analyze_script_setup_with_generic(source, None)
+    }
+
+    /// Analyze script setup source code with an optional generic parameter.
+    ///
+    /// `generic` is the value from `<script setup generic="T">` attribute, if present.
+    pub fn analyze_script_setup_with_generic(
+        &mut self,
+        source: &str,
+        generic: Option<&str>,
+    ) -> &mut Self {
         if !self.options.analyze_script {
             return self;
         }
@@ -169,17 +180,12 @@ impl Analyzer {
         self.script_analyzed = true;
 
         // Use OXC-based parser for accurate AST analysis
-        let result = crate::script_parser::parse_script_setup(source);
+        let result = profile!(
+            "croquis.analyzer.script_setup",
+            crate::script_parser::parse_script_setup_with_generic(source, generic)
+        );
 
-        // Merge results into summary
-        self.summary.bindings = result.bindings;
-        self.summary.macros = result.macros;
-        self.summary.reactivity = result.reactivity;
-        self.summary.type_exports = result.type_exports;
-        self.summary.invalid_exports = result.invalid_exports;
-        self.summary.scopes = result.scopes;
-        self.summary.provide_inject = result.provide_inject;
-        self.summary.binding_spans = result.binding_spans;
+        result.apply_to_croquis(&mut self.summary);
 
         self
     }
@@ -193,17 +199,12 @@ impl Analyzer {
         self.script_analyzed = true;
 
         // Use OXC-based parser for non-script-setup
-        let result = crate::script_parser::parse_script(source);
+        let result = profile!(
+            "croquis.analyzer.script_plain",
+            crate::script_parser::parse_script(source)
+        );
 
-        // Merge results into summary
-        self.summary.bindings = result.bindings;
-        self.summary.macros = result.macros;
-        self.summary.reactivity = result.reactivity;
-        self.summary.type_exports = result.type_exports;
-        self.summary.invalid_exports = result.invalid_exports;
-        self.summary.scopes = result.scopes;
-        self.summary.provide_inject = result.provide_inject;
-        self.summary.binding_spans = result.binding_spans;
+        result.apply_to_croquis(&mut self.summary);
 
         self
     }
@@ -213,7 +214,7 @@ impl Analyzer {
     /// Consumes the analyzer.
     #[inline]
     pub fn finish(self) -> Croquis {
-        self.summary
+        profile!("croquis.analyzer.finish", self.summary)
     }
 
     /// Get a reference to the current summary (without consuming).
@@ -240,8 +241,9 @@ impl Default for Analyzer {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{Analyzer, AnalyzerOptions};
     use crate::analysis::{InvalidExportKind, TypeExportKind};
+    use vize_carton::append;
 
     #[test]
     fn test_analyzer_script_bindings() {
@@ -256,13 +258,9 @@ mod tests {
         );
 
         let summary = analyzer.finish();
-        assert!(summary.bindings.contains("count"));
-        assert!(summary.bindings.contains("name"));
-        assert!(summary.bindings.contains("flag"));
-        assert!(summary.bindings.contains("handleClick"));
-
         assert!(summary.reactivity.is_reactive("count"));
         assert!(summary.reactivity.needs_value_access("count"));
+        insta::assert_debug_snapshot!(summary);
     }
 
     #[test]
@@ -448,40 +446,40 @@ export type UserProps = { name: string }
         let mut output = String::new();
         output.push_str("=== Bindings ===\n");
         for (name, ty) in summary.bindings.iter() {
-            output.push_str(&std::format!("  {}: {:?}\n", name, ty));
+            append!(output, "  {name}: {:?}\n", ty);
         }
 
         output.push_str("\n=== Macros ===\n");
-        output.push_str(&std::format!("  props: {}\n", summary.macros.props().len()));
-        output.push_str(&std::format!("  emits: {}\n", summary.macros.emits().len()));
-        output.push_str(&std::format!(
-            "  models: {}\n",
-            summary.macros.models().len()
-        ));
+        append!(output, "  props: {}\n", summary.macros.props().len());
+        append!(output, "  emits: {}\n", summary.macros.emits().len());
+        append!(output, "  models: {}\n", summary.macros.models().len());
 
         output.push_str("\n=== Reactivity ===\n");
         for source in summary.reactivity.sources() {
-            output.push_str(&std::format!(
+            append!(
+                output,
                 "  {}: kind={:?}, needs_value={}\n",
                 source.name,
                 source.kind,
                 source.kind.needs_value_access()
-            ));
+            );
         }
 
         output.push_str("\n=== Provide/Inject ===\n");
-        output.push_str(&std::format!(
+        append!(
+            output,
             "  provides: {}\n",
             summary.provide_inject.provides().len()
-        ));
-        output.push_str(&std::format!(
+        );
+        append!(
+            output,
             "  injects: {}\n",
             summary.provide_inject.injects().len()
-        ));
+        );
 
         output.push_str("\n=== Type Exports ===\n");
         for te in &summary.type_exports {
-            output.push_str(&std::format!("  {}: {:?}\n", te.name, te.kind));
+            append!(output, "  {}: {:?}\n", te.name, te.kind);
         }
 
         assert_snapshot!(output);
@@ -509,17 +507,18 @@ const emit = defineEmits(['update', 'delete', 'select'])
         let mut output = String::new();
         output.push_str("=== Props ===\n");
         for prop in summary.macros.props() {
-            output.push_str(&std::format!(
+            append!(
+                output,
                 "  {}: required={}, has_default={}\n",
                 prop.name,
                 prop.required,
                 prop.default_value.is_some()
-            ));
+            );
         }
 
         output.push_str("\n=== Emits ===\n");
         for emit in summary.macros.emits() {
-            output.push_str(&std::format!("  {}\n", emit.name));
+            append!(output, "  {}\n", emit.name);
         }
 
         assert_snapshot!(output);
@@ -560,17 +559,18 @@ const { name, id } = inject('user') as { name: string; id: number }
         let mut output = String::new();
         output.push_str("=== Provides ===\n");
         for p in summary.provide_inject.provides() {
-            output.push_str(&std::format!("  key: {:?}\n", p.key));
+            append!(output, "  key: {:?}\n", p.key);
         }
 
         output.push_str("\n=== Injects ===\n");
         for i in summary.provide_inject.injects() {
-            output.push_str(&std::format!(
+            append!(
+                output,
                 "  key: {:?}, has_default: {}, pattern: {:?}\n",
                 i.key,
                 i.default_value.is_some(),
                 i.pattern
-            ));
+            );
         }
 
         assert_snapshot!(output);
@@ -606,32 +606,6 @@ const { name, id } = inject('user') as { name: string; id: number }
             })
             .collect();
 
-        assert_eq!(expressions.len(), 2, "Should have 2 interpolations");
-
-        // First interpolation is inside v-if, should have guard
-        let inside_vif = expressions
-            .iter()
-            .find(|e| e.content.contains("unwrapDescription"))
-            .expect("Should find unwrapDescription interpolation");
-        assert!(
-            inside_vif.vif_guard.is_some(),
-            "Interpolation inside v-if should have vif_guard, got: {:?}",
-            inside_vif.vif_guard
-        );
-        assert_eq!(
-            inside_vif.vif_guard.as_deref(),
-            Some("todo.description"),
-            "vif_guard should be the v-if condition"
-        );
-
-        // Second interpolation is outside v-if, should NOT have guard
-        let outside_vif = expressions
-            .iter()
-            .find(|e| e.content.contains("todo.title"))
-            .expect("Should find todo.title interpolation");
-        assert!(
-            outside_vif.vif_guard.is_none(),
-            "Interpolation outside v-if should NOT have vif_guard"
-        );
+        insta::assert_debug_snapshot!(expressions);
     }
 }

@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import {
-  mdiContentCopy,
-  mdiCheck,
-  mdiCodeTags,
-  mdiFullscreen,
-  mdiOpenInNew,
-} from "@mdi/js";
-import type { ArtVariant } from "../../src/types.js";
+import { mdiContentCopy, mdiCheck, mdiCodeTags, mdiFullscreen, mdiOpenInNew } from "@mdi/js";
+import type { ArtVariant } from "../../src/types/index.js";
 import { getPreviewUrl } from "../api";
 import { useAddons } from "../composables/useAddons";
 import { sendMessage } from "../composables/usePostMessage";
@@ -29,9 +23,7 @@ function resolveSelfReferences(template: string): string {
     .replace(/<\/Self>/g, `</${props.componentName}>`);
 }
 
-const resolvedTemplate = computed(() =>
-  resolveSelfReferences(props.variant.template),
-);
+const resolvedTemplate = computed(() => resolveSelfReferences(props.variant.template));
 
 async function copyTemplate() {
   try {
@@ -45,9 +37,7 @@ async function copyTemplate() {
   }
 }
 
-const previewUrl = computed(() =>
-  getPreviewUrl(props.artPath, props.variant.name),
-);
+const previewUrl = computed(() => getPreviewUrl(props.artPath, props.variant.name));
 
 const iframeRef = ref<HTMLIFrameElement | null>(null);
 const iframeReady = ref(false);
@@ -151,6 +141,7 @@ watch(measureEnabled, (enabled) => {
       </div>
       <div class="variant-actions">
         <button
+          type="button"
           class="variant-action-btn"
           :title="copied ? 'Copied!' : 'Copy template'"
           :class="{ active: copied }"
@@ -160,6 +151,7 @@ watch(measureEnabled, (enabled) => {
           <MdiIcon v-else :path="mdiCheck" :size="14" />
         </button>
         <button
+          type="button"
           class="variant-action-btn"
           title="View source"
           :class="{ active: showSource }"
@@ -168,6 +160,7 @@ watch(measureEnabled, (enabled) => {
           <MdiIcon :path="mdiCodeTags" :size="14" />
         </button>
         <button
+          type="button"
           class="variant-action-btn"
           title="Fullscreen"
           @click="openFullscreen(artPath, variant.name)"
@@ -175,6 +168,7 @@ watch(measureEnabled, (enabled) => {
           <MdiIcon :path="mdiFullscreen" :size="14" />
         </button>
         <button
+          type="button"
           class="variant-action-btn"
           title="Open in new tab"
           @click="window.open(previewUrl, '_blank')"
@@ -199,21 +193,15 @@ const window = globalThis.window;
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-lg);
   overflow: hidden;
-  transition: all var(--musea-transition);
-}
-
-.variant-card:hover {
-  border-color: var(--musea-text-muted);
-  box-shadow: var(--musea-shadow);
-  transform: translateY(-2px);
 }
 
 .variant-preview {
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 7;
   background: var(--musea-bg-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   position: relative;
   overflow: hidden;
 }
@@ -221,15 +209,19 @@ const window = globalThis.window;
 .variant-preview.viewport-mode {
   aspect-ratio: unset;
   min-height: 200px;
-  max-height: 500px;
+  max-height: 350px;
   overflow: auto;
 }
 
 .variant-preview iframe {
   width: 70%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   border: none;
   background: white;
+  border-radius: var(--musea-radius-md);
+  box-shadow: 0 12px 30px rgba(13, 13, 13, 0.12);
 }
 
 .variant-preview.viewport-mode iframe {

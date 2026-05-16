@@ -8,9 +8,9 @@
 #[allow(dead_code)]
 use super::utils::{extract_type_args, find_call_paren, find_matching_paren};
 use super::MacroCall;
+use vize_carton::String;
 
-pub const DEFINE_PROPS: &str = "defineProps";
-pub const WITH_DEFAULTS: &str = "withDefaults";
+pub use vize_croquis::macros::{DEFINE_PROPS, WITH_DEFAULTS};
 
 /// Extract defineProps call from source
 #[allow(dead_code)]
@@ -31,7 +31,7 @@ fn extract_macro_call(content: &str, macro_name: &str) -> Option<MacroCall> {
         let after = &content[start..];
         if let Some(paren_start) = find_call_paren(after) {
             if let Some(paren_end) = find_matching_paren(&after[paren_start..]) {
-                let args = after[paren_start + 1..paren_start + paren_end].to_string();
+                let args = String::from(&after[paren_start + 1..paren_start + paren_end]);
                 let type_args = extract_type_args(&after[..paren_start]);
                 return Some(MacroCall {
                     start,
@@ -62,7 +62,7 @@ pub struct PropTypeData {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{extract_define_props, extract_with_defaults};
 
     #[test]
     fn test_extract_define_props_simple() {

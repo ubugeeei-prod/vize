@@ -20,11 +20,15 @@
 //! }
 //! ```
 
+#![allow(clippy::disallowed_macros)]
+
 use memchr::memmem;
-use std::collections::HashMap;
+use vize_carton::FxHashMap;
 
 use super::{MuseaLintResult, MuseaRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use vize_carton::String;
+use vize_carton::ToCompactString;
 
 static META: MuseaRuleMeta = MuseaRuleMeta {
     name: "musea/prefer-design-tokens",
@@ -48,18 +52,18 @@ pub struct TokenInfo {
 pub struct PreferDesignTokensConfig {
     /// Map of normalized value -> token info
     /// Multiple tokens may map to the same value
-    pub value_map: HashMap<String, Vec<TokenInfo>>,
+    pub value_map: FxHashMap<String, Vec<TokenInfo>>,
 }
 
 impl PreferDesignTokensConfig {
     /// Add a token to the configuration
     pub fn add_token(&mut self, value: &str, path: &str, tier: &str) {
         let normalized = normalize_value(value);
-        let var_name = format!("--{}", path.replace('.', "-"));
+        let var_name: String = format!("--{}", path.replace('.', "-")).into();
         let info = TokenInfo {
-            path: path.to_string(),
+            path: path.to_compact_string(),
             var_name,
-            tier: tier.to_string(),
+            tier: tier.to_compact_string(),
         };
         self.value_map.entry(normalized).or_default().push(info);
     }
@@ -263,7 +267,7 @@ fn normalize_value(value: &str) -> String {
                 .chars()
                 .flat_map(|c| std::iter::repeat_n(c, 2))
                 .collect();
-            return format!("#{}", expanded);
+            return format!("#{}", expanded).into();
         }
         if hex.len() == 4 {
             // #rgba -> #rrggbbaa
@@ -271,26 +275,26 @@ fn normalize_value(value: &str) -> String {
                 .chars()
                 .flat_map(|c| std::iter::repeat_n(c, 2))
                 .collect();
-            return format!("#{}", expanded);
+            return format!("#{}", expanded).into();
         }
     }
 
     // Normalize leading zero: .5rem -> 0.5rem
     if v.starts_with('.') {
-        return format!("0{}", v);
+        return format!("0{}", v).into();
     }
 
     // Remove spaces in rgb/hsl functions
     if v.starts_with("rgb") || v.starts_with("hsl") {
-        return v.replace(' ', "");
+        return v.replace(' ', "").into();
     }
 
-    v
+    v.into()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{normalize_value, MuseaLintResult, PreferDesignTokens, PreferDesignTokensConfig};
 
     fn create_config() -> PreferDesignTokensConfig {
         let mut config = PreferDesignTokensConfig::default();
@@ -318,7 +322,7 @@ mod tests {
         let mut result = MuseaLintResult::default();
         rule.check(source, &mut result);
         assert_eq!(result.warning_count, 1, "Should detect hardcoded color");
-        assert!(result.diagnostics[0].message.contains("color.primary"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

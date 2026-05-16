@@ -225,7 +225,8 @@ impl HoistTracker {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{HoistLevel, HoistTracker, PatchFlags};
+    use vize_carton::CompactString;
 
     #[test]
     fn test_patch_flags() {

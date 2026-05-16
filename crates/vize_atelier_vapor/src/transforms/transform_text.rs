@@ -2,7 +2,7 @@
 //!
 //! Transforms text and interpolation nodes into SetTextIRNode.
 
-use vize_carton::{Box, Bump, String, Vec};
+use vize_carton::{cstr, Box, Bump, String, Vec};
 
 use crate::ir::{OperationNode, SetTextIRNode};
 use vize_atelier_core::{ExpressionNode, InterpolationNode, SimpleExpressionNode, TextNode};
@@ -93,20 +93,20 @@ pub fn generate_text_expression(parts: &[(bool, String)]) -> String {
     if parts.len() == 1 {
         let (is_static, content) = &parts[0];
         if *is_static {
-            return format!("\"{}\"", escape_text(content)).into();
+            return cstr!("\"{}\"", escape_text(content));
         } else {
-            return format!("_toDisplayString({})", content).into();
+            return cstr!("_toDisplayString({content})");
         }
     }
 
     // Multiple parts - concatenate with +
-    let exprs: std::vec::Vec<std::string::String> = parts
+    let exprs: std::vec::Vec<vize_carton::CompactString> = parts
         .iter()
         .map(|(is_static, content)| {
             if *is_static {
-                format!("\"{}\"", escape_text(content))
+                cstr!("\"{}\"", escape_text(content))
             } else {
-                format!("_toDisplayString({})", content)
+                cstr!("_toDisplayString({content})")
             }
         })
         .collect();
@@ -115,16 +115,18 @@ pub fn generate_text_expression(parts: &[(bool, String)]) -> String {
 }
 
 /// Escape text for JavaScript string
-fn escape_text(s: &str) -> std::string::String {
+fn escape_text(s: &str) -> String {
     s.replace('\\', "\\\\")
         .replace('"', "\\\"")
         .replace('\n', "\\n")
         .replace('\r', "\\r")
+        .into()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::generate_text_expression;
+    use vize_carton::String;
 
     #[test]
     fn test_generate_text_expression_static() {
@@ -148,8 +150,6 @@ mod tests {
             (true, String::new("!")),
         ];
         let result = generate_text_expression(&parts);
-        assert!(result.contains("\"Hello, \""));
-        assert!(result.contains("_toDisplayString(name)"));
-        assert!(result.contains("\"!\""));
+        insta::assert_snapshot!(result.as_str());
     }
 }

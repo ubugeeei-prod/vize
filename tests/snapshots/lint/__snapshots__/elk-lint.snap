@@ -1,0 +1,3863 @@
+[
+  {
+    "file": "app/app.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountAvatar.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 24,
+        "column": 5,
+        "endLine": 24,
+        "endColumn": 132,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/account/AccountBigAvatar.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountBigCard.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 21,
+        "column": 41,
+        "endLine": 21,
+        "endColumn": 62,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/account/AccountBigCardSkeleton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountBotIndicator.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountCard.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountDisplayName.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountFollowButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountFollowRequestButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountHandle.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountHeader.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 134,
+        "column": 5,
+        "endLine": 134,
+        "endColumn": 120,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <component> is a static element and should not have interactive event handlers",
+        "line": 134,
+        "column": 5,
+        "endLine": 134,
+        "endColumn": 120,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <component> is deprecated",
+        "line": 134,
+        "column": 51,
+        "endLine": 134,
+        "endColumn": 66,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 135,
+        "column": 50,
+        "endLine": 135,
+        "endColumn": 71,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <label> is deprecated",
+        "line": 214,
+        "column": 9,
+        "endLine": 214,
+        "endColumn": 24,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
+        "line": 216,
+        "column": 9,
+        "endLine": 216,
+        "endColumn": 52
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
+        "line": 225,
+        "column": 9,
+        "endLine": 225,
+        "endColumn": 32
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <textarea> is an interactive element and cannot be nested inside another interactive element",
+        "line": 235,
+        "column": 11,
+        "endLine": 244,
+        "endColumn": 13
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 272,
+        "column": 1,
+        "endLine": 272,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 3,
+    "warningCount": 6
+  },
+  {
+    "file": "app/components/account/AccountHoverCard.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountHoverWrapper.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountInfo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountInlineInfo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountLockIndicator.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountMoreButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountMoved.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountPaginator.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountPostsFollowers.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountRolesIndicator.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/AccountTabs.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/account/TagHoverWrapper.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/aria/AriaAnnouncer.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/aria/AriaLog.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/aria/AriaStatus.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/command/CommandItem.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 16,
+        "column": 3,
+        "endLine": 21,
+        "endColumn": 4,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 16,
+        "column": 3,
+        "endLine": 21,
+        "endColumn": 4,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/command/CommandKey.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 20,
+        "column": 9,
+        "endLine": 20,
+        "endColumn": 24,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/command/CommandPanel.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unused-vars",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-vars] Key variable 'group' is defined by v-for but never used",
+        "line": 185,
+        "column": 11,
+        "endLine": 186,
+        "endColumn": 5,
+        "help": "Consider removing the key variable or prefix it with underscore: _key"
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
+        "line": 189,
+        "column": 7,
+        "endLine": 189,
+        "endColumn": 36
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
+        "line": 191,
+        "column": 7,
+        "endLine": 191,
+        "endColumn": 89
+      }
+    ],
+    "errorCount": 2,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/AnimateNumber.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/common/CommonAlert.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 16,
+        "column": 5,
+        "endLine": 16,
+        "endColumn": 20,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/CommonBlurhash.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 15,
+        "column": 53,
+        "endLine": 15,
+        "endColumn": 63,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/CommonCheckbox.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 14,
+        "column": 3,
+        "endLine": 19,
+        "endColumn": 4,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
+        "line": 14,
+        "column": 3,
+        "endLine": 19,
+        "endColumn": 4,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 38,
+        "column": 1,
+        "endLine": 38,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/common/CommonCropImage.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 72,
+        "column": 11,
+        "endLine": 72,
+        "endColumn": 34,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/CommonErrorMessage.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 14,
+        "column": 5,
+        "endLine": 14,
+        "endColumn": 49,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/CommonInputImage.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 75,
+        "column": 3,
+        "endLine": 82,
+        "endColumn": 4,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/label-has-for",
+        "severity": 1,
+        "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
+        "line": 75,
+        "column": 3,
+        "endLine": 82,
+        "endColumn": 4,
+        "help": "Fix options:\n1. Use for attribute:\n  <label for=\"name\">Name</label>\n  <input id=\"name\" type=\"text\">\n2. Wrap form control:\n  <label>Name <input type=\"text\"></label>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
+        "line": 75,
+        "column": 3,
+        "endLine": 82,
+        "endColumn": 4,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 83,
+        "column": 5,
+        "endLine": 90,
+        "endColumn": 6,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "a11y/alt-text",
+        "severity": 1,
+        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+        "line": 83,
+        "column": 5,
+        "endLine": 90,
+        "endColumn": 6,
+        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 85,
+        "column": 7,
+        "endLine": 85,
+        "endColumn": 22,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 6
+  },
+  {
+    "file": "app/components/common/CommonMask.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/common/CommonNotFound.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/common/CommonPaginator.vue",
+    "messages": [
+      {
+        "ruleId": "vue/v-slot-style",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 87,
+        "column": 11,
+        "endLine": 87,
+        "endColumn": 43,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
+        "ruleId": "vue/require-v-for-key",
+        "severity": 2,
+        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <slot>",
+        "line": 106,
+        "column": 11,
+        "endLine": 106,
+        "endColumn": 41,
+        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/CommonPreviewPrompt.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/common/CommonRadio.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 11,
+        "column": 3,
+        "endLine": 15,
+        "endColumn": 4,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
+        "line": 11,
+        "column": 3,
+        "endLine": 15,
+        "endColumn": 4,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 30,
+        "column": 1,
+        "endLine": 30,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/common/CommonRouteTabs.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 26,
+        "column": 69,
+        "endLine": 26,
+        "endColumn": 84,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/CommonScrollIntoView.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/common/CommonTabs.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
+        "line": 49,
+        "column": 8,
+        "endLine": 55,
+        "endColumn": 8,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/CommonTooltip.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/common/CommonTrending.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/common/CommonTrendingCharts.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/common/LocalizedNumber.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/common/OfflineChecker.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 9,
+        "column": 5,
+        "endLine": 9,
+        "endColumn": 20,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/dropdown/Dropdown.vue",
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 25,
+        "column": 30,
+        "endLine": 25,
+        "endColumn": 44,
+        "help": "Reorder attributes to follow the recommended order"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/common/dropdown/DropdownItem.vue",
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 54,
+        "column": 5,
+        "endLine": 54,
+        "endColumn": 13,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 52,
+        "column": 3,
+        "endLine": 63,
+        "endColumn": 4,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <component> is a static element and should not have interactive event handlers",
+        "line": 52,
+        "column": 3,
+        "endLine": 63,
+        "endColumn": 4,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "type/require-typed-emits",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 17,
+        "column": 14,
+        "endLine": 17,
+        "endColumn": 36,
+        "help": "Use defineEmits<...>() or a validator object with typed payload parameters."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 4
+  },
+  {
+    "file": "app/components/content/ContentCode.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-v-html",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 21,
+        "column": 39,
+        "endLine": 21,
+        "endColumn": 59,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/content/ContentMentionGroup.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/conversation/ConversationCard.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/conversation/ConversationPaginator.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/emoji/Emoji.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/help/HelpPreview.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 15,
+        "column": 32,
+        "endLine": 15,
+        "endColumn": 55,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+        "line": 36,
+        "column": 5,
+        "endLine": 36,
+        "endColumn": 47,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 39,
+        "column": 16,
+        "endLine": 39,
+        "endColumn": 60,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/list/Account.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/list/AccountSearchResult.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/list/ListEntry.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 113,
+        "column": 15,
+        "endLine": 113,
+        "endColumn": 30,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 126,
+        "column": 7,
+        "endLine": 133,
+        "endColumn": 8,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/list/Lists.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/magickeys/MagickeysKeyboardShortcuts.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <code> is deprecated",
+        "line": 163,
+        "column": 86,
+        "endLine": 163,
+        "endColumn": 112,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "type/require-typed-emits",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 2,
+        "column": 14,
+        "endLine": 2,
+        "endColumn": 36,
+        "help": "Use defineEmits<...>() or a validator object with typed payload parameters."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/main/MainContent.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 51,
+        "column": 106,
+        "endLine": 51,
+        "endColumn": 121,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/main/MainTitle.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 19,
+        "column": 3,
+        "endLine": 27,
+        "endColumn": 4,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <component> is a static element and should not have interactive event handlers",
+        "line": 19,
+        "column": 3,
+        "endLine": 27,
+        "endColumn": 4,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/modal/DurationPicker.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/modal/ModalConfirm.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/label-has-for",
+        "severity": 1,
+        "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
+        "line": 62,
+        "column": 7,
+        "endLine": 62,
+        "endColumn": 37,
+        "help": "Fix options:\n1. Use for attribute:\n  <label for=\"name\">Name</label>\n  <input id=\"name\" type=\"text\">\n2. Wrap form control:\n  <label>Name <input type=\"text\"></label>"
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 65,
+        "column": 7,
+        "endLine": 71,
+        "endColumn": 8,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'confirm' is a browser-only global and is not available in SSR",
+        "line": 79,
+        "column": 9,
+        "endLine": 79,
+        "endColumn": 54,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/modal/ModalContainer.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/modal/ModalDialog.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 148,
+        "column": 9,
+        "endLine": 148,
+        "endColumn": 130,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 148,
+        "column": 9,
+        "endLine": 148,
+        "endColumn": 130,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/modal/ModalError.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 17,
+        "column": 7,
+        "endLine": 17,
+        "endColumn": 51,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
+        "line": 27,
+        "column": 9,
+        "endLine": 27,
+        "endColumn": 20,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/modal/ModalMediaPreview.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 40,
+        "column": 3,
+        "endLine": 40,
+        "endColumn": 59,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 40,
+        "column": 3,
+        "endLine": 40,
+        "endColumn": 59,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "type/require-typed-emits",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 2,
+        "column": 14,
+        "endLine": 2,
+        "endColumn": 36,
+        "help": "Use defineEmits<...>() or a validator object with typed payload parameters."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/modal/ModalMediaPreviewCarousel.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 282,
+        "column": 11,
+        "endLine": 282,
+        "endColumn": 45,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/nav/NavBottom.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <nav> is deprecated",
+        "line": 60,
+        "column": 10,
+        "endLine": 60,
+        "endColumn": 25,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/nav/NavBottomMoreMenu.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 159,
+        "column": 16,
+        "endLine": 159,
+        "endColumn": 57,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/nav/NavFooter.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/NavLogo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/NavSide.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/NavSideItem.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/NavTitle.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/NavUser.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/NavUserSkeleton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Bookmark.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Compose.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Explore.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Favorite.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Federated.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Hashtag.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Home.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/List.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Local.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Mention.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/MoreMenu.vue",
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 7,
+        "column": 38,
+        "endLine": 7,
+        "endColumn": 54,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/v-slot-style",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 7,
+        "column": 5,
+        "endLine": 7,
+        "endColumn": 37,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/nav/button/Notification.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/ScheduledPosts.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nav/button/Search.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'Search' is a reserved HTML element name and cannot be used as a component name",
+        "line": 7,
+        "column": 11,
+        "endLine": 7,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/notification/NotificationCard.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/notification/NotificationEnablePushNotification.client.vue",
+    "messages": [
+      {
+        "ruleId": "type/require-typed-emits",
+        "severity": 1,
+        "message": "[vize:type/require-typed-emits] Emit should have a type definition",
+        "line": 10,
+        "column": 1,
+        "endLine": 10,
+        "endColumn": 35,
+        "help": "Use defineEmits<...>() or a validator object with typed payload parameters."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/notification/NotificationGroupedFollow.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 65,
+        "column": 7,
+        "endLine": 69,
+        "endColumn": 8,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 65,
+        "column": 7,
+        "endLine": 69,
+        "endColumn": 8,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 85,
+        "column": 9,
+        "endLine": 85,
+        "endColumn": 94,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 85,
+        "column": 9,
+        "endLine": 85,
+        "endColumn": 94,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 4
+  },
+  {
+    "file": "app/components/notification/NotificationGroupedLikes.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/notification/NotificationPaginator.vue",
+    "messages": [
+      {
+        "ruleId": "vue/prop-name-casing",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'eventType' should be 'event-type' (kebab-case)",
+        "line": 181,
+        "column": 5,
+        "endLine": 181,
+        "endColumn": 29,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/prop-name-casing",
+        "severity": 1,
+        "message": "[vize:vue/prop-name-casing] Prop 'virtualScroller' should be 'virtual-scroller' (kebab-case)",
+        "line": 182,
+        "column": 5,
+        "endLine": 182,
+        "endColumn": 39,
+        "help": "Use kebab-case for prop names in templates:\n  <!-- Bad -->\n  <MyComponent myProp=\"value\" />\n  \n  <!-- Good -->\n  <MyComponent my-prop=\"value\" />"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 181,
+        "column": 5,
+        "endLine": 181,
+        "endColumn": 29,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "vue/attribute-hyphenation",
+        "severity": 1,
+        "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+        "line": 182,
+        "column": 5,
+        "endLine": 182,
+        "endColumn": 39,
+        "help": "Use kebab-case for attribute names"
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
+        "line": 185,
+        "column": 44,
+        "endLine": 185,
+        "endColumn": 59,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 5
+  },
+  {
+    "file": "app/components/notification/NotificationPreferences.client.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/no-refer-to-non-existent-id",
+        "severity": 1,
+        "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"pn-s\" which does not exist in the template",
+        "line": 115,
+        "column": 55,
+        "endLine": 115,
+        "endColumn": 77,
+        "help": "Why: ID reference attributes like for, aria-labelledby, aria-describedby, etc. must point to an existing element with that id. A broken reference silently breaks the association.\nFix: Ensure the referenced ID exists in the template:\n  <label for=\"name\">Name:</label>\n  <input id=\"name\" type=\"text\">"
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 117,
+        "column": 37,
+        "endLine": 117,
+        "endColumn": 52,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <span> is deprecated",
+        "line": 167,
+        "column": 21,
+        "endLine": 167,
+        "endColumn": 40,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/notification/NotificationSubscribePushNotificationError.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 18,
+        "column": 5,
+        "endLine": 18,
+        "endColumn": 49,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/publish/PublishAttachment.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 32,
+        "column": 7,
+        "endLine": 38,
+        "endColumn": 8,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 32,
+        "column": 7,
+        "endLine": 38,
+        "endColumn": 8,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <textarea> elements must have an associated label",
+        "line": 59,
+        "column": 13,
+        "endLine": 59,
+        "endColumn": 106,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/publish/PublishCharacterCounter.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/publish/PublishEditorTools.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/publish/PublishEmojiPicker.client.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/publish/PublishLanguagePicker.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unused-components",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'Fuse' is registered but never used in template",
+        "line": 45,
+        "column": 11,
+        "endLine": 46,
+        "endColumn": 4,
+        "help": "Remove the unused import or use the component in your template"
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 48,
+        "column": 7,
+        "endLine": 53,
+        "endColumn": 8,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <input> is deprecated",
+        "line": 52,
+        "column": 22,
+        "endLine": 52,
+        "endColumn": 37,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/publish/PublishQuoteApprovalPicker.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/publish/PublishThreadTools.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/publish/PublishVisibilityPicker.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/publish/PublishWidget.vue",
+    "messages": [
+      {
+        "ruleId": "html/id-duplication",
+        "severity": 2,
+        "message": "[vize:html/id-duplication] Duplicate id=\"publish-failed\" found in template",
+        "line": 457,
+        "column": 23,
+        "endLine": 457,
+        "endColumn": 42,
+        "help": "Element IDs must be unique within a document. Duplicate IDs break label associations, ARIA references, and getElementById()."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 407,
+        "column": 22,
+        "endLine": 407,
+        "endColumn": 37,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 415,
+        "column": 62,
+        "endLine": 415,
+        "endColumn": 91,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 428,
+        "column": 15,
+        "endLine": 431,
+        "endColumn": 16,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <input> is deprecated",
+        "line": 430,
+        "column": 67,
+        "endLine": 430,
+        "endColumn": 82,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "ssr/no-hydration-mismatch",
+        "severity": 1,
+        "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
+        "line": 487,
+        "column": 22,
+        "endLine": 487,
+        "endColumn": 102,
+        "help": "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values"
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 553,
+        "column": 15,
+        "endLine": 558,
+        "endColumn": 16,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <input> is deprecated",
+        "line": 554,
+        "column": 41,
+        "endLine": 554,
+        "endColumn": 56,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <blockquote> is deprecated",
+        "line": 590,
+        "column": 45,
+        "endLine": 590,
+        "endColumn": 62,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 597,
+        "column": 58,
+        "endLine": 597,
+        "endColumn": 73,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 604,
+        "column": 99,
+        "endLine": 604,
+        "endColumn": 114,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 690,
+        "column": 17,
+        "endLine": 696,
+        "endColumn": 18,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
+        "line": 760,
+        "column": 19,
+        "endLine": 760,
+        "endColumn": 59
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
+        "line": 779,
+        "column": 19,
+        "endLine": 779,
+        "endColumn": 51
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
+        "line": 782,
+        "column": 19,
+        "endLine": 782,
+        "endColumn": 59
+      }
+    ],
+    "errorCount": 4,
+    "warningCount": 11
+  },
+  {
+    "file": "app/components/publish/PublishWidgetFull.client.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/publish/PublishWidgetList.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/pwa/PwaBadge.client.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/pwa/PwaInstallPrompt.client.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/pwa/PwaPrompt.client.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/report/ReportModal.vue",
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 138,
+        "column": 15,
+        "endLine": 138,
+        "endColumn": 40,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <textarea> elements must have an associated label",
+        "line": 160,
+        "column": 9,
+        "endLine": 160,
+        "endColumn": 121,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <textarea> is deprecated",
+        "line": 160,
+        "column": 64,
+        "endLine": 160,
+        "endColumn": 70,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "vue/attribute-order",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 194,
+        "column": 15,
+        "endLine": 194,
+        "endColumn": 42,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 253,
+        "column": 1,
+        "endLine": 253,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 5
+  },
+  {
+    "file": "app/components/search/SearchAccountInfo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/search/SearchEmojiInfo.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/img-alt",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 14,
+        "column": 5,
+        "endLine": 19,
+        "endColumn": 6,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "a11y/alt-text",
+        "severity": 1,
+        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+        "line": 14,
+        "column": 5,
+        "endLine": 19,
+        "endColumn": 6,
+        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 17,
+        "column": 7,
+        "endLine": 17,
+        "endColumn": 23,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/search/SearchHashtagInfo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/search/SearchResult.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/search/SearchResultSkeleton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/search/SearchWidget.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 67,
+        "column": 18,
+        "endLine": 67,
+        "endColumn": 33,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 69,
+        "column": 7,
+        "endLine": 87,
+        "endColumn": 8,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 94,
+        "column": 27,
+        "endLine": 94,
+        "endColumn": 42,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/settings/SettingsBottomNav.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
+        "line": 100,
+        "column": 51,
+        "endLine": 100,
+        "endColumn": 74,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/settings/SettingsColorMode.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
+        "line": 39,
+        "column": 50,
+        "endLine": 39,
+        "endColumn": 73,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/settings/SettingsFontSize.vue",
+    "messages": [
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 57,
+        "column": 1,
+        "endLine": 57,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/settings/SettingsItem.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/settings/SettingsLanguage.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
+        "line": 11,
+        "column": 3,
+        "endLine": 11,
+        "endColumn": 43,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/settings/SettingsProfileMetadata.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 64,
+        "column": 9,
+        "endLine": 69,
+        "endColumn": 10,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 70,
+        "column": 9,
+        "endLine": 75,
+        "endColumn": 10,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/settings/SettingsSponsorsList.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/settings/SettingsThemeColors.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/settings/SettingsToggleItem.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/settings/SettingsTranslations.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unused-components",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'ISO6391' is registered but never used in template",
+        "line": 30,
+        "column": 11,
+        "endLine": 31,
+        "endColumn": 7,
+        "help": "Remove the unused import or use the component in your template"
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
+        "line": 48,
+        "column": 11,
+        "endLine": 48,
+        "endColumn": 62,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusAccountDetails.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusActionButton.vue",
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 52,
+        "column": 21,
+        "endLine": 52,
+        "endColumn": 29,
+        "help": "Reorder attributes to follow the recommended order"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/status/StatusActions.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusActionsMore.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusAttachment.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/media-has-caption",
+        "severity": 1,
+        "message": "[vize:a11y/media-has-caption] <video> elements must have a <track kind=\"captions\"> for accessibility",
+        "line": 132,
+        "column": 9,
+        "endLine": 150,
+        "endColumn": 10,
+        "help": "Fix:\n  <video src=\"movie.mp4\">\n  <track kind=\"captions\" src=\"captions.vtt\" />\n  </video>\nAlternatives:\n- Add muted attribute for decorative media\n- Add aria-label for described media"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 151,
+        "column": 19,
+        "endLine": 151,
+        "endColumn": 65,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "a11y/media-has-caption",
+        "severity": 1,
+        "message": "[vize:a11y/media-has-caption] <video> elements must have a <track kind=\"captions\"> for accessibility",
+        "line": 172,
+        "column": 9,
+        "endLine": 187,
+        "endColumn": 10,
+        "help": "Fix:\n  <video src=\"movie.mp4\">\n  <track kind=\"captions\" src=\"captions.vtt\" />\n  </video>\nAlternatives:\n- Add muted attribute for decorative media\n- Add aria-label for described media"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 188,
+        "column": 19,
+        "endLine": 188,
+        "endColumn": 65,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "a11y/media-has-caption",
+        "severity": 1,
+        "message": "[vize:a11y/media-has-caption] <audio> elements must have a <track kind=\"captions\"> for accessibility",
+        "line": 204,
+        "column": 7,
+        "endLine": 204,
+        "endColumn": 28,
+        "help": "Fix:\n  <video src=\"movie.mp4\">\n  <track kind=\"captions\" src=\"captions.vtt\" />\n  </video>\nAlternatives:\n- Add muted attribute for decorative media\n- Add aria-label for described media"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 205,
+        "column": 17,
+        "endLine": 205,
+        "endColumn": 63,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 223,
+        "column": 11,
+        "endLine": 223,
+        "endColumn": 21,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 224,
+        "column": 11,
+        "endLine": 224,
+        "endColumn": 27,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 300,
+        "column": 1,
+        "endLine": 300,
+        "endColumn": 23,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 9
+  },
+  {
+    "file": "app/components/status/StatusBody.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 54,
+        "column": 21,
+        "endLine": 54,
+        "endColumn": 36,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 68,
+        "column": 1,
+        "endLine": 68,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusCard.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 121,
+        "column": 34,
+        "endLine": 121,
+        "endColumn": 49,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 122,
+        "column": 34,
+        "endLine": 122,
+        "endColumn": 49,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 123,
+        "column": 34,
+        "endLine": 123,
+        "endColumn": 49,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 125,
+        "column": 29,
+        "endLine": 125,
+        "endColumn": 44,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 177,
+        "column": 24,
+        "endLine": 177,
+        "endColumn": 39,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 5
+  },
+  {
+    "file": "app/components/status/StatusCardSkeleton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusContent.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusDetails.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 66,
+        "column": 10,
+        "endLine": 66,
+        "endColumn": 25,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 69,
+        "column": 10,
+        "endLine": 69,
+        "endColumn": 25,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusEmbeddedMedia.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 86,
+        "column": 9,
+        "endLine": 86,
+        "endColumn": 26,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 100,
+        "column": 1,
+        "endLine": 100,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusEmojiReaction.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 29,
+        "column": 17,
+        "endLine": 29,
+        "endColumn": 42,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 30,
+        "column": 14,
+        "endLine": 30,
+        "endColumn": 30,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusLink.vue",
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 40,
+        "column": 5,
+        "endLine": 40,
+        "endColumn": 13,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 38,
+        "column": 3,
+        "endLine": 50,
+        "endColumn": 4,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusMedia.vue",
+    "messages": [
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 36,
+        "column": 1,
+        "endLine": 36,
+        "endColumn": 23,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/status/StatusNotFound.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusPoll.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 67,
+        "column": 5,
+        "endLine": 67,
+        "endColumn": 122,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <form> is a static element and should not have interactive event handlers",
+        "line": 67,
+        "column": 5,
+        "endLine": 67,
+        "endColumn": 122,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusPreviewCard.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusPreviewCardInfo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusPreviewCardMoreFromAuthor.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusPreviewCardNormal.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 72,
+        "column": 11,
+        "endLine": 72,
+        "endColumn": 28,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 120,
+        "column": 1,
+        "endLine": 120,
+        "endColumn": 23,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusPreviewCardSkeleton.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 22,
+        "column": 7,
+        "endLine": 22,
+        "endColumn": 20,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/status/StatusPreviewGitHub.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/img-alt",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 117,
+        "column": 13,
+        "endLine": 117,
+        "endColumn": 93,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "a11y/alt-text",
+        "severity": 1,
+        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+        "line": 117,
+        "column": 13,
+        "endLine": 117,
+        "endColumn": 93,
+        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 117,
+        "column": 74,
+        "endLine": 117,
+        "endColumn": 92,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "a11y/img-alt",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 124,
+        "column": 13,
+        "endLine": 124,
+        "endColumn": 99,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "a11y/alt-text",
+        "severity": 1,
+        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+        "line": 124,
+        "column": 13,
+        "endLine": 124,
+        "endColumn": 99,
+        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 124,
+        "column": 72,
+        "endLine": 124,
+        "endColumn": 98,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 6
+  },
+  {
+    "file": "app/components/status/StatusPreviewStackBlitz.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusQuote.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 54,
+        "column": 14,
+        "endLine": 54,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 60,
+        "column": 14,
+        "endLine": 60,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 66,
+        "column": 14,
+        "endLine": 66,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 72,
+        "column": 14,
+        "endLine": 72,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 78,
+        "column": 14,
+        "endLine": 78,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 84,
+        "column": 14,
+        "endLine": 84,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 90,
+        "column": 14,
+        "endLine": 90,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 99,
+        "column": 14,
+        "endLine": 99,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 105,
+        "column": 14,
+        "endLine": 105,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 111,
+        "column": 14,
+        "endLine": 111,
+        "endColumn": 26,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 10
+  },
+  {
+    "file": "app/components/status/StatusReactedBy.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 67,
+        "column": 7,
+        "endLine": 72,
+        "endColumn": 8,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 67,
+        "column": 7,
+        "endLine": 72,
+        "endColumn": 8,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusReplyingTo.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusScheduledCard.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-v-html",
+        "severity": 1,
+        "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "line": 71,
+        "column": 12,
+        "endLine": 71,
+        "endColumn": 37,
+        "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 78,
+        "column": 11,
+        "endLine": 78,
+        "endColumn": 62,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/status/StatusSpoiler.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 34,
+        "column": 79,
+        "endLine": 34,
+        "endColumn": 94,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/status/StatusTranslation.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/StatusVisibilityIndicator.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/edit/StatusEditHistory.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/edit/StatusEditHistorySkeleton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/edit/StatusEditIndicator.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/status/edit/StatusEditPreview.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/tag/TagActionButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/tag/TagCard.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 32,
+        "column": 3,
+        "endLine": 36,
+        "endColumn": 4,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/tag/TagCardPaginator.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/tag/TagCardSkeleton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelineBlocks.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelineBookmarks.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelineConversations.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelineDomainBlocks.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 16,
+        "column": 11,
+        "endLine": 16,
+        "endColumn": 91,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 16,
+        "column": 11,
+        "endLine": 16,
+        "endColumn": 91,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/timeline/TimelineFavourites.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelineHome.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelineMutes.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelineNotifications.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelinePaginator.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
+        "line": 35,
+        "column": 44,
+        "endLine": 35,
+        "endColumn": 59,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/timeline/TimelinePinned.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelinePublic.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelinePublicLocal.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelineScheduledPosts.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/timeline/TimelineScheduledPostsPaginator.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
+        "line": 37,
+        "column": 44,
+        "endLine": 37,
+        "endColumn": 59,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/timeline/TimelineSkeleton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/tiptap/TiptapCodeBlock.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
+        "line": 40,
+        "column": 7,
+        "endLine": 45,
+        "endColumn": 8,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <select> is deprecated",
+        "line": 44,
+        "column": 22,
+        "endLine": 44,
+        "endColumn": 37,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/tiptap/TiptapEmojiList.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 79,
+        "column": 39,
+        "endLine": 79,
+        "endColumn": 62,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/tiptap/TiptapHashtagList.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 49,
+        "column": 75,
+        "endLine": 49,
+        "endColumn": 98,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/tiptap/TiptapMentionList.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 49,
+        "column": 75,
+        "endLine": 49,
+        "endColumn": 98,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/user/UserDropdown.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/user/UserPicker.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/user/UserSignIn.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unused-components",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'Fuse' is registered but never used in template",
+        "line": 99,
+        "column": 11,
+        "endLine": 100,
+        "endColumn": 4,
+        "help": "Remove the unused import or use the component in your template"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 102,
+        "column": 12,
+        "endLine": 102,
+        "endColumn": 35,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 114,
+        "column": 9,
+        "endLine": 114,
+        "endColumn": 24,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 121,
+        "column": 9,
+        "endLine": 136,
+        "endColumn": 10,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 140,
+        "column": 27,
+        "endLine": 140,
+        "endColumn": 42,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "vue/attribute-order",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 148,
+        "column": 13,
+        "endLine": 148,
+        "endColumn": 24,
+        "help": "Reorder attributes to follow the recommended order"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 6
+  },
+  {
+    "file": "app/components/user/UserSignInEntry.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/user/UserSwitcher.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/click-events-have-key-events",
+        "severity": 1,
+        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
+        "line": 34,
+        "column": 3,
+        "endLine": 34,
+        "endColumn": 76,
+        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 34,
+        "column": 3,
+        "endLine": 34,
+        "endColumn": 76,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 47,
+        "column": 10,
+        "endLine": 47,
+        "endColumn": 25,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/error.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/layouts/default.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/img-alt",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 71,
+        "column": 15,
+        "endLine": 71,
+        "endColumn": 61,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "a11y/alt-text",
+        "severity": 1,
+        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+        "line": 71,
+        "column": 15,
+        "endLine": 71,
+        "endColumn": 61,
+        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 71,
+        "column": 30,
+        "endLine": 71,
+        "endColumn": 60,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/layouts/none.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[...permalink].vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/@[account]/[status].vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 71,
+        "column": 32,
+        "endLine": 71,
+        "endColumn": 47,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "vue/v-slot-style",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 99,
+        "column": 15,
+        "endLine": 99,
+        "endColumn": 47,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/[[server]]/@[account]/index/followers.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/@[account]/index/following.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/@[account]/index/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/@[account]/index/media.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/@[account]/index/with_replies.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'with_replies' should be PascalCase",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/[[server]]/@[account]/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/explore/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/explore/links.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/explore/tags.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/explore/users.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/explore.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/index.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/img-alt",
+        "severity": 1,
+        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
+        "line": 13,
+        "column": 5,
+        "endLine": 13,
+        "endColumn": 80,
+        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
+      },
+      {
+        "ruleId": "a11y/alt-text",
+        "severity": 1,
+        "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+        "line": 13,
+        "column": 5,
+        "endLine": 13,
+        "endColumn": 80,
+        "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 13,
+        "column": 50,
+        "endLine": 13,
+        "endColumn": 79,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/pages/[[server]]/list/[list]/index/accounts.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <form> is deprecated",
+        "line": 78,
+        "column": 7,
+        "endLine": 78,
+        "endColumn": 22,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 83,
+        "column": 17,
+        "endLine": 83,
+        "endColumn": 32,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 88,
+        "column": 9,
+        "endLine": 102,
+        "endColumn": 10,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 111,
+        "column": 27,
+        "endLine": 111,
+        "endColumn": 42,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 121,
+        "column": 15,
+        "endLine": 121,
+        "endColumn": 30,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 5
+  },
+  {
+    "file": "app/pages/[[server]]/list/[list]/index/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/list/[list]/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/lists/index.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <form> is deprecated",
+        "line": 81,
+        "column": 9,
+        "endLine": 81,
+        "endColumn": 24,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 89,
+        "column": 19,
+        "endLine": 89,
+        "endColumn": 34,
+        "help": "Use CSS border instead."
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 92,
+        "column": 11,
+        "endLine": 103,
+        "endColumn": 12,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/pages/[[server]]/lists.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/public/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/public/local.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/search.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-reserved-component-names",
+        "severity": 2,
+        "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
+        "line": 25,
+        "column": 11,
+        "endLine": 25,
+        "endColumn": 11,
+        "help": "Rename the component to avoid using reserved names"
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/status/[status].vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/[[server]]/tags/[tag].vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/blocks.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/bookmarks.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/compose.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/conversations.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/domain_blocks.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'domain_blocks' should be PascalCase",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/favourites.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/hashtags/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/hashtags.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/home.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/intent/post.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/mutes.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/notifications/[filter].vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/notifications/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/notifications.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/pinned.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/scheduled-posts.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'scheduled-posts' should be PascalCase",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/settings/about/index.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 28,
+        "column": 34,
+        "endLine": 28,
+        "endColumn": 57,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 131,
+        "column": 16,
+        "endLine": 131,
+        "endColumn": 58,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/settings/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/settings/interface/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/settings/language/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/settings/notifications/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/settings/notifications/notifications.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/settings/notifications/push-notifications.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'push-notifications' should be PascalCase",
+        "line": 16,
+        "column": 11,
+        "endLine": 16,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/settings/preferences/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/settings/profile/appearance.vue",
+    "messages": [
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <p> (block element) is not allowed inside <label> (phrasing content only)",
+        "line": 169,
+        "column": 11,
+        "endLine": 169,
+        "endColumn": 26
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <p> (block element) is not allowed inside <label> (phrasing content only)",
+        "line": 177,
+        "column": 11,
+        "endLine": 177,
+        "endColumn": 26
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <textarea> is an interactive element and cannot be nested inside another interactive element",
+        "line": 180,
+        "column": 11,
+        "endLine": 180,
+        "endColumn": 81
+      }
+    ],
+    "errorCount": 3,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/settings/profile/featured-tags.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'featured-tags' should be PascalCase",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/settings/profile/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/settings/users/index.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 82,
+        "column": 18,
+        "endLine": 82,
+        "endColumn": 33,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/settings.vue",
+    "messages": [
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 20,
+        "column": 12,
+        "endLine": 20,
+        "endColumn": 27,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/share-target.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'share-target' should be PascalCase",
+        "line": 14,
+        "column": 11,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase:\n  my-component.vue -> MyComponent.vue\n  myComponent.vue  -> MyComponent.vue"
+      },
+      {
+        "ruleId": "html/deprecated-attr",
+        "severity": 1,
+        "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
+        "line": 30,
+        "column": 11,
+        "endLine": 30,
+        "endColumn": 55,
+        "help": "Use CSS border instead."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  }
+]

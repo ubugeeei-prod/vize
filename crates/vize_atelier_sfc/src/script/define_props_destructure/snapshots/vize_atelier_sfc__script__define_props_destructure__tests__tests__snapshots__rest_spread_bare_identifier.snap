@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
+assertion_line: 664
+expression: result
+---
+console.log(__props)
+const b = __props

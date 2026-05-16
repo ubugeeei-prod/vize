@@ -51,7 +51,7 @@ impl Rule for NoAriaHiddenOnFocusable {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoAriaHiddenOnFocusable;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

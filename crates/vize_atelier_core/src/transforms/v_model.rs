@@ -103,6 +103,7 @@ pub fn transform_v_model<'a>(
                 ))),
                 modifiers: Vec::new_in(allocator),
                 for_parse_result: None,
+                shorthand: false,
                 loc: dir.loc.clone(),
             },
             allocator,
@@ -133,6 +134,7 @@ pub fn transform_v_model<'a>(
                 ))),
                 modifiers: Vec::new_in(allocator),
                 for_parse_result: None,
+                shorthand: false,
                 loc: dir.loc.clone(),
             },
             allocator,
@@ -160,6 +162,7 @@ pub fn transform_v_model<'a>(
                 ))),
                 modifiers: Vec::new_in(allocator),
                 for_parse_result: None,
+                shorthand: false,
                 loc: dir.loc.clone(),
             },
             allocator,
@@ -206,7 +209,9 @@ pub fn get_model_event_prop(el: &ElementNode<'_>) -> (&'static str, &'static str
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        parse_model_modifiers, supports_v_model, SimpleExpressionNode, SourceLocation, String, Vec,
+    };
     use vize_carton::Allocator;
 
     #[test]

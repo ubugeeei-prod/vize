@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_vapor/src/generate/mod.rs
+expression: result.code.as_str()
+---
+import { template as _template } from 'vue';
+const t0 = _template("<div>hello</div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  return n0
+}

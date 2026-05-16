@@ -1,13 +1,16 @@
 //! Error types for batch type checking.
 
 use std::path::{Path, PathBuf};
+use vize_carton::append;
+use vize_carton::cstr;
+use vize_carton::String;
 
-/// Error type for tsgo operations.
+/// Error type for Corsa-backed batch operations.
 #[derive(Debug, thiserror::Error)]
-pub enum TsgoError {
-    /// tsgo executable not found.
+pub enum CorsaError {
+    /// Corsa executable not found.
     #[error("{0}")]
-    TsgoNotFound(#[from] TsgoNotFoundError),
+    CorsaNotFound(#[from] CorsaNotFoundError),
 
     /// IO error.
     #[error("IO error: {0}")]
@@ -21,9 +24,9 @@ pub enum TsgoError {
     #[error("Path error: {path}")]
     PathError { path: PathBuf },
 
-    /// tsgo returned an error.
-    #[error("tsgo error (exit code {exit_code}): {message}")]
-    TsgoExecution { exit_code: i32, message: String },
+    /// Corsa returned an error.
+    #[error("corsa error (exit code {exit_code}): {message}")]
+    CorsaExecution { exit_code: i32, message: String },
 
     /// JSON parse error.
     #[error("JSON parse error: {0}")]
@@ -42,8 +45,8 @@ pub enum TsgoError {
     WalkDir(#[from] walkdir::Error),
 }
 
-/// Result type for tsgo operations.
-pub type TsgoResult<T> = Result<T, TsgoError>;
+/// Result type for Corsa-backed batch operations.
+pub type CorsaResult<T> = Result<T, CorsaError>;
 
 /// Package manager type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,14 +57,14 @@ pub enum PackageManager {
     Bun,
 }
 
-/// Error when tsgo is not found.
+/// Error when a Corsa executable cannot be resolved.
 #[derive(Debug)]
-pub struct TsgoNotFoundError {
+pub struct CorsaNotFoundError {
     detected_pm: Option<PackageManager>,
 }
 
-impl TsgoNotFoundError {
-    /// Create a new TsgoNotFoundError.
+impl CorsaNotFoundError {
+    /// Create a new CorsaNotFoundError.
     pub fn new(project_root: &Path) -> Self {
         let detected_pm = detect_package_manager(project_root);
         Self { detected_pm }
@@ -74,32 +77,36 @@ impl TsgoNotFoundError {
 
     /// Generate CLI error message with installation instructions.
     pub fn display_message(&self) -> String {
-        let mut msg = String::new();
+        let mut msg = String::default();
 
-        msg.push_str("error: tsgo not found\n\n");
+        msg.push_str("error: corsa not found\n\n");
         msg.push_str("vize check requires '@typescript/native-preview' to be installed.\n\n");
 
         if let Some(pm) = self.detected_pm {
             msg.push_str("To install, run:\n\n");
-            msg.push_str(&format!("  {}\n", self.install_command(pm)));
+            append!(msg, "  {}\n", self.install_command(pm));
         } else {
             msg.push_str("To install, run one of the following:\n\n");
-            msg.push_str(&format!(
+            append!(
+                msg,
                 "  {}  # npm\n",
                 self.install_command(PackageManager::Npm)
-            ));
-            msg.push_str(&format!(
+            );
+            append!(
+                msg,
                 "  {}  # pnpm\n",
                 self.install_command(PackageManager::Pnpm)
-            ));
-            msg.push_str(&format!(
+            );
+            append!(
+                msg,
                 "  {}  # yarn\n",
                 self.install_command(PackageManager::Yarn)
-            ));
-            msg.push_str(&format!(
+            );
+            append!(
+                msg,
                 "  {}  # bun\n",
                 self.install_command(PackageManager::Bun)
-            ));
+            );
         }
 
         msg
@@ -107,21 +114,21 @@ impl TsgoNotFoundError {
 
     fn install_command(&self, pm: PackageManager) -> String {
         match pm {
-            PackageManager::Npm => "npm install -D @typescript/native-preview".to_string(),
-            PackageManager::Pnpm => "pnpm add -D @typescript/native-preview".to_string(),
-            PackageManager::Yarn => "yarn add -D @typescript/native-preview".to_string(),
-            PackageManager::Bun => "bun add -D @typescript/native-preview".to_string(),
+            PackageManager::Npm => cstr!("npm install -D @typescript/native-preview"),
+            PackageManager::Pnpm => cstr!("pnpm add -D @typescript/native-preview"),
+            PackageManager::Yarn => cstr!("yarn add -D @typescript/native-preview"),
+            PackageManager::Bun => cstr!("bun add -D @typescript/native-preview"),
         }
     }
 }
 
-impl std::fmt::Display for TsgoNotFoundError {
+impl std::fmt::Display for CorsaNotFoundError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.display_message())
     }
 }
 
-impl std::error::Error for TsgoNotFoundError {}
+impl std::error::Error for CorsaNotFoundError {}
 
 /// Detect the project's package manager.
 pub fn detect_package_manager(project_root: &Path) -> Option<PackageManager> {
@@ -165,26 +172,23 @@ pub fn detect_package_manager(project_root: &Path) -> Option<PackageManager> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{CorsaNotFoundError, PackageManager};
 
     #[test]
-    fn test_tsgo_not_found_error_message() {
-        let error = TsgoNotFoundError {
+    fn test_corsa_not_found_error_message() {
+        let error = CorsaNotFoundError {
             detected_pm: Some(PackageManager::Pnpm),
         };
 
         let msg = error.display_message();
-        assert!(msg.contains("pnpm add -D @typescript/native-preview"));
+        insta::assert_snapshot!(msg.as_str());
     }
 
     #[test]
-    fn test_tsgo_not_found_no_pm() {
-        let error = TsgoNotFoundError { detected_pm: None };
+    fn test_corsa_not_found_no_pm() {
+        let error = CorsaNotFoundError { detected_pm: None };
 
         let msg = error.display_message();
-        assert!(msg.contains("npm install"));
-        assert!(msg.contains("pnpm add"));
-        assert!(msg.contains("yarn add"));
-        assert!(msg.contains("bun add"));
+        insta::assert_snapshot!(msg.as_str());
     }
 }

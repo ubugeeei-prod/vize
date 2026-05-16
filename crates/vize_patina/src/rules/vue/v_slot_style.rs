@@ -96,7 +96,7 @@ impl Rule for VSlotStyle {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{VSlotStyle, VSlotStyleOption};
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

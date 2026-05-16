@@ -5,10 +5,13 @@
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, Statement};
-use oxc_ast::visit::walk;
-use oxc_ast::Visit;
+use oxc_ast_visit::walk;
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_carton::cstr;
+use vize_carton::String;
+use vize_carton::ToCompactString;
 
 /// Offset adjustment for source map.
 #[derive(Debug, Clone)]
@@ -82,6 +85,45 @@ impl ImportRewriter {
 
     /// Rewrite imports in the given source code.
     pub fn rewrite(&self, source: &str, source_type: SourceType) -> RewriteResult {
+        if !source.contains(".vue") {
+            return RewriteResult {
+                code: source.to_compact_string(),
+                source_map: ImportSourceMap::empty(),
+            };
+        }
+
+        self.rewrite_with(source, source_type, |path| {
+            self.rewrite_module_specifier(path)
+        })
+    }
+
+    /// Rewrite emitted declaration imports back to `.vue` specifiers.
+    pub fn rewrite_declaration_specifiers(
+        &self,
+        source: &str,
+        source_type: SourceType,
+    ) -> RewriteResult {
+        if !source.contains(".vue.ts") {
+            return RewriteResult {
+                code: source.to_compact_string(),
+                source_map: ImportSourceMap::empty(),
+            };
+        }
+
+        self.rewrite_with(source, source_type, |path| {
+            self.rewrite_declaration_specifier(path)
+        })
+    }
+
+    fn rewrite_with<F>(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        rewrite_specifier: F,
+    ) -> RewriteResult
+    where
+        F: Fn(&str) -> Option<String>,
+    {
         let allocator = Allocator::default();
         let parser = Parser::new(&allocator, source, source_type);
         let result = parser.parse();
@@ -92,7 +134,7 @@ impl ImportRewriter {
         for stmt in &result.program.body {
             match stmt {
                 Statement::ImportDeclaration(decl) => {
-                    if let Some(rewrite) = self.rewrite_module_specifier(&decl.source.value) {
+                    if let Some(rewrite) = rewrite_specifier(&decl.source.value) {
                         rewrites.push((
                             decl.source.span.start + 1, // +1 to skip opening quote
                             decl.source.span.end - 1,   // -1 to skip closing quote
@@ -102,13 +144,13 @@ impl ImportRewriter {
                 }
                 Statement::ExportNamedDeclaration(decl) => {
                     if let Some(source) = &decl.source {
-                        if let Some(rewrite) = self.rewrite_module_specifier(&source.value) {
+                        if let Some(rewrite) = rewrite_specifier(&source.value) {
                             rewrites.push((source.span.start + 1, source.span.end - 1, rewrite));
                         }
                     }
                 }
                 Statement::ExportAllDeclaration(decl) => {
-                    if let Some(rewrite) = self.rewrite_module_specifier(&decl.source.value) {
+                    if let Some(rewrite) = rewrite_specifier(&decl.source.value) {
                         rewrites.push((
                             decl.source.span.start + 1,
                             decl.source.span.end - 1,
@@ -124,22 +166,22 @@ impl ImportRewriter {
         let mut collector = DynamicImportCollector::new();
         collector.visit_program(&result.program);
         for (start, end, path) in collector.imports {
-            if let Some(rewrite) = self.rewrite_module_specifier(&path) {
+            if let Some(rewrite) = rewrite_specifier(&path) {
                 rewrites.push((start, end, rewrite));
             }
         }
 
         // Sort by offset descending (process from end to start)
-        rewrites.sort_by(|a, b| b.0.cmp(&a.0));
+        rewrites.sort_by_key(|rewrite| std::cmp::Reverse(rewrite.0));
 
-        let mut output = source.to_string();
+        let mut output = source.to_compact_string();
         let mut adjustments = Vec::new();
 
         for (start, end, new_path) in rewrites {
             let original_len = (end - start) as i32;
             let new_len = new_path.len() as i32;
 
-            output.replace_range(start as usize..end as usize, &new_path);
+            output.replace_range(start as usize..end as usize, new_path.as_str());
 
             adjustments.push(OffsetAdjustment {
                 original_offset: start,
@@ -160,10 +202,19 @@ impl ImportRewriter {
     fn rewrite_module_specifier(&self, path: &str) -> Option<String> {
         // Only rewrite relative .vue imports
         if path.ends_with(".vue") && (path.starts_with("./") || path.starts_with("../")) {
-            Some(format!("{}.ts", path))
+            Some(cstr!("{path}.ts"))
         } else {
             None
         }
+    }
+
+    fn rewrite_declaration_specifier(&self, path: &str) -> Option<String> {
+        if path.ends_with(".vue.ts") && (path.starts_with("./") || path.starts_with("../")) {
+            return path
+                .strip_suffix(".ts")
+                .map(|value| value.to_compact_string());
+        }
+        None
     }
 }
 
@@ -193,7 +244,7 @@ impl<'a> Visit<'a> for DynamicImportCollector {
             self.imports.push((
                 lit.span.start + 1, // +1 to skip opening quote
                 lit.span.end - 1,   // -1 to skip closing quote
-                lit.value.to_string(),
+                lit.value.as_str().into(),
             ));
         }
         walk::walk_import_expression(self, expr);
@@ -202,7 +253,8 @@ impl<'a> Visit<'a> for DynamicImportCollector {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::ImportRewriter;
+    use oxc_span::SourceType;
 
     #[test]
     fn test_rewrite_default_import() {
@@ -298,8 +350,6 @@ import Child from './Child.vue';
 import { ref } from 'vue';"#;
         let result = rewriter.rewrite(source, SourceType::ts());
 
-        assert!(result.code.contains("./App.vue.ts"));
-        assert!(result.code.contains("./Child.vue.ts"));
-        assert!(result.code.contains("from 'vue'"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

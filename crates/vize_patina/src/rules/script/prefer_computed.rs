@@ -94,7 +94,7 @@ impl ScriptRule for PreferComputed {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::PreferComputed;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -117,7 +117,7 @@ watch(count, (val) => {
             0,
         );
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("computed"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

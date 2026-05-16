@@ -152,7 +152,7 @@ impl ScriptRule for NoDeepDestructureInProps {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoDeepDestructureInProps;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -186,7 +186,7 @@ mod tests {
             0,
         );
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("deeply nested"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

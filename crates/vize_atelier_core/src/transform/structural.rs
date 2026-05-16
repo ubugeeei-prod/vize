@@ -1,6 +1,6 @@
 //! Structural directive transforms (v-if, v-for).
 
-use vize_carton::{Box, Bump, String, Vec};
+use vize_carton::{Box, String, Vec};
 
 use crate::ast::*;
 use crate::errors::ErrorCode;
@@ -16,38 +16,79 @@ pub struct SimpleExpressionContent {
     pub loc: SourceLocation,
 }
 
-/// Check if element has a structural directive
-pub fn check_structural_directive<'a>(
-    el: &ElementNode<'a>,
-) -> Option<(
-    String,
-    Option<SimpleExpressionContent>,
-    Option<SourceLocation>,
-)> {
-    for prop in el.props.iter() {
+#[derive(Clone, Copy)]
+pub enum StructuralDirectiveKind {
+    If,
+    ElseIf,
+    Else,
+    For,
+}
+
+fn directive_expression_to_content(exp: ExpressionNode<'_>) -> SimpleExpressionContent {
+    match exp {
+        ExpressionNode::Simple(s) => {
+            let s = Box::into_inner(s);
+            SimpleExpressionContent {
+                content: s.content,
+                is_static: s.is_static,
+                loc: s.loc,
+            }
+        }
+        ExpressionNode::Compound(c) => {
+            let c = Box::into_inner(c);
+            let loc = c.loc;
+            SimpleExpressionContent {
+                content: loc.source.clone(),
+                is_static: false,
+                loc,
+            }
+        }
+    }
+}
+
+/// Take the highest-priority structural directive from an element.
+///
+/// In Vue 3, v-if has higher priority than v-for when both are present on the same element.
+/// This removes the selected directive from the element in the same pass we discover it.
+pub fn take_structural_directive<'a>(
+    el: &mut Box<'a, ElementNode<'a>>,
+) -> Option<(StructuralDirectiveKind, Option<SimpleExpressionContent>)> {
+    let mut selected_if = None;
+    let mut selected_for = None;
+
+    for (idx, prop) in el.props.iter().enumerate() {
         if let PropNode::Directive(dir) = prop {
             match dir.name.as_str() {
-                "if" | "else-if" | "else" | "for" => {
-                    let exp_content = dir.exp.as_ref().map(|e| match e {
-                        ExpressionNode::Simple(s) => SimpleExpressionContent {
-                            content: s.content.clone(),
-                            is_static: s.is_static,
-                            loc: s.loc.clone(),
-                        },
-                        ExpressionNode::Compound(c) => SimpleExpressionContent {
-                            content: c.loc.source.clone(),
-                            is_static: false,
-                            loc: c.loc.clone(),
-                        },
-                    });
-                    let exp_loc = dir.exp.as_ref().map(|e| e.loc().clone());
-                    return Some((dir.name.clone(), exp_content, exp_loc));
+                "if" => {
+                    selected_if = Some((idx, StructuralDirectiveKind::If));
+                    break;
+                }
+                "else-if" => {
+                    selected_if = Some((idx, StructuralDirectiveKind::ElseIf));
+                    break;
+                }
+                "else" => {
+                    selected_if = Some((idx, StructuralDirectiveKind::Else));
+                    break;
+                }
+                "for" if selected_for.is_none() => {
+                    selected_for = Some((idx, StructuralDirectiveKind::For));
                 }
                 _ => {}
             }
         }
     }
-    None
+
+    let (directive_idx, directive_kind) = selected_if.or(selected_for)?;
+    let directive = match el.props.remove(directive_idx) {
+        PropNode::Directive(dir) => Box::into_inner(dir),
+        PropNode::Attribute(_) => unreachable!("structural directives are always directive props"),
+    };
+
+    Some((
+        directive_kind,
+        directive.exp.map(directive_expression_to_content),
+    ))
 }
 
 /// Extract and remove key prop from element
@@ -73,25 +114,10 @@ pub fn extract_key_prop<'a>(el: &mut ElementNode<'a>) -> Option<PropNode<'a>> {
     key_index.map(|i| el.props.remove(i))
 }
 
-/// Remove structural directive from element props
-pub fn remove_structural_directive<'a>(el: &mut Box<'a, ElementNode<'a>>, dir_name: &str) {
-    let mut i = 0;
-    while i < el.props.len() {
-        if let PropNode::Directive(dir) = &el.props[i] {
-            if dir.name.as_str() == dir_name {
-                el.props.remove(i);
-                return;
-            }
-        }
-        i += 1;
-    }
-}
-
 /// Transform v-if directive
 pub fn transform_v_if<'a>(
     ctx: &mut TransformContext<'a>,
     exp: Option<&SimpleExpressionContent>,
-    _exp_loc: Option<SourceLocation>,
     is_root: bool,
 ) -> Option<std::vec::Vec<ExitFn<'a>>> {
     let allocator = ctx.allocator;
@@ -137,11 +163,18 @@ pub fn transform_v_if<'a>(
             }
         });
 
-        // Extract user key from the element if present
+        // Extract user key from the element if present,
+        // but NOT if the element also has v-for (the key belongs to v-for in that case)
         let mut user_key = None;
         let taken_node = match taken_node {
             TemplateChildNode::Element(mut el) => {
-                user_key = extract_key_prop(&mut el);
+                let has_v_for = el
+                    .props
+                    .iter()
+                    .any(|p| matches!(p, PropNode::Directive(d) if d.name.as_str() == "for"));
+                if !has_v_for {
+                    user_key = extract_key_prop(&mut el);
+                }
                 TemplateChildNode::Element(el)
             }
             other => other,
@@ -356,7 +389,6 @@ pub fn transform_v_if<'a>(
 pub fn transform_v_for<'a>(
     ctx: &mut TransformContext<'a>,
     exp: Option<&SimpleExpressionContent>,
-    _exp_loc: Option<SourceLocation>,
 ) -> Option<std::vec::Vec<ExitFn<'a>>> {
     let allocator = ctx.allocator;
 
@@ -374,9 +406,11 @@ pub fn transform_v_for<'a>(
         _ => return None,
     };
 
-    // Parse v-for expression: "item in items" or "(item, index) in items"
-    let (mut source, value_alias, key_alias, index_alias) =
-        parse_v_for_expression(allocator, &exp.content, &exp.loc);
+    let parse_result = crate::transforms::parse_for_expression(allocator, &exp.content, &exp.loc);
+    let mut source = parse_result.source;
+    let value_alias = parse_result.value;
+    let key_alias = parse_result.key;
+    let index_alias = parse_result.index;
 
     // Process source expression with binding-aware identifier prefixing
     // This ensures imports and refs are correctly handled (e.g., _unref(PRESETS) instead of _ctx.PRESETS)
@@ -424,152 +458,13 @@ pub fn transform_v_for<'a>(
     None
 }
 
-/// Parse v-for expression
-fn parse_v_for_expression<'a>(
-    allocator: &'a Bump,
-    content: &str,
-    loc: &SourceLocation,
-) -> (
-    ExpressionNode<'a>,
-    Option<ExpressionNode<'a>>,
-    Option<ExpressionNode<'a>>,
-    Option<ExpressionNode<'a>>,
-) {
-    // Match patterns like "item in items" or "(item, index) in items"
-    let (alias_part, source_part) = if let Some(idx) = content.find(" in ") {
-        (&content[..idx], &content[idx + 4..])
-    } else if let Some(idx) = content.find(" of ") {
-        (&content[..idx], &content[idx + 4..])
-    } else {
-        // Return source as-is
-        let source = ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode {
-                content: String::new(content),
-                is_static: false,
-                const_type: ConstantType::NotConstant,
-                loc: loc.clone(),
-                js_ast: None,
-                hoisted: None,
-                identifiers: None,
-                is_handler_key: false,
-                is_ref_transformed: false,
-            },
-            allocator,
-        ));
-        return (source, None, None, None);
-    };
-
-    let source_str = source_part.trim();
-    let alias_str = alias_part.trim();
-
-    // Parse source expression
-    let source = ExpressionNode::Simple(Box::new_in(
-        SimpleExpressionNode {
-            content: String::new(source_str),
-            is_static: false,
-            const_type: ConstantType::NotConstant,
-            loc: SourceLocation::default(),
-            js_ast: None,
-            hoisted: None,
-            identifiers: None,
-            is_handler_key: false,
-            is_ref_transformed: false,
-        },
-        allocator,
-    ));
-
-    // Parse aliases
-    let (value, key, index) = if alias_str.starts_with('(') && alias_str.ends_with(')') {
-        let inner = &alias_str[1..alias_str.len() - 1];
-        let aliases: std::vec::Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
-
-        let value = if !aliases.is_empty() && !aliases[0].is_empty() {
-            Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode {
-                    content: String::new(aliases[0]),
-                    is_static: false,
-                    const_type: ConstantType::NotConstant,
-                    loc: SourceLocation::default(),
-                    js_ast: None,
-                    hoisted: None,
-                    identifiers: None,
-                    is_handler_key: false,
-                    is_ref_transformed: false,
-                },
-                allocator,
-            )))
-        } else {
-            None
-        };
-
-        let key = if aliases.len() > 1 && !aliases[1].is_empty() {
-            Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode {
-                    content: String::new(aliases[1]),
-                    is_static: false,
-                    const_type: ConstantType::NotConstant,
-                    loc: SourceLocation::default(),
-                    js_ast: None,
-                    hoisted: None,
-                    identifiers: None,
-                    is_handler_key: false,
-                    is_ref_transformed: false,
-                },
-                allocator,
-            )))
-        } else {
-            None
-        };
-
-        let index = if aliases.len() > 2 && !aliases[2].is_empty() {
-            Some(ExpressionNode::Simple(Box::new_in(
-                SimpleExpressionNode {
-                    content: String::new(aliases[2]),
-                    is_static: false,
-                    const_type: ConstantType::NotConstant,
-                    loc: SourceLocation::default(),
-                    js_ast: None,
-                    hoisted: None,
-                    identifiers: None,
-                    is_handler_key: false,
-                    is_ref_transformed: false,
-                },
-                allocator,
-            )))
-        } else {
-            None
-        };
-
-        (value, key, index)
-    } else {
-        // Simple alias
-        let value = Some(ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode {
-                content: String::new(alias_str),
-                is_static: false,
-                const_type: ConstantType::NotConstant,
-                loc: SourceLocation::default(),
-                js_ast: None,
-                hoisted: None,
-                identifiers: None,
-                is_handler_key: false,
-                is_ref_transformed: false,
-            },
-            allocator,
-        )));
-        (value, None, None)
-    };
-
-    (source, value, key, index)
-}
-
 /// Extract key value string from a PropNode for comparison
-fn extract_key_value_str(prop: &PropNode<'_>) -> Option<std::string::String> {
+fn extract_key_value_str(prop: &PropNode<'_>) -> Option<String> {
     match prop {
-        PropNode::Attribute(attr) => attr.value.as_ref().map(|v| v.content.to_string()),
+        PropNode::Attribute(attr) => attr.value.as_ref().map(|v| v.content.clone()),
         PropNode::Directive(dir) => dir.exp.as_ref().map(|exp| match exp {
-            ExpressionNode::Simple(s) => s.content.to_string(),
-            ExpressionNode::Compound(c) => c.loc.source.to_string(),
+            ExpressionNode::Simple(s) => s.content.clone(),
+            ExpressionNode::Compound(c) => c.loc.source.clone(),
         }),
     }
 }

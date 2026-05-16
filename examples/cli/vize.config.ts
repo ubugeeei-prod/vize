@@ -1,4 +1,4 @@
-import { defineConfig } from '@vizejs/vite-plugin'
+import { defineConfig } from "vize";
 
 export default defineConfig({
   compiler: {
@@ -7,8 +7,8 @@ export default defineConfig({
   linter: {
     enabled: true,
     categories: {
-      correctness: 'error',
-      suspicious: 'warn',
+      correctness: "error",
+      suspicious: "warn",
     },
   },
   formatter: {
@@ -16,6 +16,6 @@ export default defineConfig({
     tabWidth: 2,
     semi: true,
     singleQuote: true,
-    trailingComma: 'all',
+    trailingComma: "all",
   },
-})
+});

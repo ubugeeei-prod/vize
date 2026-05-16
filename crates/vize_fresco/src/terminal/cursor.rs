@@ -139,7 +139,7 @@ impl CursorShape {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::Cursor;
 
     #[test]
     fn test_cursor_new() {

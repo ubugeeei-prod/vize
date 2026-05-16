@@ -40,10 +40,14 @@
 //! </template>
 //! ```
 
+#![allow(clippy::disallowed_macros)]
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::FxHashSet;
+use vize_carton::String;
+use vize_carton::ToCompactString;
 use vize_relief::ast::{DirectiveNode, ElementNode, PropNode, RootNode, TemplateChildNode};
 use vize_relief::BindingType;
 
@@ -162,13 +166,13 @@ impl Rule for NoMutatingProps {
 
             // From defineProps
             for prop in analysis.macros.props() {
-                names.insert(prop.name.to_string());
+                names.insert(prop.name.to_compact_string());
             }
 
             // From destructured props
             for (name, binding_type) in analysis.bindings.iter() {
                 if matches!(binding_type, BindingType::Props | BindingType::PropsAliased) {
-                    names.insert(name.to_string());
+                    names.insert(name.to_compact_string());
                 }
             }
 
@@ -190,7 +194,9 @@ impl Rule for NoMutatingProps {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoMutatingProps;
+    use crate::diagnostic::Severity;
+    use crate::rule::{Rule, RuleCategory};
 
     #[test]
     fn test_meta() {

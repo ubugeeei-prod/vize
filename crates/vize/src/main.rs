@@ -33,6 +33,7 @@ enum Commands {
     Build(commands::build::BuildArgs),
 
     /// Format Vue SFC files
+    #[cfg(feature = "glyph")]
     #[command(visible_alias = "glyph")]
     Fmt(commands::fmt::FmtArgs),
 
@@ -56,6 +57,14 @@ enum Commands {
 
     /// IDE integration - LSP server and editor extension management
     Ide(commands::ide::IdeArgs),
+
+    /// Update the installed Vize CLI
+    #[command(visible_alias = "self-update")]
+    Upgrade(commands::upgrade::UpgradeArgs),
+
+    /// Run fmt, lint, check, and build
+    #[cfg(feature = "glyph")]
+    Ready(commands::ready::ReadyArgs),
 }
 
 fn main() {
@@ -63,6 +72,7 @@ fn main() {
 
     match cli.command {
         Some(Commands::Build(args)) => commands::build::run(args),
+        #[cfg(feature = "glyph")]
         Some(Commands::Fmt(args)) => commands::fmt::run(args),
         Some(Commands::Lint(args)) => commands::lint::run(args),
         Some(Commands::Check(args)) => commands::check::run(args),
@@ -71,6 +81,9 @@ fn main() {
         Some(Commands::Musea(args)) => commands::musea::run(args),
         Some(Commands::Lsp(args)) => commands::lsp::run(args),
         Some(Commands::Ide(args)) => commands::ide::run(args),
+        Some(Commands::Upgrade(args)) => commands::upgrade::run(args),
+        #[cfg(feature = "glyph")]
+        Some(Commands::Ready(args)) => commands::ready::run(args),
         None => {
             // Default to build command with default args
             commands::build::run(commands::build::BuildArgs::default());

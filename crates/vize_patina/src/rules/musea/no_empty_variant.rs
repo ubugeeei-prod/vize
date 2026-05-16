@@ -74,7 +74,7 @@ impl MuseaRule for NoEmptyVariant {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{MuseaLintResult, MuseaRule, NoEmptyVariant};
 
     #[test]
     fn test_valid_variant() {

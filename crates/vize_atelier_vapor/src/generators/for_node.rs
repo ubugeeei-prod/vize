@@ -2,6 +2,7 @@
 
 use super::block::GenerateContext;
 use crate::ir::{BlockIRNode, ForIRNode};
+use vize_carton::{cstr, String, ToCompactString};
 
 /// Generate for node code
 pub fn generate_for<F>(ctx: &mut GenerateContext, for_node: &ForIRNode<'_>, generate_block: F)
@@ -9,9 +10,9 @@ where
     F: Fn(&mut GenerateContext, &BlockIRNode<'_>),
 {
     let source = if for_node.source.is_static {
-        format!("\"{}\"", for_node.source.content)
+        cstr!("\"{}\"", for_node.source.content)
     } else {
-        for_node.source.content.to_string()
+        vize_carton::CompactString::from(for_node.source.content.as_str())
     };
 
     let value_name = for_node
@@ -25,7 +26,7 @@ where
 
     let params = build_params(value_name, key_name, index_name);
 
-    ctx.push_line(&format!("_createFor(() => {}, ({}) => {{", source, params));
+    ctx.push_line_fmt(format_args!("_createFor(() => {source}, ({params}) => {{"));
     ctx.indent();
     generate_block(ctx, &for_node.render);
     ctx.deindent();
@@ -33,11 +34,11 @@ where
     // Add key function if key prop is specified
     if let Some(ref key_prop) = for_node.key_prop {
         let key_expr = if key_prop.is_static {
-            format!("\"{}\"", key_prop.content)
+            cstr!("\"{}\"", key_prop.content)
         } else {
-            key_prop.content.to_string()
+            vize_carton::CompactString::from(key_prop.content.as_str())
         };
-        ctx.push_line(&format!("}}, ({}) => {})", params, key_expr));
+        ctx.push_line_fmt(format_args!("}}, ({params}) => {key_expr})"));
     } else {
         ctx.push_line("})");
     }
@@ -46,9 +47,9 @@ where
 /// Build parameter string for for callback
 fn build_params(value: &str, key: Option<&str>, index: Option<&str>) -> String {
     match (key, index) {
-        (Some(k), Some(i)) => format!("{}, {}, {}", value, k, i),
-        (Some(k), None) => format!("{}, {}", value, k),
-        _ => value.to_string(),
+        (Some(k), Some(i)) => cstr!("{value}, {k}, {i}"),
+        (Some(k), None) => cstr!("{value}, {k}"),
+        _ => value.to_compact_string(),
     }
 }
 
@@ -58,9 +59,9 @@ where
     F: Fn(&mut GenerateContext, &BlockIRNode<'_>),
 {
     let source = if for_node.source.is_static {
-        format!("\"{}\"", for_node.source.content)
+        cstr!("\"{}\"", for_node.source.content)
     } else {
-        for_node.source.content.to_string()
+        vize_carton::CompactString::from(for_node.source.content.as_str())
     };
 
     let value_name = for_node
@@ -77,12 +78,11 @@ where
 
     if for_node.once {
         // Non-reactive for loop
-        ctx.push_line(&format!(
-            "_createForStatic(() => {}, ({}) => {{",
-            source, params
+        ctx.push_line_fmt(format_args!(
+            "_createForStatic(() => {source}, ({params}) => {{"
         ));
     } else {
-        ctx.push_line(&format!("_createFor(() => {}, ({}) => {{", source, params));
+        ctx.push_line_fmt(format_args!("_createFor(() => {source}, ({params}) => {{"));
     }
 
     ctx.indent();
@@ -98,7 +98,7 @@ pub fn can_optimize_for(for_node: &ForIRNode<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::build_params;
 
     #[test]
     fn test_build_params_simple() {

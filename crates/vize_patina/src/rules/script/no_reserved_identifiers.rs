@@ -119,7 +119,7 @@ impl ScriptRule for NoReservedIdentifiers {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoReservedIdentifiers;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {

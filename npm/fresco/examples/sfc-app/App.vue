@@ -93,10 +93,7 @@ useInput({
 </script>
 
 <template>
-  <box
-    :style="{ flexDirection: 'column', padding: 2, alignItems: 'flex-start' }"
-    border="rounded"
-  >
+  <box :style="{ flexDirection: 'column', padding: 2, alignItems: 'flex-start' }" border="rounded">
     <text :bold="true" fg="cyan">Todo App</text>
     <text :dim="true">{{ stats.done }}/{{ stats.total }} completed</text>
 
@@ -123,10 +120,7 @@ useInput({
       <text v-if="todos.length === 0" :dim="true">No todos yet!</text>
     </box>
 
-    <box
-      v-if="inputMode"
-      :style="{ marginTop: 1, flexDirection: 'row', alignItems: 'flex-start' }"
-    >
+    <box v-if="inputMode" :style="{ marginTop: 1, flexDirection: 'row', alignItems: 'flex-start' }">
       <text fg="yellow">> Add: </text>
       <TextInput
         v-model="newTodoText"
@@ -138,9 +132,7 @@ useInput({
     </box>
 
     <box :style="{ marginTop: 1 }">
-      <text :dim="true"
-        >↑/↓: move, space: toggle, d: delete, a: add, Esc: cancel</text
-      >
+      <text :dim="true">↑/↓: move, space: toggle, d: delete, a: add, Esc: cancel</text>
     </box>
   </box>
 </template>

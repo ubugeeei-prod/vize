@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: js_output.as_str()
+---
+import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, resolveDynamicComponent as _resolveDynamicComponent, withCtx as _withCtx } from "vue"
+
+import { RouterView } from 'vue-router'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createBlock(RouterView, null, {
+      default: _withCtx(({ Component }) => [
+        _createVNode(_resolveDynamicComponent(Component))
+      ]),
+      _: 1 /* STABLE */
+    }))
+}
+}
+
+}

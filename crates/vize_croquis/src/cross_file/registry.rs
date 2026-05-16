@@ -301,7 +301,10 @@ fn extract_component_name(path: &Path) -> Option<CompactString> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{extract_component_name, ModuleRegistry};
+    use crate::Croquis;
+    use std::path::Path;
+    use vize_carton::CompactString;
 
     #[test]
     fn test_registry_basic() {

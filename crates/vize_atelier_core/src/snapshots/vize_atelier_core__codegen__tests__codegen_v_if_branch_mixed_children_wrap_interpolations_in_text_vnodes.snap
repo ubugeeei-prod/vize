@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_core/src/codegen.rs
+expression: output.as_str()
+---
+const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode, toDisplayString: _toDisplayString } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (speaker.affiliation || speaker.title)
+    ? (_openBlock(), _createElementBlock("p", { key: 0 }, [
+      _createTextVNode(_toDisplayString(speaker.affiliation), 1 /* TEXT */),
+      (speaker.affiliation && speaker.title)
+        ? (_openBlock(), _createElementBlock("br", { key: 0 }))
+        : _createCommentVNode("v-if", true),
+      _createTextVNode(_toDisplayString(speaker.title), 1 /* TEXT */)
+    ]))
+    : _createCommentVNode("v-if", true)
+}

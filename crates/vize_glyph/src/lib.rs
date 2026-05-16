@@ -42,6 +42,7 @@ mod error;
 mod formatter;
 mod options;
 mod script;
+mod style;
 mod template;
 
 pub use error::*;
@@ -50,6 +51,7 @@ pub use options::*;
 
 // Re-export allocator for external use
 pub use vize_carton::Allocator;
+use vize_carton::String;
 
 /// Format a Vue SFC source string
 ///
@@ -87,9 +89,15 @@ pub fn format_template(source: &str, options: &FormatOptions) -> Result<String, 
     template::format_template_content(source, options)
 }
 
+/// Format only the CSS/style content
+#[inline]
+pub fn format_style(source: &str, options: &FormatOptions) -> Result<String, FormatError> {
+    style::format_style_content(source, options)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{format_script, format_sfc, format_sfc_with_allocator, Allocator, FormatOptions};
 
     #[test]
     fn test_format_simple_sfc() {
@@ -105,11 +113,7 @@ const count=ref(0)
         let options = FormatOptions::default();
         let result = format_sfc(source, &options).unwrap();
 
-        // oxc_codegen formats imports with spaces
-        assert!(result.code.contains("ref"));
-        assert!(result.code.contains("vue"));
-        assert!(result.code.contains("count"));
-        assert!(result.code.contains("ref(0)"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -118,11 +122,7 @@ const count=ref(0)
         let options = FormatOptions::default();
         let result = format_script(source, &options).unwrap();
 
-        // Check that the code is formatted (variables are separated)
-        assert!(result.contains("const x"));
-        assert!(result.contains("const y"));
-        assert!(result.contains("a:"));
-        assert!(result.contains("b:"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -142,13 +142,31 @@ const msg = 'hello'
         let options = FormatOptions::default();
         let result = format_sfc(source, &options).unwrap();
 
-        // Check that all blocks are preserved
-        assert!(result.code.contains("<script setup lang=\"ts\">"));
-        assert!(result.code.contains("</script>"));
-        assert!(result.code.contains("<template>"));
-        assert!(result.code.contains("</template>"));
-        assert!(result.code.contains("<style scoped>"));
-        assert!(result.code.contains("</style>"));
+        insta::assert_snapshot!(result.code.as_str());
+    }
+
+    #[test]
+    fn test_format_sfc_preserves_block_attrs() {
+        let source = r#"<template functional>
+  <div>{{ msg }}</div>
+</template>
+
+<script setup lang="ts" generic="T extends string">
+const msg = 'hello'
+</script>
+
+<style scoped module lang="scss">
+.container { color: red; }
+</style>
+
+<i18n global locale="en">
+{"hello":"Hello"}
+</i18n>
+"#;
+        let options = FormatOptions::default();
+        let result = format_sfc(source, &options).unwrap();
+
+        insta::assert_snapshot!(result.code.as_str());
     }
 
     #[test]
@@ -162,7 +180,7 @@ const msg = 'hello'
         let result1 = format_sfc_with_allocator(source1, &options, &allocator).unwrap();
         let result2 = format_sfc_with_allocator(source2, &options, &allocator).unwrap();
 
-        assert!(result1.code.contains("const a"));
-        assert!(result2.code.contains("const b"));
+        insta::assert_snapshot!(result1.code.as_str());
+        insta::assert_snapshot!(result2.code.as_str());
     }
 }

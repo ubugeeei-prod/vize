@@ -1,0 +1,15 @@
+/// Global type declarations configuration for Vize.
+module vize.GlobalTypesConfig
+
+class TypeDeclaration {
+  /// TypeScript type string.
+  type: String
+
+  /// Default value expression for virtual TS stubs.
+  defaultValue: String? = null
+}
+
+class GlobalTypesConfig {
+  /// Global type declarations.
+  types: Mapping<String, TypeDeclaration> = new Mapping {}
+}

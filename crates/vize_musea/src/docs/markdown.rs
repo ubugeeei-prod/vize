@@ -1,7 +1,10 @@
 //! Markdown generation for individual Art components.
 
+#![allow(clippy::disallowed_macros)]
+
 use super::{DocOptions, DocOutput};
 use crate::types::{ArtDescriptor, ArtStatus, ArtVariant};
+use vize_carton::{append, cstr, String, ToCompactString};
 
 /// Generate Markdown documentation for a single Art component.
 ///
@@ -57,13 +60,13 @@ pub fn generate_component_doc(art: &ArtDescriptor<'_>, options: &DocOptions) -> 
     }
 
     // Generate filename
-    let filename = format!("{}.md", slugify(art.metadata.title));
+    let filename = cstr!("{}.md", slugify(art.metadata.title));
 
     DocOutput {
         markdown: md,
         filename,
-        title: art.metadata.title.to_string(),
-        category: art.metadata.category.map(|s| s.to_string()),
+        title: art.metadata.title.to_compact_string(),
+        category: art.metadata.category.map(|s| s.to_compact_string()),
         variant_count: art.variants.len(),
     }
 }
@@ -91,12 +94,9 @@ pub fn generate_variant_doc(variant: &ArtVariant<'_>, options: &DocOptions) -> S
 
     // Viewport info
     if let Some(ref viewport) = variant.viewport {
-        md.push_str(&format!(
-            "**Viewport:** {}x{}",
-            viewport.width, viewport.height
-        ));
+        append!(md, "**Viewport:** {}x{}", viewport.width, viewport.height);
         if let Some(scale) = viewport.device_scale_factor {
-            md.push_str(&format!(" @{:.1}x", scale));
+            append!(md, " @{:.1}x", scale);
         }
         md.push_str("\n\n");
     }
@@ -113,7 +113,7 @@ pub fn generate_variant_doc(variant: &ArtVariant<'_>, options: &DocOptions) -> S
                 serde_json::Value::Number(n) => format!("`{}`", n),
                 _ => format!("`{}`", value),
             };
-            md.push_str(&format!("| `{}` | {} |\n", key, value_str));
+            append!(md, "| `{key}` | {value_str} |\n");
         }
         md.push('\n');
     }
@@ -132,7 +132,7 @@ pub fn generate_variant_doc(variant: &ArtVariant<'_>, options: &DocOptions) -> S
 
 /// Generate metadata section with category, tags, etc.
 fn generate_metadata_section(art: &ArtDescriptor<'_>) -> String {
-    let mut md = String::new();
+    let mut md = String::default();
 
     let has_metadata = art.metadata.category.is_some()
         || !art.metadata.tags.is_empty()
@@ -146,24 +146,19 @@ fn generate_metadata_section(art: &ArtDescriptor<'_>) -> String {
     md.push_str("|---|---|\n");
 
     if let Some(category) = art.metadata.category {
-        md.push_str(&format!("| **Category** | `{}` |\n", category));
+        append!(md, "| **Category** | `{category}` |\n");
     }
 
     if !art.metadata.tags.is_empty() {
-        let tags: Vec<String> = art
-            .metadata
-            .tags
-            .iter()
-            .map(|t| format!("`{}`", t))
-            .collect();
-        md.push_str(&format!("| **Tags** | {} |\n", tags.join(" ")));
+        let tags: Vec<String> = art.metadata.tags.iter().map(|t| cstr!("`{}`", t)).collect();
+        append!(md, "| **Tags** | {} |\n", tags.join(" "));
     }
 
     if let Some(order) = art.metadata.order {
-        md.push_str(&format!("| **Order** | {} |\n", order));
+        append!(md, "| **Order** | {order} |\n");
     }
 
-    md.push_str(&format!("| **Variants** | {} |\n", art.variants.len()));
+    append!(md, "| **Variants** | {} |\n", art.variants.len());
 
     md.push('\n');
 
@@ -172,13 +167,13 @@ fn generate_metadata_section(art: &ArtDescriptor<'_>) -> String {
 
 /// Generate table of contents for variants.
 fn generate_toc(variants: &[ArtVariant<'_>]) -> String {
-    let mut md = String::new();
+    let mut md = String::default();
 
     md.push_str("## Table of Contents\n\n");
 
     for variant in variants {
         let anchor = slugify(variant.name);
-        md.push_str(&format!("- [{}](#{})", variant.name, anchor));
+        append!(md, "- [{}](#{})", variant.name, anchor);
         if variant.is_default {
             md.push_str(" *(default)*");
         }
@@ -193,16 +188,17 @@ fn generate_toc(variants: &[ArtVariant<'_>]) -> String {
 /// Format status as a badge.
 fn format_status_badge(status: ArtStatus) -> String {
     match status {
-        ArtStatus::Draft => "> **Status:** 🚧 Draft".to_string(),
-        ArtStatus::Deprecated => "> **Status:** ⚠️ Deprecated".to_string(),
-        ArtStatus::Ready => String::new(),
+        ArtStatus::Draft => "> **Status:** 🚧 Draft".to_compact_string(),
+        ArtStatus::Deprecated => "> **Status:** ⚠️ Deprecated".to_compact_string(),
+        ArtStatus::Ready => String::default(),
     }
 }
 
 /// Convert a string to a URL-safe slug.
 #[inline]
 fn slugify(s: &str) -> String {
-    s.chars()
+    let intermediate: String = s
+        .chars()
         .map(|c| {
             if c.is_alphanumeric() {
                 c.to_ascii_lowercase()
@@ -210,16 +206,20 @@ fn slugify(s: &str) -> String {
                 '-'
             }
         })
-        .collect::<String>()
+        .collect();
+    let joined = intermediate
+        .as_str()
         .split('-')
         .filter(|s| !s.is_empty())
         .collect::<Vec<_>>()
-        .join("-")
+        .join("-");
+    joined.into()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{format_status_badge, slugify};
+    use crate::types::ArtStatus;
 
     #[test]
     fn test_slugify() {
@@ -231,8 +231,8 @@ mod tests {
 
     #[test]
     fn test_format_status_badge() {
-        assert!(format_status_badge(ArtStatus::Draft).contains("Draft"));
-        assert!(format_status_badge(ArtStatus::Deprecated).contains("Deprecated"));
+        insta::assert_snapshot!(format_status_badge(ArtStatus::Draft).as_str());
+        insta::assert_snapshot!(format_status_badge(ArtStatus::Deprecated).as_str());
         assert!(format_status_badge(ArtStatus::Ready).is_empty());
     }
 }

@@ -212,7 +212,7 @@ pub fn get_modifier_prop_name(name: &str) -> String {
 
     let suffix = if name == "model" { "$" } else { "" };
 
-    String::from(format!("{}Modifiers{}", base, suffix))
+    crate::cstr!("{base}Modifiers{suffix}")
 }
 
 /// Check if a string is a valid JavaScript identifier
@@ -236,9 +236,10 @@ pub fn is_simple_identifier(s: &str) -> bool {
 /// Generate a props access expression
 pub fn gen_props_access_exp(name: &str) -> String {
     if is_simple_identifier(name) {
-        format!("__props.{}", name).into()
+        crate::cstr!("__props.{name}")
     } else {
-        format!("__props[{}]", serde_json::to_string(name).unwrap()).into()
+        let key = serde_json::to_string(name).unwrap();
+        crate::cstr!("__props[{key}]")
     }
 }
 
@@ -249,7 +250,7 @@ pub fn can_set_value_directly(tag_name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{camelize, capitalize, hyphenate, is_on, is_simple_identifier, to_handler_key};
 
     #[test]
     fn test_is_on() {

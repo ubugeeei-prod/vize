@@ -1,0 +1,19 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode } from "vue";
+import { ref } from "vue";
+import CodeHighlight from "./CodeHighlight.vue";
+export default {
+  __name: "anonymous",
+  setup(__props) {
+    const currentCode = ref("dom");
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("div", { class: "wrapper" }, [_createVNode(CodeHighlight, {
+        code: currentCode.value,
+        language: "javascript"
+      }, null, 8, ["code"])]);
+    };
+  }
+};

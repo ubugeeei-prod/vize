@@ -4,8 +4,8 @@
  * Run with: npx tsx examples/hello.ts
  */
 
-import { h, ref, defineComponent } from '@vue/runtime-core';
-import { createApp, Box, Text } from '../src/index.js';
+import { h, ref, defineComponent } from "@vue/runtime-core";
+import { createApp, Box, Text } from "../src/index.js";
 
 // Define a simple component
 const App = defineComponent({
@@ -18,10 +18,10 @@ const App = defineComponent({
     }, 1000);
 
     return () =>
-      h(Box, { border: 'single', padding: 1 }, [
-        h(Text, { bold: true, fg: 'green' }, 'Hello, Fresco!'),
+      h(Box, { border: "single", padding: 1 }, [
+        h(Text, { bold: true, fg: "green" }, "Hello, Fresco!"),
         h(Text, {}, `Counter: ${count.value}`),
-        h(Text, { dim: true }, 'Press Ctrl+C to exit'),
+        h(Text, { dim: true }, "Press Ctrl+C to exit"),
       ]);
   },
 });
@@ -32,9 +32,9 @@ const app = createApp(App, {
 });
 
 void app.mount().then(() => {
-  console.log('App mounted');
+  console.log("App mounted");
 });
 
 void app.waitUntilExit().then(() => {
-  console.log('Goodbye!');
+  console.log("Goodbye!");
 });

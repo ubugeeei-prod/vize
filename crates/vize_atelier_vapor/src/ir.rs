@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 use vize_atelier_core::{Namespace, RootNode, SimpleExpressionNode, TemplateChildNode};
-use vize_carton::{Box, Bump, FxHashMap, String, Vec};
+use vize_carton::{Box, Bump, FxHashMap, FxHashSet, String, Vec};
 
 /// IR node type discriminant
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -56,6 +56,8 @@ pub struct RootIRNode<'a> {
     pub templates: Vec<'a, String>,
     /// Mapping from element ID to template index
     pub element_template_map: FxHashMap<usize, usize>,
+    /// Element IDs that are standalone text nodes (interpolations with their own template)
+    pub standalone_text_elements: FxHashSet<usize>,
 }
 
 /// Block IR node - unit of reactive computation
@@ -113,6 +115,8 @@ pub enum OperationNode<'a> {
     CreateComponent(CreateComponentIRNode<'a>),
     SlotOutlet(SlotOutletIRNode<'a>),
     GetTextChild(GetTextChildIRNode),
+    ChildRef(ChildRefIRNode),
+    NextRef(NextRefIRNode),
 }
 
 /// Set prop operation
@@ -121,6 +125,10 @@ pub struct SetPropIRNode<'a> {
     pub element: usize,
     pub prop: IRProp<'a>,
     pub tag: String,
+    /// `.camel` modifier was used
+    pub camel: bool,
+    /// `.prop` modifier was used
+    pub prop_modifier: bool,
 }
 
 /// IR prop
@@ -136,6 +144,7 @@ pub struct IRProp<'a> {
 pub struct SetDynamicPropsIRNode<'a> {
     pub element: usize,
     pub props: Vec<'a, Box<'a, SimpleExpressionNode<'a>>>,
+    pub is_event: bool,
 }
 
 /// Set text operation
@@ -209,6 +218,10 @@ pub struct DirectiveIRNode<'a> {
     pub dir: Box<'a, vize_atelier_core::DirectiveNode<'a>>,
     pub name: String,
     pub builtin: bool,
+    /// Element tag name (for v-model type detection)
+    pub tag: String,
+    /// Input type attribute (for v-model checkbox/radio detection)
+    pub input_type: String,
 }
 
 /// If operation
@@ -243,6 +256,23 @@ pub struct ForIRNode<'a> {
     pub once: bool,
     pub component: bool,
     pub only_child: bool,
+    pub parent: Option<usize>,
+    pub anchor: Option<usize>,
+}
+
+/// Component kind for code generation
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ComponentKind {
+    /// Regular user component: resolveComponent + createComponentWithFallback
+    Regular,
+    /// Teleport: VaporTeleport + createComponent
+    Teleport,
+    /// KeepAlive: VaporKeepAlive + createComponent
+    KeepAlive,
+    /// Suspense: resolveComponent("Suspense") + createComponentWithFallback, slots wrapped with withVaporCtx
+    Suspense,
+    /// Dynamic component: createDynamicComponent
+    Dynamic,
 }
 
 /// Create component operation
@@ -255,6 +285,14 @@ pub struct CreateComponentIRNode<'a> {
     pub asset: bool,
     pub once: bool,
     pub dynamic_slots: bool,
+    /// Component kind for built-in / dynamic handling
+    pub kind: ComponentKind,
+    /// Dynamic component `:is` expression (for ComponentKind::Dynamic)
+    pub is_expr: Option<Box<'a, SimpleExpressionNode<'a>>>,
+    /// v-show expression to apply after component creation
+    pub v_show: Option<Box<'a, SimpleExpressionNode<'a>>>,
+    pub parent: Option<usize>,
+    pub anchor: Option<usize>,
 }
 
 /// IR slot
@@ -278,4 +316,20 @@ pub struct SlotOutletIRNode<'a> {
 #[derive(Debug)]
 pub struct GetTextChildIRNode {
     pub parent: usize,
+}
+
+/// Child reference operation (_child helper)
+#[derive(Debug)]
+pub struct ChildRefIRNode {
+    pub child_id: usize,
+    pub parent_id: usize,
+    pub offset: usize,
+}
+
+/// Next sibling reference operation (_next helper)
+#[derive(Debug)]
+pub struct NextRefIRNode {
+    pub child_id: usize,
+    pub prev_id: usize,
+    pub offset: usize,
 }

@@ -59,7 +59,7 @@ impl Rule for NoTextareaMustache {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoTextareaMustache;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

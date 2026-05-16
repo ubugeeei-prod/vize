@@ -226,8 +226,10 @@ impl DiffEngine {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{DiffEngine, DiffOp};
     use crate::render::node::NodeKind;
+    use crate::render::node::RenderNode;
+    use crate::render::tree::RenderTree;
 
     #[test]
     fn test_diff_empty_trees() {

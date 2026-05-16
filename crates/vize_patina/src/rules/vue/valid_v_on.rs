@@ -101,7 +101,7 @@ fn is_empty_expression(exp: &ExpressionNode) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::ValidVOn;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

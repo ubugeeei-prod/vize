@@ -3,6 +3,7 @@
 //! v-show toggles the element's display CSS property.
 
 use vize_atelier_core::{DirectiveNode, RuntimeHelper};
+use vize_carton::{cstr, String};
 
 /// Runtime helper for v-show
 pub const V_SHOW: RuntimeHelper = RuntimeHelper::WithDirectives;
@@ -15,7 +16,7 @@ pub fn is_v_show(dir: &DirectiveNode<'_>) -> bool {
 /// Generate v-show style expression
 pub fn generate_show_style(dir: &DirectiveNode<'_>) -> String {
     if let Some(vize_atelier_core::ExpressionNode::Simple(simple)) = &dir.exp {
-        return format!("display: ({}) ? '' : 'none'", simple.content);
+        return cstr!("display: ({}) ? '' : 'none'", simple.content);
     }
     String::from("display: ''")
 }
@@ -23,15 +24,15 @@ pub fn generate_show_style(dir: &DirectiveNode<'_>) -> String {
 /// Generate v-show directive registration for withDirectives
 pub fn generate_show_directive(dir: &DirectiveNode<'_>) -> String {
     if let Some(vize_atelier_core::ExpressionNode::Simple(simple)) = &dir.exp {
-        return format!("[vShow, {}]", simple.content);
+        return cstr!("[vShow, {}]", simple.content);
     }
     String::from("[vShow, true]")
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use vize_atelier_core::{ExpressionNode, SimpleExpressionNode, SourceLocation};
+    use super::{generate_show_directive, generate_show_style, is_v_show, RuntimeHelper, V_SHOW};
+    use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
     use vize_carton::{Box, Bump};
 
     fn create_show_directive<'a>(allocator: &'a Bump, exp: &str) -> DirectiveNode<'a> {

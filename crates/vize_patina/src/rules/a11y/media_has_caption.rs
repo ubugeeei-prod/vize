@@ -110,7 +110,7 @@ impl Rule for MediaHasCaption {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::MediaHasCaption;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

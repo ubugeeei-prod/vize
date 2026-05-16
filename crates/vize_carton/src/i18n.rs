@@ -237,6 +237,7 @@ impl Translator {
 
         let mut result = template.into_owned();
         for (name, value) in vars {
+            #[allow(clippy::disallowed_macros)]
             let placeholder = format!("{{{}}}", name);
             result = result.replace(&placeholder, value);
         }
@@ -434,7 +435,7 @@ pub fn t_fmt(locale: Locale, key: &str, vars: &[(&str, &str)]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{unescape_json_string, Locale, Translator};
 
     #[test]
     fn test_locale_from_str() {

@@ -91,7 +91,12 @@ fn init_file_logging() {
         let log_dir = std::env::current_dir()
             .ok()
             .map(|p| p.join("node_modules/.vize"))
-            .unwrap_or_else(|| std::path::PathBuf::from("/tmp/vize"));
+            .or_else(|| {
+                std::env::current_dir()
+                    .ok()
+                    .map(|p| p.join("__agent_only").join("vize"))
+            })
+            .unwrap_or_else(|| std::path::PathBuf::from(".").join("__agent_only/vize"));
 
         let _ = create_dir_all(&log_dir);
 
@@ -145,7 +150,9 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
 
     tracing::info!("Starting vize_maestro LSP server on port {}", port);
 
-    let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).await?;
+    #[allow(clippy::disallowed_macros)]
+    let addr = format!("127.0.0.1:{}", port);
+    let listener = TcpListener::bind(addr).await?;
     tracing::info!("Listening on 127.0.0.1:{}", port);
 
     let (stream, addr) = listener.accept().await?;

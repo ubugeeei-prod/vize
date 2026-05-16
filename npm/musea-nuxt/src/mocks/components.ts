@@ -41,16 +41,17 @@ export const NuxtLink = defineComponent({
         const { RouterLink } = require("vue-router");
         return h(
           RouterLink,
-          { to, replace: props.replace, activeClass: props.activeClass, exactActiveClass: props.exactActiveClass },
+          {
+            to,
+            replace: props.replace,
+            activeClass: props.activeClass,
+            exactActiveClass: props.exactActiveClass,
+          },
           slots,
         );
       } catch {
         // Fallback to <a> if vue-router is not available
-        return h(
-          "a",
-          { href: typeof to === "string" ? to : "/" },
-          slots.default?.(),
-        );
+        return h("a", { href: typeof to === "string" ? to : "/" }, slots.default?.());
       }
     };
   },

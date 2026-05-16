@@ -1,9 +1,11 @@
 //! Palette code generation from Art descriptors.
 
+#![allow(clippy::disallowed_macros)]
+
 use super::inference::infer_control_from_values;
 use super::{Palette, PaletteOptions, PaletteOutput, PropControl};
 use crate::types::ArtDescriptor;
-use vize_carton::FxHashMap;
+use vize_carton::{append, cstr, FxHashMap, String, ToCompactString};
 
 /// Generate palette configuration from an Art descriptor.
 ///
@@ -19,7 +21,7 @@ pub fn generate_palette(art: &ArtDescriptor<'_>, options: &PaletteOptions) -> Pa
     for variant in &art.variants {
         for (key, value) in &variant.args {
             all_values
-                .entry(key.to_string())
+                .entry(key.to_compact_string())
                 .or_default()
                 .push(value.clone());
         }
@@ -46,7 +48,7 @@ pub fn generate_palette(art: &ArtDescriptor<'_>, options: &PaletteOptions) -> Pa
             options: select_options,
             range: range_config,
             group: if options.group_by_type {
-                Some(format!("{:?}", control_kind))
+                Some(cstr!("{:?}", control_kind))
             } else {
                 None
             },
@@ -54,14 +56,16 @@ pub fn generate_palette(art: &ArtDescriptor<'_>, options: &PaletteOptions) -> Pa
 
         // Add group if grouping by type
         if options.group_by_type {
-            control.group = Some(format!("{:?}", control.control));
+            control.group = Some(cstr!("{:?}", control.control));
         }
 
         palette.add_control(control);
     }
 
     // Generate JSON representation
-    let json = serde_json::to_string_pretty(&palette).unwrap_or_default();
+    let json: String = serde_json::to_string_pretty(&palette)
+        .unwrap_or_default()
+        .into();
 
     // Generate TypeScript interface
     let typescript = generate_typescript_interface(&palette);
@@ -104,48 +108,55 @@ fn control_to_ts_type(control: &PropControl) -> String {
     use super::ControlKind;
 
     match control.control {
-        ControlKind::Text => "string".to_string(),
-        ControlKind::Number | ControlKind::Range => "number".to_string(),
-        ControlKind::Boolean => "boolean".to_string(),
-        ControlKind::Color => "string".to_string(),
-        ControlKind::Date => "string | Date".to_string(),
+        ControlKind::Text => "string".to_compact_string(),
+        ControlKind::Number | ControlKind::Range => "number".to_compact_string(),
+        ControlKind::Boolean => "boolean".to_compact_string(),
+        ControlKind::Color => "string".to_compact_string(),
+        ControlKind::Date => "string | Date".to_compact_string(),
         ControlKind::Select | ControlKind::Radio => {
             if control.options.is_empty() {
-                "string".to_string()
+                "string".to_compact_string()
             } else {
-                control
+                let joined = control
                     .options
                     .iter()
                     .map(|opt| match &opt.value {
-                        serde_json::Value::String(s) => format!("'{}'", s),
-                        serde_json::Value::Number(n) => n.to_string(),
-                        serde_json::Value::Bool(b) => b.to_string(),
-                        _ => "unknown".to_string(),
+                        serde_json::Value::String(s) => cstr!("'{}'", s),
+                        serde_json::Value::Number(n) => n.to_compact_string(),
+                        serde_json::Value::Bool(b) => b.to_compact_string(),
+                        _ => "unknown".to_compact_string(),
                     })
                     .collect::<Vec<_>>()
-                    .join(" | ")
+                    .join(" | ");
+                joined.into()
             }
         }
-        ControlKind::Array => "unknown[]".to_string(),
-        ControlKind::Object => "Record<string, unknown>".to_string(),
-        ControlKind::File => "File".to_string(),
-        ControlKind::Raw => "unknown".to_string(),
+        ControlKind::Array => "unknown[]".to_compact_string(),
+        ControlKind::Object => "Record<string, unknown>".to_compact_string(),
+        ControlKind::File => "File".to_compact_string(),
+        ControlKind::Raw => "unknown".to_compact_string(),
     }
 }
 
 /// Convert string to PascalCase.
 #[inline]
 fn to_pascal_case(s: &str) -> String {
-    s.split(|c: char| !c.is_alphanumeric())
+    let mut result = String::default();
+    for word in s
+        .split(|c: char| !c.is_alphanumeric())
         .filter(|s| !s.is_empty())
-        .map(|word| {
-            let mut chars = word.chars();
-            match chars.next() {
-                Some(first) => first.to_uppercase().chain(chars).collect::<String>(),
-                None => String::new(),
+    {
+        let mut chars = word.chars();
+        if let Some(first) = chars.next() {
+            for uc in first.to_uppercase() {
+                result.push(uc);
             }
-        })
-        .collect()
+            for ch in chars {
+                result.push(ch);
+            }
+        }
+    }
+    result
 }
 
 /// Generate Vue component props definition.
@@ -207,9 +218,9 @@ pub fn generate_storybook_argtypes(palette: &Palette) -> String {
 
         // Range config
         if let Some(ref range) = control.range {
-            sb.push_str(&format!(", min: {}, max: {}", range.min, range.max));
+            append!(sb, ", min: {}, max: {}", range.min, range.max);
             if let Some(step) = range.step {
-                sb.push_str(&format!(", step: {}", step));
+                append!(sb, ", step: {step}");
             }
         }
 
@@ -223,9 +234,9 @@ pub fn generate_storybook_argtypes(palette: &Palette) -> String {
                     sb.push_str(", ");
                 }
                 match &opt.value {
-                    serde_json::Value::String(s) => sb.push_str(&format!("'{}'", s)),
-                    serde_json::Value::Number(n) => sb.push_str(&n.to_string()),
-                    serde_json::Value::Bool(b) => sb.push_str(&b.to_string()),
+                    serde_json::Value::String(s) => append!(sb, "'{s}'"),
+                    serde_json::Value::Number(n) => append!(sb, "{n}"),
+                    serde_json::Value::Bool(b) => append!(sb, "{b}"),
                     _ => sb.push_str("null"),
                 }
             }
@@ -234,24 +245,24 @@ pub fn generate_storybook_argtypes(palette: &Palette) -> String {
 
         // Description
         if let Some(ref desc) = control.description {
-            sb.push_str(&format!("    description: '{}',\n", desc));
+            append!(sb, "    description: '{desc}',\n");
         }
 
         // Default value
         if let Some(ref default) = control.default_value {
             sb.push_str("    defaultValue: ");
             match default {
-                serde_json::Value::String(s) => sb.push_str(&format!("'{}'", s)),
-                serde_json::Value::Number(n) => sb.push_str(&n.to_string()),
-                serde_json::Value::Bool(b) => sb.push_str(&b.to_string()),
-                _ => sb.push_str(&default.to_string()),
+                serde_json::Value::String(s) => append!(sb, "'{s}'"),
+                serde_json::Value::Number(n) => append!(sb, "{n}"),
+                serde_json::Value::Bool(b) => append!(sb, "{b}"),
+                _ => append!(sb, "{default}"),
             }
             sb.push_str(",\n");
         }
 
         // Table category (group)
         if let Some(ref group) = control.group {
-            sb.push_str(&format!("    table: {{ category: '{}' }},\n", group));
+            append!(sb, "    table: {{ category: '{group}' }},\n");
         }
 
         sb.push_str("  },\n");
@@ -263,8 +274,13 @@ pub fn generate_storybook_argtypes(palette: &Palette) -> String {
 }
 
 #[cfg(test)]
+#[allow(clippy::disallowed_methods, clippy::disallowed_macros)]
 mod tests {
-    use super::*;
+    use super::super::PaletteOptions;
+    use super::{
+        generate_palette, generate_storybook_argtypes, generate_typescript_interface,
+        to_pascal_case, Palette, PropControl,
+    };
     use crate::{parse_art, ArtParseOptions, Bump};
 
     #[test]
@@ -316,10 +332,7 @@ mod tests {
 
         let ts = generate_typescript_interface(&palette);
 
-        assert!(ts.contains("export interface ButtonProps"));
-        assert!(ts.contains("label: string;"));
-        assert!(ts.contains("disabled?: boolean;"));
-        assert!(ts.contains("size?: number;"));
+        insta::assert_snapshot!(ts.as_str());
     }
 
     #[test]
@@ -330,11 +343,11 @@ mod tests {
                 "size",
                 vec![
                     super::super::SelectOption {
-                        label: "Small".to_string(),
+                        label: "Small".into(),
                         value: serde_json::json!("sm"),
                     },
                     super::super::SelectOption {
-                        label: "Large".to_string(),
+                        label: "Large".into(),
                         value: serde_json::json!("lg"),
                     },
                 ],
@@ -344,9 +357,7 @@ mod tests {
 
         let argtypes = generate_storybook_argtypes(&palette);
 
-        assert!(argtypes.contains("control: { type: 'select' }"));
-        assert!(argtypes.contains("options: ['sm', 'lg']"));
-        assert!(argtypes.contains("defaultValue: 'sm'"));
+        insta::assert_snapshot!(argtypes.as_str());
     }
 
     #[test]

@@ -99,7 +99,7 @@ impl ScriptRule for PreferUseId {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::PreferUseId;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {

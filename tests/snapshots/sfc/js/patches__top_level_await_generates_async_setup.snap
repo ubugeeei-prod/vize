@@ -1,16 +1,29 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: js_output
+expression: js_output.as_str()
 ---
+import { withAsyncContext as _withAsyncContext } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
 
 export default {
   __name: 'test',
-  setup(__props) {
+  async setup(__props) {
 
-const response = await fetch('/api/data')
-const data = await response.json()
+let __temp, __restore
+
+const response =  (
+  ([__temp,__restore] = _withAsyncContext(() => fetch('/api/data'))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
+const data =  (
+  ([__temp,__restore] = _withAsyncContext(() => response.json())),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data)), 1 /* TEXT */))

@@ -94,7 +94,7 @@ impl Rule for RoleHasRequiredAriaProps {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::RoleHasRequiredAriaProps;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

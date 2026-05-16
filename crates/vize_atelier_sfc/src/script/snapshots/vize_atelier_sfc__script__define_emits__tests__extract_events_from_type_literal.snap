@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_emits.rs
+expression: snapshot_emits(&emits)
+---
+[
+    "click",
+    "update",
+]

@@ -3,18 +3,22 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vp dev --config vite.app.config.ts",
+    "build": "vp build --config vite.app.config.ts",
+    "preview": "vp preview --config vite.app.config.ts",
+    "check": "vp check src vite.config.ts vite.app.config.ts vize.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts vite.app.config.ts vize.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts vite.app.config.ts vize.config.ts"
   },
   "dependencies": {
-    "vue": "^3.5.13"
+    "vue": "catalog:vue-stable"
   },
   "devDependencies": {
-    "vite": "^8.0.0-beta.0",
     "@vizejs/vite-plugin": "workspace:*",
-    "vize": "workspace:*",
-    "vite-plugin-inspect": "^11.0.1",
-    "typescript": "^5.8.3"
+    "typescript": "catalog:typescript",
+    "vite": "catalog:vite-stack",
+    "vite-plugin-inspect": "catalog:vite-stack",
+    "vite-plus": "catalog:vite-stack",
+    "vize": "workspace:*"
   }
 }

@@ -52,7 +52,7 @@ impl Rule for NoRolePresentationOnFocusable {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoRolePresentationOnFocusable;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

@@ -4,20 +4,29 @@
 
 use crate::context::{ElementContext, LintContext};
 use crate::rule::Rule;
-use vize_carton::CompactString;
-use vize_relief::ast::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
+use vize_carton::directive::{parse_level_severity, parse_vize_directive, DirectiveKind};
+use vize_carton::{cstr, profile, CompactString};
+use vize_relief::ast::{
+    CommentNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
+};
 
 /// Visit the AST and run all rules
 pub struct LintVisitor<'a, 'ctx, 'rules> {
     ctx: &'ctx mut LintContext<'a>,
     rules: &'rules [Box<dyn Rule>],
+    /// When true, suppress all diagnostics for the next element
+    forget_next_element: bool,
 }
 
 impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// Create a new visitor
     #[inline]
     pub fn new(ctx: &'ctx mut LintContext<'a>, rules: &'rules [Box<dyn Rule>]) -> Self {
-        Self { ctx, rules }
+        Self {
+            ctx,
+            rules,
+            forget_next_element: false,
+        }
     }
 
     /// Visit the root node and traverse the AST
@@ -26,7 +35,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run template-level checks
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.run_on_template(self.ctx, root);
+            profile!(
+                "patina.rule.run_on_template",
+                rule.run_on_template(self.ctx, root)
+            );
         }
 
         // Visit children
@@ -38,48 +50,120 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     fn visit_child(&mut self, node: &TemplateChildNode<'a>) {
         match node {
-            TemplateChildNode::Element(el) => self.visit_element(el),
+            TemplateChildNode::Element(el) => {
+                if self.forget_next_element {
+                    self.forget_next_element = false;
+                    let start_line = self.ctx.offset_to_line(el.loc.start.offset);
+                    let end_line = self.ctx.offset_to_line(el.loc.end.offset);
+                    self.ctx.disable_all(start_line, Some(end_line));
+                }
+                self.visit_element(el);
+            }
             TemplateChildNode::Interpolation(interp) => {
                 for rule in self.rules.iter() {
                     self.ctx.current_rule = rule.meta().name;
-                    rule.check_interpolation(self.ctx, interp);
+                    profile!(
+                        "patina.rule.check_interpolation",
+                        rule.check_interpolation(self.ctx, interp)
+                    );
                 }
             }
-            TemplateChildNode::If(if_node) => self.visit_if(if_node),
-            TemplateChildNode::For(for_node) => self.visit_for(for_node),
+            TemplateChildNode::If(if_node) => {
+                if self.forget_next_element {
+                    self.forget_next_element = false;
+                    let start_line = self.ctx.offset_to_line(if_node.loc.start.offset);
+                    let end_line = self.ctx.offset_to_line(if_node.loc.end.offset);
+                    self.ctx.disable_all(start_line, Some(end_line));
+                }
+                self.visit_if(if_node);
+            }
+            TemplateChildNode::For(for_node) => {
+                if self.forget_next_element {
+                    self.forget_next_element = false;
+                    let start_line = self.ctx.offset_to_line(for_node.loc.start.offset);
+                    let end_line = self.ctx.offset_to_line(for_node.loc.end.offset);
+                    self.ctx.disable_all(start_line, Some(end_line));
+                }
+                self.visit_for(for_node);
+            }
             TemplateChildNode::Comment(comment) => {
-                self.process_disable_comment(&comment.content, comment.loc.start.line);
+                if let Some(kind) = comment.directive {
+                    self.process_vize_directive(comment, kind);
+                }
             }
             TemplateChildNode::Text(_) => {}
             _ => {}
         }
     }
 
-    /// Process disable comments like `vize-disable` or `vize-disable-next-line`
-    fn process_disable_comment(&mut self, content: &str, line: u32) {
-        let content = content.trim();
+    /// Process `@vize:` directives on comment nodes.
+    fn process_vize_directive(&mut self, comment: &CommentNode, kind: DirectiveKind) {
+        let line = comment.loc.start.line;
+        let loc = &comment.loc;
 
-        // vize-disable-next-line [rule1, rule2, ...]
-        if let Some(rest) = content.strip_prefix("vize-disable-next-line") {
-            let rest = rest.trim();
-            if rest.is_empty() {
-                self.ctx.disable_next_line(line);
-            } else {
-                let rules: Vec<&str> = rest.split(',').map(|s| s.trim()).collect();
-                self.ctx.disable_rules_next_line(&rules, line);
+        match kind {
+            DirectiveKind::Todo => {
+                // Parse the payload from the comment content
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
+                    let msg = if d.payload.is_empty() {
+                        CompactString::from("TODO")
+                    } else {
+                        cstr!("TODO: {}", d.payload)
+                    };
+                    self.ctx.current_rule = "vize/todo";
+                    self.ctx.warn(msg, loc);
+                }
             }
-            return;
-        }
-
-        // vize-disable [rule1, rule2, ...]
-        if let Some(rest) = content.strip_prefix("vize-disable") {
-            let rest = rest.trim();
-            if rest.is_empty() {
-                self.ctx.disable_all(line, None);
-            } else {
-                let rules: Vec<&str> = rest.split(',').map(|s| s.trim()).collect();
-                self.ctx.disable_rules(&rules, line, None);
+            DirectiveKind::Fixme => {
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
+                    let msg = if d.payload.is_empty() {
+                        CompactString::from("FIXME")
+                    } else {
+                        cstr!("FIXME: {}", d.payload)
+                    };
+                    self.ctx.current_rule = "vize/fixme";
+                    self.ctx.error(msg, loc);
+                }
             }
+            DirectiveKind::Expected => {
+                self.ctx.expect_error_next_line(line);
+            }
+            DirectiveKind::IgnoreStart => {
+                self.ctx.push_ignore_region(line);
+            }
+            DirectiveKind::IgnoreEnd => {
+                self.ctx.pop_ignore_region(line);
+            }
+            DirectiveKind::Level => {
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
+                    if let Some(severity) = parse_level_severity(&d.payload) {
+                        self.ctx.set_severity_override_next_line(line, severity);
+                    }
+                }
+            }
+            DirectiveKind::Deprecated => {
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
+                    let msg = if d.payload.is_empty() {
+                        CompactString::from("Deprecated")
+                    } else {
+                        cstr!("Deprecated: {}", d.payload)
+                    };
+                    self.ctx.current_rule = "vize/deprecated";
+                    self.ctx.warn(msg, loc);
+                }
+            }
+            DirectiveKind::Forget => {
+                if let Some(d) = parse_vize_directive(&comment.content, line, loc.start.offset) {
+                    if d.payload.is_empty() {
+                        self.ctx.current_rule = "vize/forget";
+                        self.ctx
+                            .warn(CompactString::from("@vize:forget requires a reason"), loc);
+                    }
+                    self.forget_next_element = true;
+                }
+            }
+            // Docs, DevOnly, Unknown: no lint action needed
+            _ => {}
         }
     }
 
@@ -114,7 +198,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Enter element - run rules
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.enter_element(self.ctx, el);
+            profile!(
+                "patina.rule.enter_element",
+                rule.enter_element(self.ctx, el)
+            );
         }
 
         // Check directives
@@ -122,7 +209,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             if let PropNode::Directive(dir) = prop {
                 for rule in self.rules.iter() {
                     self.ctx.current_rule = rule.meta().name;
-                    rule.check_directive(self.ctx, el, dir);
+                    profile!(
+                        "patina.rule.check_directive",
+                        rule.check_directive(self.ctx, el, dir)
+                    );
                 }
             }
         }
@@ -135,7 +225,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Exit element - run rules
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.exit_element(self.ctx, el);
+            profile!("patina.rule.exit_element", rule.exit_element(self.ctx, el));
         }
 
         self.ctx.pop_element();
@@ -146,7 +236,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run if checks
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.check_if(self.ctx, if_node);
+            profile!("patina.rule.check_if", rule.check_if(self.ctx, if_node));
         }
 
         // Visit branches
@@ -162,7 +252,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run for checks
         for rule in self.rules.iter() {
             self.ctx.current_rule = rule.meta().name;
-            rule.check_for(self.ctx, for_node);
+            profile!("patina.rule.check_for", rule.check_for(self.ctx, for_node));
         }
 
         // Visit children
@@ -265,7 +355,7 @@ fn find_pattern(haystack: &[u8], needle: &[u8]) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{parse_v_for_variables, CompactString, ExpressionNode};
     use vize_carton::Bump;
     use vize_relief::ast::SimpleExpressionNode;
 

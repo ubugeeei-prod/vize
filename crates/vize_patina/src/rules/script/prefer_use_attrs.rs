@@ -98,7 +98,7 @@ impl ScriptRule for PreferUseAttrs {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::PreferUseAttrs;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {

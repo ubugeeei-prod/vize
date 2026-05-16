@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<Foo><span v-if=\"ok\" class=\"item\">slot content</span></Foo>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Foo"), _attrs, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        if (_ctx.ok) {
+          _push(`<span class="item">slot content</span>`)
+        } else {
+          _push(`<!---->`)
+        }
+      } else {
+        return [(_ctx.ok) ? _createElementVNode("span", { class: "item" }, "slot content") : _createCommentVNode("")]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

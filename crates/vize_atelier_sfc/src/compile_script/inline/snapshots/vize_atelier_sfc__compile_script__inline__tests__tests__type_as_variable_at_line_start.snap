@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { ref } from "vue";
+export default {
+  __name: "TestComponent",
+  setup(__props) {
+    const type = ref("material-symbols");
+    const identifier = type === "material-symbols" ? "name" : "ligature";
+    return (_ctx, _cache) => {
+      return null;
+    };
+  }
+};

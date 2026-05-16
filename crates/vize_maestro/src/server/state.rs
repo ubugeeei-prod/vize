@@ -1,21 +1,211 @@
 //! Server state management.
+#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use dashmap::DashMap;
 use parking_lot::RwLock;
+use serde::Deserialize;
 use tokio::sync::OnceCell;
 use tower_lsp::lsp_types::Url;
+use vize_carton::config::{LanguageServerConfig, TypeCheckerConfig};
+
+#[cfg(feature = "glyph")]
+use vize_carton::config::FormatterConfig;
 
 #[cfg(feature = "native")]
 use std::sync::OnceLock;
 
 #[cfg(feature = "native")]
-use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, TsgoBridge, TsgoBridgeConfig};
+use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, CorsaBridge, CorsaBridgeConfig};
 
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+struct LspConfigSection {
+    enabled: Option<bool>,
+    /// Legacy diagnostics switch. Kept as a lint diagnostics alias for older configs.
+    diagnostics: Option<bool>,
+    lint: Option<bool>,
+    typecheck: Option<bool>,
+    editor: Option<bool>,
+    completion: Option<bool>,
+    hover: Option<bool>,
+    definition: Option<bool>,
+    references: Option<bool>,
+    document_symbols: Option<bool>,
+    workspace_symbols: Option<bool>,
+    code_actions: Option<bool>,
+    rename: Option<bool>,
+    formatting: Option<bool>,
+    code_lens: Option<bool>,
+    semantic_tokens: Option<bool>,
+    document_links: Option<bool>,
+    folding_ranges: Option<bool>,
+    inlay_hints: Option<bool>,
+    file_rename: Option<bool>,
+    corsa: Option<bool>,
+    tsgo: Option<bool>,
+}
+
+impl LspConfigSection {
+    fn apply_to(self, features: &mut LspFeatureConfig) {
+        if self.enabled == Some(false) {
+            *features = LspFeatureConfig::default();
+            return;
+        }
+
+        if let Some(enabled) = self.diagnostics {
+            features.lint = enabled;
+            if !enabled {
+                features.typecheck = false;
+            }
+        }
+
+        if let Some(enabled) = self.lint {
+            features.lint = enabled;
+        }
+
+        if let Some(enabled) = self.typecheck {
+            features.typecheck = enabled;
+        }
+        if self.corsa == Some(true) || self.tsgo == Some(true) {
+            features.typecheck = true;
+        }
+
+        if let Some(enabled) = self.editor {
+            features.apply_editor_bundle(enabled);
+        }
+
+        if let Some(enabled) = self.completion {
+            features.completion = enabled;
+        }
+        if let Some(enabled) = self.hover {
+            features.hover = enabled;
+        }
+        if let Some(enabled) = self.definition {
+            features.definition = enabled;
+        }
+        if let Some(enabled) = self.references {
+            features.references = enabled;
+        }
+        if let Some(enabled) = self.document_symbols {
+            features.document_symbols = enabled;
+        }
+        if let Some(enabled) = self.workspace_symbols {
+            features.workspace_symbols = enabled;
+        }
+        if let Some(enabled) = self.code_actions {
+            features.code_actions = enabled;
+        }
+        if let Some(enabled) = self.rename {
+            features.rename = enabled;
+        }
+        if let Some(enabled) = self.formatting {
+            features.formatting = enabled;
+        }
+        if let Some(enabled) = self.code_lens {
+            features.code_lens = enabled;
+        }
+        if let Some(enabled) = self.semantic_tokens {
+            features.semantic_tokens = enabled;
+        }
+        if let Some(enabled) = self.document_links {
+            features.document_links = enabled;
+        }
+        if let Some(enabled) = self.folding_ranges {
+            features.folding_ranges = enabled;
+        }
+        if let Some(enabled) = self.inlay_hints {
+            features.inlay_hints = enabled;
+        }
+        if let Some(enabled) = self.file_rename {
+            features.file_rename = enabled;
+        }
+    }
+}
+
+impl From<LanguageServerConfig> for LspConfigSection {
+    fn from(config: LanguageServerConfig) -> Self {
+        Self {
+            enabled: config.enabled,
+            diagnostics: config.diagnostics,
+            lint: config.lint,
+            typecheck: config.typecheck,
+            editor: config.editor,
+            completion: config.completion,
+            hover: config.hover,
+            definition: config.definition,
+            references: config.references,
+            document_symbols: config.document_symbols,
+            workspace_symbols: config.workspace_symbols,
+            code_actions: config.code_actions,
+            rename: config.rename,
+            formatting: config.formatting,
+            code_lens: config.code_lens,
+            semantic_tokens: config.semantic_tokens,
+            document_links: config.document_links,
+            folding_ranges: config.folding_ranges,
+            inlay_hints: config.inlay_hints,
+            file_rename: config.file_rename,
+            corsa: config.corsa,
+            tsgo: config.tsgo,
+        }
+    }
+}
+
+/// Feature switches for Maestro LSP capabilities.
+///
+/// Everything defaults to off so editor integrations can opt in incrementally:
+/// lint diagnostics first, type checking second, and editor navigation/completion
+/// features only when a workspace is ready for Vize to overlap with other Vue
+/// language tooling.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct LspFeatureConfig {
+    pub(crate) lint: bool,
+    pub(crate) typecheck: bool,
+    pub(crate) completion: bool,
+    pub(crate) hover: bool,
+    pub(crate) definition: bool,
+    pub(crate) references: bool,
+    pub(crate) document_symbols: bool,
+    pub(crate) workspace_symbols: bool,
+    pub(crate) code_actions: bool,
+    pub(crate) rename: bool,
+    pub(crate) formatting: bool,
+    pub(crate) code_lens: bool,
+    pub(crate) semantic_tokens: bool,
+    pub(crate) document_links: bool,
+    pub(crate) folding_ranges: bool,
+    pub(crate) inlay_hints: bool,
+    pub(crate) file_rename: bool,
+}
+
+impl LspFeatureConfig {
+    pub(crate) fn has_diagnostics(self) -> bool {
+        self.lint || self.typecheck
+    }
+
+    fn apply_editor_bundle(&mut self, enabled: bool) {
+        self.completion = enabled;
+        self.hover = enabled;
+        self.definition = enabled;
+        self.references = enabled;
+        self.document_symbols = enabled;
+        self.workspace_symbols = enabled;
+        self.rename = enabled;
+        self.code_lens = enabled;
+        self.semantic_tokens = enabled;
+        self.document_links = enabled;
+        self.folding_ranges = enabled;
+        self.inlay_hints = enabled;
+        self.file_rename = enabled;
+    }
+}
 
 /// Batch type check result cache.
 #[cfg(feature = "native")]
@@ -81,12 +271,21 @@ pub struct ServerState {
     virtual_gen: RwLock<VirtualCodeGenerator>,
     /// Cached virtual documents per file
     virtual_docs_cache: DashMap<Url, VirtualDocuments>,
-    /// tsgo bridge for TypeScript language features (lazy initialized)
+    /// Enabled LSP feature surface.
+    lsp_features: RwLock<LspFeatureConfig>,
+    /// Fast path for checking whether type-aware features are enabled.
+    lsp_typecheck_enabled: AtomicBool,
+    /// Type checker options shared by LSP diagnostics.
+    type_checker_config: RwLock<TypeCheckerConfig>,
+    /// Formatting options (loaded from vize.config.json)
+    #[cfg(feature = "glyph")]
+    format_options: RwLock<vize_glyph::FormatOptions>,
+    /// Corsa bridge for native TypeScript language features (lazy initialized)
     #[cfg(feature = "native")]
-    tsgo_bridge: OnceCell<Arc<TsgoBridge>>,
-    /// Flag to track if tsgo initialization has been attempted and failed
+    corsa_bridge: OnceCell<Arc<CorsaBridge>>,
+    /// Flag to track if Corsa initialization has been attempted and failed
     #[cfg(feature = "native")]
-    tsgo_init_failed: std::sync::atomic::AtomicBool,
+    corsa_init_failed: std::sync::atomic::AtomicBool,
     /// Workspace root path
     #[cfg(feature = "native")]
     workspace_root: RwLock<Option<PathBuf>>,
@@ -111,10 +310,15 @@ impl ServerState {
             documents: DocumentStore::new(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
+            lsp_features: RwLock::new(LspFeatureConfig::default()),
+            lsp_typecheck_enabled: AtomicBool::new(false),
+            type_checker_config: RwLock::new(TypeCheckerConfig::default()),
+            #[cfg(feature = "glyph")]
+            format_options: RwLock::new(vize_glyph::FormatOptions::default()),
             #[cfg(feature = "native")]
-            tsgo_bridge: OnceCell::new(),
+            corsa_bridge: OnceCell::new(),
             #[cfg(feature = "native")]
-            tsgo_init_failed: std::sync::atomic::AtomicBool::new(false),
+            corsa_init_failed: std::sync::atomic::AtomicBool::new(false),
             #[cfg(feature = "native")]
             workspace_root: RwLock::new(None),
             #[cfg(feature = "native")]
@@ -132,6 +336,86 @@ impl ServerState {
         self.batch_cache.invalidate();
     }
 
+    /// Check whether LSP type checking is enabled.
+    #[inline]
+    pub fn is_lsp_typecheck_enabled(&self) -> bool {
+        self.lsp_typecheck_enabled.load(Ordering::SeqCst)
+    }
+
+    /// Get the enabled LSP feature set.
+    #[inline]
+    pub(crate) fn lsp_features(&self) -> LspFeatureConfig {
+        *self.lsp_features.read()
+    }
+
+    /// Check whether LSP lint diagnostics are enabled.
+    #[inline]
+    pub fn is_lsp_lint_enabled(&self) -> bool {
+        self.lsp_features().lint
+    }
+
+    /// Apply LSP initialization options sent by an editor client.
+    pub fn apply_lsp_initialization_options(&self, options: Option<&serde_json::Value>) {
+        let Some(options) = options else {
+            return;
+        };
+
+        match serde_json::from_value::<LspConfigSection>(options.clone()) {
+            Ok(config) => self.apply_lsp_config(config, "initializationOptions"),
+            Err(error) => {
+                tracing::warn!(
+                    "Failed to parse LSP initializationOptions: {}. Keeping current LSP options.",
+                    error
+                );
+            }
+        }
+    }
+
+    /// Get a clone of the current type checker config.
+    #[inline]
+    pub fn get_type_checker_config(&self) -> TypeCheckerConfig {
+        self.type_checker_config.read().clone()
+    }
+
+    fn apply_type_checker_config(&self, config: TypeCheckerConfig, source: &str) {
+        *self.type_checker_config.write() = config;
+        tracing::info!("Loaded type checker config from {}", source);
+    }
+
+    fn apply_lsp_config(&self, config: LspConfigSection, source: &str) {
+        let mut features = self.lsp_features.write();
+        config.apply_to(&mut features);
+        self.lsp_typecheck_enabled
+            .store(features.typecheck, Ordering::SeqCst);
+        tracing::info!("Loaded LSP config from {}: {:?}", source, *features);
+    }
+
+    /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
+    pub fn load_workspace_config(&self, dir: &Path) {
+        let loaded = vize_carton::config::load_config_with_source(Some(dir));
+        if let Some(source_path) = loaded.source_path {
+            let source = source_path.display().to_string();
+            let config = loaded.config;
+            #[cfg(feature = "glyph")]
+            {
+                *self.format_options.write() = format_options_from_config(&config.formatter);
+                tracing::info!("Loaded format config from {}", source);
+            }
+            self.apply_type_checker_config(config.type_checker, &source);
+            self.apply_lsp_config(config.language_server.into(), &source);
+        }
+    }
+
+    /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
+    pub fn load_lsp_config(&self, dir: &Path) {
+        let loaded = vize_carton::config::load_config_with_source(Some(dir));
+        if let Some(source_path) = loaded.source_path {
+            let source = source_path.display().to_string();
+            self.apply_type_checker_config(loaded.config.type_checker, &source);
+            self.apply_lsp_config(loaded.config.language_server.into(), &source);
+        }
+    }
+
     /// Get the workspace root path.
     #[cfg(feature = "native")]
     pub fn get_workspace_root(&self) -> Option<PathBuf> {
@@ -141,6 +425,10 @@ impl ServerState {
     /// Get or initialize the batch type checker.
     #[cfg(feature = "native")]
     pub fn get_batch_checker(&self) -> Option<Arc<RwLock<BatchTypeChecker>>> {
+        if !self.is_lsp_typecheck_enabled() {
+            return None;
+        }
+
         let workspace_root = self.get_workspace_root()?;
 
         // Try to get existing value first
@@ -162,7 +450,7 @@ impl ServerState {
     /// Check if batch type checker is available.
     #[cfg(feature = "native")]
     pub fn has_batch_checker(&self) -> bool {
-        self.batch_checker.get().is_some()
+        self.is_lsp_typecheck_enabled() && self.batch_checker.get().is_some()
     }
 
     /// Get the batch type check cache.
@@ -174,6 +462,10 @@ impl ServerState {
     /// Run batch type checking and update the cache.
     #[cfg(feature = "native")]
     pub fn run_batch_type_check(&self) -> Option<vize_canon::BatchTypeCheckResult> {
+        if !self.is_lsp_typecheck_enabled() {
+            return None;
+        }
+
         let checker = self.get_batch_checker()?;
         let mut checker_guard = checker.write();
 
@@ -205,49 +497,54 @@ impl ServerState {
         self.batch_cache.invalidate();
     }
 
-    /// Get or initialize the tsgo bridge.
+    /// Get or initialize the Corsa bridge.
     ///
-    /// Returns None if tsgo is not available or failed to initialize.
+    /// Returns `None` if Corsa is not available or failed to initialize.
     #[cfg(feature = "native")]
-    pub async fn get_tsgo_bridge(&self) -> Option<Arc<TsgoBridge>> {
-        use std::sync::atomic::Ordering;
+    pub async fn get_corsa_bridge(&self) -> Option<Arc<CorsaBridge>> {
+        if !self.is_lsp_typecheck_enabled() {
+            tracing::info!(
+                "Skipping Corsa bridge initialization because LSP typecheck is disabled"
+            );
+            return None;
+        }
 
         // If already initialized successfully, return it
-        if let Some(bridge) = self.tsgo_bridge.get() {
+        if let Some(bridge) = self.corsa_bridge.get() {
             return Some(bridge.clone());
         }
 
         // If initialization already failed, don't retry
-        if self.tsgo_init_failed.load(Ordering::SeqCst) {
+        if self.corsa_init_failed.load(Ordering::SeqCst) {
             return None;
         }
 
-        // Get workspace root for tsgo configuration
+        // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
 
         let result = self
-            .tsgo_bridge
+            .corsa_bridge
             .get_or_try_init(|| async {
-                let config = TsgoBridgeConfig {
+                let config = CorsaBridgeConfig {
                     working_dir: workspace_root,
-                    timeout_ms: 30000, // 30 second timeout for requests (tsgo needs time to analyze)
+                    timeout_ms: 30000, // Corsa needs time to build project state on first load.
                     ..Default::default()
                 };
-                let bridge = TsgoBridge::with_config(config);
+                let bridge = CorsaBridge::with_config(config);
 
-                // Add timeout for spawning tsgo (5 seconds)
+                // Add a guardrail timeout around the initial spawn.
                 match tokio::time::timeout(std::time::Duration::from_secs(5), bridge.spawn()).await
                 {
                     Ok(Ok(())) => {
-                        tracing::info!("tsgo bridge initialized successfully");
+                        tracing::info!("corsa bridge initialized successfully");
                         Ok(Arc::new(bridge))
                     }
                     Ok(Err(e)) => {
-                        tracing::warn!("tsgo bridge spawn failed: {}", e);
+                        tracing::warn!("corsa bridge spawn failed: {}", e);
                         Err(())
                     }
                     Err(_) => {
-                        tracing::warn!("tsgo bridge spawn timed out");
+                        tracing::warn!("corsa bridge spawn timed out");
                         Err(())
                     }
                 }
@@ -258,30 +555,110 @@ impl ServerState {
             Ok(bridge) => Some(bridge.clone()),
             Err(()) => {
                 // Mark as failed so we don't retry
-                self.tsgo_init_failed.store(true, Ordering::SeqCst);
+                self.corsa_init_failed.store(true, Ordering::SeqCst);
                 None
             }
         }
     }
 
-    /// Check if tsgo bridge is available (without initializing).
+    /// Check if the Corsa bridge is available (without initializing).
     #[cfg(feature = "native")]
-    pub fn has_tsgo_bridge(&self) -> bool {
-        self.tsgo_bridge.initialized()
+    pub fn has_corsa_bridge(&self) -> bool {
+        self.is_lsp_typecheck_enabled() && self.corsa_bridge.initialized()
     }
 
     /// Generate and cache virtual documents for a document.
     pub fn update_virtual_docs(&self, uri: &Url, content: &str) {
+        if uri.path().ends_with(".art.vue") {
+            self.update_art_virtual_docs(uri, content);
+            return;
+        }
+
         let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string(),
+            filename: uri.path().to_string().into(),
             ..Default::default()
         };
 
-        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) {
-            let base_uri = uri.path();
-            let virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
-            self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
+        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+            self.remove_virtual_docs(uri);
+            return;
+        };
+
+        let base_uri = uri.path();
+        let virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
+        self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
+    }
+
+    /// Generate and cache virtual documents for an art file (*.art.vue).
+    ///
+    /// Uses the default variant's template as the synthetic template block,
+    /// and generates virtual docs for script_setup if present.
+    fn update_art_virtual_docs(&self, uri: &Url, content: &str) {
+        use crate::virtual_code::{ScriptCodeGenerator, TemplateCodeGenerator, VirtualDocuments};
+
+        let allocator = vize_carton::Bump::new();
+        let Ok(art_desc) =
+            vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default())
+        else {
+            self.remove_virtual_docs(uri);
+            return;
+        };
+
+        let base_uri = uri.path();
+        let mut docs = VirtualDocuments::new();
+
+        // Generate one virtual template per variant so editor features remain correct even when
+        // the cursor is inside a non-default variant.
+        docs.art_templates.resize(art_desc.variants.len(), None);
+
+        for (index, variant) in art_desc.variants.iter().enumerate() {
+            let template_content = variant.template;
+            if template_content.trim().is_empty() {
+                continue;
+            }
+
+            let template_allocator = vize_carton::Bump::new();
+            let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
+
+            let template_ptr = template_content.as_ptr() as usize;
+            let source_ptr = content.as_ptr() as usize;
+            let block_offset = (template_ptr - source_ptr) as u32;
+
+            let mut template_gen = TemplateCodeGenerator::new();
+            template_gen.set_block_offset(block_offset);
+            let mut template_doc = template_gen.generate(&ast, template_content);
+            template_doc.uri =
+                vize_carton::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string();
+
+            if variant.is_default || docs.template.is_none() {
+                docs.template = Some(template_doc.clone());
+            }
+
+            docs.art_templates[index] = Some(template_doc);
         }
+
+        // Generate script_setup virtual doc using SFC parser
+        // (SFC parser handles script blocks even in art files)
+        let sfc_options = vize_atelier_sfc::SfcParseOptions {
+            filename: uri.path().to_string().into(),
+            ..Default::default()
+        };
+        if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, sfc_options) {
+            if let Some(ref script_setup) = descriptor.script_setup {
+                let mut script_gen = ScriptCodeGenerator::new();
+                let mut script_doc = script_gen.generate(script_setup, true);
+                script_doc.uri = vize_carton::cstr!("{base_uri}.__script_setup.ts").to_string();
+                docs.script_setup = Some(script_doc);
+            }
+            if let Some(ref script) = descriptor.script {
+                let mut script_gen = ScriptCodeGenerator::new();
+                let mut script_doc = script_gen.generate(script, false);
+                script_doc.uri = vize_carton::cstr!("{base_uri}.__script.ts").to_string();
+                docs.script = Some(script_doc);
+            }
+        }
+
+        self.virtual_docs_cache.insert(uri.clone(), docs);
     }
 
     /// Get cached virtual documents for a document.
@@ -300,5 +677,363 @@ impl ServerState {
     /// Clear all cached virtual documents.
     pub fn clear_virtual_docs(&self) {
         self.virtual_docs_cache.clear();
+    }
+
+    /// Get a clone of the current format options.
+    #[cfg(feature = "glyph")]
+    #[inline]
+    pub fn get_format_options(&self) -> vize_glyph::FormatOptions {
+        self.format_options.read().clone()
+    }
+
+    /// Load format options from `vize.config.json` in the given directory.
+    #[cfg(feature = "glyph")]
+    pub fn load_format_config(&self, dir: &Path) {
+        let loaded = vize_carton::config::load_config_with_source(Some(dir));
+        if let Some(source_path) = loaded.source_path {
+            *self.format_options.write() = format_options_from_config(&loaded.config.formatter);
+            tracing::info!("Loaded format config from {}", source_path.display());
+        }
+    }
+}
+
+#[cfg(feature = "glyph")]
+fn format_options_from_config(config: &FormatterConfig) -> vize_glyph::FormatOptions {
+    vize_glyph::FormatOptions {
+        print_width: config.print_width,
+        tab_width: config.tab_width,
+        use_tabs: config.use_tabs,
+        semi: config.semi,
+        single_quote: config.single_quote,
+        jsx_single_quote: config.jsx_single_quote,
+        trailing_comma: match config.trailing_comma {
+            vize_carton::config::TrailingComma::None => vize_glyph::TrailingComma::None,
+            vize_carton::config::TrailingComma::Es5 => vize_glyph::TrailingComma::Es5,
+            vize_carton::config::TrailingComma::All => vize_glyph::TrailingComma::All,
+        },
+        bracket_spacing: config.bracket_spacing,
+        bracket_same_line: config.bracket_same_line,
+        arrow_parens: match config.arrow_parens {
+            vize_carton::config::ArrowParens::Always => vize_glyph::ArrowParens::Always,
+            vize_carton::config::ArrowParens::Avoid => vize_glyph::ArrowParens::Avoid,
+        },
+        end_of_line: match config.end_of_line {
+            vize_carton::config::EndOfLine::Lf => vize_glyph::EndOfLine::Lf,
+            vize_carton::config::EndOfLine::Crlf => vize_glyph::EndOfLine::Crlf,
+            vize_carton::config::EndOfLine::Cr => vize_glyph::EndOfLine::Cr,
+            vize_carton::config::EndOfLine::Auto => vize_glyph::EndOfLine::Auto,
+        },
+        quote_props: match config.quote_props {
+            vize_carton::config::QuoteProps::AsNeeded => vize_glyph::QuoteProps::AsNeeded,
+            vize_carton::config::QuoteProps::Consistent => vize_glyph::QuoteProps::Consistent,
+            vize_carton::config::QuoteProps::Preserve => vize_glyph::QuoteProps::Preserve,
+        },
+        single_attribute_per_line: config.single_attribute_per_line,
+        vue_indent_script_and_style: config.vue_indent_script_and_style,
+        sort_attributes: config.sort_attributes,
+        attribute_sort_order: match config.attribute_sort_order {
+            vize_carton::config::AttributeSortOrder::Alphabetical => {
+                vize_glyph::AttributeSortOrder::Alphabetical
+            }
+            vize_carton::config::AttributeSortOrder::AsWritten => {
+                vize_glyph::AttributeSortOrder::AsWritten
+            }
+        },
+        merge_bind_and_non_bind_attrs: config.merge_bind_and_non_bind_attrs,
+        max_attributes_per_line: config.max_attributes_per_line,
+        attribute_groups: config.attribute_groups.clone(),
+        normalize_directive_shorthands: config.normalize_directive_shorthands,
+        sort_blocks: config.sort_blocks,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ServerState;
+    use crate::virtual_code::{find_art_block_at_offset, ArtCursorPosition, BlockType};
+    use tower_lsp::lsp_types::Url;
+
+    #[test]
+    fn default_format_options() {
+        let state = ServerState::new();
+        let opts = state.get_format_options();
+        assert_eq!(opts.print_width, 100);
+        assert_eq!(opts.tab_width, 2);
+        assert!(!opts.use_tabs);
+        assert!(opts.semi);
+        assert!(!opts.single_quote);
+        assert!(opts.sort_attributes);
+        assert!(opts.normalize_directive_shorthands);
+    }
+
+    #[test]
+    fn load_format_config_no_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let state = ServerState::new();
+        state.load_format_config(dir.path());
+        // options remain default
+        let opts = state.get_format_options();
+        assert_eq!(opts.print_width, 100);
+    }
+
+    #[test]
+    fn load_format_config_from_file() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{
+                "fmt": {
+                    "printWidth": 80,
+                    "tabWidth": 4,
+                    "useTabs": true,
+                    "semi": false,
+                    "singleQuote": true
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_format_config(dir.path());
+        let opts = state.get_format_options();
+        assert_eq!(opts.print_width, 80);
+        assert_eq!(opts.tab_width, 4);
+        assert!(opts.use_tabs);
+        assert!(!opts.semi);
+        assert!(opts.single_quote);
+    }
+
+    #[test]
+    fn load_format_config_partial() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{ "fmt": { "printWidth": 120 } }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_format_config(dir.path());
+        let opts = state.get_format_options();
+        assert_eq!(opts.print_width, 120);
+        // defaults preserved
+        assert_eq!(opts.tab_width, 2);
+        assert!(opts.semi);
+    }
+
+    #[test]
+    fn load_format_config_no_fmt_section() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{ "check": { "globals": ["$t"] } }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_format_config(dir.path());
+        // no fmt section → options remain default
+        let opts = state.get_format_options();
+        assert_eq!(opts.print_width, 100);
+    }
+
+    #[test]
+    fn load_format_config_invalid_json() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("vize.config.json"), "not valid json").unwrap();
+
+        let state = ServerState::new();
+        state.load_format_config(dir.path());
+        // options remain default
+        let opts = state.get_format_options();
+        assert_eq!(opts.print_width, 100);
+    }
+
+    #[test]
+    fn lsp_features_are_opt_in_by_default() {
+        let state = ServerState::new();
+        assert_eq!(state.lsp_features(), super::LspFeatureConfig::default());
+        assert!(!state.is_lsp_lint_enabled());
+        assert!(!state.is_lsp_typecheck_enabled());
+    }
+
+    #[test]
+    fn load_lsp_config_from_json() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{
+                "lsp": {
+                    "lint": true,
+                    "typecheck": true,
+                    "editor": true,
+                    "formatting": false
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+        let features = state.lsp_features();
+        assert!(features.lint);
+        assert!(features.typecheck);
+        assert!(features.completion);
+        assert!(features.definition);
+        assert!(!features.formatting);
+    }
+
+    #[test]
+    fn load_lsp_config_updates_type_checker_config() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{
+                "typeChecker": {
+                    "strict": true,
+                    "checkProps": false,
+                    "checkEmits": false
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+        let config = state.get_type_checker_config();
+        assert!(config.strict);
+        assert!(!config.check_props);
+        assert!(!config.check_emits);
+    }
+
+    #[test]
+    fn load_lsp_config_invalid_json_keeps_default() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("vize.config.json"), "not valid json").unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+        assert_eq!(state.lsp_features(), super::LspFeatureConfig::default());
+    }
+
+    #[test]
+    fn apply_lsp_initialization_options() {
+        let state = ServerState::new();
+        let options = serde_json::json!({
+            "lint": true,
+            "codeActions": true,
+            "definition": true
+        });
+
+        state.apply_lsp_initialization_options(Some(&options));
+
+        let features = state.lsp_features();
+        assert!(features.lint);
+        assert!(features.code_actions);
+        assert!(features.definition);
+        assert!(!features.typecheck);
+    }
+
+    #[test]
+    fn update_art_virtual_docs_tracks_non_default_variants_separately() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///Button.art.vue").unwrap();
+        let source = r#"<script setup lang="ts">
+const primaryLabel = ref('primary')
+const secondaryLabel = ref('secondary')
+</script>
+
+<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <Button :label="primaryLabel" />
+  </variant>
+  <variant name="Secondary">
+    <Button :label="secondaryLabel" />
+  </variant>
+</art>
+"#;
+
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let virtual_docs = state.get_virtual_docs(&uri).unwrap();
+        assert_eq!(virtual_docs.art_templates.len(), 2);
+
+        let default_template = virtual_docs.template.as_ref().unwrap();
+        let secondary_template = virtual_docs.art_template(1).unwrap();
+
+        assert!(default_template.content.contains("primaryLabel"));
+        assert!(secondary_template.content.contains("secondaryLabel"));
+        assert!(!secondary_template.uri.ends_with(".__template.ts"));
+        assert!(secondary_template
+            .uri
+            .contains(".art_variant_1.template.ts"));
+
+        let offset = source.rfind("secondaryLabel").unwrap() + 1;
+        let info = match find_art_block_at_offset(source, offset) {
+            Some(BlockType::Art(ArtCursorPosition::VariantTemplate(info))) => info,
+            other => panic!("expected secondary variant template, got {other:?}"),
+        };
+
+        let generated_offset = secondary_template
+            .source_map
+            .to_generated(info.relative_offset as u32);
+        assert!(generated_offset.is_some());
+    }
+
+    #[test]
+    fn update_virtual_docs_removes_cache_after_sfc_parse_failure() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///Broken.vue").unwrap();
+        let valid_source = r#"<script setup lang="ts">
+const message = 'ok'
+</script>
+
+<template>
+  <div>{{ message }}</div>
+</template>
+"#;
+
+        state.update_virtual_docs(&uri, valid_source);
+        assert!(state.get_virtual_docs(&uri).is_some());
+
+        state.update_virtual_docs(&uri, "<template><div></div>");
+        assert!(state.get_virtual_docs(&uri).is_none());
+    }
+
+    #[test]
+    fn update_virtual_docs_removes_cache_after_art_parse_failure() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///Broken.art.vue").unwrap();
+        let valid_source = r#"<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <Button />
+  </variant>
+</art>
+"#;
+
+        state.update_virtual_docs(&uri, valid_source);
+        assert!(state.get_virtual_docs(&uri).is_some());
+
+        state.update_virtual_docs(&uri, "<template><div>not an art file</div></template>");
+        assert!(state.get_virtual_docs(&uri).is_none());
+    }
+
+    #[test]
+    #[ignore = "requires pkl runtime installed"]
+    fn load_lsp_config_from_pkl() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.pkl"),
+            "lsp {\n    lint = true\n    typecheck = true\n}\n",
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+        assert!(state.is_lsp_lint_enabled());
+        assert!(state.is_lsp_typecheck_enabled());
     }
 }

@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_dom/tests/dom_snapshot.rs
+expression: "get_compiled(r#\"<MyComponent v-if=\"ok\"><span>slot content</span></MyComponent>\"#)"
+---
+const { openBlock: _openBlock, createBlock: _createBlock, createElementVNode: _createElementVNode, createCommentVNode: _createCommentVNode, resolveComponent: _resolveComponent, withCtx: _withCtx } = Vue
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("span", null, "slot content")
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+  
+  return (ok)
+    ? (_openBlock(), _createBlock(_component_MyComponent, { key: 0 }, {
+      default: _withCtx(() => [
+        _hoisted_1
+      ]),
+      _: 1 /* STABLE */
+    }))
+    : _createCommentVNode("v-if", true)
+}

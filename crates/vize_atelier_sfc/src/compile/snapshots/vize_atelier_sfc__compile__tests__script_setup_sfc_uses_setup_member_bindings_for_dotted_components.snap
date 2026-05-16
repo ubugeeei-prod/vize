@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, withCtx as _withCtx } from "vue"
+
+import { Form, Input } from 'ant-design-vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'anonymous',
+  setup(__props) {
+
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createBlock(Form.Item, { label: "Teacher" }, {
+      default: _withCtx(() => [
+        _createVNode(Input)
+      ]),
+      _: 1 /* STABLE */
+    }))
+}
+}
+
+})

@@ -16,10 +16,14 @@
 //! <div :class="foo"></div>
 //! ```
 
+#![allow(clippy::disallowed_macros)]
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::FxHashSet;
+use vize_carton::String;
+use vize_carton::ToCompactString;
 use vize_relief::ast::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -53,8 +57,8 @@ impl Rule for NoDuplicateAttributes {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let mut seen_attrs: FxHashSet<std::string::String> = FxHashSet::default();
-        let mut seen_directives: FxHashSet<std::string::String> = FxHashSet::default();
+        let mut seen_attrs: FxHashSet<String> = FxHashSet::default();
+        let mut seen_directives: FxHashSet<String> = FxHashSet::default();
 
         for prop in element.props.iter() {
             match prop {
@@ -62,14 +66,14 @@ impl Rule for NoDuplicateAttributes {
                     let name = attr.name.as_str().to_lowercase();
 
                     // Check for duplicate static attributes
-                    if seen_attrs.contains(&name) {
+                    if seen_attrs.contains(name.as_str()) {
                         ctx.error_with_help(
                             ctx.t_fmt("vue/no-duplicate-attributes.message", &[("attr", &name)]),
                             &attr.loc,
                             ctx.t("vue/no-duplicate-attributes.help"),
                         );
                     } else {
-                        seen_attrs.insert(name.clone());
+                        seen_attrs.insert(name.clone().into());
                     }
 
                     // Check for coexistence with directives (unless allowed)
@@ -99,9 +103,10 @@ impl Rule for NoDuplicateAttributes {
                     if dir.name.as_str() == "bind" {
                         if let Some(ref arg) = dir.arg {
                             let arg_name = get_expression_content(arg).to_lowercase();
+                            let arg_name_str = arg_name.as_str();
 
                             // Check for duplicate directives
-                            if seen_directives.contains(&arg_name) {
+                            if seen_directives.contains(arg_name_str) {
                                 ctx.error_with_help(
                                     ctx.t_fmt(
                                         "vue/no-duplicate-attributes.message",
@@ -111,7 +116,7 @@ impl Rule for NoDuplicateAttributes {
                                     ctx.t("vue/no-duplicate-attributes.help"),
                                 );
                             } else {
-                                seen_directives.insert(arg_name.clone());
+                                seen_directives.insert(arg_name_str.into());
                             }
 
                             // Check for coexistence with static attributes (unless allowed)
@@ -155,7 +160,7 @@ impl Rule for NoDuplicateAttributes {
                             } else {
                                 format!("on:{}.{}", event_name, modifiers.join("."))
                             };
-                            if seen_directives.contains(&event_key) {
+                            if seen_directives.contains(event_key.as_str()) {
                                 let display_name = if modifiers.is_empty() {
                                     format!("v-on:{}", event_name)
                                 } else {
@@ -170,7 +175,7 @@ impl Rule for NoDuplicateAttributes {
                                     ctx.t("vue/no-duplicate-attributes.help"),
                                 );
                             } else {
-                                seen_directives.insert(event_key);
+                                seen_directives.insert(event_key.into());
                             }
                         }
                     }
@@ -179,9 +184,9 @@ impl Rule for NoDuplicateAttributes {
                         let model_key = if let Some(ref arg) = dir.arg {
                             format!("model:{}", get_expression_content(arg))
                         } else {
-                            "model:modelValue".to_string()
+                            "model:modelValue".to_owned()
                         };
-                        if seen_directives.contains(&model_key) {
+                        if seen_directives.contains(model_key.as_str()) {
                             ctx.error_with_help(
                                 ctx.t_fmt(
                                     "vue/no-duplicate-attributes.message",
@@ -191,7 +196,7 @@ impl Rule for NoDuplicateAttributes {
                                 ctx.t("vue/no-duplicate-attributes.help"),
                             );
                         } else {
-                            seen_directives.insert(model_key);
+                            seen_directives.insert(model_key.into());
                         }
                     }
                 }
@@ -203,14 +208,14 @@ impl Rule for NoDuplicateAttributes {
 /// Get content from ExpressionNode
 fn get_expression_content(expr: &vize_relief::ast::ExpressionNode) -> String {
     match expr {
-        vize_relief::ast::ExpressionNode::Simple(s) => s.content.to_string(),
-        vize_relief::ast::ExpressionNode::Compound(_) => "<dynamic>".to_string(),
+        vize_relief::ast::ExpressionNode::Simple(s) => s.content.to_compact_string(),
+        vize_relief::ast::ExpressionNode::Compound(_) => "<dynamic>".to_compact_string(),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoDuplicateAttributes;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -232,7 +237,7 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div id="foo" id="bar"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("Duplicate"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]
@@ -276,7 +281,7 @@ mod tests {
         let result =
             linter.lint_template(r#"<div @click.stop="a" @click.stop="b"></div>"#, "test.vue");
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("click.stop"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

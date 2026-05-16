@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="./assets/logo.svg" alt="Vize Logo" width="400" />
+  <img src="./assets/readme-screenshot.png" alt="Vize" width="600" />
 </p>
-
-<h1 align="center">Vize</h1>
 
 <p align="center">
   <strong>Unofficial High-Performance Vue.js Toolchain in Rust</strong>
@@ -13,369 +11,285 @@
 </p>
 
 <p align="center">
-  <a href="https://vizejs.dev/play/"><strong>Playground</strong></a>
-</p>
-
-<p align="center">
-  <a href="https://crates.io/crates/vize"><img src="https://img.shields.io/crates/v/vize.svg" alt="crates.io" /></a>
-  <a href="https://www.npmjs.com/package/vizejs"><img src="https://img.shields.io/npm/v/vizejs.svg?label=vizejs" alt="npm" /></a>
-  <a href="https://www.npmjs.com/package/@vizejs/vite-plugin"><img src="https://img.shields.io/npm/v/@vizejs/vite-plugin.svg?label=@vizejs/vite-plugin" alt="npm" /></a>
-  <a href="https://www.npmjs.com/package/@vizejs/wasm"><img src="https://img.shields.io/npm/v/@vizejs/wasm.svg?label=@vizejs/wasm" alt="npm" /></a>
-  <a href="https://github.com/ubugeeei/vize/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a>
+  <a href="https://vizejs.dev"><strong>Documentation</strong></a> ・
+  <a href="https://vizejs.dev/play/"><strong>Playground</strong></a> ・
+  <a href="https://github.com/sponsors/ubugeeei"><strong>Sponsor</strong></a>
 </p>
 
 > [!WARNING]
-> This project is under active development and is not yet ready for production use.
-> APIs and features may change without notice.
+> Vize is under active development. APIs, package boundaries, and editor features are still moving.
 
----
+> [!IMPORTANT]
+> For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
+> Vize's VS Code extension, Zed extension, and `vize lsp` default to opt-in capabilities so teams can adopt them gradually.
 
-## Crates
+## What Ships Today
 
-<table>
-  <tr>
-    <th>Crate</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_carton/logo.png" width="32" align="center" /> <a href="./crates/vize_carton">vize_carton</a></td>
-    <td>Shared utilities & arena allocator</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_relief/logo.png" width="32" align="center" /> <a href="./crates/vize_relief">vize_relief</a></td>
-    <td>AST definitions, errors, options</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_armature/logo.png" width="32" align="center" /> <a href="./crates/vize_armature">vize_armature</a></td>
-    <td>Parser & tokenizer</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_croquis/logo.png" width="32" align="center" /> <a href="./crates/vize_croquis">vize_croquis</a></td>
-    <td>Semantic analysis layer</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_atelier_core/logo.png" width="32" align="center" /> <a href="./crates/vize_atelier_core">vize_atelier_core</a></td>
-    <td>Transforms & code generation</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_atelier_dom/logo.png" width="32" align="center" /> <a href="./crates/vize_atelier_dom">vize_atelier_dom</a></td>
-    <td>DOM (VDom) compiler</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_atelier_vapor/logo.png" width="32" align="center" /> <a href="./crates/vize_atelier_vapor">vize_atelier_vapor</a></td>
-    <td>Vapor mode compiler</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_atelier_sfc/logo.png" width="32" align="center" /> <a href="./crates/vize_atelier_sfc">vize_atelier_sfc</a></td>
-    <td>SFC (.vue) compiler</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_atelier_ssr/logo.png" width="32" align="center" /> <a href="./crates/vize_atelier_ssr">vize_atelier_ssr</a></td>
-    <td>SSR (Server-Side Rendering) compiler</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_vitrine/logo.png" width="32" align="center" /> <a href="./crates/vize_vitrine">vize_vitrine</a></td>
-    <td>Node.js / WASM bindings</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize/logo.png" width="32" align="center" /> <a href="./crates/vize">vize</a></td>
-    <td>Command-line interface</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_canon/logo.png" width="32" align="center" /> <a href="./crates/vize_canon">vize_canon</a></td>
-    <td>TypeScript type checker</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_patina/logo.png" width="32" align="center" /> <a href="./crates/vize_patina">vize_patina</a></td>
-    <td>Vue.js linter</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_glyph/logo.png" width="32" align="center" /> <a href="./crates/vize_glyph">vize_glyph</a></td>
-    <td>Vue.js formatter</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_maestro/logo.png" width="32" align="center" /> <a href="./crates/vize_maestro">vize_maestro</a></td>
-    <td>Language Server Protocol</td>
-  </tr>
-  <tr>
-    <td><img src="./crates/vize_musea/logo.png" width="32" align="center" /> <a href="./crates/vize_musea">vize_musea</a></td>
-    <td>Component gallery (Storybook)</td>
-  </tr>
-</table>
+- Rust workspace crates for parsing, semantic analysis, compilation, linting, formatting, type checking, LSP, Musea art tooling, and bindings
+- A full Rust CLI via the `vize` crate (`build`, `fmt`, `lint`, `check`, `ready`, `upgrade`, `musea`, `lsp`, `ide`)
+- npm packages including `@vizejs/vite-plugin`, `@vizejs/native`, `@vizejs/wasm`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, and `oxlint-plugin-vize`
+- The `vize` npm package for shared config utilities and native `build`, `fmt`, `lint`, `check`, `ready`, and `upgrade` commands
+- Nuxt dev integration that preserves URL-encoded asset links while removing broken or unsafe stylesheet references from rendered HTML
 
-## npm Packages
+## Quick Start
 
-| Package | Description |
-|---------|-------------|
-| [vizejs](https://www.npmjs.com/package/vizejs) | Main package with CLI |
-| [@vizejs/native](https://www.npmjs.com/package/@vizejs/native) | Node.js native bindings (NAPI) |
-| [@vizejs/wasm](https://www.npmjs.com/package/@vizejs/wasm) | WASM bindings for browsers |
-| [@vizejs/vite-plugin](https://www.npmjs.com/package/@vizejs/vite-plugin) | Vite plugin for Vue SFC compilation |
-| [@vizejs/vite-plugin-musea](https://www.npmjs.com/package/@vizejs/vite-plugin-musea) | Vite plugin for Musea component gallery |
-| [@vizejs/musea-mcp-server](https://www.npmjs.com/package/@vizejs/musea-mcp-server) | MCP server for AI integration |
+Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://viteplus.dev/guide/install).
 
-## IDE / Editor Support
-
-| Editor | Extension |
-|--------|-----------|
-| VS Code | [Vize](./npm/vscode-vize) - Vue Language Support powered by Vize LSP |
-| VS Code | [Vize Art](./npm/vscode-art) - Syntax highlighting for `*.art.vue` files |
-
-## Naming Theme
-
-Vize crates are named after **art and sculpture terminology**, reflecting how each component shapes and transforms Vue code:
-
-| Name | Origin | Meaning |
-|------|--------|---------|
-| **Carton** | /kɑːˈtɒn/ | Artist's portfolio case — stores and organizes tools |
-| **Relief** | /rɪˈliːf/ | Sculptural technique projecting from a surface — AST structure |
-| **Armature** | /ˈɑːrmətʃər/ | Internal skeleton supporting a sculpture — parsing framework |
-| **Croquis** | /kʁɔ.ki/ | Quick sketch capturing essence — semantic analysis |
-| **Atelier** | /ˌætəlˈjeɪ/ | Artist's workshop — compiler workspaces |
-| **Vitrine** | /vɪˈtriːn/ | Glass display case — bindings exposing the compiler |
-| **Canon** | /ˈkænən/ | Standard of ideal proportions — type checking |
-| **Patina** | /ˈpætɪnə/ | Aged surface indicating quality — linting |
-| **Glyph** | /ɡlɪf/ | Carved symbol or letterform — formatting |
-| **Maestro** | /ˈmaɪstroʊ/ | Master conductor — LSP orchestration |
-| **Musea** | /mjuːˈziːə/ | Plural of museum — component gallery |
-
-## Architecture
-
-<p align="center">
-  <img src="./assets/architecture.png" alt="Vize Architecture" width="800" />
-</p>
-
-## Installation
-
-### CLI
+### Vite
 
 ```bash
-# via npm (recommended)
-npm install -g vizejs
-
-# via Cargo
-cargo install vize
+vp install -D vize @vizejs/vite-plugin
 ```
 
-### npm
-
-```bash
-# Main package (includes CLI)
-npm install vizejs
-
-# Native bindings (Node.js)
-npm install @vizejs/native
-
-# WASM bindings (Browser)
-npm install @vizejs/wasm
-
-# Vite plugin
-npm install @vizejs/vite-plugin
-
-# Musea (component gallery)
-npm install @vizejs/vite-plugin-musea
-```
-
-## Quick Start (Development)
-
-### With mise (Recommended)
-
-```bash
-mise install && mise setup
-mise cli      # Enable `vize` CLI command
-mise dev      # Playground
-```
-
-### Without mise
-
-<details>
-<summary>Manual Setup</summary>
-
-**Prerequisites:**
-
-- [Rust](https://rustup.rs/) (1.80+)
-- [Node.js](https://nodejs.org/) (20+)
-- [pnpm](https://pnpm.io/) (9+)
-
-**Setup:**
-
-```bash
-# Install Rust (if not already installed)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Install pnpm (if not already installed)
-npm install -g pnpm
-
-# Clone and setup
-git clone https://github.com/ubugeeei/vize.git
-cd vize
-pnpm install
-
-# Build CLI
-cargo build --release -p vize
-# The binary will be at: ./target/release/vize
-
-# Or install to your PATH
-cargo install --path crates/vize
-
-# Run playground (optional)
-pnpm -C playground dev
-```
-
-**Building Native Bindings (for @vizejs/native):**
-
-```bash
-cd npm/vize-native
-pnpm build
-```
-
-**Building WASM (for @vizejs/wasm):**
-
-```bash
-# Install wasm-bindgen-cli
-cargo install wasm-bindgen-cli
-
-# Build WASM
-cargo build --release -p vize_vitrine --no-default-features --features wasm --target wasm32-unknown-unknown
-wasm-bindgen target/wasm32-unknown-unknown/release/vize_vitrine.wasm --out-dir npm/vize-wasm --target web
-```
-
-</details>
-
-## Usage
-
-### CLI
-
-```bash
-vize [COMMAND] [OPTIONS]
-```
-
-| Command | Description |
-|---------|-------------|
-| `build` | Compile Vue SFC files (default) |
-| `fmt` | Format Vue SFC files |
-| `lint` | Lint Vue SFC files |
-| `check` | Type check Vue SFC files |
-| `musea` | Start component gallery server |
-| `lsp` | Start Language Server Protocol server |
-
-```bash
-vize --help           # Show help
-vize <command> --help # Show command-specific help
-```
-
-**Examples:**
-
-```bash
-vize                              # Compile ./**/*.vue to ./dist
-vize build src/**/*.vue -o out    # Custom input/output
-vize build --ssr                  # SSR mode
-vize build --script_ext=preserve  # Keep .ts/.tsx/.jsx extensions
-vize fmt --check                  # Check formatting
-vize lint --fix                   # Auto-fix lint issues
-vize check --strict               # Strict type checking
-```
-
-### WASM (Browser)
-
-```javascript
-import init, { compileSfc } from '@vizejs/wasm';
-
-await init();
-const { code } = compileSfc(
-  `<template><div>{{ msg }}</div></template>`,
-  { filename: 'App.vue' }
-);
-```
-
-### Vite Plugin
-
-```javascript
-// vite.config.js
-import { defineConfig } from 'vite';
-import vize from '@vizejs/vite-plugin';
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
   plugins: [vize()],
 });
 ```
 
-## Performance
+```ts
+// vize.config.ts
+import { defineConfig } from "vize";
 
-Compiling **15,000 SFC files** (36.9 MB):
-
-|  | @vue/compiler-sfc | Vize | Speedup |
-|--|-------------------|------|---------|
-| **Single Thread** | 16.21s | 6.65s | **2.4x** |
-| **Multi Thread** | 4.13s | 498ms | **8.3x** |
-
-## AI Integration (MCP)
-
-Vize provides [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for AI-powered development workflows.
-
-```bash
-npm install @vizejs/musea-mcp-server
-```
-
-The MCP server exposes component information from Musea gallery, enabling AI assistants to understand and work with your Vue components.
-
-## Internationalization (i18n)
-
-Vize supports multi-language messages for lint diagnostics and compiler errors.
-
-### Supported Locales
-
-| Code | Language |
-|------|----------|
-| `en` | English (default) |
-| `ja` | Japanese (日本語) |
-| `zh` | Chinese (中文) |
-
-### Usage
-
-**CLI:**
-
-```bash
-vize lint --locale ja
-```
-
-**WASM:**
-
-```javascript
-import { lintSfc } from '@vizejs/wasm';
-
-const result = lintSfc(source, {
-  filename: 'App.vue',
-  locale: 'ja',
+export default defineConfig({
+  linter: {
+    preset: "opinionated",
+  },
+  lsp: {
+    lint: true,
+    typecheck: false,
+    editor: false,
+    formatting: false,
+  },
 });
 ```
 
-**Rust API:**
+### npm CLI
 
-```rust
-use vize_patina::{Linter, Locale};
+The npm `vize` package exposes native CLI commands plus shared config helpers:
 
-let linter = Linter::new().with_locale(Locale::Ja);
-let result = linter.lint_template(source, "test.vue");
+```bash
+vp install -D vize
+vp exec vize fmt --write src
+vp exec vize lint src
+vp exec vize check
+vp exec vize build src
+vp exec vize ready src
 ```
 
-### Playground
+### Full Rust CLI
 
-The [Playground](https://vizejs.dev/play/) includes a locale selector to switch languages for lint messages.
+For the full native CLI, install the Rust binary:
+
+```bash
+cargo install vize
+```
+
+```bash
+vize build src/**/*.vue
+vize fmt --check src
+vize lint --profile src
+vize check --profile src
+vize ready src
+vize upgrade
+vize lsp
+```
+
+You can also run the current workspace build directly:
+
+```bash
+nix run github:ubugeeei/vize#vize -- --help
+```
+
+## Static Analysis
+
+Vize shares the same parser and semantic analysis layers across linting, type checking, editor
+diagnostics, compilation, and Musea metadata.
+
+```bash
+vp exec vize lint --preset happy-path src
+vp exec vize lint --preset essential --max-warnings 0 src
+vp exec vize check src
+```
+
+Use the Rust CLI for the fuller project-backed type-checking surface:
+
+```bash
+vize check --tsconfig tsconfig.app.json
+vize check --show-virtual-ts src/components/App.vue
+vize check --declaration --declaration-dir dist/types
+```
+
+`vize lint` runs Patina rules for Vue templates, scripts, CSS, a11y, SSR, Vapor, Musea, cross-file,
+and type-aware checks. Security-oriented Vue rules include `vue/no-unsafe-url`, which checks dynamic
+URL bindings and static URL attributes for executable schemes such as `javascript:`, `vbscript:`,
+and active `data:` payloads. Anchor accessibility checks share the same scheme normalization for
+static `href` values, so case changes or HTML-decoded control characters do not hide
+`javascript:` links. `vize check` generates virtual TypeScript for Vue SFCs and maps project
+diagnostics back to the original source files.
+
+Use `vize lint --profile src` when tuning rule cost. Type-aware lint profile rows include template
+query collection and Corsa probe phases so expensive cross-rule work can be spotted quickly. When
+template unsafe-binding and floating-Promise checks are both enabled, shared expression parsing keeps
+their query collection from doing duplicate OXC work.
+SSR browser-global diagnostics also avoid common literal-boundary false positives such as strings,
+regexes, comments, and direct `typeof window` guards.
+
+## Compiler Configuration
+
+The npm CLI and Vite plugin share `vize.config.*`:
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+    vapor: false,
+    customRenderer: false,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+  },
+});
+```
+
+Direct `vize()` options override shared config for Vite. See the docs for compiler options,
+project scanning, lint presets, type-checker settings, and Musea config.
+
+## Oxlint Integration
+
+`oxlint-plugin-vize` lets Oxlint execute Vize Patina diagnostics through Oxlint's JS plugin system.
+
+```bash
+vp install -D oxlint oxlint-plugin-vize
+vp exec oxlint-vize -c .oxlintrc.json -f stylish src
+```
+
+This keeps Oxlint's core JS and TS rules active while adding Vue-aware diagnostics under the `vize/*` namespace.
+
+## Musea Component Gallery
+
+Musea uses `*.art.vue` files to describe component variants with Vue-native syntax, then serves a
+gallery through Vite.
+
+```bash
+vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
+```
+
+```ts
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
+import { musea } from "@vizejs/vite-plugin-musea";
+
+export default defineConfig({
+  plugins: [
+    vize(),
+    musea({
+      include: ["src/**/*.art.vue"],
+      basePath: "/__musea__",
+      previewCss: ["src/styles/main.css"],
+    }),
+  ],
+});
+```
+
+```bash
+vp dev
+vp exec musea-vrt --base-url http://localhost:5173 --ci --json
+```
+
+Use Musea for component documentation, prop palettes, design token views, accessibility audits,
+visual regression snapshots, generated variants, and Storybook-compatible output.
+
+## Editor Integration
+
+Vize editor support is designed for incremental adoption alongside `vuejs/language-tools`.
+
+Start with lint-only mode in VS Code:
+
+```json
+{
+  "vize.enable": true,
+  "vize.lint.enable": true,
+  "vize.typecheck.enable": false,
+  "vize.editor.enable": false,
+  "vize.formatting.enable": false
+}
+```
+
+Zed can enable the same capabilities through LSP initialization options:
+
+```json
+{
+  "languages": {
+    "Vue": {
+      "language_servers": ["vize", "..."]
+    }
+  },
+  "lsp": {
+    "vize": {
+      "initialization_options": {
+        "lint": true
+      }
+    }
+  }
+}
+```
+
+The same feature names can be committed in `vize.config.json` or `vize.config.pkl` under `lsp`.
+
+## Local Development
+
+The primary local setup is `Nix + vp`.
+
+```bash
+nix develop
+vp install --frozen-lockfile
+vp check
+vp fmt
+vp dev
+vp build
+```
+
+Useful workspace tasks:
+
+```bash
+vp check
+vp fmt
+vp dev
+vp build
+vp run --workspace-root check:fix
+vp run --workspace-root bench:all
+```
 
 ## Credits
 
-This project is inspired by and builds upon the work of these amazing projects.
-We are deeply grateful for their pioneering work and open-source contributions.
+This project draws inspiration from:
+[Volar.js](https://github.com/volarjs/volar.js) ・
+[vuejs/language-tools](https://github.com/vuejs/language-tools) ・
+[eslint-plugin-vue](https://github.com/vuejs/eslint-plugin-vue) ・
+[eslint-plugin-vuejs-accessibility](https://github.com/vue-a11y/eslint-plugin-vuejs-accessibility) ・
+[Lightning CSS](https://github.com/parcel-bundler/lightningcss) ・
+[Storybook](https://github.com/storybookjs/storybook) ・
+[OXC](https://github.com/oxc-project/oxc)
 
-- [Volar.js](https://github.com/volarjs/volar.js) - The embedded language tooling framework
-- [vuejs/language-tools](https://github.com/vuejs/language-tools) - Official Vue.js language tools
-- [eslint-plugin-vue](https://github.com/vuejs/eslint-plugin-vue) - Official ESLint plugin for Vue.js
-- [eslint-plugin-vuejs-accessibility](https://github.com/vue-a11y/eslint-plugin-vuejs-accessibility) - Accessibility rules for Vue.js
-- [Lightning CSS](https://github.com/parcel-bundler/lightningcss) - Extremely fast CSS parser, bundler, transformer
-- [Storybook](https://github.com/storybookjs/storybook) - UI component explorer
-- [OXC](https://github.com/oxc-project/oxc) - The JavaScript Oxidation Compiler
+## Sponsors
+
+Vize is maintained by [@ubugeeei](https://github.com/ubugeeei). If you find it useful, please consider
+[sponsoring](https://github.com/sponsors/ubugeeei).
 
 ## License
 
-MIT
+[MIT](./LICENSE)

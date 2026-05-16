@@ -1,0 +1,35 @@
+:root {
+  --musea-bg-primary: #e6e2d6;
+  --musea-bg-secondary: #ddd9cd;
+  --musea-bg-tertiary: #d4d0c4;
+  --musea-bg-elevated: #e6e2d6;
+  --musea-accent: #121212;
+  --musea-accent-hover: #2a2a2a;
+  --musea-accent-subtle: rgba(18, 18, 18, 0.08);
+  --musea-text: #121212;
+  --musea-text-secondary: #3a3a3a;
+  --musea-text-muted: #6b6b6b;
+  --musea-border: #c8c4b8;
+  --musea-border-subtle: #d4d0c4;
+  --musea-success: #16a34a;
+  --musea-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --musea-radius-sm: 4px;
+  --musea-radius-md: 6px;
+  --musea-radius-lg: 8px;
+  --musea-transition: 0.15s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: var(--musea-bg-primary);
+  color: var(--musea-text);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}

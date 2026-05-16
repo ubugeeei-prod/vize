@@ -1,4 +1,5 @@
 //! Document store implementation using Rope for efficient text operations.
+#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use dashmap::DashMap;
 use ropey::Rope;
@@ -63,6 +64,10 @@ impl Document {
                     self.content.try_byte_to_char(start),
                     self.content.try_byte_to_char(end),
                 ) {
+                    if start_char > end_char {
+                        return;
+                    }
+
                     self.content.remove(start_char..end_char);
                     self.content.insert(start_char, &change.text);
                 }
@@ -102,6 +107,17 @@ impl DocumentStore {
     /// Close a document.
     pub fn close(&self, uri: &Url) {
         self.documents.remove(uri);
+    }
+
+    /// Rename an open document while preserving its content and version.
+    pub fn rename(&self, old_uri: &Url, new_uri: Url) -> bool {
+        let Some((_, mut document)) = self.documents.remove(old_uri) else {
+            return false;
+        };
+
+        document.uri = new_uri.clone();
+        self.documents.insert(new_uri, document);
+        true
     }
 
     /// Get a document by URI.
@@ -156,8 +172,8 @@ impl DocumentStore {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use tower_lsp::lsp_types::{Position, Range};
+    use super::{Document, DocumentStore};
+    use tower_lsp::lsp_types::{Position, Range, TextDocumentContentChangeEvent, Url};
 
     fn test_uri() -> Url {
         Url::parse("file:///test.vue").unwrap()
@@ -241,6 +257,56 @@ mod tests {
     }
 
     #[test]
+    fn test_reversed_incremental_change_is_ignored() {
+        let mut doc = Document::new(test_uri(), "hello world".to_string(), 1, "vue".to_string());
+
+        let change = TextDocumentContentChangeEvent {
+            range: Some(Range {
+                start: Position {
+                    line: 0,
+                    character: 11,
+                },
+                end: Position {
+                    line: 0,
+                    character: 6,
+                },
+            }),
+            range_length: None,
+            text: "universe".to_string(),
+        };
+
+        doc.apply_change(&change, 2);
+
+        assert_eq!(doc.text(), "hello world");
+        assert_eq!(doc.version, 2);
+    }
+
+    #[test]
+    fn test_out_of_bounds_incremental_change_is_ignored() {
+        let mut doc = Document::new(test_uri(), "hello world".to_string(), 1, "vue".to_string());
+
+        let change = TextDocumentContentChangeEvent {
+            range: Some(Range {
+                start: Position {
+                    line: 42,
+                    character: 0,
+                },
+                end: Position {
+                    line: 42,
+                    character: 5,
+                },
+            }),
+            range_length: None,
+            text: "ignored".to_string(),
+        };
+
+        doc.apply_change(&change, 2);
+
+        assert_eq!(doc.text(), "hello world");
+        assert_eq!(doc.version, 2);
+    }
+
+    #[test]
     fn test_document_store() {
         let store = DocumentStore::new();
 
@@ -257,5 +323,22 @@ mod tests {
         store.close(&test_uri());
         assert!(!store.contains(&test_uri()));
         assert!(store.is_empty());
+    }
+
+    #[test]
+    fn test_document_store_rename() {
+        let store = DocumentStore::new();
+        let old_uri = test_uri();
+        let new_uri = Url::parse("file:///renamed.vue").unwrap();
+
+        store.open(old_uri.clone(), "content".to_string(), 3, "vue".to_string());
+
+        assert!(store.rename(&old_uri, new_uri.clone()));
+        assert!(!store.contains(&old_uri));
+        assert!(store.contains(&new_uri));
+
+        let doc = store.get(&new_uri).unwrap();
+        assert_eq!(doc.text(), "content");
+        assert_eq!(doc.version, 3);
     }
 }

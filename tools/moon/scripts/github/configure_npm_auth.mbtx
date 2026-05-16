@@ -1,0 +1,86 @@
+///|
+/// Configures an npm auth fallback for release jobs when `NPM_TOKEN` exists.
+///
+/// Trusted Publishing through GitHub OIDC is the preferred path, but some npm
+/// packages may not yet be wired up for OIDC at the registry level. To keep the
+/// release workflow resilient, this helper writes a minimal user-level `.npmrc`
+/// only when `NPM_TOKEN` is present. When the token is absent, the script is a
+/// no-op and the job continues to rely on Trusted Publishing.
+import {
+  "moonbitlang/async@0.16.8",
+  "moonbitlang/async@0.16.8/stdio",
+  "moonbitlang/x@0.4.41/fs" @xfs,
+  "moonbitlang/x@0.4.41/path",
+  "moonbitlang/x@0.4.41/sys",
+}
+
+///|
+fn resolve_path(value : String) -> String {
+  let path : @path.Path = value
+  path.resolve().to_string()
+}
+
+///|
+fn join_path(base : String, child : String) -> String {
+  let path : @path.Path = base
+  path.join(child).to_string()
+}
+
+///|
+fn read_file_to_string(path : String) -> String? {
+  try {
+    Some(@xfs.read_file_to_string(path))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+async fn run_app() -> Int {
+  let token = match @sys.get_env_var("NPM_TOKEN") {
+    Some(value) if value != "" => value
+    _ => {
+      println("NPM_TOKEN is not configured; relying on npm Trusted Publishing.")
+      return 0
+    }
+  }
+  let home = match @sys.get_env_var("HOME") {
+    Some(value) if value != "" => resolve_path(value)
+    _ => {
+      @stdio.stderr.write("HOME is not available; cannot configure npm auth fallback.\n")
+      return 1
+    }
+  }
+  let npmrc_path = join_path(home, ".npmrc")
+  let existing = read_file_to_string(npmrc_path).unwrap_or("")
+  let auth_line = "//registry.npmjs.org/:_authToken=\{token}"
+  let always_auth_line = "always-auth=true"
+  let registry_line = "registry=https://registry.npmjs.org/"
+  let lines = []
+  if existing.trim() != "" {
+    let existing_lines : Array[String] = existing.split("\n").map(StringView::to_string).collect()
+    for line in existing_lines {
+      let trimmed = line.trim()
+      if trimmed == "" {
+        continue
+      }
+      if trimmed.has_prefix("//registry.npmjs.org/:_authToken=") ||
+        trimmed == always_auth_line ||
+        trimmed == registry_line {
+        continue
+      }
+      lines.push(line)
+    }
+  }
+  lines.push(registry_line)
+  lines.push(auth_line)
+  lines.push(always_auth_line)
+  @xfs.write_string_to_file(npmrc_path, lines.join("\n") + "\n")
+  println("Configured npm auth fallback in \{npmrc_path}")
+  0
+}
+
+///|
+async fn main {
+  @sys.exit(run_app())
+}

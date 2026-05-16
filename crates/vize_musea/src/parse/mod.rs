@@ -375,7 +375,9 @@ pub(crate) fn calculate_location_fast(source: &str, start: u32, end: u32) -> Sou
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{extract_attr, has_attr, parse_art};
+    use crate::types::{ArtParseError, ArtParseOptions};
+    use vize_carton::Bump;
 
     #[test]
     fn test_parse_simple_art() {

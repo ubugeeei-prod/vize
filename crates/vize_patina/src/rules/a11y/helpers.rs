@@ -3,7 +3,21 @@
 //! These helpers are extracted from common patterns used across a11y rules
 //! to avoid code duplication.
 
-use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
+use vize_carton::is_native_tag;
+use vize_relief::ast::{ElementNode, ElementType, ExpressionNode, PropNode};
+
+/// Check if an element should be treated as a component or custom element.
+///
+/// Lint rules run on the parsed template before compiler transforms promote
+/// kebab-case component tags such as `<a-button>` to `ElementType::Component`.
+/// Accessibility rules cannot know what those tags render to, so they should
+/// avoid DOM-specific diagnostics for non-native tags.
+pub fn is_component_like_element(element: &ElementNode) -> bool {
+    matches!(
+        element.tag_type,
+        ElementType::Component | ElementType::Slot | ElementType::Template
+    ) || !is_native_tag(element.tag.as_str())
+}
 
 /// Check if an element is natively interactive (has implicit keyboard support)
 pub fn is_interactive_element(tag: &str) -> bool {
@@ -96,6 +110,52 @@ pub fn get_static_attribute_value<'a>(element: &'a ElementNode, name: &str) -> O
         }
     }
     None
+}
+
+/// Get a static attribute value, including v-bind expressions that are string literals.
+///
+/// This is useful for rules that need exact attribute values but should not warn when
+/// Vue's bind syntax is only wrapping a literal value, e.g. `:type="'hidden'"`.
+pub fn get_static_or_bound_literal_attribute_value<'a>(
+    element: &'a ElementNode,
+    name: &str,
+) -> Option<&'a str> {
+    for prop in &element.props {
+        match prop {
+            PropNode::Attribute(attr) if attr.name == name => {
+                return attr.value.as_ref().map(|v| v.content.as_ref());
+            }
+            PropNode::Directive(dir) if dir.name == "bind" => {
+                let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
+                    continue;
+                };
+                if arg.content != name {
+                    continue;
+                }
+                let Some(ExpressionNode::Simple(exp)) = &dir.exp else {
+                    continue;
+                };
+                if let Some(value) = string_literal_value(exp.content.as_ref()) {
+                    return Some(value);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn string_literal_value(content: &str) -> Option<&str> {
+    let content = content.trim();
+    let quote = content.as_bytes().first()?;
+    if content.len() < 2
+        || !matches!(quote, b'\'' | b'"')
+        || content.as_bytes().last() != Some(quote)
+    {
+        return None;
+    }
+
+    Some(&content[1..content.len() - 1])
 }
 
 /// Check if an element has a specific event handler (v-on directive)

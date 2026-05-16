@@ -3,7 +3,10 @@
 //! This module generates Vue components that can be used to render
 //! Art variants in the Musea gallery.
 
+#![allow(clippy::disallowed_macros)]
+
 use crate::types::ArtDescriptor;
+use vize_carton::{append, cstr, String};
 
 /// Output of Vue transformation.
 #[derive(Debug, Clone)]
@@ -32,17 +35,14 @@ pub fn transform_to_vue(art: &ArtDescriptor<'_>) -> VueOutput {
 
 /// Generate the main component that exposes variants.
 fn generate_main_component(art: &ArtDescriptor<'_>) -> String {
-    let mut code = String::new();
+    let mut code = String::default();
 
     // Imports
     code.push_str("import { defineComponent, h, reactive, markRaw } from 'vue';\n");
 
     // Import target component
     if let Some(ref component_path) = art.metadata.component {
-        code.push_str(&format!(
-            "import TargetComponent from '{}';\n",
-            component_path
-        ));
+        append!(code, "import TargetComponent from '{component_path}';\n");
     }
 
     // Re-export script imports if present
@@ -59,32 +59,35 @@ fn generate_main_component(art: &ArtDescriptor<'_>) -> String {
     code.push('\n');
 
     // Export metadata
-    code.push_str(&format!(
+    append!(
+        code,
         "export const metadata = {};\n\n",
         generate_metadata_json(art)
-    ));
+    );
 
     // Export variants array
     code.push_str("export const variants = [\n");
     for variant in &art.variants {
-        let args_json = serde_json::to_string(&variant.args).unwrap_or_else(|_| "{}".to_string());
+        let args_json = serde_json::to_string(&variant.args).unwrap_or_else(|_| "{}".into());
 
-        code.push_str(&format!(
+        append!(
+            code,
             "  {{ name: '{}', isDefault: {}, args: {}, skipVrt: {} }},\n",
             escape_js_string(variant.name),
             variant.is_default,
             args_json,
             variant.skip_vrt
-        ));
+        );
     }
     code.push_str("];\n\n");
 
     // Generate variant components
     for (i, variant) in art.variants.iter().enumerate() {
         let component_name = to_pascal_case(variant.name);
-        let args_json = serde_json::to_string(&variant.args).unwrap_or_else(|_| "{}".to_string());
+        let args_json = serde_json::to_string(&variant.args).unwrap_or_else(|_| "{}".into());
 
-        code.push_str(&format!(
+        append!(
+            code,
             r#"export const {} = defineComponent({{
   name: '{}',
   setup(props, {{ attrs }}) {{
@@ -102,15 +105,15 @@ fn generate_main_component(art: &ArtDescriptor<'_>) -> String {
             args_json,
             escape_js_string(variant.name),
             generate_render_expression(variant.template, art),
-        ));
+        );
 
         // Mark as default if applicable
         if variant.is_default {
-            code.push_str(&format!("{}.isDefault = true;\n\n", component_name));
+            append!(code, "{component_name}.isDefault = true;\n\n");
         }
 
         // Store index for ordering
-        code.push_str(&format!("{}.variantIndex = {};\n\n", component_name, i));
+        append!(code, "{component_name}.variantIndex = {i};\n\n");
     }
 
     // Default export - the gallery component
@@ -128,11 +131,12 @@ fn generate_main_component(art: &ArtDescriptor<'_>) -> String {
 
     for variant in &art.variants {
         let component_name = to_pascal_case(variant.name);
-        code.push_str(&format!(
+        append!(
+            code,
             "      '{}': {},\n",
             escape_js_string(variant.name),
             component_name
-        ));
+        );
     }
 
     code.push_str(
@@ -165,13 +169,13 @@ fn generate_render_expression(template: &str, art: &ArtDescriptor<'_>) -> String
 
     if uses_target {
         // Simple case: render the target component with interpolated args
-        format!(
+        cstr!(
             "h(TargetComponent, args, () => `{}`)",
             escape_template_literal(template)
         )
     } else {
         // Render raw template content (for custom components)
-        format!(
+        cstr!(
             "h('div', {{ innerHTML: `{}` }})",
             escape_template_literal(template)
         )
@@ -180,26 +184,24 @@ fn generate_render_expression(template: &str, art: &ArtDescriptor<'_>) -> String
 
 /// Generate metadata JSON for the Art.
 fn generate_metadata_json(art: &ArtDescriptor<'_>) -> String {
-    let mut json = String::new();
+    let mut json = String::default();
     json.push_str("{\n");
-    json.push_str(&format!(
+    append!(
+        json,
         "  title: '{}',\n",
         escape_js_string(art.metadata.title)
-    ));
+    );
 
     if let Some(desc) = art.metadata.description {
-        json.push_str(&format!("  description: '{}',\n", escape_js_string(desc)));
+        append!(json, "  description: '{}',\n", escape_js_string(desc));
     }
 
     if let Some(component) = art.metadata.component {
-        json.push_str(&format!(
-            "  component: '{}',\n",
-            escape_js_string(component)
-        ));
+        append!(json, "  component: '{}',\n", escape_js_string(component));
     }
 
     if let Some(category) = art.metadata.category {
-        json.push_str(&format!("  category: '{}',\n", escape_js_string(category)));
+        append!(json, "  category: '{}',\n", escape_js_string(category));
     }
 
     if !art.metadata.tags.is_empty() {
@@ -207,21 +209,22 @@ fn generate_metadata_json(art: &ArtDescriptor<'_>) -> String {
             .metadata
             .tags
             .iter()
-            .map(|t| format!("'{}'", escape_js_string(t)))
+            .map(|t| cstr!("'{}'", escape_js_string(t)))
             .collect();
-        json.push_str(&format!("  tags: [{}],\n", tags.join(", ")));
+        append!(json, "  tags: [{}],\n", tags.join(", "));
     }
 
-    json.push_str(&format!(
+    append!(
+        json,
         "  status: '{}',\n",
         status_to_string(art.metadata.status)
-    ));
+    );
 
     if let Some(order) = art.metadata.order {
-        json.push_str(&format!("  order: {},\n", order));
+        append!(json, "  order: {order},\n");
     }
 
-    json.push_str(&format!("  variantCount: {},\n", art.variants.len()));
+    append!(json, "  variantCount: {},\n", art.variants.len());
 
     json.push('}');
     json
@@ -229,29 +232,29 @@ fn generate_metadata_json(art: &ArtDescriptor<'_>) -> String {
 
 /// Generate metadata module for gallery sidebar.
 fn generate_metadata_module(art: &ArtDescriptor<'_>) -> String {
-    let mut code = String::new();
+    let mut code = String::default();
 
     code.push_str("// Auto-generated metadata module\n");
-    code.push_str(&format!(
+    append!(
+        code,
         "export const metadata = {};\n\n",
         generate_metadata_json(art)
-    ));
+    );
 
     code.push_str("export const variants = [\n");
     for variant in &art.variants {
         code.push_str("  {\n");
-        code.push_str(&format!(
-            "    name: '{}',\n",
-            escape_js_string(variant.name)
-        ));
-        code.push_str(&format!("    isDefault: {},\n", variant.is_default));
-        code.push_str(&format!("    skipVrt: {},\n", variant.skip_vrt));
+        append!(code, "    name: '{}',\n", escape_js_string(variant.name));
+        append!(code, "    isDefault: {},\n", variant.is_default);
+        append!(code, "    skipVrt: {},\n", variant.skip_vrt);
 
         if let Some(ref viewport) = variant.viewport {
-            code.push_str(&format!(
+            append!(
+                code,
                 "    viewport: {{ width: {}, height: {} }},\n",
-                viewport.width, viewport.height
-            ));
+                viewport.width,
+                viewport.height
+            );
         }
 
         code.push_str("  },\n");
@@ -272,16 +275,22 @@ fn status_to_string(status: crate::types::ArtStatus) -> &'static str {
 
 /// Convert string to PascalCase.
 fn to_pascal_case(s: &str) -> String {
-    s.split(|c: char| c.is_whitespace() || c == '-' || c == '_')
-        .filter(|part| !part.is_empty())
-        .map(|part| {
-            let mut chars = part.chars();
-            match chars.next() {
-                None => String::new(),
-                Some(first) => first.to_uppercase().chain(chars).collect(),
+    let mut result = String::default();
+    for part in s
+        .split(|c: char| c.is_whitespace() || c == '-' || c == '_')
+        .filter(|p| !p.is_empty())
+    {
+        let mut chars = part.chars();
+        if let Some(first) = chars.next() {
+            for uc in first.to_uppercase() {
+                result.push(uc);
             }
-        })
-        .collect()
+            for ch in chars {
+                result.push(ch);
+            }
+        }
+    }
+    result
 }
 
 /// Escape a string for JavaScript string literal.
@@ -291,6 +300,7 @@ fn escape_js_string(s: &str) -> String {
         .replace('\n', "\\n")
         .replace('\r', "\\r")
         .replace('\t', "\\t")
+        .into()
 }
 
 /// Escape content for JavaScript template literal.
@@ -298,11 +308,12 @@ fn escape_template_literal(s: &str) -> String {
     s.replace('\\', "\\\\")
         .replace('`', "\\`")
         .replace("${", "\\${")
+        .into()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{escape_template_literal, to_pascal_case, transform_to_vue};
     use crate::parse::parse_art;
     use crate::types::ArtParseOptions;
     use vize_carton::Bump;
@@ -321,11 +332,7 @@ mod tests {
         let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
         let output = transform_to_vue(&art);
 
-        assert!(output.code.contains("import { defineComponent"));
-        assert!(output.code.contains("import TargetComponent"));
-        assert!(output.code.contains("export const Primary"));
-        assert!(output.code.contains("export const metadata"));
-        assert!(output.metadata_code.contains("title: 'Button'"));
+        insta::assert_debug_snapshot!(output);
     }
 
     #[test]
@@ -345,9 +352,7 @@ mod tests {
         let art = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
         let output = transform_to_vue(&art);
 
-        assert!(output.code.contains("export const Primary"));
-        assert!(output.code.contains("export const Secondary"));
-        assert!(output.code.contains("Primary.isDefault = true"));
+        insta::assert_debug_snapshot!(output);
     }
 
     #[test]

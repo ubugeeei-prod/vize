@@ -120,7 +120,9 @@ impl TextNode {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::TextNode;
+    use crate::render::NodeKind;
+    use crate::terminal::Color;
 
     #[test]
     fn test_text_node_new() {

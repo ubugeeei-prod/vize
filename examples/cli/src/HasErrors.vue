@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
 const items = ref([
-  { id: 1, name: 'Apple' },
-  { id: 2, name: 'Banana' },
-  { id: 3, name: 'Cherry' },
-])
+  { id: 1, name: "Apple" },
+  { id: 2, name: "Banana" },
+  { id: 3, name: "Cherry" },
+]);
 
 const users = ref([
-  { id: 1, name: 'Alice', active: true },
-  { id: 2, name: 'Bob', active: false },
-  { id: 3, name: 'Charlie', active: true },
-])
+  { id: 1, name: "Alice", active: true },
+  { id: 2, name: "Bob", active: false },
+  { id: 3, name: "Charlie", active: true },
+]);
 </script>
 
 <template>
@@ -30,6 +30,12 @@ const users = ref([
     <template v-for="product in items" :key="product.id">
       <div>{{ product.name }}</div>
     </template>
+
+    <!-- vue/no-unsafe-url: executable scheme in a static URL attribute -->
+    <iframe src="javascript:alert(1)" title="Unsafe embedded content"></iframe>
+
+    <!-- a11y/anchor-is-valid: invalid anchor with normalized executable scheme -->
+    <a href="JaVaScRiPt:void(0)">Unsafe action link</a>
   </div>
 </template>
 

@@ -5,7 +5,7 @@
 use super::{calculate_location_fast, extract_attr, has_attr};
 use crate::types::{ArtParseError, ArtVariant, ViewportConfig};
 use memchr::{memchr, memmem};
-use vize_carton::{Bump, FxHashMap};
+use vize_carton::{Bump, FxHashMap, ToCompactString};
 
 /// Parse all `<variant>` blocks from art content.
 /// Uses arena allocation for the variants vector.
@@ -70,7 +70,7 @@ fn parse_single_variant<'a>(
     let Some(tag_end_rel) = memchr(b'>', &bytes[start..]) else {
         return Err(ArtParseError::ParseError {
             line,
-            message: "Unclosed <variant> tag".to_string(),
+            message: "Unclosed <variant> tag".to_compact_string(),
         });
     };
     let tag_end = start + tag_end_rel;
@@ -101,7 +101,7 @@ fn parse_single_variant<'a>(
     let Some(close_pos_rel) = close_finder.find(&bytes[template_start..]) else {
         return Err(ArtParseError::ParseError {
             line,
-            message: "Missing </variant> closing tag".to_string(),
+            message: "Missing </variant> closing tag".to_compact_string(),
         });
     };
     let close_pos = template_start + close_pos_rel;
@@ -150,7 +150,8 @@ fn parse_args_json<'a>(
         std::borrow::Cow::Borrowed(s)
     };
 
-    let map: FxHashMap<String, serde_json::Value> = serde_json::from_str(&json_str)?;
+    #[allow(clippy::disallowed_types)]
+    let map: FxHashMap<std::string::String, serde_json::Value> = serde_json::from_str(&json_str)?;
 
     // Allocate keys in arena for zero-copy storage
     Ok(map
@@ -226,7 +227,9 @@ fn count_lines_fast(bytes: &[u8], pos: usize) -> u32 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{parse_variants, parse_viewport};
+    use crate::types::ArtParseError;
+    use vize_carton::Bump;
 
     #[test]
     fn test_parse_single_variant() {
@@ -244,7 +247,7 @@ mod tests {
         assert_eq!(variants.len(), 1);
         assert_eq!(variants[0].name, "Primary");
         assert!(variants[0].is_default);
-        assert!(variants[0].template.contains("Button"));
+        insta::assert_debug_snapshot!(variants);
     }
 
     #[test]

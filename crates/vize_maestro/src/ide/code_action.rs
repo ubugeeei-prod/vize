@@ -4,14 +4,12 @@
 //! - Lint fixes from vize_patina
 //! - Quick fixes for common issues
 //! - Refactoring actions
+#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
-use std::collections::HashMap;
-
+use super::IdeContext;
 use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Position, Range, TextEdit, WorkspaceEdit,
 };
-
-use super::IdeContext;
 
 /// Code action service for providing quick fixes and refactorings.
 pub struct CodeActionService;
@@ -24,6 +22,9 @@ impl CodeActionService {
         // Collect lint fix actions
         actions.extend(Self::collect_lint_fixes(ctx, range));
 
+        // Collect "@vize:forget" suppress actions
+        actions.extend(Self::collect_forget_suppress(ctx, range));
+
         actions
     }
 
@@ -32,8 +33,9 @@ impl CodeActionService {
         let mut actions = Vec::new();
 
         // Parse SFC to get template
+        #[allow(clippy::disallowed_methods)]
         let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string(),
+            filename: ctx.uri.path().to_string().into(),
             ..Default::default()
         };
 
@@ -100,13 +102,15 @@ impl CodeActionService {
                                 character: edit_end_col,
                             },
                         },
-                        new_text: edit.new_text.clone(),
+                        #[allow(clippy::disallowed_methods)]
+                        new_text: edit.new_text.to_string(),
                     }
                 })
                 .collect();
 
             // Create workspace edit
-            let mut changes = HashMap::new();
+            #[allow(clippy::disallowed_types)]
+            let mut changes = std::collections::HashMap::new();
             changes.insert(ctx.uri.clone(), edits);
 
             let workspace_edit = WorkspaceEdit {
@@ -116,6 +120,7 @@ impl CodeActionService {
             };
 
             // Create code action
+            #[allow(clippy::disallowed_macros)]
             let action = CodeAction {
                 title: format!("Fix: {}", fix.message),
                 kind: Some(CodeActionKind::QUICKFIX),
@@ -133,10 +138,104 @@ impl CodeActionService {
         actions
     }
 
+    /// Collect `@vize:forget` suppress actions for diagnostics without auto-fix.
+    fn collect_forget_suppress(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
+        let mut actions = Vec::new();
+
+        #[allow(clippy::disallowed_methods)]
+        let options = vize_atelier_sfc::SfcParseOptions {
+            filename: ctx.uri.path().to_string().into(),
+            ..Default::default()
+        };
+
+        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+            return actions;
+        };
+
+        let Some(ref template) = descriptor.template else {
+            return actions;
+        };
+
+        let linter = vize_patina::Linter::new();
+        let result = linter.lint_template(&template.content, ctx.uri.path());
+
+        let template_start_line = template.loc.start_line as u32;
+
+        for lint_diag in result.diagnostics {
+            // Convert diagnostic position to SFC position
+            let (start_line, start_col) =
+                offset_to_line_col(&template.content, lint_diag.start as usize);
+            let (end_line, end_col) = offset_to_line_col(&template.content, lint_diag.end as usize);
+
+            let diag_range = Range {
+                start: Position {
+                    line: template_start_line + start_line,
+                    character: start_col,
+                },
+                end: Position {
+                    line: template_start_line + end_line,
+                    character: end_col,
+                },
+            };
+
+            if !ranges_overlap(&diag_range, &range) {
+                continue;
+            }
+
+            // Compute indentation of the diagnostic line
+            let indent = get_line_indent(&template.content, lint_diag.start as usize);
+
+            // Insert `<!-- @vize:forget <rule_name> -->\n` before the line
+            let sfc_line = template_start_line + start_line;
+            let insert_pos = Position {
+                line: sfc_line,
+                character: 0,
+            };
+
+            #[allow(clippy::disallowed_macros)]
+            let new_text = format!("{}<!-- @vize:forget {} -->\n", indent, lint_diag.rule_name,);
+
+            let edit = TextEdit {
+                range: Range {
+                    start: insert_pos,
+                    end: insert_pos,
+                },
+                new_text,
+            };
+
+            #[allow(clippy::disallowed_types)]
+            let mut changes = std::collections::HashMap::new();
+            changes.insert(ctx.uri.clone(), vec![edit]);
+
+            let workspace_edit = WorkspaceEdit {
+                changes: Some(changes),
+                document_changes: None,
+                change_annotations: None,
+            };
+
+            #[allow(clippy::disallowed_macros)]
+            let action = CodeAction {
+                title: format!("Suppress with @vize:forget ({})", lint_diag.rule_name),
+                kind: Some(CodeActionKind::QUICKFIX),
+                diagnostics: None,
+                edit: Some(workspace_edit),
+                command: None,
+                is_preferred: Some(false),
+                disabled: None,
+                data: None,
+            };
+
+            actions.push(CodeActionOrCommand::CodeAction(action));
+        }
+
+        actions
+    }
+
     /// Get all available fixes for a document (for "fix all" actions).
     pub fn get_all_fixes(ctx: &IdeContext) -> Option<WorkspaceEdit> {
+        #[allow(clippy::disallowed_methods)]
         let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string(),
+            filename: ctx.uri.path().to_string().into(),
             ..Default::default()
         };
 
@@ -169,7 +268,8 @@ impl CodeActionService {
                                 character: edit_end_col,
                             },
                         },
-                        new_text: edit.new_text.clone(),
+                        #[allow(clippy::disallowed_methods)]
+                        new_text: edit.new_text.to_string(),
                     });
                 }
             }
@@ -199,7 +299,8 @@ impl CodeActionService {
             }
         }
 
-        let mut changes = HashMap::new();
+        #[allow(clippy::disallowed_types)]
+        let mut changes = std::collections::HashMap::new();
         changes.insert(ctx.uri.clone(), filtered_edits);
 
         Some(WorkspaceEdit {
@@ -232,6 +333,30 @@ fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
     (line, col)
 }
 
+/// Get the leading whitespace (indentation) for the line containing the given byte offset.
+fn get_line_indent(source: &str, offset: usize) -> &str {
+    let bytes = source.as_bytes();
+
+    // Find the start of the line
+    let line_start = if offset == 0 {
+        0
+    } else {
+        bytes[..offset]
+            .iter()
+            .rposition(|&b| b == b'\n')
+            .map_or(0, |pos| pos + 1)
+    };
+
+    // Collect whitespace from the start of the line
+    let rest = &source[line_start..];
+    let indent_len = rest
+        .bytes()
+        .take_while(|b| *b == b' ' || *b == b'\t')
+        .count();
+
+    &source[line_start..line_start + indent_len]
+}
+
 /// Check if two ranges overlap.
 fn ranges_overlap(a: &Range, b: &Range) -> bool {
     // Ranges overlap if neither is completely before or after the other
@@ -243,7 +368,8 @@ fn ranges_overlap(a: &Range, b: &Range) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{offset_to_line_col, ranges_overlap};
+    use tower_lsp::lsp_types::{Position, Range};
 
     #[test]
     fn test_ranges_overlap() {
@@ -289,5 +415,15 @@ mod tests {
         assert_eq!(offset_to_line_col(source, 3), (0, 3));
         assert_eq!(offset_to_line_col(source, 4), (1, 0));
         assert_eq!(offset_to_line_col(source, 8), (2, 0));
+    }
+
+    #[test]
+    fn test_get_line_indent() {
+        use super::get_line_indent;
+
+        assert_eq!(get_line_indent("hello", 0), "");
+        assert_eq!(get_line_indent("  hello", 3), "  ");
+        assert_eq!(get_line_indent("a\n  hello", 5), "  ");
+        assert_eq!(get_line_indent("\t\thello", 3), "\t\t");
     }
 }

@@ -1,0 +1,70 @@
+/// Language server configuration for Vize.
+module vize.LanguageServerConfig
+
+class LanguageServerConfig {
+  /// Enable the language server.
+  enabled: Boolean? = null
+
+  /// Enable lint diagnostics.
+  lint: Boolean? = null
+
+  /// Deprecated alias for `lint`.
+  diagnostics: Boolean? = null
+
+  /// Enable project type checking diagnostics.
+  typecheck: Boolean? = null
+
+  /// Enable editor-oriented IDE features.
+  editor: Boolean? = null
+
+  /// Enable completions.
+  completion: Boolean? = null
+
+  /// Enable hover information.
+  hover: Boolean? = null
+
+  /// Enable go-to-definition.
+  definition: Boolean? = null
+
+  /// Enable reference search.
+  references: Boolean? = null
+
+  /// Enable document symbols.
+  documentSymbols: Boolean? = null
+
+  /// Enable workspace symbols.
+  workspaceSymbols: Boolean? = null
+
+  /// Enable formatting via the language server.
+  formatting: Boolean? = null
+
+  /// Enable code actions.
+  codeActions: Boolean? = null
+
+  /// Enable rename support.
+  rename: Boolean? = null
+
+  /// Enable code lenses.
+  codeLens: Boolean? = null
+
+  /// Enable semantic tokens.
+  semanticTokens: Boolean? = null
+
+  /// Enable document links.
+  documentLinks: Boolean? = null
+
+  /// Enable folding ranges.
+  foldingRanges: Boolean? = null
+
+  /// Enable inlay hints.
+  inlayHints: Boolean? = null
+
+  /// Enable file rename edits.
+  fileRename: Boolean? = null
+
+  /// Enable Corsa-backed IDE features.
+  corsa: Boolean? = null
+
+  /// Deprecated alias for `corsa`.
+  tsgo: Boolean? = null
+}

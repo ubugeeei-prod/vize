@@ -236,6 +236,7 @@ impl From<crate::input::Event> for InputEventNapi {
                     crate::input::Key::BackTab => "backtab",
                     crate::input::Key::Esc => "escape",
                     crate::input::Key::F(n) => {
+                        #[allow(clippy::disallowed_macros)]
                         return InputEventNapi {
                             event_type: "key".to_string(),
                             key: Some(format!("f{}", n)),
@@ -346,7 +347,7 @@ impl From<crate::input::Event> for InputEventNapi {
                 y: None,
                 width: None,
                 height: None,
-                text: Some(text),
+                text: Some(text.into()),
             },
         }
     }

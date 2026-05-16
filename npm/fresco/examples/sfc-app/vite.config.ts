@@ -1,28 +1,26 @@
-import { defineConfig } from 'vite';
-import { vize } from '@vizejs/vite-plugin';
-import { resolve } from 'path';
+import { defineConfig } from "vite-plus";
+import { vize } from "@vizejs/vite-plugin";
+import { resolve } from "path";
 
 export default defineConfig({
-  plugins: [
-    vize(),
-  ],
+  plugins: [vize()],
   resolve: {
     alias: {
       // Map vue to full build (includes compiler)
-      vue: 'vue/dist/vue.esm-bundler.js',
+      vue: "vue/dist/vue.esm-bundler.js",
       // Shim for SSR imports (script setup generates these)
-      '@vue/runtime-core/server-renderer': resolve(__dirname, 'ssr-shim.ts'),
+      "@vue/runtime-core/server-renderer": resolve(__dirname, "ssr-shim.ts"),
     },
   },
   build: {
-    target: 'node18',
+    target: "node18",
     lib: {
-      entry: 'main.ts',
-      formats: ['es'],
-      fileName: 'main',
+      entry: "main.ts",
+      formats: ["es"],
+      fileName: "main",
     },
     rollupOptions: {
-      external: ['@vizejs/fresco-native', '@vizejs/fresco'],
+      external: ["@vizejs/fresco-native", "@vizejs/fresco"],
     },
   },
 });

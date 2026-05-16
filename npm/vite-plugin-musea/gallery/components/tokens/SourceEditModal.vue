@@ -1,51 +1,55 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { fetchArtSource, updateArtSource } from '../../api'
-import MonacoEditor from '../MonacoEditor.vue'
+import { defineAsyncComponent, ref, watch } from "vue";
+import { fetchArtSource, updateArtSource } from "../../api";
+
+const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
 
 const props = defineProps<{
-  isOpen: boolean
-  artPath: string
-  artTitle: string
-  tokenPaths?: string[]
-}>()
+  isOpen: boolean;
+  artPath: string;
+  artTitle: string;
+  tokenPaths?: string[];
+}>();
 
 const emit = defineEmits<{
-  close: []
-  saved: []
-}>()
+  close: [];
+  saved: [];
+}>();
 
-const source = ref('')
-const loading = ref(false)
-const saving = ref(false)
-const error = ref<string | null>(null)
+const source = ref("");
+const loading = ref(false);
+const saving = ref(false);
+const error = ref<string | null>(null);
 
-watch(() => props.isOpen, async (open) => {
-  if (open && props.artPath) {
-    loading.value = true
-    error.value = null
-    try {
-      const data = await fetchArtSource(props.artPath)
-      source.value = data.source
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : String(e)
-    } finally {
-      loading.value = false
+watch(
+  () => props.isOpen,
+  async (open) => {
+    if (open && props.artPath) {
+      loading.value = true;
+      error.value = null;
+      try {
+        const data = await fetchArtSource(props.artPath);
+        source.value = data.source;
+      } catch (e) {
+        error.value = e instanceof Error ? e.message : String(e);
+      } finally {
+        loading.value = false;
+      }
     }
-  }
-})
+  },
+);
 
 async function handleSave() {
-  saving.value = true
-  error.value = null
+  saving.value = true;
+  error.value = null;
   try {
-    await updateArtSource(props.artPath, source.value)
-    emit('saved')
-    emit('close')
+    await updateArtSource(props.artPath, source.value);
+    emit("saved");
+    emit("close");
   } catch (e) {
-    error.value = e instanceof Error ? e.message : String(e)
+    error.value = e instanceof Error ? e.message : String(e);
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 </script>
@@ -60,8 +64,15 @@ async function handleSave() {
               <h2 class="modal-title">Edit Source</h2>
               <p class="modal-subtitle">{{ artTitle }}</p>
             </div>
-            <button class="modal-close" @click="emit('close')">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button type="button" class="modal-close" @click="emit('close')">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -83,9 +94,16 @@ async function handleSave() {
           <div class="modal-footer">
             <span class="save-hint">Cmd+S / Ctrl+S to save</span>
             <div class="modal-footer-actions">
-              <button class="btn btn--secondary" @click="emit('close')">Cancel</button>
-              <button class="btn btn--primary" :disabled="saving || loading" @click="handleSave">
-                {{ saving ? 'Saving...' : 'Save' }}
+              <button type="button" class="btn btn--secondary" @click="emit('close')">
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="btn btn--primary"
+                :disabled="saving || loading"
+                @click="handleSave"
+              >
+                {{ saving ? "Saving..." : "Save" }}
               </button>
             </div>
           </div>
@@ -99,7 +117,7 @@ async function handleSave() {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: var(--musea-overlay);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -118,7 +136,7 @@ async function handleSave() {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--musea-shadow);
 }
 
 .modal-header {
@@ -220,7 +238,7 @@ async function handleSave() {
 
 .btn--primary {
   background: var(--musea-accent);
-  color: #fff;
+  color: var(--musea-accent-contrast);
   border-color: var(--musea-accent);
 }
 

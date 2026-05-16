@@ -10,7 +10,7 @@ use crate::cross_file::diagnostics::{
 };
 use crate::cross_file::graph::{DependencyEdge, DependencyGraph};
 use crate::cross_file::registry::{FileId, ModuleRegistry};
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_carton::{cstr, CompactString, FxHashMap, FxHashSet, ToCompactString};
 
 /// Information about emit flow between components.
 #[derive(Debug, Clone)]
@@ -107,7 +107,7 @@ pub fn analyze_emits(
                             DiagnosticSeverity::Warning,
                             *child_id,
                             0,
-                            format!(
+                            cstr!(
                                 "Event '{}' is declared in defineEmits but never emitted",
                                 emit
                             ),
@@ -130,12 +130,9 @@ pub fn analyze_emits(
                             DiagnosticSeverity::Error,
                             *child_id,
                             child_info.emit_offsets.get(emit).copied().unwrap_or(0),
-                            format!(
-                                "Event '{}' is emitted but not declared in defineEmits",
-                                emit
-                            ),
+                            cstr!("Event '{emit}' is emitted but not declared in defineEmits",),
                         )
-                        .with_suggestion(format!("Add '{}' to defineEmits", emit)),
+                        .with_suggestion(cstr!("Add '{emit}' to defineEmits")),
                     );
                 }
             }
@@ -156,15 +153,14 @@ pub fn analyze_emits(
                                     DiagnosticSeverity::Warning,
                                     node.file_id,
                                     *offset,
-                                    format!(
-                                        "Listening for '{}' but child component doesn't emit it",
-                                        event
+                                    cstr!(
+                                        "Listening for '{event}' but child component doesn't emit it",
                                     ),
                                 )
                                 .with_related(
                                     *child_id,
                                     0,
-                                    format!("'{}' component", child_name),
+                                    cstr!("'{child_name}' component"),
                                 ),
                             );
                         }
@@ -215,15 +211,17 @@ fn extract_emit_info(analysis: &crate::Croquis) -> ComponentEmitInfo {
 ///
 /// Returns a map from component name to (event name -> handler offset).
 /// Uses component_usages for precise static analysis.
-fn extract_event_listeners(analysis: &crate::Croquis) -> FxHashMap<String, FxHashMap<String, u32>> {
-    let mut result: FxHashMap<String, FxHashMap<String, u32>> = FxHashMap::default();
+fn extract_event_listeners(
+    analysis: &crate::Croquis,
+) -> FxHashMap<CompactString, FxHashMap<CompactString, u32>> {
+    let mut result: FxHashMap<CompactString, FxHashMap<CompactString, u32>> = FxHashMap::default();
 
     for usage in &analysis.component_usages {
-        let component_name = usage.name.to_string();
+        let component_name = usage.name.to_compact_string();
         let events = result.entry(component_name).or_default();
 
         for event in &usage.events {
-            events.insert(event.name.to_string(), event.start);
+            events.insert(event.name.to_compact_string(), event.start);
         }
     }
 
@@ -282,7 +280,7 @@ fn is_native_event(event: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::is_native_event;
 
     #[test]
     fn test_native_event_detection() {

@@ -33,11 +33,7 @@ impl JsonRpcRequest {
     /// Serialize to LSP message format (with Content-Length header).
     pub fn to_lsp_message(&self) -> Result<String, serde_json::Error> {
         let content = serde_json::to_string(self)?;
-        Ok(format!(
-            "Content-Length: {}\r\n\r\n{}",
-            content.len(),
-            content
-        ))
+        Ok(lsp_message_from_json(content))
     }
 }
 
@@ -63,12 +59,19 @@ impl JsonRpcNotification {
     /// Serialize to LSP message format (with Content-Length header).
     pub fn to_lsp_message(&self) -> Result<String, serde_json::Error> {
         let content = serde_json::to_string(self)?;
-        Ok(format!(
-            "Content-Length: {}\r\n\r\n{}",
-            content.len(),
-            content
-        ))
+        Ok(lsp_message_from_json(content))
     }
+}
+
+fn lsp_message_from_json(content: String) -> String {
+    use std::fmt::Write as _;
+
+    let mut message = String::with_capacity("Content-Length: ".len() + 20 + 4 + content.len());
+    message.push_str("Content-Length: ");
+    write!(&mut message, "{}", content.len()).expect("writing to String cannot fail");
+    message.push_str("\r\n\r\n");
+    message.push_str(&content);
+    message
 }
 
 /// JSON-RPC response.
@@ -422,7 +425,10 @@ impl VueReactiveType {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        parse_content_length, Diagnostic, JsonRpcNotification, JsonRpcRequest, Range,
+        RequestIdGenerator, VueReactiveType,
+    };
 
     #[test]
     fn test_json_rpc_request() {
@@ -443,8 +449,7 @@ mod tests {
     fn test_lsp_message_format() {
         let req = JsonRpcRequest::new(1, "test", None);
         let msg = req.to_lsp_message().unwrap();
-        assert!(msg.starts_with("Content-Length: "));
-        assert!(msg.contains("\r\n\r\n"));
+        insta::assert_snapshot!(msg.as_str());
     }
 
     #[test]

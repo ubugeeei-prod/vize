@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
+assertion_line: 450
+expression: result
+---
+function test(value) {
+    try {
+    } catch {
+    }
+}
+console.log(__props.value)

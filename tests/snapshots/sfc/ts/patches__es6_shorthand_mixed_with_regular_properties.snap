@@ -1,7 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 196
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createBlock as _createBlock, resolveComponent as _resolveComponent } from "vue"
@@ -15,9 +14,9 @@ export default /*@__PURE__*/_defineComponent({
 const name = ref('test')
 
 return (_ctx: any,_cache: any) => {
-  const _component_Component = _resolveComponent("Component")
+  const _component_MyComponent = _resolveComponent("MyComponent")
 
-  return (_openBlock(), _createBlock(_component_Component, { options: { name.value, extra: 'value' } }, null, 8 /* PROPS */, ["options"]))
+  return (_openBlock(), _createBlock(_component_MyComponent, { options: { name: name.value, extra: 'value' } }, null, 8 /* PROPS */, ["options"]))
 }
 }
 

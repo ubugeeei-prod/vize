@@ -20,6 +20,11 @@ serde_json = { workspace = true }
 once_cell = { workspace = true }
 smallvec = { workspace = true }
 xxhash-rust = { workspace = true }
+pklrust = { workspace = true }
 
 [features]
 default = []
+
+[dev-dependencies]
+insta.workspace = true
+tempfile.workspace = true

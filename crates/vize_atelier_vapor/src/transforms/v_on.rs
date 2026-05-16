@@ -2,7 +2,7 @@
 //!
 //! Transforms v-on (@ shorthand) directives into SetEventIRNode.
 
-use vize_carton::{Box, Bump};
+use vize_carton::{cstr, Box, Bump, String, ToCompactString};
 
 use crate::ir::{EventModifiers, EventOptions, OperationNode, SetEventIRNode};
 use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode};
@@ -125,19 +125,18 @@ pub fn generate_event_handler(
     let handler_code = handler.unwrap_or("() => {}");
 
     if modifiers.non_keys.is_empty() && modifiers.keys.is_empty() {
-        return handler_code.to_string();
+        return handler_code.to_compact_string();
     }
 
     // Generate withModifiers/withKeys wrapper
-    let mut result = handler_code.to_string();
+    let mut result = handler_code.to_compact_string();
 
     if !modifiers.keys.is_empty() {
         let keys: Vec<&str> = modifiers.keys.iter().map(|k| k.as_str()).collect();
-        result = format!(
-            "_withKeys({}, [{}])",
-            result,
+        result = cstr!(
+            "_withKeys({result}, [{}])",
             keys.iter()
-                .map(|k| format!("\"{}\"", k))
+                .map(|k| cstr!("\"{k}\""))
                 .collect::<Vec<_>>()
                 .join(", ")
         );
@@ -145,11 +144,10 @@ pub fn generate_event_handler(
 
     if !modifiers.non_keys.is_empty() {
         let mods: Vec<&str> = modifiers.non_keys.iter().map(|m| m.as_str()).collect();
-        result = format!(
-            "_withModifiers({}, [{}])",
-            result,
+        result = cstr!(
+            "_withModifiers({result}, [{}])",
             mods.iter()
-                .map(|m| format!("\"{}\"", m))
+                .map(|m| cstr!("\"{m}\""))
                 .collect::<Vec<_>>()
                 .join(", ")
         );
@@ -160,7 +158,8 @@ pub fn generate_event_handler(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::generate_event_handler;
+    use crate::ir::EventModifiers;
     use vize_carton::String;
 
     #[test]
@@ -176,7 +175,6 @@ mod tests {
         modifiers.non_keys.push(String::new("stop"));
 
         let result = generate_event_handler("click", Some("handleClick"), &modifiers);
-        assert!(result.contains("_withModifiers"));
-        assert!(result.contains("stop"));
+        insta::assert_snapshot!(result.as_str());
     }
 }

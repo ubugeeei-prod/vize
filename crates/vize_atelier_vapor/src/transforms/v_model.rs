@@ -2,7 +2,7 @@
 //!
 //! Transforms v-model directives for two-way binding.
 
-use vize_carton::{Box, Bump, String};
+use vize_carton::{cstr, Box, Bump, String, ToCompactString};
 
 use crate::ir::{DirectiveIRNode, OperationNode};
 use vize_atelier_core::{DirectiveNode, ElementNode, ExpressionNode};
@@ -27,6 +27,8 @@ pub fn transform_v_model<'a>(
         dir: Box::new_in(new_dir, allocator),
         name: String::new("model"),
         builtin: true,
+        tag: String::new(""),
+        input_type: String::new(""),
     };
 
     operations.push(OperationNode::Directive(dir_ir));
@@ -88,43 +90,44 @@ pub fn get_model_event(el: &ElementNode<'_>) -> &'static str {
 
 /// Generate v-model handler code
 pub fn generate_model_handler(value_expr: &str, modifiers: &[String]) -> String {
-    let mut event_value = "$event.target.value".to_string();
+    let mut event_value = "$event.target.value".to_compact_string();
 
     // Apply modifiers
     for modifier in modifiers {
         match modifier.as_str() {
             "number" => {
-                event_value = format!("Number({})", event_value);
+                event_value = cstr!("Number({event_value})");
             }
             "trim" => {
-                event_value = format!("{}.trim()", event_value);
+                event_value = cstr!("{event_value}.trim()");
             }
             _ => {}
         }
     }
 
-    format!("$event => {{ {} = {} }}", value_expr, event_value).into()
+    cstr!("$event => {{ {value_expr} = {event_value} }}")
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::generate_model_handler;
+    use vize_carton::String;
 
     #[test]
     fn test_generate_model_handler_simple() {
         let result = generate_model_handler("text", &[]);
-        assert!(result.contains("text = $event.target.value"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_generate_model_handler_with_trim() {
         let result = generate_model_handler("text", &[String::new("trim")]);
-        assert!(result.contains(".trim()"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_generate_model_handler_with_number() {
         let result = generate_model_handler("num", &[String::new("number")]);
-        assert!(result.contains("Number("));
+        insta::assert_snapshot!(result.as_str());
     }
 }

@@ -1,5 +1,6 @@
 //! Text width calculation with CJK support.
 
+use compact_str::{CompactString, ToCompactString};
 use unicode_width::UnicodeWidthChar;
 use unicode_width::UnicodeWidthStr;
 
@@ -56,66 +57,70 @@ impl TextWidth {
 
     /// Truncate string with ellipsis if needed.
     /// The ellipsis is "..." (3 columns).
-    pub fn truncate_with_ellipsis(s: &str, max_width: usize) -> String {
+    #[allow(clippy::disallowed_macros)]
+    pub fn truncate_with_ellipsis(s: &str, max_width: usize) -> CompactString {
         let width = Self::width(s);
         if width <= max_width {
-            return s.to_string();
+            return s.to_compact_string();
         }
 
         if max_width < 3 {
-            return ".".repeat(max_width);
+            return std::iter::repeat_n('.', max_width).collect();
         }
 
         let target_width = max_width - 3;
         let (truncated, _) = Self::truncate(s, target_width);
-        format!("{}...", truncated)
+        CompactString::from(format!("{}...", truncated))
     }
 
     /// Pad string to specified width.
-    pub fn pad_right(s: &str, target_width: usize) -> String {
+    #[allow(clippy::disallowed_macros)]
+    pub fn pad_right(s: &str, target_width: usize) -> CompactString {
         let current_width = Self::width(s);
         if current_width >= target_width {
-            return s.to_string();
+            return s.to_compact_string();
         }
 
         let padding = target_width - current_width;
-        format!("{}{}", s, " ".repeat(padding))
+        CompactString::from(format!("{}{}", s, " ".repeat(padding)))
     }
 
     /// Pad string to specified width (left padding).
-    pub fn pad_left(s: &str, target_width: usize) -> String {
+    #[allow(clippy::disallowed_macros)]
+    pub fn pad_left(s: &str, target_width: usize) -> CompactString {
         let current_width = Self::width(s);
         if current_width >= target_width {
-            return s.to_string();
+            return s.to_compact_string();
         }
 
         let padding = target_width - current_width;
-        format!("{}{}", " ".repeat(padding), s)
+        CompactString::from(format!("{}{}", " ".repeat(padding), s))
     }
 
     /// Center string within specified width.
-    pub fn center(s: &str, target_width: usize) -> String {
+    #[allow(clippy::disallowed_macros)]
+    pub fn center(s: &str, target_width: usize) -> CompactString {
         let current_width = Self::width(s);
         if current_width >= target_width {
-            return s.to_string();
+            return s.to_compact_string();
         }
 
         let total_padding = target_width - current_width;
         let left_padding = total_padding / 2;
         let right_padding = total_padding - left_padding;
 
-        format!(
+        CompactString::from(format!(
             "{}{}{}",
             " ".repeat(left_padding),
             s,
             " ".repeat(right_padding)
-        )
+        ))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::TextWidth;
 
     #[test]
     fn test_ascii_width() {

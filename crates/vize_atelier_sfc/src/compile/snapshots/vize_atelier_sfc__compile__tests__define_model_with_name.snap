@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { useModel as _useModel } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, withDirectives as _withDirectives, vModelText as _vModelText } from "vue"
+
+
+export default {
+  __name: 'anonymous',
+  props: {
+    "title": {},
+    "titleModifiers": {},
+  },
+  emits: ["update:title"],
+  setup(__props) {
+
+const title = _useModel(__props, "title")
+
+return (_ctx, _cache) => {
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+      "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((title).value = $event))
+    }, null, 512 /* NEED_PATCH */)), [ [_vModelText, title.value] ])
+}
+}
+
+}

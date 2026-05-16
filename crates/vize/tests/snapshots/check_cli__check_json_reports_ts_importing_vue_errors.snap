@@ -1,0 +1,21 @@
+---
+source: crates/vize/tests/check_cli.rs
+assertion_line: 111
+expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
+---
+{
+  "errorCount": 1,
+  "files": [
+    {
+      "diagnostics": [],
+      "file": "src/App.vue"
+    },
+    {
+      "diagnostics": [
+        "error:6:3 [TS2322] Type 'string' is not assignable to type 'number'."
+      ],
+      "file": "src/main.ts"
+    }
+  ],
+  "status": 1
+}

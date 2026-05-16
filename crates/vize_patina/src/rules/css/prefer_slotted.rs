@@ -136,7 +136,7 @@ impl CssRule for PreferSlotted {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::PreferSlotted;
     use crate::rules::css::CssLinter;
 
     fn create_linter() -> CssLinter {

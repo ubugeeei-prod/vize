@@ -1,0 +1,8 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
+assertion_line: 571
+expression: result
+---
+const name = __props.user.profile.name
+const email = __props.user?.contact?.email
+const id = __props.user['id']

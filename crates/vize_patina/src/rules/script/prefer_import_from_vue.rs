@@ -21,6 +21,8 @@
 //! import { ref, h } from 'vue'
 //! ```
 
+#![allow(clippy::disallowed_macros)]
+
 use memchr::memmem;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
@@ -145,7 +147,7 @@ fn skip_whitespace(bytes: &[u8]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{PreferImportFromVue, ScriptLintResult, ScriptRule};
 
     #[test]
     fn test_valid_vue_import() {
@@ -163,7 +165,7 @@ mod tests {
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("@vue/runtime-core"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

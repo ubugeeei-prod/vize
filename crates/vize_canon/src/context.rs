@@ -4,6 +4,7 @@
 //! the script block that is available in the template.
 
 use vize_carton::FxHashMap;
+use vize_carton::String;
 
 use crate::types::TypeInfo;
 
@@ -325,8 +326,8 @@ impl Slot {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::types::TypeKind;
+    use super::{Binding, BindingKind, Prop, TypeContext};
+    use crate::types::{TypeInfo, TypeKind};
 
     #[test]
     fn test_type_context() {
@@ -360,6 +361,6 @@ mod tests {
             .with_default("\"hello\"");
 
         assert!(prop.required);
-        assert_eq!(prop.default, Some("\"hello\"".to_string()));
+        assert_eq!(prop.default.as_deref(), Some("\"hello\""));
     }
 }

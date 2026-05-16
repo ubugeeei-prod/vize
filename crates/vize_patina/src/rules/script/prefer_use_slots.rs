@@ -96,7 +96,7 @@ impl ScriptRule for PreferUseSlots {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::PreferUseSlots;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {

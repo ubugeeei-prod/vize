@@ -32,9 +32,13 @@
 //! </template>
 //! ```
 
+#![allow(clippy::disallowed_macros)]
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::String;
+use vize_carton::ToCompactString;
 use vize_relief::ast::RootNode;
 
 static META: RuleMeta = RuleMeta {
@@ -138,7 +142,7 @@ impl Rule for NoUnusedProperties {
 
                     !is_used
                 })
-                .map(|prop| prop.name.to_string())
+                .map(|prop| prop.name.to_compact_string())
                 .collect();
 
             (unused, loc)
@@ -161,7 +165,8 @@ impl Rule for NoUnusedProperties {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoUnusedProperties;
+    use crate::rule::{Rule, RuleCategory};
 
     #[test]
     fn test_meta() {

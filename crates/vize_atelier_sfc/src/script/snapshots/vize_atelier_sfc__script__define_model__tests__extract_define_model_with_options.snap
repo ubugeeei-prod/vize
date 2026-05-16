@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_model.rs
+expression: result
+---
+[
+    MacroCall {
+        start: 14,
+        end: 64,
+        args: "'count', { type: Number, default: 0 }",
+        type_args: None,
+        binding_name: None,
+    },
+]

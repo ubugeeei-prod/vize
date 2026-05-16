@@ -27,6 +27,8 @@ pub fn transform_v_bind<'a>(
             is_component: el.tag_type == ElementType::Component,
         },
         tag: el.tag.clone(),
+        camel: has_modifier(dir, "camel"),
+        prop_modifier: has_modifier(dir, "prop"),
     };
 
     Some(OperationNode::SetProp(set_prop))
@@ -56,6 +58,7 @@ pub fn transform_v_bind_dynamic<'a>(
         crate::ir::SetDynamicPropsIRNode {
             element: element_id,
             props,
+            is_event: false,
         },
     ))
 }
@@ -151,7 +154,7 @@ pub fn is_dynamic_binding(dir: &DirectiveNode<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use vize_carton::camelize;
 
     #[test]
     fn test_camelize() {

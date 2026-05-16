@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+const filtered = __props.items.filter(x => x > 0)
+const mapped = __props.items.map(x => x * 2)
+const reduced = __props.items.reduce((acc, x) => acc + x, 0)

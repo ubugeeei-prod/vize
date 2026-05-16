@@ -287,7 +287,7 @@ impl AriaRole {
             if Self::is_abstract_role(&role_lower) {
                 let message =
                     ctx.t_fmt("a11y/aria-role.message_abstract", &[("role", single_role)]);
-                ctx.error_with_help(&message, loc, ctx.t("a11y/aria-role.help_abstract"));
+                ctx.error_with_help(message, loc, ctx.t("a11y/aria-role.help_abstract"));
                 continue;
             }
 
@@ -300,9 +300,9 @@ impl AriaRole {
                         "a11y/aria-role.help_suggestion",
                         &[("invalid", single_role), ("valid", suggestion)],
                     );
-                    ctx.error_with_help(&message, loc, &help);
+                    ctx.error_with_help(message.clone(), loc, help);
                 } else {
-                    ctx.error_with_help(&message, loc, ctx.t("a11y/aria-role.help"));
+                    ctx.error_with_help(message, loc, ctx.t("a11y/aria-role.help"));
                 }
             }
         }
@@ -311,7 +311,7 @@ impl AriaRole {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::AriaRole;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

@@ -1,8 +1,8 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
+import { useSlots as _useSlots } from 'vue'
 import { defineComponent as _defineComponent } from 'vue'
 import { renderSlot as _renderSlot } from "vue"
 
@@ -11,6 +11,7 @@ export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   setup(__props) {
 
+const slots = _useSlots()
 
 return (_ctx: any,_cache: any) => {
   return _renderSlot(_ctx.$slots, "default")

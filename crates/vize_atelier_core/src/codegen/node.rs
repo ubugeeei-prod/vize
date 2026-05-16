@@ -7,6 +7,7 @@ use super::context::CodegenContext;
 use super::element::generate_element;
 use super::v_for::generate_for;
 use super::v_if::generate_if;
+use vize_carton::ToCompactString;
 
 /// Generate node code
 pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
@@ -20,7 +21,7 @@ pub fn generate_node(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>) {
         TemplateChildNode::Hoisted(index) => {
             // Output reference to hoisted variable
             ctx.push("_hoisted_");
-            ctx.push(&(index + 1).to_string());
+            ctx.push(&(index + 1).to_compact_string());
         }
         _ => {
             ctx.push("null /* unsupported node */");

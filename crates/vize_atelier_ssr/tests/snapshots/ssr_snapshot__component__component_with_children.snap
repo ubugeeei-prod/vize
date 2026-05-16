@@ -3,10 +3,14 @@ source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
 expression: "compile_full(r#\"<Foo>hello</Foo>\"#)"
 ---
 function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(_ssrRenderComponent(_component_Foo, _attrs, {
-    default: _withCtx(() => [
-      _push(`hello`)
-    ]),
-  _: 1
+  _push(_ssrRenderComponent(_resolveComponent("Foo"), _attrs, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`hello`)
+      } else {
+        return [_createTextVNode("hello")]
+      }
+    }),
+    _: 1
   }, _parent))
 }

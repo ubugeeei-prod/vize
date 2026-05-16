@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { ref } from "vue";
+export default {
+  __name: "TestComponent",
+  setup(__props) {
+    const x = ref(0);
+    return (_ctx, _cache) => {
+      return null;
+    };
+  }
+};

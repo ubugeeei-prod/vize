@@ -207,7 +207,8 @@ impl CssTracker {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{CssTracker, SelectorKind, SelectorPart};
+    use vize_carton::CompactString;
 
     #[test]
     fn test_css_tracker() {

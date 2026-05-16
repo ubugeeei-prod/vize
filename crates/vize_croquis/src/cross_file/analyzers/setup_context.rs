@@ -11,6 +11,7 @@ use crate::cross_file::diagnostics::{
 use crate::cross_file::graph::DependencyGraph;
 use crate::cross_file::registry::{FileId, ModuleRegistry};
 use crate::setup_context::{SetupContextViolation, SetupContextViolationKind, ViolationSeverity};
+use vize_carton::cstr;
 use vize_carton::CompactString;
 
 /// A detected setup context issue with file context.
@@ -69,28 +70,28 @@ fn create_diagnostic(file_id: FileId, violation: &SetupContextViolation) -> Cros
 
     let (message, hint) = match violation.kind {
         SetupContextViolationKind::ModuleLevelState => (
-            CompactString::new(concat!(
-                "Module-level reactive state (`",
-                "`) causes CSRP in SSR"
-            ).replace("`", &format!("`{}`", violation.api_name))),
+            cstr!(
+                "Module-level reactive state (`{}`) causes CSRP in SSR",
+                violation.api_name
+            ),
             Some(CompactString::new(
                 "Move reactive state inside setup() or <script setup> to avoid sharing state across requests",
             )),
         ),
         SetupContextViolationKind::ModuleLevelWatch => (
-            CompactString::new(format!(
+            cstr!(
                 "Module-level `{}()` is never cleaned up, causing memory leaks",
                 violation.api_name
-            )),
+            ),
             Some(CompactString::new(
                 "Move watch/watchEffect inside setup() where it will be auto-disposed on unmount",
             )),
         ),
         SetupContextViolationKind::ModuleLevelComputed => (
-            CompactString::new(format!(
+            cstr!(
                 "Module-level `{}()` is never cleaned up, causing memory leaks",
                 violation.api_name
-            )),
+            ),
             Some(CompactString::new(
                 "Move computed inside setup() where it will be auto-disposed on unmount",
             )),
@@ -112,10 +113,10 @@ fn create_diagnostic(file_id: FileId, violation: &SetupContextViolation) -> Cros
             )),
         ),
         SetupContextViolationKind::ModuleLevelLifecycle => (
-            CompactString::new(format!(
+            cstr!(
                 "`{}()` must be called inside setup() or <script setup>",
                 violation.api_name
-            )),
+            ),
             Some(CompactString::new(
                 "Lifecycle hooks require the component instance context which is only available during setup",
             )),
@@ -143,7 +144,7 @@ fn create_diagnostic(file_id: FileId, violation: &SetupContextViolation) -> Cros
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::setup_context::{SetupContextViolationKind, ViolationSeverity};
 
     #[test]
     fn test_violation_severity_mapping() {

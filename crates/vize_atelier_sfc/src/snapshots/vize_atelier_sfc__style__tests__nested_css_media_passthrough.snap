@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_sfc/src/style.rs
+expression: result.as_str()
+---
+#pages-store[data-v-123]{
+  display: grid;
+  row-gap: 1.5rem;
+  @media (--mobile) {
+    row-gap: 1rem;
+  }
+  h1 {
+    padding: 7.5rem 0;
+    @media (--mobile) {
+      padding: 2.5rem 0.75rem;
+    }
+  }
+}

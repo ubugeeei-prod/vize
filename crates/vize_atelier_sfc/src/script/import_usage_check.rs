@@ -5,14 +5,20 @@
 //!   when not using inline mode.
 //! - Check whether the built-in properties such as $attrs, $slots, $emit are used in the template
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast as oxc_ast_types;
+use oxc_ast_visit::{walk::walk_arrow_function_expression, Visit};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_atelier_core::ast::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, SimpleExpressionNode,
     TemplateChildNode,
 };
 use vize_carton::{
     camelize, capitalize, is_builtin_directive, is_native_tag, is_simple_identifier, FxHashSet,
+    String, ToCompactString,
 };
-use vize_croquis::builtins::is_builtin_component;
+use vize_croquis::builtins::{is_builtin_component, is_global_allowed};
 
 /// Result of template analysis
 #[derive(Debug, Clone, Default)]
@@ -138,8 +144,8 @@ fn walk_element(
         // Add both camelCase and PascalCase versions
         let camelized = camelize(tag);
         let capitalized = capitalize(&camelized);
-        result.used_ids.insert(camelized.to_string());
-        result.used_ids.insert(capitalized.to_string());
+        result.used_ids.insert(camelized.to_compact_string());
+        result.used_ids.insert(capitalized.to_compact_string());
     }
 
     // Process props
@@ -153,7 +159,7 @@ fn walk_element(
                 if collect_used_ids && attr.name.as_str() == "ref" {
                     if let Some(ref value) = attr.value {
                         if !value.content.is_empty() {
-                            result.used_ids.insert(value.content.to_string());
+                            result.used_ids.insert(value.content.to_compact_string());
                         }
                     }
                 }
@@ -191,7 +197,7 @@ fn process_directive(
             if let ExpressionNode::Simple(simple_exp) = exp {
                 let exp_string = simple_exp.content.trim();
                 if is_simple_identifier(exp_string) && exp_string != "undefined" {
-                    result.v_model_ids.insert(exp_string.to_string());
+                    result.v_model_ids.insert(exp_string.to_compact_string());
                 }
             }
         }
@@ -227,7 +233,7 @@ fn process_directive(
                 if let ExpressionNode::Simple(simple_arg) = arg {
                     if simple_arg.is_static {
                         let identifier = camelize(simple_arg.content.as_str());
-                        result.used_ids.insert(identifier.to_string());
+                        result.used_ids.insert(identifier.to_compact_string());
                     }
                 }
             }
@@ -253,7 +259,7 @@ fn extract_v_for_source_identifiers(exp: &ExpressionNode, ids: &mut FxHashSet<St
 
         let source_trimmed = source_part.trim();
         if !source_trimmed.is_empty() && is_simple_identifier(source_trimmed) {
-            ids.insert(source_trimmed.to_string());
+            ids.insert(source_trimmed.to_compact_string());
         }
     }
 }
@@ -278,7 +284,7 @@ fn extract_identifiers_from_simple_expression(
     // If the node has pre-parsed identifiers, use them
     if let Some(ref identifiers) = node.identifiers {
         for ident in identifiers.iter() {
-            ids.insert(ident.to_string());
+            ids.insert(ident.to_compact_string());
         }
         return;
     }
@@ -292,8 +298,91 @@ fn extract_identifiers_from_simple_expression(
     // This matches the TypeScript behavior where node.ast === null means simple identifier
     let content = node.content.trim();
     if !content.is_empty() && is_simple_identifier(content) {
-        ids.insert(content.to_string());
+        ids.insert(content.to_compact_string());
+    } else if !content.is_empty() {
+        extract_identifiers_from_js_expression(content, ids);
     }
+}
+
+fn extract_identifiers_from_js_expression(content: &str, ids: &mut FxHashSet<String>) {
+    let allocator = Allocator::default();
+    let source_type = SourceType::default()
+        .with_module(true)
+        .with_typescript(true);
+
+    let mut wrapped = String::with_capacity(content.len() + 2);
+    wrapped.push('(');
+    wrapped.push_str(content);
+    wrapped.push(')');
+
+    let parser = Parser::new(&allocator, &wrapped, source_type);
+    let Ok(expr) = parser.parse_expression() else {
+        return;
+    };
+
+    #[derive(Default)]
+    struct TemplateIdentifierVisitor {
+        ids: FxHashSet<String>,
+        local_scope: FxHashSet<String>,
+    }
+
+    impl TemplateIdentifierVisitor {
+        fn collect_binding_pattern(&mut self, pattern: &oxc_ast_types::BindingPattern<'_>) {
+            match pattern {
+                oxc_ast_types::BindingPattern::BindingIdentifier(id) => {
+                    self.local_scope
+                        .insert(id.name.as_str().to_compact_string());
+                }
+                oxc_ast_types::BindingPattern::ObjectPattern(obj) => {
+                    for prop in obj.properties.iter() {
+                        self.collect_binding_pattern(&prop.value);
+                    }
+                    if let Some(rest) = &obj.rest {
+                        self.collect_binding_pattern(&rest.argument);
+                    }
+                }
+                oxc_ast_types::BindingPattern::ArrayPattern(arr) => {
+                    for elem in arr.elements.iter().flatten() {
+                        self.collect_binding_pattern(elem);
+                    }
+                    if let Some(rest) = &arr.rest {
+                        self.collect_binding_pattern(&rest.argument);
+                    }
+                }
+                oxc_ast_types::BindingPattern::AssignmentPattern(assign) => {
+                    self.collect_binding_pattern(&assign.left);
+                }
+            }
+        }
+    }
+
+    impl<'a> Visit<'a> for TemplateIdentifierVisitor {
+        fn visit_identifier_reference(&mut self, ident: &oxc_ast_types::IdentifierReference<'a>) {
+            let name = ident.name.as_str();
+            if !self.local_scope.contains(name) && !is_global_allowed(name) {
+                self.ids.insert(name.to_compact_string());
+            }
+        }
+
+        fn visit_arrow_function_expression(
+            &mut self,
+            arrow: &oxc_ast_types::ArrowFunctionExpression<'a>,
+        ) {
+            let previous = self.local_scope.clone();
+            for param in &arrow.params.items {
+                self.collect_binding_pattern(&param.pattern);
+            }
+            if let Some(rest) = &arrow.params.rest {
+                self.collect_binding_pattern(&rest.rest.argument);
+            }
+            walk_arrow_function_expression(self, arrow);
+            self.local_scope = previous;
+        }
+    }
+
+    let mut visitor = TemplateIdentifierVisitor::default();
+    visitor.visit_expression(&expr);
+    ids.extend(visitor.ids);
 }
 
 /// Extract identifiers from a compound expression node.
@@ -304,7 +393,7 @@ fn extract_identifiers_from_compound(
     // Use pre-parsed identifiers if available
     if let Some(ref identifiers) = node.identifiers {
         for ident in identifiers.iter() {
-            ids.insert(ident.to_string());
+            ids.insert(ident.to_compact_string());
         }
         return;
     }
@@ -329,7 +418,7 @@ fn extract_identifiers_from_compound(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{is_used_in_template, resolve_template_used_identifiers, TemplateUsedIdentifiers};
     use vize_atelier_core::parser::parse;
     use vize_carton::Bump;
 
@@ -339,100 +428,99 @@ mod tests {
         resolve_template_used_identifiers(&root)
     }
 
+    fn snapshot_identifiers(result: &TemplateUsedIdentifiers) -> (Vec<&str>, Vec<&str>) {
+        let mut used_ids: Vec<_> = result.used_ids.iter().map(|id| id.as_str()).collect();
+        used_ids.sort_unstable();
+
+        let mut v_model_ids: Vec<_> = result.v_model_ids.iter().map(|id| id.as_str()).collect();
+        v_model_ids.sort_unstable();
+
+        (used_ids, v_model_ids)
+    }
+
     #[test]
     fn test_component_usage() {
         let result = analyze_template("<MyComponent />");
-        // camelize("MyComponent") = "MyComponent" (no hyphens to convert)
-        // capitalize("MyComponent") = "MyComponent"
-        assert!(result.used_ids.contains("MyComponent"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_component_usage_kebab() {
         let result = analyze_template("<my-component />");
-        // camelize("my-component") = "myComponent"
-        // capitalize("myComponent") = "MyComponent"
-        assert!(result.used_ids.contains("myComponent"));
-        assert!(result.used_ids.contains("MyComponent"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_component_with_dot() {
         let result = analyze_template("<Foo.Bar />");
-        // Tag is "Foo" (after splitting by dot)
-        // camelize("Foo") = "Foo"
-        // capitalize("Foo") = "Foo"
-        assert!(result.used_ids.contains("Foo"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_interpolation() {
         let result = analyze_template("<div>{{ msg }}</div>");
-        assert!(result.used_ids.contains("msg"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_bind() {
         let result = analyze_template("<div :class=\"classes\"></div>");
-        assert!(result.used_ids.contains("classes"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_on() {
         let result = analyze_template("<div @click=\"handleClick\"></div>");
-        assert!(result.used_ids.contains("handleClick"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_model() {
         let result = analyze_template("<input v-model=\"value\" />");
-        assert!(result.v_model_ids.contains("value"));
-        assert!(result.used_ids.contains("value"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_model_complex() {
         // Complex expressions should not be added to v_model_ids
         let result = analyze_template("<input v-model=\"obj.value\" />");
-        assert!(!result.v_model_ids.contains("obj.value"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_for() {
         let result = analyze_template("<div v-for=\"item in items\">{{ item }}</div>");
-        assert!(result.used_ids.contains("items"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_v_if() {
         let result = analyze_template("<div v-if=\"show\">content</div>");
-        assert!(result.used_ids.contains("show"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_custom_directive() {
         let result = analyze_template("<div v-focus></div>");
-        assert!(result.used_ids.contains("vFocus"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_ref_attribute() {
         let result = analyze_template("<div ref=\"myRef\"></div>");
-        assert!(result.used_ids.contains("myRef"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_native_tag_not_added() {
         let result = analyze_template("<div></div>");
-        assert!(!result.used_ids.contains("div"));
-        assert!(!result.used_ids.contains("Div"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]
     fn test_builtin_directive_not_added() {
         let result = analyze_template("<div v-if=\"show\" v-show=\"visible\"></div>");
-        assert!(!result.used_ids.contains("vIf"));
-        assert!(!result.used_ids.contains("vShow"));
+        insta::assert_debug_snapshot!(snapshot_identifiers(&result));
     }
 
     #[test]

@@ -1,7 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { mergeDefaults as _mergeDefaults } from 'vue'
 import { defineComponent as _defineComponent } from 'vue'

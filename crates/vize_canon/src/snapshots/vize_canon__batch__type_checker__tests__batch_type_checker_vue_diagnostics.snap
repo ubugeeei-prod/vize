@@ -1,0 +1,14 @@
+---
+source: crates/vize_canon/src/batch/type_checker/tests.rs
+expression: snapshot
+---
+[
+    (
+        "declaration",
+        "number",
+    ),
+    (
+        "initializer",
+        "\"oops\"",
+    ),
+]

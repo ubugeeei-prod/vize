@@ -329,7 +329,7 @@ fn is_whitespace_only(bytes: &[u8]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{extract_name_attr_bytes, MuseaLinter};
 
     #[test]
     fn test_lint_valid_art_file() {

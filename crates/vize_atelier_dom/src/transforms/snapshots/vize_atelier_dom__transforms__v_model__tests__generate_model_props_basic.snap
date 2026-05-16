@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_dom/src/transforms/v_model.rs
+expression: props
+---
+[
+    (
+        "value",
+        "modelValue",
+    ),
+    (
+        "onInput",
+        "$event => ((modelValue) = $event.target.value)",
+    ),
+]

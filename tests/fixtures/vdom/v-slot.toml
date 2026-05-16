@@ -107,6 +107,10 @@ name = "slot with v-if"
 input = '<MyComponent><template #header v-if="show">Header</template></MyComponent>'
 
 [[cases]]
+name = "conditional named slot with default"
+input = '<MyComponent>Default content<template #header v-if="show">Header</template></MyComponent>'
+
+[[cases]]
 name = "slot with v-for"
 input = '<MyComponent><template #item v-for="item in items" :key="item.id">{{ item }}</template></MyComponent>'
 

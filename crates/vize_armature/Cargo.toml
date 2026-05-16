@@ -13,3 +13,4 @@ vize_relief = { workspace = true }
 compact_str = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
+htmlize = { workspace = true }

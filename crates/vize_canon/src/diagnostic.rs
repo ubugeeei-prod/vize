@@ -2,6 +2,7 @@
 
 use std::borrow::Cow;
 use vize_carton::i18n::{t, t_fmt, Locale};
+use vize_carton::String;
 
 /// A type diagnostic from the type checker.
 #[derive(Debug, Clone)]
@@ -206,7 +207,7 @@ impl TypeErrorCode {
     /// * `vars` - Variable substitutions (e.g., [("name", "foo")])
     #[inline]
     pub fn help(&self, locale: Locale, vars: &[(&str, &str)]) -> String {
-        t_fmt(locale, self.help_key(), vars)
+        t_fmt(locale, self.help_key(), vars).into()
     }
 
     /// Get localized help text without variable substitution.
@@ -218,7 +219,7 @@ impl TypeErrorCode {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{TypeDiagnostic, TypeErrorCode, TypeSeverity};
 
     #[test]
     fn test_diagnostic_creation() {

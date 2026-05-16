@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_core/src/transform/mod.rs
+expression: result.code.as_str()
+---
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (show)
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, "visible"))
+    : _createCommentVNode("v-if", true)
+}

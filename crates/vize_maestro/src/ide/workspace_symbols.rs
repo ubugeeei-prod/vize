@@ -4,10 +4,16 @@
 //! - Vue components (from file names)
 //! - Script bindings (functions, variables, classes)
 //! - CSS classes and IDs
+#![allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
 
 use tower_lsp::lsp_types::{Location, Position, Range, SymbolInformation, SymbolKind, Url};
 
 use crate::server::ServerState;
+use vize_carton::cstr;
 
 /// Workspace symbols service.
 pub struct WorkspaceSymbolsService;
@@ -69,7 +75,7 @@ impl WorkspaceSymbolsService {
         symbols: &mut Vec<SymbolInformation>,
     ) {
         let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string(),
+            filename: uri.path().to_string().into(),
             ..Default::default()
         };
 
@@ -134,7 +140,7 @@ impl WorkspaceSymbolsService {
                 &style.content,
                 style.loc.start_line as u32,
                 query,
-                Some(&format!("style[{}]", idx)),
+                Some(&cstr!("style[{idx}]")),
                 symbols,
             );
         }
@@ -319,6 +325,7 @@ impl WorkspaceSymbolsService {
             // CSS class selectors
             for class in Self::extract_css_classes(trimmed) {
                 if class.to_lowercase().contains(query) {
+                    #[allow(clippy::disallowed_macros)]
                     symbols.push(Self::create_symbol(
                         format!(".{}", class),
                         SymbolKind::STRING,
@@ -332,6 +339,7 @@ impl WorkspaceSymbolsService {
             // CSS ID selectors
             for id in Self::extract_css_ids(trimmed) {
                 if id.to_lowercase().contains(query) {
+                    #[allow(clippy::disallowed_macros)]
                     symbols.push(Self::create_symbol(
                         format!("#{}", id),
                         SymbolKind::STRING,
@@ -475,7 +483,8 @@ impl WorkspaceSymbolsService {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::WorkspaceSymbolsService;
+    use tower_lsp::lsp_types::SymbolKind;
 
     #[test]
     fn test_to_pascal_case() {

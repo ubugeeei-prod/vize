@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 
 use dashmap::DashMap;
 use serde::Deserialize;
-use vize_carton::{profiler::CacheStats, CompactString, FxHashMap};
+use vize_carton::{cstr, profiler::CacheStats, CompactString, FxHashMap, String, ToCompactString};
 
 /// Resolved module information
 #[derive(Debug, Clone)]
@@ -187,10 +187,11 @@ impl ImportResolver {
         from_file: &Path,
     ) -> Result<ResolvedModule, ImportResolveError> {
         // Create cache key
-        let cache_key = format!("{}:{}", from_file.display(), specifier);
+        #[allow(clippy::disallowed_macros)]
+        let cache_key = format!("{}:{specifier}", from_file.display());
 
         // Check cache first
-        if let Some(cached) = self.cache.get(&cache_key) {
+        if let Some(cached) = self.cache.get(cache_key.as_str()) {
             self.cache_stats.hit();
             return cached.clone();
         }
@@ -201,7 +202,7 @@ impl ImportResolver {
         let result = self.resolve_uncached(specifier, from_file);
 
         // Cache the result
-        self.cache.insert(cache_key, result.clone());
+        self.cache.insert(cache_key.into(), result.clone());
         self.cache_stats.set_entries(self.cache.len() as u64);
 
         result
@@ -216,10 +217,11 @@ impl ImportResolver {
         // Skip node_modules for now (future: support type definitions)
         if specifier.starts_with("node:") || !specifier.contains('/') && !specifier.starts_with('.')
         {
-            return Err(ImportResolveError::NotFound(format!(
-                "Node module resolution not supported: {}",
-                specifier
-            )));
+            return Err(ImportResolveError::NotFound({
+                #[allow(clippy::disallowed_macros)]
+                let s = format!("Node module resolution not supported: {specifier}");
+                s.into()
+            }));
         }
 
         // Try relative resolution
@@ -239,7 +241,7 @@ impl ImportResolver {
             }
         }
 
-        Err(ImportResolveError::NotFound(specifier.to_string()))
+        Err(ImportResolveError::NotFound(specifier.to_compact_string()))
     }
 
     /// Resolve a relative import
@@ -250,7 +252,7 @@ impl ImportResolver {
     ) -> Result<ResolvedModule, ImportResolveError> {
         let from_dir = from_file
             .parent()
-            .ok_or_else(|| ImportResolveError::InvalidSpecifier(specifier.to_string()))?;
+            .ok_or_else(|| ImportResolveError::InvalidSpecifier(specifier.to_compact_string()))?;
 
         let target = from_dir.join(specifier);
         self.try_resolve_file(&target)
@@ -269,7 +271,8 @@ impl ImportResolver {
                     for replacement in replacements {
                         let replacement_prefix = &replacement[..replacement.len() - 1];
                         let base = self.base_url.as_ref().unwrap_or(&self.project_root);
-                        let target = base.join(format!("{}{}", replacement_prefix, suffix));
+                        #[allow(clippy::disallowed_macros)]
+                        let target = base.join(format!("{replacement_prefix}{suffix}"));
                         if let Ok(resolved) = self.try_resolve_file(&target) {
                             return Ok(Some(resolved));
                         }
@@ -318,6 +321,7 @@ impl ImportResolver {
         // Try as directory with index file
         if path.exists() && path.is_dir() {
             for ext in &self.extensions {
+                #[allow(clippy::disallowed_macros)]
                 let index = path.join(format!("index{}", ext));
                 if index.exists() && index.is_file() {
                     return self.create_resolved_module(&index);
@@ -328,6 +332,7 @@ impl ImportResolver {
         // Try path.ts if no extension
         if path.extension().is_none() {
             for ext in &self.extensions {
+                #[allow(clippy::disallowed_macros)]
                 let with_ext = PathBuf::from(format!("{}{}", path.display(), ext));
                 if with_ext.exists() && with_ext.is_file() {
                     return self.create_resolved_module(&with_ext);
@@ -335,14 +340,16 @@ impl ImportResolver {
             }
         }
 
-        Err(ImportResolveError::NotFound(path.display().to_string()))
+        Err(ImportResolveError::NotFound(
+            path.display().to_compact_string(),
+        ))
     }
 
     /// Create a resolved module from a path
     fn create_resolved_module(&self, path: &Path) -> Result<ResolvedModule, ImportResolveError> {
         let canonical = path
             .canonicalize()
-            .map_err(|e| ImportResolveError::ReadError(e.to_string()))?;
+            .map_err(|e| ImportResolveError::ReadError(e.to_compact_string()))?;
 
         let is_type_only = canonical
             .extension()
@@ -363,7 +370,9 @@ impl ImportResolver {
 
     /// Get the content of a resolved module
     pub fn get_content(&self, module: &ResolvedModule) -> Result<String, ImportResolveError> {
-        fs::read_to_string(&module.path).map_err(|e| ImportResolveError::ReadError(e.to_string()))
+        fs::read_to_string(&module.path)
+            .map(|s| s.into())
+            .map_err(|e| ImportResolveError::ReadError(e.to_compact_string()))
     }
 
     /// Extract type definitions from a module's content
@@ -388,7 +397,7 @@ impl ImportResolver {
                 if let (Some(name), Some(body)) = (cap.get(1), cap.get(2)) {
                     definitions.insert(
                         CompactString::new(name.as_str()),
-                        CompactString::new(format!("{{ {} }}", body.as_str().trim())),
+                        cstr!("{{ {} }}", body.as_str().trim()),
                     );
                 }
             }
@@ -450,7 +459,8 @@ impl Default for ImportResolver {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::ImportResolver;
+    use std::fs;
     use tempfile::tempdir;
 
     #[test]

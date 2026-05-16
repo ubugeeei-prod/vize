@@ -83,7 +83,7 @@ impl Rule for ValidAttributeName {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::ValidAttributeName;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

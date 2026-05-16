@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: ts_output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createVNode as _createVNode } from "vue"
+
+import MyComponent from './MyComponent.vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div", { class: "wrapper" }, [ _createVNode(MyComponent, { class: "child" }) ]))
+}
+}
+
+})

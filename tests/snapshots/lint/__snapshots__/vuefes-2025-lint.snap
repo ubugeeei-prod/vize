@@ -1,0 +1,1065 @@
+[
+  {
+    "file": "app/app.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/OgImage/OgDefault.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 17,
+        "column": 7,
+        "endLine": 17,
+        "endColumn": 26,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 61,
+        "column": 7,
+        "endLine": 61,
+        "endColumn": 27,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/OgImage/OgNameBadge.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 75,
+        "column": 7,
+        "endLine": 75,
+        "endColumn": 35,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 102,
+        "column": 9,
+        "endLine": 102,
+        "endColumn": 46,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 161,
+        "column": 9,
+        "endLine": 161,
+        "endColumn": 30,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/OgImage/OgSpeaker.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 50,
+        "column": 7,
+        "endLine": 50,
+        "endColumn": 35,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 65,
+        "column": 7,
+        "endLine": 65,
+        "endColumn": 32,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/OgImage/OgSponsor.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 92,
+        "column": 7,
+        "endLine": 92,
+        "endColumn": 35,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 122,
+        "column": 7,
+        "endLine": 122,
+        "endColumn": 30,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/SponsorGrid.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 42,
+        "column": 16,
+        "endLine": 42,
+        "endColumn": 43,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/button/VFButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/cta/VFCta.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/cta/VFSpCta.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/cta/VFSpCtaMobileButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/footer/VFFooter.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/form/VFFileInput.vue",
+    "messages": [
+      {
+        "ruleId": "vue/v-slot-style",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 51,
+        "column": 14,
+        "endLine": 51,
+        "endColumn": 29,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 56,
+        "column": 26,
+        "endLine": 56,
+        "endColumn": 47,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/form/VFForm.vue",
+    "messages": [
+      {
+        "ruleId": "vue/attribute-order",
+        "severity": 1,
+        "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
+        "line": 57,
+        "column": 5,
+        "endLine": 57,
+        "endColumn": 15,
+        "help": "Reorder attributes to follow the recommended order"
+      },
+      {
+        "ruleId": "vue/v-slot-style",
+        "severity": 1,
+        "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
+        "line": 56,
+        "column": 5,
+        "endLine": 56,
+        "endColumn": 19,
+        "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/form/VFInput.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/form/VFTextarea.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/header/VFHeader.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unused-components",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'AnimationPlay' is registered but never used in template",
+        "line": 23,
+        "column": 11,
+        "endLine": 25,
+        "endColumn": 2,
+        "help": "Remove the unused import or use the component in your template"
+      },
+      {
+        "ruleId": "vue/no-unused-components",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'AnimationPause' is registered but never used in template",
+        "line": 23,
+        "column": 11,
+        "endLine": 25,
+        "endColumn": 3,
+        "help": "Remove the unused import or use the component in your template"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/heading/VFHeading.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/anchor-has-content",
+        "severity": 1,
+        "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
+        "line": 15,
+        "column": 3,
+        "endLine": 15,
+        "endColumn": 48,
+        "help": "Fix options:\n1. Add text content:\n  <a href=\"/about\">About Us</a>\n2. Add aria-label for icon-only links:\n  <a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n  </a>\n3. Include image with alt:\n  <a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 15,
+        "column": 16,
+        "endLine": 15,
+        "endColumn": 32,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/components/mainVisual/MainVisual.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/mainVisual/MainVisualGraphic.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/mainVisual/MainVisualWebGL.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unused-components",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'THREE' is registered but never used in template",
+        "line": 456,
+        "column": 11,
+        "endLine": 457,
+        "endColumn": 5,
+        "help": "Remove the unused import or use the component in your template"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/menu/VFMenu.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/menu/VFMenuItem.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/menu/VFSpMenu.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/menu/VFSpMenuMobileButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/nameBadge/VFNameBadgePreview.vue",
+    "messages": [
+      {
+        "ruleId": "a11y/no-static-element-interactions",
+        "severity": 1,
+        "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
+        "line": 213,
+        "column": 3,
+        "endLine": 218,
+        "endColumn": 5,
+        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 243,
+        "column": 11,
+        "endLine": 243,
+        "endColumn": 39,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 259,
+        "column": 11,
+        "endLine": 259,
+        "endColumn": 70,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/components/scrollAttention/VFScrollAttention.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/components/section/VFSection.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 27,
+        "column": 9,
+        "endLine": 27,
+        "endColumn": 30,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/components/toast/VFToast.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/error.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/layouts/default.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionAccess.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionContact.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionEvent.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionGetYourTicket.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionGranYourGear.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionMessage.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionPhoto.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 25,
+        "column": 11,
+        "endLine": 25,
+        "endColumn": 26,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 39,
+        "column": 11,
+        "endLine": 39,
+        "endColumn": 31,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/_components/SectionSpeaker.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unused-components",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'ColorSetIter' is registered but never used in template",
+        "line": 61,
+        "column": 11,
+        "endLine": 62,
+        "endColumn": 12,
+        "help": "Remove the unused import or use the component in your template"
+      },
+      {
+        "ruleId": "vue/require-scoped-style",
+        "severity": 1,
+        "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
+        "line": 116,
+        "column": 1,
+        "endLine": 116,
+        "endColumn": 8,
+        "help": "Add scoped attribute: <style scoped>"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/_components/SectionSponsorClosed.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionSponsorWanted.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionSponsors.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionStaff.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionStudentSupport.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionTimetable.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/SectionVolunteer.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/StaffGrid.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/_components/StaffGridItem.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 36,
+        "column": 10,
+        "endLine": 36,
+        "endColumn": 26,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 41,
+        "column": 27,
+        "endLine": 41,
+        "endColumn": 43,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/code-of-conduct/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/event/_components/EventSpeakerCard.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 14,
+        "column": 10,
+        "endLine": 14,
+        "endColumn": 34,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/event/index.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 129,
+        "column": 66,
+        "endLine": 129,
+        "endColumn": 81,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 138,
+        "column": 70,
+        "endLine": 138,
+        "endColumn": 85,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/photo/index.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 46,
+        "column": 13,
+        "endLine": 46,
+        "endColumn": 28,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 60,
+        "column": 13,
+        "endLine": 60,
+        "endColumn": 33,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/privacy-policy/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/related-events/index.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 62,
+        "column": 14,
+        "endLine": 62,
+        "endColumn": 35,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/speaker/[speakerId]/index.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 108,
+        "column": 16,
+        "endLine": 108,
+        "endColumn": 47,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+        "line": 115,
+        "column": 11,
+        "endLine": 115,
+        "endColumn": 74,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 144,
+        "column": 15,
+        "endLine": 144,
+        "endColumn": 55,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 152,
+        "column": 15,
+        "endLine": 152,
+        "endColumn": 50,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 160,
+        "column": 15,
+        "endLine": 160,
+        "endColumn": 56,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 185,
+        "column": 15,
+        "endLine": 185,
+        "endColumn": 55,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 193,
+        "column": 15,
+        "endLine": 193,
+        "endColumn": 50,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 201,
+        "column": 15,
+        "endLine": 201,
+        "endColumn": 56,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+        "line": 214,
+        "column": 9,
+        "endLine": 214,
+        "endColumn": 79,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 9
+  },
+  {
+    "file": "app/pages/speaker/_components/SpeakerCard.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 34,
+        "column": 12,
+        "endLine": 34,
+        "endColumn": 36,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/speaker/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/sponsors/[sponsorId]/index.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 101,
+        "column": 18,
+        "endLine": 101,
+        "endColumn": 52,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 136,
+        "column": 18,
+        "endLine": 136,
+        "endColumn": 50,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "html/no-empty-palpable-content",
+        "severity": 1,
+        "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+        "line": 143,
+        "column": 13,
+        "endLine": 143,
+        "endColumn": 73,
+        "help": "Add text content, child elements, or use aria-label for accessible content."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 3
+  },
+  {
+    "file": "app/pages/sponsors/_components/SponsorTag.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/sponsors/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/store/_components/StoreItemCard.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 21,
+        "column": 12,
+        "endLine": 21,
+        "endColumn": 27,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "app/pages/store/_components/StorePreOrderButton.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/store/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/ticket/[userId]/edit/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/ticket/[userId]/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/ticket/index.vue",
+    "messages": [
+      {
+        "ruleId": "ssr/no-hydration-mismatch",
+        "severity": 1,
+        "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
+        "line": 91,
+        "column": 109,
+        "endLine": 91,
+        "endColumn": 178,
+        "help": "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values"
+      },
+      {
+        "ruleId": "ssr/no-hydration-mismatch",
+        "severity": 1,
+        "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
+        "line": 100,
+        "column": 109,
+        "endLine": 100,
+        "endColumn": 181,
+        "help": "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values"
+      },
+      {
+        "ruleId": "ssr/no-hydration-mismatch",
+        "severity": 1,
+        "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
+        "line": 121,
+        "column": 109,
+        "endLine": 121,
+        "endColumn": 181,
+        "help": "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values"
+      },
+      {
+        "ruleId": "ssr/no-hydration-mismatch",
+        "severity": 1,
+        "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
+        "line": 130,
+        "column": 109,
+        "endLine": 130,
+        "endColumn": 184,
+        "help": "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values"
+      },
+      {
+        "ruleId": "ssr/no-hydration-mismatch",
+        "severity": 1,
+        "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
+        "line": 154,
+        "column": 109,
+        "endLine": 154,
+        "endColumn": 167,
+        "help": "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values"
+      },
+      {
+        "ruleId": "ssr/no-hydration-mismatch",
+        "severity": 1,
+        "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
+        "line": 180,
+        "column": 109,
+        "endLine": 180,
+        "endColumn": 170,
+        "help": "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 6
+  },
+  {
+    "file": "app/pages/timetable/_components/TimetableCard.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 91,
+        "column": 24,
+        "endLine": 91,
+        "endColumn": 48,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 106,
+        "column": 39,
+        "endLine": 106,
+        "endColumn": 60,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/timetable/_components/TimetableCell.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 96,
+        "column": 24,
+        "endLine": 96,
+        "endColumn": 48,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 111,
+        "column": 39,
+        "endLine": 111,
+        "endColumn": 60,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/timetable/_components/TimetableHead.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "app/pages/timetable/index.vue",
+    "messages": [
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 122,
+        "column": 9,
+        "endLine": 122,
+        "endColumn": 123,
+        "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
+      },
+      {
+        "ruleId": "vue/no-unsafe-url",
+        "severity": 1,
+        "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
+        "line": 127,
+        "column": 11,
+        "endLine": 127,
+        "endColumn": 118,
+        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  {
+    "file": "app/pages/tokusho/index.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  }
+]

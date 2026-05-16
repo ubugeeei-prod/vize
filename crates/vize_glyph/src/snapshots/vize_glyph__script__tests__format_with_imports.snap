@@ -1,0 +1,5 @@
+---
+source: crates/vize_glyph/src/script.rs
+expression: result.as_str()
+---
+import { ref, computed } from "vue";

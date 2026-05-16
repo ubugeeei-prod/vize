@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+function processData() {
+    const result = __props.data.map(item => {
+        const inner = __props.config.map(c => c.value)
+        return { item, inner }
+    })
+    return result
+}

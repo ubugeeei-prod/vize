@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div><span>label <span> </span></span></div>", true)
+export function render(_ctx) {
+const n1 = t0()
+const n0 = _child(n1)
+const n2 = _next(_child(n0))
+const x2 = _txt(n2)
+_renderEffect(() => _setClass(n2, _ctx.cls))
+_renderEffect(() => _setText(x2, _toDisplayString(_ctx.msg)))
+return n1
+}

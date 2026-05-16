@@ -20,7 +20,7 @@ impl ProviderId {
 }
 
 /// Key used for provide/inject
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ProvideKey {
     /// String key
     String(CompactString),
@@ -244,7 +244,8 @@ impl ProvideInjectTracker {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{InjectPattern, ProvideInjectTracker, ProvideKey};
+    use vize_carton::CompactString;
 
     #[test]
     fn test_provide_inject() {

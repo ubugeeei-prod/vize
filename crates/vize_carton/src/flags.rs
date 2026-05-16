@@ -170,7 +170,7 @@ bitflags! {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{PatchFlags, ShapeFlags, SlotFlags};
 
     #[test]
     fn test_patch_flags() {

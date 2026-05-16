@@ -3,6 +3,7 @@
 //! Handles event modifiers and key modifiers.
 
 use vize_atelier_core::DirectiveNode;
+use vize_carton::cstr;
 use vize_carton::String;
 
 /// Parsed event modifiers
@@ -116,22 +117,23 @@ impl EventModifiers {
 
 /// Generate the runtime guard code for modifiers
 pub fn generate_modifier_guard(modifiers: &EventModifiers) -> String {
-    let mut guards: Vec<std::string::String> = Vec::new();
+    let mut guards: Vec<&str> = Vec::new();
 
     // Propagation guards
     if modifiers.propagation.stop {
-        guards.push("$event.stopPropagation()".to_string());
+        guards.push("$event.stopPropagation()");
     }
     if modifiers.propagation.prevent {
-        guards.push("$event.preventDefault()".to_string());
+        guards.push("$event.preventDefault()");
     }
 
     // Self guard
     if modifiers.self_only {
-        guards.push("if ($event.target !== $event.currentTarget) return".to_string());
+        guards.push("if ($event.target !== $event.currentTarget) return");
     }
 
     // System modifier guards
+    let exact_guard;
     if modifiers.exact {
         let mut exact_checks = Vec::new();
         if !modifiers.system.ctrl {
@@ -147,35 +149,36 @@ pub fn generate_modifier_guard(modifiers: &EventModifiers) -> String {
             exact_checks.push("$event.metaKey");
         }
         if !exact_checks.is_empty() {
-            guards.push(format!("if ({}) return", exact_checks.join(" || ")));
+            exact_guard = cstr!("if ({}) return", exact_checks.join(" || "));
+            guards.push(&exact_guard);
         }
     } else {
         if modifiers.system.ctrl {
-            guards.push("if (!$event.ctrlKey) return".to_string());
+            guards.push("if (!$event.ctrlKey) return");
         }
         if modifiers.system.alt {
-            guards.push("if (!$event.altKey) return".to_string());
+            guards.push("if (!$event.altKey) return");
         }
         if modifiers.system.shift {
-            guards.push("if (!$event.shiftKey) return".to_string());
+            guards.push("if (!$event.shiftKey) return");
         }
         if modifiers.system.meta {
-            guards.push("if (!$event.metaKey) return".to_string());
+            guards.push("if (!$event.metaKey) return");
         }
     }
 
     // Mouse button guards
     if modifiers.mouse.left {
-        guards.push("if ('button' in $event && $event.button !== 0) return".to_string());
+        guards.push("if ('button' in $event && $event.button !== 0) return");
     }
     if modifiers.mouse.middle {
-        guards.push("if ('button' in $event && $event.button !== 1) return".to_string());
+        guards.push("if ('button' in $event && $event.button !== 1) return");
     }
     if modifiers.mouse.right {
-        guards.push("if ('button' in $event && $event.button !== 2) return".to_string());
+        guards.push("if ('button' in $event && $event.button !== 2) return");
     }
 
-    guards.join("; ").into()
+    String::from(guards.join("; "))
 }
 
 /// Get key code for a key alias
@@ -201,22 +204,23 @@ pub fn generate_key_guard(keys: &[String]) -> String {
         return String::default();
     }
 
-    let checks: Vec<std::string::String> = keys
+    let checks: Vec<String> = keys
         .iter()
         .map(|key| {
             let resolved = resolve_key_alias(key.as_str())
-                .map(|k| k.to_string())
-                .unwrap_or_else(|| vize_carton::capitalize(key.as_str()).to_string());
-            format!("$event.key !== \"{}\"", resolved)
+                .map(String::from)
+                .unwrap_or_else(|| vize_carton::capitalize(key.as_str()));
+            cstr!("$event.key !== \"{resolved}\"")
         })
         .collect();
 
-    format!("if ({}) return", checks.join(" && ")).into()
+    cstr!("if ({}) return", checks.join(" && "))
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{generate_key_guard, generate_modifier_guard, resolve_key_alias, EventModifiers};
+    use vize_carton::String;
 
     #[test]
     fn test_parse_modifiers() {
@@ -237,7 +241,7 @@ mod tests {
     fn test_generate_key_guard() {
         let keys = vec![String::from("enter")];
         let guard = generate_key_guard(&keys);
-        assert!(guard.contains("Enter"));
+        insta::assert_snapshot!(guard.as_str());
     }
 
     #[test]
@@ -262,8 +266,7 @@ mod tests {
         mods.propagation.stop = true;
         mods.propagation.prevent = true;
         let guard = generate_modifier_guard(&mods);
-        assert!(guard.contains("stopPropagation"));
-        assert!(guard.contains("preventDefault"));
+        insta::assert_snapshot!(guard.as_str());
     }
 
     #[test]
@@ -271,7 +274,7 @@ mod tests {
         let mut mods = EventModifiers::default();
         mods.self_only = true;
         let guard = generate_modifier_guard(&mods);
-        assert!(guard.contains("$event.target !== $event.currentTarget"));
+        insta::assert_snapshot!(guard.as_str());
     }
 
     #[test]
@@ -279,10 +282,7 @@ mod tests {
         let mut mods = EventModifiers::default();
         mods.exact = true;
         let guard = generate_modifier_guard(&mods);
-        assert!(guard.contains("ctrlKey"));
-        assert!(guard.contains("altKey"));
-        assert!(guard.contains("shiftKey"));
-        assert!(guard.contains("metaKey"));
+        insta::assert_snapshot!(guard.as_str());
     }
 
     #[test]
@@ -296,7 +296,6 @@ mod tests {
     fn test_generate_key_guard_multiple() {
         let keys = vec![String::from("enter"), String::from("space")];
         let guard = generate_key_guard(&keys);
-        assert!(guard.contains("Enter"));
-        assert!(guard.contains("\" \""));
+        insta::assert_snapshot!(guard.as_str());
     }
 }

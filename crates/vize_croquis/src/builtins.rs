@@ -194,7 +194,10 @@ pub fn is_global_allowed(name: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        is_builtin_component, is_event_local, is_global_allowed, is_js_global, is_render_local,
+        is_vue_builtin,
+    };
 
     #[test]
     fn test_js_globals() {

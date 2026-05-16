@@ -78,7 +78,7 @@ impl Rule for InteractiveSupportsFocus {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::InteractiveSupportsFocus;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

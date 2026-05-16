@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+const greeting = `Hello ${__props.name}, you are ${__props.age} years old`

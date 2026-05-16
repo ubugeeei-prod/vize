@@ -1,7 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { useModel as _useModel } from 'vue'
 import { defineComponent as _defineComponent } from 'vue'
@@ -12,7 +11,7 @@ export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
     "modelValue": { type: Number, default: 0 },
-    "modelModifiers": {}
+    "modelModifiers": {},
   },
   emits: ["update:modelValue"],
   setup(__props) {
@@ -20,7 +19,10 @@ export default /*@__PURE__*/_defineComponent({
 const count = _useModel(__props, "modelValue")
 
 return (_ctx: any,_cache: any) => {
-  return _withDirectives((_openBlock(), _createElementBlock("input", { "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((count).value = $event)), type: "number" }, null, 512 /* NEED_PATCH */)), [ [_vModelText, count.value] ])
+  return _withDirectives((_openBlock(), _createElementBlock("input", {
+      "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event: any) => ((count).value = $event)),
+      type: "number"
+    }, null, 512 /* NEED_PATCH */)), [ [_vModelText, count.value] ])
 }
 }
 

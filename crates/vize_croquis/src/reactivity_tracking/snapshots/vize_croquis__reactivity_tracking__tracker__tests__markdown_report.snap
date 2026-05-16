@@ -1,0 +1,16 @@
+---
+source: crates/vize_croquis/src/reactivity_tracking/tracker.rs
+expression: md.as_str()
+---
+# Reactivity Analysis Report
+
+## Summary
+
+- **Tracked Bindings**: 1
+- **Violations**: 0 errors, 0 warnings, 0 info
+
+## Tracked Reactive Bindings
+
+| Name | Origin | State | Scope |
+|------|--------|-------|-------|
+| `state` | Reactive | ✓ Active | 1 |

@@ -79,7 +79,7 @@ impl Rule for A11yImgAlt {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::A11yImgAlt;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -115,6 +115,6 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<img src="/photo.jpg" />"#, "test.vue");
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("alt"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 }

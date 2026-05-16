@@ -1,0 +1,8 @@
+---
+source: crates/vize_musea/src/transform/to_csf.rs
+expression: csf
+---
+CsfOutput {
+    code: "import type { Meta, StoryObj } from '@storybook/vue3';\nimport Component from './Button.vue';\n\nconst meta: Meta<typeof Component> = {\n  title: 'Button',\n  component: Component,\n  tags: ['autodocs'],\n};\n\nexport default meta;\ntype Story = StoryObj<typeof meta>;\n\nexport const Primary: Story = {\n  render: (args) => ({\n    components: { Component },\n    setup() {\n      return { args };\n    },\n    template: `<Button variant=\"primary\">Click me</Button>`,\n  }),\n  parameters: {\n    docs: {\n      canvas: { sourceState: 'shown' },\n    },\n  },\n};\n\n",
+    filename: ".stories.ts",
+}

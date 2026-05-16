@@ -36,9 +36,13 @@
 //!
 //! Variables starting with `_` are ignored by default (e.g., `_unused`).
 
+#![allow(clippy::disallowed_macros)]
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::String;
+use vize_carton::ToCompactString;
 use vize_croquis::UnusedVarContext;
 use vize_relief::ast::RootNode;
 
@@ -59,7 +63,7 @@ pub struct NoUnusedVars {
 impl Default for NoUnusedVars {
     fn default() -> Self {
         Self {
-            ignore_pattern: Some("^_".to_string()),
+            ignore_pattern: Some("^_".to_compact_string()),
         }
     }
 }
@@ -152,7 +156,8 @@ impl Rule for NoUnusedVars {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoUnusedVars;
+    use crate::rule::{Rule, RuleCategory};
 
     #[test]
     fn test_meta() {

@@ -81,7 +81,7 @@ fn extract_name_attr(tag: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{extract_name_attr, MuseaLintResult, MuseaRule, UniqueVariantNames};
 
     #[test]
     fn test_unique_names() {

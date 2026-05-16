@@ -2,6 +2,9 @@
 
 Vue Language Support powered by Vize - A high-performance language server for Vue SFC.
 
+> For day-to-day Vue editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.
+> This extension is still experimental and should be evaluated separately from your primary editor setup.
+
 ## Features
 
 - **Diagnostics** - Real-time error detection
@@ -15,43 +18,64 @@ Vue Language Support powered by Vize - A high-performance language server for Vu
 
 ## Installation
 
-### From VS Code Marketplace
-
-Search "Vize" in VS Code Extensions.
+The extension is not published to the VS Code Marketplace yet. Use a locally built VSIX while the
+editor package stabilizes.
 
 ### From VSIX
 
 ```bash
-code --install-extension vize-0.0.1-alpha.84.vsix
+code --install-extension dist/vize.vsix
 ```
 
 ### Development
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then:
+
 ```bash
 cd npm/vscode-vize
-pnpm install
-pnpm run build
+vp install --ignore-workspace
+vp build
+vp exec vsce package --no-dependencies --out dist/vize.vsix
 # Press F5 to launch Extension Development Host
 ```
 
 ## Requirements
 
 - VS Code 1.75+
-- `vize` CLI installed (`cargo install vize`)
+- `vize` CLI installed (`cargo install vize`) unless you are using a build that bundles the server binary
 
 ## Configuration
+
+Opening a Vue file now prompts you to apply a recommended workspace setup if the extension is still disabled or if no Vize capabilities are enabled yet.
+That quick setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, and `vize.editor.enable` for the current workspace so diagnostics, hover, and jump work immediately.
+
+If you dismissed that prompt and want a lighter rollout, start with lint-only mode, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
 
 ```json
 {
   "vize.enable": true,
-  "vize.serverPath": "",
-  "vize.trace.server": "off",
-  "vize.diagnostics.enable": true,
-  "vize.completion.enable": true,
-  "vize.hover.enable": true,
-  "vize.codeLens.enable": true
+  "vize.lint.enable": true,
+  "vize.typecheck.enable": false,
+  "vize.editor.enable": false,
+  "vize.formatting.enable": false
 }
 ```
+
+When you are ready to evaluate Vize editor assistance separately from `vuejs/language-tools`, use:
+
+```json
+{
+  "vize.enable": true,
+  "vize.lint.enable": true,
+  "vize.typecheck.enable": true,
+  "vize.definition.enable": true,
+  "vize.references.enable": true,
+  "vize.hover.enable": true
+}
+```
+
+When paired with the `Vize Art` extension, the same editor capabilities also apply to `*.art.vue`
+documents.
 
 ## Commands
 

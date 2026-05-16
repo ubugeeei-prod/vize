@@ -1,0 +1,14 @@
+---
+source: crates/vize_croquis/src/scope/chain/chain_tests.rs
+assertion_line: 853
+expression: output
+---
+=== Scope Transitions ===
+
+[initial] current=JsGlobalUniversal
+[enter script_setup] current=ScriptSetup
+[enter v_for] current=VFor
+[enter v_slot] current=VSlot
+[exit v_slot] current=VFor
+[exit v_for] current=ScriptSetup
+[exit script_setup] current=JsGlobalUniversal

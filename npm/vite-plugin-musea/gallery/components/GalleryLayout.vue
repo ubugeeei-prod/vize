@@ -1,58 +1,97 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { mdiMagnify, mdiWeatherSunny, mdiWeatherNight, mdiThemeLightDark } from '@mdi/js'
-import { useArts } from '../composables/useArts'
-import { useSearch } from '../composables/useSearch'
-import { useTheme } from '../composables/useTheme'
-import SearchBar from './SearchBar.vue'
-import Sidebar from './Sidebar.vue'
-import SearchModal from './SearchModal.vue'
-import MdiIcon from './MdiIcon.vue'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import {
+  mdiMagnify,
+  mdiWeatherSunny,
+  mdiWeatherNight,
+  mdiThemeLightDark,
+  mdiChevronLeft,
+  mdiChevronRight,
+} from "@mdi/js";
+import { useArts } from "../composables/useArts";
+import { useSearch } from "../composables/useSearch";
+import { useTheme } from "../composables/useTheme";
+import SearchBar from "./SearchBar.vue";
+import Sidebar from "./Sidebar.vue";
+import SearchModal from "./SearchModal.vue";
+import MdiIcon from "./MdiIcon.vue";
+import { useResizable } from "../composables/useResizable";
 
-const router = useRouter()
-const { arts, load } = useArts()
-const { query, results } = useSearch(arts)
-const { currentTheme, cycleTheme } = useTheme()
+const router = useRouter();
+const { arts, load } = useArts();
+const { query, results } = useSearch(arts);
+const { currentTheme, cycleTheme } = useTheme();
 
-const searchModalOpen = ref(false)
+const searchModalOpen = ref(false);
+const sidebarCollapsed = ref(false);
+const sidebarWidth = useResizable({
+  direction: "horizontal",
+  minSize: 200,
+  maxSize: () => Math.max(240, window.innerWidth - 320),
+  storageKey: "musea-sidebar-width",
+  defaultSize: 240,
+  documentClass: "musea-sidebar-resizing",
+});
+
+const mainStyle = computed(() => ({
+  "--musea-sidebar-width": `${sidebarWidth.size.value}px`,
+}));
+
+const sidebarStyle = computed(() => ({
+  width: sidebarCollapsed.value ? "40px" : `${sidebarWidth.size.value}px`,
+}));
+
+function toggleSidebar() {
+  sidebarCollapsed.value = !sidebarCollapsed.value;
+}
 
 const themeIcon = computed(() => {
   switch (currentTheme.value) {
-    case 'light': return mdiWeatherSunny
-    case 'system': return mdiThemeLightDark
-    default: return mdiWeatherNight
+    case "dark":
+      return mdiWeatherNight;
+    case "system":
+      return mdiThemeLightDark;
+    default:
+      return mdiWeatherSunny;
   }
-})
+});
 
 const themeLabel = computed(() => {
   switch (currentTheme.value) {
-    case 'light': return 'Light'
-    case 'system': return 'System'
-    default: return 'Dark'
+    case "dark":
+      return "Dark";
+    case "system":
+      return "System";
+    default:
+      return "Light";
   }
-})
+});
 
-// Global keyboard shortcut for Cmd+K / Ctrl+K
+// Global keyboard shortcuts
 const handleKeydown = (e: KeyboardEvent) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault()
-    searchModalOpen.value = !searchModalOpen.value
+  if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    e.preventDefault();
+    searchModalOpen.value = !searchModalOpen.value;
   }
-}
+  if ((e.metaKey || e.ctrlKey) && e.key === "b") {
+    e.preventDefault();
+    toggleSidebar();
+  }
+};
 
 onMounted(() => {
-  load()
-  document.addEventListener('keydown', handleKeydown)
-})
+  load();
+  document.addEventListener("keydown", handleKeydown);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown)
-})
+  document.removeEventListener("keydown", handleKeydown);
+});
 
 const handleSearchSelect = (art: { path: string }, variantName?: string) => {
-  router.push({ name: 'component', params: { path: art.path } })
-}
+  router.push({ name: "component", params: { path: art.path } });
+};
 </script>
 
 <template>
@@ -60,32 +99,17 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
     <header class="header">
       <div class="header-left">
         <router-link to="/" class="logo">
-          <svg class="logo-svg" width="32" height="32" viewBox="0 0 200 200" fill="none">
-            <defs>
-              <linearGradient id="metal-grad" x1="0%" y1="0%" x2="100%" y2="20%">
-                <stop offset="0%" stop-color="#f0f2f5" />
-                <stop offset="50%" stop-color="#9ca3b0" />
-                <stop offset="100%" stop-color="#e07048" />
-              </linearGradient>
-              <linearGradient id="metal-grad-dark" x1="0%" y1="0%" x2="100%" y2="30%">
-                <stop offset="0%" stop-color="#d0d4dc" />
-                <stop offset="60%" stop-color="#6b7280" />
-                <stop offset="100%" stop-color="#c45530" />
-              </linearGradient>
-            </defs>
-            <g transform="translate(40, 40)">
-              <g transform="skewX(-12)">
-                <path d="M 100 0 L 60 120 L 105 30 L 100 0 Z" fill="url(#metal-grad-dark)" stroke="#4b5563" stroke-width="0.5" />
-                <path d="M 30 0 L 60 120 L 80 20 L 30 0 Z" fill="url(#metal-grad)" stroke-width="0.5" stroke-opacity="0.4" />
+          <svg class="logo-svg" viewBox="232 24 300 210" fill="none" aria-hidden="true">
+            <g transform="translate(180, 50)">
+              <g transform="translate(180, 80) skewX(-20)">
+                <rect x="0" y="0" width="150" height="4" rx="2" fill="currentColor" />
+                <rect x="20" y="25" width="100" height="3" rx="1.5" fill="currentColor" />
+                <rect x="10" y="-25" width="80" height="2" rx="1" fill="currentColor" />
               </g>
-            </g>
-            <g transform="translate(110, 120)">
-              <line x1="5" y1="10" x2="5" y2="50" stroke="#e07048" stroke-width="3" stroke-linecap="round" />
-              <line x1="60" y1="10" x2="60" y2="50" stroke="#e07048" stroke-width="3" stroke-linecap="round" />
-              <path d="M 0 10 L 32.5 0 L 65 10" fill="none" stroke="#e07048" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-              <rect x="15" y="18" width="14" height="12" rx="1" fill="none" stroke="#e07048" stroke-width="1.5" opacity="0.7" />
-              <rect x="36" y="18" width="14" height="12" rx="1" fill="none" stroke="#e07048" stroke-width="1.5" opacity="0.7" />
-              <rect x="23" y="35" width="18" height="12" rx="1" fill="none" stroke="#e07048" stroke-width="1.5" opacity="0.6" />
+              <g transform="skewX(-15)">
+                <path d="M 200 0 L 120 180 L 210 60 L 200 0 Z" fill="currentColor" />
+                <path d="M 60 0 L 120 180 L 160 40 L 60 0 Z" fill="currentColor" />
+              </g>
             </g>
           </svg>
           Musea
@@ -94,7 +118,7 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
       </div>
 
       <div class="header-center">
-        <button class="search-trigger" @click="searchModalOpen = true">
+        <button type="button" class="search-trigger" @click="searchModalOpen = true">
           <MdiIcon class="search-icon" :path="mdiMagnify" :size="16" />
           <span>Search components...</span>
           <kbd>⌘K</kbd>
@@ -102,15 +126,36 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
       </div>
 
       <div class="header-right">
-        <button class="theme-toggle" :title="`Theme: ${themeLabel}`" @click="cycleTheme">
+        <button
+          type="button"
+          class="theme-toggle"
+          :title="`Theme: ${themeLabel}`"
+          @click="cycleTheme"
+        >
           <MdiIcon :path="themeIcon" :size="18" />
         </button>
       </div>
     </header>
 
-    <main class="main">
+    <main class="main" :class="{ 'sidebar-collapsed': sidebarCollapsed }" :style="mainStyle">
       <!-- Sidebar -->
-      <Sidebar :arts="results" />
+      <aside class="sidebar-wrapper" :class="{ collapsed: sidebarCollapsed }" :style="sidebarStyle">
+        <Sidebar v-show="!sidebarCollapsed" :arts="results" />
+        <div
+          v-if="!sidebarCollapsed"
+          class="sidebar-resize-handle"
+          title="Resize sidebar"
+          @pointerdown.stop.prevent="sidebarWidth.onPointerDown"
+        />
+        <button
+          type="button"
+          class="sidebar-toggle"
+          :title="sidebarCollapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'"
+          @click="toggleSidebar"
+        >
+          <MdiIcon :path="sidebarCollapsed ? mdiChevronRight : mdiChevronLeft" :size="16" />
+        </button>
+      </aside>
 
       <!-- Main Content -->
       <section class="content">
@@ -130,7 +175,7 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
 
 <style scoped>
 .gallery-layout {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -172,8 +217,8 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
 }
 
 .logo-svg {
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 29px;
   flex-shrink: 0;
 }
 
@@ -250,30 +295,106 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
 }
 
 .main {
-  display: grid;
-  grid-template-columns: var(--musea-sidebar-width) 1fr;
+  display: flex;
   flex: 1;
   overflow: hidden;
   height: calc(100vh - var(--musea-header-height));
+  min-height: 0;
 }
 
-.main > :first-child {
+.sidebar-wrapper {
+  flex: 0 0 auto;
   height: 100%;
   max-height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--musea-bg-secondary);
+  border-right: 1px solid var(--musea-border);
+  min-width: 0;
+}
+
+.sidebar-wrapper.collapsed {
+  overflow: hidden;
+}
+
+.sidebar-wrapper :deep(.sidebar) {
+  border-right: none;
+}
+
+.sidebar-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 20;
+  touch-action: none;
+}
+
+.sidebar-resize-handle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background-color var(--musea-transition);
+}
+
+.sidebar-wrapper:hover .sidebar-resize-handle::before,
+.sidebar-resize-handle:hover::before {
+  background: color-mix(in srgb, var(--musea-border) 78%, transparent);
+}
+
+.sidebar-toggle {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--musea-bg-tertiary);
+  border: 1px solid var(--musea-border);
+  border-radius: var(--musea-radius-sm);
+  color: var(--musea-text-muted);
+  cursor: pointer;
+  transition: all var(--musea-transition);
+  z-index: 10;
+}
+
+.sidebar-wrapper.collapsed .sidebar-toggle {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.sidebar-toggle:hover {
+  background: var(--musea-bg-elevated);
+  color: var(--musea-text);
+  border-color: var(--musea-text-muted);
 }
 
 .content {
   background: var(--musea-bg-primary);
   overflow-y: auto;
   height: calc(100vh - var(--musea-header-height));
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 @media (max-width: 768px) {
   .main {
     grid-template-columns: 1fr !important;
   }
-  .main > :first-child {
+  .sidebar-wrapper {
     display: none;
   }
   .header-subtitle {

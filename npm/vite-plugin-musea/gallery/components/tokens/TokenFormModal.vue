@@ -1,104 +1,123 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
-import type { DesignToken } from '../../api'
+import { ref, computed, watch, nextTick } from "vue";
+import type { DesignToken } from "../../api";
 
 const props = defineProps<{
-  isOpen: boolean
-  mode: 'create' | 'edit'
-  editPath?: string
-  editToken?: DesignToken
-  primitiveTokenPaths: string[]
-  referenceableTokenPaths: string[]
-  existingPaths: string[]
-}>()
+  isOpen: boolean;
+  mode: "create" | "edit";
+  editPath?: string;
+  editToken?: DesignToken;
+  primitiveTokenPaths: string[];
+  referenceableTokenPaths: string[];
+  existingPaths: string[];
+}>();
 
 const emit = defineEmits<{
-  close: []
-  submit: [path: string, token: Omit<DesignToken, '$resolvedValue'>]
-}>()
+  close: [];
+  submit: [path: string, token: Omit<DesignToken, "$resolvedValue">];
+}>();
 
-const tokenPath = ref('')
-const tokenValue = ref<string>('')
-const tokenType = ref('')
-const tokenDescription = ref('')
-const tier = ref<'primitive' | 'semantic' | 'component'>('primitive')
-const reference = ref('')
-const validationError = ref<string | null>(null)
+const tokenPath = ref("");
+const tokenValue = ref<string>("");
+const tokenType = ref("");
+const tokenDescription = ref("");
+const tier = ref<"primitive" | "semantic" | "component">("primitive");
+const reference = ref("");
+const validationError = ref<string | null>(null);
 
-const TOKEN_TYPES = ['color', 'dimension', 'spacing', 'fontSize', 'fontWeight', 'lineHeight', 'shadow', 'borderRadius', 'opacity', 'string', 'number']
+const TOKEN_TYPES = [
+  "color",
+  "dimension",
+  "spacing",
+  "fontSize",
+  "fontWeight",
+  "lineHeight",
+  "shadow",
+  "borderRadius",
+  "opacity",
+  "string",
+  "number",
+];
 
-watch(() => props.isOpen, (open) => {
-  if (open) {
-    if (props.mode === 'edit' && props.editToken && props.editPath) {
-      tokenPath.value = props.editPath
-      tokenValue.value = String(props.editToken.value)
-      tokenType.value = props.editToken.type ?? ''
-      tokenDescription.value = props.editToken.description ?? ''
-      tier.value = props.editToken.$tier ?? 'primitive'
-      reference.value = props.editToken.$reference ?? ''
-    } else {
-      tokenPath.value = ''
-      tokenValue.value = ''
-      tokenType.value = ''
-      tokenDescription.value = ''
-      tier.value = 'primitive'
-      reference.value = ''
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      if (props.mode === "edit" && props.editToken && props.editPath) {
+        tokenPath.value = props.editPath;
+        tokenValue.value = String(props.editToken.value);
+        tokenType.value = props.editToken.type ?? "";
+        tokenDescription.value = props.editToken.description ?? "";
+        tier.value = props.editToken.$tier ?? "primitive";
+        reference.value = props.editToken.$reference ?? "";
+      } else {
+        tokenPath.value = "";
+        tokenValue.value = "";
+        tokenType.value = "";
+        tokenDescription.value = "";
+        tier.value = "primitive";
+        reference.value = "";
+      }
+      validationError.value = null;
+      nextTick(() => {
+        const input = document.querySelector(".token-form-path-input") as HTMLInputElement | null;
+        input?.focus();
+      });
     }
-    validationError.value = null
-    nextTick(() => {
-      const input = document.querySelector('.token-form-path-input') as HTMLInputElement | null
-      input?.focus()
-    })
-  }
-})
+  },
+);
 
 const referenceOptions = computed(() => {
-  const paths = tier.value === 'component' ? props.referenceableTokenPaths : props.primitiveTokenPaths
-  if (!reference.value) return paths
-  const q = reference.value.toLowerCase()
-  return paths.filter(p => p.toLowerCase().includes(q))
-})
+  const paths =
+    tier.value === "component" ? props.referenceableTokenPaths : props.primitiveTokenPaths;
+  if (!reference.value) return paths;
+  const q = reference.value.toLowerCase();
+  return paths.filter((p) => p.toLowerCase().includes(q));
+});
 
-const title = computed(() => props.mode === 'create' ? 'Add Token' : 'Edit Token')
+const title = computed(() => (props.mode === "create" ? "Add Token" : "Edit Token"));
 
 function validate(): boolean {
   if (!tokenPath.value.trim()) {
-    validationError.value = 'Token path is required'
-    return false
+    validationError.value = "Token path is required";
+    return false;
   }
-  if (props.mode === 'create' && props.existingPaths.includes(tokenPath.value)) {
-    validationError.value = 'A token already exists at this path'
-    return false
+  if (props.mode === "create" && props.existingPaths.includes(tokenPath.value)) {
+    validationError.value = "A token already exists at this path";
+    return false;
   }
-  if ((tier.value === 'semantic' || tier.value === 'component') && !reference.value.trim()) {
-    validationError.value = tier.value === 'component' ? 'Component tokens require a reference' : 'Semantic tokens require a reference'
-    return false
+  if ((tier.value === "semantic" || tier.value === "component") && !reference.value.trim()) {
+    validationError.value =
+      tier.value === "component"
+        ? "Component tokens require a reference"
+        : "Semantic tokens require a reference";
+    return false;
   }
-  if (tier.value === 'primitive' && !tokenValue.value.trim()) {
-    validationError.value = 'Token value is required'
-    return false
+  if (tier.value === "primitive" && !tokenValue.value.trim()) {
+    validationError.value = "Token value is required";
+    return false;
   }
-  validationError.value = null
-  return true
+  validationError.value = null;
+  return true;
 }
 
 function handleSubmit() {
-  if (!validate()) return
+  if (!validate()) return;
 
-  const isRef = tier.value === 'semantic' || tier.value === 'component'
-  const token: Omit<DesignToken, '$resolvedValue'> = {
-    value: isRef ? `{${reference.value}}` : tokenValue.value,
+  const isReferenceToken = tier.value === "semantic" || tier.value === "component";
+  const token: Omit<DesignToken, "$resolvedValue"> = {
+    value: isReferenceToken ? `{${reference.value}}` : tokenValue.value,
     $tier: tier.value,
-  }
-  if (tokenType.value) token.type = tokenType.value
-  if (tokenDescription.value) token.description = tokenDescription.value
-  if (isRef) token.$reference = reference.value
+  };
+  if (tokenType.value) token.type = tokenType.value;
+  if (tokenDescription.value) token.description = tokenDescription.value;
+  if (isReferenceToken) token.$reference = reference.value;
 
-  emit('submit', tokenPath.value, token)
+  emit("submit", tokenPath.value, token);
 }
 
 function selectReference(path: string) {
-  reference.value = path
+  reference.value = path;
 }
 </script>
 
@@ -109,8 +128,15 @@ function selectReference(path: string) {
         <div class="modal-content">
           <div class="modal-header">
             <h2 class="modal-title">{{ title }}</h2>
-            <button class="modal-close" @click="emit('close')">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button type="button" class="modal-close" @click="emit('close')">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -125,22 +151,22 @@ function selectReference(path: string) {
                 class="form-input token-form-path-input"
                 :disabled="mode === 'edit'"
                 placeholder="e.g. color.primary.500"
-              >
+              />
             </div>
 
             <div class="form-field">
               <label class="form-label">Tier</label>
               <div class="tier-radio-group">
                 <label class="tier-radio" :class="{ 'tier-radio--active': tier === 'primitive' }">
-                  <input v-model="tier" type="radio" value="primitive" class="tier-radio-input">
+                  <input v-model="tier" type="radio" value="primitive" class="tier-radio-input" />
                   <span class="tier-radio-label">Primitive</span>
                 </label>
                 <label class="tier-radio" :class="{ 'tier-radio--active': tier === 'semantic' }">
-                  <input v-model="tier" type="radio" value="semantic" class="tier-radio-input">
+                  <input v-model="tier" type="radio" value="semantic" class="tier-radio-input" />
                   <span class="tier-radio-label">Semantic</span>
                 </label>
                 <label class="tier-radio" :class="{ 'tier-radio--active': tier === 'component' }">
-                  <input v-model="tier" type="radio" value="component" class="tier-radio-input">
+                  <input v-model="tier" type="radio" value="component" class="tier-radio-input" />
                   <span class="tier-radio-label">Component</span>
                 </label>
               </div>
@@ -153,7 +179,7 @@ function selectReference(path: string) {
                   v-model="tokenValue"
                   class="form-input"
                   placeholder="e.g. #3b82f6, 16px, 400"
-                >
+                />
               </div>
             </template>
 
@@ -163,8 +189,10 @@ function selectReference(path: string) {
                 <input
                   v-model="reference"
                   class="form-input"
-                  :placeholder="tier === 'component' ? 'e.g. color.primary' : 'e.g. color.blue.500'"
-                >
+                  :placeholder="
+                    tier === 'component' ? 'e.g. color.primary' : 'e.g. color.blue.500'
+                  "
+                />
                 <div v-if="referenceOptions.length > 0" class="reference-list">
                   <button
                     v-for="opt in referenceOptions.slice(0, 8)"
@@ -194,7 +222,7 @@ function selectReference(path: string) {
                 v-model="tokenDescription"
                 class="form-input"
                 placeholder="Optional description"
-              >
+              />
             </div>
 
             <div v-if="validationError" class="form-error">
@@ -202,9 +230,11 @@ function selectReference(path: string) {
             </div>
 
             <div class="modal-footer">
-              <button type="button" class="btn btn--secondary" @click="emit('close')">Cancel</button>
+              <button type="button" class="btn btn--secondary" @click="emit('close')">
+                Cancel
+              </button>
               <button type="submit" class="btn btn--primary">
-                {{ mode === 'create' ? 'Create' : 'Save' }}
+                {{ mode === "create" ? "Create" : "Save" }}
               </button>
             </div>
           </form>
@@ -222,7 +252,7 @@ function selectReference(path: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.92);
+  background: var(--musea-overlay);
   backdrop-filter: blur(4px);
 }
 
@@ -235,7 +265,7 @@ function selectReference(path: string) {
   max-height: 85vh;
   overflow-y: auto;
   padding: 1.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--musea-shadow);
 }
 
 .modal-header {
@@ -414,7 +444,7 @@ function selectReference(path: string) {
 
 .btn--primary {
   background: var(--musea-accent);
-  color: #fff;
+  color: var(--musea-accent-contrast);
 }
 
 .btn--primary:hover {

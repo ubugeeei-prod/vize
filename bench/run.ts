@@ -5,21 +5,15 @@
  *
  * Usage:
  *   1. Generate test files: node generate.mjs [count]
- *   2. Build native bindings: mise run build
- *   3. Run benchmark: node --experimental-strip-types run.ts
+ *   2. Build native bindings: vp run --filter './npm/vize-native' build
+ *   3. Run benchmark: node run.ts
  */
 
 import { parse, compileScript, compileTemplate } from "@vue/compiler-sfc";
 import type { BindingMetadata } from "@vue/compiler-sfc";
-import {
-  existsSync,
-  readdirSync,
-  readFileSync,
-  writeFileSync,
-  mkdirSync,
-} from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join, basename } from "node:path";
+import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import { Worker } from "node:worker_threads";
 import os from "node:os";
@@ -33,16 +27,14 @@ const ORIGINAL_OUT_DIR = join(OUTPUT_DIR, "original");
 const NATIVE_OUT_DIR = join(OUTPUT_DIR, "native");
 const CPU_COUNT = os.cpus().length;
 const FILE_LIMIT = parseInt(process.argv[2] || "0", 10) || Infinity;
+const SAVE_OUTPUT = process.env.VIZE_BENCH_SAVE_OUTPUT === "1";
 
 // Types
 interface NativeBindings {
-  compileSfc: (
-    source: string,
-    options: { filename: string }
-  ) => { code: string };
+  compileSfc: (source: string, options: { filename: string }) => { code: string };
   compileSfcBatch: (
     pattern: string,
-    options?: { ssr?: boolean; threads?: number }
+    options?: { ssr?: boolean; threads?: number },
   ) => {
     success: number;
     failed: number;
@@ -57,14 +49,10 @@ interface TestFile {
   source: string;
 }
 
-interface CompileResult {
-  filename: string;
-  code: string;
-}
-
 // Load Native (NAPI) bindings
 let native: NativeBindings | null = null;
 const nativePath = join(__dirname, "..", "npm", "vize-native");
+const compilerSfcPath = require.resolve("@vue/compiler-sfc");
 if (existsSync(nativePath)) {
   try {
     native = require(nativePath) as NativeBindings;
@@ -76,7 +64,7 @@ if (existsSync(nativePath)) {
 // Check input files exist
 if (!existsSync(INPUT_DIR)) {
   console.error(
-    `Error: Input directory not found: ${INPUT_DIR}\nRun 'node generate.mjs' first to create test files.`
+    `Error: Input directory not found: ${INPUT_DIR}\nRun 'node generate.mjs' first to create test files.`,
   );
   process.exit(1);
 }
@@ -86,7 +74,7 @@ const vueFiles = readdirSync(INPUT_DIR)
   .slice(0, FILE_LIMIT);
 if (vueFiles.length === 0) {
   console.error(
-    `Error: No .vue files found in ${INPUT_DIR}\nRun 'node generate.mjs' first to create test files.`
+    `Error: No .vue files found in ${INPUT_DIR}\nRun 'node generate.mjs' first to create test files.`,
   );
   process.exit(1);
 }
@@ -97,14 +85,12 @@ const files: TestFile[] = vueFiles.map((filename) => ({
   source: readFileSync(join(INPUT_DIR, filename), "utf-8"),
 }));
 
-const totalSize = files.reduce(
-  (sum, f) => sum + Buffer.byteLength(f.source, "utf8"),
-  0
-);
+const totalSize = files.reduce((sum, f) => sum + Buffer.byteLength(f.source, "utf8"), 0);
 
-// Ensure output directories exist
-mkdirSync(ORIGINAL_OUT_DIR, { recursive: true });
-mkdirSync(NATIVE_OUT_DIR, { recursive: true });
+if (SAVE_OUTPUT) {
+  mkdirSync(ORIGINAL_OUT_DIR, { recursive: true });
+  mkdirSync(NATIVE_OUT_DIR, { recursive: true });
+}
 
 // Vue compiler-sfc full compile
 function vueCompileSfc(source: string, filename: string): string {
@@ -148,10 +134,7 @@ function runOriginalSingleThread(saveOutput: boolean): number {
     for (const file of files) {
       const code = vueCompileSfc(file.source, file.filename);
       if (saveOutput) {
-        const outPath = join(
-          ORIGINAL_OUT_DIR,
-          file.filename.replace(".vue", ".js")
-        );
+        const outPath = join(ORIGINAL_OUT_DIR, file.filename.replace(".vue", ".js"));
         writeFileSync(outPath, code);
       }
     }
@@ -167,10 +150,7 @@ function runNativeSingleThread(saveOutput: boolean): number {
         filename: file.filename,
       });
       if (saveOutput) {
-        const outPath = join(
-          NATIVE_OUT_DIR,
-          file.filename.replace(".vue", ".js")
-        );
+        const outPath = join(NATIVE_OUT_DIR, file.filename.replace(".vue", ".js"));
         writeFileSync(outPath, result.code);
       }
     }
@@ -184,7 +164,7 @@ async function runOriginalMultiThread(): Promise<number> {
 
   const workerCode = `
     const { parentPort, workerData } = require('worker_threads');
-    const { parse, compileScript, compileTemplate } = require('@vue/compiler-sfc');
+    const { parse, compileScript, compileTemplate } = require(workerData.compilerSfcPath);
 
     for (const file of workerData.files) {
       const { descriptor } = parse(file.source, { filename: file.filename });
@@ -215,14 +195,14 @@ async function runOriginalMultiThread(): Promise<number> {
 
     const worker = new Worker(workerCode, {
       eval: true,
-      workerData: { files: chunk },
+      workerData: { files: chunk, compilerSfcPath },
     });
 
     workers.push(
       new Promise((resolve, reject) => {
         worker.on("message", resolve);
         worker.on("error", reject);
-      })
+      }),
     );
   }
 
@@ -252,13 +232,11 @@ console.log();
 console.log(` Files     : ${files.length.toLocaleString()} SFC files`);
 console.log(` Total Size: ${(totalSize / 1024 / 1024).toFixed(1)} MB`);
 console.log(` CPU Cores : ${CPU_COUNT}`);
-console.log(` Output    : ${OUTPUT_DIR}`);
+console.log(` Output    : ${SAVE_OUTPUT ? OUTPUT_DIR : "disabled"}`);
 console.log();
 console.log(" Compilers:");
 console.log(`   Original : @vue/compiler-sfc`);
-console.log(
-  `   Native   : vize (NAPI)  ${native ? "OK" : "NOT FOUND"}`
-);
+console.log(`   Native   : vize (NAPI)  ${native ? "OK" : "NOT FOUND"}`);
 console.log();
 console.log("-".repeat(65));
 
@@ -267,18 +245,17 @@ console.log();
 console.log(" Single Thread:");
 console.log();
 
-// First run saves output (skip in quick mode)
-const saveOutput = FILE_LIMIT === Infinity;
-const originalSingle = runOriginalSingleThread(saveOutput);
+const originalSingle = runOriginalSingleThread(SAVE_OUTPUT);
 console.log(
-  `   Original : ${formatTime(originalSingle).padStart(8)}  (${formatThroughput(files.length, originalSingle)})`
+  `   Original : ${formatTime(originalSingle).padStart(8)}  (${formatThroughput(files.length, originalSingle)})`,
 );
 
+let nativeSingle = 0;
 if (native) {
-  const nativeSingle = runNativeSingleThread(saveOutput);
+  nativeSingle = runNativeSingleThread(SAVE_OUTPUT);
   const speedup = (originalSingle / nativeSingle).toFixed(1);
   console.log(
-    `   Native   : ${formatTime(nativeSingle).padStart(8)}  (${formatThroughput(files.length, nativeSingle)})  ${speedup}x faster`
+    `   Native   : ${formatTime(nativeSingle).padStart(8)}  (${formatThroughput(files.length, nativeSingle)})  ${speedup}x faster`,
   );
 }
 
@@ -290,7 +267,7 @@ if (FILE_LIMIT === Infinity) {
 
   const originalMulti = await runOriginalMultiThread();
   console.log(
-    `   Original : ${formatTime(originalMulti).padStart(8)}  (${formatThroughput(files.length, originalMulti)})`
+    `   Original : ${formatTime(originalMulti).padStart(8)}  (${formatThroughput(files.length, originalMulti)})`,
   );
 
   if (native) {
@@ -306,7 +283,7 @@ if (FILE_LIMIT === Infinity) {
     const nativeMulti = result.timeMs;
     const speedup = (originalMulti / nativeMulti).toFixed(1);
     console.log(
-      `   Native   : ${formatTime(nativeMulti).padStart(8)}  (${formatThroughput(files.length, nativeMulti)})  ${speedup}x faster`
+      `   Native   : ${formatTime(nativeMulti).padStart(8)}  (${formatThroughput(files.length, nativeMulti)})  ${speedup}x faster`,
     );
   }
 } else {
@@ -329,17 +306,33 @@ if (FILE_LIMIT === Infinity) {
     const speedup = (nativeThroughput / originalThroughput).toFixed(1);
 
     console.log(
-      `   Original : ${formatThroughput(files.length, originalSingle).padStart(12)}  (single-thread, ${files.length} files)`
+      `   Original : ${formatThroughput(files.length, originalSingle).padStart(12)}  (single-thread, ${files.length} files)`,
     );
     console.log(
-      `   Native   : ${formatThroughput(result.success, result.timeMs).padStart(12)}  (multi-thread, ${result.success} files)  ${speedup}x faster`
+      `   Native   : ${formatThroughput(result.success, result.timeMs).padStart(12)}  (multi-thread, ${result.success} files)  ${speedup}x faster`,
     );
   }
 }
 
+// Cross-mode summary: Original ST vs Native MT
+if (FILE_LIMIT === Infinity && native) {
+  const pattern = join(INPUT_DIR, "*.vue");
+  const batchResult = native.compileSfcBatch(pattern);
+  const nativeMultiMs = batchResult.timeMs;
+  const crossSpeedup = (originalSingle / nativeMultiMs).toFixed(1);
+
+  console.log();
+  console.log("-".repeat(65));
+  console.log();
+  console.log(" Summary:");
+  console.log();
+  console.log(`   Original ST vs Native ST : ${(originalSingle / nativeSingle).toFixed(1)}x`);
+  console.log(`   Original ST vs Native MT : ${crossSpeedup}x  (user-facing speedup)`);
+}
+
 console.log();
 console.log("-".repeat(65));
-if (FILE_LIMIT === Infinity) {
+if (SAVE_OUTPUT) {
   console.log();
   console.log(` Output saved to:`);
   console.log(`   Original : ${ORIGINAL_OUT_DIR}`);

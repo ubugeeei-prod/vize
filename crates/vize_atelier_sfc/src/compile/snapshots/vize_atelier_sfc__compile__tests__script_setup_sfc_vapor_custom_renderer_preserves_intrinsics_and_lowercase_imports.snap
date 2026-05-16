@@ -1,0 +1,42 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+
+
+const t0 = _template("<group></group>", true)
+const t1 = _template("<mesh></mesh>", true)
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n0 = t1()
+  _setInsertionState(n0, null, true)
+  const n1 = _createIf(() => (_ctx.visible), () => {
+    const n4 = t0()
+    const _component_primitive = _ctx.Primitive
+    _setInsertionState(n4, null, true)
+    const n3 = _createComponentWithFallback(_component_primitive, null, null, true)
+    return n4
+  })
+  return n0
+}
+const __vaporRender = render
+import { Primitive } from '@tresjs/core'
+const visible = true
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'anonymous',
+  render: __vaporRender,
+  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+
+const __returned__ = { visible, Primitive }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})

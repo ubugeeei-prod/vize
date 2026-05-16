@@ -1,138 +1,103 @@
 <svg width="1100" height="540" viewBox="0 0 1100 540" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="app-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4a5568"/>
-      <stop offset="100%" stop-color="#2d3748"/>
-    </linearGradient>
-    <linearGradient id="tools-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4a6670"/>
-      <stop offset="100%" stop-color="#3a5560"/>
-    </linearGradient>
-    <linearGradient id="compiler-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#9b7653"/>
-      <stop offset="100%" stop-color="#7c5e42"/>
-    </linearGradient>
-    <linearGradient id="core-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5b6b7c"/>
-      <stop offset="100%" stop-color="#445566"/>
-    </linearGradient>
-    <linearGradient id="semantic-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7c5b9b"/>
-      <stop offset="100%" stop-color="#5d4275"/>
-    </linearGradient>
-    <!-- Logo gradients -->
-    <linearGradient id="metal-grad" x1="0%" y1="0%" x2="100%" y2="20%">
-      <stop offset="0%" stop-color="#E6E9F0"/>
-      <stop offset="50%" stop-color="#7B8494"/>
-      <stop offset="100%" stop-color="#A34828"/>
-    </linearGradient>
-    <linearGradient id="metal-grad-dark" x1="0%" y1="0%" x2="100%" y2="30%">
-      <stop offset="0%" stop-color="#B8BDC9"/>
-      <stop offset="60%" stop-color="#525A6B"/>
-      <stop offset="100%" stop-color="#7D341B"/>
-    </linearGradient>
-    <linearGradient id="speed-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#A34828" stop-opacity="0.8"/>
-      <stop offset="100%" stop-color="#E6E9F0" stop-opacity="0"/>
-    </linearGradient>
-    <filter id="shadow" x="-15%" y="-20%" width="130%" height="150%">
-      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#000" flood-opacity="0.15"/>
-    </filter>
     <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <path d="M0,0 L8,3 L0,6 L2,3 Z" fill="#94a3b8"/>
+      <path d="M0,0 L8,3 L0,6 L2,3 Z" fill="#121212"/>
     </marker>
   </defs>
 
+  <!-- Background -->
+  <rect width="1100" height="540" fill="#E6E2D6"/>
+
   <!-- APPLICATIONS -->
-  <g filter="url(#shadow)">
-    <rect x="20" y="20" width="150" height="440" rx="14" fill="url(#app-grad)"/>
-    <text x="95" y="46" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" letter-spacing="1.2">APPLICATIONS</text>
-    <rect x="35" y="60" width="120" height="42" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="95" y="85" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">Vite Plugin</text>
-    <rect x="35" y="112" width="120" height="42" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="95" y="137" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">CLI (vize)</text>
-    <rect x="35" y="164" width="120" height="42" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="95" y="189" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">LSP (maestro)</text>
-    <rect x="35" y="216" width="120" height="42" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="95" y="241" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">Gallery (musea)</text>
-    <rect x="35" y="268" width="120" height="42" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="95" y="293" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">Playground</text>
+  <g>
+    <rect x="20" y="20" width="150" height="440" rx="10" fill="none" stroke="#121212" stroke-width="1.5"/>
+    <text x="95" y="46" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="9" font-weight="500" letter-spacing="2">APPLICATIONS</text>
+    <rect x="35" y="60" width="120" height="40" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="95" y="84" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">Vite Plugin</text>
+    <rect x="35" y="110" width="120" height="40" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="95" y="134" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">CLI (vize)</text>
+    <rect x="35" y="160" width="120" height="40" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="95" y="184" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">LSP (maestro)</text>
+    <rect x="35" y="210" width="120" height="40" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="95" y="234" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">Gallery (musea)</text>
+    <rect x="35" y="260" width="120" height="40" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="95" y="284" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">Playground</text>
   </g>
 
   <!-- TOOLS -->
-  <g filter="url(#shadow)">
-    <rect x="190" y="20" width="170" height="440" rx="14" fill="url(#tools-grad)"/>
-    <text x="275" y="46" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" letter-spacing="1.2">TOOLS</text>
-    <rect x="205" y="60" width="140" height="42" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="275" y="85" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">Linter (patina)</text>
-    <rect x="205" y="112" width="140" height="42" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="275" y="137" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">Formatter (glyph)</text>
-    <rect x="205" y="164" width="140" height="42" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="275" y="189" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">TypeCheck (canon)</text>
+  <g>
+    <rect x="190" y="20" width="170" height="440" rx="10" fill="none" stroke="#121212" stroke-width="1.5"/>
+    <text x="275" y="46" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="9" font-weight="500" letter-spacing="2">TOOLS</text>
+    <rect x="205" y="60" width="140" height="40" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="275" y="84" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">Linter (patina)</text>
+    <rect x="205" y="110" width="140" height="40" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="275" y="134" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">Formatter (glyph)</text>
+    <rect x="205" y="160" width="140" height="40" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="275" y="184" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">TypeCheck (canon)</text>
   </g>
 
   <!-- COMPILER (ATELIER) -->
-  <g filter="url(#shadow)">
-    <rect x="380" y="20" width="310" height="260" rx="14" fill="url(#compiler-grad)"/>
-    <text x="535" y="46" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" letter-spacing="1.2">COMPILER (ATELIER)</text>
-    <rect x="395" y="60" width="280" height="45" rx="8" fill="rgba(255,255,255,0.15)"/>
-    <text x="535" y="88" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="12" font-weight="500">atelier_sfc</text>
-    <rect x="395" y="115" width="130" height="45" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="460" y="143" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">atelier_dom</text>
-    <rect x="545" y="115" width="130" height="45" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="610" y="143" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">atelier_vapor</text>
-    <rect x="395" y="170" width="280" height="45" rx="8" fill="rgba(255,255,255,0.15)"/>
-    <text x="535" y="198" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="12" font-weight="500">atelier_core</text>
-    <path d="M535 105 L535 115" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-    <path d="M460 160 L460 170" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-    <path d="M610 160 L610 170" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+  <g>
+    <rect x="380" y="20" width="310" height="260" rx="10" fill="none" stroke="#121212" stroke-width="1.5"/>
+    <text x="535" y="46" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="9" font-weight="500" letter-spacing="2">COMPILER (ATELIER)</text>
+    <rect x="395" y="60" width="280" height="42" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="535" y="86" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="12" font-weight="400">atelier_sfc</text>
+    <rect x="395" y="112" width="130" height="42" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="460" y="138" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">atelier_dom</text>
+    <rect x="545" y="112" width="130" height="42" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="610" y="138" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">atelier_vapor</text>
+    <rect x="395" y="164" width="280" height="42" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="535" y="190" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="12" font-weight="400">atelier_core</text>
+    <path d="M535 102 L535 112" stroke="#121212" stroke-width="1"/>
+    <path d="M460 154 L460 164" stroke="#121212" stroke-width="1"/>
+    <path d="M610 154 L610 164" stroke="#121212" stroke-width="1"/>
   </g>
 
   <!-- SEMANTIC (CROQUIS) -->
-  <g filter="url(#shadow)">
-    <rect x="380" y="300" width="310" height="160" rx="14" fill="url(#semantic-grad)"/>
-    <text x="535" y="326" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" letter-spacing="1.2">SEMANTIC ANALYSIS</text>
-    <rect x="395" y="345" width="280" height="95" rx="8" fill="rgba(255,255,255,0.15)"/>
-    <text x="535" y="385" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="14" font-weight="600">croquis</text>
-    <text x="535" y="410" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="-apple-system, sans-serif" font-size="10">Scopes · Bindings · Macros · CSS</text>
-    <text x="535" y="428" text-anchor="middle" fill="#a78bfa" font-family="-apple-system, sans-serif" font-size="10" font-weight="600">VIR Output</text>
+  <g>
+    <rect x="380" y="300" width="310" height="160" rx="10" fill="none" stroke="#121212" stroke-width="1.5"/>
+    <text x="535" y="326" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="9" font-weight="500" letter-spacing="2">SEMANTIC ANALYSIS</text>
+    <rect x="395" y="345" width="280" height="95" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="535" y="385" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="14" font-weight="500">croquis</text>
+    <text x="535" y="408" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="10">Scopes · Bindings · Macros · CSS</text>
+    <text x="535" y="426" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="10" font-weight="500">VIR Output</text>
   </g>
 
   <!-- CORE -->
-  <g filter="url(#shadow)">
-    <rect x="710" y="20" width="170" height="440" rx="14" fill="url(#core-grad)"/>
-    <text x="795" y="46" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" letter-spacing="1.2">CORE</text>
-    <rect x="725" y="60" width="140" height="50" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="795" y="88" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">armature</text>
-    <text x="795" y="102" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="-apple-system, sans-serif" font-size="8">Parser</text>
-    <rect x="725" y="120" width="140" height="50" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="795" y="148" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">relief</text>
-    <text x="795" y="162" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="-apple-system, sans-serif" font-size="8">AST</text>
-    <rect x="725" y="180" width="140" height="50" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="795" y="208" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="11" font-weight="500">carton</text>
-    <text x="795" y="222" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="-apple-system, sans-serif" font-size="8">Allocator</text>
+  <g>
+    <rect x="710" y="20" width="170" height="440" rx="10" fill="none" stroke="#121212" stroke-width="1.5"/>
+    <text x="795" y="46" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="9" font-weight="500" letter-spacing="2">CORE</text>
+    <rect x="725" y="60" width="140" height="48" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="795" y="86" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">armature</text>
+    <text x="795" y="100" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="8">Parser</text>
+    <rect x="725" y="118" width="140" height="48" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="795" y="144" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">relief</text>
+    <text x="795" y="158" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="8">AST</text>
+    <rect x="725" y="176" width="140" height="48" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="795" y="202" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="11" font-weight="400">carton</text>
+    <text x="795" y="216" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="8">Allocator</text>
   </g>
 
   <!-- BINDINGS -->
-  <g filter="url(#shadow)">
-    <rect x="900" y="20" width="180" height="440" rx="14" fill="#3d4f5f"/>
-    <text x="990" y="46" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" letter-spacing="1.2">BINDINGS</text>
-    <rect x="915" y="60" width="150" height="80" rx="8" fill="rgba(255,255,255,0.1)"/>
-    <text x="990" y="95" text-anchor="middle" fill="#fff" font-family="SF Mono, monospace" font-size="12" font-weight="500">vitrine</text>
-    <text x="990" y="115" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-family="-apple-system, sans-serif" font-size="9">WASM · Node.js · Napi-rs</text>
+  <g>
+    <rect x="900" y="20" width="180" height="440" rx="10" fill="none" stroke="#121212" stroke-width="1.5"/>
+    <text x="990" y="46" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="9" font-weight="500" letter-spacing="2">BINDINGS</text>
+    <rect x="915" y="60" width="150" height="78" rx="6" fill="none" stroke="#121212" stroke-width="0.75"/>
+    <text x="990" y="93" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, monospace" font-size="12" font-weight="400">vitrine</text>
+    <text x="990" y="113" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="9">WASM · Node.js · Napi-rs</text>
   </g>
 
   <!-- ARROWS -->
-  <path d="M170 150 L190 150" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <path d="M360 100 L380 100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <path d="M360 150 L370 150 L370 390 L380 390" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <path d="M690 150 L710 150" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <path d="M690 390 L700 390 L700 150 L710 150" stroke="#94a3b8" stroke-width="1.5"/>
-  <path d="M880 150 L900 150" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <path d="M535 280 L535 300" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrow)"/>
-  <path d="M535 215 L535 280" stroke="#94a3b8" stroke-width="1.5"/>
+  <path d="M170 150 L190 150" stroke="#121212" stroke-width="1" marker-end="url(#arrow)"/>
+  <path d="M360 100 L380 100" stroke="#121212" stroke-width="1" marker-end="url(#arrow)"/>
+  <path d="M360 150 L370 150 L370 390 L380 390" stroke="#121212" stroke-width="1" marker-end="url(#arrow)"/>
+  <path d="M690 150 L710 150" stroke="#121212" stroke-width="1" marker-end="url(#arrow)"/>
+  <path d="M690 390 L700 390 L700 150 L710 150" stroke="#121212" stroke-width="1"/>
+  <path d="M880 150 L900 150" stroke="#121212" stroke-width="1" marker-end="url(#arrow)"/>
+  <path d="M535 280 L535 300" stroke="#121212" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M535 206 L535 280" stroke="#121212" stroke-width="1"/>
 
   <!-- Labels -->
-  <text x="535" y="250" text-anchor="middle" fill="#94a3b8" font-family="-apple-system, sans-serif" font-size="8">uses</text>
-  <text x="550" y="295" text-anchor="start" fill="#a78bfa" font-family="-apple-system, sans-serif" font-size="8" font-weight="600">semantic</text>
+  <text x="535" y="250" text-anchor="middle" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="8">uses</text>
+  <text x="550" y="295" text-anchor="start" fill="#121212" font-family="'Helvetica Neue', Helvetica, sans-serif" font-size="8" font-weight="500">semantic</text>
 </svg>

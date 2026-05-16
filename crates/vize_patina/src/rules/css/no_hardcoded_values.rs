@@ -245,7 +245,7 @@ impl NoHardcodedValues {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoHardcodedValues;
     use crate::rules::css::CssLinter;
 
     fn create_linter() -> CssLinter {

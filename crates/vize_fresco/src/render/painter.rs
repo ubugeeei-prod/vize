@@ -1,5 +1,7 @@
 //! Painter for rendering nodes to buffer.
 
+use compact_str::{CompactString, ToCompactString};
+
 use crate::layout::Rect;
 use crate::terminal::{Buffer, Style};
 use crate::text::{TextWrap, WrapMode};
@@ -153,12 +155,12 @@ impl<'a> Painter<'a> {
             return;
         }
 
-        let display_text = if value.is_empty() && !focused {
-            placeholder.to_string()
+        let display_text: CompactString = if value.is_empty() && !focused {
+            placeholder.to_compact_string()
         } else if mask {
-            mask_char.to_string().repeat(value.chars().count())
+            std::iter::repeat_n(mask_char, value.chars().count()).collect()
         } else {
-            value.to_string()
+            value.to_compact_string()
         };
 
         // Wrap text to fit area width
@@ -201,7 +203,9 @@ impl<'a> Painter<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{BorderStyle, Painter, RenderNode, RenderTree};
+    use crate::layout::Rect;
+    use crate::terminal::{Buffer, Style};
 
     #[test]
     fn test_paint_text() {

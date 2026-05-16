@@ -1,0 +1,11 @@
+---
+source: crates/vize_croquis/src/cross_file/suppression.rs
+expression: map.errors
+---
+[
+    SuppressionError {
+        message: "@vize forget reason cannot be empty. Explain why this suppression is needed.",
+        line: 1,
+        offset: 1,
+    },
+]

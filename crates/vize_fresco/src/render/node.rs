@@ -308,7 +308,8 @@ impl BorderStyle {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{Appearance, BorderStyle, NodeKind, RenderNode};
+    use crate::terminal::Color;
 
     #[test]
     fn test_render_node_new() {

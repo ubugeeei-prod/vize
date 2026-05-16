@@ -162,7 +162,7 @@ impl Rule for NoHydrationMismatch {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoHydrationMismatch;
 
     #[test]
     fn test_detects_math_random() {

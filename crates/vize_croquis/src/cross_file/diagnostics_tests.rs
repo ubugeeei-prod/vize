@@ -1,7 +1,8 @@
 //! Tests for cross-file diagnostics.
 
-use super::*;
+use super::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 use crate::cross_file::FileId;
+use vize_carton::append;
 
 fn make_file_id() -> FileId {
     FileId::new(0)
@@ -153,12 +154,7 @@ fn test_to_markdown_destructuring() {
 
     let markdown = diag.to_markdown();
 
-    // Check that key information is present
-    assert!(markdown.contains("WARNING"));
-    assert!(markdown.contains("count"));
-    assert!(markdown.contains("name"));
-    assert!(markdown.contains("toRefs"));
-    assert!(markdown.contains("props"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -175,12 +171,7 @@ fn test_to_markdown_circular_dependency() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("Circular"));
-    assert!(markdown.contains("computed"));
-    // Check cycle is displayed
-    assert!(markdown.contains("a"));
-    assert!(markdown.contains("b"));
-    assert!(markdown.contains("c"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -198,10 +189,7 @@ fn test_to_markdown_provide_inject_without_symbol() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("InjectionKey"));
-    assert!(markdown.contains("Symbol"));
-    assert!(markdown.contains("Type-safe")); // Capital T
-    assert!(markdown.contains("user"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -220,11 +208,7 @@ fn test_to_markdown_watch_can_be_computed() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("computed"));
-    assert!(markdown.contains("watch"));
-    assert!(markdown.contains("count"));
-    assert!(markdown.contains("doubled"));
-    assert!(markdown.contains("Declarative"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -242,10 +226,7 @@ fn test_to_markdown_dom_access_without_next_tick() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("nextTick"));
-    assert!(markdown.contains("onMounted"));
-    assert!(markdown.contains("SSR"));
-    assert!(markdown.contains("DOM"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 // ============================================================
@@ -255,13 +236,13 @@ fn test_to_markdown_dom_access_without_next_tick() {
 #[test]
 fn test_severity_badges() {
     let kinds = [
-        (DiagnosticSeverity::Error, "ERROR"),
-        (DiagnosticSeverity::Warning, "WARNING"),
-        (DiagnosticSeverity::Info, "INFO"),
-        (DiagnosticSeverity::Hint, "HINT"),
+        DiagnosticSeverity::Error,
+        DiagnosticSeverity::Warning,
+        DiagnosticSeverity::Info,
+        DiagnosticSeverity::Hint,
     ];
 
-    for (severity, expected_badge) in kinds {
+    for severity in kinds {
         let diag = CrossFileDiagnostic::new(
             CrossFileDiagnosticKind::UnmatchedInject { key: "test".into() },
             severity,
@@ -271,11 +252,7 @@ fn test_severity_badges() {
         );
 
         let markdown = diag.to_markdown();
-        assert!(
-            markdown.contains(expected_badge),
-            "Expected {} in markdown",
-            expected_badge
-        );
+        insta::assert_snapshot!(markdown.as_str());
     }
 }
 
@@ -299,10 +276,7 @@ fn test_reactive_reference_escapes() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("state"));
-    assert!(markdown.contains("escapes"));
-    assert!(markdown.contains("readonly"));
-    assert!(markdown.contains("Rust"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 #[test]
@@ -321,9 +295,7 @@ fn test_reactive_object_mutated_after_escape() {
 
     let markdown = diag.to_markdown();
 
-    assert!(markdown.contains("mutated"));
-    assert!(markdown.contains("borrow"));
-    assert!(markdown.contains("Timeline"));
+    insta::assert_snapshot!(markdown.as_str());
 }
 
 // ============================================================
@@ -437,12 +409,9 @@ fn test_snapshot_all_diagnostic_kinds() {
     output.push_str("=== All Diagnostic Kinds ===\n\n");
 
     for diag in &diagnostics {
-        output.push_str(&std::format!("--- {:?} ---\n", diag.kind));
-        output.push_str(&std::format!(
-            "Severity: {}\n",
-            diag.severity.display_name()
-        ));
-        output.push_str(&std::format!("Message: {}\n", diag.message));
+        append!(output, "--- {:?} ---\n", diag.kind);
+        append!(output, "Severity: {}\n", diag.severity.display_name());
+        append!(output, "Message: {}\n", diag.message);
         output.push_str("\nMarkdown Output:\n");
         output.push_str(&diag.to_markdown());
         output.push_str("\n\n");
@@ -478,20 +447,22 @@ fn test_snapshot_diagnostic_with_related_files() {
 
     let mut output = String::new();
     output.push_str("=== Diagnostic with Related Files ===\n\n");
-    output.push_str(&std::format!("Primary file: {:?}\n", diag.primary_file));
-    output.push_str(&std::format!(
+    append!(output, "Primary file: {:?}\n", diag.primary_file);
+    append!(
+        output,
         "Offset: {} - {}\n",
         diag.primary_offset,
         diag.primary_end_offset
-    ));
-    output.push_str(&std::format!(
+    );
+    append!(
+        output,
         "Related files count: {}\n",
         diag.related_files.len()
-    ));
+    );
 
     output.push_str("\nRelated files:\n");
     for (file_id, offset, msg) in &diag.related_files {
-        output.push_str(&std::format!("  - {:?} at {}: {}\n", file_id, offset, msg));
+        append!(output, "  - {:?} at {offset}: {msg}\n", file_id);
     }
 
     output.push_str("\nMarkdown Output:\n");
@@ -527,12 +498,13 @@ fn test_snapshot_severity_levels() {
             "Example diagnostic",
         );
 
-        output.push_str(&std::format!(
+        append!(
+            output,
             "== {} ==\n",
             severity.display_name().to_uppercase()
-        ));
-        output.push_str(&std::format!("is_error: {}\n", diag.is_error()));
-        output.push_str(&std::format!("is_warning: {}\n", diag.is_warning()));
+        );
+        append!(output, "is_error: {}\n", diag.is_error());
+        append!(output, "is_warning: {}\n", diag.is_warning());
         output.push_str("\nMarkdown:\n");
         output.push_str(&diag.to_markdown());
         output.push('\n');

@@ -7,6 +7,11 @@
  */
 
 import assert from "node:assert";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { generateOutput } from "./utils/index.ts";
+import { resolveCssImports } from "./utils/css.ts";
 
 // =============================================================================
 // Test: Non-script-setup SFC _sfc_main duplication fix
@@ -69,6 +74,143 @@ assert.strictEqual(
   true,
   "Should detect _sfc_main with various whitespace",
 );
+
+// Test 3b: Template-only SFCs need a default export shim
+const templateOnlyCode = `
+export function render() {
+  return null
+}
+const _sfc_main = {}
+_sfc_main.render = render
+export default _sfc_main
+`;
+assert.strictEqual(
+  hasExportDefault(templateOnlyCode),
+  true,
+  "Template-only components should still expose a default export",
+);
+
+// Test 3b-ssr: SSR template-only SFCs need an ssrRender default export shim
+{
+  const output = generateOutput(
+    {
+      code: `
+export function ssrRender() {
+  return null
+}
+`,
+      scopeId: "ssrtemplate",
+      hasScoped: false,
+      styles: [],
+    },
+    {
+      isProduction: true,
+      isDev: false,
+    },
+  );
+  assert.ok(
+    output.includes("_sfc_main.ssrRender = ssrRender"),
+    "SSR template-only output should attach ssrRender to the default export",
+  );
+  assert.ok(
+    output.includes("export default _sfc_main;"),
+    "SSR template-only output should expose a default export",
+  );
+}
+
+// Test 3c: Inline-template script setup must not claim template-only HMR
+{
+  const output = generateOutput(
+    {
+      code: `
+export default {
+  __name: "InlineOnly",
+  setup() {
+    return (_ctx, _cache) => null
+  }
+}
+`,
+      scopeId: "inlinehmr",
+      hasScoped: false,
+      styles: [],
+    },
+    {
+      isProduction: false,
+      isDev: true,
+      hmrUpdateType: "template-only",
+    },
+  );
+  assert.ok(
+    output.includes('__hmrUpdateType = "full-reload"'),
+    "Inline-template output must downgrade unsupported template-only HMR",
+  );
+}
+
+// Test 3d: Components with standalone render may keep template-only HMR
+{
+  const output = generateOutput(
+    {
+      code: `
+export function render() {
+  return null
+}
+const _sfc_main = {}
+_sfc_main.render = render
+export default _sfc_main
+`,
+      scopeId: "separatehmr",
+      hasScoped: false,
+      styles: [],
+    },
+    {
+      isProduction: false,
+      isDev: true,
+      hmrUpdateType: "template-only",
+    },
+  );
+  assert.ok(
+    output.includes('__hmrUpdateType = "template-only"'),
+    "Standalone render output should preserve template-only HMR",
+  );
+}
+
+// Test 3e: CSS Modules bindings should be injected even when export default has no semicolon
+{
+  const output = generateOutput(
+    {
+      code: `
+const _sfc_main = { name: "ModuleButton" }
+export default _sfc_main
+`,
+      scopeId: "cssmodule",
+      hasScoped: false,
+      styles: [
+        {
+          content: ".root { color: red; }",
+          lang: "css",
+          scoped: false,
+          module: "buttonStyles",
+          index: 0,
+        },
+      ],
+    },
+    {
+      isProduction: false,
+      isDev: false,
+      filePath: "/src/ModuleButton.vue",
+    },
+  );
+  assert.ok(
+    output.includes(
+      'import buttonStyles from "/src/ModuleButton.vue?vue=&type=style&index=0&lang=css&module=buttonStyles";',
+    ),
+    "CSS Modules should emit a virtual style import with the original binding name",
+  );
+  assert.ok(
+    output.includes('_sfc_main.__cssModules["buttonStyles"] = buttonStyles;'),
+    "CSS Modules should attach bindings even when export default omits a semicolon",
+  );
+}
 
 // =============================================================================
 // Test: Query parameter preservation in relative imports
@@ -166,6 +308,299 @@ assert.notStrictEqual(scope1, scope2, "Different files should have different sco
 // Test 14: Same file should have same scope ID
 const scope3 = generateScopeId("src/components/Button.vue");
 assert.strictEqual(scope1, scope3, "Same file should have same scope ID");
+
+// =============================================================================
+// Test: resolveCssImports — @custom-media resolution
+// =============================================================================
+
+/**
+ * Minimal version of resolveCssImports that handles @custom-media and :deep()
+ * without filesystem access (for unit testing the pure transformation logic).
+ */
+function resolveCssTransforms(css: string): string {
+  const customMedia = new Map<string, string>();
+
+  // Parse @custom-media definitions
+  const cmRe = /@custom-media\s+(--[\w-]+)\s+(.+?)\s*;/g;
+  let m: RegExpExecArray | null;
+  while ((m = cmRe.exec(css)) !== null) {
+    customMedia.set(m[1], m[2]);
+  }
+
+  // Remove @custom-media definitions
+  let result = css.replace(/^@custom-media\s+[^;]+;\s*$/gm, "");
+
+  // Replace (--name) in @media rules
+  for (const [name, query] of customMedia) {
+    const escaped = name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+    result = result.replace(new RegExp(`\\(${escaped}\\)`, "g"), query);
+  }
+
+  // Unwrap :deep()
+  result = result.replace(/:deep\(([^()]*(?:\([^()]*\))*[^()]*)\)/g, "$1");
+
+  // Clean up excessive blank lines
+  result = result.replace(/\n{3,}/g, "\n\n");
+
+  return result;
+}
+
+// Test 15: @custom-media resolution
+{
+  const css = `@custom-media --mobile (max-width: 768px);
+.foo { color: red; }
+@media (--mobile) { .foo { font-size: 12px; } }`;
+  const result = resolveCssTransforms(css);
+  assert.ok(!result.includes("@custom-media"), "@custom-media definition should be removed");
+  assert.ok(
+    result.includes("@media (max-width: 768px)"),
+    "@media (--mobile) should be resolved to (max-width: 768px). Got:\n" + result,
+  );
+}
+
+// Test 16: Multiple @custom-media definitions
+{
+  const css = `@custom-media --mobile (max-width: 768px);
+@custom-media --desktop (min-width: 1024px);
+@media (--mobile) { .a { color: red; } }
+@media (--desktop) { .b { color: blue; } }`;
+  const result = resolveCssTransforms(css);
+  assert.ok(result.includes("(max-width: 768px)"), "Should resolve --mobile");
+  assert.ok(result.includes("(min-width: 1024px)"), "Should resolve --desktop");
+}
+
+// Test 17: :deep() unwrapping
+{
+  const css = `.parent :deep(.child) { color: red; }`;
+  const result = resolveCssTransforms(css);
+  assert.ok(
+    result.includes(".parent .child"),
+    ":deep(.child) should be unwrapped to .child. Got:\n" + result,
+  );
+  assert.ok(!result.includes(":deep"), ":deep should be removed");
+}
+
+// Test 18: :deep() with nested parens
+{
+  const css = `.parent :deep(.child:nth-child(2)) { color: red; }`;
+  const result = resolveCssTransforms(css);
+  assert.ok(
+    result.includes(".child:nth-child(2)"),
+    ":deep() with nested parens should be unwrapped. Got:\n" + result,
+  );
+}
+
+// Test 19: CSS without @custom-media passes through unchanged
+{
+  const css = `.foo { color: red; }\n@media (max-width: 768px) { .foo { font-size: 12px; } }`;
+  const result = resolveCssTransforms(css);
+  assert.strictEqual(result, css, "CSS without @custom-media should pass through unchanged");
+}
+
+// Test 20: dev asset URLs honor configured base path
+{
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-"));
+  const assetPath = path.join(tempDir, "assets", "noise.png");
+  fs.mkdirSync(path.dirname(assetPath), { recursive: true });
+  fs.writeFileSync(assetPath, "");
+
+  const result = resolveCssImports(
+    `.hero { background-image: url("~/assets/noise.png"); }`,
+    path.join(tempDir, "Component.vue"),
+    [{ find: "~/", replacement: `${tempDir}/` }],
+    true,
+    "/_nuxt/",
+  );
+
+  assert.ok(
+    result.includes(`url("/_nuxt/@fs${assetPath.replace(/\\/g, "/")}")`),
+    "dev CSS asset URLs should be prefixed with the configured base path",
+  );
+}
+
+// Test 21: CSS aliases should not match package prefixes
+{
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-alias-"));
+  const srcAssetPath = path.join(tempDir, "src", "assets", "logo.svg");
+  const packageAssetPath = path.join(tempDir, "node_modules", "@scope", "icons", "logo.svg");
+  fs.mkdirSync(path.dirname(srcAssetPath), { recursive: true });
+  fs.mkdirSync(path.dirname(packageAssetPath), { recursive: true });
+  fs.writeFileSync(srcAssetPath, "");
+  fs.writeFileSync(packageAssetPath, "");
+
+  const result = resolveCssImports(
+    `
+.local { background-image: url("@/assets/logo.svg"); }
+.package { background-image: url("@scope/icons/logo.svg"); }
+`,
+    path.join(tempDir, "Component.vue"),
+    [{ find: "@", replacement: path.join(tempDir, "src") }],
+    true,
+  );
+
+  assert.ok(
+    result.includes(`url("/@fs${srcAssetPath.replace(/\\/g, "/")}")`),
+    "CSS alias should resolve @/ URLs",
+  );
+  assert.ok(
+    result.includes('url("@scope/icons/logo.svg")'),
+    "CSS alias should not rewrite package specifiers that only share the first character",
+  );
+}
+
+// Test 22: CSS aliases should support RegExp find rules
+{
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-regexp-alias-"));
+  const assetPath = path.join(tempDir, "src", "assets", "logo.svg");
+  fs.mkdirSync(path.dirname(assetPath), { recursive: true });
+  fs.writeFileSync(assetPath, "");
+
+  const result = resolveCssImports(
+    `.logo { background-image: url("@app/assets/logo.svg"); }`,
+    path.join(tempDir, "Component.vue"),
+    [{ find: /^@app\/(.+)$/, replacement: path.join(tempDir, "src", "$1") }],
+    true,
+  );
+
+  assert.ok(
+    result.includes(`url("/@fs${assetPath.replace(/\\/g, "/")}")`),
+    "CSS alias should resolve RegExp find rules",
+  );
+}
+
+// =============================================================================
+// Test: applyDefineReplacements
+// =============================================================================
+
+function applyDefineReplacements(code: string, defines: Record<string, string>): string {
+  const sortedKeys = Object.keys(defines).sort((a, b) => b.length - a.length);
+  let result = code;
+  for (const key of sortedKeys) {
+    if (!result.includes(key)) continue;
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(escaped + "(?![\\w$.])", "g");
+    result = result.replace(re, defines[key]);
+  }
+  return result;
+}
+
+// Test 20: Basic define replacement
+{
+  const code = `if (import.meta.vfFeatures.photoSection) { show(); }`;
+  const defines = { "import.meta.vfFeatures.photoSection": "true" };
+  const result = applyDefineReplacements(code, defines);
+  assert.ok(
+    result.includes("if (true)"),
+    "Should replace import.meta.vfFeatures.photoSection with true. Got:\n" + result,
+  );
+}
+
+// Test 21: Should not replace partial matches
+{
+  const code = `import.meta.vfFeatures.photoSectionEnabled`;
+  const defines = { "import.meta.vfFeatures.photoSection": "true" };
+  const result = applyDefineReplacements(code, defines);
+  assert.ok(
+    result.includes("import.meta.vfFeatures.photoSectionEnabled"),
+    "Should not replace partial match (longer identifier). Got:\n" + result,
+  );
+}
+
+// Test 22: Longest key matched first
+{
+  const code = `import.meta.env.MODE + import.meta.env.MODE_DETAIL`;
+  const defines = {
+    "import.meta.env.MODE": '"production"',
+    "import.meta.env.MODE_DETAIL": '"full"',
+  };
+  const result = applyDefineReplacements(code, defines);
+  assert.ok(
+    result.includes('"production"'),
+    "Should replace import.meta.env.MODE. Got:\n" + result,
+  );
+  assert.ok(
+    result.includes('"full"'),
+    "Should replace import.meta.env.MODE_DETAIL. Got:\n" + result,
+  );
+}
+
+// Test 23: No replacement when key not present
+{
+  const code = `const x = 42;`;
+  const defines = { "import.meta.vfFeatures.foo": "true" };
+  const result = applyDefineReplacements(code, defines);
+  assert.strictEqual(result, code, "Should not modify code when key is absent");
+}
+
+// =============================================================================
+// Test: isBuiltinDefine
+// =============================================================================
+
+const BUILTIN_DEFINE_PREFIXES = [
+  "import.meta.server",
+  "import.meta.client",
+  "import.meta.dev",
+  "import.meta.test",
+  "import.meta.prerender",
+  "import.meta.env",
+  "import.meta.hot",
+  "__VUE_",
+  "__NUXT_",
+  "process.env",
+];
+
+function isBuiltinDefine(key: string): boolean {
+  return BUILTIN_DEFINE_PREFIXES.some(
+    (prefix) => key === prefix || key.startsWith(prefix + ".") || key.startsWith(prefix + "_"),
+  );
+}
+
+// Test 24: Built-in define detection
+assert.strictEqual(isBuiltinDefine("import.meta.env"), true, "import.meta.env is builtin");
+assert.strictEqual(
+  isBuiltinDefine("import.meta.env.MODE"),
+  true,
+  "import.meta.env.MODE is builtin",
+);
+assert.strictEqual(isBuiltinDefine("import.meta.server"), true, "import.meta.server is builtin");
+assert.strictEqual(isBuiltinDefine("import.meta.client"), true, "import.meta.client is builtin");
+assert.strictEqual(isBuiltinDefine("import.meta.hot"), true, "import.meta.hot is builtin");
+// Note: __VUE_OPTIONS_API__ starts with __VUE_O, not __VUE__, so it is NOT matched
+// by the current prefix + "_" check. Only __VUE__ (double underscore) would match.
+assert.strictEqual(
+  isBuiltinDefine("__VUE_OPTIONS_API__"),
+  false,
+  "__VUE_OPTIONS_API__ does not match __VUE__ prefix",
+);
+assert.strictEqual(
+  isBuiltinDefine("__VUE__SOMETHING"),
+  true,
+  "__VUE__ (double underscore) is builtin",
+);
+assert.strictEqual(
+  isBuiltinDefine("__NUXT__SOMETHING"),
+  true,
+  "__NUXT__ (double underscore) is builtin",
+);
+assert.strictEqual(isBuiltinDefine("process.env"), true, "process.env is builtin");
+assert.strictEqual(
+  isBuiltinDefine("process.env.NODE_ENV"),
+  true,
+  "process.env.NODE_ENV is builtin",
+);
+
+// Test 25: Non-builtin defines
+assert.strictEqual(
+  isBuiltinDefine("import.meta.vfFeatures"),
+  false,
+  "Custom define is not builtin",
+);
+assert.strictEqual(
+  isBuiltinDefine("import.meta.vfFeatures.photoSection"),
+  false,
+  "Custom nested define is not builtin",
+);
+assert.strictEqual(isBuiltinDefine("MY_CUSTOM_FLAG"), false, "Custom flag is not builtin");
 
 // =============================================================================
 // All tests passed

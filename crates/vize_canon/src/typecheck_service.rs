@@ -1,17 +1,20 @@
-//! Type check service using tsgo.
+//! Type check service using Corsa.
 //!
 //! This module provides a high-level API for type checking Vue SFCs
-//! using tsgo as the TypeScript type checker backend.
+//! using Corsa as the TypeScript type checker backend.
 
-use crate::tsgo_bridge::{TsgoBridge, TsgoBridgeError};
-use std::path::Path;
+use crate::corsa_bridge::{CorsaBridge, CorsaBridgeError};
+use crate::virtual_ts::{generate_virtual_ts_with_offsets, VirtualTsOptions, VirtualTsOutput};
+#[allow(clippy::disallowed_types)]
 use std::sync::Arc;
-use vize_croquis::virtual_ts::{generate_virtual_ts, VirtualTsOutput};
+use vize_carton::cstr;
+use vize_carton::String;
 
 /// Type check service for Vue SFCs.
+#[allow(clippy::disallowed_types)]
 pub struct TypeCheckService {
-    /// The tsgo bridge.
-    bridge: Arc<TsgoBridge>,
+    /// The Corsa bridge.
+    bridge: Arc<CorsaBridge>,
 }
 
 /// Options for type checking.
@@ -30,7 +33,7 @@ pub struct TypeCheckServiceOptions {
 /// Result of type checking a Vue SFC.
 #[derive(Debug, Clone, Default)]
 pub struct SfcTypeCheckResult {
-    /// Diagnostics from tsgo.
+    /// Diagnostics from Corsa.
     pub diagnostics: Vec<SfcDiagnostic>,
     /// Error count.
     pub error_count: usize,
@@ -87,8 +90,9 @@ pub struct SfcRelatedInfo {
 
 impl TypeCheckService {
     /// Create a new type check service.
-    pub async fn new() -> Result<Self, TsgoBridgeError> {
-        let bridge = TsgoBridge::new();
+    #[allow(clippy::disallowed_types)]
+    pub async fn new() -> Result<Self, CorsaBridgeError> {
+        let bridge = CorsaBridge::new();
         bridge.spawn().await?;
         Ok(Self {
             bridge: Arc::new(bridge),
@@ -100,8 +104,8 @@ impl TypeCheckService {
         &self,
         source: &str,
         filename: &str,
-        options: &TypeCheckServiceOptions,
-    ) -> Result<SfcTypeCheckResult, TsgoBridgeError> {
+        _options: &TypeCheckServiceOptions,
+    ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
         use std::time::Instant;
         use vize_atelier_core::parser::parse;
         use vize_atelier_sfc::{parse_sfc, SfcParseOptions};
@@ -113,7 +117,7 @@ impl TypeCheckService {
 
         // Parse SFC
         let parse_opts = SfcParseOptions {
-            filename: filename.to_string(),
+            filename: filename.into(),
             ..Default::default()
         };
 
@@ -121,11 +125,11 @@ impl TypeCheckService {
             Ok(d) => d,
             Err(e) => {
                 result.diagnostics.push(SfcDiagnostic {
-                    message: format!("Failed to parse SFC: {}", e.message),
+                    message: cstr!("Failed to parse SFC: {}", e.message),
                     severity: SfcDiagnosticSeverity::Error,
                     start: 0,
                     end: 0,
-                    code: Some("parse-error".to_string()),
+                    code: Some("parse-error".into()),
                     related: Vec::new(),
                 });
                 result.error_count = 1;
@@ -158,42 +162,76 @@ impl TypeCheckService {
         };
 
         // Analyze template
+        let mut has_template_parse_errors = false;
         let (template_offset, template_ast) = if let Some(ref template) = descriptor.template {
-            let (root, _errors) = parse(&allocator, &template.content);
-            analyzer.analyze_template(&root);
-            (template.loc.start as u32, Some(root))
+            let template_offset = template.loc.start as u32;
+            let (root, errors) = parse(&allocator, &template.content);
+            if errors.is_empty() {
+                analyzer.analyze_template(&root);
+                (template_offset, Some(root))
+            } else {
+                has_template_parse_errors = true;
+                for error in errors {
+                    let (start, end) = error
+                        .loc
+                        .as_ref()
+                        .map(|loc| {
+                            (
+                                template_offset + loc.start.offset,
+                                template_offset + loc.end.offset,
+                            )
+                        })
+                        .unwrap_or((template_offset, template_offset));
+
+                    result.diagnostics.push(SfcDiagnostic {
+                        message: cstr!("Template parse error: {}", error.message),
+                        severity: SfcDiagnosticSeverity::Error,
+                        start,
+                        end: end.max(start + 1),
+                        code: Some("template-parse-error".into()),
+                        related: Vec::new(),
+                    });
+                    result.error_count += 1;
+                }
+                (template_offset, None)
+            }
         } else {
             (0, None)
         };
 
         let summary = analyzer.finish();
 
+        if has_template_parse_errors {
+            result.analysis_time_ms = Some(start_time.elapsed().as_secs_f64() * 1000.0);
+            return Ok(result);
+        }
+
         // Generate virtual TypeScript
-        let virtual_ts_output = generate_virtual_ts(
+        let virtual_ts_output = generate_virtual_ts_with_offsets(
+            &summary,
             script_content,
             template_ast.as_ref(),
-            &summary.bindings,
-            None, // import_resolver
-            options.project_root.as_ref().map(Path::new),
+            script_offset,
             template_offset,
+            &VirtualTsOptions::default(),
         );
 
-        result.virtual_ts = Some(virtual_ts_output.content.clone());
+        result.virtual_ts = Some(virtual_ts_output.code.clone());
 
-        // Check with tsgo
-        if !virtual_ts_output.content.is_empty() {
-            let virtual_uri = format!("vize-virtual://{}.ts", filename);
+        // Check with Corsa
+        if !virtual_ts_output.code.is_empty() {
+            let virtual_uri = cstr!("vize-virtual://{filename}.ts");
 
             // Open virtual document
             self.bridge
-                .open_virtual_document(&virtual_uri, &virtual_ts_output.content)
+                .open_virtual_document(&virtual_uri, &virtual_ts_output.code)
                 .await?;
 
             // Get diagnostics
-            let tsgo_result = self.bridge.get_diagnostics(&virtual_uri).await?;
+            let corsa_result = self.bridge.get_diagnostics(&virtual_uri).await?;
 
             // Map diagnostics back to original positions
-            for diag in tsgo_result {
+            for diag in corsa_result {
                 // Map position from virtual TS to original SFC
                 let (start, end) = map_position_to_sfc(
                     &virtual_ts_output,
@@ -219,11 +257,11 @@ impl TypeCheckService {
                 }
 
                 result.diagnostics.push(SfcDiagnostic {
-                    message: diag.message,
+                    message: diag.message.into(),
                     severity,
                     start,
                     end,
-                    code: diag.code.map(|c| format!("TS{}", c)),
+                    code: diag.code.map(|c| cstr!("TS{c}")),
                     related: diag
                         .related_information
                         .unwrap_or_default()
@@ -240,8 +278,8 @@ impl TypeCheckService {
                                 template_offset,
                             );
                             SfcRelatedInfo {
-                                message: r.message,
-                                filename: Some(r.location.uri),
+                                message: r.message.into(),
+                                filename: Some(r.location.uri.into()),
                                 start: rel_start,
                                 end: rel_end,
                             }
@@ -259,7 +297,7 @@ impl TypeCheckService {
     }
 
     /// Shutdown the type check service.
-    pub async fn shutdown(&self) -> Result<(), TsgoBridgeError> {
+    pub async fn shutdown(&self) -> Result<(), CorsaBridgeError> {
         self.bridge.shutdown().await
     }
 }
@@ -293,15 +331,22 @@ fn map_position_to_sfc(
     _template_offset: u32,
 ) -> (u32, u32) {
     // Convert line/col to offset in generated content
-    let gen_start_offset = line_col_to_offset(&virtual_ts.content, start_line, start_char);
-    let gen_end_offset = line_col_to_offset(&virtual_ts.content, end_line, end_char);
+    let gen_start_offset = line_col_to_offset(&virtual_ts.code, start_line, start_char) as usize;
+    let gen_end_offset = line_col_to_offset(&virtual_ts.code, end_line, end_char) as usize;
 
     // Try to find source mapping
-    if let Some(src_start) = virtual_ts.source_map.to_source(gen_start_offset) {
-        let src_end = virtual_ts
-            .source_map
-            .to_source(gen_end_offset)
-            .unwrap_or(src_start + (gen_end_offset - gen_start_offset));
+    if let Some(mapping) = virtual_ts
+        .mappings
+        .iter()
+        .find(|mapping| mapping.gen_range.contains(&gen_start_offset))
+    {
+        let src_start =
+            mapping.src_range.start as u32 + (gen_start_offset - mapping.gen_range.start) as u32;
+        let src_end = if mapping.gen_range.contains(&gen_end_offset) {
+            mapping.src_range.start as u32 + (gen_end_offset - mapping.gen_range.start) as u32
+        } else {
+            mapping.src_range.end as u32
+        };
         return (src_start, src_end);
     }
 
@@ -314,7 +359,7 @@ fn map_position_to_sfc(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{SfcDiagnosticSeverity, TypeCheckServiceOptions};
 
     #[test]
     fn test_sfc_diagnostic_severity() {

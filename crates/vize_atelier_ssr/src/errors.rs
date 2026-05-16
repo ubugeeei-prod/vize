@@ -26,7 +26,7 @@ impl SsrErrorCode {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::SsrErrorCode;
 
     #[test]
     fn test_error_messages() {

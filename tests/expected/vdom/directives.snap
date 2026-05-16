@@ -320,14 +320,12 @@ options: default
 --- OUTPUT ---
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-const _hoisted_1 = {
-  test: "",
-  "on-test": "",
-  "is-on-test": ""
-}
-
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", _hoisted_1, "content"))
+  return (_openBlock(), _createElementBlock("div", {
+    test: "",
+    "on-test": "",
+    "is-on-test": ""
+  }, "content"))
 }
 
 ===
@@ -338,13 +336,11 @@ options: default
 --- OUTPUT ---
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-const _hoisted_1 = {
-  ":id": "dynamic",
-  "@click": "handler"
-}
-
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", _hoisted_1, "{{ raw }}"))
+  return (_openBlock(), _createElementBlock("div", {
+    ":id": "dynamic",
+    "@click": "handler"
+  }, "{{ raw }}"))
 }
 
 ===
@@ -356,10 +352,10 @@ options: default
 import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", null, [...(_cache[0] || (_cache[0] = [
+  return (_openBlock(), _createElementBlock("div", null, [
     _createElementVNode("span", {
       ":class": "cls",
       "@click": "fn"
-    }, "{{ raw }}", -1 /* CACHED */)
-  ]))]))
+    }, "{{ raw }}")
+  ]))
 }

@@ -1,44 +1,51 @@
 <script setup lang="ts">
-import type { TokenCategory, DesignToken, TokenUsageMap } from '../../api'
-import TokenCard from './TokenCard.vue'
+import type { TokenCategory, DesignToken, TokenUsageMap } from "../../api";
+import TokenCard from "./TokenCard.vue";
 
-const props = withDefaults(defineProps<{
-  category: TokenCategory
-  level?: number
-  parentPath?: string
-  usageMap?: TokenUsageMap
-}>(), {
-  usageMap: () => ({}),
-})
+const props = withDefaults(
+  defineProps<{
+    category: TokenCategory;
+    level?: number;
+    parentPath?: string;
+    usageMap?: TokenUsageMap;
+  }>(),
+  {
+    usageMap: () => ({}),
+  },
+);
 
 const emit = defineEmits<{
-  edit: [path: string, token: DesignToken]
-  delete: [path: string, token: DesignToken]
-  showUsage: [tokenPath: string]
-}>()
+  edit: [path: string, token: DesignToken];
+  delete: [path: string, token: DesignToken];
+  showUsage: [tokenPath: string];
+}>();
 
-const headingLevel = Math.min((props.level ?? 2), 6)
+const headingLevel = Math.min(props.level ?? 2, 6);
 
 function getCategoryPath(): string {
-  const catKey = props.category.name.toLowerCase().replace(/\s+/g, '-')
-  return props.parentPath ? `${props.parentPath}.${catKey}` : catKey
+  const catKey = props.category.name.toLowerCase().replace(/\s+/g, "-");
+  return props.parentPath ? `${props.parentPath}.${catKey}` : catKey;
 }
 
 function getTokenPath(name: string): string {
-  return `${getCategoryPath()}.${name}`
+  return `${getCategoryPath()}.${name}`;
 }
 
 function getUsageCount(name: string): number {
-  const tokenPath = getTokenPath(name)
-  const entries = props.usageMap[tokenPath]
-  if (!entries) return 0
-  return entries.reduce((sum, entry) => sum + entry.matches.length, 0)
+  const tokenPath = getTokenPath(name);
+  const entries = props.usageMap[tokenPath];
+  if (!entries) return 0;
+  return entries.reduce((sum, entry) => sum + entry.matches.length, 0);
 }
 </script>
 
 <template>
   <div class="token-category" :class="{ 'token-subcategory': level && level > 2 }">
-    <component :is="'h' + headingLevel" class="category-title" :class="'category-title--h' + headingLevel">
+    <component
+      :is="'h' + headingLevel"
+      class="category-title"
+      :class="'category-title--h' + headingLevel"
+    >
       {{ category.name }}
     </component>
 
@@ -74,10 +81,10 @@ function getUsageCount(name: string): number {
 
 <script lang="ts">
 // Recursive component self-reference
-import { defineComponent } from 'vue'
+import { defineComponent } from "vue";
 export default defineComponent({
-  name: 'TokenCategorySection',
-})
+  name: "TokenCategorySection",
+});
 </script>
 
 <style scoped>

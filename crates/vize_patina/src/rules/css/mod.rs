@@ -28,6 +28,8 @@
 //! .baz { color: green !important; } /* vize-disable-line css/no-important */
 //! ```
 
+#![allow(clippy::disallowed_macros)]
+
 mod no_display_none;
 mod no_hardcoded_values;
 mod no_id_selectors;
@@ -39,12 +41,14 @@ mod prefer_nested_selectors;
 mod prefer_slotted;
 mod require_font_display;
 
-use std::collections::HashSet;
+use vize_carton::FxHashSet;
 
 use lightningcss::stylesheet::{ParserOptions, StyleSheet};
 use memchr::memmem;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
+use vize_carton::String;
+use vize_carton::ToCompactString;
 
 pub use no_display_none::NoDisplayNone;
 pub use no_hardcoded_values::NoHardcodedValues;
@@ -113,9 +117,9 @@ pub struct DisabledRules {
     block_disabled: Vec<(usize, String, bool)>,
     /// Rules disabled for a specific line only
     /// Maps line_number to set of disabled rule names
-    line_disabled: Vec<(usize, HashSet<String>)>,
+    line_disabled: Vec<(usize, FxHashSet<String>)>,
     /// Rules disabled for the next line only
-    next_line_disabled: Vec<(usize, HashSet<String>)>,
+    next_line_disabled: Vec<(usize, FxHashSet<String>)>,
 }
 
 impl DisabledRules {
@@ -182,7 +186,7 @@ impl DisabledRules {
                     {
                         set.insert(rule_name);
                     } else {
-                        let mut set = HashSet::new();
+                        let mut set = FxHashSet::default();
                         set.insert(rule_name);
                         result.line_disabled.push((line, set));
                     }
@@ -207,7 +211,7 @@ impl DisabledRules {
                     {
                         set.insert(rule_name);
                     } else {
-                        let mut set = HashSet::new();
+                        let mut set = FxHashSet::default();
                         set.insert(rule_name);
                         result.next_line_disabled.push((next_line, set));
                     }
@@ -253,7 +257,7 @@ impl DisabledRules {
     fn extract_rule_name(source: &str, start: usize) -> String {
         let bytes = source.as_bytes();
         if start >= bytes.len() {
-            return String::new();
+            return String::default();
         }
 
         let mut end = start;
@@ -266,7 +270,7 @@ impl DisabledRules {
             }
         }
 
-        source[start..end].to_string()
+        (&source[start..end]).to_compact_string()
     }
 
     /// Check if a rule is disabled at a given line
@@ -448,7 +452,7 @@ impl Default for CssLinter {
 
 #[cfg(test)]
 mod disable_tests {
-    use super::*;
+    use super::{strip_vize_comments, CssLinter, DisabledRules};
 
     #[test]
     fn test_parse_disable_comments() {
@@ -599,9 +603,8 @@ mod disable_tests {
         let source = r#".foo { color: red; } /* vize-disable css/no-important */
 .bar { color: blue !important; }
 /* regular comment */
-.baz { color: green; }"#;
+        .baz { color: green; }"#;
         let stripped = strip_vize_comments(source);
-        assert!(!stripped.contains("vize-disable"));
-        assert!(stripped.contains("regular comment"));
+        insta::assert_snapshot!(stripped.as_str());
     }
 }

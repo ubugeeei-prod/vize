@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: ts_output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createBlock as _createBlock, resolveComponent as _resolveComponent } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  emits: ["update"],
+  setup(__props, { emit: __emit }) {
+
+const emit = __emit
+
+return (_ctx: any,_cache: any) => {
+  const _component_Child = _resolveComponent("Child")
+
+  return (_openBlock(), _createBlock(_component_Child, {
+      onUpdate: _cache[0] || (_cache[0] = (...$args) => emit('update', ...$args)),
+      onChange: _cache[1] || (_cache[1] = (...args) => emit('update', ...args))
+    }))
+}
+}
+
+})

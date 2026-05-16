@@ -12,15 +12,10 @@ High-performance native Vite plugin for Vue SFC compilation powered by [Vize](ht
 
 ## Installation
 
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the packages:
+
 ```bash
-# npm
-npm install @vizejs/vite-plugin
-
-# pnpm
-pnpm add @vizejs/vite-plugin
-
-# yarn
-yarn add @vizejs/vite-plugin
+vp install -D @vizejs/vite-plugin vize
 ```
 
 ## Usage
@@ -29,17 +24,54 @@ yarn add @vizejs/vite-plugin
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite'
-import vize from '@vizejs/vite-plugin'
+import { defineConfig } from "vite";
+import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
   plugins: [
     vize({
       // options
-    })
-  ]
-})
+    }),
+  ],
+});
 ```
+
+### Shared config
+
+`vize.config.ts`
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  compiler: {
+    sourceMap: true,
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
+```
+
+`vize.config.pkl`
+
+```pkl
+amends "node_modules/vize/pkl/vize.pkl"
+
+compiler {
+  sourceMap = true
+}
+
+vite {
+  scanPatterns = new Listing {
+    "src/**/*.vue"
+  }
+}
+```
+
+`@vizejs/vite-plugin` loads the same `vize.config.ts`, `vize.config.js`, `vize.config.mjs`,
+`vize.config.pkl`, and `vize.config.json` files as the `vize` npm CLI. Importing
+`defineConfig` from `@vizejs/vite-plugin` still works, but `vize` is the shared entry point.
 
 ### Nuxt
 
@@ -47,23 +79,23 @@ For Nuxt 3, add the plugin to your `nuxt.config.ts`:
 
 ```ts
 // nuxt.config.ts
-import vize from '@vizejs/vite-plugin'
+import vize from "@vizejs/vite-plugin";
 
 export default defineNuxtConfig({
   vite: {
     plugins: [
       vize({
         // Exclude Nuxt's internal .vue files if needed
-        exclude: [/node_modules/, /#/, /\.nuxt/]
-      })
-    ]
+        exclude: [/node_modules/, /#/, /\.nuxt/],
+      }),
+    ],
   },
 
   // Disable the default Vue plugin
   vue: {
-    propsDestructure: false
-  }
-})
+    propsDestructure: false,
+  },
+});
 ```
 
 **Note**: When using with Nuxt, you may need to disable Nuxt's built-in Vue plugin to avoid conflicts:
@@ -72,19 +104,17 @@ export default defineNuxtConfig({
 // nuxt.config.ts
 export default defineNuxtConfig({
   hooks: {
-    'vite:extendConfig': (config) => {
+    "vite:extendConfig": (config) => {
       // Remove @vitejs/plugin-vue from plugins
       config.plugins = config.plugins?.filter(
-        (p) => p && (Array.isArray(p) ? p[0] : p).name !== 'vite:vue'
-      )
-    }
+        (p) => p && (Array.isArray(p) ? p[0] : p).name !== "vite:vue",
+      );
+    },
   },
   vite: {
-    plugins: [
-      vize()
-    ]
-  }
-})
+    plugins: [vize()],
+  },
+});
 ```
 
 ## Options
@@ -95,55 +125,55 @@ interface VizeNativeOptions {
    * Files to include in compilation
    * @default /\.vue$/
    */
-  include?: string | RegExp | (string | RegExp)[]
+  include?: string | RegExp | (string | RegExp)[];
 
   /**
    * Files to exclude from compilation
    * @default /node_modules/
    */
-  exclude?: string | RegExp | (string | RegExp)[]
+  exclude?: string | RegExp | (string | RegExp)[];
 
   /**
    * Force production mode
    * @default auto-detected from Vite config
    */
-  isProduction?: boolean
+  isProduction?: boolean;
 
   /**
    * Enable SSR mode
    * @default false
    */
-  ssr?: boolean
+  ssr?: boolean;
 
   /**
    * Enable source map generation
    * @default true in development, false in production
    */
-  sourceMap?: boolean
+  sourceMap?: boolean;
 
   /**
    * Enable Vapor mode compilation
    * @default false
    */
-  vapor?: boolean
+  vapor?: boolean;
 
   /**
    * Root directory to scan for .vue files
    * @default Vite's root
    */
-  root?: string
+  root?: string;
 
   /**
    * Glob patterns to scan for .vue files during pre-compilation
    * @default ['**\/*.vue']
    */
-  scanPatterns?: string[]
+  scanPatterns?: string[];
 
   /**
    * Glob patterns to ignore during pre-compilation
    * @default ['node_modules/**', 'dist/**', '.git/**']
    */
-  ignorePatterns?: string[]
+  ignorePatterns?: string[];
 }
 ```
 
@@ -180,26 +210,28 @@ When a `.vue` file changes:
 
 Vize's native compiler is significantly faster than the official Vue compiler:
 
-| Benchmark (15,000 SFCs) | @vue/compiler-sfc | Vize | Speedup |
-|-------------------------|-------------------|------|---------|
-| Single-threaded | 16.21s | 6.65s | **2.4x** |
-| Multi-threaded | 4.13s | 498ms | **8.3x** |
+| Benchmark (15,000 SFCs) | @vue/compiler-sfc | Vize  | Speedup   |
+| ----------------------- | ----------------- | ----- | --------- |
+| Single-threaded         | 9.35s             | 3.47s | **2.7x**  |
+| Multi-threaded          | 4.08s             | 353ms | **11.6x** |
 
 ## Comparison with vite-plugin-vize
 
-| Feature | vite-plugin-vize | vite-plugin-vize |
-|---------|------------------|-------------------------|
-| Compiler | WASM | Native (NAPI) |
-| Pre-compilation | No | Yes |
-| Module Loading | Transform | Virtual Module (Load) |
-| Performance | Fast | Fastest |
-| Platform | Any | Node.js only |
+| Feature         | vite-plugin-vize | vite-plugin-vize      |
+| --------------- | ---------------- | --------------------- |
+| Compiler        | WASM             | Native (NAPI)         |
+| Pre-compilation | No               | Yes                   |
+| Module Loading  | Transform        | Virtual Module (Load) |
+| Performance     | Fast             | Fastest               |
+| Platform        | Any              | Node.js only          |
 
 Use `vite-plugin-vize` (WASM-based) when you need:
+
 - Browser compatibility (e.g., StackBlitz, WebContainers)
 - Platform-independent deployment
 
 Use `vite-plugin-vize` when you need:
+
 - Maximum performance
 - Server-side only (standard Node.js environment)
 

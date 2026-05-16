@@ -1,7 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
@@ -15,7 +14,8 @@ interface Props {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    onSubmit: { type: Object, required: true }
+    onSubmit: { type: Function, required: true },
+    onError: { type: Function, required: false }
   },
   setup(__props: any) {
 

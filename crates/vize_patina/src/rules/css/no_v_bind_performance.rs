@@ -93,7 +93,7 @@ fn find_closing_paren(source: &str, start: usize) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoVBindPerformance;
     use crate::rules::css::CssLinter;
 
     fn create_linter() -> CssLinter {

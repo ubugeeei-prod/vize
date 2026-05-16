@@ -1,5 +1,7 @@
 //! Type representations for Vue SFC type checking.
 
+use vize_carton::String;
+
 /// Type information for a value or expression.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TypeInfo {
@@ -224,7 +226,7 @@ pub enum CompletionKind {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{CompletionItem, CompletionKind, TypeInfo, TypeKind};
 
     #[test]
     fn test_type_info() {
@@ -239,7 +241,7 @@ mod tests {
             .with_detail("number")
             .with_priority(10);
         assert_eq!(item.label, "count");
-        assert_eq!(item.detail, Some("number".to_string()));
+        assert_eq!(item.detail.as_deref(), Some("number"));
         assert_eq!(item.sort_priority, 10);
     }
 }

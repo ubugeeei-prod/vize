@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
+assertion_line: 473
+expression: result
+---
+let a = x
+let b = __props.foo

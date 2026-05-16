@@ -1,0 +1,875 @@
+import assert from "node:assert/strict";
+import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { test } from "node:test";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+type JsonRpcId = number;
+
+type JsonRpcMessage = {
+  jsonrpc: "2.0";
+  id?: JsonRpcId;
+  method?: string;
+  params?: unknown;
+  result?: unknown;
+  error?: { code: number; message: string };
+};
+
+type LspInitializationOptions = {
+  editor?: boolean;
+  lint?: boolean;
+  typecheck?: boolean;
+};
+
+type LspDiagnostic = {
+  code?: unknown;
+  source?: string;
+  severity?: number;
+  message?: string;
+  range?: {
+    start?: { line?: number; character?: number };
+    end?: { line?: number; character?: number };
+  };
+};
+
+type PublishDiagnosticsParams = {
+  uri: string;
+  diagnostics: LspDiagnostic[];
+};
+
+class LspSession {
+  private readonly process: ChildProcessWithoutNullStreams;
+  private readonly pending = new Map<
+    JsonRpcId,
+    {
+      resolve: (value: unknown) => void;
+      reject: (error: Error) => void;
+      method: string;
+      timeout: NodeJS.Timeout;
+    }
+  >();
+  private readonly notificationBacklog: Array<{ method: string; params: unknown }> = [];
+  private readonly notifications: Array<{
+    method: string;
+    predicate?: (params: unknown) => boolean;
+    resolve: (params: unknown) => void;
+    reject: (error: Error) => void;
+    timeout: NodeJS.Timeout;
+  }> = [];
+  private buffer = Buffer.alloc(0);
+  private nextId = 0;
+  private stderr = "";
+
+  constructor() {
+    const [command, ...args] = resolveVizeLaunchCommand();
+    this.process = spawn(command, args, {
+      cwd: root,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    this.process.stdout.on("data", (chunk: Buffer) => {
+      this.buffer = Buffer.concat([this.buffer, chunk]);
+      this.drainMessages();
+    });
+
+    this.process.stderr.on("data", (chunk: Buffer) => {
+      this.stderr += chunk.toString("utf8");
+    });
+
+    this.process.on("exit", (code, signal) => {
+      const error = new Error(
+        `vize lsp exited unexpectedly (code=${code ?? "null"}, signal=${signal ?? "null"})\n${this.stderr}`.trim(),
+      );
+
+      for (const pending of this.pending.values()) {
+        clearTimeout(pending.timeout);
+        pending.reject(error);
+      }
+      this.pending.clear();
+
+      for (const notification of this.notifications) {
+        clearTimeout(notification.timeout);
+        notification.reject(error);
+      }
+      this.notifications.length = 0;
+    });
+  }
+
+  async initialize(
+    workspaceDir: string,
+    initializationOptions: LspInitializationOptions = {
+      editor: true,
+      typecheck: true,
+    },
+  ): Promise<unknown> {
+    const result = await this.request("initialize", {
+      processId: process.pid,
+      rootUri: pathToFileURL(workspaceDir).href,
+      capabilities: {
+        textDocument: {
+          completion: {
+            completionItem: {
+              documentationFormat: ["markdown", "plaintext"],
+            },
+          },
+        },
+      },
+      initializationOptions,
+      workspaceFolders: [
+        {
+          uri: pathToFileURL(workspaceDir).href,
+          name: path.basename(workspaceDir),
+        },
+      ],
+    });
+
+    this.notify("initialized", {});
+    return result;
+  }
+
+  request(method: string, params: unknown, timeoutMs = 30000): Promise<unknown> {
+    const id = ++this.nextId;
+
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error(`Timed out waiting for ${method}\n${this.stderr}`.trim()));
+      }, timeoutMs);
+
+      this.pending.set(id, { resolve, reject, method, timeout });
+      this.send({ jsonrpc: "2.0", id, method, params });
+    });
+  }
+
+  notify(method: string, params: unknown): void {
+    this.send({ jsonrpc: "2.0", method, params });
+  }
+
+  waitForNotification(
+    method: string,
+    predicate?: (params: unknown) => boolean,
+    timeoutMs = 30000,
+  ): Promise<unknown> {
+    const backlogIndex = this.notificationBacklog.findIndex(
+      (notification) =>
+        notification.method === method && (predicate == null || predicate(notification.params)),
+    );
+    if (backlogIndex >= 0) {
+      const [{ params }] = this.notificationBacklog.splice(backlogIndex, 1);
+      return Promise.resolve(params);
+    }
+
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        const index = this.notifications.findIndex(
+          (notification) => notification.resolve === resolve,
+        );
+        if (index >= 0) {
+          this.notifications.splice(index, 1);
+        }
+        reject(new Error(`Timed out waiting for notification ${method}\n${this.stderr}`.trim()));
+      }, timeoutMs);
+
+      this.notifications.push({
+        method,
+        predicate,
+        resolve,
+        reject,
+        timeout,
+      });
+    });
+  }
+
+  async shutdown(): Promise<void> {
+    if (this.process.killed) {
+      return;
+    }
+
+    try {
+      await this.request("shutdown", undefined, 10000);
+    } finally {
+      this.notify("exit", undefined);
+      this.process.stdin.end();
+      await new Promise<void>((resolve) => {
+        const timeout = setTimeout(() => {
+          this.process.kill("SIGKILL");
+        }, 5000);
+
+        this.process.once("exit", () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      });
+    }
+  }
+
+  private send(message: JsonRpcMessage): void {
+    const payload = JSON.stringify(message);
+    const frame = `Content-Length: ${Buffer.byteLength(payload, "utf8")}\r\n\r\n${payload}`;
+    this.process.stdin.write(frame, "utf8");
+  }
+
+  private drainMessages(): void {
+    while (true) {
+      const headerEnd = this.buffer.indexOf("\r\n\r\n");
+      if (headerEnd < 0) {
+        return;
+      }
+
+      const header = this.buffer.subarray(0, headerEnd).toString("utf8");
+      const lengthMatch = header.match(/Content-Length:\s*(\d+)/i);
+      assert.ok(lengthMatch, `missing Content-Length header: ${header}`);
+
+      const bodyLength = Number(lengthMatch[1]);
+      const frameLength = headerEnd + 4 + bodyLength;
+      if (this.buffer.length < frameLength) {
+        return;
+      }
+
+      const body = this.buffer.subarray(headerEnd + 4, frameLength).toString("utf8");
+      this.buffer = this.buffer.subarray(frameLength);
+
+      const message = JSON.parse(body) as JsonRpcMessage;
+      this.dispatch(message);
+    }
+  }
+
+  private dispatch(message: JsonRpcMessage): void {
+    if (typeof message.id === "number" && message.method == null) {
+      const pending = this.pending.get(message.id);
+      if (!pending) {
+        return;
+      }
+
+      clearTimeout(pending.timeout);
+      this.pending.delete(message.id);
+
+      if (message.error) {
+        pending.reject(new Error(`${pending.method}: ${message.error.message}`));
+        return;
+      }
+
+      pending.resolve(message.result);
+      return;
+    }
+
+    if (message.method != null && typeof message.id === "number") {
+      this.send({
+        jsonrpc: "2.0",
+        id: message.id,
+        error: {
+          code: -32601,
+          message: `client does not implement ${message.method}`,
+        },
+      });
+      return;
+    }
+
+    if (message.method == null) {
+      return;
+    }
+
+    const index = this.notifications.findIndex(
+      (notification) =>
+        notification.method === message.method &&
+        (notification.predicate == null || notification.predicate(message.params)),
+    );
+
+    if (index < 0) {
+      this.notificationBacklog.push({
+        method: message.method,
+        params: message.params,
+      });
+      return;
+    }
+
+    const [notification] = this.notifications.splice(index, 1);
+    clearTimeout(notification.timeout);
+    notification.resolve(message.params);
+  }
+}
+
+test("vize lsp smoke-tests production editor flows", async (t) => {
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-smoke");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    fs.writeFileSync(
+      path.join(workspaceDir, "Child.vue"),
+      `<script setup lang="ts"></script>
+<template><button /></template>
+`,
+      "utf8",
+    );
+
+    const parentSource = `<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child />
+</template>
+`;
+    const parentPath = path.join(workspaceDir, "Parent.vue");
+    fs.writeFileSync(parentPath, parentSource, "utf8");
+
+    const artSource = `<script setup lang="ts">
+import { ref } from 'vue'
+
+const primaryLabel = ref('primary')
+const secondaryLabel = ref('secondary')
+</script>
+
+<art title="Button" component="./Child.vue">
+  <variant name="Primary" default>
+    <Child>{{ primaryLabel }}</Child>
+  </variant>
+  <variant name="Secondary">
+    <Child>{{ secondaryLabel }}</Child>
+  </variant>
+</art>
+`;
+    const artPath = path.join(workspaceDir, "Button.art.vue");
+    fs.writeFileSync(artPath, artSource, "utf8");
+
+    const init = (await session.initialize(workspaceDir)) as {
+      capabilities?: {
+        completionProvider?: {
+          triggerCharacters?: string[];
+        };
+        hoverProvider?: boolean;
+        definitionProvider?: boolean;
+      };
+    };
+
+    assert.equal(init.capabilities?.hoverProvider, true);
+    assert.equal(init.capabilities?.definitionProvider, true);
+    assert.ok(init.capabilities?.completionProvider?.triggerCharacters?.includes("."));
+
+    const parentUri = pathToFileURL(parentPath).href;
+    const artUri = pathToFileURL(artPath).href;
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: parentUri,
+        languageId: "vue",
+        version: 1,
+        text: parentSource,
+      },
+    });
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: artUri,
+        languageId: "art-vue",
+        version: 1,
+        text: artSource,
+      },
+    });
+
+    await session.waitForNotification("textDocument/publishDiagnostics");
+
+    await t.test("go-to-definition resolves component tags in Vue templates", async () => {
+      const childUsageOffset = parentSource.indexOf("Child />") + "Child".length;
+      const definition = (await session.request("textDocument/definition", {
+        textDocument: { uri: parentUri },
+        position: offsetToPosition(parentSource, childUsageOffset),
+      })) as
+        | Array<{
+            uri: string;
+            range: { start: { line: number; character: number } };
+          }>
+        | {
+            uri: string;
+            range: { start: { line: number; character: number } };
+          };
+
+      const location = firstLocation(definition);
+      assert.equal(location.uri, pathToFileURL(path.join(workspaceDir, "Child.vue")).href);
+      assert.deepEqual(location.range.start, { line: 0, character: 0 });
+    });
+
+    await t.test("hover and definition stay correct in non-default art variants", async () => {
+      const secondaryLabelOffset =
+        artSource.lastIndexOf("secondaryLabel") + "secondaryLabel".length;
+
+      const hover = (await session.request("textDocument/hover", {
+        textDocument: { uri: artUri },
+        position: offsetToPosition(artSource, secondaryLabelOffset),
+      })) as { contents?: unknown } | null;
+
+      const hoverText = hoverToText(hover);
+      assert.match(hoverText, /secondaryLabel/);
+      assert.match(hoverText, /(Ref<string>|string)/);
+
+      const definition = (await session.request("textDocument/definition", {
+        textDocument: { uri: artUri },
+        position: offsetToPosition(artSource, secondaryLabelOffset),
+      })) as
+        | Array<{
+            uri: string;
+            range: { start: { line: number; character: number } };
+          }>
+        | {
+            uri: string;
+            range: { start: { line: number; character: number } };
+          };
+
+      const location = firstLocation(definition);
+      assert.equal(location.uri, artUri);
+      assert.deepEqual(location.range.start, { line: 4, character: 6 });
+    });
+
+    await t.test("completion surfaces bindings and directives inside art variants", async () => {
+      const completionOffset = artSource.lastIndexOf("secondaryLabel") + "secondaryLabel".length;
+
+      const response = (await session.request("textDocument/completion", {
+        textDocument: { uri: artUri },
+        position: offsetToPosition(artSource, completionOffset),
+      })) as Array<{ label: string }> | { items?: Array<{ label: string }> } | null;
+
+      const labels = completionLabels(response);
+      assert.ok(labels.includes("secondaryLabel"), labels.join(", "));
+      assert.ok(labels.includes("primaryLabel"), labels.join(", "));
+      assert.ok(labels.includes("v-if"), labels.join(", "));
+    });
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+  }
+});
+
+test("vize lsp returns empty results for unopened and closed editor documents", async () => {
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-empty-editor-docs");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      editor: true,
+      lint: true,
+      typecheck: true,
+    });
+
+    const unopenedUri = pathToFileURL(path.join(workspaceDir, "NeverOpened.vue")).href;
+    await assertEmptyEditorRequests(session, unopenedUri, "an unopened document");
+
+    const closedSource = `<script setup lang="ts">
+const message = 'hello'
+</script>
+
+<template>
+  {{ message }}
+</template>
+`;
+    const closedPath = path.join(workspaceDir, "Closed.vue");
+    const closedUri = pathToFileURL(closedPath).href;
+    fs.writeFileSync(closedPath, closedSource, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: closedUri,
+        languageId: "vue",
+        version: 1,
+        text: closedSource,
+      },
+    });
+
+    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+      isDiagnosticsForUri(params, closedUri),
+    );
+
+    session.notify("textDocument/didClose", {
+      textDocument: {
+        uri: closedUri,
+      },
+    });
+
+    const closePublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, closedUri),
+    )) as PublishDiagnosticsParams;
+    assert.deepEqual(closePublish.diagnostics, []);
+
+    await assertEmptyEditorRequests(session, closedUri, "a closed document");
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+  }
+});
+
+test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-malformed");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      lint: true,
+      typecheck: false,
+    });
+
+    const brokenPath = path.join(workspaceDir, "Broken.vue");
+    const brokenUri = pathToFileURL(brokenPath).href;
+    const brokenSource = "<template><div></div>";
+    fs.writeFileSync(brokenPath, brokenSource, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: brokenUri,
+        languageId: "vue",
+        version: 1,
+        text: brokenSource,
+      },
+    });
+
+    const brokenPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => hasDiagnosticSource(params, brokenUri, "vize/sfc"),
+    )) as PublishDiagnosticsParams;
+    const parserDiagnostic = brokenPublish.diagnostics.find(
+      (diagnostic) => diagnostic.source === "vize/sfc",
+    );
+
+    assert.ok(parserDiagnostic, JSON.stringify(brokenPublish.diagnostics));
+    assert.equal(parserDiagnostic.severity, 1);
+    assert.match(parserDiagnostic.message ?? "", /template/i);
+    assertDiagnosticRange(parserDiagnostic);
+
+    const fixedSource = `<template>
+  <div>fixed</div>
+</template>
+`;
+    session.notify("textDocument/didChange", {
+      textDocument: {
+        uri: brokenUri,
+        version: 2,
+      },
+      contentChanges: [
+        {
+          text: fixedSource,
+        },
+      ],
+    });
+
+    const fixedPublish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, brokenUri),
+    )) as PublishDiagnosticsParams;
+
+    assert.deepEqual(fixedPublish.diagnostics, []);
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+  }
+});
+
+test("vize lsp keeps type diagnostics disabled by initialization options", async () => {
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-typecheck-disabled");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      lint: true,
+      typecheck: false,
+    });
+
+    const typeErrorPath = path.join(workspaceDir, "TypeError.vue");
+    const typeErrorUri = pathToFileURL(typeErrorPath).href;
+    const typeErrorSource = `<script setup lang="ts">
+const label: string = 1
+const items = [1, 2]
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items">{{ item }}</li>
+  </ul>
+</template>
+`;
+    fs.writeFileSync(typeErrorPath, typeErrorSource, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri: typeErrorUri,
+        languageId: "vue",
+        version: 1,
+        text: typeErrorSource,
+      },
+    });
+
+    const publish = (await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, typeErrorUri),
+    )) as PublishDiagnosticsParams;
+
+    assertNoDiagnosticSource(publish.diagnostics, "vize/types");
+    assertNoDiagnosticSource(publish.diagnostics, "vize/corsa");
+    assert.ok(
+      publish.diagnostics.some(
+        (diagnostic) =>
+          diagnostic.source === "vize/lint" && diagnostic.code === "vue/require-v-for-key",
+      ),
+      JSON.stringify(publish.diagnostics),
+    );
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+  }
+});
+
+function resolveVizeLaunchCommand(): string[] {
+  const candidates = [
+    [path.join(root, "target/release/vize"), "lsp"],
+    [path.join(root, "target/debug/vize"), "lsp"],
+    ["vize", "lsp"],
+  ];
+
+  for (const candidate of candidates) {
+    const probe = spawnSync(candidate[0], ["--version"], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    if (probe.status === 0) {
+      return candidate;
+    }
+  }
+
+  return ["cargo", "run", "-q", "-p", "vize", "--", "lsp"];
+}
+
+function isDiagnosticsForUri(params: unknown, uri: string): params is PublishDiagnosticsParams {
+  return (
+    typeof params === "object" &&
+    params != null &&
+    "uri" in params &&
+    (params as { uri?: unknown }).uri === uri &&
+    "diagnostics" in params &&
+    Array.isArray((params as { diagnostics?: unknown }).diagnostics)
+  );
+}
+
+function hasDiagnosticSource(params: unknown, uri: string, source: string): boolean {
+  return (
+    isDiagnosticsForUri(params, uri) &&
+    params.diagnostics.some((diagnostic) => diagnostic.source === source)
+  );
+}
+
+function assertDiagnosticRange(diagnostic: LspDiagnostic): void {
+  const { range } = diagnostic;
+  assert.ok(range?.start, "diagnostic should include a start range");
+  assert.ok(range?.end, "diagnostic should include an end range");
+  assert.equal(typeof range.start.line, "number");
+  assert.equal(typeof range.start.character, "number");
+  assert.equal(typeof range.end.line, "number");
+  assert.equal(typeof range.end.character, "number");
+  assert.ok((range.end.line ?? 0) >= (range.start.line ?? 0));
+}
+
+async function assertEmptyEditorRequests(
+  session: LspSession,
+  uri: string,
+  label: string,
+): Promise<void> {
+  const position = { line: 0, character: 0 };
+  const range = { start: position, end: position };
+  const requests: Array<[method: string, params: unknown]> = [
+    [
+      "textDocument/hover",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/definition",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/references",
+      {
+        textDocument: { uri },
+        position,
+        context: {
+          includeDeclaration: true,
+        },
+      },
+    ],
+    [
+      "textDocument/completion",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/documentSymbol",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/documentLink",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/semanticTokens/full",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/codeLens",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/inlayHint",
+      {
+        textDocument: { uri },
+        range,
+      },
+    ],
+    [
+      "textDocument/foldingRange",
+      {
+        textDocument: { uri },
+      },
+    ],
+    [
+      "textDocument/codeAction",
+      {
+        textDocument: { uri },
+        range,
+        context: {
+          diagnostics: [],
+        },
+      },
+    ],
+    [
+      "textDocument/prepareRename",
+      {
+        textDocument: { uri },
+        position,
+      },
+    ],
+    [
+      "textDocument/rename",
+      {
+        textDocument: { uri },
+        position,
+        newName: "renamedSymbol",
+      },
+    ],
+    [
+      "textDocument/formatting",
+      {
+        textDocument: { uri },
+        options: {
+          tabSize: 2,
+          insertSpaces: true,
+        },
+      },
+    ],
+    [
+      "textDocument/rangeFormatting",
+      {
+        textDocument: { uri },
+        range,
+        options: {
+          tabSize: 2,
+          insertSpaces: true,
+        },
+      },
+    ],
+  ];
+
+  for (const [method, params] of requests) {
+    const response = await session.request(method, params);
+    assert.equal(response, null, `${method} should return null for ${label}`);
+  }
+}
+
+function assertNoDiagnosticSource(diagnostics: LspDiagnostic[], source: string): void {
+  assert.equal(
+    diagnostics.some((diagnostic) => diagnostic.source === source),
+    false,
+    `unexpected ${source} diagnostic: ${JSON.stringify(diagnostics)}`,
+  );
+}
+
+function offsetToPosition(source: string, offset: number): { line: number; character: number } {
+  const lines = source.slice(0, offset).split("\n");
+  return {
+    line: lines.length - 1,
+    character: lines.at(-1)?.length ?? 0,
+  };
+}
+
+function firstLocation(
+  response:
+    | Array<{ uri: string; range: { start: { line: number; character: number } } }>
+    | { uri: string; range: { start: { line: number; character: number } } },
+): { uri: string; range: { start: { line: number; character: number } } } {
+  return Array.isArray(response) ? response[0] : response;
+}
+
+function hoverToText(hover: { contents?: unknown } | null): string {
+  assert.ok(hover?.contents);
+
+  const contents = hover.contents;
+  if (typeof contents === "string") {
+    return contents;
+  }
+  if (Array.isArray(contents)) {
+    return contents.map(markedStringToText).join("\n\n");
+  }
+  if (typeof contents === "object" && contents != null && "value" in contents) {
+    const value = (contents as { value?: unknown }).value;
+    return typeof value === "string" ? value : JSON.stringify(contents);
+  }
+
+  return JSON.stringify(contents);
+}
+
+function markedStringToText(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "object" && value != null && "value" in value) {
+    const text = (value as { value?: unknown }).value;
+    return typeof text === "string" ? text : JSON.stringify(value);
+  }
+  return JSON.stringify(value);
+}
+
+function completionLabels(
+  response: Array<{ label: string }> | { items?: Array<{ label: string }> } | null,
+): string[] {
+  if (response == null) {
+    return [];
+  }
+  if (Array.isArray(response)) {
+    return response.map((item) => item.label);
+  }
+  return (response.items ?? []).map((item) => item.label);
+}

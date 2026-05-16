@@ -63,7 +63,7 @@ pub fn process_v_if(ctx: &mut TransformContext<'_>) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{has_v_else, has_v_else_if, has_v_if, TemplateChildNode};
     use crate::parser::parse;
     use bumpalo::Bump;
 

@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { ref, toRef } from "vue";
+import { useSomething } from "./useSomething";
+export default {
+  __name: "TestComponent",
+  setup(__props) {
+    const fileInputRef = ref();
+    const { handleSelect, handleChange } = useSomething(fileInputRef, {
+      onError: (e) => console.log(e),
+      onSuccess: () => console.log("ok")
+    }, toRef(() => "test"));
+    const other = ref(1);
+    return (_ctx, _cache) => {
+      return null;
+    };
+  }
+};

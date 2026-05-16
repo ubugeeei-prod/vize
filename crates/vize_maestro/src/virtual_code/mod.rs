@@ -2,6 +2,7 @@
 //!
 //! This module implements the Virtual Code architecture inspired by Volar,
 //! which transforms Vue SFC files into virtual documents for each embedded language.
+#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //!
 //! ## Architecture
 //!
@@ -33,11 +34,16 @@ mod source_map;
 mod style_code;
 mod template_code;
 
-pub use generator::*;
-pub use script_code::*;
-pub use source_map::*;
-pub use style_code::*;
-pub use template_code::*;
+pub use generator::{
+    find_art_block_at_offset, find_block_at_offset, ArtCursorPosition, ArtVariantInfo,
+    BatchVirtualCodeGenerator, BlockType, VirtualCodeGenerator,
+};
+pub use script_code::{extract_simple_bindings, ScriptCodeGenerator};
+pub use source_map::{MappingData, MappingFeatures, SourceMap, SourceMapping};
+pub use style_code::{StyleCodeGenerator, StyleMetadata};
+pub use template_code::{
+    extract_expressions, ExpressionKind, TemplateCodeGenerator, TemplateExpression,
+};
 
 /// Virtual language types supported by the LSP.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -119,6 +125,8 @@ impl VirtualDocument {
 pub struct VirtualDocuments {
     /// Template virtual document
     pub template: Option<VirtualDocument>,
+    /// Art variant template virtual documents, indexed by variant position
+    pub art_templates: Vec<Option<VirtualDocument>>,
     /// Script virtual document
     pub script: Option<VirtualDocument>,
     /// Script setup virtual document
@@ -136,8 +144,16 @@ impl VirtualDocuments {
     /// Get all virtual documents as a vector.
     pub fn all(&self) -> Vec<&VirtualDocument> {
         let mut docs = Vec::new();
-        if let Some(ref t) = self.template {
-            docs.push(t);
+        if self.art_templates.is_empty() {
+            if let Some(ref t) = self.template {
+                docs.push(t);
+            }
+        } else {
+            for art_template in &self.art_templates {
+                if let Some(template) = art_template.as_ref() {
+                    docs.push(template);
+                }
+            }
         }
         if let Some(ref s) = self.script {
             docs.push(s);
@@ -149,6 +165,17 @@ impl VirtualDocuments {
             docs.push(style);
         }
         docs
+    }
+
+    /// Get the virtual template document for a specific art variant.
+    pub fn art_template(&self, variant_index: usize) -> Option<&VirtualDocument> {
+        if self.art_templates.is_empty() {
+            return self.template.as_ref();
+        }
+
+        self.art_templates
+            .get(variant_index)
+            .and_then(Option::as_ref)
     }
 
     /// Find the virtual document containing the given source offset.

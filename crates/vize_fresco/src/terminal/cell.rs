@@ -266,7 +266,7 @@ impl Cell {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{Cell, Color, Style};
 
     #[test]
     fn test_cell_default() {

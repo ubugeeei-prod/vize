@@ -75,7 +75,7 @@ impl Rule for NoVHtml {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoVHtml;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -97,6 +97,6 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div v-html="content"></div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("XSS"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 }

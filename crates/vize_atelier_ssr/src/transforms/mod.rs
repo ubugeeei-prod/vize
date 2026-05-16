@@ -86,9 +86,9 @@ pub fn get_v_text_exp<'a>(el: &'a ElementNode<'a>) -> Option<&'a ExpressionNode<
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{get_v_model_exp, get_v_show_exp, has_v_html, has_v_model, has_v_show, has_v_text};
     use vize_atelier_core::ast::{
-        DirectiveNode, ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
+        DirectiveNode, ElementNode, ExpressionNode, PropNode, SimpleExpressionNode, SourceLocation,
     };
     use vize_carton::{Box, Bump};
 

@@ -1,6 +1,7 @@
 //! VRT configuration types.
 
 use serde::{Deserialize, Serialize};
+use vize_carton::{String, ToCompactString};
 
 use super::preset::ViewportPreset;
 use crate::types::ViewportConfig;
@@ -195,7 +196,7 @@ fn default_enabled() -> bool {
 }
 
 fn default_snapshot_dir() -> String {
-    ".musea/snapshots".to_string()
+    ".musea/snapshots".to_compact_string()
 }
 
 fn default_viewports() -> Vec<ViewportConfig> {
@@ -214,7 +215,7 @@ fn default_color_sensitivity() -> f64 {
 }
 
 fn default_browser() -> String {
-    "chromium".to_string()
+    "chromium".to_compact_string()
 }
 
 fn default_true() -> bool {
@@ -230,7 +231,7 @@ fn default_settle_time() -> u32 {
 }
 
 fn default_wait_selector() -> String {
-    ".musea-variant".to_string()
+    ".musea-variant".to_compact_string()
 }
 
 fn default_diff_style() -> DiffStyle {
@@ -338,7 +339,7 @@ impl VrtConfig {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{BrowserConfig, DiffStyle, VrtConfig, VrtOptions, VrtThreshold};
 
     #[test]
     fn test_vrt_config_default() {
@@ -352,7 +353,7 @@ mod tests {
     #[test]
     fn test_vrt_config_from_options() {
         let options = VrtOptions {
-            snapshot_dir: Some("custom/snapshots".to_string()),
+            snapshot_dir: Some("custom/snapshots".into()),
             threshold: Some(0.5),
             viewports: None,
         };

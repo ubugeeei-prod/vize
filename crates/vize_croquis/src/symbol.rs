@@ -3,7 +3,7 @@
 //! Provides efficient lookup and tracking of symbols across
 //! the entire compilation unit.
 
-use vize_carton::{bitflags, FxHashMap};
+use vize_carton::{bitflags, FxHashMap, String};
 use vize_relief::BindingType;
 
 use crate::{ScopeBinding, ScopeId};
@@ -198,13 +198,21 @@ impl From<&ScopeBinding> for SymbolFlags {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::SymbolTable;
+    use crate::ScopeId;
+    use vize_carton::ToCompactString;
+    use vize_relief::BindingType;
 
     #[test]
     fn test_symbol_table() {
         let mut table = SymbolTable::new();
 
-        let id = table.add_symbol("count".to_string(), BindingType::SetupRef, ScopeId::ROOT, 0);
+        let id = table.add_symbol(
+            "count".to_compact_string(),
+            BindingType::SetupRef,
+            ScopeId::ROOT,
+            0,
+        );
 
         assert!(table.lookup("count").is_some());
         assert!(table.lookup("unknown").is_none());
@@ -222,9 +230,14 @@ mod tests {
     fn test_unused_symbols() {
         let mut table = SymbolTable::new();
 
-        table.add_symbol("used".to_string(), BindingType::SetupRef, ScopeId::ROOT, 0);
         table.add_symbol(
-            "unused".to_string(),
+            "used".to_compact_string(),
+            BindingType::SetupRef,
+            ScopeId::ROOT,
+            0,
+        );
+        table.add_symbol(
+            "unused".to_compact_string(),
             BindingType::SetupRef,
             ScopeId::ROOT,
             10,

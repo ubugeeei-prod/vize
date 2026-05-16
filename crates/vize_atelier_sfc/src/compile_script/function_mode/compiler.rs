@@ -1,0 +1,681 @@
+//! Main compiler for function-mode script setup.
+//!
+//! Contains the `compile_script_setup` function which compiles `<script setup>` blocks
+//! in function mode, where the setup function returns bindings for use by a separate
+//! render function.
+
+use vize_carton::{Bump, FxHashSet, String, ToCompactString};
+use vize_croquis::macros::runtime_erased_macro_names;
+
+use crate::script::{
+    resolve_template_used_identifiers, transform_destructured_props, ScriptCompileContext,
+    TemplateUsedIdentifiers,
+};
+use crate::types::{BindingType, SfcError};
+
+use super::super::import_utils::extract_import_identifiers;
+use super::super::lazy_hydration::transform_lazy_hydration_macros;
+use super::super::props::{
+    add_null_to_runtime_type, extract_emit_names_from_type, extract_prop_types_from_type,
+};
+use super::super::statement_sections::extract_script_sections;
+use super::super::typescript::transform_typescript_to_js;
+use super::super::ScriptCompileResult;
+use super::helpers::{collect_runtime_identifier_references, is_reserved_word};
+use super::imports::dedupe_imports;
+
+/// Compile script setup content following Vue.js core format
+#[allow(dead_code)]
+pub fn compile_script_setup(
+    content: &str,
+    component_name: &str,
+    is_vapor: bool,
+    is_ts: bool,
+    template_content: Option<&str>,
+) -> Result<ScriptCompileResult, SfcError> {
+    let lazy_hydration_transform = transform_lazy_hydration_macros(content);
+    let content = lazy_hydration_transform
+        .as_ref()
+        .map(|result| result.code.as_str())
+        .unwrap_or(content);
+
+    let mut ctx = ScriptCompileContext::new(content);
+    ctx.analyze();
+
+    // Use arena-allocated Vec for better performance
+    let bump = vize_carton::Bump::new();
+    let mut output: vize_carton::Vec<u8> = vize_carton::Vec::with_capacity_in(4096, &bump);
+
+    // Check if we have props destructure
+    let has_props_destructure = ctx.macros.props_destructure.is_some();
+
+    let (imports, setup_lines, _) = extract_script_sections(content, is_ts).unwrap_or_else(|| {
+        let setup_lines = content
+            .lines()
+            .filter_map(|line| {
+                let trimmed = line.trim();
+                if trimmed.is_empty() {
+                    None
+                } else {
+                    Some(line.to_compact_string())
+                }
+            })
+            .collect();
+        (Vec::new(), setup_lines, Vec::new())
+    });
+
+    // Check if we need PropType import (type-based defineProps in non-vapor TS mode)
+    let needs_prop_type = is_ts
+        && !is_vapor
+        && ctx
+            .macros
+            .define_props
+            .as_ref()
+            .is_some_and(|p| p.type_args.is_some());
+
+    // Add Vapor-specific import or defineComponent import
+    if is_vapor {
+        output.extend_from_slice(
+            b"import { defineVaporComponent as _defineVaporComponent } from 'vue'\n",
+        );
+    } else if needs_prop_type {
+        output.extend_from_slice(
+            b"import { defineComponent as _defineComponent, type PropType } from 'vue'\n",
+        );
+    } else {
+        output.extend_from_slice(b"import { defineComponent as _defineComponent } from 'vue'\n");
+    }
+
+    // Add mergeDefaults import if props destructure has defaults
+    let needs_merge_defaults = has_props_destructure
+        && ctx
+            .macros
+            .props_destructure
+            .as_ref()
+            .map(|d| d.bindings.values().any(|b| b.default.is_some()))
+            .unwrap_or(false);
+    if needs_merge_defaults {
+        output.extend_from_slice(b"import { mergeDefaults as _mergeDefaults } from 'vue'\n");
+    }
+
+    // Add useSlots import if defineSlots was used
+    let has_define_slots = ctx.macros.define_slots.is_some();
+    if has_define_slots {
+        output.extend_from_slice(b"import { useSlots as _useSlots } from 'vue'\n");
+    }
+
+    // Add useModel import if defineModel was used
+    let has_define_model = !ctx.macros.define_models.is_empty();
+    if has_define_model {
+        output.extend_from_slice(b"import { useModel as _useModel } from 'vue'\n");
+    }
+
+    // Output imports (filtering out type-only imports + dedupe)
+    let deduped_imports = dedupe_imports(&imports, false);
+    for import in &deduped_imports {
+        output.extend_from_slice(import.as_bytes());
+    }
+
+    output.push(b'\n');
+
+    // Add comment for props destructure
+    if has_props_destructure {
+        output.extend_from_slice(b"// Reactive Props Destructure (Vue 3.5+)\n\n");
+    }
+
+    // Start __sfc__ definition
+    if is_vapor {
+        output.extend_from_slice(b"const __sfc__ = /*@__PURE__*/_defineVaporComponent({\n");
+    } else {
+        output.extend_from_slice(b"const __sfc__ = /*@__PURE__*/_defineComponent({\n");
+    }
+    output.extend_from_slice(b"  __name: '");
+    output.extend_from_slice(component_name.as_bytes());
+    output.extend_from_slice(b"',\n");
+
+    // Props definition - handle both regular defineProps and destructure
+    emit_props_definition(
+        &mut output,
+        &ctx,
+        has_props_destructure,
+        needs_prop_type,
+        is_ts,
+    );
+
+    // Collect model names for props and emits
+    let model_names: Vec<String> = collect_model_names(&ctx);
+
+    // Add model props if defineModel was used (and no defineProps)
+    if !model_names.is_empty() && ctx.macros.define_props.is_none() && !has_props_destructure {
+        output.extend_from_slice(b"  props: {\n");
+        for model_name in &model_names {
+            output.extend_from_slice(b"    \"");
+            output.extend_from_slice(model_name.as_bytes());
+            output.extend_from_slice(b"\": {},\n");
+        }
+        output.extend_from_slice(b"  },\n");
+    }
+
+    // Emits definition - combine defineEmits and defineModel
+    emit_emits_definition(&mut output, &ctx, &model_names);
+
+    // Prepare setup code and detect top-level await (async setup)
+    let setup_code = setup_lines.join("\n");
+    let has_top_level_await = super::helpers::contains_top_level_await(&setup_code, is_ts);
+
+    // Setup function
+    if has_top_level_await {
+        output.extend_from_slice(b"  async setup(__props, { expose: __expose, emit: __emit }) {\n");
+    } else {
+        output.extend_from_slice(b"  setup(__props, { expose: __expose, emit: __emit }) {\n");
+    }
+
+    // Always call __expose() - Vue runtime requires this for proper component initialization
+    // If defineExpose has args, use those; otherwise call with no args
+    emit_expose(&mut output, &ctx);
+
+    // Collect emit binding name for inclusion in __returned__
+    let emit_binding_name: Option<String> = ctx
+        .macros
+        .define_emits
+        .as_ref()
+        .and_then(|m| m.binding_name.as_deref().map(String::from));
+
+    // defineEmits binding: const emit = __emit
+    if let Some(ref binding_name) = emit_binding_name {
+        output.extend_from_slice(b"  const ");
+        output.extend_from_slice(binding_name.as_bytes());
+        output.extend_from_slice(b" = __emit\n");
+    }
+
+    // Collect props binding for exclusion from __returned__ (props themselves shouldn't be in returned)
+    let mut props_binding_names: FxHashSet<String> = FxHashSet::default();
+
+    // defineProps binding: const props = __props (only if not destructured)
+    if !has_props_destructure {
+        if let Some(ref props_macro) = ctx.macros.define_props {
+            if let Some(ref binding_name) = props_macro.binding_name {
+                output.extend_from_slice(b"  const ");
+                output.extend_from_slice(binding_name.as_bytes());
+                output.extend_from_slice(b" = __props\n");
+                props_binding_names.insert(String::from(binding_name.as_str()));
+            }
+        }
+    }
+
+    // defineSlots binding: const slots = _useSlots()
+    if let Some(ref slots_macro) = ctx.macros.define_slots {
+        if let Some(ref binding_name) = slots_macro.binding_name {
+            output.extend_from_slice(b"  const ");
+            output.extend_from_slice(binding_name.as_bytes());
+            output.extend_from_slice(b" = _useSlots()\n");
+        }
+    }
+
+    // defineModel bindings: const model = _useModel(__props, 'modelValue')
+    // Collect model binding names for __returned__
+    let model_binding_names = emit_model_bindings(&mut output, &ctx);
+
+    // Output setup code, transforming props destructure references
+
+    // Debug: Log props destructure status
+    #[cfg(debug_assertions)]
+    {
+        if ctx.macros.props_destructure.is_some() {
+            eprintln!(
+                "[DEBUG] Props destructure found: {:?}",
+                ctx.macros.props_destructure
+            );
+        } else {
+            eprintln!("[DEBUG] No props destructure found");
+        }
+        eprintln!("[DEBUG] Setup code before transform:\n{}", setup_code);
+    }
+
+    let transformed_setup: String = if let Some(ref destructure) = ctx.macros.props_destructure {
+        let result = transform_destructured_props(&setup_code, destructure);
+        #[cfg(debug_assertions)]
+        eprintln!("[DEBUG] Setup code after transform:\n{}", result);
+        result
+    } else {
+        setup_code.into()
+    };
+
+    // Indent the setup code
+    for line in transformed_setup.lines() {
+        if !line.trim().is_empty() {
+            output.extend_from_slice(b"  ");
+            output.extend_from_slice(line.as_bytes());
+        }
+        output.push(b'\n');
+    }
+
+    let runtime_used_identifiers = collect_runtime_identifier_references(&transformed_setup);
+
+    // Generate __returned__ object
+    let returned_bindings = build_returned_bindings(
+        &mut ctx,
+        has_props_destructure,
+        &props_binding_names,
+        &emit_binding_name,
+        &imports,
+        template_content,
+        &runtime_used_identifiers,
+        &model_binding_names,
+    );
+
+    let returned_props: Vec<String> = returned_bindings
+        .iter()
+        .map(|name| {
+            if is_reserved_word(name) {
+                let mut entry = String::with_capacity(name.len() * 2 + 4);
+                entry.push('"');
+                entry.push_str(name);
+                entry.push_str("\": ");
+                entry.push_str(name);
+                entry
+            } else {
+                name.clone()
+            }
+        })
+        .collect();
+
+    output.extend_from_slice(b"  const __returned__ = { ");
+    output.extend_from_slice(returned_props.join(", ").as_bytes());
+    output.extend_from_slice(b" }\n");
+    output.extend_from_slice(b"  Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+    output.extend_from_slice(b"  return __returned__\n");
+
+    output.extend_from_slice(b"  }\n\n");
+    // Close the component definition
+    if is_vapor {
+        output.extend_from_slice(b"});\n"); // Close _defineVaporComponent(
+    } else {
+        output.extend_from_slice(b"});\n"); // Close _defineComponent(
+    }
+
+    // Convert arena Vec<u8> to String - SAFETY: we only push valid UTF-8
+    #[allow(clippy::disallowed_types)]
+    let output_str: std::string::String =
+        unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };
+
+    // Transform TypeScript to JavaScript only when output is not TS.
+    let mut final_code: String = if is_ts {
+        output_str.into()
+    } else {
+        transform_typescript_to_js(&output_str)
+    };
+    if let Some(transform) = lazy_hydration_transform {
+        let mut code = transform.preamble;
+        code.push_str(&final_code);
+        final_code = code;
+    }
+
+    Ok(ScriptCompileResult {
+        code: final_code,
+        bindings: Some(ctx.bindings),
+    })
+}
+
+/// Emit props definition to the output buffer.
+///
+/// Handles regular defineProps, destructured props with defaults, and type-based props.
+fn emit_props_definition(
+    output: &mut vize_carton::Vec<u8>,
+    ctx: &ScriptCompileContext,
+    has_props_destructure: bool,
+    needs_prop_type: bool,
+    _is_ts: bool,
+) {
+    if has_props_destructure {
+        let destructure = ctx.macros.props_destructure.as_ref().unwrap();
+
+        // Check if there are any defaults
+        let has_defaults = destructure.bindings.values().any(|b| b.default.is_some());
+
+        if has_defaults {
+            // Use mergeDefaults format: _mergeDefaults(runtimeProps, { prop2: default })
+            // Get the original props argument from defineProps (or generate from type args)
+            let original_props: String = if let Some(ref props_macro) = ctx.macros.define_props {
+                if let Some(ref type_args) = props_macro.type_args {
+                    let prop_types = extract_prop_types_from_type(type_args);
+                    if prop_types.is_empty() {
+                        "{}".to_compact_string()
+                    } else {
+                        let mut names: Vec<_> =
+                            prop_types.iter().map(|(n, _)| n.as_str()).collect();
+                        names.sort();
+                        let mut s = String::from("{ ");
+                        for (i, name) in names.iter().enumerate() {
+                            if i > 0 {
+                                s.push_str(", ");
+                            }
+                            s.push_str(name);
+                            s.push_str(": {}");
+                        }
+                        s.push_str(" }");
+                        s
+                    }
+                } else if !props_macro.args.is_empty() {
+                    String::from(props_macro.args.as_str())
+                } else {
+                    "[]".to_compact_string()
+                }
+            } else {
+                "[]".to_compact_string()
+            };
+
+            output.extend_from_slice(b"  props: /*@__PURE__*/_mergeDefaults(");
+            output.extend_from_slice(original_props.as_bytes());
+            output.extend_from_slice(b", {\n");
+
+            // Add defaults
+            for (key, binding) in &destructure.bindings {
+                if let Some(ref default_val) = binding.default {
+                    output.extend_from_slice(b"  ");
+                    output.extend_from_slice(key.as_bytes());
+                    output.extend_from_slice(b": ");
+                    output.extend_from_slice(default_val.as_bytes());
+                    output.push(b'\n');
+                }
+            }
+            output.extend_from_slice(b"}),\n");
+        } else {
+            // No defaults - just use the original props array
+            if let Some(ref props_macro) = ctx.macros.define_props {
+                if !props_macro.args.is_empty() {
+                    output.extend_from_slice(b"  props: ");
+                    output.extend_from_slice(props_macro.args.as_bytes());
+                    output.extend_from_slice(b",\n");
+                }
+            }
+        }
+    } else if let Some(ref props_macro) = ctx.macros.define_props {
+        if let Some(ref type_args) = props_macro.type_args {
+            // For type-based props, extract full prop definitions
+            let prop_types = extract_prop_types_from_type(type_args);
+            if !prop_types.is_empty() {
+                output.extend_from_slice(b"  props: {\n");
+                // Sort props for deterministic output
+                let mut sorted_props: Vec<_> = prop_types.iter().collect();
+                sorted_props.sort_by(|a, b| a.0.cmp(&b.0));
+                for (name, prop_type) in sorted_props {
+                    let runtime_js_type =
+                        add_null_to_runtime_type(&prop_type.js_type, prop_type.nullable);
+                    output.extend_from_slice(b"    ");
+                    output.extend_from_slice(name.as_bytes());
+                    output.extend_from_slice(b": { type: ");
+                    output.extend_from_slice(runtime_js_type.as_bytes());
+                    if needs_prop_type {
+                        if let Some(ref ts_type) = prop_type.ts_type {
+                            if prop_type.js_type == "null" {
+                                output.extend_from_slice(b" as unknown as PropType<");
+                            } else {
+                                output.extend_from_slice(b" as PropType<");
+                            }
+                            // Normalize multi-line types to single line
+                            let normalized: String = String::from(
+                                ts_type.split_whitespace().collect::<Vec<_>>().join(" "),
+                            );
+                            output.extend_from_slice(normalized.as_bytes());
+                            output.push(b'>');
+                        }
+                    }
+                    output.extend_from_slice(b", required: ");
+                    output.extend_from_slice(if prop_type.optional {
+                        b"false"
+                    } else {
+                        b"true"
+                    });
+                    output.extend_from_slice(b" },\n");
+                }
+                output.extend_from_slice(b"  },\n");
+            }
+        } else if !props_macro.args.is_empty() {
+            output.extend_from_slice(b"  props: ");
+            output.extend_from_slice(props_macro.args.as_bytes());
+            output.extend_from_slice(b",\n");
+        }
+    }
+}
+
+/// Collect model names from defineModel calls.
+fn collect_model_names(ctx: &ScriptCompileContext) -> Vec<String> {
+    ctx.macros
+        .define_models
+        .iter()
+        .map(|m| {
+            if m.args.is_empty() {
+                "modelValue".to_compact_string()
+            } else {
+                let args_trimmed = m.args.trim();
+                if args_trimmed.starts_with('\'') || args_trimmed.starts_with('"') {
+                    let quote_char = args_trimmed.chars().next().unwrap();
+                    if let Some(end_pos) = args_trimmed[1..].find(quote_char) {
+                        String::from(&args_trimmed[1..end_pos + 1])
+                    } else {
+                        "modelValue".to_compact_string()
+                    }
+                } else {
+                    "modelValue".to_compact_string()
+                }
+            }
+        })
+        .collect()
+}
+
+/// Emit emits definition to the output buffer.
+///
+/// Combines defineEmits and defineModel emit events.
+fn emit_emits_definition(
+    output: &mut vize_carton::Vec<u8>,
+    ctx: &ScriptCompileContext,
+    model_names: &[String],
+) {
+    let mut all_emits: Vec<String> = Vec::new();
+
+    // Add emits from defineEmits
+    if let Some(ref emits_macro) = ctx.macros.define_emits {
+        if let Some(ref type_args) = emits_macro.type_args {
+            let emit_names = extract_emit_names_from_type(type_args);
+            all_emits.extend(emit_names);
+        } else if !emits_macro.args.is_empty() {
+            // Runtime args - we'll output separately
+        }
+    }
+
+    // Add update:modelValue emits from defineModel
+    for model_name in model_names {
+        let mut name = String::with_capacity(7 + model_name.len());
+        name.push_str("update:");
+        name.push_str(model_name);
+        all_emits.push(name);
+    }
+
+    // Output emits
+    if !all_emits.is_empty() {
+        output.extend_from_slice(b"  emits: [");
+        for (i, name) in all_emits.iter().enumerate() {
+            if i > 0 {
+                output.extend_from_slice(b", ");
+            }
+            output.push(b'"');
+            output.extend_from_slice(name.as_bytes());
+            output.push(b'"');
+        }
+        output.extend_from_slice(b"],\n");
+    } else if let Some(ref emits_macro) = ctx.macros.define_emits {
+        if !emits_macro.args.is_empty() {
+            output.extend_from_slice(b"  emits: ");
+            output.extend_from_slice(emits_macro.args.as_bytes());
+            output.extend_from_slice(b",\n");
+        }
+    }
+}
+
+/// Emit the __expose() call to the output buffer.
+fn emit_expose(output: &mut vize_carton::Vec<u8>, ctx: &ScriptCompileContext) {
+    if let Some(ref expose_macro) = ctx.macros.define_expose {
+        // args contains the argument content (e.g., "{ foo, bar }")
+        let args = expose_macro.args.trim();
+        if args.is_empty() {
+            output.extend_from_slice(b"  __expose();\n");
+        } else {
+            output.extend_from_slice(b"  __expose(");
+            output.extend_from_slice(args.as_bytes());
+            output.extend_from_slice(b");\n");
+        }
+    } else {
+        // No defineExpose, but still need to call __expose() for Vue runtime
+        output.extend_from_slice(b"  __expose();\n");
+    }
+}
+
+/// Emit defineModel bindings and return the binding names.
+fn emit_model_bindings(
+    output: &mut vize_carton::Vec<u8>,
+    ctx: &ScriptCompileContext,
+) -> Vec<String> {
+    let mut model_binding_names: Vec<String> = Vec::new();
+    for model_call in &ctx.macros.define_models {
+        if let Some(ref binding_name) = model_call.binding_name {
+            // Extract model name from args (first string argument) or default to "modelValue"
+            let model_name = if model_call.args.is_empty() {
+                "modelValue".to_compact_string()
+            } else {
+                // Try to extract the first string argument (e.g., 'title' from defineModel('title'))
+                let args_trimmed = model_call.args.trim();
+                if args_trimmed.starts_with('\'') || args_trimmed.starts_with('"') {
+                    // Extract string content
+                    let quote_char = args_trimmed.chars().next().unwrap();
+                    if let Some(end_pos) = args_trimmed[1..].find(quote_char) {
+                        String::from(&args_trimmed[1..end_pos + 1])
+                    } else {
+                        "modelValue".to_compact_string()
+                    }
+                } else {
+                    "modelValue".to_compact_string()
+                }
+            };
+
+            output.extend_from_slice(b"  const ");
+            output.extend_from_slice(binding_name.as_bytes());
+            output.extend_from_slice(b" = _useModel(__props, \"");
+            output.extend_from_slice(model_name.as_bytes());
+            output.extend_from_slice(b"\")\n");
+            model_binding_names.push(String::from(binding_name.as_str()));
+        }
+    }
+    model_binding_names
+}
+
+/// Build the list of bindings to include in `__returned__`.
+///
+/// Filters out compiler macros, destructured props, props bindings, and typed props.
+/// Includes imported identifiers used in the template.
+#[allow(clippy::too_many_arguments)]
+fn build_returned_bindings(
+    ctx: &mut ScriptCompileContext,
+    _has_props_destructure: bool,
+    props_binding_names: &FxHashSet<String>,
+    emit_binding_name: &Option<String>,
+    imports: &[String],
+    template_content: Option<&str>,
+    runtime_used_identifiers: &FxHashSet<String>,
+    _model_binding_names: &[String],
+) -> Vec<String> {
+    // Compiler macros preset - these are compile-time only and should not be in __returned__
+    let compiler_macros: FxHashSet<&str> = runtime_erased_macro_names().collect();
+
+    // Collect destructured prop local names to exclude from __returned__
+    let destructured_prop_locals: FxHashSet<String> = ctx
+        .macros
+        .props_destructure
+        .as_ref()
+        .map(|d| {
+            d.bindings
+                .values()
+                .map(|b| String::from(b.local.as_str()))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    // Collect prop names from type-based defineProps to exclude from __returned__
+    let typed_prop_names: FxHashSet<String> = ctx
+        .macros
+        .define_props
+        .as_ref()
+        .and_then(|p| p.type_args.as_ref())
+        .map(|type_args| {
+            extract_prop_types_from_type(type_args)
+                .iter()
+                .map(|(n, _)| String::from(n.as_str()))
+                .collect()
+        })
+        .unwrap_or_default();
+
+    let imported_identifier_set: FxHashSet<String> = imports
+        .iter()
+        .flat_map(|import| extract_import_identifiers(import).into_iter())
+        .filter(|name| !compiler_macros.contains(name.as_str()))
+        .collect();
+
+    // Generate __returned__ object
+    let mut returned_bindings: Vec<String> = ctx
+        .bindings
+        .bindings
+        .keys()
+        .filter(|name| {
+            // Exclude compiler macros, destructured props, props bindings, and typed props
+            !compiler_macros.contains(name.as_str())
+                && !destructured_prop_locals.contains(*name)
+                && !props_binding_names.contains(*name)
+                && !typed_prop_names.contains(*name)
+                && (!imported_identifier_set.contains(*name)
+                    || runtime_used_identifiers.contains(*name)
+                    || template_content.is_none())
+        })
+        .cloned()
+        .collect();
+
+    // Add emit binding to returned (it's a runtime value that should be exposed)
+    if let Some(ref emit_name) = emit_binding_name {
+        if !returned_bindings.contains(emit_name) {
+            returned_bindings.push(emit_name.clone());
+        }
+    }
+
+    returned_bindings.sort();
+
+    // Parse template to get used identifiers
+    let template_used_ids: TemplateUsedIdentifiers = if let Some(template_src) = template_content {
+        let allocator = Bump::new();
+        let (root, _) = vize_atelier_core::parser::parse(&allocator, template_src);
+        resolve_template_used_identifiers(&root)
+    } else {
+        TemplateUsedIdentifiers::default()
+    };
+
+    // Include imported identifiers that are used in template
+    let mut all_bindings = returned_bindings.clone();
+    for name in &imported_identifier_set {
+        if template_content.is_none()
+            || runtime_used_identifiers.contains(name)
+            || template_used_ids.used_ids.contains(name.as_str())
+        {
+            if !all_bindings.contains(name) {
+                all_bindings.push(name.clone());
+            }
+            // Also add to binding metadata so template compiler knows about it
+            if !ctx.bindings.bindings.contains_key(name.as_str()) {
+                ctx.bindings
+                    .bindings
+                    .insert(name.clone(), BindingType::SetupConst);
+            }
+        }
+    }
+    all_bindings.sort();
+    all_bindings.dedup();
+
+    all_bindings
+}

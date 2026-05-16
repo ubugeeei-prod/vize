@@ -1,11 +1,11 @@
 <script setup lang="ts">
-const model = defineModel<string>({ default: '#000000' })
+const model = defineModel<string>({ default: "#000000" });
 
 defineProps<{
-  label: string
-  description?: string
-  required?: boolean
-}>()
+  label: string;
+  description?: string;
+  required?: boolean;
+}>();
 </script>
 
 <template>
@@ -15,17 +15,8 @@ defineProps<{
       <span v-if="required" class="control-required">*</span>
     </label>
     <div class="control-color-row">
-      <input
-        v-model="model"
-        type="color"
-        class="control-color"
-      >
-      <input
-        v-model="model"
-        type="text"
-        class="control-color-text"
-        placeholder="#000000"
-      >
+      <input v-model="model" type="color" class="control-color" />
+      <input v-model="model" type="text" class="control-color-text" placeholder="#000000" />
     </div>
     <span v-if="description" class="control-desc">{{ description }}</span>
   </div>

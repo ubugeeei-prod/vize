@@ -1,0 +1,18 @@
+---
+source: crates/vize_patina/src/rules/script/no_get_current_instance.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "script/no-get-current-instance",
+        severity: Error,
+        message: "getCurrentInstance() is not supported in Vapor-oriented components",
+        start: 14,
+        end: 32,
+        help: Some(
+            "Avoid instance-level access in Vapor mode because getCurrentInstance() returns null. Prefer explicit Composition API bindings, provide/inject, template refs, or lifecycle hooks instead.",
+        ),
+        labels: [],
+        fix: None,
+    },
+]

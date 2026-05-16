@@ -6,7 +6,7 @@
 //! - Re-exports from vize_carton for convenience
 
 // Re-export core utilities from vize_carton
-pub use vize_carton::{camelize, capitalize, hyphenate, is_simple_identifier};
+pub use vize_carton::{camelize, capitalize, hyphenate, is_simple_identifier, String};
 
 use once_cell::sync::Lazy;
 use rustc_hash::FxHashMap;
@@ -261,7 +261,10 @@ pub fn names_match(a: &str, b: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        is_camel_case, is_camel_case_loose, is_kebab_case, is_kebab_case_loose, is_pascal_case,
+        names_match, to_pascal_case,
+    };
 
     #[test]
     fn test_to_pascal_case() {

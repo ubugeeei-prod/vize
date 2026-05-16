@@ -1,11 +1,17 @@
-//! Virtual TypeScript generator for Vue SFC.
+//! Legacy virtual TypeScript generator used by older batch tests.
 //!
-//! Generates pure TypeScript from Vue SFC for tsgo type checking.
+//! The production path now uses `crate::virtual_ts`, but a lightweight version
+//! is kept here for the focused unit tests that exercise import rewriting and
+//! baseline batch behavior in isolation.
 
 use super::import_rewriter::ImportRewriter;
-use super::source_map::SfcSourceMap;
+use super::source_map::{SfcBlockRange, SfcSourceMap};
 use super::SfcBlockType;
+use crate::virtual_ts::VizeMapping;
 use vize_atelier_sfc::SfcDescriptor;
+use vize_carton::append;
+use vize_carton::cstr;
+use vize_carton::String;
 use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
 
 /// Result of virtual TypeScript generation.
@@ -17,16 +23,32 @@ pub struct VirtualTsResult {
     pub source_map: SfcSourceMap,
 }
 
-/// Vue compiler macros - defined with parameters marked as used.
-const VUE_SETUP_COMPILER_MACROS: &str = r#"// Compiler macros (transformed at compile time by Vue)
-function defineProps<T>(): T { return undefined as unknown as T; }
-function defineEmits<T>(): (event: string, ...args: any[]) => void { return (() => {}) as any; }
+/// Vue setup-scope helpers - defined with parameters marked as used.
+const VUE_SETUP_HELPERS: &str = r#"// Compiler macros (transformed at compile time by Vue)
+type __RuntimePropCtor<T> = T extends readonly (infer U)[] ? __RuntimePropCtor<U> : T extends { type: infer U } ? __RuntimePropCtor<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, unknown> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : unknown;
+type __RuntimePropResolved<T> = T extends { required: true } ? true : T extends { default: any } ? true : false;
+type __RuntimePropShape<T extends Record<string, any>> = { [K in keyof T]: __RuntimePropResolved<T[K]> extends true ? __RuntimePropCtor<T[K]> : __RuntimePropCtor<T[K]> | undefined; };
+type __BatchEmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? { [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[]; } : Record<string, any[]>;
+type __BatchEmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
+type __BatchEmitFn<T> = __BatchEmitShape<T> extends (...args: any[]) => any ? __BatchEmitShape<T> : (<K extends keyof __BatchEmitShape<T>>(event: K, ...args: __BatchEmitArgs<__BatchEmitShape<T>, K>) => void);
+type __DefaultFactory<T> = (props: any) => T;
+type __WithDefaultValue<T> = T | __DefaultFactory<T>;
+type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
+type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
+function defineProps<T>(): T;
+function defineProps<const T extends readonly string[]>(_props: T): { [K in T[number]]?: any };
+function defineProps<const T extends Record<string, any>>(_props: T): __RuntimePropShape<T>;
+function defineProps(_props?: any) { void _props; return undefined as any; }
+function defineEmits<T>(): __BatchEmitFn<T> { return (() => {}) as any; }
+function defineEmits<const T extends readonly string[]>(_events: T): (event: T[number], ...args: any[]) => void { void _events; return (() => {}) as any; }
+function defineEmits<const T extends Record<string, any>>(_events: T): __BatchEmitFn<T> { void _events; return (() => {}) as any; }
 function defineExpose<T>(_exposed?: T): void { void _exposed; }
-function defineModel<T>(_name?: string, _options?: any): any { void _name; void _options; return undefined as unknown as any; }
+function defineModel<T>(): $Vue['Ref']<T | undefined> { return undefined as unknown as $Vue['Ref']<T | undefined>; }
+function defineModel<T>(_options: any): $Vue['Ref']<T> { void _options; return undefined as unknown as $Vue['Ref']<T>; }
+function defineModel<T>(_name: string, _options?: any): $Vue['Ref']<T> { void _name; void _options; return undefined as unknown as $Vue['Ref']<T>; }
 function defineSlots<T>(): T { return undefined as unknown as T; }
-function withDefaults<T, D>(_props: T, _defaults: D): T & D { void _props; void _defaults; return undefined as unknown as T & D; }
-function useTemplateRef<T extends Element | import('vue').ComponentPublicInstance = Element>(_key: string): import('vue').ShallowRef<T | null> { void _key; return undefined as unknown as import('vue').ShallowRef<T | null>; }
-// Mark compiler macros as used
+function withDefaults<T, D extends __WithDefaultsArgs<T>>(_props: T, _defaults: D): __WithDefaultsResult<T, D> { void _props; void _defaults; return undefined as unknown as __WithDefaultsResult<T, D>; }
+function useTemplateRef<T = any>(_key: string): $Vue['ShallowRef']<T | null> { void _key; return undefined as unknown as $Vue['ShallowRef']<T | null>; }
 void defineProps; void defineEmits; void defineExpose; void defineModel; void defineSlots; void withDefaults; void useTemplateRef;
 "#;
 
@@ -36,7 +58,6 @@ const $attrs: Record<string, unknown> = {} as any;
 const $slots: Record<string, (...args: any[]) => any> = {} as any;
 const $refs: Record<string, any> = {} as any;
 const $emit: (...args: any[]) => void = (() => {}) as any;
-// Mark template context as used
 void $attrs; void $slots; void $refs; void $emit;
 "#;
 
@@ -51,116 +72,94 @@ impl VirtualTsGenerator {
 
     /// Generate virtual TypeScript from SFC descriptor.
     pub fn generate(&self, descriptor: &SfcDescriptor, analysis: &Croquis) -> VirtualTsResult {
-        let mut code = String::new();
-        let mut source_map = SfcSourceMap::new();
+        let mut code = String::default();
+        let mut mappings = Vec::new();
+        let mut blocks = Vec::new();
 
-        // Header
         code.push_str("// ============================================\n");
         code.push_str("// Virtual TypeScript for Vue SFC Type Checking\n");
         code.push_str("// Generated by vize\n");
         code.push_str("// ============================================\n\n");
-
-        // Compiler macros (module scope - ambient declarations)
-        code.push_str(VUE_SETUP_COMPILER_MACROS);
+        code.push_str("type $Vue = import('vue');\n\n");
+        code.push_str(VUE_SETUP_HELPERS);
         code.push('\n');
-
-        // Template context (module scope - ambient declarations)
         code.push_str(VUE_TEMPLATE_CONTEXT);
         code.push('\n');
 
-        // Module scope: Extract and emit imports (with .vue -> .vue.ts rewrite)
         code.push_str("// ========== Imports ==========\n");
-
         if let Some(ref script_setup) = descriptor.script_setup {
-            self.emit_imports(
-                &mut code,
-                &script_setup.content,
-                &mut source_map,
-                &script_setup.loc,
-            );
+            self.emit_imports(&mut code, &script_setup.content);
         } else if let Some(ref script) = descriptor.script {
-            self.emit_imports(&mut code, &script.content, &mut source_map, &script.loc);
+            self.emit_imports(&mut code, &script.content);
         }
-
         code.push('\n');
 
-        // User's script content (excluding imports) - directly in module scope
         code.push_str("// ========== Script Content ==========\n");
-
         if let Some(ref script_setup) = descriptor.script_setup {
-            let script_start = code.len() as u32;
+            let start = code.len();
             self.emit_script_content_module_scope(&mut code, &script_setup.content);
-            let script_end = code.len() as u32;
-
-            source_map.add_mapping(
-                script_start,
-                script_end,
-                script_setup.loc.start as u32,
-                SfcBlockType::ScriptSetup,
-            );
+            let end = code.len();
+            mappings.push(VizeMapping {
+                gen_range: start..end,
+                src_range: script_setup.loc.start
+                    ..script_setup.loc.start + script_setup.content.len(),
+            });
+            blocks.push(SfcBlockRange {
+                start: script_setup.loc.start as u32,
+                end: script_setup.loc.start as u32 + script_setup.content.len() as u32,
+                block_type: SfcBlockType::ScriptSetup,
+            });
         } else if let Some(ref script) = descriptor.script {
-            let script_start = code.len() as u32;
+            let start = code.len();
             self.emit_script_content_module_scope(&mut code, &script.content);
-            let script_end = code.len() as u32;
-
-            source_map.add_mapping(
-                script_start,
-                script_end,
-                script.loc.start as u32,
-                SfcBlockType::Script,
-            );
+            let end = code.len();
+            mappings.push(VizeMapping {
+                gen_range: start..end,
+                src_range: script.loc.start..script.loc.start + script.content.len(),
+            });
+            blocks.push(SfcBlockRange {
+                start: script.loc.start as u32,
+                end: script.loc.start as u32 + script.content.len() as u32,
+                block_type: SfcBlockType::Script,
+            });
         }
-
         code.push('\n');
 
-        // Template bindings (wrap in IIFE to check template expressions)
         if let Some(ref template) = descriptor.template {
             code.push_str("// ========== Template Bindings ==========\n");
             code.push_str("(function __template() {\n");
-
-            let template_start = code.len() as u32;
+            let start = code.len();
             self.emit_template_bindings(&mut code, analysis);
-            let template_end = code.len() as u32;
-
-            source_map.add_mapping(
-                template_start,
-                template_end,
-                template.loc.start as u32,
-                SfcBlockType::Template,
-            );
-
+            let end = code.len();
+            mappings.push(VizeMapping {
+                gen_range: start..end,
+                src_range: template.loc.start..template.loc.start + template.content.len(),
+            });
+            blocks.push(SfcBlockRange {
+                start: template.loc.start as u32,
+                end: template.loc.start as u32 + template.content.len() as u32,
+                block_type: SfcBlockType::Template,
+            });
             code.push_str("})();\n\n");
         }
 
-        // Component export
         code.push_str("// ========== Component Export ==========\n");
         code.push_str("import { DefineComponent } from 'vue';\n\n");
-
-        // Generate Props/Emits interfaces from analysis
         self.emit_component_types(&mut code, analysis);
-
         code.push_str("declare const __component: DefineComponent<__Props, {}, {}, {}, {}, {}, {}, __Emits>;\n");
         code.push_str("export default __component;\n");
 
-        VirtualTsResult { code, source_map }
+        VirtualTsResult {
+            code,
+            source_map: SfcSourceMap::new(mappings, blocks),
+        }
     }
 
-    /// Emit imports with .vue -> .vue.ts rewrite using OXC-based ImportRewriter.
-    fn emit_imports(
-        &self,
-        code: &mut String,
-        script: &str,
-        _source_map: &mut SfcSourceMap,
-        _loc: &vize_atelier_sfc::BlockLocation,
-    ) {
-        // Use ImportRewriter for AST-based import rewriting
-        let rewriter = ImportRewriter::new();
-        let rewrite_result = rewriter.rewrite(script, oxc_span::SourceType::ts());
-
-        // Extract import lines from the rewritten code
-        for line in rewrite_result.code.lines() {
-            let trimmed = line.trim();
-            if trimmed.starts_with("import ") {
+    /// Emit imports with `.vue -> .vue.ts` rewrite.
+    fn emit_imports(&self, code: &mut String, script: &str) {
+        let rewritten = ImportRewriter::new().rewrite(script, oxc_span::SourceType::ts());
+        for line in rewritten.code.lines() {
+            if line.trim().starts_with("import ") {
                 code.push_str("  ");
                 code.push_str(line);
                 code.push('\n');
@@ -173,11 +172,9 @@ impl VirtualTsGenerator {
         let mut first_content = true;
         for line in script.lines() {
             let trimmed = line.trim();
-            // Skip import statements (already emitted)
             if trimmed.starts_with("import ") {
                 continue;
             }
-            // Skip empty lines at the very start
             if first_content && trimmed.is_empty() {
                 continue;
             }
@@ -189,33 +186,32 @@ impl VirtualTsGenerator {
 
     /// Emit template binding references.
     fn emit_template_bindings(&self, code: &mut String, analysis: &Croquis) {
-        // Emit void statements for all bindings to trigger type checking
-        for (name, _binding_type) in analysis.bindings.iter() {
-            code.push_str(&format!("    void {};\n", name));
+        for (name, _) in analysis.bindings.iter() {
+            append!(*code, "    void {name};\n");
         }
     }
 
     /// Emit component type definitions.
     fn emit_component_types(&self, code: &mut String, analysis: &Croquis) {
-        // Props interface
         code.push_str("export interface __Props {\n");
         for prop in analysis.macros.props() {
             let optional = if !prop.required { "?" } else { "" };
             let prop_type = prop.prop_type.as_deref().unwrap_or("unknown");
-            code.push_str(&format!("  {}{}: {};\n", prop.name, optional, prop_type));
+            append!(*code, "  {}{}: {};\n", prop.name, optional, prop_type);
         }
         code.push_str("}\n\n");
 
-        // Emits interface
         code.push_str("export interface __Emits {\n");
         for emit in analysis.macros.emits() {
             if let Some(ref payload_type) = emit.payload_type {
-                code.push_str(&format!(
+                append!(
+                    *code,
                     "  (e: '{}', payload: {}): void;\n",
-                    emit.name, payload_type
-                ));
+                    emit.name,
+                    payload_type
+                );
             } else {
-                code.push_str(&format!("  (e: '{}'): void;\n", emit.name));
+                append!(*code, "  (e: '{}'): void;\n", emit.name);
             }
         }
         code.push_str("}\n\n");
@@ -223,12 +219,11 @@ impl VirtualTsGenerator {
 
     /// Generate virtual TypeScript from SFC content string.
     pub fn generate_from_content(&self, content: &str) -> Result<VirtualTsResult, String> {
-        let options = vize_atelier_sfc::SfcParseOptions::default();
         let descriptor =
-            vize_atelier_sfc::parse_sfc(content, options).map_err(|e| format!("{:?}", e))?;
+            vize_atelier_sfc::parse_sfc(content, vize_atelier_sfc::SfcParseOptions::default())
+                .map_err(|error| cstr!("{error:?}"))?;
 
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-
         if let Some(ref script_setup) = descriptor.script_setup {
             analyzer.analyze_script_setup(&script_setup.content);
         } else if let Some(ref script) = descriptor.script {
@@ -241,9 +236,7 @@ impl VirtualTsGenerator {
             analyzer.analyze_template(&root);
         }
 
-        let analysis = analyzer.finish();
-
-        Ok(self.generate(&descriptor, &analysis))
+        Ok(self.generate(&descriptor, &analyzer.finish()))
     }
 }
 
@@ -255,7 +248,7 @@ impl Default for VirtualTsGenerator {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::VirtualTsGenerator;
 
     #[test]
     fn test_generate_from_content() {
@@ -272,26 +265,7 @@ const message = ref('Hello')
 </script>
 "#;
 
-        let result = generator.generate_from_content(content);
-        assert!(result.is_ok());
-
-        let result = result.unwrap();
-        // Should have .vue.ts import
-        assert!(result.code.contains("./Child.vue.ts"));
-        // Should have compiler macros
-        assert!(result.code.contains("function defineProps"));
-        // Should have template scope
-        assert!(result.code.contains("function __template()"));
-    }
-
-    #[test]
-    fn test_rewrite_import_line() {
-        let rewriter = super::super::import_rewriter::ImportRewriter::new();
-
-        let result = rewriter.rewrite("import App from './App.vue'", oxc_span::SourceType::ts());
-        assert_eq!(result.code, "import App from './App.vue.ts'");
-
-        let result = rewriter.rewrite("import { ref } from 'vue'", oxc_span::SourceType::ts());
-        assert_eq!(result.code, "import { ref } from 'vue'");
+        let result = generator.generate_from_content(content).unwrap();
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

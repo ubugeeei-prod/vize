@@ -100,7 +100,8 @@ impl InputNode {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::InputNode;
+    use crate::render::NodeKind;
 
     #[test]
     fn test_input_node_new() {

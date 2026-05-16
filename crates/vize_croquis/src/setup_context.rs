@@ -185,7 +185,8 @@ impl SetupContextTracker {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{SetupContextTracker, SetupContextViolationKind};
+    use vize_carton::CompactString;
 
     #[test]
     fn test_violation_kind_from_api() {

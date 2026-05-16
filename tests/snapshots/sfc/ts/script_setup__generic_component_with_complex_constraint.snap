@@ -1,7 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, renderSlot as _renderSlot, withModifiers as _withModifiers } from "vue"
@@ -12,14 +11,16 @@ export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
     initialState: { type: null, required: true },
-    onSubmit: { type: Object, required: true }
+    onSubmit: { type: Function, required: true }
   },
   setup(__props: any) {
 
 const formData = ref<FormShape | null>(null)
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("form", { onSubmit: _withModifiers(() => {}, ["prevent"]) }, [ _renderSlot(_ctx.$slots, "default", { data: formData.value }) ], 40 /* PROPS, NEED_HYDRATION */, ["onSubmit"]))
+  return (_openBlock(), _createElementBlock("form", {
+      onSubmit: _withModifiers(() => {}, ["prevent"])
+    }, [ _renderSlot(_ctx.$slots, "default", {data: formData.value}) ], 40 /* PROPS, NEED_HYDRATION */, ["onSubmit"]))
 }
 }
 

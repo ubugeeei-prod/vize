@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
+assertion_line: 552
+expression: result
+---
+try {
+    console.log(__props.data)
+} catch (error) {
+    console.log(error)
+} finally {
+    console.log(__props.error)
+}

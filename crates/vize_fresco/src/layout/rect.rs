@@ -187,7 +187,7 @@ impl From<Rect> for (u16, u16, u16, u16) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::Rect;
 
     #[test]
     fn test_rect_new() {

@@ -21,8 +21,12 @@
 //!                              +-- OxlintBridge --> oxlint (future)
 //! ```
 
-use crate::diagnostic::Severity;
+#![allow(clippy::disallowed_macros)]
+
+use crate::diagnostic::{render_help, HelpRenderTarget, Severity};
 use crate::linter::LintResult;
+use vize_carton::String;
+use vize_carton::ToCompactString;
 
 /// An emitter that can transmit lint diagnostics to a destination.
 ///
@@ -87,7 +91,7 @@ impl Telegraph {
         self.emitters
             .iter()
             .map(|e| {
-                let mut output = String::new();
+                let mut output = String::default();
                 for (result, source) in results {
                     output.push_str(&e.emit(result, source));
                 }
@@ -128,7 +132,7 @@ impl Emitter for TextEmitter {
         use crate::output::format_results;
         use crate::OutputFormat;
 
-        let files = vec![(result.filename.clone(), source.to_string())];
+        let files = vec![(result.filename.clone(), source.to_compact_string())];
         format_results(std::slice::from_ref(result), &files, OutputFormat::Text)
     }
 
@@ -138,7 +142,7 @@ impl Emitter for TextEmitter {
         let file_count = results.len();
 
         if total_errors == 0 && total_warnings == 0 {
-            return String::new();
+            return String::default();
         }
 
         format!(
@@ -150,6 +154,7 @@ impl Emitter for TextEmitter {
             file_count,
             if file_count == 1 { "" } else { "s" },
         )
+        .into()
     }
 }
 
@@ -171,7 +176,7 @@ impl Emitter for JsonEmitter {
 
     fn emit_summary(&self, _results: &[LintResult]) -> String {
         // JSON format includes all data in emit(), no separate summary needed
-        String::new()
+        String::default()
     }
 }
 
@@ -235,12 +240,17 @@ impl LspEmitter {
                     Severity::Warning => 2,
                 },
                 message: if let Some(help) = &d.help {
-                    format!("{}\n{}", d.message, help)
+                    format!(
+                        "{}\n{}",
+                        d.message,
+                        render_help(help, HelpRenderTarget::PlainText)
+                    )
+                    .into()
                 } else {
-                    d.message.to_string()
+                    d.message.to_compact_string()
                 },
-                source: "vize-patina".to_string(),
-                code: d.rule_name.to_string(),
+                source: "vize-patina".to_compact_string(),
+                code: d.rule_name.to_compact_string(),
             })
             .collect()
     }
@@ -270,12 +280,17 @@ impl LspEmitter {
                         Severity::Warning => 2,
                     },
                     message: if let Some(help) = &d.help {
-                        format!("{}\n{}", d.message, help)
+                        format!(
+                            "{}\n{}",
+                            d.message,
+                            render_help(help, HelpRenderTarget::PlainText)
+                        )
+                        .into()
                     } else {
-                        d.message.to_string()
+                        d.message.to_compact_string()
                     },
-                    source: "vize-patina".to_string(),
-                    code: d.rule_name.to_string(),
+                    source: "vize-patina".to_compact_string(),
+                    code: d.rule_name.to_compact_string(),
                 }
             })
             .collect()
@@ -311,11 +326,13 @@ impl Emitter for LspEmitter {
 
     fn emit(&self, result: &LintResult, _source: &str) -> String {
         let diagnostics = Self::to_lsp_diagnostics(result);
-        serde_json::to_string_pretty(&diagnostics).unwrap_or_default()
+        serde_json::to_string_pretty(&diagnostics)
+            .unwrap_or_default()
+            .into()
     }
 
     fn emit_summary(&self, _results: &[LintResult]) -> String {
-        String::new()
+        String::default()
     }
 }
 
@@ -330,8 +347,9 @@ pub struct OxlintBridge {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{offset_to_line_col, LintResult, LspEmitter, Telegraph};
     use crate::diagnostic::LintDiagnostic;
+    use vize_carton::ToCompactString;
 
     #[test]
     fn test_telegraph_with_text() {
@@ -348,7 +366,7 @@ mod tests {
     #[test]
     fn test_lsp_diagnostic_conversion() {
         let result = LintResult {
-            filename: "test.vue".to_string(),
+            filename: "test.vue".to_compact_string(),
             diagnostics: vec![LintDiagnostic::error(
                 "vue/require-v-for-key",
                 "Missing key",
@@ -370,7 +388,7 @@ mod tests {
     fn test_lsp_diagnostic_with_source() {
         let source = "line1\nline2\nline3 v-for=\"item in items\"";
         let result = LintResult {
-            filename: "test.vue".to_string(),
+            filename: "test.vue".to_compact_string(),
             diagnostics: vec![LintDiagnostic::error(
                 "vue/require-v-for-key",
                 "Missing key",

@@ -29,9 +29,7 @@ impl TextWrap {
             WrapMode::Word => Self::wrap_word(text, max_width),
             WrapMode::Char => Self::wrap_char(text, max_width),
             WrapMode::Truncate => {
-                vec![CompactString::from(TextWidth::truncate_with_ellipsis(
-                    text, max_width,
-                ))]
+                vec![TextWidth::truncate_with_ellipsis(text, max_width)]
             }
         }
     }
@@ -43,7 +41,7 @@ impl TextWrap {
         }
 
         let mut lines = Vec::new();
-        let mut current_line = String::new();
+        let mut current_line = CompactString::default();
         let mut current_width = 0;
 
         for word in text.split_inclusive(|c: char| c.is_whitespace()) {
@@ -99,7 +97,7 @@ impl TextWrap {
         }
 
         let mut lines = Vec::new();
-        let mut current_line = String::new();
+        let mut current_line = CompactString::default();
         let mut current_width = 0;
 
         for seg in segment(text) {
@@ -107,7 +105,7 @@ impl TextWrap {
             if current_width + seg.width > max_width {
                 // Finish current line
                 if !current_line.is_empty() {
-                    lines.push(CompactString::from(&current_line));
+                    lines.push(current_line.clone());
                 }
                 current_line.clear();
                 current_width = 0;
@@ -126,7 +124,7 @@ impl TextWrap {
 
         // Don't forget the last line
         if !current_line.is_empty() {
-            lines.push(CompactString::from(current_line));
+            lines.push(current_line);
         }
 
         if lines.is_empty() {
@@ -186,7 +184,7 @@ impl WrappedLine {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{TextWrap, WrapMode};
 
     #[test]
     fn test_wrap_no_wrap() {

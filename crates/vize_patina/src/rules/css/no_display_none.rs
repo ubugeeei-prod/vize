@@ -112,7 +112,7 @@ impl NoDisplayNone {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoDisplayNone;
     use crate::rules::css::CssLinter;
 
     fn create_linter() -> CssLinter {

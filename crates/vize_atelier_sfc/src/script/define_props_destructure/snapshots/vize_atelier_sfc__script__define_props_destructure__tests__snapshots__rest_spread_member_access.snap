@@ -1,0 +1,10 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+const status = computed(() => {
+    if (__props.status.reblog) return __props.status.reblog
+    return __props.status
+})
+const rebloggedBy = computed(() => __props.status.reblog ? __props.status.account : null)
+console.log(__props.actions)

@@ -28,6 +28,8 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::visitor::parse_v_for_variables;
+use vize_carton::String;
+use vize_carton::ToCompactString;
 use vize_relief::ast::{ElementNode, ExpressionNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -73,7 +75,7 @@ impl Rule for NoUseVIfWithVFor {
                 .map(|exp| {
                     parse_v_for_variables(exp)
                         .into_iter()
-                        .map(|s| s.to_string())
+                        .map(|s| s.to_compact_string())
                         .collect()
                 })
                 .unwrap_or_default();
@@ -84,7 +86,9 @@ impl Rule for NoUseVIfWithVFor {
                     ExpressionNode::Simple(s) => s.content.as_str(),
                     ExpressionNode::Compound(_) => "",
                 };
-                v_for_vars.iter().any(|var| v_if_content.contains(var))
+                v_for_vars
+                    .iter()
+                    .any(|var| v_if_content.contains(var.as_str()))
             } else {
                 false
             };
@@ -119,7 +123,7 @@ impl Rule for NoUseVIfWithVFor {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoUseVIfWithVFor;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -157,7 +161,7 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0].message.contains("v-if"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]
@@ -168,9 +172,7 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 1);
-        assert!(result.diagnostics[0]
-            .message
-            .contains("does not have access"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

@@ -1,4 +1,4 @@
-import { defineConfig } from '@vizejs/vite-plugin'
+import { defineConfig } from "vize";
 
 // Static config example
 export default defineConfig({
@@ -10,14 +10,14 @@ export default defineConfig({
     cacheHandlers: true,
   },
   vite: {
-    scanPatterns: ['src/**/*.vue'],
-    ignorePatterns: ['node_modules/**', 'dist/**'],
+    scanPatterns: ["src/**/*.vue"],
+    ignorePatterns: ["node_modules/**", "dist/**"],
   },
   linter: {
     enabled: true,
     categories: {
-      correctness: 'error',
-      suspicious: 'warn',
+      correctness: "error",
+      suspicious: "warn",
     },
   },
   typeChecker: {
@@ -31,21 +31,21 @@ export default defineConfig({
     tabWidth: 2,
     semi: true,
     singleQuote: true,
-    trailingComma: 'all',
+    trailingComma: "all",
   },
   musea: {
-    include: ['src/**/*.art.vue'],
-    basePath: '/__musea__',
+    include: ["src/**/*.art.vue"],
+    basePath: "/__musea__",
     vrt: {
       threshold: 0.1,
-      viewports: [{ width: 1280, height: 720, name: 'desktop' }],
+      viewports: [{ width: 1280, height: 720, name: "desktop" }],
     },
   },
   globalTypes: {
-    $t: '(key: string) => string',
-    $router: { type: 'import("vue-router").Router', defaultValue: 'undefined' },
+    $t: "(key: string) => string",
+    $router: { type: 'import("vue-router").Router', defaultValue: "undefined" },
   },
-})
+});
 
 // Dynamic config example (uncomment to use):
 //

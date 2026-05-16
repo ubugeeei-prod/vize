@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<Foo v-bind=\"attrs\" :[name]=\"value\" />\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Foo"), _mergeProps(_mergeProps(_normalizeProps(_guardReactiveProps(_ctx.attrs)), _normalizeProps({ [_ctx.name || ""]: _ctx.value })), _attrs), null, _parent))
+}

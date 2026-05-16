@@ -8,8 +8,9 @@
 #[allow(dead_code)]
 use super::utils::{extract_type_args, find_call_paren, find_matching_paren};
 use super::MacroCall;
+use vize_carton::String;
 
-pub const DEFINE_MODEL: &str = "defineModel";
+pub use vize_croquis::macros::DEFINE_MODEL;
 
 /// Extract all defineModel calls from source (can appear multiple times)
 #[allow(dead_code)]
@@ -23,7 +24,7 @@ pub fn extract_define_model(content: &str) -> Vec<MacroCall> {
 
         if let Some(paren_start) = find_call_paren(after) {
             if let Some(paren_end) = find_matching_paren(&after[paren_start..]) {
-                let args = after[paren_start + 1..paren_start + paren_end].to_string();
+                let args = String::from(&after[paren_start + 1..paren_start + paren_end]);
                 let type_args = extract_type_args(&after[..paren_start]);
                 calls.push(MacroCall {
                     start,
@@ -58,7 +59,7 @@ pub struct ModelDecl {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::extract_define_model;
 
     #[test]
     fn test_extract_define_model_single() {
@@ -83,6 +84,6 @@ const lastName = defineModel('lastName')
         let content = "const count = defineModel('count', { type: Number, default: 0 })";
         let result = extract_define_model(content);
         assert_eq!(result.len(), 1);
-        assert!(result[0].args.contains("'count'"));
+        insta::assert_debug_snapshot!(result);
     }
 }

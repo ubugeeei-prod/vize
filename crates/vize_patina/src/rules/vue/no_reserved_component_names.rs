@@ -137,7 +137,7 @@ impl Rule for NoReservedComponentNames {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoReservedComponentNames;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

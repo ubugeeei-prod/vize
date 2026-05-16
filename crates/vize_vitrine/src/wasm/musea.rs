@@ -1,6 +1,14 @@
 //! Musea (Art file) WASM bindings.
+//!
+//! FFI boundary code: uses std types for JavaScript interop.
+#![allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
 
 use super::to_js_value;
+use vize_carton::cstr;
 use wasm_bindgen::prelude::*;
 
 /// Parse Art file (*.art.vue)
@@ -14,7 +22,9 @@ pub fn parse_art_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue
         .and_then(|v| v.as_string())
         .unwrap_or_else(|| "anonymous.art.vue".to_string());
 
-    let parse_opts = ArtParseOptions { filename };
+    let parse_opts = ArtParseOptions {
+        filename: filename.into(),
+    };
 
     let descriptor =
         parse_art(&allocator, source, parse_opts).map_err(|e| JsValue::from_str(&e.to_string()))?;
@@ -62,7 +72,9 @@ pub fn art_to_csf_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
         .and_then(|v| v.as_string())
         .unwrap_or_else(|| "anonymous.art.vue".to_string());
 
-    let parse_opts = ArtParseOptions { filename };
+    let parse_opts = ArtParseOptions {
+        filename: filename.into(),
+    };
 
     let descriptor =
         parse_art(&allocator, source, parse_opts).map_err(|e| JsValue::from_str(&e.to_string()))?;
@@ -92,7 +104,9 @@ pub fn generate_art_doc_wasm(source: &str, options: JsValue) -> Result<JsValue, 
         .and_then(|v| v.as_string())
         .unwrap_or_else(|| "anonymous.art.vue".to_string());
 
-    let parse_opts = ArtParseOptions { filename };
+    let parse_opts = ArtParseOptions {
+        filename: filename.into(),
+    };
 
     let descriptor =
         parse_art(&allocator, source, parse_opts).map_err(|e| JsValue::from_str(&e.to_string()))?;
@@ -125,7 +139,7 @@ pub fn generate_art_doc_wasm(source: &str, options: JsValue) -> Result<JsValue, 
         include_metadata,
         include_toc,
         toc_threshold,
-        base_path: String::new(),
+        base_path: vize_carton::CompactString::default(),
         title: None,
         include_timestamp: false,
     };
@@ -161,7 +175,7 @@ pub fn generate_art_catalog_wasm(
         let source_val = sources.get(idx);
         if let Some(source) = source_val.as_string() {
             let parse_opts = ArtParseOptions {
-                filename: format!("component_{}.art.vue", idx),
+                filename: cstr!("component_{idx}.art.vue"),
             };
 
             if let Ok(descriptor) = parse_art(&allocator, &source, parse_opts) {
@@ -186,8 +200,8 @@ pub fn generate_art_catalog_wasm(
         include_metadata,
         include_toc: true,
         toc_threshold: 5,
-        base_path: String::new(),
-        title,
+        base_path: vize_carton::CompactString::default(),
+        title: title.map(Into::into),
         include_timestamp: false,
     };
 
@@ -216,7 +230,9 @@ pub fn generate_art_palette_wasm(source: &str, options: JsValue) -> Result<JsVal
         .and_then(|v| v.as_string())
         .unwrap_or_else(|| "anonymous.art.vue".to_string());
 
-    let parse_opts = ArtParseOptions { filename };
+    let parse_opts = ArtParseOptions {
+        filename: filename.into(),
+    };
 
     let descriptor =
         parse_art(&allocator, source, parse_opts).map_err(|e| JsValue::from_str(&e.to_string()))?;

@@ -216,7 +216,7 @@ fn split_descendant_selector(selector: &str) -> Option<(&str, &str)> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::PreferNestedSelectors;
     use crate::rules::css::CssLinter;
 
     fn create_linter() -> CssLinter {

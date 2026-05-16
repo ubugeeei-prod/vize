@@ -6,13 +6,13 @@ Vue Single File Component (SFC) を使った Fresco の例です。
 ## セットアップ
 
 ```bash
-pnpm install
+vp install
 ```
 
 ## ビルド
 
 ```bash
-pnpm build
+vp build
 ```
 
 ## 実行
@@ -27,7 +27,7 @@ node dist/main.js
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from "vue";
 
 const count = ref(0);
 </script>
@@ -43,14 +43,17 @@ const count = ref(0);
 
 ```vue
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed } from "vue";
 
-const props = withDefaults(defineProps<{
-  initialValue?: number;
-  fg?: string;
-}>(), {
-  initialValue: 0,
-});
+const props = withDefaults(
+  defineProps<{
+    initialValue?: number;
+    fg?: string;
+  }>(),
+  {
+    initialValue: 0,
+  },
+);
 
 const emit = defineEmits<{
   change: [value: number];
@@ -60,7 +63,7 @@ const count = ref(props.initialValue);
 
 const increment = () => {
   count.value++;
-  emit('change', count.value);
+  emit("change", count.value);
 };
 </script>
 
@@ -75,7 +78,7 @@ const increment = () => {
 
 ```vue
 <script setup lang="ts">
-import { Spinner, ProgressBar } from '@vizejs/fresco';
+import { Spinner, ProgressBar } from "@vizejs/fresco";
 
 const progress = ref(50);
 </script>
@@ -94,14 +97,12 @@ const progress = ref(50);
 
 ```vue
 <script lang="ts">
-import { defineComponent, h } from 'vue';
-import { Box, Text } from '@vizejs/fresco';
+import { defineComponent, h } from "vue";
+import { Box, Text } from "@vizejs/fresco";
 
 export default defineComponent({
   setup() {
-    return () => h(Box, { border: 'single' }, [
-      h(Text, { bold: true }, 'Hello')
-    ]);
+    return () => h(Box, { border: "single" }, [h(Text, { bold: true }, "Hello")]);
   },
 });
 </script>
@@ -111,16 +112,14 @@ export default defineComponent({
 
 ```ts
 // vite.config.ts
-import { vize } from '@vizejs/vite-plugin';
+import { vize } from "@vizejs/vite-plugin";
 
 export default defineConfig({
-  plugins: [
-    vize(),
-  ],
+  plugins: [vize()],
   resolve: {
     alias: {
       // SSR shim（script setup 用）
-      '@vue/runtime-core/server-renderer': resolve(__dirname, 'ssr-shim.ts'),
+      "@vue/runtime-core/server-renderer": resolve(__dirname, "ssr-shim.ts"),
     },
   },
 });

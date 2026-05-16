@@ -3,6 +3,7 @@
 //! Provides code lenses for:
 //! - Script setup bindings (usage count)
 //! - Component references
+#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! - Event handler references
 
 use tower_lsp::lsp_types::{CodeLens, Command, Position, Range, Url};
@@ -16,7 +17,7 @@ impl CodeLensService {
         let mut lenses = Vec::new();
 
         let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string(),
+            filename: uri.path().to_string().into(),
             ..Default::default()
         };
 
@@ -86,6 +87,7 @@ impl CodeLensService {
                             character: 0,
                         },
                     },
+                    #[allow(clippy::disallowed_macros)]
                     command: Some(Command {
                         title: format!(
                             "{} reference{}",
@@ -233,7 +235,7 @@ impl CodeLensService {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::CodeLensService;
 
     #[test]
     fn test_find_declarations() {

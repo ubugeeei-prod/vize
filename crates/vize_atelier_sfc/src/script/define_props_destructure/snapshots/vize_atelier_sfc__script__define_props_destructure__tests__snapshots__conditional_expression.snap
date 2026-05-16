@@ -1,0 +1,6 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+const display = __props.show ? __props.msg : 'hidden'
+const result = __props.show && __props.msg || 'default'

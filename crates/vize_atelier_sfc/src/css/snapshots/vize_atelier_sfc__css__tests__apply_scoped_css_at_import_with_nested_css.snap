@@ -1,0 +1,11 @@
+---
+source: crates/vize_atelier_sfc/src/css/tests.rs
+expression: result
+---
+@import "custom.css";
+footer[data-v-abc]{
+  width: 100%;
+  @media (--mobile) {
+    padding: 1rem;
+  }
+}

@@ -1,0 +1,6 @@
+# Keep GitHub language statistics focused on authored source code.
+*.snap linguist-generated=true
+**/__snapshots__/** linguist-generated=true
+
+# Embedded third-party repositories are fixtures, not part of the project source.
+tests/_fixtures/_git/** linguist-vendored=true

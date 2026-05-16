@@ -1,5 +1,7 @@
 //! Double-buffered terminal buffer.
 
+use compact_str::ToCompactString;
+
 use super::cell::{Cell, Style};
 use crate::layout::Rect;
 
@@ -106,7 +108,7 @@ impl Buffer {
     /// Set a character at the given position with optional style.
     pub fn set_char(&mut self, x: u16, y: u16, ch: char, style: Option<Style>) {
         if let Some(cell) = self.get_mut(x, y) {
-            cell.set_symbol(ch.to_string());
+            cell.set_symbol(ch.to_compact_string());
             if let Some(s) = style {
                 cell.set_style(s);
             }
@@ -131,7 +133,7 @@ impl Buffer {
 
             // Set the main character cell
             if let Some(cell) = self.get_mut(col, y) {
-                cell.set_symbol(ch.to_string());
+                cell.set_symbol(ch.to_compact_string());
                 cell.set_style(style);
                 cell.is_continuation = false;
             }
@@ -217,7 +219,8 @@ impl Default for Buffer {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::Buffer;
+    use crate::terminal::cell::{Cell, Style};
 
     #[test]
     fn test_buffer_new() {

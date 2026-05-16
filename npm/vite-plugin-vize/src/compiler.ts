@@ -1,26 +1,46 @@
 import fs from "node:fs";
 import * as native from "@vizejs/native";
-import type { CompiledModule, BatchFileInput, BatchCompileResultWithFiles } from "./types.js";
-import { generateScopeId } from "./utils.js";
+import type {
+  CompiledModule,
+  BatchFileInput,
+  BatchCompileResultWithFiles,
+  NativeStyleBlockInfo,
+  StyleBlockInfo,
+} from "./types.ts";
+import {
+  buildCompileBatchOptions,
+  buildCompileFileOptions,
+  type CompileBatchOptions,
+  type CompileFileOptions,
+} from "./compile-options.ts";
+import { generateScopeId } from "./utils/index.ts";
 
 const { compileSfc, compileSfcBatchWithResults } = native;
+
+function normalizeStyleBlocks(styles: NativeStyleBlockInfo[] | undefined): StyleBlockInfo[] {
+  if (!styles) {
+    return [];
+  }
+
+  return styles.map((block) => ({
+    content: block.content,
+    lang: block.lang ?? null,
+    scoped: block.scoped,
+    module: block.module ? (block.moduleName ?? true) : false,
+    index: block.index,
+  }));
+}
 
 export function compileFile(
   filePath: string,
   cache: Map<string, CompiledModule>,
-  options: { sourceMap: boolean; ssr: boolean },
+  options: CompileFileOptions,
   source?: string,
 ): CompiledModule {
   const content = source ?? fs.readFileSync(filePath, "utf-8");
   const scopeId = generateScopeId(filePath);
-  const hasScoped = /<style[^>]*\bscoped\b/.test(content);
 
-  const result = compileSfc(content, {
-    filename: filePath,
-    sourceMap: options.sourceMap,
-    ssr: options.ssr,
-    scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
-  });
+  const result = compileSfc(content, buildCompileFileOptions(filePath, options));
 
   if (result.errors.length > 0) {
     const errorMsg = result.errors.join("\n");
@@ -37,7 +57,12 @@ export function compileFile(
     code: result.code,
     css: result.css,
     scopeId,
-    hasScoped,
+    hasScoped: result.hasScoped,
+    templateHash: result.templateHash,
+    styleHash: result.styleHash,
+    scriptHash: result.scriptHash,
+    macroArtifacts: result.macroArtifacts ?? [],
+    styles: normalizeStyleBlocks(result.styles),
   };
 
   cache.set(filePath, compiled);
@@ -51,16 +76,14 @@ export function compileFile(
 export function compileBatch(
   files: { path: string; source: string }[],
   cache: Map<string, CompiledModule>,
-  options: { ssr: boolean },
+  options: CompileBatchOptions,
 ): BatchCompileResultWithFiles {
   const inputs: BatchFileInput[] = files.map((f) => ({
     path: f.path,
     source: f.source,
   }));
 
-  const result = compileSfcBatchWithResults(inputs, {
-    ssr: options.ssr,
-  });
+  const result = compileSfcBatchWithResults(inputs, buildCompileBatchOptions(options));
 
   // Update cache with results
   for (const fileResult of result.results) {
@@ -73,6 +96,8 @@ export function compileBatch(
         templateHash: fileResult.templateHash,
         styleHash: fileResult.styleHash,
         scriptHash: fileResult.scriptHash,
+        macroArtifacts: fileResult.macroArtifacts ?? [],
+        styles: normalizeStyleBlocks(fileResult.styles),
       });
     }
 

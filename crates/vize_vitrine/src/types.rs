@@ -1,4 +1,9 @@
 //! Shared types for bindings.
+//!
+//! These types are FFI boundary types used by both NAPI and WASM builds,
+//! so they use `std::string::String` for JavaScript interop compatibility.
+
+#![allow(clippy::disallowed_types)]
 
 use serde::{Deserialize, Serialize};
 
@@ -40,6 +45,9 @@ pub struct CompilerOptions {
     /// Whether the template contains TypeScript
     #[serde(default)]
     pub is_ts: Option<bool>,
+    /// Whether the template targets a custom renderer instead of the DOM.
+    #[serde(default)]
+    pub custom_renderer: Option<bool>,
     /// Script extension handling: "preserve" (keep TypeScript) or "downcompile" (transpile to JS)
     /// Defaults to "downcompile"
     #[serde(default)]

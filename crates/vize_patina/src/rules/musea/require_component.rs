@@ -47,7 +47,7 @@ impl MuseaRule for RequireComponent {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{MuseaLintResult, MuseaRule, RequireComponent};
 
     #[test]
     fn test_valid() {

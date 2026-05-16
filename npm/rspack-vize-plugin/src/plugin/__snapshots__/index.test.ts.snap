@@ -1,0 +1,7 @@
+exports[`does not override Vue flags that are already defined 1`] = `
+"{\\n  \\"__VUE_PROD_DEVTOOLS__\\": \\"true\\",\\n  \\"__VUE_PROD_HYDRATION_MISMATCH_DETAILS__\\": \\"true\\"\\n}"
+`;
+
+exports[`injects the default Vue compile-time flags 1`] = `
+"{\\n  \\"__VUE_OPTIONS_API__\\": \\"true\\",\\n  \\"__VUE_PROD_DEVTOOLS__\\": \\"true\\",\\n  \\"__VUE_PROD_HYDRATION_MISMATCH_DETAILS__\\": \\"true\\"\\n}"
+`;

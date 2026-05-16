@@ -1,0 +1,106 @@
+---
+layout: entry
+title: Vize
+description: Unofficial High-Performance Vue.js Toolchain in Rust. Compile, lint, format, type-check, and explore Vue components.
+hero:
+  name: Vize
+  text: Unofficial High-Performance Vue.js Toolchain in Rust
+  tagline: "/viːz/ — A wise tool that sees through your code. Compile, lint, format, type-check, and explore Vue components — all powered by Rust. ⚠️ Not yet production-ready."
+  image:
+    src: logo.svg
+    alt: Vize Logo
+  actions:
+    - theme: brand
+      text: Get Started
+      link: getting-started.md
+    - theme: alt
+      text: GitHub
+      link: https://github.com/ubugeeei/vize
+    - theme: alt
+      text: Playground
+      link: https://vizejs.dev/play
+features:
+  - title: Vite Plugin
+    details: "Start from the recommended integration for Vue applications: native SFC compilation inside Vite with shared Vize configuration."
+    link: guide/vite-plugin.md
+  - title: Static Analysis Pipeline
+    details: Parser, semantic analysis, lint rules, virtual TypeScript, cross-file checks, and editor diagnostics share the same Rust-native analysis layers.
+    link: guide/static-analysis.md
+  - title: Rule Documentation
+    details: Browse concrete Vue, HTML, SSR, Vapor, Musea, type-aware, and cross-file diagnostics with bad and good examples.
+    link: rules/index.md
+  - title: Shared Configuration
+    details: Configure compiler options, Vite scanning, lint presets, type checking, formatting, LSP features, and Musea from `vize.config.*`.
+    link: guide/configuration.md
+  - title: Native Type Checking
+    details: "`vize check` runs through `vize_canon` and Corsa project sessions backed by `corsa-bind`, keeping Vue-aware diagnostics on a native path."
+    link: guide/static-analysis.md
+  - title: CLI Reference
+    details: Compile, format, lint, and type-check Vue SFC files from native commands when scripts or terminal workflows are the right entry point.
+    link: guide/cli.md
+  - title: Oxlint Plugin
+    details: Run Vize's Vue diagnostics inside Oxlint and combine them with OXC's JS and TS rules in one pass.
+    link: guide/oxlint.md
+  - title: Experimental Bundler Integrations
+    details: rollup, webpack, esbuild, and a dedicated Rspack path exist, but Vite remains the recommended and most stable integration.
+    link: guide/unplugin.md
+  - title: 8.3x Faster
+    details: Multi-threaded compilation of 15,000 SFC files (36.9 MB) in under 500ms. Arena allocation, Rayon parallelism, zero GC.
+    link: architecture/performance.md
+  - title: Component Gallery
+    details: "Musea — art files, docs, palette generation, a11y, and VRT tooling, with the gallery workflow provided by @vizejs/vite-plugin-musea."
+    link: guide/musea.md
+  - title: WASM Bindings
+    details: Run the Vue compiler directly in the browser with WebAssembly. Power playgrounds, docs, and education tools.
+    link: guide/wasm.md
+  - title: AI Integration
+    details: MCP server enabling AI assistants to understand and work with your Vue components through Musea.
+    link: integrations/mcp.md
+  - title: Vapor Mode
+    details: First-class support for Vue 3.6 Vapor mode — fine-grained reactive compilation without the virtual DOM.
+    link: architecture/overview.md
+  - title: Philosophy
+    details: "Art-inspired architecture, oxidation ecosystem (OXC, oxlint, corsa-bind), and a unified toolchain vision."
+    link: philosophy.md
+  - title: Blog
+    details: Release notes for shipped changes, plus irregular notes for design updates, devlogs, and project thinking.
+    link: blog/index.md
+---
+
+## Current Direction
+
+One of the biggest recent shifts in Vize is native type checking. `vize check` and the editor-facing type-check pipeline are moving onto `vize_canon` plus [`corsa-bind`](https://github.com/ubugeeei/corsa-bind), which lets Vize keep Vue virtual files and TypeScript project diagnostics on a native path for longer.
+
+That matters for more than raw speed. It gives Vize a tighter loop between template analysis, diagnostics, navigation, and future editor features, while reducing the amount of work that has to bounce back through a JavaScript-hosted compiler process. The fidelity story is still catching up, but this is the direction the toolchain is clearly heading.
+
+The same direction applies to linting and Musea. Static analysis starts with the parser and Croquis
+semantic model, then feeds Patina lint rules, Canon virtual TypeScript, compiler decisions, editor
+diagnostics, and component gallery metadata. The practical workflow is documented in
+[Static Analysis](./guide/static-analysis.md), with config details in
+[Configuration](./guide/configuration.md). The concrete rule and diagnostic catalog is in
+[Rules](./rules/index.md).
+
+## Author
+
+![ubugeeei](https://github.com/ubugeeei.png)
+
+**[ubugeeei](https://github.com/ubugeeei)** is a software engineer based in Tokyo, working across Vue, Rust, design, and language tooling.
+
+He is part of the [Vue.js Core Team](https://vuejs.org/about/team.html), [Vue.js Japan User Group](https://github.com/vuejs-jp) Core Staff, a [Vite+](https://github.com/voidzero-dev/vite-plus) Core Contributor, and Chief Engineer at [mates-dev](https://github.com/mates-dev).
+
+He is also the creator of [chibivue](https://github.com/chibivue-land/chibivue), [Vize](https://github.com/ubugeeei/vize), and [Ox Content](https://github.com/ubugeeei/ox-content).
+
+- GitHub: [github.com/ubugeeei](https://github.com/ubugeeei)
+- X (Twitter): [@ubugeeei](https://x.com/ubugeeei)
+- Blog: [wtrclred.io](https://wtrclred.io)
+- chibivue.land: [chibivue.land](https://chibivue.land)
+
+## Sponsor
+
+Vize is a free and open-source project licensed under MIT. Developing and maintaining a full toolchain — compiler, linter, formatter, type checker, LSP, component gallery, and WASM bindings — is a significant effort that requires sustained focus and dedication.
+
+If Vize saves you time, improves your development experience, or you believe in the vision of a high-performance Vue.js toolchain, please consider sponsoring the project:
+
+- [GitHub Sponsors](https://github.com/sponsors/ubugeeei)
+
+Your support helps fund continued development, infrastructure costs, and ensures Vize remains free for everyone. Every contribution — no matter the size — makes a real difference.

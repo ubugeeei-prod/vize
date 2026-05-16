@@ -43,8 +43,6 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::ast::RootNode;
-
 static META: RuleMeta = RuleMeta {
     name: "vue/require-scoped-style",
     description: "Require scoped attribute on style tags",
@@ -62,29 +60,25 @@ impl Rule for RequireScopedStyle {
         &META
     }
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
-        // This rule checks at the SFC level, not template level
-        // We need to check if there's an unscoped style block
-        // This is done during SFC parsing, so we check the source
-
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         let source = ctx.source;
 
-        // Find all <style tags
+        // Find all <style tags.
         let mut pos = 0;
         while let Some(style_start) = source[pos..].find("<style") {
             let abs_pos = pos + style_start;
             pos = abs_pos + 6;
 
-            // Find the closing >
+            // Find the closing >.
             if let Some(tag_end) = source[abs_pos..].find('>') {
                 let tag_content = &source[abs_pos..abs_pos + tag_end + 1];
 
-                // Check if it has scoped or module attribute
+                // Check if it has scoped or module attribute.
                 let has_scoped = tag_content.contains("scoped");
                 let has_module = tag_content.contains("module");
 
                 if !has_scoped && !has_module {
-                    // Check if this is in App.vue or a layout file (common exceptions)
+                    // App/layout files are common exceptions for global styles.
                     let filename = ctx.filename;
                     let is_exception = filename.ends_with("App.vue")
                         || filename.contains("layout")
@@ -109,6 +103,70 @@ impl Rule for RequireScopedStyle {
 
 #[cfg(test)]
 mod tests {
-    // Tests would need SFC-level testing infrastructure
-    // The rule checks source directly during template processing
+    use super::RequireScopedStyle;
+    use crate::linter::Linter;
+    use crate::rule::RuleRegistry;
+
+    fn create_linter() -> Linter {
+        let mut registry = RuleRegistry::new();
+        registry.register(Box::new(RequireScopedStyle));
+        Linter::with_registry(registry)
+    }
+
+    #[test]
+    fn test_invalid_unscoped_style() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            r#"<template><div>Hello</div></template>
+<style>
+.button { color: red; }
+</style>
+"#,
+            "Component.vue",
+        );
+        assert_eq!(result.warning_count, 1);
+        assert_eq!(result.diagnostics[0].rule_name, "vue/require-scoped-style");
+    }
+
+    #[test]
+    fn test_valid_scoped_style() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            r#"<template><div>Hello</div></template>
+<style scoped>
+.button { color: red; }
+</style>
+"#,
+            "Component.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_module_style() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            r#"<template><div>Hello</div></template>
+<style module>
+.button { color: red; }
+</style>
+"#,
+            "Component.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_app_vue_is_exception() {
+        let linter = create_linter();
+        let result = linter.lint_sfc(
+            r#"<template><div>Hello</div></template>
+<style>
+body { margin: 0; }
+</style>
+"#,
+            "App.vue",
+        );
+        assert_eq!(result.warning_count, 0);
+    }
 }

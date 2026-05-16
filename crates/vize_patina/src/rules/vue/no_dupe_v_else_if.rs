@@ -25,6 +25,8 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_carton::FxHashSet;
+use vize_carton::String;
+use vize_carton::ToCompactString;
 use vize_relief::ast::{
     ElementNode, ExpressionNode, PropNode, RootNode, SourceLocation, TemplateChildNode,
 };
@@ -154,19 +156,23 @@ fn get_if_directive_info(el: &ElementNode) -> IfDirectiveInfo {
 /// Get content from ExpressionNode
 fn get_expression_content(expr: &ExpressionNode) -> String {
     match expr {
-        ExpressionNode::Simple(s) => s.content.to_string(),
-        ExpressionNode::Compound(_) => "<compound>".to_string(),
+        ExpressionNode::Simple(s) => s.content.to_compact_string(),
+        ExpressionNode::Compound(_) => "<compound>".to_compact_string(),
     }
 }
 
 /// Normalize a condition for comparison (remove whitespace differences)
 fn normalize_condition(condition: &str) -> String {
-    condition.split_whitespace().collect::<Vec<_>>().join(" ")
+    condition
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .into()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoDupeVElseIf;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

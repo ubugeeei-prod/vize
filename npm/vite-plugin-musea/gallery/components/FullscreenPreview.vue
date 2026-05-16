@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
-import { mdiOpenInNew, mdiClose } from '@mdi/js'
-import { useAddons } from '../composables/useAddons'
-import { getPreviewUrl } from '../api'
-import MdiIcon from './MdiIcon.vue'
+import { computed, onMounted, onUnmounted } from "vue";
+import { mdiOpenInNew, mdiClose } from "@mdi/js";
+import { useAddons } from "../composables/useAddons";
+import { getPreviewUrl } from "../api";
+import MdiIcon from "./MdiIcon.vue";
 
-const { fullscreenVariant, closeFullscreen } = useAddons()
+const { fullscreenVariant, closeFullscreen } = useAddons();
 
 const previewUrl = computed(() => {
-  if (!fullscreenVariant.value) return ''
-  return getPreviewUrl(fullscreenVariant.value.artPath, fullscreenVariant.value.variantName)
-})
+  if (!fullscreenVariant.value) return "";
+  return getPreviewUrl(fullscreenVariant.value.artPath, fullscreenVariant.value.variantName);
+});
 
 function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') closeFullscreen()
+  if (e.key === "Escape") closeFullscreen();
 }
 
-onMounted(() => document.addEventListener('keydown', onKeydown))
-onUnmounted(() => document.removeEventListener('keydown', onKeydown))
+onMounted(() => document.addEventListener("keydown", onKeydown));
+onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 </script>
 
 <template>
@@ -28,25 +28,35 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
           <span class="fullscreen-title">{{ fullscreenVariant.variantName }}</span>
           <div class="fullscreen-actions">
             <button
+              type="button"
               class="fullscreen-action-btn"
               title="Open in new tab"
               @click="window.open(previewUrl, '_blank')"
             >
               <MdiIcon :path="mdiOpenInNew" :size="16" />
             </button>
-            <button class="fullscreen-close-btn" title="Close (Esc)" @click="closeFullscreen()">
+            <button
+              type="button"
+              class="fullscreen-close-btn"
+              title="Close (Esc)"
+              @click="closeFullscreen()"
+            >
               <MdiIcon :path="mdiClose" :size="18" />
             </button>
           </div>
         </div>
-        <iframe class="fullscreen-iframe" :src="previewUrl" :title="fullscreenVariant.variantName" />
+        <iframe
+          class="fullscreen-iframe"
+          :src="previewUrl"
+          :title="fullscreenVariant.variantName"
+        />
       </div>
     </div>
   </Teleport>
 </template>
 
 <script lang="ts">
-const window = globalThis.window
+const window = globalThis.window;
 </script>
 
 <style scoped>
@@ -54,7 +64,7 @@ const window = globalThis.window
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--musea-overlay);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -64,8 +74,12 @@ const window = globalThis.window
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .fullscreen-container {
@@ -76,7 +90,7 @@ const window = globalThis.window
   flex-direction: column;
   border-radius: var(--musea-radius-lg);
   overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--musea-shadow);
 }
 
 .fullscreen-header {

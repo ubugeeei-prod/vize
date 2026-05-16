@@ -73,7 +73,7 @@ impl Rule for MouseEventsHaveKeyEvents {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::MouseEventsHaveKeyEvents;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

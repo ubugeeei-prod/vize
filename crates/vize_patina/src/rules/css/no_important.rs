@@ -82,7 +82,7 @@ impl NoImportant {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoImportant;
     use crate::rules::css::CssLinter;
 
     fn create_linter() -> CssLinter {

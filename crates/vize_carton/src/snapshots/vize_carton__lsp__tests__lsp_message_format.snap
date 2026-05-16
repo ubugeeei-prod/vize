@@ -1,0 +1,7 @@
+---
+source: crates/vize_carton/src/lsp.rs
+expression: msg.as_str()
+---
+Content-Length: 40
+
+{"jsonrpc":"2.0","id":1,"method":"test"}

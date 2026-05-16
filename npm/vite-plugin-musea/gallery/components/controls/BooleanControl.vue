@@ -1,21 +1,17 @@
 <script setup lang="ts">
-const model = defineModel<boolean>({ default: false })
+const model = defineModel<boolean>({ default: false });
 
 defineProps<{
-  label: string
-  description?: string
-  required?: boolean
-}>()
+  label: string;
+  description?: string;
+  required?: boolean;
+}>();
 </script>
 
 <template>
   <div class="control">
     <label class="control-label">
-      <input
-        v-model="model"
-        type="checkbox"
-        class="control-checkbox"
-      >
+      <input v-model="model" type="checkbox" class="control-checkbox" />
       <span class="control-toggle" :class="{ active: model }" />
       {{ label }}
       <span v-if="required" class="control-required">*</span>
@@ -57,7 +53,7 @@ defineProps<{
 }
 
 .control-toggle::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 2px;
   left: 2px;

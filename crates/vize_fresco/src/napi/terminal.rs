@@ -1,4 +1,7 @@
 //! Terminal NAPI bindings.
+//!
+//! Note: `format!` is used throughout this module because napi `Error::new`
+//! requires `std::string::String`.
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -13,6 +16,7 @@ static BACKEND: Mutex<Option<Backend>> = Mutex::new(None);
 
 /// Initialize terminal for TUI mode.
 #[napi(js_name = "initTerminal")]
+#[allow(clippy::disallowed_macros)]
 pub fn init_terminal() -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -45,6 +49,7 @@ pub fn init_terminal() -> Result<()> {
 
 /// Initialize terminal with mouse capture.
 #[napi(js_name = "initTerminalWithMouse")]
+#[allow(clippy::disallowed_macros)]
 pub fn init_terminal_with_mouse() -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -77,6 +82,7 @@ pub fn init_terminal_with_mouse() -> Result<()> {
 
 /// Restore terminal to normal mode.
 #[napi(js_name = "restoreTerminal")]
+#[allow(clippy::disallowed_macros)]
 pub fn restore_terminal() -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -97,6 +103,7 @@ pub fn restore_terminal() -> Result<()> {
 
 /// Get terminal info.
 #[napi(js_name = "getTerminalInfo")]
+#[allow(clippy::disallowed_macros)]
 pub fn get_terminal_info() -> Result<TerminalInfoNapi> {
     let (width, height) = crossterm::terminal::size()
         .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to get size: {}", e)))?;
@@ -113,6 +120,7 @@ pub fn get_terminal_info() -> Result<TerminalInfoNapi> {
 
 /// Clear the screen.
 #[napi(js_name = "clearScreen")]
+#[allow(clippy::disallowed_macros)]
 pub fn clear_screen() -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -129,6 +137,7 @@ pub fn clear_screen() -> Result<()> {
 
 /// Flush the terminal buffer.
 #[napi(js_name = "flushTerminal")]
+#[allow(clippy::disallowed_macros)]
 pub fn flush_terminal() -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -145,6 +154,7 @@ pub fn flush_terminal() -> Result<()> {
 
 /// Sync terminal size (call after resize events).
 #[napi(js_name = "syncTerminalSize")]
+#[allow(clippy::disallowed_macros)]
 pub fn sync_terminal_size() -> Result<bool> {
     let mut guard = BACKEND
         .lock()
@@ -164,6 +174,7 @@ pub fn sync_terminal_size() -> Result<bool> {
 }
 
 /// Get access to backend (internal use).
+#[allow(clippy::disallowed_macros)]
 pub(crate) fn with_backend<T, F: FnOnce(&mut Backend) -> T>(f: F) -> Result<T> {
     let mut guard = BACKEND
         .lock()

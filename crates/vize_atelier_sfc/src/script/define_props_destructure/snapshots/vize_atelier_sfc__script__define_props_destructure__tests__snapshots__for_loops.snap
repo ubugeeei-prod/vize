@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_sfc/src/script/define_props_destructure.rs
+expression: result
+---
+for (let i = 0; i < __props.items.length; i++) {
+    console.log(__props.items[i])
+}
+for (const item of __props.items) {
+    console.log(item)
+}
+for (const index in __props.items) {
+    console.log(index)
+}

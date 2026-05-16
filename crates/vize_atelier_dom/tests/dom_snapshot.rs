@@ -22,7 +22,7 @@ fn get_compiled(src: &str) -> String {
 // =============================================================================
 
 mod static_element {
-    use super::*;
+    use super::get_compiled;
 
     #[test]
     fn simple_div() {
@@ -45,7 +45,7 @@ mod static_element {
 // =============================================================================
 
 mod interpolation {
-    use super::*;
+    use super::get_compiled;
 
     #[test]
     fn simple_interpolation() {
@@ -63,7 +63,7 @@ mod interpolation {
 // =============================================================================
 
 mod v_if {
-    use super::*;
+    use super::get_compiled;
 
     #[test]
     fn simple_v_if() {
@@ -76,6 +76,20 @@ mod v_if {
             r#"<div v-if="ok">yes</div><div v-else>no</div>"#
         ));
     }
+
+    #[test]
+    fn v_if_component_with_slot() {
+        insta::assert_snapshot!(get_compiled(
+            r#"<MyComponent v-if="ok"><span>slot content</span></MyComponent>"#
+        ));
+    }
+
+    #[test]
+    fn v_if_component_with_named_slot() {
+        insta::assert_snapshot!(get_compiled(
+            r#"<MyComponent v-if="ok"><template #header><h1>title</h1></template></MyComponent>"#
+        ));
+    }
 }
 
 // =============================================================================
@@ -83,7 +97,7 @@ mod v_if {
 // =============================================================================
 
 mod v_for {
-    use super::*;
+    use super::get_compiled;
 
     #[test]
     fn simple_v_for() {
@@ -98,7 +112,7 @@ mod v_for {
 // =============================================================================
 
 mod v_bind {
-    use super::*;
+    use super::get_compiled;
 
     #[test]
     fn dynamic_id() {
@@ -109,6 +123,20 @@ mod v_bind {
     fn dynamic_class() {
         insta::assert_snapshot!(get_compiled(r#"<div :class="cls"></div>"#));
     }
+
+    #[test]
+    fn merge_static_and_dynamic_class_with_vbind_object() {
+        insta::assert_snapshot!(get_compiled(
+            r#"<input v-bind="attrs" class="base" :class="stateClass" />"#
+        ));
+    }
+
+    #[test]
+    fn merge_static_and_dynamic_style_with_vbind_object() {
+        insta::assert_snapshot!(get_compiled(
+            r#"<input v-bind="attrs" style="color: red" :style="dynamicStyle" />"#
+        ));
+    }
 }
 
 // =============================================================================
@@ -116,7 +144,7 @@ mod v_bind {
 // =============================================================================
 
 mod v_on {
-    use super::*;
+    use super::get_compiled;
 
     #[test]
     fn click_handler() {
@@ -129,7 +157,7 @@ mod v_on {
 // =============================================================================
 
 mod v_model {
-    use super::*;
+    use super::get_compiled;
 
     #[test]
     fn input_text() {
@@ -142,11 +170,23 @@ mod v_model {
 // =============================================================================
 
 mod v_show {
-    use super::*;
+    use super::get_compiled;
 
     #[test]
     fn simple_v_show() {
         insta::assert_snapshot!(get_compiled(r#"<div v-show="visible">content</div>"#));
+    }
+
+    #[test]
+    fn v_show_on_child_component() {
+        insta::assert_snapshot!(get_compiled(
+            r#"<div><MyComponent v-show="visible" /></div>"#
+        ));
+    }
+
+    #[test]
+    fn v_show_on_root_component() {
+        insta::assert_snapshot!(get_compiled(r#"<MyComponent v-show="visible" />"#));
     }
 }
 
@@ -155,7 +195,7 @@ mod v_show {
 // =============================================================================
 
 mod component {
-    use super::*;
+    use super::get_compiled;
 
     #[test]
     fn simple_component() {

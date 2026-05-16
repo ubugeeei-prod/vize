@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_vapor/src/lib.rs
+expression: code.as_str()
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+export function render(_ctx) {
+const _component_InputBase = _resolveComponent("InputBase")
+const n0 = _createComponentWithFallback(_component_InputBase, {
+modelValue: () => (_ctx.searchQuery),
+"onUpdate:modelValue": () => _value => (_ctx.searchQuery = _value)
+}, null, true)
+return n0
+}

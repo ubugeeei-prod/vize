@@ -6,7 +6,7 @@
 //! - Type references: `defineProps<Props>()`
 //! - External imports (future): `import type { Props } from './types'`
 
-use vize_carton::{CompactString, FxHashMap};
+use vize_carton::{CompactString, FxHashMap, String};
 
 /// Resolved type information
 #[derive(Debug, Clone)]
@@ -182,7 +182,7 @@ impl TypeResolver {
     fn parse_type_members(&self, content: &str) -> Vec<TypeProperty> {
         let mut properties = Vec::new();
         let mut depth = 0;
-        let mut current = String::new();
+        let mut current = String::default();
 
         for c in content.chars() {
             match c {
@@ -333,7 +333,7 @@ fn is_valid_identifier(s: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{TypeDefinitions, TypeResolver};
 
     #[test]
     fn test_extract_inline_props() {

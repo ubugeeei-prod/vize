@@ -1,7 +1,7 @@
 //! Palette type definitions.
 
 use serde::{Deserialize, Serialize};
-use vize_carton::FxHashMap;
+use vize_carton::{FxHashMap, String};
 
 /// Control type for a prop.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -310,8 +310,9 @@ pub struct PaletteOutput {
 }
 
 #[cfg(test)]
+#[allow(clippy::disallowed_methods)]
 mod tests {
-    use super::*;
+    use super::{ControlKind, Palette, PropControl, SelectOption};
 
     #[test]
     fn test_control_builders() {
@@ -330,15 +331,15 @@ mod tests {
     fn test_select_control() {
         let options = vec![
             SelectOption {
-                label: "Small".to_string(),
+                label: "Small".into(),
                 value: serde_json::json!("sm"),
             },
             SelectOption {
-                label: "Medium".to_string(),
+                label: "Medium".into(),
                 value: serde_json::json!("md"),
             },
             SelectOption {
-                label: "Large".to_string(),
+                label: "Large".into(),
                 value: serde_json::json!("lg"),
             },
         ];

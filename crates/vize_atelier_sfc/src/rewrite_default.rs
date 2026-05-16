@@ -7,6 +7,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{ExportDefaultDeclarationKind, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
+use vize_carton::{profile, String, ToCompactString};
 
 /// Rewrite `export default` to a const declaration with the given name.
 /// Returns (rewritten_code, has_default_export)
@@ -18,11 +19,14 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
     };
 
     let allocator = Allocator::default();
-    let ret = Parser::new(&allocator, input, source_type).parse();
+    let ret = profile!(
+        "atelier.normal_script.rewrite_default.parse",
+        Parser::new(&allocator, input, source_type).parse()
+    );
 
     if !ret.errors.is_empty() {
         // If parsing fails, return original code
-        return (input.to_string(), false);
+        return (input.to_compact_string(), false);
     }
 
     let program = ret.program;
@@ -39,7 +43,7 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
 
     if !has_default {
         // No default export - append empty object
-        let mut output = input.to_string();
+        let mut output = input.to_compact_string();
         output.push_str("\nconst ");
         output.push_str(as_name);
         output.push_str(" = {}");
@@ -47,7 +51,7 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
     }
 
     // Find and rewrite the default export
-    let mut output = String::new();
+    let mut output = String::with_capacity(input.len() + as_name.len() + 32);
     let mut last_end = 0;
 
     for stmt in program.body.iter() {
@@ -60,12 +64,8 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
                     ExportDefaultDeclarationKind::ClassDeclaration(class_decl) => {
                         // export default class Foo {} -> class Foo {} \n const as_name = Foo
                         if let Some(id) = &class_decl.id {
-                            output.push_str("class ");
-                            output.push_str(id.name.as_str());
-                            // Copy the rest of the class declaration
-                            let class_body_start = id.span.end as usize;
-                            let class_body = &input[class_body_start..decl.span.end as usize];
-                            output.push_str(class_body);
+                            let class_start = class_decl.span.start as usize;
+                            output.push_str(&input[class_start..decl.span.end as usize]);
                             output.push_str("\nconst ");
                             output.push_str(as_name);
                             output.push_str(" = ");
@@ -82,12 +82,8 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
                     ExportDefaultDeclarationKind::FunctionDeclaration(func_decl) => {
                         // export default function foo() {} -> function foo() {} \n const as_name = foo
                         if let Some(id) = &func_decl.id {
-                            output.push_str("function ");
-                            output.push_str(id.name.as_str());
-                            // Copy the rest of the function
-                            let func_body_start = id.span.end as usize;
-                            let func_body = &input[func_body_start..decl.span.end as usize];
-                            output.push_str(func_body);
+                            let func_start = func_decl.span.start as usize;
+                            output.push_str(&input[func_start..decl.span.end as usize]);
                             output.push_str("\nconst ");
                             output.push_str(as_name);
                             output.push_str(" = ");
@@ -297,14 +293,13 @@ pub fn rewrite_default(input: &str, as_name: &str, is_ts: bool) -> (String, bool
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::rewrite_default;
 
     #[test]
     fn test_rewrite_default_object() {
         let (result, has_default) = rewrite_default("export default {}", "_sfc_main", false);
         assert!(has_default);
-        assert!(result.contains("const _sfc_main = {}"));
-        assert!(!result.contains("export default"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -320,9 +315,7 @@ export default {
 "#;
         let (result, has_default) = rewrite_default(input, "_sfc_main", false);
         assert!(has_default);
-        assert!(result.contains("const _sfc_main = {"));
-        assert!(result.contains("name: 'MyComponent'"));
-        assert!(!result.contains("export default"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -330,15 +323,25 @@ export default {
         let (result, has_default) =
             rewrite_default("export default class Foo {}", "_sfc_main", false);
         assert!(has_default);
-        assert!(result.contains("class Foo {}"));
-        assert!(result.contains("const _sfc_main = Foo"));
+        insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_rewrite_default_async_generator_function() {
+        let (result, has_default) = rewrite_default(
+            "export default async function* load() { yield await next() }",
+            "_sfc_main",
+            false,
+        );
+        assert!(has_default);
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
     fn test_no_default_export() {
         let (result, has_default) = rewrite_default("export const a = {}", "_sfc_main", false);
         assert!(!has_default);
-        assert!(result.contains("const _sfc_main = {}"));
+        insta::assert_snapshot!(result.as_str());
     }
 
     #[test]
@@ -346,6 +349,6 @@ export default {
         let input = "const a = 1\nexport { a as default }";
         let (result, has_default) = rewrite_default(input, "_sfc_main", false);
         assert!(has_default);
-        assert!(result.contains("const _sfc_main = a"));
+        insta::assert_snapshot!(result.as_str());
     }
 }

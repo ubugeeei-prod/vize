@@ -26,7 +26,11 @@
 //! import { ref, computed } from 'vue'
 //! ```
 
+#![allow(clippy::disallowed_macros)]
+
 use memchr::memmem;
+
+use vize_croquis::COMPILER_MACRO_NAMES;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -37,17 +41,6 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     description: "Disallow importing Vue compiler macros that are auto-imported",
     default_severity: Severity::Error,
 };
-
-/// Compiler macros that should not be imported
-const COMPILER_MACROS: &[&str] = &[
-    "defineProps",
-    "defineEmits",
-    "defineExpose",
-    "defineOptions",
-    "defineSlots",
-    "defineModel",
-    "withDefaults",
-];
 
 /// No import compiler macros rule
 pub struct NoImportCompilerMacros;
@@ -86,7 +79,7 @@ impl ScriptRule for NoImportCompilerMacros {
             }
 
             // Check for compiler macros in this import
-            for macro_name in COMPILER_MACROS {
+            for macro_name in COMPILER_MACRO_NAMES {
                 if import_line.contains(macro_name) {
                     // Find the position of the macro name in the import
                     if let Some(macro_pos) = import_line.find(macro_name) {
@@ -113,7 +106,7 @@ impl ScriptRule for NoImportCompilerMacros {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoImportCompilerMacros;
     use crate::rules::script::ScriptLinter;
 
     fn create_linter() -> ScriptLinter {
@@ -130,11 +123,18 @@ mod tests {
     }
 
     #[test]
+    fn test_valid_import_use_template_ref() {
+        let linter = create_linter();
+        let result = linter.lint("import { useTemplateRef } from 'vue'", 0);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
     fn test_invalid_import_define_props() {
         let linter = create_linter();
         let result = linter.lint("import { defineProps } from 'vue'", 0);
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("defineProps"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

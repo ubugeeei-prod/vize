@@ -19,6 +19,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::String;
+use vize_carton::ToCompactString;
 use vize_croquis::naming::is_camel_case;
 use vize_relief::ast::{ElementNode, PropNode};
 
@@ -53,10 +55,10 @@ impl Default for AttributeHyphenation {
             style: HyphenationStyle::Always,
             ignore: vec![
                 // Common data attributes
-                "data-".to_string(),
-                "aria-".to_string(),
+                "data-".to_compact_string(),
+                "aria-".to_compact_string(),
                 // Vue specific
-                "slot-scope".to_string(),
+                "slot-scope".to_compact_string(),
             ],
         }
     }
@@ -81,7 +83,7 @@ impl AttributeHyphenation {
         for pattern in &self.ignore {
             if pattern.ends_with('-') {
                 // Prefix pattern
-                if name.starts_with(pattern) {
+                if name.starts_with(pattern.as_str()) {
                     return true;
                 }
             } else if name == pattern {
@@ -162,7 +164,7 @@ impl Rule for AttributeHyphenation {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::AttributeHyphenation;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

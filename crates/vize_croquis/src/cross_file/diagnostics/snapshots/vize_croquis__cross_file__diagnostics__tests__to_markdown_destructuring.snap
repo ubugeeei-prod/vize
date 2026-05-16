@@ -1,0 +1,21 @@
+---
+source: crates/vize_croquis/src/cross_file/diagnostics/diagnostics_tests.rs
+expression: markdown.as_str()
+---
+🟡 **WARNING** `vize:croquis/cf/destructuring-breaks-reactivity`
+
+### Destructuring props loses reactivity
+
+**Problem**: Destructuring `props` extracts plain values, losing reactivity.
+
+**What happens**:
+
+```ts
+const { count, name } = props // ❌ count, name are plain values
+```
+
+**Fix**: Use `toRefs()`:
+
+```ts
+const { count, name } = toRefs(props) // ✅ count, name are refs
+```

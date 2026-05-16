@@ -4,6 +4,8 @@
 
 use crate::ast::*;
 use crate::transform::TransformContext;
+use vize_carton::String;
+use vize_carton::ToCompactString;
 
 /// Check if element has v-once directive
 pub fn has_v_once(el: &ElementNode<'_>) -> bool {
@@ -39,7 +41,7 @@ pub fn transform_v_once<'a>(ctx: &mut TransformContext<'a>, _el: &ElementNode<'a
 
 /// Generate v-once cache wrapper
 pub fn generate_v_once_wrapper(index: usize) -> String {
-    let index_str = index.to_string();
+    let index_str = index.to_compact_string();
     let mut out = String::with_capacity(32 + index_str.len());
     out.push_str("_cache[");
     out.push_str(&index_str);
@@ -51,7 +53,7 @@ pub fn generate_v_once_wrapper(index: usize) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{has_v_once, TemplateChildNode};
     use crate::parser::parse;
     use bumpalo::Bump;
 

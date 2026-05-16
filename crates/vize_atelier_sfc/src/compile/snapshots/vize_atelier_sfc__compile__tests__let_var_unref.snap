@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
+
+const a = 1
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+let b = 2
+var c = 3
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(a) + " " + _toDisplayString(_unref(b)) + " " + _toDisplayString(_unref(c)), 1 /* TEXT */))
+}
+}
+
+}

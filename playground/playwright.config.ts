@@ -1,0 +1,36 @@
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./e2e/vrt",
+  outputDir: "./e2e/vrt/test-results",
+  snapshotDir: "./e2e/vrt/__snapshots__",
+  snapshotPathTemplate: "{snapshotDir}/{testFilePath}/{projectName}/{arg}{ext}",
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: [["list"], ["html", { open: "never" }]],
+  use: {
+    baseURL: "http://localhost:5180",
+    screenshot: "only-on-failure",
+    trace: "on-first-retry",
+    video: "retain-on-failure",
+  },
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 900 } },
+    },
+  ],
+  expect: {
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.01,
+    },
+  },
+  webServer: {
+    command: "pnpm dev",
+    url: "http://localhost:5180",
+    reuseExistingServer: !process.env.CI,
+    timeout: 30_000,
+  },
+});

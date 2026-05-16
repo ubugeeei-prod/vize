@@ -2,17 +2,18 @@
 
 use super::block::GenerateContext;
 use crate::ir::{EventModifiers, SetEventIRNode};
+use vize_carton::{cstr, String, ToCompactString};
 
 /// Generate SetEvent code
 pub fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEventIRNode<'_>) {
-    let element = format!("_n{}", set_event.element);
+    let element = cstr!("_n{}", set_event.element);
     let event_name = &set_event.key.content;
 
-    let handler = if let Some(ref value) = set_event.value {
+    let handler: String = if let Some(ref value) = set_event.value {
         if value.is_static {
-            format!("\"{}\"", value.content)
+            cstr!("\"{}\"", value.content)
         } else {
-            value.content.to_string()
+            value.content.to_compact_string()
         }
     } else {
         String::from("() => {}")
@@ -21,24 +22,19 @@ pub fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEventIRNode<
     // Apply modifiers if present
     let final_handler = apply_modifiers(&handler, &set_event.modifiers);
 
-    ctx.push_line(&format!(
-        "_on({}, \"{}\", {})",
-        element, event_name, final_handler
+    ctx.push_line_fmt(format_args!(
+        "_on({element}, \"{event_name}\", {final_handler})"
     ));
 }
 
 /// Apply event modifiers to handler
 fn apply_modifiers(handler: &str, modifiers: &EventModifiers) -> String {
-    let mut result = handler.to_string();
+    let mut result = handler.to_compact_string();
 
     // Apply key modifiers
     if !modifiers.keys.is_empty() {
-        let keys: Vec<String> = modifiers
-            .keys
-            .iter()
-            .map(|k| format!("\"{}\"", k))
-            .collect();
-        result = format!("_withKeys({}, [{}])", result, keys.join(", "));
+        let keys: Vec<String> = modifiers.keys.iter().map(|k| cstr!("\"{k}\"")).collect();
+        result = cstr!("_withKeys({result}, [{}])", keys.join(", "));
     }
 
     // Apply non-key modifiers
@@ -46,9 +42,9 @@ fn apply_modifiers(handler: &str, modifiers: &EventModifiers) -> String {
         let mods: Vec<String> = modifiers
             .non_keys
             .iter()
-            .map(|m| format!("\"{}\"", m))
+            .map(|m| cstr!("\"{m}\""))
             .collect();
-        result = format!("_withModifiers({}, [{}])", result, mods.join(", "));
+        result = cstr!("_withModifiers({result}, [{}])", mods.join(", "));
     }
 
     result
@@ -74,7 +70,7 @@ pub fn generate_event_options(modifiers: &EventModifiers) -> Option<String> {
         parts.push("passive: true");
     }
 
-    Some(format!("{{ {} }}", parts.join(", ")))
+    Some(cstr!("{{ {} }}", parts.join(", ")))
 }
 
 /// Generate delegate event handler
@@ -85,38 +81,30 @@ pub fn generate_delegate_event(
     options: Option<&str>,
 ) -> String {
     if let Some(opts) = options {
-        format!(
-            "_delegate({}, \"{}\", {}, {})",
-            element_var, event_name, handler, opts
-        )
+        cstr!("_delegate({element_var}, \"{event_name}\", {handler}, {opts})")
     } else {
-        format!(
-            "_delegate({}, \"{}\", {})",
-            element_var, event_name, handler
-        )
+        cstr!("_delegate({element_var}, \"{event_name}\", {handler})")
     }
 }
 
 /// Generate inline event handler
 pub fn generate_inline_handler(element_var: &str, event_name: &str, handler: &str) -> String {
-    format!(
-        "{}.addEventListener(\"{}\", {})",
-        element_var, event_name, handler
-    )
+    cstr!("{element_var}.addEventListener(\"{event_name}\", {handler})")
 }
 
 /// Capitalize event name for onEvent format
 pub fn capitalize_event_name(event: &str) -> String {
     let mut chars = event.chars();
     match chars.next() {
-        None => String::new(),
-        Some(first) => format!("on{}{}", first.to_uppercase(), chars.as_str()),
+        None => String::default(),
+        Some(first) => cstr!("on{}{}", first.to_uppercase(), chars.as_str()),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{apply_modifiers, capitalize_event_name, generate_event_options};
+    use crate::ir::EventModifiers;
 
     #[test]
     fn test_apply_modifiers_none() {

@@ -140,7 +140,8 @@ impl From<crossterm::event::MouseButton> for MouseButton {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{MouseButton, MouseEvent, MouseEventKind};
+    use crate::input::keyboard::KeyModifiers;
 
     #[test]
     fn test_mouse_event_new() {

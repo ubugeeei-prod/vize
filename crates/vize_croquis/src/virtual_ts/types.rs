@@ -6,6 +6,7 @@ use vize_carton::{
 };
 
 use crate::import_resolver::ResolvedModule;
+use vize_carton::String;
 
 /// Output of virtual TypeScript generation.
 #[derive(Debug, Clone)]
@@ -23,7 +24,7 @@ pub struct VirtualTsOutput {
 impl Default for VirtualTsOutput {
     fn default() -> Self {
         Self {
-            content: String::new(),
+            content: String::default(),
             source_map: SourceMap::new(),
             resolved_imports: Vec::new(),
             diagnostics: Vec::new(),

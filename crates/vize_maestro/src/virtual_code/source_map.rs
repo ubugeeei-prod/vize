@@ -1,6 +1,7 @@
 //! Source map implementation for bidirectional position mapping.
 //!
 //! Maps positions between the original SFC and generated virtual documents.
+#![allow(clippy::disallowed_types)]
 
 use super::SourceRange;
 
@@ -346,7 +347,7 @@ impl SourceMap {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{SourceMap, SourceMapping, SourceRange};
 
     #[test]
     fn test_source_range_contains() {

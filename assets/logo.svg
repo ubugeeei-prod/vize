@@ -1,34 +1,15 @@
 <svg width="600" height="300" viewBox="0 0 600 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <linearGradient id="metal-grad" x1="0%" y1="0%" x2="100%" y2="20%">
-            <stop offset="0%" style="stop-color:#E6E9F0;stop-opacity:1" /> <stop offset="50%" style="stop-color:#7B8494;stop-opacity:1" /> <stop offset="100%" style="stop-color:#A34828;stop-opacity:1" /> </linearGradient>
-
-        <linearGradient id="metal-grad-dark" x1="0%" y1="0%" x2="100%" y2="30%">
-            <stop offset="0%" style="stop-color:#B8BDC9;stop-opacity:1" />
-            <stop offset="60%" style="stop-color:#525A6B;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#7D341B;stop-opacity:1" />
-        </linearGradient>
-
-        <linearGradient id="speed-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#A34828;stop-opacity:0.8" />
-            <stop offset="100%" style="stop-color:#E6E9F0;stop-opacity:0" />
-        </linearGradient>
-    </defs>
-
     <g transform="translate(180, 50)">
 
         <g transform="translate(180, 80) skewX(-20)">
-            <rect x="0" y="0" width="150" height="4" fill="url(#speed-grad)" rx="2"/>
-            <rect x="20" y="25" width="100" height="3" fill="url(#speed-grad)" rx="1.5"/>
-            <rect x="10" y="-25" width="80" height="2" fill="url(#speed-grad)" rx="1"/>
+            <rect x="0" y="0" width="150" height="4" fill="#000000" rx="2"/>
+            <rect x="20" y="25" width="100" height="3" fill="#000000" rx="1.5"/>
+            <rect x="10" y="-25" width="80" height="2" fill="#000000" rx="1"/>
         </g>
 
         <g transform="skewX(-15)">
-            <path d="M 200 0 L 120 180 L 210 60 L 200 0 Z" fill="url(#metal-grad-dark)" stroke="#3E4654" stroke-width="1"/>
-
-            <path d="M 60 0 L 120 180 L 160 40 L 60 0 Z" fill="url(#metal-grad)" stroke-width="1.5" stroke-opacity="0.6"/>
-
-            <path d="M 60 0 L 120 180" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+            <path d="M 200 0 L 120 180 L 210 60 L 200 0 Z" fill="#000000"/>
+            <path d="M 60 0 L 120 180 L 160 40 L 60 0 Z" fill="#000000"/>
         </g>
     </g>
 </svg>

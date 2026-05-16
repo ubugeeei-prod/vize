@@ -1,0 +1,27 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { watch } from 'vue'
+import '@/css/oldReset.scss'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'TestComponent',
+  setup(__props) {
+
+const { dialogRef } = provideDialog()
+watch(
+  dialogRef,
+  (val) => {
+    console.log(val)
+  },
+  { immediate: true },
+)
+
+return (_ctx: any,_cache: any) => {
+  return null
+}
+}
+
+})

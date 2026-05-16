@@ -6,7 +6,7 @@
 //! All types are designed for zero-copy parsing with arena allocation.
 
 use serde::{Deserialize, Serialize};
-use vize_carton::{Bump, FxHashMap, Vec as BumpVec};
+use vize_carton::{Bump, FxHashMap, String, ToCompactString, Vec as BumpVec};
 
 /// Parsed Art file descriptor.
 ///
@@ -339,8 +339,8 @@ impl<'a> ArtDescriptor<'a> {
     /// Convert to owned version for serialization.
     pub fn into_owned(self) -> ArtDescriptorOwned {
         ArtDescriptorOwned {
-            filename: self.filename.to_string(),
-            source: self.source.to_string(),
+            filename: self.filename.to_compact_string(),
+            source: self.source.to_compact_string(),
             metadata: self.metadata.into_owned(),
             variants: self.variants.into_iter().map(|v| v.into_owned()).collect(),
             script_setup: self.script_setup.map(|s| s.into_owned()),
@@ -354,11 +354,15 @@ impl<'a> ArtMetadata<'a> {
     /// Convert to owned version.
     pub fn into_owned(self) -> ArtMetadataOwned {
         ArtMetadataOwned {
-            title: self.title.to_string(),
-            description: self.description.map(|s| s.to_string()),
-            component: self.component.map(|s| s.to_string()),
-            category: self.category.map(|s| s.to_string()),
-            tags: self.tags.into_iter().map(|s| s.to_string()).collect(),
+            title: self.title.to_compact_string(),
+            description: self.description.map(|s| s.to_compact_string()),
+            component: self.component.map(|s| s.to_compact_string()),
+            category: self.category.map(|s| s.to_compact_string()),
+            tags: self
+                .tags
+                .into_iter()
+                .map(|s| s.to_compact_string())
+                .collect(),
             status: self.status,
             order: self.order,
         }
@@ -369,13 +373,13 @@ impl<'a> ArtVariant<'a> {
     /// Convert to owned version.
     pub fn into_owned(self) -> ArtVariantOwned {
         ArtVariantOwned {
-            name: self.name.to_string(),
-            template: self.template.to_string(),
+            name: self.name.to_compact_string(),
+            template: self.template.to_compact_string(),
             is_default: self.is_default,
             args: self
                 .args
                 .into_iter()
-                .map(|(k, v)| (k.to_string(), v))
+                .map(|(k, v)| (k.to_compact_string(), v))
                 .collect(),
             viewport: self.viewport,
             skip_vrt: self.skip_vrt,
@@ -388,8 +392,8 @@ impl<'a> ArtScriptBlock<'a> {
     /// Convert to owned version.
     pub fn into_owned(self) -> ArtScriptBlockOwned {
         ArtScriptBlockOwned {
-            content: self.content.to_string(),
-            lang: self.lang.map(|s| s.to_string()),
+            content: self.content.to_compact_string(),
+            lang: self.lang.map(|s| s.to_compact_string()),
             setup: self.setup,
             loc: self.loc,
         }
@@ -400,8 +404,8 @@ impl<'a> ArtStyleBlock<'a> {
     /// Convert to owned version.
     pub fn into_owned(self) -> ArtStyleBlockOwned {
         ArtStyleBlockOwned {
-            content: self.content.to_string(),
-            lang: self.lang.map(|s| s.to_string()),
+            content: self.content.to_compact_string(),
+            lang: self.lang.map(|s| s.to_compact_string()),
             scoped: self.scoped,
             loc: self.loc,
         }
@@ -410,7 +414,8 @@ impl<'a> ArtStyleBlock<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{ArtDescriptor, ArtStatus, ViewportConfig};
+    use vize_carton::Bump;
 
     #[test]
     fn test_art_descriptor_new() {

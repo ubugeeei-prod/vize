@@ -70,7 +70,7 @@ pub fn is_condensible_whitespace(text: &str) -> bool {
 
 /// Condense whitespace in text
 pub fn condense_whitespace(text: &str) -> String {
-    let mut result = std::string::String::new();
+    let mut result = String::with_capacity(text.len());
     let mut prev_was_space = false;
 
     for c in text.chars() {
@@ -85,7 +85,7 @@ pub fn condense_whitespace(text: &str) -> String {
         }
     }
 
-    result.into()
+    result
 }
 
 /// Build text call expression
@@ -162,16 +162,18 @@ impl TextPart {
 }
 
 /// Escape text for code generation
-fn escape_text(s: &str) -> std::string::String {
-    s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
+fn escape_text(s: &str) -> String {
+    String::from(
+        s.replace('\\', "\\\\")
+            .replace('"', "\\\"")
+            .replace('\n', "\\n")
+            .replace('\r', "\\r"),
+    )
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{condense_whitespace, is_whitespace_only, TextPart};
 
     #[test]
     fn test_is_whitespace_only() {

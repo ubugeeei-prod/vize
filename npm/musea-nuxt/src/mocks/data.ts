@@ -2,7 +2,7 @@
  * Mock Nuxt data-fetching composables.
  */
 
-import { ref, shallowRef } from "vue";
+import { ref } from "vue";
 
 let _fetchMocks: Record<string, unknown> = {};
 
@@ -10,7 +10,7 @@ export function _setFetchMocks(mocks: Record<string, unknown>): void {
   _fetchMocks = mocks;
 }
 
-function findMockData(key: string): unknown | undefined {
+function findMockData(key: string): unknown {
   // Exact match first
   if (key in _fetchMocks) return _fetchMocks[key];
   // Pattern match

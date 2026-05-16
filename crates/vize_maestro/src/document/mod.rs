@@ -4,4 +4,4 @@
 
 mod store;
 
-pub use store::*;
+pub use store::{Document, DocumentStore};

@@ -2,25 +2,28 @@
 //!
 //! Transforms element nodes into template strings and operations.
 
+use vize_carton::append;
+use vize_carton::cstr;
 use vize_carton::String;
 
 use vize_atelier_core::{ElementNode, ElementType, PropNode, TemplateChildNode};
 
 /// Generate static template string for an element
 pub fn generate_element_template(el: &ElementNode<'_>) -> String {
-    let mut template = format!("<{}", el.tag);
+    let mut template = cstr!("<{}", el.tag);
 
     // Add static attributes
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop {
             if let Some(ref value) = attr.value {
-                template.push_str(&format!(
+                append!(
+                    template,
                     " {}=\"{}\"",
                     attr.name,
                     escape_attr(&value.content)
-                ));
+                );
             } else {
-                template.push_str(&format!(" {}", attr.name));
+                append!(template, " {}", attr.name);
             }
         }
     }
@@ -44,10 +47,10 @@ pub fn generate_element_template(el: &ElementNode<'_>) -> String {
             }
         }
 
-        template.push_str(&format!("</{}>", el.tag));
+        append!(template, "</{}>", el.tag);
     }
 
-    template.into()
+    template
 }
 
 /// Check if element is static (no dynamic bindings or children)
@@ -109,23 +112,25 @@ pub fn get_tag_name(el: &ElementNode<'_>) -> String {
 }
 
 /// Escape HTML special characters
-fn escape_html(s: &str) -> std::string::String {
+fn escape_html(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")
+        .into()
 }
 
 /// Escape attribute value
-fn escape_attr(s: &str) -> std::string::String {
+fn escape_attr(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('"', "&quot;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")
+        .into()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{escape_attr, escape_html};
 
     #[test]
     fn test_escape_html() {

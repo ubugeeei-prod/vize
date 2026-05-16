@@ -1,7 +1,15 @@
 //! WASM bindings for Vue compiler.
+//!
+//! FFI boundary code: uses std types for JavaScript interop.
+#![allow(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros
+)]
 
 mod analyze;
 mod cross_file;
+#[cfg(feature = "glyph")]
 mod format;
 mod lint;
 mod musea;
@@ -13,12 +21,14 @@ mod wasm_typecheck;
 // Re-export all WASM bindings
 pub use analyze::*;
 pub use cross_file::*;
+#[cfg(feature = "glyph")]
 pub use format::*;
 pub use lint::*;
 pub use musea::*;
 pub use wasm_typecheck::*;
 
 use serde::Serialize;
+use std::collections::BTreeMap;
 use vize_carton::Bump;
 use wasm_bindgen::prelude::*;
 
@@ -26,9 +36,11 @@ use crate::{CompileResult, CompilerOptions};
 use vize_atelier_core::options::CodegenMode;
 use vize_atelier_core::parser::parse;
 use vize_atelier_dom::{compile_template_with_options, DomCompilerOptions};
+use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
-    compile_sfc as sfc_compile, parse_sfc, ScriptCompileOptions, SfcCompileOptions, SfcDescriptor,
-    SfcParseOptions, StyleCompileOptions, TemplateCompileOptions,
+    compile_sfc as sfc_compile, parse_sfc, CssCompileOptions, CssTargets, ScriptCompileOptions,
+    SfcCompileOptions, SfcDescriptor, SfcMacroArtifact, SfcParseOptions, StyleCompileOptions,
+    TemplateCompileOptions,
 };
 use vize_atelier_ssr::compile_ssr as ssr_compile;
 use vize_atelier_vapor::{compile_vapor as vapor_compile, VaporCompilerOptions};
@@ -41,22 +53,177 @@ pub(crate) fn to_js_value<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
         .map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
-/// Convert UTF-8 byte offset to character (code point) offset.
-/// OXC uses UTF-8 byte offsets, but JavaScript strings use UTF-16 code units.
-/// For most cases (ASCII + BMP characters), this converts to character count.
-pub(crate) fn utf8_byte_to_char_offset(content: &str, byte_offset: u32) -> u32 {
+fn to_json_js_value<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
+    let json = serde_json::to_string(value).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    js_sys::JSON::parse(&json)
+}
+
+struct ParsedCompilerOptions {
+    options: CompilerOptions,
+    binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
+}
+
+fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions {
+    let get_string = |key: &str| {
+        js_sys::Reflect::get(options, &JsValue::from_str(key))
+            .ok()
+            .and_then(|value| value.as_string())
+    };
+
+    let get_bool = |key: &str| {
+        js_sys::Reflect::get(options, &JsValue::from_str(key))
+            .ok()
+            .and_then(|value| value.as_bool())
+    };
+
+    let binding_metadata = js_sys::Reflect::get(options, &JsValue::from_str("bindingMetadata"))
+        .ok()
+        .and_then(|value| {
+            if value.is_null() || value.is_undefined() {
+                return None;
+            }
+            let json = js_sys::JSON::stringify(&value).ok()?.as_string()?;
+            serde_json::from_str(&json).ok()
+        });
+
+    ParsedCompilerOptions {
+        options: CompilerOptions {
+            mode: get_string("mode"),
+            prefix_identifiers: get_bool("prefixIdentifiers"),
+            hoist_static: get_bool("hoistStatic"),
+            cache_handlers: get_bool("cacheHandlers"),
+            scope_id: get_string("scopeId"),
+            ssr: get_bool("ssr"),
+            source_map: get_bool("sourceMap"),
+            filename: get_string("filename"),
+            output_mode: get_string("outputMode"),
+            is_ts: get_bool("isTs"),
+            custom_renderer: get_bool("customRenderer"),
+            script_ext: get_string("scriptExt"),
+        },
+        binding_metadata,
+    }
+}
+
+/// Convert a UTF-8 byte offset to a JavaScript string offset (UTF-16 code units).
+/// OXC and the SFC parser report byte offsets, while Monaco/JS consumers expect
+/// UTF-16 offsets.
+pub(crate) fn utf8_byte_to_utf16_offset(content: &str, byte_offset: u32) -> u32 {
     let byte_offset = byte_offset as usize;
     if byte_offset >= content.len() {
-        return content.chars().count() as u32;
+        return content.encode_utf16().count() as u32;
     }
-    // Count characters up to the byte offset
-    content[..byte_offset].chars().count() as u32
+    content[..byte_offset].encode_utf16().count() as u32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::utf8_byte_to_utf16_offset;
+
+    #[test]
+    fn test_utf8_byte_to_utf16_offset_handles_multibyte_and_astral_chars() {
+        let source = "aあ😀b";
+
+        let hiragana_start = source.find('あ').expect("hiragana should exist") as u32;
+        let emoji_start = source.find('😀').expect("emoji should exist") as u32;
+        let latin_b_start = source.find('b').expect("latin b should exist") as u32;
+
+        assert_eq!(utf8_byte_to_utf16_offset(source, 0), 0);
+        assert_eq!(utf8_byte_to_utf16_offset(source, hiragana_start), 1);
+        assert_eq!(utf8_byte_to_utf16_offset(source, emoji_start), 2);
+        assert_eq!(utf8_byte_to_utf16_offset(source, latin_b_start), 4);
+        assert_eq!(utf8_byte_to_utf16_offset(source, source.len() as u32), 5);
+    }
+}
+
+/// Parse CSS options from JsValue
+pub(crate) fn parse_css_options(options: JsValue) -> CssCompileOptions {
+    let scope_id = js_sys::Reflect::get(&options, &JsValue::from_str("scopeId"))
+        .ok()
+        .and_then(|v| v.as_string())
+        .map(Into::into);
+
+    let scoped = js_sys::Reflect::get(&options, &JsValue::from_str("scoped"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let minify = js_sys::Reflect::get(&options, &JsValue::from_str("minify"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let source_map = js_sys::Reflect::get(&options, &JsValue::from_str("sourceMap"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let css_modules = js_sys::Reflect::get(&options, &JsValue::from_str("cssModules"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let custom_media = js_sys::Reflect::get(&options, &JsValue::from_str("customMedia"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let filename = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
+        .ok()
+        .and_then(|v| v.as_string())
+        .map(Into::into);
+
+    // Parse targets
+    let targets = js_sys::Reflect::get(&options, &JsValue::from_str("targets"))
+        .ok()
+        .and_then(|v| {
+            if v.is_undefined() || v.is_null() {
+                return None;
+            }
+            Some(CssTargets {
+                chrome: js_sys::Reflect::get(&v, &JsValue::from_str("chrome"))
+                    .ok()
+                    .and_then(|v| v.as_f64())
+                    .map(|v| v as u32),
+                firefox: js_sys::Reflect::get(&v, &JsValue::from_str("firefox"))
+                    .ok()
+                    .and_then(|v| v.as_f64())
+                    .map(|v| v as u32),
+                safari: js_sys::Reflect::get(&v, &JsValue::from_str("safari"))
+                    .ok()
+                    .and_then(|v| v.as_f64())
+                    .map(|v| v as u32),
+                edge: js_sys::Reflect::get(&v, &JsValue::from_str("edge"))
+                    .ok()
+                    .and_then(|v| v.as_f64())
+                    .map(|v| v as u32),
+                ios: js_sys::Reflect::get(&v, &JsValue::from_str("ios"))
+                    .ok()
+                    .and_then(|v| v.as_f64())
+                    .map(|v| v as u32),
+                android: js_sys::Reflect::get(&v, &JsValue::from_str("android"))
+                    .ok()
+                    .and_then(|v| v.as_f64())
+                    .map(|v| v as u32),
+            })
+        });
+
+    CssCompileOptions {
+        scope_id,
+        scoped,
+        minify,
+        source_map,
+        targets,
+        filename,
+        custom_media,
+        css_modules,
+    }
 }
 
 /// SFC compile result for WASM
 #[derive(Serialize)]
 pub struct SfcWasmResult {
-    pub descriptor: SfcDescriptor<'static>,
+    pub descriptor: SfcDescriptorWasm,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub template: Option<CompileResult>,
     pub script: SfcScriptResult,
@@ -66,6 +233,8 @@ pub struct SfcWasmResult {
     pub warnings: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none", rename = "bindingMetadata")]
     pub binding_metadata: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Vec::is_empty", rename = "macroArtifacts")]
+    pub macro_artifacts: Vec<SfcMacroArtifactWasm>,
 }
 
 /// Script compilation result
@@ -74,6 +243,196 @@ pub struct SfcScriptResult {
     pub code: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bindings: Option<serde_json::Value>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcMacroArtifactWasm {
+    pub kind: String,
+    pub name: String,
+    pub source: String,
+    pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module_code: Option<String>,
+    pub start: usize,
+    pub end: usize,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcDescriptorWasm {
+    pub filename: String,
+    pub source: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub template: Option<SfcTemplateBlockWasm>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub script: Option<SfcScriptBlockWasm>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub script_setup: Option<SfcScriptBlockWasm>,
+    pub styles: Vec<SfcStyleBlockWasm>,
+    pub custom_blocks: Vec<SfcCustomBlockWasm>,
+    pub css_vars: Vec<String>,
+    pub slotted: bool,
+    pub should_force_reload: bool,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcTemplateBlockWasm {
+    pub content: String,
+    pub loc: SfcBlockLocationWasm,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lang: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub src: Option<String>,
+    pub attrs: BTreeMap<String, String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcScriptBlockWasm {
+    pub content: String,
+    pub loc: SfcBlockLocationWasm,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lang: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub src: Option<String>,
+    pub setup: bool,
+    pub attrs: BTreeMap<String, String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcStyleBlockWasm {
+    pub content: String,
+    pub loc: SfcBlockLocationWasm,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lang: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub src: Option<String>,
+    pub scoped: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module: Option<String>,
+    pub attrs: BTreeMap<String, String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcCustomBlockWasm {
+    pub r#type: String,
+    pub content: String,
+    pub attrs: BTreeMap<String, String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SfcBlockLocationWasm {
+    pub start: usize,
+    pub end: usize,
+    pub tag_start: usize,
+    pub tag_end: usize,
+    pub start_line: usize,
+    pub start_column: usize,
+    pub end_line: usize,
+    pub end_column: usize,
+}
+
+fn attrs_to_wasm(
+    attrs: &vize_carton::FxHashMap<std::borrow::Cow<'_, str>, std::borrow::Cow<'_, str>>,
+) -> BTreeMap<String, String> {
+    attrs
+        .iter()
+        .map(|(key, value)| (key.to_string(), value.to_string()))
+        .collect()
+}
+
+fn loc_to_wasm(loc: &vize_atelier_sfc::BlockLocation) -> SfcBlockLocationWasm {
+    SfcBlockLocationWasm {
+        start: loc.start,
+        end: loc.end,
+        tag_start: loc.tag_start,
+        tag_end: loc.tag_end,
+        start_line: loc.start_line,
+        start_column: loc.start_column,
+        end_line: loc.end_line,
+        end_column: loc.end_column,
+    }
+}
+
+fn template_block_to_wasm(block: &vize_atelier_sfc::SfcTemplateBlock<'_>) -> SfcTemplateBlockWasm {
+    SfcTemplateBlockWasm {
+        content: block.content.to_string(),
+        loc: loc_to_wasm(&block.loc),
+        lang: block.lang.as_ref().map(|value| value.to_string()),
+        src: block.src.as_ref().map(|value| value.to_string()),
+        attrs: attrs_to_wasm(&block.attrs),
+    }
+}
+
+fn script_block_to_wasm(block: &vize_atelier_sfc::SfcScriptBlock<'_>) -> SfcScriptBlockWasm {
+    SfcScriptBlockWasm {
+        content: block.content.to_string(),
+        loc: loc_to_wasm(&block.loc),
+        lang: block.lang.as_ref().map(|value| value.to_string()),
+        src: block.src.as_ref().map(|value| value.to_string()),
+        setup: block.setup,
+        attrs: attrs_to_wasm(&block.attrs),
+    }
+}
+
+fn style_block_to_wasm(block: &vize_atelier_sfc::SfcStyleBlock<'_>) -> SfcStyleBlockWasm {
+    SfcStyleBlockWasm {
+        content: block.content.to_string(),
+        loc: loc_to_wasm(&block.loc),
+        lang: block.lang.as_ref().map(|value| value.to_string()),
+        src: block.src.as_ref().map(|value| value.to_string()),
+        scoped: block.scoped,
+        module: block.module.as_ref().map(|value| value.to_string()),
+        attrs: attrs_to_wasm(&block.attrs),
+    }
+}
+
+fn custom_block_to_wasm(block: &vize_atelier_sfc::SfcCustomBlock<'_>) -> SfcCustomBlockWasm {
+    SfcCustomBlockWasm {
+        r#type: block.block_type.to_string(),
+        content: block.content.to_string(),
+        attrs: attrs_to_wasm(&block.attrs),
+    }
+}
+
+fn descriptor_to_wasm(descriptor: &SfcDescriptor<'_>) -> SfcDescriptorWasm {
+    SfcDescriptorWasm {
+        filename: descriptor.filename.to_string(),
+        source: descriptor.source.to_string(),
+        template: descriptor.template.as_ref().map(template_block_to_wasm),
+        script: descriptor.script.as_ref().map(script_block_to_wasm),
+        script_setup: descriptor.script_setup.as_ref().map(script_block_to_wasm),
+        styles: descriptor.styles.iter().map(style_block_to_wasm).collect(),
+        custom_blocks: descriptor
+            .custom_blocks
+            .iter()
+            .map(custom_block_to_wasm)
+            .collect(),
+        css_vars: descriptor
+            .css_vars
+            .iter()
+            .map(|value| value.to_string())
+            .collect(),
+        slotted: descriptor.slotted,
+        should_force_reload: descriptor.should_force_reload,
+    }
+}
+
+fn macro_artifact_to_wasm(artifact: &SfcMacroArtifact) -> SfcMacroArtifactWasm {
+    SfcMacroArtifactWasm {
+        kind: artifact.kind.to_string(),
+        name: artifact.name.to_string(),
+        source: artifact.source.to_string(),
+        content: artifact.content.to_string(),
+        module_code: artifact.module_code.as_ref().map(ToString::to_string),
+        start: artifact.start,
+        end: artifact.end,
+    }
 }
 
 /// WASM Compiler instance
@@ -90,10 +449,10 @@ impl Compiler {
     /// Compile template to VDom render function
     #[wasm_bindgen]
     pub fn compile(&self, template: &str, options: JsValue) -> Result<JsValue, JsValue> {
-        let opts: CompilerOptions = serde_wasm_bindgen::from_value(options).unwrap_or_default();
+        let parsed = parse_compiler_options(&options);
 
-        match compile_internal(template, &opts, false) {
-            Ok(result) => to_js_value(&result),
+        match compile_internal(template, &parsed.options, false, parsed.binding_metadata) {
+            Ok(result) => to_json_js_value(&result),
             Err(e) => Err(JsValue::from_str(&e)),
         }
     }
@@ -101,10 +460,10 @@ impl Compiler {
     /// Compile template to Vapor mode
     #[wasm_bindgen(js_name = "compileVapor")]
     pub fn compile_vapor(&self, template: &str, options: JsValue) -> Result<JsValue, JsValue> {
-        let opts: CompilerOptions = serde_wasm_bindgen::from_value(options).unwrap_or_default();
+        let parsed = parse_compiler_options(&options);
 
-        match compile_internal(template, &opts, true) {
-            Ok(result) => to_js_value(&result),
+        match compile_internal(template, &parsed.options, true, None) {
+            Ok(result) => to_json_js_value(&result),
             Err(e) => Err(JsValue::from_str(&e)),
         }
     }
@@ -127,10 +486,12 @@ impl Compiler {
     /// Parse SFC (.vue file)
     #[wasm_bindgen(js_name = "parseSfc")]
     pub fn parse_sfc_method(&self, source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-        let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
-            .ok()
-            .and_then(|v| v.as_string())
-            .unwrap_or_else(|| "anonymous.vue".to_string());
+        let filename: vize_carton::CompactString =
+            js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
+                .ok()
+                .and_then(|v| v.as_string())
+                .unwrap_or_else(|| "anonymous.vue".to_string())
+                .into();
 
         let opts = SfcParseOptions {
             filename,
@@ -138,11 +499,7 @@ impl Compiler {
         };
 
         match parse_sfc(source, opts) {
-            Ok(descriptor) => {
-                // Convert to owned for serialization
-                let owned = descriptor.into_owned();
-                to_js_value(&owned)
-            }
+            Ok(descriptor) => to_json_js_value(&descriptor_to_wasm(&descriptor)),
             Err(e) => Err(JsValue::from_str(&e.message)),
         }
     }
@@ -151,7 +508,7 @@ impl Compiler {
     #[wasm_bindgen(js_name = "compileCss")]
     pub fn compile_css_method(&self, css: &str, options: JsValue) -> Result<JsValue, JsValue> {
         use vize_atelier_sfc::compile_css;
-        let opts = format::parse_css_options(options);
+        let opts = parse_css_options(options);
         let result = compile_css(css, &opts);
         to_js_value(&result)
     }
@@ -159,13 +516,14 @@ impl Compiler {
     /// Compile SFC template block
     #[wasm_bindgen(js_name = "compileSfc")]
     pub fn compile_sfc(&self, source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-        let opts: CompilerOptions =
-            serde_wasm_bindgen::from_value(options.clone()).unwrap_or_default();
+        let parsed = parse_compiler_options(&options);
+        let opts = parsed.options;
 
-        let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
-            .ok()
-            .and_then(|v| v.as_string())
-            .unwrap_or_else(|| "anonymous.vue".to_string());
+        let filename: vize_carton::CompactString = opts
+            .filename
+            .clone()
+            .unwrap_or_else(|| "anonymous.vue".to_string())
+            .into();
 
         let parse_opts = SfcParseOptions {
             filename: filename.clone(),
@@ -220,8 +578,8 @@ impl Compiler {
         }
 
         // Compile template if present
-        let template_result = if let Some(template) = &descriptor.template {
-            match compile_internal(&template.content, &opts, use_vapor) {
+        let mut template_result = if let Some(template) = &descriptor.template {
+            match compile_internal(&template.content, &opts, use_vapor, None) {
                 Ok(r) => Some(r),
                 Err(e) => return Err(JsValue::from_str(&e)),
             }
@@ -246,6 +604,7 @@ impl Compiler {
                 scoped: descriptor.styles.iter().any(|s| s.scoped),
                 ssr: opts.ssr.unwrap_or(false),
                 is_ts: output_is_ts,
+                custom_renderer: opts.custom_renderer.unwrap_or(false),
                 ..Default::default()
             },
             style: StyleCompileOptions {
@@ -253,6 +612,8 @@ impl Compiler {
                 scoped: descriptor.styles.iter().any(|s| s.scoped),
                 ..Default::default()
             },
+            vapor: use_vapor,
+            scope_id: None,
         };
 
         // Compile the full SFC
@@ -261,29 +622,56 @@ impl Compiler {
             Err(e) => return Err(JsValue::from_str(&e.message)),
         };
 
+        let script_code = if source_is_ts && !output_is_ts {
+            transform_typescript_to_js(&sfc_result.code).to_string()
+        } else {
+            sfc_result.code.to_string()
+        };
+
+        if source_is_ts && !output_is_ts {
+            if let Some(template_result) = template_result.as_mut() {
+                template_result.code =
+                    transform_typescript_to_js(&template_result.code).to_string();
+            }
+        }
+
         // Build result with compiled script code
         // Convert descriptor to owned for serialization
         let binding_metadata = sfc_result
             .bindings
             .as_ref()
             .and_then(|b| serde_json::to_value(&b.bindings).ok());
+        let macro_artifacts = sfc_result
+            .macro_artifacts
+            .iter()
+            .map(macro_artifact_to_wasm)
+            .collect();
 
         let result = SfcWasmResult {
-            descriptor: descriptor.into_owned(),
+            descriptor: descriptor_to_wasm(&descriptor),
             template: template_result,
             script: SfcScriptResult {
-                code: sfc_result.code,
+                code: script_code,
                 bindings: sfc_result
                     .bindings
                     .map(|b| serde_json::to_value(&b).unwrap_or_default()),
             },
-            css: sfc_result.css,
-            errors: sfc_result.errors.into_iter().map(|e| e.message).collect(),
-            warnings: sfc_result.warnings.into_iter().map(|e| e.message).collect(),
+            css: sfc_result.css.map(Into::into),
+            errors: sfc_result
+                .errors
+                .into_iter()
+                .map(|e| e.message.into())
+                .collect(),
+            warnings: sfc_result
+                .warnings
+                .into_iter()
+                .map(|e| e.message.into())
+                .collect(),
             binding_metadata,
+            macro_artifacts,
         };
 
-        to_js_value(&result)
+        to_json_js_value(&result)
     }
 }
 
@@ -298,11 +686,12 @@ fn compile_internal(
     template: &str,
     opts: &CompilerOptions,
     vapor: bool,
+    binding_metadata: Option<vize_atelier_core::options::BindingMetadata>,
 ) -> Result<CompileResult, String> {
     let allocator = Bump::new();
 
     // SSR mode - use dedicated SSR compiler
-    if opts.ssr.unwrap_or(false) && !vapor {
+    if opts.ssr.unwrap_or(false) && !vapor && binding_metadata.is_none() {
         let (root, errors, result) = ssr_compile(&allocator, template);
 
         if !errors.is_empty() {
@@ -330,12 +719,19 @@ fn compile_internal(
         let vapor_opts = VaporCompilerOptions {
             prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
             ssr: opts.ssr.unwrap_or(false),
+            custom_renderer: opts.custom_renderer.unwrap_or(false),
+            binding_metadata,
             ..Default::default()
         };
         let result = vapor_compile(&allocator, template, vapor_opts);
 
         if !result.error_messages.is_empty() {
-            return Err(result.error_messages.join("\n"));
+            return Err(result
+                .error_messages
+                .iter()
+                .map(|s| s.as_str())
+                .collect::<Vec<_>>()
+                .join("\n"));
         }
 
         return Ok(CompileResult {
@@ -355,18 +751,22 @@ fn compile_internal(
     }
 
     // VDOM mode - use vize_atelier_dom which includes proper v-model transform
+    let has_binding_metadata = binding_metadata.is_some();
     let dom_opts = DomCompilerOptions {
         mode: match opts.mode.as_deref() {
             Some("module") => CodegenMode::Module,
             _ => CodegenMode::Function,
         },
-        prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
-        hoist_static: opts.hoist_static.unwrap_or(false),
-        cache_handlers: opts.cache_handlers.unwrap_or(false),
+        prefix_identifiers: opts.prefix_identifiers.unwrap_or(has_binding_metadata),
+        hoist_static: opts.hoist_static.unwrap_or(has_binding_metadata),
+        cache_handlers: opts.cache_handlers.unwrap_or(has_binding_metadata),
         scope_id: opts.scope_id.clone().map(|s| s.into()),
         ssr: opts.ssr.unwrap_or(false),
         source_map: opts.source_map.unwrap_or(false),
         is_ts: opts.is_ts.unwrap_or(false),
+        custom_renderer: opts.custom_renderer.unwrap_or(false),
+        binding_metadata,
+        inline: has_binding_metadata,
         ..Default::default()
     };
 

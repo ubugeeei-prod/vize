@@ -1,5 +1,6 @@
 //! Input event types.
 
+use compact_str::CompactString;
 use serde::{Deserialize, Serialize};
 
 use super::keyboard::KeyEvent;
@@ -19,7 +20,7 @@ pub enum Event {
     /// Focus lost
     FocusLost,
     /// Paste event (bracketed paste)
-    Paste(String),
+    Paste(CompactString),
 }
 
 impl Event {
@@ -63,7 +64,7 @@ impl From<crossterm::event::Event> for Event {
             crossterm::event::Event::Resize(w, h) => Event::Resize(w, h),
             crossterm::event::Event::FocusGained => Event::FocusGained,
             crossterm::event::Event::FocusLost => Event::FocusLost,
-            crossterm::event::Event::Paste(s) => Event::Paste(s),
+            crossterm::event::Event::Paste(s) => Event::Paste(CompactString::from(s)),
         }
     }
 }
@@ -93,7 +94,8 @@ pub fn read_event() -> std::io::Result<Event> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::Event;
+    use crate::input::keyboard::KeyEvent;
 
     #[test]
     fn test_event_is_key() {

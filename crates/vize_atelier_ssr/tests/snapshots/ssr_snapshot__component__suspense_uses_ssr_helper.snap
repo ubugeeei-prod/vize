@@ -1,0 +1,21 @@
+---
+source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
+expression: "compile_full(r#\"<Suspense><Foo>slot content</Foo></Suspense>\"#)"
+---
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _ssrRenderSuspense(_push, {
+    default: () => {
+      _push(_ssrRenderComponent(_resolveComponent("Foo"), null, {
+        default: _withCtx((_, _push, _parent, _scopeId) => {
+          if (_push) {
+            _push(`slot content`)
+          } else {
+            return [_createTextVNode("slot content")]
+          }
+        }),
+        _: 1
+      }, _parent))
+    },
+    _: 1
+  })
+}

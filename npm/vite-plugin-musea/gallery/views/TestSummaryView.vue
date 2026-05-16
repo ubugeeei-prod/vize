@@ -1,200 +1,294 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { mdiPlay, mdiLoading, mdiCheckCircle, mdiCloseCircle, mdiCircleOutline, mdiAlertCircle, mdiOpenInNew } from '@mdi/js'
-import { useArts } from '../composables/useArts'
-import { useA11y, type A11yResult, type A11yViolation } from '../composables/useA11y'
-import { getPreviewUrl } from '../api'
-import MdiIcon from '../components/MdiIcon.vue'
+import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { useRouter } from "vue-router";
+import {
+  mdiPlay,
+  mdiLoading,
+  mdiCheckCircle,
+  mdiCloseCircle,
+  mdiCircleOutline,
+  mdiAlertCircle,
+  mdiOpenInNew,
+} from "@mdi/js";
+import { useArts } from "../composables/useArts";
+import { useA11y, type A11yResult } from "../composables/useA11y";
+import { getPreviewUrl } from "../api";
+import MdiIcon from "../components/MdiIcon.vue";
+import { getVariantSectionId } from "../utils/variantSections";
 
-const router = useRouter()
-const { arts, load } = useArts()
-const { init: initA11y, runA11y, getResult, isRunning: a11yIsRunning, results: a11yResults } = useA11y()
+const POOL_SIZE = 4;
+
+const router = useRouter();
+const { arts, load } = useArts();
+const { init: initA11y, runA11yAsync, getResult, results: a11yResults } = useA11y();
 
 interface TestStatus {
-  artPath: string
-  artTitle: string
-  variantName: string
-  status: 'pending' | 'running' | 'passed' | 'failed'
-  result?: A11yResult
+  artPath: string;
+  artTitle: string;
+  variantName: string;
+  status: "pending" | "running" | "passed" | "failed";
+  result?: A11yResult;
 }
 
-const testQueue = ref<TestStatus[]>([])
-const isRunningAll = ref(false)
-const currentTestIndex = ref(-1)
-const iframeRefs = ref<Map<string, HTMLIFrameElement>>(new Map())
-const iframeReadyMap = ref<Map<string, boolean>>(new Map())
+const testQueue = ref<TestStatus[]>([]);
+const isRunningAll = ref(false);
+const completedCount = ref(0);
+
+// Iframe pool: POOL_SIZE reusable slots
+const poolIframes = ref<(HTMLIFrameElement | null)[]>(Array(POOL_SIZE).fill(null));
+const poolSrcs = ref<string[]>(Array(POOL_SIZE).fill(""));
 
 // Flatten all variants into test queue
 const buildTestQueue = () => {
-  const queue: TestStatus[] = []
+  const queue: TestStatus[] = [];
   for (const art of arts.value) {
     for (const variant of art.variants) {
-      const key = `${art.path}:${variant.name}`
-      const existingResult = getResult(key)
+      const key = `${art.path}:${variant.name}`;
+      const existingResult = getResult(key);
       queue.push({
         artPath: art.path,
         artTitle: art.metadata.title || art.path,
         variantName: variant.name,
-        status: existingResult ? (existingResult.violations.length > 0 ? 'failed' : 'passed') : 'pending',
+        status: existingResult
+          ? existingResult.violations.length > 0
+            ? "failed"
+            : "passed"
+          : "pending",
         result: existingResult,
-      })
+      });
     }
   }
-  testQueue.value = queue
-}
+  testQueue.value = queue;
+};
 
 const summary = computed(() => {
-  const total = testQueue.value.length
-  const passed = testQueue.value.filter(t => t.status === 'passed').length
-  const failed = testQueue.value.filter(t => t.status === 'failed').length
-  const pending = testQueue.value.filter(t => t.status === 'pending').length
-  const running = testQueue.value.filter(t => t.status === 'running').length
+  const total = testQueue.value.length;
+  const passed = testQueue.value.filter((t) => t.status === "passed").length;
+  const failed = testQueue.value.filter((t) => t.status === "failed").length;
+  const pending = testQueue.value.filter((t) => t.status === "pending").length;
+  const running = testQueue.value.filter((t) => t.status === "running").length;
 
-  let violations = 0
-  let criticalCount = 0
-  let seriousCount = 0
-  let moderateCount = 0
-  let minorCount = 0
+  let violations = 0;
+  let criticalCount = 0;
+  let seriousCount = 0;
+  let moderateCount = 0;
+  let minorCount = 0;
 
   for (const test of testQueue.value) {
     if (test.result) {
-      violations += test.result.violations.length
+      violations += test.result.violations.length;
       for (const v of test.result.violations) {
         switch (v.impact) {
-          case 'critical': criticalCount++; break
-          case 'serious': seriousCount++; break
-          case 'moderate': moderateCount++; break
-          case 'minor': minorCount++; break
+          case "critical":
+            criticalCount++;
+            break;
+          case "serious":
+            seriousCount++;
+            break;
+          case "moderate":
+            moderateCount++;
+            break;
+          case "minor":
+            minorCount++;
+            break;
         }
       }
     }
   }
 
-  return { total, passed, failed, pending, running, violations, criticalCount, seriousCount, moderateCount, minorCount }
-})
+  return {
+    total,
+    passed,
+    failed,
+    pending,
+    running,
+    violations,
+    criticalCount,
+    seriousCount,
+    moderateCount,
+    minorCount,
+  };
+});
 
-const setIframeRef = (key: string, el: HTMLIFrameElement | null) => {
+const setPoolIframeRef = (index: number, el: HTMLIFrameElement | null) => {
   if (el) {
-    iframeRefs.value.set(key, el)
+    poolIframes.value[index] = el;
+  }
+};
+
+// Wait for an iframe slot to load after setting its src
+function waitForIframeLoad(slotIndex: number): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const iframe = poolIframes.value[slotIndex];
+    if (!iframe) {
+      reject(new Error("Iframe slot not found"));
+      return;
+    }
+    const timeout = setTimeout(() => {
+      iframe.removeEventListener("load", onLoad);
+      reject(new Error("Iframe load timeout"));
+    }, 10000);
+
+    function onLoad() {
+      clearTimeout(timeout);
+      resolve();
+    }
+    iframe.addEventListener("load", onLoad, { once: true });
+  });
+}
+
+// Worker coroutine: pulls tests from shared queue index
+async function runWorker(slotIndex: number, queueRef: { index: number }) {
+  while (queueRef.index < testQueue.value.length) {
+    const testIndex = queueRef.index++;
+    const test = testQueue.value[testIndex];
+    const key = `${test.artPath}:${test.variantName}`;
+
+    test.status = "running";
+
+    try {
+      // Set iframe src and wait for load
+      poolSrcs.value[slotIndex] = getPreviewUrl(test.artPath, test.variantName);
+      await nextTick();
+      await waitForIframeLoad(slotIndex);
+
+      // Run a11y test via promise-based API
+      const iframe = poolIframes.value[slotIndex];
+      if (!iframe) throw new Error("Iframe slot lost");
+
+      const result = await runA11yAsync(iframe, key);
+      test.result = result;
+      test.status = result.violations.length > 0 ? "failed" : "passed";
+    } catch (e) {
+      test.status = "failed";
+      test.result = {
+        violations: [
+          {
+            id: "error",
+            impact: "critical",
+            description: e instanceof Error ? e.message : "Unknown error",
+            helpUrl: "",
+            nodes: [],
+          },
+        ],
+        passes: 0,
+        incomplete: 0,
+        error: e instanceof Error ? e.message : "Unknown error",
+      };
+    }
+
+    completedCount.value++;
   }
 }
 
-const onIframeLoad = (key: string) => {
-  iframeReadyMap.value.set(key, true)
-}
-
-// Run all tests sequentially
+// Run all tests with iframe pool
 const runAllTests = async () => {
-  if (isRunningAll.value) return
+  if (isRunningAll.value) return;
 
-  isRunningAll.value = true
+  isRunningAll.value = true;
+  completedCount.value = 0;
 
   // Reset all to pending
   for (const test of testQueue.value) {
-    test.status = 'pending'
-    test.result = undefined
+    test.status = "pending";
+    test.result = undefined;
   }
 
-  for (let i = 0; i < testQueue.value.length; i++) {
-    currentTestIndex.value = i
-    const test = testQueue.value[i]
-    const key = `${test.artPath}:${test.variantName}`
+  // Shared queue index for workers to pull from
+  const queueRef = { index: 0 };
 
-    test.status = 'running'
+  // Launch POOL_SIZE workers concurrently
+  const workers = Array.from({ length: Math.min(POOL_SIZE, testQueue.value.length) }, (_, i) =>
+    runWorker(i, queueRef),
+  );
 
-    // Wait for iframe to be ready
-    const iframe = iframeRefs.value.get(key)
-    if (!iframe) {
-      test.status = 'failed'
-      test.result = { violations: [{ id: 'error', impact: 'critical', description: 'Iframe not found', helpUrl: '', nodes: [] }], passes: 0, incomplete: 0 }
-      continue
-    }
+  await Promise.all(workers);
 
-    // Wait for iframe to load
-    let waitCount = 0
-    while (!iframeReadyMap.value.get(key) && waitCount < 50) {
-      await new Promise(r => setTimeout(r, 100))
-      waitCount++
-    }
-
-    if (!iframeReadyMap.value.get(key)) {
-      test.status = 'failed'
-      test.result = { violations: [{ id: 'error', impact: 'critical', description: 'Iframe load timeout', helpUrl: '', nodes: [] }], passes: 0, incomplete: 0 }
-      continue
-    }
-
-    // Run a11y test
-    runA11y(iframe, key)
-
-    // Wait for result
-    let resultWait = 0
-    while (a11yIsRunning.value && resultWait < 100) {
-      await new Promise(r => setTimeout(r, 100))
-      resultWait++
-    }
-
-    const result = getResult(key)
-    test.result = result
-    test.status = result ? (result.violations.length > 0 ? 'failed' : 'passed') : 'failed'
+  // Clear iframe srcs to free memory
+  for (let i = 0; i < POOL_SIZE; i++) {
+    poolSrcs.value[i] = "";
   }
 
-  currentTestIndex.value = -1
-  isRunningAll.value = false
-}
+  isRunningAll.value = false;
+};
 
 const getImpactColor = (impact: string): string => {
   switch (impact) {
-    case 'critical': return '#f87171'
-    case 'serious': return '#fb923c'
-    case 'moderate': return '#fbbf24'
-    case 'minor': return '#60a5fa'
-    default: return '#7b8494'
+    case "critical":
+      return "#f87171";
+    case "serious":
+      return "#fb923c";
+    case "moderate":
+      return "#fbbf24";
+    case "minor":
+      return "#60a5fa";
+    default:
+      return "#7b8494";
   }
-}
+};
 
-const getStatusIconPath = (status: TestStatus['status']) => {
+const getStatusIconPath = (status: TestStatus["status"]) => {
   switch (status) {
-    case 'passed': return mdiCheckCircle
-    case 'failed': return mdiCloseCircle
-    case 'running': return mdiLoading
-    default: return mdiCircleOutline
+    case "passed":
+      return mdiCheckCircle;
+    case "failed":
+      return mdiCloseCircle;
+    case "running":
+      return mdiLoading;
+    default:
+      return mdiCircleOutline;
   }
-}
+};
 
-const getStatusColor = (status: TestStatus['status']) => {
+const getStatusColor = (status: TestStatus["status"]) => {
   switch (status) {
-    case 'passed': return '#4ade80'
-    case 'failed': return '#f87171'
-    case 'running': return '#fbbf24'
-    default: return '#7b8494'
+    case "passed":
+      return "#4ade80";
+    case "failed":
+      return "#f87171";
+    case "running":
+      return "#fbbf24";
+    default:
+      return "#7b8494";
   }
-}
+};
 
-const navigateToComponent = (artPath: string) => {
-  router.push({ name: 'component', params: { path: artPath } })
-}
+const navigateToComponent = (artPath: string, variantName: string) => {
+  router.push({
+    name: "component",
+    params: { path: artPath },
+    hash: `#${getVariantSectionId(variantName)}`,
+  });
+};
 
 onMounted(() => {
-  load()
-  initA11y()
-})
+  load();
+  initA11y();
+});
 
-watch(arts, () => {
-  buildTestQueue()
-}, { immediate: true })
+watch(
+  arts,
+  () => {
+    buildTestQueue();
+  },
+  { immediate: true },
+);
 
 // Update test results when a11y results change
-watch(a11yResults, () => {
-  for (const test of testQueue.value) {
-    const key = `${test.artPath}:${test.variantName}`
-    const result = getResult(key)
-    if (result && test.status !== 'running') {
-      test.result = result
-      test.status = result.violations.length > 0 ? 'failed' : 'passed'
+watch(
+  a11yResults,
+  () => {
+    for (const test of testQueue.value) {
+      const key = `${test.artPath}:${test.variantName}`;
+      const result = getResult(key);
+      if (result && test.status !== "running") {
+        test.result = result;
+        test.status = result.violations.length > 0 ? "failed" : "passed";
+      }
     }
-  }
-}, { deep: true })
+  },
+  { deep: true },
+);
 </script>
 
 <template>
@@ -243,14 +337,12 @@ watch(a11yResults, () => {
     </div>
 
     <div class="summary-actions">
-      <button
-        class="run-all-btn"
-        :disabled="isRunningAll"
-        @click="runAllTests"
-      >
+      <button type="button" class="run-all-btn" :disabled="isRunningAll" @click="runAllTests">
         <MdiIcon v-if="isRunningAll" class="spin" :path="mdiLoading" :size="16" />
         <MdiIcon v-else :path="mdiPlay" :size="16" />
-        {{ isRunningAll ? `Running ${currentTestIndex + 1}/${testQueue.length}...` : 'Run All A11y Tests' }}
+        {{
+          isRunningAll ? `Running ${completedCount}/${testQueue.length}...` : "Run All A11y Tests"
+        }}
       </button>
     </div>
 
@@ -262,9 +354,9 @@ watch(a11yResults, () => {
         :class="{
           running: test.status === 'running',
           passed: test.status === 'passed',
-          failed: test.status === 'failed'
+          failed: test.status === 'failed',
         }"
-        @click="navigateToComponent(test.artPath)"
+        @click="navigateToComponent(test.artPath, test.variantName)"
       >
         <MdiIcon
           class="test-status"
@@ -299,14 +391,13 @@ watch(a11yResults, () => {
       </div>
     </div>
 
-    <!-- Hidden iframes for testing -->
+    <!-- Iframe pool: POOL_SIZE reusable slots -->
     <div class="hidden-iframes">
       <iframe
-        v-for="test in testQueue"
-        :key="`iframe-${test.artPath}:${test.variantName}`"
-        :ref="(el) => setIframeRef(`${test.artPath}:${test.variantName}`, el as HTMLIFrameElement)"
-        :src="getPreviewUrl(test.artPath, test.variantName)"
-        @load="onIframeLoad(`${test.artPath}:${test.variantName}`)"
+        v-for="(src, i) in poolSrcs"
+        :key="`pool-${i}`"
+        :ref="(el) => setPoolIframeRef(i, el as HTMLIFrameElement)"
+        :src="src || undefined"
       />
     </div>
   </div>
@@ -363,11 +454,21 @@ watch(a11yResults, () => {
   letter-spacing: 0.05em;
 }
 
-.stat.total .stat-value { color: var(--musea-text); }
-.stat.passed .stat-value { color: #4ade80; }
-.stat.failed .stat-value { color: #f87171; }
-.stat.pending .stat-value { color: #7b8494; }
-.stat.violations .stat-value { color: #fb923c; }
+.stat.total .stat-value {
+  color: var(--musea-text);
+}
+.stat.passed .stat-value {
+  color: #4ade80;
+}
+.stat.failed .stat-value {
+  color: #f87171;
+}
+.stat.pending .stat-value {
+  color: #7b8494;
+}
+.stat.violations .stat-value {
+  color: #fb923c;
+}
 
 .violation-breakdown {
   display: flex;
@@ -383,10 +484,22 @@ watch(a11yResults, () => {
   font-weight: 600;
 }
 
-.violation-badge.critical { background: rgba(248, 113, 113, 0.15); color: #f87171; }
-.violation-badge.serious { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
-.violation-badge.moderate { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
-.violation-badge.minor { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+.violation-badge.critical {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+.violation-badge.serious {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+.violation-badge.moderate {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+.violation-badge.minor {
+  background: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
+}
 
 .summary-actions {
   margin-bottom: 1.5rem;
@@ -400,7 +513,7 @@ watch(a11yResults, () => {
   background: var(--musea-accent);
   border: none;
   border-radius: var(--musea-radius-md);
-  color: #fff;
+  color: var(--musea-accent-contrast);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -534,7 +647,9 @@ watch(a11yResults, () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spin {

@@ -1,0 +1,24 @@
+---
+source: crates/vize_atelier_sfc/src/parse/tests.rs
+expression: script
+---
+SfcScriptBlock {
+    content: "\nconst str1 = \"He said \\\"</script>\\\"\"\nconst str2 = 'It\\'s </script> here'\nconst str3 = `Template \\` </script> \\``\nconst d = 4\n",
+    loc: BlockLocation {
+        start: 14,
+        end: 140,
+        tag_start: 0,
+        tag_end: 149,
+        start_line: 1,
+        start_column: 1,
+        end_line: 6,
+        end_column: 10,
+    },
+    lang: None,
+    src: None,
+    setup: true,
+    attrs: {
+        "setup": "",
+    },
+    bindings: None,
+}

@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/css/tests.rs
+expression: result.code.as_str()
+---
+.foo{color:red;background:#00f}

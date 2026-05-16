@@ -71,7 +71,7 @@ impl Rule for NoVTextVHtmlOnComponent {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoVTextVHtmlOnComponent;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 

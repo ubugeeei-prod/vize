@@ -301,7 +301,8 @@ impl OptimizationTracker {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{BlockType, OptimizationTracker};
+    use vize_carton::CompactString;
 
     #[test]
     fn test_event_caching() {

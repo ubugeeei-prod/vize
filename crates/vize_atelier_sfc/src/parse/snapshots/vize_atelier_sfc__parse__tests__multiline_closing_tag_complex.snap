@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_sfc/src/parse/tests.rs
+expression: template
+---
+SfcTemplateBlock {
+    content: "<div class=\"container\">\n    <template v-if=\"show\">\n      Content\n    </template\n    ><template v-else>\n      Other\n    </template>\n  </div>",
+    loc: BlockLocation {
+        start: 84,
+        end: 223,
+        tag_start: 73,
+        tag_end: 235,
+        start_line: 5,
+        start_column: 1,
+        end_line: 11,
+        end_column: 21,
+    },
+    lang: None,
+    src: None,
+    attrs: {},
+}

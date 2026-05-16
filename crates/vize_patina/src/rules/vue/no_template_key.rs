@@ -9,21 +9,23 @@
 //!
 //! ### Invalid
 //! ```vue
-//! <template v-for="item in items" :key="item.id">
+//! <template :key="section">
 //!   <div>{{ item }}</div>
 //! </template>
 //! ```
 //!
 //! ### Valid
 //! ```vue
-//! <template v-for="item in items">
-//!   <div :key="item.id">{{ item }}</div>
+//! <template v-for="item in items" :key="item.id">
+//!   <div>{{ item }}</div>
 //! </template>
 //! ```
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_carton::String;
+use vize_carton::ToCompactString;
 use vize_relief::ast::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -48,11 +50,16 @@ impl Rule for NoTemplateKey {
             return;
         }
 
+        let has_v_for = element.props.iter().any(|prop| match prop {
+            PropNode::Directive(dir) => dir.name.as_str() == "for",
+            _ => false,
+        });
+
         // Check for key attribute or :key directive
         for prop in element.props.iter() {
             match prop {
                 PropNode::Attribute(attr) => {
-                    if attr.name.as_str() == "key" {
+                    if attr.name.as_str() == "key" && !has_v_for {
                         ctx.error_with_help(
                             ctx.t("vue/no-template-key.message"),
                             &attr.loc,
@@ -63,7 +70,7 @@ impl Rule for NoTemplateKey {
                 PropNode::Directive(dir) => {
                     if dir.name.as_str() == "bind" {
                         if let Some(ref arg) = dir.arg {
-                            if get_expression_content(arg) == "key" {
+                            if get_expression_content(arg) == "key" && !has_v_for {
                                 ctx.error_with_help(
                                     ctx.t("vue/no-template-key.message"),
                                     &dir.loc,
@@ -81,14 +88,14 @@ impl Rule for NoTemplateKey {
 /// Get content from ExpressionNode
 fn get_expression_content(expr: &vize_relief::ast::ExpressionNode) -> String {
     match expr {
-        vize_relief::ast::ExpressionNode::Simple(s) => s.content.to_string(),
-        vize_relief::ast::ExpressionNode::Compound(_) => String::new(),
+        vize_relief::ast::ExpressionNode::Simple(s) => s.content.to_compact_string(),
+        vize_relief::ast::ExpressionNode::Compound(_) => String::default(),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::NoTemplateKey;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -112,10 +119,20 @@ mod tests {
     fn test_invalid_key_on_template() {
         let linter = create_linter();
         let result = linter.lint_template(
-            r#"<template v-for="item in items" :key="item.id"><div>{{ item }}</div></template>"#,
+            r#"<template :key="section"><div>{{ item }}</div></template>"#,
             "test.vue",
         );
         assert_eq!(result.error_count, 1);
+    }
+
+    #[test]
+    fn test_valid_key_on_template_v_for() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<template v-for="item in items" :key="item.id"><div>{{ item }}</div></template>"#,
+            "test.vue",
+        );
+        assert_eq!(result.error_count, 0);
     }
 
     #[test]

@@ -12,8 +12,14 @@
 pub mod options;
 pub mod transforms;
 
-pub use options::*;
-pub use transforms::*;
+pub use options::{element_checks, event_modifiers, DomCompilerOptions};
+pub use transforms::{
+    generate_html_prop, generate_html_warning, generate_key_guard, generate_model_props,
+    generate_modifier_guard, generate_show_directive, generate_show_style, generate_text_children,
+    generate_text_content, get_model_event, get_model_helper, get_model_prop, is_v_html, is_v_show,
+    is_v_text, resolve_key_alias, EventModifiers, EventOptions, MouseModifiers,
+    PropagationModifiers, SystemModifiers, VModelModifiers, V_SHOW, V_TEXT,
+};
 
 // Re-export core types
 pub use vize_atelier_core::{
@@ -28,7 +34,7 @@ use vize_atelier_core::{
     parser::parse_with_options,
     transform::transform as do_transform,
 };
-use vize_carton::Bump;
+use vize_carton::{profile, Bump, String};
 use vize_croquis::Croquis;
 
 /// Compile a Vue template for DOM with default options
@@ -49,6 +55,7 @@ pub fn compile_template_with_options<'a>(
     let parser_opts = ParserOptions {
         is_void_tag: vize_carton::is_void_tag,
         is_native_tag: Some(vize_carton::is_native_tag),
+        custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
         comments: options.comments,
@@ -56,12 +63,15 @@ pub fn compile_template_with_options<'a>(
     };
 
     // Parse
-    let (mut root, errors) = parse_with_options(allocator, source, parser_opts);
+    let (mut root, errors) = profile!(
+        "atelier.dom.template.parse",
+        parse_with_options(allocator, source, parser_opts)
+    );
 
     if !errors.is_empty() {
         let codegen_result = CodegenResult {
-            code: String::new(),
-            preamble: String::new(),
+            code: String::default(),
+            preamble: String::default(),
             map: None,
         };
         return (root, errors.to_vec(), codegen_result);
@@ -77,17 +87,22 @@ pub fn compile_template_with_options<'a>(
         ssr: options.ssr,
         is_ts: options.is_ts,
         inline: options.inline,
+        custom_renderer: options.custom_renderer,
         binding_metadata: options.binding_metadata.clone(),
         ..Default::default()
     };
     // Allocate Croquis in the arena so it shares the allocator lifetime
     let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc(*c));
-    do_transform(allocator, &mut root, transform_opts, analysis);
+    profile!(
+        "atelier.dom.template.transform",
+        do_transform(allocator, &mut root, transform_opts, analysis)
+    );
 
     // Codegen
     let codegen_opts = CodegenOptions {
         mode: options.mode,
         source_map: options.source_map,
+        component_name: options.component_name,
         scope_id: options.scope_id.clone(),
         ssr: options.ssr,
         is_ts: options.is_ts,
@@ -96,7 +111,10 @@ pub fn compile_template_with_options<'a>(
         binding_metadata: options.binding_metadata,
         ..Default::default()
     };
-    let codegen_result = generate(&root, codegen_opts);
+    let codegen_result = profile!(
+        "atelier.dom.template.codegen",
+        generate(&root, codegen_opts)
+    );
 
     (root, errors.to_vec(), codegen_result)
 }
@@ -128,8 +146,20 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{
+        compile_template, compile_template_with_options, DomCompilerOptions, Namespace,
+        TemplateChildNode,
+    };
     use vize_atelier_core::options::CodegenMode;
+    use vize_carton::Bump;
+
+    fn full_output(preamble: &str, code: &str) -> vize_carton::String {
+        let mut full = vize_carton::String::with_capacity(preamble.len() + code.len() + 1);
+        full.push_str(preamble);
+        full.push('\n');
+        full.push_str(code);
+        full
+    }
 
     #[test]
     fn test_compile_simple_element() {
@@ -138,13 +168,8 @@ mod tests {
 
         assert!(errors.is_empty());
         assert_eq!(root.children.len(), 1);
-        // Root elements use createElementBlock (blocks for tracking)
-        let full_output = format!("{}\n{}", result.preamble, result.code);
-        assert!(
-            full_output.contains("_createElementBlock"),
-            "Expected output to contain _createElementBlock, got:\n{}",
-            full_output
-        );
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
     }
 
     #[test]
@@ -170,5 +195,140 @@ mod tests {
         assert!(errors.is_empty());
         // Empty div generates minimal code
         assert!(!result.code.is_empty());
+    }
+
+    #[test]
+    fn test_event_handler_setup_ref_value() {
+        use vize_atelier_core::options::BindingType;
+        use vize_carton::FxHashMap;
+
+        let allocator = Bump::new();
+        let mut bindings_map = FxHashMap::default();
+        bindings_map.insert("quoteId".into(), BindingType::SetupRef);
+        bindings_map.insert("renoteTargetNote".into(), BindingType::SetupRef);
+        let binding_metadata = vize_atelier_core::options::BindingMetadata {
+            bindings: bindings_map,
+            props_aliases: FxHashMap::default(),
+            is_script_setup: true,
+        };
+
+        let opts = DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            cache_handlers: true,
+            binding_metadata: Some(binding_metadata),
+            ..Default::default()
+        };
+        let template = r#"<button @click="quoteId = null; renoteTargetNote = null;">x</button>"#;
+        let (_, errors, result) = compile_template_with_options(&allocator, template, opts);
+
+        eprintln!(
+            "=== Template Output ===\npreamble:\n{}\ncode:\n{}",
+            result.preamble, result.code
+        );
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
+    }
+
+    #[test]
+    fn test_inline_ref_class_binding_keeps_class_patch_flag() {
+        use vize_atelier_core::options::{BindingMetadata, BindingType};
+        use vize_carton::FxHashMap;
+
+        let allocator = Bump::new();
+        let mut bindings = FxHashMap::default();
+        bindings.insert("currentTab".into(), BindingType::SetupRef);
+
+        let options = DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            cache_handlers: true,
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        };
+
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            r#"<button :class="['tab', { active: currentTab === 'a' }]" @click="currentTab = 'b'">A</button>"#,
+            options,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
+    }
+
+    #[test]
+    fn test_inline_component_dynamic_prop_keeps_props_patch_flag() {
+        use vize_atelier_core::options::{BindingMetadata, BindingType};
+        use vize_carton::FxHashMap;
+
+        let allocator = Bump::new();
+        let mut bindings = FxHashMap::default();
+        bindings.insert("message".into(), BindingType::SetupRef);
+
+        let options = DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            cache_handlers: true,
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        };
+
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            r#"<div><MyComponent :msg="message" /></div>"#,
+            options,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
+    }
+
+    #[test]
+    fn test_v_if_branch_component_dynamic_prop_keeps_props_patch_flag() {
+        use vize_atelier_core::options::{BindingMetadata, BindingType};
+        use vize_carton::FxHashMap;
+
+        let allocator = Bump::new();
+        let mut bindings = FxHashMap::default();
+        bindings.insert("show".into(), BindingType::SetupRef);
+        bindings.insert("message".into(), BindingType::SetupRef);
+
+        let options = DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            cache_handlers: true,
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        };
+
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            r#"<div><MyComponent v-if="show" :msg="message" /></div>"#,
+            options,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        let full = full_output(&result.preamble, &result.code);
+        insta::assert_snapshot!(full.as_str());
     }
 }

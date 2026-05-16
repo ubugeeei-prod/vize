@@ -5,11 +5,13 @@
 //! in tests/snapshots/sfc/ts/.
 //!
 //! The test cases are loaded from TOML fixtures in tests/fixtures/sfc/.
+#![allow(clippy::disallowed_macros)]
 
 use crate::{compile_sfc, parse_sfc, SfcCompileOptions};
 use serde::Deserialize;
 use std::fmt::Write;
 use std::path::PathBuf;
+use vize_carton::{String, ToCompactString};
 
 /// A test case from a TOML fixture
 #[derive(Debug, Deserialize)]
@@ -90,7 +92,7 @@ fn compile_sfc_ts(input: &str) -> String {
     // Enable TypeScript output mode
     options.script.is_ts = true;
     options.template.is_ts = true;
-    options.script.id = Some("test.vue".to_string());
+    options.script.id = Some("test.vue".to_compact_string());
 
     match compile_sfc(&descriptor, options) {
         Ok(result) => result.code,
@@ -117,7 +119,7 @@ fn compile_sfc_js(input: &str) -> String {
     // Disable TypeScript output mode - transpile to JavaScript
     options.script.is_ts = false;
     options.template.is_ts = false;
-    options.script.id = Some("test.vue".to_string());
+    options.script.id = Some("test.vue".to_compact_string());
 
     match compile_sfc(&descriptor, options) {
         Ok(result) => result.code,
@@ -147,7 +149,7 @@ fn test_script_setup_ts_snapshots() {
             snapshot_suffix => "",
         }, {
             let snapshot_name = build_snapshot_name("script_setup__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name, ts_output);
+            insta::assert_snapshot!(snapshot_name.as_str(), ts_output.as_str());
         });
     }
 }
@@ -170,7 +172,7 @@ fn test_basic_sfc_ts_snapshots() {
             snapshot_suffix => "",
         }, {
             let snapshot_name = build_snapshot_name("basic__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name, ts_output);
+            insta::assert_snapshot!(snapshot_name.as_str(), ts_output.as_str());
         });
     }
 }
@@ -193,7 +195,7 @@ fn test_patches_ts_snapshots() {
             snapshot_suffix => "",
         }, {
             let snapshot_name = build_snapshot_name("patches__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name, ts_output);
+            insta::assert_snapshot!(snapshot_name.as_str(), ts_output.as_str());
         });
     }
 }
@@ -216,7 +218,53 @@ fn test_patches_js_snapshots() {
             snapshot_suffix => "",
         }, {
             let snapshot_name = build_snapshot_name("patches__", &normalized_name);
-            insta::assert_snapshot!(snapshot_name, js_output);
+            insta::assert_snapshot!(snapshot_name.as_str(), js_output.as_str());
+        });
+    }
+}
+
+#[test]
+fn test_directives_ts_snapshots() {
+    let snapshot_path = snapshots_path().join("sfc").join("ts");
+    std::fs::create_dir_all(&snapshot_path).ok();
+
+    let fixture_path = fixtures_path().join("sfc").join("directives.toml");
+    let fixture = load_fixture(&fixture_path).expect("Failed to load directives fixture");
+
+    for case in &fixture.cases {
+        let normalized_name = normalize_name(&case.name);
+        let ts_output = compile_sfc_ts(&case.input);
+
+        insta::with_settings!({
+            snapshot_path => &snapshot_path,
+            prepend_module_to_snapshot => false,
+            snapshot_suffix => "",
+        }, {
+            let snapshot_name = build_snapshot_name("directives__", &normalized_name);
+            insta::assert_snapshot!(snapshot_name.as_str(), ts_output.as_str());
+        });
+    }
+}
+
+#[test]
+fn test_directives_js_snapshots() {
+    let snapshot_path = snapshots_path().join("sfc").join("js");
+    std::fs::create_dir_all(&snapshot_path).ok();
+
+    let fixture_path = fixtures_path().join("sfc").join("directives.toml");
+    let fixture = load_fixture(&fixture_path).expect("Failed to load directives fixture");
+
+    for case in &fixture.cases {
+        let normalized_name = normalize_name(&case.name);
+        let js_output = compile_sfc_js(&case.input);
+
+        insta::with_settings!({
+            snapshot_path => &snapshot_path,
+            prepend_module_to_snapshot => false,
+            snapshot_suffix => "",
+        }, {
+            let snapshot_name = build_snapshot_name("directives__", &normalized_name);
+            insta::assert_snapshot!(snapshot_name.as_str(), js_output.as_str());
         });
     }
 }

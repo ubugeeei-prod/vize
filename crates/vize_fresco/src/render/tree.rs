@@ -250,8 +250,8 @@ impl<'a> Iterator for TreeWalker<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::node::NodeKind;
-    use super::*;
+    use super::RenderTree;
+    use crate::render::node::{NodeKind, RenderNode};
 
     #[test]
     fn test_tree_new() {

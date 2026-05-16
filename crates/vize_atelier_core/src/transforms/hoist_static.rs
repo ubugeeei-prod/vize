@@ -2,7 +2,7 @@
 //!
 //! Hoists static nodes to reduce runtime overhead.
 
-use vize_carton::{Box, Bump, Vec};
+use vize_carton::{Box, Bump, String, Vec};
 
 use crate::ast::*;
 use crate::transform::TransformContext;
@@ -27,10 +27,16 @@ fn is_static_element(el: &ElementNode<'_>) -> bool {
         return false;
     }
 
-    // Check for dynamic props
+    // Check for dynamic props or ref
     for prop in el.props.iter() {
-        if let PropNode::Directive(_) = prop {
-            return false;
+        match prop {
+            PropNode::Directive(_) => return false,
+            PropNode::Attribute(attr) => {
+                // ref attribute prevents hoisting - refs need runtime owner context
+                if attr.name == "ref" {
+                    return false;
+                }
+            }
         }
     }
 
@@ -74,10 +80,18 @@ fn get_element_static_type(el: &ElementNode<'_>) -> StaticType {
     let mut has_dynamic_text = false;
 
     for prop in el.props.iter() {
-        if let PropNode::Directive(_) = prop {
-            // Any directive makes the element dynamic (non-static)
-            // This includes v-bind:class, v-bind:style, v-on:*, etc.
-            return StaticType::NotStatic;
+        match prop {
+            PropNode::Directive(_) => {
+                // Any directive makes the element dynamic (non-static)
+                // This includes v-bind:class, v-bind:style, v-on:*, etc.
+                return StaticType::NotStatic;
+            }
+            PropNode::Attribute(attr) => {
+                // ref attribute prevents hoisting - refs need runtime owner context
+                if attr.name == "ref" {
+                    return StaticType::NotStatic;
+                }
+            }
         }
     }
 
@@ -310,7 +324,7 @@ fn create_children_expression<'a>(
 
     // For multiple text children, combine them
     let mut all_text = true;
-    let mut text_content = String::new();
+    let mut text_content = String::default();
 
     for child in children.iter() {
         match child {
@@ -463,7 +477,8 @@ pub fn count_dynamic_children(children: &[TemplateChildNode<'_>]) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{get_static_type, is_static_node};
+    use crate::ast::{PropNode, TemplateChildNode};
     use crate::parser::parse;
     use bumpalo::Bump;
 

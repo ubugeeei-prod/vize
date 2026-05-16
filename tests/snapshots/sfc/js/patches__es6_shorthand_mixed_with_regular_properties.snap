@@ -1,6 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-expression: js_output
+expression: js_output.as_str()
 ---
 import { openBlock as _openBlock, createBlock as _createBlock, resolveComponent as _resolveComponent } from "vue"
 
@@ -13,9 +13,9 @@ export default {
 const name = ref('test')
 
 return (_ctx, _cache) => {
-  const _component_Component = _resolveComponent("Component")
+  const _component_MyComponent = _resolveComponent("MyComponent")
 
-  return (_openBlock(), _createBlock(_component_Component, { options: { name.value, extra: 'value' } }, null, 8 /* PROPS */, ["options"]))
+  return (_openBlock(), _createBlock(_component_MyComponent, { options: { name: name.value, extra: 'value' } }, null, 8 /* PROPS */, ["options"]))
 }
 }
 

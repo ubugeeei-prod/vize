@@ -1,0 +1,16 @@
+---
+source: crates/vize_patina/src/linter/tests/directives.rs
+expression: result.diagnostics
+---
+[
+    LintDiagnostic {
+        rule_name: "vize/fixme",
+        severity: Error,
+        message: "FIXME: broken",
+        start: 5,
+        end: 32,
+        help: None,
+        labels: [],
+        fix: None,
+    },
+]

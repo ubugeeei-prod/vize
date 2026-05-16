@@ -1,7 +1,7 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+assertion_line: 152
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
@@ -14,14 +14,16 @@ interface Props {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    refreshMethod: { type: Object, required: true }
+    refreshMethod: { type: Function, required: true }
   },
   setup(__props: any) {
 
 const props = __props
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", { onClick: _cache[0] || (_cache[0] = props.refreshMethod(() => {})) }, "Refresh"))
+  return (_openBlock(), _createElementBlock("div", {
+      onClick: _cache[0] || (_cache[0] = ($event: any) => (props.refreshMethod(() => {})))
+    }, "Refresh"))
 }
 }
 

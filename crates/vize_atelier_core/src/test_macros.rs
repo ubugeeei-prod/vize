@@ -264,34 +264,21 @@ macro_rules! get_directive {
     };
 }
 
-/// Assert codegen output contains expected content
+/// Assert codegen output against a full snapshot.
 #[macro_export]
 macro_rules! assert_codegen {
-    ($input:expr => contains: [$($expected:expr),* $(,)?]) => {{
+    ($input:expr => snapshot) => {{
         let allocator = bumpalo::Bump::new();
         let (mut root, errors) = $crate::parser::parse(&allocator, $input);
         assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        $crate::transform::transform(&allocator, &mut root, $crate::options::TransformOptions::default(), None);
-        let result = $crate::codegen::generate(&root, $crate::options::CodegenOptions::default());
-        $(
-            assert!(
-                result.code.contains($expected),
-                "Expected codegen to contain '{}', got:\n{}", $expected, result.code
-            );
-        )*
-        result
-    }};
-
-    ($input:expr => code_matches: $pattern:expr) => {{
-        let allocator = bumpalo::Bump::new();
-        let (mut root, errors) = $crate::parser::parse(&allocator, $input);
-        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
-        $crate::transform::transform(&allocator, &mut root, $crate::options::TransformOptions::default(), None);
-        let result = $crate::codegen::generate(&root, $crate::options::CodegenOptions::default());
-        assert!(
-            result.code.contains($pattern),
-            "Expected codegen to match pattern '{}', got:\n{}", $pattern, result.code
+        $crate::transform::transform(
+            &allocator,
+            &mut root,
+            $crate::options::TransformOptions::default(),
+            None,
         );
+        let result = $crate::codegen::generate(&root, $crate::options::CodegenOptions::default());
+        insta::assert_snapshot!(result.code.as_str());
         result
     }};
 }
@@ -360,18 +347,18 @@ mod tests {
 
     #[test]
     fn test_assert_codegen_element() {
-        assert_codegen!("<div>hello</div>" => contains: ["_createElementBlock", "\"div\"", "\"hello\""]);
+        assert_codegen!("<div>hello</div>" => snapshot);
     }
 
     #[test]
     fn test_assert_codegen_interpolation() {
         // When prefix_identifiers is false (default), expressions are not prefixed with _ctx.
-        assert_codegen!("<div>{{ msg }}</div>" => contains: ["_toDisplayString", "msg"]);
+        assert_codegen!("<div>{{ msg }}</div>" => snapshot);
     }
 
     #[test]
     fn test_compile_macro() {
         let result = compile!("<div>test</div>");
-        assert!(result.code.contains("_createElementBlock"));
+        insta::assert_snapshot!(result.code.as_str());
     }
 }

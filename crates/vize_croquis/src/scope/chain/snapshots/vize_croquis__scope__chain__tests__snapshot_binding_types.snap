@@ -1,0 +1,14 @@
+---
+source: crates/vize_croquis/src/scope/chain/chain_tests.rs
+assertion_line: 896
+expression: output
+---
+=== Binding Types ===
+
+refBinding: SetupRef
+letBinding: SetupLet
+constBinding: SetupConst
+reactiveConstBinding: SetupReactiveConst
+maybeRefBinding: SetupMaybeRef
+literalConstBinding: LiteralConst
+propsBinding: Props

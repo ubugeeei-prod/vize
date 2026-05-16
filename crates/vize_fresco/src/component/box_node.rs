@@ -177,7 +177,9 @@ impl BoxNode {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::BoxNode;
+    use crate::layout::{Dimension, FlexDirection};
+    use crate::render::{BorderStyle, NodeKind};
 
     #[test]
     fn test_box_node_new() {

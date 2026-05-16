@@ -1,13 +1,14 @@
 //! Snapshot tests for vize_canon.
 
 #[cfg(test)]
+#[allow(clippy::disallowed_macros)]
 mod virtual_ts_tests {
     use crate::sfc_typecheck::{type_check_sfc, SfcTypeCheckOptions};
 
     /// Generate virtual TypeScript from SFC using canon's type_check_sfc.
     /// This uses croquis scope analysis to generate proper JavaScript scoping
     /// (for-of loops, closures, IIFEs) instead of declare statements.
-    fn generate_virtual_ts_from_sfc(source: &str) -> String {
+    fn generate_virtual_ts_from_sfc(source: &str) -> vize_carton::String {
         let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
         let result = type_check_sfc(source, &options);
         result.virtual_ts.unwrap_or_default()

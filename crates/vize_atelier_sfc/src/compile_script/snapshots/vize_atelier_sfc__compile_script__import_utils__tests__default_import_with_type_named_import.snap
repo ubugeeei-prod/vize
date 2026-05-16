@@ -1,0 +1,5 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/import_utils.rs
+expression: output.as_str()
+---
+import AtriumSegmentedTabs from '../AtriumSegmentedTabs/AtriumSegmentedTabs.vue'

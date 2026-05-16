@@ -1,7 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 150
-expression: ts_output
+expression: ts_output.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, renderSlot as _renderSlot } from "vue"
@@ -25,7 +24,7 @@ export default /*@__PURE__*/_defineComponent({
     mini: { type: Boolean, required: false },
     disabled: { type: Boolean, required: false, default: false },
     on: { type: Object, required: false, default: undefined },
-    height: { type: Number, required: false, default: '2rem' },
+    height: { type: [Number, String], required: false, default: '2rem' },
     color: { type: String, required: false, default: 'primary' }
   },
   setup(__props: any) {

@@ -1,0 +1,76 @@
+{
+  "name": "@vizejs/unplugin",
+  "version": "0.90.0",
+  "description": "Experimental unplugin-based Vue SFC integration for rollup, webpack, and esbuild powered by Vize",
+  "keywords": [
+    "compiler",
+    "esbuild",
+    "fast",
+    "native",
+    "plugin",
+    "rollup",
+    "unplugin",
+    "vue",
+    "webpack"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ubugeeei/vize",
+    "directory": "npm/unplugin-vize"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./esbuild": {
+      "types": "./dist/esbuild.d.mts",
+      "import": "./dist/esbuild.mjs",
+      "default": "./dist/esbuild.mjs"
+    },
+    "./rollup": {
+      "types": "./dist/rollup.d.mts",
+      "import": "./dist/rollup.mjs",
+      "default": "./dist/rollup.mjs"
+    },
+    "./webpack": {
+      "types": "./dist/webpack.d.mts",
+      "import": "./dist/webpack.mjs",
+      "default": "./dist/webpack.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "check": "vp check src vite.config.ts",
+    "check:fix": "vp check --fix src vite.config.ts",
+    "fmt": "vp fmt --write src vite.config.ts",
+    "test": "node --test src/*.test.ts src/**/*.test.ts",
+    "test:update": "node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@vizejs/native": "workspace:*",
+    "oxc-transform": "catalog:oxc",
+    "unplugin": "catalog:vite-stack"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:typescript",
+    "esbuild": "catalog:bundlers",
+    "rollup": "catalog:bundlers",
+    "typescript": "catalog:typescript",
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-beta",
+    "webpack": "catalog:bundlers"
+  }
+}

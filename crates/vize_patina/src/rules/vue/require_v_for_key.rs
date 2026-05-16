@@ -87,7 +87,7 @@ impl Rule for RequireVForKey {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::RequireVForKey;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -115,7 +115,7 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.error_count, 1);
-        assert!(result.diagnostics[0].message.contains("v-bind:key"));
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

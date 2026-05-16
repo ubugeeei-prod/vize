@@ -1,0 +1,5 @@
+---
+source: crates/vize_patina/src/diagnostic/mod.rs
+expression: result.as_str()
+---
+[1mbold[22m and [36mcode[39m
