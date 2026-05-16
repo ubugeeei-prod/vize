@@ -946,6 +946,27 @@ const onSave = () => {}
 }
 
 #[test]
+fn typed_v_for_alias_template_bindings_are_ignored() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const items: Array<{ label: string }> = [{ label: 'safe' }]
+</script>
+
+<template>
+  <p v-for="item in items" :key="item.label">{{ item.label }}</p>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
+    assert!(!result
+        .diagnostics
+        .iter()
+        .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING));
+}
+
+#[test]
 fn typed_template_members_after_setup_object_literals_are_ignored() {
     if !corsa_available() {
         return;

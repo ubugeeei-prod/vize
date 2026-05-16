@@ -212,19 +212,9 @@ impl VirtualTsGenerator {
             self.emit_line("{");
             self.indent_level += 1;
 
-            // Extract and declare loop variables
             let vars_part = left.trim();
             let vars_part = vars_part.trim_start_matches('(').trim_end_matches(')');
-            for var in vars_part.split(',') {
-                let var = var.trim();
-                if !var.is_empty()
-                    && var
-                        .chars()
-                        .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
-                {
-                    self.emit_line(&format!("let {}: any;", var));
-                }
-            }
+            let aliases = extract_var_names(vars_part);
 
             // Emit the source expression (right side)
             let source = right.trim();
@@ -232,7 +222,12 @@ impl VirtualTsGenerator {
             self.expr_counter += 1;
             self.emit_line(&format!("const {} = {};", var_name, source));
 
+            let loop_emitted = self.emit_v_for_loop_open(&aliases, &var_name);
             profile!("croquis.virtual_ts.template.v_for_body", body(self));
+            if loop_emitted {
+                self.indent_level = self.indent_level.saturating_sub(1);
+                self.emit_line("}");
+            }
 
             self.indent_level = self.indent_level.saturating_sub(1);
             self.emit_line("}");
@@ -272,75 +267,43 @@ impl VirtualTsGenerator {
         self.emit_line("{");
         self.indent_level += 1;
 
-        fn extract_var_name(expr: &ExpressionNode) -> Option<String> {
-            match expr {
-                ExpressionNode::Simple(simple) => {
-                    let name = simple.content.trim();
-                    if !name.is_empty()
-                        && name
-                            .chars()
-                            .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
-                    {
-                        Some(name.to_compact_string())
-                    } else {
-                        None
-                    }
-                }
-                ExpressionNode::Compound(compound) => {
-                    use vize_relief::ast::CompoundExpressionChild;
-                    if let Some(CompoundExpressionChild::Simple(simple)) = compound.children.first()
-                    {
-                        let name = simple.content.trim();
-                        if !name.is_empty()
-                            && name
-                                .chars()
-                                .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
-                        {
-                            return Some(name.to_compact_string());
-                        }
-                    }
-                    None
-                }
-            }
-        }
-
-        // Declare loop variables from parse_result
+        let mut aliases = Vec::with_capacity(3);
         if let Some(ref value) = parse_result.value {
             if let Some(var_name) = extract_var_name(value) {
-                self.emit_line(&format!("let {}: any;", var_name));
+                push_unique_alias(&mut aliases, var_name);
             }
         }
         if let Some(ref key) = parse_result.key {
             if let Some(var_name) = extract_var_name(key) {
-                self.emit_line(&format!("let {}: any;", var_name));
+                push_unique_alias(&mut aliases, var_name);
             }
         }
         if let Some(ref index) = parse_result.index {
             if let Some(var_name) = extract_var_name(index) {
-                self.emit_line(&format!("let {}: any;", var_name));
+                push_unique_alias(&mut aliases, var_name);
             }
         }
 
         // Also check the direct aliases on ForNode
         if let Some(ref value_alias) = for_node.value_alias {
             if let Some(var_name) = extract_var_name(value_alias) {
-                self.emit_line(&format!("let {}: any;", var_name));
+                push_unique_alias(&mut aliases, var_name);
             }
         }
         if let Some(ref key_alias) = for_node.key_alias {
             if let Some(var_name) = extract_var_name(key_alias) {
-                self.emit_line(&format!("let {}: any;", var_name));
+                push_unique_alias(&mut aliases, var_name);
             }
         }
         if let Some(ref index_alias) = for_node.object_index_alias {
             if let Some(var_name) = extract_var_name(index_alias) {
-                self.emit_line(&format!("let {}: any;", var_name));
+                push_unique_alias(&mut aliases, var_name);
             }
         }
 
         // Emit the source expression
         let source_expr = &parse_result.source;
-        match source_expr {
+        let source_var_name = match source_expr {
             ExpressionNode::Simple(simple) => {
                 if !simple.content.is_empty() {
                     let expr_index = self.expr_counter;
@@ -348,20 +311,59 @@ impl VirtualTsGenerator {
                     self.emit_generated_line(|output| {
                         append!(*output, "const __expr_{expr_index} = {};", simple.content);
                     });
+                    Some(format!("__expr_{expr_index}"))
+                } else {
+                    None
                 }
             }
             ExpressionNode::Compound(_) => {
                 self.emit_expression(source_expr, "v-for source");
+                Some(format!("__expr_{}", self.expr_counter.saturating_sub(1)))
             }
-        }
+        };
 
+        let loop_emitted = source_var_name
+            .as_deref()
+            .is_some_and(|source_var_name| self.emit_v_for_loop_open(&aliases, source_var_name));
         profile!(
             "croquis.virtual_ts.template.for_children",
             self.visit_children(&for_node.children)
         );
+        if loop_emitted {
+            self.indent_level = self.indent_level.saturating_sub(1);
+            self.emit_line("}");
+        }
 
         self.indent_level = self.indent_level.saturating_sub(1);
         self.emit_line("}");
+    }
+
+    fn emit_v_for_loop_open(&mut self, aliases: &[String], source_var_name: &str) -> bool {
+        match aliases {
+            [value] => {
+                self.emit_line(&format!("for (const {} of {}) {{", value, source_var_name));
+                self.indent_level += 1;
+                true
+            }
+            [value, index] => {
+                self.emit_line(&format!(
+                    "for (const [{}, {}] of Array.from({}).entries()) {{",
+                    index, value, source_var_name
+                ));
+                self.indent_level += 1;
+                true
+            }
+            [value, key, index, ..] => {
+                self.emit_line(&format!(
+                    "for (const [{}, {}] of Array.from({}).entries()) {{",
+                    index, value, source_var_name
+                ));
+                self.indent_level += 1;
+                self.emit_line(&format!("const {} = {};", key, index));
+                true
+            }
+            [] => false,
+        }
     }
 
     /// Emit a TypeScript expression with source mapping.
@@ -423,4 +425,44 @@ fn decimal_len(mut value: u32) -> usize {
         len += 1;
     }
     len
+}
+
+fn extract_var_name(expr: &ExpressionNode) -> Option<String> {
+    match expr {
+        ExpressionNode::Simple(simple) => {
+            let name = simple.content.trim();
+            is_simple_identifier(name).then_some(name.to_compact_string())
+        }
+        ExpressionNode::Compound(compound) => {
+            use vize_relief::ast::CompoundExpressionChild;
+            if let Some(CompoundExpressionChild::Simple(simple)) = compound.children.first() {
+                let name = simple.content.trim();
+                return is_simple_identifier(name).then_some(name.to_compact_string());
+            }
+            None
+        }
+    }
+}
+
+fn extract_var_names(vars_part: &str) -> Vec<String> {
+    vars_part
+        .split(',')
+        .filter_map(|var| {
+            let var = var.trim();
+            is_simple_identifier(var).then_some(var.to_compact_string())
+        })
+        .collect()
+}
+
+fn push_unique_alias(aliases: &mut Vec<String>, alias: String) {
+    if !aliases.iter().any(|existing| existing == &alias) {
+        aliases.push(alias);
+    }
+}
+
+fn is_simple_identifier(name: &str) -> bool {
+    !name.is_empty()
+        && name
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '_' || c == '$')
 }

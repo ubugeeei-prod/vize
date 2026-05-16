@@ -12,10 +12,10 @@ const { items } = __ctx;
 // Template expressions
 // v-for scope
 {
-  let item: any;
-  let index: any;
   const __expr_0 = items;
-  const __expr_1 = item.id;
-  const __expr_2 = item.name;
-  const __expr_3 = index;
+  for (const [index, item] of Array.from(__expr_0).entries()) {
+    const __expr_1 = item.id;
+    const __expr_2 = item.name;
+    const __expr_3 = index;
+  }
 }
