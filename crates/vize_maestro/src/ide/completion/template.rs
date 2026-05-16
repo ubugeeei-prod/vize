@@ -35,6 +35,11 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
     // Add built-in components
     items_vec.extend(builtin_component_completions());
 
+    if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
+        items_vec.extend(template_snippets());
+        return items_vec;
+    }
+
     // Use vize_croquis for accurate scope analysis and type information
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: ctx.uri.path().to_string().into(),

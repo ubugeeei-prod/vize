@@ -204,6 +204,60 @@ mod tests {
     }
 
     #[test]
+    fn test_template_completion_skips_bindings_in_plain_text_node() {
+        let source = r#"<script setup lang="ts">
+const message = ref('hello')
+</script>
+<template>
+  <div>Hello </div>
+</template>
+"#;
+        let (state, uri) = state_with_document("PlainTextCompletion.vue", source);
+        let offset = source.find("Hello ").unwrap() + "Hello ".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert!(!has_label(&labels, "message"));
+        assert!(has_label(&labels, "v-if"));
+    }
+
+    #[test]
+    fn test_template_completion_skips_bindings_in_static_attribute_value() {
+        let source = r#"<script setup lang="ts">
+const message = ref('hello')
+</script>
+<template>
+  <div title="message" />
+</template>
+"#;
+        let (state, uri) = state_with_document("StaticAttributeCompletion.vue", source);
+        let offset = source.rfind("message\"").unwrap() + "message".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert!(!has_label(&labels, "message"));
+        assert!(has_label(&labels, "v-if"));
+    }
+
+    #[test]
+    fn test_template_completion_keeps_bindings_in_dynamic_attribute_value() {
+        let source = r#"<script setup lang="ts">
+const message = ref('hello')
+</script>
+<template>
+  <div :title = "message" />
+</template>
+"#;
+        let (state, uri) = state_with_document("DynamicAttributeCompletion.vue", source);
+        let offset = source.rfind("message").unwrap() + "message".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert!(has_label(&labels, "message"));
+        assert!(has_label(&labels, "v-if"));
+    }
+
+    #[test]
     fn test_art_variant_completion_includes_script_bindings_in_non_default_variant() {
         let dir = tempfile::tempdir().unwrap();
         let source_path = dir.path().join("Button.art.vue");
@@ -242,5 +296,33 @@ const secondaryLabel = ref('secondary')
         assert!(labels.contains(&"secondaryLabel"));
         assert!(labels.contains(&"primaryLabel"));
         assert!(labels.contains(&"v-if"));
+    }
+
+    fn completion_labels(response: CompletionResponse) -> Vec<String> {
+        let items = match response {
+            CompletionResponse::Array(items) => items,
+            CompletionResponse::List(list) => list.items,
+        };
+
+        items.into_iter().map(|item| item.label).collect()
+    }
+
+    fn has_label(labels: &[String], expected: &str) -> bool {
+        labels.iter().any(|label| label == expected)
+    }
+
+    fn state_with_document(name: &str, source: &str) -> (ServerState, Url) {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join(name);
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        (state, uri)
     }
 }
