@@ -73,12 +73,7 @@ impl Analyzer {
         scope_vars: &mut Vec<CompactString>,
     ) {
         match node {
-            TemplateChildNode::Element(el) => {
-                profile!(
-                    "croquis.template.visit_element",
-                    self.visit_element(el, scope_vars)
-                )
-            }
+            TemplateChildNode::Element(el) => self.visit_element(el, scope_vars),
             TemplateChildNode::If(if_node) => {
                 profile!(
                     "croquis.template.visit_if",

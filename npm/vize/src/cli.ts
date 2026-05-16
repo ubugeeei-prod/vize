@@ -528,18 +528,23 @@ async function runBuild(args: string[]): Promise<void> {
   let success = 0;
 
   for (let start = 0; start < files.length; start += BUILD_BATCH_SIZE) {
-    const inputs = files.slice(start, start + BUILD_BATCH_SIZE).map((file) => ({
-      path: file,
-      source: readFileSync(file, "utf8"),
-    }));
-    const sourceByPath = new Map(inputs.map((input) => [input.path, input.source]));
+    const end = Math.min(start + BUILD_BATCH_SIZE, files.length);
+    const inputs: { path: string; source: string }[] = [];
+    const extensionByPath = new Map<string, string>();
+    for (let index = start; index < end; index++) {
+      const file = files[index]!;
+      const source = readFileSync(file, "utf8");
+      extensionByPath.set(file, getOutputExtension(source, options.scriptExt));
+      inputs.push({ path: file, source });
+    }
+
     const chunkStartedAt = performance.now();
     const result = native.compileSfcBatchWithResults(inputs, toNativeBuildOptions(options));
+    inputs.length = 0;
     nativeTimeMs += result.timeMs ?? result.time_ms ?? performance.now() - chunkStartedAt;
-    const results = [...result.results].sort((left, right) => left.path.localeCompare(right.path));
+    const results = result.results.sort((left, right) => left.path.localeCompare(right.path));
 
     for (const fileResult of results) {
-      const source = sourceByPath.get(fileResult.path) ?? "";
       for (const warning of fileResult.warnings) {
         process.stderr.write(
           `warning: ${displayPath(fileResult.path)} ${sanitizeTerminalText(warning)}\n`,
@@ -556,7 +561,7 @@ async function runBuild(args: string[]): Promise<void> {
       }
 
       const extension =
-        options.format === "json" ? "json" : getOutputExtension(source, options.scriptExt);
+        options.format === "json" ? "json" : (extensionByPath.get(fileResult.path) ?? "js");
       const outputPath = path.join(options.output, outputFileName(fileResult.path, extension));
       const content =
         options.format === "json" ? JSON.stringify(fileResult, null, 2) : fileResult.code;

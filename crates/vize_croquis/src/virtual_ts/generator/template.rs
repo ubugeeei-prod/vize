@@ -112,10 +112,7 @@ impl VirtualTsGenerator {
     /// Visit template children.
     pub(crate) fn visit_children(&mut self, children: &[TemplateChildNode]) {
         for child in children {
-            profile!(
-                "croquis.virtual_ts.template.visit_child",
-                self.visit_child(child)
-            );
+            self.visit_child(child);
         }
     }
 

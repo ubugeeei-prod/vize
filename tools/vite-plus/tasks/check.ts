@@ -9,6 +9,7 @@ import {
   defineTasks,
   localVp,
   noCacheTask,
+  runInDirectory,
   runInPackages,
   runInVscodeExtension,
   runPackageScriptDirectly,
@@ -21,6 +22,16 @@ const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
   concurrencyLimit: 1,
 });
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
+const ciVizeAppCheckCommand = [
+  runInDirectory(
+    "./examples/vite-musea",
+    "vize check && vp check src vite.config.ts vite.app.config.ts vize.config.ts playwright.config.ts",
+  ),
+  runInDirectory(
+    "./playground",
+    "vp check src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && vize lint --max-warnings 0",
+  ),
+].join(" && ");
 
 /**
  * Repository-wide formatting, linting, package checks, and CI aggregate tasks.
@@ -31,21 +42,22 @@ const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckP
  * builds competing with each other on Windows runners.
  */
 export const checkTasks = defineTasks({
-  check: noCacheTask(runTasks("check:repo", "check:rust", "check:js", "check:editor-extensions")),
-  "check:js": noCacheTask(runTasks("check:js:packages", "check:js:direct-packages")),
+  check: noCacheTask(
+    runTasks("check:repo", "check:rust", "check:js", "check:vize-apps", "check:editor-extensions"),
+  ),
+  "check:js": noCacheTask(runTask("check:js:packages")),
   "check:js:packages": task(
     runInPackages("check", checkedPackagesViaVpRun, { concurrencyLimit: 1 }),
     {
       input: cacheInputs.jsChecks,
     },
   ),
-  "check:js:direct-packages": noCacheTask(directPackageCheckCommand),
+  "check:vize-apps": noCacheTask(directPackageCheckCommand),
+  "check:ci:vize-apps": noCacheTask(ciVizeAppCheckCommand),
   "check:repo": noCacheTask(`${localVp} check`),
   // The oxlint example intentionally exits non-zero for its default lint script,
   // so CI checks every package except that runnable failure-case fixture.
-  "check:ci": noCacheTask(
-    `${runTask("check:repo")} && ${ciPackageCheckCommand} && ${directPackageCheckCommand}`,
-  ),
+  "check:ci": noCacheTask(`${runTask("check:repo")} && ${ciPackageCheckCommand}`),
   "check:fix": noCacheTask(runInPackages("check:fix", checkedPackages)),
   "check:rust": noCacheTask("cargo check --workspace"),
   "check:vscode-extension": noCacheTask(
