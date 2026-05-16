@@ -292,7 +292,7 @@ pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
             line += 1;
             col = 0;
         } else {
-            col += 1;
+            col += ch.len_utf16() as u32;
         }
         current_offset += ch.len_utf8();
     }
@@ -311,6 +311,14 @@ mod diagnostics_tests {
         assert_eq!(offset_to_line_col("one\ntwo", 0), (0, 0));
         assert_eq!(offset_to_line_col("one\ntwo", 4), (1, 0));
         assert_eq!(offset_to_line_col("one\ntwo", 6), (1, 2));
+    }
+
+    #[test]
+    fn offset_to_line_col_counts_utf16_code_units() {
+        let source = "const icon = \"😀\"; missing";
+        let offset = source.find("missing").unwrap();
+
+        assert_eq!(offset_to_line_col(source, offset), (0, 19));
     }
 
     #[test]
