@@ -26,6 +26,7 @@ import {
   STREAMS_KEY,
   type StreamsContext,
 } from "./composables/useStreams.js";
+import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
 import { updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
 import {
@@ -476,6 +477,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let nonInteractiveOutput = "";
   let staticOutput = "";
   const renderedStaticItems = new Map<number, number>();
+  let cursorPosition: CursorPosition | undefined;
+  let hasCursorOverride = false;
 
   let exitSettled = false;
   let resolveExit: ((value?: unknown) => void) | null = null;
@@ -536,6 +539,14 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     app.provide(FOCUS_KEY, focusManager);
     app.provide(SCREEN_READER_KEY, screenReaderEnabled);
     app.provide(STREAMS_KEY, streamsContext);
+    app.provide(
+      CURSOR_KEY,
+      createCursorContext((position) => {
+        hasCursorOverride = true;
+        cursorPosition = position;
+        needsRender = true;
+      }),
+    );
 
     // Create a root element for mounting
     rootElement = createRootElement();
@@ -593,6 +604,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     mounted = false;
     appContext = null;
     focusManager = null;
+    cursorPosition = undefined;
+    hasCursorOverride = false;
 
     if (!exitSettled) {
       exitSettled = true;
@@ -673,6 +686,17 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     consoleRestore?.();
   }
 
+  function applyCursorOverride() {
+    if (!hasCursorOverride || !native) return;
+
+    if (cursorPosition) {
+      native.setCursor(cursorPosition.x, cursorPosition.y);
+      native.showCursor();
+    } else {
+      native.hideCursor();
+    }
+  }
+
   function render() {
     if (!mounted || !rootElement) {
       return;
@@ -715,6 +739,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         if ("getLastRenderLayouts" in native) {
           updateLastRenderLayouts(native.getLastRenderLayouts());
         }
+
+        applyCursorOverride();
 
         // Flush to display
         native.flushTerminal();
@@ -931,6 +957,10 @@ export function renderToString(root: AppRoot, options: RenderToStringOptions = {
   );
   app.provide(FOCUS_KEY, createFocusManager());
   app.provide(SCREEN_READER_KEY, ref(false));
+  app.provide(
+    CURSOR_KEY,
+    createCursorContext(() => {}),
+  );
   app.provide(
     STREAMS_KEY,
     createStreamsContext({
