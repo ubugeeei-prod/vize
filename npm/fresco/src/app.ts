@@ -20,6 +20,7 @@ import {
 } from "./accessibility.js";
 import { APP_KEY, createAppContext, type UseAppReturn } from "./composables/useApp.js";
 import { createFocusManager, FOCUS_KEY, type FocusManager } from "./composables/useFocus.js";
+import { createStreamsContext, STREAMS_KEY } from "./composables/useStreams.js";
 import { updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
 import {
@@ -273,6 +274,13 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     options.isScreenReaderEnabled ?? isScreenReaderEnabledByDefault(),
   );
   const frameDelay = Math.max(1, Math.floor(1000 / Math.max(1, options.maxFps ?? 30)));
+  const streamsContext = createStreamsContext({
+    stdin: options.stdin,
+    stdout: options.stdout,
+    stderr: options.stderr,
+    exitOnCtrlC,
+    interactive: options.interactive ?? true,
+  });
 
   let vueApp: VueApp | null = null;
   let rootElement: FrescoElement | null = null;
@@ -322,11 +330,13 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
       render,
       clear,
       waitUntilRenderFlush,
+      stdout: streamsContext.stdout,
     });
     focusManager = createFocusManager();
     app.provide(APP_KEY, appContext);
     app.provide(FOCUS_KEY, focusManager);
     app.provide(SCREEN_READER_KEY, screenReaderEnabled);
+    app.provide(STREAMS_KEY, streamsContext);
 
     // Create a root element for mounting
     rootElement = createRootElement();
@@ -400,7 +410,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
       // Send to native for rendering
       if (renderNodes.length > 0) {
         if (options.debug) {
-          options.stderr?.write(`${JSON.stringify(renderNodes, null, 2)}\n`);
+          streamsContext.stderr.write(`${JSON.stringify(renderNodes, null, 2)}\n`);
         }
 
         // Use renderTree which handles layout and painting
@@ -619,6 +629,7 @@ export function renderToString(root: AppRoot, options: RenderToStringOptions = {
   );
   app.provide(FOCUS_KEY, createFocusManager());
   app.provide(SCREEN_READER_KEY, ref(false));
+  app.provide(STREAMS_KEY, createStreamsContext({ interactive: false }));
   app.mount(rootElement);
 
   const output = treeToString(rootElement);
