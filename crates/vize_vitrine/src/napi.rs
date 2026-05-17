@@ -14,6 +14,7 @@ mod lint;
 mod plugin;
 mod sfc;
 mod template;
+mod tokens;
 
 #[path = "napi_typecheck.rs"]
 mod napi_typecheck;
@@ -26,3 +27,4 @@ pub use lint::*;
 pub use plugin::*;
 pub use sfc::*;
 pub use template::*;
+pub use tokens::*;
