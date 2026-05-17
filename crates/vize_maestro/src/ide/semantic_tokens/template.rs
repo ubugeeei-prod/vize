@@ -146,23 +146,23 @@ fn collect_bind_tokens(template: &str, base_line: u32, tokens: &mut Vec<Absolute
         }
 
         // Check if it's in an attribute context.
-        if is_attribute_start(template, abs_start) {
-            if let Some(token_end) = shorthand_name_end(
+        if is_attribute_start(template, abs_start)
+            && let Some(token_end) = shorthand_name_end(
                 template,
                 abs_start,
                 |ch| ch.is_ascii_alphanumeric() || ch == '-',
                 false,
-            ) {
-                let (line, col) = offset_to_line_col(template, abs_start);
+            )
+        {
+            let (line, col) = offset_to_line_col(template, abs_start);
 
-                tokens.push(AbsoluteToken {
-                    line: base_line + line,
-                    start: col,
-                    length: utf16_len(&template[abs_start..token_end]),
-                    token_type: TokenType::Property as u32,
-                    modifiers: 0,
-                });
-            }
+            tokens.push(AbsoluteToken {
+                line: base_line + line,
+                start: col,
+                length: utf16_len(&template[abs_start..token_end]),
+                token_type: TokenType::Property as u32,
+                modifiers: 0,
+            });
         }
 
         pos = abs_start + 1;
