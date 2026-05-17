@@ -103,7 +103,8 @@ pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
 pub use preset::LintPreset;
 pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
 pub use telegraph::{
-    Emitter, FormatEmitter, JsonEmitter, LspDiagnostic, LspEmitter, Telegraph, TextEmitter,
+    Emitter, FormatEmitter, JsonEmitter, LintTransmission, LspDiagnostic, LspEmitter, Telegraph,
+    TextEmitter,
 };
 pub use vize_carton::i18n::Locale;
 
