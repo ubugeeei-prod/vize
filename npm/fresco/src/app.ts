@@ -265,11 +265,28 @@ function updateAppSize(context: UseAppReturn | null, width: number, height: numb
   context.height.value = height;
 }
 
+const CI_ENVIRONMENT_KEYS = ["CI", "CONTINUOUS_INTEGRATION", "BUILD_NUMBER", "RUN_ID"] as const;
+
+function isTruthyEnvironmentValue(value: string | undefined): boolean {
+  if (!value) return false;
+  return !["0", "false", "no"].includes(value.toLowerCase());
+}
+
+function isCiEnvironment(env: NodeJS.ProcessEnv = process.env): boolean {
+  return CI_ENVIRONMENT_KEYS.some((key) => isTruthyEnvironmentValue(env[key]));
+}
+
+function detectInteractiveMode(options: AppOptions): boolean {
+  const stdout = options.stdout ?? process.stdout;
+  return options.interactive ?? (stdout.isTTY === true && !isCiEnvironment());
+}
+
 /**
  * Create a Fresco TUI app
  */
 export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App {
   const { mouse = false, exitOnCtrlC = true, onError } = options;
+  const interactive = detectInteractiveMode(options);
   const screenReaderEnabled = ref(
     options.isScreenReaderEnabled ?? isScreenReaderEnabledByDefault(),
   );
@@ -279,7 +296,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     stdout: options.stdout,
     stderr: options.stderr,
     exitOnCtrlC,
-    interactive: options.interactive ?? true,
+    interactive,
   });
 
   let vueApp: VueApp | null = null;
@@ -305,14 +322,21 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
     const n = await loadNative();
 
-    // Initialize terminal
-    if (mouse) {
+    if (typeof n.initTerminalWithOptions === "function") {
+      n.initTerminalWithOptions({
+        alternateScreen: interactive && options.alternateScreen === true,
+        bracketedPaste: interactive,
+        hideCursor: interactive,
+        mouse: interactive && mouse,
+        rawMode: interactive,
+      });
+    } else if (mouse) {
       n.initTerminalWithMouse();
     } else {
       n.initTerminal();
     }
 
-    n.enableIme?.();
+    if (interactive) n.enableIme?.();
 
     // Initialize layout engine
     n.initLayout();
