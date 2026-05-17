@@ -43,6 +43,31 @@ impl TsconfigInputSpec {
     }
 }
 
+#[derive(Debug, Clone, Default)]
+pub(crate) struct TsconfigDeclarationOptions {
+    pub(crate) declaration_dir: Option<PathBuf>,
+    pub(crate) out_dir: Option<PathBuf>,
+    pub(crate) declaration_map: Option<bool>,
+}
+
+impl TsconfigDeclarationOptions {
+    fn apply_extended(&mut self, extended: Self) {
+        if extended.declaration_dir.is_some() {
+            self.declaration_dir = extended.declaration_dir;
+        }
+        if extended.out_dir.is_some() {
+            self.out_dir = extended.out_dir;
+        }
+        if extended.declaration_map.is_some() {
+            self.declaration_map = extended.declaration_map;
+        }
+    }
+
+    pub(crate) fn output_dir(&self) -> Option<&Path> {
+        self.declaration_dir.as_deref().or(self.out_dir.as_deref())
+    }
+}
+
 #[derive(Debug, Clone)]
 struct RelativePathSpec {
     base_dir: PathBuf,
@@ -139,6 +164,13 @@ pub(crate) fn collect_default_check_files(
 
     files.sort();
     files
+}
+
+pub(crate) fn load_tsconfig_declaration_options(
+    tsconfig_path: &Path,
+) -> TsconfigDeclarationOptions {
+    let mut seen = FxHashSet::default();
+    load_tsconfig_declaration_options_inner(tsconfig_path, &mut seen).unwrap_or_default()
 }
 
 fn collect_supported_files(
@@ -241,6 +273,51 @@ fn load_tsconfig_inputs_inner(
     Ok(merged)
 }
 
+fn load_tsconfig_declaration_options_inner(
+    tsconfig_path: &Path,
+    seen: &mut FxHashSet<PathBuf>,
+) -> Result<TsconfigDeclarationOptions, std::io::Error> {
+    let resolved = normalize_input_path(tsconfig_path);
+    if !seen.insert(resolved.clone()) {
+        return Ok(TsconfigDeclarationOptions::default());
+    }
+
+    let content = tracked_read_to_string(&resolved)?;
+    let value = parse_jsonc_value(&content).unwrap_or(Value::Null);
+    let dir = resolved.parent().unwrap_or(Path::new("."));
+
+    let mut merged = TsconfigDeclarationOptions::default();
+    for extends in read_extends_entries(&value) {
+        let Some(extends_path) = resolve_extended_tsconfig(&resolved, &extends) else {
+            continue;
+        };
+        let extended = load_tsconfig_declaration_options_inner(&extends_path, seen)?;
+        merged.apply_extended(extended);
+    }
+
+    let Some(compiler_options) = value.get("compilerOptions").and_then(Value::as_object) else {
+        return Ok(merged);
+    };
+
+    if let Some(declaration_dir) = compiler_options
+        .get("declarationDir")
+        .and_then(Value::as_str)
+    {
+        merged.declaration_dir = Some(resolve_tsconfig_path_option(dir, declaration_dir));
+    }
+    if let Some(out_dir) = compiler_options.get("outDir").and_then(Value::as_str) {
+        merged.out_dir = Some(resolve_tsconfig_path_option(dir, out_dir));
+    }
+    if let Some(declaration_map) = compiler_options
+        .get("declarationMap")
+        .and_then(Value::as_bool)
+    {
+        merged.declaration_map = Some(declaration_map);
+    }
+
+    Ok(merged)
+}
+
 fn resolve_extended_tsconfig(tsconfig_path: &Path, extends: &str) -> Option<PathBuf> {
     let base_dir = tsconfig_path.parent().unwrap_or(Path::new("."));
     let mut candidates = Vec::new();
@@ -259,6 +336,15 @@ fn resolve_extended_tsconfig(tsconfig_path: &Path, extends: &str) -> Option<Path
     }
 
     candidates.into_iter().find(|candidate| candidate.is_file())
+}
+
+fn resolve_tsconfig_path_option(base_dir: &Path, value: &str) -> PathBuf {
+    let path = Path::new(value);
+    if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        base_dir.join(path)
+    }
 }
 
 fn push_node_modules_tsconfig_candidates(
@@ -567,7 +653,9 @@ fn strip_trailing_commas(content: &str) -> std::string::String {
 
 #[cfg(test)]
 mod tests {
-    use super::{collect_default_check_files, resolve_extended_tsconfig};
+    use super::{
+        collect_default_check_files, load_tsconfig_declaration_options, resolve_extended_tsconfig,
+    };
     use std::fs;
     use std::path::{Path, PathBuf};
     use vize_carton::cstr;
@@ -644,6 +732,50 @@ mod tests {
         let files = collect_default_check_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
 
         assert_eq!(files, vec![case_dir.join("src/App.vue")]);
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn declaration_options_inherit_extends_and_use_config_relative_paths() {
+        let case_dir = unique_case_dir("tsconfig-declaration-options");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("configs")).unwrap();
+        fs::write(
+            case_dir.join("configs/base.json"),
+            r#"{
+  "compilerOptions": {
+    "declarationDir": "base-types",
+    "outDir": "base-dist",
+    "declarationMap": true
+  }
+}"#,
+        )
+        .unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "extends": "./configs/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declarationMap": false
+  }
+}"#,
+        )
+        .unwrap();
+
+        let options = load_tsconfig_declaration_options(&case_dir.join("tsconfig.json"));
+
+        assert_eq!(
+            options.declaration_dir,
+            Some(case_dir.join("configs/base-types"))
+        );
+        assert_eq!(options.out_dir, Some(case_dir.join("dist")));
+        assert_eq!(options.declaration_map, Some(false));
+        assert_eq!(
+            options.output_dir(),
+            Some(case_dir.join("configs/base-types").as_path())
+        );
 
         let _ = fs::remove_dir_all(&case_dir);
     }
