@@ -237,6 +237,26 @@ pub struct TerminalInfoNapi {
     pub true_color: bool,
 }
 
+/// Terminal initialization options for NAPI.
+#[napi(object)]
+#[derive(Debug, Clone, Default)]
+pub struct TerminalOptionsNapi {
+    /// Enable raw mode
+    #[napi(js_name = "rawMode")]
+    pub raw_mode: Option<bool>,
+    /// Enable the alternate screen buffer
+    #[napi(js_name = "alternateScreen")]
+    pub alternate_screen: Option<bool>,
+    /// Enable mouse capture
+    pub mouse: Option<bool>,
+    /// Enable bracketed paste mode
+    #[napi(js_name = "bracketedPaste")]
+    pub bracketed_paste: Option<bool>,
+    /// Hide the terminal cursor
+    #[napi(js_name = "hideCursor")]
+    pub hide_cursor: Option<bool>,
+}
+
 fn modifiers_from_key(key: &crate::input::KeyEvent) -> ModifiersNapi {
     ModifiersNapi {
         ctrl: key.ctrl(),

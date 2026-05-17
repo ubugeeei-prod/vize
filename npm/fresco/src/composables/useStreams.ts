@@ -58,7 +58,7 @@ export function createStreamsContext(options: StreamsContextOptions = {}): Strea
     stdout,
     stderr,
     setRawMode: (isRawMode: boolean) => {
-      if (typeof stdin.setRawMode !== "function") return;
+      if (!isInteractive || typeof stdin.setRawMode !== "function") return;
 
       stdin.setEncoding?.("utf8");
 
@@ -84,7 +84,7 @@ export function createStreamsContext(options: StreamsContextOptions = {}): Strea
         stdin.unref?.();
       });
     },
-    isRawModeSupported: typeof stdin.setRawMode === "function",
+    isRawModeSupported: isInteractive && typeof stdin.setRawMode === "function",
     setBracketedPasteMode: (isEnabled: boolean) => {
       if (!isInteractive) return;
 
