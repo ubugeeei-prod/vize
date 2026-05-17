@@ -4,6 +4,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 155,
@@ -21,6 +22,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 14,
@@ -31,6 +33,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 18,
@@ -41,6 +44,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 27,
@@ -51,6 +55,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 34,
@@ -68,6 +73,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 29,
@@ -78,6 +84,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 36,
@@ -88,6 +95,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 55,
@@ -98,6 +106,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 62,
@@ -115,6 +124,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 38,
@@ -125,6 +135,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
         "line": 45,
@@ -135,6 +146,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 45,
@@ -152,6 +164,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'inputClass' should be 'input-class' (kebab-case)",
         "line": 255,
@@ -162,6 +175,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 255,
@@ -172,6 +186,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 301,
@@ -182,6 +197,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 312,
@@ -192,6 +208,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 317,
@@ -221,6 +238,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 63,
@@ -231,6 +249,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <a> (phrasing content only)",
         "line": 69,
@@ -240,6 +259,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 72,
@@ -250,6 +270,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> (block element) is not allowed inside <a> (phrasing content only)",
         "line": 92,
@@ -259,6 +280,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 99,
@@ -269,6 +291,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <a> (phrasing content only)",
         "line": 112,
@@ -285,6 +308,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-properties] Prop 'buildInfo' is defined but never used",
         "line": 16,
@@ -302,6 +326,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
         "line": 37,
@@ -325,6 +350,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 53,
@@ -335,6 +361,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 49,
@@ -345,6 +372,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 49,
@@ -355,6 +383,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 65,
@@ -372,6 +401,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 91,
@@ -382,6 +412,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 118,
@@ -399,6 +430,7 @@
     "messages": [
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
         "line": 53,
@@ -409,6 +441,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 62,
@@ -419,6 +452,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 72,
@@ -429,6 +463,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 98,
@@ -446,6 +481,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 35,
@@ -456,6 +492,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 47,
@@ -466,6 +503,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 47,
@@ -476,6 +514,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 71,
@@ -493,6 +532,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 100,
@@ -503,6 +543,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 101,
@@ -513,6 +554,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 118,
@@ -536,6 +578,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 78,
@@ -571,6 +614,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 43,
@@ -581,6 +625,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 55,
@@ -591,6 +636,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 81,
@@ -614,6 +660,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 217,
@@ -624,6 +671,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 246,
@@ -641,6 +689,7 @@
     "messages": [
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
         "line": 38,
@@ -658,6 +707,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 37,
@@ -693,6 +743,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 245,
@@ -703,6 +754,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 270,
@@ -720,6 +772,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 65,
@@ -730,6 +783,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 76,
@@ -740,6 +794,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 92,
@@ -750,6 +805,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 150,
@@ -760,6 +816,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 154,
@@ -770,6 +827,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 196,
@@ -793,6 +851,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
         "line": 67,
@@ -803,6 +862,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 67,
@@ -813,6 +873,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 67,
@@ -823,6 +884,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 158,
@@ -840,6 +902,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
         "line": 50,
@@ -850,6 +913,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 50,
@@ -860,6 +924,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 52,
@@ -870,6 +935,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 70,
@@ -880,6 +946,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 123,
@@ -890,6 +957,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <label> is an interactive element and cannot be nested inside another interactive element",
         "line": 183,
@@ -899,6 +967,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 204,
@@ -916,6 +985,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 123,
@@ -926,6 +996,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 148,
@@ -943,6 +1014,7 @@
     "messages": [
       {
         "ruleId": "a11y/mouse-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/mouse-events-have-key-events] @mouseenter/@mouseover must be paired with @focus for keyboard accessibility",
         "line": 54,
@@ -953,6 +1025,7 @@
       },
       {
         "ruleId": "a11y/mouse-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/mouse-events-have-key-events] @mouseleave/@mouseout must be paired with @blur for keyboard accessibility",
         "line": 54,
@@ -963,6 +1036,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 54,
@@ -980,6 +1054,7 @@
     "messages": [
       {
         "ruleId": "a11y/mouse-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/mouse-events-have-key-events] @mouseenter/@mouseover must be paired with @focus for keyboard accessibility",
         "line": 54,
@@ -990,6 +1065,7 @@
       },
       {
         "ruleId": "a11y/mouse-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/mouse-events-have-key-events] @mouseleave/@mouseout must be paired with @blur for keyboard accessibility",
         "line": 54,
@@ -1000,6 +1076,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 54,
@@ -1017,6 +1094,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 58,
@@ -1027,6 +1105,7 @@
       },
       {
         "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 11,
@@ -1044,6 +1123,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
         "line": 37,
@@ -1054,6 +1134,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 44,
@@ -1064,6 +1145,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 38,
@@ -1081,6 +1163,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 18,
@@ -1098,6 +1181,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
         "line": 72,
@@ -1108,6 +1192,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 89,
@@ -1131,6 +1216,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 73,
@@ -1160,6 +1246,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 368,
@@ -1170,6 +1257,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 535,
@@ -1180,6 +1268,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 551,
@@ -1197,6 +1286,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <button> is an interactive element and cannot be nested inside another interactive element",
         "line": 428,
@@ -1213,6 +1303,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 449,
@@ -1230,6 +1321,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 249,
@@ -1240,6 +1332,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 269,
@@ -1257,6 +1350,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'isExactMatch' should be 'is-exact-match' (kebab-case)",
         "line": 42,
@@ -1267,6 +1361,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 42,
@@ -1277,6 +1372,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 85,
@@ -1287,6 +1383,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 165,
@@ -1297,6 +1394,7 @@
       },
       {
         "ruleId": "a11y/no-redundant-roles",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-redundant-roles] <ul> has an implicit role of 'list'. The role attribute is redundant",
         "line": 163,
@@ -1314,6 +1412,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
         "line": 14,
@@ -1324,6 +1423,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'modalSubtitle' should be 'modal-subtitle' (kebab-case)",
         "line": 15,
@@ -1334,6 +1434,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 14,
@@ -1344,6 +1445,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 15,
@@ -1354,6 +1456,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 16,
@@ -1371,6 +1474,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'modalTitle' should be 'modal-title' (kebab-case)",
         "line": 149,
@@ -1381,6 +1485,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 149,
@@ -1391,6 +1496,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 150,
@@ -1408,6 +1514,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 38,
@@ -1437,6 +1544,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 63,
@@ -1454,6 +1562,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 9,
@@ -1471,6 +1580,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 84,
@@ -1488,6 +1598,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 160,
@@ -1498,6 +1609,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 172,
@@ -1515,6 +1627,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 79,
@@ -1525,6 +1638,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 81,
@@ -1542,6 +1656,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 167,
@@ -1559,6 +1674,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 273,
@@ -1576,6 +1692,7 @@
     "messages": [
       {
         "ruleId": "a11y/interactive-supports-focus",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
         "line": 133,
@@ -1586,6 +1703,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 136,
@@ -1596,6 +1714,7 @@
       },
       {
         "ruleId": "a11y/mouse-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/mouse-events-have-key-events] @mouseenter/@mouseover must be paired with @focus for keyboard accessibility",
         "line": 147,
@@ -1606,6 +1725,7 @@
       },
       {
         "ruleId": "a11y/interactive-supports-focus",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
         "line": 147,
@@ -1616,6 +1736,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 150,
@@ -1626,6 +1747,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 174,
@@ -1649,6 +1771,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 130,
@@ -1659,6 +1782,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 175,
@@ -1669,6 +1793,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 184,
@@ -1686,6 +1811,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 82,
@@ -1696,6 +1822,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 92,
@@ -1725,6 +1852,7 @@
     "messages": [
       {
         "ruleId": "a11y/heading-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/heading-has-content] <h1> elements must have accessible content",
         "line": 14,
@@ -1742,6 +1870,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 14,
@@ -1759,6 +1888,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 49,
@@ -1776,6 +1906,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
         "line": 112,
@@ -1786,6 +1917,7 @@
       },
       {
         "ruleId": "a11y/no-redundant-roles",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-redundant-roles] <th> has an implicit role of 'columnheader'. The role attribute is redundant",
         "line": 118,
@@ -1796,6 +1928,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <th> is a static element and should not have interactive event handlers",
         "line": 118,
@@ -1806,6 +1939,7 @@
       },
       {
         "ruleId": "a11y/no-redundant-roles",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-redundant-roles] <th> has an implicit role of 'columnheader'. The role attribute is redundant",
         "line": 171,
@@ -1816,6 +1950,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <th> is a static element and should not have interactive event handlers",
         "line": 171,
@@ -1826,6 +1961,7 @@
       },
       {
         "ruleId": "a11y/no-redundant-roles",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-redundant-roles] <th> has an implicit role of 'columnheader'. The role attribute is redundant",
         "line": 209,
@@ -1836,6 +1972,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <th> is a static element and should not have interactive event handlers",
         "line": 209,
@@ -1853,6 +1990,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 140,
@@ -1870,6 +2008,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 1694,
@@ -1880,6 +2019,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 1710,
@@ -1890,6 +2030,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 1914,
@@ -1900,6 +2041,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 1918,
@@ -1910,6 +2052,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 1921,
@@ -1920,6 +2063,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 1926,
@@ -1930,6 +2074,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 1993,
@@ -1940,6 +2085,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 2120,
@@ -1957,6 +2103,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 346,
@@ -1967,6 +2114,7 @@
       },
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 351,
@@ -1977,6 +2125,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 358,
@@ -1987,6 +2136,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 365,
@@ -1997,6 +2147,7 @@
       },
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 373,
@@ -2007,6 +2158,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 396,
@@ -2017,6 +2169,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 402,
@@ -2027,6 +2180,7 @@
       },
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 410,
@@ -2037,6 +2191,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 432,
@@ -2047,6 +2202,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 438,
@@ -2057,6 +2213,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 458,
@@ -2067,6 +2224,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 463,
@@ -2077,6 +2235,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 468,
@@ -2087,6 +2246,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 649,
@@ -2104,6 +2264,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 501,
@@ -2121,6 +2282,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"vuln-tree-heading\" which does not exist in the template",
         "line": 73,
@@ -2131,6 +2293,7 @@
       },
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"vuln-tree-error\" which does not exist in the template",
         "line": 214,
@@ -2141,6 +2304,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 153,
@@ -2158,6 +2322,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 300,
@@ -2168,6 +2333,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'weeklyDownloads' should be 'weekly-downloads' (kebab-case)",
         "line": 373,
@@ -2178,6 +2344,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 373,
@@ -2188,6 +2355,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'inModal' should be 'in-modal' (kebab-case)",
         "line": 374,
@@ -2198,6 +2366,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 374,
@@ -2208,6 +2377,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'packageName' should be 'package-name' (kebab-case)",
         "line": 375,
@@ -2218,6 +2388,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 375,
@@ -2228,6 +2399,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'repoRef' should be 'repo-ref' (kebab-case)",
         "line": 376,
@@ -2238,6 +2410,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 376,
@@ -2248,6 +2421,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'createdIso' should be 'created-iso' (kebab-case)",
         "line": 377,
@@ -2258,6 +2432,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 377,
@@ -2268,6 +2443,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 406,
@@ -2285,6 +2461,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 33,
@@ -2295,6 +2472,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 49,
@@ -2305,6 +2483,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 70,
@@ -2315,6 +2494,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 87,
@@ -2332,6 +2512,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 157,
@@ -2342,6 +2523,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 160,
@@ -2359,6 +2541,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 32,
@@ -2376,6 +2559,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 67,
@@ -2386,6 +2570,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 63,
@@ -2396,6 +2581,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <article> is a static element and should not have interactive event handlers",
         "line": 63,
@@ -2406,6 +2592,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 66,
@@ -2423,6 +2610,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 154,
@@ -2433,6 +2621,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 180,
@@ -2443,6 +2632,7 @@
       },
       {
         "ruleId": "a11y/interactive-supports-focus",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
         "line": 177,
@@ -2453,6 +2643,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 229,
@@ -2488,6 +2679,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'isExactMatch' should be 'is-exact-match' (kebab-case)",
         "line": 15,
@@ -2498,6 +2690,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 15,
@@ -2515,6 +2708,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
         "line": 12,
@@ -2525,6 +2719,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
         "line": 13,
@@ -2542,6 +2737,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 57,
@@ -2571,6 +2767,7 @@
     "messages": [
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <label> element is empty but expects visible content",
         "line": 28,
@@ -2581,6 +2778,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 43,
@@ -2591,6 +2789,7 @@
       },
       {
         "ruleId": "a11y/role-has-required-aria-props",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/role-has-required-aria-props] Elements with role=\"switch\" must have the 'aria-checked' attribute",
         "line": 39,
@@ -2601,6 +2800,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 89,
@@ -2611,6 +2811,7 @@
       },
       {
         "ruleId": "a11y/role-has-required-aria-props",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/role-has-required-aria-props] Elements with role=\"switch\" must have the 'aria-checked' attribute",
         "line": 85,
@@ -2634,6 +2835,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 120,
@@ -2644,6 +2846,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 130,
@@ -2673,6 +2876,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 36,
@@ -2696,6 +2900,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 85,
@@ -2713,6 +2918,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 314,
@@ -2730,6 +2936,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'isVisible' should be 'is-visible' (kebab-case)",
         "line": 13,
@@ -2740,6 +2947,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 13,
@@ -2757,6 +2965,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'isVisible' should be 'is-visible' (kebab-case)",
         "line": 53,
@@ -2767,6 +2976,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 53,
@@ -2777,6 +2987,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 64,
@@ -2794,6 +3005,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Base' is a reserved HTML element name and cannot be used as a component name",
         "line": 47,
@@ -2811,6 +3023,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 24,
@@ -2828,6 +3041,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 144,
@@ -2838,6 +3052,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 176,
@@ -2848,6 +3063,7 @@
       },
       {
         "ruleId": "a11y/interactive-supports-focus",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
         "line": 173,
@@ -2858,6 +3074,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 185,
@@ -2868,6 +3085,7 @@
       },
       {
         "ruleId": "a11y/mouse-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/mouse-events-have-key-events] @mouseenter/@mouseover must be paired with @focus for keyboard accessibility",
         "line": 182,
@@ -2878,6 +3096,7 @@
       },
       {
         "ruleId": "a11y/interactive-supports-focus",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
         "line": 182,
@@ -2895,6 +3114,7 @@
     "messages": [
       {
         "ruleId": "a11y/interactive-supports-focus",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"option\" must be focusable (add tabindex=\"0\")",
         "line": 515,
@@ -2918,6 +3138,7 @@
     "messages": [
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
         "line": 132,
@@ -2941,6 +3162,7 @@
     "messages": [
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
         "line": 86,
@@ -2951,6 +3173,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 103,
@@ -2968,6 +3191,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 40,
@@ -2978,6 +3202,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 40,
@@ -2988,6 +3213,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 84,
@@ -3005,6 +3231,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <select> is an interactive element and cannot be nested inside another interactive element",
         "line": 212,
@@ -3021,6 +3248,7 @@
     "messages": [
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
         "line": 14,
@@ -3038,6 +3266,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
         "line": 18,
@@ -3055,6 +3284,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 178,
@@ -3065,6 +3295,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 181,
@@ -3088,6 +3319,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 64,
@@ -3098,6 +3330,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 202,
@@ -3108,6 +3341,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 277,
@@ -3118,6 +3352,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 284,
@@ -3135,6 +3370,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 32,
@@ -3152,6 +3388,7 @@
     "messages": [
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"comparison-heading\" found in template",
         "line": 264,
@@ -3162,6 +3399,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 175,
@@ -3179,6 +3417,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 193,
@@ -3189,6 +3428,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 253,
@@ -3212,6 +3452,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 176,
@@ -3222,6 +3463,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 268,
@@ -3232,6 +3474,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 271,
@@ -3242,6 +3485,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 301,
@@ -3271,6 +3515,7 @@
     "messages": [
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"package-article\" found in template",
         "line": 762,
@@ -3281,6 +3526,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 759,
@@ -3291,6 +3537,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 766,
@@ -3301,6 +3548,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 812,
@@ -3311,6 +3559,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 853,
@@ -3321,6 +3570,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 896,
@@ -3331,6 +3581,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 925,
@@ -3341,6 +3592,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 956,
@@ -3351,6 +3603,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <li> element is empty but expects visible content",
         "line": 985,
@@ -3361,6 +3614,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 1067,
@@ -3371,6 +3625,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 1412,
@@ -3381,6 +3636,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 1435,
@@ -3391,6 +3647,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'packageName' should be 'package-name' (kebab-case)",
         "line": 1496,
@@ -3401,6 +3658,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'createdIso' should be 'created-iso' (kebab-case)",
         "line": 1497,
@@ -3411,6 +3669,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'repoRef' should be 'repo-ref' (kebab-case)",
         "line": 1498,
@@ -3421,6 +3680,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1496,
@@ -3431,6 +3691,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1497,
@@ -3441,6 +3702,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 1498,
@@ -3458,6 +3720,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 426,
@@ -3468,6 +3731,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 495,
@@ -3485,6 +3749,7 @@
     "messages": [
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 177,
@@ -3495,6 +3760,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 209,
@@ -3505,6 +3771,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 215,
@@ -3522,6 +3789,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 34,
@@ -3539,6 +3807,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The for attribute references id=\"displayName\" which does not exist in the template",
         "line": 115,
@@ -3549,6 +3818,7 @@
       },
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The for attribute references id=\"description\" which does not exist in the template",
         "line": 125,
@@ -3559,6 +3829,7 @@
       },
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The for attribute references id=\"website\" which does not exist in the template",
         "line": 135,
@@ -3569,6 +3840,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 122,
@@ -3579,6 +3851,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 131,
@@ -3589,6 +3862,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 141,
@@ -3599,6 +3873,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 152,
@@ -3609,6 +3884,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 173,
@@ -3619,6 +3895,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'packageUrl' should be 'package-url' (kebab-case)",
         "line": 198,
@@ -3629,6 +3906,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 198,
@@ -3639,6 +3917,7 @@
       },
       {
         "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <PackageLikeCard>",
         "line": 198,
@@ -3656,6 +3935,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 81,
@@ -3673,6 +3953,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
         "line": 560,
@@ -3683,6 +3964,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 627,
@@ -3693,6 +3975,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 630,
@@ -3703,6 +3986,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 740,
@@ -3720,6 +4004,7 @@
     "messages": [
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"search-provider-select\" found in template",
         "line": 176,
@@ -3730,6 +4015,7 @@
       },
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"language-select\" found in template",
         "line": 234,
@@ -3740,6 +4026,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 58,
@@ -3750,6 +4037,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 123,
@@ -3760,6 +4048,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 133,
@@ -3770,6 +4059,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 143,
@@ -3780,6 +4070,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 169,
@@ -3790,6 +4081,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 226,
@@ -3800,6 +4092,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 228,
@@ -3810,6 +4103,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 276,
@@ -3827,6 +4121,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 155,
@@ -3844,6 +4139,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 140,
