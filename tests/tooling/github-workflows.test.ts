@@ -128,6 +128,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
 
   for (const [jobName, minutes] of [
     ["pr-benchmark", 30],
+    ["pr-benchmark-budget", 5],
     ["pr-benchmark-comment", 5],
   ] as const) {
     assert.match(
@@ -164,6 +165,7 @@ test("release workflow explicitly installs matrix Rust targets", () => {
 test("benchmark workflow comments from trusted code after a read-only benchmark run", () => {
   const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
+  const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
 
   assert.match(benchmarkJob, /contents:\s*read/);
@@ -180,6 +182,17 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   assert.match(benchmarkJob, /name:\s*pr-benchmark/);
   assert.doesNotMatch(benchmarkJob, /node base\/bench\/comment-pr\.mjs/);
   assert.doesNotMatch(benchmarkJob, /node bench\/comment-pr\.mjs/);
+  assert.match(benchmarkJob, /--threshold "\$VIZE_BENCH_REGRESSION_THRESHOLD_PERCENT"/);
+
+  assert.match(budgetJob, /needs:\n\s+- pr-benchmark\b/);
+  assert.match(budgetJob, /actions:\s*read/);
+  assert.match(budgetJob, /contents:\s*read/);
+  assert.doesNotMatch(budgetJob, /issues:\s*write/);
+  assert.doesNotMatch(budgetJob, /pull-requests:\s*write/);
+  assert.match(budgetJob, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
+  assert.match(budgetJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v8\.0\.1/);
+  assert.match(budgetJob, /name:\s*pr-benchmark/);
+  assert.match(budgetJob, /node bench\/enforce-pr-budget\.mjs --json benchmark-results\.json/);
 
   assert.match(commentJob, /needs:\n\s+- pr-benchmark\b/);
   assert.match(commentJob, /actions:\s*read/);
