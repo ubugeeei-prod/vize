@@ -3,6 +3,7 @@
  */
 
 import { onMounted, onUnmounted, reactive, type Ref } from "@vue/runtime-core";
+import { getLastRenderLayout, updateLastRenderLayouts, type DOMElement } from "../layoutMetrics.js";
 
 export interface BoxMetrics {
   width: number;
@@ -15,10 +16,7 @@ export interface UseBoxMetricsResult extends BoxMetrics {
   hasMeasured: boolean;
 }
 
-export interface MetricTarget {
-  id?: number;
-  $el?: { id?: number };
-}
+export type MetricTarget = DOMElement;
 
 async function loadNative() {
   return import("@vizejs/fresco-native");
@@ -53,6 +51,7 @@ export function useBoxMetrics(ref: Ref<MetricTarget | null>): UseBoxMetricsResul
     void loadNative()
       .then((native) => {
         const layouts = "getLastRenderLayouts" in native ? native.getLastRenderLayouts() : [];
+        updateLastRenderLayouts(layouts);
         const layout = layouts.find((item: { id: number }) => item.id === id);
         if (!layout) return;
 
@@ -66,6 +65,15 @@ export function useBoxMetrics(ref: Ref<MetricTarget | null>): UseBoxMetricsResul
   };
 
   onMounted(() => {
+    const layout = getLastRenderLayout(ref.value);
+    if (layout) {
+      metrics.width = layout.width;
+      metrics.height = layout.height;
+      metrics.left = layout.x;
+      metrics.top = layout.y;
+      metrics.hasMeasured = true;
+    }
+
     refresh();
     timer = setInterval(refresh, 100);
   });

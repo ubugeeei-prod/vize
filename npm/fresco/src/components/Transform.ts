@@ -3,6 +3,7 @@
  */
 
 import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { useIsScreenReaderEnabled } from "../composables/useIsScreenReaderEnabled.js";
 import { stringifyChildren } from "../utils/text.js";
 
 export interface TransformProps {
@@ -22,12 +23,17 @@ export const Transform = defineComponent({
     },
   },
   setup(props, { slots }) {
+    const isScreenReaderEnabled = useIsScreenReaderEnabled();
+
     return () => {
       const text = stringifyChildren(slots.default?.());
-      const transformed = text
-        .split("\n")
-        .map((line, index) => props.transform(line, index))
-        .join("\n");
+      const transformed =
+        isScreenReaderEnabled && props.accessibilityLabel
+          ? props.accessibilityLabel
+          : text
+              .split("\n")
+              .map((line, index) => props.transform(line, index))
+              .join("\n");
 
       return h("text", {
         text: transformed,
