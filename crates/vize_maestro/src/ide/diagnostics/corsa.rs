@@ -114,28 +114,6 @@ impl DiagnosticService {
             );
         }
 
-        // Helper to convert byte offset to (line, column) - both 0-indexed
-        let offset_to_position = |offset: u32| -> (u32, u32) {
-            let mut line = 0u32;
-            let mut col = 0u32;
-            let mut current = 0u32;
-
-            for ch in content.chars() {
-                if current >= offset {
-                    break;
-                }
-                if ch == '\n' {
-                    line += 1;
-                    col = 0;
-                } else {
-                    col += 1;
-                }
-                current += ch.len_utf8() as u32;
-            }
-
-            (line, col)
-        };
-
         // Convert to LSP diagnostics with proper position mapping
         corsa_diags
             .into_iter()
@@ -194,8 +172,10 @@ impl DiagnosticService {
 
                     if let Some(src_mapping) = mapping {
                         // Found a source mapping - convert byte offset to line/column
-                        let (start_line, start_col) = offset_to_position(src_mapping.start);
-                        let (end_line, end_col) = offset_to_position(src_mapping.end);
+                        let (start_line, start_col) =
+                            source_offset_to_position(&content, src_mapping.start as usize);
+                        let (end_line, end_col) =
+                            source_offset_to_position(&content, src_mapping.end as usize);
 
                         tracing::info!(
                             "template error with mapping: virtual_line={} -> offset {}:{} -> sfc_line={} (message: {})",
@@ -656,12 +636,18 @@ fn line_character_to_byte_offset(text: &str, line: u32, character: u32) -> Optio
         .unwrap_or(&text[line_start..]);
     let mut utf16_units = 0u32;
     for (relative_offset, ch) in line_text.char_indices() {
-        if utf16_units >= character {
+        if utf16_units == character {
             return Some(line_start + relative_offset);
         }
-        utf16_units += ch.len_utf16() as u32;
+
+        let next_utf16_units = utf16_units + ch.len_utf16() as u32;
+        if character < next_utf16_units {
+            return None;
+        }
+        utf16_units = next_utf16_units;
     }
-    Some(line_start + line_text.len())
+
+    (utf16_units == character).then_some(line_start + line_text.len())
 }
 
 fn source_offset_to_position(source: &str, offset: usize) -> (u32, u32) {
@@ -682,4 +668,38 @@ fn source_offset_to_position(source: &str, offset: usize) -> (u32, u32) {
     }
 
     (line, character)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{line_character_to_byte_offset, source_offset_to_position};
+
+    #[test]
+    fn line_character_to_byte_offset_counts_utf16_code_units() {
+        let source = "const icon = \"😀\";\nconst message = icon";
+
+        assert_eq!(
+            line_character_to_byte_offset(source, 0, 16),
+            Some("const icon = \"😀".len())
+        );
+        assert_eq!(
+            line_character_to_byte_offset(source, 1, 6),
+            Some(source.find("message").unwrap())
+        );
+    }
+
+    #[test]
+    fn line_character_to_byte_offset_rejects_surrogate_pair_interior() {
+        let source = "a😀b";
+
+        assert_eq!(line_character_to_byte_offset(source, 0, 2), None);
+    }
+
+    #[test]
+    fn source_offset_to_position_counts_utf16_code_units() {
+        let source = "const icon = \"😀\"; missing";
+        let offset = source.find("missing").unwrap();
+
+        assert_eq!(source_offset_to_position(source, offset), (0, 19));
+    }
 }
