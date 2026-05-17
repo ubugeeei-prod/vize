@@ -51,6 +51,7 @@ export type {
   InputEventNapi,
   ImeStateNapi,
   TerminalInfoNapi,
+  TerminalOptionsNapi,
   LayoutResultNapi,
   ModifiersNapi,
 } from "@vizejs/fresco-native";

@@ -2,8 +2,10 @@
  * useInput - Input handling composable
  */
 
-import { isRef, ref, watch, type Ref } from "@vue/runtime-core";
-import { lastCompositionEvent, lastKeyEvent, type KeyEvent } from "../app.js";
+import { isRef, onUnmounted, ref, watch, type Ref } from "@vue/runtime-core";
+import { lastCompositionEvent, lastKeyEvent, lastPasteEvent, type KeyEvent } from "../app.js";
+import { hasActivePasteHandlers } from "./usePaste.js";
+import { useStreamsContext } from "./useStreams.js";
 
 export interface Key {
   upArrow: boolean;
@@ -107,6 +109,31 @@ function toInkKey(event: KeyEvent): Key {
   };
 }
 
+function emptyKey(): Key {
+  return {
+    upArrow: false,
+    downArrow: false,
+    leftArrow: false,
+    rightArrow: false,
+    pageDown: false,
+    pageUp: false,
+    home: false,
+    end: false,
+    return: false,
+    escape: false,
+    ctrl: false,
+    shift: false,
+    tab: false,
+    backspace: false,
+    delete: false,
+    meta: false,
+    super: false,
+    hyper: false,
+    capsLock: false,
+    numLock: false,
+  };
+}
+
 function inputValue(event: KeyEvent, key: Key): string {
   if (event.char) return event.char;
   if (key.return) return "\r";
@@ -162,6 +189,14 @@ export function useInput(
   const activeSource = options.isActive ?? options.active ?? true;
   const isActive = toRef(activeSource);
   const lastKey = ref<string | null>(null);
+  const streams = useStreamsContext();
+  let rawModeEnabled = false;
+
+  const syncRawMode = (isEnabled: boolean) => {
+    if (rawModeEnabled === isEnabled) return;
+    streams.setRawMode(isEnabled);
+    rawModeEnabled = isEnabled;
+  };
 
   watch(lastKeyEvent, (event) => {
     if (!event || !isActive.value) return;
@@ -170,9 +205,19 @@ export function useInput(
     const input = inputValue(event, inkKey);
     const pressedKey = keyName(event);
 
+    if (input === "c" && inkKey.ctrl && streams.internal_exitOnCtrlC) return;
+
     lastKey.value = pressedKey || null;
     options.handler?.(input, inkKey);
     handleStructuredOptions(event, options, lastKey);
+  });
+
+  watch(lastPasteEvent, (event) => {
+    if (!event || !isActive.value || hasActivePasteHandlers()) return;
+
+    lastKey.value = event.text;
+    options.handler?.(event.text, emptyKey());
+    options.onChar?.(event.text);
   });
 
   watch(lastCompositionEvent, (event) => {
@@ -186,6 +231,9 @@ export function useInput(
       options.onCompositionEnd?.(event.text);
     }
   });
+
+  watch(isActive, syncRawMode, { immediate: true });
+  onUnmounted(() => syncRawMode(false));
 
   const enable = () => {
     isActive.value = true;
