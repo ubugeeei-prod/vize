@@ -1,6 +1,6 @@
 ===
 name: simple v-if
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="show"></div>
 --- OUTPUT ---
@@ -11,10 +11,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if with content
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="show">content</div>
 --- OUTPUT ---
@@ -25,10 +24,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, "content"))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if with interpolation
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="show">{{ msg }}</div>
 --- OUTPUT ---
@@ -39,10 +37,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(_ctx.msg), 1 /* TEXT */))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if on component
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-if="show" />
 --- OUTPUT ---
@@ -55,10 +52,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createBlock(_component_MyComponent, { key: 0 }))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if with v-else
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="show">yes</div><div v-else>no</div>
 --- OUTPUT ---
@@ -69,10 +65,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, "yes"))
     : (_openBlock(), _createElementBlock("div", { key: 1 }, "no"))
 }
-
 ===
 name: v-if/v-else on components
-options: default
+options: vdom
 --- INPUT ---
 <Foo v-if="show" /><Bar v-else />
 --- OUTPUT ---
@@ -86,10 +81,28 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createBlock(_component_Foo, { key: 0 }))
     : (_openBlock(), _createBlock(_component_Bar, { key: 1 }))
 }
+===
+name: v-if/v-else-if on components
+options: vdom
+--- INPUT ---
+<Foo v-if="a" /><Bar v-else-if="b" /><Baz v-else />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode } from "vue"
 
+export function render(_ctx, _cache) {
+  const _component_Foo = _resolveComponent("Foo")
+  const _component_Bar = _resolveComponent("Bar")
+  const _component_Baz = _resolveComponent("Baz")
+
+  return (_ctx.a)
+    ? (_openBlock(), _createBlock(_component_Foo, { key: 0 }))
+    : (_ctx.b)
+      ? (_openBlock(), _createBlock(_component_Bar, { key: 1 }))
+      : (_openBlock(), _createBlock(_component_Baz, { key: 2 }))
+}
 ===
 name: v-if/v-else same element
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="show">A</div><div v-else>B</div>
 --- OUTPUT ---
@@ -100,10 +113,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, "A"))
     : (_openBlock(), _createElementBlock("div", { key: 1 }, "B"))
 }
-
 ===
 name: v-if/v-else-if/v-else
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="a">A</div><div v-else-if="b">B</div><div v-else>C</div>
 --- OUTPUT ---
@@ -116,10 +128,9 @@ export function render(_ctx, _cache) {
       ? (_openBlock(), _createElementBlock("div", { key: 1 }, "B"))
       : (_openBlock(), _createElementBlock("div", { key: 2 }, "C"))
 }
-
 ===
 name: multiple v-else-if
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="a">A</div><div v-else-if="b">B</div><div v-else-if="c">C</div><div v-else>D</div>
 --- OUTPUT ---
@@ -134,10 +145,9 @@ export function render(_ctx, _cache) {
         ? (_openBlock(), _createElementBlock("div", { key: 2 }, "C"))
         : (_openBlock(), _createElementBlock("div", { key: 3 }, "D"))
 }
-
 ===
 name: v-else-if without v-else
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="a">A</div><div v-else-if="b">B</div>
 --- OUTPUT ---
@@ -150,10 +160,9 @@ export function render(_ctx, _cache) {
       ? (_openBlock(), _createElementBlock("div", { key: 1 }, "B"))
       : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if on template
-options: default
+options: vdom
 --- INPUT ---
 <template v-if="show"><div>A</div><div>B</div></template>
 --- OUTPUT ---
@@ -167,10 +176,9 @@ export function render(_ctx, _cache) {
       ], 64 /* STABLE_FRAGMENT */))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if/v-else on template
-options: default
+options: vdom
 --- INPUT ---
 <template v-if="show"><div>yes</div></template><template v-else><div>no</div></template>
 --- OUTPUT ---
@@ -181,10 +189,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, "yes"))
     : (_openBlock(), _createElementBlock("div", { key: 1 }, "no"))
 }
-
 ===
 name: v-if on template with multiple children
-options: default
+options: vdom
 --- INPUT ---
 <template v-if="show"><span>1</span><span>2</span><span>3</span></template>
 --- OUTPUT ---
@@ -199,10 +206,9 @@ export function render(_ctx, _cache) {
       ], 64 /* STABLE_FRAGMENT */))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: nested v-if
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="a"><span v-if="b">nested</span></div>
 --- OUTPUT ---
@@ -217,10 +223,26 @@ export function render(_ctx, _cache) {
       ]))
     : _createCommentVNode("v-if", true)
 }
+===
+name: nested v-if with else
+options: vdom
+--- INPUT ---
+<div v-if="a"><span v-if="b">B</span><span v-else>C</span></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_ctx.a)
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, [
+        (_ctx.b)
+          ? (_openBlock(), _createElementBlock("span", { key: 0 }, "B"))
+          : (_openBlock(), _createElementBlock("span", { key: 1 }, "C"))
+      ]))
+    : _createCommentVNode("v-if", true)
+}
 ===
 name: v-if inside v-for
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items" :key="item.id"><span v-if="item.show">{{ item.name }}</span></div>
 --- OUTPUT ---
@@ -237,10 +259,9 @@ export function render(_ctx, _cache) {
     ]))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-if with key
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="show" key="a">A</div><div v-else key="b">B</div>
 --- OUTPUT ---
@@ -251,10 +272,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: "a" }, "A"))
     : (_openBlock(), _createElementBlock("div", { key: "b" }, "B"))
 }
-
 ===
 name: v-if with dynamic key
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="show" :key="keyA">A</div><div v-else :key="keyB">B</div>
 --- OUTPUT ---
@@ -265,10 +285,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: _ctx.keyA }, "A"))
     : (_openBlock(), _createElementBlock("div", { key: _ctx.keyB }, "B"))
 }
-
 ===
 name: v-if with logical expression
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="a && b">both</div>
 --- OUTPUT ---
@@ -279,10 +298,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, "both"))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if with comparison
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="count > 0">positive</div>
 --- OUTPUT ---
@@ -293,10 +311,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, "positive"))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if with ternary in content
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="show">{{ ok ? "yes" : "no" }}</div>
 --- OUTPUT ---
@@ -307,10 +324,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(_ctx.ok ? "yes" : "no"), 1 /* TEXT */))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if with method call
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="isValid()">valid</div>
 --- OUTPUT ---
@@ -321,10 +337,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, "valid"))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: v-if with negation
-options: default
+options: vdom
 --- INPUT ---
 <div v-if="!hidden">visible</div>
 --- OUTPUT ---
@@ -333,5 +348,18 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock, cre
 export function render(_ctx, _cache) {
   return (!_ctx.hidden)
     ? (_openBlock(), _createElementBlock("div", { key: 0 }, "visible"))
+    : _createCommentVNode("v-if", true)
+}
+===
+name: v-if with optional chaining
+options: vdom
+--- INPUT ---
+<div v-if="user?.profile">{{ user.profile.name }}</div>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_ctx.user?.profile)
+    ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(_ctx.user.profile.name), 1 /* TEXT */))
     : _createCommentVNode("v-if", true)
 }

@@ -1,6 +1,6 @@
 ===
 name: simple component
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent />
 --- OUTPUT ---
@@ -11,10 +11,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent))
 }
-
 ===
 name: component with closing tag
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent></MyComponent>
 --- OUTPUT ---
@@ -25,10 +24,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent))
 }
-
 ===
 name: component with text content
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent>content</MyComponent>
 --- OUTPUT ---
@@ -44,10 +42,9 @@ export function render(_ctx, _cache) {
     _: 1 /* STABLE */
   }))
 }
-
 ===
 name: PascalCase component
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent />
 --- OUTPUT ---
@@ -58,10 +55,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent))
 }
-
 ===
 name: kebab-case component
-options: default
+options: vdom
 --- INPUT ---
 <my-component />
 --- OUTPUT ---
@@ -72,10 +68,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_my_component))
 }
-
 ===
 name: component name with colon
-options: default
+options: vdom
 --- INPUT ---
 <global:head title="Page Title" />
 --- OUTPUT ---
@@ -86,10 +81,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_global_head, { title: "Page Title" }))
 }
-
 ===
 name: static prop
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent msg="hello" />
 --- OUTPUT ---
@@ -100,10 +94,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, { msg: "hello" }))
 }
-
 ===
 name: dynamic prop
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent :msg="message" />
 --- OUTPUT ---
@@ -114,10 +107,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, { msg: _ctx.message }, null, 8 /* PROPS */, ["msg"]))
 }
-
 ===
 name: boolean prop
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent disabled />
 --- OUTPUT ---
@@ -128,10 +120,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, { disabled: "" }))
 }
-
 ===
 name: multiple props
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent :count="n" title="Test" />
 --- OUTPUT ---
@@ -145,10 +136,9 @@ export function render(_ctx, _cache) {
     title: "Test"
   }, null, 8 /* PROPS */, ["count"]))
 }
-
 ===
 name: v-bind object
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-bind="props" />
 --- OUTPUT ---
@@ -159,10 +149,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, _normalizeProps(_guardReactiveProps(_ctx.props)), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: v-bind object with extra props
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-bind="props" :extra="value" />
 --- OUTPUT ---
@@ -173,10 +162,35 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, _mergeProps(_ctx.props, { extra: _ctx.value }), null, 16 /* FULL_PROPS */, ["extra"]))
 }
+===
+name: dynamic prop name
+options: vdom
+--- INPUT ---
+<MyComponent :[prop]="value" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, normalizeProps as _normalizeProps, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+
+  return (_openBlock(), _createBlock(_component_MyComponent, _normalizeProps({ [_ctx.prop || ""]: _ctx.value }), null, 16 /* FULL_PROPS */))
+}
+===
+name: v-bind object with event
+options: vdom
+--- INPUT ---
+<MyComponent v-bind="props" @update="onUpdate" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, mergeProps as _mergeProps, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+
+  return (_openBlock(), _createBlock(_component_MyComponent, _mergeProps(_ctx.props, { onUpdate: _ctx.onUpdate }), null, 16 /* FULL_PROPS */, ["onUpdate"]))
+}
 ===
 name: Teleport
-options: default
+options: vdom
 --- INPUT ---
 <Teleport to="body"><div>content</div></Teleport>
 --- OUTPUT ---
@@ -187,10 +201,9 @@ export function render(_ctx, _cache) {
     _createElementVNode("div", null, "content")
   ]))
 }
-
 ===
 name: Suspense
-options: default
+options: vdom
 --- INPUT ---
 <Suspense><Component /></Suspense>
 --- OUTPUT ---
@@ -206,10 +219,9 @@ export function render(_ctx, _cache) {
     _: 1 /* STABLE */
   }))
 }
-
 ===
 name: KeepAlive
-options: default
+options: vdom
 --- INPUT ---
 <KeepAlive><Component /></KeepAlive>
 --- OUTPUT ---
@@ -222,10 +234,9 @@ export function render(_ctx, _cache) {
     _createVNode(_component_Component)
   ], 1024 /* DYNAMIC_SLOTS */))
 }
-
 ===
 name: Transition
-options: default
+options: vdom
 --- INPUT ---
 <Transition name="fade"><div v-if="show">content</div></Transition>
 --- OUTPUT ---
@@ -241,10 +252,9 @@ export function render(_ctx, _cache) {
     _: 1 /* STABLE */
   }))
 }
-
 ===
 name: TransitionGroup
-options: default
+options: vdom
 --- INPUT ---
 <TransitionGroup tag="ul"><li v-for="item in items" :key="item">{{ item }}</li></TransitionGroup>
 --- OUTPUT ---
@@ -260,10 +270,9 @@ export function render(_ctx, _cache) {
     _: 1 /* STABLE */
   }))
 }
-
 ===
 name: keep-alive kebab-case
-options: default
+options: vdom
 --- INPUT ---
 <keep-alive><Component /></keep-alive>
 --- OUTPUT ---
@@ -276,10 +285,9 @@ export function render(_ctx, _cache) {
     _createVNode(_component_Component)
   ], 1024 /* DYNAMIC_SLOTS */))
 }
-
 ===
 name: transition kebab-case
-options: default
+options: vdom
 --- INPUT ---
 <transition name="fade"><div v-if="show">content</div></transition>
 --- OUTPUT ---
@@ -295,10 +303,9 @@ export function render(_ctx, _cache) {
     _: 1 /* STABLE */
   }))
 }
-
 ===
 name: transition-group kebab-case
-options: default
+options: vdom
 --- INPUT ---
 <transition-group tag="ul"><li v-for="item in items" :key="item">{{ item }}</li></transition-group>
 --- OUTPUT ---
@@ -314,10 +321,9 @@ export function render(_ctx, _cache) {
     _: 1 /* STABLE */
   }))
 }
-
 ===
 name: teleport kebab-case
-options: default
+options: vdom
 --- INPUT ---
 <teleport to="body"><div>content</div></teleport>
 --- OUTPUT ---
@@ -328,10 +334,9 @@ export function render(_ctx, _cache) {
     _createElementVNode("div", null, "content")
   ]))
 }
-
 ===
 name: suspense kebab-case
-options: default
+options: vdom
 --- INPUT ---
 <suspense><Component /></suspense>
 --- OUTPUT ---
@@ -347,10 +352,9 @@ export function render(_ctx, _cache) {
     _: 1 /* STABLE */
   }))
 }
-
 ===
 name: dynamic component
-options: default
+options: vdom
 --- INPUT ---
 <component :is="currentComponent" />
 --- OUTPUT ---
@@ -359,10 +363,9 @@ import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _open
 export function render(_ctx, _cache) {
   return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.currentComponent)))
 }
-
 ===
 name: dynamic component with static is
-options: default
+options: vdom
 --- INPUT ---
 <component is="MyComponent" />
 --- OUTPUT ---
@@ -371,10 +374,9 @@ import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _open
 export function render(_ctx, _cache) {
   return (_openBlock(), _createBlock(_resolveDynamicComponent("MyComponent")))
 }
-
 ===
 name: dynamic component with props
-options: default
+options: vdom
 --- INPUT ---
 <component :is="current" :msg="message" />
 --- OUTPUT ---
@@ -383,10 +385,9 @@ import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _open
 export function render(_ctx, _cache) {
   return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.current), { msg: _ctx.message }, null, 8 /* PROPS */, ["msg"]))
 }
-
 ===
 name: v-model on component
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-model="value" />
 --- OUTPUT ---
@@ -400,10 +401,9 @@ export function render(_ctx, _cache) {
     "onUpdate:modelValue": $event => ((_ctx.value) = $event)
   }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue"]))
 }
-
 ===
 name: named v-model
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-model:title="pageTitle" />
 --- OUTPUT ---
@@ -417,10 +417,9 @@ export function render(_ctx, _cache) {
     "onUpdate:title": $event => ((_ctx.pageTitle) = $event)
   }, null, 8 /* PROPS */, ["title", "onUpdate:title"]))
 }
-
 ===
 name: multiple v-model
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-model:first="a" v-model:second="b" />
 --- OUTPUT ---
@@ -436,10 +435,9 @@ export function render(_ctx, _cache) {
     "onUpdate:second": $event => ((_ctx.b) = $event)
   }, null, 8 /* PROPS */, ["first", "onUpdate:first", "second", "onUpdate:second"]))
 }
-
 ===
 name: v-model with modifier
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-model.trim="value" />
 --- OUTPUT ---
@@ -454,10 +452,9 @@ export function render(_ctx, _cache) {
     modelModifiers: { trim: true }
   }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue"]))
 }
-
 ===
 name: v-model with multiple modifiers
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-model.trim.lazy="value" />
 --- OUTPUT ---
@@ -472,10 +469,9 @@ export function render(_ctx, _cache) {
     modelModifiers: { trim: true, lazy: true }
   }, null, 8 /* PROPS */, ["modelValue", "onUpdate:modelValue"]))
 }
-
 ===
 name: component with v-if
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-if="show" />
 --- OUTPUT ---
@@ -488,10 +484,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createBlock(_component_MyComponent, { key: 0 }))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: component with v-else
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-if="a" /><OtherComponent v-else />
 --- OUTPUT ---
@@ -505,10 +500,9 @@ export function render(_ctx, _cache) {
     ? (_openBlock(), _createBlock(_component_MyComponent, { key: 0 }))
     : (_openBlock(), _createBlock(_component_OtherComponent, { key: 1 }))
 }
-
 ===
 name: component with v-for
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-for="item in items" :key="item.id" />
 --- OUTPUT ---
@@ -523,10 +517,9 @@ export function render(_ctx, _cache) {
     }))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: component with v-show
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-show="visible" />
 --- OUTPUT ---
@@ -539,10 +532,9 @@ export function render(_ctx, _cache) {
     [_vShow, _ctx.visible]
   ])
 }
-
 ===
 name: component with custom directive
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-focus />
 --- OUTPUT ---
@@ -556,10 +548,9 @@ export function render(_ctx, _cache) {
     [_directive_focus]
   ])
 }
-
 ===
 name: component event handler
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent @update="onUpdate" />
 --- OUTPUT ---
@@ -570,10 +561,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, { onUpdate: _ctx.onUpdate }, null, 8 /* PROPS */, ["onUpdate"]))
 }
-
 ===
 name: component event with argument
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent @update="onUpdate($event)" />
 --- OUTPUT ---
@@ -586,10 +576,22 @@ export function render(_ctx, _cache) {
     onUpdate: $event => (_ctx.onUpdate($event))
   }, null, 8 /* PROPS */, ["onUpdate"]))
 }
+===
+name: component dynamic event name
+options: vdom
+--- INPUT ---
+<MyComponent @[event]="handler" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, toHandlerKey as _toHandlerKey, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  const _component_MyComponent = _resolveComponent("MyComponent")
+
+  return (_openBlock(), _createBlock(_component_MyComponent, { [_toHandlerKey(_ctx.event)]: _ctx.handler }, null, 16 /* FULL_PROPS */))
+}
 ===
 name: component multiple events
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent @update="onUpdate" @change="onChange" />
 --- OUTPUT ---
@@ -603,10 +605,9 @@ export function render(_ctx, _cache) {
     onChange: _ctx.onChange
   }, null, 8 /* PROPS */, ["onUpdate", "onChange"]))
 }
-
 ===
 name: component event modifiers
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent @update.once="onUpdate" />
 --- OUTPUT ---

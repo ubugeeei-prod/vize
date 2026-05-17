@@ -1,6 +1,6 @@
 ===
 name: empty div
-options: default
+options: vdom
 --- INPUT ---
 <div></div>
 --- OUTPUT ---
@@ -9,10 +9,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div"))
 }
-
 ===
 name: self-closing div
-options: default
+options: vdom
 --- INPUT ---
 <div />
 --- OUTPUT ---
@@ -21,10 +20,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div"))
 }
-
 ===
 name: element with text
-options: default
+options: vdom
 --- INPUT ---
 <div>hello</div>
 --- OUTPUT ---
@@ -33,10 +31,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, "hello"))
 }
-
 ===
 name: element with interpolation
-options: default
+options: vdom
 --- INPUT ---
 <div>{{ msg }}</div>
 --- OUTPUT ---
@@ -45,10 +42,9 @@ import { toDisplayString as _toDisplayString, openBlock as _openBlock, createEle
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg), 1 /* TEXT */))
 }
-
 ===
 name: element with mixed content
-options: default
+options: vdom
 --- INPUT ---
 <div>Hello {{ name }}!</div>
 --- OUTPUT ---
@@ -57,10 +53,9 @@ import { toDisplayString as _toDisplayString, openBlock as _openBlock, createEle
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, "Hello " + _toDisplayString(_ctx.name) + "!", 1 /* TEXT */))
 }
-
 ===
 name: multiple interpolations
-options: default
+options: vdom
 --- INPUT ---
 <div>{{ a }} and {{ b }}</div>
 --- OUTPUT ---
@@ -69,10 +64,9 @@ import { toDisplayString as _toDisplayString, openBlock as _openBlock, createEle
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.a) + " and " + _toDisplayString(_ctx.b), 1 /* TEXT */))
 }
-
 ===
 name: input element
-options: default
+options: vdom
 --- INPUT ---
 <input>
 --- OUTPUT ---
@@ -81,10 +75,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("input"))
 }
-
 ===
 name: br element
-options: default
+options: vdom
 --- INPUT ---
 <br>
 --- OUTPUT ---
@@ -93,10 +86,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("br"))
 }
-
 ===
 name: img element
-options: default
+options: vdom
 --- INPUT ---
 <img src="test.png">
 --- OUTPUT ---
@@ -105,10 +97,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("img", { src: "test.png" }))
 }
-
 ===
 name: hr element
-options: default
+options: vdom
 --- INPUT ---
 <hr>
 --- OUTPUT ---
@@ -117,10 +108,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("hr"))
 }
-
 ===
 name: nested elements
-options: default
+options: vdom
 --- INPUT ---
 <div><span>text</span></div>
 --- OUTPUT ---
@@ -131,10 +121,9 @@ export function render(_ctx, _cache) {
     _createElementVNode("span", null, "text")
   ]))
 }
-
 ===
 name: deeply nested
-options: default
+options: vdom
 --- INPUT ---
 <div><p><span>deep</span></p></div>
 --- OUTPUT ---
@@ -147,10 +136,9 @@ export function render(_ctx, _cache) {
     ])
   ]))
 }
-
 ===
 name: multiple children
-options: default
+options: vdom
 --- INPUT ---
 <div><span></span><p></p></div>
 --- OUTPUT ---
@@ -162,10 +150,9 @@ export function render(_ctx, _cache) {
     _createElementVNode("p")
   ]))
 }
-
 ===
 name: mixed children types
-options: default
+options: vdom
 --- INPUT ---
 <div>text<span>element</span>{{ interp }}</div>
 --- OUTPUT ---
@@ -178,10 +165,45 @@ export function render(_ctx, _cache) {
     _createTextVNode(_toDisplayString(_ctx.interp), 1 /* TEXT */)
   ]))
 }
+===
+name: text around interpolation
+options: vdom
+--- INPUT ---
+<div>Hello {{ name }}, count is {{ count }}</div>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "Hello " + _toDisplayString(_ctx.name) + ", count is " + _toDisplayString(_ctx.count), 1 /* TEXT */))
+}
+===
+name: textarea with text
+options: vdom
+--- INPUT ---
+<textarea>hello</textarea>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("textarea", null, "hello"))
+}
+===
+name: template with text and element
+options: vdom
+--- INPUT ---
+<template>hello<span>world</span></template>
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("template", null, [
+    _createTextVNode("hello"),
+    _createElementVNode("span", null, "world")
+  ]))
+}
 ===
 name: static id
-options: default
+options: vdom
 --- INPUT ---
 <div id="app"></div>
 --- OUTPUT ---
@@ -190,10 +212,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { id: "app" }))
 }
-
 ===
 name: static class
-options: default
+options: vdom
 --- INPUT ---
 <div class="container"></div>
 --- OUTPUT ---
@@ -202,10 +223,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { class: "container" }))
 }
-
 ===
 name: multiple static attributes
-options: default
+options: vdom
 --- INPUT ---
 <div id="app" class="container"></div>
 --- OUTPUT ---
@@ -217,10 +237,20 @@ export function render(_ctx, _cache) {
     class: "container"
   }))
 }
+===
+name: static title attribute
+options: vdom
+--- INPUT ---
+<div title="hello world"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { title: "hello world" }))
+}
 ===
 name: data attribute
-options: default
+options: vdom
 --- INPUT ---
 <div data-id="123"></div>
 --- OUTPUT ---
@@ -229,10 +259,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { "data-id": "123" }))
 }
-
 ===
 name: boolean attribute
-options: default
+options: vdom
 --- INPUT ---
 <input disabled>
 --- OUTPUT ---
@@ -241,10 +270,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("input", { disabled: "" }))
 }
-
 ===
 name: aria attribute
-options: default
+options: vdom
 --- INPUT ---
 <div aria-label="test"></div>
 --- OUTPUT ---
@@ -253,10 +281,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { "aria-label": "test" }))
 }
-
 ===
 name: dynamic id
-options: default
+options: vdom
 --- INPUT ---
 <div :id="dynamicId"></div>
 --- OUTPUT ---
@@ -265,10 +292,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { id: _ctx.dynamicId }, null, 8 /* PROPS */, ["id"]))
 }
-
 ===
 name: dynamic class
-options: default
+options: vdom
 --- INPUT ---
 <div :class="dynamicClass"></div>
 --- OUTPUT ---
@@ -279,10 +305,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass(_ctx.dynamicClass)
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: dynamic style
-options: default
+options: vdom
 --- INPUT ---
 <div :style="dynamicStyle"></div>
 --- OUTPUT ---
@@ -293,10 +318,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle(_ctx.dynamicStyle)
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: dynamic attribute
-options: default
+options: vdom
 --- INPUT ---
 <div :data-id="id"></div>
 --- OUTPUT ---
@@ -305,10 +329,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { "data-id": _ctx.id }, null, 8 /* PROPS */, ["data-id"]))
 }
-
 ===
 name: mixed static and dynamic
-options: default
+options: vdom
 --- INPUT ---
 <div class="static" :class="dynamic"></div>
 --- OUTPUT ---
@@ -319,10 +342,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass(["static", _ctx.dynamic])
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: template element
-options: default
+options: vdom
 --- INPUT ---
 <template><div>content</div></template>
 --- OUTPUT ---
@@ -333,10 +355,9 @@ export function render(_ctx, _cache) {
     _createElementVNode("div", null, "content")
   ]))
 }
-
 ===
 name: slot element
-options: default
+options: vdom
 --- INPUT ---
 <slot></slot>
 --- OUTPUT ---
@@ -345,10 +366,9 @@ import { renderSlot as _renderSlot } from "vue"
 export function render(_ctx, _cache) {
   return _renderSlot(_ctx.$slots, "default")
 }
-
 ===
 name: slot with name
-options: default
+options: vdom
 --- INPUT ---
 <slot name="header"></slot>
 --- OUTPUT ---
@@ -357,10 +377,9 @@ import { renderSlot as _renderSlot } from "vue"
 export function render(_ctx, _cache) {
   return _renderSlot(_ctx.$slots, "header")
 }
-
 ===
 name: slot with fallback
-options: default
+options: vdom
 --- INPUT ---
 <slot>fallback content</slot>
 --- OUTPUT ---
@@ -371,10 +390,9 @@ export function render(_ctx, _cache) {
     _createTextVNode("fallback content")
   ])
 }
-
 ===
 name: svg element
-options: default
+options: vdom
 --- INPUT ---
 <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg>
 --- OUTPUT ---
@@ -389,10 +407,9 @@ export function render(_ctx, _cache) {
     })
   ]))
 }
-
 ===
 name: svg with namespace
-options: default
+options: vdom
 --- INPUT ---
 <svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>
 --- OUTPUT ---
@@ -406,10 +423,35 @@ export function render(_ctx, _cache) {
     })
   ]))
 }
+===
+name: svg path element
+options: vdom
+--- INPUT ---
+<svg viewBox="0 0 10 10"><path d="M0 0h10v10z"></path></svg>
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("svg", { viewBox: "0 0 10 10" }, [
+    _createElementVNode("path", { d: "M0 0h10v10z" })
+  ]))
+}
+===
+name: math element
+options: vdom
+--- INPUT ---
+<math><mi>x</mi></math>
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("math", null, [
+    _createElementVNode("mi", null, "x")
+  ]))
+}
 ===
 name: html comment
-options: default
+options: vdom
 --- INPUT ---
 <div><!-- comment --></div>
 --- OUTPUT ---
@@ -420,10 +462,9 @@ export function render(_ctx, _cache) {
     _createCommentVNode(" comment ")
   ]))
 }
-
 ===
 name: comment between elements
-options: default
+options: vdom
 --- INPUT ---
 <div><span></span><!-- between --><p></p></div>
 --- OUTPUT ---
@@ -435,4 +476,19 @@ export function render(_ctx, _cache) {
     _createCommentVNode(" between "),
     _createElementVNode("p")
   ]))
+}
+===
+name: root comment between elements
+options: vdom
+--- INPUT ---
+<span>one</span><!-- between --><span>two</span>
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("span", null, "one"),
+    _createCommentVNode(" between "),
+    _createElementVNode("span", null, "two")
+  ], 64 /* STABLE_FRAGMENT */))
 }

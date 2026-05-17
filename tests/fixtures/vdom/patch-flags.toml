@@ -87,6 +87,14 @@ name = "event handler"
 input = '<button @click="handler">click</button>'
 
 [[cases]]
+name = "event handler with dynamic text"
+input = '<button @click="handler">{{ label }}</button>'
+
+[[cases]]
+name = "event handler with dynamic class"
+input = '<button :class="cls" @click="handler">click</button>'
+
+[[cases]]
 name = "ref"
 input = '<div ref="el"></div>'
 

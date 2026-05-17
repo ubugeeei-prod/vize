@@ -30,6 +30,10 @@ input = '<button @click="handler()"></button>'
 name = "method with args"
 input = '<button @click="handler(1, 2)"></button>'
 
+[[cases]]
+name = "sequence expression handler"
+input = '<button @click="foo(), bar()"></button>'
+
 # =============================================================================
 # Event with $event
 # =============================================================================
@@ -49,6 +53,10 @@ input = '<button @click="e => handler(e)"></button>'
 [[cases]]
 name = "arrow function with multiple params"
 input = '<div @custom="(a, b) => handler(a, b)"></div>'
+
+[[cases]]
+name = "optional chaining call"
+input = '<button @click="props.onClick?.($event)"></button>'
 
 # =============================================================================
 # Modifiers
@@ -93,6 +101,10 @@ input = '<input @keyup.enter="submit">'
 [[cases]]
 name = "escape key"
 input = '<input @keyup.esc="cancel">'
+
+[[cases]]
+name = "page down key"
+input = '<input @keyup.page-down="next">'
 
 [[cases]]
 name = "tab key"

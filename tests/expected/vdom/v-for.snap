@@ -1,6 +1,6 @@
 ===
 name: v-for array
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items">{{ item }}</div>
 --- OUTPUT ---
@@ -11,10 +11,9 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", null, _toDisplayString(item), 1 /* TEXT */))
   }), 256 /* UNKEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with key
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items" :key="item.id">{{ item.name }}</div>
 --- OUTPUT ---
@@ -27,10 +26,9 @@ export function render(_ctx, _cache) {
     }, _toDisplayString(item.name), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with index
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="(item, index) in items" :key="index">{{ index }}: {{ item }}</div>
 --- OUTPUT ---
@@ -41,10 +39,9 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", { key: index }, _toDisplayString(index) + ": " + _toDisplayString(item), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for object
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="(value, key) in obj" :key="key">{{ key }}: {{ value }}</div>
 --- OUTPUT ---
@@ -55,10 +52,9 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", { key: key }, _toDisplayString(key) + ": " + _toDisplayString(value), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for object with index
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="(value, key, index) in obj" :key="index">{{ index }}. {{ key }}: {{ value }}</div>
 --- OUTPUT ---
@@ -69,10 +65,9 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", { key: index }, _toDisplayString(index) + ". " + _toDisplayString(key) + ": " + _toDisplayString(value), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for range
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="n in 10" :key="n">{{ n }}</div>
 --- OUTPUT ---
@@ -83,10 +78,9 @@ export function render(_ctx, _cache) {
     return _createElementVNode("div", { key: n }, _toDisplayString(n), 1 /* TEXT */)
   }), 64 /* STABLE_FRAGMENT */))
 }
-
 ===
 name: v-for of array
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item of items" :key="item">{{ item }}</div>
 --- OUTPUT ---
@@ -97,10 +91,9 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", { key: item }, _toDisplayString(item), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for of with index
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="(item, i) of items" :key="i">{{ item }}</div>
 --- OUTPUT ---
@@ -111,10 +104,9 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", { key: i }, _toDisplayString(item), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for on template
-options: default
+options: vdom
 --- INPUT ---
 <template v-for="item in items" :key="item.id"><div>{{ item.a }}</div><div>{{ item.b }}</div></template>
 --- OUTPUT ---
@@ -130,10 +122,9 @@ export function render(_ctx, _cache) {
     ], 64 /* STABLE_FRAGMENT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for on template with nested
-options: default
+options: vdom
 --- INPUT ---
 <template v-for="item in items" :key="item.id"><span>{{ item }}</span></template>
 --- OUTPUT ---
@@ -146,10 +137,27 @@ export function render(_ctx, _cache) {
     }, _toDisplayString(item), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
+===
+name: v-for on template with index
+options: vdom
+--- INPUT ---
+<template v-for="(item, index) in items" :key="item.id"><div>{{ index }}</div><span>{{ item.name }}</span></template>
+--- OUTPUT ---
+import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item, index) => {
+    return (_openBlock(), _createElementBlock(_Fragment, {
+      key: item.id
+    }, [
+      _createElementVNode("div", null, _toDisplayString(index), 1 /* TEXT */),
+      _createElementVNode("span", null, _toDisplayString(item.name), 1 /* TEXT */)
+    ], 64 /* STABLE_FRAGMENT */))
+  }), 128 /* KEYED_FRAGMENT */))
+}
 ===
 name: v-for on component
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-for="item in items" :key="item.id" :item="item" />
 --- OUTPUT ---
@@ -165,10 +173,9 @@ export function render(_ctx, _cache) {
     }, null, 8 /* PROPS */, ["item"]))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for on component with content
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-for="item in items" :key="item.id">{{ item.name }}</MyComponent>
 --- OUTPUT ---
@@ -188,10 +195,9 @@ export function render(_ctx, _cache) {
     }, 1024 /* DYNAMIC_SLOTS */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: nested v-for
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="row in rows" :key="row.id"><span v-for="cell in row.cells" :key="cell.id">{{ cell }}</span></div>
 --- OUTPUT ---
@@ -210,10 +216,9 @@ export function render(_ctx, _cache) {
     ]))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with v-if
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items" :key="item.id" v-if="item.active">{{ item.name }}</div>
 --- OUTPUT ---
@@ -228,10 +233,9 @@ export function render(_ctx, _cache) {
       }), 128 /* KEYED_FRAGMENT */))
     : _createCommentVNode("v-if", true)
 }
-
 ===
 name: template v-for with v-if inside
-options: default
+options: vdom
 --- INPUT ---
 <template v-for="item in items" :key="item.id"><div v-if="item.show">{{ item.name }}</div></template>
 --- OUTPUT ---
@@ -248,10 +252,9 @@ export function render(_ctx, _cache) {
     ], 64 /* STABLE_FRAGMENT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with destructure
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="{ id, name } in items" :key="id">{{ name }}</div>
 --- OUTPUT ---
@@ -262,10 +265,9 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", { key: id }, _toDisplayString(name), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with nested destructure
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="{ user: { name } } in items" :key="name">{{ name }}</div>
 --- OUTPUT ---
@@ -276,29 +278,17 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", { key: name }, _toDisplayString(name), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with default value
-options: default
+options: vdom
 errors: Attribute name cannot contain U+0022 ("), U+0027 ('), and U+003C (<).; Attribute name cannot contain U+0022 ("), U+0027 ('), and U+003C (<).; v-for has invalid expression.
 --- INPUT ---
 <div v-for="{ id, name = "default" } in items" :key="id">{{ name }}</div>
 --- OUTPUT ---
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
-
-export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("div", {
-    "default\"": "",
-    "}": "",
-    in: "",
-    "items\"": "",
-    key: _ctx.id
-  }, _toDisplayString(_ctx.name), 1 /* TEXT */))
-}
-
+Compile errors: Attribute name cannot contain U+0022 ("), U+0027 ('), and U+003C (<)., Attribute name cannot contain U+0022 ("), U+0027 ('), and U+003C (<)., v-for has invalid expression.
 ===
 name: v-for with rest
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="{ id, ...rest } in items" :key="id">{{ rest }}</div>
 --- OUTPUT ---
@@ -309,10 +299,9 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", { key: id }, _toDisplayString(rest), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with method call
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in getItems()" :key="item.id">{{ item }}</div>
 --- OUTPUT ---
@@ -325,10 +314,9 @@ export function render(_ctx, _cache) {
     }, _toDisplayString(item), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with computed
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in filteredItems" :key="item.id">{{ item }}</div>
 --- OUTPUT ---
@@ -341,10 +329,9 @@ export function render(_ctx, _cache) {
     }, _toDisplayString(item), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with filter
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items.filter(i => i.active)" :key="item.id">{{ item }}</div>
 --- OUTPUT ---
@@ -357,10 +344,9 @@ export function render(_ctx, _cache) {
     }, _toDisplayString(item), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-for with nested property
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in state.list.items" :key="item.id">{{ item }}</div>
 --- OUTPUT ---
@@ -371,5 +357,33 @@ export function render(_ctx, _cache) {
     return (_openBlock(), _createElementBlock("div", {
       key: item.id
     }, _toDisplayString(item), 1 /* TEXT */))
+  }), 128 /* KEYED_FRAGMENT */))
+}
+===
+name: v-for over object keys
+options: vdom
+--- INPUT ---
+<div v-for="key in Object.keys(obj)" :key="key">{{ key }}</div>
+--- OUTPUT ---
+import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(Object.keys(_ctx.obj), (key) => {
+    return (_openBlock(), _createElementBlock("div", { key: key }, _toDisplayString(key), 1 /* TEXT */))
+  }), 128 /* KEYED_FRAGMENT */))
+}
+===
+name: v-for with optional chaining source
+options: vdom
+--- INPUT ---
+<div v-for="item in state.items?.list" :key="item.id">{{ item.name }}</div>
+--- OUTPUT ---
+import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.state.items?.list, (item) => {
+    return (_openBlock(), _createElementBlock("div", {
+      key: item.id
+    }, _toDisplayString(item.name), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
 }

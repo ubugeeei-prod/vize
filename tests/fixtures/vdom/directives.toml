@@ -22,6 +22,14 @@ input = "<div v-highlight=\"'yellow'\"></div>"
 name = "custom directive with object"
 input = '<div v-pin="{ top: 10, left: 20 }"></div>'
 
+[[cases]]
+name = "custom directive with array"
+input = '<div v-list="[one, two]"></div>'
+
+[[cases]]
+name = "custom directive with function call"
+input = '<div v-observe="createObserver(item)"></div>'
+
 # =============================================================================
 # Directive arguments
 # =============================================================================

@@ -1,6 +1,6 @@
 ===
 name: v-bind attribute
-options: default
+options: vdom
 --- INPUT ---
 <div v-bind:id="id"></div>
 --- OUTPUT ---
@@ -9,10 +9,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { id: _ctx.id }, null, 8 /* PROPS */, ["id"]))
 }
-
 ===
 name: v-bind shorthand
-options: default
+options: vdom
 --- INPUT ---
 <div :id="id"></div>
 --- OUTPUT ---
@@ -21,10 +20,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { id: _ctx.id }, null, 8 /* PROPS */, ["id"]))
 }
-
 ===
 name: v-bind class
-options: default
+options: vdom
 --- INPUT ---
 <div :class="cls"></div>
 --- OUTPUT ---
@@ -35,10 +33,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass(_ctx.cls)
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: v-bind style
-options: default
+options: vdom
 --- INPUT ---
 <div :style="styles"></div>
 --- OUTPUT ---
@@ -49,10 +46,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle(_ctx.styles)
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: class object syntax
-options: default
+options: vdom
 --- INPUT ---
 <div :class="{ active: isActive }"></div>
 --- OUTPUT ---
@@ -63,10 +59,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass({ active: _ctx.isActive })
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: class multiple objects
-options: default
+options: vdom
 --- INPUT ---
 <div :class="{ active: isActive, error: hasError }"></div>
 --- OUTPUT ---
@@ -77,10 +72,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass({ active: _ctx.isActive, error: _ctx.hasError })
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: class array syntax
-options: default
+options: vdom
 --- INPUT ---
 <div :class="[activeClass, errorClass]"></div>
 --- OUTPUT ---
@@ -91,10 +85,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass([_ctx.activeClass, _ctx.errorClass])
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: class array with object
-options: default
+options: vdom
 --- INPUT ---
 <div :class="[{ active: isActive }, errorClass]"></div>
 --- OUTPUT ---
@@ -105,10 +98,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass([{ active: _ctx.isActive }, _ctx.errorClass])
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: class with static
-options: default
+options: vdom
 --- INPUT ---
 <div class="static" :class="dynamic"></div>
 --- OUTPUT ---
@@ -119,10 +111,9 @@ export function render(_ctx, _cache) {
     class: _normalizeClass(["static", _ctx.dynamic])
   }, null, 2 /* CLASS */))
 }
-
 ===
 name: class ternary
-options: default
+options: vdom
 --- INPUT ---
 <div :class="isActive ? 'active' : 'inactive'"></div>
 --- OUTPUT ---
@@ -133,10 +124,22 @@ export function render(_ctx, _cache) {
     class: _normalizeClass(_ctx.isActive ? 'active' : 'inactive')
   }, null, 2 /* CLASS */))
 }
+===
+name: class array with conditional
+options: vdom
+--- INPUT ---
+<div :class="[base, isActive && active]"></div>
+--- OUTPUT ---
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass([_ctx.base, _ctx.isActive && _ctx.active])
+  }, null, 2 /* CLASS */))
+}
 ===
 name: style object syntax
-options: default
+options: vdom
 --- INPUT ---
 <div :style="{ color: textColor }"></div>
 --- OUTPUT ---
@@ -147,10 +150,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle({ color: _ctx.textColor })
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: style multiple properties
-options: default
+options: vdom
 --- INPUT ---
 <div :style="{ color: textColor, fontSize: size + 'px' }"></div>
 --- OUTPUT ---
@@ -161,10 +163,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle({ color: _ctx.textColor, fontSize: _ctx.size + 'px' })
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: style array syntax
-options: default
+options: vdom
 --- INPUT ---
 <div :style="[baseStyles, overrideStyles]"></div>
 --- OUTPUT ---
@@ -175,10 +176,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle([_ctx.baseStyles, _ctx.overrideStyles])
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: style with static
-options: default
+options: vdom
 --- INPUT ---
 <div style="color: red" :style="{ fontSize: size }"></div>
 --- OUTPUT ---
@@ -189,10 +189,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle([{"color":"red"}, { fontSize: _ctx.size }])
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: style camelCase
-options: default
+options: vdom
 --- INPUT ---
 <div :style="{ backgroundColor: bg }"></div>
 --- OUTPUT ---
@@ -203,10 +202,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle({ backgroundColor: _ctx.bg })
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: style kebab-case
-options: default
+options: vdom
 --- INPUT ---
 <div :style="{ 'background-color': bg }"></div>
 --- OUTPUT ---
@@ -217,10 +215,9 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle({ 'background-color': _ctx.bg })
   }, null, 4 /* STYLE */))
 }
-
 ===
 name: v-bind object
-options: default
+options: vdom
 --- INPUT ---
 <div v-bind="attrs"></div>
 --- OUTPUT ---
@@ -229,10 +226,9 @@ import { normalizeProps as _normalizeProps, guardReactiveProps as _guardReactive
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(_ctx.attrs)), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: v-bind object with other attrs
-options: default
+options: vdom
 --- INPUT ---
 <div v-bind="attrs" id="static"></div>
 --- OUTPUT ---
@@ -241,10 +237,9 @@ import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock 
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _mergeProps(_ctx.attrs, { id: "static" }), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: v-bind object with dynamic
-options: default
+options: vdom
 --- INPUT ---
 <div v-bind="attrs" :class="cls"></div>
 --- OUTPUT ---
@@ -253,10 +248,9 @@ import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock 
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _mergeProps(_ctx.attrs, { class: _ctx.cls }), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: v-bind $attrs
-options: default
+options: vdom
 --- INPUT ---
 <div v-bind="$attrs"></div>
 --- OUTPUT ---
@@ -265,10 +259,9 @@ import { normalizeProps as _normalizeProps, guardReactiveProps as _guardReactive
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _normalizeProps(_guardReactiveProps(_ctx.$attrs)), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: v-bind $props
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-bind="$props" />
 --- OUTPUT ---
@@ -279,10 +272,46 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, _normalizeProps(_guardReactiveProps(_ctx.$props)), null, 16 /* FULL_PROPS */))
 }
+===
+name: aria attribute binding
+options: vdom
+--- INPUT ---
+<button :aria-expanded="isOpen"></button>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", { "aria-expanded": _ctx.isOpen }, null, 8 /* PROPS */, ["aria-expanded"]))
+}
+===
+name: data attribute expression
+options: vdom
+--- INPUT ---
+<div :data-count="items.length"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    "data-count": _ctx.items.length
+  }, null, 8 /* PROPS */, ["data-count"]))
+}
+===
+name: optional chaining binding
+options: vdom
+--- INPUT ---
+<div :title="user?.name"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    title: _ctx.user?.name
+  }, null, 8 /* PROPS */, ["title"]))
+}
 ===
 name: dynamic attribute name
-options: default
+options: vdom
 --- INPUT ---
 <div :[attr]="value"></div>
 --- OUTPUT ---
@@ -291,10 +320,9 @@ import { normalizeProps as _normalizeProps, openBlock as _openBlock, createEleme
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _normalizeProps({ [_ctx.attr || ""]: _ctx.value }), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: dynamic attribute with prefix
-options: default
+options: vdom
 --- INPUT ---
 <div :[`data-${key}`]="value"></div>
 --- OUTPUT ---
@@ -303,10 +331,9 @@ import { normalizeProps as _normalizeProps, openBlock as _openBlock, createEleme
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", _normalizeProps({ [(`data-${_ctx.key}`) || ""]: _ctx.value }), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: v-bind.camel
-options: default
+options: vdom
 --- INPUT ---
 <svg :view-box.camel="viewBox"></svg>
 --- OUTPUT ---
@@ -315,10 +342,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("svg", { viewBox: _ctx.viewBox }, null, 8 /* PROPS */, ["viewBox"]))
 }
-
 ===
 name: v-bind.prop
-options: default
+options: vdom
 --- INPUT ---
 <div :text-content.prop="text"></div>
 --- OUTPUT ---
@@ -327,10 +353,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { ".text-content": _ctx.text }, null, 40 /* PROPS, NEED_HYDRATION */, [".text-content"]))
 }
-
 ===
 name: v-bind.attr
-options: default
+options: vdom
 --- INPUT ---
 <div :foo.attr="bar"></div>
 --- OUTPUT ---
@@ -339,10 +364,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { "^foo": _ctx.bar }, null, 8 /* PROPS */, ["^foo"]))
 }
-
 ===
 name: v-bind key
-options: default
+options: vdom
 --- INPUT ---
 <div :key="id"></div>
 --- OUTPUT ---
@@ -351,10 +375,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { key: _ctx.id }))
 }
-
 ===
 name: v-bind ref
-options: default
+options: vdom
 --- INPUT ---
 <div :ref="refName"></div>
 --- OUTPUT ---
@@ -363,10 +386,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { ref: _ctx.refName }, null, 512 /* NEED_PATCH */))
 }
-
 ===
 name: v-bind is
-options: default
+options: vdom
 --- INPUT ---
 <component :is="comp"></component>
 --- OUTPUT ---
@@ -375,10 +397,9 @@ import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _open
 export function render(_ctx, _cache) {
   return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.comp)))
 }
-
 ===
 name: boolean attribute binding
-options: default
+options: vdom
 --- INPUT ---
 <input :disabled="isDisabled">
 --- OUTPUT ---
@@ -387,10 +408,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("input", { disabled: _ctx.isDisabled }, null, 8 /* PROPS */, ["disabled"]))
 }
-
 ===
 name: boolean attribute expression
-options: default
+options: vdom
 --- INPUT ---
 <input :disabled="count > 0">
 --- OUTPUT ---
@@ -401,10 +421,9 @@ export function render(_ctx, _cache) {
     disabled: _ctx.count > 0
   }, null, 8 /* PROPS */, ["disabled"]))
 }
-
 ===
 name: boolean readonly
-options: default
+options: vdom
 --- INPUT ---
 <input :readonly="isReadonly">
 --- OUTPUT ---

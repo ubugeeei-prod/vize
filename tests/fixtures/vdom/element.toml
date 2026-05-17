@@ -70,6 +70,18 @@ input = "<div><span></span><p></p></div>"
 name = "mixed children types"
 input = "<div>text<span>element</span>{{ interp }}</div>"
 
+[[cases]]
+name = "text around interpolation"
+input = "<div>Hello {{ name }}, count is {{ count }}</div>"
+
+[[cases]]
+name = "textarea with text"
+input = "<textarea>hello</textarea>"
+
+[[cases]]
+name = "template with text and element"
+input = "<template>hello<span>world</span></template>"
+
 # =============================================================================
 # Attributes
 # =============================================================================
@@ -85,6 +97,10 @@ input = '<div class="container"></div>'
 [[cases]]
 name = "multiple static attributes"
 input = '<div id="app" class="container"></div>'
+
+[[cases]]
+name = "static title attribute"
+input = '<div title="hello world"></div>'
 
 [[cases]]
 name = "data attribute"
@@ -154,6 +170,14 @@ input = '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg>'
 name = "svg with namespace"
 input = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100"/></svg>'
 
+[[cases]]
+name = "svg path element"
+input = '<svg viewBox="0 0 10 10"><path d="M0 0h10v10z"></path></svg>'
+
+[[cases]]
+name = "math element"
+input = "<math><mi>x</mi></math>"
+
 # =============================================================================
 # Comments
 # =============================================================================
@@ -165,3 +189,7 @@ input = "<div><!-- comment --></div>"
 [[cases]]
 name = "comment between elements"
 input = "<div><span></span><!-- between --><p></p></div>"
+
+[[cases]]
+name = "root comment between elements"
+input = "<span>one</span><!-- between --><span>two</span>"

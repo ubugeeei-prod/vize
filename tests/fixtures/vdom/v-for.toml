@@ -54,6 +54,10 @@ input = '<template v-for="item in items" :key="item.id"><div>{{ item.a }}</div><
 name = "v-for on template with nested"
 input = '<template v-for="item in items" :key="item.id"><span>{{ item }}</span></template>'
 
+[[cases]]
+name = "v-for on template with index"
+input = '<template v-for="(item, index) in items" :key="item.id"><div>{{ index }}</div><span>{{ item.name }}</span></template>'
+
 # =============================================================================
 # v-for on component
 # =============================================================================
@@ -121,3 +125,11 @@ input = '<div v-for="item in items.filter(i => i.active)" :key="item.id">{{ item
 [[cases]]
 name = "v-for with nested property"
 input = '<div v-for="item in state.list.items" :key="item.id">{{ item }}</div>'
+
+[[cases]]
+name = "v-for over object keys"
+input = '<div v-for="key in Object.keys(obj)" :key="key">{{ key }}</div>'
+
+[[cases]]
+name = "v-for with optional chaining source"
+input = '<div v-for="item in state.items?.list" :key="item.id">{{ item.name }}</div>'
