@@ -1,0 +1,10 @@
+---
+source: crates/vize_musea/src/tokens/tests.rs
+expression: "validate_reference(&map, \"color.a\", Some(\"color.b\"))"
+---
+ValidationResult {
+    valid: false,
+    error: Some(
+        "Circular reference detected at \"color.b\"",
+    ),
+}

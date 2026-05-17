@@ -3,6 +3,9 @@ use super::{
     normalize_virtual_vue_module_id,
 };
 
+mod middleware;
+mod precompile;
+
 #[test]
 fn snapshots_macro_define_page_request() {
     insta::assert_debug_snapshot!(

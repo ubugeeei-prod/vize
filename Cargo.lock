@@ -3400,6 +3400,7 @@ dependencies = [
  "vize_canon",
  "vize_carton",
  "vize_croquis",
+ "vize_croquis_cf",
  "vize_glyph",
  "vize_maestro",
  "vize_musea",
@@ -3577,7 +3578,6 @@ dependencies = [
 name = "vize_croquis"
 version = "0.101.0"
 dependencies = [
- "criterion",
  "dashmap 6.1.0",
  "insta",
  "once_cell",
@@ -3594,6 +3594,18 @@ dependencies = [
  "vize_armature",
  "vize_carton",
  "vize_relief",
+]
+
+[[package]]
+name = "vize_croquis_cf"
+version = "0.101.0"
+dependencies = [
+ "criterion",
+ "insta",
+ "rustc-hash",
+ "vize_armature",
+ "vize_carton",
+ "vize_croquis",
 ]
 
 [[package]]
@@ -3760,6 +3772,7 @@ dependencies = [
  "vize_canon",
  "vize_carton",
  "vize_croquis",
+ "vize_croquis_cf",
  "vize_glyph",
  "vize_musea",
  "vize_patina",

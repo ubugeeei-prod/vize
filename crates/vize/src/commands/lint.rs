@@ -16,11 +16,11 @@ use vize_carton::{
     Allocator, CompactString, FxHashMap, String, ToCompactString, cstr, profile,
     profiler::{allocation_snapshot, global_profiler},
 };
-use vize_croquis::cross_file::{
+use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
+use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
     DiagnosticSeverity, FileId,
 };
-use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
 use vize_patina::{
     HelpLevel, LintDiagnostic, LintPreset, LintResult, Linter, OutputFormat, format_results,
     format_summary,

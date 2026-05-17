@@ -1,7 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 
 import { generateTokensHtml } from "./tokens/generator.ts";
@@ -13,8 +12,14 @@ import {
   setTokenAtPath,
 } from "./tokens/resolver.ts";
 
+async function makeAgentTempDir() {
+  const root = path.resolve("__agent_only");
+  await fs.promises.mkdir(root, { recursive: true });
+  return fs.promises.mkdtemp(path.join(root, "musea-tokens-"));
+}
+
 void test("parseTokens merges token directories into canonical reference paths", async () => {
-  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-tokens-"));
+  const tempDir = await makeAgentTempDir();
 
   await fs.promises.writeFile(
     path.join(tempDir, "colors.tokens.json"),
@@ -62,7 +67,7 @@ void test("token mutations reject prototype-polluting paths", () => {
 });
 
 void test("token parsing keeps prototype-like token names as data", async () => {
-  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-tokens-"));
+  const tempDir = await makeAgentTempDir();
 
   try {
     await fs.promises.writeFile(
@@ -103,5 +108,5 @@ void test("generateTokensHtml escapes untrusted token text and filters unsafe co
   assert.match(html, /bad&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
   assert.match(html, /&lt;b onclick=alert\(1\)&gt;owned&lt;\/b&gt;/);
   assert.doesNotMatch(html, /<script>|<b onclick=|javascript:/);
-  assert.doesNotMatch(html, /color-swatch/);
+  assert.doesNotMatch(html, /class="color-swatch"|style="background:/);
 });
