@@ -4,6 +4,7 @@
 
 // Layout
 export { Box, type BoxProps } from "./Box.js";
+export { Spacer } from "./Spacer.js";
 export { Divider, type DividerProps } from "./Divider.js";
 export { Stack, HStack, VStack, type StackProps } from "./Stack.js";
 export { Grid, type GridProps } from "./Grid.js";
@@ -11,6 +12,9 @@ export { Card, type CardProps } from "./Card.js";
 
 // Text
 export { Text, type TextProps } from "./Text.js";
+export { Newline, type NewlineProps } from "./Newline.js";
+export { Static, type StaticProps } from "./Static.js";
+export { Transform, type TransformProps } from "./Transform.js";
 export { Code, type CodeProps } from "./Code.js";
 export { Link, type LinkProps } from "./Link.js";
 

@@ -4,7 +4,7 @@ use std::io::{self, Write};
 
 use crossterm::{
     cursor::{Hide, MoveTo, Show},
-    event::{DisableMouseCapture, EnableMouseCapture},
+    event::{DisableBracketedPaste, DisableMouseCapture, EnableBracketedPaste, EnableMouseCapture},
     execute, queue,
     style::{Attribute, Print, SetAttribute, SetBackgroundColor, SetForegroundColor},
     terminal::{
@@ -27,6 +27,8 @@ pub struct Backend {
     alternate_screen: bool,
     /// Whether mouse capture is enabled
     mouse_capture: bool,
+    /// Whether bracketed paste is enabled
+    bracketed_paste: bool,
     /// Terminal width
     width: u16,
     /// Terminal height
@@ -43,6 +45,7 @@ impl Backend {
             cursor: Cursor::new(),
             alternate_screen: false,
             mouse_capture: false,
+            bracketed_paste: false,
             width,
             height,
         })
@@ -51,8 +54,14 @@ impl Backend {
     /// Initialize the terminal for TUI mode.
     pub fn init(&mut self) -> io::Result<()> {
         enable_raw_mode()?;
-        execute!(io::stdout(), EnterAlternateScreen, Hide)?;
+        execute!(
+            io::stdout(),
+            EnterAlternateScreen,
+            EnableBracketedPaste,
+            Hide
+        )?;
         self.alternate_screen = true;
+        self.bracketed_paste = true;
         Ok(())
     }
 
@@ -71,6 +80,11 @@ impl Backend {
         if self.mouse_capture {
             execute!(stdout, DisableMouseCapture)?;
             self.mouse_capture = false;
+        }
+
+        if self.bracketed_paste {
+            execute!(stdout, DisableBracketedPaste)?;
+            self.bracketed_paste = false;
         }
 
         if self.alternate_screen {

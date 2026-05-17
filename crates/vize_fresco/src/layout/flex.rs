@@ -30,6 +30,7 @@ pub struct FlexStyle {
     pub min_height: Dimension,
     pub max_width: Dimension,
     pub max_height: Dimension,
+    pub aspect_ratio: Option<f32>,
 
     // Spacing
     pub margin: Edges,
@@ -64,6 +65,7 @@ impl Default for FlexStyle {
             min_height: Dimension::default(),
             max_width: Dimension::default(),
             max_height: Dimension::default(),
+            aspect_ratio: None,
             margin: Edges::default(),
             padding: Edges::default(),
             gap: Gap::default(),
@@ -111,7 +113,7 @@ impl FlexStyle {
                 width: self.max_width.to_taffy(),
                 height: self.max_height.to_taffy(),
             },
-            aspect_ratio: None,
+            aspect_ratio: self.aspect_ratio,
             margin: self.margin.to_taffy(),
             padding: self.padding.to_taffy_no_auto(),
             gap: self.gap.to_taffy(),

@@ -203,6 +203,12 @@ pub struct Appearance {
     pub italic: bool,
     /// Underline text
     pub underline: bool,
+    /// Inverse background/foreground
+    pub inverse: bool,
+    /// Blinking text
+    pub blink: bool,
+    /// Hidden text
+    pub hidden: bool,
     /// Strikethrough text
     pub strikethrough: bool,
     /// Border style
@@ -260,8 +266,10 @@ impl Appearance {
             dim: self.dim,
             italic: self.italic,
             underline: self.underline,
+            reverse: self.inverse,
+            blink: self.blink,
+            hidden: self.hidden,
             strikethrough: self.strikethrough,
-            ..Default::default()
         }
     }
 }
