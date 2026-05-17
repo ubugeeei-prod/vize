@@ -149,6 +149,7 @@ pub fn generate_event_handler(
 }
 
 #[cfg(test)]
+#[allow(clippy::disallowed_macros)]
 mod tests {
     use super::generate_simple_expression_with_prefix;
     use crate::ast::{ExpressionNode, SimpleExpressionNode, SourceLocation};

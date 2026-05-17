@@ -25,10 +25,22 @@ pub(crate) use helpers::{
 
 /// Generate for node
 pub fn generate_for(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
-    generate_for_inner(ctx, for_node)
+    generate_for_inner(ctx, for_node, None)
 }
 
-fn generate_for_inner(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
+pub(crate) fn generate_for_with_fragment_key(
+    ctx: &mut CodegenContext,
+    for_node: &ForNode<'_>,
+    generate_key: &dyn Fn(&mut CodegenContext),
+) {
+    generate_for_inner(ctx, for_node, Some(generate_key))
+}
+
+fn generate_for_inner(
+    ctx: &mut CodegenContext,
+    for_node: &ForNode<'_>,
+    generate_fragment_key: Option<&dyn Fn(&mut CodegenContext)>,
+) {
     ctx.use_helper(RuntimeHelper::OpenBlock);
     ctx.use_helper(RuntimeHelper::CreateElementBlock);
     ctx.use_helper(RuntimeHelper::Fragment);
@@ -65,7 +77,13 @@ fn generate_for_inner(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
     ctx.push(ctx.helper(RuntimeHelper::CreateElementBlock));
     ctx.push("(");
     ctx.push(ctx.helper(RuntimeHelper::Fragment));
-    ctx.push(", null, ");
+    if let Some(generate_key) = generate_fragment_key {
+        ctx.push(", { key: ");
+        generate_key(ctx);
+        ctx.push(" }, ");
+    } else {
+        ctx.push(", null, ");
+    }
     ctx.push(ctx.helper(RuntimeHelper::RenderList));
     ctx.push("(");
     generate_expression(ctx, &for_node.source);

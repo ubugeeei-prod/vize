@@ -206,6 +206,7 @@ fn create_root_codegen<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'
 }
 
 #[cfg(test)]
+#[allow(clippy::disallowed_macros)]
 mod tests {
     use super::transform;
     use crate::codegen::generate;

@@ -4,7 +4,7 @@
 //! component, element, template fragment, and regular fragment rendering.
 
 use crate::ast::{
-    ElementNode, ElementType, ExpressionNode, IfBranchNode, PropNode, RuntimeHelper,
+    ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
     TemplateChildNode,
 };
 use vize_carton::ToCompactString;
@@ -13,11 +13,11 @@ use super::{
     super::{
         children::{generate_children_force_array, is_directive_comment},
         context::CodegenContext,
-        element::is_whitespace_or_comment,
         element::{
             generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
             has_custom_directives, has_vmodel_directive, has_vshow_directive,
         },
+        element::{helpers::is_dynamic_component, is_whitespace_or_comment},
         expression::generate_expression,
         helpers::{escape_js_string, is_builtin_component, to_valid_asset_identifier},
         node::generate_node,
@@ -76,13 +76,28 @@ pub(super) fn generate_if_branch(
             }
             _ => {
                 // Other node types - wrap in fragment
-                generate_if_branch_fragment(ctx, branch, branch_index);
+                if let TemplateChildNode::For(for_node) = &branch.children[0] {
+                    generate_if_branch_for(ctx, for_node, branch, branch_index);
+                } else {
+                    generate_if_branch_fragment(ctx, branch, branch_index);
+                }
             }
         }
     } else {
         // Multiple children - wrap in fragment
         generate_if_branch_fragment(ctx, branch, branch_index);
     }
+}
+
+fn generate_if_branch_for(
+    ctx: &mut CodegenContext,
+    for_node: &ForNode<'_>,
+    branch: &IfBranchNode<'_>,
+    branch_index: usize,
+) {
+    super::super::v_for::generate_for_with_fragment_key(ctx, for_node, &|ctx| {
+        super::generate_if_branch_key(ctx, branch, branch_index);
+    });
 }
 
 /// Generate slot outlet for if branch.
@@ -130,7 +145,7 @@ fn generate_if_branch_component(
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
-    let is_dynamic_component = el.tag == "component" || el.tag == "Component";
+    let is_dynamic = is_dynamic_component(el);
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);
@@ -156,7 +171,7 @@ fn generate_if_branch_component(
     ctx.push("(");
     // Generate component name
     // Handle dynamic component (<component :is="..."> / <Component :is="...">)
-    if is_dynamic_component {
+    if is_dynamic {
         let dynamic_is = el.props.iter().find_map(|p| {
             if let PropNode::Directive(dir) = p
                 && dir.name == "bind"
@@ -204,7 +219,7 @@ fn generate_if_branch_component(
         ctx.push(&to_valid_asset_identifier("component", &el.tag));
     }
 
-    let (mut patch_flag, dynamic_props) = if is_dynamic_component {
+    let (mut patch_flag, dynamic_props) = if is_dynamic {
         calculate_element_patch_info_skip_is(
             el,
             ctx.options.binding_metadata.as_ref(),

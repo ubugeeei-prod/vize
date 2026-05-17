@@ -84,6 +84,36 @@ pub(crate) fn escape_template(s: &str) -> String {
         .into()
 }
 
+/// Escape a value for use inside a double-quoted JavaScript string literal.
+pub(crate) fn escape_js_string_literal(s: &str) -> String {
+    let mut result = String::with_capacity(s.len());
+
+    fn push_hex4(out: &mut String, value: u32) {
+        const HEX: &[u8; 16] = b"0123456789abcdef";
+        out.push_str("\\u");
+        out.push(HEX[((value >> 12) & 0xF) as usize] as char);
+        out.push(HEX[((value >> 8) & 0xF) as usize] as char);
+        out.push(HEX[((value >> 4) & 0xF) as usize] as char);
+        out.push(HEX[(value & 0xF) as usize] as char);
+    }
+
+    for char in s.chars() {
+        match char {
+            '\\' => result.push_str("\\\\"),
+            '"' => result.push_str("\\\""),
+            '\n' => result.push_str("\\n"),
+            '\r' => result.push_str("\\r"),
+            '\t' => result.push_str("\\t"),
+            '\x08' => result.push_str("\\b"),
+            '\x0C' => result.push_str("\\f"),
+            char if char.is_control() => push_hex4(&mut result, char as u32),
+            char => result.push(char),
+        }
+    }
+
+    result
+}
+
 /// Check if a tag is an SVG element
 pub(crate) fn is_svg_tag(tag: &str) -> bool {
     matches!(

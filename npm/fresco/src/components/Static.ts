@@ -1,9 +1,8 @@
 /**
  * Static Component - renders stable items above the live area.
  *
- * Fresco keeps this component declarative for Vue. The native renderer does not
- * yet persist historical frames separately, so current items are rendered in
- * order with the same child function API as Ink.
+ * The app renderer treats this component specially: newly added items are
+ * promoted into a persistent output region above the live frame.
  */
 
 import { defineComponent, h, type PropType } from "@vue/runtime-core";
@@ -33,12 +32,26 @@ export const Static = defineComponent({
       return h(
         "box",
         {
+          internal_static: true,
           style: {
+            position: "absolute",
             flexDirection: "column",
             ...props.style,
           },
         },
-        props.items.flatMap((item, index) => renderItem?.({ item, index }) ?? []),
+        props.items.map((item, index) =>
+          h(
+            "box",
+            {
+              key: index,
+              internal_static_item: true,
+              style: {
+                flexDirection: "column",
+              },
+            },
+            renderItem?.({ item, index }) ?? [],
+          ),
+        ),
       );
     };
   },

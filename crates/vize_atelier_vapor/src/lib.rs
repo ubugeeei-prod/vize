@@ -158,6 +158,9 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 #[cfg(test)]
 mod tests {
     use super::compile_vapor;
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_carton::Bump;
     use vize_carton::FxHashMap;
@@ -168,6 +171,25 @@ mod tests {
             .filter(|line| !line.is_empty())
             .collect::<Vec<_>>()
             .join("\n")
+    }
+
+    fn assert_parses_as_module(code: &str) {
+        let allocator = Allocator::default();
+        let parsed = Parser::new(
+            &allocator,
+            code,
+            SourceType::default()
+                .with_module(true)
+                .with_typescript(true),
+        )
+        .parse();
+
+        assert!(
+            parsed.errors.is_empty(),
+            "generated code should parse, got: {:?}\n\n{}",
+            parsed.errors,
+            code
+        );
     }
 
     #[test]
@@ -708,6 +730,26 @@ mod tests {
 
         let code = normalize_code(&result.code);
         insta::assert_snapshot!(code.as_str());
+    }
+
+    #[test]
+    fn test_compile_dynamic_text_escapes_multiline_static_part() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<button :class="cls">{{ count }} all
+selected</button>"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        assert!(result.code.contains(r#"" all\nselected""#));
+        assert_parses_as_module(result.code.as_str());
     }
 
     #[test]

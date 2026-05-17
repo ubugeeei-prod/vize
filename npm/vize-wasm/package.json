@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/wasm",
-  "version": "0.101.0",
+  "version": "0.102.0",
   "description": "Vize WASM bindings for browser environments",
   "homepage": "https://github.com/ubugeeei/vize",
   "license": "MIT",

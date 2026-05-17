@@ -26,6 +26,7 @@ import {
   STREAMS_KEY,
   type StreamsContext,
 } from "./composables/useStreams.js";
+import { createCursorContext, CURSOR_KEY, type CursorPosition } from "./composables/useCursor.js";
 import { updateLastRenderLayouts } from "./layoutMetrics.js";
 import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
 import {
@@ -133,7 +134,7 @@ export interface AppOptions {
   /** Ink-compatible option, accepted for API parity */
   patchConsole?: boolean;
   /** Called after a frame is rendered */
-  onRender?: (metrics: { renderTime: number }) => void;
+  onRender?: (metrics: RenderMetrics) => void;
   /** Enable screen reader rendering hints */
   isScreenReaderEnabled?: boolean;
   /** Maximum render frames per second */
@@ -153,6 +154,14 @@ export interface AppOptions {
 export type RenderOptions = AppOptions;
 
 export type AppRoot = Component | VNode;
+
+/**
+ * Performance metrics for a render operation.
+ */
+export interface RenderMetrics {
+  /** Time spent rendering in milliseconds */
+  renderTime: number;
+}
 
 /**
  * Fresco App instance
@@ -182,6 +191,8 @@ export interface RenderInstance {
   cleanup(): Promise<void>;
   clear(): void;
 }
+
+export type Instance = RenderInstance;
 
 export interface RenderToStringOptions {
   /** Width of the virtual terminal in columns */
@@ -289,9 +300,19 @@ function nodeText(node: FrescoNode): string {
   return "";
 }
 
-function treeToString(node: FrescoNode): string {
+function isStaticNode(node: FrescoNode): boolean {
+  return node.props.internal_static === true || node.props.internalStatic === true;
+}
+
+function joinOutput(parts: string[], separator = "\n"): string {
+  return parts.filter(Boolean).join(separator);
+}
+
+function treeToString(node: FrescoNode, options: { skipStatic?: boolean } = {}): string {
+  if (options.skipStatic && isStaticNode(node)) return "";
+
   const ownText = nodeText(node);
-  const childOutput = node.children.map((child) => treeToString(child));
+  const childOutput = node.children.map((child) => treeToString(child, options));
 
   if (node.type === "text" || node.type === "input") {
     return `${ownText}${childOutput.join("")}`;
@@ -300,7 +321,109 @@ function treeToString(node: FrescoNode): string {
   const style = (node.props.style ?? {}) as Record<string, unknown>;
   const flexDirection = style.flexDirection ?? style.flex_direction;
   const separator = flexDirection === "column" ? "\n" : "";
-  return childOutput.filter(Boolean).join(separator);
+  return joinOutput(childOutput, separator);
+}
+
+function normalizeOutput(output: string): string {
+  return output.endsWith("\n") ? output.slice(0, -1) : output;
+}
+
+function appendOutput(previous: string, next: string): string {
+  const normalized = normalizeOutput(next);
+  if (!normalized) return previous;
+  return previous ? `${previous}\n${normalized}` : normalized;
+}
+
+function captureStaticOutput(node: FrescoNode, renderedStaticItems: Map<number, number>): string {
+  const output: string[] = [];
+
+  function visit(current: FrescoNode) {
+    if (isStaticNode(current)) {
+      const renderedItems = renderedStaticItems.get(current.id) ?? 0;
+      const nextItems = current.children.slice(renderedItems);
+      const nextOutput = joinOutput(
+        nextItems.map((child) => treeToString(child)),
+        "\n",
+      );
+      if (nextOutput) output.push(nextOutput);
+      renderedStaticItems.set(current.id, current.children.length);
+      return;
+    }
+
+    for (const child of current.children) {
+      visit(child);
+    }
+  }
+
+  visit(node);
+  return joinOutput(output, "\n");
+}
+
+function createStaticOutputNode(output: string): FrescoElement | null {
+  const normalized = normalizeOutput(output);
+  if (!normalized) return null;
+
+  const staticRoot: FrescoElement = {
+    id: -1,
+    type: "box",
+    props: {
+      style: {
+        flexDirection: "column",
+      },
+    },
+    children: [],
+    parent: null,
+  };
+
+  staticRoot.children = normalized.split("\n").map((line, index) => ({
+    id: -2 - index,
+    type: "text",
+    props: {
+      text: line,
+    },
+    children: [],
+    parent: staticRoot,
+  }));
+
+  return staticRoot;
+}
+
+function cloneDynamicTree(node: FrescoNode): FrescoElement | null {
+  if (isStaticNode(node)) return null;
+
+  const clone: FrescoElement = {
+    id: node.id,
+    type: node.type,
+    props: node.props,
+    children: [],
+    parent: null,
+    text: node.text,
+  };
+
+  clone.children = node.children
+    .map((child) => cloneDynamicTree(child))
+    .filter((child): child is FrescoElement => child !== null);
+  for (const child of clone.children) {
+    child.parent = clone;
+  }
+
+  return clone;
+}
+
+function createRenderTree(root: FrescoElement, staticOutput: string): FrescoElement {
+  const dynamicRoot = cloneDynamicTree(root) ?? createRootElement();
+  const staticOutputNode = createStaticOutputNode(staticOutput);
+
+  if (staticOutputNode) {
+    staticOutputNode.parent = dynamicRoot;
+    dynamicRoot.children = [staticOutputNode, ...dynamicRoot.children];
+  }
+
+  return dynamicRoot;
+}
+
+function renderPlainOutput(root: FrescoNode, staticOutput: string): string {
+  return joinOutput([staticOutput, treeToString(root, { skipStatic: true })], "\n");
 }
 
 function updateAppSize(context: UseAppReturn | null, width: number, height: number) {
@@ -362,6 +485,10 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let consoleRestore: (() => void) | null = null;
   let isWritingExternalOutput = false;
   let nonInteractiveOutput = "";
+  let staticOutput = "";
+  const renderedStaticItems = new Map<number, number>();
+  let cursorPosition: CursorPosition | undefined;
+  let hasCursorOverride = false;
 
   let exitSettled = false;
   let resolveExit: ((value?: unknown) => void) | null = null;
@@ -422,6 +549,14 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     app.provide(FOCUS_KEY, focusManager);
     app.provide(SCREEN_READER_KEY, screenReaderEnabled);
     app.provide(STREAMS_KEY, streamsContext);
+    app.provide(
+      CURSOR_KEY,
+      createCursorContext((position) => {
+        hasCursorOverride = true;
+        cursorPosition = position;
+        needsRender = true;
+      }),
+    );
 
     // Create a root element for mounting
     rootElement = createRootElement();
@@ -449,7 +584,11 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     running = false;
 
     if (!interactive && rootElement) {
-      nonInteractiveOutput = treeToString(rootElement);
+      staticOutput = appendOutput(
+        staticOutput,
+        captureStaticOutput(rootElement, renderedStaticItems),
+      );
+      nonInteractiveOutput = renderPlainOutput(rootElement, staticOutput);
     }
 
     if (native && interactive) {
@@ -475,6 +614,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     mounted = false;
     appContext = null;
     focusManager = null;
+    cursorPosition = undefined;
+    hasCursorOverride = false;
 
     if (!exitSettled) {
       exitSettled = true;
@@ -496,6 +637,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
   function clear() {
     if (!mounted) return;
+    staticOutput = "";
     if (!interactive) {
       nonInteractiveOutput = "";
       return;
@@ -554,6 +696,17 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     consoleRestore?.();
   }
 
+  function applyCursorOverride() {
+    if (!hasCursorOverride || !native) return;
+
+    if (cursorPosition) {
+      native.setCursor(cursorPosition.x, cursorPosition.y);
+      native.showCursor();
+    } else {
+      native.hideCursor();
+    }
+  }
+
   function render() {
     if (!mounted || !rootElement) {
       return;
@@ -563,7 +716,11 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
     try {
       if (!interactive) {
-        nonInteractiveOutput = treeToString(rootElement);
+        staticOutput = appendOutput(
+          staticOutput,
+          captureStaticOutput(rootElement, renderedStaticItems),
+        );
+        nonInteractiveOutput = renderPlainOutput(rootElement, staticOutput);
         options.onRender?.({ renderTime: performance.now() - start });
         return;
       }
@@ -572,9 +729,14 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         return;
       }
 
+      staticOutput = appendOutput(
+        staticOutput,
+        captureStaticOutput(rootElement, renderedStaticItems),
+      );
+      const renderRoot = createRenderTree(rootElement, staticOutput);
       const renderNodes = screenReaderEnabled.value
-        ? treeToScreenReaderRenderNodes(rootElement)
-        : treeToRenderNodes(rootElement);
+        ? treeToScreenReaderRenderNodes(renderRoot)
+        : treeToRenderNodes(renderRoot);
 
       // Send to native for rendering
       if (renderNodes.length > 0) {
@@ -587,6 +749,8 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
         if ("getLastRenderLayouts" in native) {
           updateLastRenderLayouts(native.getLastRenderLayouts());
         }
+
+        applyCursorOverride();
 
         // Flush to display
         native.flushTerminal();
@@ -804,6 +968,10 @@ export function renderToString(root: AppRoot, options: RenderToStringOptions = {
   app.provide(FOCUS_KEY, createFocusManager());
   app.provide(SCREEN_READER_KEY, ref(false));
   app.provide(
+    CURSOR_KEY,
+    createCursorContext(() => {}),
+  );
+  app.provide(
     STREAMS_KEY,
     createStreamsContext({
       stdin,
@@ -816,7 +984,9 @@ export function renderToString(root: AppRoot, options: RenderToStringOptions = {
   );
   app.mount(rootElement);
 
-  const output = treeToString(rootElement);
+  const renderedStaticItems = new Map<number, number>();
+  const staticOutput = captureStaticOutput(rootElement, renderedStaticItems);
+  const output = renderPlainOutput(rootElement, staticOutput);
   app.unmount();
   return output;
 }

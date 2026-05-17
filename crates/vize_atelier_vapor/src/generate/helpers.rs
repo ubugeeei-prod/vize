@@ -3,7 +3,11 @@
 use crate::ir::{IREffect, OperationNode};
 use vize_carton::{FxHashMap, String, cstr};
 
-use super::{context::GenerateContext, operations::generate_operation, setup::is_svg_tag};
+use super::{
+    context::GenerateContext,
+    operations::generate_operation,
+    setup::{escape_js_string_literal, is_svg_tag},
+};
 
 /// Generate effect
 pub(crate) fn generate_effect(
@@ -56,7 +60,7 @@ pub(crate) fn generate_operation_inline(
                 .iter()
                 .map(|v| {
                     if v.is_static {
-                        cstr!("\"{}\"", escape_text_literal(v.content.as_str()))
+                        cstr!("\"{}\"", escape_js_string_literal(v.content.as_str()))
                     } else {
                         ctx.use_helper("toDisplayString");
                         let resolved = ctx.resolve_expression(&v.content);
@@ -130,7 +134,7 @@ fn build_prop_value(
             .iter()
             .map(|v| {
                 if v.is_static {
-                    cstr!("\"{}\"", v.content)
+                    cstr!("\"{}\"", escape_js_string_literal(v.content.as_str()))
                 } else {
                     ctx.resolve_expression(&v.content)
                 }
@@ -139,7 +143,7 @@ fn build_prop_value(
         cstr!("[{}]", parts.join(", "))
     } else if let Some(first) = set_prop.prop.values.first() {
         if first.is_static {
-            cstr!("\"{}\"", first.content)
+            cstr!("\"{}\"", escape_js_string_literal(first.content.as_str()))
         } else {
             ctx.resolve_expression(&first.content)
         }
@@ -170,7 +174,7 @@ fn generate_set_dynamic_props_inline(
             .iter()
             .map(|p| {
                 if p.is_static {
-                    cstr!("\"{}\"", p.content)
+                    cstr!("\"{}\"", escape_js_string_literal(p.content.as_str()))
                 } else {
                     ctx.resolve_expression(&p.content)
                 }
@@ -178,13 +182,4 @@ fn generate_set_dynamic_props_inline(
             .collect();
         cstr!("_setDynamicProps({element}, [{}])", props_parts.join(", "))
     }
-}
-
-fn escape_text_literal(text: &str) -> String {
-    text.replace('\\', "\\\\")
-        .replace('"', "\\\"")
-        .replace('\n', "\\n")
-        .replace('\r', "\\r")
-        .replace('\t', "\\t")
-        .into()
 }

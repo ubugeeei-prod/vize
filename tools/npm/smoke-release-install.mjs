@@ -164,8 +164,33 @@ function npmAllows(list, current) {
   return positives.length === 0 || positives.includes(current);
 }
 
+function currentLibc() {
+  if (process.platform !== "linux") return undefined;
+
+  const report = process.report?.getReport?.();
+  const header = report?.header;
+  if (header != null && typeof header.glibcVersionRuntime === "string") {
+    return "glibc";
+  }
+
+  const ldd = spawnSync("ldd", ["--version"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  const output = `${ldd.stdout ?? ""}\n${ldd.stderr ?? ""}`;
+  if (/musl/i.test(output)) {
+    return "musl";
+  }
+
+  return undefined;
+}
+
 function isCompatibleWithCurrentRunner(packageJson) {
-  return npmAllows(packageJson.os, process.platform) && npmAllows(packageJson.cpu, process.arch);
+  return (
+    npmAllows(packageJson.os, process.platform) &&
+    npmAllows(packageJson.cpu, process.arch) &&
+    npmAllows(packageJson.libc, currentLibc())
+  );
 }
 
 function packPackage(packageDir, packDir) {

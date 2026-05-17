@@ -203,6 +203,7 @@ fn has_matching_outer_parens(s: &str) -> bool {
 }
 
 #[cfg(test)]
+#[allow(clippy::disallowed_macros)]
 mod tests {
     use super::{needs_typescript_stripping, strip_typescript_from_expression};
 

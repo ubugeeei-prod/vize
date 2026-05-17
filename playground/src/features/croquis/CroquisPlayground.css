@@ -791,7 +791,6 @@
   padding: 0.5rem 0.75rem;
   background: var(--color-notice-bg);
   border: 1px solid var(--color-notice-border);
-  border-top: none;
   font-size: 0.6875rem;
   color: var(--color-notice);
   line-height: 1.4;
@@ -800,28 +799,14 @@
 .vir-content {
   flex: 1;
   min-height: 0;
-  display: grid;
-  grid-template-columns: auto 1fr;
   margin: 0;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 0 0 4px 4px;
+  border-bottom: none;
   font-size: 0.8125rem;
   font-family: "JetBrains Mono", monospace;
   overflow: auto;
   line-height: 1.6;
-}
-
-.vir-line-numbers {
-  display: flex;
-  flex-direction: column;
-  padding: 0.75rem 0;
-  background: rgba(0, 0, 0, 0.15);
-  border-right: 1px solid var(--border-primary);
-  user-select: none;
-  position: sticky;
-  left: 0;
-  z-index: 1;
 }
 
 .vir-ln {
@@ -833,18 +818,26 @@
   opacity: 0.6;
   height: 1.6em;
   line-height: 1.6;
-  display: block;
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.15);
+  border-right: 1px solid var(--border-primary);
+  user-select: none;
 }
 
 .vir-code {
   flex: 1;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 0;
 }
 
 .vir-line {
+  display: flex;
   white-space: pre;
   height: 1.6em;
   line-height: 1.6;
+}
+
+.vir-line-text {
+  padding: 0 1rem;
 }
 
 /* VIR Token Types - Subtle syntax highlighting */

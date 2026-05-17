@@ -1,7 +1,10 @@
 use crate::ir::{SetDynamicPropsIRNode, SetHtmlIRNode, SetPropIRNode, SetTextIRNode};
 use vize_carton::{String, cstr};
 
-use super::super::{context::GenerateContext, setup::is_svg_tag};
+use super::super::{
+    context::GenerateContext,
+    setup::{escape_js_string_literal, is_svg_tag},
+};
 
 /// Generate SetProp
 pub(super) fn generate_set_prop(ctx: &mut GenerateContext, set_prop: &SetPropIRNode<'_>) {
@@ -17,7 +20,7 @@ pub(super) fn generate_set_prop(ctx: &mut GenerateContext, set_prop: &SetPropIRN
             .iter()
             .map(|v| {
                 if v.is_static {
-                    cstr!("\"{}\"", v.content)
+                    cstr!("\"{}\"", escape_js_string_literal(v.content.as_str()))
                 } else {
                     ctx.resolve_expression(&v.content)
                 }
@@ -26,7 +29,7 @@ pub(super) fn generate_set_prop(ctx: &mut GenerateContext, set_prop: &SetPropIRN
         cstr!("[{}]", parts.join(", "))
     } else if let Some(first) = set_prop.prop.values.first() {
         if first.is_static {
-            cstr!("\"{}\"", first.content)
+            cstr!("\"{}\"", escape_js_string_literal(first.content.as_str()))
         } else {
             ctx.resolve_expression(&first.content)
         }
@@ -85,7 +88,7 @@ pub(super) fn generate_set_dynamic_props(
             .iter()
             .map(|p| {
                 if p.is_static {
-                    cstr!("\"{}\"", p.content)
+                    cstr!("\"{}\"", escape_js_string_literal(p.content.as_str()))
                 } else {
                     ctx.resolve_expression(&p.content)
                 }
@@ -115,7 +118,7 @@ pub(super) fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRN
         .iter()
         .map(|v| {
             if v.is_static {
-                cstr!("\"{}\"", v.content)
+                cstr!("\"{}\"", escape_js_string_literal(v.content.as_str()))
             } else {
                 ctx.use_helper("toDisplayString");
                 let resolved = ctx.resolve_expression(&v.content);
@@ -140,7 +143,10 @@ pub(super) fn generate_set_html(ctx: &mut GenerateContext, set_html: &SetHtmlIRN
     let element = cstr!("n{}", set_html.element);
 
     let value = if set_html.value.is_static {
-        cstr!("\"{}\"", set_html.value.content)
+        cstr!(
+            "\"{}\"",
+            escape_js_string_literal(set_html.value.content.as_str())
+        )
     } else {
         ctx.resolve_expression(set_html.value.content.as_str())
     };
