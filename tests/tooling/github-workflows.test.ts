@@ -189,10 +189,16 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   assert.match(budgetJob, /contents:\s*read/);
   assert.doesNotMatch(budgetJob, /issues:\s*write/);
   assert.doesNotMatch(budgetJob, /pull-requests:\s*write/);
-  assert.match(budgetJob, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
+  assert.match(
+    budgetJob,
+    /path:\s*head[\s\S]*ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+  );
   assert.match(budgetJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v8\.0\.1/);
   assert.match(budgetJob, /name:\s*pr-benchmark/);
-  assert.match(budgetJob, /node bench\/enforce-pr-budget\.mjs --json benchmark-results\.json/);
+  assert.match(
+    budgetJob,
+    /node head\/bench\/enforce-pr-budget\.mjs --json benchmark-results\.json/,
+  );
 
   assert.match(commentJob, /needs:\n\s+- pr-benchmark\b/);
   assert.match(commentJob, /actions:\s*read/);
