@@ -70,11 +70,18 @@ const secondaryLabel = ref('secondary')
         };
         hoverProvider?: boolean;
         definitionProvider?: boolean;
+        referencesProvider?: boolean;
+        semanticTokensProvider?: {
+          range?: boolean;
+          full?: boolean | unknown;
+        };
       };
     };
 
     assert.equal(init.capabilities?.hoverProvider, true);
     assert.equal(init.capabilities?.definitionProvider, true);
+    assert.equal(init.capabilities?.referencesProvider, true);
+    assert.equal(init.capabilities?.semanticTokensProvider?.range, true);
     assert.ok(init.capabilities?.completionProvider?.triggerCharacters?.includes("."));
 
     const parentUri = pathToFileURL(parentPath).href;
@@ -163,6 +170,87 @@ const secondaryLabel = ref('secondary')
       assert.ok(labels.includes("primaryLabel"), labels.join(", "));
       assert.ok(labels.includes("v-if"), labels.join(", "));
     });
+
+    await t.test("definition and references use UTF-16 LSP coordinates", async () => {
+      const utf16Source = `<script setup lang="ts">
+const emoji = "😀"; const message = ref(emoji)
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>
+`;
+      const utf16Path = path.join(workspaceDir, "Utf16.vue");
+      fs.writeFileSync(utf16Path, utf16Source, "utf8");
+      const utf16Uri = pathToFileURL(utf16Path).href;
+
+      session.notify("textDocument/didOpen", {
+        textDocument: {
+          uri: utf16Uri,
+          languageId: "vue",
+          version: 1,
+          text: utf16Source,
+        },
+      });
+
+      await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+        isDiagnosticsForUri(params, utf16Uri),
+      );
+
+      const usageOffset = utf16Source.lastIndexOf("message") + "message".length;
+      const declarationOffset = utf16Source.indexOf("message =");
+      const declarationPosition = offsetToPosition(utf16Source, declarationOffset);
+
+      const definition = (await session.request("textDocument/definition", {
+        textDocument: { uri: utf16Uri },
+        position: offsetToPosition(utf16Source, usageOffset),
+      })) as
+        | Array<{
+            uri: string;
+            range: { start: { line: number; character: number } };
+          }>
+        | {
+            uri: string;
+            range: { start: { line: number; character: number } };
+          };
+
+      const location = firstLocation(definition);
+      assert.equal(location.uri, utf16Uri);
+      assert.deepEqual(location.range.start, declarationPosition);
+
+      const references = (await session.request("textDocument/references", {
+        textDocument: { uri: utf16Uri },
+        position: offsetToPosition(utf16Source, usageOffset),
+        context: {
+          includeDeclaration: true,
+        },
+      })) as Array<{ uri: string; range: { start: { line: number; character: number } } }>;
+
+      assert.ok(
+        references.some(
+          (reference) =>
+            reference.uri === utf16Uri &&
+            reference.range.start.line === declarationPosition.line &&
+            reference.range.start.character === declarationPosition.character,
+        ),
+        JSON.stringify(references),
+      );
+    });
+
+    await t.test("semantic token range requests are implemented", async () => {
+      const response = (await session.request("textDocument/semanticTokens/range", {
+        textDocument: { uri: artUri },
+        range: {
+          start: { line: 8, character: 0 },
+          end: { line: 11, character: 0 },
+        },
+      })) as { data?: unknown[] } | null;
+
+      assert.ok(response);
+      assert.ok(Array.isArray(response.data));
+      assert.equal(response.data.length % 5, 0);
+      assert.ok(response.data.length > 0);
+    });
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
@@ -224,6 +312,98 @@ const message = 'hello'
     assert.deepEqual(closePublish.diagnostics, []);
 
     await assertEmptyEditorRequests(session, closedUri, "a closed document");
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+  }
+});
+
+test("vize lsp rename fallback returns UTF-16 edit ranges", async () => {
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-rename-utf16");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      editor: true,
+      lint: false,
+      typecheck: false,
+    });
+
+    const source = `<script setup lang="ts">
+const emoji = "😀"; const message = ref(emoji)
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>
+`;
+    const filePath = path.join(workspaceDir, "RenameUtf16.vue");
+    const uri = pathToFileURL(filePath).href;
+    fs.writeFileSync(filePath, source, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri,
+        languageId: "vue",
+        version: 1,
+        text: source,
+      },
+    });
+
+    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+      isDiagnosticsForUri(params, uri),
+    );
+
+    const usageStart = source.lastIndexOf("message");
+    const usageEnd = usageStart + "message".length;
+    const declarationStart = source.indexOf("message =");
+    const declarationEnd = declarationStart + "message".length;
+    const usagePosition = offsetToPosition(source, usageEnd);
+
+    const prepare = (await session.request("textDocument/prepareRename", {
+      textDocument: { uri },
+      position: usagePosition,
+    })) as {
+      start?: { line: number; character: number };
+      end?: { line: number; character: number };
+    };
+
+    assert.deepEqual(prepare.start, offsetToPosition(source, usageStart));
+    assert.deepEqual(prepare.end, offsetToPosition(source, usageEnd));
+
+    const edit = (await session.request("textDocument/rename", {
+      textDocument: { uri },
+      position: usagePosition,
+      newName: "renamedMessage",
+    })) as {
+      changes?: Record<
+        string,
+        Array<{
+          range: {
+            start: { line: number; character: number };
+            end: { line: number; character: number };
+          };
+          newText: string;
+        }>
+      >;
+    } | null;
+
+    const edits = edit?.changes?.[uri] ?? [];
+    assert.ok(edits.length >= 2, JSON.stringify(edit));
+    assert.ok(
+      edits.some(
+        (textEdit) =>
+          textEdit.newText === "renamedMessage" &&
+          textEdit.range.start.line === offsetToPosition(source, declarationStart).line &&
+          textEdit.range.start.character === offsetToPosition(source, declarationStart).character &&
+          textEdit.range.end.line === offsetToPosition(source, declarationEnd).line &&
+          textEdit.range.end.character === offsetToPosition(source, declarationEnd).character,
+      ),
+      JSON.stringify(edits),
+    );
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });

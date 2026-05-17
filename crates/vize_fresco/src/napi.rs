@@ -43,8 +43,8 @@ pub use layout::{
     set_layout_root, set_layout_style,
 };
 pub use render::{
-    clear_rect, fill_rect, hide_cursor, render_box, render_text, render_tree, set_cursor,
-    set_cursor_shape, show_cursor,
+    clear_rect, fill_rect, get_last_render_layouts, hide_cursor, render_box, render_text,
+    render_tree, set_cursor, set_cursor_shape, show_cursor,
 };
 pub use terminal::{
     clear_screen, flush_terminal, get_terminal_info, init_terminal, init_terminal_with_mouse,

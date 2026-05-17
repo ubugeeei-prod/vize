@@ -4,7 +4,7 @@
 
 import { ref, provide, inject, type InjectionKey, type Ref } from "@vue/runtime-core";
 
-const APP_KEY: InjectionKey<UseAppReturn> = Symbol("fresco-app");
+export const APP_KEY: InjectionKey<UseAppReturn> = Symbol("fresco-app");
 
 export interface UseAppReturn {
   /** Terminal width */
@@ -14,39 +14,53 @@ export interface UseAppReturn {
   /** Whether app is running */
   isRunning: Ref<boolean>;
   /** Exit the app */
-  exit: (code?: number) => void;
+  exit: (errorOrResult?: unknown) => void;
   /** Force re-render */
   render: () => void;
   /** Clear the screen */
   clear: () => void;
+  /** Wait until pending render output has flushed */
+  waitUntilRenderFlush: () => Promise<void>;
+}
+
+export interface AppContextControls {
+  exit?: (errorOrResult?: unknown) => void;
+  render?: () => void;
+  clear?: () => void;
+  waitUntilRenderFlush?: () => Promise<void>;
+  width?: number;
+  height?: number;
 }
 
 /**
  * Create app context (use at app root)
  */
-export function createAppContext(): UseAppReturn {
-  const width = ref(80);
-  const height = ref(24);
+export function createAppContext(controls: AppContextControls = {}): UseAppReturn {
+  const width = ref(controls.width ?? 80);
+  const height = ref(controls.height ?? 24);
   const isRunning = ref(true);
 
-  // These would be connected to actual app instance
-  const exit = (_code = 0) => {
+  const exit = (errorOrResult?: unknown) => {
     isRunning.value = false;
-    // In real implementation, trigger app exit
+    controls.exit?.(errorOrResult);
   };
 
   const render = () => {
-    // In real implementation, trigger re-render
+    controls.render?.();
   };
 
   const clear = () => {
-    // In real implementation, clear screen
+    controls.clear?.();
+  };
+
+  const waitUntilRenderFlush = () => {
+    return controls.waitUntilRenderFlush?.() ?? Promise.resolve();
   };
 
   // Try to get terminal size
   if (typeof process !== "undefined" && process.stdout) {
-    width.value = process.stdout.columns ?? 80;
-    height.value = process.stdout.rows ?? 24;
+    width.value = controls.width ?? process.stdout.columns ?? 80;
+    height.value = controls.height ?? process.stdout.rows ?? 24;
 
     process.stdout.on?.("resize", () => {
       width.value = process.stdout.columns ?? 80;
@@ -61,6 +75,7 @@ export function createAppContext(): UseAppReturn {
     exit,
     render,
     clear,
+    waitUntilRenderFlush,
   };
 }
 
@@ -86,6 +101,7 @@ export function useApp(): UseAppReturn {
       exit: () => {},
       render: () => {},
       clear: () => {},
+      waitUntilRenderFlush: () => Promise.resolve(),
     };
   }
 

@@ -5,7 +5,27 @@
  */
 
 // Core
-export { createApp, type App, type AppOptions, lastKeyEvent, type KeyEvent } from "./app.js";
+export {
+  createApp,
+  render,
+  renderToString,
+  type App,
+  type AppOptions,
+  type RenderInstance,
+  type RenderToStringOptions,
+  lastKeyEvent,
+  lastPasteEvent,
+  lastResizeEvent,
+  lastMouseEvent,
+  lastFocusEvent,
+  lastCompositionEvent,
+  type KeyEvent,
+  type PasteEvent,
+  type ResizeEvent,
+  type MouseEvent,
+  type FocusEvent,
+  type CompositionEvent,
+} from "./app.js";
 export { createRenderer } from "./renderer.js";
 
 // Components
@@ -22,4 +42,6 @@ export type {
   InputEventNapi,
   ImeStateNapi,
   TerminalInfoNapi,
+  LayoutResultNapi,
+  ModifiersNapi,
 } from "@vizejs/fresco-native";

@@ -11,6 +11,7 @@
 //!
 //! - **Allocator**: Arena-based memory allocation for efficient AST construction
 //! - **Shared utilities**: DOM configuration, optimization flags, and helper functions
+//! - **Telegraph**: Generic message fan-out for report emitters
 //!
 //! # Example
 //!
@@ -49,6 +50,7 @@ pub mod lsp;
 pub mod profiler;
 pub mod source_range;
 pub mod string_builder;
+pub mod telegraph;
 
 // Re-export allocator types
 pub use allocator::Allocator;

@@ -2,8 +2,15 @@
  * TextInput Component - Text input with builtin cursor management and IME support
  */
 
-import { defineComponent, h, ref, watch, computed, type PropType } from "@vue/runtime-core";
+import { computed, defineComponent, h, ref, watch, type PropType } from "@vue/runtime-core";
 import { useInput } from "../composables/useInput.js";
+import {
+  deleteGraphemeAt,
+  deleteGraphemeBefore,
+  graphemeLength,
+  insertAtGrapheme,
+  sliceGraphemes,
+} from "../utils/text.js";
 
 export interface TextInputProps {
   /** Input value (v-model) */
@@ -12,6 +19,8 @@ export interface TextInputProps {
   placeholder?: string;
   /** Whether input is focused */
   focus?: boolean;
+  /** Whether input is focused (Ink-style alias used by native nodes) */
+  focused?: boolean;
   /** Password mode (mask input) */
   mask?: boolean;
   /** Mask character */
@@ -28,6 +37,12 @@ export interface TextInputProps {
   onSubmit?: (value: string) => void;
   /** Called when escape is pressed */
   onCancel?: () => void;
+  /** Called when IME composition starts */
+  onCompositionStart?: () => void;
+  /** Called when IME composition updates */
+  onCompositionUpdate?: (text: string, cursor: number) => void;
+  /** Called when IME composition ends */
+  onCompositionEnd?: (text: string) => void;
 }
 
 export const TextInput = defineComponent({
@@ -45,6 +60,10 @@ export const TextInput = defineComponent({
       type: Boolean,
       default: false,
     },
+    focused: {
+      type: Boolean,
+      default: undefined,
+    },
     mask: {
       type: Boolean,
       default: false,
@@ -57,10 +76,23 @@ export const TextInput = defineComponent({
     fg: String,
     bg: String,
   },
-  emits: ["update:modelValue", "submit", "cancel"],
+  emits: [
+    "update:modelValue",
+    "submit",
+    "cancel",
+    "compositionstart",
+    "compositionupdate",
+    "compositionend",
+  ],
   setup(props, { emit }) {
     const internalValue = ref(props.modelValue);
-    const cursorPos = ref(props.modelValue.length);
+    const cursorPos = ref(graphemeLength(props.modelValue));
+    const isComposing = ref(false);
+    const compositionAnchor = ref(cursorPos.value);
+    const preedit = ref("");
+    const preeditCursor = ref(0);
+
+    const focused = computed(() => props.focused ?? props.focus);
 
     // Sync with v-model
     watch(
@@ -68,8 +100,9 @@ export const TextInput = defineComponent({
       (newValue) => {
         internalValue.value = newValue;
         // Keep cursor at end if value changes externally
-        if (cursorPos.value > newValue.length) {
-          cursorPos.value = newValue.length;
+        const length = graphemeLength(newValue);
+        if (cursorPos.value > length) {
+          cursorPos.value = length;
         }
       },
     );
@@ -82,28 +115,22 @@ export const TextInput = defineComponent({
 
     // Insert text at cursor position
     const insertText = (text: string) => {
-      const before = internalValue.value.slice(0, cursorPos.value);
-      const after = internalValue.value.slice(cursorPos.value);
-      updateValue(before + text + after);
-      cursorPos.value += text.length;
+      updateValue(insertAtGrapheme(internalValue.value, cursorPos.value, text));
+      cursorPos.value += graphemeLength(text);
     };
 
     // Delete character before cursor (Backspace)
     const deleteBack = () => {
       if (cursorPos.value > 0) {
-        const before = internalValue.value.slice(0, cursorPos.value - 1);
-        const after = internalValue.value.slice(cursorPos.value);
-        updateValue(before + after);
+        updateValue(deleteGraphemeBefore(internalValue.value, cursorPos.value));
         cursorPos.value--;
       }
     };
 
     // Delete character at cursor (Delete)
     const deleteForward = () => {
-      if (cursorPos.value < internalValue.value.length) {
-        const before = internalValue.value.slice(0, cursorPos.value);
-        const after = internalValue.value.slice(cursorPos.value + 1);
-        updateValue(before + after);
+      if (cursorPos.value < graphemeLength(internalValue.value)) {
+        updateValue(deleteGraphemeAt(internalValue.value, cursorPos.value));
       }
     };
 
@@ -116,7 +143,7 @@ export const TextInput = defineComponent({
 
     // Move cursor right
     const moveRight = () => {
-      if (cursorPos.value < internalValue.value.length) {
+      if (cursorPos.value < graphemeLength(internalValue.value)) {
         cursorPos.value++;
       }
     };
@@ -128,11 +155,70 @@ export const TextInput = defineComponent({
 
     // Move cursor to end
     const moveToEnd = () => {
-      cursorPos.value = internalValue.value.length;
+      cursorPos.value = graphemeLength(internalValue.value);
     };
 
+    const updatePreedit = (text: string, cursor = graphemeLength(text)) => {
+      if (!isComposing.value) {
+        isComposing.value = true;
+        compositionAnchor.value = cursorPos.value;
+        emit("compositionstart");
+      }
+
+      preedit.value = text;
+      preeditCursor.value = Math.max(0, Math.min(cursor, graphemeLength(text)));
+      emit("compositionupdate", preedit.value, preeditCursor.value);
+    };
+
+    const finishComposition = (text = preedit.value) => {
+      if (!isComposing.value) return;
+
+      cursorPos.value = compositionAnchor.value;
+      isComposing.value = false;
+      preedit.value = "";
+      preeditCursor.value = 0;
+      if (text) {
+        insertText(text);
+      }
+      emit("compositionend", text);
+    };
+
+    const cancelComposition = () => {
+      if (!isComposing.value) return false;
+
+      isComposing.value = false;
+      preedit.value = "";
+      preeditCursor.value = 0;
+      cursorPos.value = compositionAnchor.value;
+      emit("compositionend", "");
+      return true;
+    };
+
+    const deletePreeditBack = () => {
+      if (!isComposing.value || preeditCursor.value === 0) return false;
+
+      preedit.value = deleteGraphemeBefore(preedit.value, preeditCursor.value);
+      preeditCursor.value--;
+      emit("compositionupdate", preedit.value, preeditCursor.value);
+      return true;
+    };
+
+    const displayValue = computed(() => {
+      if (!isComposing.value) return internalValue.value;
+      return [
+        sliceGraphemes(internalValue.value, 0, compositionAnchor.value),
+        preedit.value,
+        sliceGraphemes(internalValue.value, compositionAnchor.value),
+      ].join("");
+    });
+
+    const displayCursor = computed(() => {
+      if (!isComposing.value) return cursorPos.value;
+      return compositionAnchor.value + preeditCursor.value;
+    });
+
     // Use focus prop to control input handling
-    const isActive = computed(() => props.focus);
+    const isActive = computed(() => focused.value);
 
     // Handle keyboard input when focused
     useInput({
@@ -146,7 +232,7 @@ export const TextInput = defineComponent({
       },
       onKey: (key, modifiers) => {
         if (key === "backspace") {
-          deleteBack();
+          if (!deletePreeditBack()) deleteBack();
         } else if (key === "delete") {
           deleteForward();
         } else if (key === "home") {
@@ -159,11 +245,25 @@ export const TextInput = defineComponent({
         }
       },
       onSubmit: () => {
+        if (isComposing.value) {
+          finishComposition();
+          return;
+        }
         emit("submit", internalValue.value);
       },
       onEscape: () => {
+        if (cancelComposition()) return;
         emit("cancel");
       },
+      onCompositionStart: () => {
+        isComposing.value = true;
+        compositionAnchor.value = cursorPos.value;
+        preedit.value = "";
+        preeditCursor.value = 0;
+        emit("compositionstart");
+      },
+      onCompositionUpdate: updatePreedit,
+      onCompositionEnd: finishComposition,
     });
 
     return () => {
@@ -173,12 +273,12 @@ export const TextInput = defineComponent({
       }
 
       return h("input", {
-        value: internalValue.value,
+        value: displayValue.value,
         placeholder: props.placeholder,
-        focused: props.focus,
-        cursor: cursorPos.value,
+        focused: focused.value,
+        cursor: displayCursor.value,
         mask: props.mask,
-        "mask-char": props.maskChar,
+        maskChar: props.maskChar,
         style,
         fg: props.fg,
         bg: props.bg,

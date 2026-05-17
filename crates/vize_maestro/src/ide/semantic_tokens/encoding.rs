@@ -6,9 +6,9 @@ use tower_lsp::lsp_types::SemanticToken;
 
 use super::types::AbsoluteToken;
 
-/// Convert byte offset to (line, column) - 1-indexed.
+/// Convert byte offset to (line, column), both 0-indexed for LSP.
 pub(crate) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
-    let mut line = 1u32;
+    let mut line = 0u32;
     let mut col = 0u32;
     let mut current = 0;
 
@@ -20,12 +20,17 @@ pub(crate) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
             line += 1;
             col = 0;
         } else {
-            col += 1;
+            col += ch.len_utf16() as u32;
         }
         current += ch.len_utf8();
     }
 
     (line, col)
+}
+
+/// Return the LSP token length for text, measured in UTF-16 code units.
+pub(crate) fn utf16_len(text: &str) -> u32 {
+    text.encode_utf16().count() as u32
 }
 
 /// Encode tokens using delta encoding.

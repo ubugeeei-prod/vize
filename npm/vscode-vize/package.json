@@ -51,6 +51,21 @@
   "contributes": {
     "languages": [
       {
+        "id": "art-vue",
+        "aliases": [
+          "Art Vue",
+          "art-vue"
+        ],
+        "extensions": [
+          ".art.vue"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/vue.svg",
+          "dark": "./icons/vue.svg"
+        }
+      },
+      {
         "id": "vue",
         "aliases": [
           "Vue",
@@ -67,6 +82,20 @@
       }
     ],
     "grammars": [
+      {
+        "language": "art-vue",
+        "scopeName": "source.art-vue",
+        "path": "./syntaxes/art-vue.tmLanguage.json",
+        "embeddedLanguages": {
+          "text.html.basic": "html",
+          "source.js": "javascript",
+          "source.ts": "typescript",
+          "source.css": "css",
+          "source.css.scss": "scss",
+          "source.css.less": "less",
+          "source.json": "json"
+        }
+      },
       {
         "language": "vue",
         "scopeName": "source.vue",

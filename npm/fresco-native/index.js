@@ -313,6 +313,7 @@ const {
   hideCursor,
   setCursorShape,
   renderTree,
+  getLastRenderLayouts,
   initTerminal,
   initTerminalWithMouse,
   restoreTerminal,
@@ -350,6 +351,7 @@ module.exports.showCursor = showCursor;
 module.exports.hideCursor = hideCursor;
 module.exports.setCursorShape = setCursorShape;
 module.exports.renderTree = renderTree;
+module.exports.getLastRenderLayouts = getLastRenderLayouts;
 module.exports.initTerminal = initTerminal;
 module.exports.initTerminalWithMouse = initTerminalWithMouse;
 module.exports.restoreTerminal = restoreTerminal;

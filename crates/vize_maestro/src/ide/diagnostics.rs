@@ -60,6 +60,8 @@ pub(super) struct SourceMapping {
 pub(super) struct VirtualTsResult {
     /// Generated TypeScript code
     pub(super) code: String,
+    /// Byte-range source mappings from generated TS back to the source SFC.
+    pub(super) source_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,
     /// Line number where user code starts in virtual TS (0-indexed)
     pub(super) user_code_start_line: u32,
     /// Line number where script starts in original SFC (1-indexed)

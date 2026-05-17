@@ -9,12 +9,18 @@ pub struct KeyEvent {
     pub key: Key,
     /// Active modifier keys
     pub modifiers: KeyModifiers,
+    /// Press/repeat/release event kind
+    pub kind: KeyEventKind,
 }
 
 impl KeyEvent {
     /// Create a new key event.
     pub fn new(key: Key, modifiers: KeyModifiers) -> Self {
-        Self { key, modifiers }
+        Self {
+            key,
+            modifiers,
+            kind: KeyEventKind::Press,
+        }
     }
 
     /// Create a key event from just a key (no modifiers).
@@ -73,6 +79,40 @@ impl From<crossterm::event::KeyEvent> for KeyEvent {
         Self {
             key: event.code.into(),
             modifiers: event.modifiers.into(),
+            kind: event.kind.into(),
+        }
+    }
+}
+
+/// Key event kind.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+pub enum KeyEventKind {
+    /// Key press
+    #[default]
+    Press,
+    /// Key repeat
+    Repeat,
+    /// Key release
+    Release,
+}
+
+impl KeyEventKind {
+    /// JavaScript-facing event type name.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            KeyEventKind::Press => "press",
+            KeyEventKind::Repeat => "repeat",
+            KeyEventKind::Release => "release",
+        }
+    }
+}
+
+impl From<crossterm::event::KeyEventKind> for KeyEventKind {
+    fn from(kind: crossterm::event::KeyEventKind) -> Self {
+        match kind {
+            crossterm::event::KeyEventKind::Press => KeyEventKind::Press,
+            crossterm::event::KeyEventKind::Repeat => KeyEventKind::Repeat,
+            crossterm::event::KeyEventKind::Release => KeyEventKind::Release,
         }
     }
 }

@@ -76,6 +76,8 @@ The npm `vize` package exposes native CLI commands plus shared config helpers:
 vp install -D vize
 vp exec vize fmt --write src
 vp exec vize lint src
+vp exec vize lint --format ansi src
+vp exec vize lint --format agent src
 vp exec vize check
 vp exec vize build src
 vp exec vize ready src
@@ -131,6 +133,10 @@ and active `data:` payloads. Anchor accessibility checks share the same scheme n
 static `href` values, so case changes or HTML-decoded control characters do not hide
 `javascript:` links. `vize check` generates virtual TypeScript for Vue SFCs and maps project
 diagnostics back to the original source files.
+
+Patina output can be transformed with `--format text`, `ansi`, `plain`, `json`, `stylish`,
+`markdown`, `html`, or `agent`. Human and agent-oriented report formats include a local rule documentation path such as
+`docs/content/rules/vue.md` so commit hooks and coding agents can jump directly to the reference.
 
 Use `vize lint --profile src` when tuning rule cost. Profile output now starts with a strict audit
 that calls out untracked wall time, slow-threshold hits, cumulative worker time, and captured
