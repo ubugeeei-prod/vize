@@ -101,11 +101,40 @@ export interface BatchFileInputNapi {
 
 export interface StyleBlockNapi {
   content: string;
+  src?: string;
   lang?: string;
   scoped: boolean;
   module: boolean;
   moduleName?: string;
   index: number;
+}
+
+export interface SfcBlockAttributeNapi {
+  name: string;
+  value?: string;
+}
+
+export interface CustomBlockNapi {
+  blockType: string;
+  content: string;
+  src?: string;
+  attrs: Array<SfcBlockAttributeNapi>;
+  index: number;
+}
+
+export interface SfcSrcInfoNapi {
+  scriptSrc?: string;
+  templateSrc?: string;
+}
+
+export interface TemplateAssetUrlNapi {
+  url: string;
+  varName: string;
+}
+
+export interface TemplateAssetTagRuleNapi {
+  tag: string;
+  attrs: Array<string>;
 }
 
 /** Per-file result from batch compilation */
@@ -132,6 +161,8 @@ export interface BatchFileResultNapi {
   scriptHash?: string;
   /** Per-block style metadata */
   styles: Array<StyleBlockNapi>;
+  /** Custom block metadata */
+  customBlocks: Array<CustomBlockNapi>;
   /** Compile-time macro artifacts */
   macroArtifacts: Array<MacroArtifactNapi>;
 }
@@ -596,6 +627,49 @@ export declare function parseSfc(
   options?: SfcParseOptionsNapi | undefined | null,
 ): any;
 
+export declare function generateSfcScopeId(
+  filename: string,
+  root?: string | undefined | null,
+  isProduction?: boolean | undefined | null,
+  source?: string | undefined | null,
+): string;
+
+export declare function extractSfcStyleBlocks(
+  source: string,
+  filename?: string | undefined | null,
+): Array<StyleBlockNapi>;
+
+export declare function extractSfcCustomBlocks(
+  source: string,
+  filename?: string | undefined | null,
+): Array<CustomBlockNapi>;
+
+export declare function extractSfcSrcInfo(
+  source: string,
+  filename?: string | undefined | null,
+): SfcSrcInfoNapi;
+
+export declare function hasSfcScopedStyle(
+  source: string,
+  filename?: string | undefined | null,
+): boolean;
+
+export declare function isSfcImportableAssetUrl(url: string): boolean;
+
+export declare function collectSfcTemplateAssetUrls(
+  source: string,
+  rules?: Array<TemplateAssetTagRuleNapi> | undefined | null,
+  filename?: string | undefined | null,
+): Array<TemplateAssetUrlNapi>;
+
+export declare function stripSfcScopedCssComments(css: string): string;
+
+export declare function wrapSfcScopedPreprocessorStyle(
+  content: string,
+  scoped?: string | undefined | null,
+  lang?: string | undefined | null,
+): string;
+
 /** Parse template to AST only */
 export declare function parseTemplate(
   template: string,
@@ -692,6 +766,8 @@ export interface SfcCompileResultNapi {
   hasScoped: boolean;
   /** Per-block style metadata */
   styles: Array<StyleBlockNapi>;
+  /** Custom block metadata */
+  customBlocks: Array<CustomBlockNapi>;
   /** Compile-time macro artifacts */
   macroArtifacts: Array<MacroArtifactNapi>;
 }

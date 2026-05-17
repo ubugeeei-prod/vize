@@ -11,53 +11,45 @@ use vize_carton::cstr;
 impl ReferencesService {
     /// Find the definition location of a symbol.
     pub(super) fn find_definition_location(ctx: &IdeContext, word: &str) -> Option<Location> {
-        // Check script setup first
-        if let Some(ref virtual_docs) = ctx.virtual_docs {
-            if let Some(ref script_setup) = virtual_docs.script_setup
-                && let Some(loc) = Self::find_binding_in_script(&script_setup.content, word)
-            {
-                let script_start_line = Self::get_script_setup_start_line(&ctx.content)?;
-                let (line, character) = Self::offset_to_position(&script_setup.content, loc);
+        let options = vize_atelier_sfc::SfcParseOptions::default();
+        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
 
-                return Some(Location {
-                    uri: ctx.uri.clone(),
-                    range: Range {
-                        start: Position {
-                            line: script_start_line + line,
-                            character,
-                        },
-                        end: Position {
-                            line: script_start_line + line,
-                            character: character + word.len() as u32,
-                        },
-                    },
-                });
-            }
+        if let Some(ref script_setup) = descriptor.script_setup
+            && let Some(loc) = Self::find_binding_in_script(&script_setup.content, word)
+        {
+            return Some(Self::location_from_sfc_offset(
+                ctx,
+                script_setup.loc.start + loc,
+                word,
+            ));
+        }
 
-            // Check regular script
-            if let Some(ref script) = virtual_docs.script
-                && let Some(loc) = Self::find_binding_in_script(&script.content, word)
-            {
-                let script_start_line = Self::get_script_start_line(&ctx.content)?;
-                let (line, character) = Self::offset_to_position(&script.content, loc);
-
-                return Some(Location {
-                    uri: ctx.uri.clone(),
-                    range: Range {
-                        start: Position {
-                            line: script_start_line + line,
-                            character,
-                        },
-                        end: Position {
-                            line: script_start_line + line,
-                            character: character + word.len() as u32,
-                        },
-                    },
-                });
-            }
+        if let Some(ref script) = descriptor.script
+            && let Some(loc) = Self::find_binding_in_script(&script.content, word)
+        {
+            return Some(Self::location_from_sfc_offset(
+                ctx,
+                script.loc.start + loc,
+                word,
+            ));
         }
 
         None
+    }
+
+    fn location_from_sfc_offset(ctx: &IdeContext, offset: usize, word: &str) -> Location {
+        let (line, character) = crate::ide::offset_to_position(&ctx.content, offset);
+
+        Location {
+            uri: ctx.uri.clone(),
+            range: Range {
+                start: Position { line, character },
+                end: Position {
+                    line,
+                    character: character + word.encode_utf16().count() as u32,
+                },
+            },
+        }
     }
 
     /// Find references to a symbol in the script block.
@@ -164,7 +156,10 @@ impl ReferencesService {
             let positions = Self::find_word_occurrences(line, word);
 
             for pos in positions {
-                refs.push((line_idx as u32 + 1, pos as u32));
+                refs.push((
+                    line_idx as u32 + 1,
+                    crate::ide::offset_to_position(line, pos).1,
+                ));
             }
         }
 
@@ -176,18 +171,23 @@ impl ReferencesService {
         let mut refs = Vec::new();
 
         for (line_idx, line) in content.lines().enumerate() {
-            // Look for v-bind(word) pattern
-            if let Some(vbind_pos) = line.find("v-bind(") {
+            let mut search_start = 0;
+            while let Some(relative_vbind_pos) = line[search_start..].find("v-bind(") {
+                let vbind_pos = search_start + relative_vbind_pos;
                 let after_vbind = &line[vbind_pos + 7..];
                 if let Some(close_paren) = after_vbind.find(')') {
                     let binding_name = after_vbind[..close_paren].trim();
                     if binding_name == word {
+                        let binding_offset =
+                            vbind_pos + 7 + (binding_name.len() - binding_name.trim_start().len());
                         refs.push((
                             line_idx as u32 + 1,
-                            (vbind_pos + 7 + (binding_name.len() - binding_name.trim_start().len()))
-                                as u32,
+                            crate::ide::offset_to_position(line, binding_offset).1,
                         ));
                     }
+                    search_start = vbind_pos + 7 + close_paren + 1;
+                } else {
+                    break;
                 }
             }
         }
@@ -248,22 +248,5 @@ impl ReferencesService {
             }
         }
         offset
-    }
-
-    /// Get script setup start line.
-    fn get_script_setup_start_line(content: &str) -> Option<u32> {
-        let options = vize_atelier_sfc::SfcParseOptions::default();
-        let descriptor = vize_atelier_sfc::parse_sfc(content, options).ok()?;
-        descriptor
-            .script_setup
-            .as_ref()
-            .map(|s| s.loc.start_line as u32)
-    }
-
-    /// Get script start line.
-    fn get_script_start_line(content: &str) -> Option<u32> {
-        let options = vize_atelier_sfc::SfcParseOptions::default();
-        let descriptor = vize_atelier_sfc::parse_sfc(content, options).ok()?;
-        descriptor.script.as_ref().map(|s| s.loc.start_line as u32)
     }
 }

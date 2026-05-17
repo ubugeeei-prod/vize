@@ -29,6 +29,8 @@ test("vscode-vize wires art-vue documents into editor features", () => {
   const manifest = readJson<{
     activationEvents?: string[];
     contributes?: {
+      grammars?: Array<{ language?: string; path?: string; scopeName?: string }>;
+      languages?: Array<{ id?: string; extensions?: string[] }>;
       menus?: {
         commandPalette?: Array<{ when?: string }>;
       };
@@ -36,6 +38,21 @@ test("vscode-vize wires art-vue documents into editor features", () => {
   }>("npm/vscode-vize/package.json");
 
   assert.equal(manifest.activationEvents?.includes("onLanguage:art-vue"), true);
+  assert.equal(
+    manifest.contributes?.languages?.some(
+      (language) => language.id === "art-vue" && language.extensions?.includes(".art.vue"),
+    ),
+    true,
+  );
+  assert.equal(
+    manifest.contributes?.grammars?.some(
+      (grammar) =>
+        grammar.language === "art-vue" &&
+        grammar.scopeName === "source.art-vue" &&
+        grammar.path === "./syntaxes/art-vue.tmLanguage.json",
+    ),
+    true,
+  );
 
   for (const item of manifest.contributes?.menus?.commandPalette ?? []) {
     assert.match(item.when ?? "", /editorLangId == art-vue/);
@@ -57,7 +74,7 @@ test("vscode-vize wires art-vue documents into editor features", () => {
 
 test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   const grammar = readJson<{
-    repository?: Record<string, { begin?: string }>;
+    repository?: Record<string, { begin?: string; patterns?: Array<{ begin?: string }> }>;
   }>("npm/vscode-vize/syntaxes/vue.tmLanguage.json");
 
   const repository = grammar.repository ?? {};
@@ -73,6 +90,17 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
   ]) {
     quoteAwareTagLookahead(repository[key]?.begin);
   }
+
+  for (const pattern of repository["vue-directive-attributes"]?.patterns ?? []) {
+    assert.doesNotMatch(pattern.begin ?? "", /\(\?<=\\s\|\^\)/);
+  }
+
+  const artGrammar = readJson<{
+    patterns?: Array<{ include?: string }>;
+    scopeName?: string;
+  }>("npm/vscode-vize/syntaxes/art-vue.tmLanguage.json");
+  assert.equal(artGrammar.scopeName, "source.art-vue");
+  assert.deepEqual(artGrammar.patterns, [{ include: "source.vue" }]);
 });
 
 test("vscode-art grammar stays aligned with vue-aware editor support", () => {

@@ -4,7 +4,7 @@
 //! template interpolations, directive values, and event handlers.
 
 use super::{
-    encoding::{is_ident_char, is_ident_start, offset_to_line_col},
+    encoding::{is_ident_char, is_ident_start, offset_to_line_col, utf16_len},
     types::{AbsoluteToken, TokenType},
 };
 
@@ -50,17 +50,17 @@ pub(crate) fn tokenize_expression(
             let abs_offset = expr_offset + start;
             let (line, col) = offset_to_line_col(template, abs_offset);
             tokens.push(AbsoluteToken {
-                line: base_line + line - 1,
+                line: base_line + line,
                 start: col,
-                length: (i - start) as u32,
+                length: utf16_len(&expr[start..i]),
                 token_type: TokenType::Number as u32,
                 modifiers: 0,
             });
             continue;
         }
 
-        // String literals within expressions ('...' or `...`)
-        if c == '\'' || c == '`' {
+        // String literals within expressions ("...", '...' or `...`)
+        if c == '"' || c == '\'' || c == '`' {
             let quote = c;
             let start = i;
             i += 1;
@@ -77,9 +77,9 @@ pub(crate) fn tokenize_expression(
             let abs_offset = expr_offset + start;
             let (line, col) = offset_to_line_col(template, abs_offset);
             tokens.push(AbsoluteToken {
-                line: base_line + line - 1,
+                line: base_line + line,
                 start: col,
-                length: (i - start) as u32,
+                length: utf16_len(&expr[start..i]),
                 token_type: TokenType::String as u32,
                 modifiers: 0,
             });
@@ -108,9 +108,9 @@ pub(crate) fn tokenize_expression(
             };
 
             tokens.push(AbsoluteToken {
-                line: base_line + line - 1,
+                line: base_line + line,
                 start: col,
-                length: ident.len() as u32,
+                length: utf16_len(ident),
                 token_type: token_type as u32,
                 modifiers: 0,
             });
@@ -126,9 +126,9 @@ pub(crate) fn tokenize_expression(
             let abs_offset = expr_offset + start;
             let (line, col) = offset_to_line_col(template, abs_offset);
             tokens.push(AbsoluteToken {
-                line: base_line + line - 1,
+                line: base_line + line,
                 start: col,
-                length: op_len as u32,
+                length: utf16_len(&expr[start..i]),
                 token_type: TokenType::Operator as u32,
                 modifiers: 0,
             });

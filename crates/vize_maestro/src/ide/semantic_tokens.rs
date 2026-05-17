@@ -15,13 +15,33 @@ mod types;
 
 pub use types::{TokenModifier, TokenType};
 
-use tower_lsp::lsp_types::SemanticTokensResult;
+use tower_lsp::lsp_types::{
+    Range, SemanticTokens, SemanticTokensRangeResult, SemanticTokensResult,
+};
 
-use encoding::{encode_tokens, offset_to_line_col};
+use encoding::{encode_tokens, offset_to_line_col, utf16_len};
 use types::AbsoluteToken;
 
 /// Semantic tokens service.
 pub struct SemanticTokensService;
+
+fn token_overlaps_range(token: &AbsoluteToken, range: Range) -> bool {
+    if token.line < range.start.line || token.line > range.end.line {
+        return false;
+    }
+
+    let token_end = token.start.saturating_add(token.length);
+
+    if token.line == range.start.line && token_end <= range.start.character {
+        return false;
+    }
+
+    if token.line == range.end.line && token.start >= range.end.character {
+        return false;
+    }
+
+    true
+}
 
 impl SemanticTokensService {
     /// Get semantic tokens for a document.
@@ -29,9 +49,38 @@ impl SemanticTokensService {
         content: &str,
         uri: &tower_lsp::lsp_types::Url,
     ) -> Option<SemanticTokensResult> {
+        let tokens = Self::collect_tokens(content, uri)?;
+        Some(SemanticTokensResult::Tokens(SemanticTokens {
+            result_id: None,
+            data: encode_tokens(&tokens),
+        }))
+    }
+
+    /// Get semantic tokens for the visible range of a document.
+    pub fn get_tokens_range(
+        content: &str,
+        uri: &tower_lsp::lsp_types::Url,
+        range: Range,
+    ) -> Option<SemanticTokensRangeResult> {
+        let tokens = Self::collect_tokens(content, uri)?;
+        let tokens = tokens
+            .into_iter()
+            .filter(|token| token_overlaps_range(token, range))
+            .collect::<Vec<_>>();
+
+        Some(SemanticTokensRangeResult::Tokens(SemanticTokens {
+            result_id: None,
+            data: encode_tokens(&tokens),
+        }))
+    }
+
+    fn collect_tokens(
+        content: &str,
+        uri: &tower_lsp::lsp_types::Url,
+    ) -> Option<Vec<AbsoluteToken>> {
         // Check if this is an Art file
         if uri.path().ends_with(".art.vue") {
-            return Self::get_art_tokens(content);
+            return Some(Self::collect_art_tokens(content));
         }
 
         let options = vize_atelier_sfc::SfcParseOptions {
@@ -47,7 +96,7 @@ impl SemanticTokensService {
         if let Some(ref template) = descriptor.template {
             template::collect_template_tokens(
                 &template.content,
-                template.loc.start_line as u32,
+                template.loc.start_line.saturating_sub(1) as u32,
                 &mut tokens,
             );
         }
@@ -56,7 +105,7 @@ impl SemanticTokensService {
         if let Some(ref script_setup) = descriptor.script_setup {
             template::collect_script_tokens(
                 &script_setup.content,
-                script_setup.loc.start_line as u32,
+                script_setup.loc.start_line.saturating_sub(1) as u32,
                 &mut tokens,
             );
         }
@@ -65,14 +114,18 @@ impl SemanticTokensService {
         if let Some(ref script) = descriptor.script {
             template::collect_script_tokens(
                 &script.content,
-                script.loc.start_line as u32,
+                script.loc.start_line.saturating_sub(1) as u32,
                 &mut tokens,
             );
         }
 
         // Collect tokens from styles
         for s in &descriptor.styles {
-            style::collect_style_tokens(&s.content, s.loc.start_line as u32, &mut tokens);
+            style::collect_style_tokens(
+                &s.content,
+                s.loc.start_line.saturating_sub(1) as u32,
+                &mut tokens,
+            );
         }
 
         // Collect tokens from inline <art> custom blocks
@@ -85,19 +138,10 @@ impl SemanticTokensService {
         // Sort by position
         tokens.sort_by_key(|token| (token.line, token.start));
 
-        // Convert to delta encoding
-        let semantic_tokens = encode_tokens(&tokens);
-
-        Some(SemanticTokensResult::Tokens(
-            tower_lsp::lsp_types::SemanticTokens {
-                result_id: None,
-                data: semantic_tokens,
-            },
-        ))
+        Some(tokens)
     }
 
-    /// Get semantic tokens for Art files (*.art.vue).
-    fn get_art_tokens(content: &str) -> Option<SemanticTokensResult> {
+    fn collect_art_tokens(content: &str) -> Vec<AbsoluteToken> {
         let mut tokens: Vec<AbsoluteToken> = Vec::new();
 
         // Collect Art-specific tokens
@@ -109,15 +153,7 @@ impl SemanticTokensService {
         // Sort by position
         tokens.sort_by_key(|token| (token.line, token.start));
 
-        // Convert to delta encoding
-        let semantic_tokens = encode_tokens(&tokens);
-
-        Some(SemanticTokensResult::Tokens(
-            tower_lsp::lsp_types::SemanticTokens {
-                result_id: None,
-                data: semantic_tokens,
-            },
-        ))
+        tokens
     }
 
     /// Collect <art> and </art> tag tokens.
@@ -240,7 +276,7 @@ impl SemanticTokensService {
                         tokens.push(AbsoluteToken {
                             line,
                             start: col,
-                            length: attr.len() as u32,
+                            length: utf16_len(attr),
                             token_type: TokenType::Property as u32,
                             modifiers: 0,
                         });
@@ -257,7 +293,7 @@ impl SemanticTokensService {
                                 tokens.push(AbsoluteToken {
                                     line: val_line,
                                     start: val_col,
-                                    length: (end + 2) as u32, // include quotes
+                                    length: utf16_len(&content[value_start..value_start + end + 2]),
                                     token_type: TokenType::String as u32,
                                     modifiers: 0,
                                 });
@@ -358,7 +394,7 @@ impl SemanticTokensService {
                             tokens.push(AbsoluteToken {
                                 line,
                                 start: col,
-                                length: (end + 2) as u32, // include quotes
+                                length: utf16_len(&remaining[start..start + end + 2]),
                                 token_type: TokenType::String as u32,
                                 modifiers: 0,
                             });
@@ -503,7 +539,7 @@ impl SemanticTokensService {
                         tokens.push(AbsoluteToken {
                             line,
                             start: col,
-                            length: attr.len() as u32,
+                            length: utf16_len(attr),
                             token_type: TokenType::Property as u32,
                             modifiers: 0,
                         });
@@ -520,7 +556,7 @@ impl SemanticTokensService {
                                 tokens.push(AbsoluteToken {
                                     line: val_line,
                                     start: val_col,
-                                    length: (end + 2) as u32,
+                                    length: utf16_len(&slice[value_start..value_start + end + 2]),
                                     token_type: TokenType::String as u32,
                                     modifiers: 0,
                                 });
@@ -570,7 +606,41 @@ mod tests {
         SemanticTokensService, TokenModifier, TokenType, encoding::offset_to_line_col, expressions,
         template,
     };
-    use tower_lsp::lsp_types::SemanticTokensResult;
+    use tower_lsp::lsp_types::{
+        Position, Range, SemanticToken, SemanticTokensRangeResult, SemanticTokensResult,
+    };
+
+    #[derive(Debug)]
+    struct DecodedToken {
+        line: u32,
+        start: u32,
+        length: u32,
+        token_type: u32,
+    }
+
+    fn decode_tokens(tokens: &[SemanticToken]) -> Vec<DecodedToken> {
+        let mut decoded = Vec::with_capacity(tokens.len());
+        let mut line = 0;
+        let mut start = 0;
+
+        for token in tokens {
+            line += token.delta_line;
+            if token.delta_line == 0 {
+                start += token.delta_start;
+            } else {
+                start = token.delta_start;
+            }
+
+            decoded.push(DecodedToken {
+                line,
+                start,
+                length: token.length,
+                token_type: token.token_type,
+            });
+        }
+
+        decoded
+    }
 
     #[test]
     fn test_extract_identifiers() {
@@ -594,9 +664,17 @@ mod tests {
     #[test]
     fn test_offset_to_line_col() {
         let source = "abc\ndef\nghi";
-        assert_eq!(offset_to_line_col(source, 0), (1, 0));
-        assert_eq!(offset_to_line_col(source, 4), (2, 0));
-        assert_eq!(offset_to_line_col(source, 8), (3, 0));
+        assert_eq!(offset_to_line_col(source, 0), (0, 0));
+        assert_eq!(offset_to_line_col(source, 4), (1, 0));
+        assert_eq!(offset_to_line_col(source, 8), (2, 0));
+    }
+
+    #[test]
+    fn test_offset_to_line_col_counts_utf16_code_units() {
+        let source = "const icon = \"😀\"; missing";
+        let offset = source.find("missing").unwrap();
+
+        assert_eq!(offset_to_line_col(source, offset), (0, 19));
     }
 
     #[test]
@@ -618,7 +696,8 @@ mod tests {
 import Button from './Button.vue'
 </script>"#;
 
-        let result = SemanticTokensService::get_art_tokens(content);
+        let uri = tower_lsp::lsp_types::Url::parse("file:///test.art.vue").unwrap();
+        let result = SemanticTokensService::get_tokens(content, &uri);
         assert!(result.is_some());
 
         if let Some(SemanticTokensResult::Tokens(tokens)) = result {
@@ -685,6 +764,17 @@ import Button from './Button.vue'
     }
 
     #[test]
+    fn test_interpolation_string_token_uses_utf16_length() {
+        let template_str = "  {{ \"😀\" }}";
+        let mut tokens = Vec::new();
+        template::collect_interpolation_tokens(template_str, 1, &mut tokens);
+
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(tokens[0].token_type, TokenType::String as u32);
+        assert_eq!(tokens[0].length, 4);
+    }
+
+    #[test]
     fn test_full_sfc_semantic_tokens() {
         let content = r#"<template>
   <div>{{ count }}</div>
@@ -705,6 +795,86 @@ const count = ref(0)
             // - 'ref' in script
             assert!(!tokens.data.is_empty(), "Should have semantic tokens");
         }
+    }
+
+    #[test]
+    fn test_full_sfc_semantic_tokens_use_lsp_coordinates() {
+        let content = r#"<template>
+  <div>{{ count }}</div>
+</template>
+
+<script setup>
+const icon = "😀"
+const count = ref(icon)
+</script>
+"#;
+
+        let uri = tower_lsp::lsp_types::Url::parse("file:///test.vue").unwrap();
+        let result = SemanticTokensService::get_tokens(content, &uri);
+        let Some(SemanticTokensResult::Tokens(tokens)) = result else {
+            panic!("expected semantic tokens");
+        };
+        let decoded = decode_tokens(&tokens.data);
+
+        assert!(
+            decoded.iter().any(|token| {
+                token.line == 1
+                    && token.start == 10
+                    && token.length == "count".len() as u32
+                    && token.token_type == TokenType::Variable as u32
+            }),
+            "{decoded:#?}"
+        );
+        assert!(
+            decoded.iter().any(|token| {
+                token.line == 6
+                    && token.start == 14
+                    && token.length == "ref".len() as u32
+                    && token.token_type == TokenType::Function as u32
+            }),
+            "{decoded:#?}"
+        );
+    }
+
+    #[test]
+    fn test_range_semantic_tokens_return_only_requested_lines() {
+        let content = r#"<template>
+  <div>{{ count }}</div>
+</template>
+
+<script setup>
+const count = ref(0)
+</script>
+"#;
+
+        let uri = tower_lsp::lsp_types::Url::parse("file:///test.vue").unwrap();
+        let result = SemanticTokensService::get_tokens_range(
+            content,
+            &uri,
+            Range {
+                start: Position {
+                    line: 5,
+                    character: 0,
+                },
+                end: Position {
+                    line: 6,
+                    character: 0,
+                },
+            },
+        );
+        let Some(SemanticTokensRangeResult::Tokens(tokens)) = result else {
+            panic!("expected range semantic tokens");
+        };
+        let decoded = decode_tokens(&tokens.data);
+
+        assert!(!decoded.is_empty());
+        assert!(decoded.iter().all(|token| token.line == 5), "{decoded:#?}");
+        assert!(
+            decoded
+                .iter()
+                .any(|token| token.start == 14 && token.token_type == TokenType::Function as u32),
+            "{decoded:#?}"
+        );
     }
 
     #[test]
