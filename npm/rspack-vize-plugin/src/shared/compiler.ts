@@ -6,9 +6,9 @@ import * as native from "@vizejs/native";
 import type { CompiledModule, SfcCompileOptionsNapi } from "../types/index.ts";
 import {
   generateScopeId,
-  extractStyleBlocks,
-  extractCustomBlocks,
   collectTemplateAssetUrls,
+  toCustomBlockInfo,
+  toStyleBlockInfo,
 } from "./utils.ts";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.ts";
 
@@ -76,7 +76,6 @@ export function compileFile(
   }
 
   const scopeId = generateScopeId(filePath, options.rootContext, options.isProduction, source);
-  const hasScoped = /<style[^>]*\bscoped\b/.test(source);
 
   const napiOptions: SfcCompileOptionsNapi = {
     ...options.compilerOptions,
@@ -85,13 +84,11 @@ export function compileFile(
     ssr,
     vapor,
     isTs: autoIsTs,
-    scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
+    scopeId: `data-v-${scopeId}`,
   };
 
   const result = compileSfc(source, napiOptions);
 
-  const styles = extractStyleBlocks(source);
-  const customBlocks = extractCustomBlocks(source);
   const templateAssetUrls = collectTemplateAssetUrls(source, transformAssetUrls);
 
   const compiled: CompiledModule = {
@@ -100,9 +97,9 @@ export function compileFile(
     errors: result.errors,
     warnings: result.warnings,
     scopeId,
-    hasScoped,
-    styles,
-    customBlocks,
+    hasScoped: result.hasScoped,
+    styles: result.styles.map(toStyleBlockInfo),
+    customBlocks: result.customBlocks.map(toCustomBlockInfo),
     isCustomElement,
     templateAssetUrls,
     macroArtifacts: result.macroArtifacts ?? [],

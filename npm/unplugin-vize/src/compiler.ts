@@ -6,7 +6,7 @@ import type {
   CachedCompiledModule,
   SfcCompileResultNapi,
 } from "./types.ts";
-import { extractStyleBlocks, generateScopeId } from "./style.ts";
+import { generateScopeId, toStyleBlockInfo } from "./style.ts";
 
 const { compileSfc } = native as {
   compileSfc: (source: string, options?: Record<string, unknown>) => SfcCompileResultNapi;
@@ -42,14 +42,13 @@ export function compileVueModule(
   }
 
   const scopeId = generateScopeId(filePath, options.root, options.isProduction, source);
-  const hasScoped = /<style[^>]*\bscoped\b/.test(source);
   const result = compileSfc(source, {
     filename: filePath,
     sourceMap: options.sourceMap,
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer,
-    scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
+    scopeId: `data-v-${scopeId}`,
   });
 
   if (result.errors.length > 0) {
@@ -60,12 +59,12 @@ export function compileVueModule(
     code: result.code,
     css: result.css,
     scopeId,
-    hasScoped,
+    hasScoped: result.hasScoped,
     templateHash: result.templateHash,
     styleHash: result.styleHash,
     scriptHash: result.scriptHash,
     macroArtifacts: result.macroArtifacts ?? [],
-    styles: extractStyleBlocks(source),
+    styles: result.styles.map(toStyleBlockInfo),
   };
 
   cache.set(filePath, {
