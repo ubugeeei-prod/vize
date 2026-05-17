@@ -2,12 +2,16 @@
 
 use clap::{Args, Subcommand};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[derive(Args)]
 pub struct MuseaArgs {
     #[command(subcommand)]
     pub command: Option<MuseaCommand>,
+
+    #[command(flatten)]
+    pub serve: ServeArgs,
 }
 
 #[derive(Subcommand)]
@@ -19,7 +23,7 @@ pub enum MuseaCommand {
     New(NewArgs),
 }
 
-#[derive(Args, Default)]
+#[derive(Args, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::disallowed_types)]
 pub struct ServeArgs {
     /// Port to run the server on
@@ -37,6 +41,22 @@ pub struct ServeArgs {
     /// Open browser automatically
     #[arg(long)]
     pub open: bool,
+
+    /// Run `vite build` instead of `vite dev`
+    #[arg(long)]
+    pub build: bool,
+}
+
+impl Default for ServeArgs {
+    fn default() -> Self {
+        Self {
+            port: 6006,
+            host: "localhost".to_string(),
+            stories: None,
+            open: false,
+            build: false,
+        }
+    }
 }
 
 #[derive(Args)]
@@ -54,20 +74,110 @@ pub fn run(args: MuseaArgs) {
     match args.command {
         Some(MuseaCommand::Serve(serve_args)) => run_serve(serve_args),
         Some(MuseaCommand::New(new_args)) => run_new(new_args),
-        None => {
-            // Default to serve
-            run_serve(ServeArgs::default());
-        }
+        None => run_serve(args.serve),
     }
 }
 
 fn run_serve(args: ServeArgs) {
-    eprintln!("vize musea: Starting component gallery...");
-    eprintln!("  host: {}", args.host);
-    eprintln!("  port: {}", args.port);
-    eprintln!("  open: {}", args.open);
+    let cwd = match std::env::current_dir() {
+        Ok(cwd) => cwd,
+        Err(error) => {
+            eprintln!("vize musea: failed to read current directory: {}", error);
+            std::process::exit(1);
+        }
+    };
+    let plan = match create_serve_plan(&args, &cwd) {
+        Ok(plan) => plan,
+        Err(message) => {
+            eprintln!("{}", message);
+            std::process::exit(1);
+        }
+    };
 
-    vize_musea::serve();
+    eprintln!("vize musea: starting Vite-backed component gallery...");
+    eprintln!(
+        "  command: {} {}",
+        plan.program.display(),
+        plan.args.join(" ")
+    );
+    eprintln!("  route: configure @vizejs/vite-plugin-musea in Vite and open /__musea__");
+
+    let status = Command::new(&plan.program).args(&plan.args).status();
+    match status {
+        Ok(status) => {
+            std::process::exit(status.code().unwrap_or(1));
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            eprintln!(
+                "vize musea: could not find Vite. Install vite and @vizejs/vite-plugin-musea, then run from your project root."
+            );
+            std::process::exit(1);
+        }
+        Err(error) => {
+            eprintln!("vize musea: failed to start Vite: {}", error);
+            std::process::exit(1);
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct ServePlan {
+    program: PathBuf,
+    args: Vec<String>,
+}
+
+fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> {
+    if let Some(stories) = &args.stories {
+        return Err(format!(
+            "vize musea: --stories is not supported by the Vite-backed serve entrypoint yet (got {}). Configure Musea include patterns in vize.config.ts instead.",
+            stories.display()
+        ));
+    }
+
+    let program = resolve_vite_binary(cwd).unwrap_or_else(|| PathBuf::from("vite"));
+    let mut vite_args = if args.build {
+        vec!["build".to_string()]
+    } else {
+        vec![
+            "dev".to_string(),
+            "--host".to_string(),
+            args.host.clone(),
+            "--port".to_string(),
+            args.port.to_string(),
+        ]
+    };
+    if args.open && !args.build {
+        vite_args.push("--open".to_string());
+        vite_args.push("/__musea__".to_string());
+    }
+
+    Ok(ServePlan {
+        program,
+        args: vite_args,
+    })
+}
+
+fn resolve_vite_binary(cwd: &Path) -> Option<PathBuf> {
+    for ancestor in cwd.ancestors() {
+        let bin_dir = ancestor.join("node_modules").join(".bin");
+        for name in vite_bin_names() {
+            let candidate = bin_dir.join(name);
+            if candidate.is_file() {
+                return Some(candidate);
+            }
+        }
+    }
+    None
+}
+
+#[cfg(windows)]
+fn vite_bin_names() -> &'static [&'static str] {
+    &["vite.cmd", "vite.ps1", "vite"]
+}
+
+#[cfg(not(windows))]
+fn vite_bin_names() -> &'static [&'static str] {
+    &["vite"]
 }
 
 fn run_new(args: NewArgs) {
@@ -152,4 +262,94 @@ export default defineConfig({
     eprintln!("Next steps:");
     eprintln!("  1. Add more art files in the 'stories' directory");
     eprintln!("  2. Enable @vizejs/vite-plugin-musea in your Vite or Nuxt project");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ServeArgs, create_serve_plan, resolve_vite_binary, vite_bin_names};
+    use std::fs;
+    use std::path::{Path, PathBuf};
+
+    fn write_vite_bin(root: &Path) -> PathBuf {
+        let bin_dir = root.join("node_modules").join(".bin");
+        fs::create_dir_all(&bin_dir).unwrap();
+        let vite_bin = bin_dir.join(vite_bin_names()[0]);
+        fs::write(&vite_bin, "").unwrap();
+        vite_bin
+    }
+
+    #[test]
+    fn resolves_vite_binary_from_project_ancestors() {
+        let temp = tempfile::tempdir().unwrap();
+        let vite_bin = write_vite_bin(temp.path());
+        let nested = temp.path().join("packages").join("app");
+        fs::create_dir_all(&nested).unwrap();
+
+        assert_eq!(resolve_vite_binary(&nested), Some(vite_bin));
+    }
+
+    #[test]
+    fn serve_plan_defaults_to_vite_dev_with_gallery_route() {
+        let temp = tempfile::tempdir().unwrap();
+        let vite_bin = write_vite_bin(temp.path());
+
+        let plan = create_serve_plan(
+            &ServeArgs {
+                open: true,
+                ..ServeArgs::default()
+            },
+            temp.path(),
+        )
+        .unwrap();
+
+        assert_eq!(plan.program, vite_bin);
+        assert_eq!(
+            plan.args,
+            [
+                "dev",
+                "--host",
+                "localhost",
+                "--port",
+                "6006",
+                "--open",
+                "/__musea__"
+            ]
+        );
+    }
+
+    #[test]
+    fn serve_plan_supports_vite_build() {
+        let temp = tempfile::tempdir().unwrap();
+        let vite_bin = write_vite_bin(temp.path());
+
+        let plan = create_serve_plan(
+            &ServeArgs {
+                build: true,
+                open: true,
+                ..ServeArgs::default()
+            },
+            temp.path(),
+        )
+        .unwrap();
+
+        assert_eq!(plan.program, vite_bin);
+        assert_eq!(plan.args, ["build"]);
+    }
+
+    #[test]
+    fn serve_plan_rejects_silent_stories_option() {
+        let temp = tempfile::tempdir().unwrap();
+        write_vite_bin(temp.path());
+
+        let error = create_serve_plan(
+            &ServeArgs {
+                stories: Some(PathBuf::from("stories")),
+                ..ServeArgs::default()
+            },
+            temp.path(),
+        )
+        .unwrap_err();
+
+        assert!(error.contains("--stories is not supported"));
+    }
 }
