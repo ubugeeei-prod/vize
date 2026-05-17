@@ -34,6 +34,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 41,
@@ -44,6 +45,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 79,
@@ -67,6 +69,7 @@
     "messages": [
       {
         "ruleId": "a11y/anchor-is-valid",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/anchor-is-valid] <a> element has href=\"#\" which is not a valid navigation target",
         "line": 47,
@@ -84,6 +87,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 72,
@@ -101,6 +105,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 72,
@@ -118,6 +123,7 @@
     "messages": [
       {
         "ruleId": "a11y/anchor-is-valid",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/anchor-is-valid] <a> element has href=\"#\" which is not a valid navigation target",
         "line": 85,
@@ -135,6 +141,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Accordion' should be PascalCase",
         "line": 22,
@@ -188,6 +195,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 24,
@@ -223,6 +231,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_AlertDialog' should be PascalCase",
         "line": 18,
@@ -258,6 +267,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 253,
@@ -275,6 +285,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Autocomplete' should be PascalCase",
         "line": 20,
@@ -285,6 +296,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 23,
@@ -308,6 +320,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 53,
@@ -330,17 +343,8 @@
     "file": "packages/core/src/Avatar/story/Avatar.story.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'PROFILES' is registered but never used in template",
-        "line": 29,
-        "column": 11,
-        "endLine": 30,
-        "endColumn": 8,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 90,
@@ -351,13 +355,14 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Avatar/story/_Avatar.vue",
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Avatar' should be PascalCase",
         "line": 7,
@@ -453,6 +458,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 6,
@@ -463,6 +469,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -480,6 +487,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 7,
@@ -490,6 +498,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 15,
@@ -525,6 +534,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 20,
@@ -535,6 +545,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 28,
@@ -545,6 +556,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 27,
@@ -555,6 +567,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 48,
@@ -565,6 +578,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 48,
@@ -575,6 +589,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 64,
@@ -585,6 +600,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 64,
@@ -602,6 +618,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 55,
@@ -612,6 +629,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 203,
@@ -622,6 +640,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 202,
@@ -645,6 +664,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 14,
@@ -662,6 +682,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 13,
@@ -672,6 +693,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 20,
@@ -689,6 +711,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 15,
@@ -699,6 +722,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Calendar' should be PascalCase",
         "line": 15,
@@ -709,6 +733,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 17,
@@ -726,6 +751,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 9,
@@ -736,6 +762,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_CalendarMultiple' should be PascalCase",
         "line": 9,
@@ -746,6 +773,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 11,
@@ -763,6 +791,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_CalendarPopover' should be PascalCase",
         "line": 5,
@@ -780,6 +809,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 13,
@@ -790,6 +820,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyCalendar' should be PascalCase",
         "line": 13,
@@ -800,6 +831,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 15,
@@ -829,6 +861,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 138,
@@ -839,6 +872,7 @@
       },
       {
         "ruleId": "a11y/interactive-supports-focus",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"checkbox\" must be focusable (add tabindex=\"0\")",
         "line": 136,
@@ -856,6 +890,7 @@
     "messages": [
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 19,
@@ -866,6 +901,7 @@
       },
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 43,
@@ -876,6 +912,7 @@
       },
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 61,
@@ -886,6 +923,7 @@
       },
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 85,
@@ -896,6 +934,7 @@
       },
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 111,
@@ -919,6 +958,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Checkbox' should be PascalCase",
         "line": 11,
@@ -929,6 +969,7 @@
       },
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The for attribute references id=\"test\" which does not exist in the template",
         "line": 14,
@@ -939,6 +980,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 20,
@@ -956,6 +998,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_CheckboxGroup' should be PascalCase",
         "line": 13,
@@ -966,6 +1009,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 16,
@@ -983,6 +1027,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 99,
@@ -993,6 +1038,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 98,
@@ -1028,6 +1074,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Collapsible' should be PascalCase",
         "line": 11,
@@ -1069,6 +1116,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorArea' should be PascalCase",
         "line": 21,
@@ -1079,6 +1127,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 29,
@@ -1089,6 +1138,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 28,
@@ -1118,6 +1168,7 @@
     "messages": [
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 118,
@@ -1135,6 +1186,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorField' should be PascalCase",
         "line": 23,
@@ -1158,6 +1210,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorPicker' should be PascalCase",
         "line": 39,
@@ -1168,6 +1221,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 55,
@@ -1185,6 +1239,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 201,
@@ -1220,6 +1275,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSlider' should be PascalCase",
         "line": 22,
@@ -1237,6 +1293,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSliderCompound' should be PascalCase",
         "line": 38,
@@ -1266,6 +1323,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSwatch' should be PascalCase",
         "line": 10,
@@ -1301,6 +1359,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 40,
@@ -1324,6 +1383,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ColorSwatchPicker' should be PascalCase",
         "line": 23,
@@ -1365,6 +1425,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'Node' is a browser-only global and is not available in SSR",
         "line": 113,
@@ -1375,6 +1436,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'Node' is a browser-only global and is not available in SSR",
         "line": 120,
@@ -1410,6 +1472,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 82,
@@ -1445,6 +1508,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 254,
@@ -1480,6 +1544,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 29,
@@ -1521,6 +1586,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 60,
@@ -1562,6 +1628,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 41,
@@ -1572,6 +1639,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 40,
@@ -1589,6 +1657,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 47,
@@ -1606,6 +1675,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Combobox' should be PascalCase",
         "line": 25,
@@ -1616,6 +1686,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 28,
@@ -1633,6 +1704,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ComboboxManualFilter' should be PascalCase",
         "line": 24,
@@ -1643,6 +1715,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 27,
@@ -1660,6 +1733,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ComboboxObject' should be PascalCase",
         "line": 19,
@@ -1670,6 +1744,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 22,
@@ -1693,6 +1768,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ConfigProvider' should be PascalCase",
         "line": 9,
@@ -1812,6 +1888,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ContextMenu' should be PascalCase",
         "line": 32,
@@ -1829,6 +1906,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 59,
@@ -1846,6 +1924,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 288,
@@ -1863,6 +1942,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 20,
@@ -1873,6 +1953,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 46,
@@ -1883,6 +1964,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 73,
@@ -1893,6 +1975,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 100,
@@ -1903,6 +1986,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 99,
@@ -1913,6 +1997,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 126,
@@ -1923,6 +2008,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 154,
@@ -1933,6 +2019,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 182,
@@ -1943,6 +2030,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 210,
@@ -1960,6 +2048,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 18,
@@ -1977,6 +2066,7 @@
     "messages": [
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"date-field\" found in template",
         "line": 53,
@@ -1987,6 +2077,7 @@
       },
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"date-field\" found in template",
         "line": 88,
@@ -1997,6 +2088,7 @@
       },
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"date-field\" found in template",
         "line": 123,
@@ -2007,6 +2099,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 19,
@@ -2017,6 +2110,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 54,
@@ -2027,6 +2121,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 89,
@@ -2037,6 +2132,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 124,
@@ -2054,6 +2150,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 19,
@@ -2071,6 +2168,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 12,
@@ -2081,6 +2179,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 39,
@@ -2091,6 +2190,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 67,
@@ -2101,6 +2201,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 95,
@@ -2111,6 +2212,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 123,
@@ -2121,6 +2223,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 151,
@@ -2138,6 +2241,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DateField' should be PascalCase",
         "line": 10,
@@ -2148,6 +2252,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 17,
@@ -2158,6 +2263,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 18,
@@ -2187,6 +2293,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 14,
@@ -2210,6 +2317,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 16,
@@ -2233,6 +2341,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 31,
@@ -2250,6 +2359,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -2303,6 +2413,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 20,
@@ -2326,6 +2437,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 17,
@@ -2343,6 +2455,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 16,
@@ -2366,6 +2479,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 19,
@@ -2389,6 +2503,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 26,
@@ -2399,6 +2514,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 39,
@@ -2409,6 +2525,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 75,
@@ -2438,6 +2555,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 28,
@@ -2448,6 +2566,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DatePicker' should be PascalCase",
         "line": 28,
@@ -2458,6 +2577,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 42,
@@ -2468,6 +2588,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 60,
@@ -2485,6 +2606,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 32,
@@ -2495,6 +2617,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDatePicker' should be PascalCase",
         "line": 32,
@@ -2505,6 +2628,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 37,
@@ -2515,6 +2639,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 73,
@@ -2532,6 +2657,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 63,
@@ -2549,6 +2675,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 381,
@@ -2572,6 +2699,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 10,
@@ -2601,6 +2729,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DateRangeField' should be PascalCase",
         "line": 10,
@@ -2611,6 +2740,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 17,
@@ -2621,6 +2751,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 18,
@@ -2638,6 +2769,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDateRangeField' should be PascalCase",
         "line": 11,
@@ -2648,6 +2780,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -2677,6 +2810,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -2700,6 +2834,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 16,
@@ -2723,6 +2858,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 31,
@@ -2740,6 +2876,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -2793,6 +2930,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 20,
@@ -2816,6 +2954,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 16,
@@ -2833,6 +2972,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 16,
@@ -2856,6 +2996,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 19,
@@ -2879,6 +3020,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 26,
@@ -2889,6 +3031,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 39,
@@ -2899,6 +3042,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 99,
@@ -2928,6 +3072,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 28,
@@ -2938,6 +3083,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DateRangePicker' should be PascalCase",
         "line": 28,
@@ -2948,6 +3094,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 41,
@@ -2958,6 +3105,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 70,
@@ -2975,6 +3123,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 33,
@@ -2985,6 +3134,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDateRangePicker' should be PascalCase",
         "line": 33,
@@ -2995,6 +3145,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 36,
@@ -3005,6 +3156,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 95,
@@ -3046,6 +3198,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 36,
@@ -3123,6 +3276,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -3133,6 +3287,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 13,
@@ -3143,6 +3298,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 30,
@@ -3153,6 +3309,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 42,
@@ -3163,6 +3320,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 64,
@@ -3186,6 +3344,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Dialog' should be PascalCase",
         "line": 18,
@@ -3196,6 +3355,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 92,
@@ -3225,6 +3385,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 82,
@@ -3235,6 +3396,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 121,
@@ -3245,6 +3407,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 122,
@@ -3255,6 +3418,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 123,
@@ -3272,6 +3436,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 50,
@@ -3282,6 +3447,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 91,
@@ -3299,6 +3465,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 59,
@@ -3316,6 +3483,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DismissableBox' should be PascalCase",
         "line": 10,
@@ -3333,6 +3501,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DismissableLayer' should be PascalCase",
         "line": 26,
@@ -3350,6 +3519,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyDialog' should be PascalCase",
         "line": 15,
@@ -3360,6 +3530,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 49,
@@ -3377,6 +3548,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyPopover' should be PascalCase",
         "line": 28,
@@ -3387,6 +3559,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 68,
@@ -3416,6 +3589,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 61,
@@ -3529,6 +3703,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DropdownMenu' should be PascalCase",
         "line": 42,
@@ -3546,6 +3721,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DropdownMenuWithFilter' should be PascalCase",
         "line": 40,
@@ -3593,6 +3769,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 223,
@@ -3622,6 +3799,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 12,
@@ -3639,6 +3817,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyEditable' should be PascalCase",
         "line": 21,
@@ -3649,6 +3828,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 23,
@@ -3666,6 +3846,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Editable' should be PascalCase",
         "line": 8,
@@ -3695,6 +3876,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 41,
@@ -3705,6 +3887,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 45,
@@ -3715,6 +3898,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 49,
@@ -3725,6 +3909,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 87,
@@ -3735,6 +3920,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 91,
@@ -3745,6 +3931,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 95,
@@ -3774,6 +3961,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 104,
@@ -3784,6 +3972,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 104,
@@ -3819,6 +4008,7 @@
     "messages": [
       {
         "ruleId": "a11y/anchor-is-valid",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/anchor-is-valid] <a> element is missing an href attribute",
         "line": 28,
@@ -3829,6 +4019,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 103,
@@ -3846,6 +4037,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'entry' is defined by v-for but never used",
         "line": 10,
@@ -3856,6 +4048,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 43,
@@ -3873,6 +4066,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_HoverCard' should be PascalCase",
         "line": 14,
@@ -3896,6 +4090,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Label' is a reserved HTML element name and cannot be used as a component name",
         "line": 21,
@@ -3913,6 +4108,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
         "line": 37,
@@ -3948,6 +4144,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 79,
@@ -3971,6 +4168,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 396,
@@ -4012,6 +4210,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 22,
@@ -4022,6 +4221,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 47,
@@ -4032,6 +4232,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 68,
@@ -4042,6 +4243,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 89,
@@ -4052,6 +4254,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 110,
@@ -4062,6 +4265,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 134,
@@ -4079,6 +4283,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Listbox' should be PascalCase",
         "line": 20,
@@ -4138,6 +4343,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 84,
@@ -4215,6 +4421,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'Node' is a browser-only global and is not available in SSR",
         "line": 61,
@@ -4225,6 +4432,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
         "line": 80,
@@ -4235,6 +4443,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 80,
@@ -4245,6 +4454,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 80,
@@ -4298,6 +4508,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Menu' should be PascalCase",
         "line": 51,
@@ -4315,6 +4526,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_MenuWithAnchor' should be PascalCase",
         "line": 20,
@@ -4332,6 +4544,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Submenu' should be PascalCase",
         "line": 14,
@@ -4342,6 +4555,7 @@
       },
       {
         "ruleId": "vue/no-mutating-props",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-mutating-props] Unexpected mutation of prop 'open' via v-model",
         "line": 15,
@@ -4359,6 +4573,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_TickIcon' should be PascalCase",
         "line": 1,
@@ -4388,6 +4603,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 90,
@@ -4495,6 +4711,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Menubar' should be PascalCase",
         "line": 33,
@@ -4572,6 +4789,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'monthRow' is defined by v-for but never used",
         "line": 6,
@@ -4582,6 +4800,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -4599,6 +4818,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'monthRow' is defined by v-for but never used",
         "line": 9,
@@ -4609,6 +4829,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_MonthPicker' should be PascalCase",
         "line": 9,
@@ -4619,6 +4840,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 11,
@@ -4702,6 +4924,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'monthRow' is defined by v-for but never used",
         "line": 9,
@@ -4712,6 +4935,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_MonthRangePicker' should be PascalCase",
         "line": 9,
@@ -4722,6 +4946,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 11,
@@ -4739,6 +4964,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 57,
@@ -4804,6 +5030,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 159,
@@ -4839,6 +5066,7 @@
     "messages": [
       {
         "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
         "line": 51,
@@ -4849,6 +5077,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 51,
@@ -4859,6 +5088,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <a> (phrasing content only)",
         "line": 55,
@@ -4868,6 +5098,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> (block element) is not allowed inside <a> (phrasing content only)",
         "line": 56,
@@ -4896,6 +5127,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_LinkGroup' should be PascalCase",
         "line": 9,
@@ -4913,6 +5145,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_NavigationMenu' should be PascalCase",
         "line": 30,
@@ -4930,6 +5163,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_NavigationMenuListItem' should be PascalCase",
         "line": 9,
@@ -4940,6 +5174,7 @@
       },
       {
         "ruleId": "a11y/anchor-is-valid",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/anchor-is-valid] <a> element is missing an href attribute",
         "line": 12,
@@ -4950,6 +5185,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <a> (phrasing content only)",
         "line": 16,
@@ -4959,6 +5195,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> (block element) is not allowed inside <a> (phrasing content only)",
         "line": 19,
@@ -4975,6 +5212,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_StoryFrame' should be PascalCase",
         "line": 1,
@@ -4992,6 +5230,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 33,
@@ -5009,6 +5248,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 33,
@@ -5026,6 +5266,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 63,
@@ -5043,6 +5284,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 225,
@@ -5072,6 +5314,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_NumberField' should be PascalCase",
         "line": 9,
@@ -5082,6 +5325,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 12,
@@ -5147,6 +5391,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 17,
@@ -5164,6 +5409,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Pagination' should be PascalCase",
         "line": 23,
@@ -5174,6 +5420,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 29,
@@ -5215,6 +5462,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_PinInput' should be PascalCase",
         "line": 14,
@@ -5225,6 +5473,7 @@
       },
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The for attribute references id=\"otp\" which does not exist in the template",
         "line": 15,
@@ -5235,6 +5484,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 18,
@@ -5288,6 +5538,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 36,
@@ -5359,6 +5610,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <textarea> elements must have an associated label",
         "line": 45,
@@ -5376,6 +5628,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <textarea> elements must have an associated label",
         "line": 44,
@@ -5386,6 +5639,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <textarea> elements must have an associated label",
         "line": 78,
@@ -5409,6 +5663,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 19,
@@ -5419,6 +5674,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 43,
@@ -5436,6 +5692,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Popover' should be PascalCase",
         "line": 16,
@@ -5459,6 +5716,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 39,
@@ -5488,6 +5746,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Popper' should be PascalCase",
         "line": 8,
@@ -5505,6 +5764,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 75,
@@ -5528,6 +5788,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 34,
@@ -5545,6 +5806,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Animation' should be PascalCase",
         "line": 13,
@@ -5555,6 +5817,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 22,
@@ -5572,6 +5835,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Toggle' should be PascalCase",
         "line": 19,
@@ -5582,6 +5846,7 @@
       },
       {
         "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 7,
@@ -5611,6 +5876,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 59,
@@ -5621,6 +5887,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 65,
@@ -5638,6 +5905,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Progress' should be PascalCase",
         "line": 12,
@@ -5685,6 +5953,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Radio' should be PascalCase",
         "line": 5,
@@ -5702,6 +5971,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_RadioGroup' should be PascalCase",
         "line": 11,
@@ -5797,6 +6067,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 6,
@@ -5807,6 +6078,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -5830,6 +6102,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 17,
@@ -5840,6 +6113,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 25,
@@ -5850,6 +6124,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 24,
@@ -5860,6 +6135,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 44,
@@ -5870,6 +6146,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 44,
@@ -5880,6 +6157,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 60,
@@ -5890,6 +6168,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 60,
@@ -5913,6 +6192,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 14,
@@ -5930,6 +6210,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 13,
@@ -5940,6 +6221,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyRangeCalendar' should be PascalCase",
         "line": 13,
@@ -5950,6 +6232,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 15,
@@ -5967,6 +6250,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'weekDates' is defined by v-for but never used",
         "line": 18,
@@ -5977,6 +6261,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_RangeCalendar' should be PascalCase",
         "line": 18,
@@ -5987,6 +6272,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 20,
@@ -6028,6 +6314,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 21,
@@ -6038,6 +6325,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 20,
@@ -6048,6 +6336,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 29,
@@ -6065,6 +6354,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Rating' should be PascalCase",
         "line": 9,
@@ -6075,6 +6365,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 11,
@@ -6085,6 +6376,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 18,
@@ -6120,6 +6412,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Button' should be PascalCase",
         "line": 18,
@@ -6130,6 +6423,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 29,
@@ -6147,6 +6441,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ButtonGroup' should be PascalCase",
         "line": 18,
@@ -6278,6 +6573,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ScrollArea' should be PascalCase",
         "line": 15,
@@ -6295,6 +6591,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ScrollAreaCopy' should be PascalCase",
         "line": 1,
@@ -6312,6 +6609,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ScrollAreaStory' should be PascalCase",
         "line": 24,
@@ -6329,6 +6627,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
         "line": 59,
@@ -6358,16 +6657,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'SelectPopperPosition' is registered but never used in template",
-        "line": 273,
-        "column": 11,
-        "endLine": 275,
-        "endColumn": 1,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'SelectItemAlignedPosition' is registered but never used in template",
         "line": 273,
@@ -6377,7 +6667,19 @@
         "help": "Remove the unused import or use the component in your template"
       },
       {
+        "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'SelectPopperPosition' is registered but never used in template",
+        "line": 273,
+        "column": 11,
+        "endLine": 275,
+        "endColumn": 1,
+        "help": "Remove the unused import or use the component in your template"
+      },
+      {
         "ruleId": "a11y/interactive-supports-focus",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"listbox\" must be focusable (add tabindex=\"0\")",
         "line": 295,
@@ -6388,6 +6690,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 303,
@@ -6398,6 +6701,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 303,
@@ -6427,6 +6731,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 172,
@@ -6486,6 +6791,7 @@
     "messages": [
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <option> element is empty but expects visible content",
         "line": 215,
@@ -6496,6 +6802,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <option> element is empty but expects visible content",
         "line": 219,
@@ -6537,6 +6844,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
         "line": 72,
@@ -6547,6 +6855,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 72,
@@ -6557,6 +6866,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 82,
@@ -6592,6 +6902,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The for attribute references id=\"fruit\" which does not exist in the template",
         "line": 43,
@@ -6615,6 +6926,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Select' should be PascalCase",
         "line": 29,
@@ -6632,6 +6944,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_SelectItem' should be PascalCase",
         "line": 10,
@@ -6649,6 +6962,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_SelectTest' should be PascalCase",
         "line": 28,
@@ -6684,6 +6998,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 49,
@@ -6694,6 +7009,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 63,
@@ -6704,6 +7020,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 67,
@@ -6727,6 +7044,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'SliderHorizontal' is registered but never used in template",
         "line": 170,
@@ -6737,6 +7055,7 @@
       },
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'SliderVertical' is registered but never used in template",
         "line": 170,
@@ -6796,6 +7115,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Slider' should be PascalCase",
         "line": 17,
@@ -6806,6 +7126,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 20,
@@ -6895,6 +7216,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Splitter' should be PascalCase",
         "line": 5,
@@ -6966,6 +7288,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyStepper' should be PascalCase",
         "line": 40,
@@ -6983,6 +7306,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Stepper' should be PascalCase",
         "line": 34,
@@ -7018,6 +7342,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Switch' should be PascalCase",
         "line": 9,
@@ -7035,6 +7360,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 49,
@@ -7088,6 +7414,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Tabs' should be PascalCase",
         "line": 5,
@@ -7147,6 +7474,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 35,
@@ -7157,6 +7485,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 34,
@@ -7180,6 +7509,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_TagsInput' should be PascalCase",
         "line": 19,
@@ -7197,6 +7527,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_TagsInputObject' should be PascalCase",
         "line": 15,
@@ -7207,6 +7538,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 18,
@@ -7224,6 +7556,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Teleport' is a reserved HTML element name and cannot be used as a component name",
         "line": 40,
@@ -7241,6 +7574,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 61,
@@ -7258,6 +7592,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 341,
@@ -7275,6 +7610,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 19,
@@ -7285,6 +7621,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 45,
@@ -7295,6 +7632,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 72,
@@ -7305,6 +7643,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 99,
@@ -7315,6 +7654,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 98,
@@ -7325,6 +7665,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 125,
@@ -7335,6 +7676,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 152,
@@ -7345,6 +7687,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 179,
@@ -7355,6 +7698,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 206,
@@ -7372,6 +7716,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 18,
@@ -7389,6 +7734,7 @@
     "messages": [
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"time-field\" found in template",
         "line": 56,
@@ -7399,6 +7745,7 @@
       },
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"time-field\" found in template",
         "line": 92,
@@ -7409,6 +7756,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 21,
@@ -7419,6 +7767,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 57,
@@ -7429,6 +7778,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 93,
@@ -7446,6 +7796,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 21,
@@ -7463,6 +7814,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 12,
@@ -7473,6 +7825,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 39,
@@ -7483,6 +7836,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 67,
@@ -7493,6 +7847,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 95,
@@ -7503,6 +7858,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 123,
@@ -7513,6 +7869,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 151,
@@ -7530,6 +7887,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_TimeField' should be PascalCase",
         "line": 10,
@@ -7540,6 +7898,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 18,
@@ -7550,6 +7909,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 19,
@@ -7567,6 +7927,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 63,
@@ -7584,6 +7945,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 446,
@@ -7607,6 +7969,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 10,
@@ -7636,6 +7999,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_DummyTimeRangeField' should be PascalCase",
         "line": 11,
@@ -7646,6 +8010,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -7663,6 +8028,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_TimeRangeField' should be PascalCase",
         "line": 10,
@@ -7673,6 +8039,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 18,
@@ -7683,6 +8050,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 19,
@@ -7700,6 +8068,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 17,
@@ -7759,6 +8128,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 58,
@@ -7769,6 +8139,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 58,
@@ -7779,6 +8150,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 69,
@@ -7789,6 +8161,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 75,
@@ -7799,6 +8172,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 85,
@@ -7809,6 +8183,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 96,
@@ -7826,6 +8201,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 204,
@@ -7836,6 +8212,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 214,
@@ -7846,6 +8223,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 244,
@@ -7869,6 +8247,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 175,
@@ -7879,6 +8258,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 199,
@@ -7914,6 +8294,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 27,
@@ -7924,6 +8305,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 27,
@@ -7941,6 +8323,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Toast' should be PascalCase",
         "line": 29,
@@ -7970,6 +8353,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 41,
@@ -7980,6 +8364,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 41,
@@ -8009,6 +8394,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_ToggleGroup' should be PascalCase",
         "line": 16,
@@ -8032,6 +8418,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
         "line": 24,
@@ -8042,6 +8429,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 24,
@@ -8089,6 +8477,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Toolbar' should be PascalCase",
         "line": 17,
@@ -8112,22 +8501,24 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'TooltipContentImpl' is registered but never used in template",
-        "line": 30,
-        "column": 11,
-        "endLine": 31,
-        "endColumn": 18,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'TooltipContentHoverable' is registered but never used in template",
         "line": 30,
         "column": 11,
         "endLine": 31,
         "endColumn": 23,
+        "help": "Remove the unused import or use the component in your template"
+      },
+      {
+        "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'TooltipContentImpl' is registered but never used in template",
+        "line": 30,
+        "column": 11,
+        "endLine": 31,
+        "endColumn": 18,
         "help": "Remove the unused import or use the component in your template"
       }
     ],
@@ -8145,6 +8536,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
         "line": 99,
@@ -8186,6 +8578,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <h4> is not allowed as a direct child of <ul>",
         "line": 37,
@@ -8195,6 +8588,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> is not allowed as a direct child of <ul>",
         "line": 38,
@@ -8204,6 +8598,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
         "line": 52,
@@ -8227,6 +8622,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Tooltip' should be PascalCase",
         "line": 13,
@@ -8262,6 +8658,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 74,
@@ -8272,6 +8669,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 82,
@@ -8289,6 +8687,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 14,
@@ -8306,6 +8705,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 18,
@@ -8316,6 +8716,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 17,
@@ -8326,6 +8727,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 29,
@@ -8336,6 +8738,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 43,
@@ -8359,6 +8762,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 37,
@@ -8376,6 +8780,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_Tree' should be PascalCase",
         "line": 69,
@@ -8386,6 +8791,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 71,
@@ -8403,6 +8809,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_TreeNested' should be PascalCase",
         "line": 20,
@@ -8413,6 +8820,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 26,
@@ -8514,6 +8922,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'yearRow' is defined by v-for but never used",
         "line": 6,
@@ -8524,6 +8933,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 13,
@@ -8541,6 +8951,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'yearRow' is defined by v-for but never used",
         "line": 9,
@@ -8551,6 +8962,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_YearPicker' should be PascalCase",
         "line": 9,
@@ -8561,6 +8973,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 11,
@@ -8644,6 +9057,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'yearRow' is defined by v-for but never used",
         "line": 9,
@@ -8654,6 +9068,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name '_YearRangePicker' should be PascalCase",
         "line": 9,
@@ -8664,6 +9079,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 11,
@@ -8681,6 +9097,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'viewBox' should be 'view-box' (kebab-case)",
         "line": 44,
@@ -8691,6 +9108,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'preserveAspectRatio' should be 'preserve-aspect-ratio' (kebab-case)",
         "line": 45,
@@ -8701,6 +9119,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 44,
@@ -8711,6 +9130,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 45,

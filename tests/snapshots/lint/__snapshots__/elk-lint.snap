@@ -10,6 +10,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 24,
@@ -33,6 +34,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 21,
@@ -91,27 +93,8 @@
     "file": "app/components/account/AccountHeader.vue",
     "messages": [
       {
-        "ruleId": "a11y/click-events-have-key-events",
-        "severity": 1,
-        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 134,
-        "column": 5,
-        "endLine": 134,
-        "endColumn": 120,
-        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "a11y/no-static-element-interactions",
-        "severity": 1,
-        "message": "[vize:a11y/no-static-element-interactions] <component> is a static element and should not have interactive event handlers",
-        "line": 134,
-        "column": 5,
-        "endLine": 134,
-        "endColumn": 120,
-        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <component> is deprecated",
         "line": 134,
@@ -122,6 +105,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 135,
@@ -132,6 +116,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <label> is deprecated",
         "line": 214,
@@ -142,6 +127,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
         "line": 216,
@@ -151,6 +137,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
         "line": 225,
@@ -160,6 +147,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <textarea> is an interactive element and cannot be nested inside another interactive element",
         "line": 235,
@@ -169,6 +157,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 272,
@@ -179,7 +168,7 @@
       }
     ],
     "errorCount": 3,
-    "warningCount": 6
+    "warningCount": 4
   },
   {
     "file": "app/components/account/AccountHoverCard.vue",
@@ -276,6 +265,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 16,
@@ -286,6 +276,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 16,
@@ -303,6 +294,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 20,
@@ -320,16 +312,18 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Key variable 'group' is defined by v-for but never used",
+        "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
         "line": 185,
         "column": 11,
         "endLine": 186,
         "endColumn": 5,
-        "help": "Consider removing the key variable or prefix it with underscore: _key"
+        "help": "If the variable is intentionally unused, prefix it with underscore: _item"
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
         "line": 189,
@@ -339,6 +333,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <label> (phrasing content only)",
         "line": 191,
@@ -361,6 +356,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 16,
@@ -378,6 +374,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 15,
@@ -395,6 +392,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 14,
@@ -405,6 +403,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
         "line": 14,
@@ -415,6 +414,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 38,
@@ -432,6 +432,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 72,
@@ -449,6 +450,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 14,
@@ -466,6 +468,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 75,
@@ -476,6 +479,7 @@
       },
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 75,
@@ -486,6 +490,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
         "line": 75,
@@ -496,6 +501,7 @@
       },
       {
         "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
         "line": 83,
@@ -506,6 +512,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 83,
@@ -516,6 +523,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 85,
@@ -545,6 +553,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 87,
@@ -555,6 +564,7 @@
       },
       {
         "ruleId": "vue/require-v-for-key",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <slot>",
         "line": 106,
@@ -578,6 +588,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 11,
@@ -588,6 +599,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
         "line": 11,
@@ -598,6 +610,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 30,
@@ -615,6 +628,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 26,
@@ -638,6 +652,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <label> is a static element and should not have interactive event handlers",
         "line": 49,
@@ -679,6 +694,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 9,
@@ -696,6 +712,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 25,
@@ -713,6 +730,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 54,
@@ -722,27 +740,8 @@
         "help": "Reorder attributes to follow the recommended order"
       },
       {
-        "ruleId": "a11y/click-events-have-key-events",
-        "severity": 1,
-        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 52,
-        "column": 3,
-        "endLine": 63,
-        "endColumn": 4,
-        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "a11y/no-static-element-interactions",
-        "severity": 1,
-        "message": "[vize:a11y/no-static-element-interactions] <component> is a static element and should not have interactive event handlers",
-        "line": 52,
-        "column": 3,
-        "endLine": 63,
-        "endColumn": 4,
-        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
         "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 17,
@@ -753,13 +752,14 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 2
   },
   {
     "file": "app/components/content/ContentCode.vue",
     "messages": [
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 21,
@@ -801,6 +801,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 15,
@@ -811,6 +812,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
         "line": 36,
@@ -821,6 +823,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 39,
@@ -850,6 +853,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 113,
@@ -860,6 +864,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 126,
@@ -883,6 +888,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <code> is deprecated",
         "line": 163,
@@ -893,6 +899,7 @@
       },
       {
         "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 2,
@@ -910,6 +917,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 51,
@@ -924,30 +932,9 @@
   },
   {
     "file": "app/components/main/MainTitle.vue",
-    "messages": [
-      {
-        "ruleId": "a11y/click-events-have-key-events",
-        "severity": 1,
-        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 19,
-        "column": 3,
-        "endLine": 27,
-        "endColumn": 4,
-        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "a11y/no-static-element-interactions",
-        "severity": 1,
-        "message": "[vize:a11y/no-static-element-interactions] <component> is a static element and should not have interactive event handlers",
-        "line": 19,
-        "column": 3,
-        "endLine": 27,
-        "endColumn": 4,
-        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/components/modal/DurationPicker.vue",
@@ -960,6 +947,7 @@
     "messages": [
       {
         "ruleId": "a11y/label-has-for",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/label-has-for] <label> must have a `for` attribute or wrap a form control (input, select, textarea)",
         "line": 62,
@@ -970,6 +958,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 65,
@@ -980,6 +969,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'confirm' is a browser-only global and is not available in SSR",
         "line": 79,
@@ -1003,6 +993,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 148,
@@ -1013,6 +1004,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 148,
@@ -1030,6 +1022,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 17,
@@ -1040,6 +1033,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 27,
@@ -1057,6 +1051,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 40,
@@ -1067,6 +1062,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 40,
@@ -1077,6 +1073,7 @@
       },
       {
         "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 2,
@@ -1094,6 +1091,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 282,
@@ -1111,6 +1109,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <nav> is deprecated",
         "line": 60,
@@ -1128,6 +1127,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 159,
@@ -1247,6 +1247,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 7,
@@ -1257,6 +1258,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 7,
@@ -1286,6 +1288,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Search' is a reserved HTML element name and cannot be used as a component name",
         "line": 7,
@@ -1309,6 +1312,7 @@
     "messages": [
       {
         "ruleId": "type/require-typed-emits",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
         "message": "[vize:type/require-typed-emits] Emit should have a type definition",
         "line": 10,
@@ -1326,6 +1330,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 65,
@@ -1336,6 +1341,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 65,
@@ -1346,6 +1352,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 85,
@@ -1356,6 +1363,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 85,
@@ -1379,6 +1387,7 @@
     "messages": [
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'eventType' should be 'event-type' (kebab-case)",
         "line": 181,
@@ -1389,6 +1398,7 @@
       },
       {
         "ruleId": "vue/prop-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/prop-name-casing] Prop 'virtualScroller' should be 'virtual-scroller' (kebab-case)",
         "line": 182,
@@ -1399,6 +1409,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 181,
@@ -1409,6 +1420,7 @@
       },
       {
         "ruleId": "vue/attribute-hyphenation",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
         "line": 182,
@@ -1419,6 +1431,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
         "line": 185,
@@ -1436,6 +1449,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-refer-to-non-existent-id] The aria-reference attribute references id=\"pn-s\" which does not exist in the template",
         "line": 115,
@@ -1446,6 +1460,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 117,
@@ -1456,6 +1471,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <span> is deprecated",
         "line": 167,
@@ -1473,6 +1489,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 18,
@@ -1490,6 +1507,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 32,
@@ -1500,6 +1518,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 32,
@@ -1510,6 +1529,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <textarea> elements must have an associated label",
         "line": 59,
@@ -1544,17 +1564,8 @@
     "file": "app/components/publish/PublishLanguagePicker.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Fuse' is registered but never used in template",
-        "line": 45,
-        "column": 11,
-        "endLine": 46,
-        "endColumn": 4,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 48,
@@ -1565,6 +1576,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <input> is deprecated",
         "line": 52,
@@ -1575,7 +1587,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/components/publish/PublishQuoteApprovalPicker.vue",
@@ -1600,6 +1612,7 @@
     "messages": [
       {
         "ruleId": "html/id-duplication",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 2,
         "message": "[vize:html/id-duplication] Duplicate id=\"publish-failed\" found in template",
         "line": 457,
@@ -1610,6 +1623,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 407,
@@ -1620,6 +1634,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 415,
@@ -1630,6 +1645,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 428,
@@ -1640,6 +1656,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <input> is deprecated",
         "line": 430,
@@ -1650,6 +1667,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 487,
@@ -1660,6 +1678,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 553,
@@ -1670,6 +1689,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <input> is deprecated",
         "line": 554,
@@ -1680,6 +1700,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <blockquote> is deprecated",
         "line": 590,
@@ -1690,6 +1711,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 597,
@@ -1700,6 +1722,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 604,
@@ -1710,6 +1733,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 690,
@@ -1720,6 +1744,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
         "line": 760,
@@ -1729,6 +1754,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
         "line": 779,
@@ -1738,6 +1764,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <div> (block element) is not allowed inside <span> (phrasing content only)",
         "line": 782,
@@ -1784,6 +1811,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 138,
@@ -1794,6 +1822,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <textarea> elements must have an associated label",
         "line": 160,
@@ -1804,6 +1833,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <textarea> is deprecated",
         "line": 160,
@@ -1814,6 +1844,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 194,
@@ -1824,6 +1855,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 253,
@@ -1847,6 +1879,7 @@
     "messages": [
       {
         "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
         "line": 14,
@@ -1857,6 +1890,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 14,
@@ -1867,6 +1901,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 17,
@@ -1902,6 +1937,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 67,
@@ -1912,6 +1948,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 69,
@@ -1922,6 +1959,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 94,
@@ -1939,6 +1977,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
         "line": 100,
@@ -1956,6 +1995,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
         "line": 39,
@@ -1973,6 +2013,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 57,
@@ -1996,6 +2037,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
         "line": 11,
@@ -2013,6 +2055,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 64,
@@ -2023,6 +2066,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 70,
@@ -2057,17 +2101,8 @@
     "file": "app/components/settings/SettingsTranslations.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'ISO6391' is registered but never used in template",
-        "line": 30,
-        "column": 11,
-        "endLine": 31,
-        "endColumn": 7,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
         "line": 48,
@@ -2078,7 +2113,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/components/status/StatusAccountDetails.vue",
@@ -2091,6 +2126,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 52,
@@ -2120,6 +2156,7 @@
     "messages": [
       {
         "ruleId": "a11y/media-has-caption",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/media-has-caption] <video> elements must have a <track kind=\"captions\"> for accessibility",
         "line": 132,
@@ -2130,6 +2167,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 151,
@@ -2140,6 +2178,7 @@
       },
       {
         "ruleId": "a11y/media-has-caption",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/media-has-caption] <video> elements must have a <track kind=\"captions\"> for accessibility",
         "line": 172,
@@ -2150,6 +2189,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 188,
@@ -2160,6 +2200,7 @@
       },
       {
         "ruleId": "a11y/media-has-caption",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/media-has-caption] <audio> elements must have a <track kind=\"captions\"> for accessibility",
         "line": 204,
@@ -2170,6 +2211,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 205,
@@ -2180,6 +2222,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 223,
@@ -2190,6 +2233,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 224,
@@ -2200,6 +2244,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 300,
@@ -2217,6 +2262,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 54,
@@ -2227,6 +2273,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 68,
@@ -2244,6 +2291,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 121,
@@ -2254,6 +2302,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 122,
@@ -2264,6 +2313,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 123,
@@ -2274,6 +2324,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 125,
@@ -2284,6 +2335,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 177,
@@ -2313,6 +2365,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 66,
@@ -2323,6 +2376,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 69,
@@ -2340,6 +2394,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 86,
@@ -2350,6 +2405,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 100,
@@ -2367,6 +2423,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 29,
@@ -2377,6 +2434,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 30,
@@ -2394,6 +2452,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 40,
@@ -2404,6 +2463,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 38,
@@ -2421,6 +2481,7 @@
     "messages": [
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 36,
@@ -2444,6 +2505,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 67,
@@ -2454,6 +2516,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <form> is a static element and should not have interactive event handlers",
         "line": 67,
@@ -2489,6 +2552,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 72,
@@ -2499,6 +2563,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 120,
@@ -2516,6 +2581,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 22,
@@ -2533,6 +2599,7 @@
     "messages": [
       {
         "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
         "line": 117,
@@ -2543,6 +2610,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 117,
@@ -2553,6 +2621,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 117,
@@ -2563,6 +2632,7 @@
       },
       {
         "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
         "line": 124,
@@ -2573,6 +2643,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 124,
@@ -2583,6 +2654,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 124,
@@ -2606,6 +2678,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 54,
@@ -2616,6 +2689,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 60,
@@ -2626,6 +2700,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 66,
@@ -2636,6 +2711,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 72,
@@ -2646,6 +2722,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 78,
@@ -2656,6 +2733,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 84,
@@ -2666,6 +2744,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 90,
@@ -2676,6 +2755,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 99,
@@ -2686,6 +2766,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 105,
@@ -2696,6 +2777,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 111,
@@ -2713,6 +2795,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 67,
@@ -2723,6 +2806,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 67,
@@ -2746,6 +2830,7 @@
     "messages": [
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 71,
@@ -2756,6 +2841,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 78,
@@ -2773,6 +2859,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 34,
@@ -2832,6 +2919,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 32,
@@ -2879,6 +2967,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 16,
@@ -2889,6 +2978,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 16,
@@ -2930,6 +3020,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
         "line": 35,
@@ -2971,6 +3062,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <button> is deprecated",
         "line": 37,
@@ -2994,6 +3086,7 @@
     "messages": [
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <select> elements must have an associated label",
         "line": 40,
@@ -3004,6 +3097,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <select> is deprecated",
         "line": 44,
@@ -3021,6 +3115,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 79,
@@ -3038,6 +3133,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 49,
@@ -3055,6 +3151,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 49,
@@ -3083,17 +3180,8 @@
     "file": "app/components/user/UserSignIn.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Fuse' is registered but never used in template",
-        "line": 99,
-        "column": 11,
-        "endLine": 100,
-        "endColumn": 4,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 102,
@@ -3104,6 +3192,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 114,
@@ -3114,6 +3203,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 121,
@@ -3124,6 +3214,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 140,
@@ -3134,6 +3225,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 148,
@@ -3144,7 +3236,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 5
   },
   {
     "file": "app/components/user/UserSignInEntry.vue",
@@ -3157,6 +3249,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 34,
@@ -3167,6 +3260,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 34,
@@ -3177,6 +3271,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 47,
@@ -3200,6 +3295,7 @@
     "messages": [
       {
         "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
         "line": 71,
@@ -3210,6 +3306,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 71,
@@ -3220,6 +3317,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 71,
@@ -3249,6 +3347,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 71,
@@ -3259,6 +3358,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 99,
@@ -3300,6 +3400,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'with_replies' should be PascalCase",
         "line": 19,
@@ -3353,6 +3454,7 @@
     "messages": [
       {
         "ruleId": "a11y/img-alt",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
         "line": 13,
@@ -3363,6 +3465,7 @@
       },
       {
         "ruleId": "a11y/alt-text",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
         "line": 13,
@@ -3373,6 +3476,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 13,
@@ -3390,6 +3494,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <form> is deprecated",
         "line": 78,
@@ -3400,6 +3505,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 83,
@@ -3410,6 +3516,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 88,
@@ -3420,6 +3527,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 111,
@@ -3430,6 +3538,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 121,
@@ -3459,6 +3568,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <form> is deprecated",
         "line": 81,
@@ -3469,6 +3579,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 89,
@@ -3479,6 +3590,7 @@
       },
       {
         "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
         "line": 92,
@@ -3514,6 +3626,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'search' is a reserved HTML element name and cannot be used as a component name",
         "line": 25,
@@ -3567,6 +3680,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'domain_blocks' should be PascalCase",
         "line": 13,
@@ -3650,6 +3764,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'scheduled-posts' should be PascalCase",
         "line": 13,
@@ -3667,6 +3782,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 28,
@@ -3677,6 +3793,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 131,
@@ -3724,6 +3841,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'push-notifications' should be PascalCase",
         "line": 16,
@@ -3747,6 +3865,7 @@
     "messages": [
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> (block element) is not allowed inside <label> (phrasing content only)",
         "line": 169,
@@ -3756,6 +3875,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <p> (block element) is not allowed inside <label> (phrasing content only)",
         "line": 177,
@@ -3765,6 +3885,7 @@
       },
       {
         "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/permitted-contents] <textarea> is an interactive element and cannot be nested inside another interactive element",
         "line": 180,
@@ -3781,6 +3902,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'featured-tags' should be PascalCase",
         "line": 13,
@@ -3804,6 +3926,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 82,
@@ -3821,6 +3944,7 @@
     "messages": [
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 20,
@@ -3838,6 +3962,7 @@
     "messages": [
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'share-target' should be PascalCase",
         "line": 14,
@@ -3848,6 +3973,7 @@
       },
       {
         "ruleId": "html/deprecated-attr",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/deprecated-attr] The \"border\" attribute on <div> is deprecated",
         "line": 30,
