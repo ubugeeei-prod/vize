@@ -10,16 +10,32 @@
     "directory": "npm/vize-wasm"
   },
   "files": [
+    "index.js",
+    "index.d.ts",
     "vize_vitrine_bg.wasm",
     "vize_vitrine.js",
-    "vize_vitrine.d.ts"
+    "vize_vitrine.d.ts",
+    "snippets/**"
   ],
   "type": "module",
   "sideEffects": [
     "./snippets/*"
   ],
-  "main": "vize_vitrine.js",
-  "types": "vize_vitrine.d.ts",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./vize_vitrine.js": {
+      "types": "./vize_vitrine.d.ts",
+      "import": "./vize_vitrine.js",
+      "default": "./vize_vitrine.js"
+    },
+    "./vize_vitrine_bg.wasm": "./vize_vitrine_bg.wasm"
+  },
   "engines": {
     "node": ">=22"
   }
