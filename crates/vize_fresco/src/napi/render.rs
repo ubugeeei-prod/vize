@@ -2,11 +2,32 @@
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
+use std::cell::RefCell;
 
 use super::terminal::with_backend;
-use super::types::{RenderNodeNapi, StyleNapi};
+use super::types::{LayoutResultNapi, RenderNodeNapi, StyleNapi};
 use crate::layout::Rect;
 use crate::terminal::{Color, Style};
+
+thread_local! {
+    static LAST_RENDER_LAYOUTS: RefCell<Vec<LayoutResultNapi>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Get layout results from the most recent renderTree call.
+#[napi(js_name = "getLastRenderLayouts")]
+pub fn get_last_render_layouts() -> Result<Vec<LayoutResultNapi>> {
+    LAST_RENDER_LAYOUTS.with(|layouts| {
+        layouts
+            .try_borrow()
+            .map(|items| items.clone())
+            .map_err(|e| {
+                Error::new(
+                    Status::GenericFailure,
+                    format!("Layout borrow error: {}", e),
+                )
+            })
+    })
+}
 
 /// Render text at position.
 #[napi(js_name = "renderText")]
@@ -126,7 +147,7 @@ pub fn set_cursor_shape(shape: String) -> Result<()> {
 pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
     use crate::layout::{
         AlignItems, AlignSelf, Dimension, Display, FlexDirection, FlexWrap, JustifyContent,
-        LengthPercentageAuto,
+        LengthPercentageAuto, Overflow, Position,
     };
     use crate::render::{
         Appearance, BorderStyle, InputContent, NodeKind, Painter, RenderNode, RenderTree,
@@ -150,7 +171,11 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                     cursor: node.cursor.unwrap_or(0) as usize,
                     focused: node.focused.unwrap_or(false),
                     mask: node.mask.unwrap_or(false),
-                    mask_char: '*',
+                    mask_char: node
+                        .mask_char
+                        .as_deref()
+                        .and_then(|s| s.chars().next())
+                        .unwrap_or('*'),
                 }),
                 _ => NodeKind::Box,
             };
@@ -197,6 +222,40 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                     flex_style.display = match display.as_str() {
                         "none" => Display::None,
                         _ => Display::Flex,
+                    };
+                }
+
+                // Position and inset
+                if let Some(ref position) = style.position {
+                    flex_style.position = match position.as_str() {
+                        "absolute" => Position::Absolute,
+                        _ => Position::Relative,
+                    };
+                }
+                if let Some(ref top) = style.top {
+                    flex_style.inset.top = parse_length_percentage_auto(top);
+                }
+                if let Some(ref right) = style.right {
+                    flex_style.inset.right = parse_length_percentage_auto(right);
+                }
+                if let Some(ref bottom) = style.bottom {
+                    flex_style.inset.bottom = parse_length_percentage_auto(bottom);
+                }
+                if let Some(ref left) = style.left {
+                    flex_style.inset.left = parse_length_percentage_auto(left);
+                }
+
+                // Overflow
+                let overflow = style
+                    .overflow
+                    .as_ref()
+                    .or(style.overflow_x.as_ref())
+                    .or(style.overflow_y.as_ref());
+                if let Some(overflow) = overflow {
+                    flex_style.overflow = match overflow.as_str() {
+                        "hidden" => Overflow::Hidden,
+                        "scroll" => Overflow::Scroll,
+                        _ => Overflow::Visible,
                     };
                 }
 
@@ -265,6 +324,9 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 if let Some(shrink) = style.flex_shrink {
                     flex_style.flex_shrink = shrink as f32;
                 }
+                if let Some(ref basis) = style.flex_basis {
+                    flex_style.flex_basis = parse_dimension(basis);
+                }
 
                 // Dimensions
                 if let Some(ref w) = style.width {
@@ -284,6 +346,9 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 }
                 if let Some(ref h) = style.max_height {
                     flex_style.max_height = parse_dimension(h);
+                }
+                if let Some(aspect_ratio) = style.aspect_ratio {
+                    flex_style.aspect_ratio = Some(aspect_ratio as f32);
                 }
 
                 // Padding
@@ -333,6 +398,12 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                     flex_style.gap.row = g as f32;
                     flex_style.gap.column = g as f32;
                 }
+                if let Some(g) = style.row_gap {
+                    flex_style.gap.row = g as f32;
+                }
+                if let Some(g) = style.column_gap {
+                    flex_style.gap.column = g as f32;
+                }
 
                 render_node.style = flex_style;
             }
@@ -350,6 +421,9 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 appearance.dim = app.dim.unwrap_or(false);
                 appearance.italic = app.italic.unwrap_or(false);
                 appearance.underline = app.underline.unwrap_or(false);
+                appearance.inverse = app.inverse.unwrap_or(false);
+                appearance.blink = app.blink.unwrap_or(false);
+                appearance.hidden = app.hidden.unwrap_or(false);
                 appearance.strikethrough = app.strikethrough.unwrap_or(false);
                 render_node.appearance = appearance;
             }
@@ -402,6 +476,22 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
         // Compute layout
         let (width, height) = (backend.width(), backend.height());
         tree.compute_layout(width, height);
+
+        let layouts: Vec<_> = tree
+            .iter()
+            .filter_map(|(&id, node)| {
+                node.layout.map(|rect| LayoutResultNapi {
+                    id: id as i64,
+                    x: rect.x as i32,
+                    y: rect.y as i32,
+                    width: rect.width as i32,
+                    height: rect.height as i32,
+                })
+            })
+            .collect();
+        LAST_RENDER_LAYOUTS.with(|last| {
+            *last.borrow_mut() = layouts;
+        });
 
         // Paint to buffer
         let mut painter = Painter::new(backend.buffer_mut());
@@ -468,6 +558,27 @@ fn parse_dimension(s: &str) -> crate::layout::Dimension {
     Dimension::Auto
 }
 
+/// Parse length/percentage/auto string to LengthPercentageAuto.
+fn parse_length_percentage_auto(s: &str) -> crate::layout::LengthPercentageAuto {
+    use crate::layout::LengthPercentageAuto;
+
+    if s == "auto" {
+        return LengthPercentageAuto::Auto;
+    }
+
+    if let Some(percent) = s.strip_suffix('%')
+        && let Ok(v) = percent.parse::<f32>()
+    {
+        return LengthPercentageAuto::Percent(v);
+    }
+
+    if let Ok(v) = s.parse::<f32>() {
+        return LengthPercentageAuto::Points(v);
+    }
+
+    LengthPercentageAuto::Auto
+}
+
 /// Convert StyleNapi to Style.
 fn convert_style(style: StyleNapi) -> Style {
     let mut result = Style::default();
@@ -482,6 +593,9 @@ fn convert_style(style: StyleNapi) -> Style {
     result.dim = style.dim.unwrap_or(false);
     result.italic = style.italic.unwrap_or(false);
     result.underline = style.underline.unwrap_or(false);
+    result.reverse = style.inverse.unwrap_or(false);
+    result.blink = style.blink.unwrap_or(false);
+    result.hidden = style.hidden.unwrap_or(false);
     result.strikethrough = style.strikethrough.unwrap_or(false);
 
     result

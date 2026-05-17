@@ -10,6 +10,7 @@ export type JsonRpcMessage = {
 };
 
 export type LspInitializationOptions = {
+  semanticTokens?: boolean;
   editor?: boolean;
   lint?: boolean;
   typecheck?: boolean;

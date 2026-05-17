@@ -25,7 +25,19 @@ export interface SfcCompileResultNapi {
   templateHash?: string;
   styleHash?: string;
   scriptHash?: string;
+  hasScoped: boolean;
+  styles: StyleBlockNapi[];
   macroArtifacts?: MacroArtifact[];
+}
+
+export interface StyleBlockNapi {
+  content: string;
+  src?: string;
+  lang?: string;
+  scoped: boolean;
+  module: boolean;
+  moduleName?: string;
+  index: number;
 }
 
 export interface VizeUnpluginOptions {

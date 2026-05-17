@@ -99,6 +99,13 @@ export async function assertEmptyEditorRequests(
       },
     ],
     [
+      "textDocument/semanticTokens/range",
+      {
+        textDocument: { uri },
+        range,
+      },
+    ],
+    [
       "textDocument/codeLens",
       {
         textDocument: { uri },

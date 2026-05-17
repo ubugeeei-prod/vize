@@ -208,16 +208,17 @@ impl ReferencesService {
                 // Check if this is in a binding context
                 // (inside {{ }}, after v-*, after :, after @, etc.)
                 if Self::is_in_binding_context(line, pos) {
+                    let character = crate::ide::offset_to_position(line, pos).1;
                     locations.push(Location {
                         uri: tower_lsp::lsp_types::Url::parse("file:///dummy").unwrap(),
                         range: Range {
                             start: Position {
                                 line: base_line + line_idx as u32,
-                                character: pos as u32,
+                                character,
                             },
                             end: Position {
                                 line: base_line + line_idx as u32,
-                                character: pos as u32 + word.len() as u32,
+                                character: character + word.encode_utf16().count() as u32,
                             },
                         },
                     });

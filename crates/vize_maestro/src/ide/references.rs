@@ -224,24 +224,7 @@ impl ReferencesService {
 
     /// Convert offset to (line, character).
     pub(crate) fn offset_to_position(content: &str, offset: usize) -> (u32, u32) {
-        let mut line = 0u32;
-        let mut col = 0u32;
-        let mut current = 0usize;
-
-        for ch in content.chars() {
-            if current >= offset {
-                break;
-            }
-            if ch == '\n' {
-                line += 1;
-                col = 0;
-            } else {
-                col += 1;
-            }
-            current += ch.len_utf8();
-        }
-
-        (line, col)
+        crate::ide::offset_to_position(content, offset)
     }
 }
 

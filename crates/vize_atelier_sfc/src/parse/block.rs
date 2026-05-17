@@ -306,13 +306,21 @@ pub(super) fn parse_block_fast<'a>(
         }
     }
 
-    // Handle self-closing tag
-    let is_self_closing = pos > 0 && pos < len && bytes[pos - 1] == b'/';
+    // Handle self-closing tag.
+    let is_self_closing = pos < len && bytes[pos] == b'/';
 
     if is_self_closing {
-        if pos < len && bytes[pos] == b'>' {
+        pos += 1;
+        while pos < len && is_whitespace_fast(bytes[pos]) {
             pos += 1;
         }
+        if pos >= len || bytes[pos] != b'>' {
+            return Err(build_malformed_error(
+                tag_name,
+                "the self-closing tag is incomplete",
+            ));
+        }
+        pos += 1;
         return Ok(Some((
             tag_name,
             attrs,

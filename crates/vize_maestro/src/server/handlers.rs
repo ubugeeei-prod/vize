@@ -17,8 +17,9 @@ use tower_lsp::{
         HoverParams, InitializeParams, InitializeResult, InitializedParams, InlayHint,
         InlayHintParams, Location, MessageType, Position, PrepareRenameResponse, Range,
         ReferenceParams, RenameFilesParams, RenameParams, SemanticTokensParams,
-        SemanticTokensResult, ServerInfo, SymbolInformation, SymbolKind,
-        TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
+        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
+        SymbolInformation, SymbolKind, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
+        WorkspaceSymbolParams,
     },
 };
 
@@ -571,6 +572,28 @@ impl LanguageServer for MaestroServer {
 
         let content = doc.text();
         Ok(SemanticTokensService::get_tokens(&content, uri))
+    }
+
+    async fn semantic_tokens_range(
+        &self,
+        params: SemanticTokensRangeParams,
+    ) -> Result<Option<SemanticTokensRangeResult>> {
+        if !self.state.lsp_features().semantic_tokens {
+            return Ok(None);
+        }
+
+        let uri = &params.text_document.uri;
+
+        let Some(doc) = self.state.documents.get(uri) else {
+            return Ok(None);
+        };
+
+        let content = doc.text();
+        Ok(SemanticTokensService::get_tokens_range(
+            &content,
+            uri,
+            params.range,
+        ))
     }
 
     async fn code_lens(&self, params: CodeLensParams) -> Result<Option<Vec<CodeLens>>> {

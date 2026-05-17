@@ -2,68 +2,88 @@
  * Text Component - Text display
  */
 
-import { defineComponent, h } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { stringifyChildren } from "../utils/text.js";
+
+export type TextWrap =
+  | boolean
+  | "wrap"
+  | "end"
+  | "middle"
+  | "truncate"
+  | "truncate-start"
+  | "truncate-middle"
+  | "truncate-end";
 
 export interface TextProps {
   /** Text content (alternative to slot) */
   content?: string;
-  /** Enable text wrapping */
-  wrap?: boolean;
-  /** Foreground color */
+  /** Ink-compatible text wrapping/truncation mode */
+  wrap?: TextWrap;
+  /** Foreground color (Fresco alias) */
   fg?: string;
-  /** Background color */
+  /** Foreground color (Ink alias) */
+  color?: string;
+  /** Background color (Fresco alias) */
   bg?: string;
+  /** Background color (Ink alias) */
+  backgroundColor?: string;
   /** Bold text */
   bold?: boolean;
-  /** Dim text */
+  /** Dim text (Fresco alias) */
   dim?: boolean;
+  /** Dim text (Ink alias) */
+  dimColor?: boolean;
   /** Italic text */
   italic?: boolean;
   /** Underlined text */
   underline?: boolean;
   /** Strikethrough text */
   strikethrough?: boolean;
+  /** Inverse background/foreground colors */
+  inverse?: boolean;
+  /** Accessibility label, accepted for Ink API parity */
+  "aria-label"?: string;
+  /** Hide from screen readers, accepted for Ink API parity */
+  "aria-hidden"?: boolean;
 }
 
 export const Text = defineComponent({
   name: "Text",
   props: {
     content: String,
-    wrap: Boolean,
+    wrap: [Boolean, String] as PropType<TextProps["wrap"]>,
     fg: String,
+    color: String,
     bg: String,
+    backgroundColor: String,
     bold: Boolean,
     dim: Boolean,
+    dimColor: Boolean,
     italic: Boolean,
     underline: Boolean,
     strikethrough: Boolean,
+    inverse: Boolean,
+    "aria-label": String,
+    "aria-hidden": Boolean,
   },
   setup(props, { slots }) {
     return () => {
-      // Get text from content prop or slot
-      const text =
-        props.content ??
-        slots
-          .default?.()
-          ?.map((vnode) => {
-            if (typeof vnode.children === "string") {
-              return vnode.children;
-            }
-            return "";
-          })
-          .join("") ??
-        "";
+      const text = props.content ?? stringifyChildren(slots.default?.());
 
       return h("text", {
         text,
         wrap: props.wrap,
-        fg: props.fg,
-        bg: props.bg,
+        fg: props.fg ?? props.color,
+        bg: props.bg ?? props.backgroundColor,
         bold: props.bold,
-        dim: props.dim,
+        dim: props.dim || props.dimColor,
         italic: props.italic,
         underline: props.underline,
         strikethrough: props.strikethrough,
+        inverse: props.inverse,
+        "aria-label": props["aria-label"],
+        "aria-hidden": props["aria-hidden"],
       });
     };
   },
