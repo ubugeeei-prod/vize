@@ -104,7 +104,6 @@ vize lsp
 You can also download platform-specific binaries from
 [GitHub Releases](https://github.com/ubugeeei/vize/releases).
 
-
 ## Static Analysis
 
 Vize shares the same parser and semantic analysis layers across linting, type checking, editor
