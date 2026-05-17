@@ -54,7 +54,12 @@ impl Backend {
     /// Initialize the terminal for TUI mode.
     pub fn init(&mut self) -> io::Result<()> {
         enable_raw_mode()?;
-        execute!(io::stdout(), EnterAlternateScreen, EnableBracketedPaste, Hide)?;
+        execute!(
+            io::stdout(),
+            EnterAlternateScreen,
+            EnableBracketedPaste,
+            Hide
+        )?;
         self.alternate_screen = true;
         self.bracketed_paste = true;
         Ok(())

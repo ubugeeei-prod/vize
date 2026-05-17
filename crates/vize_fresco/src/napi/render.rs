@@ -20,7 +20,12 @@ pub fn get_last_render_layouts() -> Result<Vec<LayoutResultNapi>> {
         layouts
             .try_borrow()
             .map(|items| items.clone())
-            .map_err(|e| Error::new(Status::GenericFailure, format!("Layout borrow error: {}", e)))
+            .map_err(|e| {
+                Error::new(
+                    Status::GenericFailure,
+                    format!("Layout borrow error: {}", e),
+                )
+            })
     })
 }
 

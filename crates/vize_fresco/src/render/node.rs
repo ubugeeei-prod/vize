@@ -270,7 +270,6 @@ impl Appearance {
             blink: self.blink,
             hidden: self.hidden,
             strikethrough: self.strikethrough,
-            ..Default::default()
         }
     }
 }
