@@ -8,8 +8,10 @@ use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Position, Range, Url}
 
 use crate::server::ServerState;
 
-use super::{DiagnosticService, SourceMapping, VirtualTsResult};
+use super::{DiagnosticService, SourceMapping, VirtualTsResult, sources};
 use vize_carton::cstr;
+
+type LspRangeParts = (u32, u32, u32, u32);
 
 impl DiagnosticService {
     /// Collect diagnostics from the Corsa project-session backend.
@@ -56,6 +58,7 @@ impl DiagnosticService {
         let sfc_script_start_line = virtual_result.sfc_script_start_line;
         let template_scope_start_line = virtual_result.template_scope_start_line;
         let line_mappings = &virtual_result.line_mappings;
+        let source_mappings = &virtual_result.source_mappings;
         tracing::info!(
             "generated virtual ts ({} bytes), user_code_start={}, sfc_script_start={}, template_scope_start={}, mappings_count={}",
             virtual_ts.len(),
@@ -137,17 +140,6 @@ impl DiagnosticService {
         corsa_diags
             .into_iter()
             .filter_map(|diag| {
-                // Skip diagnostics in preamble (before user script content)
-                if diag.range.start.line < user_code_start_line {
-                    tracing::debug!(
-                        "skipping preamble diagnostic at line {} (user code starts at {}): {}",
-                        diag.range.start.line,
-                        user_code_start_line,
-                        &diag.message[..diag.message.len().min(50)]
-                    );
-                    return None;
-                }
-
                 // Skip warnings about internal generated variables
                 // TS6133: 'X' is declared but its value is never read
                 // TS6196: 'X' is declared but never used
@@ -168,10 +160,25 @@ impl DiagnosticService {
                     return None;
                 }
 
-                // Determine if this is a script error or template error
+                let mapped_range = map_diagnostic_with_source_mappings(
+                    virtual_ts,
+                    content.as_str(),
+                    source_mappings,
+                    diag.range.start.line,
+                    diag.range.start.character,
+                    diag.range.end.line,
+                    diag.range.end.character,
+                );
+
+                // Determine if this is a script error or template error.
+                // Prefer byte-range source maps from canon. The older line
+                // mapping remains as a fallback for diagnostics that land on
+                // synthetic wrapper statements.
                 let is_template_error = diag.range.start.line >= template_scope_start_line;
 
-                let (start_line, end_line, start_char, end_char) = if is_template_error {
+                let (start_line, end_line, start_char, end_char) = if let Some(mapped_range) = mapped_range {
+                    mapped_range
+                } else if is_template_error {
                     // Template scope error - try to find source mapping from @vize-map comments
                     let virtual_line = diag.range.start.line as usize;
 
@@ -209,15 +216,32 @@ impl DiagnosticService {
                         return None;
                     }
                 } else {
+                    // Skip diagnostics in generated preamble when no source map
+                    // points back to user code.
+                    if diag.range.start.line < user_code_start_line {
+                        tracing::debug!(
+                            "skipping preamble diagnostic at line {} (user code starts at {}): {}",
+                            diag.range.start.line,
+                            user_code_start_line,
+                            &diag.message[..diag.message.len().min(50)]
+                        );
+                        return None;
+                    }
+
                     // Script error - map using user code offset
-                    let user_code_offset = diag.range.start.line.saturating_sub(user_code_start_line);
-                    let user_code_offset_end = diag.range.end.line.saturating_sub(user_code_start_line);
+                    let user_code_offset =
+                        diag.range.start.line.saturating_sub(user_code_start_line);
+                    let user_code_offset_end =
+                        diag.range.end.line.saturating_sub(user_code_start_line);
 
                     // sfc_script_start_line is 1-indexed, convert to 0-indexed
                     // Add skipped_import_lines to account for import lines that were moved to module scope
                     let skipped_lines = virtual_result.skipped_import_lines;
-                    let start = (sfc_script_start_line.saturating_sub(1)) + user_code_offset + skipped_lines;
-                    let end = (sfc_script_start_line.saturating_sub(1)) + user_code_offset_end + skipped_lines;
+                    let start =
+                        (sfc_script_start_line.saturating_sub(1)) + user_code_offset + skipped_lines;
+                    let end = (sfc_script_start_line.saturating_sub(1))
+                        + user_code_offset_end
+                        + skipped_lines;
 
                     // Adjust character offset: virtual TS adds 2 spaces of indentation
                     let start_ch = diag.range.start.character.saturating_sub(2);
@@ -250,7 +274,7 @@ impl DiagnosticService {
                         3 => DiagnosticSeverity::INFORMATION,
                         _ => DiagnosticSeverity::HINT,
                     }),
-                    source: Some("vize/corsa".to_string()),
+                    source: Some(sources::TYPE_CHECKER.to_string()),
                     message: diag.message,
                     ..Default::default()
                 })
@@ -261,7 +285,7 @@ impl DiagnosticService {
     /// Generate virtual TypeScript for a Vue SFC.
     pub(super) fn generate_virtual_ts(uri: &Url, content: &str) -> Option<VirtualTsResult> {
         use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-        use vize_canon::virtual_ts::generate_virtual_ts;
+        use vize_canon::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
         use vize_croquis::{Analyzer, AnalyzerOptions};
 
         let options = SfcParseOptions {
@@ -272,15 +296,24 @@ impl DiagnosticService {
         let descriptor = parse_sfc(content, options).ok()?;
 
         // Get script block info
-        let (script_content, sfc_script_start_line) = descriptor
+        let (script_content, script_offset, sfc_script_start_line) = descriptor
             .script_setup
             .as_ref()
-            .map(|s| (s.content.as_ref(), s.loc.start_line as u32))
+            .map(|s| {
+                (
+                    s.content.as_ref(),
+                    s.loc.start as u32,
+                    s.loc.start_line as u32,
+                )
+            })
             .or_else(|| {
-                descriptor
-                    .script
-                    .as_ref()
-                    .map(|s| (s.content.as_ref(), s.loc.start_line as u32))
+                descriptor.script.as_ref().map(|s| {
+                    (
+                        s.content.as_ref(),
+                        s.loc.start as u32,
+                        s.loc.start_line as u32,
+                    )
+                })
             })?;
 
         let template_block = descriptor.template.as_ref()?;
@@ -294,13 +327,16 @@ impl DiagnosticService {
         analyzer.analyze_template(&template_ast);
 
         let summary = analyzer.finish();
-        let output = generate_virtual_ts(
+        let output = generate_virtual_ts_with_offsets(
             &summary,
             Some(script_content),
             Some(&template_ast),
+            script_offset,
             template_offset,
+            &VirtualTsOptions::default(),
         );
         let code = output.code;
+        let source_mappings = output.mappings;
 
         // Count import lines in script content (these are moved to module scope)
         // Import lines are skipped from user setup code section
@@ -332,6 +368,7 @@ impl DiagnosticService {
         Some(VirtualTsResult {
             #[allow(clippy::disallowed_methods)]
             code: code.to_string(),
+            source_mappings,
             user_code_start_line,
             sfc_script_start_line,
             template_scope_start_line,
@@ -434,7 +471,7 @@ impl DiagnosticService {
     /// and the script_setup block from the SFC parse.
     pub(super) fn generate_virtual_ts_for_art(uri: &Url, content: &str) -> Option<VirtualTsResult> {
         use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-        use vize_canon::virtual_ts::generate_virtual_ts;
+        use vize_canon::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
         use vize_croquis::{Analyzer, AnalyzerOptions};
 
         // Parse as art file to get variant templates
@@ -466,15 +503,24 @@ impl DiagnosticService {
         let descriptor = parse_sfc(content, sfc_options).ok()?;
 
         // Get script block info
-        let (script_content, sfc_script_start_line) = descriptor
+        let (script_content, script_offset, sfc_script_start_line) = descriptor
             .script_setup
             .as_ref()
-            .map(|s| (s.content.as_ref(), s.loc.start_line as u32))
+            .map(|s| {
+                (
+                    s.content.as_ref(),
+                    s.loc.start as u32,
+                    s.loc.start_line as u32,
+                )
+            })
             .or_else(|| {
-                descriptor
-                    .script
-                    .as_ref()
-                    .map(|s| (s.content.as_ref(), s.loc.start_line as u32))
+                descriptor.script.as_ref().map(|s| {
+                    (
+                        s.content.as_ref(),
+                        s.loc.start as u32,
+                        s.loc.start_line as u32,
+                    )
+                })
             })?;
 
         // Parse template AST
@@ -487,13 +533,16 @@ impl DiagnosticService {
         analyzer.analyze_template(&template_ast);
 
         let summary = analyzer.finish();
-        let output = generate_virtual_ts(
+        let output = generate_virtual_ts_with_offsets(
             &summary,
             Some(script_content),
             Some(&template_ast),
+            script_offset,
             template_offset,
+            &VirtualTsOptions::default(),
         );
         let code = output.code;
+        let source_mappings = output.mappings;
 
         // Count import lines
         let skipped_import_lines = Self::count_import_lines(script_content);
@@ -520,6 +569,7 @@ impl DiagnosticService {
         Some(VirtualTsResult {
             #[allow(clippy::disallowed_methods)]
             code: code.to_string(),
+            source_mappings,
             user_code_start_line,
             sfc_script_start_line,
             template_scope_start_line,
@@ -527,4 +577,109 @@ impl DiagnosticService {
             skipped_import_lines,
         })
     }
+}
+
+fn map_diagnostic_with_source_mappings(
+    virtual_ts: &str,
+    source: &str,
+    mappings: &[vize_canon::virtual_ts::VizeMapping],
+    start_line: u32,
+    start_character: u32,
+    end_line: u32,
+    end_character: u32,
+) -> Option<LspRangeParts> {
+    let start_offset = line_character_to_byte_offset(virtual_ts, start_line, start_character)?;
+    let end_offset = line_character_to_byte_offset(virtual_ts, end_line, end_character)
+        .unwrap_or(start_offset.saturating_add(1));
+    let start_mapping = mapping_for_generated_offset(mappings, start_offset)?;
+    let src_start = map_generated_offset_to_source(start_mapping, start_offset);
+    let src_end = mapping_for_generated_offset(mappings, end_offset)
+        .map(|mapping| map_generated_offset_to_source(mapping, end_offset))
+        .unwrap_or_else(|| {
+            let generated_len = end_offset.saturating_sub(start_offset);
+            src_start
+                .saturating_add(generated_len)
+                .min(start_mapping.src_range.end)
+        })
+        .max(src_start.saturating_add(1));
+
+    let (start_line, start_char) = source_offset_to_position(source, src_start);
+    let (end_line, end_char) = source_offset_to_position(source, src_end.min(source.len()));
+    Some((start_line, end_line, start_char, end_char))
+}
+
+fn mapping_for_generated_offset(
+    mappings: &[vize_canon::virtual_ts::VizeMapping],
+    offset: usize,
+) -> Option<&vize_canon::virtual_ts::VizeMapping> {
+    mappings
+        .iter()
+        .find(|mapping| offset >= mapping.gen_range.start && offset <= mapping.gen_range.end)
+}
+
+fn map_generated_offset_to_source(
+    mapping: &vize_canon::virtual_ts::VizeMapping,
+    generated_offset: usize,
+) -> usize {
+    let generated_relative = generated_offset.saturating_sub(mapping.gen_range.start);
+    let source_len = mapping
+        .src_range
+        .end
+        .saturating_sub(mapping.src_range.start);
+    mapping
+        .src_range
+        .start
+        .saturating_add(generated_relative.min(source_len.saturating_sub(1)))
+}
+
+fn line_character_to_byte_offset(text: &str, line: u32, character: u32) -> Option<usize> {
+    let mut current_line = 0u32;
+    let mut line_start = 0usize;
+
+    for (offset, ch) in text.char_indices() {
+        if current_line == line {
+            break;
+        }
+        if ch == '\n' {
+            current_line += 1;
+            line_start = offset + ch.len_utf8();
+        }
+    }
+
+    if current_line != line {
+        return None;
+    }
+
+    let line_text = text[line_start..]
+        .split_once('\n')
+        .map(|(line, _)| line)
+        .unwrap_or(&text[line_start..]);
+    let mut utf16_units = 0u32;
+    for (relative_offset, ch) in line_text.char_indices() {
+        if utf16_units >= character {
+            return Some(line_start + relative_offset);
+        }
+        utf16_units += ch.len_utf16() as u32;
+    }
+    Some(line_start + line_text.len())
+}
+
+fn source_offset_to_position(source: &str, offset: usize) -> (u32, u32) {
+    let mut line = 0u32;
+    let mut character = 0u32;
+    let target = offset.min(source.len());
+
+    for (current, ch) in source.char_indices() {
+        if current >= target {
+            break;
+        }
+        if ch == '\n' {
+            line += 1;
+            character = 0;
+        } else {
+            character += ch.len_utf16() as u32;
+        }
+    }
+
+    (line, character)
 }

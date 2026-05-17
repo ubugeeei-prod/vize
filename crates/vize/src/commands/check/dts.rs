@@ -23,6 +23,32 @@ pub(super) fn parse_interface_members(
     Ok(parse_interface_members_content(&content, interface_name))
 }
 
+pub(super) fn parse_interface_members_with_rewritten_imports(
+    path: &Path,
+    interface_name: &str,
+) -> Result<Vec<(String, String)>, std::io::Error> {
+    let content = match profile!("cli.check.dts.read", fs::read_to_string(path)) {
+        Ok(content) => {
+            global_profiler().record_fs_read_to_string(content.len());
+            content
+        }
+        Err(error) => {
+            global_profiler().record_fs_read_to_string_failure();
+            return Err(error);
+        }
+    };
+    let source_dir = path.parent().unwrap_or_else(|| Path::new("."));
+    Ok(parse_interface_members_content(&content, interface_name)
+        .into_iter()
+        .map(|(name, type_annotation)| {
+            (
+                name,
+                normalize_rewritten_type(type_annotation.as_str(), source_dir),
+            )
+        })
+        .collect())
+}
+
 pub(super) fn parse_interface_members_content(
     content: &str,
     interface_name: &str,

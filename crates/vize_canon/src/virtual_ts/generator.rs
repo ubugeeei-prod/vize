@@ -14,10 +14,10 @@ use super::{
     scope::generate_scope_closures,
     types::{VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
-use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
+use vize_carton::{FxHashSet, String};
 
 /// Generate virtual TypeScript from Vue SFC analysis.
 ///
@@ -379,13 +379,22 @@ pub fn generate_virtual_ts_with_offsets(
                 )
             );
 
-            // Declare unresolved components (auto-imported or built-in) as `any`
+            // Declare unresolved components (auto-imported or built-in) as `any`.
+            // Names known to be provided by ambient project declarations stay
+            // unshadowed so their actual component prop types are preserved.
             if !summary.used_components.is_empty() {
+                let external_template_bindings: FxHashSet<&str> = options
+                    .external_template_bindings
+                    .iter()
+                    .map(|name| name.as_str())
+                    .collect();
                 let mut has_unresolved = false;
                 for component in &summary.used_components {
                     let name = component.as_str();
                     // Skip if already declared via script bindings (import/const)
-                    if summary.bindings.bindings.contains_key(name) {
+                    if summary.bindings.bindings.contains_key(name)
+                        || external_template_bindings.contains(name)
+                    {
                         continue;
                     }
                     if !has_unresolved {
