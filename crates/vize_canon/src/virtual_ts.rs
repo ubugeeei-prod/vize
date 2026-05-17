@@ -95,6 +95,45 @@ const count = 1
     }
 
     #[test]
+    fn test_external_template_bindings_do_not_shadow_auto_imported_components() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = "const count = 'oops'\n";
+        let template = r#"<AutoCard :count="count" />"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let options = VirtualTsOptions {
+            auto_import_stubs: vec![
+                "declare const AutoCard: typeof import('./components/AutoCard.vue.ts')['default'];"
+                    .into(),
+            ],
+            external_template_bindings: vec!["AutoCard".into()],
+            ..Default::default()
+        };
+        let output =
+            generate_virtual_ts_with_offsets(&summary, Some(script), Some(&root), 0, 0, &options);
+
+        assert!(
+            output
+                .code
+                .contains("declare const AutoCard: typeof import")
+        );
+        assert!(!output.code.contains("const AutoCard: any"));
+        assert!(
+            output
+                .code
+                .contains("type __AutoCard_Props_0 = typeof AutoCard")
+        );
+    }
+
+    #[test]
     fn test_dom_event_type_mapping() {
         // Mouse events
         assert_eq!(get_dom_event_type("click"), "MouseEvent");

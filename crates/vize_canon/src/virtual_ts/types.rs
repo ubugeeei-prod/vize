@@ -34,6 +34,13 @@ pub struct VirtualTsOptions {
     /// Auto-import stub declarations (e.g., Nuxt composables).
     /// Each entry is a full TypeScript `declare function ...;` statement.
     pub auto_import_stubs: Vec<String>,
+    /// Template identifiers declared outside the SFC virtual module.
+    ///
+    /// Nuxt auto-imported components are declared in a generated ambient file.
+    /// Keeping their names here prevents the virtual TS generator from
+    /// shadowing them with local `any` fallbacks, so their real props remain
+    /// type-checkable.
+    pub external_template_bindings: Vec<String>,
 }
 
 impl Default for VirtualTsOptions {
@@ -42,6 +49,7 @@ impl Default for VirtualTsOptions {
             template_globals: default_plugin_globals(),
             css_modules: Vec::new(),
             auto_import_stubs: Vec::new(),
+            external_template_bindings: Vec::new(),
         }
     }
 }
