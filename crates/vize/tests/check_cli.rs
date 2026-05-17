@@ -234,6 +234,111 @@ const props = defineProps<PublicProps>()
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn check_json_reports_nuxt_auto_imports_and_preserves_builtin_components() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "nuxt-auto-imports",
+        &[
+            ("nuxt.config.ts", "export default {}\n"),
+            (
+                "app.vue",
+                r#"<script setup lang="ts">
+const count = 'oops'
+</script>
+
+<template>
+  <AutoCard :count="count" />
+  <NuxtLink to="/">Home</NuxtLink>
+  <ClientOnly>
+    {{ useCounter().count.toUpperCase() }}
+  </ClientOnly>
+</template>
+"#,
+            ),
+            (
+                "components/AutoCard.vue",
+                r#"<script setup lang="ts">
+defineProps<{
+  count: number
+}>()
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"#,
+            ),
+            (
+                "app/composables/counter.ts",
+                r#"export function useCounter(): { count: number } {
+  return { count: 1 }
+}
+"#,
+            ),
+        ],
+    );
+    std::fs::create_dir_all(project_root.join(".nuxt")).unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/components.d.ts"),
+        r#"declare module 'vue' {
+  export interface GlobalComponents {
+    AutoCard: typeof import('../components/AutoCard.vue')['default']
+  }
+}
+export {}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        project_root.join(".nuxt/imports.d.ts"),
+        r#"export { useCounter } from '../app/composables/counter';
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", ".", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let diagnostics = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(|diagnostic| diagnostic.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.contains("[TS2322]") && diagnostic.contains("number")),
+        "expected AutoCard prop type error, got: {diagnostics:#?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.contains("[TS2339]") && diagnostic.contains("toUpperCase")),
+        "expected typed Nuxt auto-import composable error, got: {diagnostics:#?}"
+    );
+    assert!(
+        diagnostics.iter().all(|diagnostic| {
+            !diagnostic.contains("NuxtLink") && !diagnostic.contains("ClientOnly")
+        }),
+        "Nuxt built-in components should not produce diagnostics: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 fn collect_declaration_snapshot(
     declaration_dir: &Path,
 ) -> Vec<(std::string::String, std::string::String)> {

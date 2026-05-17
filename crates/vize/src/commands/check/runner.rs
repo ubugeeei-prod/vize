@@ -99,7 +99,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
 
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
-    nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &cwd);
+    nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &project_root);
 
     if !args.quiet {
         eprintln!(
