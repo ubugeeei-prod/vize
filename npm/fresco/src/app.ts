@@ -306,6 +306,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   let needsRender = true;
   let appContext: UseAppReturn | null = null;
   let focusManager: FocusManager | null = null;
+  let nonInteractiveOutput = "";
 
   let exitSettled = false;
   let resolveExit: ((value?: unknown) => void) | null = null;
@@ -320,31 +321,36 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   async function mount() {
     if (mounted) return;
 
-    const n = await loadNative();
+    const n = interactive ? await loadNative() : null;
 
-    if (typeof n.initTerminalWithOptions === "function") {
-      n.initTerminalWithOptions({
-        alternateScreen: interactive && options.alternateScreen === true,
-        bracketedPaste: interactive,
-        hideCursor: interactive,
-        mouse: interactive && mouse,
-        rawMode: interactive,
-      });
-    } else if (mouse) {
-      n.initTerminalWithMouse();
-    } else {
-      n.initTerminal();
+    if (n) {
+      if (typeof n.initTerminalWithOptions === "function") {
+        n.initTerminalWithOptions({
+          alternateScreen: options.alternateScreen === true,
+          bracketedPaste: true,
+          hideCursor: true,
+          mouse,
+          rawMode: true,
+        });
+      } else if (mouse) {
+        n.initTerminalWithMouse();
+      } else {
+        n.initTerminal();
+      }
+
+      n.enableIme?.();
+
+      // Initialize layout engine
+      n.initLayout();
     }
-
-    if (interactive) n.enableIme?.();
-
-    // Initialize layout engine
-    n.initLayout();
 
     // Create Vue app with custom renderer
     const app = createVueApp(componentFromRoot(rootComponent));
 
-    const info = n.getTerminalInfo();
+    const info = n?.getTerminalInfo() ?? {
+      width: streamsContext.stdout.columns ?? 80,
+      height: streamsContext.stdout.rows ?? 24,
+    };
     appContext = createAppContext({
       width: info.width,
       height: info.height,
@@ -381,13 +387,25 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
     running = false;
 
-    const n = await loadNative();
-    n.disableIme?.();
-    n.restoreTerminal();
+    if (!interactive && rootElement) {
+      nonInteractiveOutput = treeToString(rootElement);
+    }
+
+    if (native && interactive) {
+      native.disableIme?.();
+      native.restoreTerminal();
+    }
 
     if (vueApp) {
       vueApp.unmount();
       vueApp = null;
+    }
+
+    if (!interactive && nonInteractiveOutput) {
+      streamsContext.stdout.write(
+        nonInteractiveOutput.endsWith("\n") ? nonInteractiveOutput : `${nonInteractiveOutput}\n`,
+      );
+      nonInteractiveOutput = "";
     }
 
     rootElement = null;
@@ -414,19 +432,34 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   }
 
   function clear() {
-    if (!native || !mounted) return;
+    if (!mounted) return;
+    if (!interactive) {
+      nonInteractiveOutput = "";
+      return;
+    }
+    if (!native) return;
     native.clearScreen();
     native.flushTerminal();
   }
 
   function render() {
-    if (!native || !mounted || !rootElement) {
+    if (!mounted || !rootElement) {
       return;
     }
 
     const start = performance.now();
 
     try {
+      if (!interactive) {
+        nonInteractiveOutput = treeToString(rootElement);
+        options.onRender?.({ renderTime: performance.now() - start });
+        return;
+      }
+
+      if (!native) {
+        return;
+      }
+
       const renderNodes = screenReaderEnabled.value
         ? treeToScreenReaderRenderNodes(rootElement)
         : treeToRenderNodes(rootElement);
@@ -534,17 +567,17 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
   }
 
   async function eventLoop() {
-    const n = await loadNative();
+    const n = interactive ? await loadNative() : null;
 
     while (running) {
       try {
-        const event = n.pollEvent(16); // ~60fps
+        const event = n?.pollEvent(16); // ~60fps
 
         if (event) {
           // Handle resize
           if (event.eventType === "resize") {
-            n.syncTerminalSize();
-            n.clearScreen();
+            n?.syncTerminalSize();
+            n?.clearScreen();
             needsRender = true;
           }
 
