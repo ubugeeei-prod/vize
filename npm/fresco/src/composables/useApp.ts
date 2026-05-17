@@ -28,6 +28,7 @@ export interface AppContextControls {
   render?: () => void;
   clear?: () => void;
   waitUntilRenderFlush?: () => Promise<void>;
+  stdout?: NodeJS.WriteStream;
   width?: number;
   height?: number;
 }
@@ -57,14 +58,16 @@ export function createAppContext(controls: AppContextControls = {}): UseAppRetur
     return controls.waitUntilRenderFlush?.() ?? Promise.resolve();
   };
 
-  // Try to get terminal size
-  if (typeof process !== "undefined" && process.stdout) {
-    width.value = controls.width ?? process.stdout.columns ?? 80;
-    height.value = controls.height ?? process.stdout.rows ?? 24;
+  const stdout = controls.stdout ?? (typeof process !== "undefined" ? process.stdout : undefined);
 
-    process.stdout.on?.("resize", () => {
-      width.value = process.stdout.columns ?? 80;
-      height.value = process.stdout.rows ?? 24;
+  // Try to get terminal size
+  if (stdout) {
+    width.value = controls.width ?? stdout.columns ?? 80;
+    height.value = controls.height ?? stdout.rows ?? 24;
+
+    stdout.on?.("resize", () => {
+      width.value = stdout.columns ?? 80;
+      height.value = stdout.rows ?? 24;
     });
   }
 

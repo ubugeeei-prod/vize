@@ -27,7 +27,7 @@ use super::{MaestroServer, server_capabilities};
 use crate::ide::{
     CodeActionService, CodeLensService, CompletionService, DefinitionService, DocumentLinkService,
     FileRenameService, HoverService, IdeContext, InlayHintService, ReferencesService,
-    RenameService, SemanticTokensService, WorkspaceSymbolsService,
+    RenameService, SemanticTokensService, WorkspaceSymbolsService, position_to_offset,
 };
 
 #[tower_lsp::async_trait]
@@ -142,9 +142,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         let mut hover_result: Option<Hover> = None;
 
@@ -182,8 +182,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
@@ -232,8 +233,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
@@ -269,8 +271,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
@@ -475,8 +478,10 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, range.start.line, range.start.character);
+        let Some(offset) = position_to_offset(&content, range.start.line, range.start.character)
+        else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             let actions = CodeActionService::code_actions(&ctx, range);
@@ -504,8 +509,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]
@@ -537,8 +543,9 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let offset =
-            crate::utils::position_to_offset_str(&content, position.line, position.character);
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
 
         if let Some(ctx) = IdeContext::new(&self.state, uri, offset) {
             #[cfg(feature = "native")]

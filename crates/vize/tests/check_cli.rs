@@ -339,6 +339,111 @@ export {}
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn check_declaration_emit_uses_tsconfig_options() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "emit-declarations-tsconfig",
+        &[
+            (
+                "tsconfig.json",
+                r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "declarationDir": "types-from-tsconfig",
+    "declarationMap": true
+  },
+  "include": ["src/**/*"]
+}"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+export interface PublicProps {
+  label: string
+}
+
+defineProps<PublicProps>()
+</script>
+
+<template>
+  <button>{{ label }}</button>
+</template>
+"#,
+            ),
+            (
+                "src/index.ts",
+                r#"export { default as App } from './App.vue'
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", ".", "--format", "json", "--declaration"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let declarations = json["declarations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|path| path.as_str().unwrap())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        declarations,
+        vec![
+            "types-from-tsconfig/App.vue.d.ts",
+            "types-from-tsconfig/index.d.ts"
+        ]
+    );
+    assert!(
+        project_root
+            .join("types-from-tsconfig/App.vue.d.ts")
+            .is_file()
+    );
+    assert!(
+        project_root
+            .join("types-from-tsconfig/App.vue.d.ts.map")
+            .is_file()
+    );
+    assert!(
+        project_root
+            .join("types-from-tsconfig/index.d.ts")
+            .is_file()
+    );
+    assert!(
+        project_root
+            .join("types-from-tsconfig/index.d.ts.map")
+            .is_file()
+    );
+    assert!(!project_root.join("dist/types").exists());
+
+    let app_declaration =
+        std::fs::read_to_string(project_root.join("types-from-tsconfig/App.vue.d.ts")).unwrap();
+    assert!(app_declaration.contains("export interface PublicProps"));
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 fn collect_declaration_snapshot(
     declaration_dir: &Path,
 ) -> Vec<(std::string::String, std::string::String)> {

@@ -5,12 +5,14 @@ use compact_str::CompactString;
 use crate::layout::FlexStyle;
 use crate::render::{Appearance, NodeKind, RenderNode, TextContent};
 use crate::terminal::Color;
+use crate::text::WrapMode;
 
 /// Builder for Text nodes.
 #[derive(Debug, Clone, Default)]
 pub struct TextNode {
     text: CompactString,
     wrap: bool,
+    wrap_mode: WrapMode,
     style: FlexStyle,
     appearance: Appearance,
 }
@@ -27,6 +29,14 @@ impl TextNode {
     /// Enable text wrapping.
     pub fn wrap(mut self) -> Self {
         self.wrap = true;
+        self.wrap_mode = WrapMode::Word;
+        self
+    }
+
+    /// Set text wrapping mode.
+    pub fn wrap_mode(mut self, mode: WrapMode) -> Self {
+        self.wrap = !matches!(mode, WrapMode::NoWrap);
+        self.wrap_mode = mode;
         self
     }
 
@@ -83,6 +93,7 @@ impl TextNode {
         let content = TextContent {
             text: self.text,
             wrap: self.wrap,
+            wrap_mode: self.wrap_mode,
         };
         RenderNode::new(id, NodeKind::Text(content))
             .with_style(self.style)

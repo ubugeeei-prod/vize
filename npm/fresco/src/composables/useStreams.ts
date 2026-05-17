@@ -2,6 +2,31 @@
  * Stream composables matching Ink's stdin/stdout/stderr helpers.
  */
 
+import { inject, type InjectionKey } from "@vue/runtime-core";
+
+const BRACKETED_PASTE_ENABLE = "\x1B[?2004h";
+const BRACKETED_PASTE_DISABLE = "\x1B[?2004l";
+
+export const STREAMS_KEY: InjectionKey<StreamsContext> = Symbol("fresco-streams");
+
+export interface StreamsContextOptions {
+  stdin?: NodeJS.ReadStream;
+  stdout?: NodeJS.WriteStream;
+  stderr?: NodeJS.WriteStream;
+  exitOnCtrlC?: boolean;
+  interactive?: boolean;
+}
+
+export interface StreamsContext {
+  stdin: NodeJS.ReadStream;
+  stdout: NodeJS.WriteStream;
+  stderr: NodeJS.WriteStream;
+  setRawMode: (isRawMode: boolean) => void;
+  isRawModeSupported: boolean;
+  setBracketedPasteMode: (isEnabled: boolean) => void;
+  internal_exitOnCtrlC: boolean;
+}
+
 export interface UseStdinReturn {
   stdin: NodeJS.ReadStream;
   setRawMode: (isRawMode: boolean) => void;
@@ -19,21 +44,55 @@ export interface UseStderrReturn {
   write: (data: string) => void;
 }
 
-export function useStdin(): UseStdinReturn {
-  const stdin = process.stdin;
+export function createStreamsContext(options: StreamsContextOptions = {}): StreamsContext {
+  const stdin = options.stdin ?? process.stdin;
+  const stdout = options.stdout ?? process.stdout;
+  const stderr = options.stderr ?? process.stderr;
+  const isInteractive = options.interactive ?? true;
+  let bracketedPasteDepth = 0;
 
   return {
     stdin,
+    stdout,
+    stderr,
     setRawMode: (isRawMode: boolean) => {
       stdin.setRawMode?.(isRawMode);
     },
     isRawModeSupported: typeof stdin.setRawMode === "function",
-    internal_exitOnCtrlC: true,
+    setBracketedPasteMode: (isEnabled: boolean) => {
+      if (!isInteractive) return;
+
+      if (isEnabled) {
+        bracketedPasteDepth += 1;
+        if (bracketedPasteDepth === 1) stdout.write(BRACKETED_PASTE_ENABLE);
+        return;
+      }
+
+      if (bracketedPasteDepth === 0) return;
+      bracketedPasteDepth -= 1;
+      if (bracketedPasteDepth === 0) stdout.write(BRACKETED_PASTE_DISABLE);
+    },
+    internal_exitOnCtrlC: options.exitOnCtrlC ?? true,
+  };
+}
+
+export function useStreamsContext(): StreamsContext {
+  return inject(STREAMS_KEY) ?? createStreamsContext();
+}
+
+export function useStdin(): UseStdinReturn {
+  const streams = useStreamsContext();
+
+  return {
+    stdin: streams.stdin,
+    setRawMode: streams.setRawMode,
+    isRawModeSupported: streams.isRawModeSupported,
+    internal_exitOnCtrlC: streams.internal_exitOnCtrlC,
   };
 }
 
 export function useStdout(): UseStdoutReturn {
-  const stdout = process.stdout;
+  const { stdout } = useStreamsContext();
 
   return {
     stdout,
@@ -44,7 +103,7 @@ export function useStdout(): UseStdoutReturn {
 }
 
 export function useStderr(): UseStderrReturn {
-  const stderr = process.stderr;
+  const { stderr } = useStreamsContext();
 
   return {
     stderr,

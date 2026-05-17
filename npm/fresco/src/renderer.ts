@@ -190,6 +190,16 @@ function isWrappingEnabled(value: unknown): boolean {
   return true;
 }
 
+function textWrapMode(value: unknown): string | undefined {
+  if (value === undefined) return undefined;
+  if (value === false) return "none";
+  if (value === true) return "wrap";
+  if (value === "end") return "truncate-end";
+  if (value === "middle") return "truncate-middle";
+  if (typeof value === "string") return value;
+  return undefined;
+}
+
 /**
  * Convert Fresco tree to render nodes for native
  */
@@ -209,6 +219,7 @@ export function treeToRenderNodes(root: FrescoNode): NativeRenderNode[] {
     }
     if (node.props.wrap !== undefined) {
       renderNode.wrap = isWrappingEnabled(node.props.wrap);
+      renderNode.wrapMode = textWrapMode(node.props.wrap);
     }
     if (node.props.value !== undefined) {
       renderNode.value = stringValue(node.props.value) ?? "";

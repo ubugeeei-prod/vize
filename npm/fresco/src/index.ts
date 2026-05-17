@@ -11,6 +11,7 @@ export {
   renderToString,
   type App,
   type AppOptions,
+  type RenderOptions,
   type RenderInstance,
   type RenderToStringOptions,
   lastKeyEvent,
@@ -27,6 +28,14 @@ export {
   type CompositionEvent,
 } from "./app.js";
 export { createRenderer } from "./renderer.js";
+export {
+  kittyFlags,
+  kittyModifiers,
+  resolveKittyFlags,
+  type KittyFlagName,
+  type KittyKeyboardOptions,
+} from "./kittyKeyboard.js";
+export { measureElement, type DOMElement } from "./measureElement.js";
 
 // Components
 export * from "./components/index.js";
