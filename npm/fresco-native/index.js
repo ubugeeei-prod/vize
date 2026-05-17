@@ -316,6 +316,7 @@ const {
   getLastRenderLayouts,
   initTerminal,
   initTerminalWithMouse,
+  initTerminalWithOptions,
   restoreTerminal,
   getTerminalInfo,
   clearScreen,
@@ -354,6 +355,7 @@ module.exports.renderTree = renderTree;
 module.exports.getLastRenderLayouts = getLastRenderLayouts;
 module.exports.initTerminal = initTerminal;
 module.exports.initTerminalWithMouse = initTerminalWithMouse;
+module.exports.initTerminalWithOptions = initTerminalWithOptions;
 module.exports.restoreTerminal = restoreTerminal;
 module.exports.getTerminalInfo = getTerminalInfo;
 module.exports.clearScreen = clearScreen;

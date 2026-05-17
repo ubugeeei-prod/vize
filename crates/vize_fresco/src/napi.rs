@@ -48,9 +48,9 @@ pub use render::{
 };
 pub use terminal::{
     clear_screen, flush_terminal, get_terminal_info, init_terminal, init_terminal_with_mouse,
-    restore_terminal, sync_terminal_size,
+    init_terminal_with_options, restore_terminal, sync_terminal_size,
 };
 pub use types::{
     FlexStyleNapi, ImeStateNapi, InputEventNapi, LayoutResultNapi, ModifiersNapi, RenderNodeNapi,
-    StyleNapi, TerminalInfoNapi,
+    StyleNapi, TerminalInfoNapi, TerminalOptionsNapi,
 };

@@ -7,9 +7,9 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use std::sync::Mutex;
 
-use crate::terminal::Backend;
+use crate::terminal::{Backend, TerminalOptions};
 
-use super::types::TerminalInfoNapi;
+use super::types::{TerminalInfoNapi, TerminalOptionsNapi};
 
 // Global terminal backend (lazy initialized)
 static BACKEND: Mutex<Option<Backend>> = Mutex::new(None);
@@ -51,6 +51,19 @@ pub fn init_terminal() -> Result<()> {
 #[napi(js_name = "initTerminalWithMouse")]
 #[allow(clippy::disallowed_macros)]
 pub fn init_terminal_with_mouse() -> Result<()> {
+    init_terminal_with_options(TerminalOptionsNapi {
+        raw_mode: Some(true),
+        alternate_screen: Some(true),
+        mouse: Some(true),
+        bracketed_paste: Some(true),
+        hide_cursor: Some(true),
+    })
+}
+
+/// Initialize terminal with explicit TUI mode options.
+#[napi(js_name = "initTerminalWithOptions")]
+#[allow(clippy::disallowed_macros)]
+pub fn init_terminal_with_options(options: TerminalOptionsNapi) -> Result<()> {
     let mut guard = BACKEND
         .lock()
         .map_err(|e| Error::new(Status::GenericFailure, format!("Lock error: {}", e)))?;
@@ -69,12 +82,20 @@ pub fn init_terminal_with_mouse() -> Result<()> {
         )
     })?;
 
-    backend.init_with_mouse().map_err(|e| {
-        Error::new(
-            Status::GenericFailure,
-            format!("Failed to init terminal: {}", e),
-        )
-    })?;
+    backend
+        .init_with_options(TerminalOptions {
+            raw_mode: options.raw_mode.unwrap_or(true),
+            alternate_screen: options.alternate_screen.unwrap_or(false),
+            mouse_capture: options.mouse.unwrap_or(false),
+            bracketed_paste: options.bracketed_paste.unwrap_or(true),
+            hide_cursor: options.hide_cursor.unwrap_or(true),
+        })
+        .map_err(|e| {
+            Error::new(
+                Status::GenericFailure,
+                format!("Failed to init terminal: {}", e),
+            )
+        })?;
 
     *guard = Some(backend);
     Ok(())
