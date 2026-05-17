@@ -15,6 +15,8 @@ export interface StreamsContextOptions {
   stderr?: NodeJS.WriteStream;
   exitOnCtrlC?: boolean;
   interactive?: boolean;
+  writeToStdout?: (data: string) => void;
+  writeToStderr?: (data: string) => void;
 }
 
 export interface StreamsContext {
@@ -24,6 +26,8 @@ export interface StreamsContext {
   setRawMode: (isRawMode: boolean) => void;
   isRawModeSupported: boolean;
   setBracketedPasteMode: (isEnabled: boolean) => void;
+  writeToStdout: (data: string) => void;
+  writeToStderr: (data: string) => void;
   internal_exitOnCtrlC: boolean;
 }
 
@@ -49,6 +53,8 @@ export function createStreamsContext(options: StreamsContextOptions = {}): Strea
   const stdout = options.stdout ?? process.stdout;
   const stderr = options.stderr ?? process.stderr;
   const isInteractive = options.interactive ?? true;
+  const writeToStdout = options.writeToStdout ?? ((data: string) => stdout.write(data));
+  const writeToStderr = options.writeToStderr ?? ((data: string) => stderr.write(data));
   let rawModeDepth = 0;
   let pendingRawModeDisable = false;
   let bracketedPasteDepth = 0;
@@ -98,6 +104,8 @@ export function createStreamsContext(options: StreamsContextOptions = {}): Strea
       bracketedPasteDepth -= 1;
       if (bracketedPasteDepth === 0) stdout.write(BRACKETED_PASTE_DISABLE);
     },
+    writeToStdout,
+    writeToStderr,
     internal_exitOnCtrlC: options.exitOnCtrlC ?? true,
   };
 }
@@ -118,23 +126,19 @@ export function useStdin(): UseStdinReturn {
 }
 
 export function useStdout(): UseStdoutReturn {
-  const { stdout } = useStreamsContext();
+  const { stdout, writeToStdout } = useStreamsContext();
 
   return {
     stdout,
-    write: (data: string) => {
-      stdout.write(data);
-    },
+    write: writeToStdout,
   };
 }
 
 export function useStderr(): UseStderrReturn {
-  const { stderr } = useStreamsContext();
+  const { stderr, writeToStderr } = useStreamsContext();
 
   return {
     stderr,
-    write: (data: string) => {
-      stderr.write(data);
-    },
+    write: writeToStderr,
   };
 }
