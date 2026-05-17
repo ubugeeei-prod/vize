@@ -60,24 +60,8 @@ use crate::virtual_code::{
 /// Convert byte offset to (line, character) position in a document.
 #[inline]
 pub fn offset_to_position(content: &str, offset: usize) -> (u32, u32) {
-    let mut line = 0u32;
-    let mut col = 0u32;
-    let mut current = 0usize;
-
-    for ch in content.chars() {
-        if current >= offset {
-            break;
-        }
-        if ch == '\n' {
-            line += 1;
-            col = 0;
-        } else {
-            col += 1;
-        }
-        current += ch.len_utf8();
-    }
-
-    (line, col)
+    let position = crate::utils::offset_to_position_str(content, offset);
+    (position.line, position.character)
 }
 
 /// Convert (line, character) position to byte offset in a document.
@@ -416,6 +400,20 @@ mod tests {
         assert_eq!(offset_to_position(content, 6), (1, 0));
         assert_eq!(offset_to_position(content, 8), (1, 2));
         assert_eq!(offset_to_position(content, 12), (2, 0));
+    }
+
+    #[test]
+    fn test_offset_to_position_counts_utf16_code_units() {
+        let content = "const icon = \"😀\";\nconst message = icon";
+
+        assert_eq!(
+            offset_to_position(content, "const icon = \"😀".len()),
+            (0, 16)
+        );
+        assert_eq!(
+            offset_to_position(content, content.find("message").unwrap()),
+            (1, 6)
+        );
     }
 
     #[test]

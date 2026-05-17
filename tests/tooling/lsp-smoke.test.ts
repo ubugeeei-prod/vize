@@ -70,11 +70,18 @@ const secondaryLabel = ref('secondary')
         };
         hoverProvider?: boolean;
         definitionProvider?: boolean;
+        referencesProvider?: boolean;
+        semanticTokensProvider?: {
+          range?: boolean;
+          full?: boolean | unknown;
+        };
       };
     };
 
     assert.equal(init.capabilities?.hoverProvider, true);
     assert.equal(init.capabilities?.definitionProvider, true);
+    assert.equal(init.capabilities?.referencesProvider, true);
+    assert.equal(init.capabilities?.semanticTokensProvider?.range, true);
     assert.ok(init.capabilities?.completionProvider?.triggerCharacters?.includes("."));
 
     const parentUri = pathToFileURL(parentPath).href;
@@ -162,6 +169,87 @@ const secondaryLabel = ref('secondary')
       assert.ok(labels.includes("secondaryLabel"), labels.join(", "));
       assert.ok(labels.includes("primaryLabel"), labels.join(", "));
       assert.ok(labels.includes("v-if"), labels.join(", "));
+    });
+
+    await t.test("definition and references use UTF-16 LSP coordinates", async () => {
+      const utf16Source = `<script setup lang="ts">
+const emoji = "😀"; const message = ref(emoji)
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>
+`;
+      const utf16Path = path.join(workspaceDir, "Utf16.vue");
+      fs.writeFileSync(utf16Path, utf16Source, "utf8");
+      const utf16Uri = pathToFileURL(utf16Path).href;
+
+      session.notify("textDocument/didOpen", {
+        textDocument: {
+          uri: utf16Uri,
+          languageId: "vue",
+          version: 1,
+          text: utf16Source,
+        },
+      });
+
+      await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+        isDiagnosticsForUri(params, utf16Uri),
+      );
+
+      const usageOffset = utf16Source.lastIndexOf("message") + "message".length;
+      const declarationOffset = utf16Source.indexOf("message =");
+      const declarationPosition = offsetToPosition(utf16Source, declarationOffset);
+
+      const definition = (await session.request("textDocument/definition", {
+        textDocument: { uri: utf16Uri },
+        position: offsetToPosition(utf16Source, usageOffset),
+      })) as
+        | Array<{
+            uri: string;
+            range: { start: { line: number; character: number } };
+          }>
+        | {
+            uri: string;
+            range: { start: { line: number; character: number } };
+          };
+
+      const location = firstLocation(definition);
+      assert.equal(location.uri, utf16Uri);
+      assert.deepEqual(location.range.start, declarationPosition);
+
+      const references = (await session.request("textDocument/references", {
+        textDocument: { uri: utf16Uri },
+        position: offsetToPosition(utf16Source, usageOffset),
+        context: {
+          includeDeclaration: true,
+        },
+      })) as Array<{ uri: string; range: { start: { line: number; character: number } } }>;
+
+      assert.ok(
+        references.some(
+          (reference) =>
+            reference.uri === utf16Uri &&
+            reference.range.start.line === declarationPosition.line &&
+            reference.range.start.character === declarationPosition.character,
+        ),
+        JSON.stringify(references),
+      );
+    });
+
+    await t.test("semantic token range requests are implemented", async () => {
+      const response = (await session.request("textDocument/semanticTokens/range", {
+        textDocument: { uri: artUri },
+        range: {
+          start: { line: 8, character: 0 },
+          end: { line: 11, character: 0 },
+        },
+      })) as { data?: unknown[] } | null;
+
+      assert.ok(response);
+      assert.ok(Array.isArray(response.data));
+      assert.equal(response.data.length % 5, 0);
+      assert.ok(response.data.length > 0);
     });
   } finally {
     await session.shutdown();

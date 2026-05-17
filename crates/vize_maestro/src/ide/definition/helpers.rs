@@ -27,26 +27,7 @@ pub(crate) fn is_word_char(c: u8) -> bool {
 
 /// Convert byte offset to (line, character) position.
 pub(crate) fn offset_to_position(content: &str, offset: usize) -> (u32, u32) {
-    let mut line = 0u32;
-    let mut col = 0u32;
-    let mut current_offset = 0usize;
-
-    for ch in content.chars() {
-        if current_offset >= offset {
-            break;
-        }
-
-        if ch == '\n' {
-            line += 1;
-            col = 0;
-        } else {
-            col += 1;
-        }
-
-        current_offset += ch.len_utf8();
-    }
-
-    (line, col)
+    crate::ide::offset_to_position(content, offset)
 }
 
 /// Skip virtual code header comments.
