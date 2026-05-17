@@ -49,7 +49,7 @@ pub struct LintArgs {
     #[arg(long)]
     pub no_config: bool,
 
-    /// Output format (text, json, stylish, markdown, html, agent)
+    /// Output format (text, ansi, plain, json, stylish, markdown, html, agent)
     #[arg(short, long, default_value = "text")]
     pub format: String,
 
@@ -94,7 +94,7 @@ pub fn run(args: LintArgs) {
     let start = Instant::now();
     let format = OutputFormat::parse(args.format.as_str()).unwrap_or_else(|| {
         eprintln!(
-            "Unknown lint output format '{}'. Expected one of: text, json, stylish, markdown, html, agent",
+            "Unknown lint output format '{}'. Expected one of: text, ansi, plain, json, stylish, markdown, html, agent",
             args.format
         );
         std::process::exit(2);
@@ -637,6 +637,8 @@ mod tests {
 
     #[test]
     fn report_formats_render_in_quiet_mode() {
+        assert!(should_render_lint_details(OutputFormat::Ansi, true));
+        assert!(should_render_lint_details(OutputFormat::Plain, true));
         assert!(should_render_lint_details(OutputFormat::Markdown, true));
         assert!(should_render_lint_details(OutputFormat::Html, true));
         assert!(should_render_lint_details(OutputFormat::Agent, true));

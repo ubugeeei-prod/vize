@@ -7,7 +7,7 @@ pub use text::*;
 use crate::diagnostic::{HelpRenderTarget, render_help};
 use crate::linter::LintResult;
 use serde::Serialize;
-use vize_carton::{FxHashMap, SmallVec, String};
+use vize_carton::{FxHashMap, SmallVec, String, ToCompactString, append};
 
 /// Output format for lint results
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -15,6 +15,10 @@ pub enum OutputFormat {
     /// Rich terminal output with colors and code snippets
     #[default]
     Text,
+    /// Full ANSI report with colors, code snippets, and formatted help
+    Ansi,
+    /// Plain text report without ANSI escape codes or code frames
+    Plain,
     /// ESLint-style compact grouped terminal output
     Stylish,
     /// JSON output for tooling integration
@@ -32,6 +36,8 @@ impl OutputFormat {
     pub fn parse(format: &str) -> Option<Self> {
         match format {
             "text" | "codeframe" | "code-frame" => Some(Self::Text),
+            "ansi" | "anssi" | "rich" | "rich-text" => Some(Self::Ansi),
+            "plain" | "plain-text" => Some(Self::Plain),
             "stylish" => Some(Self::Stylish),
             "json" => Some(Self::Json),
             "markdown" | "md" => Some(Self::Markdown),
@@ -45,6 +51,8 @@ impl OutputFormat {
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Text => "text",
+            Self::Ansi => "ansi",
+            Self::Plain => "plain",
             Self::Stylish => "stylish",
             Self::Json => "json",
             Self::Markdown => "markdown",
@@ -67,6 +75,8 @@ pub fn format_results(
 ) -> String {
     match format {
         OutputFormat::Text => format_text(results, sources),
+        OutputFormat::Ansi => format_ansi(results, sources),
+        OutputFormat::Plain => format_plain(results, sources),
         OutputFormat::Stylish => format_stylish(results, sources),
         OutputFormat::Json => format_json(results, sources),
         OutputFormat::Markdown => format_markdown(results, sources),
@@ -275,7 +285,10 @@ fn source_indices(sources: &[(String, String)]) -> FxHashMap<&str, SourceLineInd
 fn format_stylish(results: &[LintResult], sources: &[(String, String)]) -> String {
     let views = diagnostic_views(results, sources);
     if views.is_empty() {
-        return format!("{}\n", format_summary(0, 0, results.len())).into();
+        let mut output = String::default();
+        output.push_str(&format_summary(0, 0, results.len()));
+        output.push('\n');
+        return output;
     }
 
     let rule_width = views
@@ -296,7 +309,8 @@ fn format_stylish(results: &[LintResult], sources: &[(String, String)]) -> Strin
             output.push('\n');
         }
 
-        output.push_str(&format!(
+        append!(
+            output,
             "  {:>4}:{:<3}  {:<7}  {:<rule_width$}  {}  {}\n",
             view.line,
             view.column,
@@ -305,7 +319,7 @@ fn format_stylish(results: &[LintResult], sources: &[(String, String)]) -> Strin
             view.message,
             view.rule_docs_path,
             rule_width = rule_width,
-        ));
+        );
     }
 
     let (errors, warnings) = result_counts(results);
@@ -315,14 +329,62 @@ fn format_stylish(results: &[LintResult], sources: &[(String, String)]) -> Strin
     output
 }
 
+fn format_plain(results: &[LintResult], sources: &[(String, String)]) -> String {
+    let views = diagnostic_views(results, sources);
+    let (errors, warnings) = result_counts(results);
+    let mut output = String::default();
+
+    append!(
+        output,
+        "Patina lint report: {}\n",
+        format_summary(errors, warnings, results.len())
+    );
+
+    if views.is_empty() {
+        return output;
+    }
+
+    let mut current_file = "";
+    for view in &views {
+        if current_file != view.file {
+            current_file = view.file;
+            output.push('\n');
+            output.push_str(current_file);
+            output.push('\n');
+        }
+
+        append!(
+            output,
+            "  {}:{}:{} {} {} {}\n",
+            view.file,
+            view.line,
+            view.column,
+            view.severity_name(),
+            view.rule_id,
+            view.message
+        );
+        output.push_str("    Reference: ");
+        output.push_str(view.rule_docs_path);
+        output.push('\n');
+
+        if let Some(help) = view.help_text.as_deref() {
+            output.push_str("    Help:\n");
+            push_indented_lines(&mut output, help, "      ");
+        }
+    }
+
+    output
+}
+
 fn format_markdown(results: &[LintResult], sources: &[(String, String)]) -> String {
     let views = diagnostic_views(results, sources);
     let (errors, warnings) = result_counts(results);
     let mut output = String::from("# Patina Lint Report\n\n");
-    output.push_str(&format!(
+    append!(
+        output,
         "Summary: {}.\n",
         format_summary(errors, warnings, results.len())
-    ));
+    );
 
     if views.is_empty() {
         return output;
@@ -337,7 +399,8 @@ fn format_markdown(results: &[LintResult], sources: &[(String, String)]) -> Stri
             output.push_str("\n");
         }
 
-        output.push_str(&format!(
+        append!(
+            output,
             "\n### {} `{}` at {}:{}\n\n{}\n\nReference: `{}`\n",
             view.severity_name(),
             view.rule_id,
@@ -345,7 +408,7 @@ fn format_markdown(results: &[LintResult], sources: &[(String, String)]) -> Stri
             view.column,
             view.message,
             view.rule_docs_path
-        ));
+        );
 
         if let Some(help) = view.help_markdown {
             output.push_str("\nHelp:\n\n");
@@ -395,10 +458,14 @@ fn format_html(results: &[LintResult], sources: &[(String, String)]) -> String {
         output.push_str("</span><code>");
         output.push_str(&escape_html(view.rule_id));
         output.push_str("</code><span class=\"location\">");
-        output.push_str(&format!(
+        append!(
+            output,
             "{}:{}-{}:{}",
-            view.line, view.column, view.end_line, view.end_column
-        ));
+            view.line,
+            view.column,
+            view.end_line,
+            view.end_column
+        );
         output.push_str("</span></header>\n<p>");
         output.push_str(&escape_html(view.message));
         output.push_str("</p>\n<p class=\"docs\">Reference: <code>");
@@ -423,12 +490,13 @@ fn format_agent(results: &[LintResult], sources: &[(String, String)]) -> String 
     let (errors, warnings) = result_counts(results);
     let mut output = String::default();
 
-    output.push_str(&format!(
+    append!(
+        output,
         "patina report errors={} warnings={} files={}\n",
         errors,
         warnings,
         results.len()
-    ));
+    );
 
     if views.is_empty() {
         output.push_str("patina ok: no problems found\n");
@@ -440,9 +508,9 @@ fn format_agent(results: &[LintResult], sources: &[(String, String)]) -> String 
         output.push_str(" file=");
         output.push_str(&json_quote(view.file));
         output.push_str(" line=");
-        output.push_str(&view.line.to_string());
+        output.push_str(&view.line.to_compact_string());
         output.push_str(" column=");
-        output.push_str(&view.column.to_string());
+        output.push_str(&view.column.to_compact_string());
         output.push_str(" severity=");
         output.push_str(view.severity_name());
         output.push_str(" rule=");
@@ -489,6 +557,14 @@ fn json_quote(input: &str) -> String {
     serde_json::to_string(input)
         .unwrap_or_else(|_| "\"\"".to_owned())
         .into()
+}
+
+fn push_indented_lines(output: &mut String, text: &str, indent: &str) {
+    for line in text.lines() {
+        output.push_str(indent);
+        output.push_str(line);
+        output.push('\n');
+    }
 }
 
 struct SourceLineIndex {
@@ -562,6 +638,9 @@ const items = [1]
     #[test]
     fn output_format_parses_report_formats() {
         assert_eq!(OutputFormat::parse("stylish"), Some(OutputFormat::Stylish));
+        assert_eq!(OutputFormat::parse("ansi"), Some(OutputFormat::Ansi));
+        assert_eq!(OutputFormat::parse("anssi"), Some(OutputFormat::Ansi));
+        assert_eq!(OutputFormat::parse("plain-text"), Some(OutputFormat::Plain));
         assert_eq!(OutputFormat::parse("md"), Some(OutputFormat::Markdown));
         assert_eq!(OutputFormat::parse("telegraph"), Some(OutputFormat::Agent));
         assert_eq!(OutputFormat::parse("unknown"), None);
@@ -626,6 +705,63 @@ const items = [1]
         );
 
         assert!(output.contains("docs/content/rules/vue.md"), "{output}");
+    }
+
+    #[test]
+    fn ansi_output_includes_summary_and_ansi_help() {
+        let result = LintResult {
+            filename: "Component.vue".to_compact_string(),
+            diagnostics: vec![
+                LintDiagnostic::warn("vue/no-v-html", "Avoid raw HTML", 0, 3)
+                    .with_help("Use **text interpolation** instead."),
+            ],
+            error_count: 0,
+            warning_count: 1,
+        };
+        let output = format_results(
+            &[result],
+            &[(
+                vize_carton::String::from("Component.vue"),
+                vize_carton::String::from("abc"),
+            )],
+            OutputFormat::Ansi,
+        );
+
+        assert!(output.contains("docs/content/rules/vue.md"), "{output}");
+        assert!(output.contains("1 warning in 1 file"), "{output}");
+        assert!(output.contains("\x1b["), "{output}");
+    }
+
+    #[test]
+    fn plain_output_includes_reference_paths_without_ansi() {
+        let result = LintResult {
+            filename: "Component.vue".to_compact_string(),
+            diagnostics: vec![
+                LintDiagnostic::error("a11y/img-alt", "Missing alt text", 0, 3)
+                    .with_help("Add an `alt` attribute."),
+            ],
+            error_count: 1,
+            warning_count: 0,
+        };
+        let output = format_results(
+            &[result],
+            &[(
+                vize_carton::String::from("Component.vue"),
+                vize_carton::String::from("abc"),
+            )],
+            OutputFormat::Plain,
+        );
+
+        assert!(
+            output.contains("Patina lint report: 1 error in 1 file"),
+            "{output}"
+        );
+        assert!(
+            output.contains("docs/content/rules/accessibility.md"),
+            "{output}"
+        );
+        assert!(output.contains("Add an alt attribute."), "{output}");
+        assert!(!output.contains("\x1b["), "{output}");
     }
 
     #[test]

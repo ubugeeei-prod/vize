@@ -17,6 +17,7 @@
 //!                              |
 //!                              +-- TextEmitter  --> stdout (rich terminal)
 //!                              +-- JsonEmitter  --> JSON format
+//!                              +-- FormatEmitter --> ansi/plain/stylish/markdown/html/agent reports
 //!                              +-- LspEmitter   --> LSP diagnostics
 //!                              +-- OxlintBridge --> oxlint (future)
 //! ```

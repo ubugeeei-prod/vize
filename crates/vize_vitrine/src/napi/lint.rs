@@ -34,7 +34,7 @@ struct PatinaRuleMetaNapi<'a> {
 #[napi(object)]
 #[derive(Default)]
 pub struct LintOptionsNapi {
-    /// Output format: "text", "json", "stylish", "markdown", "html", or "agent"
+    /// Output format: "text", "ansi", "plain", "json", "stylish", "markdown", "html", or "agent"
     pub format: Option<String>,
     /// Maximum number of warnings before failing
     pub max_warnings: Option<u32>,
