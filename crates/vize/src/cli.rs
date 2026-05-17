@@ -48,7 +48,7 @@ enum Commands {
     #[cfg(feature = "maestro")]
     Ide(crate::commands::ide::IdeArgs),
 
-    /// Update the installed Vize CLI
+    /// Update the installed Vize package
     #[command(visible_alias = "self-update")]
     Upgrade(crate::commands::upgrade::UpgradeArgs),
 

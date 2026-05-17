@@ -146,10 +146,12 @@ Recommended package scripts:
 
 ### 4. Full Rust CLI
 
-Use the Rust binary when you want the full native CLI today.
+Use the Rust binary when you want the full native CLI today. For v1 alpha, the supported public
+channels are GitHub release binaries and the Nix entry point; the Rust CLI is not published through
+crates.io yet.
 
 ```bash
-cargo install vize
+nix run github:ubugeeei/vize#vize -- --help
 ```
 
 ```bash
@@ -158,7 +160,6 @@ vize fmt --check src
 vize lint --profile src
 vize check --profile src
 vize ready src
-vize upgrade
 vize lsp
 ```
 

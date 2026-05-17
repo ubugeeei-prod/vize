@@ -11,8 +11,9 @@ The `vize` npm package provides:
 - `vize upgrade` for updating the npm package
 
 For Vite integration, pair it with `@vizejs/vite-plugin`.
-For the full Rust-native CLI (`lsp`, `ide`, project-backed `check`, and `check-server`), install
-the Rust `vize` binary with `cargo install vize`.
+For the full Rust-native CLI (`lsp`, `ide`, project-backed `check`, and `check-server`), use the
+GitHub release binaries or the Nix entry point. The Rust CLI is not published through crates.io for
+v1 alpha.
 
 Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://viteplus.dev/guide/install).
 
