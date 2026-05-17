@@ -161,6 +161,70 @@ test("release workflow explicitly installs matrix Rust targets", () => {
   }
 });
 
+test("release workflow smoke installs npm tarballs before publishing", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const smokeJob = workflowJobBody(workflow, "smoke-release-packages");
+
+  assert.match(smokeJob, /needs:\s*\[build-release-packages, build-native-all\]/);
+  assert.match(smokeJob, /name:\s*Smoke release npm package installs/);
+  assert.match(smokeJob, /name:\s*Prepare native package tarballs/);
+  assert.match(smokeJob, /name:\s*Prepare Fresco native package tarball/);
+  assert.match(smokeJob, /node tools\/npm\/smoke-release-install\.mjs --prepare-manifests/);
+
+  for (const packageDir of [
+    "npm/vize-native",
+    "npm/fresco-native",
+    "npm/vize",
+    "npm/vite-plugin-vize",
+    "npm/oxlint-plugin-vize",
+    "npm/unplugin-vize",
+    "npm/fresco",
+    "npm/musea-mcp-server",
+    "npm/vite-plugin-musea",
+    "npm/rspack-vize-plugin",
+    "npm/musea-nuxt",
+    "npm/nuxt",
+  ]) {
+    assert.match(smokeJob, new RegExp(packageDir.replaceAll("/", "\\/")));
+  }
+
+  for (const jobName of [
+    "release-npm-cli",
+    "release-npm-vite-plugin",
+    "release-npm-oxlint-plugin",
+    "release-npm-unplugin",
+    "release-npm-fresco",
+    "release-npm-musea-mcp-server",
+    "release-npm-vite-plugin-musea",
+    "release-npm-rspack-plugin",
+    "release-npm-musea-nuxt",
+    "release-npm-nuxt",
+  ]) {
+    assert.match(workflowJobBody(workflow, jobName), /smoke-release-packages/);
+  }
+
+  for (const [jobName, smokeStep, publishStep] of [
+    [
+      "release-npm-native",
+      "name: Smoke install native package tarballs",
+      "name: Publish platform packages",
+    ],
+    [
+      "release-npm-fresco-native",
+      "name: Smoke install Fresco native package tarball",
+      "name: Publish",
+    ],
+    ["release-npm-wasm", "name: Smoke install WASM package tarball", "name: Publish @vizejs/wasm"],
+  ] as const) {
+    const job = workflowJobBody(workflow, jobName);
+    const smokeIndex = job.indexOf(smokeStep);
+    const publishIndex = job.indexOf(publishStep);
+    assert.notEqual(smokeIndex, -1, `${jobName} is missing ${smokeStep}`);
+    assert.notEqual(publishIndex, -1, `${jobName} is missing ${publishStep}`);
+    assert.ok(smokeIndex < publishIndex, `${jobName} must smoke install before publishing`);
+  }
+});
+
 test("benchmark workflow comments from trusted code after a read-only benchmark run", () => {
   const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
