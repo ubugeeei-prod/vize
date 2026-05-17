@@ -226,6 +226,23 @@ void test("applyNavigationOrder keeps the Blog group compact", () => {
   ]);
 });
 
+void test("applyNavigationOrder keeps the stability contract in Start", () => {
+  const document = createNavigationDocument([
+    ["/", "index"],
+    ["/getting-started", "Getting Started"],
+    ["/stability", "Stability"],
+  ]);
+
+  applyNavigation(document);
+
+  assert.deepEqual(sections(document), [
+    {
+      title: "Start",
+      labels: ["Overview", "Getting Started", "Stability"],
+    },
+  ]);
+});
+
 void test("applyNavigationOrder hides dated blog posts from the More fallback", () => {
   const document = createNavigationDocument([
     ["/internal/reference", "Internal Reference"],
