@@ -3,6 +3,8 @@
  */
 
 import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import type { AriaRole, AriaState } from "../accessibility.js";
+import { useIsScreenReaderEnabled } from "../composables/useIsScreenReaderEnabled.js";
 
 export type DimensionValue = number | string;
 export type BorderStyleName =
@@ -143,27 +145,9 @@ export interface BoxProps {
   /** Hide from screen readers, accepted for Ink API parity */
   "aria-hidden"?: boolean;
   /** Accessibility role, accepted for Ink API parity */
-  "aria-role"?:
-    | "button"
-    | "checkbox"
-    | "combobox"
-    | "list"
-    | "listbox"
-    | "listitem"
-    | "menu"
-    | "menuitem"
-    | "option"
-    | "progressbar"
-    | "radio"
-    | "radiogroup"
-    | "tab"
-    | "tablist"
-    | "table"
-    | "textbox"
-    | "timer"
-    | "toolbar";
+  "aria-role"?: AriaRole;
   /** Accessibility state, accepted for Ink API parity */
-  "aria-state"?: Record<string, boolean | undefined>;
+  "aria-state"?: AriaState;
 }
 
 const dimensionProp = [Number, String] as PropType<DimensionValue>;
@@ -250,7 +234,11 @@ export const Box = defineComponent({
     "aria-state": Object as PropType<BoxProps["aria-state"]>,
   },
   setup(props, { slots }) {
+    const isScreenReaderEnabled = useIsScreenReaderEnabled();
+
     return () => {
+      if (isScreenReaderEnabled && props["aria-hidden"]) return null;
+
       const style: Record<string, unknown> = {};
 
       if (props.display) style.display = props.display;
@@ -313,6 +301,11 @@ export const Box = defineComponent({
       if (props.overflowX) style.overflowX = props.overflowX;
       if (props.overflowY) style.overflowY = props.overflowY;
 
+      const children =
+        isScreenReaderEnabled && props["aria-label"]
+          ? [h("text", { text: props["aria-label"] })]
+          : slots.default?.();
+
       return h(
         "box",
         {
@@ -332,7 +325,7 @@ export const Box = defineComponent({
           "aria-role": props["aria-role"],
           "aria-state": props["aria-state"],
         },
-        slots.default?.(),
+        children,
       );
     };
   },
