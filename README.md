@@ -219,6 +219,9 @@ vp dev
 vp exec musea-vrt --base-url http://localhost:5173 --ci --json
 ```
 
+Musea's dev middleware is designed for local development and trusted networks. Protect the route
+behind your own access controls before exposing it outside that environment.
+
 Use Musea for component documentation, prop palettes, design token views, accessibility audits,
 visual regression snapshots, generated variants, and Storybook-compatible output.
 

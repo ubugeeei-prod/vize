@@ -4,8 +4,11 @@ import fs from "node:fs";
 import type { IncomingMessage } from "node:http";
 import os from "node:os";
 import path from "node:path";
+import { Readable } from "node:stream";
 
 import {
+  collectRequestBody,
+  decodeUrlComponent,
   HttpError,
   resolveInside,
   resolveUrlPathInside,
@@ -22,7 +25,32 @@ void test("resolveInside keeps filesystem reads under the allowed directory", ()
 
   assert.equal(resolveInside(root, "src/Button.vue"), path.join(root, "src/Button.vue"));
   assert.throws(() => resolveInside(root, "../outside.txt"), HttpError);
+  assert.throws(() => resolveInside(root, "src/\0secret.txt"), HttpError);
   assert.throws(() => resolveUrlPathInside(root, "/assets/../../outside.txt"), HttpError);
+  assert.throws(() => resolveUrlPathInside(root, "/assets/%2e%2e/outside.txt"), HttpError);
+  assert.throws(() => resolveUrlPathInside(root, "/assets/%5C..%5Coutside.txt"), HttpError);
+});
+
+void test("URL path decoding failures are reported as bad requests", () => {
+  assert.throws(
+    () => decodeUrlComponent("%E0%A4%A", "art path"),
+    (error) =>
+      error instanceof HttpError &&
+      error.status === 400 &&
+      error.message === "art path is not valid URL encoding",
+  );
+});
+
+void test("collectRequestBody enforces request body size limits", async () => {
+  const req = Readable.from(["too large"]) as IncomingMessage;
+
+  await assert.rejects(
+    collectRequestBody(req, 3),
+    (error) =>
+      error instanceof HttpError &&
+      error.status === 413 &&
+      error.message === "Request body exceeds 3 bytes",
+  );
 });
 
 void test("resolveInside follows links before accepting a path", async () => {

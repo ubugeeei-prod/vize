@@ -57,6 +57,7 @@
     "build": "vp pack && vp build --config gallery-vite.config.ts",
     "build:gallery": "vp build --config gallery-vite.config.ts",
     "dev": "vp pack --watch",
+    "test": "vp exec tsx --test src/*.test.ts src/**/*.test.ts",
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts"

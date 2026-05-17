@@ -10,6 +10,7 @@ import fs from "node:fs";
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { allowedSourceRoots, resolveComponentSourcePath } from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
+import { decodeUrlComponent } from "../security.js";
 
 export { handleArtPalette } from "./handler-palette.js";
 
@@ -20,7 +21,7 @@ export async function handleArtSource(
   sendJson: SendJson,
   sendError: SendError,
 ): Promise<void> {
-  const artPath = decodeURIComponent(match[1]);
+  const artPath = decodeUrlComponent(match[1], "art path");
   const art = ctx.artFiles.get(artPath);
   if (!art) {
     sendError("Art not found", 404);
@@ -42,7 +43,7 @@ export async function handleArtAnalysis(
   sendJson: SendJson,
   sendError: SendError,
 ): Promise<void> {
-  const artPath = decodeURIComponent(match[1]);
+  const artPath = decodeUrlComponent(match[1], "art path");
   const art = ctx.artFiles.get(artPath);
   if (!art) {
     sendError("Art not found", 404);
@@ -85,7 +86,7 @@ export async function handleArtDocs(
   sendJson: SendJson,
   sendError: SendError,
 ): Promise<void> {
-  const artPath = decodeURIComponent(match[1]);
+  const artPath = decodeUrlComponent(match[1], "art path");
   const art = ctx.artFiles.get(artPath);
   if (!art) {
     sendError("Art not found", 404);
@@ -160,8 +161,8 @@ export function handleArtA11y(
   sendJson: SendJson,
   sendError: SendError,
 ): void {
-  const artPath = decodeURIComponent(match[1]);
-  const _variantName = decodeURIComponent(match[2]);
+  const artPath = decodeUrlComponent(match[1], "art path");
+  const _variantName = decodeUrlComponent(match[2], "variant name");
   const art = ctx.artFiles.get(artPath);
   if (!art) {
     sendError("Art not found", 404);

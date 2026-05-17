@@ -9,6 +9,7 @@ import fs from "node:fs";
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { allowedSourceRoots, resolveComponentSourcePath } from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
+import { decodeUrlComponent } from "../security.js";
 
 /** GET /api/arts/:path/palette */
 export async function handleArtPalette(
@@ -17,7 +18,7 @@ export async function handleArtPalette(
   sendJson: SendJson,
   sendError: SendError,
 ): Promise<void> {
-  const artPath = decodeURIComponent(match[1]);
+  const artPath = decodeUrlComponent(match[1], "art path");
   const art = ctx.artFiles.get(artPath);
   if (!art) {
     sendError("Art not found", 404);
