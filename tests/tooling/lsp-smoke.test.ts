@@ -73,7 +73,7 @@ const secondaryLabel = ref('secondary')
         referencesProvider?: boolean;
         semanticTokensProvider?: {
           range?: boolean;
-          full?: boolean | unknown;
+          full?: boolean | { delta?: boolean };
         };
       };
     };

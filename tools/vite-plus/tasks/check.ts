@@ -22,6 +22,7 @@ const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
   concurrencyLimit: 1,
 });
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
+const strictRepoCheckCommand = `node tools/vite-plus/check-warning-budget.mjs -- ${localVp} check`;
 const ciVizeAppCheckCommand = [
   runInDirectory(
     "./examples/vite-musea",
@@ -54,7 +55,8 @@ export const checkTasks = defineTasks({
   ),
   "check:vize-apps": noCacheTask(directPackageCheckCommand),
   "check:ci:vize-apps": noCacheTask(ciVizeAppCheckCommand),
-  "check:repo": noCacheTask(`${localVp} check`),
+  // v1 alpha release branches keep a zero-warning budget for repo-wide JS/TS checks.
+  "check:repo": noCacheTask(strictRepoCheckCommand),
   // The oxlint example intentionally exits non-zero for its default lint script,
   // so CI checks every package except that runnable failure-case fixture.
   "check:ci": noCacheTask(`${runTask("check:repo")} && ${ciPackageCheckCommand}`),
