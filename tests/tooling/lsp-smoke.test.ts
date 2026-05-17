@@ -235,6 +235,24 @@ const emoji = "😀"; const message = ref(emoji)
         ),
         JSON.stringify(references),
       );
+
+      const emojiPosition = offsetToPosition(utf16Source, utf16Source.indexOf("😀"));
+      const surrogateInteriorPosition = {
+        line: emojiPosition.line,
+        character: emojiPosition.character + 1,
+      };
+
+      const invalidCompletion = await session.request("textDocument/completion", {
+        textDocument: { uri: utf16Uri },
+        position: surrogateInteriorPosition,
+      });
+      assert.equal(invalidCompletion, null);
+
+      const invalidPrepareRename = await session.request("textDocument/prepareRename", {
+        textDocument: { uri: utf16Uri },
+        position: surrogateInteriorPosition,
+      });
+      assert.equal(invalidPrepareRename, null);
     });
 
     await t.test("semantic token range requests are implemented", async () => {
