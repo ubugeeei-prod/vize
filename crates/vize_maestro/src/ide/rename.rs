@@ -478,27 +478,7 @@ impl RenameService {
 
     /// Convert byte offset to LSP Position.
     fn offset_to_position(content: &str, offset: usize) -> Position {
-        let mut line = 0u32;
-        let mut col = 0u32;
-        let mut current = 0;
-
-        for ch in content.chars() {
-            if current >= offset {
-                break;
-            }
-            if ch == '\n' {
-                line += 1;
-                col = 0;
-            } else {
-                col += 1;
-            }
-            current += ch.len_utf8();
-        }
-
-        Position {
-            line,
-            character: col,
-        }
+        crate::utils::offset_to_position_str(content, offset)
     }
 
     /// Check if character can start an identifier.
@@ -657,5 +637,17 @@ mod tests {
         let css = ".container { color: v-bind(textColor); width: v-bind('width'); }";
         let occurrences = RenameService::find_vbind_occurrences(css, "textColor");
         assert_eq!(occurrences.len(), 1);
+    }
+
+    #[test]
+    fn test_offset_range_to_lsp_counts_utf16_code_units() {
+        let content = "const emoji = \"😀\"; const message = ref(emoji)";
+        let start = content.find("message").unwrap();
+        let end = start + "message".len();
+        let range = RenameService::offset_range_to_lsp(content, start, end);
+
+        assert_eq!(range.start.line, 0);
+        assert_eq!(range.start.character, 26);
+        assert_eq!(range.end.character, 33);
     }
 }

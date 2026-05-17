@@ -34,7 +34,7 @@ struct PatinaRuleMetaNapi<'a> {
 #[napi(object)]
 #[derive(Default)]
 pub struct LintOptionsNapi {
-    /// Output format: "text" or "json"
+    /// Output format: "text", "ansi", "plain", "json", "stylish", "markdown", "html", or "agent"
     pub format: Option<String>,
     /// Maximum number of warnings before failing
     pub max_warnings: Option<u32>,
@@ -430,16 +430,17 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
     let total_errors = error_count.load(Ordering::Relaxed);
     let total_warnings = warning_count.load(Ordering::Relaxed);
 
-    let format = match opts.format.as_deref() {
-        Some("json") => OutputFormat::Json,
-        _ => OutputFormat::Text,
-    };
+    let format = opts
+        .format
+        .as_deref()
+        .and_then(OutputFormat::parse)
+        .unwrap_or(OutputFormat::Text);
 
     let quiet = opts.quiet.unwrap_or(false);
 
     // Format output
     let mut output = vize_carton::CompactString::default();
-    if !quiet || total_errors > 0 || total_warnings > 0 {
+    if format.renders_details_when_quiet() || !quiet || total_errors > 0 || total_warnings > 0 {
         let lint_results: Vec<_> = results.iter().map(|(_, _, r)| r).cloned().collect();
         let sources: Vec<_> = results
             .iter()

@@ -110,19 +110,19 @@ vize lint --help-level short src
 
 Key options:
 
-| Option                | Description                                                        |
-| --------------------- | ------------------------------------------------------------------ |
-| `--fix`               | Reserved for future autofix support                                |
-| `-f, --format`        | Output format: `text` or `json`                                    |
-| `--max-warnings`      | Fail when warnings exceed the limit                                |
-| `-q, --quiet`         | Show summary only                                                  |
-| `--help-level`        | `full`, `short`, or `none`                                         |
-| `--preset`            | `happy-path`, `opinionated`, `essential`, `incremental`, or `nuxt` |
-| `--cross-file`        | Enable opt-in cross-file checks                                    |
-| `--cross-file-tree`   | Print the provide/inject tree when cross-file linting is enabled   |
-| `--strict-reactivity` | Enable native checker-backed reactivity-loss linting               |
-| `--profile`           | Print timing profile                                               |
-| `--slow-threshold`    | Slow file threshold for profile output                             |
+| Option                | Description                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| `--fix`               | Reserved for future autofix support                                                       |
+| `-f, --format`        | Output format: `text`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`, or `agent` |
+| `--max-warnings`      | Fail when warnings exceed the limit                                                       |
+| `-q, --quiet`         | Show summary only                                                                         |
+| `--help-level`        | `full`, `short`, or `none`                                                                |
+| `--preset`            | `happy-path`, `opinionated`, `essential`, `incremental`, or `nuxt`                        |
+| `--cross-file`        | Enable opt-in cross-file checks                                                           |
+| `--cross-file-tree`   | Print the provide/inject tree when cross-file linting is enabled                          |
+| `--strict-reactivity` | Enable native checker-backed reactivity-loss linting                                      |
+| `--profile`           | Print timing profile                                                                      |
+| `--slow-threshold`    | Slow file threshold for profile output                                                    |
 
 Presets are intended for staged adoption:
 
@@ -141,6 +141,10 @@ vize lint --preset essential --max-warnings 0 src
 vize lint --preset opinionated --help-level short src
 vize lint --cross-file --cross-file-tree src
 vize lint --strict-reactivity src
+vize lint --format ansi src
+vize lint --format plain src
+vize lint --format agent src
+vize lint --format markdown src
 ```
 
 ## Check

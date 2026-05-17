@@ -319,6 +319,98 @@ const message = 'hello'
   }
 });
 
+test("vize lsp rename fallback returns UTF-16 edit ranges", async () => {
+  const agentOnlyDir = path.join(root, "__agent_only", "lsp-rename-utf16");
+  fs.mkdirSync(agentOnlyDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const session = new LspSession();
+
+  try {
+    await session.initialize(workspaceDir, {
+      editor: true,
+      lint: false,
+      typecheck: false,
+    });
+
+    const source = `<script setup lang="ts">
+const emoji = "😀"; const message = ref(emoji)
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>
+`;
+    const filePath = path.join(workspaceDir, "RenameUtf16.vue");
+    const uri = pathToFileURL(filePath).href;
+    fs.writeFileSync(filePath, source, "utf8");
+
+    session.notify("textDocument/didOpen", {
+      textDocument: {
+        uri,
+        languageId: "vue",
+        version: 1,
+        text: source,
+      },
+    });
+
+    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
+      isDiagnosticsForUri(params, uri),
+    );
+
+    const usageStart = source.lastIndexOf("message");
+    const usageEnd = usageStart + "message".length;
+    const declarationStart = source.indexOf("message =");
+    const declarationEnd = declarationStart + "message".length;
+    const usagePosition = offsetToPosition(source, usageEnd);
+
+    const prepare = (await session.request("textDocument/prepareRename", {
+      textDocument: { uri },
+      position: usagePosition,
+    })) as {
+      start?: { line: number; character: number };
+      end?: { line: number; character: number };
+    };
+
+    assert.deepEqual(prepare.start, offsetToPosition(source, usageStart));
+    assert.deepEqual(prepare.end, offsetToPosition(source, usageEnd));
+
+    const edit = (await session.request("textDocument/rename", {
+      textDocument: { uri },
+      position: usagePosition,
+      newName: "renamedMessage",
+    })) as {
+      changes?: Record<
+        string,
+        Array<{
+          range: {
+            start: { line: number; character: number };
+            end: { line: number; character: number };
+          };
+          newText: string;
+        }>
+      >;
+    } | null;
+
+    const edits = edit?.changes?.[uri] ?? [];
+    assert.ok(edits.length >= 2, JSON.stringify(edit));
+    assert.ok(
+      edits.some(
+        (textEdit) =>
+          textEdit.newText === "renamedMessage" &&
+          textEdit.range.start.line === offsetToPosition(source, declarationStart).line &&
+          textEdit.range.start.character === offsetToPosition(source, declarationStart).character &&
+          textEdit.range.end.line === offsetToPosition(source, declarationEnd).line &&
+          textEdit.range.end.character === offsetToPosition(source, declarationEnd).character,
+      ),
+      JSON.stringify(edits),
+    );
+  } finally {
+    await session.shutdown();
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+  }
+});
+
 test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
   const agentOnlyDir = path.join(root, "__agent_only", "lsp-malformed");
   fs.mkdirSync(agentOnlyDir, { recursive: true });

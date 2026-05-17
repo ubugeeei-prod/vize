@@ -89,7 +89,13 @@ Override config discovery with `--config`, or disable it with `--no-config`.
 vp exec vize lint --preset essential --max-warnings 0 src
 vp exec vize lint --preset opinionated --help-level short src
 vp exec vize lint --format json src
+vp exec vize lint --format plain src
+vp exec vize lint --format agent src
 ```
+
+Lint output supports `text`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`, and `agent`.
+The human and agent-friendly formats include local rule documentation paths such as
+`docs/content/rules/vue.md`.
 
 `vize check` in the npm package uses the packaged NAPI checker so it can run from `package.json`
 scripts after installing `vize`:
