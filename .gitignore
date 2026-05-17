@@ -59,4 +59,5 @@ tests/_fixtures/_projects/_git-worktrees/
 
 # Vize local data (snapshots, cache, etc.)
 .vize/
+__agent_only/
 *.pending-snap

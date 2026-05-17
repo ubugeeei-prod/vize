@@ -79,6 +79,9 @@ export interface NativeBinding {
     categories: string[];
     tags: string[];
   };
+  parseDesignTokensFromPath: (path: string) => unknown;
+  flattenDesignTokenCategories: (categories: unknown) => unknown[];
+  generateDesignTokensMarkdown: (categories: unknown, generatedAt?: string) => string;
   analyzeSfc?: (
     source: string,
     options?: { filename?: string },

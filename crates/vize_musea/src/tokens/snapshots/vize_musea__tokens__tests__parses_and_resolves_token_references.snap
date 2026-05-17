@@ -1,0 +1,93 @@
+---
+source: crates/vize_musea/src/tokens/tests.rs
+expression: resolved
+---
+ResolvedTokens {
+    categories: [
+        TokenCategory {
+            name: "Color",
+            tokens: {},
+            subcategories: [
+                TokenCategory {
+                    name: "Primitive",
+                    tokens: {},
+                    subcategories: [
+                        TokenCategory {
+                            name: "Gray",
+                            tokens: {
+                                "50": DesignToken {
+                                    value: String("#f7f7f7"),
+                                    token_type: Some(
+                                        "color",
+                                    ),
+                                    description: None,
+                                    attributes: None,
+                                    tier: Some(
+                                        "primitive",
+                                    ),
+                                    reference: None,
+                                    resolved_value: None,
+                                },
+                            },
+                            subcategories: [],
+                        },
+                    ],
+                },
+                TokenCategory {
+                    name: "Semantic",
+                    tokens: {
+                        "surface": DesignToken {
+                            value: String("{color.primitive.gray.50}"),
+                            token_type: None,
+                            description: None,
+                            attributes: None,
+                            tier: Some(
+                                "semantic",
+                            ),
+                            reference: Some(
+                                "color.primitive.gray.50",
+                            ),
+                            resolved_value: Some(
+                                String("#f7f7f7"),
+                            ),
+                        },
+                    },
+                    subcategories: [],
+                },
+            ],
+        },
+    ],
+    token_map: {
+        "color.primitive.gray.50": DesignToken {
+            value: String("#f7f7f7"),
+            token_type: Some(
+                "color",
+            ),
+            description: None,
+            attributes: None,
+            tier: Some(
+                "primitive",
+            ),
+            reference: None,
+            resolved_value: None,
+        },
+        "color.semantic.surface": DesignToken {
+            value: String("{color.primitive.gray.50}"),
+            token_type: None,
+            description: None,
+            attributes: None,
+            tier: Some(
+                "semantic",
+            ),
+            reference: Some(
+                "color.primitive.gray.50",
+            ),
+            resolved_value: Some(
+                String("#f7f7f7"),
+            ),
+        },
+    },
+    token_count: 2,
+    primitive_count: 1,
+    semantic_count: 1,
+}

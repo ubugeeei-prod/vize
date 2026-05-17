@@ -76,6 +76,17 @@ export interface NativeBinding {
     category?: string;
     variant_count: number;
   };
+  parseDesignTokensFromPath?: (path: string) => unknown;
+  buildDesignTokenMap?: (categories: unknown) => Record<string, unknown>;
+  resolveDesignTokenReferences?: (categories: unknown) => unknown;
+  flattenDesignTokenCategories?: (categories: unknown) => unknown[];
+  generateDesignTokensMarkdown?: (categories: unknown, generatedAt?: string) => string;
+  validateDesignTokenReference?: (
+    tokenMap: Record<string, unknown>,
+    reference: string,
+    selfPath?: string,
+  ) => { valid: boolean; error?: string };
+  findDependentDesignTokens?: (tokenMap: Record<string, unknown>, targetPath: string) => string[];
   analyzeSfc?: (
     source: string,
     options?: { filename?: string },
