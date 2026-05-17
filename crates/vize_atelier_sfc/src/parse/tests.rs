@@ -57,6 +57,23 @@ fn test_parse_custom_block() {
 }
 
 #[test]
+fn test_parse_self_closing_custom_block() {
+    let source = r#"
+<template><div></div></template>
+<i18n src="./en.json" />
+"#;
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    assert_eq!(result.custom_blocks.len(), 1);
+    assert_eq!(result.custom_blocks[0].block_type, "i18n");
+    assert_eq!(result.custom_blocks[0].content, "");
+    assert_eq!(
+        result.custom_blocks[0].attrs.get("src").map(Cow::as_ref),
+        Some("./en.json")
+    );
+}
+
+#[test]
 fn test_parse_script_setup() {
     let source = r#"
 <script setup lang="ts">

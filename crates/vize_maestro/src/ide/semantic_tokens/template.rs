@@ -4,7 +4,7 @@
 //! event handlers, and v-bind shorthand.
 
 use super::{
-    encoding::{is_ident_char, offset_to_line_col},
+    encoding::{is_ident_char, offset_to_line_col, utf16_len},
     expressions::tokenize_expression,
     types::{AbsoluteToken, TokenType},
 };
@@ -56,9 +56,9 @@ fn collect_directive_tokens(template: &str, base_line: u32, tokens: &mut Vec<Abs
             let (line, col) = offset_to_line_col(template, abs_pos);
 
             tokens.push(AbsoluteToken {
-                line: base_line + line - 1,
+                line: base_line + line,
                 start: col,
-                length: directive.len() as u32,
+                length: utf16_len(directive),
                 token_type: TokenType::Keyword as u32,
                 modifiers: 0,
             });
@@ -108,9 +108,9 @@ fn collect_event_tokens(template: &str, base_line: u32, tokens: &mut Vec<Absolut
             let (line, col) = offset_to_line_col(template, abs_start);
 
             tokens.push(AbsoluteToken {
-                line: base_line + line - 1,
+                line: base_line + line,
                 start: col,
-                length: (event_end + 1) as u32, // +1 for @
+                length: utf16_len(&template[abs_start..abs_start + event_end + 1]),
                 token_type: TokenType::Event as u32,
                 modifiers: 0,
             });
@@ -146,9 +146,9 @@ fn collect_bind_tokens(template: &str, base_line: u32, tokens: &mut Vec<Absolute
                     let (line, col) = offset_to_line_col(template, abs_start);
 
                     tokens.push(AbsoluteToken {
-                        line: base_line + line - 1,
+                        line: base_line + line,
                         start: col,
-                        length: (prop_end + 1) as u32, // +1 for :
+                        length: utf16_len(&template[abs_start..abs_start + prop_end + 1]),
                         token_type: TokenType::Property as u32,
                         modifiers: 0,
                     });
@@ -280,9 +280,9 @@ pub(crate) fn collect_script_tokens(script: &str, base_line: u32, tokens: &mut V
                 let (line, col) = offset_to_line_col(script, abs_pos);
 
                 tokens.push(AbsoluteToken {
-                    line: base_line + line - 1,
+                    line: base_line + line,
                     start: col,
-                    length: macro_name.len() as u32,
+                    length: utf16_len(macro_name),
                     token_type: TokenType::Macro as u32,
                     modifiers: TokenModifier::encode(&[TokenModifier::DefaultLibrary]),
                 });
@@ -307,9 +307,9 @@ pub(crate) fn collect_script_tokens(script: &str, base_line: u32, tokens: &mut V
                 let (line, col) = offset_to_line_col(script, abs_pos);
 
                 tokens.push(AbsoluteToken {
-                    line: base_line + line - 1,
+                    line: base_line + line,
                     start: col,
-                    length: func.len() as u32,
+                    length: utf16_len(func),
                     token_type: TokenType::Function as u32,
                     modifiers: TokenModifier::encode(&[TokenModifier::DefaultLibrary]),
                 });

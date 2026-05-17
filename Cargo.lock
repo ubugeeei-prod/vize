@@ -3480,6 +3480,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror",
  "toml",
  "vize_atelier_core",

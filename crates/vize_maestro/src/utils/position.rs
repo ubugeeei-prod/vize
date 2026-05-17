@@ -61,6 +61,35 @@ pub fn position_to_offset(rope: &Rope, position: Position) -> Option<usize> {
     rope.try_char_to_byte(char_idx).ok()
 }
 
+/// Convert a byte offset in a string to an LSP position.
+///
+/// LSP `character` values are UTF-16 code units, not Rust scalar-value counts.
+/// This helper mirrors [`offset_to_position`] for call sites that already have
+/// string content instead of a reusable rope.
+pub fn offset_to_position_str(content: &str, offset: usize) -> Position {
+    let mut line = 0u32;
+    let mut character = 0u32;
+    let mut current_offset = 0usize;
+    let target = offset.min(content.len());
+
+    for ch in content.chars() {
+        if current_offset >= target {
+            break;
+        }
+
+        if ch == '\n' {
+            line += 1;
+            character = 0;
+        } else {
+            character += ch.len_utf16() as u32;
+        }
+
+        current_offset += ch.len_utf8();
+    }
+
+    Position { line, character }
+}
+
 /// Convert internal 1-based Position to LSP 0-based Position.
 pub fn internal_to_lsp_position(pos: &vize_relief::Position) -> Position {
     Position {
@@ -150,7 +179,8 @@ pub fn line_range(rope: &Rope, line: usize) -> Option<Range> {
 #[cfg(test)]
 mod tests {
     use super::{
-        internal_to_lsp_position, offset_to_position, position_to_offset, position_to_offset_str,
+        internal_to_lsp_position, offset_to_position, offset_to_position_str, position_to_offset,
+        position_to_offset_str,
     };
     use ropey::Rope;
     use tower_lsp::lsp_types::Position;
@@ -296,6 +326,28 @@ mod tests {
                 }
             ),
             None
+        );
+    }
+
+    #[test]
+    fn test_offset_to_position_str_counts_utf16_code_units() {
+        let content = "const icon = \"😀\";\nconst message = icon";
+        let message_offset = content.find("message").unwrap();
+
+        assert_eq!(
+            offset_to_position_str(content, message_offset),
+            Position {
+                line: 1,
+                character: 6,
+            }
+        );
+
+        assert_eq!(
+            offset_to_position_str(content, "const icon = \"😀".len()),
+            Position {
+                line: 0,
+                character: 16,
+            }
         );
     }
 
