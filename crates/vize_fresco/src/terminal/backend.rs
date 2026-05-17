@@ -18,17 +18,21 @@ use super::{buffer::Buffer, cell::Style, cursor::Cursor};
 /// Terminal mode switches used during backend initialization.
 #[derive(Debug, Clone, Copy)]
 pub struct TerminalOptions {
+    pub raw_mode: bool,
     pub alternate_screen: bool,
     pub mouse_capture: bool,
     pub bracketed_paste: bool,
+    pub hide_cursor: bool,
 }
 
 impl Default for TerminalOptions {
     fn default() -> Self {
         Self {
+            raw_mode: true,
             alternate_screen: true,
             mouse_capture: false,
             bracketed_paste: true,
+            hide_cursor: true,
         }
     }
 }
@@ -45,6 +49,8 @@ pub struct Backend {
     alternate_screen: bool,
     /// Whether the cursor was hidden during initialization
     cursor_hidden: bool,
+    /// Whether raw mode is enabled
+    raw_mode: bool,
     /// Whether mouse capture is enabled
     mouse_capture: bool,
     /// Whether bracketed paste is enabled
@@ -65,6 +71,7 @@ impl Backend {
             cursor: Cursor::new(),
             alternate_screen: false,
             cursor_hidden: false,
+            raw_mode: false,
             mouse_capture: false,
             bracketed_paste: false,
             width,
@@ -79,7 +86,11 @@ impl Backend {
 
     /// Initialize the terminal for TUI mode with explicit mode options.
     pub fn init_with_options(&mut self, options: TerminalOptions) -> io::Result<()> {
-        enable_raw_mode()?;
+        if options.raw_mode {
+            enable_raw_mode()?;
+            self.raw_mode = true;
+        }
+
         let mut stdout = io::stdout();
 
         if options.alternate_screen {
@@ -97,8 +108,10 @@ impl Backend {
             self.mouse_capture = true;
         }
 
-        execute!(stdout, Hide)?;
-        self.cursor_hidden = true;
+        if options.hide_cursor {
+            execute!(stdout, Hide)?;
+            self.cursor_hidden = true;
+        }
         Ok(())
     }
 
@@ -134,7 +147,10 @@ impl Backend {
             self.cursor_hidden = false;
         }
 
-        disable_raw_mode()?;
+        if self.raw_mode {
+            disable_raw_mode()?;
+            self.raw_mode = false;
+        }
         Ok(())
     }
 
@@ -413,5 +429,7 @@ mod tests {
         assert!(options.alternate_screen);
         assert!(!options.mouse_capture);
         assert!(options.bracketed_paste);
+        assert!(options.raw_mode);
+        assert!(options.hide_cursor);
     }
 }
