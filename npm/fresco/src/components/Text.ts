@@ -9,12 +9,13 @@ import { stringifyChildren } from "../utils/text.js";
 export type TextWrap =
   | boolean
   | "wrap"
-  | "end"
-  | "middle"
+  | "hard"
   | "truncate"
   | "truncate-start"
   | "truncate-middle"
-  | "truncate-end";
+  | "truncate-end"
+  | "end"
+  | "middle";
 
 export interface TextProps {
   /** Text content (alternative to slot) */

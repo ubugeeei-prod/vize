@@ -161,6 +161,7 @@ export function treeToScreenReaderRenderNodes(root: FrescoNode): NativeRenderNod
     nodeType: "text",
     text: output,
     wrap: true,
+    wrapMode: "wrap",
   });
 
   return nodes;

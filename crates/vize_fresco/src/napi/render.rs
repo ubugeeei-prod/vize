@@ -8,9 +8,23 @@ use super::terminal::with_backend;
 use super::types::{LayoutResultNapi, RenderNodeNapi, StyleNapi};
 use crate::layout::Rect;
 use crate::terminal::{Color, Style};
+use crate::text::WrapMode;
 
 thread_local! {
     static LAST_RENDER_LAYOUTS: RefCell<Vec<LayoutResultNapi>> = const { RefCell::new(Vec::new()) };
+}
+
+fn parse_wrap_mode(mode: Option<&str>, wrap: Option<bool>) -> WrapMode {
+    match mode {
+        Some("wrap") => WrapMode::Word,
+        Some("hard") => WrapMode::Char,
+        Some("truncate") | Some("truncate-end") => WrapMode::TruncateEnd,
+        Some("truncate-start") => WrapMode::TruncateStart,
+        Some("truncate-middle") => WrapMode::TruncateMiddle,
+        Some("false") | Some("none") => WrapMode::NoWrap,
+        _ if wrap.unwrap_or(false) => WrapMode::Word,
+        _ => WrapMode::NoWrap,
+    }
 }
 
 /// Get layout results from the most recent renderTree call.
@@ -164,6 +178,7 @@ pub fn render_tree(nodes: Vec<RenderNodeNapi>) -> Result<()> {
                 "text" => NodeKind::Text(TextContent {
                     text: text_content.clone().into(),
                     wrap: node.wrap.unwrap_or(false),
+                    wrap_mode: parse_wrap_mode(node.wrap_mode.as_deref(), node.wrap),
                 }),
                 "input" => NodeKind::Input(InputContent {
                     value: node.value.clone().unwrap_or_default().into(),
