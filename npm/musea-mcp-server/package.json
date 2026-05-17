@@ -55,5 +55,8 @@
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

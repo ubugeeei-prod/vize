@@ -110,6 +110,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     ["nix-flake", 30],
     ["fmt-rust", 10],
     ["check-js", 15],
+    ["node-engine-compat", 20],
     ["check-vize-apps", 20],
     ["test-scripts", 15],
     ["editor-extensions", 15],
@@ -135,6 +136,19 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
       new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
     );
   }
+});
+
+test("check workflow runs declared Node engine compatibility matrix", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const job = workflowJobBody(workflow, "node-engine-compat");
+
+  assert.match(job, /node-version:\s*\["22", "24"\]/);
+  assert.match(job, /echo "\$\{\{\s*matrix\.node-version\s*\}\}" > \.node-version\.ci/);
+  assert.match(job, /node-version-file:\s*"\.node-version\.ci"/);
+  assert.match(
+    job,
+    /node --test tests\/tooling\/node-engine-matrix\.test\.ts tests\/tooling\/package-manifests\.test\.ts/,
+  );
 });
 
 test("release workflow explicitly installs matrix Rust targets", () => {
@@ -216,6 +230,7 @@ test("check workflow comments a detailed PR test report for each head push", () 
     "nix-flake",
     "fmt-rust",
     "check-js",
+    "node-engine-compat",
     "check-vize-apps",
     "test-scripts",
     "editor-extensions",

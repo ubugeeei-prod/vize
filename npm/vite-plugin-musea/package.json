@@ -95,5 +95,8 @@
     "axe-core": {
       "optional": true
     }
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

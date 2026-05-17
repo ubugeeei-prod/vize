@@ -58,5 +58,8 @@
   },
   "peerDependencies": {
     "@vue/runtime-core": "^3.4.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

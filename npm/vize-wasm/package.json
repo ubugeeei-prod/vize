@@ -1,23 +1,26 @@
 {
   "name": "@vizejs/wasm",
-  "type": "module",
-  "description": "Vize WASM bindings for browser environments",
   "version": "0.101.0",
+  "description": "Vize WASM bindings for browser environments",
+  "homepage": "https://github.com/ubugeeei/vize",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ubugeeei/vize.git",
     "directory": "npm/vize-wasm"
   },
-  "homepage": "https://github.com/ubugeeei/vize",
   "files": [
     "vize_vitrine_bg.wasm",
     "vize_vitrine.js",
     "vize_vitrine.d.ts"
   ],
-  "main": "vize_vitrine.js",
-  "types": "vize_vitrine.d.ts",
+  "type": "module",
   "sideEffects": [
     "./snippets/*"
-  ]
+  ],
+  "main": "vize_vitrine.js",
+  "types": "vize_vitrine.d.ts",
+  "engines": {
+    "node": ">=22"
+  }
 }
