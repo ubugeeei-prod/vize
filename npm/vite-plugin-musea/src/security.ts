@@ -91,12 +91,7 @@ export function resolveUrlPathInside(
   label = "path",
 ): string {
   const rawPath = requestUrl.split(/[?#]/, 1)[0] || "/";
-  let pathname: string;
-  try {
-    pathname = decodeURIComponent(rawPath);
-  } catch {
-    throw new HttpError(`${label} is not valid URL encoding`, 400);
-  }
+  let pathname = decodeUrlComponent(rawPath, label);
 
   pathname = pathname.replaceAll("\\", "/");
   if (pathname.split("/").includes("..")) {
@@ -105,6 +100,14 @@ export function resolveUrlPathInside(
 
   const relativePath = `.${pathname}`;
   return resolveInside(parentDir, relativePath, label);
+}
+
+export function decodeUrlComponent(value: string, label = "path"): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    throw new HttpError(`${label} is not valid URL encoding`, 400);
+  }
 }
 
 export function collectRequestBody(

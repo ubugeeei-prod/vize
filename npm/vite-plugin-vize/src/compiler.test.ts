@@ -2,6 +2,24 @@ import assert from "node:assert/strict";
 
 import { compileBatch, compileFile } from "./compiler.ts";
 
+const invalidCache = new Map();
+assert.throws(
+  () =>
+    compileFile(
+      "/src/Broken.vue",
+      invalidCache,
+      { sourceMap: false, ssr: false, vapor: false },
+      `<template><div></template>`,
+    ),
+  /Compilation failed in \/src\/Broken\.vue/,
+  "Single-file compilation errors should fail the Vite plugin instead of caching empty output",
+);
+assert.equal(
+  invalidCache.has("/src/Broken.vue"),
+  false,
+  "Failed single-file compilation must not populate the module cache",
+);
+
 const tresSource = `<script setup lang="ts">
 import { Primitive } from "@tresjs/core";
 const msg = "hello";
@@ -219,8 +237,13 @@ assert.equal(
 );
 assert.match(
   definePageMetaCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
-  /export default \{/,
-  "definePageMeta artifacts should include loadable module code",
+  /const __nuxt_page_meta = \{/,
+  "definePageMeta artifacts should include Nuxt-compatible module code",
+);
+assert.match(
+  definePageMetaCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
+  /export default __nuxt_page_meta/,
+  "definePageMeta artifacts should not be treated as empty by Nuxt's page meta transform",
 );
 
 const defineRouteRulesSource = `<script setup lang="ts">

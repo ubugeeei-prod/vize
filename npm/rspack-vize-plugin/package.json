@@ -72,5 +72,8 @@
   },
   "peerDependencies": {
     "@rspack/core": ">=1.0.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

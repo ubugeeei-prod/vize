@@ -14,6 +14,7 @@ export type LspInitializationOptions = {
   editor?: boolean;
   lint?: boolean;
   typecheck?: boolean;
+  codeActions?: boolean;
 };
 
 export type LspDiagnostic = {

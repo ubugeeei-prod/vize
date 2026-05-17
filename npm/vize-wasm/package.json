@@ -35,5 +35,8 @@
       "default": "./vize_vitrine.js"
     },
     "./vize_vitrine_bg.wasm": "./vize_vitrine_bg.wasm"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

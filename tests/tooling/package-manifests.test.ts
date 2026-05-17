@@ -31,6 +31,41 @@ function isEsmPackPackage(packageDir: string): boolean {
   return config.includes('format: "esm"') && config.includes("pack:");
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function collectNativeBinaryCatalogPins(workspaceYaml: string): Record<string, string> {
+  const pins: Record<string, string> = {};
+  let inNativeCatalog = false;
+
+  for (const line of workspaceYaml.split("\n")) {
+    if (line === "  native-binaries:") {
+      inNativeCatalog = true;
+      continue;
+    }
+
+    if (inNativeCatalog && /^\S|^  [^\s]/.test(line)) {
+      break;
+    }
+
+    if (!inNativeCatalog) {
+      continue;
+    }
+
+    const match = line.match(/^    "(@vizejs\/native-[^"]+)": "([^"]+)"$/);
+    if (match) {
+      pins[match[1]] = match[2];
+    }
+  }
+
+  return pins;
+}
+
+function readRepoFile(filePath: string): string {
+  return fs.readFileSync(path.join(root, filePath), "utf-8");
+}
+
 test("esm packed npm manifests point at mjs and d.mts outputs", () => {
   const failures: string[] = [];
 
@@ -67,6 +102,86 @@ test("esm packed npm manifests point at mjs and d.mts outputs", () => {
   }
 
   assert.deepEqual(failures, []);
+});
+
+test("native package pins and generated loader version checks stay aligned", () => {
+  const nativePackage = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/vize-native/package.json"), "utf-8"),
+  ) as {
+    optionalDependencies?: Record<string, string>;
+    version?: string;
+  };
+  assert.ok(nativePackage.version);
+
+  const workspacePins = collectNativeBinaryCatalogPins(
+    fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf-8"),
+  );
+  const nativeOptionalDependencies = Object.entries(
+    nativePackage.optionalDependencies ?? {},
+  ).filter(([name]) => name.startsWith("@vizejs/native-"));
+
+  assert.ok(nativeOptionalDependencies.length > 0);
+  assert.deepEqual(
+    Object.fromEntries(nativeOptionalDependencies),
+    Object.fromEntries(
+      nativeOptionalDependencies.map(([name]) => [name, "catalog:native-binaries"]),
+    ),
+  );
+
+  for (const [name] of nativeOptionalDependencies) {
+    assert.equal(workspacePins[name], nativePackage.version, `${name} catalog pin`);
+  }
+
+  const lockfile = fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf-8");
+  for (const [name] of nativeOptionalDependencies) {
+    const escapedName = escapeRegExp(name);
+    const escapedVersion = escapeRegExp(nativePackage.version);
+    assert.match(lockfile, new RegExp(`['"]?${escapedName}@${escapedVersion}['"]?:`));
+    assert.doesNotMatch(lockfile, new RegExp(`${escapedName}@(?!${escapedVersion})`));
+  }
+
+  const nativeTargetsLoader = fs.readFileSync(
+    path.join(root, "npm/vize-native/native-targets.js"),
+    "utf-8",
+  );
+  assert.match(
+    nativeTargetsLoader,
+    /const packageVersion = require\("\.\/package\.json"\)\.version;/,
+  );
+  assert.match(nativeTargetsLoader, /bindingPackageVersion !== packageVersion/);
+  assert.match(nativeTargetsLoader, /expected \$\{packageVersion\} but got/);
+  assert.doesNotMatch(nativeTargetsLoader, /bindingPackageVersion !== "[^"]+"/);
+});
+
+test("documented install commands point at supported release artifacts", () => {
+  const vizeNpmPackage = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+    bin?: Record<string, string>;
+    publishConfig?: Record<string, string>;
+  };
+  const vizeCrateToml = readRepoFile("crates/vize/Cargo.toml");
+  const releaseWorkflow = readRepoFile(".github/workflows/release.yml");
+  const flake = readRepoFile("flake.nix");
+  const publicDocs = [
+    "README.md",
+    "docs/content/getting-started.md",
+    "docs/content/guide/cli.md",
+    "docs/content/guide/static-analysis.md",
+    "npm/vize/README.md",
+    "crates/vize/README.md",
+  ];
+  const unsupportedCargoInstallDocs = publicDocs.filter((filePath) =>
+    readRepoFile(filePath).includes("cargo install vize"),
+  );
+
+  assert.equal(vizeNpmPackage.publishConfig?.access, "public");
+  assert.equal(vizeNpmPackage.bin?.vize, "bin/vize");
+  assert.match(releaseWorkflow, /cli-artifacts\/\*\.tar\.gz/);
+  assert.match(flake, /apps = \{/);
+  assert.match(flake, /vize = flake-utils\.lib\.mkApp \{ drv = vize; \};/);
+
+  if (/^publish = false$/m.test(vizeCrateToml)) {
+    assert.deepEqual(unsupportedCargoInstallDocs, []);
+  }
 });
 
 test("editor extension manifests stay opt-in and version aligned", () => {

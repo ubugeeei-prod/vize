@@ -9,17 +9,31 @@
 import type { ViteDevServer } from "vite";
 import { createRequire } from "node:module";
 import fs from "node:fs";
+import type { ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { ArtFileInfo } from "./types/index.js";
-import { generateGalleryHtml } from "./gallery/index.js";
 import { generatePreviewModule, generatePreviewHtml } from "./preview/index.js";
 import { generateArtModule } from "./art-module.js";
-import { HttpError, resolveUrlPathInside, serializeScriptValue } from "./security.js";
+import {
+  decodeUrlComponent,
+  HttpError,
+  resolveUrlPathInside,
+  serializeScriptValue,
+} from "./security.js";
 import { toPascalCase } from "./utils.js";
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const galleryAssetMimeTypes: Record<string, string> = {
+  ".js": "application/javascript",
+  ".css": "text/css",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".ico": "image/x-icon",
+  ".woff2": "font/woff2",
+  ".woff": "font/woff",
+};
 
 function resolveGalleryDistDir(): string {
   return path.resolve(moduleDir, "gallery");
@@ -70,6 +84,43 @@ async function tryLoadSourceGalleryHtml(
   );
 
   return devServer.transformIndexHtml(url, html);
+}
+
+async function generateFallbackGalleryHtml(
+  basePath: string,
+  devSessionToken: string,
+  themeConfig?: { default: string; custom?: Record<string, unknown> },
+): Promise<string> {
+  const { generateGalleryHtml } = await import("./gallery/index.js");
+  return generateGalleryHtml(basePath, devSessionToken, themeConfig);
+}
+
+export async function serveGalleryAsset(
+  galleryDistDir: string,
+  requestUrl: string,
+  res: ServerResponse,
+): Promise<boolean> {
+  try {
+    const filePath = resolveUrlPathInside(galleryDistDir, requestUrl, "asset path");
+    const stat = await fs.promises.stat(filePath);
+    if (!stat.isFile()) {
+      return false;
+    }
+
+    const content = await fs.promises.readFile(filePath);
+    const ext = path.extname(filePath);
+    res.setHeader("Content-Type", galleryAssetMimeTypes[ext] || "application/octet-stream");
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    res.end(content);
+    return true;
+  } catch (error) {
+    if (error instanceof HttpError) {
+      res.statusCode = error.status;
+      res.end(error.message);
+      return true;
+    }
+    return false;
+  }
 }
 
 /** Dependencies injected from the plugin closure. */
@@ -135,7 +186,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
           return;
         }
 
-        const html = generateGalleryHtml(basePath, devSessionToken, themeConfig);
+        const html = await generateFallbackGalleryHtml(basePath, devSessionToken, themeConfig);
         res.setHeader("Content-Type", "text/html");
         res.end(html);
         return;
@@ -144,34 +195,8 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
 
     // Serve gallery static assets (JS, CSS) from built SPA
     if (url.startsWith("/assets/")) {
-      const galleryDistDir = resolveGalleryDistDir();
-      try {
-        const filePath = resolveUrlPathInside(galleryDistDir, url, "asset path");
-        const stat = await fs.promises.stat(filePath);
-        if (stat.isFile()) {
-          const content = await fs.promises.readFile(filePath);
-          const ext = path.extname(filePath);
-          const mimeTypes: Record<string, string> = {
-            ".js": "application/javascript",
-            ".css": "text/css",
-            ".svg": "image/svg+xml",
-            ".png": "image/png",
-            ".ico": "image/x-icon",
-            ".woff2": "font/woff2",
-            ".woff": "font/woff",
-          };
-          res.setHeader("Content-Type", mimeTypes[ext] || "application/octet-stream");
-          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-          res.end(content);
-          return;
-        }
-      } catch (error) {
-        if (error instanceof HttpError) {
-          res.statusCode = error.status;
-          res.end(error.message);
-          return;
-        }
-        // File not found, fall through
+      if (await serveGalleryAsset(resolveGalleryDistDir(), url, res)) {
+        return;
       }
     }
 
@@ -282,7 +307,17 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
   // --- Art module route ---
   devServer.middlewares.use(`${basePath}/art`, async (req, res, next) => {
     const url = new URL(req.url || "", "http://localhost");
-    const artPath = decodeURIComponent(url.pathname.slice(1));
+    let artPath: string;
+    try {
+      artPath = decodeUrlComponent(url.pathname.slice(1), "art path");
+    } catch (error) {
+      if (error instanceof HttpError) {
+        res.statusCode = error.status;
+        res.end(error.message);
+        return;
+      }
+      throw error;
+    }
 
     if (!artPath) {
       next();

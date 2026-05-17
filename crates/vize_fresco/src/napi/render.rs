@@ -143,7 +143,9 @@ pub fn hide_cursor() -> Result<()> {
 
 /// Set cursor shape.
 #[napi(js_name = "setCursorShape")]
-pub fn set_cursor_shape(shape: String) -> Result<()> {
+pub fn set_cursor_shape(
+    #[napi(ts_arg_type = "\"block\" | \"underline\" | \"bar\" | (string & {})")] shape: String,
+) -> Result<()> {
     with_backend(|backend| {
         use crate::terminal::CursorShape;
         let cursor_shape = match shape.as_str() {

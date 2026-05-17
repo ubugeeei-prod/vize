@@ -9,6 +9,7 @@ import {
   withRustTaskEnvironment,
 } from "../../tools/vite-plus/task-shell.ts";
 import { moonCommandForEnvironment } from "../../tools/vite-plus/task-commands.ts";
+import { checkTasks } from "../../tools/vite-plus/tasks/check.ts";
 import { releaseTasks } from "../../tools/vite-plus/tasks/release.ts";
 
 test("macOS task shells fall back from C.UTF-8 to an installed UTF-8 locale", () => {
@@ -88,6 +89,15 @@ test("release task forwards extra vp run arguments into the MoonBit script", () 
   );
   assert.doesNotMatch(command, /env -u MOON_HOME/);
   assert.match(command, / --$/);
+});
+
+test("repository JS check enforces the v1 alpha warning budget", () => {
+  const command = (checkTasks["check:repo"] as { command: string }).command;
+
+  assert.match(
+    command,
+    /tools\/vite-plus\/check-warning-budget\.mjs -- \.\/node_modules\/\.bin\/vp check/,
+  );
 });
 
 test("normalizing a macOS C.UTF-8 environment updates child-process locale variables", () => {

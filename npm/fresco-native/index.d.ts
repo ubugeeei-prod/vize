@@ -82,7 +82,7 @@ export interface ModifiersNapi {
 }
 
 export interface InputEventNapi {
-  eventType: "key" | "mouse" | "resize" | "focus" | "paste" | string;
+  eventType: "key" | "mouse" | "resize" | "focus" | "paste" | (string & {});
   key?: string;
   char?: string;
   keyEventType?: "press" | "repeat" | "release";
@@ -172,7 +172,7 @@ export function clearRect(x: number, y: number, width: number, height: number): 
 export function setCursor(x: number, y: number): void;
 export function showCursor(): void;
 export function hideCursor(): void;
-export function setCursorShape(shape: "block" | "underline" | "bar" | string): void;
+export function setCursorShape(shape: "block" | "underline" | "bar" | (string & {})): void;
 export function renderTree(nodes: RenderNodeNapi[]): void;
 export function getLastRenderLayouts(): LayoutResultNapi[];
 

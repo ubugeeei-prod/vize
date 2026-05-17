@@ -345,12 +345,28 @@ export async function transformHook(
       return { code: transformed, map: null };
     } catch (e: unknown) {
       state.logger.error(`transformWithOxc failed for ${realPath}:`, e);
-      const dumpPath = getOxcDumpPath(state.root, realPath);
-      fs.writeFileSync(dumpPath, code, "utf-8");
-      state.logger.error(`Dumped failing code to ${dumpPath}`);
-      return { code: "export default {}", map: null };
+      let dumpPath: string | null = null;
+      try {
+        dumpPath = getOxcDumpPath(state.root, realPath);
+        fs.writeFileSync(dumpPath, code, "utf-8");
+        state.logger.error(`Dumped failing code to ${dumpPath}`);
+      } catch (dumpError: unknown) {
+        state.logger.error(`Failed to dump failing virtual module for ${realPath}:`, dumpError);
+      }
+
+      const message = [
+        `[vize] Virtual module transform failed for ${realPath}: ${formatUnknownError(e)}`,
+        dumpPath ? `Dumped failing code to ${dumpPath}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
+      throw new Error(message);
     }
   }
 
   return null;
+}
+
+function formatUnknownError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

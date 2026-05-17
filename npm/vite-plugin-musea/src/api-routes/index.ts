@@ -32,6 +32,7 @@ import {
 import { handlePreviewWithProps, handleGenerate, handleRunVrt } from "./post-handlers.js";
 import {
   collectRequestBody,
+  decodeUrlComponent,
   DEFAULT_API_BODY_LIMIT_BYTES,
   HttpError,
   resolveInside,
@@ -123,7 +124,7 @@ export function createApiMiddleware(ctx: ApiRoutesContext) {
         const rest = url.slice(6);
         const sourceMatch = rest.match(/^(.+)\/source$/);
         if (sourceMatch) {
-          const artPath = decodeURIComponent(sourceMatch[1]);
+          const artPath = decodeUrlComponent(sourceMatch[1], "art path");
           const art = ctx.artFiles.get(artPath);
           if (!art) {
             sendError("Art not found", 404);
@@ -182,7 +183,7 @@ export function createApiMiddleware(ctx: ApiRoutesContext) {
         }
 
         // GET /api/arts/:path (no sub-resource)
-        const artPath = decodeURIComponent(rest);
+        const artPath = decodeUrlComponent(rest, "art path");
         const art = ctx.artFiles.get(artPath);
         if (art) {
           sendJson(art);

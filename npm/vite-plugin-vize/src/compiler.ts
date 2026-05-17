@@ -17,6 +17,26 @@ import { generateScopeId } from "./utils/index.ts";
 
 const { compileSfc, compileSfcBatchWithResults } = native;
 
+export class VizeSfcCompileError extends Error {
+  readonly filePath: string;
+  readonly diagnostics: readonly string[];
+
+  constructor(filePath: string, diagnostics: readonly string[]) {
+    super(formatCompileErrorMessage(filePath, diagnostics));
+    this.name = "VizeSfcCompileError";
+    this.filePath = filePath;
+    this.diagnostics = diagnostics;
+  }
+}
+
+export function formatCompileErrorMessage(
+  filePath: string,
+  diagnostics: readonly string[],
+): string {
+  const details = diagnostics.map((diagnostic) => `  - ${diagnostic}`).join("\n");
+  return `[vize] Compilation failed in ${filePath}:\n${details}`;
+}
+
 function normalizeStyleBlocks(styles: NativeStyleBlockInfo[] | undefined): StyleBlockInfo[] {
   if (!styles) {
     return [];
@@ -43,8 +63,7 @@ export function compileFile(
   const result = compileSfc(content, buildCompileFileOptions(filePath, options));
 
   if (result.errors.length > 0) {
-    const errorMsg = result.errors.join("\n");
-    console.error(`[vize] Compilation error in ${filePath}:\n${errorMsg}`);
+    throw new VizeSfcCompileError(filePath, result.errors);
   }
 
   if (result.warnings.length > 0) {
@@ -101,9 +120,7 @@ export function compileBatch(
 
     // Log errors and warnings
     if (fileResult.errors.length > 0) {
-      console.error(
-        `[vize] Compilation error in ${fileResult.path}:\n${fileResult.errors.join("\n")}`,
-      );
+      console.error(formatCompileErrorMessage(fileResult.path, fileResult.errors));
     }
     if (fileResult.warnings.length > 0) {
       fileResult.warnings.forEach((warning) => {

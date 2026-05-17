@@ -137,7 +137,6 @@ function emptyKey(): Key {
 function inputValue(event: KeyEvent, key: Key): string {
   if (event.char) return event.char;
   if (key.return) return "\r";
-  if (key.tab) return "\t";
   return "";
 }
 

@@ -200,9 +200,17 @@ fn collect_static_imports<'a>(
     imports
 }
 
-fn build_artifact_module(_kind: &str, payload: &str, static_imports: &str) -> String {
+fn build_artifact_module(kind: &str, payload: &str, static_imports: &str) -> String {
     let mut module_code = String::default();
     module_code.push_str(static_imports);
+
+    if kind == "nuxt.definePageMeta" {
+        module_code.push_str("const __nuxt_page_meta = ");
+        module_code.push_str(payload.trim());
+        module_code.push_str("\nexport default __nuxt_page_meta\n");
+        return module_code;
+    }
+
     module_code.push_str("export default ");
     module_code.push_str(payload.trim());
     module_code.push('\n');
@@ -273,7 +281,14 @@ const msg = 'ready'
                 .module_code
                 .as_ref()
                 .unwrap()
-                .contains("import { pageAlias } from './route'\nexport default {")
+                .contains("import { pageAlias } from './route'\nconst __nuxt_page_meta = {")
+        );
+        assert!(
+            artifacts[0]
+                .module_code
+                .as_ref()
+                .unwrap()
+                .contains("export default __nuxt_page_meta")
         );
     }
 

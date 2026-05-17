@@ -160,6 +160,7 @@ pub struct LayoutResultNapi {
 #[derive(Debug, Clone)]
 pub struct InputEventNapi {
     /// Event type: "key" | "mouse" | "resize" | "focus" | "paste"
+    #[napi(ts_type = "\"key\" | \"mouse\" | \"resize\" | \"focus\" | \"paste\" | (string & {})")]
     pub event_type: String,
     /// Key code (for key events)
     pub key: Option<String>,

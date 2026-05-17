@@ -7,7 +7,7 @@ import fs from "node:fs";
 import { glob } from "tinyglobby";
 
 import type { VizeOptions, CompiledModule } from "../types.ts";
-import { compileBatch } from "../compiler.ts";
+import { compileBatch, formatCompileErrorMessage } from "../compiler.ts";
 import { resolveCssImports, type CssAliasRule } from "../utils/css.ts";
 import { hasDelegatedStyles } from "../utils/index.ts";
 import { type DynamicImportAliasRule } from "../virtual.ts";
@@ -158,6 +158,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
   let successCount = 0;
   let failedCount = 0;
   let nativeTimeMs = 0;
+  const precompileFailures: string[] = [];
   const chunks = chunkPrecompileFiles(changedFiles, state.precompileBatchSize, {
     metadata: currentMetadata,
   });
@@ -173,6 +174,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
         state.cache.delete(file);
         state.collectedCss.delete(file);
         state.precompileMetadata.delete(file);
+        precompileFailures.push(`[vize] Failed to read ${file}: ${formatUnknownError(e)}`);
         state.logger.error(`Failed to read ${file}:`, e);
       }
     }
@@ -187,8 +189,11 @@ export async function compileAll(state: VizePluginState): Promise<void> {
       customRenderer: state.mergedOptions.customRenderer ?? false,
     });
 
-    successCount += result.successCount;
-    failedCount += result.failedCount;
+    const chunkFailedCount = result.results.filter(
+      (fileResult) => fileResult.errors.length > 0,
+    ).length;
+    failedCount += chunkFailedCount;
+    successCount += result.results.length - chunkFailedCount;
     nativeTimeMs += result.timeMs;
 
     // Collect CSS for production extraction.
@@ -201,6 +206,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
         state.cache.delete(fileResult.path);
         state.collectedCss.delete(fileResult.path);
         state.precompileMetadata.delete(fileResult.path);
+        precompileFailures.push(formatCompileErrorMessage(fileResult.path, fileResult.errors));
         continue;
       }
 
@@ -217,4 +223,13 @@ export async function compileAll(state: VizePluginState): Promise<void> {
   state.logger.info(
     `Pre-compilation complete: ${successCount} recompiled, ${cachedFileCount} reused, ${failedCount} failed (${elapsed}ms, native ${batchLabel}: ${nativeTimeMs.toFixed(2)}ms)`,
   );
+
+  if (failedCount > 0) {
+    const details = precompileFailures.length > 0 ? `\n\n${precompileFailures.join("\n\n")}` : "";
+    throw new Error(`[vize] Pre-compilation failed for ${failedCount} file(s).${details}`);
+  }
+}
+
+function formatUnknownError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

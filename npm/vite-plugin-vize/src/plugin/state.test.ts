@@ -1,16 +1,21 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 import {
   DEFAULT_PRECOMPILE_BATCH_MAX_BYTES,
   DEFAULT_PRECOMPILE_BATCH_SIZE,
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
   chunkPrecompileFiles,
+  compileAll,
   diffPrecompileFiles,
   getCompileOptionsForRequest,
   hasFileMetadataChanged,
   normalizePrecompileBatchSize,
   syncCollectedCssForFile,
   type PrecompileFileMetadata,
+  type VizePluginState,
 } from "./state.ts";
 import type { CompiledModule } from "../types.ts";
 
@@ -87,6 +92,51 @@ assert.equal(
   32 * 1024 * 1024,
   "Default precompile byte cap should leave headroom in Node heap",
 );
+
+const brokenPrecompileRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-precompile-fail-"));
+fs.writeFileSync(path.join(brokenPrecompileRoot, "Broken.vue"), `<template><div></template>`);
+
+const brokenPrecompileState: VizePluginState = {
+  cache: new Map(),
+  ssrCache: new Map(),
+  collectedCss: new Map(),
+  precompileMetadata: new Map(),
+  pendingHmrUpdateTypes: new Map(),
+  isProduction: false,
+  root: brokenPrecompileRoot,
+  clientViteBase: "/",
+  serverViteBase: "/",
+  server: null,
+  filter: () => true,
+  scanPatterns: ["**/*.vue"],
+  precompileBatchSize: DEFAULT_PRECOMPILE_BATCH_SIZE,
+  ignorePatterns: [],
+  mergedOptions: {},
+  initialized: true,
+  dynamicImportAliasRules: [],
+  cssAliasRules: [],
+  extractCss: false,
+  clientViteDefine: {},
+  serverViteDefine: {},
+  logger: {
+    log() {},
+    info() {},
+    warn() {},
+    error() {},
+  } as never,
+};
+
+await assert.rejects(
+  () => compileAll(brokenPrecompileState),
+  /Pre-compilation failed for 1 file\(s\)[\s\S]*Broken\.vue/,
+  "Pre-compilation errors should fail buildStart instead of continuing with a partial cache",
+);
+assert.equal(
+  brokenPrecompileState.cache.has(path.join(brokenPrecompileRoot, "Broken.vue")),
+  false,
+  "Failed pre-compilation must not leave invalid output in the cache",
+);
+
 assert.ok(
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS.includes(".nuxt/**"),
   "Nuxt build artifacts should be ignored by default during pre-compilation",

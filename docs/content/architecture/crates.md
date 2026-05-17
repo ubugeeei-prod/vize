@@ -53,8 +53,8 @@ editor tooling can share the same syntax model.
   provided by `@vizejs/vite-plugin-musea`.
 - `vize_vitrine` is the bridge from Rust to JS. Packages such as `@vizejs/native` and
   `@vizejs/wasm` publish its bindings.
-- `vize` is the full Rust CLI today. The npm `vize` package currently focuses on shared config and
-  the native `lint` command.
+- `vize` is the full Rust CLI crate in the workspace. For v1 alpha, its public binary channel is
+  GitHub Releases or Nix, while the npm `vize` package is the supported package-script entry point.
 
 ## Package Mapping
 

@@ -37,6 +37,7 @@ const vizeDocsNavigation = (() => {
   const labelByPath = new Map([
     ["/", "Overview"],
     ["/getting-started", "Getting Started"],
+    ["/stability", "Stability"],
     ["/guide/configuration", "Configuration"],
     ["/guide/cli", "CLI"],
     ["/guide/vite-plugin", "Vite Plugin"],
@@ -75,7 +76,7 @@ const vizeDocsNavigation = (() => {
   const navGroups = [
     {
       title: "Start",
-      paths: ["/", "/getting-started"],
+      paths: ["/", "/getting-started", "/stability"],
     },
     {
       title: "Project Setup",

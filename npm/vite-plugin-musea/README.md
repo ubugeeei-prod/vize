@@ -41,6 +41,10 @@ vp dev
 http://localhost:5173/__musea__
 ```
 
+Musea middleware is intended for the local Vite dev server and trusted development networks. Do
+not expose `/__musea__` directly on the public internet unless it is protected by your own network
+controls or authentication layer.
+
 Shared defaults can live in `vize.config.ts`:
 
 ```ts

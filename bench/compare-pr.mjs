@@ -10,6 +10,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, delimiter, dirname, join, parse, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
+import { pathToFileURL } from "node:url";
 
 const DEFAULT_RUNS = 5;
 const DEFAULT_WARMUPS = 1;
@@ -85,6 +86,14 @@ function formatRate(value) {
 
 function formatRunList(values) {
   return values.map(formatMs).join(", ");
+}
+
+function formatPercent(value) {
+  if (!Number.isFinite(value)) {
+    return "n/a";
+  }
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
 }
 
 function pathWithNodeBins(cwd) {
@@ -176,6 +185,23 @@ function measureTask(task, baseBin, headBin, options) {
   };
 }
 
+export function createBenchmarkBudget(results) {
+  const regressions = results
+    .filter((result) => result.status === "regression")
+    .map((result) => ({
+      id: result.id,
+      label: result.label,
+      rate: result.rate,
+      changePercent: result.changePercent,
+    }));
+
+  return {
+    status: regressions.length > 0 ? "failed" : "passed",
+    regressionCount: regressions.length,
+    regressions,
+  };
+}
+
 function makeTasks(inputDir, taskFilter) {
   const tsconfig = join(inputDir, "tsconfig.json");
   const pattern = ".";
@@ -215,7 +241,8 @@ function makeTasks(inputDir, taskFilter) {
   });
 }
 
-function renderMarkdown(data) {
+export function renderMarkdown(data) {
+  const budget = data.budget ?? createBenchmarkBudget(data.results);
   const lines = [];
   lines.push("## PR Benchmark");
   lines.push("");
@@ -225,6 +252,9 @@ function renderMarkdown(data) {
   lines.push(
     `Median of ${data.runs} measured run(s) after ${data.warmups} warmup run(s). Times are shown in milliseconds to 0.001ms. Rate is head/base, so below 1.000x is faster. Regression threshold: ${data.thresholdPercent}%.`,
   );
+  lines.push(
+    `Budget: ${budget.status}${budget.regressionCount > 0 ? ` (${budget.regressionCount} regression${budget.regressionCount === 1 ? "" : "s"})` : ""}.`,
+  );
   lines.push("");
   lines.push("| Task | Base | Head | Rate | Result |");
   lines.push("| --- | ---: | ---: | ---: | --- |");
@@ -232,6 +262,15 @@ function renderMarkdown(data) {
     lines.push(
       `| ${result.label} | ${formatMs(result.baseMs)} | ${formatMs(result.headMs)} | ${formatRate(result.rate)} | ${result.status} |`,
     );
+  }
+  if (budget.regressionCount > 0) {
+    lines.push("");
+    lines.push("Regression budget failures:");
+    for (const regression of budget.regressions) {
+      lines.push(
+        `- ${regression.label}: ${formatRate(regression.rate)} (${formatPercent(regression.changePercent)})`,
+      );
+    }
   }
   lines.push("");
   lines.push("<details>");
@@ -249,8 +288,8 @@ function renderMarkdown(data) {
   return `${lines.join("\n")}\n`;
 }
 
-function main() {
-  const args = parseArgs(process.argv.slice(2));
+export function main(argv = process.argv.slice(2)) {
+  const args = parseArgs(argv);
   const inputDir = resolve(requireArg(args, "input"));
   const baseBin = resolve(requireArg(args, "base-bin"));
   const headBin = resolve(requireArg(args, "head-bin"));
@@ -304,6 +343,7 @@ function main() {
     warmups,
     thresholdPercent,
     results,
+    budget: createBenchmarkBudget(results),
   };
 
   const markdown = renderMarkdown(data);
@@ -317,9 +357,11 @@ function main() {
   }
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    main();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
 }

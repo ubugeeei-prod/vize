@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 import type { VizePluginState } from "./state.ts";
@@ -70,6 +71,19 @@ const nullResolveContext = {
 
 function hasFixtureProject(projectRoot: string): boolean {
   return fs.existsSync(path.join(projectRoot, "package.json"));
+}
+
+function canResolveFixtureDependency(projectRoot: string, specifier: string): boolean {
+  if (!hasFixtureProject(projectRoot)) {
+    return false;
+  }
+
+  try {
+    createRequire(path.join(projectRoot, "package.json")).resolve(specifier);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): string {
@@ -220,6 +234,43 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     expectResolvedId(resolved),
     entry,
     "Aliased package subpaths from virtual modules should resolve to loadable files",
+  );
+}
+
+{
+  const projectRoot = createTempProject("preserve-vite-vue");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const vueRoot = path.join(projectRoot, "node_modules", "vue");
+  const vueCjsEntry = path.join(vueRoot, "index.js");
+  const vueBundlerEntry = path.join(vueRoot, "dist", "vue.runtime.esm-bundler.js");
+  writeFixtureFile(
+    path.join(vueRoot, "package.json"),
+    JSON.stringify(
+      {
+        name: "vue",
+        main: "index.js",
+      },
+      null,
+      2,
+    ),
+  );
+  writeFixtureFile(vueCjsEntry, "module.exports = require('./dist/vue.cjs.js');");
+  writeFixtureFile(vueBundlerEntry, "export const createBlock = () => null;");
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async (id) => (id === "vue" ? { id: vueBundlerEntry } : null),
+    },
+    createState(projectRoot),
+    "vue",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    vueBundlerEntry,
+    "Vite-resolved Vue ESM entries must not be replaced by Node's CommonJS entry",
   );
 }
 
@@ -384,7 +435,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
 {
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "npmx.dev");
-  if (hasFixtureProject(projectRoot)) {
+  if (canResolveFixtureDependency(projectRoot, "vue-data-ui/style.css")) {
     const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));
     const resolved = await resolveIdHook(
       nullResolveContext,
@@ -400,7 +451,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
 {
   const projectRoot = path.join(workspaceRoot, "tests", "_fixtures", "_git", "vuefes-2025");
-  if (hasFixtureProject(projectRoot)) {
+  if (canResolveFixtureDependency(projectRoot, "@primevue/forms/resolvers/valibot")) {
     const importer = toVirtualId(path.join(projectRoot, "app", "pages", "index.vue"));
     const resolved = await resolveIdHook(
       nullResolveContext,
