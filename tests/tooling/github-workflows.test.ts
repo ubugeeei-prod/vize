@@ -482,6 +482,25 @@ test("release workflow publishes npm packages from package-specific artifacts", 
   }
 });
 
+test("release workflow smokes the wasm package wrapper before publishing", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const job = workflowJobBody(workflow, "release-npm-wasm");
+
+  assert.match(job, /npm\/vize-wasm\/index\.js/);
+  assert.match(job, /npm\/vize-wasm\/index\.d\.ts/);
+  assert.match(job, /tools\/moon\/scripts\/build_vize_wasm_package\.mbtx/);
+
+  const setupNode = job.indexOf("name: Setup Vite+ and Node.js");
+  const smoke = job.indexOf("name: Smoke @vizejs/wasm package");
+  const publish = job.indexOf("name: Publish @vizejs/wasm");
+
+  assert.notEqual(setupNode, -1);
+  assert.notEqual(smoke, -1);
+  assert.notEqual(publish, -1);
+  assert.ok(setupNode < smoke && smoke < publish);
+  assert.match(job, /node tools\/npm\/smoke-wasm-package\.mjs npm\/vize-wasm/);
+});
+
 test("release workflow bundles fresco-native binaries into the root package instead of publishing platform packages", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const frescoJobStart = workflow.indexOf("\n  release-npm-fresco-native:\n");
