@@ -11,6 +11,7 @@ pub use state::{DisabledRange, ElementContext, SsrMode};
 
 use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};
 use std::borrow::Cow;
+use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::String;
 use vize_carton::{
     Allocator, CompactString, FxHashMap, FxHashSet,
@@ -53,6 +54,8 @@ pub struct LintContext<'a> {
     enabled_rules: Option<FxHashSet<String>>,
     /// Optional semantic analysis from croquis.
     pub(crate) analysis: Option<&'a Croquis>,
+    /// Optional parsed SFC descriptor shared by SFC-level rules.
+    sfc_descriptor: Option<&'a SfcDescriptor<'a>>,
     /// Rules that should ignore semantic analysis for this lint pass.
     analysis_excluded_rules: Option<&'static [&'static str]>,
     /// SSR mode for linting.
@@ -101,6 +104,7 @@ impl<'a> LintContext<'a> {
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             analysis: None,
+            sfc_descriptor: None,
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             help_level: HelpLevel::default(),
@@ -133,6 +137,7 @@ impl<'a> LintContext<'a> {
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             analysis: Some(analysis),
+            sfc_descriptor: None,
             analysis_excluded_rules: None,
             ssr_mode: SsrMode::default(),
             help_level: HelpLevel::default(),
@@ -169,6 +174,18 @@ impl<'a> LintContext<'a> {
     #[inline]
     pub fn has_analysis(&self) -> bool {
         self.analysis().is_some()
+    }
+
+    /// Set parsed SFC descriptor shared by SFC-level rules.
+    #[inline]
+    pub fn set_sfc_descriptor(&mut self, descriptor: &'a SfcDescriptor<'a>) {
+        self.sfc_descriptor = Some(descriptor);
+    }
+
+    /// Get parsed SFC descriptor if one was prepared by the engine.
+    #[inline]
+    pub fn sfc_descriptor(&self) -> Option<&SfcDescriptor<'a>> {
+        self.sfc_descriptor
     }
 
     /// Set SSR mode.

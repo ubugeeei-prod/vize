@@ -34,8 +34,15 @@ impl Rule for VueI18nNoMissingKey {
             return;
         }
 
-        let Ok(descriptor) = parse_sfc(ctx.source, sfc_parse_options(ctx.filename)) else {
-            return;
+        let owned_descriptor;
+        let descriptor = if let Some(descriptor) = ctx.sfc_descriptor() {
+            descriptor
+        } else {
+            owned_descriptor = match parse_sfc(ctx.source, sfc_parse_options(ctx.filename)) {
+                Ok(descriptor) => descriptor,
+                Err(_) => return,
+            };
+            &owned_descriptor
         };
 
         let mut keys = FxHashSet::default();

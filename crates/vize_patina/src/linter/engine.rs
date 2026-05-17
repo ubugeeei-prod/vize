@@ -5,6 +5,7 @@
 
 use crate::{context::LintContext, diagnostic::LintSummary, visitor::LintVisitor};
 use vize_armature::Parser;
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::Allocator;
 use vize_carton::String;
 use vize_carton::ToCompactString;
@@ -21,6 +22,8 @@ const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
     "vue/no-mutating-props",
     "a11y/no-refer-to-non-existent-id",
 ];
+
+const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &["vue/sfc-element-order", "vue/single-style-block"];
 
 pub(crate) fn analyze_descriptor_for_lint(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
@@ -52,6 +55,26 @@ impl Linter {
         let mut ctx = LintContext::with_locale(&allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_help_level(self.help_level);
+
+        let shared_descriptor = if self.has_active_shared_sfc_descriptor_rules() {
+            profile!(
+                "patina.sfc.level_rules.parse_sfc",
+                parse_sfc(
+                    source,
+                    SfcParseOptions {
+                        filename: filename.into(),
+                        ..Default::default()
+                    },
+                )
+                .ok()
+            )
+        } else {
+            None
+        };
+
+        if let Some(descriptor) = shared_descriptor.as_ref() {
+            ctx.set_sfc_descriptor(descriptor);
+        }
 
         profile!("patina.sfc.rules.run_on_sfc", {
             for rule in self.registry.rules() {
@@ -112,6 +135,13 @@ impl Linter {
 
     fn has_active_semantic_template_rules(&self) -> bool {
         SEMANTIC_TEMPLATE_RULES
+            .iter()
+            .copied()
+            .any(|rule_name| self.registry.has_rule(rule_name) && self.is_rule_enabled(rule_name))
+    }
+
+    fn has_active_shared_sfc_descriptor_rules(&self) -> bool {
+        SHARED_SFC_DESCRIPTOR_RULES
             .iter()
             .copied()
             .any(|rule_name| self.registry.has_rule(rule_name) && self.is_rule_enabled(rule_name))

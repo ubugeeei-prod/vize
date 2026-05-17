@@ -87,18 +87,24 @@ impl Rule for SfcElementOrder {
     }
 
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
-        let descriptor = match profile!(
-            "patina.rule.sfc_element_order.parse_sfc",
-            parse_sfc(
-                ctx.source,
-                SfcParseOptions {
-                    filename: ctx.filename.into(),
-                    ..Default::default()
-                },
-            )
-        ) {
-            Ok(descriptor) => descriptor,
-            Err(_) => return,
+        let owned_descriptor;
+        let descriptor = if let Some(descriptor) = ctx.sfc_descriptor() {
+            descriptor
+        } else {
+            owned_descriptor = match profile!(
+                "patina.rule.sfc_element_order.parse_sfc",
+                parse_sfc(
+                    ctx.source,
+                    SfcParseOptions {
+                        filename: ctx.filename.into(),
+                        ..Default::default()
+                    },
+                )
+            ) {
+                Ok(descriptor) => descriptor,
+                Err(_) => return,
+            };
+            &owned_descriptor
         };
 
         let mut blocks = Vec::with_capacity(2 + descriptor.styles.len());
