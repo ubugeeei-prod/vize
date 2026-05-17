@@ -4,6 +4,7 @@ use clap::{Args, Subcommand};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use vize_carton::{String, ToCompactString, cstr};
 
 #[derive(Args)]
 pub struct MuseaArgs {
@@ -51,7 +52,7 @@ impl Default for ServeArgs {
     fn default() -> Self {
         Self {
             port: 6006,
-            host: "localhost".to_string(),
+            host: cstr!("localhost"),
             stories: None,
             open: false,
             build: false,
@@ -98,11 +99,17 @@ fn run_serve(args: ServeArgs) {
     eprintln!(
         "  command: {} {}",
         plan.program.display(),
-        plan.args.join(" ")
+        plan.args
+            .iter()
+            .map(|arg| arg.as_str())
+            .collect::<Vec<_>>()
+            .join(" ")
     );
     eprintln!("  route: configure @vizejs/vite-plugin-musea in Vite and open /__musea__");
 
-    let status = Command::new(&plan.program).args(&plan.args).status();
+    let status = Command::new(&plan.program)
+        .args(plan.args.iter().map(|arg| arg.as_str()))
+        .status();
     match status {
         Ok(status) => {
             std::process::exit(status.code().unwrap_or(1));
@@ -128,7 +135,7 @@ struct ServePlan {
 
 fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> {
     if let Some(stories) = &args.stories {
-        return Err(format!(
+        return Err(cstr!(
             "vize musea: --stories is not supported by the Vite-backed serve entrypoint yet (got {}). Configure Musea include patterns in vize.config.ts instead.",
             stories.display()
         ));
@@ -136,19 +143,19 @@ fn create_serve_plan(args: &ServeArgs, cwd: &Path) -> Result<ServePlan, String> 
 
     let program = resolve_vite_binary(cwd).unwrap_or_else(|| PathBuf::from("vite"));
     let mut vite_args = if args.build {
-        vec!["build".to_string()]
+        vec![cstr!("build")]
     } else {
         vec![
-            "dev".to_string(),
-            "--host".to_string(),
+            cstr!("dev"),
+            cstr!("--host"),
             args.host.clone(),
-            "--port".to_string(),
-            args.port.to_string(),
+            cstr!("--port"),
+            args.port.to_compact_string(),
         ]
     };
     if args.open && !args.build {
-        vite_args.push("--open".to_string());
-        vite_args.push("/__musea__".to_string());
+        vite_args.push(cstr!("--open"));
+        vite_args.push(cstr!("/__musea__"));
     }
 
     Ok(ServePlan {
@@ -186,8 +193,11 @@ fn run_new(args: NewArgs) {
     let project_name = args.name.unwrap_or_else(|| {
         std::env::current_dir()
             .ok()
-            .and_then(|p| p.file_name().map(|n| n.to_string_lossy().to_string()))
-            .unwrap_or_else(|| "stories".to_string())
+            .and_then(|p| {
+                p.file_name()
+                    .map(|name| name.to_string_lossy().as_ref().to_compact_string())
+            })
+            .unwrap_or_else(|| cstr!("stories"))
     });
 
     eprintln!(
