@@ -106,6 +106,10 @@ export function loadHook(
   id: string,
   loadOptions?: { ssr?: boolean },
 ): string | { code: string; map: null } | null {
+  if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0")) {
+    return null;
+  }
+
   // Pick the correct viteBase for URL resolution based on the build environment.
   const currentBase = loadOptions?.ssr ? state.serverViteBase : state.clientViteBase;
   const request = classifyVitePluginRequest(id);
@@ -328,6 +332,10 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
+  if (!id.startsWith("\0")) {
+    return null;
+  }
+
   const request = classifyVitePluginRequest(id);
   if (request.isVizeVirtual || request.isMacroVirtualId) {
     const realPath = request.isMacroVirtualId
