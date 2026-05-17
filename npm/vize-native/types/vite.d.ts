@@ -28,6 +28,11 @@ export interface ViteIdPartsNapi {
   querySuffix: string;
 }
 
+export interface ViteDevMiddlewareRewriteNapi {
+  cleanedUrl: string;
+  fsPath: string;
+}
+
 export interface VitePluginRequestNapi {
   /** Path segment before the query string. */
   path: string;
@@ -69,10 +74,37 @@ export interface VitePluginRequestNapi {
   boundaryKind?: string;
 }
 
+export interface VitePrecompileChunkOptionsNapi {
+  maxBytes?: number;
+  metadata?: Array<VitePrecompileFileMetadataEntryNapi>;
+}
+
+export interface VitePrecompileDiffNapi {
+  changedFiles: Array<string>;
+  deletedFiles: Array<string>;
+}
+
+export interface VitePrecompileFileMetadataEntryNapi {
+  path: string;
+  mtimeMs: number;
+  size: number;
+}
+
+export interface VitePrecompileFileMetadataNapi {
+  mtimeMs: number;
+  size: number;
+}
+
 export declare function applyViteDefineReplacements(
   code: string,
   defines: Array<DefineReplacementNapi>,
 ): string;
+
+export declare function chunkVitePrecompileFiles(
+  files: Array<string>,
+  batchSize?: number | undefined | null,
+  options?: VitePrecompileChunkOptionsNapi | undefined | null,
+): Array<Array<string>>;
 
 /**
  * Classify a Vite plugin module request using the native Vize request model.
@@ -102,6 +134,12 @@ export declare function detectViteHmrUpdateType(
   next: HmrHashesNapi,
 ): string;
 
+export declare function diffVitePrecompileFiles(
+  files: Array<string>,
+  currentMetadata: Array<VitePrecompileFileMetadataEntryNapi>,
+  previousMetadata: Array<VitePrecompileFileMetadataEntryNapi>,
+): VitePrecompileDiffNapi;
+
 export declare function fromViteVirtualId(virtualId: string): string;
 
 export declare function generateViteHmrCode(scopeId: string, updateType: string): string;
@@ -111,11 +149,24 @@ export declare function hasViteHmrChanges(
   next: HmrHashesNapi,
 ): boolean;
 
+export declare function hasVitePrecompileFileMetadataChanged(
+  previous: VitePrecompileFileMetadataNapi | undefined | null,
+  next: VitePrecompileFileMetadataNapi,
+): boolean;
+
 export declare function isBuiltinViteDefine(key: string): boolean;
 
 export declare function isViteBareSpecifier(id: string): boolean;
 
 export declare function normalizeViteFsIdForBuild(id: string): string;
+
+export declare function normalizeViteCssModuleFilename(filename: string): string;
+
+export declare function normalizeViteDevMiddlewareUrl(
+  reqUrl: string,
+): ViteDevMiddlewareRewriteNapi | null;
+
+export declare function normalizeVitePrecompileBatchSize(value?: number | undefined | null): number;
 
 export declare function normalizeViteRequireBase(
   importer?: string | undefined | null,
