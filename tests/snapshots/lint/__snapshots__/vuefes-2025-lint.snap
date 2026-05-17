@@ -10,6 +10,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 17,
@@ -20,6 +21,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 61,
@@ -37,6 +39,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 75,
@@ -47,6 +50,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 102,
@@ -57,6 +61,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 161,
@@ -74,6 +79,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 50,
@@ -84,6 +90,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 65,
@@ -101,6 +108,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 92,
@@ -111,6 +119,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 122,
@@ -128,6 +137,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 42,
@@ -175,6 +185,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 51,
@@ -185,6 +196,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 56,
@@ -202,6 +214,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 57,
@@ -212,6 +225,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 56,
@@ -238,36 +252,16 @@
   },
   {
     "file": "app/components/header/VFHeader.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'AnimationPlay' is registered but never used in template",
-        "line": 23,
-        "column": 11,
-        "endLine": 25,
-        "endColumn": 2,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'AnimationPause' is registered but never used in template",
-        "line": 23,
-        "column": 11,
-        "endLine": 25,
-        "endColumn": 3,
-        "help": "Remove the unused import or use the component in your template"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/components/heading/VFHeading.vue",
     "messages": [
       {
         "ruleId": "a11y/anchor-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
         "line": 15,
@@ -278,6 +272,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 15,
@@ -304,20 +299,9 @@
   },
   {
     "file": "app/components/mainVisual/MainVisualWebGL.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'THREE' is registered but never used in template",
-        "line": 456,
-        "column": 11,
-        "endLine": 457,
-        "endColumn": 5,
-        "help": "Remove the unused import or use the component in your template"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/menu/VFMenu.vue",
@@ -348,6 +332,7 @@
     "messages": [
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 213,
@@ -358,6 +343,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 243,
@@ -368,6 +354,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 259,
@@ -391,6 +378,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 27,
@@ -462,6 +450,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 25,
@@ -472,6 +461,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 39,
@@ -488,17 +478,8 @@
     "file": "app/pages/_components/SectionSpeaker.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'ColorSetIter' is registered but never used in template",
-        "line": 61,
-        "column": 11,
-        "endLine": 62,
-        "endColumn": 12,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 116,
@@ -509,7 +490,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "app/pages/_components/SectionSponsorClosed.vue",
@@ -564,6 +545,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 36,
@@ -574,6 +556,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 41,
@@ -597,6 +580,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 14,
@@ -614,6 +598,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 129,
@@ -624,6 +609,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 138,
@@ -647,6 +633,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 46,
@@ -657,6 +644,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 60,
@@ -680,6 +668,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 62,
@@ -697,6 +686,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 108,
@@ -707,6 +697,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
         "line": 115,
@@ -717,6 +708,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 144,
@@ -727,6 +719,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 152,
@@ -737,6 +730,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 160,
@@ -747,6 +741,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 185,
@@ -757,6 +752,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 193,
@@ -767,6 +763,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 201,
@@ -777,6 +774,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
         "line": 214,
@@ -794,6 +792,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 34,
@@ -817,6 +816,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 101,
@@ -827,6 +827,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 136,
@@ -837,6 +838,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
         "line": 143,
@@ -866,6 +868,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 21,
@@ -907,6 +910,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-hydration-mismatch",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 91,
@@ -917,6 +921,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 100,
@@ -927,6 +932,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 121,
@@ -937,6 +943,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 130,
@@ -947,6 +954,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 154,
@@ -957,6 +965,7 @@
       },
       {
         "ruleId": "ssr/no-hydration-mismatch",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-hydration-mismatch] '.toLocaleString()' may cause hydration mismatch between server and client",
         "line": 180,
@@ -974,6 +983,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 91,
@@ -984,6 +994,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 106,
@@ -1001,6 +1012,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 96,
@@ -1011,6 +1023,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 111,
@@ -1034,6 +1047,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 122,
@@ -1044,6 +1058,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 127,
