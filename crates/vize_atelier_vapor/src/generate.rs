@@ -3,6 +3,7 @@
 //! Generates JavaScript code from Vapor IR.
 
 mod context;
+mod destructure;
 mod expression;
 mod helpers;
 mod operations;

@@ -1,6 +1,9 @@
 //! Code generation context that tracks state during Vapor code emission.
 
-use super::expression;
+use super::{
+    destructure::{parse_destructure_bindings, parse_destructure_names},
+    expression,
+};
 use vize_atelier_core::options::BindingMetadata;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, camelize, capitalize, cstr};
 use vize_croquis::builtins::is_global_allowed;
@@ -205,11 +208,10 @@ impl<'a> GenerateContext<'a> {
             if let Some(ref value_alias) = scope.value_alias {
                 let for_var = cstr!("_for_item{}", scope.depth);
 
-                if value_alias.starts_with('{') || value_alias.starts_with('(') {
-                    let names = parse_destructure_names(value_alias.as_str());
-                    for binding_name in &names {
-                        if name == *binding_name {
-                            return Some(cstr!("{}.value.{}", for_var, binding_name));
+                if value_alias.starts_with(['{', '[', '(']) {
+                    for binding in parse_destructure_bindings(value_alias.as_str()) {
+                        if name == binding.local.as_str() {
+                            return Some(cstr!("{}.value{}", for_var, binding.path));
                         }
                     }
                 } else if name == value_alias.as_str() {
@@ -388,10 +390,7 @@ impl<'a> GenerateContext<'a> {
         let slot_props_var = cstr!("_slotProps{}", self.slot_scope_count);
         self.slot_scope_count += 1;
 
-        let names = parse_destructure_names(destructure_pattern)
-            .into_iter()
-            .map(|s| s.to_compact_string())
-            .collect();
+        let names = parse_destructure_names(destructure_pattern);
 
         self.slot_scopes.push(SlotScope {
             names,
@@ -411,27 +410,6 @@ impl<'a> GenerateContext<'a> {
         self.temp_count += 1;
         name
     }
-}
-
-/// Parse destructured variable names from patterns like "{ id, name }" or "{ a: b }"
-fn parse_destructure_names(pattern: &str) -> std::vec::Vec<&str> {
-    let inner = pattern
-        .trim_start_matches(['{', '(', ' '])
-        .trim_end_matches(['}', ')', ' ']);
-    inner
-        .split(',')
-        .filter_map(|part| {
-            let part = part.trim();
-            // Handle "a: b" -> use "b" (the bound name)
-            if let Some(pos) = part.find(':') {
-                Some(part[pos + 1..].trim())
-            } else if part.is_empty() {
-                None
-            } else {
-                Some(part)
-            }
-        })
-        .collect()
 }
 
 impl std::fmt::Write for GenerateContext<'_> {

@@ -598,6 +598,45 @@ mod tests {
     }
 
     #[test]
+    fn test_compile_v_for_destructured_aliases_resolve_source_paths() {
+        let allocator = Bump::new();
+        let result = compile_vapor(
+            &allocator,
+            r#"<ul><li v-for="{ id: itemId, user: { name }, meta: { count: total = 0 } } in rows" :key="itemId" :title="name">{{ total }}</li></ul>"#,
+            Default::default(),
+        );
+
+        assert!(
+            result.error_messages.is_empty(),
+            "Expected no errors: {:?}",
+            result.error_messages
+        );
+
+        assert_parses_as_module(&result.code);
+        assert!(
+            result
+                .code
+                .contains(r#"_setProp(n2, "title", _for_item0.value.user.name)"#),
+            "{}",
+            result.code
+        );
+        assert!(
+            result
+                .code
+                .contains("_setText(x2, _toDisplayString(_for_item0.value.meta.count))"),
+            "{}",
+            result.code
+        );
+        assert!(
+            result.code.contains(
+                "}, ({ id: itemId, user: { name }, meta: { count: total = 0 } }) => (itemId))"
+            ),
+            "{}",
+            result.code
+        );
+    }
+
+    #[test]
     fn test_compile_nested_v_for_key_uses_outer_alias() {
         let allocator = Bump::new();
         let result = compile_vapor(

@@ -4,6 +4,7 @@ use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 use super::{
     super::{
         context::{ForScope, GenerateContext},
+        destructure::parse_destructure_bindings,
         generate_block,
     },
     insertion::{block_requires_parent_insertion_state, emit_insertion_state},
@@ -163,11 +164,15 @@ fn resolve_key_expression(
 fn restore_current_alias_reference(expr: &mut String, reference: &str, alias: &str) {
     if is_simple_local_alias(alias) && expr.contains(reference) {
         *expr = expr.replace(reference, alias).into();
-    } else if alias.trim_start().starts_with(['{', '(']) {
-        for name in parse_destructure_names(alias) {
-            let property_reference = cstr!("{}.{}", reference, name);
+    } else if alias.trim_start().starts_with(['{', '[', '(']) {
+        let mut bindings = parse_destructure_bindings(alias);
+        bindings.sort_by(|a, b| b.path.len().cmp(&a.path.len()));
+        for binding in bindings {
+            let property_reference = cstr!("{}{}", reference, binding.path);
             if expr.contains(property_reference.as_str()) {
-                *expr = expr.replace(property_reference.as_str(), name).into();
+                *expr = expr
+                    .replace(property_reference.as_str(), binding.local.as_str())
+                    .into();
             }
         }
     }
@@ -182,25 +187,6 @@ fn is_simple_local_alias(alias: &str) -> bool {
         && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
 }
 
-fn parse_destructure_names(pattern: &str) -> std::vec::Vec<&str> {
-    let inner = pattern
-        .trim_start_matches(['{', '(', ' '])
-        .trim_end_matches(['}', ')', ' ']);
-    inner
-        .split(',')
-        .filter_map(|part| {
-            let part = part.trim();
-            if let Some(pos) = part.find(':') {
-                Some(part[pos + 1..].trim())
-            } else if part.is_empty() {
-                None
-            } else {
-                Some(part)
-            }
-        })
-        .collect()
-}
-
 #[cfg(test)]
 mod tests {
     use super::restore_current_alias_reference;
@@ -208,10 +194,14 @@ mod tests {
 
     #[test]
     fn restores_destructured_key_alias_references() {
-        let mut expr = "_for_item0.value.id".to_compact_string();
+        let mut expr = "_for_item0.value.name + _for_item0.value.user.id".to_compact_string();
 
-        restore_current_alias_reference(&mut expr, "_for_item0.value", "{ id, name }");
+        restore_current_alias_reference(
+            &mut expr,
+            "_for_item0.value",
+            "{ name: label, user: { id: userId } }",
+        );
 
-        assert_eq!(expr, "id");
+        assert_eq!(expr, "label + userId");
     }
 }
