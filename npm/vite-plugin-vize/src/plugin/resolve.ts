@@ -271,19 +271,19 @@ export async function resolveIdHook(
               return { ...resolved, id: normalizedFsId };
             }
 
-            const nodeResolved = resolveBareImportCandidatesWithNode(
-              state,
-              id,
-              cleanImporter,
-              resolved.id,
-            );
-            if (nodeResolved) {
-              state.logger.log(
-                `resolveId: normalized bare ${id} to ${nodeResolved} via Node fallback`,
-              );
-              return nodeResolved;
-            }
             if (isViteBareSpecifier(resolved.id)) {
+              const nodeResolved = resolveBareImportCandidatesWithNode(
+                state,
+                id,
+                cleanImporter,
+                resolved.id,
+              );
+              if (nodeResolved) {
+                state.logger.log(
+                  `resolveId: normalized bare ${id} to ${nodeResolved} via Node fallback`,
+                );
+                return nodeResolved;
+              }
               return null;
             }
             return resolved;
@@ -310,19 +310,19 @@ export async function resolveIdHook(
                 return { ...resolved, id: normalizedFsId };
               }
 
-              const nodeResolved = resolveBareImportCandidatesWithNode(
-                state,
-                id,
-                cleanImporter,
-                resolved.id,
-              );
-              if (nodeResolved) {
-                state.logger.log(
-                  `resolveId: normalized aliased bare ${id} to ${nodeResolved} via Node fallback`,
-                );
-                return nodeResolved;
-              }
               if (isViteBareSpecifier(resolved.id)) {
+                const nodeResolved = resolveBareImportCandidatesWithNode(
+                  state,
+                  id,
+                  cleanImporter,
+                  resolved.id,
+                );
+                if (nodeResolved) {
+                  state.logger.log(
+                    `resolveId: normalized aliased bare ${id} to ${nodeResolved} via Node fallback`,
+                  );
+                  return nodeResolved;
+                }
                 return null;
               }
               return resolved;
