@@ -27,8 +27,3 @@ oxc_allocator.workspace = true
 tempfile.workspace = true
 vize_armature.workspace = true
 insta.workspace = true
-criterion.workspace = true
-
-[[bench]]
-name = "cross_file"
-harness = false

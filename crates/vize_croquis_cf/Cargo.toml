@@ -1,0 +1,21 @@
+[package]
+name = "vize_croquis_cf"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Cross-file semantic analysis for Vize Croquis."
+
+[dependencies]
+vize_carton.workspace = true
+vize_croquis.workspace = true
+rustc-hash.workspace = true
+
+[dev-dependencies]
+vize_armature.workspace = true
+insta.workspace = true
+criterion.workspace = true
+
+[[bench]]
+name = "cross_file"
+harness = false
