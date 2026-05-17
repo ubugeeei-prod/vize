@@ -49,7 +49,7 @@ pub struct LintArgs {
     #[arg(long)]
     pub no_config: bool,
 
-    /// Output format (text, json)
+    /// Output format (text, ansi, plain, json, stylish, markdown, html, agent)
     #[arg(short, long, default_value = "text")]
     pub format: String,
 
@@ -92,10 +92,13 @@ pub struct LintArgs {
 
 pub fn run(args: LintArgs) {
     let start = Instant::now();
-    let format = match args.format.as_str() {
-        "json" => OutputFormat::Json,
-        _ => OutputFormat::Text,
-    };
+    let format = OutputFormat::parse(args.format.as_str()).unwrap_or_else(|| {
+        eprintln!(
+            "Unknown lint output format '{}'. Expected one of: text, ansi, plain, json, stylish, markdown, html, agent",
+            args.format
+        );
+        std::process::exit(2);
+    });
     let render_details = should_render_lint_details(format, args.quiet);
 
     // Collect .vue files using glob patterns or directory walking
@@ -613,7 +616,7 @@ fn merge_lint_result(target: &mut LintResult, mut extra: LintResult) {
 
 #[inline]
 fn should_render_lint_details(format: OutputFormat, quiet: bool) -> bool {
-    matches!(format, OutputFormat::Json) || !quiet
+    format.renders_details_when_quiet() || !quiet
 }
 
 #[cfg(test)]
@@ -630,6 +633,15 @@ mod tests {
     #[test]
     fn json_output_remains_machine_readable_in_quiet_mode() {
         assert!(should_render_lint_details(OutputFormat::Json, true));
+    }
+
+    #[test]
+    fn report_formats_render_in_quiet_mode() {
+        assert!(should_render_lint_details(OutputFormat::Ansi, true));
+        assert!(should_render_lint_details(OutputFormat::Plain, true));
+        assert!(should_render_lint_details(OutputFormat::Markdown, true));
+        assert!(should_render_lint_details(OutputFormat::Html, true));
+        assert!(should_render_lint_details(OutputFormat::Agent, true));
     }
 
     #[cfg(not(target_arch = "wasm32"))]

@@ -70,6 +70,9 @@ vize lint examples/cli/src/*.vue
 # Output as JSON
 vize lint examples/cli/src/HasErrors.vue --format json
 
+# Output as plain text for hooks and agents
+vize lint examples/cli/src/HasErrors.vue --format plain
+
 # Set a warning limit
 vize lint examples/cli/src/*.vue --max-warnings 5
 
@@ -87,12 +90,12 @@ The SSR rule docs include extra boundary examples for `typeof window`, comments,
 
 **Options:**
 
-| Option           | Description                    | Default |
-| ---------------- | ------------------------------ | ------- |
-| `--format`, `-f` | Output format (`text`/`json`)  | text    |
-| `--max-warnings` | Warning limit                  | -       |
-| `--quiet`, `-q`  | Show only the summary          | false   |
-| `--fix`          | Auto-fix (not implemented yet) | false   |
+| Option           | Description                                                                      | Default |
+| ---------------- | -------------------------------------------------------------------------------- | ------- |
+| `--format`, `-f` | Output format (`text`/`ansi`/`plain`/`json`/`stylish`/`markdown`/`html`/`agent`) | text    |
+| `--max-warnings` | Warning limit                                                                    | -       |
+| `--quiet`, `-q`  | Show only the summary                                                            | false   |
+| `--fix`          | Auto-fix (not implemented yet)                                                   | false   |
 
 ### LSP Server (`vize lsp`)
 

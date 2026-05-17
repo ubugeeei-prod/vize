@@ -554,7 +554,7 @@ export declare function lint(
 
 /** Lint options for NAPI */
 export interface LintOptionsNapi {
-  /** Output format: "text" or "json" */
+  /** Output format: "text", "ansi", "plain", "json", "stylish", "markdown", "html", or "agent" */
   format?: string;
   /** Maximum number of warnings before failing */
   maxWarnings?: number;
