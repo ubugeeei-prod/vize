@@ -52,9 +52,11 @@ pub fn init_terminal() -> Result<()> {
 #[allow(clippy::disallowed_macros)]
 pub fn init_terminal_with_mouse() -> Result<()> {
     init_terminal_with_options(TerminalOptionsNapi {
+        raw_mode: Some(true),
         alternate_screen: Some(true),
         mouse: Some(true),
         bracketed_paste: Some(true),
+        hide_cursor: Some(true),
     })
 }
 
@@ -82,9 +84,11 @@ pub fn init_terminal_with_options(options: TerminalOptionsNapi) -> Result<()> {
 
     backend
         .init_with_options(TerminalOptions {
+            raw_mode: options.raw_mode.unwrap_or(true),
             alternate_screen: options.alternate_screen.unwrap_or(false),
             mouse_capture: options.mouse.unwrap_or(false),
             bracketed_paste: options.bracketed_paste.unwrap_or(true),
+            hide_cursor: options.hide_cursor.unwrap_or(true),
         })
         .map_err(|e| {
             Error::new(

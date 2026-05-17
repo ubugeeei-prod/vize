@@ -114,9 +114,11 @@ export interface TerminalInfoNapi {
 }
 
 export interface TerminalOptionsNapi {
+  rawMode?: boolean;
   alternateScreen?: boolean;
   mouse?: boolean;
   bracketedPaste?: boolean;
+  hideCursor?: boolean;
 }
 
 export interface LayoutResultNapi {
