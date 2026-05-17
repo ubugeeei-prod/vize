@@ -21,6 +21,14 @@ pub(crate) fn needs_typescript_stripping(content: &str) -> bool {
         return true;
     }
 
+    if contains_unquoted_word(content, "satisfies") {
+        return true;
+    }
+
+    if contains_generic_call(content) {
+        return true;
+    }
+
     // Check for arrow function parameter type annotations: (param: Type) =>
     // Pattern: identifier followed by : and then some type, before ) =>
     if content.contains("=>") {
@@ -92,6 +100,111 @@ pub(crate) fn needs_typescript_stripping(content: &str) -> bool {
     }
 
     false
+}
+
+fn contains_unquoted_word(content: &str, word: &str) -> bool {
+    let mut quote = None;
+    let mut prev = '\0';
+
+    for (index, ch) in content.char_indices() {
+        if let Some(open_quote) = quote {
+            if ch == open_quote && prev != '\\' {
+                quote = None;
+            }
+            prev = ch;
+            continue;
+        }
+
+        match ch {
+            '"' | '\'' | '`' => quote = Some(ch),
+            _ if content[index..].starts_with(word) => {
+                let before = content[..index].chars().next_back();
+                let after = content[index + word.len()..].chars().next();
+                let before_boundary = before.is_none_or(|ch| !is_ident_char(ch));
+                let after_boundary = after.is_none_or(|ch| !is_ident_char(ch));
+                if before_boundary && after_boundary {
+                    return true;
+                }
+            }
+            _ => {}
+        }
+        prev = ch;
+    }
+
+    false
+}
+
+fn contains_generic_call(content: &str) -> bool {
+    let mut quote = None;
+    let mut prev = '\0';
+
+    for (index, ch) in content.char_indices() {
+        if let Some(open_quote) = quote {
+            if ch == open_quote && prev != '\\' {
+                quote = None;
+            }
+            prev = ch;
+            continue;
+        }
+
+        match ch {
+            '"' | '\'' | '`' => quote = Some(ch),
+            '<' if previous_non_whitespace(content, index).is_some_and(is_ident_char) => {
+                if let Some(close) = find_matching_angle(content, index) {
+                    let after = content[close + 1..].trim_start();
+                    if after.starts_with('(') {
+                        return true;
+                    }
+                }
+            }
+            _ => {}
+        }
+        prev = ch;
+    }
+
+    false
+}
+
+fn previous_non_whitespace(content: &str, index: usize) -> Option<char> {
+    content[..index]
+        .chars()
+        .rev()
+        .find(|ch| !ch.is_whitespace())
+}
+
+fn find_matching_angle(content: &str, open_index: usize) -> Option<usize> {
+    let mut depth = 0i32;
+    let mut quote = None;
+    let mut prev = '\0';
+
+    for (relative, ch) in content[open_index..].char_indices() {
+        if let Some(open_quote) = quote {
+            if ch == open_quote && prev != '\\' {
+                quote = None;
+            }
+            prev = ch;
+            continue;
+        }
+
+        match ch {
+            '"' | '\'' | '`' => quote = Some(ch),
+            '<' => depth += 1,
+            '>' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(open_index + relative);
+                }
+            }
+            _ => {}
+        }
+        prev = ch;
+    }
+
+    None
+}
+
+fn is_ident_char(ch: char) -> bool {
+    ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'
 }
 
 /// Strip TypeScript type annotations from an expression
@@ -252,16 +365,12 @@ mod tests {
     }
 
     #[test]
-    fn test_needs_typescript_stripping_generic_detection_note() {
-        // NOTE: Generic function call detection (e.g., useStore<RootState>())
-        // is not implemented in needs_typescript_stripping.
-        // Generic stripping is handled by the full OXC TypeScript transformer
-        // when compiling script blocks with is_ts = false.
-        // This test documents the current behavior.
-
-        // Currently NOT detected as needing stripping:
-        assert!(!needs_typescript_stripping("useStore<RootState>()"));
-        assert!(!needs_typescript_stripping("ref<User | null>(null)"));
+    fn test_needs_typescript_stripping_generic_calls() {
+        assert!(needs_typescript_stripping("useStore<RootState>()"));
+        assert!(needs_typescript_stripping("ref<User | null>(null)"));
+        assert!(needs_typescript_stripping(
+            "factory<Map<string, number>>(value)"
+        ));
 
         // Regular function calls correctly don't need stripping:
         assert!(!needs_typescript_stripping("useStore()"));
@@ -269,24 +378,26 @@ mod tests {
     }
 
     #[test]
-    fn test_strip_typescript_documents_limitations() {
-        // NOTE: strip_typescript_from_expression is a simple parser-based
-        // transformation for template expressions. It handles common cases
-        // like "as" assertions, but complex TypeScript like generics are
-        // handled by the full OXC transformer in compile_script.
-        //
-        // For template expressions with generics, they are stripped during
-        // script compilation (not in the template transform phase).
+    fn test_needs_typescript_stripping_satisfies_operator() {
+        assert!(needs_typescript_stripping("payload satisfies Payload"));
+        assert!(!needs_typescript_stripping(
+            "'payload satisfies Payload'.includes(query)"
+        ));
+    }
 
-        // "as" assertions are stripped:
+    #[test]
+    fn test_strip_typescript_generic_calls_and_satisfies() {
         let result = strip_typescript_from_expression("foo as string");
-        insta::assert_snapshot!(result.as_str());
+        assert_eq!(result.as_str(), "foo");
 
-        // Generics in expressions MAY or MAY NOT be stripped depending on context
-        // This is expected behavior - complex cases are handled elsewhere
         let result = strip_typescript_from_expression("useStore<RootState>()");
-        // Document the actual behavior - generics aren't stripped by this function
-        eprintln!("Generic expression result: {}", result);
+        assert_eq!(result.as_str(), "useStore()");
+
+        let result = strip_typescript_from_expression("ref<User | null>(null)");
+        assert_eq!(result.as_str(), "ref(null)");
+
+        let result = strip_typescript_from_expression("payload satisfies Payload");
+        assert_eq!(result.as_str(), "payload");
     }
 
     #[test]
