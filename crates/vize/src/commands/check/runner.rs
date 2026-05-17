@@ -28,7 +28,9 @@ use crate::commands::profile::{
 use super::{
     CheckArgs,
     reporting::{JsonFileResult, JsonOutput},
-    tsconfig_inputs::collect_default_check_files,
+    tsconfig_inputs::{
+        TsconfigDeclarationOptions, collect_default_check_files, load_tsconfig_declaration_options,
+    },
 };
 
 mod collect;
@@ -113,7 +115,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut checker = match BatchTypeChecker::with_options(
         &project_root,
         BatchTypeCheckerOptions {
-            tsconfig_path,
+            tsconfig_path: tsconfig_path.clone(),
             virtual_ts_options,
         },
     ) {
@@ -168,9 +170,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
 
     let emit_start = Instant::now();
     let emitted_declarations = if args.declaration {
-        let declaration_dir =
-            resolve_declaration_dir(args.declaration_dir.as_deref(), &project_root);
-        match checker.emit_declarations(&DeclarationEmitOptions::new(declaration_dir.clone())) {
+        let declaration_options = resolve_declaration_emit_options(
+            args.declaration_dir.as_deref(),
+            tsconfig_path.as_deref(),
+            &project_root,
+        );
+        let declaration_dir = declaration_options.out_dir.clone();
+        match checker.emit_declarations(&declaration_options) {
             Ok(result) => Some((declaration_dir, result)),
             Err(error) => {
                 eprintln!("\x1b[31mError:\x1b[0m {}", error);
@@ -555,7 +561,25 @@ fn build_virtual_ts_options(
     }
 }
 
-fn resolve_declaration_dir(declaration_dir: Option<&Path>, project_root: &Path) -> PathBuf {
+fn resolve_declaration_emit_options(
+    declaration_dir: Option<&Path>,
+    tsconfig_path: Option<&Path>,
+    project_root: &Path,
+) -> DeclarationEmitOptions {
+    let tsconfig_options = tsconfig_path
+        .map(load_tsconfig_declaration_options)
+        .unwrap_or_default();
+    let out_dir = resolve_declaration_dir(declaration_dir, &tsconfig_options, project_root);
+
+    DeclarationEmitOptions::new(out_dir)
+        .with_declaration_map(tsconfig_options.declaration_map.unwrap_or(false))
+}
+
+fn resolve_declaration_dir(
+    declaration_dir: Option<&Path>,
+    tsconfig_options: &TsconfigDeclarationOptions,
+    project_root: &Path,
+) -> PathBuf {
     declaration_dir
         .map(|path| {
             if path.is_absolute() {
@@ -564,6 +588,7 @@ fn resolve_declaration_dir(declaration_dir: Option<&Path>, project_root: &Path) 
                 project_root.join(path)
             }
         })
+        .or_else(|| tsconfig_options.output_dir().map(Path::to_path_buf))
         .unwrap_or_else(|| project_root.join("dist").join("types"))
 }
 
@@ -679,19 +704,94 @@ fn parse_dts_globals(
 
 #[cfg(test)]
 mod tests {
-    use super::resolve_declaration_dir;
-    use std::path::{Path, PathBuf};
+    use super::{resolve_declaration_dir, resolve_declaration_emit_options};
+    use crate::commands::check::tsconfig_inputs::TsconfigDeclarationOptions;
+    use std::{
+        path::{Path, PathBuf},
+        sync::atomic::{AtomicUsize, Ordering},
+    };
+
+    fn unique_case_dir(name: &str) -> PathBuf {
+        static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
+
+        let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("__agent_only")
+            .join("tests")
+            .join(format!(
+                "check-runner-{name}-{}-{case_id}",
+                std::process::id()
+            ))
+    }
 
     #[test]
     fn resolve_declaration_dir_defaults_to_dist_types() {
         let project_root = PathBuf::from("/workspace/project");
+        let tsconfig_options = TsconfigDeclarationOptions::default();
         assert_eq!(
-            resolve_declaration_dir(None, &project_root),
+            resolve_declaration_dir(None, &tsconfig_options, &project_root),
             project_root.join("dist").join("types")
         );
         assert_eq!(
-            resolve_declaration_dir(Some(Path::new("types")), &project_root),
+            resolve_declaration_dir(Some(Path::new("types")), &tsconfig_options, &project_root),
             project_root.join("types")
         );
+    }
+
+    #[test]
+    fn resolve_declaration_dir_uses_tsconfig_when_cli_dir_is_absent() {
+        let project_root = PathBuf::from("/workspace/project");
+        let tsconfig_options = TsconfigDeclarationOptions {
+            declaration_dir: Some(project_root.join("types")),
+            out_dir: Some(project_root.join("dist")),
+            declaration_map: Some(true),
+        };
+
+        assert_eq!(
+            resolve_declaration_dir(None, &tsconfig_options, &project_root),
+            project_root.join("types")
+        );
+        assert_eq!(
+            resolve_declaration_dir(Some(Path::new("custom")), &tsconfig_options, &project_root),
+            project_root.join("custom")
+        );
+
+        let out_dir_only = TsconfigDeclarationOptions {
+            declaration_dir: None,
+            out_dir: Some(project_root.join("dist")),
+            declaration_map: None,
+        };
+        assert_eq!(
+            resolve_declaration_dir(None, &out_dir_only, &project_root),
+            project_root.join("dist")
+        );
+    }
+
+    #[test]
+    fn resolve_declaration_emit_options_uses_tsconfig_declaration_map() {
+        let project_root = unique_case_dir("declaration-options");
+        let _ = std::fs::remove_dir_all(&project_root);
+        std::fs::create_dir_all(&project_root).unwrap();
+        std::fs::write(
+            project_root.join("tsconfig.json"),
+            r#"{
+  "compilerOptions": {
+    "declarationDir": "types",
+    "declarationMap": true
+  }
+}"#,
+        )
+        .unwrap();
+
+        let options = resolve_declaration_emit_options(
+            None,
+            Some(&project_root.join("tsconfig.json")),
+            &project_root,
+        );
+
+        assert_eq!(options.out_dir, project_root.join("types"));
+        assert!(options.declaration_map);
+
+        let _ = std::fs::remove_dir_all(&project_root);
     }
 }
