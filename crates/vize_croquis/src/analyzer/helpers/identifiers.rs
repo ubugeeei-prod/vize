@@ -22,7 +22,7 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
     let len = bytes.len();
     let mut i = 0;
     let mut changed = false;
-    let mut out = std::string::String::with_capacity(expr.len());
+    let mut out = std::string::String::new();
 
     while i < len {
         let c = bytes[i];
@@ -64,6 +64,7 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
 
             if next == b'/' {
                 if !changed {
+                    out.reserve(expr.len());
                     out.push_str(&expr[..i]);
                     changed = true;
                 }
@@ -81,6 +82,7 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
 
             if next == b'*' {
                 if !changed {
+                    out.reserve(expr.len());
                     out.push_str(&expr[..i]);
                     changed = true;
                 }
