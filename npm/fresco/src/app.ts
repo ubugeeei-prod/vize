@@ -270,6 +270,7 @@ function updateAppSize(context: UseAppReturn | null, width: number, height: numb
  */
 export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App {
   const { mouse = false, exitOnCtrlC = true, onError } = options;
+  const interactive = options.interactive ?? true;
   const screenReaderEnabled = ref(
     options.isScreenReaderEnabled ?? isScreenReaderEnabledByDefault(),
   );
@@ -279,7 +280,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     stdout: options.stdout,
     stderr: options.stderr,
     exitOnCtrlC,
-    interactive: options.interactive ?? true,
+    interactive,
   });
 
   let vueApp: VueApp | null = null;
@@ -305,8 +306,13 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 
     const n = await loadNative();
 
-    // Initialize terminal
-    if (mouse) {
+    if (typeof n.initTerminalWithOptions === "function") {
+      n.initTerminalWithOptions({
+        alternateScreen: interactive && options.alternateScreen === true,
+        bracketedPaste: interactive,
+        mouse: interactive && mouse,
+      });
+    } else if (mouse) {
       n.initTerminalWithMouse();
     } else {
       n.initTerminal();
