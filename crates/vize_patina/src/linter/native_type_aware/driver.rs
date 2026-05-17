@@ -1,21 +1,22 @@
 use super::{
-    LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_UNSAFE_TEMPLATE_BINDING,
-    RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, has_promise_like_return,
-    has_unsafe_template_type, push_warning, should_warn_for_emit_validator,
-    should_warn_for_prop_access, should_warn_for_reactivity_loss, with_corsa_session,
+    LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS,
+    RULE_NO_UNSAFE_TEMPLATE_BINDING, RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS,
+    has_promise_like_return, has_unsafe_template_type, push_warning,
+    should_warn_for_emit_validator, should_warn_for_prop_access, should_warn_for_reactivity_loss,
+    with_corsa_session,
 };
 use crate::diagnostic::LintDiagnostic;
 use std::path::Path;
 use vize_armature::Parser as TemplateParser;
 use vize_carton::{FxHashSet, profile};
 use vize_croquis::{
-    script_parser,
+    Croquis, script_parser,
     virtual_ts::{VirtualTsConfig, generate_virtual_ts_with_croquis},
 };
 
 use super::{
     markers::{QueryKind, push_promise_marker},
-    parsing::collect_floating_candidates,
+    parsing::{collect_floating_candidates, is_runtime_array_macro},
     reactivity_loss::collect_reactivity_loss_queries,
     rule_queries::{MacroWarning, collect_emit_queries, collect_prop_queries, push_macro_warning},
     template_queries::{TemplateQueryKind, collect_template_query_sets},
@@ -79,6 +80,24 @@ pub(super) fn lint_with_descriptor<'a>(
         return result;
     }
 
+    let needs_prop_probe = profile!("patina.type_aware.plan_prop_queries", {
+        collect_prop_static_warning_or_probe_need(linter, &analysis, &mut result, script_block)
+    });
+    let needs_emit_probe = profile!("patina.type_aware.plan_emit_queries", {
+        collect_emit_static_warning_or_probe_need(linter, &analysis, &mut result, script_block)
+    });
+    let include_template_queries = is_type_rule_active(linter, RULE_NO_UNSAFE_TEMPLATE_BINDING);
+    let include_template_promise_queries = is_type_rule_active(linter, RULE_NO_FLOATING_PROMISES);
+    let include_reactivity_queries = is_type_rule_active(linter, RULE_NO_REACTIVITY_LOSS);
+    if !needs_prop_probe
+        && !needs_emit_probe
+        && !include_template_queries
+        && !include_template_promise_queries
+        && !include_reactivity_queries
+    {
+        return result;
+    }
+
     let template_offset = template_ast
         .as_ref()
         .map(|(_, offset)| *offset)
@@ -113,32 +132,34 @@ pub(super) fn lint_with_descriptor<'a>(
     );
 
     let mut macro_queries = Vec::new();
-    profile!(
-        "patina.type_aware.collect_prop_queries",
-        collect_prop_queries(
-            linter,
-            &analysis,
-            &mut result,
-            script_block,
-            &mut virtual_ts,
-            &mut macro_queries,
+    if needs_prop_probe {
+        profile!(
+            "patina.type_aware.collect_prop_queries",
+            collect_prop_queries(
+                linter,
+                &analysis,
+                &mut result,
+                script_block,
+                &mut virtual_ts,
+                &mut macro_queries,
+            )
         )
-    );
-    profile!(
-        "patina.type_aware.collect_emit_queries",
-        collect_emit_queries(
-            linter,
-            &analysis,
-            &mut result,
-            script_block,
-            &mut virtual_ts,
-            &mut macro_queries,
-        )
-    );
+    }
+    if needs_emit_probe {
+        profile!(
+            "patina.type_aware.collect_emit_queries",
+            collect_emit_queries(
+                linter,
+                &analysis,
+                &mut result,
+                script_block,
+                &mut virtual_ts,
+                &mut macro_queries,
+            )
+        );
+    }
 
-    if linter.registry.has_rule(RULE_NO_FLOATING_PROMISES)
-        && linter.is_rule_enabled(RULE_NO_FLOATING_PROMISES)
-    {
+    if include_template_promise_queries {
         for candidate in profile!(
             "patina.type_aware.collect_floating_candidates",
             collect_floating_candidates(script_content)
@@ -164,10 +185,6 @@ pub(super) fn lint_with_descriptor<'a>(
         )
     });
 
-    let include_template_queries = linter.registry.has_rule(RULE_NO_UNSAFE_TEMPLATE_BINDING)
-        && linter.is_rule_enabled(RULE_NO_UNSAFE_TEMPLATE_BINDING);
-    let include_template_promise_queries = linter.registry.has_rule(RULE_NO_FLOATING_PROMISES)
-        && linter.is_rule_enabled(RULE_NO_FLOATING_PROMISES);
     let (template_queries, template_promise_queries) =
         profile!("patina.type_aware.collect_template_query_sets", {
             if include_template_queries || include_template_promise_queries {
@@ -349,4 +366,89 @@ pub(super) fn lint_with_descriptor<'a>(
     );
 
     result
+}
+
+#[inline]
+fn is_type_rule_active(linter: &Linter, rule_name: &str) -> bool {
+    linter.registry.has_rule(rule_name) && linter.is_rule_enabled(rule_name)
+}
+
+fn collect_prop_static_warning_or_probe_need(
+    linter: &Linter,
+    analysis: &Croquis,
+    result: &mut LintResult,
+    script_block: &vize_atelier_sfc::SfcScriptBlock<'_>,
+) -> bool {
+    if !is_type_rule_active(linter, RULE_REQUIRE_TYPED_PROPS) {
+        return false;
+    }
+
+    let Some(call) = analysis.macros.define_props() else {
+        return false;
+    };
+    if call.type_args.is_some() {
+        return false;
+    }
+
+    if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
+        push_warning(
+            result,
+            LintDiagnostic::warn(
+                RULE_REQUIRE_TYPED_PROPS,
+                "Prop should have a type definition",
+                script_block.loc.start as u32 + call.start,
+                script_block.loc.start as u32 + call.end,
+            )
+            .with_help(
+                "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
+            ),
+        );
+        return false;
+    }
+
+    analysis
+        .macros
+        .props()
+        .iter()
+        .any(|prop| prop.prop_type.is_none())
+}
+
+fn collect_emit_static_warning_or_probe_need(
+    linter: &Linter,
+    analysis: &Croquis,
+    result: &mut LintResult,
+    script_block: &vize_atelier_sfc::SfcScriptBlock<'_>,
+) -> bool {
+    if !is_type_rule_active(linter, RULE_REQUIRE_TYPED_EMITS) {
+        return false;
+    }
+
+    let Some(call) = analysis.macros.define_emits() else {
+        return false;
+    };
+    if call.type_args.is_some() {
+        return false;
+    }
+
+    if is_runtime_array_macro(call.runtime_args.as_ref().map(|args| args.as_str())) {
+        push_warning(
+            result,
+            LintDiagnostic::warn(
+                RULE_REQUIRE_TYPED_EMITS,
+                "Emit should have a type definition",
+                script_block.loc.start as u32 + call.start,
+                script_block.loc.start as u32 + call.end,
+            )
+            .with_help(
+                "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
+            ),
+        );
+        return false;
+    }
+
+    analysis
+        .macros
+        .emits()
+        .iter()
+        .any(|emit| emit.payload_type.is_none())
 }
