@@ -38,6 +38,7 @@
 #![allow(clippy::only_used_in_recursion)]
 
 // Core modules - following Vue.js compiler-sfc structure
+pub mod bundler;
 pub mod compile;
 pub mod compile_script;
 pub mod compile_template;
@@ -50,6 +51,12 @@ pub mod types;
 pub mod vite_plugin;
 
 // Re-exports for public API
+pub use bundler::{
+    BundlerCustomBlock, BundlerStyleBlock, SfcBlockAttribute, SfcSrcInfo, TemplateAssetTagRule,
+    TemplateAssetUrl, collect_template_asset_urls, extract_custom_blocks, extract_src_info,
+    extract_style_blocks, generate_bundler_scope_id, has_scoped_style, is_importable_asset_url,
+    strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
+};
 pub use compile::{ScriptCompileResult, compile_sfc};
 pub use css::{
     CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css, compile_style_block,

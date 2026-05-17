@@ -24,11 +24,45 @@ use vize_carton::cstr;
 #[napi(object)]
 pub struct StyleBlockNapi {
     pub content: String,
+    pub src: Option<String>,
     pub lang: Option<String>,
     pub scoped: bool,
     pub module: bool,
     pub module_name: Option<String>,
     pub index: u32,
+}
+
+#[napi(object)]
+pub struct SfcBlockAttributeNapi {
+    pub name: String,
+    pub value: Option<String>,
+}
+
+#[napi(object)]
+pub struct CustomBlockNapi {
+    pub block_type: String,
+    pub content: String,
+    pub src: Option<String>,
+    pub attrs: Vec<SfcBlockAttributeNapi>,
+    pub index: u32,
+}
+
+#[napi(object)]
+pub struct SfcSrcInfoNapi {
+    pub script_src: Option<String>,
+    pub template_src: Option<String>,
+}
+
+#[napi(object)]
+pub struct TemplateAssetUrlNapi {
+    pub url: String,
+    pub var_name: String,
+}
+
+#[napi(object)]
+pub struct TemplateAssetTagRuleNapi {
+    pub tag: String,
+    pub attrs: Vec<String>,
 }
 
 #[napi(object)]
@@ -76,6 +110,7 @@ fn style_blocks_to_napi(styles: &[vize_atelier_sfc::SfcStyleBlock]) -> Vec<Style
 
             StyleBlockNapi {
                 content: style.content.as_ref().into(),
+                src: style.src.as_deref().map(Into::into),
                 lang: style.lang.as_deref().map(Into::into),
                 scoped: style.scoped,
                 module: module_attr.is_some(),
@@ -84,6 +119,93 @@ fn style_blocks_to_napi(styles: &[vize_atelier_sfc::SfcStyleBlock]) -> Vec<Style
             }
         })
         .collect()
+}
+
+fn custom_blocks_to_napi(blocks: &[vize_atelier_sfc::SfcCustomBlock]) -> Vec<CustomBlockNapi> {
+    blocks
+        .iter()
+        .enumerate()
+        .map(|(index, block)| {
+            let mut attrs = block
+                .attrs
+                .iter()
+                .map(|(name, value)| SfcBlockAttributeNapi {
+                    name: name.as_ref().into(),
+                    value: (!value.is_empty()).then(|| value.as_ref().into()),
+                })
+                .collect::<Vec<_>>();
+            attrs.sort_by(|left, right| left.name.cmp(&right.name));
+            CustomBlockNapi {
+                block_type: block.block_type.as_ref().into(),
+                content: block.content.as_ref().into(),
+                src: block.attrs.get("src").map(|value| value.as_ref().into()),
+                attrs,
+                index: index as u32,
+            }
+        })
+        .collect()
+}
+
+impl From<vize_atelier_sfc::BundlerStyleBlock> for StyleBlockNapi {
+    fn from(block: vize_atelier_sfc::BundlerStyleBlock) -> Self {
+        Self {
+            content: block.content.into(),
+            src: block.src.map(Into::into),
+            lang: block.lang.map(Into::into),
+            scoped: block.scoped,
+            module: block.module,
+            module_name: block.module_name.map(Into::into),
+            index: block.index,
+        }
+    }
+}
+
+impl From<vize_atelier_sfc::SfcBlockAttribute> for SfcBlockAttributeNapi {
+    fn from(attr: vize_atelier_sfc::SfcBlockAttribute) -> Self {
+        Self {
+            name: attr.name.into(),
+            value: attr.value.map(Into::into),
+        }
+    }
+}
+
+impl From<vize_atelier_sfc::BundlerCustomBlock> for CustomBlockNapi {
+    fn from(block: vize_atelier_sfc::BundlerCustomBlock) -> Self {
+        Self {
+            block_type: block.block_type.into(),
+            content: block.content.into(),
+            src: block.src.map(Into::into),
+            attrs: block.attrs.into_iter().map(Into::into).collect(),
+            index: block.index,
+        }
+    }
+}
+
+impl From<vize_atelier_sfc::SfcSrcInfo> for SfcSrcInfoNapi {
+    fn from(info: vize_atelier_sfc::SfcSrcInfo) -> Self {
+        Self {
+            script_src: info.script_src.map(Into::into),
+            template_src: info.template_src.map(Into::into),
+        }
+    }
+}
+
+impl From<vize_atelier_sfc::TemplateAssetUrl> for TemplateAssetUrlNapi {
+    fn from(url: vize_atelier_sfc::TemplateAssetUrl) -> Self {
+        Self {
+            url: url.url.into(),
+            var_name: url.var_name.into(),
+        }
+    }
+}
+
+impl From<TemplateAssetTagRuleNapi> for vize_atelier_sfc::TemplateAssetTagRule {
+    fn from(rule: TemplateAssetTagRuleNapi) -> Self {
+        Self {
+            tag: rule.tag.into(),
+            attrs: rule.attrs.into_iter().map(Into::into).collect(),
+        }
+    }
 }
 
 /// SFC parse options for NAPI
@@ -129,6 +251,8 @@ pub struct SfcCompileResultNapi {
     pub has_scoped: bool,
     /// Per-block style metadata
     pub styles: Vec<StyleBlockNapi>,
+    /// Custom block metadata
+    pub custom_blocks: Vec<CustomBlockNapi>,
     /// Compile-time macro artifacts
     pub macro_artifacts: Vec<MacroArtifactNapi>,
 }
@@ -194,6 +318,8 @@ pub struct BatchFileResultNapi {
     pub script_hash: Option<String>,
     /// Per-block style metadata
     pub styles: Vec<StyleBlockNapi>,
+    /// Custom block metadata
+    pub custom_blocks: Vec<CustomBlockNapi>,
     /// Compile-time macro artifacts
     pub macro_artifacts: Vec<MacroArtifactNapi>,
 }
@@ -293,6 +419,81 @@ pub fn parse_sfc(source: String, options: Option<SfcParseOptionsNapi>) -> Result
     }
 }
 
+#[napi(js_name = "generateSfcScopeId")]
+pub fn generate_sfc_scope_id(
+    filename: String,
+    root: Option<String>,
+    is_production: Option<bool>,
+    source: Option<String>,
+) -> String {
+    vize_atelier_sfc::generate_bundler_scope_id(
+        &filename,
+        root.as_deref(),
+        is_production.unwrap_or(false),
+        source.as_deref(),
+    )
+    .into()
+}
+
+#[napi(js_name = "extractSfcStyleBlocks")]
+pub fn extract_sfc_style_blocks(source: String, filename: Option<String>) -> Vec<StyleBlockNapi> {
+    vize_atelier_sfc::extract_style_blocks(&source, filename.as_deref())
+        .into_iter()
+        .map(Into::into)
+        .collect()
+}
+
+#[napi(js_name = "extractSfcCustomBlocks")]
+pub fn extract_sfc_custom_blocks(source: String, filename: Option<String>) -> Vec<CustomBlockNapi> {
+    vize_atelier_sfc::extract_custom_blocks(&source, filename.as_deref())
+        .into_iter()
+        .map(Into::into)
+        .collect()
+}
+
+#[napi(js_name = "extractSfcSrcInfo")]
+pub fn extract_sfc_src_info(source: String, filename: Option<String>) -> SfcSrcInfoNapi {
+    vize_atelier_sfc::extract_src_info(&source, filename.as_deref()).into()
+}
+
+#[napi(js_name = "hasSfcScopedStyle")]
+pub fn has_sfc_scoped_style(source: String, filename: Option<String>) -> bool {
+    vize_atelier_sfc::has_scoped_style(&source, filename.as_deref())
+}
+
+#[napi(js_name = "isSfcImportableAssetUrl")]
+pub fn is_sfc_importable_asset_url(url: String) -> bool {
+    vize_atelier_sfc::is_importable_asset_url(&url)
+}
+
+#[napi(js_name = "collectSfcTemplateAssetUrls")]
+pub fn collect_sfc_template_asset_urls(
+    source: String,
+    rules: Option<Vec<TemplateAssetTagRuleNapi>>,
+    filename: Option<String>,
+) -> Vec<TemplateAssetUrlNapi> {
+    let rules = rules.map(|rules| rules.into_iter().map(Into::into).collect::<Vec<_>>());
+    vize_atelier_sfc::collect_template_asset_urls(&source, rules.as_deref(), filename.as_deref())
+        .into_iter()
+        .map(Into::into)
+        .collect()
+}
+
+#[napi(js_name = "stripSfcScopedCssComments")]
+pub fn strip_sfc_scoped_css_comments(css: String) -> String {
+    vize_atelier_sfc::strip_css_comments_for_scoped(&css).into()
+}
+
+#[napi(js_name = "wrapSfcScopedPreprocessorStyle")]
+pub fn wrap_sfc_scoped_preprocessor_style(
+    content: String,
+    scoped: Option<String>,
+    lang: Option<String>,
+) -> String {
+    vize_atelier_sfc::wrap_scoped_preprocessor_style(&content, scoped.as_deref(), lang.as_deref())
+        .into()
+}
+
 /// Compile SFC (.vue file) to JavaScript - main use case
 #[napi(js_name = "compileSfc")]
 pub fn compile_sfc(
@@ -329,6 +530,7 @@ pub fn compile_sfc(
                 script_hash: None,
                 has_scoped: false,
                 styles: vec![],
+                custom_blocks: vec![],
                 macro_artifacts: vec![],
             });
         }
@@ -338,6 +540,7 @@ pub fn compile_sfc(
     let style_hash: Option<String> = descriptor.style_hash().map(Into::into);
     let script_hash: Option<String> = descriptor.script_hash().map(Into::into);
     let styles = style_blocks_to_napi(&descriptor.styles);
+    let custom_blocks = custom_blocks_to_napi(&descriptor.custom_blocks);
 
     // Compile
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
@@ -411,6 +614,7 @@ pub fn compile_sfc(
                 script_hash: script_hash.clone(),
                 has_scoped,
                 styles,
+                custom_blocks,
                 macro_artifacts,
             })
         }
@@ -424,6 +628,7 @@ pub fn compile_sfc(
             script_hash,
             has_scoped,
             styles,
+            custom_blocks,
             macro_artifacts: vec![],
         }),
     }
@@ -674,6 +879,7 @@ pub fn compile_sfc_batch_with_results(
                     style_hash: None,
                     script_hash: None,
                     styles: vec![],
+                    custom_blocks: vec![],
                     macro_artifacts: vec![],
                 });
                 return;
@@ -685,6 +891,7 @@ pub fn compile_sfc_batch_with_results(
         let style_hash: Option<String> = descriptor.style_hash().map(Into::into);
         let script_hash: Option<String> = descriptor.script_hash().map(Into::into);
         let styles = style_blocks_to_napi(&descriptor.styles);
+        let custom_blocks = custom_blocks_to_napi(&descriptor.custom_blocks);
 
         // Compile
         // Preserve TypeScript in output - let Vite/esbuild handle TS transformation
@@ -751,6 +958,7 @@ pub fn compile_sfc_batch_with_results(
                     style_hash: style_hash.clone(),
                     script_hash: script_hash.clone(),
                     styles,
+                    custom_blocks,
                     macro_artifacts,
                 });
             }
@@ -768,6 +976,7 @@ pub fn compile_sfc_batch_with_results(
                     style_hash,
                     script_hash,
                     styles,
+                    custom_blocks,
                     macro_artifacts: vec![],
                 });
             }

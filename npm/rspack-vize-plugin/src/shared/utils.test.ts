@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   extractCustomBlocks,
   extractStyleBlocks,
+  addScopeToCssFallback,
   collectTemplateAssetUrls,
   isImportableUrl,
   matchesPattern,
@@ -227,6 +228,14 @@ void describe("stripCssCommentsForScoped", () => {
     const output = stripCssCommentsForScoped(input);
 
     assert.equal(output.includes('content: "/* :deep(.x) */"'), true);
+  });
+});
+
+void describe("addScopeToCssFallback", () => {
+  void test("delegates scoped CSS transformation to native pipeline", () => {
+    const output = addScopeToCssFallback(".root { color: red; }", "abc123");
+
+    assert.equal(output, ".root[data-v-abc123] { color: red; }");
   });
 });
 

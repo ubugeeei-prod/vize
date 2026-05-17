@@ -1,6 +1,9 @@
-import { createHash } from "node:crypto";
-import path from "node:path";
-import type { CompiledModule, StyleBlockInfo } from "./types.ts";
+import {
+  extractSfcStyleBlocks,
+  generateSfcScopeId,
+  wrapSfcScopedPreprocessorStyle,
+} from "@vizejs/native";
+import type { CompiledModule, StyleBlockInfo, StyleBlockNapi } from "./types.ts";
 
 const PREPROCESSOR_LANGS = new Set(["scss", "sass", "less", "stylus", "styl"]);
 
@@ -22,42 +25,11 @@ export function generateScopeId(
   isProduction: boolean,
   source: string,
 ): string {
-  const relative = path
-    .relative(root, filename)
-    .replace(/^(\.\.[/\\])+/, "")
-    .replace(/\\/g, "/");
-  const input = isProduction ? `${relative}\n${source.replace(/\r\n/g, "\n")}` : relative;
-  return createHash("sha256").update(input).digest("hex").slice(0, 8);
+  return generateSfcScopeId(filename, root, isProduction, source);
 }
 
 export function extractStyleBlocks(source: string): StyleBlockInfo[] {
-  const blocks: StyleBlockInfo[] = [];
-  const styleRegex = /<style([^>]*)>([\s\S]*?)<\/style>/gi;
-  let match: RegExpExecArray | null = null;
-  let index = 0;
-
-  while ((match = styleRegex.exec(source)) !== null) {
-    const attrs = match[1];
-    const content = match[2];
-    const src = attrs.match(/\bsrc=["']([^"']+)["']/)?.[1] ?? null;
-    const lang = attrs.match(/\blang=["']([^"']+)["']/)?.[1] ?? null;
-    const scoped = /\bscoped\b/.test(attrs);
-    const moduleMatch = attrs.match(/\bmodule(?:=["']([^"']+)["'])?/);
-    const moduleValue = moduleMatch ? moduleMatch[1] || true : false;
-
-    blocks.push({
-      content,
-      src,
-      lang,
-      scoped,
-      module: moduleValue,
-      index,
-    });
-
-    index++;
-  }
-
-  return blocks;
+  return extractSfcStyleBlocks(source).map(toStyleBlockInfo);
 }
 
 function supportsTemplateOnlyHmr(output: string): boolean {
@@ -186,28 +158,16 @@ export function wrapScopedPreprocessorStyle(
   scoped: string | null,
   lang: string | null,
 ): string {
-  if (!scoped || !lang || lang === "css") {
-    return content;
-  }
+  return wrapSfcScopedPreprocessorStyle(content, scoped, lang);
+}
 
-  const lines = content.split("\n");
-  const hoisted: string[] = [];
-  const body: string[] = [];
-
-  for (const line of lines) {
-    const trimmed = line.trimStart();
-    if (
-      trimmed.startsWith("@use ") ||
-      trimmed.startsWith("@forward ") ||
-      trimmed.startsWith("@import ")
-    ) {
-      hoisted.push(line);
-      continue;
-    }
-
-    body.push(line);
-  }
-
-  const hoistedContent = hoisted.length > 0 ? `${hoisted.join("\n")}\n\n` : "";
-  return `${hoistedContent}[${scoped}] {\n${body.join("\n")}\n}`;
+export function toStyleBlockInfo(block: StyleBlockNapi): StyleBlockInfo {
+  return {
+    content: block.content,
+    src: block.src ?? null,
+    lang: block.lang ?? null,
+    scoped: block.scoped,
+    module: block.module ? (block.moduleName ?? true) : false,
+    index: block.index,
+  };
 }

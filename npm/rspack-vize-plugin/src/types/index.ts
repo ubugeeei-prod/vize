@@ -14,6 +14,29 @@ export interface SfcCompileOptionsNapi {
   scopeId?: string;
 }
 
+export interface StyleBlockNapi {
+  content: string;
+  src?: string;
+  lang?: string;
+  scoped: boolean;
+  module: boolean;
+  moduleName?: string;
+  index: number;
+}
+
+export interface SfcBlockAttributeNapi {
+  name: string;
+  value?: string;
+}
+
+export interface CustomBlockNapi {
+  blockType: string;
+  content: string;
+  src?: string;
+  attrs: SfcBlockAttributeNapi[];
+  index: number;
+}
+
 export interface MacroArtifact {
   kind: string;
   name: string;
@@ -31,6 +54,9 @@ export interface SfcCompileResultNapi {
   map?: string;
   errors: string[];
   warnings: string[];
+  hasScoped: boolean;
+  styles: StyleBlockNapi[];
+  customBlocks: CustomBlockNapi[];
   macroArtifacts?: MacroArtifact[];
 }
 
