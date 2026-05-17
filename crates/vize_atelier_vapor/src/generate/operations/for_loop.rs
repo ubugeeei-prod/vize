@@ -166,7 +166,7 @@ fn restore_current_alias_reference(expr: &mut String, reference: &str, alias: &s
         *expr = expr.replace(reference, alias).into();
     } else if alias.trim_start().starts_with(['{', '[', '(']) {
         let mut bindings = parse_destructure_bindings(alias);
-        bindings.sort_by(|a, b| b.path.len().cmp(&a.path.len()));
+        bindings.sort_by_key(|binding| std::cmp::Reverse(binding.path.len()));
         for binding in bindings {
             let property_reference = cstr!("{}{}", reference, binding.path);
             if expr.contains(property_reference.as_str()) {
