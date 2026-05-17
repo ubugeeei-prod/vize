@@ -56,16 +56,16 @@ void test("createHighlightedHtml does not treat TypeScript generics in Vue scrip
 
 void test("createHighlightedHtml highlights bash commands and flags", () => {
   const html = syntax.createHighlightedHtml(
-    "vp install -D @vizejs/vite-plugin\ncargo install vize\nvize check --profile src\nvp dev\n$ nix develop",
+    "vp install -D @vizejs/vite-plugin\nvp exec vize check --profile src\nvp dev\n$ nix develop",
     "bash",
   );
 
   assert.match(html, /v-code__command/);
   assert.match(html, /v-code__property/);
   assert.match(html, />vp</);
-  assert.match(html, />cargo</);
+  assert.match(html, />exec</);
   assert.match(html, />install</);
-  assert.match(html, />check</);
+  assert.match(html, /\bcheck\b/);
   assert.match(html, /<span class="v-code__token v-code__keyword">dev<\/span>/);
   assert.match(html, />develop</);
   assert.match(html, />vize</);

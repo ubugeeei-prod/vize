@@ -15,14 +15,20 @@ For a higher-level explanation of the analysis pipeline, see [Static Analysis](.
 
 ## Installation
 
-```bash
-cargo install vize
-```
-
-Or run the current workspace build:
+For v1 alpha, use the prebuilt GitHub release binaries or the Nix entry point. The Rust CLI is not a
+supported crates.io install channel yet.
 
 ```bash
 nix run github:ubugeeei/vize#vize -- --help
+```
+
+You can also download platform-specific binaries from
+[GitHub Releases](https://github.com/ubugeeei/vize/releases).
+
+For local development inside this repository, install the workspace build:
+
+```bash
+cargo install --path crates/vize --force --locked
 ```
 
 ## Rust CLI vs npm CLI
@@ -236,8 +242,13 @@ vize upgrade
 vize upgrade --dry-run
 ```
 
-The Rust CLI upgrades through Cargo by running `cargo install vize --force --locked`.
-The npm CLI upgrades the npm package through the detected package manager.
+By default, `vize upgrade` updates the npm package through Vite+:
+
+```bash
+vp install -D vize@latest
+```
+
+Use `--source cargo` only for explicit local Cargo installs.
 
 ## Musea
 

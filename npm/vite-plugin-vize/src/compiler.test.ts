@@ -219,8 +219,13 @@ assert.equal(
 );
 assert.match(
   definePageMetaCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
-  /export default \{/,
-  "definePageMeta artifacts should include loadable module code",
+  /const __nuxt_page_meta = \{/,
+  "definePageMeta artifacts should include Nuxt-compatible module code",
+);
+assert.match(
+  definePageMetaCompiled.macroArtifacts?.[0]?.moduleCode ?? "",
+  /export default __nuxt_page_meta/,
+  "definePageMeta artifacts should not be treated as empty by Nuxt's page meta transform",
 );
 
 const defineRouteRulesSource = `<script setup lang="ts">

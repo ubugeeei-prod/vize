@@ -72,5 +72,8 @@
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-beta",
     "webpack": "catalog:bundlers"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -203,6 +203,50 @@ export const TextInput = defineComponent({
       return true;
     };
 
+    const deletePreeditForward = () => {
+      if (!isComposing.value || preeditCursor.value >= graphemeLength(preedit.value)) {
+        return false;
+      }
+
+      preedit.value = deleteGraphemeAt(preedit.value, preeditCursor.value);
+      emit("compositionupdate", preedit.value, preeditCursor.value);
+      return true;
+    };
+
+    const movePreeditLeft = () => {
+      if (!isComposing.value || preeditCursor.value === 0) return false;
+
+      preeditCursor.value--;
+      emit("compositionupdate", preedit.value, preeditCursor.value);
+      return true;
+    };
+
+    const movePreeditRight = () => {
+      if (!isComposing.value || preeditCursor.value >= graphemeLength(preedit.value)) {
+        return false;
+      }
+
+      preeditCursor.value++;
+      emit("compositionupdate", preedit.value, preeditCursor.value);
+      return true;
+    };
+
+    const movePreeditToStart = () => {
+      if (!isComposing.value) return false;
+
+      preeditCursor.value = 0;
+      emit("compositionupdate", preedit.value, preeditCursor.value);
+      return true;
+    };
+
+    const movePreeditToEnd = () => {
+      if (!isComposing.value) return false;
+
+      preeditCursor.value = graphemeLength(preedit.value);
+      emit("compositionupdate", preedit.value, preeditCursor.value);
+      return true;
+    };
+
     const displayValue = computed(() => {
       if (!isComposing.value) return internalValue.value;
       return [
@@ -224,24 +268,29 @@ export const TextInput = defineComponent({
     useInput({
       isActive,
       onChar: (char) => {
+        if (isComposing.value) return;
         insertText(char);
       },
       onArrow: (direction) => {
-        if (direction === "left") moveLeft();
-        if (direction === "right") moveRight();
+        if (direction === "left") {
+          if (!movePreeditLeft()) moveLeft();
+        }
+        if (direction === "right") {
+          if (!movePreeditRight()) moveRight();
+        }
       },
       onKey: (key, modifiers) => {
         if (key === "backspace") {
           if (!deletePreeditBack()) deleteBack();
         } else if (key === "delete") {
-          deleteForward();
+          if (!deletePreeditForward()) deleteForward();
         } else if (key === "home") {
-          moveToStart();
+          if (!movePreeditToStart()) moveToStart();
         } else if (key === "end") {
-          moveToEnd();
+          if (!movePreeditToEnd()) moveToEnd();
         } else if (key === "a" && modifiers.ctrl) {
           // Ctrl+A - select all (move to end for now)
-          moveToEnd();
+          if (!movePreeditToEnd()) moveToEnd();
         }
       },
       onSubmit: () => {

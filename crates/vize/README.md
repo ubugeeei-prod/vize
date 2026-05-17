@@ -9,8 +9,11 @@ It provides:
 
 ## Install
 
+For v1 alpha, the Rust CLI is distributed as GitHub release binaries and through the Nix entry
+point. This crate is not published through crates.io yet.
+
 ```bash
-cargo install vize
+nix run github:ubugeeei/vize#vize -- --help
 ```
 
 ## CLI
@@ -21,13 +24,13 @@ vize fmt --check src
 vize lint --preset opinionated src
 vize check --profile src
 vize ready src
-vize upgrade
 vize lsp
 ```
 
 `vize` defaults to `build` when no subcommand is provided.
 `vize ready` runs `fmt --write`, `lint`, `check`, and `build` in order.
-`vize upgrade` updates the installed Rust CLI through Cargo.
+`vize upgrade` updates the npm package through Vite+ by default; use `--source cargo` only for
+explicit local Cargo installs.
 
 ## Re-exported Crates
 
