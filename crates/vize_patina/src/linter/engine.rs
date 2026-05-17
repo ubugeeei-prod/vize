@@ -158,6 +158,8 @@ impl Linter {
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_help_level(self.help_level);
+        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(not(target_arch = "wasm32"))]
         let has_analysis = analysis.is_some();
         if let Some(analysis) = analysis {
             ctx.set_analysis(analysis);

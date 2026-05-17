@@ -91,6 +91,10 @@ const VIZE_LOCAL_BUILD_TARGETS = [
   },
 ] as const;
 const MISSKEY_FLUENT_EMOJI_RE = /\/fluent-emoji(?:s)?\/([0-9a-z-]+\.png)\b/g;
+const NPMX_E2E_ENV = {
+  NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+  VIZE_E2E_DISABLE_LUNARIA: "1",
+} as const;
 const TRANSPARENT_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z/C/HwAFgwJ/lE6nWQAAAABJRU5ErkJggg==",
   "base64",
@@ -167,7 +171,8 @@ function patchNuxtConfig(
   // Remove modules that cause issues in the e2e environment
   if (opts?.removeModules) {
     for (const mod of opts.removeModules) {
-      const re = new RegExp(`\\s*'${mod.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}',?\\n?`);
+      const escapedMod = mod.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp(`\\s*["']${escapedMod}["'],?\\n?`);
       if (re.test(config)) {
         config = config.replace(re, "\n");
         changed = true;
@@ -177,6 +182,29 @@ function patchNuxtConfig(
 
   if (changed) {
     fs.writeFileSync(configPath, config);
+  }
+}
+
+function patchNpmxLunariaModule(modulePath: string): void {
+  const source = fs.readFileSync(modulePath, "utf-8");
+  if (source.includes("VIZE_E2E_DISABLE_LUNARIA")) {
+    return;
+  }
+
+  const nextSource = source.replace(
+    "    if (nuxt.options.dev || nuxt.options._prepare || nuxt.options.test || isTest) {\n",
+    "    if (process.env.VIZE_E2E_DISABLE_LUNARIA === '1' || nuxt.options.dev || nuxt.options._prepare || nuxt.options.test || isTest) {\n",
+  );
+  if (nextSource !== source) {
+    fs.writeFileSync(modulePath, nextSource);
+  }
+}
+
+function patchNpmxPrerenderRoutes(configPath: string): void {
+  const source = fs.readFileSync(configPath, "utf-8");
+  const nextSource = source.replace(/prerender: true/g, "prerender: false");
+  if (nextSource !== source) {
+    fs.writeFileSync(configPath, nextSource);
   }
 }
 
@@ -468,6 +496,10 @@ const VUEFES_WORK_DIR = getMutableGitFixtureDir("vuefes-2025");
 
 // --- App configurations ---
 
+const ELK_E2E_ENV = {
+  NUXT_STORAGE_DRIVER: "fs",
+} as const;
+
 export const elkApp: AppConfig = {
   name: "elk",
   cwd: ELK_WORK_DIR,
@@ -481,6 +513,7 @@ export const elkApp: AppConfig = {
   waitUntil: "load",
   readyDelay: 15_000,
   startupTimeout: 120_000,
+  env: ELK_E2E_ENV,
   setup() {
     const elkDir = syncGitFixtureWorktree("elk");
 
@@ -824,9 +857,7 @@ export const npmxApp: AppConfig = {
   allowNon200: true,
   waitUntil: "load",
   readyDelay: 30_000,
-  env: {
-    NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
-  },
+  env: NPMX_E2E_ENV,
   startupTimeout: 120_000,
   setup() {
     setupNpmxWorktree();
@@ -873,7 +904,7 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
     timeout: 300_000,
     env: {
       ...process.env,
-      NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+      ...NPMX_E2E_ENV,
     },
   });
 
@@ -885,6 +916,8 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
     enableVize,
     removeModules: ["@nuxtjs/html-validator"],
   });
+  patchNpmxPrerenderRoutes(path.join(npmxDir, "nuxt.config.ts"));
+  patchNpmxLunariaModule(path.join(npmxDir, "modules", "lunaria.ts"));
 
   const npmxAppPath = path.join(npmxDir, "app", "app.vue");
   const npmxAppSource = fs.readFileSync(npmxAppPath, "utf-8");
@@ -902,7 +935,7 @@ function setupNpmxWorktree(opts?: { enableVize?: boolean; variant?: string }): s
     timeout: 180_000,
     env: {
       ...process.env,
-      NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
+      ...NPMX_E2E_ENV,
     },
   });
 
@@ -925,9 +958,7 @@ function createNpmxVisualParityApp(kind: "candidate" | "reference", port: number
     allowNon200: true,
     waitUntil: "load",
     readyDelay: 30_000,
-    env: {
-      NUXT_SESSION_PASSWORD: "e2e-test-dummy-session-password-32chars!",
-    },
+    env: NPMX_E2E_ENV,
     startupTimeout: 120_000,
     setup() {
       setupNpmxWorktree({ enableVize: kind === "candidate", variant });
@@ -994,7 +1025,9 @@ export const vuefesApp: AppConfig = {
     });
 
     createVizeSymlinks(path.join(vuefesDir, "node_modules"));
-    patchNuxtConfig(path.join(vuefesDir, "nuxt.config.ts"));
+    patchNuxtConfig(path.join(vuefesDir, "nuxt.config.ts"), {
+      removeModules: ["@nuxtjs/storybook"],
+    });
 
     console.log("[vuefes-2025:setup] nuxt prepare...");
     execSync("npx -y pnpm@10 exec nuxt prepare", {

@@ -1,8 +1,8 @@
 //! Lint command - Lint Vue SFC files
 
 use clap::Args;
-use glob::glob;
-use ignore::Walk;
+use glob::{MatchOptions, Pattern};
+use ignore::WalkBuilder;
 use rayon::prelude::*;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -13,7 +13,7 @@ use std::time::Instant;
 use vize_armature::Parser;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::{
-    Allocator, CompactString, FxHashMap, String, ToCompactString, cstr, profile,
+    Allocator, CompactString, FxHashMap, FxHashSet, String, ToCompactString, cstr, profile,
     profiler::{allocation_snapshot, global_profiler},
 };
 use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
@@ -103,33 +103,7 @@ pub fn run(args: LintArgs) {
 
     // Collect .vue files using glob patterns or directory walking
     let collect_start = Instant::now();
-    let files: Vec<PathBuf> = args
-        .patterns
-        .iter()
-        .flat_map(|pattern| {
-            // Check if pattern contains glob characters
-            if pattern.contains('*') || pattern.contains('?') || pattern.contains('[') {
-                // Use glob for pattern matching
-                glob(pattern)
-                    .ok()
-                    .into_iter()
-                    .flatten()
-                    .filter_map(|r| r.ok())
-                    .filter(|p| {
-                        p.extension().is_some_and(|ext| ext == "vue")
-                            && !p.components().any(|c| c.as_os_str() == "node_modules")
-                    })
-                    .collect::<Vec<_>>()
-            } else {
-                // Use directory walking for paths (respects .gitignore)
-                Walk::new(pattern)
-                    .filter_map(|e| e.ok())
-                    .filter(|e| e.path().extension().is_some_and(|ext| ext == "vue"))
-                    .map(|e| e.path().to_path_buf())
-                    .collect::<Vec<_>>()
-            }
-        })
-        .collect();
+    let files = collect_lint_files(&args.patterns);
     let collect_time = collect_start.elapsed();
 
     if files.is_empty() {
@@ -424,6 +398,143 @@ pub fn run(args: LintArgs) {
     {
         eprintln!("\nToo many warnings ({} > max {})", total_warnings, max);
         std::process::exit(1);
+    }
+}
+
+fn collect_lint_files(patterns: &[String]) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    let mut seen = FxHashSet::default();
+
+    for pattern in patterns {
+        let candidate = PathBuf::from(pattern);
+        if candidate.exists() {
+            if candidate.is_file() {
+                add_lint_file(&candidate, &mut files, &mut seen);
+                continue;
+            }
+            if candidate.is_dir() {
+                collect_lint_files_from_dir(&candidate, None, &mut files, &mut seen);
+                continue;
+            }
+        }
+
+        let base_dir = base_dir_from_lint_pattern(pattern);
+        let matcher = LintInputGlob::new(pattern);
+        collect_lint_files_from_dir(&base_dir, matcher.as_ref(), &mut files, &mut seen);
+    }
+
+    files.sort();
+    files
+}
+
+fn collect_lint_files_from_dir(
+    dir: &Path,
+    matcher: Option<&LintInputGlob>,
+    files: &mut Vec<PathBuf>,
+    seen: &mut FxHashSet<PathBuf>,
+) {
+    for entry in WalkBuilder::new(dir)
+        .standard_filters(true)
+        .hidden(true)
+        .build()
+    {
+        let Ok(entry) = entry else {
+            continue;
+        };
+        let path = entry.path();
+        if path.is_file() && matcher.is_none_or(|matcher| matcher.matches(path)) {
+            add_lint_file(path, files, seen);
+        }
+    }
+}
+
+fn add_lint_file(path: &Path, files: &mut Vec<PathBuf>, seen: &mut FxHashSet<PathBuf>) {
+    if path.extension().and_then(|extension| extension.to_str()) != Some("vue") {
+        return;
+    }
+    let normalized = normalize_lint_input_path(path);
+    let canonical = path.canonicalize().unwrap_or_else(|_| normalized.clone());
+    if seen.insert(canonical) {
+        files.push(normalized);
+    }
+}
+
+fn base_dir_from_lint_pattern(pattern: &str) -> PathBuf {
+    let glob_start = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
+    let prefix = &pattern[..glob_start];
+    let base = if prefix.is_empty() {
+        "."
+    } else if let Some(index) = prefix.rfind('/') {
+        &prefix[..index]
+    } else {
+        prefix
+    };
+    if base.is_empty() {
+        PathBuf::from(".")
+    } else {
+        PathBuf::from(base)
+    }
+}
+
+struct LintInputGlob {
+    pattern: Pattern,
+    cwd: PathBuf,
+    absolute: bool,
+}
+
+impl LintInputGlob {
+    fn new(pattern: &str) -> Option<Self> {
+        let normalized = normalize_lint_glob_pattern(pattern);
+        let absolute = Path::new(normalized.as_str()).is_absolute();
+        Pattern::new(normalized.as_str()).ok().map(|pattern| Self {
+            pattern,
+            cwd: std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+            absolute,
+        })
+    }
+
+    fn matches(&self, path: &Path) -> bool {
+        let candidate = if self.absolute {
+            let absolute = if path.is_absolute() {
+                path.to_path_buf()
+            } else {
+                self.cwd.join(path)
+            };
+            normalize_lint_path(&absolute)
+        } else {
+            normalize_lint_path(path)
+        };
+
+        self.pattern
+            .matches_with(&candidate, lint_glob_match_options())
+    }
+}
+
+fn normalize_lint_glob_pattern(pattern: &str) -> String {
+    strip_lint_current_dir_prefix(&pattern.replace('\\', "/"))
+}
+
+fn normalize_lint_path(path: &Path) -> String {
+    strip_lint_current_dir_prefix(&path.to_string_lossy().replace('\\', "/"))
+}
+
+fn strip_lint_current_dir_prefix(value: &str) -> String {
+    let mut normalized = value;
+    while let Some(stripped) = normalized.strip_prefix("./") {
+        normalized = stripped;
+    }
+    normalized.into()
+}
+
+fn normalize_lint_input_path(path: &Path) -> PathBuf {
+    PathBuf::from(normalize_lint_path(path))
+}
+
+fn lint_glob_match_options() -> MatchOptions {
+    MatchOptions {
+        case_sensitive: true,
+        require_literal_separator: true,
+        require_literal_leading_dot: false,
     }
 }
 

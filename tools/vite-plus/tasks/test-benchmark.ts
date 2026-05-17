@@ -22,9 +22,7 @@ export const testAndBenchmarkTasks = defineTasks({
   test: noCacheTask(runTasks("test:rust", "test:js", "test:scripts")),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
   "test:js": noCacheTask(`${runTask("build:native")} && ${runInPackages("test", testedPackages)}`),
-  "test:scripts": task("node --test --test-concurrency=1 tests/tooling/*.test.ts", {
-    input: cacheInputs.rust,
-  }),
+  "test:scripts": noCacheTask("node --test --test-concurrency=1 tests/tooling/*.test.ts"),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),
