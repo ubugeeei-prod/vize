@@ -184,23 +184,28 @@ impl VirtualTsGenerator {
             return line.to_compact_string();
         };
 
-        // Match relative path in import
-        let import_re = regex::Regex::new(r#"from\s+['"](\.[^'"]+)['"]"#);
-        match import_re {
-            Ok(re) => re
-                .replace(line, |caps: &regex::Captures| {
-                    let rel_path = caps.get(1).map(|m| m.as_str()).unwrap_or("");
-                    let resolved = parent.join(rel_path);
-                    let abs_path = resolved
-                        .canonicalize()
-                        .ok()
-                        .and_then(|p| p.to_str().map(String::from))
-                        .unwrap_or_else(|| resolved.to_string_lossy().to_compact_string());
-                    format!("from \"{}\"", abs_path)
-                })
-                .to_compact_string(),
-            Err(_) => line.to_compact_string(),
-        }
+        let Some((from_start, path_start, path_end, quote_end)) =
+            find_relative_import_from_range(line)
+        else {
+            return line.to_compact_string();
+        };
+
+        let rel_path = &line[path_start..path_end];
+        let resolved = parent.join(rel_path);
+        let abs_path = resolved
+            .canonicalize()
+            .ok()
+            .and_then(|path| path.to_str().map(String::from))
+            .unwrap_or_else(|| resolved.to_string_lossy().to_compact_string());
+
+        let mut resolved_line =
+            String::with_capacity(line.len() + abs_path.len().saturating_sub(rel_path.len()));
+        resolved_line.push_str(&line[..from_start]);
+        resolved_line.push_str("from \"");
+        resolved_line.push_str(abs_path.as_str());
+        resolved_line.push('"');
+        resolved_line.push_str(&line[quote_end + 1..]);
+        resolved_line
     }
 
     /// Emit the setup function opening.
@@ -418,5 +423,86 @@ impl VirtualTsGenerator {
     pub(crate) fn generate_emits_type(&mut self, _bindings: &BindingMetadata) {
         self.emit_line("// Emits type");
         self.emit_line("type __Emits = {};");
+    }
+}
+
+fn find_relative_import_from_range(line: &str) -> Option<(usize, usize, usize, usize)> {
+    let bytes = line.as_bytes();
+    let mut search_start = 0;
+
+    while let Some(offset) = line[search_start..].find("from") {
+        let from_start = search_start + offset;
+        let mut cursor = from_start + 4;
+
+        if !bytes
+            .get(cursor)
+            .is_some_and(|byte| byte.is_ascii_whitespace())
+        {
+            search_start = cursor;
+            continue;
+        }
+
+        while bytes
+            .get(cursor)
+            .is_some_and(|byte| byte.is_ascii_whitespace())
+        {
+            cursor += 1;
+        }
+
+        let Some(quote @ (b'\'' | b'"')) = bytes.get(cursor).copied() else {
+            search_start = cursor.saturating_add(1);
+            continue;
+        };
+        let path_start = cursor + 1;
+        if bytes.get(path_start) != Some(&b'.') {
+            search_start = path_start;
+            continue;
+        }
+
+        let mut path_end = path_start + 1;
+        while bytes.get(path_end).is_some_and(|byte| *byte != quote) {
+            path_end += 1;
+        }
+        if bytes.get(path_end) != Some(&quote) {
+            return None;
+        }
+
+        return Some((from_start, path_start, path_end, path_end));
+    }
+
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::find_relative_import_from_range;
+
+    fn relative_path(line: &str) -> Option<&str> {
+        find_relative_import_from_range(line).map(|(_, start, end, _)| &line[start..end])
+    }
+
+    #[test]
+    fn finds_relative_import_paths() {
+        assert_eq!(
+            relative_path("import Foo from './Foo.vue';"),
+            Some("./Foo.vue")
+        );
+        assert_eq!(
+            relative_path("import type { Foo } from \"../types\";"),
+            Some("../types")
+        );
+    }
+
+    #[test]
+    fn ignores_non_relative_import_paths() {
+        assert_eq!(relative_path("import { ref } from 'vue';"), None);
+    }
+
+    #[test]
+    fn skips_from_inside_imported_names() {
+        assert_eq!(
+            relative_path("import { fromNow } from './time';"),
+            Some("./time")
+        );
     }
 }
