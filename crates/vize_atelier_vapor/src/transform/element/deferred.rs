@@ -1,5 +1,7 @@
 //! Deferred child ID allocation for dynamic and control-flow descendants.
 
+use crate::ir::{ForIRNode, IfIRNode, NegativeBranch};
+
 use super::component::transform_component;
 use super::template::*;
 use super::*;
@@ -20,6 +22,11 @@ pub(super) fn transform_element_with_control_flow_children<'a>(
         .iter()
         .map(|_| ctx.next_id())
         .collect();
+
+    if dynamic_child_indices.is_empty() {
+        transform_element_with_deferred_control_flow_parent(ctx, el, block, template);
+        return;
+    }
 
     // Allocate the parent after reserving direct dynamic child IDs so child refs
     // still sort before the parent, while keeping all nested wiring anchored to it.
@@ -69,6 +76,49 @@ pub(super) fn transform_element_with_control_flow_children<'a>(
     // Register template after nested wiring is emitted
     ctx.add_template(element_id, template);
 
+    block.returns.push(element_id);
+}
+
+fn transform_element_with_deferred_control_flow_parent<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    block: &mut BlockIRNode<'a>,
+    template: String,
+) {
+    let mut deferred_children = BlockIRNode::new(ctx.allocator);
+    transform_deferred_parent_control_flow_children(ctx, el, &mut deferred_children);
+
+    let element_id = ctx.next_id();
+
+    for prop in el.props.iter() {
+        match prop {
+            PropNode::Directive(dir) => {
+                transform_directive(ctx, dir, element_id, el, block);
+            }
+            PropNode::Attribute(_attr) => {}
+        }
+    }
+
+    transform_template_ref(ctx, el, element_id, block);
+
+    let has_text_or_interpolation = el.children.iter().any(|c| {
+        matches!(
+            c,
+            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
+        )
+    });
+    let has_interpolation = el
+        .children
+        .iter()
+        .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
+
+    if has_interpolation && has_text_or_interpolation {
+        transform_text_children(ctx, &el.children, element_id, block);
+    }
+
+    append_deferred_control_flow_children(block, deferred_children, element_id);
+
+    ctx.add_template(element_id, template);
     block.returns.push(element_id);
 }
 
@@ -261,6 +311,57 @@ fn transform_existing_element_control_flow_children<'a>(
             _ => {}
         }
     }
+}
+
+fn transform_deferred_parent_control_flow_children<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    block: &mut BlockIRNode<'a>,
+) {
+    for child in el.children.iter() {
+        match child {
+            TemplateChildNode::If(if_node) => {
+                transform_if_node_deferred_parent(ctx, if_node, block);
+            }
+            TemplateChildNode::For(for_node) => {
+                transform_for_node_deferred_parent(ctx, for_node, block);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn append_deferred_control_flow_children<'a>(
+    block: &mut BlockIRNode<'a>,
+    deferred_children: BlockIRNode<'a>,
+    parent_id: usize,
+) {
+    for mut operation in deferred_children.operation {
+        set_direct_control_flow_parent(&mut operation, parent_id);
+        block.operation.push(operation);
+    }
+    for effect in deferred_children.effect {
+        block.effect.push(effect);
+    }
+}
+
+fn set_direct_control_flow_parent(operation: &mut OperationNode<'_>, parent_id: usize) {
+    match operation {
+        OperationNode::If(if_node) => set_if_parent(if_node, parent_id),
+        OperationNode::For(for_node) => set_for_parent(for_node, parent_id),
+        _ => {}
+    }
+}
+
+fn set_if_parent(if_node: &mut IfIRNode<'_>, parent_id: usize) {
+    if_node.parent = Some(parent_id);
+    if let Some(NegativeBranch::If(nested_if)) = if_node.negative.as_mut() {
+        set_if_parent(nested_if, parent_id);
+    }
+}
+
+fn set_for_parent(for_node: &mut ForIRNode<'_>, parent_id: usize) {
+    for_node.parent = Some(parent_id);
 }
 
 fn count_rendered_child_nodes(

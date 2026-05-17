@@ -6,20 +6,20 @@ import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, 
 const t0 = _template("<span> </span>")
 const t1 = _template("<div></div>", true)
 export function render(_ctx) {
-const n0 = t1()
-_setInsertionState(n0, null, true)
-const n1 = _createFor(() => (4), (_for_item0) => {
-_setInsertionState(n0, null, true)
-const n3 = _createFor(() => (_ctx.icons), (_for_item1, _for_key1) => {
-const n5 = t0()
-const x5 = _txt(n5)
+const n5 = t1()
+_setInsertionState(n5, null, true)
+const n0 = _createFor(() => (4), (_for_item0) => {
+_setInsertionState(n5, null, true)
+const n2 = _createFor(() => (_ctx.icons), (_for_item1, _for_key1) => {
+const n4 = t0()
+const x4 = _txt(n4)
 _renderEffect(() => {
-_setClass(n5, _for_item1.value)
-_setText(x5, _toDisplayString(_for_item1.value))
+_setClass(n4, _for_item1.value)
+_setText(x4, _toDisplayString(_for_item1.value))
 })
-return n5
+return n4
 }, (icon, i) => (`${_for_item0.value}-${i}`), 1)
-return n3
+return n2
 }, (n) => (`set-${n}`), 4)
-return n0
+return n5
 }

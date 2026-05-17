@@ -30,6 +30,14 @@ pub(crate) fn transform_if_node_into_parent<'a>(
     transform_if_node_with_options(ctx, if_node, block, Some(parent), None, false);
 }
 
+pub(crate) fn transform_if_node_deferred_parent<'a>(
+    ctx: &mut TransformContext<'a>,
+    if_node: &IfNode<'a>,
+    block: &mut BlockIRNode<'a>,
+) {
+    transform_if_node_with_options(ctx, if_node, block, None, None, false);
+}
+
 fn transform_if_node_with_options<'a>(
     ctx: &mut TransformContext<'a>,
     if_node: &IfNode<'a>,
@@ -199,6 +207,14 @@ pub(crate) fn transform_for_node_into_parent<'a>(
     parent: usize,
 ) {
     transform_for_node_with_options(ctx, for_node, block, Some(parent), None, false);
+}
+
+pub(crate) fn transform_for_node_deferred_parent<'a>(
+    ctx: &mut TransformContext<'a>,
+    for_node: &ForNode<'a>,
+    block: &mut BlockIRNode<'a>,
+) {
+    transform_for_node_with_options(ctx, for_node, block, None, None, false);
 }
 
 fn transform_for_node_with_options<'a>(

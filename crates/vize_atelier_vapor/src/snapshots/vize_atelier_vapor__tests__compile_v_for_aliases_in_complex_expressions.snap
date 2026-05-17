@@ -6,17 +6,17 @@ import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, 
 const t0 = _template("<li> </li>")
 const t1 = _template("<ul></ul>", true)
 export function render(_ctx) {
-const n0 = t1()
-_setInsertionState(n0, null, true)
-const n1 = _createFor(() => (_ctx.items), (_for_item0) => {
-const n3 = t0()
-const x3 = _txt(n3)
-n3.$evtclick = _createInvoker(() => (_ctx.pick(_for_item0.value.id)))
+const n3 = t1()
+_setInsertionState(n3, null, true)
+const n0 = _createFor(() => (_ctx.items), (_for_item0) => {
+const n2 = t0()
+const x2 = _txt(n2)
+n2.$evtclick = _createInvoker(() => (_ctx.pick(_for_item0.value.id)))
 _renderEffect(() => {
-_setClass(n3, ['row', { active: _ctx.selected.has(_for_item0.value.id) }, `kind-${_for_item0.value.kind}`])
-_setText(x3, _toDisplayString(_for_item0.value.name))
+_setClass(n2, ['row', { active: _ctx.selected.has(_for_item0.value.id) }, `kind-${_for_item0.value.kind}`])
+_setText(x2, _toDisplayString(_for_item0.value.name))
+})
+return n2
 })
 return n3
-})
-return n0
 }

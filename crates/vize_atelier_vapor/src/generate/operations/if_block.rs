@@ -68,15 +68,22 @@ fn generate_if_inner(
                 ctx.push_line("})");
             }
             NegativeBranch::If(nested_if) => {
-                ctx.push_line("}, () => {");
-                ctx.indent();
-                emit_insertion_state(ctx, nested_if.parent, nested_if.anchor);
-                ctx.push_indent();
-                ctx.push("return ");
-                generate_nested_if(ctx, nested_if, element_template_map);
-                ctx.push("\n");
-                ctx.deindent();
-                ctx.push_line("})");
+                if nested_if.parent.is_none() && nested_if.anchor.is_none() {
+                    ctx.push("}, () => ");
+                    generate_nested_if(ctx, nested_if, element_template_map);
+                    ctx.push(")");
+                    ctx.push("\n");
+                } else {
+                    ctx.push_line("}, () => {");
+                    ctx.indent();
+                    emit_insertion_state(ctx, nested_if.parent, nested_if.anchor);
+                    ctx.push_indent();
+                    ctx.push("return ");
+                    generate_nested_if(ctx, nested_if, element_template_map);
+                    ctx.push("\n");
+                    ctx.deindent();
+                    ctx.push_line("})");
+                }
             }
         }
     } else {
@@ -128,16 +135,22 @@ fn generate_nested_if(
                 ctx.push("})");
             }
             NegativeBranch::If(nested_if) => {
-                ctx.push_line("}, () => {");
-                ctx.indent();
-                emit_insertion_state(ctx, nested_if.parent, nested_if.anchor);
-                ctx.push_indent();
-                ctx.push("return ");
-                generate_nested_if(ctx, nested_if, element_template_map);
-                ctx.push("\n");
-                ctx.deindent();
-                ctx.push_indent();
-                ctx.push("})");
+                if nested_if.parent.is_none() && nested_if.anchor.is_none() {
+                    ctx.push("}, () => ");
+                    generate_nested_if(ctx, nested_if, element_template_map);
+                    ctx.push(")");
+                } else {
+                    ctx.push_line("}, () => {");
+                    ctx.indent();
+                    emit_insertion_state(ctx, nested_if.parent, nested_if.anchor);
+                    ctx.push_indent();
+                    ctx.push("return ");
+                    generate_nested_if(ctx, nested_if, element_template_map);
+                    ctx.push("\n");
+                    ctx.deindent();
+                    ctx.push_indent();
+                    ctx.push("})");
+                }
             }
         }
     } else {
