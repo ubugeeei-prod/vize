@@ -20,7 +20,9 @@ n6.$evtclick = _createInvoker(() => (_ctx.activeTab = 'bindings'))
 _renderEffect(() => _setClass(n6, ['tab', { active: _ctx.activeTab === 'bindings' }]))
 return n6
 })
-_renderEffect(() => _setClass(n2, ['tab', { active: _ctx.activeTab === 'code' }]))
-_renderEffect(() => _setClass(n3, ['tab', { active: _ctx.activeTab === 'helpers' }]))
+_renderEffect(() => {
+_setClass(n2, ['tab', { active: _ctx.activeTab === 'code' }])
+_setClass(n3, ['tab', { active: _ctx.activeTab === 'helpers' }])
+})
 return n1
 }

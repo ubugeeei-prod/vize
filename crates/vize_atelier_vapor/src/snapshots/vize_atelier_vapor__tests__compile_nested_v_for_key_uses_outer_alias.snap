@@ -13,8 +13,10 @@ _setInsertionState(n0, null, true)
 const n3 = _createFor(() => (_ctx.icons), (_for_item1, _for_key1) => {
 const n5 = t0()
 const x5 = _txt(n5)
-_renderEffect(() => _setClass(n5, _for_item1.value))
-_renderEffect(() => _setText(x5, _toDisplayString(_for_item1.value)))
+_renderEffect(() => {
+_setClass(n5, _for_item1.value)
+_setText(x5, _toDisplayString(_for_item1.value))
+})
 return n5
 }, (icon, i) => (`${_for_item0.value}-${i}`), 1)
 return n3

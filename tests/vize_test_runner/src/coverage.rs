@@ -11,9 +11,9 @@ use vize_carton::String;
 use vize_test_runner::{CompilerMode, run_fixture_tests};
 
 const MIN_VDOM_PASSED: usize = 343;
-const MIN_VAPOR_PASSED: usize = 100;
+const MIN_VAPOR_PASSED: usize = 101;
 const MIN_SFC_PASSED: usize = 60;
-const MIN_TOTAL_PASSED: usize = 503;
+const MIN_TOTAL_PASSED: usize = 504;
 
 // Known v1 alpha fixture debt. CI allows these exact failures so existing gaps
 // do not block unrelated work, but any new failure or pass-count regression
@@ -29,7 +29,6 @@ const KNOWN_FAILURES: &[(&str, &str)] = &[
     ("vdom/component", "suspense kebab-case"),
     ("vdom/v-for", "v-for with v-if"),
     ("vdom/v-slot", "Transition slot"),
-    ("vapor/element", "element with dynamic children"),
     ("vapor/v-if", "v-if/v-else-if/v-else"),
     ("vapor/v-if", "nested v-if"),
     ("vapor/v-for", "nested v-for"),
@@ -423,7 +422,7 @@ mod tests {
 
     #[test]
     fn tracks_the_current_known_failure_budget() {
-        assert_eq!(KNOWN_FAILURES.len(), 91);
+        assert_eq!(KNOWN_FAILURES.len(), 90);
         let unique_failures: HashSet<_> = KNOWN_FAILURES.iter().collect();
         assert_eq!(unique_failures.len(), KNOWN_FAILURES.len());
         assert!(is_known_failure("vdom/component", "Suspense"));

@@ -12,8 +12,10 @@ const n1 = _createFor(() => (_ctx.items), (_for_item0) => {
 const n3 = t0()
 const x3 = _txt(n3)
 n3.$evtclick = _createInvoker(() => (_ctx.pick(_for_item0.value.id)))
-_renderEffect(() => _setClass(n3, ['row', { active: _ctx.selected.has(_for_item0.value.id) }, `kind-${_for_item0.value.kind}`]))
-_renderEffect(() => _setText(x3, _toDisplayString(_for_item0.value.name)))
+_renderEffect(() => {
+_setClass(n3, ['row', { active: _ctx.selected.has(_for_item0.value.id) }, `kind-${_for_item0.value.kind}`])
+_setText(x3, _toDisplayString(_for_item0.value.name))
+})
 return n3
 })
 return n0

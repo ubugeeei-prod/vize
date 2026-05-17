@@ -9,7 +9,9 @@ const n1 = t0()
 const n0 = _child(n1)
 const n2 = _next(_child(n0), 1)
 const x2 = _txt(n2)
-_renderEffect(() => _setClass(n2, _ctx.cls))
-_renderEffect(() => _setText(x2, _toDisplayString(_ctx.msg)))
+_renderEffect(() => {
+_setClass(n2, _ctx.cls)
+_setText(x2, _toDisplayString(_ctx.msg))
+})
 return n1
 }

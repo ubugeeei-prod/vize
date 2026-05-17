@@ -245,9 +245,21 @@ fn generate_block(
         }
     }
 
-    // Generate effects
-    for effect in block.effect.iter() {
-        generate_effect(ctx, effect, element_template_map);
+    // Generate effects. Multiple reactive updates in the same block share a
+    // single effect, matching Vue Vapor output for sibling dynamic children.
+    if block.effect.len() == 1 {
+        generate_effect(ctx, &block.effect[0], element_template_map);
+    } else if !block.effect.is_empty() {
+        ctx.use_helper("renderEffect");
+        ctx.push_line("_renderEffect(() => {");
+        ctx.indent();
+        for effect in block.effect.iter() {
+            for op in effect.operations.iter() {
+                generate_operation(ctx, op, element_template_map);
+            }
+        }
+        ctx.deindent();
+        ctx.push_line("})");
     }
 
     // Generate return
