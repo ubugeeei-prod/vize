@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -102,17 +102,19 @@ const signDarwinBinary = (filePath) => {
   }
 };
 
-for (const file of readdirSync(packageDir)) {
-  if (file.startsWith("vize-vitrine.") && file.endsWith(".node")) {
-    rmSync(path.join(packageDir, file), { force: true });
-  }
+const builtFiles = readdirSync(outputDir).filter((file) => file.endsWith(".node"));
+
+for (const file of builtFiles) {
+  const destination = path.join(packageDir, file);
+  const staging = path.join(packageDir, `.${file}.next`);
+  rmSync(staging, { force: true });
+  copyFileSync(path.join(outputDir, file), staging);
+  signDarwinBinary(staging);
+  renameSync(staging, destination);
 }
 
-for (const file of readdirSync(outputDir)) {
-  if (!file.endsWith(".node")) {
-    continue;
+for (const file of readdirSync(packageDir)) {
+  if (file.startsWith("vize-vitrine.") && file.endsWith(".node") && !builtFiles.includes(file)) {
+    rmSync(path.join(packageDir, file), { force: true });
   }
-  const destination = path.join(packageDir, file);
-  copyFileSync(path.join(outputDir, file), destination);
-  signDarwinBinary(destination);
 }

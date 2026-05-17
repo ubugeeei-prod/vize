@@ -57,6 +57,7 @@ export interface RenderNodeNapi {
   nodeType: string;
   text?: string;
   wrap?: boolean;
+  wrapMode?: string;
   value?: string;
   placeholder?: string;
   focused?: boolean;

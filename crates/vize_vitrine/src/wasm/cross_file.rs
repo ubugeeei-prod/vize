@@ -16,8 +16,8 @@ use wasm_bindgen::prelude::*;
 pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsValue, JsValue> {
     use vize_atelier_core::parser::parse;
     use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-    use vize_croquis::cross_file::CrossFileAnalyzer;
     use vize_croquis::{Analyzer, AnalyzerOptions};
+    use vize_croquis_cf::CrossFileAnalyzer;
 
     // Parse options
     let cross_file_opts = parse_cross_file_options(&options);
@@ -247,7 +247,7 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                 .iter()
                 .map(
                     |(file_id, offset, message): &(
-                        vize_croquis::cross_file::FileId,
+                        vize_croquis_cf::FileId,
                         u32,
                         vize_carton::CompactString,
                     )| {
@@ -329,8 +329,8 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
 }
 
 /// Parse CrossFileOptions from JsValue
-fn parse_cross_file_options(options: &JsValue) -> vize_croquis::cross_file::CrossFileOptions {
-    use vize_croquis::cross_file::CrossFileOptions;
+fn parse_cross_file_options(options: &JsValue) -> vize_croquis_cf::CrossFileOptions {
+    use vize_croquis_cf::CrossFileOptions;
 
     let get_bool = |key: &str| -> bool {
         js_sys::Reflect::get(options, &JsValue::from_str(key))
@@ -366,10 +366,8 @@ fn parse_cross_file_options(options: &JsValue) -> vize_croquis::cross_file::Cros
 }
 
 /// Convert diagnostic kind to string type
-fn diagnostic_kind_to_string(
-    kind: &vize_croquis::cross_file::CrossFileDiagnosticKind,
-) -> &'static str {
-    use vize_croquis::cross_file::CrossFileDiagnosticKind::*;
+fn diagnostic_kind_to_string(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> &'static str {
+    use vize_croquis_cf::CrossFileDiagnosticKind::*;
     match kind {
         // Fallthrough attributes
         UnusedFallthroughAttrs { .. } => "fallthrough-attrs",
@@ -465,10 +463,8 @@ fn diagnostic_kind_to_string(
 
 /// Determine if a diagnostic is template-related (uses template offsets)
 /// vs script-related (uses script offsets)
-fn is_template_related_diagnostic(
-    kind: &vize_croquis::cross_file::CrossFileDiagnosticKind,
-) -> bool {
-    use vize_croquis::cross_file::CrossFileDiagnosticKind::*;
+fn is_template_related_diagnostic(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> bool {
+    use vize_croquis_cf::CrossFileDiagnosticKind::*;
     matches!(
         kind,
         // Template-based diagnostics (positions in template block)
@@ -486,10 +482,8 @@ fn is_template_related_diagnostic(
 
 /// Determine if a diagnostic should span the entire <template> tag
 /// (uses tag_start and tag_end directly, not relative offsets)
-fn is_template_tag_span_diagnostic(
-    kind: &vize_croquis::cross_file::CrossFileDiagnosticKind,
-) -> bool {
-    use vize_croquis::cross_file::CrossFileDiagnosticKind::*;
+fn is_template_tag_span_diagnostic(kind: &vize_croquis_cf::CrossFileDiagnosticKind) -> bool {
+    use vize_croquis_cf::CrossFileDiagnosticKind::*;
     matches!(
         kind,
         // These diagnostics apply to the entire template, not a specific location

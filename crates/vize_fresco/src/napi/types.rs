@@ -113,6 +113,9 @@ pub struct RenderNodeNapi {
     pub text: Option<String>,
     /// Whether text should wrap
     pub wrap: Option<bool>,
+    /// Ink-compatible text wrapping/truncation mode
+    #[napi(js_name = "wrapMode")]
+    pub wrap_mode: Option<String>,
     /// Input value (for input nodes)
     pub value: Option<String>,
     /// Placeholder text (for input nodes)

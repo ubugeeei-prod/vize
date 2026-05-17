@@ -10,6 +10,8 @@ mod css;
 mod css_scope;
 mod hmr;
 mod js_string;
+mod middleware;
+mod precompile;
 mod query;
 mod request;
 mod resolver;
@@ -21,6 +23,14 @@ mod tests;
 
 pub use css::{CssAliasRule, resolve_css_imports, scope_css_for_pipeline};
 pub use hmr::{HmrHashes, detect_hmr_update_type, generate_hmr_code, has_hmr_changes};
+pub use middleware::{
+    ViteDevMiddlewareRewrite, normalize_css_module_filename, normalize_dev_middleware_url,
+};
+pub use precompile::{
+    DEFAULT_PRECOMPILE_BATCH_MAX_BYTES, DEFAULT_PRECOMPILE_BATCH_SIZE, PrecompileChunkOptions,
+    PrecompileDiff, PrecompileFileMetadata, PrecompileFileMetadataEntry, chunk_precompile_files,
+    diff_precompile_files, has_file_metadata_changed, normalize_precompile_batch_size,
+};
 pub use request::{
     VitePluginRequest, classify_vite_plugin_request, create_virtual_id, from_virtual_id,
     normalize_fs_id_for_build, normalize_virtual_vue_module_id,

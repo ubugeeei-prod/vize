@@ -12,10 +12,16 @@ pub enum WrapMode {
     NoWrap,
     /// Wrap at word boundaries
     Word,
-    /// Wrap at character boundaries
+    /// Wrap at grapheme boundaries
     Char,
-    /// Truncate with ellipsis
+    /// Truncate at the end with ellipsis
     Truncate,
+    /// Truncate at the end with ellipsis
+    TruncateEnd,
+    /// Truncate at the start with ellipsis
+    TruncateStart,
+    /// Truncate in the middle with ellipsis
+    TruncateMiddle,
 }
 
 /// Text wrapper for terminal output.
@@ -28,10 +34,113 @@ impl TextWrap {
             WrapMode::NoWrap => vec![CompactString::from(text)],
             WrapMode::Word => Self::wrap_word(text, max_width),
             WrapMode::Char => Self::wrap_char(text, max_width),
-            WrapMode::Truncate => {
-                vec![TextWidth::truncate_with_ellipsis(text, max_width)]
-            }
+            WrapMode::Truncate | WrapMode::TruncateEnd => vec![Self::truncate_end(text, max_width)],
+            WrapMode::TruncateStart => vec![Self::truncate_start(text, max_width)],
+            WrapMode::TruncateMiddle => vec![Self::truncate_middle(text, max_width)],
         }
+    }
+
+    fn ellipsis(max_width: usize) -> CompactString {
+        std::iter::repeat_n('.', max_width.min(3)).collect()
+    }
+
+    fn truncate_end(text: &str, max_width: usize) -> CompactString {
+        if TextWidth::width(text) <= max_width {
+            return CompactString::from(text);
+        }
+
+        if max_width <= 3 {
+            return Self::ellipsis(max_width);
+        }
+
+        let target_width = max_width - 3;
+        let mut result = CompactString::default();
+        let mut width = 0;
+
+        for seg in segment(text) {
+            if width + seg.width > target_width {
+                break;
+            }
+
+            width += seg.width;
+            result.push_str(&seg.grapheme);
+        }
+
+        result.push_str("...");
+        result
+    }
+
+    fn truncate_start(text: &str, max_width: usize) -> CompactString {
+        if TextWidth::width(text) <= max_width {
+            return CompactString::from(text);
+        }
+
+        if max_width <= 3 {
+            return Self::ellipsis(max_width);
+        }
+
+        let target_width = max_width - 3;
+        let mut suffix = Vec::new();
+        let mut width = 0;
+
+        for seg in segment(text).collect::<Vec<_>>().into_iter().rev() {
+            if width + seg.width > target_width {
+                break;
+            }
+
+            width += seg.width;
+            suffix.push(seg.grapheme);
+        }
+
+        let mut result = CompactString::from("...");
+        for item in suffix.into_iter().rev() {
+            result.push_str(&item);
+        }
+        result
+    }
+
+    fn truncate_middle(text: &str, max_width: usize) -> CompactString {
+        if TextWidth::width(text) <= max_width {
+            return CompactString::from(text);
+        }
+
+        if max_width <= 3 {
+            return Self::ellipsis(max_width);
+        }
+
+        let target_width = max_width - 3;
+        let prefix_target = target_width.div_ceil(2);
+        let suffix_target = target_width / 2;
+
+        let mut prefix = CompactString::default();
+        let mut prefix_width = 0;
+        let segments = segment(text).collect::<Vec<_>>();
+
+        for seg in &segments {
+            if prefix_width + seg.width > prefix_target {
+                break;
+            }
+
+            prefix_width += seg.width;
+            prefix.push_str(&seg.grapheme);
+        }
+
+        let mut suffix = Vec::new();
+        let mut suffix_width = 0;
+        for seg in segments.into_iter().rev() {
+            if suffix_width + seg.width > suffix_target {
+                break;
+            }
+
+            suffix_width += seg.width;
+            suffix.push(seg.grapheme);
+        }
+
+        prefix.push_str("...");
+        for item in suffix.into_iter().rev() {
+            prefix.push_str(&item);
+        }
+        prefix
     }
 
     /// Wrap at word boundaries.
@@ -230,6 +339,27 @@ mod tests {
         let lines = TextWrap::wrap("Hello World", 8, WrapMode::Truncate);
         assert_eq!(lines.len(), 1);
         assert_eq!(lines[0].as_str(), "Hello...");
+    }
+
+    #[test]
+    fn test_wrap_truncate_start() {
+        let lines = TextWrap::wrap("Hello World", 8, WrapMode::TruncateStart);
+        assert_eq!(lines.len(), 1);
+        assert_eq!(lines[0].as_str(), "...World");
+    }
+
+    #[test]
+    fn test_wrap_truncate_middle() {
+        let lines = TextWrap::wrap("Hello World", 9, WrapMode::TruncateMiddle);
+        assert_eq!(lines.len(), 1);
+        assert_eq!(lines[0].as_str(), "Hel...rld");
+    }
+
+    #[test]
+    fn test_wrap_truncate_cjk_width() {
+        let lines = TextWrap::wrap("あいうえお", 7, WrapMode::TruncateEnd);
+        assert_eq!(lines.len(), 1);
+        assert_eq!(lines[0].as_str(), "あい...");
     }
 
     #[test]

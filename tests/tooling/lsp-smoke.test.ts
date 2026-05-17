@@ -235,6 +235,24 @@ const emoji = "😀"; const message = ref(emoji)
         ),
         JSON.stringify(references),
       );
+
+      const emojiPosition = offsetToPosition(utf16Source, utf16Source.indexOf("😀"));
+      const surrogateInteriorPosition = {
+        line: emojiPosition.line,
+        character: emojiPosition.character + 1,
+      };
+
+      const invalidCompletion = await session.request("textDocument/completion", {
+        textDocument: { uri: utf16Uri },
+        position: surrogateInteriorPosition,
+      });
+      assert.equal(invalidCompletion, null);
+
+      const invalidPrepareRename = await session.request("textDocument/prepareRename", {
+        textDocument: { uri: utf16Uri },
+        position: surrogateInteriorPosition,
+      });
+      assert.equal(invalidPrepareRename, null);
     });
 
     await t.test("semantic token range requests are implemented", async () => {
@@ -441,6 +459,7 @@ test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
       "textDocument/publishDiagnostics",
       (params) => hasDiagnosticSource(params, brokenUri, "vize/sfc"),
     )) as PublishDiagnosticsParams;
+    assert.equal(brokenPublish.version, 1);
     const parserDiagnostic = brokenPublish.diagnostics.find(
       (diagnostic) => diagnostic.source === "vize/sfc",
     );
@@ -471,6 +490,7 @@ test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
       (params) => isDiagnosticsForUri(params, brokenUri),
     )) as PublishDiagnosticsParams;
 
+    assert.equal(fixedPublish.version, 2);
     assert.deepEqual(fixedPublish.diagnostics, []);
   } finally {
     await session.shutdown();

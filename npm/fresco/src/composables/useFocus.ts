@@ -31,7 +31,7 @@ export interface FocusManager {
   /** Ink-compatible currently focused ID alias */
   activeId: Readonly<Ref<string | undefined>>;
   /** All active focusable element IDs */
-  focusableIds: Ref<string[]>;
+  focusableIds: Readonly<Ref<string[]>>;
   /** Whether focus management is enabled */
   isEnabled: Ref<boolean>;
   /** Enable focus management */
@@ -45,13 +45,20 @@ export interface FocusManager {
   /** Focus previous element */
   focusPrevious: () => void;
   /** Register a focusable element */
-  register: (id: string) => void;
+  register: (id: string, options?: { isActive?: boolean; autoFocus?: boolean }) => void;
   /** Unregister a focusable element */
   unregister: (id: string) => void;
+  /** Activate or deactivate a focusable element while keeping its order */
+  setActive: (id: string, isActive: boolean) => void;
 }
 
-function normalizeIndex(index: number, length: number): number {
-  return ((index % length) + length) % length;
+interface Focusable {
+  id: string;
+  isActive: boolean;
+}
+
+function activeFocusables(focusables: Focusable[]): Focusable[] {
+  return focusables.filter((focusable) => focusable.isActive);
 }
 
 /**
@@ -60,46 +67,74 @@ function normalizeIndex(index: number, length: number): number {
 export function createFocusManager(): FocusManager {
   const focusedId = ref<string | null>(null);
   const activeId = computed(() => focusedId.value ?? undefined);
-  const focusableIds = ref<string[]>([]);
+  const focusables = ref<Focusable[]>([]);
+  const focusableIds = computed(() => activeFocusables(focusables.value).map(({ id }) => id));
   const isEnabled = ref(true);
 
   const focus = (id: string) => {
-    if (isEnabled.value && focusableIds.value.includes(id)) {
+    const target = focusables.value.find((focusable) => focusable.id === id);
+    if (isEnabled.value && target?.isActive) {
       focusedId.value = id;
     }
   };
 
   const focusNext = () => {
-    if (!isEnabled.value || focusableIds.value.length === 0) return;
+    const active = activeFocusables(focusables.value);
+    if (!isEnabled.value || active.length === 0) return;
 
-    const currentIndex = focusedId.value ? focusableIds.value.indexOf(focusedId.value) : -1;
-    focusedId.value =
-      focusableIds.value[normalizeIndex(currentIndex + 1, focusableIds.value.length)];
+    const currentIndex = focusedId.value
+      ? focusables.value.findIndex((focusable) => focusable.id === focusedId.value)
+      : -1;
+    const next = focusables.value.slice(currentIndex + 1).find((focusable) => focusable.isActive);
+    focusedId.value = next?.id ?? active[0]?.id ?? null;
   };
 
   const focusPrevious = () => {
-    if (!isEnabled.value || focusableIds.value.length === 0) return;
+    const active = activeFocusables(focusables.value);
+    if (!isEnabled.value || active.length === 0) return;
 
     const currentIndex = focusedId.value
-      ? focusableIds.value.indexOf(focusedId.value)
-      : focusableIds.value.length;
-    focusedId.value =
-      focusableIds.value[normalizeIndex(currentIndex - 1, focusableIds.value.length)];
+      ? focusables.value.findIndex((focusable) => focusable.id === focusedId.value)
+      : focusables.value.length;
+    const previous = focusables.value
+      .slice(0, currentIndex < 0 ? 0 : currentIndex)
+      .findLast((focusable) => focusable.isActive);
+    focusedId.value = previous?.id ?? active.at(-1)?.id ?? null;
   };
 
-  const register = (id: string) => {
-    if (!focusableIds.value.includes(id)) {
-      focusableIds.value.push(id);
+  const register: FocusManager["register"] = (id, options = {}) => {
+    const existing = focusables.value.find((focusable) => focusable.id === id);
+    if (existing) {
+      existing.isActive = options.isActive ?? existing.isActive;
+    } else {
+      focusables.value.push({
+        id,
+        isActive: options.isActive ?? true,
+      });
+    }
+
+    if (options.autoFocus && !focusedId.value && options.isActive !== false) {
+      focus(id);
     }
   };
 
   const unregister = (id: string) => {
-    const index = focusableIds.value.indexOf(id);
+    const index = focusables.value.findIndex((focusable) => focusable.id === id);
     if (index !== -1) {
-      focusableIds.value.splice(index, 1);
+      focusables.value.splice(index, 1);
       if (focusedId.value === id) {
-        focusedId.value = focusableIds.value[0] ?? null;
+        focusedId.value = null;
       }
+    }
+  };
+
+  const setActive = (id: string, isActive: boolean) => {
+    const focusable = focusables.value.find((item) => item.id === id);
+    if (!focusable) return;
+
+    focusable.isActive = isActive;
+    if (!isActive && focusedId.value === id) {
+      focusedId.value = null;
     }
   };
 
@@ -124,6 +159,7 @@ export function createFocusManager(): FocusManager {
     focusPrevious,
     register,
     unregister,
+    setActive,
   };
 }
 
@@ -174,19 +210,15 @@ export function useFocus(options: UseFocusOptions = {}) {
   };
 
   if (manager) {
+    manager.register(id, { isActive: active.value, autoFocus });
+
     watch(
       active,
       (enabled) => {
-        if (enabled) {
-          manager.register(id);
-          if (autoFocus && !manager.focusedId.value) {
-            manager.focus(id);
-          }
-        } else {
-          manager.unregister(id);
-        }
+        manager.setActive(id, enabled);
+        if (enabled && autoFocus && !manager.focusedId.value) manager.focus(id);
       },
-      { immediate: true },
+      { immediate: false },
     );
 
     onUnmounted(() => {

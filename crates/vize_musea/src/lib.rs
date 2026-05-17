@@ -67,12 +67,18 @@ pub mod autogen;
 pub mod docs;
 pub mod palette;
 pub mod parse;
+pub mod tokens;
 pub mod transform;
 pub mod types;
 pub mod vrt;
 
 // Re-exports for convenience
 pub use parse::parse_art;
+pub use tokens::{
+    build_token_map, find_dependent_tokens, flatten_token_categories, generate_tokens_markdown,
+    parse_tokens_from_json, parse_tokens_from_path, parse_tokens_from_value,
+    resolve_token_categories, validate_reference,
+};
 pub use transform::{transform_to_csf, transform_to_vue};
 pub use types::{
     ArtDescriptor, ArtDescriptorOwned, ArtMetadata, ArtMetadataOwned, ArtParseError,

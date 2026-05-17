@@ -3,17 +3,19 @@
  */
 
 import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { useIsScreenReaderEnabled } from "../composables/useIsScreenReaderEnabled.js";
 import { stringifyChildren } from "../utils/text.js";
 
 export type TextWrap =
   | boolean
   | "wrap"
-  | "end"
-  | "middle"
+  | "hard"
   | "truncate"
   | "truncate-start"
   | "truncate-middle"
-  | "truncate-end";
+  | "truncate-end"
+  | "end"
+  | "middle";
 
 export interface TextProps {
   /** Text content (alternative to slot) */
@@ -68,8 +70,15 @@ export const Text = defineComponent({
     "aria-hidden": Boolean,
   },
   setup(props, { slots }) {
+    const isScreenReaderEnabled = useIsScreenReaderEnabled();
+
     return () => {
-      const text = props.content ?? stringifyChildren(slots.default?.());
+      if (isScreenReaderEnabled && props["aria-hidden"]) return null;
+
+      const text =
+        isScreenReaderEnabled && props["aria-label"]
+          ? props["aria-label"]
+          : (props.content ?? stringifyChildren(slots.default?.()));
 
       return h("text", {
         text,

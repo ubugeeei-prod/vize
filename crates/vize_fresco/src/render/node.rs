@@ -6,6 +6,7 @@ use smallvec::SmallVec;
 
 use crate::layout::{FlexStyle, Rect};
 use crate::terminal::{Color, Style};
+use crate::text::WrapMode;
 
 /// Unique identifier for render nodes.
 pub type NodeId = u64;
@@ -108,6 +109,8 @@ pub struct TextContent {
     pub text: CompactString,
     /// Whether text should wrap
     pub wrap: bool,
+    /// How text should wrap or truncate within its layout area
+    pub wrap_mode: WrapMode,
 }
 
 impl TextContent {
@@ -116,12 +119,21 @@ impl TextContent {
         Self {
             text: text.into(),
             wrap: false,
+            wrap_mode: WrapMode::NoWrap,
         }
     }
 
     /// Enable text wrapping.
     pub fn with_wrap(mut self) -> Self {
         self.wrap = true;
+        self.wrap_mode = WrapMode::Word;
+        self
+    }
+
+    /// Set the text wrapping mode.
+    pub fn with_wrap_mode(mut self, wrap_mode: WrapMode) -> Self {
+        self.wrap = !matches!(wrap_mode, WrapMode::NoWrap);
+        self.wrap_mode = wrap_mode;
         self
     }
 }

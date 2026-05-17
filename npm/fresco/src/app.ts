@@ -13,8 +13,16 @@ import {
   type VNode,
 } from "@vue/runtime-core";
 import type { InputEventNapi } from "@vizejs/fresco-native";
+import {
+  SCREEN_READER_KEY,
+  isScreenReaderEnabledByDefault,
+  treeToScreenReaderRenderNodes,
+} from "./accessibility.js";
 import { APP_KEY, createAppContext, type UseAppReturn } from "./composables/useApp.js";
 import { createFocusManager, FOCUS_KEY, type FocusManager } from "./composables/useFocus.js";
+import { createStreamsContext, STREAMS_KEY } from "./composables/useStreams.js";
+import { updateLastRenderLayouts } from "./layoutMetrics.js";
+import type { KittyKeyboardOptions } from "./kittyKeyboard.js";
 import {
   createRenderer,
   treeToRenderNodes,
@@ -124,7 +132,17 @@ export interface AppOptions {
   maxFps?: number;
   /** Use alternate screen buffer */
   alternateScreen?: boolean;
+  /** Ink-compatible option, accepted for API parity */
+  incrementalRendering?: boolean;
+  /** Ink-compatible option, accepted for API parity */
+  concurrent?: boolean;
+  /** Override interactive mode detection */
+  interactive?: boolean;
+  /** Configure Kitty keyboard protocol support */
+  kittyKeyboard?: KittyKeyboardOptions;
 }
+
+export type RenderOptions = AppOptions;
 
 export type AppRoot = Component | VNode;
 
@@ -160,6 +178,23 @@ export interface RenderInstance {
 export interface RenderToStringOptions {
   /** Width of the virtual terminal in columns */
   columns?: number;
+}
+
+export interface WritableStreamLike {
+  write(...args: unknown[]): unknown;
+}
+
+function isWritableStream(value: unknown): value is WritableStreamLike {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "write" in value &&
+    typeof (value as { write?: unknown }).write === "function"
+  );
+}
+
+function normalizeRenderOptions(options: AppOptions | WritableStreamLike): AppOptions {
+  return isWritableStream(options) ? { stdout: options as NodeJS.WriteStream } : options;
 }
 
 function isVNodeRoot(root: AppRoot): root is VNode {
@@ -235,6 +270,17 @@ function updateAppSize(context: UseAppReturn | null, width: number, height: numb
  */
 export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App {
   const { mouse = false, exitOnCtrlC = true, onError } = options;
+  const screenReaderEnabled = ref(
+    options.isScreenReaderEnabled ?? isScreenReaderEnabledByDefault(),
+  );
+  const frameDelay = Math.max(1, Math.floor(1000 / Math.max(1, options.maxFps ?? 30)));
+  const streamsContext = createStreamsContext({
+    stdin: options.stdin,
+    stdout: options.stdout,
+    stderr: options.stderr,
+    exitOnCtrlC,
+    interactive: options.interactive ?? true,
+  });
 
   let vueApp: VueApp | null = null;
   let rootElement: FrescoElement | null = null;
@@ -284,10 +330,13 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
       render,
       clear,
       waitUntilRenderFlush,
+      stdout: streamsContext.stdout,
     });
     focusManager = createFocusManager();
     app.provide(APP_KEY, appContext);
     app.provide(FOCUS_KEY, focusManager);
+    app.provide(SCREEN_READER_KEY, screenReaderEnabled);
+    app.provide(STREAMS_KEY, streamsContext);
 
     // Create a root element for mounting
     rootElement = createRootElement();
@@ -354,17 +403,21 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
     const start = performance.now();
 
     try {
-      // Convert Vue tree to render nodes
-      const renderNodes = treeToRenderNodes(rootElement);
+      const renderNodes = screenReaderEnabled.value
+        ? treeToScreenReaderRenderNodes(rootElement)
+        : treeToRenderNodes(rootElement);
 
       // Send to native for rendering
       if (renderNodes.length > 0) {
         if (options.debug) {
-          options.stderr?.write(`${JSON.stringify(renderNodes, null, 2)}\n`);
+          streamsContext.stderr.write(`${JSON.stringify(renderNodes, null, 2)}\n`);
         }
 
         // Use renderTree which handles layout and painting
         native.renderTree(renderNodes);
+        if ("getLastRenderLayouts" in native) {
+          updateLastRenderLayouts(native.getLastRenderLayouts());
+        }
 
         // Flush to display
         native.flushTerminal();
@@ -509,7 +562,7 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
       }
 
       // Small delay to prevent busy loop
-      await new Promise((resolve) => setTimeout(resolve, 16));
+      await new Promise((resolve) => setTimeout(resolve, frameDelay));
     }
   }
 
@@ -527,7 +580,11 @@ export function createApp(rootComponent: AppRoot, options: AppOptions = {}): App
 /**
  * Ink-compatible helper that mounts immediately.
  */
-export function render(root: AppRoot, options: AppOptions = {}): RenderInstance {
+export function render(
+  root: AppRoot,
+  options: AppOptions | WritableStreamLike = {},
+): RenderInstance {
+  const renderOptions = normalizeRenderOptions(options);
   const rootRef = shallowRef(root);
   const Root = defineComponent({
     name: "FrescoRenderRoot",
@@ -539,7 +596,7 @@ export function render(root: AppRoot, options: AppOptions = {}): RenderInstance 
     },
   });
 
-  const app = createApp(Root, options);
+  const app = createApp(Root, renderOptions);
   void app.mount();
 
   return {
@@ -571,6 +628,8 @@ export function renderToString(root: AppRoot, options: RenderToStringOptions = {
     }),
   );
   app.provide(FOCUS_KEY, createFocusManager());
+  app.provide(SCREEN_READER_KEY, ref(false));
+  app.provide(STREAMS_KEY, createStreamsContext({ interactive: false }));
   app.mount(rootElement);
 
   const output = treeToString(rootElement);
