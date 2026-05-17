@@ -27,14 +27,20 @@ test("app e2e workflow runs a PR matrix, stays manually selectable, and uploads 
 
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /type:\s*choice/);
-  for (const suite of ["dev", "vrt", "preview", "check", "lint", "build", "check-fixtures"]) {
+  const manuallySelectableSuites = [
+    "dev",
+    "vrt",
+    "preview",
+    "check",
+    "lint",
+    "build",
+    "check-fixtures",
+  ];
+  for (const suite of manuallySelectableSuites) {
     assert.match(workflow, new RegExp(`- ${suite}`));
     assert.match(workflow, new RegExp(`${suite}\\)\\n\\s+`));
   }
-  assert.match(
-    workflow,
-    /fromJSON\('\["dev","preview","check","lint","build","check-fixtures"\]'\)/,
-  );
+  assert.match(workflow, /fromJSON\('\["dev","preview","build"\]'\)/);
 
   assert.match(workflow, /--filter '\.\/tests\.\.\.'/);
   assert.match(workflow, /--filter '\.\/npm\/vize-native\.\.\.'/);
