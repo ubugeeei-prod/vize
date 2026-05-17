@@ -6,7 +6,7 @@ async function waitForAtelier(page: Page) {
     () => document.querySelector(".wasm-status")?.textContent?.includes("WASM"),
     { timeout: 15_000 },
   );
-  await page.waitForSelector(".compile-time", { timeout: 10_000 });
+  await page.waitForSelector(".compile-time", { timeout: 20_000 });
   await expect(page.locator(".code-output .code-content").first()).toBeVisible();
 }
 

@@ -84,6 +84,28 @@ async function readCurrentRoute(page: Page): Promise<RouteSnapshot> {
   });
 }
 
+async function navigateWithNuxtRouter(page: Page, path: string): Promise<void> {
+  await page.evaluate(async (targetPath) => {
+    const root = document.querySelector("#__nuxt") as {
+      __vue_app__?: {
+        config?: {
+          globalProperties?: {
+            $router?: {
+              push?: (target: string) => Promise<unknown> | void;
+            };
+          };
+        };
+      };
+    } | null;
+    const router = root?.__vue_app__?.config?.globalProperties?.$router;
+    if (typeof router?.push !== "function") {
+      throw new Error("Nuxt router is not available");
+    }
+
+    await router.push(targetPath);
+  }, path);
+}
+
 test.describe("npmx.dev dev", () => {
   let devServer: ChildProcess;
 
@@ -260,34 +282,14 @@ test.describe("npmx.dev dev", () => {
       timeout: 30_000,
     });
     await page.waitForTimeout(3_000);
-    await readCurrentRoute(page);
+    expect((await readCurrentRoute(page)).path).toBe("/");
 
-    // Try to navigate to /about via client-side link
-    const aboutLink = page.locator('a[href="/about"]').first();
-    const hasAboutLink = await aboutLink.count();
-    if (hasAboutLink > 0) {
-      await aboutLink.scrollIntoViewIfNeeded();
+    await navigateWithNuxtRouter(page, "/about");
 
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const navigation = page.waitForURL((url) => url.pathname === "/about", {
-          timeout: 5_000,
-        });
-        await aboutLink.click();
-        try {
-          await navigation;
-          break;
-        } catch (error) {
-          if (attempt === 1) {
-            throw error;
-          }
-          await page.waitForLoadState("load", { timeout: 5_000 }).catch(() => {});
-          await page.waitForTimeout(1_000);
-        }
-      }
-
-      await expect.poll(() => new URL(page.url()).pathname).toBe("/about");
-      await expect.poll(async () => (await readCurrentRoute(page)).path).toBe("/about");
-    }
+    await expect.poll(() => new URL(page.url()).pathname, { timeout: 10_000 }).toBe("/about");
+    await expect
+      .poll(async () => (await readCurrentRoute(page)).path, { timeout: 10_000 })
+      .toBe("/about");
   });
 
   test("reactivity: search input updates state", async ({ page }) => {

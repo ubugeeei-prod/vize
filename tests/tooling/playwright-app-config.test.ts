@@ -20,6 +20,6 @@ test("app e2e Playwright config keeps CI runs guarded and debuggable", () => {
     /reporter:\s*process\.env\.CI \? \[\["list"\], \["html", \{ open: "never" \}\]\] : "list"/,
   );
   assert.match(config, /screenshot:\s*"only-on-failure"/);
-  assert.match(config, /trace:\s*"retain-on-failure"/);
-  assert.match(config, /video:\s*"retain-on-failure"/);
+  assert.match(config, /trace:\s*process\.env\.CI \? "off" : "retain-on-failure"/);
+  assert.match(config, /video:\s*process\.env\.CI \? "off" : "retain-on-failure"/);
 });
