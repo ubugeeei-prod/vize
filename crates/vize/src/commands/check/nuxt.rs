@@ -460,19 +460,21 @@ fn collect_fallback_stubs(stubs: &mut Vec<String>, seen_names: &mut FxHashSet<St
 
 fn fallback_stub_strings() -> Vec<String> {
     vec![
-        "type $Vue = typeof import('vue');".into(),
         "type Composer = any;".into(),
         "type Ref<T = any> = import('vue').Ref<T>;".into(),
         "type ComputedRef<T = any> = import('vue').ComputedRef<T>;".into(),
         "type WritableComputedRef<T = any> = import('vue').WritableComputedRef<T>;".into(),
+        "type ShallowRef<T = any> = import('vue').ShallowRef<T>;".into(),
+        "type UnwrapRef<T> = import('vue').UnwrapRef<T>;".into(),
+        "type UnwrapNestedRefs<T> = import('vue').UnwrapNestedRefs<T>;".into(),
         "type MaybeRef<T = any> = import('vue').MaybeRef<T>;".into(),
         "type MaybeRefOrGetter<T = any> = import('vue').MaybeRefOrGetter<T>;".into(),
         "type Component = import('vue').Component;".into(),
-        "declare function ref<T>(value: T): $Vue['Ref']<$Vue['UnwrapRef']<T>>;".into(),
-        "declare function ref<T = any>(): $Vue['Ref']<T | undefined>;".into(),
-        "declare function computed<T>(getter: () => T): $Vue['ComputedRef']<T>;".into(),
-        "declare function computed<T>(options: { get: () => T; set: (value: T) => void }): $Vue['WritableComputedRef']<T>;".into(),
-        "declare function reactive<T extends object>(target: T): $Vue['UnwrapNestedRefs']<T>;".into(),
+        "declare function ref<T>(value: T): Ref<UnwrapRef<T>>;".into(),
+        "declare function ref<T = any>(): Ref<T | undefined>;".into(),
+        "declare function computed<T>(getter: () => T): ComputedRef<T>;".into(),
+        "declare function computed<T>(options: { get: () => T; set: (value: T) => void }): WritableComputedRef<T>;".into(),
+        "declare function reactive<T extends object>(target: T): UnwrapNestedRefs<T>;".into(),
         "declare function readonly<T extends object>(target: T): Readonly<T>;".into(),
         "declare function watch(source: any, cb: (...args: any[]) => any, options?: any): any;".into(),
         "declare function watchEffect(effect: () => void, options?: any): any;".into(),
@@ -488,12 +490,12 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function onDeactivated(hook: () => any): void;".into(),
         "declare function onErrorCaptured(hook: (...args: any[]) => any): void;".into(),
         "declare function nextTick(fn?: () => void): Promise<void>;".into(),
-        "declare function toRef<T extends object, K extends keyof T>(object: T, key: K): $Vue['Ref']<T[K]>;".into(),
-        "declare function toRefs<T extends object>(object: T): { [K in keyof T]: $Vue['Ref']<T[K]> };".into(),
-        "declare function unref<T>(ref: T | $Vue['Ref']<T>): T;".into(),
-        "declare function isRef(value: any): value is $Vue['Ref'];".into(),
-        "declare function shallowRef<T>(value: T): $Vue['ShallowRef']<T>;".into(),
-        "declare function triggerRef(ref: $Vue['ShallowRef']): void;".into(),
+        "declare function toRef<T extends object, K extends keyof T>(object: T, key: K): Ref<T[K]>;".into(),
+        "declare function toRefs<T extends object>(object: T): { [K in keyof T]: Ref<T[K]> };".into(),
+        "declare function unref<T>(ref: T | Ref<T>): T;".into(),
+        "declare function isRef(value: any): value is Ref;".into(),
+        "declare function shallowRef<T>(value: T): ShallowRef<T>;".into(),
+        "declare function triggerRef(ref: ShallowRef): void;".into(),
         "declare function provide<T>(key: string | symbol, value: T): void;".into(),
         "declare function inject<T>(key: string | symbol): T | undefined;".into(),
         "declare function inject<T>(key: string | symbol, defaultValue: T): T;".into(),
@@ -508,7 +510,7 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function onScopeDispose(fn: () => void): void;".into(),
         "declare function shallowReactive<T extends object>(target: T): T;".into(),
         "declare function shallowReadonly<T extends object>(target: T): Readonly<T>;".into(),
-        "declare function customRef<T>(factory: any): $Vue['Ref']<T>;".into(),
+        "declare function customRef<T>(factory: any): Ref<T>;".into(),
         "declare function useRouter(): any;".into(),
         "declare function useRoute(name?: string): any;".into(),
         "declare function definePageMeta(meta: any): void;".into(),
@@ -527,8 +529,8 @@ fn fallback_stub_strings() -> Vec<String> {
         "declare function useNuxtApp(): any;".into(),
         "declare function useRuntimeConfig(): any;".into(),
         "declare function useAppConfig(): any;".into(),
-        "declare function useState<T = any>(key: string, init?: () => T): $Vue['Ref']<T>;".into(),
-        "declare function useCookie<T = any>(name: string, options?: any): $Vue['Ref']<T>;".into(),
+        "declare function useState<T = any>(key: string, init?: () => T): Ref<T>;".into(),
+        "declare function useCookie<T = any>(name: string, options?: any): Ref<T>;".into(),
         "declare function useHead(input: any): void;".into(),
         "declare function useRequestHeaders(headers?: string[]): Record<string, string>;".into(),
         "declare function useRequestURL(): URL;".into(),
@@ -758,8 +760,11 @@ mod tests {
 
     use super::{
         declared_name, detect_nuxt_auto_imports, extract_plugin_provide_keys_from_source,
-        parse_export_names, parse_module_specifier,
+        fallback_stub_strings, parse_export_names, parse_module_specifier,
     };
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
     use vize_canon::virtual_ts::VirtualTsOptions;
     use vize_carton::cstr;
 
@@ -813,6 +818,23 @@ export default defineNuxtPlugin({
         assert_eq!(
             declared_name("declare const currentUser: any;"),
             Some("currentUser")
+        );
+    }
+
+    #[test]
+    fn fallback_stub_bundle_is_valid_typescript() {
+        let allocator = Allocator::default();
+        let source = fallback_stub_strings().join("\n");
+        let source_type = SourceType::default()
+            .with_module(true)
+            .with_typescript(true);
+        let ret = Parser::new(&allocator, &source, source_type).parse();
+
+        assert!(
+            ret.errors.is_empty(),
+            "fallback stubs should parse as TypeScript declarations: {:#?}\n{}",
+            ret.errors,
+            source
         );
     }
 

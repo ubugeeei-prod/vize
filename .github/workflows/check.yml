@@ -60,6 +60,29 @@ jobs:
       - name: Check JS/TS
         run: vp run --workspace-root check:ci
 
+  node-engine-compat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["22", "24"]
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Select Node compatibility version
+        run: echo "${{ matrix.node-version }}" > .node-version.ci
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version.ci"
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Check package engine matrix
+        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts
+
   check-vize-apps:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -327,6 +350,7 @@ jobs:
       - nix-flake
       - fmt-rust
       - check-js
+      - node-engine-compat
       - check-vize-apps
       - test-scripts
       - editor-extensions

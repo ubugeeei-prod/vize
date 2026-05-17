@@ -66,14 +66,8 @@ impl CodeActionService {
             let (end_line, end_col) = offset_to_line_col(&template.content, lint_diag.end as usize);
 
             let diag_range = Range {
-                start: Position {
-                    line: template_start_line + start_line - 1,
-                    character: start_col,
-                },
-                end: Position {
-                    line: template_start_line + end_line - 1,
-                    character: end_col,
-                },
+                start: template_position(template_start_line, start_line, start_col),
+                end: template_position(template_start_line, end_line, end_col),
             };
 
             // Check if the diagnostic range overlaps with the requested range
@@ -93,14 +87,16 @@ impl CodeActionService {
 
                     TextEdit {
                         range: Range {
-                            start: Position {
-                                line: template_start_line + edit_start_line - 1,
-                                character: edit_start_col,
-                            },
-                            end: Position {
-                                line: template_start_line + edit_end_line - 1,
-                                character: edit_end_col,
-                            },
+                            start: template_position(
+                                template_start_line,
+                                edit_start_line,
+                                edit_start_col,
+                            ),
+                            end: template_position(
+                                template_start_line,
+                                edit_end_line,
+                                edit_end_col,
+                            ),
                         },
                         #[allow(clippy::disallowed_methods)]
                         new_text: edit.new_text.to_string(),
@@ -168,14 +164,8 @@ impl CodeActionService {
             let (end_line, end_col) = offset_to_line_col(&template.content, lint_diag.end as usize);
 
             let diag_range = Range {
-                start: Position {
-                    line: template_start_line + start_line,
-                    character: start_col,
-                },
-                end: Position {
-                    line: template_start_line + end_line,
-                    character: end_col,
-                },
+                start: template_position(template_start_line, start_line, start_col),
+                end: template_position(template_start_line, end_line, end_col),
             };
 
             if !ranges_overlap(&diag_range, &range) {
@@ -186,7 +176,7 @@ impl CodeActionService {
             let indent = get_line_indent(&template.content, lint_diag.start as usize);
 
             // Insert `<!-- @vize:forget <rule_name> -->\n` before the line
-            let sfc_line = template_start_line + start_line;
+            let sfc_line = template_position(template_start_line, start_line, 0).line;
             let insert_pos = Position {
                 line: sfc_line,
                 character: 0,
@@ -259,14 +249,16 @@ impl CodeActionService {
 
                     all_edits.push(TextEdit {
                         range: Range {
-                            start: Position {
-                                line: template_start_line + edit_start_line - 1,
-                                character: edit_start_col,
-                            },
-                            end: Position {
-                                line: template_start_line + edit_end_line - 1,
-                                character: edit_end_col,
-                            },
+                            start: template_position(
+                                template_start_line,
+                                edit_start_line,
+                                edit_start_col,
+                            ),
+                            end: template_position(
+                                template_start_line,
+                                edit_end_line,
+                                edit_end_col,
+                            ),
                         },
                         #[allow(clippy::disallowed_methods)]
                         new_text: edit.new_text.to_string(),
@@ -311,7 +303,7 @@ impl CodeActionService {
     }
 }
 
-/// Convert byte offset to (line, column) - both 0-indexed.
+/// Convert byte offset to (line, column) - both 0-indexed for LSP.
 fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
     let mut line = 0u32;
     let mut col = 0u32;
@@ -325,12 +317,19 @@ fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
             line += 1;
             col = 0;
         } else {
-            col += 1;
+            col += ch.len_utf16() as u32;
         }
         current_offset += ch.len_utf8();
     }
 
     (line, col)
+}
+
+fn template_position(template_start_line: u32, line: u32, character: u32) -> Position {
+    Position {
+        line: template_start_line.saturating_sub(1) + line,
+        character,
+    }
 }
 
 /// Get the leading whitespace (indentation) for the line containing the given byte offset.
@@ -368,7 +367,7 @@ fn ranges_overlap(a: &Range, b: &Range) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{offset_to_line_col, ranges_overlap};
+    use super::{offset_to_line_col, ranges_overlap, template_position};
     use tower_lsp::lsp_types::{Position, Range};
 
     #[test]
@@ -415,6 +414,25 @@ mod tests {
         assert_eq!(offset_to_line_col(source, 3), (0, 3));
         assert_eq!(offset_to_line_col(source, 4), (1, 0));
         assert_eq!(offset_to_line_col(source, 8), (2, 0));
+    }
+
+    #[test]
+    fn offset_to_line_col_counts_utf16_code_units() {
+        let source = r#"<div title="😀"  id="target"></div>"#;
+        let offset = source.find("  id").unwrap();
+
+        assert_eq!(offset_to_line_col(source, offset), (0, 15));
+    }
+
+    #[test]
+    fn template_position_maps_content_lines_to_lsp_lines() {
+        assert_eq!(
+            template_position(1, 1, 17),
+            Position {
+                line: 1,
+                character: 17,
+            }
+        );
     }
 
     #[test]

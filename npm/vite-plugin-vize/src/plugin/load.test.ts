@@ -164,7 +164,9 @@ fs.writeFileSync(
   `<script setup lang="ts">
 definePageMeta({
   name: "docs",
-  meta: { scrollMargin: 180 },
+  path: "/package-docs/:path+",
+  alias: ["/docs/:path+"],
+  scrollMargin: 180,
 })
 
 const msg = "ready"
@@ -184,8 +186,13 @@ assert.ok(
 );
 assert.match(
   definePageMetaLoad.code,
-  /export default \{/,
-  "Nuxt definePageMeta macro queries should return the extracted page metadata module",
+  /const __nuxt_page_meta = \{/,
+  "Nuxt definePageMeta macro queries should return Nuxt-compatible page metadata modules",
+);
+assert.match(
+  definePageMetaLoad.code,
+  /export default __nuxt_page_meta/,
+  "Nuxt definePageMeta macro queries should not be treated as empty by Nuxt's page meta transform",
 );
 assert.match(
   definePageMetaLoad.code,

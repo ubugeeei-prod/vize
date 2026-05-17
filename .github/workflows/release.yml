@@ -404,6 +404,124 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
+  smoke-release-packages:
+    name: Smoke release npm package installs
+    runs-on: ubuntu-latest
+    needs: [build-release-packages, build-native-all]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Install native package tooling dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...' --filter './npm/fresco-native...'
+
+      - name: Download vize CLI package artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-vize
+          path: npm/vize
+
+      - name: Download Vite plugin artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-vite-plugin-vize
+          path: npm/vite-plugin-vize
+
+      - name: Download Oxlint plugin artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-oxlint-plugin-vize
+          path: npm/oxlint-plugin-vize
+
+      - name: Download unplugin artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-unplugin-vize
+          path: npm/unplugin-vize
+
+      - name: Download Fresco artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-fresco
+          path: npm/fresco
+
+      - name: Download Musea MCP server artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-musea-mcp-server
+          path: npm/musea-mcp-server
+
+      - name: Download Musea Vite plugin artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-vite-plugin-musea
+          path: npm/vite-plugin-musea
+
+      - name: Download Rspack plugin artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-rspack-vize-plugin
+          path: npm/rspack-vize-plugin
+
+      - name: Download Musea Nuxt artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-musea-nuxt
+          path: npm/musea-nuxt
+
+      - name: Download Nuxt artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-nuxt
+          path: npm/nuxt
+
+      - name: Download vize native artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: bindings-*
+          path: npm/vize-native/artifacts
+
+      - name: Download fresco native artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: fresco-bindings-*
+          path: npm/fresco-native/artifacts
+
+      - name: Prepare native package tarballs
+        working-directory: npm/vize-native
+        run: |
+          vp exec napi create-npm-dirs
+          vp exec napi artifacts --output-dir artifacts
+          vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
+
+      - name: Prepare Fresco native package tarball
+        run: |
+          moon run --target native - -- npm/fresco-native < tools/moon/scripts/github/clean_node_binaries.mbtx
+          moon run --target native - -- npm/fresco-native/artifacts npm/fresco-native fresco-native < tools/moon/scripts/github/collect_native_artifacts.mbtx
+
+      - name: Smoke install release package tarballs
+        run: |
+          node tools/npm/smoke-release-install.mjs --prepare-manifests \
+            npm/vize-native npm/vize-native/npm/* \
+            npm/fresco-native \
+            npm/vize \
+            npm/vite-plugin-vize \
+            npm/oxlint-plugin-vize \
+            npm/unplugin-vize \
+            npm/fresco \
+            npm/musea-mcp-server \
+            npm/vite-plugin-musea \
+            npm/rspack-vize-plugin \
+            npm/musea-nuxt \
+            npm/nuxt
+
   # Publish native packages to npm (using Trusted Publishing / OIDC)
   release-npm-native:
     name: Release @vizejs/native to npm
@@ -453,6 +571,9 @@ jobs:
       - name: List packages
         run: ls -R npm/vize-native/npm/
 
+      - name: Smoke install native package tarballs
+        run: node tools/npm/smoke-release-install.mjs --prepare-manifests npm/vize-native npm/vize-native/npm/*
+
       - name: Publish platform packages
         run: moon run --target native - -- npm/vize-native/npm --provenance < tools/moon/scripts/publish_npm_package_dirs.mbtx
 
@@ -498,6 +619,9 @@ jobs:
 
       - name: Stage bundled native binaries
         run: moon run --target native - -- npm/fresco-native/artifacts npm/fresco-native fresco-native < tools/moon/scripts/github/collect_native_artifacts.mbtx
+
+      - name: Smoke install Fresco native package tarball
+        run: node tools/npm/smoke-release-install.mjs --prepare-manifests npm/fresco-native
 
       - name: Publish
         run: moon run --target native - -- npm/fresco-native --provenance < tools/moon/scripts/publish_npm_package.mbtx
@@ -556,6 +680,9 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
+      - name: Smoke install WASM package tarball
+        run: node tools/npm/smoke-release-install.mjs npm/vize-wasm
+
       - name: Publish @vizejs/wasm
         run: moon run --target native - -- npm/vize-wasm --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
@@ -563,7 +690,7 @@ jobs:
   release-npm-vite-plugin:
     name: Release @vizejs/vite-plugin to npm
     runs-on: ubuntu-latest
-    needs: [build-release-packages, release-npm-native]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages]
     environment: npm
     permissions:
       contents: read
@@ -596,7 +723,7 @@ jobs:
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-latest
-    needs: [build-release-packages, release-npm-native]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages]
     environment: npm
     permissions:
       contents: read
@@ -632,7 +759,7 @@ jobs:
   release-npm-unplugin:
     name: Release @vizejs/unplugin to npm
     runs-on: ubuntu-latest
-    needs: [build-release-packages, release-npm-native]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages]
     environment: npm
     permissions:
       contents: read
@@ -665,7 +792,7 @@ jobs:
   release-npm-fresco:
     name: Release @vizejs/fresco to npm
     runs-on: ubuntu-latest
-    needs: [build-release-packages, release-npm-fresco-native]
+    needs: [build-release-packages, release-npm-fresco-native, smoke-release-packages]
     environment: npm
     permissions:
       contents: read
@@ -698,7 +825,7 @@ jobs:
   release-npm-musea-mcp-server:
     name: Release @vizejs/musea-mcp-server to npm
     runs-on: ubuntu-latest
-    needs: [build-release-packages, release-npm-native]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages]
     environment: npm
     permissions:
       contents: read
@@ -731,7 +858,7 @@ jobs:
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
     runs-on: ubuntu-latest
-    needs: [build-release-packages, release-npm-native]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages]
     environment: npm
     permissions:
       contents: read
@@ -764,7 +891,7 @@ jobs:
   release-npm-rspack-plugin:
     name: Release @vizejs/rspack-plugin to npm
     runs-on: ubuntu-latest
-    needs: [build-release-packages, release-npm-native]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages]
     environment: npm
     permissions:
       contents: read
@@ -797,7 +924,7 @@ jobs:
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
     runs-on: ubuntu-latest
-    needs: [build-release-packages, release-npm-native]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages]
     environment: npm
     permissions:
       contents: read
@@ -836,6 +963,7 @@ jobs:
         release-npm-vite-plugin,
         release-npm-vite-plugin-musea,
         release-npm-musea-nuxt,
+        smoke-release-packages,
       ]
     environment: npm
     permissions:
@@ -940,7 +1068,7 @@ jobs:
   release-npm-cli:
     name: Release vize CLI to npm
     runs-on: ubuntu-latest
-    needs: [build-release-packages, release-npm-native]
+    needs: [build-release-packages, release-npm-native, smoke-release-packages]
     environment: npm
     permissions:
       contents: read

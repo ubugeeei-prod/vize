@@ -62,6 +62,10 @@ function collectNativeBinaryCatalogPins(workspaceYaml: string): Record<string, s
   return pins;
 }
 
+function readRepoFile(filePath: string): string {
+  return fs.readFileSync(path.join(root, filePath), "utf-8");
+}
+
 test("esm packed npm manifests point at mjs and d.mts outputs", () => {
   const failures: string[] = [];
 
@@ -147,6 +151,37 @@ test("native package pins and generated loader version checks stay aligned", () 
   assert.match(nativeTargetsLoader, /bindingPackageVersion !== packageVersion/);
   assert.match(nativeTargetsLoader, /expected \$\{packageVersion\} but got/);
   assert.doesNotMatch(nativeTargetsLoader, /bindingPackageVersion !== "[^"]+"/);
+});
+
+test("documented install commands point at supported release artifacts", () => {
+  const vizeNpmPackage = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+    bin?: Record<string, string>;
+    publishConfig?: Record<string, string>;
+  };
+  const vizeCrateToml = readRepoFile("crates/vize/Cargo.toml");
+  const releaseWorkflow = readRepoFile(".github/workflows/release.yml");
+  const flake = readRepoFile("flake.nix");
+  const publicDocs = [
+    "README.md",
+    "docs/content/getting-started.md",
+    "docs/content/guide/cli.md",
+    "docs/content/guide/static-analysis.md",
+    "npm/vize/README.md",
+    "crates/vize/README.md",
+  ];
+  const unsupportedCargoInstallDocs = publicDocs.filter((filePath) =>
+    readRepoFile(filePath).includes("cargo install vize"),
+  );
+
+  assert.equal(vizeNpmPackage.publishConfig?.access, "public");
+  assert.equal(vizeNpmPackage.bin?.vize, "bin/vize");
+  assert.match(releaseWorkflow, /cli-artifacts\/\*\.tar\.gz/);
+  assert.match(flake, /apps = \{/);
+  assert.match(flake, /vize = flake-utils\.lib\.mkApp \{ drv = vize; \};/);
+
+  if (/^publish = false$/m.test(vizeCrateToml)) {
+    assert.deepEqual(unsupportedCargoInstallDocs, []);
+  }
 });
 
 test("editor extension manifests stay opt-in and version aligned", () => {

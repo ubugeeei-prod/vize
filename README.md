@@ -26,7 +26,7 @@
 ## What Ships Today
 
 - Rust workspace crates for parsing, semantic analysis, compilation, linting, formatting, type checking, LSP, Musea art tooling, and bindings
-- A full Rust CLI via the `vize` crate (`build`, `fmt`, `lint`, `check`, `ready`, `upgrade`, `musea`, `lsp`, `ide`)
+- A full Rust CLI available from GitHub release artifacts and the Nix workspace build (`build`, `fmt`, `lint`, `check`, `ready`, `musea`, `lsp`, `ide`)
 - npm packages including `@vizejs/vite-plugin`, `@vizejs/native`, `@vizejs/wasm`, `@vizejs/unplugin`, `@vizejs/rspack-plugin`, `@vizejs/nuxt`, `@vizejs/vite-plugin-musea`, `@vizejs/musea-mcp-server`, and `oxlint-plugin-vize`
 - The `vize` npm package for shared config utilities and native `build`, `fmt`, `lint`, `check`, `ready`, and `upgrade` commands
 - Nuxt dev integration that preserves URL-encoded asset links while removing broken or unsafe stylesheet references from rendered HTML
@@ -85,10 +85,11 @@ vp exec vize ready src
 
 ### Full Rust CLI
 
-For the full native CLI, install the Rust binary:
+For v1 alpha, use the prebuilt GitHub release binaries or the Nix entry point for the full native
+CLI. The Rust CLI is not a supported crates.io install channel yet.
 
 ```bash
-cargo install vize
+nix run github:ubugeeei/vize#vize -- --help
 ```
 
 ```bash
@@ -97,15 +98,11 @@ vize fmt --check src
 vize lint --profile src
 vize check --profile src
 vize ready src
-vize upgrade
 vize lsp
 ```
 
-You can also run the current workspace build directly:
-
-```bash
-nix run github:ubugeeei/vize#vize -- --help
-```
+You can also download platform-specific binaries from
+[GitHub Releases](https://github.com/ubugeeei/vize/releases).
 
 ## Static Analysis
 

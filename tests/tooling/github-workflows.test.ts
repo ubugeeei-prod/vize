@@ -110,6 +110,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     ["nix-flake", 30],
     ["fmt-rust", 10],
     ["check-js", 15],
+    ["node-engine-compat", 20],
     ["check-vize-apps", 20],
     ["test-scripts", 15],
     ["editor-extensions", 15],
@@ -128,6 +129,7 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
 
   for (const [jobName, minutes] of [
     ["pr-benchmark", 30],
+    ["pr-benchmark-budget", 5],
     ["pr-benchmark-comment", 5],
   ] as const) {
     assert.match(
@@ -135,6 +137,19 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
       new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
     );
   }
+});
+
+test("check workflow runs declared Node engine compatibility matrix", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const job = workflowJobBody(workflow, "node-engine-compat");
+
+  assert.match(job, /node-version:\s*\["22", "24"\]/);
+  assert.match(job, /echo "\$\{\{\s*matrix\.node-version\s*\}\}" > \.node-version\.ci/);
+  assert.match(job, /node-version-file:\s*"\.node-version\.ci"/);
+  assert.match(
+    job,
+    /node --test tests\/tooling\/node-engine-matrix\.test\.ts tests\/tooling\/package-manifests\.test\.ts/,
+  );
 });
 
 test("release workflow explicitly installs matrix Rust targets", () => {
@@ -161,9 +176,74 @@ test("release workflow explicitly installs matrix Rust targets", () => {
   }
 });
 
+test("release workflow smoke installs npm tarballs before publishing", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const smokeJob = workflowJobBody(workflow, "smoke-release-packages");
+
+  assert.match(smokeJob, /needs:\s*\[build-release-packages, build-native-all\]/);
+  assert.match(smokeJob, /name:\s*Smoke release npm package installs/);
+  assert.match(smokeJob, /name:\s*Prepare native package tarballs/);
+  assert.match(smokeJob, /name:\s*Prepare Fresco native package tarball/);
+  assert.match(smokeJob, /node tools\/npm\/smoke-release-install\.mjs --prepare-manifests/);
+
+  for (const packageDir of [
+    "npm/vize-native",
+    "npm/fresco-native",
+    "npm/vize",
+    "npm/vite-plugin-vize",
+    "npm/oxlint-plugin-vize",
+    "npm/unplugin-vize",
+    "npm/fresco",
+    "npm/musea-mcp-server",
+    "npm/vite-plugin-musea",
+    "npm/rspack-vize-plugin",
+    "npm/musea-nuxt",
+    "npm/nuxt",
+  ]) {
+    assert.match(smokeJob, new RegExp(packageDir.replaceAll("/", "\\/")));
+  }
+
+  for (const jobName of [
+    "release-npm-cli",
+    "release-npm-vite-plugin",
+    "release-npm-oxlint-plugin",
+    "release-npm-unplugin",
+    "release-npm-fresco",
+    "release-npm-musea-mcp-server",
+    "release-npm-vite-plugin-musea",
+    "release-npm-rspack-plugin",
+    "release-npm-musea-nuxt",
+    "release-npm-nuxt",
+  ]) {
+    assert.match(workflowJobBody(workflow, jobName), /smoke-release-packages/);
+  }
+
+  for (const [jobName, smokeStep, publishStep] of [
+    [
+      "release-npm-native",
+      "name: Smoke install native package tarballs",
+      "name: Publish platform packages",
+    ],
+    [
+      "release-npm-fresco-native",
+      "name: Smoke install Fresco native package tarball",
+      "name: Publish",
+    ],
+    ["release-npm-wasm", "name: Smoke install WASM package tarball", "name: Publish @vizejs/wasm"],
+  ] as const) {
+    const job = workflowJobBody(workflow, jobName);
+    const smokeIndex = job.indexOf(smokeStep);
+    const publishIndex = job.indexOf(publishStep);
+    assert.notEqual(smokeIndex, -1, `${jobName} is missing ${smokeStep}`);
+    assert.notEqual(publishIndex, -1, `${jobName} is missing ${publishStep}`);
+    assert.ok(smokeIndex < publishIndex, `${jobName} must smoke install before publishing`);
+  }
+});
+
 test("benchmark workflow comments from trusted code after a read-only benchmark run", () => {
   const workflow = readRepoFile(".github", "workflows", "benchmark.yml");
   const benchmarkJob = workflowJobBody(workflow, "pr-benchmark");
+  const budgetJob = workflowJobBody(workflow, "pr-benchmark-budget");
   const commentJob = workflowJobBody(workflow, "pr-benchmark-comment");
 
   assert.match(benchmarkJob, /contents:\s*read/);
@@ -180,6 +260,23 @@ test("benchmark workflow comments from trusted code after a read-only benchmark 
   assert.match(benchmarkJob, /name:\s*pr-benchmark/);
   assert.doesNotMatch(benchmarkJob, /node base\/bench\/comment-pr\.mjs/);
   assert.doesNotMatch(benchmarkJob, /node bench\/comment-pr\.mjs/);
+  assert.match(benchmarkJob, /--threshold "\$VIZE_BENCH_REGRESSION_THRESHOLD_PERCENT"/);
+
+  assert.match(budgetJob, /needs:\n\s+- pr-benchmark\b/);
+  assert.match(budgetJob, /actions:\s*read/);
+  assert.match(budgetJob, /contents:\s*read/);
+  assert.doesNotMatch(budgetJob, /issues:\s*write/);
+  assert.doesNotMatch(budgetJob, /pull-requests:\s*write/);
+  assert.match(
+    budgetJob,
+    /path:\s*head[\s\S]*ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/,
+  );
+  assert.match(budgetJob, /uses:\s*actions\/download-artifact@[0-9a-f]{40}\s*# v8\.0\.1/);
+  assert.match(budgetJob, /name:\s*pr-benchmark/);
+  assert.match(
+    budgetJob,
+    /node head\/bench\/enforce-pr-budget\.mjs --json benchmark-results\.json/,
+  );
 
   assert.match(commentJob, /needs:\n\s+- pr-benchmark\b/);
   assert.match(commentJob, /actions:\s*read/);
@@ -216,6 +313,7 @@ test("check workflow comments a detailed PR test report for each head push", () 
     "nix-flake",
     "fmt-rust",
     "check-js",
+    "node-engine-compat",
     "check-vize-apps",
     "test-scripts",
     "editor-extensions",
