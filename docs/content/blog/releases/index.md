@@ -17,11 +17,11 @@ Use this section for shipped changes: new versions, notable fixes, migrations, d
 ## Posts
 
 <div class="blog-post-list">
-  <a class="blog-post-list-item" href="./2026-03-26-oxlint-plugin-vize-alpha.md">
+  <a class="blog-post-list-item" href="./2026-03-26-oxlint-plugin-vize-alpha/">
     <strong><code>oxlint-plugin-vize</code> Alpha</strong>
     <span>A new Oxlint JS plugin bridge brings Vize Patina diagnostics into a single Oxlint run for Vue SFCs.</span>
   </a>
-  <a class="blog-post-list-item" href="./2026-03-26-docs-blog-support.md">
+  <a class="blog-post-list-item" href="./2026-03-26-docs-blog-support/">
     <strong>Docs Blog</strong>
     <span>The Vize docs can now host both release notes and irregular notes.</span>
   </a>
