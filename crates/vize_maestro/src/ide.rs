@@ -67,30 +67,43 @@ pub fn offset_to_position(content: &str, offset: usize) -> (u32, u32) {
 /// Convert (line, character) position to byte offset in a document.
 #[inline]
 pub fn position_to_offset(content: &str, line: u32, character: u32) -> Option<usize> {
-    let mut current_line = 0u32;
-    let mut current_col = 0u32;
-    let mut offset = 0usize;
+    fn offset_in_line(content: &str, line_start: usize, character: u32) -> Option<usize> {
+        let mut utf16_units = 0u32;
 
-    for ch in content.chars() {
-        if current_line == line && current_col == character {
-            return Some(offset);
-        }
-        if ch == '\n' {
-            if current_line == line {
-                // Reached end of target line
-                return Some(offset);
+        for (relative_offset, ch) in content[line_start..].char_indices() {
+            if ch == '\n' {
+                return (utf16_units == character).then_some(line_start + relative_offset);
             }
-            current_line += 1;
-            current_col = 0;
-        } else {
-            current_col += 1;
+            if utf16_units == character {
+                return Some(line_start + relative_offset);
+            }
+
+            let next_utf16_units = utf16_units + ch.len_utf16() as u32;
+            if character < next_utf16_units {
+                return None;
+            }
+            utf16_units = next_utf16_units;
         }
-        offset += ch.len_utf8();
+
+        (utf16_units == character).then_some(content.len())
     }
 
-    // Handle end of file
-    if current_line == line && current_col == character {
-        return Some(offset);
+    let mut current_line = 0u32;
+    let mut line_start = 0usize;
+
+    for (offset, ch) in content.char_indices() {
+        if current_line == line {
+            return offset_in_line(content, line_start, character);
+        }
+
+        if ch == '\n' {
+            current_line += 1;
+            line_start = offset + ch.len_utf8();
+        }
+    }
+
+    if current_line == line {
+        return offset_in_line(content, line_start, character);
     }
 
     None
@@ -425,6 +438,22 @@ mod tests {
         assert_eq!(position_to_offset(content, 1, 0), Some(6));
         assert_eq!(position_to_offset(content, 1, 2), Some(8));
         assert_eq!(position_to_offset(content, 2, 0), Some(12));
+    }
+
+    #[test]
+    fn test_position_to_offset_counts_utf16_code_units() {
+        let content = "a😀b\nc";
+
+        assert_eq!(position_to_offset(content, 0, 3), Some("a😀".len()));
+        assert_eq!(position_to_offset(content, 0, 4), Some("a😀b".len()));
+        assert_eq!(position_to_offset(content, 1, 1), Some(content.len()));
+    }
+
+    #[test]
+    fn test_position_to_offset_rejects_utf16_surrogate_pair_interior() {
+        let content = "a😀b";
+
+        assert_eq!(position_to_offset(content, 0, 2), None);
     }
 
     #[test]
