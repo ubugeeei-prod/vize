@@ -642,6 +642,24 @@ mod tests {
         decoded
     }
 
+    fn has_token_text(
+        template_str: &str,
+        tokens: &[super::types::AbsoluteToken],
+        token_type: TokenType,
+        text: &str,
+    ) -> bool {
+        let Some(start) = template_str.find(text) else {
+            return false;
+        };
+
+        tokens.iter().any(|token| {
+            token.line == 0
+                && token.start == start as u32
+                && token.length == text.len() as u32
+                && token.token_type == token_type as u32
+        })
+    }
+
     #[test]
     fn test_extract_identifiers() {
         let expr = "count + message.length";
@@ -831,6 +849,42 @@ import Button from './Button.vue'
                 .any(|token| token.token_type == TokenType::Variable as u32),
             "{tokens:#?}"
         );
+    }
+
+    #[test]
+    fn test_template_semantic_tokens_collect_dynamic_shorthand_args() {
+        let template_str = r#"<button @[eventName].stop="run" :[propName].camel="value"></button>"#;
+        let mut tokens = Vec::new();
+        template::collect_template_tokens(template_str, 0, &mut tokens);
+
+        assert!(
+            has_token_text(template_str, &tokens, TokenType::Event, "@[eventName].stop"),
+            "{tokens:#?}"
+        );
+        assert!(
+            has_token_text(template_str, &tokens, TokenType::Property, ":[propName]"),
+            "{tokens:#?}"
+        );
+        for name in ["eventName", "propName", "run", "value"] {
+            assert!(
+                has_token_text(template_str, &tokens, TokenType::Variable, name),
+                "missing {name}: {tokens:#?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_template_semantic_tokens_collect_unquoted_directive_values() {
+        let template_str = r#"<div v-if=ready @click=save :class=classes></div>"#;
+        let mut tokens = Vec::new();
+        template::collect_template_tokens(template_str, 0, &mut tokens);
+
+        for name in ["ready", "save", "classes"] {
+            assert!(
+                has_token_text(template_str, &tokens, TokenType::Variable, name),
+                "missing {name}: {tokens:#?}"
+            );
+        }
     }
 
     #[test]
