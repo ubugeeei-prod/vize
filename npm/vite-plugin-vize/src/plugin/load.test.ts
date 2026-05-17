@@ -121,6 +121,19 @@ assert.equal(
   "Virtual module OXC transforms should not allocate sourcemaps that Vize discards",
 );
 
+const failingVirtualTransformRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-oxc-fail-"));
+await assert.rejects(
+  () =>
+    transformHook(
+      { ...virtualDefineState, root: failingVirtualTransformRoot },
+      `export default {`,
+      toVirtualId("/src/BrokenVirtual.vue"),
+      { ssr: false },
+    ),
+  /Virtual module transform failed for \/src\/BrokenVirtual\.vue/,
+  "Virtual transform failures should fail the Vite plugin instead of emitting an empty component",
+);
+
 const definePageDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-define-page-"));
 const definePagePath = path.join(definePageDir, "Home.vue");
 fs.writeFileSync(
