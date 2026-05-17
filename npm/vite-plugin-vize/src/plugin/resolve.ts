@@ -95,6 +95,23 @@ function nativeCssAliasRules(
     : state.cssAliasRules.map(toNativeCssAliasRule);
 }
 
+function isPotentialVizeResolveId(id: string): boolean {
+  return (
+    id.startsWith("\0") ||
+    id.startsWith("vize:") ||
+    id.startsWith("/@fs") ||
+    id === VIRTUAL_CSS_MODULE ||
+    id.endsWith(".vue") ||
+    id.includes(".vue?") ||
+    id.includes("?macro=true") ||
+    id.includes("?definePage")
+  );
+}
+
+function isPotentialVizeImporter(importer: string | undefined): boolean {
+  return importer !== undefined && (importer.startsWith("\0") || importer.startsWith("vize:"));
+}
+
 async function resolveAliasedVueImport(
   ctx: ResolveContext,
   state: VizePluginState,
@@ -140,6 +157,10 @@ export async function resolveIdHook(
   importer?: string,
   options?: { ssr?: boolean },
 ): Promise<string | { id: string } | null | undefined> {
+  if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer)) {
+    return null;
+  }
+
   const isBuild = state.server === null;
   const importerRequest = importer ? classifyVitePluginRequest(importer) : null;
   const isSsrRequest = !!options?.ssr || (importerRequest?.isVizeSsrVirtual ?? false);

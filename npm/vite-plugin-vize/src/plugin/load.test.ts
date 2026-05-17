@@ -1,13 +1,23 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import type { VizePluginState } from "./state.ts";
 import { getBoundaryPlaceholderCode } from "./load.ts";
 import { loadHook } from "./load.ts";
 import { transformHook } from "./load.ts";
 import { toVirtualId } from "../virtual.ts";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const workspaceRoot = path.resolve(__dirname, "../../../..");
+const agentTestRoot = path.join(workspaceRoot, "__agent_only", "tests", "vite-plugin-vize", "load");
+fs.mkdirSync(agentTestRoot, { recursive: true });
+
+function createTempRoot(prefix: string): string {
+  return fs.mkdtempSync(path.join(agentTestRoot, prefix + "-"));
+}
 
 const ssrClientPlaceholder = getBoundaryPlaceholderCode("/src/Foo.client.vue", true);
 assert.ok(ssrClientPlaceholder, "SSR should stub .client.vue components");
@@ -121,7 +131,28 @@ assert.equal(
   "Virtual module OXC transforms should not allocate sourcemaps that Vize discards",
 );
 
-const failingVirtualTransformRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-oxc-fail-"));
+assert.equal(
+  loadHook(
+    hmrState,
+    "/project/node_modules/@sqlite.org/sqlite-wasm/sqlite-wasm/jswasm/sqlite3-bundler-friendly.mjs",
+    { ssr: false },
+  ),
+  null,
+  "Regular dependency modules should bypass Vize load handling",
+);
+
+assert.equal(
+  await transformHook(
+    virtualDefineState,
+    "export default {};",
+    "/project/node_modules/@sqlite.org/sqlite-wasm/sqlite-wasm/jswasm/sqlite3-bundler-friendly.mjs",
+    { ssr: false },
+  ),
+  null,
+  "Regular dependency modules should bypass Vize transform handling",
+);
+
+const failingVirtualTransformRoot = createTempRoot("oxc-fail");
 await assert.rejects(
   () =>
     transformHook(
@@ -134,7 +165,7 @@ await assert.rejects(
   "Virtual transform failures should fail the Vite plugin instead of emitting an empty component",
 );
 
-const definePageDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-define-page-"));
+const definePageDir = createTempRoot("define-page");
 const definePagePath = path.join(definePageDir, "Home.vue");
 fs.writeFileSync(
   definePagePath,
@@ -170,7 +201,7 @@ assert.doesNotMatch(
   "Vue Router definePage queries should not return the component setup body",
 );
 
-const definePageMetaDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-define-page-meta-"));
+const definePageMetaDir = createTempRoot("define-page-meta");
 const definePageMetaPath = path.join(definePageMetaDir, "Docs.vue");
 fs.writeFileSync(
   definePageMetaPath,
@@ -218,7 +249,7 @@ assert.doesNotMatch(
   "Nuxt definePageMeta macro queries should not return the component setup body",
 );
 
-const jsMacroDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-js-macro-"));
+const jsMacroDir = createTempRoot("js-macro");
 const jsMacroPath = path.join(jsMacroDir, "component-stub.js");
 fs.writeFileSync(jsMacroPath, "export default {};");
 
@@ -506,7 +537,7 @@ assert.match(
   "Delegated @apply CSS should keep @apply while applying the scoped selector",
 );
 
-const onDemandProdDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-load-"));
+const onDemandProdDir = createTempRoot("load");
 const onDemandProdPath = path.join(onDemandProdDir, "OnDemandProd.vue");
 fs.writeFileSync(
   onDemandProdPath,

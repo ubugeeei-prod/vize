@@ -120,6 +120,34 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("regular-dependency");
+  let resolverCalled = false;
+  const resolved = await resolveIdHook(
+    {
+      resolve: async () => {
+        resolverCalled = true;
+        return null;
+      },
+    },
+    createState(projectRoot),
+    "@sqlite.org/sqlite-wasm/sqlite-wasm/jswasm/sqlite3-bundler-friendly.mjs",
+    path.join(projectRoot, "app", "content-client.ts"),
+    undefined,
+  );
+
+  assert.equal(
+    resolved,
+    null,
+    "Regular dependency imports outside Vize virtual modules should bypass Vize resolution",
+  );
+  assert.equal(
+    resolverCalled,
+    false,
+    "Bypassed dependency imports should not enter Vite fallback resolution through Vize",
+  );
+}
+
+{
   const tempRoot = createTempRoot("js-macro");
   const importer = path.join(tempRoot, "App.vue");
   const stub = path.join(tempRoot, "component-stub.js");
