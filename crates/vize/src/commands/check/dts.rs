@@ -274,8 +274,15 @@ fn flush_pending_global(
 
 fn parse_named_type(line: &str) -> Option<(String, String)> {
     let (name_part, type_part) = line.split_once(':')?;
-    let name = name_part.trim().trim_end_matches('?').trim();
+    let mut name = name_part.trim().trim_end_matches('?').trim();
+    if let Some(rest) = name.strip_prefix("readonly ") {
+        name = rest.trim().trim_end_matches('?').trim();
+    }
+    let name = name.trim_matches('"').trim_matches('\'').trim();
     if name.is_empty() {
+        return None;
+    }
+    if name.starts_with('[') {
         return None;
     }
 
@@ -415,6 +422,28 @@ declare module 'vue' {
         assert_eq!(members[0].1.as_str(), "string");
         assert_eq!(members[1].0.as_str(), "bar");
         assert_eq!(members[1].1.as_str(), "typeof import('./bar').bar");
+    }
+
+    #[test]
+    fn parses_readonly_and_quoted_members_without_index_signatures() {
+        let content = r#"
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    readonly $config?: typeof import('./config').config
+    "quoted-key": string
+    [key: string]: unknown
+  }
+}
+"#;
+
+        let members =
+            parse_interface_members_content(content, "interface ComponentCustomProperties");
+
+        assert_eq!(members.len(), 2);
+        assert_eq!(members[0].0.as_str(), "$config");
+        assert_eq!(members[0].1.as_str(), "typeof import('./config').config");
+        assert_eq!(members[1].0.as_str(), "quoted-key");
+        assert_eq!(members[1].1.as_str(), "string");
     }
 
     #[test]
