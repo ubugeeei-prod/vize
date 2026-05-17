@@ -23,6 +23,9 @@ function readJsonFile<T>(...segments: string[]): T {
 test("real-world check and lint snapshots are wired into e2e scripts", () => {
   const pkg = readJsonFile<{ scripts: Record<string, string> }>("tests", "package.json");
 
+  assert.match(pkg.scripts["test:check"], /--test-concurrency=1/);
+  assert.match(pkg.scripts["test:check:fixtures"], /--test-concurrency=1/);
+
   for (const app of realworldSnapshotApps) {
     assert.match(
       pkg.scripts["test:check"],

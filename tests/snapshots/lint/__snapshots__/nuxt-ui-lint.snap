@@ -4,6 +4,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 109,
@@ -14,6 +15,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 108,
@@ -24,6 +26,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 108,
@@ -34,6 +37,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 117,
@@ -44,6 +48,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 122,
@@ -54,6 +59,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 125,
@@ -64,6 +70,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 132,
@@ -74,6 +81,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 134,
@@ -91,6 +99,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 128,
@@ -101,6 +110,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 137,
@@ -124,6 +134,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 273,
@@ -141,16 +152,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'ImageComponent' is registered but never used in template",
-        "line": 99,
-        "column": 11,
-        "endLine": 101,
-        "endColumn": 1,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'UChip' is registered but never used in template",
         "line": 99,
@@ -161,6 +163,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 111,
@@ -171,7 +174,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/AvatarGroup.vue",
@@ -190,6 +193,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 190,
@@ -204,20 +208,9 @@
   },
   {
     "file": "src/runtime/components/BlogPost.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'ImageComponent' is registered but never used in template",
-        "line": 121,
-        "column": 11,
-        "endLine": 122,
-        "endColumn": 14,
-        "help": "Remove the unused import or use the component in your template"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/BlogPosts.vue",
@@ -230,6 +223,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 96,
@@ -247,6 +241,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Button' is a reserved HTML element name and cannot be used as a component name",
         "line": 119,
@@ -257,6 +252,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 121,
@@ -274,6 +270,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 165,
@@ -284,6 +281,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 179,
@@ -294,6 +292,7 @@
       },
       {
         "ruleId": "a11y/interactive-supports-focus",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/interactive-supports-focus] Element with role=\"gridcell\" must be focusable (add tabindex=\"0\")",
         "line": 219,
@@ -322,17 +321,8 @@
     "file": "src/runtime/components/ChangelogVersion.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'ImageComponent' is registered but never used in template",
-        "line": 126,
-        "column": 11,
-        "endLine": 127,
-        "endColumn": 14,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 139,
@@ -343,7 +333,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "src/runtime/components/ChangelogVersions.vue",
@@ -362,6 +352,7 @@
     "messages": [
       {
         "ruleId": "a11y/aria-role",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 2,
         "message": "[vize:a11y/aria-role] 'assistant' is not a valid ARIA role",
         "line": 316,
@@ -397,6 +388,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 121,
@@ -426,6 +418,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 52,
@@ -436,6 +429,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 52,
@@ -446,6 +440,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 54,
@@ -469,6 +464,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 457,
@@ -479,6 +475,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 458,
@@ -489,6 +486,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 487,
@@ -499,6 +497,7 @@
       },
       {
         "ruleId": "vue/no-v-html",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
         "line": 490,
@@ -509,6 +508,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 528,
@@ -519,6 +519,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 560,
@@ -529,6 +530,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 563,
@@ -539,6 +541,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 583,
@@ -568,6 +571,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
         "line": 77,
@@ -578,6 +582,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 78,
@@ -588,6 +593,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 172,
@@ -617,6 +623,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 58,
@@ -652,6 +659,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'UDrawer' is registered but never used in template",
         "line": 147,
@@ -662,6 +670,7 @@
       },
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'UModal' is registered but never used in template",
         "line": 147,
@@ -672,6 +681,7 @@
       },
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'USlideover' is registered but never used in template",
         "line": 147,
@@ -682,6 +692,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 178,
@@ -723,6 +734,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 156,
@@ -733,6 +745,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 156,
@@ -743,6 +756,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 158,
@@ -760,6 +774,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
         "line": 89,
@@ -770,6 +785,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 90,
@@ -780,6 +796,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 186,
@@ -794,70 +811,9 @@
   },
   {
     "file": "src/runtime/components/Editor.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'StarterKit' is registered but never used in template",
-        "line": 274,
-        "column": 11,
-        "endLine": 275,
-        "endColumn": 10,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Image' is registered but never used in template",
-        "line": 274,
-        "column": 11,
-        "endLine": 275,
-        "endColumn": 5,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Mention' is registered but never used in template",
-        "line": 274,
-        "column": 11,
-        "endLine": 275,
-        "endColumn": 7,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Code' is registered but never used in template",
-        "line": 274,
-        "column": 11,
-        "endLine": 275,
-        "endColumn": 4,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'HorizontalRule' is registered but never used in template",
-        "line": 274,
-        "column": 11,
-        "endLine": 275,
-        "endColumn": 14,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Placeholder' is registered but never used in template",
-        "line": 274,
-        "column": 11,
-        "endLine": 275,
-        "endColumn": 11,
-        "help": "Remove the unused import or use the component in your template"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 0
   },
   {
     "file": "src/runtime/components/EditorDragHandle.vue",
@@ -876,6 +832,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'UAvatar' is registered but never used in template",
         "line": 123,
@@ -886,6 +843,7 @@
       },
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'UIcon' is registered but never used in template",
         "line": 123,
@@ -903,6 +861,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'UIcon' is registered but never used in template",
         "line": 144,
@@ -920,6 +879,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
         "line": 311,
@@ -955,6 +915,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 290,
@@ -964,17 +925,8 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
-        "ruleId": "a11y/no-static-element-interactions",
-        "severity": 1,
-        "message": "[vize:a11y/no-static-element-interactions] <component> is a static element and should not have interactive event handlers",
-        "line": 344,
-        "column": 7,
-        "endLine": 356,
-        "endColumn": 8,
-        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 389,
@@ -985,13 +937,14 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/Footer.vue",
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Footer' is a reserved HTML element name and cannot be used as a component name",
         "line": 48,
@@ -1009,6 +962,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 90,
@@ -1026,6 +980,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Form' is a reserved HTML element name and cannot be used as a component name",
         "line": 457,
@@ -1036,6 +991,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 461,
@@ -1059,6 +1015,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Header' is a reserved HTML element name and cannot be used as a component name",
         "line": 134,
@@ -1069,6 +1026,7 @@
       },
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'UDrawer' is registered but never used in template",
         "line": 134,
@@ -1079,6 +1037,7 @@
       },
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'UModal' is registered but never used in template",
         "line": 134,
@@ -1089,6 +1048,7 @@
       },
       {
         "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-components] Component 'USlideover' is registered but never used in template",
         "line": 134,
@@ -1112,6 +1072,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Input' is a reserved HTML element name and cannot be used as a component name",
         "line": 184,
@@ -1122,6 +1083,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 188,
@@ -1139,6 +1101,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 166,
@@ -1149,6 +1112,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 184,
@@ -1159,6 +1123,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 184,
@@ -1176,6 +1141,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
         "line": 504,
@@ -1186,6 +1152,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 520,
@@ -1196,6 +1163,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 576,
@@ -1206,6 +1174,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 576,
@@ -1216,6 +1185,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 590,
@@ -1226,6 +1196,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 617,
@@ -1236,6 +1207,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 630,
@@ -1246,6 +1218,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 643,
@@ -1256,6 +1229,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 650,
@@ -1266,6 +1240,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 686,
@@ -1283,6 +1258,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 190,
@@ -1300,6 +1276,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 159,
@@ -1310,6 +1287,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 159,
@@ -1327,6 +1305,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 142,
@@ -1337,6 +1316,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 142,
@@ -1354,6 +1334,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Kbd' is a reserved HTML element name and cannot be used as a component name",
         "line": 59,
@@ -1371,6 +1352,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Link' is a reserved HTML element name and cannot be used as a component name",
         "line": 186,
@@ -1381,6 +1363,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 187,
@@ -1404,6 +1387,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Main' is a reserved HTML element name and cannot be used as a component name",
         "line": 43,
@@ -1427,6 +1411,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 142,
@@ -1437,6 +1422,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 142,
@@ -1447,6 +1433,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 142,
@@ -1457,6 +1444,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 166,
@@ -1467,6 +1455,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 168,
@@ -1477,6 +1466,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 203,
@@ -1487,6 +1477,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 207,
@@ -1497,6 +1488,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 214,
@@ -1514,6 +1506,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 339,
@@ -1523,27 +1516,8 @@
         "help": "Shorthand: <template #header> (default)\nLongform: <template v-slot:header>\nChoose one style and be consistent."
       },
       {
-        "ruleId": "a11y/click-events-have-key-events",
-        "severity": 1,
-        "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
-        "line": 367,
-        "column": 7,
-        "endLine": 374,
-        "endColumn": 8,
-        "help": "Why: Keyboard users cannot activate click-only handlers.\nBest solution: Use semantic elements:\n  <button @click=\"handleClick\">Click me</button>\nIf you must use a div:\n  <div\n  role=\"button\"\n  tabindex=\"0\"\n  @click=\"handleClick\"\n  @keydown.enter=\"handleClick\"\n  @keydown.space=\"handleClick\"\n  >\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "a11y/no-static-element-interactions",
-        "severity": 1,
-        "message": "[vize:a11y/no-static-element-interactions] <component> is a static element and should not have interactive event handlers",
-        "line": 367,
-        "column": 7,
-        "endLine": 374,
-        "endColumn": 8,
-        "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'Event' is a browser-only global and is not available in SSR",
         "line": 373,
@@ -1554,6 +1528,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 393,
@@ -1564,6 +1539,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 402,
@@ -1574,6 +1550,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 415,
@@ -1584,6 +1561,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 422,
@@ -1594,6 +1572,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 429,
@@ -1604,6 +1583,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 461,
@@ -1614,6 +1594,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 532,
@@ -1624,13 +1605,14 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 11
+    "warningCount": 9
   },
   {
     "file": "src/runtime/components/OverlayProvider.vue",
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 26,
@@ -1638,19 +1620,9 @@
         "endLine": 26,
         "endColumn": 34,
         "help": "Reorder attributes to follow the recommended order"
-      },
-      {
-        "ruleId": "vue/valid-v-model",
-        "severity": 2,
-        "message": "[vize:vue/valid-v-model] v-model cannot be used on <component> element",
-        "line": 26,
-        "column": 5,
-        "endLine": 26,
-        "endColumn": 34,
-        "help": "Supported elements:\n- <input> (text, checkbox, radio, etc.)\n- <textarea>\n- <select>\n- Custom components with modelValue prop\nExamples:\n  <input v-model=\"message\">\n  <input v-model.number=\"age\" type=\"number\">\n  <input v-model.trim=\"name\">\n  <MyComponent v-model=\"value\">"
       }
     ],
-    "errorCount": 1,
+    "errorCount": 0,
     "warningCount": 1
   },
   {
@@ -1664,6 +1636,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 68,
@@ -1735,6 +1708,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 76,
@@ -1758,6 +1732,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 67,
@@ -1781,6 +1756,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 144,
@@ -1791,6 +1767,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 145,
@@ -1814,6 +1791,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 119,
@@ -1824,6 +1802,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 119,
@@ -1834,6 +1813,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 119,
@@ -1844,6 +1824,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 119,
@@ -1854,6 +1835,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 121,
@@ -1864,6 +1846,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 125,
@@ -1874,6 +1857,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 125,
@@ -1884,6 +1868,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 130,
@@ -1894,6 +1879,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 130,
@@ -1923,6 +1909,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 152,
@@ -1933,6 +1920,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 229,
@@ -1943,6 +1931,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
         "line": 250,
@@ -1953,6 +1942,7 @@
       },
       {
         "ruleId": "html/no-empty-palpable-content",
+        "ruleDocsPath": "docs/content/rules/html.md",
         "severity": 1,
         "message": "[vize:html/no-empty-palpable-content] <td> element is empty but expects visible content",
         "line": 277,
@@ -1970,6 +1960,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Progress' is a reserved HTML element name and cannot be used as a component name",
         "line": 171,
@@ -1999,6 +1990,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
         "line": 297,
@@ -2009,6 +2001,7 @@
       },
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Select' is a reserved HTML element name and cannot be used as a component name",
         "line": 297,
@@ -2019,6 +2012,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 299,
@@ -2029,6 +2023,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 299,
@@ -2039,6 +2034,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 311,
@@ -2049,6 +2045,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 317,
@@ -2059,6 +2056,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 323,
@@ -2069,6 +2067,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 335,
@@ -2086,6 +2085,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unused-vars",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unused-vars] Variable 'group' is defined by v-for but never used",
         "line": 495,
@@ -2096,6 +2096,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 511,
@@ -2106,6 +2107,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 568,
@@ -2116,6 +2118,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 568,
@@ -2126,6 +2129,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 568,
@@ -2136,6 +2140,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 580,
@@ -2146,6 +2151,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 586,
@@ -2156,6 +2162,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 598,
@@ -2166,6 +2173,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 651,
@@ -2195,6 +2203,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 140,
@@ -2205,6 +2214,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 140,
@@ -2215,6 +2225,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 140,
@@ -2225,6 +2236,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 142,
@@ -2235,6 +2247,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 171,
@@ -2245,6 +2258,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 173,
@@ -2255,6 +2269,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 208,
@@ -2265,6 +2280,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 212,
@@ -2282,6 +2298,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 113,
@@ -2299,6 +2316,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 147,
@@ -2316,6 +2334,7 @@
     "messages": [
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 116,
@@ -2333,6 +2352,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
         "line": 525,
@@ -2343,6 +2363,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 526,
@@ -2353,6 +2374,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 527,
@@ -2363,6 +2385,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <tr> is a static element and should not have interactive event handlers",
         "line": 527,
@@ -2386,6 +2409,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Textarea' is a reserved HTML element name and cannot be used as a component name",
         "line": 213,
@@ -2396,6 +2420,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 217,
@@ -2419,6 +2444,7 @@
     "messages": [
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 132,
@@ -2429,6 +2455,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 132,
@@ -2446,6 +2473,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 126,
@@ -2456,6 +2484,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 126,
@@ -2466,6 +2495,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 167,
@@ -2476,6 +2506,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 176,
@@ -2486,6 +2517,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 179,
@@ -2496,6 +2528,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 194,
@@ -2519,6 +2552,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 83,
@@ -2529,6 +2563,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 83,
@@ -2539,6 +2574,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 85,
@@ -2556,6 +2592,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 255,
@@ -2566,6 +2603,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 261,
@@ -2576,6 +2614,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 359,
@@ -2586,6 +2625,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 365,
@@ -2596,6 +2636,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 378,
@@ -2619,6 +2660,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 23,
@@ -2629,6 +2671,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 24,
@@ -2651,17 +2694,8 @@
     "file": "src/runtime/components/color-mode/ColorModeImage.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'ImageComponent' is registered but never used in template",
-        "line": 24,
-        "column": 11,
-        "endLine": 25,
-        "endColumn": 14,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 25,
@@ -2672,6 +2706,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 26,
@@ -2682,7 +2717,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "src/runtime/components/color-mode/ColorModeSelect.vue",
@@ -2701,6 +2736,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 169,
@@ -2711,6 +2747,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 236,
@@ -2740,6 +2777,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 85,
@@ -2757,6 +2795,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 149,
@@ -2767,6 +2806,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 152,
@@ -2777,6 +2817,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 165,
@@ -2787,6 +2828,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 165,
@@ -2797,6 +2839,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 166,
@@ -2807,6 +2850,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 169,
@@ -2817,6 +2861,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 173,
@@ -2827,6 +2872,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 179,
@@ -2837,6 +2883,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 179,
@@ -2847,6 +2894,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 187,
@@ -2857,6 +2905,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 199,
@@ -2880,6 +2929,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'A' is a reserved HTML element name and cannot be used as a component name",
         "line": 38,
@@ -2890,6 +2940,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'A' should be PascalCase",
         "line": 38,
@@ -2900,6 +2951,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 39,
@@ -2935,6 +2987,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Blockquote' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -2970,6 +3023,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Code' is a reserved HTML element name and cannot be used as a component name",
         "line": 40,
@@ -3011,6 +3065,7 @@
     "messages": [
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 198,
@@ -3021,6 +3076,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 206,
@@ -3038,6 +3094,7 @@
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 63,
@@ -3048,6 +3105,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'open' is a browser-only global and is not available in SSR",
         "line": 68,
@@ -3065,6 +3123,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Em' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3094,6 +3153,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'H1' is a reserved HTML element name and cannot be used as a component name",
         "line": 39,
@@ -3104,6 +3164,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'H1' should be PascalCase",
         "line": 39,
@@ -3114,6 +3175,7 @@
       },
       {
         "ruleId": "a11y/heading-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/heading-has-content] <h1> elements must have accessible content",
         "line": 40,
@@ -3124,6 +3186,7 @@
       },
       {
         "ruleId": "a11y/anchor-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
         "line": 41,
@@ -3134,6 +3197,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 41,
@@ -3151,6 +3215,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'H2' is a reserved HTML element name and cannot be used as a component name",
         "line": 40,
@@ -3161,6 +3226,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'H2' should be PascalCase",
         "line": 40,
@@ -3171,6 +3237,7 @@
       },
       {
         "ruleId": "a11y/heading-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/heading-has-content] <h2> elements must have accessible content",
         "line": 41,
@@ -3181,6 +3248,7 @@
       },
       {
         "ruleId": "a11y/anchor-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
         "line": 42,
@@ -3191,6 +3259,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 42,
@@ -3208,6 +3277,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'H3' is a reserved HTML element name and cannot be used as a component name",
         "line": 40,
@@ -3218,6 +3288,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'H3' should be PascalCase",
         "line": 40,
@@ -3228,6 +3299,7 @@
       },
       {
         "ruleId": "a11y/heading-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/heading-has-content] <h3> elements must have accessible content",
         "line": 41,
@@ -3238,6 +3310,7 @@
       },
       {
         "ruleId": "a11y/anchor-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
         "line": 42,
@@ -3248,6 +3321,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 42,
@@ -3265,6 +3339,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'H4' is a reserved HTML element name and cannot be used as a component name",
         "line": 39,
@@ -3275,6 +3350,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'H4' should be PascalCase",
         "line": 39,
@@ -3285,6 +3361,7 @@
       },
       {
         "ruleId": "a11y/heading-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/heading-has-content] <h4> elements must have accessible content",
         "line": 40,
@@ -3295,6 +3372,7 @@
       },
       {
         "ruleId": "a11y/anchor-has-content",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/anchor-has-content] <a> elements must have accessible content",
         "line": 41,
@@ -3305,6 +3383,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 41,
@@ -3322,6 +3401,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Hr' is a reserved HTML element name and cannot be used as a component name",
         "line": 29,
@@ -3345,6 +3425,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Img' is a reserved HTML element name and cannot be used as a component name",
         "line": 64,
@@ -3354,17 +3435,8 @@
         "help": "Rename the component to avoid using reserved names"
       },
       {
-        "ruleId": "vue/no-unused-components",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'ImageComponent' is registered but never used in template",
-        "line": 64,
-        "column": 11,
-        "endLine": 65,
-        "endColumn": 14,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 68,
@@ -3375,6 +3447,7 @@
       },
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 80,
@@ -3385,6 +3458,7 @@
       },
       {
         "ruleId": "vue/attribute-order",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/attribute-order] Attribute should be placed in correct order",
         "line": 87,
@@ -3395,6 +3469,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 87,
@@ -3405,6 +3480,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 87,
@@ -3415,6 +3491,7 @@
       },
       {
         "ruleId": "a11y/click-events-have-key-events",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/click-events-have-key-events] Non-interactive elements with @click must also have keyboard event handlers",
         "line": 98,
@@ -3425,6 +3502,7 @@
       },
       {
         "ruleId": "a11y/no-static-element-interactions",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
         "message": "[vize:a11y/no-static-element-interactions] <div> is a static element and should not have interactive event handlers",
         "line": 98,
@@ -3435,6 +3513,7 @@
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
         "message": "[vize:ssr/no-browser-globals-in-ssr] 'close' is a browser-only global and is not available in SSR",
         "line": 98,
@@ -3445,13 +3524,14 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 9
+    "warningCount": 8
   },
   {
     "file": "src/runtime/components/prose/Kbd.vue",
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Kbd' is a reserved HTML element name and cannot be used as a component name",
         "line": 31,
@@ -3469,6 +3549,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Li' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3486,6 +3567,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Ol' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3503,6 +3585,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'P' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3513,6 +3596,7 @@
       },
       {
         "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/component-definition-name-casing] Component file name 'P' should be PascalCase",
         "line": 35,
@@ -3530,6 +3614,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Pre' is a reserved HTML element name and cannot be used as a component name",
         "line": 49,
@@ -3540,6 +3625,7 @@
       },
       {
         "ruleId": "vue/require-scoped-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/require-scoped-style] Style block should use `scoped` or `module` attribute to prevent CSS leaking",
         "line": 72,
@@ -3557,6 +3643,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Script' is a reserved HTML element name and cannot be used as a component name",
         "line": 9,
@@ -3580,6 +3667,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Strong' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3597,6 +3685,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Table' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3626,6 +3715,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Tbody' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3643,6 +3733,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Td' is a reserved HTML element name and cannot be used as a component name",
         "line": 36,
@@ -3660,6 +3751,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Th' is a reserved HTML element name and cannot be used as a component name",
         "line": 36,
@@ -3677,6 +3769,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Thead' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3694,6 +3787,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Tr' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3711,6 +3805,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Ul' is a reserved HTML element name and cannot be used as a component name",
         "line": 35,
@@ -3770,6 +3865,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Link' is a reserved HTML element name and cannot be used as a component name",
         "line": 181,
@@ -3787,6 +3883,7 @@
     "messages": [
       {
         "ruleId": "vue/no-unsafe-url",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :{attr} binding may be vulnerable to XSS via javascript: protocol",
         "line": 46,
@@ -3804,6 +3901,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Link' is a reserved HTML element name and cannot be used as a component name",
         "line": 171,
@@ -3821,6 +3919,7 @@
     "messages": [
       {
         "ruleId": "vue/no-reserved-component-names",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
         "message": "[vize:vue/no-reserved-component-names] 'Link' is a reserved HTML element name and cannot be used as a component name",
         "line": 183,
@@ -3831,6 +3930,7 @@
       },
       {
         "ruleId": "vue/v-slot-style",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
         "message": "[vize:vue/v-slot-style] Use shorthand `#name` instead of `v-slot:name`",
         "line": 185,
