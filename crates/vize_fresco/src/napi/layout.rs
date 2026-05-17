@@ -204,6 +204,44 @@ fn convert_flex_style(style: FlexStyleNapi) -> FlexStyle {
 
     let mut result = FlexStyle::default();
 
+    if let Some(display) = style.display {
+        result.display = match display.as_str() {
+            "none" => Display::None,
+            _ => Display::Flex,
+        };
+    }
+
+    if let Some(position) = style.position {
+        result.position = match position.as_str() {
+            "absolute" => Position::Absolute,
+            _ => Position::Relative,
+        };
+    }
+
+    if let Some(top) = style.top {
+        result.inset.top = parse_length_percentage_auto(&top);
+    }
+
+    if let Some(right) = style.right {
+        result.inset.right = parse_length_percentage_auto(&right);
+    }
+
+    if let Some(bottom) = style.bottom {
+        result.inset.bottom = parse_length_percentage_auto(&bottom);
+    }
+
+    if let Some(left) = style.left {
+        result.inset.left = parse_length_percentage_auto(&left);
+    }
+
+    if let Some(overflow) = style.overflow.or(style.overflow_x).or(style.overflow_y) {
+        result.overflow = match overflow.as_str() {
+            "hidden" => Overflow::Hidden,
+            "scroll" => Overflow::Scroll,
+            _ => Overflow::Visible,
+        };
+    }
+
     if let Some(dir) = style.flex_direction {
         result.flex_direction = match dir.as_str() {
             "column" => FlexDirection::Column,
@@ -242,12 +280,38 @@ fn convert_flex_style(style: FlexStyleNapi) -> FlexStyle {
         };
     }
 
+    if let Some(ai) = style.align_self {
+        result.align_self = match ai.as_str() {
+            "flex-start" | "start" => AlignSelf::FlexStart,
+            "flex-end" | "end" => AlignSelf::FlexEnd,
+            "center" => AlignSelf::Center,
+            "stretch" => AlignSelf::Stretch,
+            "baseline" => AlignSelf::Baseline,
+            _ => AlignSelf::Auto,
+        };
+    }
+
+    if let Some(ac) = style.align_content {
+        result.align_content = match ac.as_str() {
+            "flex-end" | "end" => AlignContent::FlexEnd,
+            "center" => AlignContent::Center,
+            "stretch" => AlignContent::Stretch,
+            "space-between" => AlignContent::SpaceBetween,
+            "space-around" => AlignContent::SpaceAround,
+            _ => AlignContent::FlexStart,
+        };
+    }
+
     if let Some(grow) = style.flex_grow {
         result.flex_grow = grow as f32;
     }
 
     if let Some(shrink) = style.flex_shrink {
         result.flex_shrink = shrink as f32;
+    }
+
+    if let Some(basis) = style.flex_basis {
+        result.flex_basis = parse_dimension(&basis);
     }
 
     if let Some(width) = style.width {
@@ -258,16 +322,76 @@ fn convert_flex_style(style: FlexStyleNapi) -> FlexStyle {
         result.height = parse_dimension(&height);
     }
 
+    if let Some(width) = style.min_width {
+        result.min_width = parse_dimension(&width);
+    }
+
+    if let Some(height) = style.min_height {
+        result.min_height = parse_dimension(&height);
+    }
+
+    if let Some(width) = style.max_width {
+        result.max_width = parse_dimension(&width);
+    }
+
+    if let Some(height) = style.max_height {
+        result.max_height = parse_dimension(&height);
+    }
+
+    if let Some(aspect_ratio) = style.aspect_ratio {
+        result.aspect_ratio = Some(aspect_ratio as f32);
+    }
+
     if let Some(p) = style.padding {
         result.padding = Edges::all(p as f32);
+    }
+
+    if let Some(p) = style.padding_top {
+        result.padding.top = LengthPercentageAuto::Points(p as f32);
+    }
+
+    if let Some(p) = style.padding_right {
+        result.padding.right = LengthPercentageAuto::Points(p as f32);
+    }
+
+    if let Some(p) = style.padding_bottom {
+        result.padding.bottom = LengthPercentageAuto::Points(p as f32);
+    }
+
+    if let Some(p) = style.padding_left {
+        result.padding.left = LengthPercentageAuto::Points(p as f32);
     }
 
     if let Some(m) = style.margin {
         result.margin = Edges::all(m as f32);
     }
 
+    if let Some(m) = style.margin_top {
+        result.margin.top = LengthPercentageAuto::Points(m as f32);
+    }
+
+    if let Some(m) = style.margin_right {
+        result.margin.right = LengthPercentageAuto::Points(m as f32);
+    }
+
+    if let Some(m) = style.margin_bottom {
+        result.margin.bottom = LengthPercentageAuto::Points(m as f32);
+    }
+
+    if let Some(m) = style.margin_left {
+        result.margin.left = LengthPercentageAuto::Points(m as f32);
+    }
+
     if let Some(g) = style.gap {
         result.gap = Gap::all(g as f32);
+    }
+
+    if let Some(g) = style.row_gap {
+        result.gap.row = g as f32;
+    }
+
+    if let Some(g) = style.column_gap {
+        result.gap.column = g as f32;
     }
 
     result
@@ -292,4 +416,25 @@ fn parse_dimension(s: &str) -> crate::layout::Dimension {
     }
 
     Dimension::Auto
+}
+
+/// Parse length/percentage/auto string.
+fn parse_length_percentage_auto(s: &str) -> crate::layout::LengthPercentageAuto {
+    use crate::layout::LengthPercentageAuto;
+
+    if s == "auto" {
+        return LengthPercentageAuto::Auto;
+    }
+
+    if let Some(pct) = s.strip_suffix('%')
+        && let Ok(v) = pct.parse::<f32>()
+    {
+        return LengthPercentageAuto::Percent(v);
+    }
+
+    if let Ok(v) = s.parse::<f32>() {
+        return LengthPercentageAuto::Points(v);
+    }
+
+    LengthPercentageAuto::Auto
 }
