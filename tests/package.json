@@ -6,10 +6,10 @@
     "test:dev": "playwright test --config app/playwright.config.ts",
     "test:vrt": "playwright test --config app/playwright.vrt.config.ts",
     "test:preview": "node app/preview/elk.ts && node app/preview/misskey.ts && node app/preview/npmx.ts && node app/preview/vuefes.ts",
-    "test:check": "node --test snapshots/check/ant-design-vue.ts snapshots/check/elk.ts snapshots/check/misskey.ts snapshots/check/npmx.ts snapshots/check/nuxt-ui.ts snapshots/check/reka-ui.ts snapshots/check/vuefes.ts",
+    "test:check": "node --test --test-concurrency=1 snapshots/check/ant-design-vue.ts snapshots/check/elk.ts snapshots/check/misskey.ts snapshots/check/npmx.ts snapshots/check/nuxt-ui.ts snapshots/check/reka-ui.ts snapshots/check/vuefes.ts",
     "test:lint": "node --test snapshots/lint/ant-design-vue.ts snapshots/lint/elk.ts snapshots/lint/misskey.ts snapshots/lint/npmx.ts snapshots/lint/nuxt-ui.ts snapshots/lint/reka-ui.ts snapshots/lint/vuefes.ts",
     "test:build": "node --test snapshots/build/elk.ts snapshots/build/misskey.ts snapshots/build/npmx.ts snapshots/build/vuefes.ts",
-    "test:check:fixtures": "node --test snapshots/check/typecheck-errors.ts snapshots/check/compiler-macros.ts snapshots/check/style-preprocessors.ts snapshots/check/toolchain-parity.ts"
+    "test:check:fixtures": "node --test --test-concurrency=1 snapshots/check/typecheck-errors.ts snapshots/check/compiler-macros.ts snapshots/check/style-preprocessors.ts snapshots/check/toolchain-parity.ts"
   },
   "devDependencies": {
     "@playwright/test": "catalog:testing",
