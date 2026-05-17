@@ -87,12 +87,12 @@ The SSR rule docs include extra boundary examples for `typeof window`, comments,
 
 **Options:**
 
-| Option           | Description                    | Default |
-| ---------------- | ------------------------------ | ------- |
-| `--format`, `-f` | Output format (`text`/`json`)  | text    |
-| `--max-warnings` | Warning limit                  | -       |
-| `--quiet`, `-q`  | Show only the summary          | false   |
-| `--fix`          | Auto-fix (not implemented yet) | false   |
+| Option           | Description                                                            | Default |
+| ---------------- | ---------------------------------------------------------------------- | ------- |
+| `--format`, `-f` | Output format (`text`/`json`/`stylish`/`markdown`/`html`/`agent`)      | text    |
+| `--max-warnings` | Warning limit                                                          | -       |
+| `--quiet`, `-q`  | Show only the summary                                                  | false   |
+| `--fix`          | Auto-fix (not implemented yet)                                         | false   |
 
 ### LSP Server (`vize lsp`)
 

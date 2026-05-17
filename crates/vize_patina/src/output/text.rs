@@ -3,6 +3,7 @@
 #![allow(clippy::disallowed_macros)]
 
 use crate::linter::LintResult;
+use crate::output::rule_docs_path;
 use oxc_diagnostics::{GraphicalReportHandler, GraphicalTheme, NamedSource};
 #[allow(clippy::disallowed_types)] // Required by oxc_diagnostics API
 use std::sync::Arc;
@@ -35,7 +36,16 @@ pub fn format_text(results: &[LintResult], sources: &[(String, String)]) -> Stri
         let named_source = Arc::new(NamedSource::new(&result.filename, source.to_owned()));
 
         for diagnostic in &result.diagnostics {
-            let oxc_diag = diagnostic.clone().into_oxc_diagnostic();
+            let mut diagnostic = diagnostic.clone();
+            let docs_path = rule_docs_path(diagnostic.rule_name);
+            let help = diagnostic
+                .help
+                .take()
+                .map(|help| format!("{}\n\nReference: {}", help, docs_path))
+                .unwrap_or_else(|| format!("Reference: {}", docs_path));
+            diagnostic.help = Some(help.into());
+
+            let oxc_diag = diagnostic.into_oxc_diagnostic();
             let report = oxc_diag.with_source_code(Arc::clone(&named_source));
 
             // Render using oxc_diagnostics

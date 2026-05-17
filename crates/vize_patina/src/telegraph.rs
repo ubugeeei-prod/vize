@@ -25,6 +25,7 @@
 
 use crate::diagnostic::{HelpRenderTarget, Severity, render_help};
 use crate::linter::LintResult;
+use crate::output::{OutputFormat, format_results};
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
@@ -38,6 +39,18 @@ pub trait Emitter: Send + Sync {
 
     /// Emit a summary of all lint results
     fn emit_summary(&self, results: &[LintResult]) -> String;
+
+    /// Emit diagnostics for multiple file results as one report.
+    fn emit_all(&self, results: &[(LintResult, String)]) -> String {
+        let mut output = String::default();
+        for (result, source) in results {
+            output.push_str(&self.emit(result, source));
+        }
+        output.push_str(
+            &self.emit_summary(&results.iter().map(|(r, _)| r.clone()).collect::<Vec<_>>()),
+        );
+        output
+    }
 
     /// Name of this emitter for identification
     fn name(&self) -> &'static str;
@@ -73,6 +86,17 @@ impl Telegraph {
         telegraph
     }
 
+    /// Create Telegraph with a single output-format emitter.
+    pub fn with_format(format: OutputFormat) -> Self {
+        let mut telegraph = Self::new();
+        match format {
+            OutputFormat::Text => telegraph.add_emitter(Box::new(TextEmitter::default())),
+            OutputFormat::Json => telegraph.add_emitter(Box::new(JsonEmitter)),
+            _ => telegraph.add_emitter(Box::new(FormatEmitter::new(format))),
+        }
+        telegraph
+    }
+
     /// Add an emitter to the telegraph
     pub fn add_emitter(&mut self, emitter: Box<dyn Emitter>) {
         self.emitters.push(emitter);
@@ -88,19 +112,7 @@ impl Telegraph {
 
     /// Transmit multiple results through all emitters
     pub fn transmit_all(&self, results: &[(LintResult, String)]) -> Vec<String> {
-        self.emitters
-            .iter()
-            .map(|e| {
-                let mut output = String::default();
-                for (result, source) in results {
-                    output.push_str(&e.emit(result, source));
-                }
-                output.push_str(
-                    &e.emit_summary(&results.iter().map(|(r, _)| r.clone()).collect::<Vec<_>>()),
-                );
-                output
-            })
-            .collect()
+        self.emitters.iter().map(|e| e.emit_all(results)).collect()
     }
 }
 
@@ -129,9 +141,6 @@ impl Emitter for TextEmitter {
     }
 
     fn emit(&self, result: &LintResult, source: &str) -> String {
-        use crate::OutputFormat;
-        use crate::output::format_results;
-
         let files = vec![(result.filename.clone(), source.to_compact_string())];
         format_results(std::slice::from_ref(result), &files, OutputFormat::Text)
     }
@@ -166,11 +175,8 @@ impl Emitter for JsonEmitter {
         "json"
     }
 
-    fn emit(&self, result: &LintResult, _source: &str) -> String {
-        use crate::OutputFormat;
-        use crate::output::format_results;
-
-        let files: Vec<(String, String)> = vec![];
+    fn emit(&self, result: &LintResult, source: &str) -> String {
+        let files = vec![(result.filename.clone(), source.to_compact_string())];
         format_results(std::slice::from_ref(result), &files, OutputFormat::Json)
     }
 
@@ -178,6 +184,54 @@ impl Emitter for JsonEmitter {
         // JSON format includes all data in emit(), no separate summary needed
         String::default()
     }
+
+    fn emit_all(&self, results: &[(LintResult, String)]) -> String {
+        emit_format_all(results, OutputFormat::Json)
+    }
+}
+
+/// Generic output-format emitter for whole-report transforms.
+pub struct FormatEmitter {
+    format: OutputFormat,
+}
+
+impl FormatEmitter {
+    pub const fn new(format: OutputFormat) -> Self {
+        Self { format }
+    }
+
+    pub const fn format(&self) -> OutputFormat {
+        self.format
+    }
+}
+
+impl Emitter for FormatEmitter {
+    fn name(&self) -> &'static str {
+        self.format.as_str()
+    }
+
+    fn emit(&self, result: &LintResult, source: &str) -> String {
+        let files = vec![(result.filename.clone(), source.to_compact_string())];
+        format_results(std::slice::from_ref(result), &files, self.format)
+    }
+
+    fn emit_summary(&self, _results: &[LintResult]) -> String {
+        String::default()
+    }
+
+    fn emit_all(&self, results: &[(LintResult, String)]) -> String {
+        emit_format_all(results, self.format)
+    }
+}
+
+fn emit_format_all(results: &[(LintResult, String)], format: OutputFormat) -> String {
+    let lint_results: Vec<_> = results.iter().map(|(result, _)| result.clone()).collect();
+    let sources: Vec<_> = results
+        .iter()
+        .map(|(result, source)| (result.filename.clone(), source.clone()))
+        .collect();
+
+    format_results(&lint_results, &sources, format)
 }
 
 /// LSP emitter for Language Server Protocol diagnostics.
@@ -347,8 +401,9 @@ pub struct OxlintBridge {
 
 #[cfg(test)]
 mod tests {
-    use super::{LintResult, LspEmitter, Telegraph, offset_to_line_col};
+    use super::{FormatEmitter, LintResult, LspEmitter, Telegraph, offset_to_line_col};
     use crate::diagnostic::LintDiagnostic;
+    use crate::output::OutputFormat;
     use vize_carton::ToCompactString;
 
     #[test]
@@ -361,6 +416,34 @@ mod tests {
     fn test_telegraph_with_json() {
         let telegraph = Telegraph::with_json();
         assert_eq!(telegraph.emitters.len(), 1);
+    }
+
+    #[test]
+    fn test_telegraph_with_format() {
+        let telegraph = Telegraph::with_format(OutputFormat::Markdown);
+        assert_eq!(telegraph.emitters.len(), 1);
+    }
+
+    #[test]
+    fn test_format_emitter_transmit_all_renders_single_report() {
+        let mut telegraph = Telegraph::new();
+        telegraph.add_emitter(Box::new(FormatEmitter::new(OutputFormat::Html)));
+        let result = LintResult {
+            filename: "test.vue".to_compact_string(),
+            diagnostics: vec![LintDiagnostic::warn(
+                "vue/no-v-html",
+                "Avoid raw HTML",
+                0,
+                3,
+            )],
+            error_count: 0,
+            warning_count: 1,
+        };
+        let outputs = telegraph.transmit_all(&[(result, "abc".to_compact_string())]);
+
+        assert_eq!(outputs.len(), 1);
+        assert_eq!(outputs[0].matches("<!doctype html>").count(), 1);
+        assert!(outputs[0].contains("docs/content/rules/vue.md"));
     }
 
     #[test]
