@@ -459,6 +459,7 @@ test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
       "textDocument/publishDiagnostics",
       (params) => hasDiagnosticSource(params, brokenUri, "vize/sfc"),
     )) as PublishDiagnosticsParams;
+    assert.equal(brokenPublish.version, 1);
     const parserDiagnostic = brokenPublish.diagnostics.find(
       (diagnostic) => diagnostic.source === "vize/sfc",
     );
@@ -489,6 +490,7 @@ test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
       (params) => isDiagnosticsForUri(params, brokenUri),
     )) as PublishDiagnosticsParams;
 
+    assert.equal(fixedPublish.version, 2);
     assert.deepEqual(fixedPublish.diagnostics, []);
   } finally {
     await session.shutdown();

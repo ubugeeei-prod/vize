@@ -29,5 +29,6 @@ export type LspDiagnostic = {
 
 export type PublishDiagnosticsParams = {
   uri: string;
+  version?: number;
   diagnostics: LspDiagnostic[];
 };

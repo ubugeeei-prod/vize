@@ -17,12 +17,23 @@ use vize_carton::append;
 impl MaestroServer {
     /// Publish diagnostics for a document.
     pub(crate) async fn publish_diagnostics(&self, uri: &Url) {
+        let version = self
+            .state
+            .documents
+            .get(uri)
+            .map(|document| document.version);
+
         if !self.state.lsp_features().has_diagnostics() {
             self.client
-                .publish_diagnostics(uri.clone(), Vec::new(), None)
+                .publish_diagnostics(uri.clone(), Vec::new(), version)
                 .await;
             return;
         }
+
+        let Some(version) = version else {
+            tracing::debug!("skipping diagnostics for unopened document: {}", uri);
+            return;
+        };
 
         // Use async version when native feature is enabled (includes Corsa diagnostics)
         #[cfg(feature = "native")]
@@ -31,8 +42,23 @@ impl MaestroServer {
         #[cfg(not(feature = "native"))]
         let diagnostics = DiagnosticService::collect(&self.state, uri);
 
+        let current_version = self
+            .state
+            .documents
+            .get(uri)
+            .map(|document| document.version);
+        if current_version != Some(version) {
+            tracing::debug!(
+                "skipping stale diagnostics for {}: collected version {}, current {:?}",
+                uri,
+                version,
+                current_version
+            );
+            return;
+        }
+
         self.client
-            .publish_diagnostics(uri.clone(), diagnostics, None)
+            .publish_diagnostics(uri.clone(), diagnostics, Some(version))
             .await;
     }
 
