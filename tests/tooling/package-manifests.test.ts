@@ -31,6 +31,37 @@ function isEsmPackPackage(packageDir: string): boolean {
   return config.includes('format: "esm"') && config.includes("pack:");
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function collectNativeBinaryCatalogPins(workspaceYaml: string): Record<string, string> {
+  const pins: Record<string, string> = {};
+  let inNativeCatalog = false;
+
+  for (const line of workspaceYaml.split("\n")) {
+    if (line === "  native-binaries:") {
+      inNativeCatalog = true;
+      continue;
+    }
+
+    if (inNativeCatalog && /^\S|^  [^\s]/.test(line)) {
+      break;
+    }
+
+    if (!inNativeCatalog) {
+      continue;
+    }
+
+    const match = line.match(/^    "(@vizejs\/native-[^"]+)": "([^"]+)"$/);
+    if (match) {
+      pins[match[1]] = match[2];
+    }
+  }
+
+  return pins;
+}
+
 test("esm packed npm manifests point at mjs and d.mts outputs", () => {
   const failures: string[] = [];
 
@@ -67,6 +98,55 @@ test("esm packed npm manifests point at mjs and d.mts outputs", () => {
   }
 
   assert.deepEqual(failures, []);
+});
+
+test("native package pins and generated loader version checks stay aligned", () => {
+  const nativePackage = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/vize-native/package.json"), "utf-8"),
+  ) as {
+    optionalDependencies?: Record<string, string>;
+    version?: string;
+  };
+  assert.ok(nativePackage.version);
+
+  const workspacePins = collectNativeBinaryCatalogPins(
+    fs.readFileSync(path.join(root, "pnpm-workspace.yaml"), "utf-8"),
+  );
+  const nativeOptionalDependencies = Object.entries(
+    nativePackage.optionalDependencies ?? {},
+  ).filter(([name]) => name.startsWith("@vizejs/native-"));
+
+  assert.ok(nativeOptionalDependencies.length > 0);
+  assert.deepEqual(
+    Object.fromEntries(nativeOptionalDependencies),
+    Object.fromEntries(
+      nativeOptionalDependencies.map(([name]) => [name, "catalog:native-binaries"]),
+    ),
+  );
+
+  for (const [name] of nativeOptionalDependencies) {
+    assert.equal(workspacePins[name], nativePackage.version, `${name} catalog pin`);
+  }
+
+  const lockfile = fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf-8");
+  for (const [name] of nativeOptionalDependencies) {
+    const escapedName = escapeRegExp(name);
+    const escapedVersion = escapeRegExp(nativePackage.version);
+    assert.match(lockfile, new RegExp(`['"]?${escapedName}@${escapedVersion}['"]?:`));
+    assert.doesNotMatch(lockfile, new RegExp(`${escapedName}@(?!${escapedVersion})`));
+  }
+
+  const nativeTargetsLoader = fs.readFileSync(
+    path.join(root, "npm/vize-native/native-targets.js"),
+    "utf-8",
+  );
+  assert.match(
+    nativeTargetsLoader,
+    /const packageVersion = require\("\.\/package\.json"\)\.version;/,
+  );
+  assert.match(nativeTargetsLoader, /bindingPackageVersion !== packageVersion/);
+  assert.match(nativeTargetsLoader, /expected \$\{packageVersion\} but got/);
+  assert.doesNotMatch(nativeTargetsLoader, /bindingPackageVersion !== "[^"]+"/);
 });
 
 test("editor extension manifests stay opt-in and version aligned", () => {
