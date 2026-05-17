@@ -367,7 +367,7 @@ mod tests {
     }
 
     #[test]
-    fn test_codegen_default_slot_with_v_if_is_marked_dynamic() {
+    fn test_codegen_default_slot_with_v_if_is_stable() {
         let result = compile!(
             r#"<PageWithHeader>
   <div v-if="tab === 'overview'">Overview</div>

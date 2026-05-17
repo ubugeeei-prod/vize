@@ -7,8 +7,8 @@ use crate::transforms::transform_expression::process_inline_handler;
 
 use super::{ExitFn, TransformContext};
 
-fn is_dynamic_component_tag(tag: &str) -> bool {
-    matches!(tag, "component" | "Component")
+fn is_dynamic_component(el: &ElementNode<'_>) -> bool {
+    el.tag == "component" || (el.tag == "Component" && has_is_attribute(el))
 }
 
 /// Transform element node
@@ -27,7 +27,7 @@ pub fn transform_element<'a>(
             ctx.helper(RuntimeHelper::CreateElementVNode);
         }
         ElementType::Component => {
-            if is_dynamic_component_tag(&el.tag) {
+            if is_dynamic_component(el) {
                 return None;
             }
 
@@ -66,7 +66,7 @@ fn maybe_promote_element_to_component(
         return;
     }
 
-    let looks_like_component = is_dynamic_component_tag(&el.tag)
+    let looks_like_component = el.tag == "component"
         || el.tag.chars().next().is_some_and(|c| c.is_uppercase())
         || el.tag.contains('-');
 
@@ -92,7 +92,14 @@ fn maybe_promote_element_to_component(
 
 fn has_is_attribute(el: &ElementNode<'_>) -> bool {
     el.props.iter().any(|prop| match prop {
-        PropNode::Directive(dir) => dir.name == "is",
+        PropNode::Directive(dir) => {
+            dir.name == "is"
+                || (dir.name == "bind"
+                    && matches!(
+                        &dir.arg,
+                        Some(ExpressionNode::Simple(arg)) if arg.content == "is"
+                    ))
+        }
         PropNode::Attribute(attr) => attr.name == "is",
     })
 }

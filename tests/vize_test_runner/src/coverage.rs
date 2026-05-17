@@ -10,25 +10,15 @@ use std::path::PathBuf;
 use vize_carton::String;
 use vize_test_runner::{CompilerMode, run_fixture_tests};
 
-const MIN_VDOM_PASSED: usize = 343;
+const MIN_VDOM_PASSED: usize = 353;
 const MIN_VAPOR_PASSED: usize = 101;
 const MIN_SFC_PASSED: usize = 60;
-const MIN_TOTAL_PASSED: usize = 504;
+const MIN_TOTAL_PASSED: usize = 514;
 
 // Known v1 alpha fixture debt. CI allows these exact failures so existing gaps
 // do not block unrelated work, but any new failure or pass-count regression
 // fails the coverage job.
 const KNOWN_FAILURES: &[(&str, &str)] = &[
-    ("vdom/component", "Suspense"),
-    ("vdom/component", "KeepAlive"),
-    ("vdom/component", "Transition"),
-    ("vdom/component", "TransitionGroup"),
-    ("vdom/component", "keep-alive kebab-case"),
-    ("vdom/component", "transition kebab-case"),
-    ("vdom/component", "transition-group kebab-case"),
-    ("vdom/component", "suspense kebab-case"),
-    ("vdom/v-for", "v-for with v-if"),
-    ("vdom/v-slot", "Transition slot"),
     ("vapor/v-if", "v-if/v-else-if/v-else"),
     ("vapor/v-if", "nested v-if"),
     ("vapor/v-for", "nested v-for"),
@@ -422,10 +412,10 @@ mod tests {
 
     #[test]
     fn tracks_the_current_known_failure_budget() {
-        assert_eq!(KNOWN_FAILURES.len(), 90);
+        assert_eq!(KNOWN_FAILURES.len(), 80);
         let unique_failures: HashSet<_> = KNOWN_FAILURES.iter().collect();
         assert_eq!(unique_failures.len(), KNOWN_FAILURES.len());
-        assert!(is_known_failure("vdom/component", "Suspense"));
+        assert!(is_known_failure("vapor/v-if", "v-if/v-else-if/v-else"));
         assert!(is_known_failure(
             "sfc/script-setup",
             "defineProps type-only with destructure defaults"

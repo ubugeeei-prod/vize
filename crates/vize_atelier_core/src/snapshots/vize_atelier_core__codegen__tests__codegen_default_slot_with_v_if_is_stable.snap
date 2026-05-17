@@ -15,6 +15,6 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           ? (_openBlock(), _createElementBlock("div", { key: 1 }, "Emojis"))
         : (_openBlock(), _createElementBlock("div", { key: 2 }, "Charts"))
     ]),
-    _: 2 /* DYNAMIC */
-  }, 1024 /* DYNAMIC_SLOTS */))
+    _: 1 /* STABLE */
+  }))
 }

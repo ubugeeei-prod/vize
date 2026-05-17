@@ -11,7 +11,7 @@ use crate::{
 use super::super::{
     children::{generate_children, generate_children_force_array},
     context::CodegenContext,
-    element::helpers::{is_dynamic_component_tag, is_is_prop},
+    element::helpers::{is_dynamic_component, is_is_prop},
     element::{
         generate_custom_directives_closing, generate_vmodel_closing, generate_vshow_closing,
         has_custom_directives, has_vmodel_directive, has_vshow_directive,
@@ -34,7 +34,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             let key_exp = get_element_key(el);
             let is_template = el.tag_type == ElementType::Template;
             let is_component = el.tag_type == ElementType::Component;
-            let is_dynamic_component = is_component && is_dynamic_component_tag(&el.tag);
+            let is_dynamic = is_component && is_dynamic_component(el);
             let prev_skip_scope_id = ctx.skip_scope_id;
             let unwrapped_child = unwrap_template_single_element(el);
             let gen_is_template = is_template && unwrapped_child.is_none();
@@ -104,7 +104,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
 
                 // Props with key and all other props
                 let props_el = unwrapped_child.unwrap_or(el);
-                generate_for_item_props(ctx, props_el, key_exp, is_dynamic_component);
+                generate_for_item_props(ctx, props_el, key_exp, is_dynamic);
 
                 // Children
                 let children_el = unwrapped_child.unwrap_or(el);
@@ -157,7 +157,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                     ctx.push(ctx.helper(RuntimeHelper::CreateBlock));
                     ctx.push("(");
                     // Handle dynamic component
-                    if is_dynamic_component {
+                    if is_dynamic {
                         let dynamic_is = el.props.iter().find_map(|p| {
                             if let PropNode::Directive(dir) = p
                                 && dir.name == "bind"
@@ -228,7 +228,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 // Props with key and all other props
                 // For unwrapped template child, use child's props with template's key
                 let props_el = unwrapped_child.unwrap_or(el);
-                generate_for_item_props(ctx, props_el, key_exp, is_dynamic_component);
+                generate_for_item_props(ctx, props_el, key_exp, is_dynamic);
 
                 // Children
                 let children_el = unwrapped_child.unwrap_or(el);
@@ -263,7 +263,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
 
                 // Add patch flag
                 if is_component {
-                    let (mut patch_flag, dynamic_props) = if is_dynamic_component {
+                    let (mut patch_flag, dynamic_props) = if is_dynamic {
                         calculate_element_patch_info_skip_is(
                             el,
                             ctx.options.binding_metadata.as_ref(),

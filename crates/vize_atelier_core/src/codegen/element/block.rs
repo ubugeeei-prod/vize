@@ -29,7 +29,7 @@ use super::{
     },
     helpers::{
         has_custom_directives, has_renderable_props, has_vmodel_directive, has_vshow_directive,
-        is_dynamic_component_tag, is_is_prop, is_renderable_prop, is_whitespace_or_comment,
+        is_dynamic_component, is_is_prop, is_renderable_prop, is_whitespace_or_comment,
     },
     v_once::generate_v_once_element,
 };
@@ -253,8 +253,8 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.push("(");
 
             // Check for dynamic component (<component :is="..."> or <Component is="...">)
-            let is_dynamic_component = is_dynamic_component_tag(&el.tag);
-            let (dynamic_is, static_is) = if is_dynamic_component {
+            let is_dynamic = is_dynamic_component(el);
+            let (dynamic_is, static_is) = if is_dynamic {
                 // Check for :is="..." (dynamic binding)
                 let dynamic = el.props.iter().find_map(|p| {
                     if let PropNode::Directive(dir) = p
@@ -311,7 +311,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
             // Calculate patch flag and dynamic props for component
             // For dynamic components, skip the :is binding from patch flag calculation
-            let (mut patch_flag, dynamic_props) = if is_dynamic_component {
+            let (mut patch_flag, dynamic_props) = if is_dynamic {
                 calculate_element_patch_info_skip_is(
                     el,
                     ctx.options.binding_metadata.as_ref(),
@@ -344,7 +344,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
 
             // Generate props (only if there are renderable props, not just v-show)
             // For dynamic components (<component :is="...">), filter out the `is` prop
-            let effective_has_props = if is_dynamic_component {
+            let effective_has_props = if is_dynamic {
                 // Check if there are renderable props besides `is`
                 el.props
                     .iter()
@@ -354,7 +354,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             };
             if effective_has_props {
                 ctx.push(", ");
-                if is_dynamic_component {
+                if is_dynamic {
                     ctx.skip_is_prop = true;
                 }
                 // Components: skip scope_id in props -- Vue runtime applies it via __scopeId
@@ -392,7 +392,7 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                     if is_keep_alive
                         && let TemplateChildNode::Element(child_el) = child
                         && child_el.tag_type == ElementType::Component
-                        && is_dynamic_component_tag(&child_el.tag)
+                        && is_dynamic_component(child_el)
                     {
                         generate_element_block(ctx, child_el);
                         continue;
