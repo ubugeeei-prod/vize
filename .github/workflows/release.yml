@@ -530,7 +530,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: npm/vize-wasm
-          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json') }}
+          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json', 'npm/vize-wasm/index.js', 'npm/vize-wasm/index.d.ts', 'tools/moon/scripts/build_vize_wasm_package.mbtx') }}
 
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
@@ -547,6 +547,9 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
+
+      - name: Smoke @vizejs/wasm package
+        run: node tools/npm/smoke-wasm-package.mjs npm/vize-wasm
 
       - name: Configure npm auth fallback
         env:
