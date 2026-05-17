@@ -157,6 +157,41 @@ test("vize package delegates rule type generation to the workspace MoonBit task"
   );
 });
 
+test("wasm package publishes the wrapper entrypoint and raw wasm assets", () => {
+  const wasmPackage = JSON.parse(
+    fs.readFileSync(path.join(root, "npm/vize-wasm/package.json"), "utf-8"),
+  ) as {
+    exports?: Record<string, string | Record<string, string>>;
+    files?: string[];
+    main?: string;
+    types?: string;
+  };
+
+  assert.equal(wasmPackage.main, "./index.js");
+  assert.equal(wasmPackage.types, "./index.d.ts");
+  assert.deepEqual(wasmPackage.exports?.["."], {
+    types: "./index.d.ts",
+    import: "./index.js",
+    default: "./index.js",
+  });
+  assert.deepEqual(wasmPackage.exports?.["./vize_vitrine.js"], {
+    types: "./vize_vitrine.d.ts",
+    import: "./vize_vitrine.js",
+    default: "./vize_vitrine.js",
+  });
+  assert.equal(wasmPackage.exports?.["./vize_vitrine_bg.wasm"], "./vize_vitrine_bg.wasm");
+
+  for (const file of [
+    "index.js",
+    "index.d.ts",
+    "vize_vitrine.js",
+    "vize_vitrine.d.ts",
+    "vize_vitrine_bg.wasm",
+  ]) {
+    assert.ok(wasmPackage.files?.includes(file), `@vizejs/wasm files include ${file}`);
+  }
+});
+
 test("workspace TypeScript package builds use vp pack", () => {
   const packages = [
     ["npm/fresco", "vp pack", "vp pack --watch"],
