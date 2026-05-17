@@ -408,12 +408,12 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::{KNOWN_FAILURES, is_known_failure};
-    use std::collections::HashSet;
+    use vize_carton::FxHashSet;
 
     #[test]
     fn tracks_the_current_known_failure_budget() {
         assert_eq!(KNOWN_FAILURES.len(), 80);
-        let unique_failures: HashSet<_> = KNOWN_FAILURES.iter().collect();
+        let unique_failures: FxHashSet<_> = KNOWN_FAILURES.iter().collect();
         assert_eq!(unique_failures.len(), KNOWN_FAILURES.len());
         assert!(is_known_failure("vapor/v-if", "v-if/v-else-if/v-else"));
         assert!(is_known_failure(
