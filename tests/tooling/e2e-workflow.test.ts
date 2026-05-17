@@ -10,8 +10,20 @@ function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(root, ...segments), "utf8");
 }
 
-test("app e2e workflow is manually selectable and uploads failure artifacts", () => {
+test("app e2e workflow runs a PR matrix, stays manually selectable, and uploads artifacts", () => {
   const workflow = readRepoFile(".github", "workflows", "e2e.yml");
+
+  assert.match(workflow, /pull_request:/);
+  assert.match(workflow, /branches:\s*\[main\]/);
+  for (const pathFilter of [
+    '".github/workflows/e2e.yml"',
+    '"crates/**"',
+    '"npm/vize/**"',
+    '"npm/vite-plugin-vize/**"',
+    '"tests/**"',
+  ]) {
+    assert.match(workflow, new RegExp(`- ${pathFilter.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
+  }
 
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /type:\s*choice/);
@@ -19,6 +31,10 @@ test("app e2e workflow is manually selectable and uploads failure artifacts", ()
     assert.match(workflow, new RegExp(`- ${suite}`));
     assert.match(workflow, new RegExp(`${suite}\\)\\n\\s+`));
   }
+  assert.match(
+    workflow,
+    /fromJSON\('\["dev","preview","check","lint","build","check-fixtures"\]'\)/,
+  );
 
   assert.match(workflow, /--filter '\.\/tests\.\.\.'/);
   assert.match(workflow, /--filter '\.\/npm\/vize-native\.\.\.'/);
@@ -29,9 +45,11 @@ test("app e2e workflow is manually selectable and uploads failure artifacts", ()
   assert.match(workflow, /uses: \.\/\.github\/actions\/setup-moonbit/);
   assert.match(workflow, /Cache Playwright browsers/);
   assert.match(workflow, /vp exec --filter '\.\/tests' -- playwright install --with-deps chromium/);
+  assert.match(workflow, /case "\$\{\{ matrix\.suite \}\}" in/);
   assert.match(workflow, /RUN_BUILD_TESTS=1 vp run --filter '\.\/tests' test:preview/);
   assert.doesNotMatch(workflow, /pnpm --dir tests/);
   assert.match(workflow, /- name: Upload app e2e artifacts\s+if: failure\(\)/);
+  assert.match(workflow, /name: app-e2e-artifacts-\$\{\{ matrix\.suite \}\}/);
   assert.match(workflow, /tests\/app\/results\//);
   assert.match(workflow, /tests\/app\/screenshots\//);
   assert.match(workflow, /tests\/app\/playwright-report\//);
