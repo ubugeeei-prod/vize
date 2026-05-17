@@ -127,6 +127,20 @@ impl Analyzer {
         }
     }
 
+    /// Continue analysis from an existing summary.
+    ///
+    /// This is useful for infrastructure that needs to normalize script offsets
+    /// before adding template facts to the same Croquis summary.
+    #[inline]
+    pub fn with_summary(options: AnalyzerOptions, summary: Croquis, script_analyzed: bool) -> Self {
+        Self {
+            options,
+            summary,
+            script_analyzed,
+            vif_guard_stack: Vec::new(),
+        }
+    }
+
     /// Get the current v-if guard (combined from stack)
     pub(crate) fn current_vif_guard(&self) -> Option<CompactString> {
         if self.vif_guard_stack.is_empty() {

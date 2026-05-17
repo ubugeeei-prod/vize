@@ -16,6 +16,73 @@ impl Croquis {
         Self::default()
     }
 
+    /// Shift script-relative offsets after embedding this analysis into a
+    /// larger synthetic script. Call this before adding template analysis.
+    pub fn shift_script_offsets(&mut self, delta: u32) {
+        if delta == 0 {
+            return;
+        }
+
+        self.scopes.shift_script_offsets(delta);
+        self.symbols.shift_offsets(delta);
+        self.macros.shift_offsets(delta);
+        self.reactivity.shift_offsets(delta);
+        self.race_conditions.shift_offsets(delta);
+        self.provide_inject.shift_offsets(delta);
+        self.setup_context.shift_offsets(delta);
+
+        for type_export in &mut self.type_exports {
+            type_export.start = type_export.start.saturating_add(delta);
+            type_export.end = type_export.end.saturating_add(delta);
+        }
+        for invalid_export in &mut self.invalid_exports {
+            invalid_export.start = invalid_export.start.saturating_add(delta);
+            invalid_export.end = invalid_export.end.saturating_add(delta);
+        }
+        for import in &mut self.import_statements {
+            import.start = import.start.saturating_add(delta);
+            import.end = import.end.saturating_add(delta);
+        }
+        for re_export in &mut self.re_exports {
+            re_export.start = re_export.start.saturating_add(delta);
+            re_export.end = re_export.end.saturating_add(delta);
+        }
+        for span in self.binding_spans.values_mut() {
+            span.0 = span.0.saturating_add(delta);
+            span.1 = span.1.saturating_add(delta);
+        }
+    }
+
+    /// Merge a regular `<script>` analysis into a `<script setup>` analysis.
+    ///
+    /// The receiver keeps precedence for setup-local data, while module-level
+    /// facts from the regular script are retained for virtual TS, lint, and
+    /// cross-file consumers.
+    pub fn merge_plain_script(&mut self, plain: Self) {
+        let plain_bindings = plain.bindings;
+        self.bindings.is_script_setup |= plain_bindings.is_script_setup;
+        for (name, binding_type) in plain_bindings.bindings {
+            self.bindings.bindings.entry(name).or_insert(binding_type);
+        }
+        for (local, prop) in plain_bindings.props_aliases {
+            self.bindings.props_aliases.entry(local).or_insert(prop);
+        }
+
+        self.reactivity.extend(plain.reactivity);
+        self.race_conditions.extend(plain.race_conditions);
+        self.provide_inject.extend(plain.provide_inject);
+        self.setup_context.extend(plain.setup_context);
+        self.type_exports.extend(plain.type_exports);
+        self.import_statements.extend(plain.import_statements);
+        self.re_exports.extend(plain.re_exports);
+        self.component_registrations
+            .extend(plain.component_registrations);
+
+        for (name, span) in plain.binding_spans {
+            self.binding_spans.entry(name).or_insert(span);
+        }
+    }
+
     /// Check if a variable is defined in any scope
     #[inline]
     pub fn is_defined(&self, name: &str) -> bool {

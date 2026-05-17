@@ -26,8 +26,11 @@ fn to_sfc_utf16_range(source: &str, base_offset: u32, start: u32, end: u32) -> (
 #[allow(clippy::disallowed_macros)]
 pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
     use vize_atelier_core::parser::parse;
-    use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-    use vize_croquis::{Analyzer, AnalyzerOptions};
+    use vize_atelier_sfc::{
+        SfcParseOptions,
+        croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+        parse_sfc,
+    };
 
     let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
         .ok()
@@ -45,20 +48,6 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
         Err(e) => return Err(JsValue::from_str(&e.message)),
     };
 
-    // Create analyzer with full options
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-
-    // Analyze script if present, track script offset for coordinate adjustment
-    let script_offset: u32 = if let Some(ref script_setup) = descriptor.script_setup {
-        analyzer.analyze_script_setup(&script_setup.content);
-        script_setup.loc.start as u32
-    } else if let Some(ref script) = descriptor.script {
-        analyzer.analyze_script_plain(&script.content);
-        script.loc.start as u32
-    } else {
-        0
-    };
-
     // Track template offset for coordinate adjustment
     let template_offset: u32 = descriptor
         .template
@@ -66,15 +55,16 @@ pub fn analyze_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsVal
         .map(|t| t.loc.start as u32)
         .unwrap_or(0);
 
-    // Analyze template if present
-    if let Some(ref template) = descriptor.template {
+    let analysis = if let Some(ref template) = descriptor.template {
         let allocator = Bump::new();
         let (root, _errors) = parse(&allocator, &template.content);
-        analyzer.analyze_template(&root);
-    }
+        analyze_sfc_descriptor_with_context(&descriptor, Some(&root), SfcCroquisOptions::full())
+    } else {
+        analyze_sfc_descriptor_with_context(&descriptor, None, SfcCroquisOptions::full())
+    };
 
-    // Get analysis summary
-    let summary = analyzer.finish();
+    let script_offset = analysis.script_offset;
+    let summary = analysis.croquis;
 
     // Convert scopes to JSON with span information
     // Adjust offsets to SFC coordinates based on scope origin

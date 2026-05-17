@@ -16,11 +16,14 @@ use crate::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
 use oxc_span::SourceType;
 use serde_json::{Map, Value};
 use vize_atelier_core::parser::parse;
-use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{
+    SfcDescriptor, SfcParseOptions,
+    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+    parse_sfc,
+};
 use vize_carton::{
     Bump, FxHashMap, FxHashSet, String as CompactString, ToCompactString, cstr, profile,
 };
-use vize_croquis::{Analyzer, AnalyzerOptions, ImportStatementInfo, ReExportInfo, TypeExport};
 
 const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
 const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
@@ -574,22 +577,13 @@ fn generate_vue_virtual_ts(
     descriptor: &SfcDescriptor,
     options: &VirtualTsOptions,
 ) -> CorsaResult<GeneratedVueFile> {
-    let (script_content, script_offset) = merged_script_content(descriptor);
-    let script_content_ref = script_content.as_deref();
-
     let allocator = Bump::new();
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     let mut diagnostics = Vec::new();
-    let has_both_scripts = descriptor.script.is_some() && descriptor.script_setup.is_some();
 
     if let Some(ref script) = descriptor.script {
         let script_diagnostics =
             collect_script_parse_diagnostics(&script.content, script.loc.start as u32);
-        if script_diagnostics.is_empty() {
-            profile!("canon.croquis.analyze_script", {
-                analyzer.analyze_script_plain(&script.content);
-            });
-        } else {
+        if !script_diagnostics.is_empty() {
             diagnostics.extend(script_diagnostics.into_iter().map(|diagnostic| {
                 diagnostic_for_offset(
                     path,
@@ -602,29 +596,10 @@ fn generate_vue_virtual_ts(
         }
     }
 
-    let plain_spans: Option<(Vec<ImportStatementInfo>, Vec<ReExportInfo>, Vec<TypeExport>)> =
-        if has_both_scripts {
-            Some((
-                analyzer.summary().import_statements.clone(),
-                analyzer.summary().re_exports.clone(),
-                analyzer.summary().type_exports.clone(),
-            ))
-        } else {
-            None
-        };
-
     if let Some(ref script_setup) = descriptor.script_setup {
-        let generic = script_setup
-            .attrs
-            .get("generic")
-            .map(|value| value.as_ref());
         let script_diagnostics =
             collect_script_parse_diagnostics(&script_setup.content, script_setup.loc.start as u32);
-        if script_diagnostics.is_empty() {
-            profile!("canon.croquis.analyze_script_setup", {
-                analyzer.analyze_script_setup_with_generic(&script_setup.content, generic);
-            });
-        } else {
+        if !script_diagnostics.is_empty() {
             diagnostics.extend(script_diagnostics.into_iter().map(|diagnostic| {
                 diagnostic_for_offset(
                     path,
@@ -643,10 +618,9 @@ fn generate_vue_virtual_ts(
         .map(|template| template.loc.start as u32)
         .unwrap_or(0);
     let template_ast = descriptor.template.as_ref().and_then(|template| {
-        profile!("canon.template.parse_and_analyze", {
+        profile!("canon.template.parse", {
             let (root, errors) = parse(&allocator, &template.content);
             if errors.is_empty() {
-                analyzer.analyze_template(&root);
                 Some(root)
             } else {
                 diagnostics.extend(errors.into_iter().map(|error| {
@@ -676,27 +650,22 @@ fn generate_vue_virtual_ts(
         });
     }
 
-    let mut summary = profile!("canon.croquis.finish", analyzer.finish());
-
-    if let (Some((plain_imports, plain_reexports, plain_types)), Some(script)) =
-        (plain_spans, descriptor.script.as_ref())
-    {
-        let plain_len = script.content.len() as u32 + 1;
-        shift_module_spans(&mut summary.import_statements, plain_len);
-        shift_module_spans(&mut summary.re_exports, plain_len);
-        shift_module_spans(&mut summary.type_exports, plain_len);
-        summary.import_statements.extend(plain_imports);
-        summary.re_exports.extend(plain_reexports);
-        summary.type_exports.extend(plain_types);
-    }
+    let analysis = profile!(
+        "canon.croquis.analyze_sfc",
+        analyze_sfc_descriptor_with_context(
+            descriptor,
+            template_ast.as_ref(),
+            SfcCroquisOptions::full()
+        )
+    );
 
     let output = profile!(
         "canon.virtual_ts.generate",
         generate_virtual_ts_with_offsets(
-            &summary,
-            script_content_ref,
+            &analysis.croquis,
+            analysis.script_content_ref(),
             template_ast.as_ref(),
-            script_offset,
+            analysis.script_offset,
             template_offset,
             options,
         )
@@ -751,58 +720,6 @@ fn line_column_for_offset(source: &str, offset: u32) -> (u32, u32) {
     }
 
     (line, target.saturating_sub(line_start) as u32)
-}
-
-fn shift_module_spans<T>(items: &mut [T], delta: u32)
-where
-    T: ModuleSpan,
-{
-    for item in items {
-        item.shift(delta);
-    }
-}
-
-trait ModuleSpan {
-    fn shift(&mut self, delta: u32);
-}
-
-impl ModuleSpan for ImportStatementInfo {
-    fn shift(&mut self, delta: u32) {
-        self.start += delta;
-        self.end += delta;
-    }
-}
-
-impl ModuleSpan for ReExportInfo {
-    fn shift(&mut self, delta: u32) {
-        self.start += delta;
-        self.end += delta;
-    }
-}
-
-impl ModuleSpan for TypeExport {
-    fn shift(&mut self, delta: u32) {
-        self.start += delta;
-        self.end += delta;
-    }
-}
-
-fn merged_script_content(descriptor: &SfcDescriptor) -> (Option<CompactString>, u32) {
-    match (descriptor.script.as_ref(), descriptor.script_setup.as_ref()) {
-        (Some(script), Some(script_setup)) => (
-            Some(cstr!("{}\n{}", script.content, script_setup.content)),
-            script.loc.start as u32,
-        ),
-        (Some(script), None) => (
-            Some(script.content.to_compact_string()),
-            script.loc.start as u32,
-        ),
-        (None, Some(script_setup)) => (
-            Some(script_setup.content.to_compact_string()),
-            script_setup.loc.start as u32,
-        ),
-        (None, None) => (None, 0),
-    }
 }
 
 fn collect_sfc_block_ranges(descriptor: &SfcDescriptor) -> Vec<SfcBlockRange> {

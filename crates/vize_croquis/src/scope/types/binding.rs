@@ -20,6 +20,12 @@ impl Span {
     pub const fn new(start: u32, end: u32) -> Self {
         Self { start, end }
     }
+
+    #[inline]
+    pub fn shift(&mut self, delta: u32) {
+        self.start = self.start.saturating_add(delta);
+        self.end = self.end.saturating_add(delta);
+    }
 }
 
 bitflags! {
@@ -81,5 +87,10 @@ impl ScopeBinding {
     #[inline]
     pub fn mark_mutated(&mut self) {
         self.flags.insert(BindingFlags::MUTATED);
+    }
+
+    #[inline]
+    pub fn shift_declaration_offset(&mut self, delta: u32) {
+        self.declaration_offset = self.declaration_offset.saturating_add(delta);
     }
 }

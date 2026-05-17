@@ -8,11 +8,14 @@ use super::SfcBlockType;
 use super::import_rewriter::ImportRewriter;
 use super::source_map::{SfcBlockRange, SfcSourceMap};
 use crate::virtual_ts::VizeMapping;
-use vize_atelier_sfc::SfcDescriptor;
+use vize_atelier_sfc::{
+    SfcDescriptor,
+    croquis::{SfcCroquisOptions, analyze_sfc_descriptor},
+};
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
-use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
+use vize_croquis::Croquis;
 
 /// Result of virtual TypeScript generation.
 #[derive(Debug)]
@@ -223,20 +226,15 @@ impl VirtualTsGenerator {
             vize_atelier_sfc::parse_sfc(content, vize_atelier_sfc::SfcParseOptions::default())
                 .map_err(|error| cstr!("{error:?}"))?;
 
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-        if let Some(ref script_setup) = descriptor.script_setup {
-            analyzer.analyze_script_setup(&script_setup.content);
-        } else if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
-        }
-
-        if let Some(ref template) = descriptor.template {
+        let analysis = if let Some(ref template) = descriptor.template {
             let allocator = vize_carton::Bump::new();
             let (root, _) = vize_armature::parse(&allocator, &template.content);
-            analyzer.analyze_template(&root);
-        }
+            analyze_sfc_descriptor(&descriptor, Some(&root), SfcCroquisOptions::full())
+        } else {
+            analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full())
+        };
 
-        Ok(self.generate(&descriptor, &analyzer.finish()))
+        Ok(self.generate(&descriptor, &analysis))
     }
 }
 

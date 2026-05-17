@@ -116,6 +116,19 @@ impl RaceConditionTracker {
     pub fn is_empty(&self) -> bool {
         self.risks.is_empty()
     }
+
+    /// Shift all stored source offsets by `delta`.
+    pub fn shift_offsets(&mut self, delta: u32) {
+        for risk in &mut self.risks {
+            risk.start = risk.start.saturating_add(delta);
+            risk.end = risk.end.saturating_add(delta);
+        }
+    }
+
+    /// Merge another tracker into this one.
+    pub fn extend(&mut self, other: Self) {
+        self.risks.extend(other.risks);
+    }
 }
 
 #[cfg(test)]

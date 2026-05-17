@@ -313,10 +313,13 @@ impl CorsaServer {
     /// Check a Vue SFC and return diagnostics.
     fn check_vue_sfc(&mut self, uri: &str, content: &str) -> Result<CheckResult, String> {
         use vize_atelier_core::parser::parse;
-        use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+        use vize_atelier_sfc::{
+            SfcParseOptions,
+            croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+            parse_sfc,
+        };
         use vize_carton::Bump;
         use vize_croquis::virtual_ts::generate_virtual_ts;
-        use vize_croquis::{Analyzer, AnalyzerOptions};
 
         // Parse SFC
         let parse_opts = SfcParseOptions {
@@ -327,52 +330,33 @@ impl CorsaServer {
         let descriptor = parse_sfc(content, parse_opts)
             .map_err(|e| cstr!("Failed to parse SFC: {}", e.message))?;
 
-        // Get script content
-        let script_content = descriptor
-            .script_setup
-            .as_ref()
-            .map(|s| s.content.as_ref())
-            .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
-
         // Create allocator
         let allocator = Bump::new();
 
-        // Analyze
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-
-        let template_offset: u32 = if let Some(ref script_setup) = descriptor.script_setup {
-            analyzer.analyze_script_setup(&script_setup.content);
-            descriptor
-                .template
-                .as_ref()
-                .map(|t| t.loc.start as u32)
-                .unwrap_or(0)
-        } else if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
-            descriptor
-                .template
-                .as_ref()
-                .map(|t| t.loc.start as u32)
-                .unwrap_or(0)
-        } else {
-            0
-        };
+        let template_offset = descriptor
+            .template
+            .as_ref()
+            .map(|t| t.loc.start as u32)
+            .unwrap_or(0);
 
         let template_ast = if let Some(ref template) = descriptor.template {
             let (root, _) = parse(&allocator, &template.content);
-            analyzer.analyze_template(&root);
             Some(root)
         } else {
             None
         };
 
-        let summary = analyzer.finish();
+        let analysis = analyze_sfc_descriptor_with_context(
+            &descriptor,
+            template_ast.as_ref(),
+            SfcCroquisOptions::full().without_script_merge(),
+        );
 
         // Generate Virtual TypeScript
         let output = generate_virtual_ts(
-            script_content,
+            analysis.script_content_ref(),
             template_ast.as_ref(),
-            &summary.bindings,
+            &analysis.croquis.bindings,
             None,
             Some(Path::new(uri)),
             template_offset,
