@@ -181,6 +181,57 @@ test("publish_npm_package normalizes workspace and catalog dependency specs befo
   }
 });
 
+test("prepare_npm_publish_manifest pins native binary catalog deps to the release version", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-prepare-native-"));
+  const repoDir = path.join(tempDir, "repo");
+  const nativeDir = path.join(repoDir, "npm", "vize-native");
+
+  try {
+    fs.mkdirSync(nativeDir, { recursive: true });
+    writeFileSync(
+      path.join(repoDir, "pnpm-workspace.yaml"),
+      [
+        "packages:",
+        '  - "npm/*"',
+        "",
+        "catalogs:",
+        "  native-binaries:",
+        '    "@vizejs/native-linux-x64-gnu": "0.57.0"',
+        '    "@vizejs/native-linux-x64-musl": "0.57.0"',
+        "",
+      ].join("\n"),
+    );
+    writeFileSync(
+      path.join(nativeDir, "package.json"),
+      `${JSON.stringify(
+        {
+          name: "@vizejs/native",
+          version: "0.58.0",
+          optionalDependencies: {
+            "@vizejs/native-linux-x64-gnu": "catalog:native-binaries",
+            "@vizejs/native-linux-x64-musl": "catalog:native-binaries",
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    );
+
+    const result = runMoonScript("prepare_npm_publish_manifest", [nativeDir]);
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+
+    const manifest = JSON.parse(fs.readFileSync(path.join(nativeDir, "package.json"), "utf8")) as {
+      optionalDependencies: Record<string, string>;
+    };
+    assert.deepEqual(manifest.optionalDependencies, {
+      "@vizejs/native-linux-x64-gnu": "0.58.0",
+      "@vizejs/native-linux-x64-musl": "0.58.0",
+    });
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
 test("publish_npm_package computes the tag and forwards provenance to vp", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-npm-"));
   const packageDir = path.join(tempDir, "pkg");

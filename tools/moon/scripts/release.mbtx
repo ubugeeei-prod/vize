@@ -674,7 +674,21 @@ async fn run_app() -> Int {
     @stdio.stderr.write("Failed to stage release files\n")
     return 1
   }
-  if @process.run("git", ["commit", "-m", "chore: release \{tag}"]) != 0 {
+
+  let (staged_exit, staged_output) = @process.collect_stdout(
+    "git",
+    ["diff", "--cached", "--name-only"],
+  )
+  if staged_exit != 0 {
+    @stdio.stderr.write("Failed to inspect staged release files\n")
+    return 1
+  }
+  let commit_args = if staged_output.text().trim() == "" && force_tag {
+    ["commit", "--allow-empty", "-m", "chore: release \{tag}"]
+  } else {
+    ["commit", "-m", "chore: release \{tag}"]
+  }
+  if @process.run("git", commit_args) != 0 {
     @stdio.stderr.write("Failed to create the release commit\n")
     return 1
   }

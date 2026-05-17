@@ -138,7 +138,7 @@ test("esm packed npm manifests point at mjs and d.mts outputs", () => {
   assert.deepEqual(failures, []);
 });
 
-test("native package pins and generated loader version checks stay aligned", () => {
+test("native package catalog pins and generated loader version checks stay aligned", () => {
   const nativePackage = JSON.parse(
     fs.readFileSync(path.join(root, "npm/vize-native/package.json"), "utf-8"),
   ) as {
@@ -162,14 +162,12 @@ test("native package pins and generated loader version checks stay aligned", () 
     ),
   );
 
-  for (const [name] of nativeOptionalDependencies) {
-    assert.equal(workspacePins[name], nativePackage.version, `${name} catalog pin`);
-  }
-
   const lockfile = fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf-8");
   for (const [name] of nativeOptionalDependencies) {
     const escapedName = escapeRegExp(name);
-    const escapedVersion = escapeRegExp(nativePackage.version);
+    const catalogVersion = workspacePins[name];
+    assert.ok(catalogVersion, `${name} catalog pin`);
+    const escapedVersion = escapeRegExp(catalogVersion);
     assert.match(lockfile, new RegExp(`['"]?${escapedName}@${escapedVersion}['"]?:`));
     assert.doesNotMatch(lockfile, new RegExp(`${escapedName}@(?!${escapedVersion})`));
   }

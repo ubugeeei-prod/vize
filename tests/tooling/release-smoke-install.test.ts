@@ -58,6 +58,34 @@ test("release install smoke rejects unresolved workspace protocols", () => {
   }
 });
 
+test("release install smoke skips libc-incompatible tarballs", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
+  try {
+    const compatibleDir = writePackage(tempDir, "compatible", {
+      cpu: [process.arch],
+      name: "@vizejs/smoke-compatible",
+      os: [process.platform],
+      version: "1.0.0",
+    });
+    const incompatibleDir = writePackage(tempDir, "incompatible", {
+      cpu: [process.arch],
+      libc: [oppositeLibc()],
+      name: "@vizejs/smoke-incompatible",
+      os: [process.platform],
+      version: "1.0.0",
+    });
+
+    const result = runSmoke(compatibleDir, incompatibleDir);
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stdout, /install: @vizejs\/smoke-compatible@1\.0\.0/);
+    assert.match(result.stdout, /pack-only: @vizejs\/smoke-incompatible@1\.0\.0/);
+    assert.match(result.stdout, /smoked 1\/2 package tarballs/);
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
+});
+
 function writePackage(tempDir: string, dirName: string, manifest: Record<string, unknown>): string {
   const packageDir = path.join(tempDir, dirName);
   fs.mkdirSync(packageDir, { recursive: true });
@@ -83,6 +111,12 @@ function writePackage(tempDir: string, dirName: string, manifest: Record<string,
     ),
   );
   return packageDir;
+}
+
+function oppositeLibc(): "glibc" | "musl" {
+  if (process.platform !== "linux") return "glibc";
+  const header = process.report?.getReport?.().header;
+  return header != null && typeof header.glibcVersionRuntime === "string" ? "musl" : "glibc";
 }
 
 function runSmoke(...packageDirs: string[]): {
