@@ -49,6 +49,8 @@ export function createStreamsContext(options: StreamsContextOptions = {}): Strea
   const stdout = options.stdout ?? process.stdout;
   const stderr = options.stderr ?? process.stderr;
   const isInteractive = options.interactive ?? true;
+  let rawModeDepth = 0;
+  let pendingRawModeDisable = false;
   let bracketedPasteDepth = 0;
 
   return {
@@ -56,7 +58,31 @@ export function createStreamsContext(options: StreamsContextOptions = {}): Strea
     stdout,
     stderr,
     setRawMode: (isRawMode: boolean) => {
-      stdin.setRawMode?.(isRawMode);
+      if (typeof stdin.setRawMode !== "function") return;
+
+      stdin.setEncoding?.("utf8");
+
+      if (isRawMode) {
+        pendingRawModeDisable = false;
+        if (rawModeDepth === 0) {
+          stdin.ref?.();
+          stdin.setRawMode(true);
+        }
+        rawModeDepth += 1;
+        return;
+      }
+
+      if (rawModeDepth === 0) return;
+      rawModeDepth -= 1;
+      if (rawModeDepth > 0) return;
+
+      pendingRawModeDisable = true;
+      queueMicrotask(() => {
+        if (!pendingRawModeDisable || rawModeDepth > 0) return;
+        pendingRawModeDisable = false;
+        stdin.setRawMode?.(false);
+        stdin.unref?.();
+      });
     },
     isRawModeSupported: typeof stdin.setRawMode === "function",
     setBracketedPasteMode: (isEnabled: boolean) => {
