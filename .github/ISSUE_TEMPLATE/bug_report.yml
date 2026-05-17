@@ -1,0 +1,83 @@
+name: Bug report
+description: Report a reproducible problem in Vize
+title: "fix: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Please include a minimal reproduction when possible.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - CLI
+        - Vite plugin
+        - Nuxt integration
+        - Rspack plugin
+        - Oxlint plugin
+        - Fresco
+        - Musea
+        - VS Code or editor integration
+        - Release or package install
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Package version, commit SHA, or tag.
+      placeholder: "0.101.0"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Link a repository or paste the smallest commands/files that reproduce the problem.
+      placeholder: |
+        git clone ...
+        vp check ...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened? Include logs, diagnostics, stack traces, or screenshots when useful.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, architecture, Node.js version, package manager, Rust version, and framework versions when relevant.
+      value: |
+        - OS:
+        - Architecture:
+        - Node.js:
+        - Package manager:
+        - Rust:
+        - Framework:
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked existing issues and pull requests.
+          required: true
+        - label: This is not a private security report.
+          required: true
