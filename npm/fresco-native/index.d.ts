@@ -113,6 +113,12 @@ export interface TerminalInfoNapi {
   trueColor: boolean;
 }
 
+export interface TerminalOptionsNapi {
+  alternateScreen?: boolean;
+  mouse?: boolean;
+  bracketedPaste?: boolean;
+}
+
 export interface LayoutResultNapi {
   id: number;
   x: number;
@@ -123,6 +129,7 @@ export interface LayoutResultNapi {
 
 export function initTerminal(): void;
 export function initTerminalWithMouse(): void;
+export function initTerminalWithOptions(options: TerminalOptionsNapi): void;
 export function restoreTerminal(): void;
 export function getTerminalInfo(): TerminalInfoNapi;
 export function clearScreen(): void;
