@@ -2,6 +2,7 @@
 
 use clap::{Args, ValueEnum};
 use std::process::Command;
+use vize_carton::String as CompactString;
 
 #[derive(Debug, Clone, Copy, ValueEnum, Default)]
 pub enum UpgradeSource {
@@ -42,7 +43,7 @@ pub fn run(args: UpgradeArgs) {
     }
 
     let status = Command::new(program)
-        .args(&command_args)
+        .args(command_args.iter().map(|arg| arg.as_str()))
         .status()
         .unwrap_or_else(|error| {
             eprintln!("Failed to start {}: {}", program, error);
@@ -54,18 +55,22 @@ pub fn run(args: UpgradeArgs) {
     }
 }
 
-fn command_for_args(args: &UpgradeArgs) -> (&'static str, Vec<String>) {
+fn command_for_args(args: &UpgradeArgs) -> (&'static str, Vec<CompactString>) {
     match args.source {
         UpgradeSource::PackageManager => {
-            let package = if args.package == "vize" {
+            let package: CompactString = if args.package == "vize" {
                 "vize@latest".into()
             } else {
-                args.package.clone()
+                args.package.as_str().into()
             };
             ("vp", vec!["install".into(), "-D".into(), package])
         }
         UpgradeSource::Cargo => {
-            let mut command_args = vec!["install".into(), args.package.clone(), "--force".into()];
+            let mut command_args: Vec<CompactString> = vec![
+                "install".into(),
+                args.package.as_str().into(),
+                "--force".into(),
+            ];
             if !args.no_locked {
                 command_args.push("--locked".into());
             }
