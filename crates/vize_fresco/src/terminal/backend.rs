@@ -15,6 +15,24 @@ use crossterm::{
 
 use super::{buffer::Buffer, cell::Style, cursor::Cursor};
 
+/// Terminal mode switches used during backend initialization.
+#[derive(Debug, Clone, Copy)]
+pub struct TerminalOptions {
+    pub alternate_screen: bool,
+    pub mouse_capture: bool,
+    pub bracketed_paste: bool,
+}
+
+impl Default for TerminalOptions {
+    fn default() -> Self {
+        Self {
+            alternate_screen: true,
+            mouse_capture: false,
+            bracketed_paste: true,
+        }
+    }
+}
+
 /// Terminal backend for rendering.
 pub struct Backend {
     /// Current buffer (what should be displayed)
@@ -25,6 +43,8 @@ pub struct Backend {
     cursor: Cursor,
     /// Whether alternate screen is enabled
     alternate_screen: bool,
+    /// Whether the cursor was hidden during initialization
+    cursor_hidden: bool,
     /// Whether mouse capture is enabled
     mouse_capture: bool,
     /// Whether bracketed paste is enabled
@@ -44,6 +64,7 @@ impl Backend {
             previous: Buffer::new(width, height),
             cursor: Cursor::new(),
             alternate_screen: false,
+            cursor_hidden: false,
             mouse_capture: false,
             bracketed_paste: false,
             width,
@@ -53,24 +74,40 @@ impl Backend {
 
     /// Initialize the terminal for TUI mode.
     pub fn init(&mut self) -> io::Result<()> {
+        self.init_with_options(TerminalOptions::default())
+    }
+
+    /// Initialize the terminal for TUI mode with explicit mode options.
+    pub fn init_with_options(&mut self, options: TerminalOptions) -> io::Result<()> {
         enable_raw_mode()?;
-        execute!(
-            io::stdout(),
-            EnterAlternateScreen,
-            EnableBracketedPaste,
-            Hide
-        )?;
-        self.alternate_screen = true;
-        self.bracketed_paste = true;
+        let mut stdout = io::stdout();
+
+        if options.alternate_screen {
+            execute!(stdout, EnterAlternateScreen)?;
+            self.alternate_screen = true;
+        }
+
+        if options.bracketed_paste {
+            execute!(stdout, EnableBracketedPaste)?;
+            self.bracketed_paste = true;
+        }
+
+        if options.mouse_capture {
+            execute!(stdout, EnableMouseCapture)?;
+            self.mouse_capture = true;
+        }
+
+        execute!(stdout, Hide)?;
+        self.cursor_hidden = true;
         Ok(())
     }
 
     /// Initialize with mouse capture enabled.
     pub fn init_with_mouse(&mut self) -> io::Result<()> {
-        self.init()?;
-        execute!(io::stdout(), EnableMouseCapture)?;
-        self.mouse_capture = true;
-        Ok(())
+        self.init_with_options(TerminalOptions {
+            mouse_capture: true,
+            ..TerminalOptions::default()
+        })
     }
 
     /// Restore the terminal to normal mode.
@@ -88,8 +125,13 @@ impl Backend {
         }
 
         if self.alternate_screen {
-            execute!(stdout, LeaveAlternateScreen, Show)?;
+            execute!(stdout, LeaveAlternateScreen)?;
             self.alternate_screen = false;
+        }
+
+        if self.cursor_hidden {
+            execute!(stdout, Show)?;
+            self.cursor_hidden = false;
         }
 
         disable_raw_mode()?;
@@ -353,7 +395,7 @@ impl Drop for Backend {
 
 #[cfg(test)]
 mod tests {
-    use super::Backend;
+    use super::{Backend, TerminalOptions};
 
     #[test]
     fn test_backend_size() {
@@ -362,5 +404,14 @@ mod tests {
             assert!(backend.width() > 0);
             assert!(backend.height() > 0);
         }
+    }
+
+    #[test]
+    fn terminal_options_default_preserves_legacy_init_modes() {
+        let options = TerminalOptions::default();
+
+        assert!(options.alternate_screen);
+        assert!(!options.mouse_capture);
+        assert!(options.bracketed_paste);
     }
 }
