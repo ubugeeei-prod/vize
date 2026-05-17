@@ -214,6 +214,7 @@ fn normalize_dependency_sections(
   package_json : Json,
   workspace_versions : Map[String, String],
   catalog_versions : Map[String, String],
+  native_binary_version : String?,
 ) -> Array[String] {
   let unresolved = []
   guard package_json is Object(package_obj) else {
@@ -240,6 +241,18 @@ fn normalize_dependency_sections(
         }
         if version_spec.has_prefix("catalog:") {
           let catalog_name = version_spec.replace(old="catalog:", new="")
+          if catalog_name == "native-binaries" && dependency_name.has_prefix("@vizejs/native-") {
+            match native_binary_version {
+              Some(version) => {
+                dependencies[dependency_name] = Json::string(version)
+              }
+              None =>
+                unresolved.push(
+                  "Missing native package version for \{dependency_name} from \{section}",
+                )
+            }
+            continue
+          }
           let catalog_key = catalog_name + "\u0000" + dependency_name
           match catalog_versions.get(catalog_key) {
             Some(version) => {
@@ -341,7 +354,16 @@ async fn run_app() -> Int {
     }
   }
   let catalog_versions = parse_catalog_versions(workspace_yaml)
-  let unresolved = normalize_dependency_sections(package_json, workspace_versions, catalog_versions)
+  let native_binary_version = match workspace_versions.get("@vizejs/native") {
+    Some(version) => Some(version)
+    None => package_version(package_json)
+  }
+  let unresolved = normalize_dependency_sections(
+    package_json,
+    workspace_versions,
+    catalog_versions,
+    native_binary_version,
+  )
   if !unresolved.is_empty() {
     for item in unresolved {
       @stdio.stderr.write(item + "\n")
