@@ -13,6 +13,8 @@ export {
   type AppOptions,
   type RenderOptions,
   type RenderInstance,
+  type Instance,
+  type RenderMetrics,
   type RenderToStringOptions,
   lastKeyEvent,
   lastPasteEvent,

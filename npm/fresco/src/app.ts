@@ -134,7 +134,7 @@ export interface AppOptions {
   /** Ink-compatible option, accepted for API parity */
   patchConsole?: boolean;
   /** Called after a frame is rendered */
-  onRender?: (metrics: { renderTime: number }) => void;
+  onRender?: (metrics: RenderMetrics) => void;
   /** Enable screen reader rendering hints */
   isScreenReaderEnabled?: boolean;
   /** Maximum render frames per second */
@@ -154,6 +154,14 @@ export interface AppOptions {
 export type RenderOptions = AppOptions;
 
 export type AppRoot = Component | VNode;
+
+/**
+ * Performance metrics for a render operation.
+ */
+export interface RenderMetrics {
+  /** Time spent rendering in milliseconds */
+  renderTime: number;
+}
 
 /**
  * Fresco App instance
@@ -183,6 +191,8 @@ export interface RenderInstance {
   cleanup(): Promise<void>;
   clear(): void;
 }
+
+export type Instance = RenderInstance;
 
 export interface RenderToStringOptions {
   /** Width of the virtual terminal in columns */
