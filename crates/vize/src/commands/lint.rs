@@ -11,12 +11,16 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use std::time::Instant;
 use vize_armature::Parser;
-use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_atelier_sfc::{
+    SfcParseOptions,
+    croquis::{SfcCroquisOptions, analyze_sfc_descriptor},
+    parse_sfc,
+};
 use vize_carton::{
     Allocator, CompactString, FxHashMap, FxHashSet, String, ToCompactString, cstr, profile,
     profiler::{allocation_snapshot, global_profiler},
 };
-use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
+use vize_croquis::Croquis;
 use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
     DiagnosticSeverity, FileId,
@@ -647,30 +651,33 @@ fn analyze_sfc_for_cross_file(
     )
     .ok()?;
 
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     let mut offsets = CrossFileSourceOffsets::default();
 
     if let Some(script_setup) = descriptor.script_setup.as_ref() {
-        offsets.script = script_setup.loc.start as u32;
-        let generic = script_setup
-            .attrs
-            .get("generic")
-            .map(|value| value.as_ref());
-        analyzer.analyze_script_setup_with_generic(script_setup.content.as_ref(), generic);
+        offsets.script = if descriptor.script.is_some() {
+            descriptor
+                .script
+                .as_ref()
+                .map(|script| script.loc.start as u32)
+                .unwrap_or(script_setup.loc.start as u32)
+        } else {
+            script_setup.loc.start as u32
+        };
     } else if let Some(script) = descriptor.script.as_ref() {
         offsets.script = script.loc.start as u32;
-        analyzer.analyze_script_plain(script.content.as_ref());
     }
 
-    if let Some(template) = descriptor.template.as_ref() {
+    let analysis = if let Some(template) = descriptor.template.as_ref() {
         offsets.template = template.loc.start as u32;
         let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
         let parser = Parser::new(allocator.as_bump(), template.content.as_ref());
         let (root, _parse_errors) = parser.parse();
-        analyzer.analyze_template(&root);
-    }
+        analyze_sfc_descriptor(&descriptor, Some(&root), SfcCroquisOptions::full())
+    } else {
+        analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full())
+    };
 
-    Some((analyzer.finish(), offsets))
+    Some((analysis, offsets))
 }
 
 fn cross_file_diagnostic_to_lint(

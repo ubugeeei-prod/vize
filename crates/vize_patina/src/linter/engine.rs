@@ -5,12 +5,13 @@
 
 use crate::{context::LintContext, diagnostic::LintSummary, visitor::LintVisitor};
 use vize_armature::Parser;
+use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::Allocator;
 use vize_carton::String;
 use vize_carton::ToCompactString;
 use vize_carton::profile;
-use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
+use vize_croquis::{Analyzer, Croquis};
 use vize_relief::ast::RootNode;
 
 use super::config::{LintResult, Linter};
@@ -29,23 +30,7 @@ pub(crate) fn analyze_descriptor_for_lint(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     template_ast: Option<&RootNode<'_>>,
 ) -> Croquis {
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::for_lint());
-
-    if let Some(script_setup) = descriptor.script_setup.as_ref() {
-        let generic = script_setup
-            .attrs
-            .get("generic")
-            .map(|value| value.as_ref());
-        analyzer.analyze_script_setup_with_generic(script_setup.content.as_ref(), generic);
-    } else if let Some(script) = descriptor.script.as_ref() {
-        analyzer.analyze_script_plain(script.content.as_ref());
-    }
-
-    if let Some(root) = template_ast {
-        analyzer.analyze_template(root);
-    }
-
-    analyzer.finish()
+    analyze_sfc_descriptor(descriptor, template_ast, SfcCroquisOptions::for_lint())
 }
 
 impl Linter {
@@ -200,7 +185,7 @@ impl Linter {
             analysis
         } else {
             owned_analysis = profile!("patina.template.croquis", {
-                let mut analyzer = Analyzer::with_options(AnalyzerOptions::for_lint());
+                let mut analyzer = Analyzer::for_lint();
                 analyzer.analyze_template(root);
                 analyzer.finish()
             });

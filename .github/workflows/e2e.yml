@@ -112,7 +112,7 @@ jobs:
         run: |
           case "${{ matrix.suite }}" in
             dev)
-              vp run --filter './tests' test:dev
+              vp run --filter './tests' test:dev:ci
               ;;
             vrt)
               vp run --filter './tests' test:vrt

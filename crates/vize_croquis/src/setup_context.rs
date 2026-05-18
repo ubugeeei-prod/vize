@@ -181,6 +181,19 @@ impl SetupContextTracker {
     pub fn count(&self) -> usize {
         self.violations.len()
     }
+
+    /// Shift all stored source offsets by `delta`.
+    pub fn shift_offsets(&mut self, delta: u32) {
+        for violation in &mut self.violations {
+            violation.start = violation.start.saturating_add(delta);
+            violation.end = violation.end.saturating_add(delta);
+        }
+    }
+
+    /// Merge another tracker into this one.
+    pub fn extend(&mut self, other: Self) {
+        self.violations.extend(other.violations);
+    }
 }
 
 #[cfg(test)]

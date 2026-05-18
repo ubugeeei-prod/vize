@@ -203,7 +203,7 @@ async function resolveConfigExport(
 
 async function loadTypeScriptConfig(filePath: string, env?: ConfigEnv): Promise<VizeConfig> {
   const source = fs.readFileSync(filePath, "utf-8");
-  const result = transform(filePath, source, {
+  const result = await transform(filePath, source, {
     typescript: {
       onlyRemoveTypeImports: true,
     },

@@ -110,11 +110,13 @@ test("vscode-art grammar stays aligned with vue-aware editor support", () => {
         embeddedLanguages?: Record<string, string>;
       }>;
     };
+    license?: string;
     scripts?: Record<string, string>;
     version?: string;
   }>("npm/vscode-art/package.json");
 
   assert.equal(manifest.version, workspaceVersion());
+  assert.equal(manifest.license, "MIT");
   assert.equal(manifest.scripts?.compile, "tsgo -p ./");
   assert.equal(manifest.scripts?.watch, "tsgo -watch -p ./");
 

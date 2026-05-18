@@ -1,5 +1,6 @@
 ---
 source: crates/vize_canon/src/tests.rs
+assertion_line: 336
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -39,13 +40,13 @@ type __ShallowRef<T> = import('vue').ShallowRef<T>;
 import { ref } from 'vue'
 
 // ========== Exported Types ==========
-export type Props = {
+export type Props<T extends string | number = any> = {
   items: T[]
   selected?: T
 };
 
 // ========== Setup Scope ==========
-function __setup() {
+function __setup<T extends string | number>() {
   // Compiler macros (only valid in setup scope, not global)
   function defineProps<_T = unknown>(): _T;
   function defineProps<const _T extends readonly string[]>(_props: _T): { [K in _T[number]]?: any };
@@ -80,7 +81,7 @@ function __setup() {
   
   const activeItem = ref<T | null>(null)
   
-  // @vize-map: 4246:4440 -> 0:193
+  // @vize-map: 4306:4500 -> 0:193
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -100,7 +101,7 @@ function __setup() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: Props = {} as Props;
+  const props: Props<T> = {} as Props<T>;
   void props; // Mark as used to avoid TS6133
   const items = props["items"];
   void items;

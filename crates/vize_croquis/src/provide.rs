@@ -240,6 +240,36 @@ impl ProvideInjectTracker {
             }
         }
     }
+
+    /// Shift all stored source offsets by `delta`.
+    pub fn shift_offsets(&mut self, delta: u32) {
+        for provide in &mut self.provides {
+            provide.start = provide.start.saturating_add(delta);
+            provide.end = provide.end.saturating_add(delta);
+        }
+        for inject in &mut self.injects {
+            inject.start = inject.start.saturating_add(delta);
+            inject.end = inject.end.saturating_add(delta);
+            if let InjectPattern::IndirectDestructure { offset, .. } = &mut inject.pattern {
+                *offset = offset.saturating_add(delta);
+            }
+        }
+        for composable in &mut self.composables {
+            composable.start = composable.start.saturating_add(delta);
+            composable.end = composable.end.saturating_add(delta);
+        }
+    }
+
+    /// Merge another tracker into this one, remapping provider IDs.
+    pub fn extend(&mut self, other: Self) {
+        for mut provide in other.provides {
+            provide.id = ProviderId::new(self.next_id);
+            self.next_id += 1;
+            self.provides.push(provide);
+        }
+        self.injects.extend(other.injects);
+        self.composables.extend(other.composables);
+    }
 }
 
 #[cfg(test)]

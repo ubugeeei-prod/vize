@@ -398,6 +398,29 @@ impl ScopeChain {
         self.scopes.iter()
     }
 
+    /// Shift script-local offsets after embedding a script analysis into a
+    /// larger synthetic script. Template scopes should be added after this.
+    pub fn shift_script_offsets(&mut self, delta: u32) {
+        for scope in &mut self.scopes {
+            if matches!(
+                scope.kind,
+                ScopeKind::JsGlobalUniversal
+                    | ScopeKind::JsGlobalBrowser
+                    | ScopeKind::JsGlobalNode
+                    | ScopeKind::JsGlobalDeno
+                    | ScopeKind::JsGlobalBun
+                    | ScopeKind::VueGlobal
+            ) {
+                continue;
+            }
+
+            scope.span.shift(delta);
+            for binding in scope.bindings.values_mut() {
+                binding.shift_declaration_offset(delta);
+            }
+        }
+    }
+
     /// Find a scope by kind (returns the first match)
     #[inline]
     pub fn find_scope_by_kind(&self, kind: ScopeKind) -> Option<ScopeId> {

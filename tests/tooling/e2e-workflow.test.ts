@@ -39,6 +39,7 @@ test("app e2e workflow is manually selectable and uploads failure artifacts", ()
   assert.match(workflow, /contains\(fromJSON\('\["dev","vrt"\]'\), matrix\.suite\)/);
   assert.match(workflow, /vp exec --filter '\.\/tests' -- playwright install --with-deps chromium/);
   assert.match(workflow, /RUN_BUILD_TESTS=1 vp run --filter '\.\/tests' test:preview/);
+  assert.match(workflow, /vp run --filter '\.\/tests' test:dev:ci/);
   assert.match(workflow, /vp run --filter '\.\/tests' test:check/);
   assert.match(workflow, /vp run --filter '\.\/tests' test:lint/);
   assert.match(workflow, /vp run --filter '\.\/tests' test:check:fixtures/);

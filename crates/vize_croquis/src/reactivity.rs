@@ -406,6 +406,25 @@ impl ReactivityTracker {
     pub fn has_losses(&self) -> bool {
         !self.losses.is_empty()
     }
+
+    /// Shift all stored source offsets by `delta`.
+    pub fn shift_offsets(&mut self, delta: u32) {
+        for source in &mut self.sources {
+            source.declaration_offset = source.declaration_offset.saturating_add(delta);
+        }
+        for loss in &mut self.losses {
+            loss.start = loss.start.saturating_add(delta);
+            loss.end = loss.end.saturating_add(delta);
+        }
+    }
+
+    /// Merge another tracker into this one, preserving this tracker's IDs.
+    pub fn extend(&mut self, other: Self) {
+        for source in other.sources {
+            self.register(source.name, source.kind, source.declaration_offset);
+        }
+        self.losses.extend(other.losses);
+    }
 }
 
 #[cfg(test)]

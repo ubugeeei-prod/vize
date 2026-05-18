@@ -571,6 +571,22 @@ impl MacroTracker {
     pub fn is_async(&self) -> bool {
         self.has_top_level_await()
     }
+
+    /// Shift all stored source offsets by `delta`.
+    pub fn shift_offsets(&mut self, delta: u32) {
+        for call in &mut self.calls {
+            call.start = call.start.saturating_add(delta);
+            call.end = call.end.saturating_add(delta);
+        }
+        for call in &mut self.emit_calls {
+            call.start = call.start.saturating_add(delta);
+            call.end = call.end.saturating_add(delta);
+        }
+        for await_expr in &mut self.top_level_awaits {
+            await_expr.start = await_expr.start.saturating_add(delta);
+            await_expr.end = await_expr.end.saturating_add(delta);
+        }
+    }
 }
 
 #[cfg(test)]

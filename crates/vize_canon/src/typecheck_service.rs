@@ -109,9 +109,12 @@ impl TypeCheckService {
     ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
         use std::time::Instant;
         use vize_atelier_core::parser::parse;
-        use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+        use vize_atelier_sfc::{
+            SfcParseOptions,
+            croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+            parse_sfc,
+        };
         use vize_carton::Bump;
-        use vize_croquis::{Analyzer, AnalyzerOptions};
 
         let start_time = Instant::now();
         let mut result = SfcTypeCheckResult::default();
@@ -138,46 +141,24 @@ impl TypeCheckService {
             }
         };
 
-        // Get script content
-        let script_content = descriptor
-            .script_setup
-            .as_ref()
-            .map(|s| s.content.as_ref())
-            .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
-
         // Create allocator for template parsing
         let allocator = Bump::new();
 
-        // Create analyzer
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-
-        // Analyze script
         let mut has_script_parse_errors = false;
-        let mut script_offset: u32 = 0;
         if let Some(ref script) = descriptor.script {
-            if descriptor.script_setup.is_none() {
-                script_offset = script.loc.start as u32;
-            }
             let script_diagnostics =
                 collect_script_parse_diagnostics(&script.content, script.loc.start as u32);
-            if script_diagnostics.is_empty() {
-                if descriptor.script_setup.is_none() {
-                    analyzer.analyze_script_plain(&script.content);
-                }
-            } else {
+            if !script_diagnostics.is_empty() {
                 has_script_parse_errors = true;
                 add_script_parse_diagnostics(script_diagnostics, &mut result);
             }
         }
         if let Some(ref script_setup) = descriptor.script_setup {
-            script_offset = script_setup.loc.start as u32;
             let script_diagnostics = collect_script_parse_diagnostics(
                 &script_setup.content,
                 script_setup.loc.start as u32,
             );
-            if script_diagnostics.is_empty() {
-                analyzer.analyze_script_setup(&script_setup.content);
-            } else {
+            if !script_diagnostics.is_empty() {
                 has_script_parse_errors = true;
                 add_script_parse_diagnostics(script_diagnostics, &mut result);
             }
@@ -189,7 +170,6 @@ impl TypeCheckService {
             let template_offset = template.loc.start as u32;
             let (root, errors) = parse(&allocator, &template.content);
             if errors.is_empty() {
-                analyzer.analyze_template(&root);
                 (template_offset, Some(root))
             } else {
                 has_template_parse_errors = true;
@@ -221,17 +201,23 @@ impl TypeCheckService {
             (0, None)
         };
 
-        let summary = analyzer.finish();
+        let analysis = analyze_sfc_descriptor_with_context(
+            &descriptor,
+            template_ast.as_ref(),
+            SfcCroquisOptions::full(),
+        );
 
         if has_template_parse_errors || has_script_parse_errors {
             result.analysis_time_ms = Some(start_time.elapsed().as_secs_f64() * 1000.0);
             return Ok(result);
         }
 
+        let script_offset = analysis.script_offset;
+
         // Generate virtual TypeScript
         let virtual_ts_output = generate_virtual_ts_with_offsets(
-            &summary,
-            script_content,
+            &analysis.croquis,
+            analysis.script_content_ref(),
             template_ast.as_ref(),
             script_offset,
             template_offset,

@@ -42,6 +42,7 @@ pub mod bundler;
 pub mod compile;
 pub mod compile_script;
 pub mod compile_template;
+pub mod croquis;
 pub mod css;
 pub mod parse;
 pub mod rewrite_default;

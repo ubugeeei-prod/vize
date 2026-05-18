@@ -15,8 +15,11 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen(js_name = "analyzeCrossFile")]
 pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsValue, JsValue> {
     use vize_atelier_core::parser::parse;
-    use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-    use vize_croquis::{Analyzer, AnalyzerOptions};
+    use vize_atelier_sfc::{
+        SfcParseOptions,
+        croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+        parse_sfc,
+    };
     use vize_croquis_cf::CrossFileAnalyzer;
 
     // Parse options
@@ -66,69 +69,21 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                 ..Default::default()
             };
             if let Ok(descriptor) = parse_sfc(source, parse_opts) {
-                // Create single-file analyzer with full options
-                let mut single_analyzer = Analyzer::with_options(AnalyzerOptions::full());
-
-                // Extract and analyze script content
-                let (script_content, script_start): (&str, usize) =
-                    if let Some(ref script_setup) = descriptor.script_setup {
-                        single_analyzer.analyze_script_setup(&script_setup.content);
-                        (&script_setup.content, script_setup.loc.start)
-                    } else if let Some(ref script) = descriptor.script {
-                        single_analyzer.analyze_script_plain(&script.content);
-                        (&script.content, script.loc.start)
-                    } else {
-                        ("", 0)
-                    };
-
-                // Also analyze the regular <script> block for setup context violations
-                // when it exists alongside <script setup>
-                let plain_script_violations = if descriptor.script_setup.is_some() {
-                    if let Some(ref script) = descriptor.script {
-                        // Parse the plain script to detect setup context violations
-                        let plain_result =
-                            vize_croquis::script_parser::parse_script(&script.content);
-                        // Extract violations with adjusted offsets
-                        plain_result
-                            .setup_context
-                            .violations()
-                            .iter()
-                            .map(|v| {
-                                vize_croquis::setup_context::SetupContextViolation {
-                                    kind: v.kind,
-                                    api_name: v.api_name.clone(),
-                                    // Adjust offset to account for script block position
-                                    start: v.start + script.loc.start as u32,
-                                    end: v.end + script.loc.start as u32,
-                                }
-                            })
-                            .collect::<Vec<_>>()
-                    } else {
-                        Vec::new()
-                    }
-                } else {
-                    Vec::new()
-                };
-
-                // Analyze template for component usages (populates used_components)
-                if let Some(ref template) = descriptor.template {
+                let analysis = if let Some(ref template) = descriptor.template {
                     let allocator = Bump::new();
                     let (root, _errors) = parse(&allocator, &template.content);
-                    single_analyzer.analyze_template(&root);
-                }
-
-                // Get complete analysis with used_components populated
-                let mut analysis = single_analyzer.finish();
-
-                // Merge setup context violations from plain script
-                for violation in plain_script_violations {
-                    analysis.setup_context.record_violation(
-                        violation.kind,
-                        violation.api_name,
-                        violation.start,
-                        violation.end,
-                    );
-                }
+                    analyze_sfc_descriptor_with_context(
+                        &descriptor,
+                        Some(&root),
+                        SfcCroquisOptions::full(),
+                    )
+                } else {
+                    analyze_sfc_descriptor_with_context(
+                        &descriptor,
+                        None,
+                        SfcCroquisOptions::full(),
+                    )
+                };
 
                 // Record template opening tag span before adding file
                 // Use tag_start and content start (which is right after '>') to cover just <template...>
@@ -139,7 +94,10 @@ pub fn analyze_cross_file_wasm(files: JsValue, options: JsValue) -> Result<JsVal
                     .unwrap_or((0, 0));
 
                 // Add file with pre-computed analysis
-                let file_id = analyzer.add_file_with_analysis(std_path, script_content, analysis);
+                let script_start = analysis.script_offset as usize;
+                let script_content = analysis.script_content.unwrap_or_default();
+                let file_id =
+                    analyzer.add_file_with_analysis(std_path, &script_content, analysis.croquis);
 
                 // Record the script and template offsets for this file
                 script_offsets.insert(file_id.as_u32(), script_start);

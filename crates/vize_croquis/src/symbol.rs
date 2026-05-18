@@ -177,6 +177,16 @@ impl SymbolTable {
     pub fn is_empty(&self) -> bool {
         self.symbols.is_empty()
     }
+
+    /// Shift all stored source offsets by `delta`.
+    pub fn shift_offsets(&mut self, delta: u32) {
+        for symbol in &mut self.symbols {
+            symbol.declaration_offset = symbol.declaration_offset.saturating_add(delta);
+            for reference in &mut symbol.references {
+                *reference = reference.saturating_add(delta);
+            }
+        }
+    }
 }
 
 /// Convert from ScopeBinding to add to symbol table

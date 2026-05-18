@@ -39,6 +39,9 @@
     },
     "./vize_vitrine_bg.wasm": "./vize_vitrine_bg.wasm"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=22"
   }
