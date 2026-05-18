@@ -4,7 +4,9 @@ Thanks for helping make Vize sharper. This project is still moving toward v1 alp
 
 ## Setup
 
-Use the Node.js version from `.node-version`, then install dependencies from the workspace root:
+Use the Node.js version from `.node-version` and the Rust version from `rust-toolchain.toml`. The workspace declares a minimum supported Rust version (MSRV) of `1.95.0` in `Cargo.toml` (`[workspace.package].rust-version`); contributions must compile under that version.
+
+Install dependencies from the workspace root:
 
 ```sh
 vp install --frozen-lockfile --prefer-offline

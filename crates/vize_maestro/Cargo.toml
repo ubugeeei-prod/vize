@@ -2,6 +2,7 @@
 name = "vize_maestro"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Maestro - Language Server Protocol implementation for Vize Vue templates"

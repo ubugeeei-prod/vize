@@ -2,6 +2,7 @@
 name = "vize_musea"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Musea - Component gallery and documentation for Vize Vue components"
