@@ -74,6 +74,10 @@ input = '<div v-for="item in items" :key="item.id" v-memo="[item.selected]">{{ i
 name = "v-memo with complex expression"
 input = '<div v-for="item in items" :key="item.id" v-memo="[item.id === selected]">{{ item.name }}</div>'
 
+[[cases]]
+name = "v-memo with optional chaining"
+input = '<div v-memo="[item?.id]">{{ item?.name }}</div>'
+
 # =============================================================================
 # v-memo on template
 # =============================================================================

@@ -10,10 +10,10 @@ use std::path::PathBuf;
 use vize_carton::String;
 use vize_test_runner::{CompilerMode, run_fixture_tests};
 
-const MIN_VDOM_PASSED: usize = 353;
+const MIN_VDOM_PASSED: usize = 383;
 const MIN_VAPOR_PASSED: usize = 104;
-const MIN_SFC_PASSED: usize = 60;
-const MIN_TOTAL_PASSED: usize = 517;
+const MIN_SFC_PASSED: usize = 61;
+const MIN_TOTAL_PASSED: usize = 548;
 
 // Known v1 alpha fixture debt. CI allows these exact failures so existing gaps
 // do not block unrelated work, but any new failure or pass-count regression

@@ -171,3 +171,18 @@ watch(count, (n) => console.log(n))
   <div>{{ double }}</div>
 </template>
 """
+
+[[cases]]
+name = "script setup function handler"
+input = """
+<script setup>
+const count = 0
+function onClick() {
+  console.log(count)
+}
+</script>
+
+<template>
+  <button @click="onClick">Click</button>
+</template>
+"""

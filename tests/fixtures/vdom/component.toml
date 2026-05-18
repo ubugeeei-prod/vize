@@ -58,6 +58,14 @@ input = '<MyComponent v-bind="props" />'
 name = "v-bind object with extra props"
 input = '<MyComponent v-bind="props" :extra="value" />'
 
+[[cases]]
+name = "dynamic prop name"
+input = '<MyComponent :[prop]="value" />'
+
+[[cases]]
+name = "v-bind object with event"
+input = '<MyComponent v-bind="props" @update="onUpdate" />'
+
 # =============================================================================
 # Built-in components
 # =============================================================================
@@ -181,6 +189,10 @@ input = '<MyComponent @update="onUpdate" />'
 [[cases]]
 name = "component event with argument"
 input = '<MyComponent @update="onUpdate($event)" />'
+
+[[cases]]
+name = "component dynamic event name"
+input = '<MyComponent @[event]="handler" />'
 
 [[cases]]
 name = "component multiple events"

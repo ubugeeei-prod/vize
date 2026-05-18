@@ -50,6 +50,10 @@ input = '<div class="static" :class="dynamic"></div>'
 name = "class ternary"
 input = "<div :class=\"isActive ? 'active' : 'inactive'\"></div>"
 
+[[cases]]
+name = "class array with conditional"
+input = '<div :class="[base, isActive && active]"></div>'
+
 # =============================================================================
 # Style bindings
 # =============================================================================
@@ -101,6 +105,18 @@ input = '<div v-bind="$attrs"></div>'
 [[cases]]
 name = "v-bind $props"
 input = '<MyComponent v-bind="$props" />'
+
+[[cases]]
+name = "aria attribute binding"
+input = '<button :aria-expanded="isOpen"></button>'
+
+[[cases]]
+name = "data attribute expression"
+input = '<div :data-count="items.length"></div>'
+
+[[cases]]
+name = "optional chaining binding"
+input = '<div :title="user?.name"></div>'
 
 # =============================================================================
 # Dynamic attribute name

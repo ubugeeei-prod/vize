@@ -1,6 +1,6 @@
 ===
 name: simple v-once
-options: default
+options: vdom
 --- INPUT ---
 <div v-once>static</div>
 --- OUTPUT ---
@@ -16,10 +16,9 @@ export function render(_ctx, _cache) {
     _cache[0]
   )
 }
-
 ===
 name: v-once with interpolation
-options: default
+options: vdom
 --- INPUT ---
 <div v-once>{{ msg }}</div>
 --- OUTPUT ---
@@ -35,10 +34,9 @@ export function render(_ctx, _cache) {
     _cache[0]
   )
 }
-
 ===
 name: v-once with binding
-options: default
+options: vdom
 --- INPUT ---
 <div v-once :class="cls">content</div>
 --- OUTPUT ---
@@ -56,10 +54,9 @@ export function render(_ctx, _cache) {
     _cache[0]
   )
 }
-
 ===
 name: v-once on component
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-once />
 --- OUTPUT ---
@@ -75,10 +72,9 @@ export function render(_ctx, _cache) {
     _cache[0]
   )
 }
-
 ===
 name: v-once on template
-options: default
+options: vdom
 --- INPUT ---
 <template v-once><div>A</div><div>B</div></template>
 --- OUTPUT ---
@@ -95,10 +91,9 @@ export function render(_ctx, _cache) {
     _cache[0]
   )
 }
-
 ===
 name: v-once with nested dynamic
-options: default
+options: vdom
 --- INPUT ---
 <div v-once><span :class="cls">{{ msg }}</span></div>
 --- OUTPUT ---
@@ -116,10 +111,9 @@ export function render(_ctx, _cache) {
     _cache[0]
   )
 }
-
 ===
 name: v-once inside v-for
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items" :key="item.id"><span v-once>{{ item.static }}</span></div>
 --- OUTPUT ---
@@ -141,10 +135,9 @@ export function render(_ctx, _cache) {
     ]))
   }), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: basic v-memo
-options: default
+options: vdom
 --- INPUT ---
 <div v-memo="[value]">{{ computed }}</div>
 --- OUTPUT ---
@@ -155,10 +148,9 @@ export function render(_ctx, _cache) {
     _createTextVNode(_toDisplayString(_ctx.computed), 1 /* TEXT */)
   ])), _cache, 0)
 }
-
 ===
 name: v-memo multiple deps
-options: default
+options: vdom
 --- INPUT ---
 <div v-memo="[a, b, c]">{{ result }}</div>
 --- OUTPUT ---
@@ -169,10 +161,9 @@ export function render(_ctx, _cache) {
     _createTextVNode(_toDisplayString(_ctx.result), 1 /* TEXT */)
   ])), _cache, 0)
 }
-
 ===
 name: v-memo empty array
-options: default
+options: vdom
 --- INPUT ---
 <div v-memo="[]">static</div>
 --- OUTPUT ---
@@ -183,10 +174,9 @@ export function render(_ctx, _cache) {
     _createTextVNode("static")
   ])), _cache, 0)
 }
-
 ===
 name: v-memo on component
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent v-memo="[prop]" :prop="prop" />
 --- OUTPUT ---
@@ -197,10 +187,9 @@ export function render(_ctx, _cache) {
 
   return _withMemo([_ctx.prop], () => _createVNode(_component_MyComponent, { prop: _ctx.prop }, null, 8 /* PROPS */, ["prop"]), _cache, 0)
 }
-
 ===
 name: v-memo in v-for
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items" :key="item.id" v-memo="[item.selected]">{{ item.name }}</div>
 --- OUTPUT ---
@@ -219,10 +208,9 @@ export function render(_ctx, _cache) {
     return _item
   }, _cache, 0), 128 /* KEYED_FRAGMENT */))
 }
-
 ===
 name: v-memo with complex expression
-options: default
+options: vdom
 --- INPUT ---
 <div v-for="item in items" :key="item.id" v-memo="[item.id === selected]">{{ item.name }}</div>
 --- OUTPUT ---
@@ -241,10 +229,22 @@ export function render(_ctx, _cache) {
     return _item
   }, _cache, 0), 128 /* KEYED_FRAGMENT */))
 }
+===
+name: v-memo with optional chaining
+options: vdom
+--- INPUT ---
+<div v-memo="[item?.id]">{{ item?.name }}</div>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, withMemo as _withMemo } from "vue"
 
+export function render(_ctx, _cache) {
+  return _withMemo([_ctx.item?.id], () => (_openBlock(), _createElementBlock("div", null, [
+    _createTextVNode(_toDisplayString(_ctx.item?.name), 1 /* TEXT */)
+  ])), _cache, 0)
+}
 ===
 name: v-memo on template
-options: default
+options: vdom
 --- INPUT ---
 <template v-memo="[value]"><div>A</div><div>B</div></template>
 --- OUTPUT ---

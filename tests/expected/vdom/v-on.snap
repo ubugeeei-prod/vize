@@ -1,6 +1,6 @@
 ===
 name: v-on handler
-options: default
+options: vdom
 --- INPUT ---
 <button v-on:click="handler"></button>
 --- OUTPUT ---
@@ -9,10 +9,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("button", { onClick: _ctx.handler }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: v-on shorthand
-options: default
+options: vdom
 --- INPUT ---
 <button @click="handler"></button>
 --- OUTPUT ---
@@ -21,10 +20,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("button", { onClick: _ctx.handler }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: inline handler
-options: default
+options: vdom
 --- INPUT ---
 <button @click="count++"></button>
 --- OUTPUT ---
@@ -35,10 +33,9 @@ export function render(_ctx, _cache) {
     onClick: $event => (_ctx.count++)
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: inline with statement
-options: default
+options: vdom
 --- INPUT ---
 <button @click="count = count + 1"></button>
 --- OUTPUT ---
@@ -49,10 +46,9 @@ export function render(_ctx, _cache) {
     onClick: $event => (_ctx.count = _ctx.count + 1)
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: method call
-options: default
+options: vdom
 --- INPUT ---
 <button @click="handler()"></button>
 --- OUTPUT ---
@@ -63,10 +59,9 @@ export function render(_ctx, _cache) {
     onClick: $event => (_ctx.handler())
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: method with args
-options: default
+options: vdom
 --- INPUT ---
 <button @click="handler(1, 2)"></button>
 --- OUTPUT ---
@@ -77,10 +72,22 @@ export function render(_ctx, _cache) {
     onClick: $event => (_ctx.handler(1, 2))
   }, null, 8 /* PROPS */, ["onClick"]))
 }
+===
+name: sequence expression handler
+options: vdom
+--- INPUT ---
+<button @click="foo(), bar()"></button>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", {
+    onClick: $event => (_ctx.foo(), _ctx.bar())
+  }, null, 8 /* PROPS */, ["onClick"]))
+}
 ===
 name: inline with $event
-options: default
+options: vdom
 --- INPUT ---
 <button @click="handler($event)"></button>
 --- OUTPUT ---
@@ -91,10 +98,9 @@ export function render(_ctx, _cache) {
     onClick: $event => (_ctx.handler($event))
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: inline $event property
-options: default
+options: vdom
 --- INPUT ---
 <button @click="handler($event.target.value)"></button>
 --- OUTPUT ---
@@ -105,10 +111,9 @@ export function render(_ctx, _cache) {
     onClick: $event => (_ctx.handler($event.target.value))
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: arrow function with event
-options: default
+options: vdom
 --- INPUT ---
 <button @click="e => handler(e)"></button>
 --- OUTPUT ---
@@ -119,10 +124,9 @@ export function render(_ctx, _cache) {
     onClick: e => _ctx.handler(e)
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: arrow function with multiple params
-options: default
+options: vdom
 --- INPUT ---
 <div @custom="(a, b) => handler(a, b)"></div>
 --- OUTPUT ---
@@ -133,10 +137,22 @@ export function render(_ctx, _cache) {
     onCustom: (a, b) => _ctx.handler(a, b)
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onCustom"]))
 }
+===
+name: optional chaining call
+options: vdom
+--- INPUT ---
+<button @click="props.onClick?.($event)"></button>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("button", {
+    onClick: $event => (_ctx.props.onClick?.($event))
+  }, null, 8 /* PROPS */, ["onClick"]))
+}
 ===
 name: stop modifier
-options: default
+options: vdom
 --- INPUT ---
 <button @click.stop="handler"></button>
 --- OUTPUT ---
@@ -147,10 +163,9 @@ export function render(_ctx, _cache) {
     onClick: _withModifiers(_ctx.handler, ["stop"])
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: prevent modifier
-options: default
+options: vdom
 --- INPUT ---
 <form @submit.prevent="onSubmit"></form>
 --- OUTPUT ---
@@ -161,10 +176,9 @@ export function render(_ctx, _cache) {
     onSubmit: _withModifiers(_ctx.onSubmit, ["prevent"])
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onSubmit"]))
 }
-
 ===
 name: stop and prevent
-options: default
+options: vdom
 --- INPUT ---
 <button @click.stop.prevent="handler"></button>
 --- OUTPUT ---
@@ -175,10 +189,9 @@ export function render(_ctx, _cache) {
     onClick: _withModifiers(_ctx.handler, ["stop","prevent"])
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: capture modifier
-options: default
+options: vdom
 --- INPUT ---
 <div @click.capture="handler"></div>
 --- OUTPUT ---
@@ -187,10 +200,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { onClickCapture: _ctx.handler }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickCapture"]))
 }
-
 ===
 name: once modifier
-options: default
+options: vdom
 --- INPUT ---
 <button @click.once="handler"></button>
 --- OUTPUT ---
@@ -199,10 +211,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("button", { onClickOnce: _ctx.handler }, null, 40 /* PROPS, NEED_HYDRATION */, ["onClickOnce"]))
 }
-
 ===
 name: passive modifier
-options: default
+options: vdom
 --- INPUT ---
 <div @scroll.passive="onScroll"></div>
 --- OUTPUT ---
@@ -211,10 +222,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { onScrollPassive: _ctx.onScroll }, null, 40 /* PROPS, NEED_HYDRATION */, ["onScrollPassive"]))
 }
-
 ===
 name: self modifier
-options: default
+options: vdom
 --- INPUT ---
 <div @click.self="handler"></div>
 --- OUTPUT ---
@@ -225,10 +235,9 @@ export function render(_ctx, _cache) {
     onClick: _withModifiers(_ctx.handler, ["self"])
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: enter key
-options: default
+options: vdom
 --- INPUT ---
 <input @keyup.enter="submit">
 --- OUTPUT ---
@@ -239,10 +248,9 @@ export function render(_ctx, _cache) {
     onKeyup: _withKeys(_ctx.submit, ["enter"])
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onKeyup"]))
 }
-
 ===
 name: escape key
-options: default
+options: vdom
 --- INPUT ---
 <input @keyup.esc="cancel">
 --- OUTPUT ---
@@ -253,10 +261,22 @@ export function render(_ctx, _cache) {
     onKeyup: _withKeys(_ctx.cancel, ["esc"])
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onKeyup"]))
 }
+===
+name: page down key
+options: vdom
+--- INPUT ---
+<input @keyup.page-down="next">
+--- OUTPUT ---
+import { withKeys as _withKeys, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("input", {
+    onKeyup: _withKeys(_ctx.next, ["page-down"])
+  }, null, 40 /* PROPS, NEED_HYDRATION */, ["onKeyup"]))
+}
 ===
 name: tab key
-options: default
+options: vdom
 --- INPUT ---
 <input @keyup.tab="next">
 --- OUTPUT ---
@@ -267,10 +287,9 @@ export function render(_ctx, _cache) {
     onKeyup: _withKeys(_ctx.next, ["tab"])
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onKeyup"]))
 }
-
 ===
 name: delete key
-options: default
+options: vdom
 --- INPUT ---
 <input @keyup.delete="remove">
 --- OUTPUT ---
@@ -281,10 +300,9 @@ export function render(_ctx, _cache) {
     onKeyup: _withKeys(_ctx.remove, ["delete"])
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onKeyup"]))
 }
-
 ===
 name: arrow keys
-options: default
+options: vdom
 --- INPUT ---
 <input @keyup.up="up" @keyup.down="down" @keyup.left="left" @keyup.right="right">
 --- OUTPUT ---
@@ -300,10 +318,9 @@ export function render(_ctx, _cache) {
     ]
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onKeyup"]))
 }
-
 ===
 name: key code
-options: default
+options: vdom
 --- INPUT ---
 <input @keyup.13="submit">
 --- OUTPUT ---
@@ -314,10 +331,9 @@ export function render(_ctx, _cache) {
     onKeyup: _withKeys(_ctx.submit, ["13"])
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onKeyup"]))
 }
-
 ===
 name: ctrl modifier
-options: default
+options: vdom
 --- INPUT ---
 <input @keyup.ctrl.enter="submit">
 --- OUTPUT ---
@@ -328,10 +344,9 @@ export function render(_ctx, _cache) {
     onKeyup: _withKeys(_withModifiers(_ctx.submit, ["ctrl"]), ["enter"])
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onKeyup"]))
 }
-
 ===
 name: alt modifier
-options: default
+options: vdom
 --- INPUT ---
 <button @click.alt="handler"></button>
 --- OUTPUT ---
@@ -342,10 +357,9 @@ export function render(_ctx, _cache) {
     onClick: _withModifiers(_ctx.handler, ["alt"])
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: shift modifier
-options: default
+options: vdom
 --- INPUT ---
 <button @click.shift="handler"></button>
 --- OUTPUT ---
@@ -356,10 +370,9 @@ export function render(_ctx, _cache) {
     onClick: _withModifiers(_ctx.handler, ["shift"])
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: meta modifier
-options: default
+options: vdom
 --- INPUT ---
 <button @click.meta="handler"></button>
 --- OUTPUT ---
@@ -370,10 +383,9 @@ export function render(_ctx, _cache) {
     onClick: _withModifiers(_ctx.handler, ["meta"])
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: exact modifier
-options: default
+options: vdom
 --- INPUT ---
 <button @click.ctrl.exact="handler"></button>
 --- OUTPUT ---
@@ -384,10 +396,9 @@ export function render(_ctx, _cache) {
     onClick: _withModifiers(_ctx.handler, ["ctrl","exact"])
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: left click
-options: default
+options: vdom
 --- INPUT ---
 <button @click.left="handler"></button>
 --- OUTPUT ---
@@ -398,10 +409,9 @@ export function render(_ctx, _cache) {
     onClick: _withModifiers(_ctx.handler, ["left"])
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: right click
-options: default
+options: vdom
 --- INPUT ---
 <button @click.right="handler"></button>
 --- OUTPUT ---
@@ -412,10 +422,9 @@ export function render(_ctx, _cache) {
     onContextmenu: _withModifiers(_ctx.handler, ["right"])
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onContextmenu"]))
 }
-
 ===
 name: middle click
-options: default
+options: vdom
 --- INPUT ---
 <button @click.middle="handler"></button>
 --- OUTPUT ---
@@ -426,10 +435,9 @@ export function render(_ctx, _cache) {
     onMouseup: _withModifiers(_ctx.handler, ["middle"])
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onMouseup"]))
 }
-
 ===
 name: multiple events
-options: default
+options: vdom
 --- INPUT ---
 <input @focus="onFocus" @blur="onBlur">
 --- OUTPUT ---
@@ -441,10 +449,9 @@ export function render(_ctx, _cache) {
     onBlur: _ctx.onBlur
   }, null, 40 /* PROPS, NEED_HYDRATION */, ["onFocus", "onBlur"]))
 }
-
 ===
 name: same event different modifiers
-options: default
+options: vdom
 --- INPUT ---
 <button @click="a" @click.ctrl="b"></button>
 --- OUTPUT ---
@@ -458,10 +465,9 @@ export function render(_ctx, _cache) {
     ]
   }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: dynamic event name
-options: default
+options: vdom
 --- INPUT ---
 <button @[event]="handler"></button>
 --- OUTPUT ---
@@ -470,10 +476,9 @@ import { toHandlerKey as _toHandlerKey, openBlock as _openBlock, createElementBl
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("button", { [_toHandlerKey(_ctx.event)]: _ctx.handler }, null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: dynamic event with modifier
-options: default
+options: vdom
 --- INPUT ---
 <button @[event].stop="handler"></button>
 --- OUTPUT ---
@@ -484,10 +489,9 @@ export function render(_ctx, _cache) {
     [_toHandlerKey(_ctx.event)]: _withModifiers(_ctx.handler, ["stop"])
   }, null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: v-on object
-options: default
+options: vdom
 --- INPUT ---
 <button v-on="handlers"></button>
 --- OUTPUT ---
@@ -496,10 +500,9 @@ import { toHandlers as _toHandlers, openBlock as _openBlock, createElementBlock 
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("button", _toHandlers(_ctx.handlers, true), null, 16 /* FULL_PROPS */))
 }
-
 ===
 name: v-on object with other events
-options: default
+options: vdom
 --- INPUT ---
 <button v-on="handlers" @click="extra"></button>
 --- OUTPUT ---
@@ -508,10 +511,9 @@ import { toHandlers as _toHandlers, mergeProps as _mergeProps, openBlock as _ope
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("button", _mergeProps(_toHandlers(_ctx.handlers, true), { onClick: _ctx.extra }), null, 16 /* FULL_PROPS */, ["onClick"]))
 }
-
 ===
 name: component event
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent @update="onUpdate" />
 --- OUTPUT ---
@@ -522,10 +524,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, { onUpdate: _ctx.onUpdate }, null, 8 /* PROPS */, ["onUpdate"]))
 }
-
 ===
 name: component native event
-options: default
+options: vdom
 --- INPUT ---
 <MyComponent @click.native="onClick" />
 --- OUTPUT ---
@@ -536,10 +537,9 @@ export function render(_ctx, _cache) {
 
   return (_openBlock(), _createBlock(_component_MyComponent, { onClick: _ctx.onClick }, null, 8 /* PROPS */, ["onClick"]))
 }
-
 ===
 name: inline handler (cacheHandlers)
-options: cacheHandlers
+options: vdom
 --- INPUT ---
 <button @click="count++"></button>
 --- OUTPUT ---
@@ -550,10 +550,9 @@ export function render(_ctx, _cache) {
     onClick: _cache[0] || (_cache[0] = $event => (_ctx.count++))
   }))
 }
-
 ===
 name: inline statement (cacheHandlers)
-options: cacheHandlers
+options: vdom
 --- INPUT ---
 <button @click="count = count + 1"></button>
 --- OUTPUT ---
@@ -564,10 +563,9 @@ export function render(_ctx, _cache) {
     onClick: _cache[0] || (_cache[0] = $event => (_ctx.count = _ctx.count + 1))
   }))
 }
-
 ===
 name: method call (cacheHandlers)
-options: cacheHandlers
+options: vdom
 --- INPUT ---
 <button @click="handler()"></button>
 --- OUTPUT ---
@@ -578,10 +576,9 @@ export function render(_ctx, _cache) {
     onClick: _cache[0] || (_cache[0] = $event => (_ctx.handler()))
   }))
 }
-
 ===
 name: handler reference (cacheHandlers)
-options: cacheHandlers
+options: vdom
 --- INPUT ---
 <button @click="handler"></button>
 --- OUTPUT ---
@@ -592,10 +589,9 @@ export function render(_ctx, _cache) {
     onClick: _cache[0] || (_cache[0] = (...args) => (_ctx.handler && _ctx.handler(...args)))
   }))
 }
-
 ===
 name: multiple cached handlers
-options: cacheHandlers
+options: vdom
 --- INPUT ---
 <button @click="count++" @mouseenter="hover = true"></button>
 --- OUTPUT ---
