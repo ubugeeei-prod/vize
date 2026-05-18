@@ -228,7 +228,15 @@ function assertInstalledPackage(nodeModules, packageInfo) {
   assert.equal(packageJson.name, packageInfo.name);
   assert.equal(packageJson.version, packageInfo.version);
   assertNoWorkspaceProtocols(packageDir, packageJson);
-  assertPublishEntrypointsExist(packageDir, packageJson);
+  // Per-platform native sub-packages: see the comment near the same guard in
+  // main(). The single-host smoke does not ship .node binaries for non-host
+  // platforms into the sub-package tarball, so asserting entrypoint existence
+  // on the installed tree red-lights the matrix.
+  const isPlatformSpecificSubPackage =
+    Array.isArray(packageJson.os) || Array.isArray(packageJson.cpu);
+  if (!isPlatformSpecificSubPackage) {
+    assertPublishEntrypointsExist(packageDir, packageJson);
+  }
 
   if (packageJson.bin != null && process.platform !== "win32") {
     const bins =
