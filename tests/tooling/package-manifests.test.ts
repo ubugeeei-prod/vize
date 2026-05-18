@@ -351,9 +351,11 @@ test("wasm package publishes the wrapper entrypoint and raw wasm assets", () => 
     exports?: Record<string, string | Record<string, string>>;
     files?: string[];
     main?: string;
+    publishConfig?: Record<string, string>;
     types?: string;
   };
 
+  assert.equal(wasmPackage.publishConfig?.access, "public");
   assert.equal(wasmPackage.main, "./index.js");
   assert.equal(wasmPackage.types, "./index.d.ts");
   assert.deepEqual(wasmPackage.exports?.["."], {
