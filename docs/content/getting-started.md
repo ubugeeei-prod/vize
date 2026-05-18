@@ -55,7 +55,7 @@ See [Static Analysis](./guide/static-analysis.md) for the lint and type-checking
 Use the Vite plugin if you want native Vue compilation in an existing Vite project.
 
 ```bash
-vp install -D @vizejs/vite-plugin vize
+vp install -D @vizejs/vite-plugin
 ```
 
 Install `vize` as a direct dependency only when you want to import shared config helpers from

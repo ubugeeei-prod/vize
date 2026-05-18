@@ -38,7 +38,7 @@ Need `vp` first? Install Vite+ once from the [Vite+ install guide](https://vitep
 ### Vite
 
 ```bash
-vp install -D vize @vizejs/vite-plugin
+vp install -D @vizejs/vite-plugin
 ```
 
 ```ts
