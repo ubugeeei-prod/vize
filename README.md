@@ -285,6 +285,13 @@ vp run --workspace-root check:fix
 vp run --workspace-root bench:all
 ```
 
+## Community
+
+- [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/) — Vize adopts the Contributor Covenant v2.1.
+- [Governance](./GOVERNANCE.md) — maintainer model and decision-making process.
+- [Support](./SUPPORT.md) — where to ask questions, file bugs, or report security issues.
+- [Contributing](./CONTRIBUTING.md) — setup and pull-request guidelines.
+
 ## Credits
 
 This project draws inspiration from:
