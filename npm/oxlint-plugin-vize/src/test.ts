@@ -520,7 +520,7 @@ assert.doesNotMatch(
 );
 assert.match(
   defaultRun.output,
-  /^  [|│]     Help:/mu,
+  /(?:^  [|│]     Help:|%0A    Help:)/mu,
   "Default output should still include help text",
 );
 
