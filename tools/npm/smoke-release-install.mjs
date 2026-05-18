@@ -431,7 +431,15 @@ function main() {
       const packageJson = readPackageJson(packageDir);
       assertNoWorkspaceProtocols(packageDir, packageJson);
       const compatible = isCompatibleWithCurrentRunner(packageJson);
-      if (compatible) {
+      // Per-platform native sub-packages (those declaring os/cpu) only ship a
+      // platform-specific .node binary that napi emits at the workspace root,
+      // not into the per-platform npm subdir on a single-host smoke runner.
+      // Asserting their entrypoint existence here would incorrectly red-light
+      // the smoke matrix even for the host platform. The umbrella package and
+      // every non-platform-specific package still get the check.
+      const isPlatformSpecificSubPackage =
+        Array.isArray(packageJson.os) || Array.isArray(packageJson.cpu);
+      if (!isPlatformSpecificSubPackage) {
         assertPublishEntrypointsExist(packageDir, packageJson);
       }
 
