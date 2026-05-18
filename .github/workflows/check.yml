@@ -83,7 +83,6 @@ jobs:
           tool: cargo-audit
       - name: Audit Rust dependencies
         run: cargo audit --deny warnings
-        continue-on-error: true
 
   node-engine-compat:
     runs-on: ubuntu-latest

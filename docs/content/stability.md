@@ -7,7 +7,9 @@ description: Vize v1 alpha support tiers, compatibility promises, and experiment
 
 Vize is moving toward a v1 alpha. The alpha contract is intentionally narrower than a stable v1
 contract: it names the surfaces that should be usable by early adopters, while keeping room to
-change internals and experimental integrations quickly.
+change internals and experimental integrations quickly. The full project is not yet a completely
+production-ready toolchain; release decisions should use the
+[production-readiness checklist](https://github.com/ubugeeei/vize/blob/main/docs/release/production-readiness.md).
 
 ## Versioning Contract
 

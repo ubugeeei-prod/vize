@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const checklistPath = path.join(root, "docs", "release", "v1-alpha-go-no-go.md");
+const productionReadinessPath = path.join(root, "docs", "release", "production-readiness.md");
 
 test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
   const checklist = fs.readFileSync(checklistPath, "utf-8");
@@ -51,5 +52,30 @@ test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
     "npm deprecate",
   ]) {
     assert.match(checklist, new RegExp(requiredTerm));
+  }
+});
+
+test("production-readiness checklist scopes supported and experimental surfaces", () => {
+  const readiness = fs.readFileSync(productionReadinessPath, "utf-8");
+
+  for (const heading of [
+    "# Production Readiness",
+    "## Current Support Scope",
+    "## Required Gates",
+    "## Exit Criteria For Removing Public Warnings",
+    "## How To Answer The Readiness Question",
+  ]) {
+    assert.match(readiness, new RegExp(`^${heading}$`, "m"));
+  }
+
+  for (const requiredTerm of [
+    "not yet a stable, production-ready toolchain",
+    "Alpha-supported",
+    "Experimental",
+    "cargo audit --deny warnings",
+    "real-world fixture coverage",
+    "Official Vue tooling remains the compatibility baseline",
+  ]) {
+    assert.match(readiness, new RegExp(requiredTerm));
   }
 });

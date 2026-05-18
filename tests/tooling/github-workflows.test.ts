@@ -644,7 +644,7 @@ test("check workflow runs JS package unit tests and production dependency audit"
   assert.match(auditJob, /vp exec pnpm audit --prod --audit-level moderate/);
   assert.match(auditJob, /tool:\s*cargo-audit/);
   assert.match(auditJob, /cargo audit --deny warnings/);
-  assert.match(auditJob, /continue-on-error:\s*true/);
+  assert.doesNotMatch(auditJob, /continue-on-error:\s*true/);
 });
 
 test("native smoke workflow covers host platforms before release tags", () => {

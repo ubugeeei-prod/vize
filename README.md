@@ -17,7 +17,9 @@
 </p>
 
 > [!WARNING]
-> Vize is under active development. APIs, package boundaries, and editor features are still moving.
+> Vize is under active development. It is not a completely production-ready toolchain yet; see the
+> [production-readiness checklist](./docs/release/production-readiness.md) and stability tiers
+> before adopting it in production.
 
 > [!IMPORTANT]
 > For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.

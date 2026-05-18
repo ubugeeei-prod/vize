@@ -32,6 +32,7 @@ vp install --frozen-lockfile
 vp run --workspace-root check:ci
 vp run --workspace-root test:scripts
 cargo test --workspace
+cargo audit --deny warnings
 vp run --workspace-root build:packages
 ```
 
@@ -102,6 +103,7 @@ vp install -D @vizejs/vite-plugin@alpha @vizejs/vite-plugin-musea@alpha
   - installation commands
   - known limitations
   - rollback status and support window
+- [ ] Production-readiness status is updated against [Production Readiness](./production-readiness.md).
 
 ## Rollback Plan
 
