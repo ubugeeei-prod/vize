@@ -102,8 +102,7 @@ function requireTargetPackage(target) {
 
   if (
     bindingPackageVersion !== packageVersion &&
-    process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
-    process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
+    process.env.VIZE_ALLOW_NATIVE_VERSION_MISMATCH !== "1"
   ) {
     throw new Error(
       `Native binding package version mismatch, expected ${packageVersion} but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
