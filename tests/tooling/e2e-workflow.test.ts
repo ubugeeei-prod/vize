@@ -10,17 +10,21 @@ function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(root, ...segments), "utf8");
 }
 
-test("app e2e workflow is manually selectable and uploads failure artifacts", () => {
+test("app e2e workflow runs on schedule + workflow_dispatch and uploads failure artifacts", () => {
   const workflow = readRepoFile(".github", "workflows", "e2e.yml");
 
-  assert.match(workflow, /pull_request:\n\s+branches: \[main\]/);
+  // App E2E and VRT are slow and now run nightly on schedule plus on demand
+  // via workflow_dispatch. They no longer block PR merges (faster gates take
+  // over there). Regressions still gate release via the readiness pipeline.
+  assert.match(workflow, /schedule:[\s\S]*?- cron:\s*"/);
+  assert.doesNotMatch(workflow, /pull_request:/);
   assert.match(workflow, /name: app-e2e \(\$\{\{ matrix\.suite \}\}\)/);
   assert.match(workflow, /fail-fast:\s*false/);
+  // Scheduled runs exercise every suite, including vrt.
   assert.match(
     workflow,
-    /fromJSON\('\["dev","preview","build","check","lint","check-fixtures"\]'\)/,
+    /fromJSON\('\["dev","vrt","preview","build","check","lint","check-fixtures"\]'\)/,
   );
-  assert.doesNotMatch(workflow, /fromJSON\('\["dev","vrt","preview"/);
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /type:\s*choice/);
   for (const suite of ["dev", "vrt", "preview", "check", "lint", "build", "check-fixtures"]) {
