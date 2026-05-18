@@ -76,8 +76,10 @@ test("publish_crates script keeps publishable workspace dependencies ordered", (
 
 test("publish_crates includes every publishable crate package", () => {
   const publishedCrates = new Set(getPublishedCrates());
-  const missingCrates = getMetadata().packages
-    .filter((pkg) => path.relative(repoRoot, pkg.manifest_path).startsWith(`crates${path.sep}`))
+  const missingCrates = getMetadata()
+    .packages.filter((pkg) =>
+      path.relative(repoRoot, pkg.manifest_path).startsWith(`crates${path.sep}`),
+    )
     .filter((pkg) => pkg.publish === null || pkg.publish.length > 0)
     .map((pkg) => pkg.name)
     .filter((crateName) => !publishedCrates.has(crateName));

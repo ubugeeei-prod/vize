@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import type { ChildProcess } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -18,6 +18,59 @@ import {
 import { setupMisskeyMocks } from "../../_helpers/mocking";
 
 const app = misskeyApp;
+
+async function gotoMisskey(page: Page) {
+  await setupMisskeyMocks(page);
+
+  return page.goto(app.url, {
+    waitUntil: app.waitUntil ?? "networkidle",
+    timeout: 30_000,
+  });
+}
+
+async function waitForMisskeyContent(page: Page) {
+  const mountEl = page.locator(app.mountSelector);
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await expect(mountEl).toBeAttached({ timeout: 15_000 });
+      await expect
+        .poll(
+          async () => {
+            const html = await mountEl.innerHTML();
+            return html.trim().length;
+          },
+          { timeout: 20_000 },
+        )
+        .toBeGreaterThan(0);
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 2) {
+        break;
+      }
+      await page.reload({
+        waitUntil: app.waitUntil ?? "networkidle",
+        timeout: 30_000,
+      });
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
+}
+
+async function hasCssModuleClass(page: Page): Promise<boolean> {
+  return page.evaluate(() => {
+    const allElements = document.querySelectorAll("*");
+    for (const el of allElements) {
+      for (const cls of el.classList) {
+        if (cls.startsWith("_") && cls.includes("_")) return true;
+      }
+    }
+    return false;
+  });
+}
 
 test.describe("misskey dev", () => {
   let devServer: ChildProcess;
@@ -52,110 +105,50 @@ test.describe("misskey dev", () => {
 
   test("page renders with #misskey_app attached", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await setupMisskeyMocks(page);
 
-    const response = await page.goto(app.url, {
-      waitUntil: app.waitUntil ?? "networkidle",
-      timeout: 30_000,
-    });
+    const response = await gotoMisskey(page);
     expect(response?.status()).toBeDefined();
-
-    const mountEl = page.locator(app.mountSelector);
-    await expect(mountEl).toBeAttached({ timeout: 15_000 });
-
-    // Wait for content to render
-    try {
-      await page.waitForFunction(
-        (sel: string) => {
-          const el = document.querySelector(sel);
-          return el !== null && (el.textContent ?? "").trim().length > 0;
-        },
-        app.mountSelector,
-        { timeout: 10_000 },
-      );
-    } catch {
-      // Content may not render fully without backend
-    }
+    await waitForMisskeyContent(page);
   });
 
   test("visitor UI renders", async ({ page }) => {
-    await setupMisskeyMocks(page);
-
-    await page.goto(app.url, {
-      waitUntil: app.waitUntil ?? "networkidle",
-      timeout: 30_000,
-    });
-    await page.waitForTimeout(3_000);
-
-    // Misskey should render root component (signup form, welcome page, etc.)
-    const rootContent = await page.locator(app.mountSelector).innerHTML();
-    expect(rootContent.trim().length).toBeGreaterThan(0);
+    await gotoMisskey(page);
+    await waitForMisskeyContent(page);
   });
 
   test("scoped CSS: data-v-* attributes exist", async ({ page }) => {
-    await setupMisskeyMocks(page);
-
-    await page.goto(app.url, {
-      waitUntil: app.waitUntil ?? "networkidle",
-      timeout: 30_000,
-    });
-    await page.waitForTimeout(3_000);
-
-    const count = await verifyScopedCssAttributes(page);
-    expect(count).toBeGreaterThan(0);
+    await gotoMisskey(page);
+    await waitForMisskeyContent(page);
+    await expect
+      .poll(() => verifyScopedCssAttributes(page), { timeout: 30_000 })
+      .toBeGreaterThan(0);
   });
 
   test("CSS Modules: module-generated class names exist", async ({ page }) => {
-    await setupMisskeyMocks(page);
-
-    await page.goto(app.url, {
-      waitUntil: app.waitUntil ?? "networkidle",
-      timeout: 30_000,
-    });
-    await page.waitForTimeout(3_000);
-
-    // Misskey uses CSS modules with patterns like _root_, _xxxx_ or hashed class names
-    const hasCssModules = await page.evaluate(() => {
-      const allElements = document.querySelectorAll("*");
-      for (const el of allElements) {
-        for (const cls of el.classList) {
-          // CSS module generated class names (e.g., _root_xxxxx, module hashes)
-          if (cls.startsWith("_") && cls.includes("_")) return true;
-        }
-      }
-      return false;
-    });
-    expect(hasCssModules).toBe(true);
+    await gotoMisskey(page);
+    await waitForMisskeyContent(page);
+    await expect.poll(() => hasCssModuleClass(page), { timeout: 30_000 }).toBe(true);
   });
 
   test("async components load", async ({ page }) => {
-    await setupMisskeyMocks(page);
-
-    await page.goto(app.url, {
-      waitUntil: app.waitUntil ?? "networkidle",
-      timeout: 30_000,
-    });
-
-    // Wait for async components to load (defineAsyncComponent)
-    await page.waitForTimeout(5_000);
-
-    // Verify the app has rendered content beyond the initial mount point
-    const childCount = await page.evaluate((sel: string) => {
-      const el = document.querySelector(sel);
-      return el ? el.querySelectorAll("*").length : 0;
-    }, app.mountSelector);
-    expect(childCount).toBeGreaterThan(1);
+    await gotoMisskey(page);
+    await expect
+      .poll(
+        () =>
+          page.evaluate((sel: string) => {
+            const el = document.querySelector(sel);
+            return el ? el.querySelectorAll("*").length : 0;
+          }, app.mountSelector),
+        { timeout: 30_000 },
+      )
+      .toBeGreaterThan(1);
   });
 
   test("no fatal console errors", async ({ page }) => {
     const errors = await collectConsoleErrors(page, app.name);
-    await setupMisskeyMocks(page);
 
-    await page.goto(app.url, {
-      waitUntil: app.waitUntil ?? "networkidle",
-      timeout: 30_000,
-    });
-    await page.waitForTimeout(3_000);
+    await gotoMisskey(page);
+    await waitForMisskeyContent(page);
 
     const fatalErrors = errors.filter(isFatalError);
     if (fatalErrors.length > 0) {
@@ -166,13 +159,9 @@ test.describe("misskey dev", () => {
 
   test("screenshot", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await setupMisskeyMocks(page);
 
-    await page.goto(app.url, {
-      waitUntil: app.waitUntil ?? "networkidle",
-      timeout: 30_000,
-    });
-    await page.waitForTimeout(2_000);
+    await gotoMisskey(page);
+    await waitForMisskeyContent(page);
 
     fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
     await page.screenshot({

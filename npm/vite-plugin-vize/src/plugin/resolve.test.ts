@@ -268,6 +268,29 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 {
   const projectRoot = createTempProject("preserve-vite-vue");
   const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const optimizedVueEntry = path.join(projectRoot, "node_modules", ".vite", "deps", "vue.js");
+  writeFixtureFile(optimizedVueEntry, "export const createBlock = () => null;");
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async (id) => (id === "vue" ? { id: `${optimizedVueEntry}?v=abc123` } : null),
+    },
+    createState(projectRoot),
+    "vue",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `${optimizedVueEntry}?v=abc123`,
+    "Vite-optimized Vue entries must not be replaced by Node's CommonJS entry",
+  );
+}
+
+{
+  const projectRoot = createTempProject("dev-vue-node-fallback");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
   const vueRoot = path.join(projectRoot, "node_modules", "vue");
   const vueCjsEntry = path.join(vueRoot, "index.js");
   const vueBundlerEntry = path.join(vueRoot, "dist", "vue.runtime.esm-bundler.js");
@@ -283,13 +306,49 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     ),
   );
   writeFixtureFile(vueCjsEntry, "module.exports = require('./dist/vue.cjs.js');");
-  writeFixtureFile(vueBundlerEntry, "export const createBlock = () => null;");
+  writeFixtureFile(vueBundlerEntry, "export const Transition = () => null;");
 
   const resolved = await resolveIdHook(
-    {
-      resolve: async (id) => (id === "vue" ? { id: vueBundlerEntry } : null),
-    },
+    nullResolveContext,
     createState(projectRoot),
+    "vue",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    resolved,
+    null,
+    "Dev virtual SFC Vue imports should stay bare so Vite can optimize and dedupe the runtime",
+  );
+}
+
+{
+  const projectRoot = createTempProject("build-vue-node-fallback");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const vueRoot = path.join(projectRoot, "node_modules", "vue");
+  const vueCjsEntry = path.join(vueRoot, "index.js");
+  const vueBundlerEntry = path.join(vueRoot, "dist", "vue.runtime.esm-bundler.js");
+  writeFixtureFile(
+    path.join(vueRoot, "package.json"),
+    JSON.stringify(
+      {
+        name: "vue",
+        main: "index.js",
+      },
+      null,
+      2,
+    ),
+  );
+  writeFixtureFile(vueCjsEntry, "module.exports = require('./dist/vue.cjs.js');");
+  writeFixtureFile(vueBundlerEntry, "export const Transition = () => null;");
+
+  const state = createState(projectRoot);
+  state.server = null;
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    state,
     "vue",
     toVirtualId(importer),
     undefined,
@@ -298,7 +357,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   assert.equal(
     expectResolvedId(resolved),
     vueBundlerEntry,
-    "Vite-resolved Vue ESM entries must not be replaced by Node's CommonJS entry",
+    "Build virtual SFC imports must resolve Vue to an ESM bundler entry, not the CommonJS package entry",
   );
 }
 

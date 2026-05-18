@@ -83,6 +83,74 @@ function resolveBareImportCandidatesWithNode(
   return null;
 }
 
+function findPackageRoot(resolvedFile: string): string | null {
+  let current = path.dirname(resolvedFile);
+  while (current !== path.dirname(current)) {
+    if (fs.existsSync(path.join(current, "package.json"))) {
+      return current;
+    }
+    current = path.dirname(current);
+  }
+  return null;
+}
+
+function resolveVueBundlerEntryWithNode(
+  state: Pick<VizePluginState, "root">,
+  id: string,
+  importer?: string,
+): string | null {
+  const { request, querySuffix } = splitViteIdQuery(id);
+  if (request !== "vue") {
+    return null;
+  }
+
+  const packageJson = resolveBareImportWithNode(state, "vue/package.json", importer);
+  const resolvedVue = packageJson ? null : resolveBareImportWithNode(state, "vue", importer);
+  const packageRoot = packageJson
+    ? path.dirname(packageJson)
+    : resolvedVue
+      ? findPackageRoot(resolvedVue)
+      : null;
+  if (!packageRoot) {
+    return null;
+  }
+
+  for (const relativeEntry of [
+    "dist/vue.runtime.esm-bundler.js",
+    "dist/vue.esm-bundler.js",
+    "index.mjs",
+  ]) {
+    const entry = path.join(packageRoot, relativeEntry);
+    if (fs.existsSync(entry)) {
+      return `${entry}${querySuffix}`;
+    }
+  }
+
+  return null;
+}
+
+function isVueRuntimeRequest(id: string): boolean {
+  return splitViteIdQuery(id).request === "vue";
+}
+
+function isVuePackageEntry(id: string): boolean {
+  const { request } = splitViteIdQuery(id);
+  const normalized = request.split(path.sep).join("/");
+  return (
+    normalized.endsWith("/node_modules/vue/index.js") ||
+    normalized.endsWith("/node_modules/vue/dist/vue.runtime.esm-bundler.js") ||
+    normalized.endsWith("/node_modules/vue/dist/vue.esm-bundler.js") ||
+    normalized.includes("/node_modules/.pnpm/vue@") ||
+    normalized.includes("/node_modules/.pnpm/@vue+")
+  );
+}
+
+function isOptimizedVueDependency(id: string): boolean {
+  const { request } = splitViteIdQuery(id);
+  const normalized = request.split(path.sep).join("/");
+  return normalized.includes("/node_modules/.vite/deps/vue.");
+}
+
 function normalizeResolvedVuePath(id: string): string | null {
   return normalizeViteResolvedVuePath(id);
 }
@@ -272,8 +340,9 @@ export async function resolveIdHook(
       // resolve them from the real importer path so that Vite can find
       // packages in the correct node_modules directory.
       if (!id.startsWith("./") && !id.startsWith("../") && !id.startsWith("/")) {
+        const isVueRuntime = isVueRuntimeRequest(id);
         const aliasRequest = resolveAliasRequest(state, id);
-        if (aliasRequest && isViteBareSpecifier(aliasRequest)) {
+        if (!isVueRuntime && aliasRequest && isViteBareSpecifier(aliasRequest)) {
           const nodeResolved = resolveBareImportCandidatesWithNode(state, id, cleanImporter);
           if (nodeResolved) {
             state.logger.log(
@@ -292,7 +361,33 @@ export async function resolveIdHook(
               return { ...resolved, id: normalizedFsId };
             }
 
+            if (isVueRuntime && state.server !== null && !isOptimizedVueDependency(resolved.id)) {
+              state.logger.log(`resolveId: deferring Vue runtime ${resolved.id} to Vite optimizer`);
+              return null;
+            }
+
+            if (isVueRuntime && isVuePackageEntry(resolved.id)) {
+              const vueBundlerEntry = resolveVueBundlerEntryWithNode(state, id, cleanImporter);
+              if (vueBundlerEntry) {
+                state.logger.log(`resolveId: resolved Vue runtime to ${vueBundlerEntry}`);
+                return vueBundlerEntry;
+              }
+              return null;
+            }
+
             if (isViteBareSpecifier(resolved.id)) {
+              if (isVueRuntime) {
+                const vueBundlerEntry = isBuild
+                  ? resolveVueBundlerEntryWithNode(state, id, cleanImporter)
+                  : null;
+                if (vueBundlerEntry) {
+                  state.logger.log(`resolveId: resolved Vue runtime to ${vueBundlerEntry}`);
+                  return vueBundlerEntry;
+                }
+                state.logger.log(`resolveId: deferring bare Vue runtime ${id} to Vite`);
+                return null;
+              }
+
               const nodeResolved = resolveBareImportCandidatesWithNode(
                 state,
                 id,
@@ -311,6 +406,18 @@ export async function resolveIdHook(
           }
         } catch {
           // Fall through
+        }
+
+        if (isVueRuntime) {
+          const vueBundlerEntry = isBuild
+            ? resolveVueBundlerEntryWithNode(state, id, cleanImporter)
+            : null;
+          if (vueBundlerEntry) {
+            state.logger.log(`resolveId: resolved Vue runtime to ${vueBundlerEntry}`);
+            return vueBundlerEntry;
+          }
+          state.logger.log(`resolveId: deferring Vue runtime ${id} to Vite`);
+          return null;
         }
 
         const nodeResolved = resolveBareImportCandidatesWithNode(state, id, cleanImporter);
