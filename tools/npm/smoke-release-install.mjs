@@ -430,10 +430,12 @@ function main() {
 
       const packageJson = readPackageJson(packageDir);
       assertNoWorkspaceProtocols(packageDir, packageJson);
-      assertPublishEntrypointsExist(packageDir, packageJson);
+      const compatible = isCompatibleWithCurrentRunner(packageJson);
+      if (compatible) {
+        assertPublishEntrypointsExist(packageDir, packageJson);
+      }
 
       const tarball = packPackage(packageDir, packDir);
-      const compatible = isCompatibleWithCurrentRunner(packageJson);
       packages.push({
         compatible,
         name: packageJson.name,
