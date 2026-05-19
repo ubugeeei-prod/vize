@@ -45,7 +45,13 @@ function workflowJobBody(workflow: string, jobName: string): string {
 }
 
 test("GitHub workflows opt JavaScript actions into Node 24", () => {
-  for (const workflowName of ["check.yml", "deploy-docs.yml", "native-smoke.yml", "release.yml"]) {
+  for (const workflowName of [
+    "check.yml",
+    "deploy-docs.yml",
+    "native-smoke.yml",
+    "pkg-pr-new.yml",
+    "release.yml",
+  ]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);
     assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
   }
@@ -827,4 +833,30 @@ test("check and docs workflows use the CI Rust profile for non-release native bu
   assert.match(checkWorkflow, /cp target\/ci\/vize \/usr\/local\/bin\/vize/);
   assert.match(checkWorkflow, /vp run --filter '\.\/npm\/vize-native' build:ci/);
   assert.match(deployDocsWorkflow, /vp run --filter '\.\/npm\/vize-native' build:ci/);
+});
+
+test("pkg.pr.new workflow publishes built npm packages from the lockfile", () => {
+  const workflow = readRepoFile(".github", "workflows", "pkg-pr-new.yml");
+  const job = workflowJobBody(workflow, "publish-preview");
+
+  assert.match(job, /timeout-minutes:\s*30/);
+  assert.match(job, /vp run --workspace-root build:packages/);
+  assert.match(job, /vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update/);
+  assert.doesNotMatch(job, /\b(?:npx|bunx)\b|pnpm dlx|yarn dlx/);
+  assert.equal([...job.matchAll(/pkg-pr-new publish/g)].length, 1);
+
+  for (const packagePath of [
+    "./npm/vize",
+    "./npm/vite-plugin-vize",
+    "./npm/oxlint-plugin-vize",
+    "./npm/unplugin-vize",
+    "./npm/fresco",
+    "./npm/musea-mcp-server",
+    "./npm/vite-plugin-musea",
+    "./npm/rspack-vize-plugin",
+    "./npm/musea-nuxt",
+    "./npm/nuxt",
+  ]) {
+    assert.match(job, new RegExp(packagePath.replaceAll("/", "\\/").replace(".", "\\.")));
+  }
 });
