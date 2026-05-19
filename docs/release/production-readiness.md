@@ -30,6 +30,8 @@ A production-ready claim for any supported surface requires current evidence for
 - `cargo test --workspace`
 - `vp exec pnpm audit --prod --audit-level moderate`
 - `cargo audit --deny warnings`
+- release-artifact signatures and SBOMs land on the GitHub Release (see
+  [supply-chain.md](./supply-chain.md))
 - package build coverage for the surface being promoted
 - package install smoke coverage for the surface being promoted
 - supported Node.js compatibility coverage
