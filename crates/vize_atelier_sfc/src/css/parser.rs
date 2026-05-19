@@ -20,9 +20,6 @@ pub(crate) fn version_to_u32(major: u32) -> u32 {
 
 use super::CssModuleExport as VizeCssModuleExport;
 
-const EMPTY_IMAGE_SET_FILE_TYPE: &str = "__vize_empty_image_set_file_type__";
-const EMPTY_IMAGE_SET_FILE_TYPE_CSS: &str = " type(\"__vize_empty_image_set_file_type__\")";
-
 /// CSS Modules compilation result
 pub(crate) struct CssInternalResult {
     pub code: String,
@@ -156,7 +153,7 @@ pub(crate) fn print_css_ast_internal(
             });
 
             CssInternalResult {
-                code: denormalize_image_set_file_types(&result.code),
+                code: result.code.into(),
                 errors: vec![],
                 exports,
             }
@@ -178,10 +175,7 @@ fn normalize_image_set_file_types(value: &mut Value) {
     match value {
         Value::Object(map) => {
             if map.get("fileType") == Some(&Value::Null) {
-                map.insert(
-                    "fileType".into(),
-                    Value::String(EMPTY_IMAGE_SET_FILE_TYPE.into()),
-                );
+                map.remove("fileType");
             }
 
             for child in map.values_mut() {
@@ -195,10 +189,6 @@ fn normalize_image_set_file_types(value: &mut Value) {
         }
         _ => {}
     }
-}
-
-fn denormalize_image_set_file_types(code: &str) -> String {
-    code.replace(EMPTY_IMAGE_SET_FILE_TYPE_CSS, "").into()
 }
 
 /// Internal CSS compilation with owned strings to avoid borrow issues
