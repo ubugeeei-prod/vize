@@ -254,10 +254,17 @@ function assertInstalledPackage(nodeModules, packageInfo) {
   }
 }
 
+// The fresh-install smoke must mirror what an actual `@vizejs/vite-plugin`
+// consumer would install. That plugin declares `vite: ^8.0.0` as its peer
+// dependency, so we install upstream vite directly. (An earlier iteration
+// aliased vite to `@voidzero-dev/vite-plus-core` to mimic the workspace's
+// own vp tooling, but vite-plus-core ships only the JS API — it has no
+// `vite` bin and its rolldown bindings expect a separate `vite-plus`
+// metapackage at runtime, which together broke `vite build` in CI.)
 const RUNTIME_PEER_DEPENDENCIES = {
   "@typescript/native-preview": "7.0.0-dev.20260514.1",
   typescript: "6.0.3",
-  vite: "npm:@voidzero-dev/vite-plus-core@0.1.21",
+  vite: "^8.0.0",
   vue: "3.5.34",
 };
 
@@ -448,32 +455,10 @@ function runRuntimeChecks(installDir, packages) {
   }
 
   if (hasPackage(packages, "@vizejs/vite-plugin")) {
-    const viteCli = resolveViteCliEntry(installDir);
-    run(process.execPath, [viteCli, "build"], { cwd: installDir });
+    const viteBin = resolveInstalledBin(installDir, "vite", "vite");
+    run(process.execPath, [viteBin, "build"], { cwd: installDir });
     console.log("runtime: @vizejs/vite-plugin vite build");
   }
-}
-
-function resolveViteCliEntry(installDir) {
-  // vite is installed via the `vite@npm:@voidzero-dev/vite-plus-core` alias, so
-  // `node_modules/vite/package.json` carries no `bin` field — the umbrella
-  // package only exports the JS API. The CLI ships inside the same package at
-  // `dist/vite/node/cli.js`. Prefer the standard `bin` field if a future
-  // upstream adds one; fall back to the known CLI entry path otherwise so the
-  // smoke does not silently swap to a different binary.
-  const packageDir = installedPackageDir(path.join(installDir, "node_modules"), "vite");
-  const packageJson = readPackageJson(packageDir);
-  const bin = packageJson.bin;
-  if (typeof bin === "string") return path.join(packageDir, bin);
-  if (bin && typeof bin === "object" && typeof bin.vite === "string") {
-    return path.join(packageDir, bin.vite);
-  }
-  const viteCli = path.join(packageDir, "dist/vite/node/cli.js");
-  assert.ok(
-    fs.existsSync(viteCli),
-    `installed vite does not expose a CLI at ${path.relative(installDir, viteCli)}`,
-  );
-  return viteCli;
 }
 
 function main() {
