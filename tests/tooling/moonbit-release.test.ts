@@ -153,10 +153,19 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
   const out = result.stdout;
 
-  assert.match(out, /native-binaries:\n {4}'@vizejs\/native-darwin-arm64':\n {6}specifier: 0\.107\.0\n {6}version: 0\.107\.0\n/);
-  assert.match(out, / {4}'@vizejs\/native-darwin-x64':\n {6}specifier: 0\.107\.0\n {6}version: 0\.107\.0\n/);
+  assert.match(
+    out,
+    /native-binaries:\n {4}'@vizejs\/native-darwin-arm64':\n {6}specifier: 0\.107\.0\n {6}version: 0\.107\.0\n/,
+  );
+  assert.match(
+    out,
+    / {4}'@vizejs\/native-darwin-x64':\n {6}specifier: 0\.107\.0\n {6}version: 0\.107\.0\n/,
+  );
 
-  assert.match(out, /linting:\n {4}oxlint:\n {6}specifier: 1\.64\.0\n {6}version: 1\.64\.0\n/);
+  assert.match(
+    out,
+    /linting:\n {4}oxlint:\n {6}specifier: 1\.64\.0\n {6}version: 1\.64\.0\n/,
+  );
 
   assert.ok(
     out.includes("        version: 0.106.0"),
