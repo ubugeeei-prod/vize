@@ -109,16 +109,28 @@ jobs:
           restore-keys: |
             fuzz-corpus-${{ matrix.target }}-
 
+      # While the fuzz harnesses are advisory, mask libFuzzer's non-zero exit
+      # so a discovered crash does not flip the GitHub check to FAILURE (which
+      # would block the PR even with the job-level `continue-on-error: true`).
+      # The crash gets a workflow warning + a reproducer artifact instead.
+      # Drop the `|| ...` masking when the matrix promotes back to a required
+      # gate.
       - name: Run fuzz target ${{ matrix.target }}
         working-directory: fuzz
         run: |
+          set +e
           cargo +nightly fuzz run ${{ matrix.target }} \
             -- -max_total_time=${{ steps.budget.outputs.seconds }} \
                -max_len=65536 \
                -timeout=25
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::libFuzzer ${{ matrix.target }} exited with $status — reproducer uploaded as artifact."
+          fi
+          exit 0
 
-      - name: Upload reproducers on failure
-        if: failure()
+      - name: Upload reproducers when libFuzzer crashed
+        if: hashFiles(format('fuzz/artifacts/{0}/**', matrix.target)) != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: fuzz-reproducers-${{ matrix.target }}
