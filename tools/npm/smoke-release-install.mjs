@@ -52,12 +52,20 @@ function parseArgs(argv) {
 }
 
 function run(command, args, options = {}) {
+  // Node 22+ refuses to spawn `.cmd` / `.bat` directly (CVE-2024-27980) and
+  // returns EINVAL. The Windows runner reaches this code for the moonbit
+  // helper (`MOON_BIN: …\moon.cmd`). Route through cmd.exe via `shell: true`
+  // when the resolved command ends in a Windows batch suffix; the smoke args
+  // contain no shell metacharacters, so quoting them is a no-op.
+  const isWindowsBatch =
+    process.platform === "win32" && /\.(cmd|bat)$/i.test(command);
   const result = spawnSync(command, args, {
     cwd: options.cwd ?? root,
     encoding: "utf8",
     env: options.env ?? process.env,
     input: options.input,
     stdio: ["pipe", "pipe", "pipe"],
+    shell: isWindowsBatch,
   });
 
   if (result.error != null) {
