@@ -27,6 +27,12 @@ export const buildTasks = defineTasks({
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
   "build:packages": noCacheTask(runInPackages("build", packedPackages)),
   "build:native": noCacheTask(runPackageScriptDirectly("build", ["./npm/vize-native"])),
+  // Fast variant for test pipelines. `build:ci` uses the `ci` cargo profile
+  // (inherits dev, debug=false, incremental=false). It is the same profile
+  // every other Rust CI job already uses and is roughly 3x faster than the
+  // release profile that `build:native` runs. The release profile is only
+  // needed by publishing flows, so test:js can stay on this fast path.
+  "build:native:test": noCacheTask(runPackageScriptDirectly("build:ci", ["./npm/vize-native"])),
   "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/vite-plugin-vize/wasm")),
   "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(

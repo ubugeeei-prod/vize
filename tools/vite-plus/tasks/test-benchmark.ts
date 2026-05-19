@@ -58,7 +58,11 @@ const rustBranchCoverageCommand = [
 export const testAndBenchmarkTasks = defineTasks({
   test: noCacheTask(runTasks("test:rust", "test:js", "test:scripts")),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
-  "test:js": noCacheTask(`${runTask("build:native")} && ${jsPackageTestCommand}`),
+  // Use the CI-profile native build instead of the release-profile one.
+  // The release build was ~3m+ on GitHub Actions and was being immediately
+  // overwritten by vite-plugin-vize's pretest hook, which also rebuilds in
+  // dev profile (~1m20s). Building once in the CI profile saves both legs.
+  "test:js": noCacheTask(`${runTask("build:native:test")} && ${jsPackageTestCommand}`),
   "test:scripts": noCacheTask("node --test --test-concurrency=1 tests/tooling/*.test.ts"),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
