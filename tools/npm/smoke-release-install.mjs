@@ -57,8 +57,7 @@ function run(command, args, options = {}) {
   // helper (`MOON_BIN: …\moon.cmd`). Route through cmd.exe via `shell: true`
   // when the resolved command ends in a Windows batch suffix; the smoke args
   // contain no shell metacharacters, so quoting them is a no-op.
-  const isWindowsBatch =
-    process.platform === "win32" && /\.(cmd|bat)$/i.test(command);
+  const isWindowsBatch = process.platform === "win32" && /\.(cmd|bat)$/i.test(command);
   const result = spawnSync(command, args, {
     cwd: options.cwd ?? root,
     encoding: "utf8",
