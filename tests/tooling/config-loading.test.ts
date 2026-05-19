@@ -131,7 +131,10 @@ test("pkl config can amend the bundled schema without a project-level vize depen
 
     assert.equal(config?.compiler?.sourceMap, true);
     assert.deepEqual(config?.vite?.scanPatterns, ["app/**/*.vue"]);
-    assert.equal(fs.existsSync(path.join(tempDir, "node_modules", "vize", "pkl", "vize.pkl")), false);
+    assert.equal(
+      fs.existsSync(path.join(tempDir, "node_modules", "vize", "pkl", "vize.pkl")),
+      false,
+    );
   } finally {
     fs.rmSync(tempDir, { force: true, recursive: true });
   }
