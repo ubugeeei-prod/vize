@@ -46,11 +46,11 @@ tag is allowed to publish. Three declared targets are not currently exercised by
 runner and are covered only by per-platform build artifacts plus the
 `@vizejs/native-*` optional-dependency resolver:
 
-| Target               | Hosted runner gap                | Compensating coverage                                                       |
-| -------------------- | -------------------------------- | --------------------------------------------------------------------------- |
-| linux-arm64-gnu      | No free GitHub Actions runner    | Build job emits the per-platform tarball; manual install smoke before tags. |
+| Target                 | Hosted runner gap              | Compensating coverage                                                       |
+| ---------------------- | ------------------------------ | --------------------------------------------------------------------------- |
+| linux-arm64-gnu        | No free GitHub Actions runner  | Build job emits the per-platform tarball; manual install smoke before tags. |
 | linux-{x64,arm64}-musl | Alpine container not yet wired | Build job emits musl tarballs; manual `node:alpine` install smoke.          |
-| win32-arm64-msvc     | No free GitHub Actions runner    | Build job emits the per-platform tarball; manual install smoke before tags. |
+| win32-arm64-msvc       | No free GitHub Actions runner  | Build job emits the per-platform tarball; manual install smoke before tags. |
 
 Closing these gaps is tracked alongside [#493](https://github.com/ubugeeei/vize/issues/493).
 
