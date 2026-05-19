@@ -60,7 +60,8 @@ pub use bundler::{
 };
 pub use compile::{ScriptCompileResult, compile_sfc};
 pub use css::{
-    CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css, compile_style_block,
+    CssAstResult, CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css,
+    compile_style_block, parse_css_ast, print_css_ast,
 };
 pub use parse::parse_sfc;
 pub use types::{

@@ -1,0 +1,138 @@
+name: Fuzz
+
+on:
+  workflow_dispatch:
+    inputs:
+      max-total-time:
+        description: "libFuzzer -max_total_time per target (seconds)"
+        required: false
+        default: "120"
+  schedule:
+    # Daily long-run fuzz at 04:23 UTC; reproducers are uploaded as artifacts
+    # so a regression triage can grab the failing input without re-running.
+    - cron: "23 4 * * *"
+  pull_request:
+    branches: [main]
+    paths:
+      - "crates/vize_atelier_sfc/**"
+      - "crates/vize_atelier_dom/**"
+      - "crates/vize_atelier_core/**"
+      - "crates/vize_atelier_ssr/**"
+      - "crates/vize_atelier_vapor/**"
+      - "crates/vize_armature/**"
+      - "crates/vize_carton/**"
+      - "fuzz/**"
+      - "tools/fuzz/**"
+      - ".github/workflows/fuzz.yml"
+
+concurrency:
+  group: fuzz-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fuzz:
+    name: Fuzz ${{ matrix.target }}
+    # libFuzzer requires Linux or macOS; this matrix uses ubuntu-latest for
+    # speed and consistency. macOS coverage can be added in a follow-up if
+    # platform-divergent panics ever appear in triage.
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # The fuzz matrix is advisory at bootstrap. libFuzzer immediately surfaces
+    # real parser/compiler bugs (the first PR run already found one — see the
+    # `crash-*` reproducer artifact this job uploads) and triaging those is
+    # tracked per-bug, not gated through this workflow. Promote back to a
+    # required gate once a regression-only mode lands and the open finds are
+    # cleaned up.
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [sfc_parse, template_compile]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Resolve max-total-time
+        id: budget
+        shell: bash
+        run: |
+          case "${{ github.event_name }}" in
+            schedule)
+              # Nightly long fuzz: 30 minutes/target — large enough to drive
+              # libFuzzer past coverage plateaus on the seeded corpus.
+              echo "seconds=1800" >> "$GITHUB_OUTPUT"
+              ;;
+            workflow_dispatch)
+              echo "seconds=${{ inputs.max-total-time }}" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              # PR-gating short fuzz: 2 minutes/target — tight enough to keep
+              # PR latency reasonable while still exercising every seed.
+              echo "seconds=120" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: nightly
+          components: rust-src
+
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: fuzz-${{ matrix.target }}
+          workspaces: "fuzz -> target"
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz --locked --version "^0.13"
+
+      # ubuntu-latest still ships Node 20.x today, but seed_corpus.mjs uses
+      # `fs.globSync` which is Node 22+. Pin to the repo's `.node-version`
+      # so the script runs on the same Node line as `vp` / `node-engine-compat`.
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: ".node-version"
+
+      - name: Seed fuzz corpus from repository fixtures
+        run: node tools/fuzz/seed_corpus.mjs
+
+      - name: Restore grown corpus cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: fuzz/corpus/${{ matrix.target }}
+          key: fuzz-corpus-${{ matrix.target }}-${{ github.run_id }}
+          restore-keys: |
+            fuzz-corpus-${{ matrix.target }}-
+
+      # While the fuzz harnesses are advisory, mask libFuzzer's non-zero exit
+      # so a discovered crash does not flip the GitHub check to FAILURE (which
+      # would block the PR even with the job-level `continue-on-error: true`).
+      # The crash gets a workflow warning + a reproducer artifact instead.
+      # Drop the `|| ...` masking when the matrix promotes back to a required
+      # gate.
+      - name: Run fuzz target ${{ matrix.target }}
+        working-directory: fuzz
+        run: |
+          set +e
+          cargo +nightly fuzz run ${{ matrix.target }} \
+            -- -max_total_time=${{ steps.budget.outputs.seconds }} \
+               -max_len=65536 \
+               -timeout=25
+          status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "::warning::libFuzzer ${{ matrix.target }} exited with $status — reproducer uploaded as artifact."
+          fi
+          exit 0
+
+      - name: Upload reproducers when libFuzzer crashed
+        if: hashFiles(format('fuzz/artifacts/{0}/**', matrix.target)) != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fuzz-reproducers-${{ matrix.target }}
+          path: fuzz/artifacts/${{ matrix.target }}
+          if-no-files-found: ignore

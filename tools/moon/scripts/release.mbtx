@@ -388,6 +388,96 @@ fn replace_all_version_references(
 }
 
 ///|
+/// Rewrites every native binary catalog pin under the `native-binaries:` block
+/// of `pnpm-workspace.yaml` to the new release version.
+///
+/// The catalog block is recognised by the `  native-binaries:` header (two-space
+/// indent) and runs until the next top-level or catalog-section header. Inside
+/// that block the function replaces the version literal on every
+/// `    "@vizejs/native-...": "<version>"` line. The block header itself plus
+/// any comments are preserved untouched.
+fn replace_native_binary_workspace_catalog(
+  content : String,
+  current_version : String,
+  new_version : String,
+) -> String {
+  let updated : Array[String] = []
+  let mut in_catalog = false
+  let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
+  let header = "  native-binaries:"
+  let pin_prefix = "    \"@vizejs/native-"
+  for line in lines {
+    if line == header {
+      in_catalog = true
+      updated.push(line)
+      continue
+    }
+    if in_catalog {
+      let leaves_block = line != "" &&
+        !line.has_prefix("    ") &&
+        !line.has_prefix("  #")
+      if leaves_block {
+        in_catalog = false
+      } else if line.has_prefix(pin_prefix) && line.contains(current_version) {
+        updated.push(line.replace(old=current_version, new=new_version))
+        continue
+      }
+    }
+    updated.push(line)
+  }
+  updated.join("\n")
+}
+
+///|
+/// Rewrites every native binary catalog pin under the `native-binaries:` block
+/// inside `pnpm-lock.yaml`.
+///
+/// The catalogs section of pnpm-lock.yaml mirrors `pnpm-workspace.yaml` and each
+/// native package appears as a two-line entry:
+///
+/// ```
+///     '@vizejs/native-darwin-arm64':
+///       specifier: 0.107.0
+///       version: 0.107.0
+/// ```
+///
+/// We walk the file, detect entry into the `native-binaries:` block (under
+/// `catalogs:` at the four-space indent), and rewrite the `specifier:` /
+/// `version:` lines for every native package. The block ends when we either hit
+/// a top-level YAML key or another catalog header at the same indent.
+fn replace_native_binary_lockfile_catalog(
+  content : String,
+  current_version : String,
+  new_version : String,
+) -> String {
+  let updated : Array[String] = []
+  let mut in_block = false
+  let lines : Array[String] = content.split("\n").map(view => view.to_owned()).collect()
+  let header = "  native-binaries:"
+  for line in lines {
+    if line == header {
+      in_block = true
+      updated.push(line)
+      continue
+    }
+    if in_block {
+      let leaves_block = line != "" && !line.has_prefix("    ")
+      if leaves_block {
+        in_block = false
+      } else if (
+        line.has_prefix("      specifier: ") || line.has_prefix("      version: ")
+      ) &&
+        line.contains(current_version) {
+        updated.push(line.replace(old=current_version, new=new_version))
+        continue
+      }
+    }
+    updated.push(line)
+  }
+  updated.join("\n")
+}
+
+///|
 /// Detects whether the script can safely prompt the user for confirmation.
 ///
 /// The release script is allowed to be interactive when run locally, but CI and
@@ -439,6 +529,32 @@ async fn run_app() -> Int {
       }
       None => return 1
     }
+  }
+  if args.length() == 4 && args[0] == "--print-workspace-catalog-update" {
+    let input = match read_file_to_string(args[1]) {
+      Some(text) => text
+      None => {
+        @stdio.stderr.write("Failed to read \{args[1]}\n")
+        return 1
+      }
+    }
+    @stdio.stdout.write(
+      replace_native_binary_workspace_catalog(input, args[2], args[3]),
+    )
+    return 0
+  }
+  if args.length() == 4 && args[0] == "--print-lockfile-catalog-update" {
+    let input = match read_file_to_string(args[1]) {
+      Some(text) => text
+      None => {
+        @stdio.stderr.write("Failed to read \{args[1]}\n")
+        return 1
+      }
+    }
+    @stdio.stdout.write(
+      replace_native_binary_lockfile_catalog(input, args[2], args[3]),
+    )
+    return 0
   }
   if args.is_empty() {
     @stdio.stderr.write(
@@ -575,6 +691,50 @@ async fn run_app() -> Int {
     }
   }
 
+  let workspace_yaml_path = "pnpm-workspace.yaml"
+  let workspace_yaml = match read_file_to_string(workspace_yaml_path) {
+    Some(content) => content
+    None => {
+      @stdio.stderr.write("Failed to read \{workspace_yaml_path}\n")
+      return 1
+    }
+  }
+  let updated_workspace_yaml = replace_native_binary_workspace_catalog(
+    workspace_yaml,
+    current_version,
+    new_version,
+  )
+  if updated_workspace_yaml != workspace_yaml {
+    if !write_string_to_file(workspace_yaml_path, updated_workspace_yaml) {
+      @stdio.stderr.write("Failed to update \{workspace_yaml_path}\n")
+      return 1
+    }
+    println("  Updated \{workspace_yaml_path}")
+    files_to_stage.push(workspace_yaml_path)
+  }
+
+  let lockfile_path = "pnpm-lock.yaml"
+  let lockfile = match read_file_to_string(lockfile_path) {
+    Some(content) => content
+    None => {
+      @stdio.stderr.write("Failed to read \{lockfile_path}\n")
+      return 1
+    }
+  }
+  let updated_lockfile = replace_native_binary_lockfile_catalog(
+    lockfile,
+    current_version,
+    new_version,
+  )
+  if updated_lockfile != lockfile {
+    if !write_string_to_file(lockfile_path, updated_lockfile) {
+      @stdio.stderr.write("Failed to update \{lockfile_path}\n")
+      return 1
+    }
+    println("  Updated \{lockfile_path} native-binaries catalog block")
+    files_to_stage.push(lockfile_path)
+  }
+
   let zed_cargo_toml = "npm/zed-vize/Cargo.toml"
   let zed_extension_toml = "npm/zed-vize/extension.toml"
   let zed_cargo_lock = "npm/zed-vize/Cargo.lock"
@@ -699,6 +859,14 @@ async fn run_app() -> Int {
   }
   if @process.run("git", commit_args) != 0 {
     @stdio.stderr.write("Failed to create the release commit\n")
+    return 1
+  }
+
+  println("Verifying manifest alignment with tests/tooling/package-manifests.test.ts...")
+  if @process.run("node", ["--test", "tests/tooling/package-manifests.test.ts"]) != 0 {
+    @stdio.stderr.write(
+      "Error: package manifest alignment tests failed against the release commit. Inspect tests/tooling/package-manifests.test.ts, fix the drift, amend the release commit, and retry.\n",
+    )
     return 1
   }
 

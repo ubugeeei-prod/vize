@@ -9,7 +9,7 @@ description = "Atelier SFC - The Single File Component workshop for Vize"
 
 [features]
 default = ["native"]
-native = ["dep:lightningcss"]
+native = ["dep:lightningcss", "lightningcss/serde"]
 
 [dependencies]
 vize_carton = { workspace = true }

@@ -1,0 +1,40 @@
+# vize_fuzz is an isolated workspace dedicated to libFuzzer harnesses
+# driven by cargo-fuzz. Keeping it out of the root workspace avoids:
+# - Forcing every workspace build to pull in libfuzzer-sys (nightly only).
+# - Mixing a stable-pinned root toolchain with the nightly toolchain
+#   cargo-fuzz requires for libfuzzer.
+#
+# Run with: `cargo +nightly fuzz run <target>` from the fuzz/ directory.
+# Targets are bootstrapped from `corpus/<target>/` (seeded from
+# repository fixtures by `tools/fuzz/seed_corpus.mjs`).
+[package]
+name = "vize_fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+vize_atelier_sfc = { path = "../crates/vize_atelier_sfc", default-features = false }
+vize_atelier_dom = { path = "../crates/vize_atelier_dom" }
+vize_carton = { path = "../crates/vize_carton" }
+
+[[bin]]
+name = "sfc_parse"
+path = "fuzz_targets/sfc_parse.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "template_compile"
+path = "fuzz_targets/template_compile.rs"
+test = false
+doc = false
+bench = false
+
+# Isolated workspace — does NOT inherit from the repository root workspace.
+[workspace]
