@@ -64,7 +64,7 @@ production ready. The formerly missing release-blocking checks are tracked by th
 have explicit gates in CI and release docs:
 
 - [#492](https://github.com/ubugeeei/vize/issues/492): source line and branch coverage gates, with function and region budgets included.
-- [#493](https://github.com/ubugeeei/vize/issues/493): fresh-install smoke coverage for runtime package tarballs across supported OS and Node targets.
+- [#493](https://github.com/ubugeeei/vize/issues/493): fresh-install smoke coverage for runtime package tarballs across supported OS and Node targets. Hosted matrix covers darwin-x64 (`macos-13`), darwin-arm64 (`macos-latest`), linux-x64-gnu (`ubuntu-latest`), and win32-x64 (`windows-latest`) on Node 22 and Node 24. The remaining declared targets (linux-arm64-gnu, linux musl, win32-arm64-msvc) are documented as hosted-runner gaps in [stability.md](https://github.com/ubugeeei/vize/blob/main/docs/content/stability.md#runtime-support) and continue to receive build artifacts plus manual install smoke.
 - [#494](https://github.com/ubugeeei/vize/issues/494): public Vue compiler and language-tools parity matrix.
 
 The public compatibility baseline is documented in

@@ -702,7 +702,7 @@ test("native smoke workflow covers host platforms before release tags", () => {
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /schedule:/);
   assert.match(workflow, /pull_request:[\s\S]*paths:/);
-  assert.match(job, /os:\s*\[ubuntu-latest, macos-latest, windows-latest\]/);
+  assert.match(job, /os:\s*\[ubuntu-latest, macos-13, macos-latest, windows-latest\]/);
   assert.match(job, /cargo build --profile ci -p vize/);
   assert.match(job, /vp run --filter '\.\/npm\/vize-native' build:ci/);
   assert.match(job, /require\('\.\/npm\/vize-native'\)/);
@@ -713,7 +713,7 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
   const job = workflowJobBody(workflow, "fresh-install-smoke");
 
-  assert.match(job, /os:\s*\[ubuntu-latest, macos-latest, windows-latest\]/);
+  assert.match(job, /os:\s*\[ubuntu-latest, macos-13, macos-latest, windows-latest\]/);
   assert.match(job, /node-version:\s*\["22", "24"\]/);
   assert.match(job, /echo "\$\{\{\s*matrix\.node-version\s*\}\}" > \.node-version\.ci/);
   assert.match(job, /node-version-file:\s*"\.node-version\.ci"/);

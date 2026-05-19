@@ -39,6 +39,21 @@ The release workflow builds native packages for macOS, Linux, and Windows across
 where the package declares support. CI compatibility jobs cover the declared Node floor and the
 current project Node version.
 
+The fresh-install smoke matrix (`.github/workflows/native-smoke.yml`) runs the published
+package install path on `ubuntu-latest` (linux-x64-gnu), `macos-13` (darwin-x64), `macos-latest`
+(darwin-arm64), and `windows-latest` (win32-x64) against Node 22 and Node 24 before a release
+tag is allowed to publish. Three declared targets are not currently exercised by a hosted
+runner and are covered only by per-platform build artifacts plus the
+`@vizejs/native-*` optional-dependency resolver:
+
+| Target               | Hosted runner gap                | Compensating coverage                                                       |
+| -------------------- | -------------------------------- | --------------------------------------------------------------------------- |
+| linux-arm64-gnu      | No free GitHub Actions runner    | Build job emits the per-platform tarball; manual install smoke before tags. |
+| linux-{x64,arm64}-musl | Alpine container not yet wired | Build job emits musl tarballs; manual `node:alpine` install smoke.          |
+| win32-arm64-msvc     | No free GitHub Actions runner    | Build job emits the per-platform tarball; manual install smoke before tags. |
+
+Closing these gaps is tracked alongside [#493](https://github.com/ubugeeei/vize/issues/493).
+
 The minimum supported Rust version (MSRV) for the workspace is declared in `Cargo.toml` under
 `[workspace.package].rust-version`. The development toolchain pinned by `rust-toolchain.toml`
 may be the same version or newer. Before v1 stable the MSRV may move forward in any prerelease;
