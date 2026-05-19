@@ -326,6 +326,13 @@ jobs:
   source-coverage:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    # cargo llvm-cov against the whole workspace consistently runs in the
+    # 4–6 minute range. Coverage is a trend metric, not a per-PR signal —
+    # a single PR rarely meaningfully changes workspace-wide percentages.
+    # Run on push-to-main (so regressions surface within minutes of merge)
+    # and on the daily schedule. The fixture-coverage job (`coverage`) and
+    # the compiler/lint suites still run on every PR.
+    if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
@@ -371,6 +378,11 @@ jobs:
   branch-coverage:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # Nightly Rust branch coverage on the core compiler crates. Same
+    # rationale as source-coverage: a single PR does not move branch
+    # coverage in a way that needs gating per-PR. Push-to-main + schedule
+    # keeps the trend honest without paying ~2 minutes on every PR.
+    if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
