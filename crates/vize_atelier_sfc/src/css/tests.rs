@@ -96,6 +96,34 @@ fn test_parse_and_print_css_ast() {
 
 #[test]
 #[cfg(feature = "native")]
+fn test_parse_and_print_css_ast_with_image_set() {
+    let css = ".hero { background-image: image-set(url('./one.png') 1x, url('./two.png') 2x); }";
+    let ast_result = parse_css_ast(css, &CssCompileOptions::default());
+
+    assert!(
+        ast_result.errors.is_empty(),
+        "Unexpected errors: {:?}",
+        ast_result.errors
+    );
+
+    let result = print_css_ast(
+        ast_result.ast.expect("expected serialized CSS AST"),
+        &CssCompileOptions::default(),
+    );
+
+    assert!(
+        result.errors.is_empty(),
+        "Unexpected errors: {:?}",
+        result.errors
+    );
+    assert!(result.code.contains("image-set"));
+    assert!(result.code.contains("./one.png"));
+    assert!(result.code.contains("./two.png"));
+    assert!(!result.code.contains("type(\""));
+}
+
+#[test]
+#[cfg(feature = "native")]
 fn test_compile_minified_css() {
     let css = ".foo {\n  color: red;\n  background: blue;\n}";
     let result = compile_css(

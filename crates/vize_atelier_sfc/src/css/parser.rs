@@ -20,6 +20,9 @@ pub(crate) fn version_to_u32(major: u32) -> u32 {
 
 use super::CssModuleExport as VizeCssModuleExport;
 
+const EMPTY_IMAGE_SET_FILE_TYPE: &str = "__vize_empty_image_set_file_type__";
+const EMPTY_IMAGE_SET_FILE_TYPE_CSS: &str = " type(\"__vize_empty_image_set_file_type__\")";
+
 /// CSS Modules compilation result
 pub(crate) struct CssInternalResult {
     pub code: String,
@@ -93,10 +96,12 @@ pub(crate) fn parse_css_ast_internal(
 }
 
 pub(crate) fn print_css_ast_internal(
-    ast: Value,
+    mut ast: Value,
     minify: bool,
     targets: Targets,
 ) -> CssInternalResult {
+    normalize_image_set_file_types(&mut ast);
+
     let mut stylesheet: StyleSheet = match StyleSheet::deserialize(ast.into_deserializer()) {
         Ok(stylesheet) => stylesheet,
         Err(e) => {
@@ -151,7 +156,7 @@ pub(crate) fn print_css_ast_internal(
             });
 
             CssInternalResult {
-                code: result.code.into(),
+                code: denormalize_image_set_file_types(&result.code),
                 errors: vec![],
                 exports,
             }
@@ -167,6 +172,33 @@ pub(crate) fn print_css_ast_internal(
             }
         }
     }
+}
+
+fn normalize_image_set_file_types(value: &mut Value) {
+    match value {
+        Value::Object(map) => {
+            if map.get("fileType") == Some(&Value::Null) {
+                map.insert(
+                    "fileType".into(),
+                    Value::String(EMPTY_IMAGE_SET_FILE_TYPE.into()),
+                );
+            }
+
+            for child in map.values_mut() {
+                normalize_image_set_file_types(child);
+            }
+        }
+        Value::Array(items) => {
+            for child in items {
+                normalize_image_set_file_types(child);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn denormalize_image_set_file_types(code: &str) -> String {
+    code.replace(EMPTY_IMAGE_SET_FILE_TYPE_CSS, "").into()
 }
 
 /// Internal CSS compilation with owned strings to avoid borrow issues
