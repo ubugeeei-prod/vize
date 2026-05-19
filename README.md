@@ -18,8 +18,9 @@
 
 > [!WARNING]
 > Vize is under active development. It is not a completely production-ready toolchain yet; see the
-> [production-readiness checklist](./docs/release/production-readiness.md) and stability tiers
-> before adopting it in production.
+> [production-readiness checklist](./docs/release/production-readiness.md), the
+> [support policy](./docs/release/support-policy.md), and the stability tiers before adopting it
+> in production.
 
 > [!IMPORTANT]
 > For day-to-day editor support, keep using the official Vue language tools (`vuejs/language-tools`) for now.

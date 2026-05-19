@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Schedule trigger for slow jobs (nix-flake, playground-test) that should
+  # run on a cadence but no longer block PR review. See the conditional
+  # `if:` guards on those jobs.
+  schedule:
+    # 03:11 UTC daily (~12:11 JST). Offset from native-smoke and e2e to spread
+    # GitHub Actions concurrency budget.
+    - cron: "11 3 * * *"
 
 concurrency:
   group: check-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -21,6 +28,11 @@ jobs:
   nix-flake:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Nix store cache restore + `nix flake check` was the second-slowest PR
+    # gate after playground-test. The flake itself rarely changes between
+    # PRs, so run it on push-to-main (catches merge regressions within
+    # minutes) and on the daily schedule, not on every PR.
+    if: ${{ github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31

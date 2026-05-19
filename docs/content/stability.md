@@ -10,6 +10,8 @@ contract: it names the surfaces that should be usable by early adopters, while k
 change internals and experimental integrations quickly. The full project is not yet a completely
 production-ready toolchain; release decisions should use the
 [production-readiness checklist](https://github.com/ubugeeei/vize/blob/main/docs/release/production-readiness.md).
+Deprecation windows, SemVer rules, and release-line support are spelled out in the
+[support policy](https://github.com/ubugeeei/vize/blob/main/docs/release/support-policy.md).
 
 ## Versioning Contract
 
