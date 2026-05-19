@@ -42,9 +42,7 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
 
   // The matrix must drive each fuzz_target declared in fuzz/Cargo.toml.
   const manifest = readRepoFile("fuzz/Cargo.toml");
-  const targets = [...manifest.matchAll(/\[\[bin\]\]\s+name = "([^"]+)"/g)].map(
-    ([, name]) => name,
-  );
+  const targets = [...manifest.matchAll(/\[\[bin\]\]\s+name = "([^"]+)"/g)].map(([, name]) => name);
   for (const target of targets) {
     assert.match(
       workflow,
@@ -64,9 +62,7 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
 test("seed_corpus.mjs writes seeds for every declared fuzz target", () => {
   const script = readRepoFile("tools/fuzz/seed_corpus.mjs");
   const manifest = readRepoFile("fuzz/Cargo.toml");
-  const targets = [...manifest.matchAll(/\[\[bin\]\]\s+name = "([^"]+)"/g)].map(
-    ([, name]) => name,
-  );
+  const targets = [...manifest.matchAll(/\[\[bin\]\]\s+name = "([^"]+)"/g)].map(([, name]) => name);
 
   for (const target of targets) {
     assert.match(
