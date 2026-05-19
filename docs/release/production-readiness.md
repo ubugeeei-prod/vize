@@ -30,6 +30,8 @@ A production-ready claim for any supported surface requires current evidence for
 - `cargo test --workspace`
 - `vp exec pnpm audit --prod --audit-level moderate`
 - `cargo audit --deny warnings`
+- release-artifact signatures and SBOMs land on the GitHub Release (see
+  [supply-chain.md](./supply-chain.md))
 - package build coverage for the surface being promoted
 - package install smoke coverage for the surface being promoted
 - supported Node.js compatibility coverage
@@ -72,6 +74,7 @@ The public compatibility baseline is documented in
 Do not remove the public work-in-progress or experimental warnings until:
 
 - the promoted support scope is named in this document and in the stability guide
+- the [support policy](./support-policy.md) covers the surface, including deprecation windows
 - every required gate above is green on the release commit
 - skipped production-relevant fixtures are either re-enabled or documented as known unsupported behavior
 - dependency audits are blocking, or every temporary ignore has an owner and review date

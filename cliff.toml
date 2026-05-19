@@ -1,0 +1,70 @@
+# Configuration for `git-cliff` — regenerates the root CHANGELOG.md from
+# Conventional Commits in the repository's git history.
+#
+# Run locally:
+#   git cliff --config cliff.toml --output CHANGELOG.md
+# Or via the helper:
+#   node tools/release/regenerate-changelog.mjs
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to this repository are tracked in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project follows [Conventional Commits](https://www.conventionalcommits.org/).
+
+See [`docs/release/support-policy.md`](./docs/release/support-policy.md) for the
+deprecation contract that backs the entries below.
+
+"""
+body = """
+{% if version %}\
+## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits %}
+- {{ commit.message | upper_first | trim }}\
+{% if commit.id %} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/ubugeeei/vize/commit/{{ commit.id }})){% endif %}\
+{% endfor %}
+{% endfor %}\n
+"""
+trim = true
+footer = ""
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+require_conventional = false
+split_commits = false
+
+# Conventional Commit type → CHANGELOG section.
+# Anything else (chore, ci, build, refactor, docs, test, style) is hidden by
+# default — set `skip = false` and add a `group` entry below to surface it.
+commit_parsers = [
+  { message = "^feat", group = "Added" },
+  { message = "^fix", group = "Fixed" },
+  { message = "^perf", group = "Performance" },
+  { message = "^revert", group = "Reverted" },
+  { message = "^docs\\(release\\)", group = "Documented release contract" },
+  { message = "^chore\\(release\\):", group = "Released" },
+  { message = "^chore\\(breaking\\)", group = "Breaking" },
+  { message = "^.+!:", group = "Breaking" },
+  { body = ".*BREAKING CHANGE.*", group = "Breaking" },
+  { message = "^chore", skip = true },
+  { message = "^ci", skip = true },
+  { message = "^build", skip = true },
+  { message = "^style", skip = true },
+  { message = "^refactor", skip = true },
+  { message = "^test", skip = true },
+  { message = "^docs", skip = true },
+]
+filter_commits = true
+tag_pattern = "v[0-9]*"
+ignore_tags = ""
+topo_order = false
+sort_commits = "newest"
