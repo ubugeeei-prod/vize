@@ -147,7 +147,15 @@ jobs:
       - name: Build npm runtime packages
         shell: bash
         run: |
-          vp run --filter './npm/vize' build
+          # Pack npm/vize directly instead of running its full `build` script,
+          # which would also re-invoke `generate:rule-types` (a moonbit script
+          # that shells out to `cl.exe`). The checked-in src/types/rules.ts is
+          # the source of truth and is regenerated/verified on the test-scripts
+          # job on Linux; the smoke matrix only needs the packed tarball, and
+          # moonbit's `cc` integration does not currently honor the inherited
+          # INCLUDE env on Windows even when ilammy/msvc-dev-cmd has set it,
+          # which would otherwise block this matrix on every Windows runner.
+          (cd npm/vize && vp pack)
           vp run --filter './npm/vite-plugin-vize' build
       - name: Fresh install and runtime smoke published tarballs
         shell: bash
