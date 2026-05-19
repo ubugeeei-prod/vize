@@ -100,8 +100,13 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   // deps and drop them mid-run (npm/cli#4828).
   assert.match(script, /resolveInstalledBin\(installDir, "vize", "vize"\)/);
   assert.match(script, /"lint"[\s\S]*"src\/App\.vue"/);
-  assert.match(script, /resolveInstalledBin\(installDir, "vite", "vite"\)/);
-  assert.match(script, /viteBin, "build"/);
+  // vite is installed via the vite-plus-core alias which carries no bin
+  // field, so the smoke must locate its CLI directly. Keep both the
+  // dedicated resolver and the known CLI entry path asserted so a future
+  // refactor cannot regress to looking up a non-existent bin name.
+  assert.match(script, /resolveViteCliEntry\(installDir\)/);
+  assert.match(script, /dist\/vite\/node\/cli\.js/);
+  assert.match(script, /viteCli, "build"/);
   assert.match(script, /runtime: @vizejs\/vite-plugin vite build/);
   // The combined install must request optional deps explicitly so that an
   // inherited `omit=optional` config does not silently drop platform-specific

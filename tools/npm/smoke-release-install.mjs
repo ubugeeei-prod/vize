@@ -448,10 +448,32 @@ function runRuntimeChecks(installDir, packages) {
   }
 
   if (hasPackage(packages, "@vizejs/vite-plugin")) {
-    const viteBin = resolveInstalledBin(installDir, "vite", "vite");
-    run(process.execPath, [viteBin, "build"], { cwd: installDir });
+    const viteCli = resolveViteCliEntry(installDir);
+    run(process.execPath, [viteCli, "build"], { cwd: installDir });
     console.log("runtime: @vizejs/vite-plugin vite build");
   }
+}
+
+function resolveViteCliEntry(installDir) {
+  // vite is installed via the `vite@npm:@voidzero-dev/vite-plus-core` alias, so
+  // `node_modules/vite/package.json` carries no `bin` field — the umbrella
+  // package only exports the JS API. The CLI ships inside the same package at
+  // `dist/vite/node/cli.js`. Prefer the standard `bin` field if a future
+  // upstream adds one; fall back to the known CLI entry path otherwise so the
+  // smoke does not silently swap to a different binary.
+  const packageDir = installedPackageDir(path.join(installDir, "node_modules"), "vite");
+  const packageJson = readPackageJson(packageDir);
+  const bin = packageJson.bin;
+  if (typeof bin === "string") return path.join(packageDir, bin);
+  if (bin && typeof bin === "object" && typeof bin.vite === "string") {
+    return path.join(packageDir, bin.vite);
+  }
+  const viteCli = path.join(packageDir, "dist/vite/node/cli.js");
+  assert.ok(
+    fs.existsSync(viteCli),
+    `installed vite does not expose a CLI at ${path.relative(installDir, viteCli)}`,
+  );
+  return viteCli;
 }
 
 function main() {
