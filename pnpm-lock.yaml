@@ -760,10 +760,6 @@ importers:
       vite-plus:
         specifier: catalog:vite-stack
         version: 0.1.21(@tsdown/css@0.22.0)(@types/node@25.7.0)(@voidzero-dev/vite-plus-core@0.1.21(@tsdown/css@0.22.0)(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0)
-    optionalDependencies:
-      '@pkl-community/pkl':
-        specifier: catalog:repo-tooling
-        version: 0.27.2
 
   npm/vize-native:
     devDependencies:

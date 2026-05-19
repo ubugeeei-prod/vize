@@ -65,6 +65,24 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
 
 ## PKL Config
 
+The `@pkl-community/pkl` CLI is an optional peer dependency, not a bundled
+dependency, because its native binaries add ~50 MB to the install footprint of
+projects that never use PKL config. Add it to your project only when you want
+`vize.config.pkl` resolution:
+
+```sh
+npm install --save-dev @pkl-community/pkl
+# or:
+pnpm add -D @pkl-community/pkl
+# or:
+yarn add -D @pkl-community/pkl
+```
+
+Vize also accepts a system `pkl` binary on `PATH`, so installing the npm
+package is optional if your environment already provides one. When no pkl
+binary is reachable, `vize.config.pkl` is skipped and Vize falls back to the
+next supported config format.
+
 ```pkl
 amends "node_modules/vize/pkl/vize.pkl"
 
