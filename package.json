@@ -15,6 +15,7 @@
     "json-schema-to-typescript": "catalog:repo-tooling",
     "oxfmt": "catalog:linting",
     "oxlint": "catalog:linting",
+    "pkg-pr-new": "catalog:repo-tooling",
     "tsdown": "catalog:vite-stack",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack"
