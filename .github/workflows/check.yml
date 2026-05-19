@@ -216,6 +216,12 @@ jobs:
 
   test-scripts:
     runs-on: ubuntu-latest
+    # No Rust toolchain, no moonbit setup, no cargo build: every test under
+    # tests/tooling/*.test.ts is pure JS (reading repo files and asserting
+    # structural invariants). The single test that mentions the vize binary
+    # (`e2e-binaries.test.ts`) spawns `process.execPath` with stubbed env
+    # overrides — it never invokes the compiled CLI. Skipping the Rust
+    # bootstrap saves ~30 seconds per PR.
     timeout-minutes: 15
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -226,18 +232,8 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
-      - uses: ./.github/actions/setup-moonbit
-      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-        with:
-          shared-key: "native"
-          cache-workspace-crates: "true"
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Build vize CLI
-        run: cargo build --profile ci -p vize
-      - name: Install vize CLI
-        run: cp target/ci/vize /usr/local/bin/vize
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
 
@@ -371,6 +367,13 @@ jobs:
   source-coverage:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    # cargo llvm-cov against the whole workspace consistently runs in the
+    # 4–6 minute range. Coverage is a trend metric, not a per-PR signal —
+    # a single PR rarely meaningfully changes workspace-wide percentages.
+    # Run on push-to-main (so regressions surface within minutes of merge)
+    # and on the daily schedule. The fixture-coverage job (`coverage`) and
+    # the compiler/lint suites still run on every PR.
+    if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
@@ -416,6 +419,11 @@ jobs:
   branch-coverage:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # Nightly Rust branch coverage on the core compiler crates. Same
+    # rationale as source-coverage: a single PR does not move branch
+    # coverage in a way that needs gating per-PR. Push-to-main + schedule
+    # keeps the trend honest without paying ~2 minutes on every PR.
+    if: ${{ github.event_name != 'pull_request' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
