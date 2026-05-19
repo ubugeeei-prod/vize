@@ -289,11 +289,7 @@ function installPackedPackages(tempDir, packages, options = {}) {
 
   fs.writeFileSync(
     path.join(installDir, "package.json"),
-    JSON.stringify(
-      { name: "vize-release-install-smoke", private: true, dependencies },
-      null,
-      2,
-    ),
+    JSON.stringify({ name: "vize-release-install-smoke", private: true, dependencies }, null, 2),
   );
 
   // `--include=optional` is explicit so a global npm config that filters
