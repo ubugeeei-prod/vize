@@ -504,6 +504,26 @@ impl Compiler {
         }
     }
 
+    /// Parse CSS into a serialized LightningCSS AST.
+    #[wasm_bindgen(js_name = "parseCssAst")]
+    pub fn parse_css_ast_method(&self, css: &str, options: JsValue) -> Result<JsValue, JsValue> {
+        use vize_atelier_sfc::parse_css_ast;
+        let opts = parse_css_options(options);
+        let result = parse_css_ast(css, &opts);
+        to_js_value(&result)
+    }
+
+    /// Print CSS from a serialized LightningCSS AST.
+    #[wasm_bindgen(js_name = "printCssAst")]
+    pub fn print_css_ast_method(&self, ast: JsValue, options: JsValue) -> Result<JsValue, JsValue> {
+        use vize_atelier_sfc::print_css_ast;
+        let ast = serde_wasm_bindgen::from_value(ast)
+            .map_err(|e| JsValue::from_str(&format!("Invalid CSS AST: {e}")))?;
+        let opts = parse_css_options(options);
+        let result = print_css_ast(ast, &opts);
+        to_js_value(&result)
+    }
+
     /// Compile CSS with LightningCSS
     #[wasm_bindgen(js_name = "compileCss")]
     pub fn compile_css_method(&self, css: &str, options: JsValue) -> Result<JsValue, JsValue> {
@@ -900,6 +920,18 @@ pub fn parse_sfc_fn(source: &str, options: JsValue) -> Result<JsValue, JsValue> 
 #[wasm_bindgen(js_name = "compileSfc")]
 pub fn compile_sfc_fn(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
     Compiler::new().compile_sfc(source, options)
+}
+
+/// Parse CSS to AST (free function)
+#[wasm_bindgen(js_name = "parseCssAst")]
+pub fn parse_css_ast_fn(css: &str, options: JsValue) -> Result<JsValue, JsValue> {
+    Compiler::new().parse_css_ast_method(css, options)
+}
+
+/// Print CSS from AST (free function)
+#[wasm_bindgen(js_name = "printCssAst")]
+pub fn print_css_ast_fn(ast: JsValue, options: JsValue) -> Result<JsValue, JsValue> {
+    Compiler::new().print_css_ast_method(ast, options)
 }
 
 /// Compile CSS (free function)

@@ -8,12 +8,15 @@
 - Script compilation and binding metadata extraction
 - Template compilation through DOM or Vapor backends
 - Scoped CSS and style transforms powered by Lightning CSS
+- Serialized CSS AST parse/print helpers for parser-backed tooling
 
 ## Key Entry Points
 
 - `parse_sfc`
 - `compile_sfc`
 - `compile_css`
+- `parse_css_ast`
+- `print_css_ast`
 - `compile_style_block`
 - `SfcParseOptions`
 - `SfcCompileOptions`

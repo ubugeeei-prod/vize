@@ -11,7 +11,7 @@ use super::scoped::{
     add_scope_to_element, apply_scoped_css, transform_deep, transform_global, transform_slotted,
 };
 use super::transform::extract_and_transform_v_bind;
-use super::{CssCompileOptions, bundle_css, compile_css};
+use super::{CssCompileOptions, bundle_css, compile_css, parse_css_ast, print_css_ast};
 
 fn test_utf8(bytes: &[u8]) -> &str {
     match std::str::from_utf8(bytes) {
@@ -41,6 +41,57 @@ fn test_compile_scoped_css() {
     );
     assert!(result.errors.is_empty());
     insta::assert_debug_snapshot!(result);
+}
+
+#[cfg(feature = "native")]
+fn rewrite_url_nodes(value: &mut serde_json::Value, from: &str, to: &str) {
+    match value {
+        serde_json::Value::Object(map) => {
+            if map.get("url") == Some(&serde_json::Value::String(from.to_string())) {
+                map.insert("url".to_string(), serde_json::Value::String(to.to_string()));
+            }
+
+            for child in map.values_mut() {
+                rewrite_url_nodes(child, from, to);
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for child in items {
+                rewrite_url_nodes(child, from, to);
+            }
+        }
+        _ => {}
+    }
+}
+
+#[test]
+#[cfg(feature = "native")]
+fn test_parse_and_print_css_ast() {
+    let css = ".foo { background: url('./logo.svg'); color: red; }";
+    let ast_result = parse_css_ast(css, &CssCompileOptions::default());
+
+    assert!(
+        ast_result.errors.is_empty(),
+        "Unexpected errors: {:?}",
+        ast_result.errors
+    );
+
+    let mut ast = ast_result.ast.expect("expected serialized CSS AST");
+    assert!(
+        ast.get("rules").is_some(),
+        "expected stylesheet rules in {ast:?}"
+    );
+
+    rewrite_url_nodes(&mut ast, "./logo.svg", "/assets/logo-hash.svg");
+
+    let result = print_css_ast(ast, &CssCompileOptions::default());
+    assert!(
+        result.errors.is_empty(),
+        "Unexpected errors: {:?}",
+        result.errors
+    );
+    assert!(result.code.contains("background"));
+    assert!(result.code.contains("/assets/logo-hash.svg"));
 }
 
 #[test]
