@@ -93,23 +93,11 @@ test("release script rewrites only the native-binaries catalog block in pnpm-wor
 
   const nativeBlockStart = lines.indexOf("  native-binaries:");
   assert.notEqual(nativeBlockStart, -1, "native-binaries header preserved");
-  assert.equal(
-    lines[nativeBlockStart + 1],
-    '    "@vizejs/native-darwin-arm64": "0.107.0"',
-  );
-  assert.equal(
-    lines[nativeBlockStart + 2],
-    '    "@vizejs/native-darwin-x64": "0.107.0"',
-  );
-  assert.equal(
-    lines[nativeBlockStart + 3],
-    '    "@vizejs/native-linux-arm64-gnu": "0.107.0"',
-  );
+  assert.equal(lines[nativeBlockStart + 1], '    "@vizejs/native-darwin-arm64": "0.107.0"');
+  assert.equal(lines[nativeBlockStart + 2], '    "@vizejs/native-darwin-x64": "0.107.0"');
+  assert.equal(lines[nativeBlockStart + 3], '    "@vizejs/native-linux-arm64-gnu": "0.107.0"');
 
-  assert.ok(
-    result.stdout.includes("peerDependencyRules:"),
-    "later sections preserved",
-  );
+  assert.ok(result.stdout.includes("peerDependencyRules:"), "later sections preserved");
 });
 
 test("release script rewrites only the native-binaries catalog block in pnpm-lock.yaml", () => {
@@ -162,10 +150,7 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
     / {4}'@vizejs\/native-darwin-x64':\n {6}specifier: 0\.107\.0\n {6}version: 0\.107\.0\n/,
   );
 
-  assert.match(
-    out,
-    /linting:\n {4}oxlint:\n {6}specifier: 1\.64\.0\n {6}version: 1\.64\.0\n/,
-  );
+  assert.match(out, /linting:\n {4}oxlint:\n {6}specifier: 1\.64\.0\n {6}version: 1\.64\.0\n/);
 
   assert.ok(
     out.includes("        version: 0.106.0"),
@@ -175,8 +160,5 @@ test("release script rewrites only the native-binaries catalog block in pnpm-loc
     out.includes("'@vizejs/native-darwin-arm64@0.106.0':"),
     "packages section key preserved",
   );
-  assert.ok(
-    out.includes("resolution: {integrity: sha512-AAA==}"),
-    "integrity hash preserved",
-  );
+  assert.ok(out.includes("resolution: {integrity: sha512-AAA==}"), "integrity hash preserved");
 });
