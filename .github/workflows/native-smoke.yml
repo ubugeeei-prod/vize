@@ -38,6 +38,13 @@ jobs:
     name: Native host smoke (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    # GitHub's free `macos-13` (darwin-x64) pool currently sits in queue for
+    # the entire job timeout window during peak hours, which would block PRs
+    # waiting on a runner that never allocates. Keep macos-13 in the matrix so
+    # we still execute it whenever capacity exists, but mark it advisory until
+    # we move darwin-x64 onto a paid runner (`macos-13-large`) or a
+    # self-hosted node. The other three OSes remain required.
+    continue-on-error: ${{ matrix.os == 'macos-13' }}
     strategy:
       fail-fast: false
       matrix:
@@ -81,6 +88,8 @@ jobs:
     name: Fresh install smoke (${{ matrix.os }}, Node ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
+    # See `host-native-smoke` above for why macos-13 cells are advisory.
+    continue-on-error: ${{ matrix.os == 'macos-13' }}
     strategy:
       fail-fast: false
       matrix:
