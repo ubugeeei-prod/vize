@@ -84,6 +84,13 @@ jobs:
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz --locked --version "^0.13"
 
+      # ubuntu-latest still ships Node 20.x today, but seed_corpus.mjs uses
+      # `fs.globSync` which is Node 22+. Pin to the repo's `.node-version`
+      # so the script runs on the same Node line as `vp` / `node-engine-compat`.
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: ".node-version"
+
       - name: Seed fuzz corpus from repository fixtures
         run: node tools/fuzz/seed_corpus.mjs
 
