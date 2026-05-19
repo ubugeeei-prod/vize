@@ -254,14 +254,44 @@ function assertInstalledPackage(nodeModules, packageInfo) {
   }
 }
 
-function installPackedPackages(tempDir, packages) {
+const RUNTIME_PEER_DEPENDENCIES = {
+  "@typescript/native-preview": "7.0.0-dev.20260514.1",
+  typescript: "6.0.3",
+  vite: "npm:@voidzero-dev/vite-plus-core@0.1.21",
+  vue: "3.5.34",
+};
+
+function installPackedPackages(tempDir, packages, options = {}) {
   const installDir = path.join(tempDir, "install");
   fs.mkdirSync(installDir, { recursive: true });
+
+  // Build a single package.json holding both the tarballs under test and any
+  // runtime peer dependencies the smoke project needs. A single `npm install`
+  // lets npm's optional-dependency resolver settle once consistently;
+  // splitting it into two installs hits npm/cli#4828, where the second pass
+  // can drop transitive optional deps that the first pass already resolved.
+  const dependencies = {};
+  for (const pkg of packages) {
+    dependencies[pkg.name] = `file:${pkg.tarball}`;
+  }
+  if (options.includeRuntimePeers === true) {
+    for (const [name, version] of Object.entries(RUNTIME_PEER_DEPENDENCIES)) {
+      dependencies[name] = version;
+    }
+  }
+
   fs.writeFileSync(
     path.join(installDir, "package.json"),
-    JSON.stringify({ name: "vize-release-install-smoke", private: true }, null, 2),
+    JSON.stringify(
+      { name: "vize-release-install-smoke", private: true, dependencies },
+      null,
+      2,
+    ),
   );
 
+  // `--include=optional` is explicit so a global npm config that filters
+  // optional deps (or an inherited `omit=optional`) cannot silently drop
+  // platform-specific native bindings that Vize and rolldown depend on.
   run(
     process.env.NPM_BIN || "npm",
     [
@@ -271,7 +301,7 @@ function installPackedPackages(tempDir, packages) {
       "--no-audit",
       "--fund=false",
       "--legacy-peer-deps",
-      ...packages.map((pkg) => pkg.tarball),
+      "--include=optional",
     ],
     { cwd: installDir },
   );
@@ -284,23 +314,22 @@ function installPackedPackages(tempDir, packages) {
   return installDir;
 }
 
-function installRuntimePeerDependencies(installDir) {
-  run(
-    process.env.NPM_BIN || "npm",
-    [
-      "install",
-      "--ignore-scripts",
-      "--package-lock=false",
-      "--no-audit",
-      "--fund=false",
-      "--legacy-peer-deps",
-      "@typescript/native-preview@7.0.0-dev.20260514.1",
-      "typescript@6.0.3",
-      "vite@npm:@voidzero-dev/vite-plus-core@0.1.21",
-      "vue@3.5.34",
-    ],
-    { cwd: installDir },
+function resolveInstalledBin(installDir, packageName, binName) {
+  const packageDir = installedPackageDir(path.join(installDir, "node_modules"), packageName);
+  const packageJson = readPackageJson(packageDir);
+  const bin = packageJson.bin;
+  const relative =
+    typeof bin === "string"
+      ? bin
+      : bin != null && typeof bin === "object"
+        ? (bin[binName] ?? bin[packageName.replace(/^@[^/]+\//, "")])
+        : undefined;
+  assert.equal(
+    typeof relative,
+    "string",
+    `installed ${packageName} does not expose a "${binName}" bin entry`,
   );
+  return path.join(packageDir, relative);
 }
 
 function writeRuntimeSmokeProject(installDir) {
@@ -380,7 +409,6 @@ function hasPackage(packages, name) {
 }
 
 function runRuntimeChecks(installDir, packages) {
-  installRuntimePeerDependencies(installDir);
   writeRuntimeSmokeProject(installDir);
 
   if (hasPackage(packages, "@vizejs/native")) {
@@ -404,17 +432,24 @@ function runRuntimeChecks(installDir, packages) {
     console.log("runtime: @vizejs/native compileSfc");
   }
 
+  // Bins are invoked through `node <resolved-bin>` instead of `npm exec` so
+  // that npm/cli#4828 cannot re-resolve transitive optional native deps and
+  // drop them mid-run. The single combined install above already settled the
+  // dependency tree; re-entering npm here is what previously broke vite/rolldown
+  // native bindings on the fresh-install smoke matrix.
   if (hasPackage(packages, "vize")) {
+    const vizeBin = resolveInstalledBin(installDir, "vize", "vize");
     run(
-      process.env.NPM_BIN || "npm",
-      ["exec", "--", "vize", "lint", "src/App.vue", "--format", "json", "--quiet", "--no-config"],
+      process.execPath,
+      [vizeBin, "lint", "src/App.vue", "--format", "json", "--quiet", "--no-config"],
       { cwd: installDir },
     );
     console.log("runtime: vize lint");
   }
 
   if (hasPackage(packages, "@vizejs/vite-plugin")) {
-    run(process.env.NPM_BIN || "npm", ["exec", "--", "vite", "build"], { cwd: installDir });
+    const viteBin = resolveInstalledBin(installDir, "vite", "vite");
+    run(process.execPath, [viteBin, "build"], { cwd: installDir });
     console.log("runtime: @vizejs/vite-plugin vite build");
   }
 }
@@ -466,7 +501,9 @@ function main() {
 
     const installable = packages.filter((pkg) => pkg.compatible);
     assert.ok(installable.length > 0, "no package tarballs are compatible with this runner");
-    const installDir = installPackedPackages(tempDir, installable);
+    const installDir = installPackedPackages(tempDir, installable, {
+      includeRuntimePeers: options.runtimeChecks,
+    });
 
     if (options.runtimeChecks) {
       runRuntimeChecks(installDir, installable);

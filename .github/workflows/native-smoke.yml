@@ -81,11 +81,6 @@ jobs:
     name: Fresh install smoke (${{ matrix.os }}, Node ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
-    # Limited to manual dispatch and the weekly cron until the runtime-checks
-    # design is rebuilt (see issue #511). Skipping on pull_request stops the
-    # matrix from red-lighting unrelated PRs while the install-time smoke is
-    # blocked by upstream npm/cli#4828 in the vite-plus binding resolution.
-    if: ${{ github.event_name != 'pull_request' }}
     strategy:
       fail-fast: false
       matrix:
