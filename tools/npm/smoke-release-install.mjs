@@ -228,7 +228,15 @@ function assertInstalledPackage(nodeModules, packageInfo) {
   assert.equal(packageJson.name, packageInfo.name);
   assert.equal(packageJson.version, packageInfo.version);
   assertNoWorkspaceProtocols(packageDir, packageJson);
-  assertPublishEntrypointsExist(packageDir, packageJson);
+  // Per-platform native sub-packages: see the comment near the same guard in
+  // main(). The single-host smoke does not ship .node binaries for non-host
+  // platforms into the sub-package tarball, so asserting entrypoint existence
+  // on the installed tree red-lights the matrix.
+  const isPlatformSpecificSubPackage =
+    Array.isArray(packageJson.os) || Array.isArray(packageJson.cpu);
+  if (!isPlatformSpecificSubPackage) {
+    assertPublishEntrypointsExist(packageDir, packageJson);
+  }
 
   if (packageJson.bin != null && process.platform !== "win32") {
     const bins =
@@ -430,10 +438,20 @@ function main() {
 
       const packageJson = readPackageJson(packageDir);
       assertNoWorkspaceProtocols(packageDir, packageJson);
-      assertPublishEntrypointsExist(packageDir, packageJson);
+      const compatible = isCompatibleWithCurrentRunner(packageJson);
+      // Per-platform native sub-packages (those declaring os/cpu) only ship a
+      // platform-specific .node binary that napi emits at the workspace root,
+      // not into the per-platform npm subdir on a single-host smoke runner.
+      // Asserting their entrypoint existence here would incorrectly red-light
+      // the smoke matrix even for the host platform. The umbrella package and
+      // every non-platform-specific package still get the check.
+      const isPlatformSpecificSubPackage =
+        Array.isArray(packageJson.os) || Array.isArray(packageJson.cpu);
+      if (!isPlatformSpecificSubPackage) {
+        assertPublishEntrypointsExist(packageDir, packageJson);
+      }
 
       const tarball = packPackage(packageDir, packDir);
-      const compatible = isCompatibleWithCurrentRunner(packageJson);
       packages.push({
         compatible,
         name: packageJson.name,

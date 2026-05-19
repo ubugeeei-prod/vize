@@ -2,6 +2,7 @@
 name = "vize_atelier_sfc"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Atelier SFC - The Single File Component workshop for Vize"

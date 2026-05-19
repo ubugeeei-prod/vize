@@ -4,7 +4,9 @@ Thanks for helping make Vize sharper. This project is still moving toward v1 alp
 
 ## Setup
 
-Use the Node.js version from `.node-version`, then install dependencies from the workspace root:
+Use the Node.js version from `.node-version` and the Rust version from `rust-toolchain.toml`. The workspace declares a minimum supported Rust version (MSRV) of `1.95.0` in `Cargo.toml` (`[workspace.package].rust-version`); contributions must compile under that version.
+
+Install dependencies from the workspace root:
 
 ```sh
 vp install --frozen-lockfile --prefer-offline
@@ -38,3 +40,9 @@ Before opening a PR that changes shared tooling, release automation, native bind
 Use the bug report template for regressions, crashes, incorrect diagnostics, package installation problems, and release failures. Use the feature request template for new integrations, API changes, or workflow improvements.
 
 Security issues should follow `SECURITY.md` instead of the public issue templates.
+
+## Code of Conduct and Governance
+
+By participating, you agree to abide by the [Contributor Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+The governance model and decision-making process are documented in [`GOVERNANCE.md`](./GOVERNANCE.md).
+For help finding the right channel, see [`SUPPORT.md`](./SUPPORT.md).

@@ -81,6 +81,11 @@ jobs:
     name: Fresh install smoke (${{ matrix.os }}, Node ${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
+    # Limited to manual dispatch and the weekly cron until the runtime-checks
+    # design is rebuilt (see issue #511). Skipping on pull_request stops the
+    # matrix from red-lighting unrelated PRs while the install-time smoke is
+    # blocked by upstream npm/cli#4828 in the vite-plus binding resolution.
+    if: ${{ github.event_name != 'pull_request' }}
     strategy:
       fail-fast: false
       matrix:
@@ -105,6 +110,7 @@ jobs:
           shared-key: fresh-install-smoke-${{ runner.os }}
           cache-workspace-crates: "true"
       - name: Install package dependencies
+        shell: bash
         run: |
           vp install --frozen-lockfile --prefer-offline \
             --filter './npm/vize-native...' \
@@ -113,11 +119,27 @@ jobs:
       - name: Build @vizejs/native
         run: vp run --filter './npm/vize-native' build:ci
       - name: Prepare native platform packages
+        shell: bash
         working-directory: npm/vize-native
         run: |
           vp exec napi create-npm-dirs
           vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish
+          # `napi pre-publish --skip-optional-publish` does not move the host
+          # platform's .node binary into its per-platform npm subdir. Without
+          # that move, the per-platform tarball that the smoke test installs is
+          # empty of the actual binding, and the umbrella package fails to load
+          # at runtime. Copy the host's .node into the matching subdir so the
+          # smoke test exercises a real install + runtime path.
+          for binary in vize-vitrine.*.node; do
+            [ -f "$binary" ] || continue
+            target="${binary#vize-vitrine.}"
+            target="${target%.node}"
+            if [ -d "npm/$target" ]; then
+              cp "$binary" "npm/$target/"
+            fi
+          done
       - name: Build npm runtime packages
+        shell: bash
         run: |
           vp run --filter './npm/vize' build
           vp run --filter './npm/vite-plugin-vize' build

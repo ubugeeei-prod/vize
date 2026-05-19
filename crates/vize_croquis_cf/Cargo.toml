@@ -2,6 +2,7 @@
 name = "vize_croquis_cf"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Cross-file semantic analysis for Vize Croquis."

@@ -37,6 +37,12 @@ The release workflow builds native packages for macOS, Linux, and Windows across
 where the package declares support. CI compatibility jobs cover the declared Node floor and the
 current project Node version.
 
+The minimum supported Rust version (MSRV) for the workspace is declared in `Cargo.toml` under
+`[workspace.package].rust-version`. The development toolchain pinned by `rust-toolchain.toml`
+may be the same version or newer. Before v1 stable the MSRV may move forward in any prerelease;
+the move is called out in release notes when it changes. Downstream packagers should read
+`rust-version` from a crate's `Cargo.toml` rather than infer it from the toolchain file.
+
 ## Package Support Tiers
 
 | Tier                  | Packages                                                                                      | Contract                                                                                       |
