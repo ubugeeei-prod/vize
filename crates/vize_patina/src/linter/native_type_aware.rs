@@ -6,6 +6,7 @@ use crate::diagnostic::LintDiagnostic;
 use corsa::utils::{
     is_any_like_type_texts, is_promise_like_type_texts, is_unknown_like_type_texts,
 };
+use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::{String, ToCompactString, profile};
 
 mod driver;
@@ -39,16 +40,29 @@ pub(crate) fn has_active_type_aware_rules(linter: &Linter) -> bool {
         .any(|rule_name| linter.registry.has_rule(rule_name) && linter.is_rule_enabled(rule_name))
 }
 
+#[cfg(test)]
 pub(crate) fn lint_sfc_with_corsa(linter: &Linter, source: &str, filename: &str) -> LintResult {
-    let mut result = match profile!(
+    let descriptor = profile!(
         "patina.type_aware.parse_sfc",
         super::script_rules::parse_sfc_for_lint(source, filename)
-    ) {
-        Ok(descriptor) => profile!(
+    )
+    .ok();
+
+    lint_sfc_with_corsa_descriptor(linter, source, filename, descriptor.as_ref())
+}
+
+pub(crate) fn lint_sfc_with_corsa_descriptor<'a>(
+    linter: &Linter,
+    source: &'a str,
+    filename: &str,
+    descriptor: Option<&'a SfcDescriptor<'a>>,
+) -> LintResult {
+    let mut result = match descriptor {
+        Some(descriptor) => profile!(
             "patina.type_aware.driver",
             driver::lint_with_descriptor(linter, source, filename, descriptor)
         ),
-        Err(_) => {
+        None => {
             if let Some((content, byte_offset)) = super::engine::extract_template_fast(source) {
                 let mut fallback = profile!(
                     "patina.type_aware.fallback_template_lint",

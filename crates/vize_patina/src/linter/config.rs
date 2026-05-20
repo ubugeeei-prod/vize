@@ -193,6 +193,12 @@ impl Linter {
     pub fn rules(&self) -> &[Box<dyn crate::rule::Rule>] {
         self.registry.rules()
     }
+
+    /// Get all registered rule names.
+    #[inline]
+    pub(crate) fn rule_names(&self) -> &[&'static str] {
+        self.registry.rule_names()
+    }
 }
 
 impl Default for Linter {

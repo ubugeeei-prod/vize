@@ -34,15 +34,25 @@ pub(crate) fn analyze_descriptor_for_lint(
 }
 
 impl Linter {
-    fn lint_sfc_level(&self, source: &str, filename: &str) -> LintResult {
+    fn lint_sfc_level<'a>(
+        &self,
+        source: &'a str,
+        filename: &str,
+        shared_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
+    ) -> LintResult {
         let capacity = (source.len() * 2).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);
         let mut ctx = LintContext::with_locale(&allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_help_level(self.help_level);
 
-        let shared_descriptor = if self.has_active_shared_sfc_descriptor_rules() {
-            profile!(
+        let owned_descriptor;
+        let shared_descriptor = if !self.has_active_shared_sfc_descriptor_rules() {
+            None
+        } else if let Some(descriptor) = shared_descriptor {
+            Some(descriptor)
+        } else {
+            owned_descriptor = profile!(
                 "patina.sfc.level_rules.parse_sfc",
                 parse_sfc(
                     source,
@@ -52,18 +62,22 @@ impl Linter {
                     },
                 )
                 .ok()
-            )
-        } else {
-            None
+            );
+            owned_descriptor.as_ref()
         };
 
-        if let Some(descriptor) = shared_descriptor.as_ref() {
+        if let Some(descriptor) = shared_descriptor {
             ctx.set_sfc_descriptor(descriptor);
         }
 
         profile!("patina.sfc.rules.run_on_sfc", {
-            for rule in self.registry.rules() {
-                ctx.current_rule = rule.meta().name;
+            for (rule, rule_name) in self
+                .registry
+                .rules()
+                .iter()
+                .zip(self.rule_names().iter().copied())
+            {
+                ctx.current_rule = rule_name;
                 rule.run_on_sfc(&mut ctx);
             }
         });
@@ -132,6 +146,22 @@ impl Linter {
             .any(|rule_name| self.registry.has_rule(rule_name) && self.is_rule_enabled(rule_name))
     }
 
+    fn needs_sfc_descriptor_for_lint(&self) -> bool {
+        self.has_active_shared_sfc_descriptor_rules()
+            || super::script_rules::has_active_builtin_script_rules(self)
+            || self.has_active_semantic_template_rules()
+            || {
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    super::native_type_aware::has_active_type_aware_rules(self)
+                }
+                #[cfg(target_arch = "wasm32")]
+                {
+                    false
+                }
+            }
+    }
+
     fn run_template_rules<'a>(
         &self,
         allocator: &'a Allocator,
@@ -154,7 +184,7 @@ impl Linter {
             ctx.set_analysis_excluded_rules(super::native_type_aware::TYPE_AWARE_RULES);
         }
 
-        let mut visitor = LintVisitor::new(&mut ctx, self.registry.rules());
+        let mut visitor = LintVisitor::new(&mut ctx, self.registry.rules(), self.rule_names());
         profile!("patina.template.visit", visitor.visit_root(root));
 
         let error_count = ctx.error_count();
@@ -300,16 +330,30 @@ impl Linter {
     /// Uses ultra-fast template extraction optimized for linting.
     #[inline]
     pub fn lint_sfc(&self, source: &str, filename: &str) -> LintResult {
+        let shared_descriptor = if self.needs_sfc_descriptor_for_lint() {
+            profile!(
+                "patina.sfc.shared_parse_sfc",
+                super::script_rules::parse_sfc_for_lint(source, filename).ok()
+            )
+        } else {
+            None
+        };
+
         let sfc_result = profile!(
             "patina.sfc.level_rules",
-            self.lint_sfc_level(source, filename)
+            self.lint_sfc_level(source, filename, shared_descriptor.as_ref())
         );
 
         #[cfg(not(target_arch = "wasm32"))]
         if super::native_type_aware::has_active_type_aware_rules(self) {
             let template_result = profile!(
                 "patina.type_aware.lint_sfc_with_corsa",
-                super::native_type_aware::lint_sfc_with_corsa(self, source, filename)
+                super::native_type_aware::lint_sfc_with_corsa_descriptor(
+                    self,
+                    source,
+                    filename,
+                    shared_descriptor.as_ref(),
+                )
             );
             return Self::merge_lint_results(template_result, sfc_result);
         }
@@ -317,16 +361,13 @@ impl Linter {
         if super::script_rules::has_active_builtin_script_rules(self)
             || self.has_active_semantic_template_rules()
         {
-            let template_result = match profile!(
-                "patina.sfc.parse_for_script_rules",
-                super::script_rules::parse_sfc_for_lint(source, filename)
-            ) {
-                Ok(descriptor) => {
+            let template_result = match shared_descriptor.as_ref() {
+                Some(descriptor) => {
                     profile!("patina.sfc.descriptor_rules", {
-                        super::script_rules::lint_with_descriptor(self, filename, &descriptor)
+                        super::script_rules::lint_with_descriptor(self, filename, descriptor)
                     })
                 }
-                Err(_) => {
+                None => {
                     if let Some((content, byte_offset)) = profile!(
                         "patina.template.extract_fast",
                         extract_template_fast(source)

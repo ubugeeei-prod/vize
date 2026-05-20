@@ -495,7 +495,8 @@ mod tests {
         let (root, _) = parser.parse();
 
         let rules: Vec<Box<dyn Rule>> = vec![Box::new(NoBrowserGlobalsInSsr)];
-        let mut visitor = crate::visitor::LintVisitor::new(&mut ctx, &rules);
+        let rule_names = [rules[0].meta().name];
+        let mut visitor = crate::visitor::LintVisitor::new(&mut ctx, &rules, &rule_names);
         visitor.visit_root(&root);
 
         ctx.into_diagnostics()

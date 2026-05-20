@@ -26,7 +26,7 @@ pub(super) fn lint_with_descriptor<'a>(
     linter: &Linter,
     source: &str,
     filename: &str,
-    descriptor: vize_atelier_sfc::SfcDescriptor<'a>,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'a>,
 ) -> LintResult {
     let allocator =
         vize_carton::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
@@ -38,7 +38,7 @@ pub(super) fn lint_with_descriptor<'a>(
 
     let analysis = profile!("patina.type_aware.croquis", {
         super::super::engine::analyze_descriptor_for_lint(
-            &descriptor,
+            descriptor,
             template_ast.as_ref().map(|(root, _)| root),
         )
     });
