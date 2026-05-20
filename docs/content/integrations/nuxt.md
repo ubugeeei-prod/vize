@@ -51,6 +51,55 @@ Nuxt.
 During development, the server response cleanup preserves valid URL-encoded Nuxt asset links such
 as `%40fs/` and encoded `assets/` paths while dropping decoded null-byte or traversal paths.
 
+## Module Options
+
+`@vizejs/nuxt` keeps the simple `compiler: true | false` switch, but the module options also expose
+the Vize compiler and Nuxt compatibility bridges for projects that need tighter control:
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compiler: {
+      // Any @vizejs/vite-plugin option can be passed here.
+      configMode: "auto",
+      customRenderer: false,
+      debug: false,
+      handleNodeModulesVue: false,
+      ignorePatterns: ["node_modules/**", ".nuxt/**", ".output/**"],
+      precompileBatchSize: 64,
+      scanPatterns: [], // Nuxt defaults to on-demand compilation
+      sourceMap: true,
+      vapor: false,
+    },
+    bridge: {
+      autoImports: true,
+      components: true,
+      i18n: true,
+      stableInjectedKeys: true,
+    },
+    unocss: {
+      originalSource: {
+        maxBytes: 2 * 1024 * 1024,
+      },
+    },
+    dev: {
+      stylesheetLinks: true,
+    },
+  },
+});
+```
+
+| Option                | Type                                 | Default                                           | Description                                                                                                                                                                           |
+| --------------------- | ------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                                            | Enables Vize as the Vue SFC compiler. Passing an object forwards options to `@vizejs/vite-plugin` while keeping Nuxt defaults for `root`, `devUrlBase`, and on-demand `scanPatterns`. |
+| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                                            | Controls the Nuxt transform bridge for auto-imports, component imports, i18n helpers, and stable async-data keys on Vize virtual modules.                                             |
+| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                                            | Controls the UnoCSS bridge for Vize virtual modules. `originalSource: false` disables reading source SFCs; `maxBytes` limits memory use.                                              |
+| `dev.stylesheetLinks` | `boolean`                            | `true`                                            | Enables dev-only SSR HTML stylesheet-link cleanup for Vize-generated Nuxt asset URLs.                                                                                                 |
+| `musea`               | `false \| MuseaOptions`              | `{ include: ["**/*.art.vue"], inlineArt: false }` | Configures or disables Musea gallery integration.                                                                                                                                     |
+| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }`                        | Documents the Nuxt mock shape used by Musea preview helpers. The Nuxt module does not install the mock layer globally because doing so would shadow Nuxt's own `#imports`.            |
+
 ## Advanced Setup
 
 ### Using the Vite Plugin Directly
