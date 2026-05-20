@@ -742,6 +742,9 @@ importers:
         specifier: catalog:oxc
         version: 0.130.0
     devDependencies:
+      '@pkl-community/pkl':
+        specifier: catalog:repo-tooling
+        version: 0.27.2
       '@tsdown/css':
         specifier: catalog:content
         version: 0.22.0(jiti@2.7.0)(postcss@8.5.14)(tsdown@0.22.0)(tsx@4.21.0)(yaml@2.9.0)
@@ -760,10 +763,6 @@ importers:
       vite-plus:
         specifier: catalog:vite-stack
         version: 0.1.21(@tsdown/css@0.22.0)(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(typescript@6.0.3)(unrun@0.2.39)(vite@8.0.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@25.7.0)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.47.1)(tsx@4.21.0)(yaml@2.9.0))(yaml@2.9.0)
-    optionalDependencies:
-      '@pkl-community/pkl':
-        specifier: catalog:repo-tooling
-        version: 0.27.2
 
   npm/vize-native:
     devDependencies:
@@ -11550,7 +11549,6 @@ snapshots:
       '@pkl-community/pkl-darwin-x64': 0.27.2
       '@pkl-community/pkl-linux-arm64': 0.27.2
       '@pkl-community/pkl-linux-x64': 0.27.2
-    optional: true
 
   '@playwright/test@1.60.0':
     dependencies:
