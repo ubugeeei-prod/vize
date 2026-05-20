@@ -117,43 +117,46 @@ pub fn run(args: FmtArgs) {
         profiler.enable();
     }
 
-    // Process files in parallel, each thread gets its own allocator for maximum performance
+    // Process files in parallel, reusing one arena per Rayon worker.
     let process_start = Instant::now();
-    files.par_iter().for_each(|path| {
-        // Create per-thread allocator with estimated capacity
-        let allocator = Allocator::with_capacity(64 * 1024); // 64KB initial capacity
+    files.par_iter().for_each_init(
+        || Allocator::with_capacity(64 * 1024),
+        |allocator, path| {
+            allocator.reset();
 
-        match process_file(
-            path,
-            &options,
-            &allocator,
-            args.check,
-            args.write,
-            args.profile,
-        ) {
-            Ok(result) => {
-                if result.changed {
-                    files_changed.fetch_add(1, Ordering::Relaxed);
-                    if args.check {
-                        has_errors.store(true, Ordering::Relaxed);
+            match process_file(
+                path,
+                &options,
+                allocator,
+                args.check,
+                args.write,
+                args.profile,
+            ) {
+                Ok(result) => {
+                    if result.changed {
+                        files_changed.fetch_add(1, Ordering::Relaxed);
+                        if args.check {
+                            has_errors.store(true, Ordering::Relaxed);
+                        }
+                    } else {
+                        files_unchanged.fetch_add(1, Ordering::Relaxed);
                     }
-                } else {
-                    files_unchanged.fetch_add(1, Ordering::Relaxed);
-                }
 
-                if let (Some(profile), Some(profile_rows)) = (result.profile, profile_rows.as_ref())
-                    && let Ok(mut rows) = profile_rows.lock()
-                {
-                    rows.push(profile);
+                    if let (Some(profile), Some(profile_rows)) =
+                        (result.profile, profile_rows.as_ref())
+                        && let Ok(mut rows) = profile_rows.lock()
+                    {
+                        rows.push(profile);
+                    }
+                }
+                Err(err) => {
+                    eprintln!("Error formatting {}: {}", path.display(), err);
+                    files_errored.fetch_add(1, Ordering::Relaxed);
+                    has_errors.store(true, Ordering::Relaxed);
                 }
             }
-            Err(err) => {
-                eprintln!("Error formatting {}: {}", path.display(), err);
-                files_errored.fetch_add(1, Ordering::Relaxed);
-                has_errors.store(true, Ordering::Relaxed);
-            }
-        }
-    });
+        },
+    );
     let process_time = process_start.elapsed();
 
     // Print summary
