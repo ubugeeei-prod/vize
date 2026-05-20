@@ -301,7 +301,10 @@ jobs:
       fail-fast: false
       matrix:
         settings:
-          - host: macos-15-intel
+          # MoonBit's native installer does not publish a Darwin x64 toolchain.
+          # Build the darwin-x64 native package from the macOS ARM runner,
+          # matching the CLI release job.
+          - host: macos-latest
             target: x86_64-apple-darwin
             cross_compile: false
           - host: macos-latest

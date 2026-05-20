@@ -757,12 +757,18 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   );
 });
 
-test("release workflow builds directly hosted native targets on matching runners", () => {
+test("release workflow builds native targets on MoonBit-supported runners", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const job = workflowJobBody(workflow, "build-native-all");
 
+  assert.doesNotMatch(
+    job,
+    /host:\s*macos-15-intel[\s\S]*target:\s*x86_64-apple-darwin/,
+    "MoonBit native scripts cannot run on macOS Intel runners",
+  );
+
   for (const [host, target] of [
-    ["macos-15-intel", "x86_64-apple-darwin"],
+    ["macos-latest", "x86_64-apple-darwin"],
     ["macos-latest", "aarch64-apple-darwin"],
     ["ubuntu-latest", "x86_64-unknown-linux-gnu"],
     ["ubuntu-24.04-arm", "aarch64-unknown-linux-gnu"],
