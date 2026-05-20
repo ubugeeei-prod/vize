@@ -10,6 +10,7 @@ import { loadConfig, vizeConfigStore } from "../config.ts";
 import {
   DEFAULT_PRECOMPILE_BATCH_SIZE,
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
+  clearBuildCaches,
   type VizePluginState,
   compileAll,
   normalizePrecompileBatchSize,
@@ -240,6 +241,12 @@ export function vize(options: VizeOptions = {}): Plugin[] {
 
     generateBundle() {
       handleGenerateBundleHook(state, this.emitFile.bind(this));
+    },
+
+    closeBundle() {
+      if (state.server === null) {
+        clearBuildCaches(state);
+      }
     },
   };
 

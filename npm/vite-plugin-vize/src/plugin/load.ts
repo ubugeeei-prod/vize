@@ -61,6 +61,10 @@ function getVirtualModuleDefines(
   };
 }
 
+export function normalizeVueServerRendererImport(code: string): string {
+  return code.replace(/\bfrom\s+(['"])@vue\/server-renderer\1/g, 'from "vue/server-renderer"');
+}
+
 function findMacroArtifactModule(
   state: VizePluginState,
   realPath: string,
@@ -275,16 +279,17 @@ export function loadHook(
           ),
         };
       }
+      const generatedOutput = generateOutput(compiled, {
+        isProduction: state.isProduction,
+        isDev: state.server !== null && !isSsr,
+        ssr: isSsr,
+        hmrUpdateType: pendingHmrUpdateType,
+        extractCss: state.extractCss,
+        filePath: realPath,
+      });
       const output = rewriteStaticAssetUrls(
         rewriteDynamicTemplateImports(
-          generateOutput(compiled, {
-            isProduction: state.isProduction,
-            isDev: state.server !== null && !isSsr,
-            ssr: isSsr,
-            hmrUpdateType: pendingHmrUpdateType,
-            extractCss: state.extractCss,
-            filePath: realPath,
-          }),
+          isSsr ? normalizeVueServerRendererImport(generatedOutput) : generatedOutput,
           state.dynamicImportAliasRules,
         ),
         state.dynamicImportAliasRules,

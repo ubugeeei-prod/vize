@@ -18,6 +18,7 @@ import {
   resolveNuxtBridgeOptions,
   resolveNuxtCompilerOptions,
   resolveNuxtDevOptions,
+  resolveNuxtMuseaOptions,
   resolveNuxtUnoCssOptions,
 } from "./options";
 import {
@@ -80,10 +81,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
     configKey: "vize",
   },
   defaults: {
-    musea: {
-      include: ["**/*.art.vue"],
-      inlineArt: false,
-    },
+    musea: false,
     nuxtMusea: {
       route: { path: "/" },
     },
@@ -92,6 +90,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
     const resolver = createResolver(import.meta.url);
     const bridgeOptions = resolveNuxtBridgeOptions(options.bridge);
     const devOptions = resolveNuxtDevOptions(options.dev);
+    const museaOptions = resolveNuxtMuseaOptions(options.musea);
     const unocssOptions = resolveNuxtUnoCssOptions(options.unocss);
 
     nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
@@ -311,12 +310,12 @@ export default defineNuxtModule<VizeNuxtOptions>({
     // In Nuxt context, real composables/components are already available
     // via Nuxt's own Vite plugins. Adding nuxtMusea globally would shadow
     // Nuxt's #imports resolution and break the app.
-    if (options.musea !== false) {
+    if (museaOptions !== false) {
       const museaBasePath =
-        options.musea && typeof options.musea === "object" && "basePath" in options.musea
-          ? ((options.musea as Record<string, unknown>).basePath as string)
+        "basePath" in museaOptions
+          ? ((museaOptions as Record<string, unknown>).basePath as string)
           : "/__musea__";
-      nuxt.options.vite.plugins.push(...musea(options.musea || {}));
+      nuxt.options.vite.plugins.push(...musea(museaOptions));
 
       // Print Musea Gallery URL after dev server starts
       nuxt.hook("listen", (_server: unknown, listener: { url: string }) => {

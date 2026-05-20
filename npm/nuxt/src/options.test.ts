@@ -4,6 +4,7 @@ import {
   resolveNuxtBridgeOptions,
   resolveNuxtCompilerOptions,
   resolveNuxtDevOptions,
+  resolveNuxtMuseaOptions,
   resolveNuxtUnoCssOptions,
 } from "./options.ts";
 
@@ -90,6 +91,24 @@ assert.deepEqual(
     stylesheetLinks: false,
   },
   "dev stylesheet cleanup should be configurable",
+);
+
+assert.equal(
+  resolveNuxtMuseaOptions(undefined),
+  false,
+  "Musea should be opt-in so normal Nuxt builds do not include the gallery plugin",
+);
+
+assert.deepEqual(
+  resolveNuxtMuseaOptions(true),
+  {},
+  "musea true should enable the gallery with plugin defaults",
+);
+
+assert.deepEqual(
+  resolveNuxtMuseaOptions({ include: ["**/*.art.vue"], inlineArt: false }),
+  { include: ["**/*.art.vue"], inlineArt: false },
+  "musea object should pass through explicit gallery options",
 );
 
 console.log("✅ nuxt option normalization tests passed!");

@@ -93,9 +93,11 @@ export interface VizeNuxtOptions {
 
   /**
    * Musea gallery options.
-   * Set to `false` to disable musea.
+   * Set to `true` to enable Musea with default options.
+   *
+   * @default false
    */
-  musea?: MuseaOptions | false;
+  musea?: boolean | MuseaOptions;
 
   /**
    * Nuxt mock options for musea gallery.
@@ -191,4 +193,14 @@ export function resolveNuxtDevOptions(dev: VizeNuxtOptions["dev"]): Required<Viz
     ...DEFAULT_NUXT_DEV_OPTIONS,
     ...dev,
   };
+}
+
+export function resolveNuxtMuseaOptions(musea: VizeNuxtOptions["musea"]): MuseaOptions | false {
+  if (musea === true) {
+    return {};
+  }
+  if (musea === false || musea == null) {
+    return false;
+  }
+  return musea;
 }

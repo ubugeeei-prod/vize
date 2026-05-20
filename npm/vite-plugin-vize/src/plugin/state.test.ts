@@ -7,6 +7,7 @@ import {
   DEFAULT_PRECOMPILE_BATCH_MAX_BYTES,
   DEFAULT_PRECOMPILE_BATCH_SIZE,
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
+  clearBuildCaches,
   chunkPrecompileFiles,
   compileAll,
   diffPrecompileFiles,
@@ -228,6 +229,37 @@ assert.equal(
   cssState.collectedCss.has("/src/Button.vue"),
   false,
   "Delegated CSS modules should stay out of the extracted plain CSS bundle",
+);
+
+const retainedBuildState = {
+  cache: new Map([["/src/App.vue", plainCssModule]]),
+  ssrCache: new Map([["/src/App.vue", plainCssModule]]),
+  collectedCss: new Map([["/src/App.vue", ".app{}"]]),
+  precompileMetadata: new Map([["/src/App.vue", { mtimeMs: 1, size: 100 }]]),
+  pendingHmrUpdateTypes: new Map([["/src/App.vue", "template-only" as const]]),
+};
+
+clearBuildCaches(retainedBuildState);
+assert.equal(retainedBuildState.cache.size, 0, "build cache should be released after bundling");
+assert.equal(
+  retainedBuildState.ssrCache.size,
+  0,
+  "SSR build cache should be released after bundling",
+);
+assert.equal(
+  retainedBuildState.collectedCss.size,
+  0,
+  "collected CSS cache should be released after CSS emission",
+);
+assert.equal(
+  retainedBuildState.precompileMetadata.size,
+  0,
+  "precompile metadata should be released after build",
+);
+assert.equal(
+  retainedBuildState.pendingHmrUpdateTypes.size,
+  0,
+  "build-only HMR bookkeeping should be released after build",
 );
 
 console.log("✅ vite-plugin-vize state tests passed!");

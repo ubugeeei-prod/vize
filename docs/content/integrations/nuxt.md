@@ -87,18 +87,19 @@ export default defineNuxtConfig({
     dev: {
       stylesheetLinks: true,
     },
+    musea: false,
   },
 });
 ```
 
-| Option                | Type                                 | Default                                           | Description                                                                                                                                                                           |
-| --------------------- | ------------------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                                            | Enables Vize as the Vue SFC compiler. Passing an object forwards options to `@vizejs/vite-plugin` while keeping Nuxt defaults for `root`, `devUrlBase`, and on-demand `scanPatterns`. |
-| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                                            | Controls the Nuxt transform bridge for auto-imports, component imports, i18n helpers, and stable async-data keys on Vize virtual modules.                                             |
-| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                                            | Controls the UnoCSS bridge for Vize virtual modules. `originalSource: false` disables reading source SFCs; `maxBytes` limits memory use.                                              |
-| `dev.stylesheetLinks` | `boolean`                            | `true`                                            | Enables dev-only SSR HTML stylesheet-link cleanup for Vize-generated Nuxt asset URLs.                                                                                                 |
-| `musea`               | `false \| MuseaOptions`              | `{ include: ["**/*.art.vue"], inlineArt: false }` | Configures or disables Musea gallery integration.                                                                                                                                     |
-| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }`                        | Documents the Nuxt mock shape used by Musea preview helpers. The Nuxt module does not install the mock layer globally because doing so would shadow Nuxt's own `#imports`.            |
+| Option                | Type                                 | Default                    | Description                                                                                                                                                                           |
+| --------------------- | ------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                     | Enables Vize as the Vue SFC compiler. Passing an object forwards options to `@vizejs/vite-plugin` while keeping Nuxt defaults for `root`, `devUrlBase`, and on-demand `scanPatterns`. |
+| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                     | Controls the Nuxt transform bridge for auto-imports, component imports, i18n helpers, and stable async-data keys on Vize virtual modules.                                             |
+| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                     | Controls the UnoCSS bridge for Vize virtual modules. `originalSource: false` disables reading source SFCs; `maxBytes` limits memory use.                                              |
+| `dev.stylesheetLinks` | `boolean`                            | `true`                     | Enables dev-only SSR HTML stylesheet-link cleanup for Vize-generated Nuxt asset URLs.                                                                                                 |
+| `musea`               | `boolean \| MuseaOptions`            | `false`                    | Opts into Musea gallery integration. Use `true` for Musea defaults or pass an object to configure include patterns, tokens, preview CSS, and routing.                                 |
+| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }` | Documents the Nuxt mock shape used by Musea preview helpers. The Nuxt module does not install the mock layer globally because doing so would shadow Nuxt's own `#imports`.            |
 
 ## Advanced Setup
 

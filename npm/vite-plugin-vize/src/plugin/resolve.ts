@@ -34,7 +34,7 @@ interface ResolveContext {
     id: string,
     importer?: string,
     options?: { skipSelf: boolean },
-  ): Promise<{ id: string } | null>;
+  ): Promise<{ id: string; external?: boolean } | null>;
 }
 
 function resolveAliasRequest(
@@ -133,6 +133,27 @@ function isVueRuntimeRequest(id: string): boolean {
   return splitViteIdQuery(id).request === "vue";
 }
 
+function resolveSsrExternalVueRequest(id: string): string | null {
+  const { request, querySuffix } = splitViteIdQuery(id);
+  if (querySuffix) {
+    return null;
+  }
+
+  if (request === "@vue/server-renderer" || request === "vue/server-renderer") {
+    return "vue/server-renderer";
+  }
+
+  if (request === "vue" || request.startsWith("vue/dist/")) {
+    return "vue";
+  }
+
+  if (request.startsWith("@vue/")) {
+    return request;
+  }
+
+  return null;
+}
+
 function isVuePackageEntry(id: string): boolean {
   const { request } = splitViteIdQuery(id);
   const normalized = request.split(path.sep).join("/");
@@ -224,7 +245,7 @@ export async function resolveIdHook(
   id: string,
   importer?: string,
   options?: { ssr?: boolean },
-): Promise<string | { id: string } | null | undefined> {
+): Promise<string | { id: string; external?: boolean } | null | undefined> {
   if (!isPotentialVizeResolveId(id) && !isPotentialVizeImporter(importer)) {
     return null;
   }
@@ -336,6 +357,11 @@ export async function resolveIdHook(
 
     // For non-vue files, resolve relative to the real importer
     if (!id.endsWith(".vue")) {
+      const ssrExternalVueRequest = isSsrRequest ? resolveSsrExternalVueRequest(id) : null;
+      if (ssrExternalVueRequest) {
+        return { id: ssrExternalVueRequest, external: true };
+      }
+
       // For bare module specifiers (not relative, not absolute),
       // resolve them from the real importer path so that Vite can find
       // packages in the correct node_modules directory.
