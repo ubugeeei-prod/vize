@@ -201,6 +201,35 @@ function isPotentialVizeImporter(importer: string | undefined): boolean {
   return importer !== undefined && (importer.startsWith("\0") || importer.startsWith("vize:"));
 }
 
+function shouldCompileVueSfcRequest(
+  request: ReturnType<typeof classifyVitePluginRequest>,
+): boolean {
+  if (
+    !request.isVueSfcPath ||
+    request.isVueStyleQuery ||
+    request.hasMacroQuery ||
+    request.hasDefinePageQuery
+  ) {
+    return false;
+  }
+
+  if (!request.querySuffix) {
+    return true;
+  }
+
+  const params = new URLSearchParams(request.querySuffix.slice(1));
+  if (
+    params.has("raw") ||
+    params.has("url") ||
+    params.has("worker") ||
+    params.has("sharedworker")
+  ) {
+    return false;
+  }
+
+  return params.has("nuxt_component");
+}
+
 async function resolveAliasedVueImport(
   ctx: ResolveContext,
   state: VizePluginState,
@@ -213,6 +242,7 @@ async function resolveAliasedVueImport(
     return null;
   }
 
+  const request = classifyVitePluginRequest(id);
   const viteImporter = normalizeViteRequireBase(importer) ?? importer;
   const viteResolved = await ctx.resolve(id, viteImporter, { skipSelf: true });
   const realPath = viteResolved ? normalizeResolvedVuePath(viteResolved.id) : null;
@@ -233,7 +263,7 @@ async function resolveAliasedVueImport(
 
   if (state.cache.has(realPath) || fs.existsSync(realPath)) {
     state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
-    return toVirtualId(realPath, isSsrRequest);
+    return `${toVirtualId(realPath, isSsrRequest)}${request.querySuffix}`;
   }
 
   return null;
@@ -529,18 +559,20 @@ export async function resolveIdHook(
     }
   }
 
-  // Handle .vue file imports
-  if (id.endsWith(".vue")) {
+  // Handle Vue SFC component imports, including Nuxt component-loader queries.
+  if (shouldCompileVueSfcRequest(request)) {
     const handleNodeModules = state.initialized
       ? (state.mergedOptions.handleNodeModulesVue ?? true)
       : true;
 
-    if (!handleNodeModules && id.includes("node_modules")) {
+    const vueRequestPath = request.path;
+
+    if (!handleNodeModules && vueRequestPath.includes("node_modules")) {
       state.logger.log(`resolveId: skipping node_modules import ${id}`);
       return null;
     }
 
-    const resolved = resolveVuePath(state, id, importer);
+    const resolved = resolveVuePath(state, vueRequestPath, importer);
     const fileExists = fs.existsSync(resolved);
     if (!fileExists) {
       const aliased = await resolveAliasedVueImport(
@@ -575,7 +607,7 @@ export async function resolveIdHook(
 
     // Return virtual module ID: \0/path/to/Component.vue.ts
     if (hasCache || fileExists) {
-      return toVirtualId(resolved, isSsrRequest);
+      return `${toVirtualId(resolved, isSsrRequest)}${request.querySuffix}`;
     }
   }
 

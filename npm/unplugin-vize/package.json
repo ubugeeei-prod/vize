@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/unplugin",
-  "version": "0.112.0",
+  "version": "0.113.0",
   "description": "Experimental unplugin-based Vue SFC integration for rollup, webpack, and esbuild powered by Vize",
   "keywords": [
     "compiler",

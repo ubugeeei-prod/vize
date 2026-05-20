@@ -258,6 +258,38 @@ assert.doesNotMatch(
   "Nuxt definePageMeta macro queries should not return the component setup body",
 );
 
+const emptyPageMetaDir = createTempRoot("empty-page-meta");
+const emptyPageMetaPath = path.join(emptyPageMetaDir, "Plain.vue");
+fs.writeFileSync(
+  emptyPageMetaPath,
+  `<script setup lang="ts">
+const { t } = useI18n()
+useSeoMeta({ title: () => t("site.name") })
+</script>
+<template><div /></template>`,
+);
+
+const emptyPageMetaLoad = loadHook(
+  { ...hmrState, cache: new Map(), ssrCache: new Map(), root: emptyPageMetaDir },
+  `\0${emptyPageMetaPath}?macro=true`,
+  { ssr: false },
+);
+
+assert.ok(
+  emptyPageMetaLoad && typeof emptyPageMetaLoad === "object",
+  "Nuxt page macro queries without definePageMeta should still load as code objects",
+);
+assert.equal(
+  emptyPageMetaLoad.code,
+  "export default {}",
+  "Nuxt page macro queries without definePageMeta should return empty metadata",
+);
+assert.doesNotMatch(
+  emptyPageMetaLoad.code,
+  /useI18n|useSeoMeta/,
+  "Nuxt page macro queries must not evaluate setup composables outside setup",
+);
+
 const jsMacroDir = createTempRoot("js-macro");
 const jsMacroPath = path.join(jsMacroDir, "component-stub.js");
 fs.writeFileSync(jsMacroPath, "export default {};");

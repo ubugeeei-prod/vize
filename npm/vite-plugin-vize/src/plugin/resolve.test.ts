@@ -515,6 +515,54 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("nuxt-component-query");
+  const source = path.join(
+    projectRoot,
+    "node_modules",
+    "@nuxtjs",
+    "mdc",
+    "dist",
+    "runtime",
+    "components",
+    "prose",
+    "ProseScript.vue",
+  );
+  writeFixtureFile(source, "<template><script /></template>");
+
+  const query =
+    "?nuxt_component=async&nuxt_component_name=ProseScript&nuxt_component_export=default";
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    `${source}${query}`,
+    undefined,
+    { ssr: true },
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `${toVirtualId(source, true)}${query}`,
+    "Nuxt component-loader Vue queries should resolve to Vize virtual modules with the query preserved",
+  );
+}
+
+{
+  const projectRoot = createTempProject("vue-raw-query");
+  const source = path.join(projectRoot, "app", "components", "Raw.vue");
+  writeFixtureFile(source, "<template><div /></template>");
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    `${source}?raw`,
+    undefined,
+    undefined,
+  );
+
+  assert.equal(resolved, null, "Vue ?raw imports should not be compiled as components");
+}
+
+{
   const projectRoot = createTempProject("ssr-entry");
   const source = path.join(projectRoot, "app", "pages", "index.vue");
   const resolved = await resolveIdHook(

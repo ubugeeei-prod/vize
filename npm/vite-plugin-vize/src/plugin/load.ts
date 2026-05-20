@@ -217,18 +217,6 @@ export function loadHook(
       if (artifactLoad) {
         return artifactLoad;
       }
-
-      if (fs.existsSync(realPath)) {
-        const source = fs.readFileSync(realPath, "utf-8");
-        const setupMatch = source.match(/<script\s+setup[^>]*>([\s\S]*?)<\/script>/);
-        if (setupMatch) {
-          const scriptContent = setupMatch[1];
-          return {
-            code: `${scriptContent}\nexport default {}`,
-            map: null,
-          };
-        }
-      }
       return { code: "export default {}", map: null };
     }
   }
