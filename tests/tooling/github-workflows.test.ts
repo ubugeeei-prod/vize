@@ -555,13 +555,37 @@ test("release workflow overwrites existing GitHub release assets when a tag is r
   );
 });
 
-test("release workflow configures npm auth fallback for every npm publish job", () => {
+test("release workflow publishes npm packages through Trusted Publishing only", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const fallbackSteps = [...workflow.matchAll(/- name: Configure npm auth fallback/g)];
 
-  assert.equal(fallbackSteps.length, 13);
-  assert.match(workflow, /NPM_TOKEN:\s*\$\{\{\s*secrets\.NPM_TOKEN\s*\}\}/);
-  assert.match(workflow, /tools\/moon\/scripts\/github\/configure_npm_auth\.mbtx/);
+  assert.doesNotMatch(workflow, /secrets\.NPM_TOKEN/);
+  assert.doesNotMatch(workflow, /NPM_TOKEN/);
+  assert.doesNotMatch(workflow, /configure_npm_auth/);
+
+  const npmPublishJobs = [
+    "release-npm-native",
+    "release-npm-fresco-native",
+    "release-npm-wasm",
+    "release-npm-vite-plugin",
+    "release-npm-oxlint-plugin",
+    "release-npm-unplugin",
+    "release-npm-fresco",
+    "release-npm-musea-mcp-server",
+    "release-npm-vite-plugin-musea",
+    "release-npm-rspack-plugin",
+    "release-npm-musea-nuxt",
+    "release-npm-nuxt",
+    "release-npm-cli",
+  ];
+
+  for (const jobName of npmPublishJobs) {
+    const job = workflowJobBody(workflow, jobName);
+    assert.match(job, /runs-on:\s*ubuntu-latest/);
+    assert.match(job, /environment:\s*npm/);
+    assert.match(job, /id-token:\s*write/);
+    assert.match(job, /--provenance/);
+    assert.doesNotMatch(job, /NODE_AUTH_TOKEN|_authToken/);
+  }
 });
 
 test("release workflow publishes npm packages from package-specific artifacts", () => {
