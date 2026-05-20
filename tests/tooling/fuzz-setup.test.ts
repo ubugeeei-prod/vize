@@ -57,6 +57,30 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
   // Reproducers on failure must be uploaded so triage does not have to
   // re-run the fuzzer to recover the failing input.
   assert.match(workflow, /upload-artifact[\s\S]*fuzz\/artifacts\//);
+  assert.match(workflow, /issues:\s*write/);
+  assert.match(workflow, /github\.event_name != 'pull_request'/);
+  assert.match(workflow, /gh issue (create|comment)/);
+});
+
+test("fuzz workspace covers parser, lexer, and compiler harnesses", () => {
+  const manifest = readRepoFile("fuzz/Cargo.toml");
+
+  for (const target of [
+    "sfc_parse",
+    "template_lexer",
+    "js_ts_expression",
+    "css_parse",
+    "template_compile",
+  ]) {
+    assert.match(
+      manifest,
+      new RegExp(`name = "${target}"[\\s\\S]*path = "fuzz_targets/${target}\\.rs"`),
+      `fuzz workspace missing ${target}`,
+    );
+  }
+
+  assert.match(manifest, /oxc_parser\s*=/);
+  assert.match(manifest, /features = \[\s*"native",?\s*\]/);
 });
 
 test("seed_corpus.mjs writes seeds for every declared fuzz target", () => {
