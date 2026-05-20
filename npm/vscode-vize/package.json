@@ -1,7 +1,7 @@
 {
   "name": "vize",
   "displayName": "Vize",
-  "version": "0.107.0",
+  "version": "0.112.0",
   "description": "Vue Language Support powered by Vize - A high-performance language server for Vue SFC",
   "categories": [
     "Formatters",
@@ -118,7 +118,7 @@
         "vize.enable": {
           "type": "boolean",
           "default": false,
-          "description": "Enable the Vize language server. Individual capabilities remain opt-in so this can coexist with the official Vue language tools."
+          "description": "Enable the Vize language server. If no capability switches are explicitly set, Vize starts with the recommended diagnostics and editor profile."
         },
         "vize.serverPath": {
           "type": "string",

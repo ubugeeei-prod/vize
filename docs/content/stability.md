@@ -39,6 +39,28 @@ The release workflow builds native packages for macOS, Linux, and Windows across
 where the package declares support. CI compatibility jobs cover the declared Node floor and the
 current project Node version.
 
+The full fresh-install smoke matrix (`.github/workflows/native-smoke.yml`) runs on a weekly
+cadence and on demand, not on every PR push. It exercises the published package install path on
+`ubuntu-latest` (linux-x64-gnu), `ubuntu-24.04-arm`
+(linux-arm64-gnu), `macos-15-intel` (darwin-x64), `macos-latest` (darwin-arm64),
+`windows-latest` (win32-x64-msvc), and `windows-11-arm` (win32-arm64-msvc)
+against Node 22 and Node 24. Release tags remain blocked by the release workflow's tarball install
+smoke before npm packages publish. The runtime smoke checks `vize --version`, `vize check`,
+`@vizejs/native` through both `require` and `import`, and a `@vizejs/vite-plugin` `vite build`
+from installed tarballs.
+
+Two declared Linux musl targets are not currently exercised by a hosted fresh-install runner.
+They are covered by per-platform build artifacts plus the `@vizejs/native-*`
+optional-dependency resolver until a containerized Alpine smoke can stage the matching native
+tarball:
+
+| Target           | Hosted runner gap                                                 | Compensating coverage                                              |
+| ---------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| linux-x64-musl   | No GitHub-hosted Alpine/musl VM is available as a native runner   | Build job emits the musl tarball; manual `node:alpine` smoke.      |
+| linux-arm64-musl | Arm64 hosted runners are Ubuntu GNU, not Alpine/musl native hosts | Build job emits the arm64 musl tarball; manual Alpine arm64 smoke. |
+
+Closing these gaps is tracked alongside [#493](https://github.com/ubugeeei/vize/issues/493).
+
 The minimum supported Rust version (MSRV) for the workspace is declared in `Cargo.toml` under
 `[workspace.package].rust-version`. The development toolchain pinned by `rust-toolchain.toml`
 may be the same version or newer. Before v1 stable the MSRV may move forward in any prerelease;

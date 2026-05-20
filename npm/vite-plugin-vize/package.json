@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/vite-plugin",
-  "version": "0.107.0",
+  "version": "0.112.0",
   "description": "High-performance native Vite plugin for Vue SFC compilation powered by Vize",
   "keywords": [
     "compiler",
@@ -42,7 +42,7 @@
     "check": "vp check src vite.config.ts",
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
-    "test": "pnpm --dir ../vize-native build:ci && node src/test.ts"
+    "test": "pnpm --dir ../vize-native build:debug && node src/test.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",

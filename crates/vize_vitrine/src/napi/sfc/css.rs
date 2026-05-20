@@ -26,6 +26,13 @@ pub struct CssTargetsNapi {
 }
 
 #[napi(object)]
+pub struct CssAstResultNapi {
+    pub ast: Option<serde_json::Value>,
+    pub errors: Vec<String>,
+    pub warnings: Vec<String>,
+}
+
+#[napi(object)]
 pub struct CssCompileResultNapi {
     pub code: String,
     pub map: Option<String>,
@@ -34,12 +41,10 @@ pub struct CssCompileResultNapi {
     pub warnings: Vec<String>,
 }
 
-#[napi(js_name = "compileCss")]
-pub fn compile_css_napi(
-    source: String,
+fn css_options_from_napi(
     options: Option<CssCompileOptionsNapi>,
-) -> Result<CssCompileResultNapi> {
-    use vize_atelier_sfc::{CssCompileOptions, CssTargets, compile_css};
+) -> vize_atelier_sfc::CssCompileOptions {
+    use vize_atelier_sfc::{CssCompileOptions, CssTargets};
 
     let opts = options.unwrap_or_default();
     let targets = opts.targets.map(|targets| CssTargets {
@@ -51,19 +56,54 @@ pub fn compile_css_napi(
         android: targets.android,
     });
 
-    let result = compile_css(
-        &source,
-        &CssCompileOptions {
-            filename: opts.filename.map(Into::into),
-            scoped: opts.scoped.unwrap_or(false),
-            scope_id: opts.scope_id.map(Into::into),
-            source_map: opts.source_map.unwrap_or(false),
-            minify: opts.minify.unwrap_or(false),
-            css_modules: opts.css_modules.unwrap_or(false),
-            custom_media: opts.custom_media.unwrap_or(false),
-            targets,
-        },
-    );
+    CssCompileOptions {
+        filename: opts.filename.map(Into::into),
+        scoped: opts.scoped.unwrap_or(false),
+        scope_id: opts.scope_id.map(Into::into),
+        source_map: opts.source_map.unwrap_or(false),
+        minify: opts.minify.unwrap_or(false),
+        css_modules: opts.css_modules.unwrap_or(false),
+        custom_media: opts.custom_media.unwrap_or(false),
+        targets,
+    }
+}
+
+#[napi(js_name = "parseCssAst")]
+pub fn parse_css_ast_napi(
+    source: String,
+    options: Option<CssCompileOptionsNapi>,
+) -> Result<CssAstResultNapi> {
+    let result = vize_atelier_sfc::parse_css_ast(&source, &css_options_from_napi(options));
+
+    Ok(CssAstResultNapi {
+        ast: result.ast,
+        errors: result.errors.into_iter().map(Into::into).collect(),
+        warnings: result.warnings.into_iter().map(Into::into).collect(),
+    })
+}
+
+#[napi(js_name = "printCssAst")]
+pub fn print_css_ast_napi(
+    ast: serde_json::Value,
+    options: Option<CssCompileOptionsNapi>,
+) -> Result<CssCompileResultNapi> {
+    let result = vize_atelier_sfc::print_css_ast(ast, &css_options_from_napi(options));
+
+    Ok(CssCompileResultNapi {
+        code: result.code.into(),
+        map: result.map.map(Into::into),
+        css_vars: result.css_vars.into_iter().map(Into::into).collect(),
+        errors: result.errors.into_iter().map(Into::into).collect(),
+        warnings: result.warnings.into_iter().map(Into::into).collect(),
+    })
+}
+
+#[napi(js_name = "compileCss")]
+pub fn compile_css_napi(
+    source: String,
+    options: Option<CssCompileOptionsNapi>,
+) -> Result<CssCompileResultNapi> {
+    let result = vize_atelier_sfc::compile_css(&source, &css_options_from_napi(options));
 
     Ok(CssCompileResultNapi {
         code: result.code.into(),

@@ -61,6 +61,25 @@ A successful verification prints `Verified OK` and exits zero. Treat any
 failure as evidence that the artifact has been tampered with or replaced —
 do not install it.
 
+## npm Trusted Publishing
+
+All npm publishing in `.github/workflows/release.yml` is expected to use npm
+Trusted Publishing through GitHub Actions OIDC. The release jobs run on
+GitHub-hosted `ubuntu-latest` runners, request `id-token: write`, and use the
+`npm` deployment environment. They intentionally do not configure
+`secrets.NPM_TOKEN` or write an npm auth token fallback.
+
+Configure each npm package's Trusted Publisher with:
+
+- Organization or user: `ubugeeei`
+- Repository: `vize`
+- Workflow filename: `release.yml`
+- Environment name: `npm`
+
+After every package is configured and one release has verified OIDC publishing,
+set the npm package publishing access to require two-factor authentication and
+disallow tokens, then revoke the old automation token.
+
 ## What is not signed
 
 - Per-platform NAPI native packages (`@vizejs/native-*`): published to npm via

@@ -1,5 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import {
   ConfigurationTarget,
   ExtensionContext,
@@ -19,10 +21,20 @@ import {
   TransportKind,
 } from "vscode-languageclient/node";
 
+const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;
 let outputChannel: OutputChannel;
 
 type LspInitializationOptions = Partial<Record<string, boolean>>;
+type ServerCandidateSource = "configured" | "bundled" | "development" | "cargo" | "path";
+type ServerCandidate = {
+  path: string;
+  source: ServerCandidateSource;
+};
+type InspectedServerCandidate = ServerCandidate & {
+  version?: string;
+  versionError?: string;
+};
 const SUPPORTED_LANGUAGE_IDS = ["vue", "art-vue"] as const;
 const SUPPORTED_URI_SCHEMES = ["file", "untitled"] as const;
 const RECOMMENDED_SETUP_ACTION = "Enable Recommended";
@@ -226,6 +238,12 @@ function hasAnyEnabledCapability(config: ReturnType<typeof workspace.getConfigur
   return FEATURE_SETTING_KEYS.some((key) => config.get<boolean>(key, false));
 }
 
+function hasAnyExplicitCapabilityValue(
+  config: ReturnType<typeof workspace.getConfiguration>,
+): boolean {
+  return FEATURE_SETTING_KEYS.some((key) => hasExplicitConfigurationValue(config, key));
+}
+
 function hasWorkspaceLspConfig(): boolean {
   const workspaceFolders = workspace.workspaceFolders;
   if (!workspaceFolders) {
@@ -375,6 +393,20 @@ function getInitializationOptions(
   setIfEnabled(options, "inlayHints", config.get<boolean>("inlayHints.enable", false));
   setIfEnabled(options, "fileRename", config.get<boolean>("fileRename.enable", false));
 
+  if (
+    Object.keys(options).length === 0 &&
+    config.get<boolean>("enable", false) &&
+    !hasAnyExplicitCapabilityValue(config) &&
+    !hasWorkspaceLspConfig()
+  ) {
+    outputChannel.appendLine(
+      "Vize is enabled with no explicit feature switches. Using the recommended diagnostics and editor profile.",
+    );
+    options.lint = true;
+    options.typecheck = true;
+    options.editor = true;
+  }
+
   return options;
 }
 
@@ -397,42 +429,53 @@ async function findServerPath(
   config: ReturnType<typeof workspace.getConfiguration>,
 ): Promise<string | undefined> {
   const exeName = process.platform === "win32" ? "vize.exe" : "vize";
+  const expectedVersion = getExtensionVersion(context);
 
-  const configuredPath = config.get<string>("serverPath");
-  if (configuredPath && fs.existsSync(configuredPath)) {
-    outputChannel.appendLine(`Found server at configured path: ${configuredPath}`);
-    return configuredPath;
+  const configuredPath = config.get<string>("serverPath")?.trim();
+  if (configuredPath) {
+    if (fs.existsSync(configuredPath)) {
+      const candidate = await inspectServerCandidate({
+        path: configuredPath,
+        source: "configured",
+      });
+      logSelectedServer(candidate, expectedVersion);
+      void warnAboutVersionMismatch(candidate, expectedVersion);
+      return configuredPath;
+    }
+
+    outputChannel.appendLine(`Configured server path does not exist: ${configuredPath}`);
   }
 
-  const homeDir = process.env.HOME || process.env.USERPROFILE || "";
-  const cargoPath = path.join(homeDir, ".cargo", "bin", exeName);
-  if (fs.existsSync(cargoPath)) {
-    outputChannel.appendLine(`Found server at cargo path: ${cargoPath}`);
-    return cargoPath;
-  }
+  const candidates = await inspectServerCandidates(collectServerCandidates(context, exeName));
 
-  const pathEnv = process.env.PATH || "";
-  const pathSeparator = process.platform === "win32" ? ";" : ":";
-  const pathDirs = pathEnv.split(pathSeparator);
-
-  for (const dir of pathDirs) {
-    const serverPath = path.join(dir, exeName);
-    if (fs.existsSync(serverPath)) {
-      outputChannel.appendLine(`Found server in PATH: ${serverPath}`);
-      return serverPath;
+  if (expectedVersion) {
+    const matchingCandidate = candidates.find((candidate) => candidate.version === expectedVersion);
+    if (matchingCandidate) {
+      logSelectedServer(matchingCandidate, expectedVersion);
+      return matchingCandidate.path;
     }
   }
+
+  const fallbackCandidate = candidates[0];
+  if (fallbackCandidate) {
+    logSelectedServer(fallbackCandidate, expectedVersion);
+    void warnAboutVersionMismatch(fallbackCandidate, expectedVersion);
+    return fallbackCandidate.path;
+  }
+
+  outputChannel.appendLine("Server not found in any location");
+  return undefined;
+}
+
+function collectServerCandidates(context: ExtensionContext, exeName: string): ServerCandidate[] {
+  const candidates: ServerCandidate[] = [];
 
   const bundledPaths = [
     path.join(context.extensionPath, "dist", exeName),
     path.join(context.extensionPath, "server", exeName),
   ];
-
   for (const serverPath of bundledPaths) {
-    if (fs.existsSync(serverPath)) {
-      outputChannel.appendLine(`Found bundled server: ${serverPath}`);
-      return serverPath;
-    }
+    candidates.push({ path: serverPath, source: "bundled" });
   }
 
   const devPaths = [
@@ -440,16 +483,118 @@ async function findServerPath(
     path.join(context.extensionPath, "..", "..", "target", "debug", exeName),
     ...getWorkspaceDevPaths(exeName),
   ];
-
   for (const serverPath of devPaths) {
-    if (fs.existsSync(serverPath)) {
-      outputChannel.appendLine(`Found dev server: ${serverPath}`);
-      return serverPath;
+    candidates.push({ path: serverPath, source: "development" });
+  }
+
+  const homeDir = process.env.HOME || process.env.USERPROFILE || "";
+  if (homeDir) {
+    candidates.push({
+      path: path.join(homeDir, ".cargo", "bin", exeName),
+      source: "cargo",
+    });
+  }
+
+  const pathEnv = process.env.PATH || "";
+  const pathSeparator = process.platform === "win32" ? ";" : ":";
+  for (const dir of pathEnv.split(pathSeparator)) {
+    if (dir) {
+      candidates.push({ path: path.join(dir, exeName), source: "path" });
     }
   }
 
-  outputChannel.appendLine("Server not found in any location");
-  return undefined;
+  return dedupeCandidates(candidates).filter((candidate) => fs.existsSync(candidate.path));
+}
+
+function dedupeCandidates(candidates: ServerCandidate[]): ServerCandidate[] {
+  const seen = new Set<string>();
+  const deduped: ServerCandidate[] = [];
+
+  for (const candidate of candidates) {
+    const key = path.resolve(candidate.path);
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    deduped.push(candidate);
+  }
+
+  return deduped;
+}
+
+async function inspectServerCandidates(
+  candidates: ServerCandidate[],
+): Promise<InspectedServerCandidate[]> {
+  return Promise.all(candidates.map(inspectServerCandidate));
+}
+
+async function inspectServerCandidate(
+  candidate: ServerCandidate,
+): Promise<InspectedServerCandidate> {
+  try {
+    const { stdout } = await execFileAsync(candidate.path, ["--version"], {
+      timeout: 3000,
+    });
+    return {
+      ...candidate,
+      version: parseVizeVersion(stdout),
+    };
+  } catch (error) {
+    return {
+      ...candidate,
+      versionError: String(error),
+    };
+  }
+}
+
+function parseVizeVersion(output: string): string | undefined {
+  const match = output.match(/\bvize\s+([0-9]+\.[0-9]+\.[0-9]+(?:[-+][^\s]+)?)/);
+  return match?.[1];
+}
+
+function getExtensionVersion(context: ExtensionContext): string | undefined {
+  const packageJson = context.extension.packageJSON as { version?: unknown };
+  return typeof packageJson.version === "string" ? packageJson.version : undefined;
+}
+
+function logSelectedServer(
+  candidate: InspectedServerCandidate,
+  expectedVersion: string | undefined,
+): void {
+  const version = candidate.version ?? "unknown";
+  const expected = expectedVersion ? `, extension ${expectedVersion}` : "";
+  outputChannel.appendLine(
+    `Using ${candidate.source} server: ${candidate.path} (server ${version}${expected})`,
+  );
+
+  if (candidate.versionError) {
+    outputChannel.appendLine(`Could not inspect server version: ${candidate.versionError}`);
+  }
+}
+
+async function warnAboutVersionMismatch(
+  candidate: InspectedServerCandidate,
+  expectedVersion: string | undefined,
+): Promise<void> {
+  if (!expectedVersion || !candidate.version || candidate.version === expectedVersion) {
+    return;
+  }
+
+  const selection = await window.showWarningMessage(
+    `Vize: extension version ${expectedVersion} is starting language server ${candidate.version}. Hover, completion, and navigation may not work correctly.`,
+    OPEN_SETTINGS_ACTION,
+    SHOW_OUTPUT_ACTION,
+  );
+
+  if (selection === OPEN_SETTINGS_ACTION) {
+    await commands.executeCommand("workbench.action.openSettings", "vize.serverPath");
+    return;
+  }
+
+  if (selection === SHOW_OUTPUT_ACTION) {
+    outputChannel.show();
+  }
 }
 
 function getWorkspaceDevPaths(exeName: string): string[] {

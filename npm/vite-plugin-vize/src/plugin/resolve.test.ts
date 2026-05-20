@@ -170,6 +170,36 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const tempRoot = createTempRoot("ssr-vue-runtime");
+  const importer = path.join(tempRoot, "App.vue");
+  fs.writeFileSync(importer, "<template><div /></template>");
+
+  assert.deepEqual(
+    await resolveIdHook(
+      nullResolveContext,
+      createState(tempRoot),
+      "@vue/server-renderer",
+      toVirtualId(importer, true),
+      { ssr: true },
+    ),
+    { id: "vue/server-renderer", external: true },
+    "SSR virtual modules should externalize Vue's public server renderer entry",
+  );
+
+  assert.deepEqual(
+    await resolveIdHook(
+      nullResolveContext,
+      createState(tempRoot),
+      "vue/dist/vue.esm-bundler.js",
+      toVirtualId(importer, true),
+      { ssr: true },
+    ),
+    { id: "vue", external: true },
+    "SSR virtual modules should not bundle Vue runtime aliases into Nuxt server output",
+  );
+}
+
+{
   const tempRoot = createTempRoot("alias-vue");
   const importer = path.join(tempRoot, "src", "App.vue");
   const aliased = path.join(tempRoot, "src", "views", "Aliased.vue");

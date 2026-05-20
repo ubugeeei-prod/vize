@@ -25,6 +25,8 @@ reference support in addition to syntax highlighting.
 The Vize extension starts `vize lsp` and can opt into specific capability bundles.
 When you open a Vue file with the extension still disabled, or with no capabilities enabled, the extension now offers a one-click recommended workspace setup so hover, jump, and diagnostics do not silently stay off.
 That setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, and `vize.editor.enable` for the current workspace.
+If you manually set only `vize.enable: true`, Vize also uses that recommended diagnostics and
+editor profile instead of starting an empty language server.
 
 ### Recommended Starting Point
 
@@ -50,6 +52,7 @@ existing Vue tooling.
 | `vize.lint.enable`           | Enable lint diagnostics                            |
 | `vize.typecheck.enable`      | Enable type-aware diagnostics and backend features |
 | `vize.editor.enable`         | Enable the editor assistance bundle                |
+| `vize.completion.enable`     | Enable completion                                  |
 | `vize.formatting.enable`     | Enable document formatting                         |
 | `vize.definition.enable`     | Enable go-to-definition                            |
 | `vize.references.enable`     | Enable references                                  |
@@ -108,11 +111,12 @@ require("lspconfig").vize.setup({
   filetypes = { "vue" },
   init_options = {
     lint = true,
-    typecheck = false,
-    editor = false,
+    typecheck = true,
+    editor = true,
   },
 })
 ```
 
-When another TypeScript server such as tsgo owns project diagnostics, keep `typecheck = false` and
-turn on only the Vue-specific capabilities you want to evaluate.
+`editor = true` is the easiest way to test hover, completion, jump, references, and symbols
+together. When another TypeScript server such as tsgo owns project diagnostics, keep
+`typecheck = false` and turn on only the Vue-specific capabilities you want to evaluate.

@@ -299,39 +299,6 @@ test("github/write_coverage_summary preserves failing coverage output before ret
   }
 });
 
-test("github/configure_npm_auth writes a fallback .npmrc when NPM_TOKEN is present", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-configure-npm-auth-"));
-  const homeDir = path.join(tempDir, "home");
-  const npmrcPath = path.join(homeDir, ".npmrc");
-
-  try {
-    fs.mkdirSync(homeDir, { recursive: true });
-    writeFileSync(npmrcPath, "legacy-setting=true\n");
-
-    const result = runMoonScript("github/configure_npm_auth", [], {
-      cwd: tempDir,
-      env: {
-        HOME: homeDir,
-        MOON_HOME: process.env.MOON_HOME ?? path.join(process.env.HOME ?? "", ".moon"),
-        NPM_TOKEN: "test-token",
-      },
-    });
-
-    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-    assert.equal(
-      fs.readFileSync(npmrcPath, "utf8"),
-      [
-        "legacy-setting=true",
-        "registry=https://registry.npmjs.org/",
-        "//registry.npmjs.org/:_authToken=test-token",
-        "always-auth=true",
-      ].join("\n") + "\n",
-    );
-  } finally {
-    rmSync(tempDir, { recursive: true, force: true });
-  }
-});
-
 test("github/build_napi_package builds Apple targets with cargo and writes the expected .node artifact", () => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-build-napi-apple-"));
   const binDir = path.join(tempDir, "bin");

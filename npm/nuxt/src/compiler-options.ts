@@ -1,0 +1,43 @@
+export type VizeNuxtPattern = string | RegExp;
+
+/**
+ * Nuxt-facing mirror of the public `@vizejs/vite-plugin` options.
+ *
+ * Keeping this shape local lets the Nuxt module expose compiler configuration
+ * without requiring the sibling package's generated declaration files to exist
+ * during monorepo lint runs.
+ */
+export interface VizeNuxtCompilerOptions {
+  /** Override the public base used for dev-time asset URLs. */
+  devUrlBase?: string;
+  /** Files to include in compilation. */
+  include?: VizeNuxtPattern | VizeNuxtPattern[];
+  /** Files to exclude from compilation. */
+  exclude?: VizeNuxtPattern | VizeNuxtPattern[];
+  /** Force production mode. */
+  isProduction?: boolean;
+  /** Enable SSR mode. */
+  ssr?: boolean;
+  /** Enable source map generation. */
+  sourceMap?: boolean;
+  /** Enable Vapor mode compilation. */
+  vapor?: boolean;
+  /** Treat lowercase non-HTML tags as custom renderer elements. */
+  customRenderer?: boolean;
+  /** Root directory to scan for .vue files. */
+  root?: string;
+  /** Glob patterns to scan for .vue files during pre-compilation. */
+  scanPatterns?: string[];
+  /** Maximum number of Vue files to compile in a single native batch. */
+  precompileBatchSize?: number;
+  /** Glob patterns to ignore during pre-compilation. */
+  ignorePatterns?: string[];
+  /** Config file search mode. */
+  configMode?: "root" | "auto" | false;
+  /** Custom config file path. */
+  configFile?: string;
+  /** Handle .vue files in node_modules during on-demand compilation. */
+  handleNodeModulesVue?: boolean;
+  /** Enable debug logging. */
+  debug?: boolean;
+}

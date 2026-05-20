@@ -301,6 +301,9 @@ jobs:
       fail-fast: false
       matrix:
         settings:
+          # MoonBit's native installer does not publish a Darwin x64 toolchain.
+          # Build the darwin-x64 native package from the macOS ARM runner,
+          # matching the CLI release job.
           - host: macos-latest
             target: x86_64-apple-darwin
             cross_compile: false
@@ -310,7 +313,7 @@ jobs:
           - host: windows-latest
             target: x86_64-pc-windows-msvc
             cross_compile: false
-          - host: windows-latest
+          - host: windows-11-arm
             target: aarch64-pc-windows-msvc
             cross_compile: false
           - host: ubuntu-latest
@@ -319,10 +322,10 @@ jobs:
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             cross_compile: true
-          - host: ubuntu-latest
+          - host: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
-            cross_compile: true
-          - host: ubuntu-latest
+            cross_compile: false
+          - host: ubuntu-24.04-arm
             target: aarch64-unknown-linux-musl
             cross_compile: true
     steps:
@@ -542,11 +545,6 @@ jobs:
           run-install: false
       - uses: ./.github/actions/setup-moonbit
 
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
-
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...'
 
@@ -599,11 +597,6 @@ jobs:
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Install dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/fresco-native...'
@@ -675,11 +668,6 @@ jobs:
       - name: Smoke @vizejs/wasm package
         run: node tools/npm/smoke-wasm-package.mjs npm/vize-wasm
 
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
-
       - name: Smoke install WASM package tarball
         run: node tools/npm/smoke-release-install.mjs npm/vize-wasm
 
@@ -704,11 +692,6 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -737,11 +720,6 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -774,11 +752,6 @@ jobs:
           run-install: false
       - uses: ./.github/actions/setup-moonbit
 
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -806,11 +779,6 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -840,11 +808,6 @@ jobs:
           run-install: false
       - uses: ./.github/actions/setup-moonbit
 
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -872,11 +835,6 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -906,11 +864,6 @@ jobs:
           run-install: false
       - uses: ./.github/actions/setup-moonbit
 
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
-
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -938,11 +891,6 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -979,11 +927,6 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -1169,11 +1112,6 @@ jobs:
           node-version-file: ".node-version"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-
-      - name: Configure npm auth fallback
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: moon run --target native - -- < tools/moon/scripts/github/configure_npm_auth.mbtx
 
       - name: Download prebuilt packages
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1

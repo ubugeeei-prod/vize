@@ -94,6 +94,23 @@ pub struct CssModuleExport {
     pub is_referenced: bool,
 }
 
+/// CSS AST parsing result.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CssAstResult {
+    /// Serialized LightningCSS AST.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ast: Option<serde_json::Value>,
+
+    /// Errors during parsing or serialization.
+    #[serde(default)]
+    pub errors: Vec<String>,
+
+    /// Warnings during parsing.
+    #[serde(default)]
+    pub warnings: Vec<String>,
+}
+
 /// CSS compilation result
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -121,6 +138,71 @@ pub struct CssCompileResult {
     /// Only populated when `css_modules: true`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub exports: Option<FxHashMap<String, CssModuleExport>>,
+}
+
+/// Parse CSS into a serialized LightningCSS AST.
+#[cfg(feature = "native")]
+pub fn parse_css_ast(css: &str, options: &CssCompileOptions) -> CssAstResult {
+    let result = parser::parse_css_ast_internal(
+        css,
+        options.filename.as_deref().unwrap_or("style.css"),
+        options.custom_media,
+        options.css_modules,
+    );
+
+    CssAstResult {
+        ast: result.ast,
+        errors: result.errors,
+        warnings: result.warnings,
+    }
+}
+
+/// Print CSS from a serialized LightningCSS AST.
+#[cfg(feature = "native")]
+pub fn print_css_ast(ast: serde_json::Value, options: &CssCompileOptions) -> CssCompileResult {
+    let targets = options
+        .targets
+        .as_ref()
+        .map(|t| t.to_lightningcss_targets())
+        .unwrap_or_default();
+
+    let result = parser::print_css_ast_internal(ast, options.minify, targets);
+
+    CssCompileResult {
+        code: result.code,
+        map: None,
+        css_vars: vec![],
+        errors: result.errors,
+        warnings: vec![],
+        exports: result.exports,
+    }
+}
+
+/// Parse CSS into a serialized AST (wasm fallback).
+#[cfg(not(feature = "native"))]
+pub fn parse_css_ast(_css: &str, _options: &CssCompileOptions) -> CssAstResult {
+    CssAstResult {
+        ast: None,
+        errors: vec![String::from(
+            "CSS AST parsing requires the `native` feature",
+        )],
+        warnings: vec![],
+    }
+}
+
+/// Print CSS from a serialized AST (wasm fallback).
+#[cfg(not(feature = "native"))]
+pub fn print_css_ast(_ast: serde_json::Value, _options: &CssCompileOptions) -> CssCompileResult {
+    CssCompileResult {
+        code: String::default(),
+        map: None,
+        css_vars: vec![],
+        errors: vec![String::from(
+            "CSS AST printing requires the `native` feature",
+        )],
+        warnings: vec![],
+        exports: None,
+    }
 }
 
 /// Compile CSS using LightningCSS (native feature enabled)

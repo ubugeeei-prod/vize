@@ -72,6 +72,51 @@ jobs:
       - name: Check JS/TS
         run: vp run --workspace-root check:ci
 
+  semver-checks:
+    name: cargo-semver-checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: "semver-checks"
+          cache-workspace-crates: "true"
+      - name: Install cargo-semver-checks
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-semver-checks
+      # Flags accidental breaking changes to a published crate's public API by
+      # comparing against the latest baseline on crates.io. Each `--package`
+      # flag adds another crate to the comparison; keep this list in sync with
+      # the publishable workspace crates that have at least one version on
+      # crates.io.
+      #
+      # cargo-semver-checks fails the whole run with "not found in registry"
+      # for crates that have no baseline yet, so a newly publishable crate
+      # must land on crates.io first, then be added to this list in a
+      # follow-up. `vize_croquis_cf` is currently in that state and is
+      # intentionally omitted until its first publish.
+      - name: Check public API SemVer compatibility
+        run: |
+          cargo semver-checks check-release \
+            --package vize_armature \
+            --package vize_atelier_core \
+            --package vize_atelier_dom \
+            --package vize_atelier_sfc \
+            --package vize_atelier_ssr \
+            --package vize_atelier_vapor \
+            --package vize_canon \
+            --package vize_carton \
+            --package vize_croquis \
+            --package vize_fresco \
+            --package vize_musea \
+            --package vize_patina \
+            --package vize_relief
+
   security-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -171,12 +216,13 @@ jobs:
 
   test-scripts:
     runs-on: ubuntu-latest
-    # No Rust toolchain, no moonbit setup, no cargo build: every test under
-    # tests/tooling/*.test.ts is pure JS (reading repo files and asserting
-    # structural invariants). The single test that mentions the vize binary
-    # (`e2e-binaries.test.ts`) spawns `process.execPath` with stubbed env
-    # overrides — it never invokes the compiled CLI. Skipping the Rust
-    # bootstrap saves ~30 seconds per PR.
+    # Restoration of the original setup after the trim in #519 broke
+    # main: lsp-smoke.test.ts launches `vize lsp` (falls back to
+    # `cargo run -p vize` when no binary is staged), moonbit-*.test.ts
+    # files shell out to `moon run` for release-script coverage, and
+    # several tests assert on artifacts produced by the built CLI.
+    # Each of those was treated as not-needed and reintroduced a
+    # regression; keeping the full bootstrap is the safe answer.
     timeout-minutes: 15
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -187,8 +233,18 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - uses: ./.github/actions/setup-moonbit
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: "native"
+          cache-workspace-crates: "true"
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Build vize CLI
+        run: cargo build --profile ci -p vize
+      - name: Install vize CLI
+        run: cp target/ci/vize /usr/local/bin/vize
       - name: Test release scripts
         run: vp run --workspace-root test:scripts
 
@@ -533,6 +589,7 @@ jobs:
       - fmt-rust
       - check-js
       - security-audit
+      - semver-checks
       - node-engine-compat
       - check-vize-apps
       - vue-parity

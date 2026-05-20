@@ -193,6 +193,24 @@ test("native package catalog pins and generated loader version checks stay align
   assert.doesNotMatch(nativeTargetsLoader, /bindingPackageVersion !== "[^"]+"/);
 });
 
+test("pkl runtime stays optional for consumers of the vize package", () => {
+  const packageJson = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+  };
+
+  assert.equal(packageJson.dependencies?.["@pkl-community/pkl"], undefined);
+  assert.equal(packageJson.optionalDependencies?.["@pkl-community/pkl"], undefined);
+  assert.equal(packageJson.devDependencies?.["@pkl-community/pkl"], "catalog:repo-tooling");
+  assert.equal(packageJson.peerDependencies?.["@pkl-community/pkl"], "catalog:repo-tooling");
+  assert.deepEqual(packageJson.peerDependenciesMeta?.["@pkl-community/pkl"], {
+    optional: true,
+  });
+});
+
 test("musea Nuxt tests the same vue-router major that it declares as a peer", () => {
   const workspaceYaml = readRepoFile("pnpm-workspace.yaml");
   const catalogVersion = workspaceYaml.match(/^\s+vue-router: "([^"]+)"$/m)?.[1];

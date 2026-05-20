@@ -707,6 +707,7 @@ dependencies = [
  "dtoa-short",
  "itoa",
  "phf 0.11.3",
+ "serde",
  "smallvec",
 ]
 
@@ -1434,6 +1435,7 @@ dependencies = [
  "serde",
  "serde-content",
  "smallvec",
+ "static-self",
 ]
 
 [[package]]
@@ -2111,7 +2113,9 @@ dependencies = [
  "phf_codegen 0.11.3",
  "precomputed-hash",
  "rustc-hash",
+ "serde",
  "smallvec",
+ "static-self",
 ]
 
 [[package]]
@@ -2913,6 +2917,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
+name = "static-self"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6635404b73efc136af3a7956e53c53d4f34b2f16c95a15c438929add0f69412"
+dependencies = [
+ "indexmap",
+ "smallvec",
+ "static-self-derive",
+]
+
+[[package]]
+name = "static-self-derive"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5268c96d4b907c558a9a52d8492522d6c7b559651a5e1d8f2d551e461b9425d5"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3372,7 +3398,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "vize"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "clap",
  "dirs",
@@ -3410,7 +3436,7 @@ dependencies = [
 
 [[package]]
 name = "vize_armature"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "compact_str 0.9.0",
  "htmlize",
@@ -3423,7 +3449,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_core"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "bumpalo",
  "compact_str 0.9.0",
@@ -3450,7 +3476,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_dom"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "insta",
  "phf 0.13.1",
@@ -3463,7 +3489,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_sfc"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3494,7 +3520,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_ssr"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "insta",
  "serde",
@@ -3507,7 +3533,7 @@ dependencies = [
 
 [[package]]
 name = "vize_atelier_vapor"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "insta",
  "oxc_allocator",
@@ -3525,7 +3551,7 @@ dependencies = [
 
 [[package]]
 name = "vize_canon"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "corsa",
  "dashmap 6.1.0",
@@ -3557,7 +3583,7 @@ dependencies = [
 
 [[package]]
 name = "vize_carton"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "bitflags 2.11.1",
  "bumpalo",
@@ -3576,7 +3602,7 @@ dependencies = [
 
 [[package]]
 name = "vize_croquis"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "dashmap 6.1.0",
  "insta",
@@ -3598,7 +3624,7 @@ dependencies = [
 
 [[package]]
 name = "vize_croquis_cf"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3610,7 +3636,7 @@ dependencies = [
 
 [[package]]
 name = "vize_fresco"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "compact_str 0.9.0",
  "criterion",
@@ -3632,7 +3658,7 @@ dependencies = [
 
 [[package]]
 name = "vize_glyph"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3651,7 +3677,7 @@ dependencies = [
 
 [[package]]
 name = "vize_maestro"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "async-trait",
  "dashmap 6.1.0",
@@ -3685,7 +3711,7 @@ dependencies = [
 
 [[package]]
 name = "vize_musea"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "criterion",
  "insta",
@@ -3700,7 +3726,7 @@ dependencies = [
 
 [[package]]
 name = "vize_patina"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "corsa",
  "criterion",
@@ -3726,7 +3752,7 @@ dependencies = [
 
 [[package]]
 name = "vize_relief"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -3736,7 +3762,7 @@ dependencies = [
 
 [[package]]
 name = "vize_test_runner"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "serde",
  "toml",
@@ -3748,7 +3774,7 @@ dependencies = [
 
 [[package]]
 name = "vize_vitrine"
-version = "0.107.0"
+version = "0.112.0"
 dependencies = [
  "getrandom 0.3.4",
  "glob",

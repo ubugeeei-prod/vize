@@ -13,6 +13,13 @@ test("stability page documents v1 alpha support tiers", () => {
   assert.match(stability, /v1 alpha/);
   assert.match(stability, /Node 22/);
   assert.match(stability, /`oxlint-plugin-vize`[\s\S]*Node 24/);
+  assert.match(stability, /linux-arm64-gnu/);
+  assert.match(stability, /win32-arm64-msvc/);
+  assert.match(stability, /linux-x64-musl/);
+  assert.match(stability, /linux-arm64-musl/);
+  assert.match(stability, /`vize --version`/);
+  assert.match(stability, /`vize check`/);
+  assert.match(stability, /`@vizejs\/native` through both `require` and `import`/);
 
   for (const tier of ["Alpha-supported", "Compatibility preview", "Experimental", "Incubating"]) {
     assert.match(stability, new RegExp(`\\| ${tier}\\s+\\|`));

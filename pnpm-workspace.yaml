@@ -78,7 +78,7 @@ catalogs:
   integrations:
     "@modelcontextprotocol/sdk": "1.29.0"
     "@napi-rs/cli": "3.6.2"
-    "@nuxt/kit": "4.4.5"
+    "@nuxt/kit": "4.4.6"
     "@ox-content/vite-plugin": "2.5.0"
 
   # Rendering / content tooling used by docs, playgrounds, and galleries.
@@ -100,14 +100,14 @@ catalogs:
 
   # Published native binary packages that are installed optionally at runtime.
   native-binaries:
-    "@vizejs/native-darwin-arm64": "0.107.0"
-    "@vizejs/native-darwin-x64": "0.107.0"
-    "@vizejs/native-linux-arm64-gnu": "0.107.0"
-    "@vizejs/native-linux-arm64-musl": "0.107.0"
-    "@vizejs/native-linux-x64-gnu": "0.107.0"
-    "@vizejs/native-linux-x64-musl": "0.107.0"
-    "@vizejs/native-win32-arm64-msvc": "0.107.0"
-    "@vizejs/native-win32-x64-msvc": "0.107.0"
+    "@vizejs/native-darwin-arm64": "0.112.0"
+    "@vizejs/native-darwin-x64": "0.112.0"
+    "@vizejs/native-linux-arm64-gnu": "0.112.0"
+    "@vizejs/native-linux-arm64-musl": "0.112.0"
+    "@vizejs/native-linux-x64-gnu": "0.112.0"
+    "@vizejs/native-linux-x64-musl": "0.112.0"
+    "@vizejs/native-win32-arm64-msvc": "0.112.0"
+    "@vizejs/native-win32-x64-msvc": "0.112.0"
 
 peerDependencyRules:
   allowAny:

@@ -74,6 +74,7 @@ vite {
 `@vizejs/vite-plugin` loads the same `vize.config.ts`, `vize.config.js`, `vize.config.mjs`,
 `vize.config.pkl`, and `vize.config.json` files as the `vize` npm CLI. Importing
 `defineConfig` from `@vizejs/vite-plugin` still works, but `vize` is the shared entry point.
+Install `@pkl-community/pkl` or provide a `pkl` binary on `PATH` when using `vize.config.pkl`.
 
 ### Nuxt
 

@@ -82,6 +82,64 @@ test("missing pkl runtime falls back to the next config format", async () => {
   }
 });
 
+test("pkl config can amend the bundled schema without a project-level vize dependency", async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-config-pkl-schema-"));
+  const binDir = path.join(tempDir, "bin");
+
+  try {
+    fs.mkdirSync(binDir);
+    writeFakePkl(
+      binDir,
+      [
+        "#!/usr/bin/env node",
+        "const fs = require('node:fs');",
+        "if (process.argv.includes('--version')) process.exit(0);",
+        "const modulePath = process.argv[process.argv.length - 1];",
+        "const source = fs.readFileSync(modulePath, 'utf-8');",
+        "if (!source.includes('file://') || !source.includes('/pkl/vize.pkl')) {",
+        "  process.stderr.write(source);",
+        "  process.exit(1);",
+        "}",
+        "process.stdout.write(JSON.stringify({",
+        "  compiler: { sourceMap: true },",
+        "  vite: { scanPatterns: ['app/**/*.vue'] },",
+        "}));",
+        "",
+      ].join("\n"),
+    );
+    fs.writeFileSync(
+      path.join(tempDir, "vize.config.pkl"),
+      [
+        'amends "node_modules/vize/pkl/vize.pkl"',
+        "",
+        "compiler {",
+        "  sourceMap = true",
+        "}",
+        "",
+        "vite {",
+        "  scanPatterns = new Listing {",
+        '    "app/**/*.vue"',
+        "  }",
+        "}",
+        "",
+      ].join("\n"),
+    );
+
+    const config = await withPath(`${binDir}${path.delimiter}${process.env.PATH ?? ""}`, () =>
+      loadConfig(tempDir, { mode: "root" }),
+    );
+
+    assert.equal(config?.compiler?.sourceMap, true);
+    assert.deepEqual(config?.vite?.scanPatterns, ["app/**/*.vue"]);
+    assert.equal(
+      fs.existsSync(path.join(tempDir, "node_modules", "vize", "pkl", "vize.pkl")),
+      false,
+    );
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
+});
+
 test("pkl evaluation failures stop lower-priority config fallback", async () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-config-pkl-failure-"));
   const binDir = path.join(tempDir, "bin");

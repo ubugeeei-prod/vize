@@ -36,6 +36,9 @@ export const VIZE_CONFIG_JSON_SCHEMA_PATH = path.join(
 
 export const VIZE_CONFIG_PKL_SCHEMA_PATH = path.join(PACKAGE_ROOT, "pkl", "vize.pkl");
 
+const DOCUMENTED_PKL_SCHEMA_IMPORT_RE =
+  /^(\s*(?:amends|import)\s+)(["'])node_modules\/vize\/pkl\/(VizeConfig\.pkl|vize\.pkl)\2/gm;
+
 type CompatVizeConfig = VizeConfig & {
   lsp?: LanguageServerConfig;
 };
@@ -182,8 +185,10 @@ function loadPklConfig(filePath: string): VizeConfig | null {
   }
 
   let output: string;
+  const patchedFilePath = createPklConfigWithBundledSchemaImports(filePath);
+  const evalFilePath = patchedFilePath ?? filePath;
   try {
-    output = execFileSync(pklBin, ["eval", "-f", "json", filePath], {
+    output = execFileSync(pklBin, ["eval", "-f", "json", evalFilePath], {
       cwd: path.dirname(filePath),
       encoding: "utf-8",
       stdio: ["ignore", "pipe", "pipe"],
@@ -191,8 +196,47 @@ function loadPklConfig(filePath: string): VizeConfig | null {
     });
   } catch (error) {
     throw new Error(`Failed to evaluate vize PKL config at ${filePath}: ${getErrorMessage(error)}`);
+  } finally {
+    if (patchedFilePath) {
+      fs.rmSync(patchedFilePath, { force: true });
+    }
   }
   return parseJsonConfig(output, filePath);
+}
+
+function createPklConfigWithBundledSchemaImports(filePath: string): string | null {
+  const configDir = path.dirname(filePath);
+  const source = fs.readFileSync(filePath, "utf-8");
+  let patched = false;
+
+  const content = source.replace(
+    DOCUMENTED_PKL_SCHEMA_IMPORT_RE,
+    (match, prefix, quote, schemaFile) => {
+      const projectSchemaPath = path.join(configDir, "node_modules", "vize", "pkl", schemaFile);
+      if (fs.existsSync(projectSchemaPath)) {
+        return match;
+      }
+
+      const bundledSchemaPath = path.join(PACKAGE_ROOT, "pkl", schemaFile);
+      if (!fs.existsSync(bundledSchemaPath)) {
+        return match;
+      }
+
+      patched = true;
+      return `${prefix}${quote}${pathToFileURL(bundledSchemaPath).href}${quote}`;
+    },
+  );
+
+  if (!patched) {
+    return null;
+  }
+
+  const tempFile = path.join(
+    configDir,
+    `.vize-config-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}.pkl`,
+  );
+  fs.writeFileSync(tempFile, content, { flag: "wx", mode: 0o600 });
+  return tempFile;
 }
 
 async function resolveConfigExport(

@@ -3,26 +3,13 @@ name: Native Smoke
 on:
   workflow_dispatch:
   schedule:
+    # Full native/fresh-install smoke is release evidence, not a per-push gate.
+    # Keep it on a weekly cadence plus manual runs so normal PR pushes stay
+    # fast while release promotion still has a reproducible matrix check.
     - cron: "17 3 * * 1"
-  pull_request:
-    branches: [main]
-    paths:
-      - "crates/**"
-      - "npm/vize-native/**"
-      - "npm/fresco-native/**"
-      - "npm/vize/**"
-      - "npm/vite-plugin-vize/**"
-      - "tools/moon/scripts/**"
-      - "tools/npm/**"
-      - ".github/workflows/**"
-      - ".github/actions/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "pnpm-workspace.yaml"
-      - "pnpm-lock.yaml"
 
 concurrency:
-  group: native-smoke-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: native-smoke-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -35,13 +22,31 @@ env:
 
 jobs:
   host-native-smoke:
-    name: Native host smoke (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: Native host smoke (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - runner: ubuntu-latest
+            target: linux-x64-gnu
+            msvc_arch: amd64
+          - runner: ubuntu-24.04-arm
+            target: linux-arm64-gnu
+            msvc_arch: amd64
+          - runner: macos-15-intel
+            target: darwin-x64
+            msvc_arch: amd64
+          - runner: macos-latest
+            target: darwin-arm64
+            msvc_arch: amd64
+          - runner: windows-latest
+            target: win32-x64-msvc
+            msvc_arch: amd64
+          - runner: windows-11-arm
+            target: win32-arm64-msvc
+            msvc_arch: arm64
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
@@ -51,11 +56,16 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - name: Setup MSVC toolchain (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
       - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
-          shared-key: native-smoke-${{ runner.os }}
+          shared-key: native-smoke-${{ matrix.target }}
           cache-workspace-crates: "true"
       - name: Install native package dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...'
@@ -78,19 +88,36 @@ jobs:
         run: node tools/npm/smoke-release-install.mjs --prepare-manifests npm/vize-native
 
   fresh-install-smoke:
-    name: Fresh install smoke (${{ matrix.os }}, Node ${{ matrix.node-version }})
-    runs-on: ${{ matrix.os }}
+    name: Fresh install smoke (${{ matrix.platform.target }}, Node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.platform.runner }}
     timeout-minutes: 45
-    # Limited to manual dispatch and the weekly cron until the runtime-checks
-    # design is rebuilt (see issue #511). Skipping on pull_request stops the
-    # matrix from red-lighting unrelated PRs while the install-time smoke is
-    # blocked by upstream npm/cli#4828 in the vite-plus binding resolution.
-    if: ${{ github.event_name != 'pull_request' }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
         node-version: ["22", "24"]
+        # Linux musl targets are intentionally absent here: GitHub-hosted
+        # standard runners provide Ubuntu GNU hosts, not native Alpine/musl
+        # hosts. Keep the known-limitation policy in docs/content/stability.md
+        # in sync when containerized musl tarball staging is added.
+        platform:
+          - runner: ubuntu-latest
+            target: linux-x64-gnu
+            msvc_arch: amd64
+          - runner: ubuntu-24.04-arm
+            target: linux-arm64-gnu
+            msvc_arch: amd64
+          - runner: macos-15-intel
+            target: darwin-x64
+            msvc_arch: amd64
+          - runner: macos-latest
+            target: darwin-arm64
+            msvc_arch: amd64
+          - runner: windows-latest
+            target: win32-x64-msvc
+            msvc_arch: amd64
+          - runner: windows-11-arm
+            target: win32-arm64-msvc
+            msvc_arch: arm64
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
@@ -103,11 +130,22 @@ jobs:
           node-version-file: ".node-version.ci"
           cache: true
           run-install: false
+      # MSVC env vars (INCLUDE, LIB, etc.) must be set at job scope, not just
+      # inside the setup-moonbit composite action — `vp run … build` later in
+      # the job invokes moonbit's `cc` integration through `generate:rule-types`
+      # (vize's build script), and that subprocess needs the MSVC C headers to
+      # be visible. host-native-smoke gets away without this because it never
+      # builds the npm/vize package; fresh-install-smoke does.
+      - name: Setup MSVC toolchain (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with:
+          arch: ${{ matrix.platform.msvc_arch }}
       - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
-          shared-key: fresh-install-smoke-${{ runner.os }}
+          shared-key: fresh-install-smoke-${{ matrix.platform.target }}
           cache-workspace-crates: "true"
       - name: Install package dependencies
         shell: bash
@@ -141,7 +179,15 @@ jobs:
       - name: Build npm runtime packages
         shell: bash
         run: |
-          vp run --filter './npm/vize' build
+          # Pack npm/vize directly instead of running its full `build` script,
+          # which would also re-invoke `generate:rule-types` (a moonbit script
+          # that shells out to `cl.exe`). The checked-in src/types/rules.ts is
+          # the source of truth and is regenerated/verified on the test-scripts
+          # job on Linux; the smoke matrix only needs the packed tarball, and
+          # moonbit's `cc` integration does not currently honor the inherited
+          # INCLUDE env on Windows even when ilammy/msvc-dev-cmd has set it,
+          # which would otherwise block this matrix on every Windows runner.
+          (cd npm/vize && vp pack)
           vp run --filter './npm/vite-plugin-vize' build
       - name: Fresh install and runtime smoke published tarballs
         shell: bash

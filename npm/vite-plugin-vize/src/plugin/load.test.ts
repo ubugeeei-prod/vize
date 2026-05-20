@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import type { VizePluginState } from "./state.ts";
 import { getBoundaryPlaceholderCode } from "./load.ts";
 import { loadHook } from "./load.ts";
+import { normalizeVueServerRendererImport } from "./load.ts";
 import { transformHook } from "./load.ts";
 import { toVirtualId } from "../virtual.ts";
 
@@ -49,6 +50,14 @@ assert.equal(
   getBoundaryPlaceholderCode("/src/Foo.vue", true),
   null,
   "Regular SFCs must not be stubbed",
+);
+
+assert.equal(
+  normalizeVueServerRendererImport(
+    "import { ssrRenderAttrs } from '@vue/server-renderer';\nexport { ssrRenderAttrs };",
+  ),
+  'import { ssrRenderAttrs } from "vue/server-renderer";\nexport { ssrRenderAttrs };',
+  "SSR helper imports should use Vue's public server-renderer entry for Nuxt/Nitro externalization",
 );
 
 const realPath = "/src/Hmr.vue";

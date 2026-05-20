@@ -35,6 +35,28 @@ assert.deepStrictEqual(
   "Nuxt compiler options should use on-demand compilation to avoid retaining every SFC in large Nuxt apps",
 );
 
+assert.deepStrictEqual(
+  buildNuxtCompilerOptions("/repo/app", "/2026/", "/_nuxt/", {
+    configFile: "vize.nuxt.config.ts",
+    debug: true,
+    ignorePatterns: ["node_modules/**", ".nuxt/**", "fixtures/**"],
+    scanPatterns: ["app/**/*.vue", "layers/**/*.vue"],
+    sourceMap: false,
+    vapor: true,
+  }),
+  {
+    configFile: "vize.nuxt.config.ts",
+    debug: true,
+    devUrlBase: "/2026/_nuxt/",
+    ignorePatterns: ["node_modules/**", ".nuxt/**", "fixtures/**"],
+    root: "/repo/app",
+    scanPatterns: ["app/**/*.vue", "layers/**/*.vue"],
+    sourceMap: false,
+    vapor: true,
+  },
+  "Nuxt compiler options should forward Vite plugin overrides while keeping Nuxt defaults",
+);
+
 assert.equal(
   isVizeVirtualVueModuleId("\0vize-ssr:/repo/app/components/Foo.vue.ts"),
   true,
