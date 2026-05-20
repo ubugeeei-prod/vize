@@ -65,7 +65,7 @@ pub(super) fn lint_with_descriptor<'a>(
             warning_count: 0,
         }
     };
-    super::super::script_rules::append_builtin_script_diagnostics(linter, &descriptor, &mut result);
+    super::super::script_rules::append_builtin_script_diagnostics(linter, descriptor, &mut result);
 
     let Some(script_block) = descriptor
         .script_setup
