@@ -427,19 +427,28 @@ function runRuntimeChecks(installDir, packages) {
       [
         "-e",
         [
-          'const native = require("@vizejs/native");',
+          'const required = require("@vizejs/native");',
+          "(async () => {",
+          'const imported = await import("@vizejs/native");',
+          "const importedNative = imported.default ?? imported;",
+          "for (const [label, native] of [['require', required], ['import', importedNative]]) {",
+          "if (typeof native.compileSfc !== 'function') {",
+          "  throw new Error(`compileSfc missing from ${label} smoke`);",
+          "}",
           "const result = native.compileSfc(",
           '  \'<template><div>{{ msg }}</div></template><script setup lang="ts">const msg: string = "ok";</script>\',',
           "  { filename: 'Smoke.vue', isTs: true },",
           ");",
           "if (!result || result.errors.length > 0 || typeof result.code !== 'string' || result.code.length === 0) {",
-          "  throw new Error('compileSfc runtime smoke failed');",
+          "  throw new Error(`compileSfc ${label} runtime smoke failed`);",
           "}",
+          "}",
+          "})().catch((error) => { console.error(error); process.exit(1); });",
         ].join("\n"),
       ],
       { cwd: installDir },
     );
-    console.log("runtime: @vizejs/native compileSfc");
+    console.log("runtime: @vizejs/native require/import compileSfc");
   }
 
   // Bins are invoked through `node <resolved-bin>` instead of `npm exec` so
@@ -449,6 +458,14 @@ function runRuntimeChecks(installDir, packages) {
   // native bindings on the fresh-install smoke matrix.
   if (hasPackage(packages, "vize")) {
     const vizeBin = resolveInstalledBin(installDir, "vize", "vize");
+    run(process.execPath, [vizeBin, "--version"], { cwd: installDir });
+    console.log("runtime: vize --version");
+    run(
+      process.execPath,
+      [vizeBin, "check", "src/App.vue", "--format", "json", "--quiet", "--no-config"],
+      { cwd: installDir },
+    );
+    console.log("runtime: vize check");
     run(
       process.execPath,
       [vizeBin, "lint", "src/App.vue", "--format", "json", "--quiet", "--no-config"],

@@ -44,6 +44,10 @@ function workflowJobBody(workflow: string, jobName: string): string {
   return remaining.slice(0, nextJobMatch ? nextJobMatch.index + 1 : undefined);
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 test("GitHub workflows opt JavaScript actions into Node 24", () => {
   for (const workflowName of [
     "check.yml",
@@ -701,8 +705,24 @@ test("native smoke workflow covers host platforms before release tags", () => {
 
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /schedule:/);
-  assert.match(workflow, /pull_request:[\s\S]*paths:/);
-  assert.match(job, /os:\s*\[ubuntu-latest, macos-13, macos-latest, windows-latest\]/);
+  assert.doesNotMatch(workflow, /pull_request:/);
+  assert.match(
+    workflow,
+    /Full native\/fresh-install smoke is release evidence, not a per-push gate/,
+  );
+  for (const [runner, target] of [
+    ["ubuntu-latest", "linux-x64-gnu"],
+    ["ubuntu-24.04-arm", "linux-arm64-gnu"],
+    ["macos-15-intel", "darwin-x64"],
+    ["macos-latest", "darwin-arm64"],
+    ["windows-latest", "win32-x64-msvc"],
+    ["windows-11-arm", "win32-arm64-msvc"],
+  ] as const) {
+    assert.match(
+      job,
+      new RegExp(`runner:\\s*${escapeRegExp(runner)}[\\s\\S]*target:\\s*${target}`),
+    );
+  }
   assert.match(job, /cargo build --profile ci -p vize/);
   assert.match(job, /vp run --filter '\.\/npm\/vize-native' build:ci/);
   assert.match(job, /require\('\.\/npm\/vize-native'\)/);
@@ -713,7 +733,19 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
   const job = workflowJobBody(workflow, "fresh-install-smoke");
 
-  assert.match(job, /os:\s*\[ubuntu-latest, macos-13, macos-latest, windows-latest\]/);
+  for (const [runner, target] of [
+    ["ubuntu-latest", "linux-x64-gnu"],
+    ["ubuntu-24.04-arm", "linux-arm64-gnu"],
+    ["macos-15-intel", "darwin-x64"],
+    ["macos-latest", "darwin-arm64"],
+    ["windows-latest", "win32-x64-msvc"],
+    ["windows-11-arm", "win32-arm64-msvc"],
+  ] as const) {
+    assert.match(
+      job,
+      new RegExp(`runner:\\s*${escapeRegExp(runner)}[\\s\\S]*target:\\s*${target}`),
+    );
+  }
   assert.match(job, /node-version:\s*\["22", "24"\]/);
   assert.match(job, /echo "\$\{\{\s*matrix\.node-version\s*\}\}" > \.node-version\.ci/);
   assert.match(job, /node-version-file:\s*"\.node-version\.ci"/);
@@ -723,6 +755,22 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
     job,
     /smoke-release-install\.mjs --prepare-manifests --runtime-checks[\s\S]*npm\/vize-native npm\/vize-native\/npm\/\*[\s\S]*npm\/vize npm\/vite-plugin-vize/,
   );
+});
+
+test("release workflow builds directly hosted native targets on matching runners", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const job = workflowJobBody(workflow, "build-native-all");
+
+  for (const [host, target] of [
+    ["macos-15-intel", "x86_64-apple-darwin"],
+    ["macos-latest", "aarch64-apple-darwin"],
+    ["ubuntu-latest", "x86_64-unknown-linux-gnu"],
+    ["ubuntu-24.04-arm", "aarch64-unknown-linux-gnu"],
+    ["windows-latest", "x86_64-pc-windows-msvc"],
+    ["windows-11-arm", "aarch64-pc-windows-msvc"],
+  ] as const) {
+    assert.match(job, new RegExp(`host:\\s*${escapeRegExp(host)}[\\s\\S]*target:\\s*${target}`));
+  }
 });
 
 test("release workflow bundles fresco-native binaries into the root package instead of publishing platform packages", () => {

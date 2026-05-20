@@ -3,26 +3,13 @@ name: Native Smoke
 on:
   workflow_dispatch:
   schedule:
+    # Full native/fresh-install smoke is release evidence, not a per-push gate.
+    # Keep it on a weekly cadence plus manual runs so normal PR pushes stay
+    # fast while release promotion still has a reproducible matrix check.
     - cron: "17 3 * * 1"
-  pull_request:
-    branches: [main]
-    paths:
-      - "crates/**"
-      - "npm/vize-native/**"
-      - "npm/fresco-native/**"
-      - "npm/vize/**"
-      - "npm/vite-plugin-vize/**"
-      - "tools/moon/scripts/**"
-      - "tools/npm/**"
-      - ".github/workflows/**"
-      - ".github/actions/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "pnpm-workspace.yaml"
-      - "pnpm-lock.yaml"
 
 concurrency:
-  group: native-smoke-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: native-smoke-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -35,20 +22,31 @@ env:
 
 jobs:
   host-native-smoke:
-    name: Native host smoke (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: Native host smoke (${{ matrix.target }})
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
-    # GitHub's free `macos-13` (darwin-x64) pool currently sits in queue for
-    # the entire job timeout window during peak hours, which would block PRs
-    # waiting on a runner that never allocates. Keep macos-13 in the matrix so
-    # we still execute it whenever capacity exists, but mark it advisory until
-    # we move darwin-x64 onto a paid runner (`macos-13-large`) or a
-    # self-hosted node. The other three OSes remain required.
-    continue-on-error: ${{ matrix.os == 'macos-13' }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, macos-latest, windows-latest]
+        include:
+          - runner: ubuntu-latest
+            target: linux-x64-gnu
+            msvc_arch: amd64
+          - runner: ubuntu-24.04-arm
+            target: linux-arm64-gnu
+            msvc_arch: amd64
+          - runner: macos-15-intel
+            target: darwin-x64
+            msvc_arch: amd64
+          - runner: macos-latest
+            target: darwin-arm64
+            msvc_arch: amd64
+          - runner: windows-latest
+            target: win32-x64-msvc
+            msvc_arch: amd64
+          - runner: windows-11-arm
+            target: win32-arm64-msvc
+            msvc_arch: arm64
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
@@ -58,11 +56,16 @@ jobs:
           node-version-file: ".node-version"
           cache: true
           run-install: false
+      - name: Setup MSVC toolchain (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
       - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
-          shared-key: native-smoke-${{ runner.os }}
+          shared-key: native-smoke-${{ matrix.target }}
           cache-workspace-crates: "true"
       - name: Install native package dependencies
         run: vp install --frozen-lockfile --prefer-offline --filter './npm/vize-native...'
@@ -85,16 +88,36 @@ jobs:
         run: node tools/npm/smoke-release-install.mjs --prepare-manifests npm/vize-native
 
   fresh-install-smoke:
-    name: Fresh install smoke (${{ matrix.os }}, Node ${{ matrix.node-version }})
-    runs-on: ${{ matrix.os }}
+    name: Fresh install smoke (${{ matrix.platform.target }}, Node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.platform.runner }}
     timeout-minutes: 45
-    # See `host-native-smoke` above for why macos-13 cells are advisory.
-    continue-on-error: ${{ matrix.os == 'macos-13' }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, macos-latest, windows-latest]
         node-version: ["22", "24"]
+        # Linux musl targets are intentionally absent here: GitHub-hosted
+        # standard runners provide Ubuntu GNU hosts, not native Alpine/musl
+        # hosts. Keep the known-limitation policy in docs/content/stability.md
+        # in sync when containerized musl tarball staging is added.
+        platform:
+          - runner: ubuntu-latest
+            target: linux-x64-gnu
+            msvc_arch: amd64
+          - runner: ubuntu-24.04-arm
+            target: linux-arm64-gnu
+            msvc_arch: amd64
+          - runner: macos-15-intel
+            target: darwin-x64
+            msvc_arch: amd64
+          - runner: macos-latest
+            target: darwin-arm64
+            msvc_arch: amd64
+          - runner: windows-latest
+            target: win32-x64-msvc
+            msvc_arch: amd64
+          - runner: windows-11-arm
+            target: win32-arm64-msvc
+            msvc_arch: arm64
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
@@ -117,12 +140,12 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
         with:
-          arch: amd64
+          arch: ${{ matrix.platform.msvc_arch }}
       - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         with:
-          shared-key: fresh-install-smoke-${{ runner.os }}
+          shared-key: fresh-install-smoke-${{ matrix.platform.target }}
           cache-workspace-crates: "true"
       - name: Install package dependencies
         shell: bash

@@ -94,11 +94,15 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   // smoke project; the version is the single source of truth for what the
   // matrix runners install.
   assert.match(script, /"@typescript\/native-preview":\s*"7\.0\.0-dev\.20260514\.1"/);
+  assert.match(script, /require\("@vizejs\/native"\)/);
+  assert.match(script, /import\("@vizejs\/native"\)/);
   assert.match(script, /native\.compileSfc/);
   // Bins are resolved out of the installed tree and invoked through
   // `process.execPath` so that `npm exec` cannot re-resolve native optional
   // deps and drop them mid-run (npm/cli#4828).
   assert.match(script, /resolveInstalledBin\(installDir, "vize", "vize"\)/);
+  assert.match(script, /vizeBin, "--version"/);
+  assert.match(script, /"check"[\s\S]*"src\/App\.vue"/);
   assert.match(script, /"lint"[\s\S]*"src\/App\.vue"/);
   // vite is installed as upstream vite (^8.0.0), matching the
   // `@vizejs/vite-plugin` peer dep declaration. Real vite exposes a `vite`
