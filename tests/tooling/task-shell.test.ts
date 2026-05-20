@@ -8,7 +8,10 @@ import {
   shellCommandForwardingArguments,
   withRustTaskEnvironment,
 } from "../../tools/vite-plus/task-shell.ts";
-import { moonCommandForEnvironment } from "../../tools/vite-plus/task-commands.ts";
+import {
+  moonCommandForEnvironment,
+  moonRegistryUpdateGuardForEnvironment,
+} from "../../tools/vite-plus/task-commands.ts";
 import { checkTasks } from "../../tools/vite-plus/tasks/check.ts";
 import { releaseTasks } from "../../tools/vite-plus/tasks/release.ts";
 
@@ -77,6 +80,26 @@ test("MoonBit task commands preserve the GitHub runner shim", () => {
   assert.equal(
     moonCommandForEnvironment({ MOON_BIN: "/runner-temp/moonbit-shims/moon" }, () => true),
     "/runner-temp/moonbit-shims/moon",
+  );
+});
+
+test("MoonBit task commands initialize the workspace registry index", () => {
+  assert.equal(
+    moonRegistryUpdateGuardForEnvironment(
+      {},
+      (candidate) => candidate === ".cache/moonbit/bin/moon",
+    ),
+    "( [ -d .cache/moonbit/registry/index/.git ] || env MOON_HOME=.cache/moonbit MOON_BIN=.cache/moonbit/bin/moon .cache/moonbit/bin/moon update )",
+  );
+});
+
+test("MoonBit task commands leave explicit MoonBit shims untouched", () => {
+  assert.equal(
+    moonRegistryUpdateGuardForEnvironment(
+      { MOON_BIN: "/runner-temp/moonbit-shims/moon" },
+      () => true,
+    ),
+    null,
   );
 });
 

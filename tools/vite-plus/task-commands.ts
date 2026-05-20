@@ -65,6 +65,7 @@ export const runTasks = (...taskNames: string[]) => taskNames.map(runTask).join(
 
 const workspaceMoonHome = ".cache/moonbit";
 const workspaceMoonBin = `${workspaceMoonHome}/bin/moon`;
+const workspaceMoonRegistryIndex = `${workspaceMoonHome}/registry/index/.git`;
 
 export const moonCommandForEnvironment = (
   env: NodeJS.ProcessEnv = process.env,
@@ -81,7 +82,20 @@ export const moonCommandForEnvironment = (
   return "moon";
 };
 
+export const moonRegistryUpdateGuardForEnvironment = (
+  env: NodeJS.ProcessEnv = process.env,
+  pathExists: (path: string) => boolean = existsSync,
+) => {
+  const hasExplicitMoonBin = env.MOON_BIN != null && env.MOON_BIN !== "";
+  if (hasExplicitMoonBin || !pathExists(workspaceMoonBin)) {
+    return null;
+  }
+
+  return `( [ -d ${workspaceMoonRegistryIndex} ] || ${moonCommandForEnvironment(env, pathExists)} update )`;
+};
+
 const moonCommand = moonCommandForEnvironment();
+const moonRegistryUpdateGuard = moonRegistryUpdateGuardForEnvironment();
 
 /**
  * Executes a repository MoonBit script through native script mode.
@@ -93,6 +107,7 @@ const moonCommand = moonCommandForEnvironment();
  */
 export const moonScript = (name: string, ...args: string[]) =>
   [
+    ...(moonRegistryUpdateGuard == null ? [] : [moonRegistryUpdateGuard, "&&"]),
     moonCommand,
     "run",
     "-q",
