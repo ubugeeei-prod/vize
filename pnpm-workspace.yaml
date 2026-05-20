@@ -78,7 +78,7 @@ catalogs:
   integrations:
     "@modelcontextprotocol/sdk": "1.29.0"
     "@napi-rs/cli": "3.6.2"
-    "@nuxt/kit": "4.4.5"
+    "@nuxt/kit": "4.4.6"
     "@ox-content/vite-plugin": "2.5.0"
 
   # Rendering / content tooling used by docs, playgrounds, and galleries.
