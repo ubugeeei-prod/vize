@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const checklistPath = path.join(root, "docs", "release", "v1-alpha-go-no-go.md");
 const productionReadinessPath = path.join(root, "docs", "release", "production-readiness.md");
+const supplyChainPath = path.join(root, "docs", "release", "supply-chain.md");
 const vueParityMatrixPath = path.join(root, "docs", "release", "vue-parity-matrix.md");
 
 test("v1 alpha go/no-go checklist covers release gates and rollback", () => {
@@ -120,4 +121,11 @@ test("Vue parity matrix names release-blocking compiler, typecheck, runtime, and
   ]) {
     assert.match(matrix, new RegExp(requiredTerm));
   }
+});
+
+test("supply-chain verification examples are release-version neutral", () => {
+  const supplyChain = fs.readFileSync(supplyChainPath, "utf-8");
+
+  assert.match(supplyChain, /vize-<tag>-cyclonedx\.sbom\.json/);
+  assert.doesNotMatch(supplyChain, /vize-v\d+\.\d+\.\d+-cyclonedx\.sbom\.json/);
 });

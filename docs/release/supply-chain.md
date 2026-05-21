@@ -51,10 +51,10 @@ Same call works for the SBOM:
 
 ```sh
 cosign verify-blob \
-  --bundle vize-v0.107.0-cyclonedx.sbom.json.cosign.bundle \
+  --bundle vize-<tag>-cyclonedx.sbom.json.cosign.bundle \
   --certificate-identity-regexp 'https://github.com/ubugeeei/vize/.+' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  vize-v0.107.0-cyclonedx.sbom.json
+  vize-<tag>-cyclonedx.sbom.json
 ```
 
 A successful verification prints `Verified OK` and exits zero. Treat any

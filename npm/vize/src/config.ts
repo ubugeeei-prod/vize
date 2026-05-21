@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { transform } from "oxc-transform";
 import type {
@@ -233,7 +234,7 @@ function createPklConfigWithBundledSchemaImports(filePath: string): string | nul
 
   const tempFile = path.join(
     configDir,
-    `.vize-config-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}.pkl`,
+    `.vize-config-${process.pid}-${Date.now()}-${randomUUID()}.pkl`,
   );
   fs.writeFileSync(tempFile, content, { flag: "wx", mode: 0o600 });
   return tempFile;
@@ -260,7 +261,7 @@ async function loadTypeScriptConfig(filePath: string, env?: ConfigEnv): Promise<
 
   const tempFile = path.join(
     path.dirname(filePath),
-    `.vize-config-${process.pid}-${Date.now()}.mjs`,
+    `.vize-config-${process.pid}-${Date.now()}-${randomUUID()}.mjs`,
   );
   fs.writeFileSync(tempFile, result.code, { flag: "wx", mode: 0o600 });
 

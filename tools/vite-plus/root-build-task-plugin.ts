@@ -2,7 +2,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import type { Plugin } from "vite";
 
 const commandExists = (command: string) =>
-  spawnSync("sh", ["-c", `command -v ${command}`], { stdio: "ignore" }).status === 0;
+  spawnSync(command, ["--version"], { stdio: "ignore" }).status === 0;
 
 /**
  * Builds the root library artifact by delegating to the workspace build task.

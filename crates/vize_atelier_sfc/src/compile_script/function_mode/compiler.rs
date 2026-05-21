@@ -215,27 +215,8 @@ pub fn compile_script_setup(
     // Collect model binding names for __returned__
     let model_binding_names = emit_model_bindings(&mut output, &ctx);
 
-    // Output setup code, transforming props destructure references
-
-    // Debug: Log props destructure status
-    #[cfg(debug_assertions)]
-    {
-        if ctx.macros.props_destructure.is_some() {
-            eprintln!(
-                "[DEBUG] Props destructure found: {:?}",
-                ctx.macros.props_destructure
-            );
-        } else {
-            eprintln!("[DEBUG] No props destructure found");
-        }
-        eprintln!("[DEBUG] Setup code before transform:\n{}", setup_code);
-    }
-
     let transformed_setup: String = if let Some(ref destructure) = ctx.macros.props_destructure {
-        let result = transform_destructured_props(&setup_code, destructure);
-        #[cfg(debug_assertions)]
-        eprintln!("[DEBUG] Setup code after transform:\n{}", result);
-        result
+        transform_destructured_props(&setup_code, destructure)
     } else {
         setup_code.into()
     };

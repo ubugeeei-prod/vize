@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { createRequire } from "node:module";
 
@@ -16,12 +16,13 @@ function isMusl(): boolean {
     return !header.glibcVersionRuntime;
   }
 
-  try {
-    const lddPath = require("node:child_process").execSync("which ldd").toString().trim();
-    return readFileSync(lddPath, "utf8").includes("musl");
-  } catch {
-    return true;
-  }
+  const result = spawnSync("ldd", ["--version"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (result.error) return true;
+
+  return `${result.stdout ?? ""}\n${result.stderr ?? ""}`.includes("musl");
 }
 
 function getBindingPackageName(): string {
