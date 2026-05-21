@@ -617,6 +617,154 @@ defineProps<PublicProps>()
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn check_json_handles_monorepo_tsconfig_extends_paths_and_excludes() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "monorepo-tsconfig",
+        &[
+            (
+                "tsconfig.base.json",
+                r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["packages/shared/src/*"]
+    },
+    "noEmit": true
+  }
+}"#,
+            ),
+            (
+                "tsconfig.json",
+                r#"{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.vue"
+  ],
+  "exclude": [
+    "packages/*/src/generated/**"
+  ]
+}"#,
+            ),
+            (
+                "packages/app/tsconfig.json",
+                r#"{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}"#,
+            ),
+            (
+                "packages/ui/tsconfig.json",
+                r#"{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}"#,
+            ),
+            (
+                "packages/shared/tsconfig.json",
+                r#"{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*.ts"]
+}"#,
+            ),
+            (
+                "packages/shared/src/contracts.ts",
+                r#"export type Label = string
+"#,
+            ),
+            (
+                "packages/ui/src/UiButton.vue",
+                r#"<script setup lang="ts">
+import type { Label } from '@shared/contracts'
+
+defineProps<{
+  label: Label
+  count: number
+}>()
+</script>
+
+<template>
+  <button>{{ label }} {{ count }}</button>
+</template>
+"#,
+            ),
+            (
+                "packages/app/src/App.vue",
+                r#"<script setup lang="ts">
+import UiButton from '../../ui/src/UiButton.vue'
+import type { Label } from '@shared/contracts'
+
+const label: Label = 'Save'
+const count = 'not a number'
+</script>
+
+<template>
+  <UiButton :label="label" :count="count" />
+</template>
+"#,
+            ),
+            (
+                "packages/app/src/generated/Bad.vue",
+                r#"<script setup lang="ts">
+const shouldNotBeChecked: string = 0
+</script>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let diagnostics = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(|diagnostic| diagnostic.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["fileCount"], 3);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.contains("[TS2322]") && diagnostic.contains("number")),
+        "expected imported monorepo component prop type error, got: {diagnostics:#?}"
+    );
+    assert!(
+        diagnostics.iter().all(|diagnostic| {
+            !diagnostic.contains("Cannot find module")
+                && !diagnostic.contains("shouldNotBeChecked")
+                && !diagnostic.contains("generated/Bad.vue")
+        }),
+        "monorepo tsconfig paths/excludes should be respected: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 fn collect_declaration_snapshot(
     declaration_dir: &Path,
 ) -> Vec<(std::string::String, std::string::String)> {
