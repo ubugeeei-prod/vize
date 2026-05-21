@@ -10,6 +10,7 @@ mod state;
 pub use state::{DisabledRange, ElementContext, SsrMode};
 
 use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};
+use memchr::memchr_iter;
 use std::borrow::Cow;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::String;
@@ -257,10 +258,8 @@ impl<'a> LintContext<'a> {
     /// Compute line offsets for fast line number lookup.
     fn compute_line_offsets(source: &str) -> Vec<u32> {
         let mut offsets = vec![0];
-        for (i, c) in source.char_indices() {
-            if c == '\n' {
-                offsets.push((i + 1) as u32);
-            }
+        for offset in memchr_iter(b'\n', source.as_bytes()) {
+            offsets.push((offset + 1) as u32);
         }
         offsets
     }
