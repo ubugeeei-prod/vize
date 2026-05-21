@@ -56,11 +56,12 @@ impl CorsaTypeAwareSession {
         let config_path_wire = path_to_wire(&config_path);
         let virtual_file_wire = path_to_wire(&virtual_file_path);
         let executable = resolve_corsa_executable(&project_root);
+        let api_mode = api_mode_for_executable(&executable);
         let session = profile!(
             "patina.corsa_session.spawn",
             block_on(ProjectSession::spawn(
                 ApiSpawnConfig::new(executable)
-                    .with_mode(ApiMode::SyncMsgpackStdio)
+                    .with_mode(api_mode)
                     .with_cwd(&session_root),
                 config_path_wire.as_str(),
                 Some(virtual_file_wire.as_str().into()),
@@ -163,5 +164,66 @@ impl CorsaTypeAwareSession {
         self.closed = true;
         let _ = block_on(self.session.close());
         let _ = std::fs::remove_dir_all(&self.session_root);
+    }
+}
+
+fn api_mode_for_executable(path: &std::path::Path) -> ApiMode {
+    if path.extension().and_then(|extension| extension.to_str()) == Some("js") {
+        return ApiMode::AsyncJsonRpcStdio;
+    }
+
+    if path
+        .parent()
+        .and_then(|parent| parent.file_name())
+        .and_then(|name| name.to_str())
+        == Some(".bin")
+    {
+        return ApiMode::AsyncJsonRpcStdio;
+    }
+
+    let Some(parent) = path.parent() else {
+        return ApiMode::SyncMsgpackStdio;
+    };
+    let Some(grandparent) = parent.parent() else {
+        return ApiMode::SyncMsgpackStdio;
+    };
+
+    if parent.file_name().and_then(|name| name.to_str()) == Some("bin")
+        && grandparent.file_name().and_then(|name| name.to_str()) == Some("native-preview")
+    {
+        ApiMode::AsyncJsonRpcStdio
+    } else {
+        ApiMode::SyncMsgpackStdio
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::api_mode_for_executable;
+    use corsa::api::ApiMode;
+    use std::path::Path;
+
+    #[test]
+    fn uses_json_rpc_for_node_wrappers() {
+        assert_eq!(
+            api_mode_for_executable(Path::new("/workspace/node_modules/.bin/tsgo")),
+            ApiMode::AsyncJsonRpcStdio
+        );
+        assert_eq!(
+            api_mode_for_executable(Path::new(
+                "/workspace/node_modules/@typescript/native-preview/bin/tsgo.js"
+            )),
+            ApiMode::AsyncJsonRpcStdio
+        );
+    }
+
+    #[test]
+    fn uses_msgpack_for_native_binaries() {
+        assert_eq!(
+            api_mode_for_executable(Path::new(
+                "/workspace/node_modules/@typescript/native-preview-darwin-arm64/lib/tsgo"
+            )),
+            ApiMode::SyncMsgpackStdio
+        );
     }
 }

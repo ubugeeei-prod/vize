@@ -36,6 +36,32 @@ pub struct CorsaExecutor {
 impl CorsaExecutor {
     /// Create a new executor by finding a local or global Corsa executable.
     pub fn new(project_root: &Path) -> Result<Self, CorsaNotFoundError> {
+        Self::with_corsa_path(project_root, None)
+    }
+
+    /// Create a new executor with an optional explicit Corsa executable path.
+    pub fn with_corsa_path(
+        project_root: &Path,
+        corsa_path: Option<&Path>,
+    ) -> Result<Self, CorsaNotFoundError> {
+        if let Some(path) = corsa_path {
+            if !path.exists() {
+                return Err(CorsaNotFoundError::new_explicit(project_root, path));
+            }
+            let corsa_path = normalize_corsa_path(path.to_path_buf()).unwrap_or(path.to_path_buf());
+            return Ok(Self { corsa_path });
+        }
+
+        for env_name in ["CORSA_PATH", "TSGO_PATH"] {
+            if let Some(path) = std::env::var_os(env_name).map(PathBuf::from) {
+                if !path.exists() {
+                    return Err(CorsaNotFoundError::new_explicit(project_root, &path));
+                }
+                let corsa_path = normalize_corsa_path(path.clone()).unwrap_or(path);
+                return Ok(Self { corsa_path });
+            }
+        }
+
         let search_roots = corsa_search_roots(Some(project_root));
         if let Some(local_corsa) = find_corsa_in_search_roots(&search_roots)
             && let Some(corsa_path) = normalize_corsa_path(PathBuf::from(local_corsa.as_str()))
@@ -191,6 +217,7 @@ fn normalize_corsa_path(path: PathBuf) -> Option<PathBuf> {
     find_corsa_in_search_roots(&corsa_search_roots(Some(project_root)))
         .map(|resolved| PathBuf::from(resolved.as_str()))
         .filter(|resolved| resolved != &path)
+        .or(Some(path))
 }
 
 fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {

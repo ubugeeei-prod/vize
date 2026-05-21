@@ -77,6 +77,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .tsconfig
         .clone()
         .or_else(|| config.type_checker.tsconfig.as_ref().map(PathBuf::from));
+    let effective_corsa_path = args
+        .corsa_path
+        .as_ref()
+        .map(PathBuf::from)
+        .or_else(|| config.type_checker.tsgo_path.as_ref().map(PathBuf::from));
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
@@ -112,12 +117,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     }
 
     let gen_start = Instant::now();
-    let mut checker = match BatchTypeChecker::with_options(
+    let mut checker = match BatchTypeChecker::with_options_and_corsa_path(
         &project_root,
         BatchTypeCheckerOptions {
             tsconfig_path: tsconfig_path.clone(),
             virtual_ts_options,
         },
+        effective_corsa_path.as_deref(),
     ) {
         Ok(checker) => checker,
         Err(error) => {

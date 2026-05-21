@@ -120,6 +120,88 @@ void props
 }
 
 #[test]
+fn check_respects_explicit_corsa_path() {
+    let project_root = create_cli_project(
+        "explicit-corsa-path",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count = 1;
+</script>
+"#,
+        )],
+    );
+    let missing_corsa = project_root.join("__missing_corsa__");
+    let missing_corsa_arg = missing_corsa.to_string_lossy().into_owned();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "check",
+            "src/App.vue",
+            "--quiet",
+            "--corsa-path",
+            missing_corsa_arg.as_str(),
+        ])
+        .output()
+        .unwrap();
+
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(!output.status.success());
+    assert!(
+        stderr.contains("Configured Corsa executable does not exist"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("__missing_corsa__"), "{stderr}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_respects_configured_tsgo_path() {
+    let project_root = create_cli_project(
+        "configured-tsgo-path",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count = 1;
+</script>
+"#,
+        )],
+    );
+    let missing_corsa = project_root.join("__missing_configured_tsgo__");
+    std::fs::write(
+        project_root.join("vize.config.json"),
+        cstr!(
+            r#"{{
+  "typeChecker": {{
+    "tsgoPath": "{}"
+  }}
+}}"#,
+            missing_corsa.display()
+        )
+        .as_str(),
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["check", "src/App.vue", "--quiet"])
+        .output()
+        .unwrap();
+
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(!output.status.success());
+    assert!(
+        stderr.contains("Configured Corsa executable does not exist"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("__missing_configured_tsgo__"), "{stderr}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_json_reports_broken_sfc_parse_errors_without_secondary_noise() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
