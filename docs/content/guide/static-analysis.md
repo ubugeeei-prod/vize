@@ -142,7 +142,7 @@ fields if a project config is available. Use `--show-virtual-ts` when debugging 
 ```bash
 vize check --show-virtual-ts src/components/App.vue
 vize check --profile src
-vize check --servers 4 src
+vize check --servers 1 src
 ```
 
 Declaration output is available from the materialized checker project:

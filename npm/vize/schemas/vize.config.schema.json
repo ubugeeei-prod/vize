@@ -222,8 +222,12 @@
           "description": "Path to tsconfig.json",
           "type": "string"
         },
+        "corsaPath": {
+          "description": "Path to the Corsa executable. This is the canonical runtime key; tsgoPath is kept as a compatibility alias.",
+          "type": "string"
+        },
         "tsgoPath": {
-          "description": "Path to tsgo binary",
+          "description": "Deprecated alias for typeChecker.corsaPath",
           "type": "string"
         },
         "globalsFile": {
@@ -231,7 +235,7 @@
           "type": "string"
         },
         "servers": {
-          "description": "Number of parallel Corsa servers to use",
+          "description": "Reserved Corsa server count. The direct project-session runner currently supports only 1.",
           "type": "integer"
         }
       },

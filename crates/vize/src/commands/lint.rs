@@ -104,6 +104,26 @@ pub fn run(args: LintArgs) {
         std::process::exit(2);
     });
     let render_details = should_render_lint_details(format, args.quiet);
+    crate::config::write_schema(None);
+    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let loaded_config = if args.no_config {
+        crate::config::LoadedConfig {
+            config: crate::config::VizeConfig::default(),
+            source_path: None,
+        }
+    } else {
+        crate::config::load_config_with_source(args.config.as_deref())
+    };
+    let config_dir = loaded_config
+        .source_path
+        .as_deref()
+        .and_then(Path::parent)
+        .unwrap_or(cwd.as_path());
+    let configured_corsa_path = loaded_config
+        .config
+        .type_checker
+        .runtime_path()
+        .map(|path| resolve_lint_config_path(config_dir, path));
 
     // Collect .vue files using glob patterns or directory walking
     let collect_start = Instant::now();
@@ -122,6 +142,10 @@ pub fn run(args: LintArgs) {
     };
     let preset = LintPreset::parse(&args.preset).unwrap_or_default();
     let mut linter = Linter::with_preset(preset).with_help_level(help_level);
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        linter = linter.with_corsa_path(configured_corsa_path);
+    }
     #[cfg(not(target_arch = "wasm32"))]
     if args.strict_reactivity {
         linter = linter.with_rule(Box::new(
@@ -534,6 +558,15 @@ fn normalize_lint_input_path(path: &Path) -> PathBuf {
     PathBuf::from(normalize_lint_path(path))
 }
 
+fn resolve_lint_config_path(config_dir: &Path, candidate: &str) -> PathBuf {
+    let path = Path::new(candidate);
+    if path.is_absolute() {
+        return path.to_path_buf();
+    }
+
+    config_dir.join(path)
+}
+
 fn lint_glob_match_options() -> MatchOptions {
     MatchOptions {
         case_sensitive: true,
@@ -633,6 +666,7 @@ fn patina_cross_file_options() -> CrossFileOptions {
     CrossFileOptions::minimal()
         .with_provide_inject(true)
         .with_unique_ids(true)
+        .with_server_client_boundary(true)
         .with_reactivity_tracking(true)
         .with_race_conditions(true)
 }
@@ -714,7 +748,9 @@ fn cross_file_diagnostic_offset(
 ) -> u32 {
     match diagnostic.kind {
         CrossFileDiagnosticKind::DuplicateElementId { .. }
-        | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. } => offsets.template,
+        | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
+        | CrossFileDiagnosticKind::BrowserApiInSsr { .. }
+        | CrossFileDiagnosticKind::HydrationMismatchRisk { .. } => offsets.template,
         _ => offsets.script,
     }
 }

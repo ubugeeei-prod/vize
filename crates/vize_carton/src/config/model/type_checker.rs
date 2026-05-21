@@ -18,12 +18,18 @@ pub struct TypeCheckerConfig {
     pub check_invalid_exports: bool,
     pub check_fallthrough_attrs: bool,
     pub tsconfig: Option<String>,
+    pub corsa_path: Option<String>,
     pub tsgo_path: Option<String>,
     pub globals_file: Option<String>,
     pub servers: Option<usize>,
 }
 
 impl TypeCheckerConfig {
+    /// Canonical Corsa executable path, with the legacy `tsgoPath` key as a fallback.
+    pub fn runtime_path(&self) -> Option<&str> {
+        self.corsa_path.as_deref().or(self.tsgo_path.as_deref())
+    }
+
     /// Returns true when the config matches the built-in defaults.
     pub fn is_default(&self) -> bool {
         self == &Self::default()
@@ -43,6 +49,7 @@ impl Default for TypeCheckerConfig {
             check_invalid_exports: true,
             check_fallthrough_attrs: true,
             tsconfig: None,
+            corsa_path: None,
             tsgo_path: None,
             globals_file: None,
             servers: None,

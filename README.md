@@ -170,9 +170,16 @@ export default defineConfig({
   typeChecker: {
     enabled: true,
     strict: true,
+    corsaPath: "./node_modules/.bin/tsgo",
   },
 });
 ```
+
+`typeChecker.corsaPath` pins the native runtime used by `vize check`, `vize lint` type-aware
+rules, and `vize lsp` type-aware/editor features. The runtime stack is the
+`@typescript/native-preview` package, reached through Vize's Corsa/corsa-bind API layer; the
+installed executable is still commonly named `tsgo`. `typeChecker.tsgoPath` remains a compatibility
+alias for older configs.
 
 Direct `vize()` options override shared config for Vite. See the docs for compiler options,
 project scanning, lint presets, type-checker settings, and Musea config.

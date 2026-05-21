@@ -11,6 +11,8 @@ use crate::{
     rule::RuleRegistry,
 };
 #[cfg(not(target_arch = "wasm32"))]
+use std::path::PathBuf;
+#[cfg(not(target_arch = "wasm32"))]
 use std::sync::Mutex;
 use vize_carton::{FxHashSet, String, i18n::Locale};
 
@@ -64,6 +66,9 @@ pub struct Linter {
     /// Lazily initialized native corsa session for type-aware lint.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) native_corsa: Mutex<Option<CorsaTypeAwareSession>>,
+    /// Optional configured Corsa executable for type-aware lint.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) corsa_path: Option<PathBuf>,
 }
 
 impl Linter {
@@ -84,6 +89,8 @@ impl Linter {
             script_rules: builtin_script_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
+            #[cfg(not(target_arch = "wasm32"))]
+            corsa_path: None,
         }
     }
 
@@ -100,6 +107,8 @@ impl Linter {
             script_rules: builtin_script_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
+            #[cfg(not(target_arch = "wasm32"))]
+            corsa_path: None,
         }
     }
 
@@ -116,6 +125,8 @@ impl Linter {
             script_rules: &[],
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
+            #[cfg(not(target_arch = "wasm32"))]
+            corsa_path: None,
         }
     }
 
@@ -164,6 +175,14 @@ impl Linter {
     #[inline]
     pub fn with_help_level(mut self, level: HelpLevel) -> Self {
         self.help_level = level;
+        self
+    }
+
+    /// Set the Corsa executable used by native type-aware lint rules.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[inline]
+    pub fn with_corsa_path(mut self, path: Option<PathBuf>) -> Self {
+        self.corsa_path = path;
         self
     }
 

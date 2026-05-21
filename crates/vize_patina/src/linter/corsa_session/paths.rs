@@ -69,40 +69,53 @@ pub(super) fn resolve_project_root(filename: &str) -> PathBuf {
     package_root.unwrap_or(start_dir)
 }
 
-pub(super) fn resolve_corsa_executable(project_root: &Path) -> PathBuf {
+pub(super) fn resolve_corsa_executable(
+    project_root: &Path,
+    configured_path: Option<&Path>,
+) -> Result<PathBuf, String> {
+    if let Some(path) = configured_path {
+        if !path.exists() {
+            return Err(cstr!(
+                "Configured Corsa executable does not exist: {}",
+                path.display()
+            ));
+        }
+        return Ok(path.to_path_buf());
+    }
+
     if let Some(path) = resolve_executable_from_env(&EXECUTABLE_ENV_VARS) {
-        return path;
+        return Ok(path);
     }
     if let Some(path) = resolve_executable_from_env(&LEGACY_EXECUTABLE_ENV_VARS) {
-        return path;
+        return Ok(path);
     }
 
     for current in project_root.ancestors() {
         for candidate in corsa_executable_candidates(current) {
             if candidate.exists() {
-                return candidate;
+                return Ok(candidate);
             }
         }
         if let Some(parent) = current.parent() {
             for candidate in corsa_executable_candidates(&parent.join("corsa-bind")) {
                 if candidate.exists() {
-                    return candidate;
+                    return Ok(candidate);
                 }
             }
         }
         if let Some(path) = resolve_node_modules_executable(current) {
-            return path;
+            return Ok(path);
         }
     }
 
     if let Some(home) = std::env::var_os("HOME") {
         let home = PathBuf::from(home);
         if let Some(path) = resolve_home_executable(&home) {
-            return path;
+            return Ok(path);
         }
     }
 
-    resolve_path_executable().unwrap_or_else(|| PathBuf::from(EXECUTABLE_NAMES[0]))
+    Ok(resolve_path_executable().unwrap_or_else(|| PathBuf::from(EXECUTABLE_NAMES[0])))
 }
 
 fn source_directory(filename: &str) -> PathBuf {
@@ -346,7 +359,7 @@ mod tests {
         write_file(&wrapper);
         write_file(&native);
 
-        assert_eq!(resolve_corsa_executable(&root), native);
+        assert_eq!(resolve_corsa_executable(&root, None).unwrap(), native);
 
         let _ = std::fs::remove_dir_all(&root);
     }
@@ -359,9 +372,19 @@ mod tests {
 
         write_file(&wrapper);
 
-        assert_eq!(resolve_corsa_executable(&root), wrapper);
+        assert_eq!(resolve_corsa_executable(&root, None).unwrap(), wrapper);
 
         let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn configured_corsa_path_must_exist() {
+        let root = case_dir("configured-missing");
+        let missing = root.join("missing-corsa");
+        let error = resolve_corsa_executable(&root, Some(missing.as_path())).unwrap_err();
+
+        assert!(error.contains("Configured Corsa executable does not exist"));
+        assert!(error.contains("missing-corsa"));
     }
 
     fn write_file(path: &Path) {

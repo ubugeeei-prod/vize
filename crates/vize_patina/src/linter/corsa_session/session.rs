@@ -16,7 +16,10 @@ use corsa::{
 use vize_carton::{String, ToCompactString, profile};
 
 impl CorsaTypeAwareSession {
-    pub(in crate::linter) fn new(filename: &str) -> Result<Self, String> {
+    pub(in crate::linter) fn new_with_corsa_path(
+        filename: &str,
+        corsa_path: Option<&std::path::Path>,
+    ) -> Result<Self, String> {
         let project_root = resolve_project_root(filename);
         let session_root = allocate_session_root(&project_root);
         profile!(
@@ -55,7 +58,7 @@ impl CorsaTypeAwareSession {
 
         let config_path_wire = path_to_wire(&config_path);
         let virtual_file_wire = path_to_wire(&virtual_file_path);
-        let executable = resolve_corsa_executable(&project_root);
+        let executable = resolve_corsa_executable(&project_root, corsa_path)?;
         let api_mode = api_mode_for_executable(&executable);
         let session = profile!(
             "patina.corsa_session.spawn",

@@ -117,7 +117,7 @@ pub(super) fn with_corsa_session<T>(
         }
         *guard = Some(profile!(
             "patina.type_aware.corsa.new_session",
-            CorsaTypeAwareSession::new(filename)
+            CorsaTypeAwareSession::new_with_corsa_path(filename, linter.corsa_path.as_deref())
         )?);
     }
 

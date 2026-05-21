@@ -77,11 +77,16 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .tsconfig
         .clone()
         .or_else(|| config.type_checker.tsconfig.as_ref().map(PathBuf::from));
-    let effective_corsa_path = args
-        .corsa_path
-        .as_ref()
-        .map(PathBuf::from)
-        .or_else(|| config.type_checker.tsgo_path.as_ref().map(PathBuf::from));
+    let effective_corsa_path = args.corsa_path.as_ref().map(PathBuf::from).or_else(|| {
+        config
+            .type_checker
+            .runtime_path()
+            .map(|candidate| resolve_from_config_dir(config_dir, candidate))
+    });
+    if let Err(error) = validate_corsa_server_count(args.servers.or(config.type_checker.servers)) {
+        eprintln!("\x1b[31mError:\x1b[0m {}", error);
+        std::process::exit(2);
+    }
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
@@ -714,6 +719,22 @@ fn resolve_from_config_dir(config_dir: &Path, candidate: &str) -> PathBuf {
     config_dir.join(path)
 }
 
+fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), String> {
+    let Some(servers) = servers else {
+        return Ok(());
+    };
+    if servers == 0 {
+        return Err("typeChecker.servers must be at least 1.".into());
+    }
+    if servers > 1 {
+        return Err(format!(
+            "typeChecker.servers={servers} is not supported by the direct Corsa project-session runner yet; use 1 or omit the option."
+        )
+        .into());
+    }
+    Ok(())
+}
+
 /// Parse a `.d.ts` file containing `ComponentCustomProperties` augmentation.
 fn parse_dts_globals(
     path: &Path,
@@ -737,7 +758,7 @@ fn parse_dts_globals(
 mod tests {
     use super::{
         find_nearest_tsconfig_dir, resolve_declaration_dir, resolve_declaration_emit_options,
-        resolve_project_root, resolve_tsconfig_path,
+        resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
     };
     use crate::commands::check::tsconfig_inputs::TsconfigDeclarationOptions;
     use std::{
@@ -900,5 +921,13 @@ mod tests {
         assert!(options.declaration_map);
 
         let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn validates_unsupported_corsa_server_counts() {
+        assert!(validate_corsa_server_count(None).is_ok());
+        assert!(validate_corsa_server_count(Some(1)).is_ok());
+        assert!(validate_corsa_server_count(Some(0)).is_err());
+        assert!(validate_corsa_server_count(Some(2)).is_err());
     }
 }

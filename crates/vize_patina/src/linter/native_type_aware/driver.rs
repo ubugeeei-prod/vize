@@ -217,7 +217,7 @@ pub(super) fn lint_with_descriptor<'a>(
     let mut should_warn_for_emits = false;
     let mut warned_template_owners = FxHashSet::default();
     let mut warned_reactivity_loss_owners = FxHashSet::default();
-    let _ = profile!(
+    let corsa_result = profile!(
         "patina.type_aware.corsa_session",
         with_corsa_session(linter, filename, |session| {
             profile!(
@@ -339,6 +339,14 @@ pub(super) fn lint_with_descriptor<'a>(
             Ok(())
         })
     );
+    if let Err(error) = corsa_result {
+        push_warning(
+            &mut result,
+            LintDiagnostic::warn("type/corsa-runtime", error, 0, 0).with_help(
+                "Type-aware lint rules were skipped because the Corsa runtime could not be started. Configure `typeChecker.corsaPath` or install `@typescript/native-preview`.",
+            ),
+        );
+    }
 
     push_macro_warning(
         &mut result,

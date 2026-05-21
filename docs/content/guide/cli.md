@@ -179,11 +179,13 @@ Key options:
 | `-q, --quiet`       | Show summary only                                  |
 | `--profile`         | Write profile artifacts under `node_modules/.vize` |
 | `--corsa-path`      | Override the Corsa executable path                 |
-| `--servers`         | Parallel Corsa worker count                        |
+| `--servers`         | Reserved Corsa server count; only `1` is supported |
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 
-Use `--corsa-path` when you want to pin a custom Corsa executable while developing Vize or testing a local `corsa-bind` checkout.
+Use `--corsa-path` when you want to pin a custom Corsa executable while developing Vize or testing a
+local `corsa-bind` checkout. The shared config key is `typeChecker.corsaPath`; `typeChecker.tsgoPath`
+is kept only as a compatibility alias.
 
 Useful patterns:
 

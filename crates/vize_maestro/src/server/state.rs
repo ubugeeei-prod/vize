@@ -441,7 +441,7 @@ impl ServerState {
 
         // Try to initialize
         let config = self.get_type_checker_config();
-        let corsa_path = config.tsgo_path.as_ref().map(PathBuf::from);
+        let corsa_path = config.runtime_path().map(PathBuf::from);
         let options = BatchTypeCheckerOptions {
             tsconfig_path: config.tsconfig.as_ref().map(PathBuf::from),
             ..Default::default()
@@ -541,7 +541,7 @@ impl ServerState {
             .corsa_bridge
             .get_or_try_init(|| async {
                 let config = CorsaBridgeConfig {
-                    corsa_path: type_checker_config.tsgo_path.as_ref().map(PathBuf::from),
+                    corsa_path: type_checker_config.runtime_path().map(PathBuf::from),
                     working_dir: workspace_root,
                     timeout_ms: 30000, // Corsa needs time to build project state on first load.
                     ..Default::default()
@@ -910,7 +910,7 @@ mod tests {
                     "checkProps": false,
                     "checkEmits": false,
                     "tsconfig": "tsconfig.app.json",
-                    "tsgoPath": "./node_modules/.bin/tsgo"
+                    "corsaPath": "./node_modules/.bin/corsa"
                 }
             }"#,
         )
@@ -923,10 +923,7 @@ mod tests {
         assert!(!config.check_props);
         assert!(!config.check_emits);
         assert_eq!(config.tsconfig.as_deref(), Some("tsconfig.app.json"));
-        assert_eq!(
-            config.tsgo_path.as_deref(),
-            Some("./node_modules/.bin/tsgo")
-        );
+        assert_eq!(config.runtime_path(), Some("./node_modules/.bin/corsa"));
     }
 
     #[test]

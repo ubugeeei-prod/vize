@@ -32,12 +32,15 @@ class TypeCheckerConfig {
   /// Path to tsconfig.json.
   tsconfig: String? = null
 
-  /// Path to tsgo binary.
+  /// Path to the Corsa executable.
+  corsaPath: String? = null
+
+  /// Deprecated alias for `corsaPath`.
   tsgoPath: String? = null
 
   /// Path to a .d.ts file that declares template globals.
   globalsFile: String? = null
 
-  /// Number of parallel Corsa servers to use.
+  /// Reserved Corsa server count. The direct project-session runner currently supports only 1.
   servers: Int? = null
 }
