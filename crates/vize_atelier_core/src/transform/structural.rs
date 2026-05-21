@@ -7,7 +7,7 @@ use crate::errors::ErrorCode;
 
 use super::context::clone_expression;
 use super::traverse::traverse_children;
-use super::{ExitFn, ParentNode, TransformContext};
+use super::{ExitFns, ParentNode, TransformContext};
 
 /// Simple expression content for passing between functions
 pub struct SimpleExpressionContent {
@@ -125,7 +125,7 @@ pub fn transform_v_if<'a>(
     ctx: &mut TransformContext<'a>,
     exp: Option<&SimpleExpressionContent>,
     is_root: bool,
-) -> Option<std::vec::Vec<ExitFn<'a>>> {
+) -> Option<ExitFns<'a>> {
     let allocator = ctx.allocator;
 
     if is_root {
@@ -391,7 +391,7 @@ pub fn transform_v_if<'a>(
 pub fn transform_v_for<'a>(
     ctx: &mut TransformContext<'a>,
     exp: Option<&SimpleExpressionContent>,
-) -> Option<std::vec::Vec<ExitFn<'a>>> {
+) -> Option<ExitFns<'a>> {
     let allocator = ctx.allocator;
 
     let Some(exp) = exp else {

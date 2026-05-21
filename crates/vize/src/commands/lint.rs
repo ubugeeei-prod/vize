@@ -457,8 +457,7 @@ fn add_lint_file(path: &Path, files: &mut Vec<PathBuf>, seen: &mut FxHashSet<Pat
         return;
     }
     let normalized = normalize_lint_input_path(path);
-    let canonical = path.canonicalize().unwrap_or_else(|_| normalized.clone());
-    if seen.insert(canonical) {
+    if seen.insert(normalized.clone()) {
         files.push(normalized);
     }
 }

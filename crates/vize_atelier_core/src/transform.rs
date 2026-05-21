@@ -7,7 +7,7 @@ pub mod element;
 pub mod structural;
 pub mod traverse;
 
-use vize_carton::{Box, Bump, FxHashSet, String, Vec, profile};
+use vize_carton::{Box, Bump, FxHashSet, SmallVec, String, Vec, profile};
 use vize_croquis::{Croquis, ScopeChain};
 
 use crate::ast::*;
@@ -18,10 +18,11 @@ use traverse::traverse_children;
 
 /// Transform function for nodes - returns optional exit function(s)
 pub type NodeTransform<'a> =
-    fn(&mut TransformContext<'a>, &mut TemplateChildNode<'a>) -> Option<std::vec::Vec<ExitFn<'a>>>;
+    fn(&mut TransformContext<'a>, &mut TemplateChildNode<'a>) -> Option<ExitFns<'a>>;
 
 /// Exit function called after children are processed
 pub type ExitFn<'a> = std::boxed::Box<dyn FnOnce(&mut TransformContext<'a>) + 'a>;
+pub type ExitFns<'a> = SmallVec<[ExitFn<'a>; 2]>;
 
 /// Transform function for directives
 pub type DirectiveTransform<'a> = fn(

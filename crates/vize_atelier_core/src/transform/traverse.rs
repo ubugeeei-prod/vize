@@ -8,7 +8,7 @@ use super::element::{transform_element, transform_interpolation};
 use super::structural::{
     StructuralDirectiveKind, take_structural_directive, transform_v_for, transform_v_if,
 };
-use super::{ExitFn, ParentNode, TransformContext};
+use super::{ExitFns, ParentNode, TransformContext};
 
 fn enter_v_slot_scope_if_needed<'a>(ctx: &mut TransformContext<'a>, el: &ElementNode<'a>) -> bool {
     if el.children.is_empty()
@@ -70,7 +70,7 @@ pub fn traverse_node<'a>(ctx: &mut TransformContext<'a>, node: &mut TemplateChil
     ctx.current_node = Some(node as *mut _);
 
     // Collect exit functions from transforms
-    let mut exit_fns: std::vec::Vec<ExitFn<'a>> = std::vec::Vec::new();
+    let mut exit_fns = ExitFns::new();
 
     // Apply node transforms based on node type
     match node {
