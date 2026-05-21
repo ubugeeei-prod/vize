@@ -42,11 +42,32 @@ pub(super) fn demote_v_model_reactive_const_bindings(
     script_bindings: &mut BindingMetadata,
     croquis: &mut vize_croquis::analysis::Croquis,
 ) -> Vec<String> {
+    if !template_content.contains("v-model") {
+        return Vec::new();
+    }
+
+    if !script_bindings
+        .bindings
+        .values()
+        .any(|binding_type| matches!(binding_type, BindingType::SetupReactiveConst))
+    {
+        return Vec::new();
+    }
+
     let template_allocator = TemplateAllocator::default();
     let (root, _) = vize_atelier_core::parse(&template_allocator, template_content);
     let v_model_ids = resolve_template_v_model_identifiers(&root);
 
     if v_model_ids.is_empty() {
+        return Vec::new();
+    }
+
+    if !v_model_ids.iter().any(|binding_name| {
+        matches!(
+            script_bindings.bindings.get(binding_name.as_str()),
+            Some(BindingType::SetupReactiveConst)
+        )
+    }) {
         return Vec::new();
     }
 
