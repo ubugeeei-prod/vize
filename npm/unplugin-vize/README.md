@@ -9,8 +9,10 @@ Experimental unplugin-based Vue SFC integration powered by [Vize](https://github
 `@vizejs/unplugin` provides experimental support for:
 
 - `rollup`
+- `rolldown`
 - `webpack`
 - `esbuild`
+- `babel`
 
 Rspack intentionally uses the dedicated `@vizejs/rspack-plugin` path instead of an `unplugin` export because its loader chain, `experiments.css`, and HMR behavior need Rspack-specific handling.
 
@@ -44,6 +46,16 @@ export default {
 };
 ```
 
+### rolldown
+
+```javascript
+import vize from "@vizejs/unplugin/rolldown";
+
+export default {
+  plugins: [vize()],
+};
+```
+
 ### esbuild
 
 ```javascript
@@ -56,6 +68,19 @@ await build({
   plugins: [vize()],
 });
 ```
+
+### babel
+
+```javascript
+import vize from "@vizejs/unplugin/babel";
+
+export default {
+  plugins: [vize()],
+};
+```
+
+The Babel adapter compiles `.vue` files before Babel parses them. Keep your usual Babel
+TypeScript/JSX transforms in the pipeline if your SFC scripts use those syntaxes.
 
 ## Caveats
 

@@ -37,6 +37,8 @@ export const LINT_RULE_NAMES = [
   "ecosystem/nuxt-prefer-nuxt-link",
   "ecosystem/pinia-prefer-store-to-refs",
   "ecosystem/router-link-require-to",
+  "ecosystem/void-link-require-href",
+  "ecosystem/void-link-valid-method",
   "ecosystem/vue-i18n-no-missing-key",
   "ecosystem/vue-router-prefer-named-link",
   "ecosystem/vue-router-prefer-named-push",

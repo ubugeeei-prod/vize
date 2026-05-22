@@ -54,6 +54,7 @@ pub(super) fn lint_with_descriptor<'a>(
                 *offset,
                 &allocator,
                 root,
+                Some(&descriptor),
                 Some(&analysis),
             )
         )

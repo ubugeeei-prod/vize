@@ -61,9 +61,11 @@ impl super::CompletionService {
             return template::complete_inline_art(ctx);
         }
 
-        let ecosystem_items = ecosystem::completions(ctx);
-        if !ecosystem_items.is_empty() {
-            return Some(CompletionResponse::Array(ecosystem_items));
+        if ctx.state.lsp_features().ecosystem {
+            let ecosystem_items = ecosystem::completions(ctx);
+            if !ecosystem_items.is_empty() {
+                return Some(CompletionResponse::Array(ecosystem_items));
+            }
         }
 
         let items = match ctx.block_type? {
@@ -137,9 +139,11 @@ impl super::CompletionService {
             return template::complete_inline_art(ctx);
         }
 
-        let ecosystem_items = ecosystem::completions(ctx);
-        if !ecosystem_items.is_empty() {
-            return Some(CompletionResponse::Array(ecosystem_items));
+        if ctx.state.lsp_features().ecosystem {
+            let ecosystem_items = ecosystem::completions(ctx);
+            if !ecosystem_items.is_empty() {
+                return Some(CompletionResponse::Array(ecosystem_items));
+            }
         }
 
         let block_type = ctx.block_type?;

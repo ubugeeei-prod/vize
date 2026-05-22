@@ -19,8 +19,8 @@ manual.
   accessible media checks.
 - [SSR rules](./ssr.md): server rendering and hydration hazards.
 - [Vapor rules](./vapor.md): Vapor-only template constraints.
-- [Ecosystem rules](./ecosystem.md): opt-in checks for Nuxt, Vue Router, Pinia, vue-i18n, and
-  Vue Test Utils.
+- [Ecosystem rules](./ecosystem.md): preset-backed checks for Nuxt, Vue Router, Pinia, vue-i18n,
+  Vue Test Utils, and Void Vue.
 - [Musea and CSS rules](./musea-and-css.md): Musea art-block checks and style diagnostics.
 - [Cross-file analyzer rules](./cross-file.md): project-graph diagnostics emitted by
   `vize lint --cross-file`.
@@ -28,8 +28,9 @@ manual.
 ## Presets
 
 `essential` contains correctness rules that should almost always be enabled. `happy-path` adds
-practical hygiene checks for day-to-day Vue development. `nuxt` includes Nuxt-oriented SSR
-expectations and Vapor expectations. `opinionated` is the broadest built-in preset.
+practical hygiene checks for day-to-day Vue development. `ecosystem` adds Vue Router, Vue I18n,
+Pinia, Vue Test Utils, Nuxt, and Void Vue checks. `nuxt` includes Nuxt-oriented SSR expectations
+and Vapor expectations. `opinionated` is the broadest built-in preset.
 
 `incremental` starts empty. Use it when a host wants to opt into specific rules without inheriting a
 larger preset.

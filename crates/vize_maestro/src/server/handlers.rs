@@ -685,7 +685,8 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
-        if !self.state.lsp_features().inlay_hints {
+        let features = self.state.lsp_features();
+        if !features.inlay_hints {
             return Ok(None);
         }
 
@@ -697,7 +698,8 @@ impl LanguageServer for MaestroServer {
         };
 
         let content = doc.text();
-        let hints = InlayHintService::get_hints(&content, uri, range);
+        let hints =
+            InlayHintService::get_hints_with_ecosystem(&content, uri, range, features.ecosystem);
 
         if hints.is_empty() {
             Ok(None)

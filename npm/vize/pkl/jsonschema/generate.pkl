@@ -12,7 +12,7 @@ local ruleSeverityEnum: JsonSchema = new JsonSchema {
 
 local lintPresetEnum: JsonSchema = new JsonSchema {
   type = "string"
-  enum = new Listing { "happy-path"; "opinionated"; "essential"; "incremental"; "nuxt" }
+  enum = new Listing { "happy-path"; "opinionated"; "essential"; "incremental"; "ecosystem"; "nuxt" }
 }
 
 local compilerConfigDef: JsonSchema = new JsonSchema {
@@ -365,6 +365,10 @@ local languageServerConfigDef: JsonSchema = new JsonSchema {
     ["editor"] = new JsonSchema {
       type = "boolean"
       description = "Enable editor-oriented IDE features"
+    }
+    ["ecosystem"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable Vue ecosystem lint and editor helpers"
     }
     ["completion"] = new JsonSchema {
       type = "boolean"

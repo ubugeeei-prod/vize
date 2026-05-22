@@ -15,6 +15,7 @@ Vue Language Support powered by Vize - A high-performance language server for Vu
 - **Rename** - Safe identifier renaming
 - **Semantic Highlighting** - Vue-specific syntax colors
 - **Code Lens** - Reference counts
+- **Ecosystem Helpers** - Vue Router, Vue I18n, Nuxt, and Void Vue diagnostics and completions
 
 ## Installation
 
@@ -47,7 +48,7 @@ vp exec vsce package --no-dependencies --out dist/vize.vsix
 ## Configuration
 
 Opening a Vue file now prompts you to apply a recommended workspace setup if the extension is still disabled or if no Vize capabilities are enabled yet.
-That quick setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, and `vize.editor.enable` for the current workspace so diagnostics, hover, and jump work immediately.
+That quick setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, `vize.editor.enable`, and `vize.ecosystem.enable` for the current workspace so diagnostics, hover, jump, and Vue ecosystem helpers work immediately.
 
 If you dismissed that prompt and want a lighter rollout, start with lint-only mode, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
 
@@ -57,6 +58,7 @@ If you dismissed that prompt and want a lighter rollout, start with lint-only mo
   "vize.lint.enable": true,
   "vize.typecheck.enable": false,
   "vize.editor.enable": false,
+  "vize.ecosystem.enable": false,
   "vize.formatting.enable": false
 }
 ```
@@ -70,9 +72,13 @@ When you are ready to evaluate Vize editor assistance separately from `vuejs/lan
   "vize.typecheck.enable": true,
   "vize.definition.enable": true,
   "vize.references.enable": true,
-  "vize.hover.enable": true
+  "vize.hover.enable": true,
+  "vize.ecosystem.enable": true
 }
 ```
+
+`vize.ecosystem.enable` adds Vue Router route-name completions, Vue I18n key completions and
+inlay previews, Void Vue route completions, and ecosystem lint diagnostics.
 
 When paired with the `Vize Art` extension, the same editor capabilities also apply to `*.art.vue`
 documents.

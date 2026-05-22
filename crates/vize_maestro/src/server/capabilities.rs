@@ -221,6 +221,7 @@ mod tests {
         LspFeatureConfig {
             lint: true,
             typecheck: true,
+            ecosystem: true,
             completion: true,
             hover: true,
             definition: true,

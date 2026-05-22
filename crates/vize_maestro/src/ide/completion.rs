@@ -312,6 +312,7 @@ const secondaryLabel = ref('secondary')
 </i18n>
 "#;
         let (state, uri) = state_with_document("I18nCompletion.vue", source);
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({ "ecosystem": true })));
         let offset = source.find("auth.").unwrap() + "auth.".len();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
         let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
@@ -330,6 +331,7 @@ router.push({ name: "" })
 </route>
 "#;
         let (state, uri) = state_with_document("RouteCompletion.vue", source);
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({ "ecosystem": true })));
         let offset = source.find("name: \"\"").unwrap() + "name: \"".len();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
         let labels = completion_labels(CompletionService::complete(&ctx).unwrap());

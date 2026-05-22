@@ -12,7 +12,7 @@ This package lets Oxlint execute Patina through Vize's native binding while stil
 
 - Runs Vize Patina rules inside Oxlint as `vize/*` diagnostics, so Vue-specific findings can live beside Oxlint core rules in one command.
 - Keeps Oxlint's existing rules and built-in `vue` plugin active. The bridge adds Vize rules; it does not replace `eqeqeq`, `no-console`, or your existing `vue/*` setup.
-- Ships preset rule maps for JS/TS Oxlint configs: `configs.recommended`, `configs.essential`, `configs.opinionated`, `configs.nuxt`, `configs.all`, and type-aware opt-in variants.
+- Ships preset rule maps for JS/TS Oxlint configs: `configs.recommended`, `configs.essential`, `configs.ecosystem`, `configs.opinionated`, `configs.nuxt`, `configs.all`, and type-aware opt-in variants.
 - Supports runtime settings through `settings.vize`, including `locale`, `preset`, and `helpLevel`.
 - Provides the `oxlint-vize` CLI wrapper, which runs Oxlint with a scriptless-SFC workaround and rewrites temporary paths back to the original `.vue` files.
 - Resolves Vize native bindings through platform-specific optional dependencies, so published installs do not need a separate `@vizejs/native` package.
@@ -81,7 +81,7 @@ export default {
 };
 ```
 
-`configs.recommended`, `configs.essential`, `configs.opinionated`, `configs.nuxt`, and `configs.all` intentionally skip Vize's unstable type-aware rules for now. If you explicitly want those experimental rules too, use `configs.recommendedWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`.
+`configs.recommended`, `configs.essential`, `configs.ecosystem`, `configs.opinionated`, `configs.nuxt`, and `configs.all` intentionally skip Vize's unstable type-aware rules for now. If you explicitly want those experimental rules too, use `configs.recommendedWithTypeAware`, `configs.ecosystemWithTypeAware`, `configs.opinionatedWithTypeAware`, or `createVizeRuleConfig({ includeTypeAware: true, preset: ... })`.
 
 You can pass Patina settings through `settings.vize`:
 
@@ -97,12 +97,13 @@ You can pass Patina settings through `settings.vize`:
 }
 ```
 
-- `preset` accepts `"general-recommended"`, `"essential"`, `"incremental"`, `"opinionated"`, or `"nuxt"`.
+- `preset` accepts `"general-recommended"`, `"essential"`, `"ecosystem"`, `"incremental"`, `"opinionated"`, or `"nuxt"`.
 - `preset` defaults to `"general-recommended"`.
 - Bundle presets keep out-of-bundle rules quiet even if they are still listed in `rules`.
 - `"incremental"` skips bundle gating and runs only the Vize rules you explicitly configure in Oxlint.
+- `"ecosystem"` enables Vize's Vue Router, Vue I18n, Pinia, Vue Test Utils, Nuxt, and Void Vue rules without taking on the full opinionated preset.
 - `"opinionated"` is the preset that enables Vize's built-in script rules such as `vize/script/no-options-api`.
-- Legacy aliases such as `"GeneralRecommended"`, `"Essential"`, `"Incremental"`, `"Opinionated"`, `"Nuxt"`, and `"happy-path"` are still accepted for compatibility.
+- Legacy aliases such as `"GeneralRecommended"`, `"Essential"`, `"Ecosystem"`, `"Incremental"`, `"Opinionated"`, `"Nuxt"`, and `"happy-path"` are still accepted for compatibility.
 - `helpLevel` accepts `"full"`, `"short"`, or `"none"`.
 - `helpLevel: "full"` only expands the Patina remediation text. It does not restore original-SFC formatter anchors or machine-readable range fidelity.
 - `showHelp` is still accepted for backward compatibility, but `helpLevel` is the preferred setting.

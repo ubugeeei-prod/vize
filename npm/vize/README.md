@@ -88,6 +88,7 @@ Override config discovery with `--config`, or disable it with `--no-config`.
 
 ```bash
 vp exec vize lint --preset essential --max-warnings 0 src
+vp exec vize lint --preset ecosystem src
 vp exec vize lint --preset opinionated --help-level short src
 vp exec vize lint --format json src
 vp exec vize lint --format plain src

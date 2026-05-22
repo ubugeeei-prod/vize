@@ -7,7 +7,7 @@ High-performance Rspack plugin for Vue SFC compilation powered by [Vize](https:/
 > Its loader chain, `experiments.css`, and HMR behavior need Rspack-specific handling.
 >
 > Non-Vite bundler integrations are still unstable.
-> If you need rollup, webpack, or esbuild, use `@vizejs/unplugin` and test carefully before relying on it in production.
+> If you need Rollup, Rolldown, Webpack, esbuild, or Babel, use `@vizejs/unplugin` and test carefully before relying on it in production.
 
 ## Features
 

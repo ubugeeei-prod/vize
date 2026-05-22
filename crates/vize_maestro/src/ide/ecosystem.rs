@@ -3,6 +3,7 @@
 mod context;
 pub(crate) mod i18n;
 pub(crate) mod router;
+pub(crate) mod void;
 
 use tower_lsp::lsp_types::{CompletionItem, Position, Range};
 
@@ -28,6 +29,9 @@ pub(crate) fn completions(ctx: &IdeContext<'_>) -> Vec<CompletionItem> {
     let mut items = i18n::completions(&ctx.content, ctx.offset, &descriptor);
     if items.is_empty() {
         items = router::completions(&ctx.content, ctx.offset, &descriptor);
+    }
+    if items.is_empty() {
+        items = void::completions(ctx);
     }
     items
 }

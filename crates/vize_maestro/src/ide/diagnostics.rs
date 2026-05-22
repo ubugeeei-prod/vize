@@ -138,7 +138,7 @@ impl DiagnosticService {
 
         if features.lint {
             // Collect linter diagnostics (vize_patina)
-            let lint_diags = Self::collect_lint_diagnostics(uri, &content);
+            let lint_diags = Self::collect_lint_diagnostics(uri, &content, features.ecosystem);
             tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
             diagnostics.extend(lint_diags);
         } else {

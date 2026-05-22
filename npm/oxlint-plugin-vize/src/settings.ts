@@ -10,6 +10,8 @@ const PRESET_ALIASES = new Map<string, PatinaPreset>([
   ["default", "general-recommended"],
   ["recommended", "general-recommended"],
   ["essential", "essential"],
+  ["ecosystem", "ecosystem"],
+  ["eco", "ecosystem"],
   ["incremental", "incremental"],
   ["opinionated", "opinionated"],
   ["opnionated", "opinionated"],
@@ -96,6 +98,9 @@ if (import.meta.vitest) {
       });
       expect(parseVizeSettings({ preset: "incremental" })).toEqual({
         preset: "incremental",
+      });
+      expect(parseVizeSettings({ preset: "ecosystem" })).toEqual({
+        preset: "ecosystem",
       });
       expect(parseVizeSettings({ preset: "strict" })).toEqual({
         preset: "opinionated",

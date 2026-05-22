@@ -19,7 +19,9 @@ import type {
   VizeUnpluginOptions,
 } from "./types.ts";
 
-function normalizeOptions(rawOptions: VizeUnpluginOptions = {}): NormalizedVizeUnpluginOptions {
+export function normalizeOptions(
+  rawOptions: VizeUnpluginOptions = {},
+): NormalizedVizeUnpluginOptions {
   const isProduction = rawOptions.isProduction ?? process.env.NODE_ENV === "production";
   return {
     include: rawOptions.include,

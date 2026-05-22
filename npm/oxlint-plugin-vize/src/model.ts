@@ -51,6 +51,7 @@ export type HelpLevel = "none" | "short" | "full";
 export type PatinaPreset =
   | "general-recommended"
   | "essential"
+  | "ecosystem"
   | "incremental"
   | "opinionated"
   | "nuxt";

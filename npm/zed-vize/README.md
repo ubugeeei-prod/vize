@@ -65,12 +65,16 @@ Use this only when you are ready to let Vize overlap with the existing Vue langu
         "typecheck": true,
         "definition": true,
         "references": true,
-        "hover": true
+        "hover": true,
+        "ecosystem": true
       }
     }
   }
 }
 ```
+
+`ecosystem` enables Vue Router route-name completions, Vue I18n key completions and inlay previews,
+Void Vue route completions, and ecosystem lint diagnostics.
 
 To make Vize the only Vue language server, replace the existing Vue server entry in your `language_servers` list with its disabled form, such as `"!server-id"`.
 

@@ -150,6 +150,11 @@
           "default": false,
           "description": "Enable the editor assistance bundle: completion, hover, navigation, symbols, rename, code lens, semantic tokens, links, folding, inlay hints, and file rename handling. Keep off while vuejs/language-tools owns editor navigation."
         },
+        "vize.ecosystem.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Vue ecosystem diagnostics and editor helpers for Vue Router, Vue I18n, Nuxt, and Void Vue."
+        },
         "vize.diagnostics.enable": {
           "type": "boolean",
           "default": false,

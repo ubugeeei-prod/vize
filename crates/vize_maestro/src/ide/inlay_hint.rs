@@ -20,6 +20,16 @@ pub struct InlayHintService;
 impl InlayHintService {
     /// Get inlay hints for a document range.
     pub fn get_hints(content: &str, uri: &Url, range: Range) -> Vec<InlayHint> {
+        Self::get_hints_with_ecosystem(content, uri, range, true)
+    }
+
+    /// Get inlay hints for a document range with optional ecosystem helpers.
+    pub fn get_hints_with_ecosystem(
+        content: &str,
+        uri: &Url,
+        range: Range,
+        ecosystem_enabled: bool,
+    ) -> Vec<InlayHint> {
         let mut hints = Vec::new();
 
         let options = vize_atelier_sfc::SfcParseOptions {
@@ -31,7 +41,9 @@ impl InlayHintService {
             return hints;
         };
 
-        ecosystem::i18n::collect_inlay_hints(content, &descriptor, range, &mut hints);
+        if ecosystem_enabled {
+            ecosystem::i18n::collect_inlay_hints(content, &descriptor, range, &mut hints);
+        }
 
         // Use vize_croquis analyzer for proper scope analysis
         let Some(ref script_setup) = descriptor.script_setup else {

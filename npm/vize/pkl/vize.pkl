@@ -11,7 +11,7 @@ module vize.Config
 typealias CompilerMode = "module" | "function"
 typealias ScriptExt = "ts" | "js"
 typealias RuleSeverity = "off" | "warn" | "error"
-typealias LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "nuxt"
+typealias LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt"
 typealias TrailingComma = "all" | "none" | "es5"
 typealias FilterPattern = String | Listing<String>
 typealias GlobalTypeValue = String | GlobalTypeDeclaration
@@ -79,6 +79,7 @@ class LspConfig {
   diagnostics: Boolean? = null
   typecheck: Boolean? = null
   editor: Boolean? = null
+  ecosystem: Boolean? = null
   completion: Boolean? = null
   hover: Boolean? = null
   definition: Boolean? = null

@@ -4,17 +4,17 @@ title: Ecosystem Rules
 
 # Ecosystem Rules
 
-These rules cover conventions around Nuxt, Vue Router, Pinia, vue-i18n, and Vue Test Utils.
+These rules cover conventions around Nuxt, Vue Router, Pinia, vue-i18n, Vue Test Utils, and Void Vue.
 
-Every ecosystem rule is opt-in. They are listed in metadata so hosts can enable them by name, but
-they are not part of `happy-path`, `nuxt`, or `opinionated`.
+Ecosystem rules are enabled by the `ecosystem` preset. Hosts can also enable them by name when using
+`incremental`; they are not part of `happy-path`, `nuxt`, or `opinionated`.
 
 ## `ecosystem/router-link-require-to`
 
 Requires `to` or `:to` on `<RouterLink>`, `<router-link>`, `<NuxtLink>`, and `<nuxt-link>`.
 
 Default severity: `error`
-Presets: none
+Presets: `ecosystem`
 
 Bad:
 
@@ -38,7 +38,7 @@ Warns on static internal path strings in RouterLink-like components. Named route
 Router typed routes and editor completions centered around route names and params.
 
 Default severity: `warning`
-Presets: none
+Presets: `ecosystem`
 
 Bad:
 
@@ -61,7 +61,7 @@ Good:
 Warns on `router.push("/path")`, `router.replace("/path")`, and route objects with a static `path`.
 
 Default severity: `warning`
-Presets: none
+Presets: `ecosystem`
 
 Bad:
 
@@ -81,7 +81,7 @@ Warns on internal `<a href="/...">` links in Nuxt-oriented code. External links,
 `target="_blank"` remain plain anchors.
 
 Default severity: `warning`
-Presets: none
+Presets: `ecosystem`
 
 Bad:
 
@@ -105,7 +105,7 @@ Warns when a Pinia store is destructured directly. Use `storeToRefs()` for state
 keep actions on the store instance.
 
 Default severity: `warning`
-Presets: none
+Presets: `ecosystem`
 
 Bad:
 
@@ -126,7 +126,7 @@ Warns when a static `$t()`, `$te()`, `$tm()`, `t()`, `te()`, or `tm()` key is mi
 SFC's local `<i18n lang="json">` block.
 
 Default severity: `warning`
-Presets: none
+Presets: `ecosystem`
 
 Bad:
 
@@ -148,13 +148,76 @@ Good:
 </i18n>
 ```
 
+## `ecosystem/void-link-require-href`
+
+Requires `href` or `:href` on Void Vue `<Link>` components imported from `@void/vue`.
+
+Default severity: `error`
+Presets: `ecosystem`
+
+Bad:
+
+```vue
+<script setup>
+import { Link } from "@void/vue";
+</script>
+
+<template>
+  <Link>Settings</Link>
+</template>
+```
+
+Good:
+
+```vue
+<script setup>
+import { Link } from "@void/vue";
+</script>
+
+<template>
+  <Link href="/settings">Settings</Link>
+</template>
+```
+
+## `ecosystem/void-link-valid-method`
+
+Warns on unknown static Void Vue `<Link method>` values and on GET-only props such as `prefetch`
+or `reloadDocument` when the link uses a mutation method.
+
+Default severity: `warning`
+Presets: `ecosystem`
+
+Bad:
+
+```vue
+<script setup>
+import { Link } from "@void/vue";
+</script>
+
+<template>
+  <Link href="/posts/1" method="DELETE" prefetch>Delete</Link>
+</template>
+```
+
+Good:
+
+```vue
+<script setup>
+import { Link } from "@void/vue";
+</script>
+
+<template>
+  <Link href="/posts/1" method="DELETE">Delete</Link>
+</template>
+```
+
 ## `ecosystem/vue-test-utils-no-html-snapshot`
 
 Warns on `expect(wrapper.html()).toMatchSnapshot()`. Prefer focused assertions around visible text,
 attributes, emitted events, or component state.
 
 Default severity: `warning`
-Presets: none
+Presets: `ecosystem`
 
 Bad:
 

@@ -332,7 +332,11 @@ impl DiagnosticService {
     }
 
     /// Collect linter diagnostics from vize_patina.
-    pub(super) fn collect_lint_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+    pub(super) fn collect_lint_diagnostics(
+        uri: &Url,
+        content: &str,
+        ecosystem_enabled: bool,
+    ) -> Vec<Diagnostic> {
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: uri.path().to_string().into(),
             ..Default::default()
@@ -343,7 +347,11 @@ impl DiagnosticService {
         }
 
         // Create linter and lint the full SFC so editor diagnostics match the CLI.
-        let linter = vize_patina::Linter::new();
+        let linter = if ecosystem_enabled {
+            vize_patina::Linter::with_preset(vize_patina::LintPreset::Ecosystem)
+        } else {
+            vize_patina::Linter::new()
+        };
         let result = linter.lint_sfc(content, uri.path());
 
         // Convert lint diagnostics to LSP diagnostics

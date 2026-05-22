@@ -33,6 +33,11 @@ export function createVizeRuleConfig(options: VizeRuleConfigOptions = {}): Oxlin
 
 export const configs = {
   all: createVizeRuleConfig({ preset: "all" }),
+  ecosystem: createVizeRuleConfig({ preset: "ecosystem" }),
+  ecosystemWithTypeAware: createVizeRuleConfig({
+    includeTypeAware: true,
+    preset: "ecosystem",
+  }),
   essential: createVizeRuleConfig({ preset: "essential" }),
   nuxt: createVizeRuleConfig({ preset: "nuxt" }),
   opinionated: createVizeRuleConfig({ preset: "opinionated" }),
@@ -77,9 +82,12 @@ if (import.meta.vitest) {
       expect(configs.opinionatedWithTypeAware["vize/type/require-typed-props"]).toBe("warn");
     });
 
-    it("keeps ecosystem rules out of named presets until explicitly selected", () => {
+    it("keeps ecosystem rules out of non-ecosystem presets until explicitly selected", () => {
       expect(configs.recommended["vize/ecosystem/router-link-require-to"]).toBeUndefined();
       expect(configs.nuxt["vize/ecosystem/nuxt-prefer-nuxt-link"]).toBeUndefined();
+      expect(configs.ecosystem["vize/ecosystem/router-link-require-to"]).toBe("error");
+      expect(configs.ecosystem["vize/ecosystem/vue-i18n-no-missing-key"]).toBe("warn");
+      expect(configs.ecosystem["vize/ecosystem/void-link-require-href"]).toBe("error");
       expect(configs.all["vize/ecosystem/router-link-require-to"]).toBe("error");
     });
   });

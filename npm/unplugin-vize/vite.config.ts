@@ -11,7 +11,14 @@ export default defineConfig({
     ignorePatterns: ["dist/**"],
   },
   pack: {
-    entry: ["src/index.ts", "src/esbuild.ts", "src/rollup.ts", "src/webpack.ts"],
+    entry: [
+      "src/index.ts",
+      "src/babel.ts",
+      "src/esbuild.ts",
+      "src/rollup.ts",
+      "src/rolldown.ts",
+      "src/webpack.ts",
+    ],
     format: "esm",
     dts: {
       resolver: "tsc",

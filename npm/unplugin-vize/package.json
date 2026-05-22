@@ -1,14 +1,16 @@
 {
   "name": "@vizejs/unplugin",
   "version": "0.104.0",
-  "description": "Experimental unplugin-based Vue SFC integration for rollup, webpack, and esbuild powered by Vize",
+  "description": "Experimental Vue SFC integrations for Rollup, Rolldown, Webpack, esbuild, and Babel powered by Vize",
   "keywords": [
     "compiler",
+    "babel",
     "esbuild",
     "fast",
     "native",
     "plugin",
     "rollup",
+    "rolldown",
     "unplugin",
     "vue",
     "webpack"
@@ -45,10 +47,20 @@
       "import": "./dist/rollup.mjs",
       "default": "./dist/rollup.mjs"
     },
+    "./rolldown": {
+      "types": "./dist/rolldown.d.mts",
+      "import": "./dist/rolldown.mjs",
+      "default": "./dist/rolldown.mjs"
+    },
     "./webpack": {
       "types": "./dist/webpack.d.mts",
       "import": "./dist/webpack.mjs",
       "default": "./dist/webpack.mjs"
+    },
+    "./babel": {
+      "types": "./dist/babel.d.mts",
+      "import": "./dist/babel.mjs",
+      "default": "./dist/babel.mjs"
     }
   },
   "publishConfig": {

@@ -5,7 +5,13 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type LintPreset = "happy-path" | "opinionated" | "essential" | "incremental" | "nuxt";
+export type LintPreset =
+  | "happy-path"
+  | "opinionated"
+  | "essential"
+  | "incremental"
+  | "ecosystem"
+  | "nuxt";
 
 export type RuleSeverity = "off" | "warn" | "error";
 
@@ -106,7 +112,7 @@ export interface LinterConfig {
   /**
    * Built-in lint preset
    */
-  preset?: "happy-path" | "opinionated" | "essential" | "incremental" | "nuxt";
+  preset?: "happy-path" | "opinionated" | "essential" | "incremental" | "ecosystem" | "nuxt";
   /**
    * Rules to enable/disable
    */
@@ -295,6 +301,10 @@ export interface LanguageServerConfig {
    * Enable editor-oriented IDE features
    */
   editor?: boolean;
+  /**
+   * Enable Vue ecosystem lint and editor helpers
+   */
+  ecosystem?: boolean;
   /**
    * Enable completions
    */

@@ -125,7 +125,7 @@
           "description": "Built-in lint preset",
           "default": "happy-path",
           "type": "string",
-          "enum": ["happy-path", "opinionated", "essential", "incremental", "nuxt"]
+          "enum": ["happy-path", "opinionated", "essential", "incremental", "ecosystem", "nuxt"]
         },
         "rules": {
           "description": "Rules to enable/disable",
@@ -380,6 +380,10 @@
         },
         "editor": {
           "description": "Enable editor-oriented IDE features",
+          "type": "boolean"
+        },
+        "ecosystem": {
+          "description": "Enable Vue ecosystem lint and editor helpers",
           "type": "boolean"
         },
         "completion": {

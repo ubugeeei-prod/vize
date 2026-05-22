@@ -12,7 +12,7 @@ export interface LintOptionsNapi {
   fix?: boolean;
   /** Help display level: "full", "short", "none" */
   helpLevel?: string;
-  /** Lint preset: "general-recommended", "essential", "incremental", "opinionated", or "nuxt" */
+  /** Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt" */
   preset?: string;
 }
 
@@ -38,7 +38,7 @@ export interface PatinaLintOptionsNapi {
   locale?: string;
   /** Help display level: "full", "short", or "none" */
   helpLevel?: string;
-  /** Lint preset: "general-recommended", "essential", "incremental", "opinionated", or "nuxt" */
+  /** Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt" */
   preset?: string;
   /** Optional list of Patina rule names to enable */
   enabledRules?: Array<string>;

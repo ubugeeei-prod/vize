@@ -5,7 +5,7 @@
 ## Highlights
 
 - Vue-focused lint rules covering correctness, style, accessibility, security, Vapor, Musea, and type-aware checks
-- Built-in presets: `happy-path`, `opinionated`, `essential`, `incremental`, `nuxt`
+- Built-in presets: `happy-path`, `opinionated`, `essential`, `incremental`, `ecosystem`, `nuxt`
 - Human-readable and machine-readable reporting helpers
 - Locale support through `vize_carton::i18n::Locale`
 

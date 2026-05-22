@@ -24,7 +24,12 @@ const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
     "a11y/no-refer-to-non-existent-id",
 ];
 
-const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &["vue/sfc-element-order", "vue/single-style-block"];
+const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/sfc-element-order",
+    "vue/single-style-block",
+    "ecosystem/void-link-require-href",
+    "ecosystem/void-link-valid-method",
+];
 
 pub(crate) fn analyze_descriptor_for_lint(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
@@ -138,11 +143,15 @@ impl Linter {
         source: &'a str,
         filename: &'a str,
         root: &RootNode<'a>,
+        sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
         analysis: Option<&'a Croquis>,
     ) -> LintResult {
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
         ctx.set_help_level(self.help_level);
+        if let Some(descriptor) = sfc_descriptor {
+            ctx.set_sfc_descriptor(descriptor);
+        }
         #[cfg(not(target_arch = "wasm32"))]
         #[cfg(not(target_arch = "wasm32"))]
         let has_analysis = analysis.is_some();
@@ -175,10 +184,18 @@ impl Linter {
         source: &'a str,
         filename: &'a str,
         root: &RootNode<'a>,
+        sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
         analysis: Option<&'a Croquis>,
     ) -> LintResult {
         if !self.has_active_semantic_template_rules() {
-            return self.run_template_rules(allocator, source, filename, root, None);
+            return self.run_template_rules(
+                allocator,
+                source,
+                filename,
+                root,
+                sfc_descriptor,
+                None,
+            );
         }
         let owned_analysis;
         let analysis = if let Some(analysis) = analysis {
@@ -192,7 +209,14 @@ impl Linter {
             &owned_analysis
         };
 
-        self.run_template_rules(allocator, source, filename, root, Some(analysis))
+        self.run_template_rules(
+            allocator,
+            source,
+            filename,
+            root,
+            sfc_descriptor,
+            Some(analysis),
+        )
     }
 
     /// Lint a Vue template source.
@@ -216,7 +240,7 @@ impl Linter {
         let parser = Parser::new(allocator.as_bump(), source);
         let (root, _parse_errors) = profile!("patina.template.parse", parser.parse());
 
-        self.lint_template_root(allocator, source, filename, &root, None)
+        self.lint_template_root(allocator, source, filename, &root, None, None)
     }
 
     /// Lint multiple files and aggregate results.
@@ -248,10 +272,17 @@ impl Linter {
         template_offset: u32,
         allocator: &'a Allocator,
         root: &RootNode<'a>,
+        descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
         analysis: Option<&'a Croquis>,
     ) -> LintResult {
-        let mut result =
-            self.lint_template_root(allocator, template_content, filename, root, analysis);
+        let mut result = self.lint_template_root(
+            allocator,
+            template_content,
+            filename,
+            root,
+            descriptor,
+            analysis,
+        );
         Self::offset_result(&mut result, template_offset);
         result
     }
@@ -291,6 +322,7 @@ impl Linter {
             template.loc.start as u32,
             &allocator,
             &root,
+            Some(descriptor),
             analysis.as_ref(),
         )
     }
@@ -316,6 +348,7 @@ impl Linter {
 
         if super::script_rules::has_active_builtin_script_rules(self)
             || self.has_active_semantic_template_rules()
+            || self.has_active_shared_sfc_descriptor_rules()
         {
             let template_result = match profile!(
                 "patina.sfc.parse_for_script_rules",

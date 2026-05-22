@@ -33,6 +33,7 @@ struct LspConfigSection {
     lint: Option<bool>,
     typecheck: Option<bool>,
     editor: Option<bool>,
+    ecosystem: Option<bool>,
     completion: Option<bool>,
     hover: Option<bool>,
     definition: Option<bool>,
@@ -79,6 +80,10 @@ impl LspConfigSection {
 
         if let Some(enabled) = self.editor {
             features.apply_editor_bundle(enabled);
+        }
+
+        if let Some(enabled) = self.ecosystem {
+            features.ecosystem = enabled;
         }
 
         if let Some(enabled) = self.completion {
@@ -137,6 +142,7 @@ impl From<LanguageServerConfig> for LspConfigSection {
             lint: config.lint,
             typecheck: config.typecheck,
             editor: config.editor,
+            ecosystem: config.ecosystem,
             completion: config.completion,
             hover: config.hover,
             definition: config.definition,
@@ -168,6 +174,7 @@ impl From<LanguageServerConfig> for LspConfigSection {
 pub struct LspFeatureConfig {
     pub(crate) lint: bool,
     pub(crate) typecheck: bool,
+    pub(crate) ecosystem: bool,
     pub(crate) completion: bool,
     pub(crate) hover: bool,
     pub(crate) definition: bool,
@@ -191,6 +198,7 @@ impl LspFeatureConfig {
     }
 
     fn apply_editor_bundle(&mut self, enabled: bool) {
+        self.ecosystem = enabled;
         self.completion = enabled;
         self.hover = enabled;
         self.definition = enabled;
@@ -878,6 +886,7 @@ mod tests {
         let features = state.lsp_features();
         assert!(features.lint);
         assert!(features.typecheck);
+        assert!(features.ecosystem);
         assert!(features.completion);
         assert!(features.definition);
         assert!(!features.formatting);
@@ -922,7 +931,8 @@ mod tests {
         let options = serde_json::json!({
             "lint": true,
             "codeActions": true,
-            "definition": true
+            "definition": true,
+            "ecosystem": true
         });
 
         state.apply_lsp_initialization_options(Some(&options));
@@ -931,6 +941,7 @@ mod tests {
         assert!(features.lint);
         assert!(features.code_actions);
         assert!(features.definition);
+        assert!(features.ecosystem);
         assert!(!features.typecheck);
     }
 

@@ -14,7 +14,7 @@ pub(crate) const RULE_VUE_ROUTER_PREFER_NAMED_PUSH: &str = "ecosystem/vue-router
 pub(crate) const RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT: &str =
     "ecosystem/vue-test-utils-no-html-snapshot";
 const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated", "nuxt"];
-const OPT_IN_SCRIPT_PRESETS: &[&str] = &[];
+const ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &["ecosystem"];
 const ALL_BUILTIN_SCRIPT_RULE_NAMES: &[&str] = &[
     RULE_NO_OPTIONS_API,
     RULE_NO_GET_CURRENT_INSTANCE,
@@ -84,7 +84,7 @@ pub fn builtin_script_rules() -> [BuiltinScriptRuleMeta; 6] {
             category: "Ecosystem",
             fixable: false,
             default_severity: pinia_prefer_store_to_refs_meta.default_severity,
-            presets: OPT_IN_SCRIPT_PRESETS,
+            presets: ECOSYSTEM_SCRIPT_PRESETS,
         },
         BuiltinScriptRuleMeta {
             name: vue_router_prefer_named_push_meta.name,
@@ -92,7 +92,7 @@ pub fn builtin_script_rules() -> [BuiltinScriptRuleMeta; 6] {
             category: "Ecosystem",
             fixable: false,
             default_severity: vue_router_prefer_named_push_meta.default_severity,
-            presets: OPT_IN_SCRIPT_PRESETS,
+            presets: ECOSYSTEM_SCRIPT_PRESETS,
         },
         BuiltinScriptRuleMeta {
             name: vue_test_utils_no_html_snapshot_meta.name,
@@ -100,7 +100,7 @@ pub fn builtin_script_rules() -> [BuiltinScriptRuleMeta; 6] {
             category: "Ecosystem",
             fixable: false,
             default_severity: vue_test_utils_no_html_snapshot_meta.default_severity,
-            presets: OPT_IN_SCRIPT_PRESETS,
+            presets: ECOSYSTEM_SCRIPT_PRESETS,
         },
     ]
 }

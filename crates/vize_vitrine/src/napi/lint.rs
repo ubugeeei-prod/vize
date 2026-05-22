@@ -44,7 +44,7 @@ pub struct LintOptionsNapi {
     pub fix: Option<bool>,
     /// Help display level: "full", "short", "none"
     pub help_level: Option<String>,
-    /// Lint preset: "general-recommended", "essential", "incremental", "opinionated", or "nuxt"
+    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt"
     pub preset: Option<String>,
 }
 
@@ -73,7 +73,7 @@ pub struct PatinaLintOptionsNapi {
     pub locale: Option<String>,
     /// Help display level: "full", "short", or "none"
     pub help_level: Option<String>,
-    /// Lint preset: "general-recommended", "essential", "incremental", "opinionated", or "nuxt"
+    /// Lint preset: "general-recommended", "essential", "incremental", "ecosystem", "opinionated", or "nuxt"
     pub preset: Option<String>,
     /// Optional list of Patina rule names to enable
     pub enabled_rules: Option<Vec<String>>,
@@ -101,6 +101,7 @@ fn patina_preset_from_option(preset: Option<&str>) -> vize_patina::LintPreset {
         }
         Some("essential" | "Essential") => vize_patina::LintPreset::Essential,
         Some("incremental" | "Incremental") => vize_patina::LintPreset::Incremental,
+        Some("ecosystem" | "Ecosystem" | "eco" | "Eco") => vize_patina::LintPreset::Ecosystem,
         Some("opinionated" | "Opinionated" | "Opnionated" | "opnionated" | "strict" | "all") => {
             vize_patina::LintPreset::Opinionated
         }
@@ -116,6 +117,7 @@ const fn plugin_preset_name(preset: vize_patina::LintPreset) -> &'static str {
         vize_patina::LintPreset::Opinionated => "opinionated",
         vize_patina::LintPreset::Essential => "essential",
         vize_patina::LintPreset::Incremental => "incremental",
+        vize_patina::LintPreset::Ecosystem => "ecosystem",
         vize_patina::LintPreset::Nuxt => "nuxt",
     }
 }
@@ -129,6 +131,7 @@ fn plugin_preset_name_from_raw(preset: &'static str) -> &'static str {
         "happy-path" | "happy_path" | "happy" | "default" | "recommended" => "general-recommended",
         "essential" | "Essential" => "essential",
         "incremental" | "Incremental" => "incremental",
+        "ecosystem" | "Ecosystem" | "eco" | "Eco" => "ecosystem",
         "opinionated" | "Opinionated" | "strict" | "all" | "opnionated" => "opinionated",
         "nuxt" | "Nuxt" => "nuxt",
         _ => preset,
@@ -160,9 +163,13 @@ const fn severity_name(severity: vize_patina::Severity) -> &'static str {
 
 fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>> {
     use vize_carton::FxHashSet;
-    use vize_patina::{LintPreset, Linter, RuleRegistry, builtin_script_rules};
+    use vize_patina::{LintPreset, RuleRegistry, builtin_script_rules};
 
-    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let template_rule_registries = [
+        RuleRegistry::with_preset(LintPreset::Opinionated),
+        RuleRegistry::with_preset(LintPreset::Ecosystem),
+        RuleRegistry::with_opt_in_rules(),
+    ];
     let happy_path_rules: FxHashSet<&'static str> =
         RuleRegistry::with_preset(LintPreset::HappyPath)
             .rules()
@@ -179,12 +186,26 @@ fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>> {
         .iter()
         .map(|rule| rule.meta().name)
         .collect();
-
-    let mut rules: Vec<_> = linter
+    let opinionated_rules: FxHashSet<&'static str> =
+        RuleRegistry::with_preset(LintPreset::Opinionated)
+            .rules()
+            .iter()
+            .map(|rule| rule.meta().name)
+            .collect();
+    let ecosystem_rules: FxHashSet<&'static str> = RuleRegistry::with_preset(LintPreset::Ecosystem)
         .rules()
         .iter()
-        .map(|rule| {
+        .map(|rule| rule.meta().name)
+        .collect();
+
+    let mut seen = FxHashSet::default();
+    let mut rules = Vec::new();
+    for registry in &template_rule_registries {
+        for rule in registry.rules() {
             let meta = rule.meta();
+            if !seen.insert(meta.name) {
+                continue;
+            }
             let mut presets = Vec::with_capacity(4);
             if essential_rules.contains(meta.name) {
                 presets.push(plugin_preset_name(LintPreset::Essential));
@@ -195,35 +216,23 @@ fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>> {
             if nuxt_rules.contains(meta.name) {
                 presets.push(plugin_preset_name(LintPreset::Nuxt));
             }
-            presets.push(plugin_preset_name(LintPreset::Opinionated));
+            if ecosystem_rules.contains(meta.name) {
+                presets.push(plugin_preset_name(LintPreset::Ecosystem));
+            }
+            if opinionated_rules.contains(meta.name) {
+                presets.push(plugin_preset_name(LintPreset::Opinionated));
+            }
 
-            PatinaRuleMetaNapi {
+            rules.push(PatinaRuleMetaNapi {
                 name: meta.name,
                 description: meta.description,
                 category: rule_category_name(meta.category),
                 fixable: meta.fixable,
                 default_severity: severity_name(meta.default_severity),
                 presets,
-            }
-        })
-        .collect();
-
-    rules.extend(
-        RuleRegistry::with_opt_in_rules()
-            .rules()
-            .iter()
-            .map(|rule| {
-                let meta = rule.meta();
-                PatinaRuleMetaNapi {
-                    name: meta.name,
-                    description: meta.description,
-                    category: rule_category_name(meta.category),
-                    fixable: meta.fixable,
-                    default_severity: severity_name(meta.default_severity),
-                    presets: Vec::new(),
-                }
-            }),
-    );
+            });
+        }
+    }
 
     for script_rule in builtin_script_rules() {
         rules.push(PatinaRuleMetaNapi {
@@ -491,7 +500,7 @@ mod tests {
 
         assert_eq!(
             require_scoped_style.presets,
-            vec!["general-recommended", "nuxt", "opinionated"]
+            vec!["general-recommended", "nuxt", "ecosystem", "opinionated"]
         );
     }
 
@@ -505,5 +514,17 @@ mod tests {
 
         assert_eq!(no_options_api.presets, vec!["opinionated", "nuxt"]);
         assert_eq!(no_options_api.default_severity, "error");
+    }
+
+    #[test]
+    fn patina_rule_metadata_includes_ecosystem_rules() {
+        let rules = collect_patina_rule_metadata();
+        let void_link = rules
+            .iter()
+            .find(|rule| rule.name == "ecosystem/void-link-require-href")
+            .expect("Void Vue Link rule should be exposed");
+
+        assert_eq!(void_link.presets, vec!["ecosystem"]);
+        assert_eq!(void_link.default_severity, "error");
     }
 }
