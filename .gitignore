@@ -65,8 +65,8 @@ __agent_only/
 # cargo-fuzz runtime state — corpora are seeded by tools/fuzz/seed_corpus.mjs
 # from repository fixtures, and reproducers stay out of git so libFuzzer is
 # free to grow the corpus locally without polluting commits.
-fuzz/Cargo.lock
-fuzz/corpus/
-fuzz/artifacts/
-fuzz/coverage/
-fuzz/target/
+tests/fuzz/Cargo.lock
+tests/fuzz/corpus/
+tests/fuzz/artifacts/
+tests/fuzz/coverage/
+tests/fuzz/target/

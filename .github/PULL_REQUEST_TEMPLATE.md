@@ -25,7 +25,9 @@
 - [ ] Minimal fixture or focused regression test added or updated
 - [ ] Snapshot/baseline changes reviewed and explained
 - [ ] Parity or real-world fixture coverage considered
-- [ ] Performance or PR benchmark impact considered
+- [ ] Security/audit impact considered
+- [ ] Performance status or PR benchmark impact considered
+- [ ] Fuzzing target or crash-reproducer coverage considered
 - [ ] Editor/LSP scenario coverage considered
 - [ ] Ecosystem or broad app compatibility impact considered
 - [ ] Docs, release, or stability notes updated when public behavior changed

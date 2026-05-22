@@ -18,6 +18,11 @@ test("language engineering practices document upstream-derived compiler workflow
     "rust-lang/rust",
     "rustc-dev-guide",
     "rustc` ecosystem and perf testing",
+    "rust-fuzz/cargo-fuzz",
+    "Linux kernel testing",
+    "Chromium testing and CQ",
+    "V8 testing",
+    "feature launch",
     "microsoft/TypeScript",
     "TypeScript tests/cases/fourslash",
     "microsoft/typescript-go",
@@ -33,6 +38,15 @@ test("language engineering practices document upstream-derived compiler workflow
     "testdata/baselines/local",
     "Crater",
     "rustc-perf",
+    "KUnit",
+    "kselftest",
+    "KCOV",
+    "perf stat",
+    "Telemetry",
+    "ClusterFuzz",
+    "Test262",
+    "mjsunit",
+    "tools/run_perf.py",
     "tests/cases/fourslash",
     ".diff",
     ".exp",
@@ -48,6 +62,14 @@ test("language engineering practices document upstream-derived compiler workflow
     "tests/snapshots/lint",
     "bench/test-inventory.mjs",
     ".github/workflows/benchmark.yml",
+    ".github/workflows/check.yml",
+    ".github/workflows/fuzz.yml",
+    "tests/fuzz/Cargo.toml",
+    "tools/fuzz/seed_corpus.mjs",
+    "bench/enforce-pr-budget.mjs",
+    "security-audit",
+    "vp exec pnpm audit --prod --audit-level moderate",
+    "cargo audit --deny warnings",
     "docs/release/production-readiness.md",
     "docs/release/vue-parity-matrix.md",
   ]) {
@@ -83,6 +105,9 @@ test("language-facing change classes are present in docs, contribution guide, an
   assert.match(pullRequestTemplate, /## Change Class/);
   assert.match(pullRequestTemplate, /## Verification Evidence/);
   assert.match(pullRequestTemplate, /Snapshot\/baseline changes reviewed and explained/);
+  assert.match(pullRequestTemplate, /Security\/audit impact considered/);
+  assert.match(pullRequestTemplate, /Performance status or PR benchmark impact considered/);
+  assert.match(pullRequestTemplate, /Fuzzing target or crash-reproducer coverage considered/);
   assert.match(pullRequestTemplate, /Editor\/LSP scenario coverage considered/);
   assert.match(pullRequestTemplate, /Ecosystem or broad app compatibility impact considered/);
 });
@@ -99,6 +124,9 @@ test("docs navigation exposes the language engineering practices page", () => {
 
   assert.match(architectureOverview, /language-engineering-practices\.md/);
   assert.match(productionReadiness, /language-engineering change-class evidence/);
+  assert.match(productionReadiness, /security-audit` workflow status/);
+  assert.match(productionReadiness, /pr-benchmark-budget` status/);
+  assert.match(productionReadiness, /\.github\/workflows\/fuzz\.yml/);
   assert.match(
     navigation,
     /\["\/architecture\/language-engineering-practices", "Language Engineering"\]/,
