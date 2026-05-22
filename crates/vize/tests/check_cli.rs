@@ -385,6 +385,12 @@ const count: number = 'oops'
         .unwrap();
     let mut stdin = child.stdin.take().unwrap();
     let stdout = child.stdout.take().unwrap();
+    let stderr = child.stderr.take().unwrap();
+    std::thread::spawn(move || {
+        let mut stderr = std::io::BufReader::new(stderr);
+        let mut buffer = Vec::new();
+        let _ = stderr.read_to_end(&mut buffer);
+    });
     let (messages_tx, messages_rx) = std::sync::mpsc::channel();
     std::thread::spawn(move || {
         let mut reader = std::io::BufReader::new(stdout);
@@ -1260,7 +1266,31 @@ fn recv_lsp_matching(
 
 fn file_uri(path: &Path) -> std::string::String {
     let path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
-    format!("file://{}", path.display())
+    let path = path.to_string_lossy().replace('\\', "/");
+    let prefix = if path.starts_with('/') {
+        "file://"
+    } else {
+        "file:///"
+    };
+    format!("{prefix}{}", percent_encode_file_uri_path(&path))
+}
+
+fn percent_encode_file_uri_path(path: &str) -> std::string::String {
+    let mut encoded = std::string::String::with_capacity(path.len());
+    for byte in path.bytes() {
+        match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b'~' | b'/' | b':' => {
+                encoded.push(byte as char)
+            }
+            _ => {
+                const HEX: &[u8; 16] = b"0123456789ABCDEF";
+                encoded.push('%');
+                encoded.push(HEX[(byte >> 4) as usize] as char);
+                encoded.push(HEX[(byte & 0x0f) as usize] as char);
+            }
+        }
+    }
+    encoded
 }
 
 fn resolve_test_corsa_path() -> Option<String> {

@@ -748,8 +748,7 @@ fn cross_file_diagnostic_offset(
     match diagnostic.kind {
         CrossFileDiagnosticKind::DuplicateElementId { .. }
         | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
-        | CrossFileDiagnosticKind::BrowserApiInSsr { .. }
-        | CrossFileDiagnosticKind::HydrationMismatchRisk { .. } => offsets.template,
+        | CrossFileDiagnosticKind::BrowserApiInSsr { .. } => offsets.template,
         _ => offsets.script,
     }
 }

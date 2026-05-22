@@ -37,7 +37,7 @@ expression: "serde_json::to_string_pretty(&config).unwrap()"
     "checkInvalidExports": true,
     "checkFallthroughAttrs": true,
     "tsconfig": null,
-    "tsgoPath": null,
+    "corsaPath": null,
     "globalsFile": "./globals.d.ts",
     "servers": null
   },
