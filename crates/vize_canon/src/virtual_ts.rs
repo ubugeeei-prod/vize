@@ -14,14 +14,17 @@ mod props;
 mod scope;
 mod types;
 
+pub(crate) use generator::generate_virtual_ts_with_offsets_and_checks;
 pub use generator::{generate_virtual_ts, generate_virtual_ts_with_offsets};
+pub(crate) use types::VirtualTsCheckOptions;
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping};
 
 #[cfg(test)]
 mod tests {
     use super::helpers::{VUE_SETUP_HELPERS, generate_template_context, get_dom_event_type};
     use super::{
-        TemplateGlobal, VirtualTsOptions, generate_virtual_ts, generate_virtual_ts_with_offsets,
+        TemplateGlobal, VirtualTsCheckOptions, VirtualTsOptions, generate_virtual_ts,
+        generate_virtual_ts_with_offsets, generate_virtual_ts_with_offsets_and_checks,
     };
 
     fn assert_virtual_ts_snapshot(name: &str, value: &str) {
@@ -131,6 +134,71 @@ const count = 1
                 .code
                 .contains("type __AutoCard_Props_0 = typeof AutoCard")
         );
+    }
+
+    #[test]
+    fn test_check_props_option_disables_component_prop_checks() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import Child from './Child.vue'
+const wrong = 'not a number'
+"#;
+        let template = r#"<Child :count="wrong" />"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts_with_offsets_and_checks(
+            &summary,
+            Some(script),
+            Some(&root),
+            0,
+            0,
+            &VirtualTsOptions::default(),
+            VirtualTsCheckOptions {
+                check_props: false,
+                ..Default::default()
+            },
+        );
+
+        assert!(!output.code.contains("__vize_prop_check"));
+        assert!(!output.code.contains("type __Child_Props_0"));
+    }
+
+    #[test]
+    fn test_check_template_bindings_option_disables_template_expressions() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = "const message = 'hello'\n";
+        let template = r#"<div>{{ message }}</div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts_with_offsets_and_checks(
+            &summary,
+            Some(script),
+            Some(&root),
+            0,
+            0,
+            &VirtualTsOptions::default(),
+            VirtualTsCheckOptions {
+                check_template_bindings: false,
+                ..Default::default()
+            },
+        );
+
+        assert!(!output.code.contains("void (message);"));
     }
 
     #[test]

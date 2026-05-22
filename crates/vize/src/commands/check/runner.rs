@@ -136,6 +136,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             std::process::exit(1);
         }
     };
+    checker.set_virtual_ts_checks(
+        config.type_checker.check_props && !args.no_check_props,
+        config.type_checker.check_template_bindings && !args.no_check_template_bindings,
+        config.type_checker.check_emits && !args.no_check_emits,
+    );
 
     if let Err(error) = checker.scan_paths(&files) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);

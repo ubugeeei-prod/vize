@@ -54,6 +54,29 @@ impl Default for VirtualTsOptions {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct VirtualTsCheckOptions {
+    pub(crate) check_props: bool,
+    pub(crate) check_template_bindings: bool,
+    pub(crate) check_emits: bool,
+}
+
+impl VirtualTsCheckOptions {
+    pub(crate) fn any_enabled(self) -> bool {
+        self.check_props || self.check_template_bindings || self.check_emits
+    }
+}
+
+impl Default for VirtualTsCheckOptions {
+    fn default() -> Self {
+        Self {
+            check_props: true,
+            check_template_bindings: true,
+            check_emits: true,
+        }
+    }
+}
+
 /// Default plugin globals.
 /// Returns empty by default. Configure via `vize.config.pkl` `globalTypes`
 /// or `typeChecker.globalsFile`.

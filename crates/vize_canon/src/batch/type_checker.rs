@@ -6,7 +6,7 @@ use super::Diagnostic;
 use super::error::{CorsaError, CorsaResult};
 use super::executor::CorsaExecutor;
 use super::virtual_project::VirtualProject;
-use crate::virtual_ts::VirtualTsOptions;
+use crate::virtual_ts::{VirtualTsCheckOptions, VirtualTsOptions};
 use vize_carton::String;
 
 /// Result of type checking.
@@ -140,6 +140,21 @@ impl BatchTypeChecker {
             executor,
             scanned: false,
         })
+    }
+
+    /// Configure which virtual TypeScript checks are generated for Vue files.
+    pub fn set_virtual_ts_checks(
+        &mut self,
+        check_props: bool,
+        check_template_bindings: bool,
+        check_emits: bool,
+    ) {
+        self.project
+            .set_virtual_ts_check_options(VirtualTsCheckOptions {
+                check_props,
+                check_template_bindings,
+                check_emits,
+            });
     }
 
     /// Scan an explicit set of project files.

@@ -12,7 +12,7 @@ use super::{
     },
     props::{collect_template_prop_names, generate_props_type, generate_props_variables},
     scope::generate_scope_closures,
-    types::{VirtualTsOptions, VirtualTsOutput, VizeMapping},
+    types::{VirtualTsCheckOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
 use vize_carton::append;
 use vize_carton::cstr;
@@ -56,6 +56,26 @@ pub fn generate_virtual_ts_with_offsets(
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,
+) -> VirtualTsOutput {
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsCheckOptions::default(),
+    )
+}
+
+pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::ast::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    check_options: VirtualTsCheckOptions,
 ) -> VirtualTsOutput {
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
@@ -368,16 +388,19 @@ pub fn generate_virtual_ts_with_offsets(
             );
 
             // Generate scope closures
-            profile!(
-                "canon.virtual_ts.generate_scope_closures",
-                generate_scope_closures(
-                    &mut ts,
-                    &mut mappings,
-                    summary,
-                    &template_prop_names,
-                    template_offset
-                )
-            );
+            if check_options.any_enabled() {
+                profile!(
+                    "canon.virtual_ts.generate_scope_closures",
+                    generate_scope_closures(
+                        &mut ts,
+                        &mut mappings,
+                        summary,
+                        &template_prop_names,
+                        template_offset,
+                        check_options,
+                    )
+                );
+            }
 
             // Declare unresolved components (auto-imported or built-in) as `any`.
             // Names known to be provided by ambient project declarations stay
