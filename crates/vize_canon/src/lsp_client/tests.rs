@@ -1,6 +1,9 @@
 use super::{
     bootstrap::resolve_corsa_executable,
-    paths::{find_corsa_in_local_node_modules, find_corsa_in_search_roots, resolve_temp_dir_base},
+    paths::{
+        corsa_search_roots, find_corsa_in_local_node_modules, find_corsa_in_search_roots,
+        resolve_temp_dir_base,
+    },
     utils::convert_diagnostics,
 };
 use lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
@@ -197,6 +200,20 @@ fn resolves_corsa_from_secondary_search_root() {
         resolved,
         Some(fallback_cache.to_string_lossy().into_owned().into())
     );
+}
+
+#[test]
+fn search_roots_include_workspace_ancestors() {
+    let temp_dir = TempDir::new().unwrap();
+    let workspace_root = temp_dir.path().join("workspace");
+    let project_root = workspace_root.join("apps").join("app");
+
+    fs::create_dir_all(&project_root).unwrap();
+
+    let search_roots = corsa_search_roots(Some(&project_root));
+
+    assert!(search_roots.contains(&project_root));
+    assert!(search_roots.contains(&workspace_root));
 }
 
 #[test]
