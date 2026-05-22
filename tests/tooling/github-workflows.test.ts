@@ -193,6 +193,40 @@ test("release workflow explicitly installs matrix Rust targets", () => {
   }
 });
 
+test("release workflow jobs cap runtime with explicit timeouts", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+
+  for (const [jobName, minutes] of [
+    ["build-cli", 90],
+    ["build-editor-extensions", 30],
+    ["release-vscode-extension", 15],
+    ["build-release-packages", 45],
+    ["build-native-all", 90],
+    ["smoke-release-packages", 30],
+    ["release-npm-native", 30],
+    ["release-npm-fresco-native", 20],
+    ["release-npm-wasm", 30],
+    ["release-npm-vite-plugin", 15],
+    ["release-npm-oxlint-plugin", 15],
+    ["release-npm-unplugin", 15],
+    ["release-npm-fresco", 15],
+    ["release-npm-musea-mcp-server", 15],
+    ["release-npm-vite-plugin-musea", 15],
+    ["release-npm-rspack-plugin", 15],
+    ["release-npm-musea-nuxt", 15],
+    ["release-npm-nuxt", 15],
+    ["release-crates", 30],
+    ["create-github-release", 20],
+    ["release-npm-cli", 15],
+  ] as const) {
+    assert.match(
+      workflowJobBody(workflow, jobName),
+      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
+      `${jobName} should have a ${minutes} minute timeout`,
+    );
+  }
+});
+
 test("release workflow smoke installs npm tarballs before publishing", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const smokeJob = workflowJobBody(workflow, "smoke-release-packages");

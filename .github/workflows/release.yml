@@ -26,6 +26,7 @@ jobs:
   build-cli:
     name: Build CLI - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -109,6 +110,7 @@ jobs:
   build-editor-extensions:
     name: Build Editor Extensions
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -155,6 +157,7 @@ jobs:
     name: Release VS Code extension
     runs-on: ubuntu-latest
     needs: build-editor-extensions
+    timeout-minutes: 15
     environment: vscode-marketplace
     permissions:
       contents: read
@@ -196,6 +199,7 @@ jobs:
   build-release-packages:
     name: Build release npm packages
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -297,6 +301,7 @@ jobs:
   build-native-all:
     name: Build Native - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -411,6 +416,7 @@ jobs:
     name: Smoke release npm package installs
     runs-on: ubuntu-latest
     needs: [build-release-packages, build-native-all]
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -530,6 +536,7 @@ jobs:
     name: Release @vizejs/native to npm
     runs-on: ubuntu-latest
     needs: build-native-all
+    timeout-minutes: 30
     environment: npm
     permissions:
       contents: read
@@ -583,6 +590,7 @@ jobs:
     name: Release @vizejs/fresco-native to npm
     runs-on: ubuntu-latest
     needs: build-native-all
+    timeout-minutes: 20
     environment: npm
     permissions:
       contents: read
@@ -623,6 +631,7 @@ jobs:
   release-npm-wasm:
     name: Release @vizejs/wasm to npm
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: npm
     permissions:
       contents: read
@@ -679,6 +688,7 @@ jobs:
     name: Release @vizejs/vite-plugin to npm
     runs-on: ubuntu-latest
     needs: [build-release-packages, release-npm-native, release-npm-cli, smoke-release-packages]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
@@ -707,6 +717,7 @@ jobs:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-latest
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
@@ -738,6 +749,7 @@ jobs:
     name: Release @vizejs/unplugin to npm
     runs-on: ubuntu-latest
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
@@ -766,6 +778,7 @@ jobs:
     name: Release @vizejs/fresco to npm
     runs-on: ubuntu-latest
     needs: [build-release-packages, release-npm-fresco-native, smoke-release-packages]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
@@ -794,6 +807,7 @@ jobs:
     name: Release @vizejs/musea-mcp-server to npm
     runs-on: ubuntu-latest
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
@@ -822,6 +836,7 @@ jobs:
     name: Release @vizejs/vite-plugin-musea to npm
     runs-on: ubuntu-latest
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
@@ -850,6 +865,7 @@ jobs:
     name: Release @vizejs/rspack-plugin to npm
     runs-on: ubuntu-latest
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
@@ -878,6 +894,7 @@ jobs:
     name: Release @vizejs/musea-nuxt to npm
     runs-on: ubuntu-latest
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
@@ -914,6 +931,7 @@ jobs:
         release-npm-cli,
         smoke-release-packages,
       ]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
@@ -941,6 +959,7 @@ jobs:
   release-crates:
     name: Release crates to crates.io
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: crates-io
     permissions:
       contents: read
@@ -989,6 +1008,7 @@ jobs:
       - release-npm-musea-nuxt
       - release-npm-nuxt
       - release-crates
+    timeout-minutes: 20
     # `id-token: write` is required by sigstore/cosign-installer to mint the
     # keyless signing certificate, and by anchore/sbom-action when it uploads
     # the SBOM as a release asset.
@@ -1099,6 +1119,7 @@ jobs:
     name: Release vize CLI to npm
     runs-on: ubuntu-latest
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
+    timeout-minutes: 15
     environment: npm
     permissions:
       contents: read
