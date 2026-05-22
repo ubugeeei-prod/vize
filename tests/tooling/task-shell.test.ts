@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 
+import { commandExists } from "../../tools/vite-plus/root-build-task-plugin.ts";
 import {
   getTaskShellLocaleAssignments,
   normalizeTaskShellLocale,
@@ -14,6 +18,7 @@ import {
 } from "../../tools/vite-plus/task-commands.ts";
 import { checkTasks } from "../../tools/vite-plus/tasks/check.ts";
 import { releaseTasks } from "../../tools/vite-plus/tasks/release.ts";
+import { writeFakeCommand } from "./support/fake-command.ts";
 
 test("macOS task shells fall back from C.UTF-8 to an installed UTF-8 locale", () => {
   assert.deepEqual(
@@ -135,4 +140,27 @@ test("normalizing a macOS C.UTF-8 environment updates child-process locale varia
   assert.equal(env.LC_ALL, "en_US.UTF-8");
   assert.equal(env.LC_CTYPE, "en_US.UTF-8");
   assert.equal(env.LANG, "en_US.UTF-8");
+});
+
+test("root build command lookup checks PATH without executing the command", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-command-lookup-"));
+  const binDir = path.join(dir, "bin");
+  const sentinelPath = path.join(dir, "sentinel");
+  fs.mkdirSync(binDir);
+
+  try {
+    writeFakeCommand(
+      binDir,
+      "side-effect-tool",
+      `require("node:fs").writeFileSync(${JSON.stringify(sentinelPath)}, "ran");`,
+    );
+
+    assert.equal(commandExists("side-effect-tool", { PATH: binDir }), true);
+    assert.equal(fs.existsSync(sentinelPath), false);
+    assert.equal(commandExists("missing-tool", { PATH: binDir }), false);
+    assert.equal(commandExists(`side-effect-tool; touch ${sentinelPath}`, { PATH: binDir }), false);
+    assert.equal(fs.existsSync(sentinelPath), false);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

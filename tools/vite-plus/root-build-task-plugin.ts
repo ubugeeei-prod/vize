@@ -1,8 +1,60 @@
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 import type { Plugin } from "vite";
 
-const commandExists = (command: string) =>
-  spawnSync(command, ["--version"], { stdio: "ignore" }).status === 0;
+const pathDelimiterForPlatform = (platform: NodeJS.Platform) => (platform === "win32" ? ";" : ":");
+
+const pathDirectoriesForEnv = (env: NodeJS.ProcessEnv, platform: NodeJS.Platform) =>
+  (env.PATH ?? "")
+    .split(pathDelimiterForPlatform(platform))
+    .filter((directory, index, directories) => directory !== "" || directories.length > 1)
+    .map((directory) => (directory === "" ? "." : directory));
+
+const commandExtensionsForPlatform = (
+  command: string,
+  env: NodeJS.ProcessEnv,
+  platform: NodeJS.Platform,
+) => {
+  if (platform !== "win32" || path.extname(command) !== "") {
+    return [""];
+  }
+
+  return (env.PATHEXT ?? ".COM;.EXE;.BAT;.CMD")
+    .split(";")
+    .map((extension) => extension.trim())
+    .filter(Boolean);
+};
+
+const isExecutableFile = (candidate: string, platform: NodeJS.Platform) => {
+  try {
+    const stat = fs.statSync(candidate);
+    if (!stat.isFile()) return false;
+    if (platform === "win32") return true;
+    fs.accessSync(candidate, fs.constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const commandExists = (
+  command: string,
+  env: NodeJS.ProcessEnv = process.env,
+  platform: NodeJS.Platform = process.platform,
+) => {
+  const directories = /[/\\]/.test(command) ? [""] : pathDirectoriesForEnv(env, platform);
+  const extensions = commandExtensionsForPlatform(command, env, platform);
+
+  return directories.some((directory) =>
+    extensions.some((extension) =>
+      isExecutableFile(
+        directory === "" ? `${command}${extension}` : path.join(directory, command + extension),
+        platform,
+      ),
+    ),
+  );
+};
 
 /**
  * Builds the root library artifact by delegating to the workspace build task.
