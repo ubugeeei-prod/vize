@@ -39,6 +39,8 @@ A production-ready claim for any supported surface requires current evidence for
 - native host smoke coverage when native binaries are involved
 - real-world fixture coverage for the supported Vue/compiler/typecheck behavior
 - Vue parity matrix coverage for compiler, type checking, Vite, and runtime smoke behavior
+- language-engineering change-class evidence for parser, compiler, analyzer, type-checker,
+  formatter, LSP, packaging, and release changes
 - release rollback instructions for npm, crates.io, GitHub Releases, docs, and editor channels
 
 ## Current Audit Snapshot

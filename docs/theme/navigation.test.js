@@ -243,6 +243,24 @@ void test("applyNavigationOrder keeps the stability contract in Start", () => {
   ]);
 });
 
+void test("applyNavigationOrder includes language engineering in Architecture", () => {
+  const document = createNavigationDocument([
+    ["/architecture/overview", "Architecture"],
+    ["/architecture/crates", "Crates"],
+    ["/architecture/language-engineering-practices", "Language Engineering Practices"],
+    ["/architecture/performance", "Performance"],
+  ]);
+
+  applyNavigation(document);
+
+  assert.deepEqual(sections(document), [
+    {
+      title: "Architecture",
+      labels: ["Architecture Overview", "Crates", "Language Engineering", "Performance"],
+    },
+  ]);
+});
+
 void test("applyNavigationOrder hides dated blog posts from the More fallback", () => {
   const document = createNavigationDocument([
     ["/internal/reference", "Internal Reference"],
