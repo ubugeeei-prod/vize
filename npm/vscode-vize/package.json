@@ -153,7 +153,7 @@
         "vize.ecosystem.enable": {
           "type": "boolean",
           "default": false,
-          "description": "Enable Vue ecosystem diagnostics and editor helpers for Vue Router, Vue I18n, Nuxt, and Void Vue."
+          "description": "Enable Vue ecosystem diagnostics and editor helpers for Vue Router route names and file-route params, Vue I18n catalogs, Nuxt, and Void Vue."
         },
         "vize.diagnostics.enable": {
           "type": "boolean",

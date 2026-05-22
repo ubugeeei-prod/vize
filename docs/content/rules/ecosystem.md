@@ -9,6 +9,10 @@ These rules cover conventions around Nuxt, Vue Router, Pinia, vue-i18n, Vue Test
 Ecosystem rules are enabled by the `ecosystem` preset. Hosts can also enable them by name when using
 `incremental`; they are not part of `happy-path`, `nuxt`, or `opinionated`.
 
+When editor ecosystem helpers are enabled in the LSP, Vize also adds Vue Router route-name
+completion, file-route param completion and diagnostics for `useRoute().params`, Vue I18n key
+completion, workspace JSON key validation, and inlay previews for static `t()` / `$t()` calls.
+
 ## `ecosystem/router-link-require-to`
 
 Requires `to` or `:to` on `<RouterLink>`, `<router-link>`, `<NuxtLink>`, and `<nuxt-link>`.

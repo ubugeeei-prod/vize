@@ -13,6 +13,7 @@ mod corsa;
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
 
+use crate::ide::ecosystem;
 use crate::server::ServerState;
 
 /// Diagnostic source identifiers.
@@ -143,6 +144,15 @@ impl DiagnosticService {
             diagnostics.extend(lint_diags);
         } else {
             tracing::info!("collect: patina lint diagnostics skipped (disabled by config)");
+        }
+
+        if features.ecosystem {
+            let ecosystem_diags = ecosystem::diagnostics(&content, uri);
+            tracing::info!(
+                "collect: ecosystem editor diagnostics: {}",
+                ecosystem_diags.len()
+            );
+            diagnostics.extend(ecosystem_diags);
         }
 
         if state.is_lsp_typecheck_enabled() {
@@ -332,6 +342,8 @@ pub(super) fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use super::{DiagnosticBuilder, DiagnosticService, Severity, offset_to_line_col, sources};
     use crate::server::ServerState;
     use tower_lsp::lsp_types::{DiagnosticSeverity, NumberOrString, Url};
@@ -341,6 +353,14 @@ mod tests {
         state.apply_lsp_initialization_options(Some(&serde_json::json!({
             "lint": lint,
             "typecheck": typecheck
+        })));
+        state
+    }
+
+    fn state_with_ecosystem_diagnostics() -> ServerState {
+        let state = ServerState::new();
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({
+            "ecosystem": true
         })));
         state
     }
@@ -455,6 +475,66 @@ mod tests {
 
         assert_eq!(diagnostic.range.start.line, 1);
         assert!(diagnostic.message.contains("<script> should come before"));
+    }
+
+    #[test]
+    fn collect_reports_unknown_file_route_params() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("src/pages/users/[id].vue");
+        fs::create_dir_all(source_path.parent().unwrap()).unwrap();
+        let source = r#"<script setup lang="ts">
+import { useRoute } from "vue-router"
+const route = useRoute()
+route.params.slug
+</script>"#;
+        fs::write(&source_path, source).unwrap();
+
+        let state = state_with_ecosystem_diagnostics();
+        let uri = Url::from_file_path(&source_path).unwrap();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.source.as_deref() == Some("vize/ecosystem")
+                && diagnostic.code
+                    == Some(NumberOrString::String(
+                        "ecosystem/vue-router-route-param".to_string(),
+                    ))
+        }));
+    }
+
+    #[test]
+    fn collect_reports_workspace_i18n_missing_key() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("src/components/LoginButton.vue");
+        let locale_path = dir.path().join("src/locales/en.json");
+        fs::create_dir_all(source_path.parent().unwrap()).unwrap();
+        fs::create_dir_all(locale_path.parent().unwrap()).unwrap();
+        fs::write(&locale_path, r#"{ "auth": { "login": "Log in" } }"#).unwrap();
+
+        let source = r#"<script setup lang="ts">
+const title = t("auth.missing")
+</script>"#;
+        fs::write(&source_path, source).unwrap();
+
+        let state = state_with_ecosystem_diagnostics();
+        let uri = Url::from_file_path(&source_path).unwrap();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.source.as_deref() == Some("vize/ecosystem")
+                && diagnostic.code
+                    == Some(NumberOrString::String(
+                        "ecosystem/vue-i18n-no-missing-key".to_string(),
+                    ))
+        }));
     }
 
     #[test]

@@ -15,7 +15,7 @@ Vue Language Support powered by Vize - A high-performance language server for Vu
 - **Rename** - Safe identifier renaming
 - **Semantic Highlighting** - Vue-specific syntax colors
 - **Code Lens** - Reference counts
-- **Ecosystem Helpers** - Vue Router, Vue I18n, Nuxt, and Void Vue diagnostics and completions
+- **Ecosystem Helpers** - Vue Router file-route params, Vue I18n catalogs, Nuxt, and Void Vue diagnostics and completions
 
 ## Installation
 
@@ -77,8 +77,9 @@ When you are ready to evaluate Vize editor assistance separately from `vuejs/lan
 }
 ```
 
-`vize.ecosystem.enable` adds Vue Router route-name completions, Vue I18n key completions and
-inlay previews, Void Vue route completions, and ecosystem lint diagnostics.
+`vize.ecosystem.enable` adds Vue Router route-name and file-route param completions, route-param
+diagnostics for `useRoute()`, Vue I18n key completions, workspace key validation, inlay previews,
+Void Vue route completions, and ecosystem lint diagnostics.
 
 When paired with the `Vize Art` extension, the same editor capabilities also apply to `*.art.vue`
 documents.

@@ -194,7 +194,7 @@ pub struct LspFeatureConfig {
 
 impl LspFeatureConfig {
     pub(crate) fn has_diagnostics(self) -> bool {
-        self.lint || self.typecheck
+        self.lint || self.typecheck || self.ecosystem
     }
 
     fn apply_editor_bundle(&mut self, enabled: bool) {

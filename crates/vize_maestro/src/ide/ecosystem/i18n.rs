@@ -1,18 +1,23 @@
 //! Same-file vue-i18n editor helpers.
 
+use std::fs;
+use std::path::{Path, PathBuf};
+
 use serde_json::Value;
 use tower_lsp::lsp_types::{
-    CompletionItem, CompletionItemKind, Documentation, InlayHint, InlayHintKind, InlayHintLabel,
-    Position, Range,
+    CompletionItem, CompletionItemKind, Diagnostic, Documentation, InlayHint, InlayHintKind,
+    InlayHintLabel, Position, Range, Url,
 };
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::{FxHashMap, String};
 
 use super::context::string_literal_at_cursor;
-use crate::ide::offset_to_position;
+use crate::ide::{IdeContext, offset_to_position};
 
 const I18N_CALLS: &[&str] = &["$t", "$te", "$tm", "t", "te", "tm"];
 const PREVIEW_LIMIT: usize = 48;
+const WORKSPACE_I18N_DIRS: &[&str] = &["locales", "locale", "i18n", "lang", "messages"];
+const WORKSPACE_I18N_FILE_LIMIT: usize = 96;
 
 #[derive(Debug, Default)]
 pub(crate) struct I18nCatalog {
@@ -37,18 +42,25 @@ impl I18nCatalog {
     fn message(&self, key: &str) -> Option<&str> {
         self.entries.get(key).map(String::as_str)
     }
+
+    fn extend(&mut self, other: I18nCatalog) {
+        for key in other.keys {
+            if let Some(message) = other.entries.get(&key) {
+                self.insert(key, message);
+            }
+        }
+    }
 }
 
 pub(crate) fn completions(
-    content: &str,
-    offset: usize,
+    ctx: &IdeContext<'_>,
     descriptor: &SfcDescriptor<'_>,
 ) -> Vec<CompletionItem> {
-    if !is_i18n_call_string(content, offset) {
+    if !is_i18n_call_string(&ctx.content, ctx.offset) {
         return Vec::new();
     }
 
-    let catalog = collect_catalog(descriptor);
+    let catalog = collect_catalog_with_workspace(descriptor, Some(ctx.uri));
     if catalog.is_empty() {
         return Vec::new();
     }
@@ -72,16 +84,33 @@ pub(crate) fn completions(
 pub(crate) fn collect_inlay_hints(
     content: &str,
     descriptor: &SfcDescriptor<'_>,
+    uri: Option<&Url>,
     range: Range,
     hints: &mut Vec<InlayHint>,
 ) {
-    let catalog = collect_catalog(descriptor);
+    let catalog = collect_catalog_with_workspace(descriptor, uri);
     if catalog.is_empty() {
         return;
     }
 
     collect_call_hints(content, "$t", &catalog, range, hints);
     collect_call_hints(content, "t", &catalog, range, hints);
+}
+
+pub(crate) fn missing_key_diagnostics(
+    content: &str,
+    descriptor: &SfcDescriptor<'_>,
+    uri: &Url,
+) -> Vec<Diagnostic> {
+    let workspace_catalog = collect_workspace_catalog(uri);
+    if workspace_catalog.is_empty() || !collect_catalog(descriptor).is_empty() {
+        return Vec::new();
+    }
+
+    let mut diagnostics = Vec::new();
+    collect_missing_call_keys(content, "$t", &workspace_catalog, &mut diagnostics);
+    collect_missing_call_keys(content, "t", &workspace_catalog, &mut diagnostics);
+    diagnostics
 }
 
 pub(crate) fn collect_catalog(descriptor: &SfcDescriptor<'_>) -> I18nCatalog {
@@ -108,6 +137,101 @@ pub(crate) fn collect_catalog(descriptor: &SfcDescriptor<'_>) -> I18nCatalog {
     }
 
     catalog
+}
+
+fn collect_catalog_with_workspace(
+    descriptor: &SfcDescriptor<'_>,
+    uri: Option<&Url>,
+) -> I18nCatalog {
+    let mut catalog = collect_catalog(descriptor);
+    if let Some(uri) = uri {
+        catalog.extend(collect_workspace_catalog(uri));
+    }
+    catalog
+}
+
+fn collect_workspace_catalog(uri: &Url) -> I18nCatalog {
+    let Ok(file_path) = uri.to_file_path() else {
+        return I18nCatalog::default();
+    };
+    let Some(start_dir) = file_path.parent() else {
+        return I18nCatalog::default();
+    };
+
+    let mut catalog = I18nCatalog::default();
+    let mut seen_dirs = Vec::<PathBuf>::new();
+    let mut seen_files = 0usize;
+    let mut current = Some(start_dir);
+    while let Some(dir) = current {
+        for name in WORKSPACE_I18N_DIRS {
+            let candidate = dir.join(name);
+            if candidate.is_dir() && !seen_dirs.iter().any(|seen| seen == &candidate) {
+                collect_json_catalog_dir(&candidate, &mut catalog, &mut seen_files);
+                seen_dirs.push(candidate);
+            }
+        }
+
+        let src_dir = dir.join("src");
+        for name in WORKSPACE_I18N_DIRS {
+            let candidate = src_dir.join(name);
+            if candidate.is_dir() && !seen_dirs.iter().any(|seen| seen == &candidate) {
+                collect_json_catalog_dir(&candidate, &mut catalog, &mut seen_files);
+                seen_dirs.push(candidate);
+            }
+        }
+
+        current = dir.parent();
+    }
+
+    catalog
+}
+
+fn collect_json_catalog_dir(dir: &Path, catalog: &mut I18nCatalog, seen_files: &mut usize) {
+    if *seen_files >= WORKSPACE_I18N_FILE_LIMIT {
+        return;
+    }
+
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            if !is_skipped_i18n_dir(&path) {
+                collect_json_catalog_dir(&path, catalog, seen_files);
+            }
+            continue;
+        }
+        if path.extension().and_then(|ext| ext.to_str()) != Some("json") {
+            continue;
+        }
+        let Ok(source) = fs::read_to_string(&path) else {
+            continue;
+        };
+        let Ok(value) = serde_json::from_str::<Value>(&source) else {
+            continue;
+        };
+        if has_locale_roots(&value) {
+            if let Value::Object(locales) = &value {
+                for messages in locales.values() {
+                    collect_json_messages(String::default(), messages, catalog);
+                }
+            }
+        } else {
+            collect_json_messages(String::default(), &value, catalog);
+        }
+        *seen_files += 1;
+        if *seen_files >= WORKSPACE_I18N_FILE_LIMIT {
+            return;
+        }
+    }
+}
+
+fn is_skipped_i18n_dir(path: &Path) -> bool {
+    matches!(
+        path.file_name().and_then(|name| name.to_str()),
+        Some("node_modules" | ".git" | "dist" | "build" | ".nuxt")
+    )
 }
 
 fn is_i18n_call_string(content: &str, offset: usize) -> bool {
@@ -161,13 +285,27 @@ fn has_locale_roots(value: &Value) -> bool {
 }
 
 fn is_locale_key(key: &str) -> bool {
-    let bytes = key.as_bytes();
-    if bytes.len() < 2 || bytes.len() > 8 {
+    let mut parts = key.split(['-', '_']);
+    let Some(language) = parts.next() else {
+        return false;
+    };
+    if !(2..=3).contains(&language.len()) || !language.bytes().all(|byte| byte.is_ascii_lowercase())
+    {
         return false;
     }
-    bytes
-        .iter()
-        .all(|byte| byte.is_ascii_alphabetic() || *byte == b'-' || *byte == b'_')
+
+    let mut has_region = false;
+    for part in parts {
+        has_region = true;
+        if part.is_empty()
+            || part.len() > 8
+            || !part.bytes().all(|byte| byte.is_ascii_alphanumeric())
+        {
+            return false;
+        }
+    }
+
+    has_region || language.len() == 2
 }
 
 fn collect_json_messages(prefix: String, value: &Value, catalog: &mut I18nCatalog) {
@@ -238,6 +376,44 @@ fn collect_call_hints(
     }
 }
 
+fn collect_missing_call_keys(
+    content: &str,
+    call_name: &str,
+    catalog: &I18nCatalog,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut pos = 0usize;
+    while let Some(found) = content[pos..].find(call_name) {
+        let call_start = pos + found;
+        if call_start > 0
+            && content
+                .as_bytes()
+                .get(call_start - 1)
+                .is_some_and(|byte| super::context::is_ident_byte(*byte))
+        {
+            pos = call_start + call_name.len();
+            continue;
+        }
+
+        let Some((key, key_start, key_end)) =
+            literal_first_arg(content, call_start + call_name.len())
+        else {
+            pos = call_start + call_name.len();
+            continue;
+        };
+
+        if catalog.message(key).is_none() {
+            diagnostics.push(super::warning_diagnostic(
+                offset_range(content, key_start, key_end),
+                "ecosystem/vue-i18n-no-missing-key",
+                format!("vue-i18n key `{key}` is missing from workspace locale messages"),
+            ));
+        }
+
+        pos = key_start + 1;
+    }
+}
+
 fn literal_first_arg(content: &str, mut pos: usize) -> Option<(&str, usize, usize)> {
     let bytes = content.as_bytes();
     skip_ascii_ws(bytes, &mut pos);
@@ -279,6 +455,21 @@ fn is_escaped(bytes: &[u8], quote: usize) -> bool {
         pos -= 1;
     }
     slash_count % 2 == 1
+}
+
+fn offset_range(content: &str, start: usize, end: usize) -> Range {
+    let (start_line, start_character) = offset_to_position(content, start);
+    let (end_line, end_character) = offset_to_position(content, end);
+    Range {
+        start: Position {
+            line: start_line,
+            character: start_character,
+        },
+        end: Position {
+            line: end_line,
+            character: end_character,
+        },
+    }
 }
 
 fn preview_label(message: &str) -> std::string::String {
@@ -330,5 +521,19 @@ mod tests {
 
         assert_eq!(catalog.message("auth.login"), Some("Log in"));
         assert!(catalog.message("en.auth.login").is_none());
+    }
+
+    #[test]
+    fn keeps_direct_message_root_keys() {
+        let source = r#"<template>{{ $t("auth.login") }}</template>
+<i18n lang="json">
+{ "auth": { "login": "Log in" } }
+</i18n>
+"#;
+        let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+        let catalog = collect_catalog(&descriptor);
+
+        assert_eq!(catalog.message("auth.login"), Some("Log in"));
+        assert!(catalog.message("login").is_none());
     }
 }
