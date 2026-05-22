@@ -21,7 +21,8 @@ import { promisify } from "node:util";
 const execFileP = promisify(execFile);
 
 const GIT_CLIFF_VERSION = "2.6.1";
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const scriptPath = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(scriptPath);
 const repoRoot = path.resolve(__dirname, "../..");
 
 function resolveAsset() {
@@ -98,17 +99,38 @@ async function ensureGitCliff() {
   return bin;
 }
 
+export function buildGitCliffArgs(argv) {
+  const args = ["--config", "cliff.toml", "--output", "CHANGELOG.md"];
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--unreleased") {
+      args.push("--unreleased");
+      continue;
+    }
+    if (arg === "--latest") {
+      args.push("--latest");
+      continue;
+    }
+    if (arg === "--tag") {
+      const tag = argv[i + 1];
+      if (tag == null || tag === "" || tag.startsWith("--")) {
+        throw new Error("Missing value for --tag");
+      }
+      args.push("--tag", tag);
+      i += 1;
+      continue;
+    }
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+
+  return args;
+}
+
 async function main() {
+  const args = buildGitCliffArgs(process.argv.slice(2));
   await mkdir(path.dirname(path.join(repoRoot, "CHANGELOG.md")), { recursive: true });
   const cliffBin = await ensureGitCliff();
-
-  const args = ["--config", "cliff.toml", "--output", "CHANGELOG.md"];
-  if (process.argv.includes("--unreleased")) args.push("--unreleased");
-  if (process.argv.includes("--latest")) args.push("--latest");
-  if (process.argv.includes("--tag")) {
-    const i = process.argv.indexOf("--tag");
-    args.push("--tag", process.argv[i + 1]);
-  }
 
   const result = spawnSync(cliffBin, args, { cwd: repoRoot, stdio: "inherit" });
   if (result.status !== 0) {
@@ -121,7 +143,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv[1] != null && path.resolve(process.argv[1]) === scriptPath) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
