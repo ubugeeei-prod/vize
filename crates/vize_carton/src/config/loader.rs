@@ -86,14 +86,29 @@ fn try_parse_candidate(path: &Path) -> Option<VizeConfig> {
     match parse_config_file(path) {
         Ok(config) => Some(config),
         Err(error) => {
+            let should_try_next = should_try_next_config(path, error.as_ref());
             eprintln!(
                 "\x1b[33mWarning:\x1b[0m Failed to parse {}: {}",
                 path.display(),
                 error
             );
-            None
+            if should_try_next {
+                None
+            } else {
+                Some(VizeConfig::default())
+            }
         }
     }
+}
+
+fn should_try_next_config(path: &Path, error: &(dyn std::error::Error + 'static)) -> bool {
+    if path.extension().and_then(|ext| ext.to_str()) != Some("pkl") {
+        return true;
+    }
+
+    error
+        .downcast_ref::<PklError>()
+        .is_some_and(is_process_error)
 }
 
 fn parse_config_file(path: &Path) -> Result<VizeConfig, Box<dyn std::error::Error>> {

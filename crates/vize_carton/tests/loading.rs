@@ -1,6 +1,6 @@
 #![allow(clippy::disallowed_macros)]
 
-use vize_carton::config::load_config;
+use vize_carton::config::{load_config, load_config_with_source};
 
 #[test]
 fn loads_pkl_defaults() {
@@ -138,4 +138,35 @@ lsp {
     let config = load_config(Some(dir.path()));
 
     insta::assert_snapshot!(serde_json::to_string_pretty(&config).unwrap());
+}
+
+#[test]
+fn invalid_pkl_config_does_not_fall_back_to_json() {
+    let dir = tempfile::tempdir().unwrap();
+    let config_path = dir.path().join("vize.config.pkl");
+    install_pkl_modules(dir.path());
+    std::fs::write(
+        &config_path,
+        r#"
+amends "node_modules/vize/pkl/VizeConfig.pkl"
+
+formatter {
+  singleQuote =
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{ "formatter": { "singleQuote": true } }"#,
+    )
+    .unwrap();
+
+    let loaded = load_config_with_source(Some(dir.path()));
+
+    assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
+    assert!(
+        !loaded.config.formatter.single_quote,
+        "invalid higher-priority pkl config must not silently fall back to json",
+    );
 }
