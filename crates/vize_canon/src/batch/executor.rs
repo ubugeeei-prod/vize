@@ -45,19 +45,30 @@ impl CorsaExecutor {
         corsa_path: Option<&Path>,
     ) -> Result<Self, CorsaNotFoundError> {
         if let Some(path) = corsa_path {
-            if !path.exists() {
-                return Err(CorsaNotFoundError::new_explicit(project_root, path));
+            let resolved_path = resolve_explicit_corsa_path(project_root, path);
+            if !resolved_path.exists() {
+                return Err(CorsaNotFoundError::new_explicit(
+                    project_root,
+                    &resolved_path,
+                ));
             }
-            let corsa_path = normalize_corsa_path(path.to_path_buf()).unwrap_or(path.to_path_buf());
+            let corsa_path = normalize_corsa_path(resolved_path.clone()).unwrap_or(resolved_path);
+            let corsa_path = corsa_path.canonicalize().unwrap_or(corsa_path);
             return Ok(Self { corsa_path });
         }
 
         for env_name in ["CORSA_PATH", "TSGO_PATH"] {
             if let Some(path) = std::env::var_os(env_name).map(PathBuf::from) {
-                if !path.exists() {
-                    return Err(CorsaNotFoundError::new_explicit(project_root, &path));
+                let resolved_path = resolve_explicit_corsa_path(project_root, &path);
+                if !resolved_path.exists() {
+                    return Err(CorsaNotFoundError::new_explicit(
+                        project_root,
+                        &resolved_path,
+                    ));
                 }
-                let corsa_path = normalize_corsa_path(path.clone()).unwrap_or(path);
+                let corsa_path =
+                    normalize_corsa_path(resolved_path.clone()).unwrap_or(resolved_path);
+                let corsa_path = corsa_path.canonicalize().unwrap_or(corsa_path);
                 return Ok(Self { corsa_path });
             }
         }
@@ -196,6 +207,26 @@ impl CorsaExecutor {
     }
 }
 
+fn resolve_explicit_corsa_path(project_root: &Path, path: &Path) -> PathBuf {
+    if path.is_absolute() {
+        return path.to_path_buf();
+    }
+
+    let project_candidate = project_root.join(path);
+    if project_candidate.exists() {
+        return project_candidate;
+    }
+
+    if let Ok(cwd) = std::env::current_dir() {
+        let cwd_candidate = cwd.join(path);
+        if cwd_candidate.exists() {
+            return cwd_candidate;
+        }
+    }
+
+    project_candidate
+}
+
 fn normalize_corsa_path(path: PathBuf) -> Option<PathBuf> {
     let Some(bin_dir) = path.parent() else {
         return Some(path);
@@ -322,7 +353,9 @@ fn should_fallback_to_cli(error: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{collect_declaration_outputs, collect_virtual_file_uris, normalize_corsa_path};
+    use super::{
+        CorsaExecutor, collect_declaration_outputs, collect_virtual_file_uris, normalize_corsa_path,
+    };
     use crate::file_uri::path_to_file_uri;
     use std::{
         fs,
@@ -425,6 +458,39 @@ mod tests {
     }
 
     #[test]
+    fn uses_explicit_corsa_path() {
+        let temp_dir = TempDir::new().unwrap();
+        let project_root = temp_dir.path().join("project");
+        let explicit = temp_dir.path().join("bin").join("tsgo");
+
+        fs::create_dir_all(&project_root).unwrap();
+        fs::create_dir_all(explicit.parent().unwrap()).unwrap();
+        fs::write(&explicit, "").unwrap();
+
+        let executor = CorsaExecutor::with_corsa_path(&project_root, Some(&explicit)).unwrap();
+
+        assert_eq!(executor.corsa_path(), explicit.canonicalize().unwrap());
+    }
+
+    #[test]
+    fn resolves_relative_explicit_corsa_path_against_project_root() {
+        let temp_dir = TempDir::new().unwrap();
+        let project_root = temp_dir.path().join("project");
+        let explicit = project_root.join("bin").join("tsgo");
+
+        fs::create_dir_all(explicit.parent().unwrap()).unwrap();
+        fs::write(&explicit, "").unwrap();
+
+        let executor = CorsaExecutor::with_corsa_path(
+            &project_root,
+            Some(PathBuf::from("bin/tsgo").as_path()),
+        )
+        .unwrap();
+
+        assert_eq!(executor.corsa_path(), explicit.canonicalize().unwrap());
+    }
+
+    #[test]
     fn collects_emitted_declaration_outputs() {
         let temp_dir = TempDir::new().unwrap();
         let out_dir = temp_dir.path().join("dist/types");
@@ -442,7 +508,6 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn checks_with_cli_when_project_session_api_is_unavailable() {
-        use super::CorsaExecutor;
         use crate::batch::VirtualProject;
         use std::os::unix::fs::PermissionsExt;
 
