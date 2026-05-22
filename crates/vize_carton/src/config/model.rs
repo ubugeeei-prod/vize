@@ -29,9 +29,6 @@ pub struct VizeConfig {
     /// Formatter settings shared by CLI and IDE formatting.
     #[serde(skip_serializing_if = "FormatterConfig::is_default")]
     pub formatter: FormatterConfig,
-    /// Linter settings shared by CLI and IDE linting.
-    #[serde(skip_serializing_if = "LinterConfig::is_default")]
-    pub linter: LinterConfig,
     /// Type checker settings shared by CLI and IDE diagnostics.
     #[serde(
         rename = "typeChecker",
@@ -108,7 +105,6 @@ impl From<RawVizeConfig> for VizeConfig {
         Self {
             schema: raw.schema,
             formatter,
-            linter: raw.linter,
             type_checker,
             language_server,
             global_types: raw.global_types.into(),

@@ -27,6 +27,11 @@ pub struct LoadedConfig {
     pub source_path: Option<PathBuf>,
 }
 
+struct LoadedRawConfig {
+    config: RawVizeConfig,
+    source_path: Option<PathBuf>,
+}
+
 /// Load configuration from a directory or file path.
 pub fn load_config(path: Option<&Path>) -> VizeConfig {
     load_config_with_source(path).config
@@ -34,20 +39,46 @@ pub fn load_config(path: Option<&Path>) -> VizeConfig {
 
 /// Load configuration from a directory or file path and return its source path.
 pub fn load_config_with_source(path: Option<&Path>) -> LoadedConfig {
+    let loaded = load_raw_config_with_source(path);
+    LoadedConfig {
+        config: loaded.config.into(),
+        source_path: loaded.source_path,
+    }
+}
+
+/// Load configuration and linter settings from a directory or file path in one pass.
+pub fn load_config_and_linter_with_source(path: Option<&Path>) -> (LoadedConfig, LinterConfig) {
+    let loaded = load_raw_config_with_source(path);
+    let linter = loaded.config.linter.clone();
+    (
+        LoadedConfig {
+            config: loaded.config.into(),
+            source_path: loaded.source_path,
+        },
+        linter,
+    )
+}
+
+/// Load linter-specific configuration from a directory or file path.
+pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
+    load_raw_config_with_source(path).config.linter
+}
+
+fn load_raw_config_with_source(path: Option<&Path>) -> LoadedRawConfig {
     let base = path
         .map(Path::to_path_buf)
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
 
     if let Some(file_path) = resolve_file_path(&base) {
-        return LoadedConfig {
-            config: parse_config_file(&file_path).unwrap_or_default(),
+        return LoadedRawConfig {
+            config: parse_raw_config_file(&file_path).unwrap_or_default(),
             source_path: Some(file_path),
         };
     }
 
     let Some(dir_path) = resolve_dir_path(&base) else {
-        return LoadedConfig {
-            config: VizeConfig::default(),
+        return LoadedRawConfig {
+            config: RawVizeConfig::default(),
             source_path: None,
         };
     };
@@ -59,47 +90,17 @@ pub fn load_config_with_source(path: Option<&Path>) -> LoadedConfig {
         }
 
         if let Some(config) = try_parse_candidate(&candidate) {
-            return LoadedConfig {
+            return LoadedRawConfig {
                 config,
                 source_path: Some(candidate),
             };
         }
     }
 
-    LoadedConfig {
-        config: VizeConfig::default(),
+    LoadedRawConfig {
+        config: RawVizeConfig::default(),
         source_path: None,
     }
-}
-
-/// Load linter-specific configuration from a directory or file path.
-pub fn load_linter_config(path: Option<&Path>) -> LinterConfig {
-    let base = path
-        .map(Path::to_path_buf)
-        .unwrap_or_else(|| std::env::current_dir().unwrap_or_default());
-
-    if let Some(file_path) = resolve_file_path(&base) {
-        return parse_raw_config_file(&file_path)
-            .map(|config| config.linter)
-            .unwrap_or_default();
-    }
-
-    let Some(dir_path) = resolve_dir_path(&base) else {
-        return LinterConfig::default();
-    };
-
-    for file_name in CONFIG_FILE_NAMES {
-        let candidate = dir_path.join(file_name);
-        if !candidate.exists() {
-            continue;
-        }
-
-        if let Some(config) = try_parse_raw_candidate(&candidate) {
-            return config.linter;
-        }
-    }
-
-    LinterConfig::default()
 }
 
 fn resolve_file_path(base: &Path) -> Option<PathBuf> {
@@ -122,8 +123,8 @@ fn resolve_dir_path(base: &Path) -> Option<PathBuf> {
     None
 }
 
-fn try_parse_candidate(path: &Path) -> Option<VizeConfig> {
-    try_parse_raw_candidate(path).map(Into::into)
+fn try_parse_candidate(path: &Path) -> Option<RawVizeConfig> {
+    try_parse_raw_candidate(path)
 }
 
 fn try_parse_raw_candidate(path: &Path) -> Option<RawVizeConfig> {
@@ -153,10 +154,6 @@ fn should_try_next_config(path: &Path, error: &(dyn std::error::Error + 'static)
     error
         .downcast_ref::<PklError>()
         .is_some_and(is_process_error)
-}
-
-fn parse_config_file(path: &Path) -> Result<VizeConfig, Box<dyn std::error::Error>> {
-    Ok(parse_raw_config_file(path)?.into())
 }
 
 fn parse_raw_config_file(path: &Path) -> Result<RawVizeConfig, Box<dyn std::error::Error>> {
@@ -293,7 +290,7 @@ fn local_pkl_candidates(base: &Path) -> [PathBuf; 6] {
 }
 #[cfg(test)]
 mod tests {
-    use super::{load_config_with_source, load_linter_config};
+    use super::{load_config_and_linter_with_source, load_config_with_source, load_linter_config};
 
     #[test]
     fn load_config_uses_explicit_file_path() {
@@ -324,12 +321,13 @@ export default {
         )
         .unwrap();
 
-        let loaded = load_config_with_source(Some(dir.path()));
+        let (loaded, linter_from_loaded_config) =
+            load_config_and_linter_with_source(Some(dir.path()));
         let linter = load_linter_config(Some(dir.path()));
 
         assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
         assert_eq!(
-            loaded.config.linter.disabled_rules(),
+            linter_from_loaded_config.disabled_rules(),
             ["vue/prop-name-casing"]
         );
         assert_eq!(linter.disabled_rules(), ["vue/prop-name-casing"]);

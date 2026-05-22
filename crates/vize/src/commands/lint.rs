@@ -106,13 +106,16 @@ pub fn run(args: LintArgs) {
     let render_details = should_render_lint_details(format, args.quiet);
     crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let loaded_config = if args.no_config {
-        crate::config::LoadedConfig {
-            config: crate::config::VizeConfig::default(),
-            source_path: None,
-        }
+    let (loaded_config, linter_config) = if args.no_config {
+        (
+            crate::config::LoadedConfig {
+                config: crate::config::VizeConfig::default(),
+                source_path: None,
+            },
+            crate::config::LinterConfig::default(),
+        )
     } else {
-        crate::config::load_config_with_source(args.config.as_deref())
+        crate::config::load_config_and_linter_with_source(args.config.as_deref())
     };
     let config_dir = loaded_config
         .source_path
@@ -120,7 +123,6 @@ pub fn run(args: LintArgs) {
         .and_then(Path::parent)
         .unwrap_or(cwd.as_path());
     let config = loaded_config.config;
-    let linter_config = config.linter.clone();
     if !linter_config.enabled {
         eprintln!("[vize] Skipping lint because linter.enabled is false in vize.config.");
         return;
