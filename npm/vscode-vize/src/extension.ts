@@ -6,11 +6,14 @@ import {
   ConfigurationTarget,
   ExtensionContext,
   OutputChannel,
+  StatusBarAlignment,
   Uri,
   commands,
   env,
   window,
   workspace,
+  type QuickPickItem,
+  type StatusBarItem,
 } from "vscode";
 import {
   Executable,
@@ -24,6 +27,13 @@ import {
 const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;
 let outputChannel: OutputChannel;
+let statusBarItem: StatusBarItem | undefined;
+let selectedServerCandidate: InspectedServerCandidate | undefined;
+let activeInitializationOptions: LspInitializationOptions = {};
+let currentStatus: VizeStatus = "disabled";
+let currentStatusDetail = "";
+let configurationSyncTimer: ReturnType<typeof setTimeout> | undefined;
+let suppressConfigurationSync = false;
 
 type LspInitializationOptions = Partial<Record<string, boolean>>;
 type ServerCandidateSource = "configured" | "bundled" | "development" | "cargo" | "path";
@@ -35,12 +45,26 @@ type InspectedServerCandidate = ServerCandidate & {
   version?: string;
   versionError?: string;
 };
+type VizeStatus = "disabled" | "starting" | "ready" | "missing-server" | "failed";
+type VizeStatusAction =
+  | "recommended"
+  | "lintOnly"
+  | "selectServer"
+  | "restart"
+  | "settings"
+  | "output"
+  | "disable";
+type VizeStatusQuickPickItem = QuickPickItem & {
+  action: VizeStatusAction;
+};
 const SUPPORTED_LANGUAGE_IDS = ["vue", "art-vue"] as const;
 const SUPPORTED_URI_SCHEMES = ["file", "untitled"] as const;
 const RECOMMENDED_SETUP_ACTION = "Enable Recommended";
+const LINT_ONLY_SETUP_ACTION = "Enable Lint Only";
 const OPEN_SETTINGS_ACTION = "Open Settings";
 const DISMISS_ACTION = "Dismiss";
 const OPEN_SETUP_DOCS_ACTION = "Open Setup Docs";
+const SELECT_SERVER_ACTION = "Select Binary";
 const SHOW_OUTPUT_ACTION = "Show Output";
 const INITIAL_SETUP_PROMPT_DISMISSED_KEY = "vize.initialSetupPrompt.dismissed";
 const CAPABILITY_PROMPT_DISMISSED_KEY = "vize.capabilityPrompt.dismissed";
@@ -65,11 +89,36 @@ const FEATURE_SETTING_KEYS = [
   "inlayHints.enable",
   "fileRename.enable",
 ] as const;
+const CAPABILITY_LABELS: Record<string, string> = {
+  lint: "lint",
+  typecheck: "type check",
+  editor: "editor bundle",
+  completion: "completion",
+  hover: "hover",
+  definition: "definition",
+  references: "references",
+  documentSymbols: "document symbols",
+  workspaceSymbols: "workspace symbols",
+  codeActions: "code actions",
+  rename: "rename",
+  codeLens: "code lens",
+  formatting: "formatting",
+  semanticTokens: "semantic tokens",
+  documentLinks: "document links",
+  foldingRanges: "folding",
+  inlayHints: "inlay hints",
+  fileRename: "file rename",
+};
 
 export async function activate(context: ExtensionContext): Promise<void> {
   outputChannel = window.createOutputChannel("Vize");
   outputChannel.appendLine("Vize extension activating...");
   context.subscriptions.push(outputChannel);
+
+  statusBarItem = window.createStatusBarItem(StatusBarAlignment.Right, 95);
+  statusBarItem.command = "vize.showStatus";
+  context.subscriptions.push(statusBarItem);
+  updateStatusBar("starting", "Initializing Vize");
 
   context.subscriptions.push(
     workspace.onDidChangeConfiguration(async (event) => {
@@ -77,12 +126,39 @@ export async function activate(context: ExtensionContext): Promise<void> {
         return;
       }
 
+      if (suppressConfigurationSync) {
+        outputChannel.appendLine("Vize configuration changed while applying a profile.");
+        return;
+      }
+
       outputChannel.appendLine("Vize configuration changed. Refreshing language server...");
-      await syncClientToConfiguration(context, "configuration changed");
+      scheduleClientSync(context, "configuration changed");
     }),
   );
 
   context.subscriptions.push(
+    commands.registerCommand("vize.enableRecommendedProfile", async () => {
+      await applyRecommendedConfiguration();
+      await syncClientToConfiguration(context, "recommended profile applied");
+    }),
+
+    commands.registerCommand("vize.enableLintOnlyProfile", async () => {
+      await applyLintOnlyConfiguration();
+      await syncClientToConfiguration(context, "lint-only profile applied");
+    }),
+
+    commands.registerCommand("vize.selectServerPath", async () => {
+      await selectServerExecutable(context);
+    }),
+
+    commands.registerCommand("vize.showStatus", async () => {
+      await showStatus(context);
+    }),
+
+    commands.registerCommand("vize.disable", async () => {
+      await disableVize(context);
+    }),
+
     commands.registerCommand("vize.restartServer", async () => {
       outputChannel.appendLine("Restarting language server...");
       await syncClientToConfiguration(context, "manual restart");
@@ -103,6 +179,17 @@ export async function activate(context: ExtensionContext): Promise<void> {
   await syncClientToConfiguration(context, "initial activation");
 }
 
+function scheduleClientSync(context: ExtensionContext, reason: string): void {
+  if (configurationSyncTimer) {
+    clearTimeout(configurationSyncTimer);
+  }
+
+  configurationSyncTimer = setTimeout(() => {
+    configurationSyncTimer = undefined;
+    void syncClientToConfiguration(context, reason);
+  }, 150);
+}
+
 async function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
   let config = workspace.getConfiguration("vize");
 
@@ -112,11 +199,15 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
 
     if (!config.get<boolean>("enable", false)) {
       if (client) {
+        updateStatusBar("starting", "Stopping language server");
         outputChannel.appendLine(`Stopping Vize language server (${reason}; extension disabled).`);
         await stopClient();
       } else {
         outputChannel.appendLine("Vize is disabled. Set vize.enable to true to start the server.");
       }
+      activeInitializationOptions = {};
+      selectedServerCandidate = undefined;
+      updateStatusBar("disabled", "Language server is disabled");
       return;
     }
 
@@ -124,6 +215,7 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
   }
 
   if (client) {
+    updateStatusBar("starting", "Restarting language server");
     outputChannel.appendLine(`Restarting Vize language server (${reason}).`);
     await stopClient();
   }
@@ -146,12 +238,18 @@ async function maybeOfferInitialSetup(
   const selection = await window.showInformationMessage(
     "Vize is installed but disabled. Enable the recommended diagnostics and navigation profile for this workspace?",
     RECOMMENDED_SETUP_ACTION,
+    LINT_ONLY_SETUP_ACTION,
     OPEN_SETTINGS_ACTION,
     DISMISS_ACTION,
   );
 
   if (selection === RECOMMENDED_SETUP_ACTION) {
     await applyRecommendedConfiguration();
+    return;
+  }
+
+  if (selection === LINT_ONLY_SETUP_ACTION) {
+    await applyLintOnlyConfiguration();
     return;
   }
 
@@ -180,12 +278,18 @@ async function maybeOfferCapabilitySetup(
   const selection = await window.showInformationMessage(
     "Vize is enabled but no language features are turned on. Enable diagnostics and navigation for this workspace?",
     RECOMMENDED_SETUP_ACTION,
+    LINT_ONLY_SETUP_ACTION,
     OPEN_SETTINGS_ACTION,
     DISMISS_ACTION,
   );
 
   if (selection === RECOMMENDED_SETUP_ACTION) {
     await applyRecommendedConfiguration();
+    return;
+  }
+
+  if (selection === LINT_ONLY_SETUP_ACTION) {
+    await applyLintOnlyConfiguration();
     return;
   }
 
@@ -200,13 +304,186 @@ async function maybeOfferCapabilitySetup(
 }
 
 async function applyRecommendedConfiguration(): Promise<void> {
+  await applyConfigurationUpdates([
+    ["enable", true],
+    ["lint.enable", true],
+    ["typecheck.enable", true],
+    ["editor.enable", true],
+  ]);
+}
+
+async function applyLintOnlyConfiguration(): Promise<void> {
+  await applyConfigurationUpdates([
+    ["enable", true],
+    ["lint.enable", true],
+    ["diagnostics.enable", false],
+    ["typecheck.enable", false],
+    ["editor.enable", false],
+    ["completion.enable", false],
+    ["hover.enable", false],
+    ["definition.enable", false],
+    ["references.enable", false],
+    ["documentSymbols.enable", false],
+    ["workspaceSymbols.enable", false],
+    ["codeActions.enable", false],
+    ["rename.enable", false],
+    ["codeLens.enable", false],
+    ["formatting.enable", false],
+    ["semanticTokens.enable", false],
+    ["documentLinks.enable", false],
+    ["foldingRanges.enable", false],
+    ["inlayHints.enable", false],
+    ["fileRename.enable", false],
+  ]);
+}
+
+async function applyConfigurationUpdates(updates: Array<[string, unknown]>): Promise<void> {
   const config = workspace.getConfiguration("vize");
   const target = getConfigurationTarget();
 
-  await config.update("enable", true, target);
-  await config.update("lint.enable", true, target);
-  await config.update("typecheck.enable", true, target);
-  await config.update("editor.enable", true, target);
+  suppressConfigurationSync = true;
+  try {
+    for (const [key, value] of updates) {
+      await config.update(key, value, target);
+    }
+  } finally {
+    suppressConfigurationSync = false;
+  }
+}
+
+async function disableVize(context: ExtensionContext): Promise<void> {
+  await applyConfigurationUpdates([["enable", false]]);
+  await syncClientToConfiguration(context, "disabled from command");
+}
+
+async function selectServerExecutable(context: ExtensionContext): Promise<void> {
+  const selection = await window.showOpenDialog({
+    canSelectFiles: true,
+    canSelectFolders: false,
+    canSelectMany: false,
+    defaultUri: workspace.workspaceFolders?.[0]?.uri,
+    openLabel: "Use as Vize Server",
+    title: "Select vize language server executable",
+  });
+  const selectedUri = selection?.[0];
+  if (!selectedUri) {
+    return;
+  }
+
+  await applyConfigurationUpdates([
+    ["serverPath", selectedUri.fsPath],
+    ["enable", true],
+  ]);
+  await syncClientToConfiguration(context, "server executable selected");
+}
+
+async function showStatus(context: ExtensionContext): Promise<void> {
+  const config = workspace.getConfiguration("vize");
+  const initializationOptions = getInitializationOptions(config, { logDefaultProfile: false });
+  const items = createStatusItems(config);
+
+  const selected = await window.showQuickPick(items, {
+    placeHolder: createStatusSummary(config, initializationOptions),
+    title: "Vize Status",
+  });
+
+  if (!selected) {
+    return;
+  }
+
+  await runStatusAction(context, selected.action);
+}
+
+function createStatusItems(
+  config: ReturnType<typeof workspace.getConfiguration>,
+): VizeStatusQuickPickItem[] {
+  const enabled = config.get<boolean>("enable", false);
+  const items: VizeStatusQuickPickItem[] = [
+    {
+      action: "recommended",
+      description: "lint + typecheck + editor",
+      detail: "Best one-click profile when evaluating Vize as a full Vue language assistant.",
+      label: "$(rocket) Enable Recommended Profile",
+    },
+    {
+      action: "lintOnly",
+      description: "safe alongside Volar",
+      detail:
+        "Turns on Vize diagnostics while leaving navigation, completion, and formatting elsewhere.",
+      label: "$(beaker) Enable Lint-Only Profile",
+    },
+    {
+      action: "selectServer",
+      description: selectedServerCandidate
+        ? `${selectedServerCandidate.source}: ${selectedServerCandidate.path}`
+        : "pick a vize executable",
+      detail: "Use this when the auto-detected server is missing or not the version you want.",
+      label: "$(folder-opened) Select Language Server Executable",
+    },
+    {
+      action: "settings",
+      description: "open settings",
+      label: "$(settings-gear) Open Vize Settings",
+    },
+    {
+      action: "output",
+      description: "show logs",
+      label: "$(output) Show Output Channel",
+    },
+  ];
+
+  if (enabled) {
+    items.splice(3, 0, {
+      action: "restart",
+      description: "restart now",
+      label: "$(debug-restart) Restart Language Server",
+    });
+    items.push({
+      action: "disable",
+      description: "stop Vize",
+      label: "$(circle-slash) Disable Language Server",
+    });
+  }
+
+  return items;
+}
+
+async function runStatusAction(context: ExtensionContext, action: VizeStatusAction): Promise<void> {
+  if (action === "recommended") {
+    await applyRecommendedConfiguration();
+    await syncClientToConfiguration(context, "recommended profile applied from status");
+    return;
+  }
+
+  if (action === "lintOnly") {
+    await applyLintOnlyConfiguration();
+    await syncClientToConfiguration(context, "lint-only profile applied from status");
+    return;
+  }
+
+  if (action === "selectServer") {
+    await selectServerExecutable(context);
+    return;
+  }
+
+  if (action === "restart") {
+    await syncClientToConfiguration(context, "status restart");
+    return;
+  }
+
+  if (action === "settings") {
+    await commands.executeCommand("workbench.action.openSettings", "vize");
+    return;
+  }
+
+  if (action === "output") {
+    outputChannel.show();
+    return;
+  }
+
+  if (action === "disable") {
+    await disableVize(context);
+  }
 }
 
 function getConfigurationTarget(): ConfigurationTarget {
@@ -257,13 +534,19 @@ function hasWorkspaceLspConfig(): boolean {
   );
 }
 
-async function showServerNotFoundMessage(): Promise<void> {
+async function showServerNotFoundMessage(context: ExtensionContext): Promise<void> {
   const selection = await window.showErrorMessage(
     "Vize: Could not find the language server. Install the vize CLI with `cargo install vize` or set vize.serverPath.",
+    SELECT_SERVER_ACTION,
     OPEN_SETUP_DOCS_ACTION,
     OPEN_SETTINGS_ACTION,
     SHOW_OUTPUT_ACTION,
   );
+
+  if (selection === SELECT_SERVER_ACTION) {
+    await selectServerExecutable(context);
+    return;
+  }
 
   if (selection === OPEN_SETTINGS_ACTION) {
     await commands.executeCommand("workbench.action.openSettings", "vize.serverPath");
@@ -287,6 +570,9 @@ async function startClient(
   config: ReturnType<typeof workspace.getConfiguration>,
 ): Promise<void> {
   const initializationOptions = getInitializationOptions(config);
+  activeInitializationOptions = initializationOptions;
+  updateStatusBar("starting", `Starting with ${describeCapabilities(initializationOptions)}`);
+
   if (Object.keys(initializationOptions).length === 0) {
     outputChannel.appendLine(
       "Vize server is enabled with no opt-in features. Enable lint, typecheck, and editor assistance to activate diagnostics and navigation.",
@@ -296,7 +582,8 @@ async function startClient(
 
   const serverPath = await findServerPath(context, config);
   if (!serverPath) {
-    await showServerNotFoundMessage();
+    updateStatusBar("missing-server", "Language server executable was not found");
+    await showServerNotFoundMessage(context);
     return;
   }
 
@@ -316,8 +603,10 @@ async function startClient(
     await nextClient.start();
     client = nextClient;
     outputChannel.appendLine("Vize language server started successfully");
+    updateStatusBar("ready", `Ready with ${describeCapabilities(initializationOptions)}`);
   } catch (error) {
     outputChannel.appendLine(`Failed to start language server: ${String(error)}`);
+    updateStatusBar("failed", "Failed to start language server");
     window.showErrorMessage(`Vize: Failed to start language server: ${String(error)}`);
   }
 }
@@ -370,6 +659,7 @@ function applyTraceSetting(
 
 function getInitializationOptions(
   config: ReturnType<typeof workspace.getConfiguration>,
+  behavior: { logDefaultProfile?: boolean } = {},
 ): LspInitializationOptions {
   const options: LspInitializationOptions = {};
 
@@ -399,9 +689,11 @@ function getInitializationOptions(
     !hasAnyExplicitCapabilityValue(config) &&
     !hasWorkspaceLspConfig()
   ) {
-    outputChannel.appendLine(
-      "Vize is enabled with no explicit feature switches. Using the recommended diagnostics and editor profile.",
-    );
+    if (behavior.logDefaultProfile !== false) {
+      outputChannel.appendLine(
+        "Vize is enabled with no explicit feature switches. Using the recommended diagnostics and editor profile.",
+      );
+    }
     options.lint = true;
     options.typecheck = true;
     options.editor = true;
@@ -430,6 +722,7 @@ async function findServerPath(
 ): Promise<string | undefined> {
   const exeName = process.platform === "win32" ? "vize.exe" : "vize";
   const expectedVersion = getExtensionVersion(context);
+  selectedServerCandidate = undefined;
 
   const configuredPath = config.get<string>("serverPath")?.trim();
   if (configuredPath) {
@@ -440,6 +733,7 @@ async function findServerPath(
       });
       logSelectedServer(candidate, expectedVersion);
       void warnAboutVersionMismatch(candidate, expectedVersion);
+      selectedServerCandidate = candidate;
       return configuredPath;
     }
 
@@ -452,6 +746,7 @@ async function findServerPath(
     const matchingCandidate = candidates.find((candidate) => candidate.version === expectedVersion);
     if (matchingCandidate) {
       logSelectedServer(matchingCandidate, expectedVersion);
+      selectedServerCandidate = matchingCandidate;
       return matchingCandidate.path;
     }
   }
@@ -460,11 +755,86 @@ async function findServerPath(
   if (fallbackCandidate) {
     logSelectedServer(fallbackCandidate, expectedVersion);
     void warnAboutVersionMismatch(fallbackCandidate, expectedVersion);
+    selectedServerCandidate = fallbackCandidate;
     return fallbackCandidate.path;
   }
 
   outputChannel.appendLine("Server not found in any location");
   return undefined;
+}
+
+function updateStatusBar(status: VizeStatus, detail: string): void {
+  currentStatus = status;
+  currentStatusDetail = detail;
+
+  if (!statusBarItem) {
+    return;
+  }
+
+  const statusText: Record<VizeStatus, string> = {
+    disabled: "$(circle-slash) Vize",
+    failed: "$(error) Vize",
+    "missing-server": "$(warning) Vize",
+    ready: "$(check) Vize",
+    starting: "$(sync~spin) Vize",
+  };
+
+  statusBarItem.text = statusText[status];
+  statusBarItem.tooltip = createStatusTooltip();
+  statusBarItem.show();
+}
+
+function createStatusTooltip(): string {
+  const lines = [`Vize: ${formatStatus(currentStatus)}`];
+
+  if (currentStatusDetail) {
+    lines.push(currentStatusDetail);
+  }
+
+  if (Object.keys(activeInitializationOptions).length > 0) {
+    lines.push(`Features: ${describeCapabilities(activeInitializationOptions)}`);
+  }
+
+  if (selectedServerCandidate) {
+    const version = selectedServerCandidate.version
+      ? ` ${selectedServerCandidate.version}`
+      : " unknown version";
+    lines.push(`Server: ${selectedServerCandidate.source}${version}`, selectedServerCandidate.path);
+  }
+
+  lines.push("Click to manage Vize.");
+  return lines.join("\n");
+}
+
+function createStatusSummary(
+  config: ReturnType<typeof workspace.getConfiguration>,
+  initializationOptions: LspInitializationOptions,
+): string {
+  const enabled = config.get<boolean>("enable", false) ? "enabled" : "disabled";
+  const server = selectedServerCandidate
+    ? `${selectedServerCandidate.source} ${selectedServerCandidate.version ?? "unknown"}`
+    : "server not resolved";
+
+  return `Vize is ${formatStatus(currentStatus)} (${enabled}). Features: ${describeCapabilities(initializationOptions)}. Server: ${server}.`;
+}
+
+function formatStatus(status: VizeStatus): string {
+  const labels: Record<VizeStatus, string> = {
+    disabled: "disabled",
+    failed: "failed",
+    "missing-server": "server missing",
+    ready: "ready",
+    starting: "starting",
+  };
+  return labels[status];
+}
+
+function describeCapabilities(options: LspInitializationOptions): string {
+  const capabilities = Object.entries(options)
+    .filter(([, enabled]) => enabled === true)
+    .map(([name]) => CAPABILITY_LABELS[name] ?? name);
+
+  return capabilities.length ? capabilities.join(", ") : "none";
 }
 
 function collectServerCandidates(context: ExtensionContext, exeName: string): ServerCandidate[] {

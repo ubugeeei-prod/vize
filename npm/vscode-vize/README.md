@@ -50,7 +50,9 @@ Opening a Vue file now prompts you to apply a recommended workspace setup if the
 That quick setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, and `vize.editor.enable` for the current workspace so diagnostics, hover, and jump work immediately.
 If you manually set only `vize.enable: true`, the extension uses that same recommended diagnostics and editor profile instead of starting an empty language server.
 
-If you dismissed that prompt and want a lighter rollout, start with lint-only mode, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
+The status bar item opens `Vize: Show Status`, a small command hub for switching profiles, selecting the `vize` executable, restarting the server, opening settings, and showing logs. If the server cannot be found, the same flow lets you pick a local binary instead of hunting through settings.
+
+If you want a lighter rollout, run `Vize: Enable Lint-Only Profile`, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
 
 ```json
 {
@@ -83,6 +85,11 @@ documents.
 
 ## Commands
 
+- `Vize: Show Status` - Open the Vize status and setup action hub
+- `Vize: Enable Recommended Profile` - Enable lint, type checking, and editor assistance
+- `Vize: Enable Lint-Only Profile` - Enable diagnostics while leaving editor navigation to existing tools
+- `Vize: Select Language Server Executable` - Set `vize.serverPath` from a file picker
+- `Vize: Disable Language Server` - Stop Vize for the current configuration target
 - `Vize: Restart Language Server` - Restart the LSP server
 - `Vize: Show Output Channel` - Show server logs
 

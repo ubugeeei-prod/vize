@@ -235,6 +235,31 @@
     },
     "commands": [
       {
+        "command": "vize.showStatus",
+        "title": "Show Status",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.enableRecommendedProfile",
+        "title": "Enable Recommended Profile",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.enableLintOnlyProfile",
+        "title": "Enable Lint-Only Profile",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.selectServerPath",
+        "title": "Select Language Server Executable",
+        "category": "Vize"
+      },
+      {
+        "command": "vize.disable",
+        "title": "Disable Language Server",
+        "category": "Vize"
+      },
+      {
         "command": "vize.restartServer",
         "title": "Restart Language Server",
         "category": "Vize"
@@ -252,6 +277,21 @@
     ],
     "menus": {
       "commandPalette": [
+        {
+          "command": "vize.showStatus"
+        },
+        {
+          "command": "vize.enableRecommendedProfile"
+        },
+        {
+          "command": "vize.enableLintOnlyProfile"
+        },
+        {
+          "command": "vize.selectServerPath"
+        },
+        {
+          "command": "vize.disable"
+        },
         {
           "command": "vize.restartServer",
           "when": "editorLangId == vue || editorLangId == art-vue"
@@ -308,6 +348,13 @@
     ]
   },
   "activationEvents": [
+    "onCommand:vize.disable",
+    "onCommand:vize.enableLintOnlyProfile",
+    "onCommand:vize.enableRecommendedProfile",
+    "onCommand:vize.restartServer",
+    "onCommand:vize.selectServerPath",
+    "onCommand:vize.showOutput",
+    "onCommand:vize.showStatus",
     "onLanguage:art-vue",
     "onLanguage:vue"
   ],
