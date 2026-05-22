@@ -33,13 +33,12 @@ cargo install --path crates/vize --force --locked
 
 ## Rust CLI vs npm CLI
 
-| Need                                                                   | Recommended entry point                  |
-| ---------------------------------------------------------------------- | ---------------------------------------- |
-| Package scripts for build, format, lint, check, ready, and upgrade     | `vp exec vize ...` from the npm package  |
-| Project-backed type checking across `.vue`, `.ts`, `.tsx`, and `.d.ts` | Rust `vize check`                        |
-| LSP, IDE setup, `check-server`, and profiling artifacts                | Rust `vize` binary                       |
-| Shared Vite plugin and npm CLI settings                                | `vize.config.ts` through the npm package |
-| Rust command-native settings                                           | `vize.config.pkl` or `vize.config.json`  |
+| Need                                                                   | Recommended entry point                 |
+| ---------------------------------------------------------------------- | --------------------------------------- |
+| Package scripts for build, format, lint, check, ready, and upgrade     | `vp exec vize ...` from the npm package |
+| Project-backed type checking across `.vue`, `.ts`, `.tsx`, and `.d.ts` | Rust `vize check`                       |
+| LSP, IDE setup, `check-server`, and profiling artifacts                | Rust `vize` binary                      |
+| Shared Vite plugin, npm CLI, and Rust CLI settings                     | `vize.config.*`                         |
 
 ## Commands
 

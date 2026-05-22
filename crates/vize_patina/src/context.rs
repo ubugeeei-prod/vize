@@ -53,6 +53,8 @@ pub struct LintContext<'a> {
     line_offsets: Vec<u32>,
     /// Optional set of enabled rule names (if None, all rules are enabled).
     enabled_rules: Option<FxHashSet<String>>,
+    /// Rule names disabled by host configuration.
+    config_disabled_rules: FxHashSet<String>,
     /// Optional semantic analysis from croquis.
     pub(crate) analysis: Option<&'a Croquis>,
     /// Optional parsed SFC descriptor shared by SFC-level rules.
@@ -104,6 +106,7 @@ impl<'a> LintContext<'a> {
             disabled_rules: FxHashMap::default(),
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
+            config_disabled_rules: FxHashSet::default(),
             analysis: None,
             sfc_descriptor: None,
             analysis_excluded_rules: None,
@@ -137,6 +140,7 @@ impl<'a> LintContext<'a> {
             disabled_rules: FxHashMap::default(),
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
+            config_disabled_rules: FxHashSet::default(),
             analysis: Some(analysis),
             sfc_descriptor: None,
             analysis_excluded_rules: None,
@@ -228,9 +232,18 @@ impl<'a> LintContext<'a> {
         self.enabled_rules = enabled;
     }
 
+    /// Set globally disabled rules from host configuration.
+    #[inline]
+    pub fn set_config_disabled_rules(&mut self, disabled: FxHashSet<String>) {
+        self.config_disabled_rules = disabled;
+    }
+
     /// Check if a rule is enabled.
     #[inline]
     pub fn is_rule_enabled(&self, rule_name: &str) -> bool {
+        if self.config_disabled_rules.contains(rule_name) {
+            return false;
+        }
         match &self.enabled_rules {
             Some(set) => set.contains(rule_name),
             None => true,

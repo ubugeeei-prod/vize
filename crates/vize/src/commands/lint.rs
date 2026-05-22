@@ -119,6 +119,15 @@ pub fn run(args: LintArgs) {
         .as_deref()
         .and_then(Path::parent)
         .unwrap_or(cwd.as_path());
+    let linter_config = if args.no_config {
+        crate::config::LinterConfig::default()
+    } else {
+        crate::config::load_linter_config(args.config.as_deref())
+    };
+    if !linter_config.enabled {
+        eprintln!("[vize] Skipping lint because linter.enabled is false in vize.config.");
+        return;
+    }
     let configured_corsa_path = loaded_config
         .config
         .type_checker
@@ -140,8 +149,14 @@ pub fn run(args: LintArgs) {
         "short" => HelpLevel::Short,
         _ => HelpLevel::Full,
     };
-    let preset = LintPreset::parse(&args.preset).unwrap_or_default();
-    let mut linter = Linter::with_preset(preset).with_help_level(help_level);
+    let preset_name = linter_config
+        .preset
+        .as_deref()
+        .unwrap_or(args.preset.as_str());
+    let preset = LintPreset::parse(preset_name).unwrap_or_default();
+    let mut linter = Linter::with_preset(preset)
+        .with_disabled_rules(linter_config.disabled_rules())
+        .with_help_level(help_level);
     #[cfg(not(target_arch = "wasm32"))]
     {
         linter = linter.with_corsa_path(configured_corsa_path);

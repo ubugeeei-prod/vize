@@ -59,6 +59,8 @@ pub struct Linter {
     pub(crate) locale: Locale,
     /// Optional set of enabled rule names (if None, all rules are enabled).
     pub(crate) enabled_rules: Option<FxHashSet<String>>,
+    /// Rule names disabled by host configuration.
+    pub(crate) disabled_rules: FxHashSet<String>,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
     /// Built-in script rules enabled for this linter.
@@ -85,6 +87,7 @@ impl Linter {
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
+            disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
@@ -103,6 +106,7 @@ impl Linter {
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
+            disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
@@ -121,6 +125,7 @@ impl Linter {
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
+            disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: &[],
             #[cfg(not(target_arch = "wasm32"))]
@@ -161,6 +166,13 @@ impl Linter {
         self
     }
 
+    /// Disable selected rules while preserving the active preset.
+    #[inline]
+    pub fn with_disabled_rules(mut self, rules: Vec<String>) -> Self {
+        self.disabled_rules = rules.into_iter().collect();
+        self
+    }
+
     /// Register an extra rule if the active preset did not already include it.
     #[inline]
     pub fn with_rule(mut self, rule: Box<dyn crate::rule::Rule>) -> Self {
@@ -195,6 +207,9 @@ impl Linter {
     /// Check if a rule is enabled.
     #[inline]
     pub fn is_rule_enabled(&self, rule_name: &str) -> bool {
+        if self.disabled_rules.contains(rule_name) {
+            return false;
+        }
         match &self.enabled_rules {
             Some(set) => set.contains(rule_name),
             None => true,

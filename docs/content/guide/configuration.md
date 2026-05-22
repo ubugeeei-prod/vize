@@ -4,8 +4,7 @@ title: Configuration
 
 # Configuration
 
-Vize uses `vize.config.*` for shared npm CLI and Vite plugin settings. Some Rust CLI commands also
-read config directly, but their supported file formats and field names are currently narrower.
+Vize uses `vize.config.*` for shared npm CLI, Vite plugin, and Rust CLI settings.
 
 ## Config Files
 
@@ -17,8 +16,8 @@ The npm CLI and `@vizejs/vite-plugin` load these files from the project root:
 - `vize.config.pkl`
 - `vize.config.json`
 
-The Rust CLI currently reads `vize.config.pkl` first and then `vize.config.json` for command-native
-settings such as `check`, `lsp`, and `fmt`.
+The Rust CLI reads the same config file names in the order above for command-native settings such as
+`check`, `lint`, `lsp`, and `fmt`.
 
 ## TypeScript Config
 

@@ -172,6 +172,7 @@ impl Linter {
     ) -> LintResult {
         let mut ctx = LintContext::with_locale(allocator, source, filename, self.locale);
         ctx.set_enabled_rules(self.enabled_rules.clone());
+        ctx.set_config_disabled_rules(self.disabled_rules.clone());
         ctx.set_help_level(self.help_level);
         #[cfg(not(target_arch = "wasm32"))]
         #[cfg(not(target_arch = "wasm32"))]
