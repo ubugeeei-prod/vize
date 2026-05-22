@@ -177,23 +177,24 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Collect imported names from all module-level import statements to handle
     // cases where plain <script> imports are not in summary.bindings (which
     // only holds <script setup> bindings when both blocks exist).
-    let imported_names: Vec<&str> = profile!("canon.virtual_ts.extract_imported_names", {
-        if let Some(script) = script_content {
-            summary
-                .import_statements
-                .iter()
-                .flat_map(|imp| {
-                    let text = script
-                        .get(imp.start as usize..imp.end as usize)
-                        .unwrap_or("");
-                    extract_import_names(text)
-                })
-                .collect()
-        } else {
-            Vec::new()
-        }
-    });
     if !options.auto_import_stubs.is_empty() {
+        let imported_names: FxHashSet<&str> = profile!(
+            "canon.virtual_ts.extract_imported_names",
+            if let Some(script) = script_content {
+                summary
+                    .import_statements
+                    .iter()
+                    .flat_map(|imp| {
+                        let text = script
+                            .get(imp.start as usize..imp.end as usize)
+                            .unwrap_or("");
+                        extract_import_names(text)
+                    })
+                    .collect()
+            } else {
+                FxHashSet::default()
+            }
+        );
         profile!("canon.virtual_ts.emit_auto_import_stubs", {
             let mut has_header = false;
             for stub in &options.auto_import_stubs {
@@ -241,8 +242,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             // Use split('\n') to correctly track byte offsets for CRLF files.
             // Rust's lines() strips \r from CRLF but +1 for \n undercounts,
             // causing src_byte_offset drift that incorrectly skips user code.
-            let raw_lines: Vec<&str> = script.split('\n').collect();
             let mut src_byte_offset: usize = 0; // offset within script content
+            let mut module_span_index = 0usize;
 
             // Check if script uses import.meta and add a polyfill variable.
             // This avoids TS1343 when module is not set to es2020+.
@@ -251,7 +252,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 ts.push_str("  const __import_meta: any = {};\n");
             }
 
-            for raw_line in raw_lines.iter() {
+            for raw_line in script.split('\n') {
                 // Strip trailing \r for output (normalize CRLF to LF)
                 let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
                 // raw_line.len() includes \r if present; +1 for the \n from split
@@ -260,9 +261,15 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 // Skip lines that overlap with module-level spans (imports, re-exports, type decls)
                 let line_start = src_byte_offset;
                 let line_end = line_start + raw_line.len(); // use raw length for span check
-                let is_module_level = module_spans
+                while module_span_index < module_spans.len()
+                    && module_spans[module_span_index].1 as usize <= line_start
+                {
+                    module_span_index += 1;
+                }
+                let is_module_level = module_spans[module_span_index..]
                     .iter()
-                    .any(|&(s, e)| line_start < e as usize && line_end > s as usize);
+                    .take_while(|&&(start, _)| (start as usize) < line_end)
+                    .any(|&(start, end)| line_start < end as usize && line_end > start as usize);
                 if is_module_level {
                     src_byte_offset += raw_byte_len;
                     continue;

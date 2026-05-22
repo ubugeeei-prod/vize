@@ -328,6 +328,10 @@ export default {
         let linter = load_linter_config(Some(dir.path()));
 
         assert_eq!(loaded.source_path.as_deref(), Some(config_path.as_path()));
+        assert_eq!(
+            loaded.config.linter.disabled_rules(),
+            ["vue/prop-name-casing"]
+        );
         assert_eq!(linter.disabled_rules(), ["vue/prop-name-casing"]);
     }
 }

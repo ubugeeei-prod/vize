@@ -119,17 +119,13 @@ pub fn run(args: LintArgs) {
         .as_deref()
         .and_then(Path::parent)
         .unwrap_or(cwd.as_path());
-    let linter_config = if args.no_config {
-        crate::config::LinterConfig::default()
-    } else {
-        crate::config::load_linter_config(args.config.as_deref())
-    };
+    let config = loaded_config.config;
+    let linter_config = config.linter.clone();
     if !linter_config.enabled {
         eprintln!("[vize] Skipping lint because linter.enabled is false in vize.config.");
         return;
     }
-    let configured_corsa_path = loaded_config
-        .config
+    let configured_corsa_path = config
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
