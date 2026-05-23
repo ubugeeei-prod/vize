@@ -11,6 +11,8 @@ use crate::{
     rule::RuleRegistry,
 };
 #[cfg(not(target_arch = "wasm32"))]
+use std::path::PathBuf;
+#[cfg(not(target_arch = "wasm32"))]
 use std::sync::Mutex;
 use vize_carton::{FxHashSet, String, i18n::Locale};
 
@@ -57,6 +59,8 @@ pub struct Linter {
     pub(crate) locale: Locale,
     /// Optional set of enabled rule names (if None, all rules are enabled).
     pub(crate) enabled_rules: Option<FxHashSet<String>>,
+    /// Rule names disabled by host configuration.
+    pub(crate) disabled_rules: FxHashSet<String>,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
     /// Built-in script rules enabled for this linter.
@@ -64,6 +68,9 @@ pub struct Linter {
     /// Lazily initialized native corsa session for type-aware lint.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) native_corsa: Mutex<Option<CorsaTypeAwareSession>>,
+    /// Optional configured Corsa executable for type-aware lint.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub(crate) corsa_path: Option<PathBuf>,
 }
 
 impl Linter {
@@ -80,10 +87,13 @@ impl Linter {
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
+            disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
+            #[cfg(not(target_arch = "wasm32"))]
+            corsa_path: None,
         }
     }
 
@@ -96,10 +106,13 @@ impl Linter {
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
+            disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
+            #[cfg(not(target_arch = "wasm32"))]
+            corsa_path: None,
         }
     }
 
@@ -112,10 +125,13 @@ impl Linter {
             initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
             locale: Locale::default(),
             enabled_rules: None,
+            disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: &[],
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
+            #[cfg(not(target_arch = "wasm32"))]
+            corsa_path: None,
         }
     }
 
@@ -150,6 +166,13 @@ impl Linter {
         self
     }
 
+    /// Disable selected rules while preserving the active preset.
+    #[inline]
+    pub fn with_disabled_rules(mut self, rules: Vec<String>) -> Self {
+        self.disabled_rules = rules.into_iter().collect();
+        self
+    }
+
     /// Register an extra rule if the active preset did not already include it.
     #[inline]
     pub fn with_rule(mut self, rule: Box<dyn crate::rule::Rule>) -> Self {
@@ -167,6 +190,14 @@ impl Linter {
         self
     }
 
+    /// Set the Corsa executable used by native type-aware lint rules.
+    #[cfg(not(target_arch = "wasm32"))]
+    #[inline]
+    pub fn with_corsa_path(mut self, path: Option<PathBuf>) -> Self {
+        self.corsa_path = path;
+        self
+    }
+
     /// Get the current locale.
     #[inline]
     pub fn locale(&self) -> Locale {
@@ -176,6 +207,9 @@ impl Linter {
     /// Check if a rule is enabled.
     #[inline]
     pub fn is_rule_enabled(&self, rule_name: &str) -> bool {
+        if self.disabled_rules.contains(rule_name) {
+            return false;
+        }
         match &self.enabled_rules {
             Some(set) => set.contains(rule_name),
             None => true,
@@ -192,6 +226,12 @@ impl Linter {
     #[inline]
     pub fn rules(&self) -> &[Box<dyn crate::rule::Rule>] {
         self.registry.rules()
+    }
+
+    /// Get all registered rule names.
+    #[inline]
+    pub(crate) fn rule_names(&self) -> &[&'static str] {
+        self.registry.rule_names()
     }
 }
 

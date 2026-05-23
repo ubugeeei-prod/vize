@@ -5,7 +5,7 @@ use vize_carton::{Box, String, Vec, capitalize, is_builtin_directive, is_native_
 use crate::ast::*;
 use crate::transforms::transform_expression::process_inline_handler;
 
-use super::{ExitFn, TransformContext};
+use super::{ExitFns, TransformContext};
 
 fn is_dynamic_component(el: &ElementNode<'_>) -> bool {
     el.tag == "component" || (el.tag == "Component" && has_is_attribute(el))
@@ -15,7 +15,7 @@ fn is_dynamic_component(el: &ElementNode<'_>) -> bool {
 pub fn transform_element<'a>(
     ctx: &mut TransformContext<'a>,
     el: &mut Box<'a, ElementNode<'a>>,
-) -> Option<std::vec::Vec<ExitFn<'a>>> {
+) -> Option<ExitFns<'a>> {
     maybe_promote_element_to_component(ctx, el);
 
     // Process props and directives
@@ -43,9 +43,11 @@ pub fn transform_element<'a>(
             }
             // Defer add_component to exit phase so inner components resolve before outer ones
             let tag = el.tag.clone();
-            return Some(vec![std::boxed::Box::new(move |ctx| {
+            let mut exits = ExitFns::new();
+            exits.push(std::boxed::Box::new(move |ctx| {
                 ctx.add_component(tag);
-            })]);
+            }));
+            return Some(exits);
         }
         ElementType::Slot => {
             ctx.helper(RuntimeHelper::RenderSlot);

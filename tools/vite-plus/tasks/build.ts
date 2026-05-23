@@ -27,6 +27,15 @@ export const buildTasks = defineTasks({
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),
   "build:packages": noCacheTask(runInPackages("build", packedPackages)),
   "build:native": noCacheTask(runPackageScriptDirectly("build", ["./npm/vize-native"])),
+  // Fast variant for test pipelines: dev cargo profile via the local
+  // `build:debug` script. We deliberately route through `build:debug`
+  // (which wraps `build-local.mjs --no-js`) rather than `build:ci`
+  // because `build:ci` regenerates `index.js` / `index.d.ts` and
+  // wipes the manual JSON.parse wrappers that the token API depends on.
+  // The dev profile shaves ~2 minutes off the release-profile build and
+  // matches the profile that vite-plugin-vize already uses at test time,
+  // so cargo's incremental cache makes the second invocation a no-op.
+  "build:native:test": noCacheTask(runPackageScriptDirectly("build:debug", ["./npm/vize-native"])),
   "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/vite-plugin-vize/wasm")),
   "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),
   "build:vite-plugin": noCacheTask(

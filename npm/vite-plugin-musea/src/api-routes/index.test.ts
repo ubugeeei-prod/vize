@@ -47,6 +47,15 @@ function createContext(root: string, artFiles = new Map<string, ArtFileInfo>()):
   };
 }
 
+function authorizedJsonHeaders(ctx: ApiRoutesContext): IncomingMessage["headers"] {
+  return {
+    host: "localhost:5173",
+    origin: "http://localhost:5173",
+    "content-type": "application/json",
+    "x-musea-session": ctx.devSessionToken,
+  };
+}
+
 async function invokeApi(
   ctx: ApiRoutesContext,
   init: {
@@ -135,6 +144,61 @@ void test("createApiMiddleware blocks source writes outside the configured root"
     assert.equal(response.statusCode, 400);
     assert.match(response.body, /art path escapes the allowed directory/);
     assert.equal(await fs.promises.readFile(outsideArt, "utf-8"), "original");
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("createApiMiddleware returns 400 for malformed JSON mutation bodies", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-json-"));
+
+  try {
+    const ctx = createContext(tempDir);
+    ctx.tokensPath = "tokens.json";
+
+    for (const [method, url] of [
+      ["POST", "/preview-with-props"],
+      ["POST", "/generate"],
+      ["POST", "/run-vrt"],
+      ["POST", "/tokens"],
+      ["PUT", "/tokens"],
+      ["DELETE", "/tokens"],
+    ] as const) {
+      const response = await invokeApi(ctx, {
+        method,
+        url,
+        headers: authorizedJsonHeaders(ctx),
+        body: "{",
+      });
+
+      assert.equal(response.statusCode, 400, `${method} ${url}`);
+      assert.deepEqual(JSON.parse(response.body), { error: "Malformed JSON body" });
+    }
+  } finally {
+    await fs.promises.rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+void test("createApiMiddleware returns 400 for malformed art source JSON", async () => {
+  const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-api-source-json-"));
+  const artPath = "src/Escape.art.vue";
+  const artFilePath = path.join(tempDir, artPath);
+
+  try {
+    await fs.promises.mkdir(path.dirname(artFilePath), { recursive: true });
+    await fs.promises.writeFile(artFilePath, "original", "utf-8");
+
+    const ctx = createContext(tempDir, new Map([[artPath, createArt(artPath)]]));
+    const response = await invokeApi(ctx, {
+      method: "PUT",
+      url: `/arts/${encodeURIComponent(artPath)}/source`,
+      headers: authorizedJsonHeaders(ctx),
+      body: "{",
+    });
+
+    assert.equal(response.statusCode, 400);
+    assert.deepEqual(JSON.parse(response.body), { error: "Malformed JSON body" });
+    assert.equal(await fs.promises.readFile(artFilePath, "utf-8"), "original");
   } finally {
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }

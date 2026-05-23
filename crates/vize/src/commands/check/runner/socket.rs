@@ -18,11 +18,14 @@ use vize_carton::{
 };
 
 use crate::commands::{
-    check::{CheckArgs, JsonRpcResponse, ServerCheckResult},
+    check::{
+        CheckArgs, JsonRpcResponse, ServerCheckResult,
+        reporting::{JsonFileResult, JsonOutput},
+    },
     profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report},
 };
 
-use super::collect::collect_vue_files;
+use super::{collect::collect_vue_files, display_path};
 
 /// Run type checking via Unix socket connection to check-server.
 pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
@@ -70,6 +73,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     }
 
     let mut total_errors = 0usize;
+    let mut total_warnings = 0usize;
     #[allow(clippy::disallowed_types, clippy::disallowed_methods)]
     let mut results: Vec<(std::string::String, ServerCheckResult)> = Vec::new();
 
@@ -155,6 +159,11 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
 
         if let Some(result) = response.result {
             total_errors += result.error_count;
+            total_warnings += result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.severity == "warning")
+                .count();
             if args.show_virtual_ts {
                 eprintln!("\n=== {} ===", filename);
                 eprintln!("{}", result.virtual_ts);
@@ -165,6 +174,41 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     let request_time = request_start.elapsed();
 
     let render_start = Instant::now();
+    if args.format == "json" {
+        let cwd = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+        let mut files_json: Vec<JsonFileResult> = results
+            .iter()
+            .map(|(filename, result)| {
+                let path = std::path::Path::new(filename);
+                JsonFileResult {
+                    file: display_path(&cwd, path).into(),
+                    virtual_ts: result.virtual_ts.clone(),
+                    diagnostics: render_socket_diagnostics(result),
+                }
+            })
+            .collect();
+        files_json.sort_by(|left, right| left.file.cmp(&right.file));
+
+        let json_output = JsonOutput {
+            files: files_json,
+            error_count: total_errors,
+            warning_count: total_warnings,
+            file_count: results.len(),
+            declarations: None,
+        };
+        match serde_json::to_string_pretty(&json_output) {
+            Ok(output) => println!("{output}"),
+            Err(error) => {
+                eprintln!("Failed to serialize check output: {error}");
+                std::process::exit(1);
+            }
+        }
+        if total_errors > 0 {
+            std::process::exit(1);
+        }
+        return;
+    }
+
     if !args.quiet {
         for (filename, result) in &results {
             if result.diagnostics.is_empty() {
@@ -273,4 +317,36 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
         std::process::exit(1);
     }
     println!("  \x1b[32mNo type errors found!\x1b[0m");
+}
+
+#[allow(clippy::disallowed_types)]
+fn render_socket_diagnostics(result: &ServerCheckResult) -> Vec<std::string::String> {
+    let mut diagnostics = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            let code = diagnostic
+                .code
+                .as_ref()
+                .map(|code| {
+                    if code.chars().all(|char| char.is_ascii_digit()) {
+                        cstr!(" [TS{}]", code)
+                    } else {
+                        cstr!(" [{}]", code)
+                    }
+                })
+                .unwrap_or_default();
+            cstr!(
+                "{}:{}:{}{} {}",
+                diagnostic.severity,
+                diagnostic.line,
+                diagnostic.column,
+                code,
+                diagnostic.message
+            )
+            .into()
+        })
+        .collect::<Vec<_>>();
+    diagnostics.sort();
+    diagnostics
 }

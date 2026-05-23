@@ -32,22 +32,23 @@ export async function handleToolCall(
   name: string,
   args: Record<string, unknown> | undefined,
 ): Promise<ToolResult> {
-  const binding = ctx.loadNative();
+  let binding: ReturnType<ServerContext["loadNative"]> | undefined;
+  const loadBinding = () => (binding ??= ctx.loadNative());
 
   switch (name) {
     // --- Component analysis -------------------------------------------------
     case "analyze_component":
-      return handleAnalyzeComponent(ctx, binding, args);
+      return handleAnalyzeComponent(ctx, loadBinding(), args);
     case "get_palette":
-      return handleGetPalette(ctx, binding, args);
+      return handleGetPalette(ctx, loadBinding(), args);
 
     // --- Component registry -------------------------------------------------
     case "list_components":
       return handleListComponents(ctx, args);
     case "get_component":
-      return handleGetComponent(ctx, binding, args);
+      return handleGetComponent(ctx, loadBinding(), args);
     case "get_variant":
-      return handleGetVariant(ctx, binding, args);
+      return handleGetVariant(ctx, loadBinding(), args);
     case "search_components":
       return handleSearchComponents(ctx, args);
     case "recommend_components":
@@ -55,13 +56,13 @@ export async function handleToolCall(
 
     // --- Code generation / docs / tokens ------------------------------------
     case "generate_variants":
-      return handleGenerateVariants(ctx, binding, args);
+      return handleGenerateVariants(ctx, loadBinding(), args);
     case "generate_csf":
-      return handleGenerateCsf(ctx, binding, args);
+      return handleGenerateCsf(ctx, loadBinding(), args);
     case "generate_docs":
-      return handleGenerateDocs(ctx, binding, args);
+      return handleGenerateDocs(ctx, loadBinding(), args);
     case "generate_catalog":
-      return handleGenerateCatalog(ctx, binding, args);
+      return handleGenerateCatalog(ctx, loadBinding(), args);
     case "get_tokens":
       return handleGetTokens(ctx, args);
     case "search_tokens":

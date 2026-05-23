@@ -695,9 +695,7 @@ const user = ref<User | null>(null)
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
-
-const _hoisted_1 = { key: 0 }
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString } from "vue"
 
 import { ref } from 'vue'
 
@@ -714,8 +712,8 @@ const user = ref<User | null>(null)
 
 return (_ctx: any,_cache: any) => {
   return (user.value)
-    ? (_openBlock(), _createElementBlock("div", _hoisted_1, _toDisplayString(user.value.name), 1 /* TEXT */))
-    : _createCommentVNode("v-if", true)
+      ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(user.value.name), 1 /* TEXT */))
+      : _createCommentVNode("v-if", true)
 }
 }
 
@@ -1194,9 +1192,7 @@ defineProps<{
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
-
-const _hoisted_1 = ["value"]
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
@@ -1208,16 +1204,13 @@ export default /*@__PURE__*/_defineComponent({
   setup(__props: any) {
 
 
-
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("select", null, [
-    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.options, (opt) => {
-      return (_openBlock(), _createElementBlock("option", {
-        key: opt,
-        value: opt
-      }, _toDisplayString(opt), 9 /* TEXT, PROPS */, _hoisted_1))
-    }), 128 /* KEYED_FRAGMENT */))
-  ]))
+  return (_openBlock(), _createElementBlock("select", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.options, (opt) => {
+        return (_openBlock(), _createElementBlock("option", {
+          key: opt,
+          value: opt
+        }, _toDisplayString(opt), 9 /* TEXT, PROPS */, ["value"]))
+      }), 128 /* KEYED_FRAGMENT */)) ]))
 }
 }
 
@@ -1283,10 +1276,9 @@ const formData = ref<FormShape | null>(null)
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { renderSlot as _renderSlot, withModifiers as _withModifiers, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, renderSlot as _renderSlot, withModifiers as _withModifiers } from "vue"
 
 import { ref } from 'vue'
-
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -1296,16 +1288,12 @@ export default /*@__PURE__*/_defineComponent({
   },
   setup(__props: any) {
 
-
-
 const formData = ref<FormShape | null>(null)
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("form", {
-    onSubmit: _cache[0] || (_cache[0] = _withModifiers(() => {}, ["prevent"]))
-  }, [
-    _renderSlot(_ctx.$slots, "default", { data: formData.value })
-  ], 32 /* NEED_HYDRATION */))
+      onSubmit: _withModifiers(() => {}, ["prevent"])
+    }, [ _renderSlot(_ctx.$slots, "default", {data: formData.value}) ], 40 /* PROPS, NEED_HYDRATION */, ["onSubmit"]))
 }
 }
 
@@ -1436,20 +1424,19 @@ defineProps<{
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+
 
 type ButtonVariant =
   | { type: "link"; href: string }
   | { type: "button"; onClick: () => void }
 
-
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    variant: { type: Object, required: true }
+    variant: { type: [null, Object], required: true }
   },
   setup(__props: any) {
-
 
 
 return (_ctx: any,_cache: any) => {
@@ -1526,9 +1513,7 @@ defineProps<{
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
-
-const _hoisted_1 = ["value"]
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
@@ -1539,16 +1524,13 @@ export default /*@__PURE__*/_defineComponent({
   setup(__props: any) {
 
 
-
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("select", null, [
-    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.options, (opt) => {
-      return (_openBlock(), _createElementBlock("option", {
-        key: opt.value,
-        value: opt.value
-      }, _toDisplayString(opt.label), 9 /* TEXT, PROPS */, _hoisted_1))
-    }), 128 /* KEYED_FRAGMENT */))
-  ]))
+  return (_openBlock(), _createElementBlock("select", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.options, (opt) => {
+        return (_openBlock(), _createElementBlock("option", {
+          key: opt.value,
+          value: opt.value
+        }, _toDisplayString(opt.label), 9 /* TEXT, PROPS */, ["value"]))
+      }), 128 /* KEYED_FRAGMENT */)) ]))
 }
 }
 
@@ -1574,8 +1556,6 @@ defineProps<{
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
 
-const _hoisted_1 = { key: 0 }
-
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -1585,11 +1565,10 @@ export default /*@__PURE__*/_defineComponent({
   setup(__props: any) {
 
 
-
 return (_ctx: any,_cache: any) => {
   return (__props.context.isOpened)
-    ? (_openBlock(), _createElementBlock("div", _hoisted_1, "Open"))
-    : _createCommentVNode("v-if", true)
+      ? (_openBlock(), _createElementBlock("div", { key: 0 }, "Open"))
+      : _createCommentVNode("v-if", true)
 }
 }
 
@@ -1741,10 +1720,7 @@ const { data, error } = await useFetch('/api/data')
 </template>
 --- OUTPUT ---
 import { withAsyncContext as _withAsyncContext, defineComponent as _defineComponent } from 'vue'
-import { unref as _unref, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
-
-const _hoisted_1 = { key: 0 }
-const _hoisted_2 = { key: 1 }
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
 
 export default /*@__PURE__*/_defineComponent({
@@ -1753,7 +1729,7 @@ export default /*@__PURE__*/_defineComponent({
 
 let __temp: any, __restore: any
 
-const { data, error } = (
+const { data, error } =  (
   ([__temp,__restore] = _withAsyncContext(() => useFetch('/api/data'))),
   __temp = await __temp,
   __restore(),
@@ -1762,8 +1738,8 @@ const { data, error } = (
 
 return (_ctx: any,_cache: any) => {
   return (_unref(error))
-    ? (_openBlock(), _createElementBlock("div", _hoisted_1, "Error: " + _toDisplayString(_unref(error)), 1 /* TEXT */))
-    : (_openBlock(), _createElementBlock("div", _hoisted_2, _toDisplayString(_unref(data)), 1 /* TEXT */))
+      ? (_openBlock(), _createElementBlock("div", { key: 0 }, "Error: " + _toDisplayString(_unref(error)), 1 /* TEXT */))
+      : (_openBlock(), _createElementBlock("div", { key: 1 }, _toDisplayString(_unref(data)), 1 /* TEXT */))
 }
 }
 
@@ -1986,7 +1962,8 @@ const sortType = ref<SortType>('DESC');
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { unref as _unref, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
+
 
 type SortType = typeof SORT_TYPES[number]['value'];
 
@@ -1998,11 +1975,10 @@ const SORT_TYPES = [
   { text: 'Latest', value: 'DESC' },
   { text: 'Oldest', value: 'ASC' }
 ] as const;
-
 const sortType = ref<SortType>('DESC');
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(sortType)), 1 /* TEXT */))
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(sortType.value), 1 /* TEXT */))
 }
 }
 
@@ -2036,7 +2012,6 @@ withDefaults(defineProps<Props>(), {
 import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-const _hoisted_1 = ["disabled"]
 
 interface Props {
   outlined?: boolean;
@@ -2045,7 +2020,6 @@ interface Props {
   height?: number | string;
   color?: string;
 }
-
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -2059,9 +2033,8 @@ export default /*@__PURE__*/_defineComponent({
   setup(__props: any) {
 
 
-
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("button", { disabled: __props.disabled }, "Click", 8 /* PROPS */, _hoisted_1))
+  return (_openBlock(), _createElementBlock("button", { disabled: __props.disabled }, "Click", 8 /* PROPS */, ["disabled"]))
 }
 }
 
@@ -2141,9 +2114,8 @@ withDefaults(defineProps<Props>(), {
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { renderSlot as _renderSlot, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, renderSlot as _renderSlot } from "vue"
 
-const _hoisted_1 = ["disabled"]
 
 interface Props {
   outlined?: boolean;
@@ -2154,7 +2126,6 @@ interface Props {
   height?: number | string;
   color?: string;
 }
-
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -2170,11 +2141,8 @@ export default /*@__PURE__*/_defineComponent({
   setup(__props: any) {
 
 
-
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("button", { disabled: __props.disabled }, [
-    _renderSlot(_ctx.$slots, "default")
-  ], 8 /* PROPS */, _hoisted_1))
+  return (_openBlock(), _createElementBlock("button", { disabled: __props.disabled }, [ _renderSlot(_ctx.$slots, "default") ], 8 /* PROPS */, ["disabled"]))
 }
 }
 
@@ -2216,18 +2184,15 @@ const isChangedProgressLap = computed(
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { toDisplayString as _toDisplayString, withModifiers as _withModifiers, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withModifiers as _withModifiers } from "vue"
 
-const _hoisted_1 = ["disabled"]
-
-import { computed } from 'vue';
+import { computed } from 'vue'
 
 interface GuidanceProgressFormInput {
   progressLap: number;
   originalProgressLap: number;
   progressUnit: { value: string };
 }
-
 interface Props {
   guidanceProgress: GuidanceProgressFormInput;
   disabled?: boolean;
@@ -2243,8 +2208,7 @@ export default /*@__PURE__*/_defineComponent({
   },
   setup(__props: any) {
 
-const props = __props;
-
+const props = __props
 const lapClass = computed(() => `lap-${props.guidanceProgress.progressLap}`);
 const isChangedProgressLap = computed(
   () => props.guidanceProgress.progressLap !== props.guidanceProgress.originalProgressLap
@@ -2252,10 +2216,10 @@ const isChangedProgressLap = computed(
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("button", {
-    class: _normalizeClass([{ disabled: __props.disabled }, lapClass.value]),
-    disabled: __props.disabled,
-    onClick: _cache[0] || (_cache[0] = _withModifiers(() => {}, ["prevent"]))
-  }, _toDisplayString(__props.guidanceProgress.progressUnit.value), 11 /* TEXT, CLASS, PROPS */, _hoisted_1))
+      class: _normalizeClass([{ disabled: __props.disabled }, lapClass.value]),
+      disabled: __props.disabled,
+      onClick: _withModifiers(() => {}, ["prevent"])
+    }, _toDisplayString(__props.guidanceProgress.progressUnit.value), 11 /* TEXT, CLASS, PROPS */, ["disabled", "onClick"]))
 }
 }
 
@@ -2283,12 +2247,11 @@ const mode = ref<'a' | 'b'>('a');
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { normalizeClass as _normalizeClass, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, Fragment as _Fragment } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, normalizeClass as _normalizeClass } from "vue"
 
-const _hoisted_1 = { key: 0 }
-const _hoisted_2 = { key: 1 }
 
-import { ref } from 'vue';
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("span", null, "Alt")
+import { ref } from 'vue'
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -2297,24 +2260,10 @@ export default /*@__PURE__*/_defineComponent({
 const mode = ref<'a' | 'b'>('a');
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, [
-    true
-      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
-          true
-            ? (_openBlock(), _createElementBlock("div", _hoisted_1, [
-                _createElementVNode("button", {
-                  class: _normalizeClass({ active: mode.value === 'a' }),
-                  onClick: _cache[0] || (_cache[0] = ($event: any) => (mode.value = 'b'))
-                }, "Test", 2 /* CLASS */)
-              ]))
-            : false
-              ? (_openBlock(), _createElementBlock("div", _hoisted_2, [...(_cache[1] || (_cache[1] = [
-                  _createElementVNode("span", null, "Alt", -1 /* CACHED */)
-                ]))]))
-              : _createCommentVNode("v-if", true)
-        ], 64 /* STABLE_FRAGMENT */))
-      : _createCommentVNode("v-if", true)
-  ]))
+  return (_openBlock(), _createElementBlock("div", null, [ (true) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [ (true) ? (_openBlock(), _createElementBlock("div", { key: 0 }, [ _createElementVNode("button", {
+                class: _normalizeClass({ active: mode.value === 'a' }),
+                onClick: _cache[0] || (_cache[0] = ($event: any) => (mode.value = 'b'))
+              }, "Test", 2 /* CLASS */) ])) : (false) ? (_openBlock(), _createElementBlock("div", { key: 1 }, [ _hoisted_1 ])) : _createCommentVNode("v-if", true) ], 64 /* STABLE_FRAGMENT */)) : _createCommentVNode("v-if", true) ]))
 }
 }
 
@@ -2354,30 +2303,13 @@ const codeViewMode = ref<'ts' | 'js'>('ts');
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { normalizeClass as _normalizeClass, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, Fragment as _Fragment } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, normalizeClass as _normalizeClass } from "vue"
 
-const _hoisted_1 = {
-  key: 0,
-  class: "code-output"
-}
-const _hoisted_2 = {
-  key: 0,
-  class: "code-mode-toggle"
-}
-const _hoisted_3 = {
-  key: 1,
-  class: "ast-output"
-}
-const _hoisted_4 = {
-  key: 2,
-  class: "helpers-output"
-}
-const _hoisted_5 = {
-  key: 3,
-  class: "sfc-output"
-}
 
-import { ref, computed } from 'vue';
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("h4", null, "AST")
+const _hoisted_2 = /*#__PURE__*/ _createElementVNode("h4", null, "Helpers")
+const _hoisted_3 = /*#__PURE__*/ _createElementVNode("h4", null, "SFC")
+import { ref, computed } from 'vue'
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
@@ -2389,40 +2321,28 @@ const isTypeScript = computed(() => true);
 const codeViewMode = ref<'ts' | 'js'>('ts');
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, [
-    (output.value)
-      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [
-          (activeTab.value === 'code')
-            ? (_openBlock(), _createElementBlock("div", _hoisted_1, [
-                (isTypeScript.value)
-                  ? (_openBlock(), _createElementBlock("div", _hoisted_2, [
-                      _createElementVNode("button", {
-                        class: _normalizeClass(['btn', { active: codeViewMode.value === 'ts' }]),
-                        onClick: _cache[0] || (_cache[0] = ($event: any) => (codeViewMode.value = 'ts'))
-                      }, "TS", 2 /* CLASS */),
-                      _createElementVNode("button", {
-                        class: _normalizeClass(['btn', { active: codeViewMode.value === 'js' }]),
-                        onClick: _cache[1] || (_cache[1] = ($event: any) => (codeViewMode.value = 'js'))
-                      }, "JS", 2 /* CLASS */)
-                    ]))
-                  : _createCommentVNode("v-if", true)
-              ]))
-            : (activeTab.value === 'ast')
-              ? (_openBlock(), _createElementBlock("div", _hoisted_3, [...(_cache[2] || (_cache[2] = [
-                  _createElementVNode("h4", null, "AST", -1 /* CACHED */)
-                ]))]))
-              : (activeTab.value === 'helpers')
-                ? (_openBlock(), _createElementBlock("div", _hoisted_4, [...(_cache[3] || (_cache[3] = [
-                    _createElementVNode("h4", null, "Helpers", -1 /* CACHED */)
-                  ]))]))
-                : (activeTab.value === 'sfc')
-                  ? (_openBlock(), _createElementBlock("div", _hoisted_5, [...(_cache[4] || (_cache[4] = [
-                      _createElementVNode("h4", null, "SFC", -1 /* CACHED */)
-                    ]))]))
-                  : _createCommentVNode("v-if", true)
-        ], 64 /* STABLE_FRAGMENT */))
-      : _createCommentVNode("v-if", true)
-  ]))
+  return (_openBlock(), _createElementBlock("div", null, [ (output.value) ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [ (activeTab.value === 'code') ? (_openBlock(), _createElementBlock("div", {
+              key: 0,
+              class: "code-output"
+            }, [ (isTypeScript.value) ? (_openBlock(), _createElementBlock("div", {
+                  key: 0,
+                  class: "code-mode-toggle"
+                }, [ _createElementVNode("button", {
+                    class: _normalizeClass(['btn', { active: codeViewMode.value === 'ts' }]),
+                    onClick: _cache[0] || (_cache[0] = ($event: any) => (codeViewMode.value = 'ts'))
+                  }, "TS", 2 /* CLASS */), _createElementVNode("button", {
+                    class: _normalizeClass(['btn', { active: codeViewMode.value === 'js' }]),
+                    onClick: _cache[1] || (_cache[1] = ($event: any) => (codeViewMode.value = 'js'))
+                  }, "JS", 2 /* CLASS */) ])) : _createCommentVNode("v-if", true) ])) : (activeTab.value === 'ast') ? (_openBlock(), _createElementBlock("div", {
+                key: 1,
+                class: "ast-output"
+              }, [ _hoisted_1 ])) : (activeTab.value === 'helpers') ? (_openBlock(), _createElementBlock("div", {
+                key: 2,
+                class: "helpers-output"
+              }, [ _hoisted_2 ])) : (activeTab.value === 'sfc') ? (_openBlock(), _createElementBlock("div", {
+                key: 3,
+                class: "sfc-output"
+              }, [ _hoisted_3 ])) : _createCommentVNode("v-if", true) ], 64 /* STABLE_FRAGMENT */)) : _createCommentVNode("v-if", true) ]))
 }
 }
 
@@ -2533,9 +2453,7 @@ const localItems = ref(['a', 'b', 'c'])
 </template>
 --- OUTPUT ---
 import { defineComponent as _defineComponent } from 'vue'
-import { unref as _unref, renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode } from "vue"
-
-const _hoisted_1 = ["value"]
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, renderList as _renderList, toDisplayString as _toDisplayString, unref as _unref } from "vue"
 
 import { ref } from 'vue'
 import { OPTIONS } from './options'
@@ -2547,21 +2465,14 @@ export default /*@__PURE__*/_defineComponent({
 const localItems = ref(['a', 'b', 'c'])
 
 return (_ctx: any,_cache: any) => {
-  return (_openBlock(), _createElementBlock("div", null, [
-    _createElementVNode("select", null, [
-      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_unref(OPTIONS), (opt) => {
-        return (_openBlock(), _createElementBlock("option", {
-          key: opt.value,
-          value: opt.value
-        }, _toDisplayString(opt.label), 9 /* TEXT, PROPS */, _hoisted_1))
-      }), 128 /* KEYED_FRAGMENT */))
-    ]),
-    _createElementVNode("ul", null, [
-      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(localItems.value, (item) => {
-        return (_openBlock(), _createElementBlock("li", { key: item }, _toDisplayString(item), 1 /* TEXT */))
-      }), 128 /* KEYED_FRAGMENT */))
-    ])
-  ]))
+  return (_openBlock(), _createElementBlock("div", null, [ _createElementVNode("select", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_unref(OPTIONS), (opt) => {
+          return (_openBlock(), _createElementBlock("option", {
+            key: opt.value,
+            value: opt.value
+          }, _toDisplayString(opt.label), 9 /* TEXT, PROPS */, ["value"]))
+        }), 128 /* KEYED_FRAGMENT */)) ]), _createElementVNode("ul", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(localItems.value, (item) => {
+          return (_openBlock(), _createElementBlock("li", { key: item }, _toDisplayString(item), 1 /* TEXT */))
+        }), 128 /* KEYED_FRAGMENT */)) ]) ]))
 }
 }
 

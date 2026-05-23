@@ -42,11 +42,6 @@ pub fn process_define_emits(
         return false;
     }
 
-    if ctx.has_define_emits_call {
-        // In Vue, this would call ctx.error() - for now we just log
-        eprintln!("duplicate {}() call", DEFINE_EMITS);
-    }
-
     ctx.has_define_emits_call = true;
 
     // Store runtime declaration (first argument)
@@ -71,14 +66,6 @@ pub fn process_define_emits(
             String::from(type_str)
         }
     });
-
-    // Error if both type and runtime args are provided
-    if runtime_decl.is_some() && type_decl.is_some() {
-        eprintln!(
-            "{}() cannot accept both type and non-type arguments at the same time. Use one or the other.",
-            DEFINE_EMITS
-        );
-    }
 
     // Store emits info in macros
     ctx.emits_runtime_decl = runtime_decl;
@@ -288,11 +275,6 @@ fn extract_from_ts_type_literal(
             }
             _ => {}
         }
-    }
-
-    // Error check: can't mix property syntax with call signatures
-    if has_property && has_call_signature {
-        eprintln!("defineEmits() type cannot mixed call signature and property syntax.");
     }
 
     // Second pass: extract from call signatures if no properties

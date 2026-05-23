@@ -49,6 +49,7 @@ vp exec vsce package --no-dependencies --out dist/vize.vsix
 
 Opening a Vue file now prompts you to apply a recommended workspace setup if the extension is still disabled or if no Vize capabilities are enabled yet.
 That quick setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, `vize.editor.enable`, and `vize.ecosystem.enable` for the current workspace so diagnostics, hover, jump, and Vue ecosystem helpers work immediately.
+If you manually set only `vize.enable: true`, the extension uses that same recommended diagnostics, editor, and ecosystem profile instead of starting an empty language server.
 
 If you dismissed that prompt and want a lighter rollout, start with lint-only mode, then opt into type checking or editor features after confirming it does not overlap with your existing Vue setup.
 
@@ -70,12 +71,15 @@ When you are ready to evaluate Vize editor assistance separately from `vuejs/lan
   "vize.enable": true,
   "vize.lint.enable": true,
   "vize.typecheck.enable": true,
-  "vize.definition.enable": true,
-  "vize.references.enable": true,
-  "vize.hover.enable": true,
+  "vize.editor.enable": true,
   "vize.ecosystem.enable": true
 }
 ```
+
+`vize.editor.enable` turns on completion, hover, definition, references, symbols, rename,
+semantic tokens, links, folding ranges, inlay hints, and file rename handling. If you prefer
+individual switches, make sure to include `vize.completion.enable`, `vize.hover.enable`, and
+`vize.definition.enable` together when testing the core editor flow.
 
 `vize.ecosystem.enable` adds Vue Router route-name and file-route param completions, route-param
 diagnostics for `useRoute()`, Vue I18n key completions, workspace key validation, inlay previews,

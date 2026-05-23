@@ -37,6 +37,15 @@ test("issue templates collect reproducible production-readiness reports", () => 
   assert.match(config, /vize\/security\/policy/);
 });
 
+test("root quality gates ignore local generated environments", () => {
+  const viteConfig = readRepoFile("vite.config.ts");
+
+  assert.match(viteConfig, /localGeneratedIgnorePatterns/);
+  for (const pattern of [".cache/**", ".direnv/**", "target/**"]) {
+    assert.match(viteConfig, new RegExp(pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+});
+
 function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(root, ...segments), "utf8");
 }

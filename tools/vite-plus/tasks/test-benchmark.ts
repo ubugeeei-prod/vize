@@ -9,6 +9,43 @@ import {
   task,
 } from "../task-helpers.ts";
 
+const jsPackageTestCommand = runInPackages("test", testedPackages, {
+  concurrencyLimit: 1,
+});
+
+const rustSourceCoverageJson = "target/llvm-cov/source-summary.json";
+const rustBranchCoverageJson = "target/llvm-cov/source-branch-summary.json";
+const rustSourceCoverageMinimums = "--min-lines 70 --min-functions 70 --min-regions 70";
+const rustBranchCoverageMinimums =
+  "--min-lines 55 --min-functions 70 --min-regions 55 --min-branches 40";
+const rustSourceCoverageCommand = [
+  "mkdir -p target/llvm-cov",
+  [
+    "cargo llvm-cov --workspace --json --summary-only",
+    `--output-path ${rustSourceCoverageJson}`,
+    "--fail-under-lines 70 --fail-under-functions 70 --fail-under-regions 70",
+  ].join(" "),
+  [
+    "node tools/coverage/enforce-rust-source-coverage.mjs",
+    `--json ${rustSourceCoverageJson}`,
+    rustSourceCoverageMinimums,
+  ].join(" "),
+].join(" && ");
+const rustBranchCoverageCommand = [
+  "mkdir -p target/llvm-cov",
+  [
+    "cargo +nightly llvm-cov -p vize_carton -p vize_armature -p vize_atelier_core",
+    "--branch --json --summary-only",
+    `--output-path ${rustBranchCoverageJson}`,
+    "--fail-under-lines 55 --fail-under-functions 70 --fail-under-regions 55",
+  ].join(" "),
+  [
+    "node tools/coverage/enforce-rust-source-coverage.mjs",
+    `--json ${rustBranchCoverageJson}`,
+    rustBranchCoverageMinimums,
+  ].join(" "),
+].join(" && ");
+
 /**
  * Test, snapshot, coverage, and benchmark tasks.
  *
@@ -21,7 +58,11 @@ import {
 export const testAndBenchmarkTasks = defineTasks({
   test: noCacheTask(runTasks("test:rust", "test:js", "test:scripts")),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
-  "test:js": noCacheTask(`${runTask("build:native")} && ${runInPackages("test", testedPackages)}`),
+  // Use the CI-profile native build instead of the release-profile one.
+  // The release build was ~3m+ on GitHub Actions and was being immediately
+  // overwritten by vite-plugin-vize's pretest hook, which also rebuilds in
+  // dev profile (~1m20s). Building once in the CI profile saves both legs.
+  "test:js": noCacheTask(`${runTask("build:native:test")} && ${jsPackageTestCommand}`),
   "test:scripts": noCacheTask("node --test --test-concurrency=1 tests/tooling/*.test.ts"),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
@@ -34,6 +75,9 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:e2e:vrt": task(runInPackages("test:vrt", ["./tests"]), { input: cacheInputs.e2e }),
   "test:vue": task("cargo test -p vize_test_runner", { input: cacheInputs.rust }),
   coverage: task("cargo run -p vize_test_runner --bin coverage", { input: cacheInputs.rust }),
+  "coverage:all": noCacheTask(runTasks("coverage", "coverage:source")),
+  "coverage:source": task(rustSourceCoverageCommand, { input: cacheInputs.rust }),
+  "coverage:source:branch": task(rustBranchCoverageCommand, { input: cacheInputs.rust }),
   "coverage:verbose": task("cargo run -p vize_test_runner --bin coverage -- -v", {
     input: cacheInputs.rust,
   }),

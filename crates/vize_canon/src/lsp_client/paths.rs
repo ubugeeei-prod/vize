@@ -46,10 +46,16 @@ pub(crate) fn corsa_search_roots(working_dir: Option<&Path>) -> Vec<PathBuf> {
 
     if let Some(working_dir) = working_dir {
         push_unique_root(&mut roots, working_dir.to_path_buf());
+        for ancestor in working_dir.ancestors().skip(1) {
+            push_unique_root(&mut roots, ancestor.to_path_buf());
+        }
     }
 
     if let Ok(current_dir) = std::env::current_dir() {
-        push_unique_root(&mut roots, current_dir);
+        push_unique_root(&mut roots, current_dir.clone());
+        for ancestor in current_dir.ancestors().skip(1) {
+            push_unique_root(&mut roots, ancestor.to_path_buf());
+        }
     }
 
     if let Some(workspace_root) = Path::new(env!("CARGO_MANIFEST_DIR"))

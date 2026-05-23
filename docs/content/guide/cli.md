@@ -33,13 +33,12 @@ cargo install --path crates/vize --force --locked
 
 ## Rust CLI vs npm CLI
 
-| Need                                                                   | Recommended entry point                  |
-| ---------------------------------------------------------------------- | ---------------------------------------- |
-| Package scripts for build, format, lint, check, ready, and upgrade     | `vp exec vize ...` from the npm package  |
-| Project-backed type checking across `.vue`, `.ts`, `.tsx`, and `.d.ts` | Rust `vize check`                        |
-| LSP, IDE setup, `check-server`, and profiling artifacts                | Rust `vize` binary                       |
-| Shared Vite plugin and npm CLI settings                                | `vize.config.ts` through the npm package |
-| Rust command-native settings                                           | `vize.config.pkl` or `vize.config.json`  |
+| Need                                                                   | Recommended entry point                 |
+| ---------------------------------------------------------------------- | --------------------------------------- |
+| Package scripts for build, format, lint, check, ready, and upgrade     | `vp exec vize ...` from the npm package |
+| Project-backed type checking across `.vue`, `.ts`, `.tsx`, and `.d.ts` | Rust `vize check`                       |
+| LSP, IDE setup, `check-server`, and profiling artifacts                | Rust `vize` binary                      |
+| Shared Vite plugin, npm CLI, and Rust CLI settings                     | `vize.config.*`                         |
 
 ## Commands
 
@@ -179,11 +178,13 @@ Key options:
 | `-q, --quiet`       | Show summary only                                  |
 | `--profile`         | Write profile artifacts under `node_modules/.vize` |
 | `--corsa-path`      | Override the Corsa executable path                 |
-| `--servers`         | Parallel Corsa worker count                        |
+| `--servers`         | Reserved Corsa server count; only `1` is supported |
 | `--declaration`     | Emit `.d.ts` output                                |
 | `--declaration-dir` | Output directory for emitted declarations          |
 
-Use `--corsa-path` when you want to pin a custom Corsa executable while developing Vize or testing a local `corsa-bind` checkout.
+Use `--corsa-path` when you want to pin a custom Corsa executable while developing Vize or testing a
+local `corsa-bind` checkout. The shared config key is `typeChecker.corsaPath`; `typeChecker.tsgoPath`
+is kept only as a compatibility alias.
 
 Useful patterns:
 

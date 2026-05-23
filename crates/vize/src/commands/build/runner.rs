@@ -166,23 +166,6 @@ pub(crate) fn run(args: BuildArgs) {
                     .unwrap_or_else(|| PathBuf::from("output").with_extension(ext));
                 let out_path = args.output.join(filename);
 
-                if let Some(parent) = out_path.parent() {
-                    match profile!(
-                        "cli.build.output.create_dir_all",
-                        fs::create_dir_all(parent)
-                    ) {
-                        Ok(()) => global_profiler().record_fs_create_dir_all(),
-                        Err(error) => {
-                            global_profiler().record_fs_create_dir_all_failure();
-                            eprintln!(
-                                "Failed to create output subdirectory {}: {error}",
-                                parent.display()
-                            );
-                            continue;
-                        }
-                    }
-                }
-
                 let content: String = match args.format {
                     OutputFormat::Js => output.code,
                     OutputFormat::Json =>

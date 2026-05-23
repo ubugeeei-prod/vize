@@ -12,7 +12,9 @@ use super::runtime_deps::materialize_runtime_dependencies;
 use super::source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
 use super::{Diagnostic, SfcBlockType};
 use crate::script_parse::collect_script_parse_diagnostics;
-use crate::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
+use crate::virtual_ts::{
+    VirtualTsCheckOptions, VirtualTsOptions, generate_virtual_ts_with_offsets_and_checks,
+};
 use oxc_span::SourceType;
 use serde_json::{Map, Value};
 use vize_atelier_core::parser::parse;
@@ -77,6 +79,9 @@ pub struct VirtualProject {
     /// Global virtual TS options applied to every Vue file.
     virtual_ts_options: VirtualTsOptions,
 
+    /// Internal check generation settings applied to every Vue file.
+    virtual_ts_check_options: VirtualTsCheckOptions,
+
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
 
@@ -103,6 +108,7 @@ impl VirtualProject {
             virtual_root,
             tsconfig_path: None,
             virtual_ts_options: VirtualTsOptions::default(),
+            virtual_ts_check_options: VirtualTsCheckOptions::default(),
             virtual_files: FxHashMap::default(),
             diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
@@ -117,6 +123,10 @@ impl VirtualProject {
     /// Set the shared virtual TS options.
     pub fn set_virtual_ts_options(&mut self, options: VirtualTsOptions) {
         self.virtual_ts_options = options;
+    }
+
+    pub(crate) fn set_virtual_ts_check_options(&mut self, options: VirtualTsCheckOptions) {
+        self.virtual_ts_check_options = options;
     }
 
     /// Get the project root.
@@ -174,7 +184,13 @@ impl VirtualProject {
         effective_options.auto_import_stubs.clear();
         let generated = profile!(
             "canon.vue.virtual_ts",
-            generate_vue_virtual_ts(path, content, &descriptor, &effective_options)
+            generate_vue_virtual_ts(
+                path,
+                content,
+                &descriptor,
+                &effective_options,
+                self.virtual_ts_check_options,
+            )
         )?;
         let GeneratedVueFile {
             code,
@@ -576,6 +592,7 @@ fn generate_vue_virtual_ts(
     source: &str,
     descriptor: &SfcDescriptor,
     options: &VirtualTsOptions,
+    check_options: VirtualTsCheckOptions,
 ) -> CorsaResult<GeneratedVueFile> {
     let allocator = Bump::new();
     let mut diagnostics = Vec::new();
@@ -661,13 +678,14 @@ fn generate_vue_virtual_ts(
 
     let output = profile!(
         "canon.virtual_ts.generate",
-        generate_virtual_ts_with_offsets(
+        generate_virtual_ts_with_offsets_and_checks(
             &analysis.croquis,
             analysis.script_content_ref(),
             template_ast.as_ref(),
             analysis.script_offset,
             template_offset,
             options,
+            check_options,
         )
     );
 

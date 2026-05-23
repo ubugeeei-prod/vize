@@ -615,3 +615,66 @@ test("publish_vscode_extension skips publish when the Marketplace already has th
     rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test("publish_vscode_extension waits for delayed Marketplace visibility after publish failure", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "moonbit-publish-vsix-delayed-"));
+  const binDir = path.join(tempDir, "bin");
+  const statePath = path.join(tempDir, "vp-state.json");
+  const vsixPath = path.join(tempDir, "vize.vsix");
+  const packageJsonPath = path.join(tempDir, "package.json");
+
+  try {
+    fs.mkdirSync(binDir, { recursive: true });
+    writeFileSync(vsixPath, "placeholder");
+    writeFileSync(
+      packageJsonPath,
+      `${JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.57.0" }, null, 2)}\n`,
+    );
+    writeFakeCommand(
+      binDir,
+      "vp",
+      [
+        "const fs = require('node:fs');",
+        "const args = process.argv.slice(2);",
+        "const state = fs.existsSync(process.env.VP_STATE_PATH)",
+        "  ? JSON.parse(fs.readFileSync(process.env.VP_STATE_PATH, 'utf8'))",
+        "  : { publishCalls: 0, showCalls: 0 };",
+        "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'show') {",
+        "  state.showCalls += 1;",
+        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
+        "  if (state.publishCalls > 0 && state.showCalls >= 3) {",
+        "    process.stdout.write(JSON.stringify({ versions: [{ version: '0.57.0' }] }));",
+        "    process.exit(0);",
+        "  }",
+        "  process.exit(1);",
+        "}",
+        "if (args[0] === 'dlx' && args[3] === 'vsce' && args[4] === 'publish') {",
+        "  state.publishCalls += 1;",
+        "  fs.writeFileSync(process.env.VP_STATE_PATH, JSON.stringify(state));",
+        "  process.exit(1);",
+        "}",
+        "process.exit(1);",
+      ].join("\n"),
+    );
+
+    const result = runMoonScript("publish_vscode_extension", [vsixPath, packageJsonPath], {
+      env: {
+        PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+        VP_STATE_PATH: statePath,
+        PUBLISH_RESOLUTION_RETRY_LIMIT: "3",
+        PUBLISH_RESOLUTION_RETRY_DELAY: "0",
+      },
+    });
+
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.match(result.stdout, /was published despite a non-zero vsce publish exit/i);
+    const state = JSON.parse(fs.readFileSync(statePath, "utf8")) as {
+      publishCalls: number;
+      showCalls: number;
+    };
+    assert.equal(state.publishCalls, 1);
+    assert.equal(state.showCalls, 3);
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});

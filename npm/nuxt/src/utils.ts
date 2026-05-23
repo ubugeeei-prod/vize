@@ -1,4 +1,4 @@
-import type { VizeOptions } from "@vizejs/vite-plugin";
+import type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
 import { createHash } from "node:crypto";
 
 function normalizeUrlPrefix(value: string): string {
@@ -18,12 +18,23 @@ export function buildNuxtCompilerOptions(
   rootDir: string,
   baseURL = "/",
   buildAssetsDir = "/_nuxt/",
-): Pick<VizeOptions, "devUrlBase" | "root" | "scanPatterns"> {
-  return {
+  overrides: VizeNuxtCompilerOptions = {},
+): VizeNuxtCompilerOptions {
+  const defaults: VizeNuxtCompilerOptions = {
     devUrlBase: buildNuxtDevAssetBase(baseURL, buildAssetsDir),
     root: rootDir,
     scanPatterns: [],
   };
+
+  for (const [key, value] of Object.entries(overrides) as Array<
+    [keyof VizeNuxtCompilerOptions, VizeNuxtCompilerOptions[keyof VizeNuxtCompilerOptions]]
+  >) {
+    if (value !== undefined) {
+      defaults[key] = value as never;
+    }
+  }
+
+  return defaults;
 }
 
 export function isVizeVirtualVueModuleId(id: string): boolean {

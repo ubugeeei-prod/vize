@@ -11,7 +11,7 @@ expression: edits
             },
             end: Position {
                 line: 3,
-                character: 11,
+                character: 0,
             },
         },
         new_text: "<template>\n  <div>\n    hello\n  </div>\n</template>\n",

@@ -32,19 +32,19 @@
         workspaceVersion = workspaceCargo.workspace.package.version;
         moonbitArtifacts = {
           aarch64-darwin = {
-            version = "0.9.2-2026-05-13";
+            version = "0.9.3-2026-05-22";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
-            hash = "sha256-5OtkpeuCcOi8YoJVVEOMMlVm5kHHCJ4vO/Vk6RhDMbk=";
+            hash = "sha256-xv9K8uh5mV5eHooKh6DjnIIKv1ickhl1JV/YSUVW44Q=";
           };
           x86_64-linux = {
-            version = "0.9.2-2026-05-13";
+            version = "0.9.3-2026-05-22";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz";
-            hash = "sha256-LDpa8gIMnOs/4R5kV+ZHohWEbZfXHI54Sz0KfIz8YGs=";
+            hash = "sha256-ZwrAmmo6ZAC8lmeFbeZwXd7AqXzjvUwZxMOAtwfmhWw=";
           };
           aarch64-linux = {
-            version = "0.9.2-2026-05-13";
+            version = "0.9.3-2026-05-22";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-aarch64.tar.gz";
-            hash = "sha256-0n7Hu3h4+TLbrcyja6/0xOIntAChGFoChSE5HPp7kPg=";
+            hash = "sha256-9nRdhueeaA2kMthHVdXKzVleSjrbu7ZP+uWI0Uzs5dY=";
           };
         };
         moonbit =
@@ -60,7 +60,7 @@
               };
               coreSrc = pkgs.fetchurl {
                 url = "https://cli.moonbitlang.com/cores/core-latest.tar.gz";
-                hash = "sha256-xoulYgG9jZnbRCtt9ZnCwhewUo7ex9bebocbblicUC4=";
+                hash = "sha256-29JAjdJqvXh3XN/JeyQ4gzhFwsLPlTSnoP0dthW4s+g=";
               };
               nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.patchelf ];
               dontUnpack = true;

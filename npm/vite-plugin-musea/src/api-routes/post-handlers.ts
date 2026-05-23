@@ -10,7 +10,7 @@ import path from "node:path";
 
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { generatePreviewModuleWithProps } from "../preview/index.js";
-import { HttpError, resolveInside } from "../security.js";
+import { HttpError, parseJsonBody, resolveInside } from "../security.js";
 import { toPascalCase } from "../utils.js";
 
 /** POST /api/preview-with-props */
@@ -22,7 +22,15 @@ export function handlePreviewWithProps(
   sendError: SendError,
 ): void {
   try {
-    const { artPath: reqArtPath, variantName, props: propsOverride } = JSON.parse(body);
+    const {
+      artPath: reqArtPath,
+      variantName,
+      props: propsOverride,
+    } = parseJsonBody<{
+      artPath: string;
+      variantName: string;
+      props?: unknown;
+    }>(body);
     const art = ctx.artFiles.get(reqArtPath);
     if (!art) {
       sendError("Art not found", 404);
@@ -63,7 +71,10 @@ export async function handleGenerate(
   sendError: SendError,
 ): Promise<void> {
   try {
-    const { componentPath: reqComponentPath, options: autogenOptions } = JSON.parse(body);
+    const { componentPath: reqComponentPath, options: autogenOptions } = parseJsonBody<{
+      componentPath?: unknown;
+      options?: unknown;
+    }>(body);
     if (typeof reqComponentPath !== "string") {
       sendError("Missing required field: componentPath", 400);
       return;
@@ -94,7 +105,10 @@ export async function handleRunVrt(
   sendError: SendError,
 ): Promise<void> {
   try {
-    const { artPath, updateSnapshots } = JSON.parse(body);
+    const { artPath, updateSnapshots } = parseJsonBody<{
+      artPath?: string;
+      updateSnapshots?: boolean;
+    }>(body);
     const { MuseaVrtRunner, generateVrtJsonReport, generateVrtReport } = await import("../vrt.js");
 
     const snapshotDir = path.resolve(ctx.config.root, ".vize/snapshots");
@@ -124,7 +138,8 @@ export async function handleRunVrt(
       }
     })();
 
-    const reportBaseName = artPath ? `vrt-${path.basename(artPath, ".art.vue")}` : "vrt";
+    const reportBaseName =
+      typeof artPath === "string" ? `vrt-${path.basename(artPath, ".art.vue")}` : "vrt";
     const jsonReportPath = path.join(reportDir, `${reportBaseName}-report.json`);
     const htmlReportPath = path.join(reportDir, `${reportBaseName}-report.html`);
 
@@ -157,6 +172,10 @@ export async function handleRunVrt(
       },
     });
   } catch (e) {
+    if (e instanceof HttpError) {
+      sendError(e.message, e.status);
+      return;
+    }
     sendError(e instanceof Error ? e.message : String(e));
   }
 }

@@ -15,6 +15,7 @@
     "json-schema-to-typescript": "catalog:repo-tooling",
     "oxfmt": "catalog:linting",
     "oxlint": "catalog:linting",
+    "pkg-pr-new": "catalog:repo-tooling",
     "tsdown": "catalog:vite-stack",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack"
@@ -23,6 +24,23 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"
-    ]
+    ],
+    "overrides": {
+      "@azure/msal-node>uuid": "11.1.1",
+      "@unhead/vue": "2.1.15",
+      "defu": "6.1.7",
+      "devalue": "5.8.1",
+      "dompurify": "3.4.4",
+      "h3": "1.15.11",
+      "nanotar": "0.3.0",
+      "nitropack": "2.13.4",
+      "node-forge": "1.4.0",
+      "nuxt": "4.4.6",
+      "simple-git": "3.36.0",
+      "srvx": "0.11.15",
+      "svgo": "4.0.1",
+      "tar": "7.5.15",
+      "yaml": "2.9.0"
+    }
   }
 }

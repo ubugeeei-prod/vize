@@ -19,7 +19,10 @@ use vize_carton::config::FormatterConfig;
 use std::sync::OnceLock;
 
 #[cfg(feature = "native")]
-use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, CorsaBridge, CorsaBridgeConfig};
+use vize_canon::{
+    BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, CorsaBridge,
+    CorsaBridgeConfig,
+};
 
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
@@ -445,7 +448,18 @@ impl ServerState {
         }
 
         // Try to initialize
-        match BatchTypeChecker::new(&workspace_root) {
+        let config = self.get_type_checker_config();
+        let corsa_path = config.runtime_path().map(PathBuf::from);
+        let options = BatchTypeCheckerOptions {
+            tsconfig_path: config.tsconfig.as_ref().map(PathBuf::from),
+            ..Default::default()
+        };
+
+        match BatchTypeChecker::with_options_and_corsa_path(
+            &workspace_root,
+            options,
+            corsa_path.as_deref(),
+        ) {
             Ok(checker) => {
                 let arc = Arc::new(RwLock::new(checker));
                 // get_or_init to handle race condition
@@ -529,11 +543,13 @@ impl ServerState {
 
         // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
+        let type_checker_config = self.get_type_checker_config();
 
         let result = self
             .corsa_bridge
             .get_or_try_init(|| async {
                 let config = CorsaBridgeConfig {
+                    corsa_path: type_checker_config.runtime_path().map(PathBuf::from),
                     working_dir: workspace_root,
                     timeout_ms: 30000, // Corsa needs time to build project state on first load.
                     ..Default::default()
@@ -901,7 +917,9 @@ mod tests {
                 "typeChecker": {
                     "strict": true,
                     "checkProps": false,
-                    "checkEmits": false
+                    "checkEmits": false,
+                    "tsconfig": "tsconfig.app.json",
+                    "corsaPath": "./node_modules/.bin/corsa"
                 }
             }"#,
         )
@@ -913,6 +931,8 @@ mod tests {
         assert!(config.strict);
         assert!(!config.check_props);
         assert!(!config.check_emits);
+        assert_eq!(config.tsconfig.as_deref(), Some("tsconfig.app.json"));
+        assert_eq!(config.runtime_path(), Some("./node_modules/.bin/corsa"));
     }
 
     #[test]

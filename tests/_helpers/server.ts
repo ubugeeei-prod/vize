@@ -4,6 +4,19 @@ import type { AppConfig } from "./apps.ts";
 
 const VITE_PLUS_BIN = `${process.env.HOME ?? ""}/.vite-plus/bin`;
 const PROCESS_LOGS = new WeakMap<ChildProcess, string[]>();
+const PROCESS_LOG_EMISSION = new WeakMap<
+  ChildProcess,
+  {
+    emitted: number;
+    truncated: boolean;
+  }
+>();
+const MAX_EMITTED_PROCESS_LOG_LINES = process.env.CI
+  ? parsePositiveInteger(process.env.VIZE_E2E_MAX_EMITTED_PROCESS_LOG_LINES, 300)
+  : Number.POSITIVE_INFINITY;
+const MAX_EMITTED_PROCESS_LOG_CHARS = process.env.CI
+  ? parsePositiveInteger(process.env.VIZE_E2E_MAX_EMITTED_PROCESS_LOG_CHARS, 2000)
+  : Number.POSITIVE_INFINITY;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -76,8 +89,52 @@ function recordProcessLines(
 
   for (const line of lines) {
     logs.push(line);
-    console.log(`[${appName}:${stream}] ${line}`);
+
+    let emission = PROCESS_LOG_EMISSION.get(proc);
+    if (!emission) {
+      emission = { emitted: 0, truncated: false };
+      PROCESS_LOG_EMISSION.set(proc, emission);
+    }
+
+    if (emission.emitted < MAX_EMITTED_PROCESS_LOG_LINES || shouldAlwaysEmitProcessLog(line)) {
+      emission.emitted++;
+      console.log(`[${appName}:${stream}] ${formatProcessLogLine(line)}`);
+      continue;
+    }
+
+    if (!emission.truncated) {
+      emission.truncated = true;
+      console.log(
+        `[${appName}:${stream}] further dev server logs suppressed after ${MAX_EMITTED_PROCESS_LOG_LINES} lines; logs remain available to assertions`,
+      );
+    }
   }
+}
+
+function parsePositiveInteger(value: string | undefined, fallback: number): number {
+  if (value === undefined) {
+    return fallback;
+  }
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function formatProcessLogLine(line: string): string {
+  if (line.length <= MAX_EMITTED_PROCESS_LOG_CHARS) {
+    return line;
+  }
+  return `${line.slice(0, MAX_EMITTED_PROCESS_LOG_CHARS)}... [truncated ${
+    line.length - MAX_EMITTED_PROCESS_LOG_CHARS
+  } chars]`;
+}
+
+function shouldAlwaysEmitProcessLog(line: string): boolean {
+  if (line.length > MAX_EMITTED_PROCESS_LOG_CHARS) {
+    return false;
+  }
+  return /(?:\[vize\]|ready in|Local:|Network:|Unhandled|SyntaxError|ReferenceError|TypeError|Failed to (?:compile|load|resolve|spawn|start))/i.test(
+    line,
+  );
 }
 
 export function getProcessLogs(proc: ChildProcess): readonly string[] {

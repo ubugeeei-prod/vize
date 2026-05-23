@@ -143,7 +143,7 @@ async function runEslintMultiThread(): Promise<number> {
 // Run shell command, ignoring exit code (linter may exit non-zero on warnings)
 function execIgnoreExit(cmd: string): void {
   try {
-    execSync(cmd, { stdio: "ignore" });
+    execSync(cmd, { stdio: "ignore", cwd: INPUT_DIR });
   } catch {
     // ignore non-zero exit code
   }

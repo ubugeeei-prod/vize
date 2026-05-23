@@ -62,6 +62,7 @@ const vizeDocsNavigation = (() => {
     ["/integrations/mcp", "MCP Server"],
     ["/architecture/overview", "Architecture Overview"],
     ["/architecture/crates", "Crates"],
+    ["/architecture/language-engineering-practices", "Language Engineering"],
     ["/architecture/performance", "Performance"],
     ["/philosophy", "Philosophy"],
     ...blogNavigationItems,
@@ -125,6 +126,7 @@ const vizeDocsNavigation = (() => {
       paths: [
         "/architecture/overview",
         "/architecture/crates",
+        "/architecture/language-engineering-practices",
         "/architecture/performance",
         "/philosophy",
       ],

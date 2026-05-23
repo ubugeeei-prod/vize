@@ -44,8 +44,18 @@ function workflowJobBody(workflow: string, jobName: string): string {
   return remaining.slice(0, nextJobMatch ? nextJobMatch.index + 1 : undefined);
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 test("GitHub workflows opt JavaScript actions into Node 24", () => {
-  for (const workflowName of ["check.yml", "deploy-docs.yml", "release.yml"]) {
+  for (const workflowName of [
+    "check.yml",
+    "deploy-docs.yml",
+    "native-smoke.yml",
+    "pkg-pr-new.yml",
+    "release.yml",
+  ]) {
     const workflow = readRepoFile(".github", "workflows", workflowName);
     assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
   }
@@ -58,6 +68,7 @@ test("GitHub workflows use the current cache action", () => {
     ".github/workflows/check.yml",
     ".github/workflows/deploy-docs.yml",
     ".github/workflows/e2e.yml",
+    ".github/workflows/native-smoke.yml",
     ".github/workflows/release.yml",
   ]) {
     const file = readRepoFile(...relativePath.split("/"));
@@ -110,13 +121,19 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
     ["nix-flake", 30],
     ["fmt-rust", 10],
     ["check-js", 15],
+    ["security-audit", 20],
+    ["semver-checks", 25],
     ["node-engine-compat", 20],
     ["check-vize-apps", 20],
+    ["vue-parity", 30],
     ["test-scripts", 15],
     ["editor-extensions", 15],
     ["build-js-packages", 30],
+    ["test-js-packages", 30],
     ["clippy-and-test", 30],
     ["coverage", 10],
+    ["source-coverage", 40],
+    ["branch-coverage", 45],
     ["playground-test", 30],
     ["test-report", 5],
     ["test-report-comment", 5],
@@ -176,6 +193,40 @@ test("release workflow explicitly installs matrix Rust targets", () => {
   }
 });
 
+test("release workflow jobs cap runtime with explicit timeouts", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+
+  for (const [jobName, minutes] of [
+    ["build-cli", 90],
+    ["build-editor-extensions", 30],
+    ["release-vscode-extension", 15],
+    ["build-release-packages", 45],
+    ["build-native-all", 90],
+    ["smoke-release-packages", 30],
+    ["release-npm-native", 30],
+    ["release-npm-fresco-native", 20],
+    ["release-npm-wasm", 30],
+    ["release-npm-vite-plugin", 15],
+    ["release-npm-oxlint-plugin", 15],
+    ["release-npm-unplugin", 15],
+    ["release-npm-fresco", 15],
+    ["release-npm-musea-mcp-server", 15],
+    ["release-npm-vite-plugin-musea", 15],
+    ["release-npm-rspack-plugin", 15],
+    ["release-npm-musea-nuxt", 15],
+    ["release-npm-nuxt", 15],
+    ["release-crates", 30],
+    ["create-github-release", 20],
+    ["release-npm-cli", 15],
+  ] as const) {
+    assert.match(
+      workflowJobBody(workflow, jobName),
+      new RegExp(`timeout-minutes:\\s*${minutes}\\b`),
+      `${jobName} should have a ${minutes} minute timeout`,
+    );
+  }
+});
+
 test("release workflow smoke installs npm tarballs before publishing", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const smokeJob = workflowJobBody(workflow, "smoke-release-packages");
@@ -184,7 +235,10 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
   assert.match(smokeJob, /name:\s*Smoke release npm package installs/);
   assert.match(smokeJob, /name:\s*Prepare native package tarballs/);
   assert.match(smokeJob, /name:\s*Prepare Fresco native package tarball/);
-  assert.match(smokeJob, /node tools\/npm\/smoke-release-install\.mjs --prepare-manifests/);
+  assert.match(
+    smokeJob,
+    /node tools\/npm\/smoke-release-install\.mjs --prepare-manifests --runtime-checks/,
+  );
 
   for (const packageDir of [
     "npm/vize-native",
@@ -237,6 +291,9 @@ test("release workflow smoke installs npm tarballs before publishing", () => {
     assert.notEqual(smokeIndex, -1, `${jobName} is missing ${smokeStep}`);
     assert.notEqual(publishIndex, -1, `${jobName} is missing ${publishStep}`);
     assert.ok(smokeIndex < publishIndex, `${jobName} must smoke install before publishing`);
+    if (jobName === "release-npm-native") {
+      assert.match(job, /smoke-release-install\.mjs --prepare-manifests --runtime-checks/);
+    }
   }
 });
 
@@ -313,13 +370,19 @@ test("check workflow comments a detailed PR test report for each head push", () 
     "nix-flake",
     "fmt-rust",
     "check-js",
+    "security-audit",
+    "semver-checks",
     "node-engine-compat",
     "check-vize-apps",
+    "vue-parity",
     "test-scripts",
     "editor-extensions",
     "build-js-packages",
+    "test-js-packages",
     "clippy-and-test",
     "coverage",
+    "source-coverage",
+    "branch-coverage",
     "playground-test",
   ]) {
     assert.match(reportJob, new RegExp(`- ${jobName}\\b`));
@@ -526,13 +589,37 @@ test("release workflow overwrites existing GitHub release assets when a tag is r
   );
 });
 
-test("release workflow configures npm auth fallback for every npm publish job", () => {
+test("release workflow publishes npm packages through Trusted Publishing only", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const fallbackSteps = [...workflow.matchAll(/- name: Configure npm auth fallback/g)];
 
-  assert.equal(fallbackSteps.length, 13);
-  assert.match(workflow, /NPM_TOKEN:\s*\$\{\{\s*secrets\.NPM_TOKEN\s*\}\}/);
-  assert.match(workflow, /tools\/moon\/scripts\/github\/configure_npm_auth\.mbtx/);
+  assert.doesNotMatch(workflow, /secrets\.NPM_TOKEN/);
+  assert.doesNotMatch(workflow, /NPM_TOKEN/);
+  assert.doesNotMatch(workflow, /configure_npm_auth/);
+
+  const npmPublishJobs = [
+    "release-npm-native",
+    "release-npm-fresco-native",
+    "release-npm-wasm",
+    "release-npm-vite-plugin",
+    "release-npm-oxlint-plugin",
+    "release-npm-unplugin",
+    "release-npm-fresco",
+    "release-npm-musea-mcp-server",
+    "release-npm-vite-plugin-musea",
+    "release-npm-rspack-plugin",
+    "release-npm-musea-nuxt",
+    "release-npm-nuxt",
+    "release-npm-cli",
+  ];
+
+  for (const jobName of npmPublishJobs) {
+    const job = workflowJobBody(workflow, jobName);
+    assert.match(job, /runs-on:\s*ubuntu-latest/);
+    assert.match(job, /environment:\s*npm/);
+    assert.match(job, /id-token:\s*write/);
+    assert.match(job, /--provenance/);
+    assert.doesNotMatch(job, /NODE_AUTH_TOKEN|_authToken/);
+  }
 });
 
 test("release workflow publishes npm packages from package-specific artifacts", () => {
@@ -597,6 +684,157 @@ test("release workflow smokes the wasm package wrapper before publishing", () =>
   assert.notEqual(publish, -1);
   assert.ok(setupNode < smoke && smoke < publish);
   assert.match(job, /node tools\/npm\/smoke-wasm-package\.mjs npm\/vize-wasm/);
+});
+
+test("release workflow creates GitHub Releases only after registry publishing succeeds", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const releaseJob = workflowJobBody(workflow, "create-github-release");
+
+  for (const requiredNeed of [
+    "build-cli",
+    "release-vscode-extension",
+    "release-npm-native",
+    "release-npm-fresco-native",
+    "release-npm-wasm",
+    "smoke-release-packages",
+    "release-npm-cli",
+    "release-npm-vite-plugin",
+    "release-npm-oxlint-plugin",
+    "release-npm-unplugin",
+    "release-npm-fresco",
+    "release-npm-musea-mcp-server",
+    "release-npm-vite-plugin-musea",
+    "release-npm-rspack-plugin",
+    "release-npm-musea-nuxt",
+    "release-npm-nuxt",
+    "release-crates",
+  ]) {
+    assert.match(releaseJob, new RegExp(`- ${requiredNeed}\\b`));
+  }
+
+  const createRelease = releaseJob.indexOf("name: Create Release");
+  assert.notEqual(createRelease, -1);
+});
+
+test("check workflow runs JS package unit tests and production dependency audit", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const jsPackageJob = workflowJobBody(workflow, "test-js-packages");
+  const auditJob = workflowJobBody(workflow, "security-audit");
+
+  assert.match(jsPackageJob, /vp run --workspace-root test:js/);
+  assert.match(jsPackageJob, /shared-key:\s*"native"/);
+  assert.match(auditJob, /vp exec pnpm audit --prod --audit-level moderate/);
+  assert.match(auditJob, /tool:\s*cargo-audit/);
+  assert.match(auditJob, /cargo audit --deny warnings/);
+  assert.doesNotMatch(auditJob, /continue-on-error:\s*true/);
+});
+
+test("check workflow blocks on Rust source and branch coverage budgets", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const sourceJob = workflowJobBody(workflow, "source-coverage");
+  const branchJob = workflowJobBody(workflow, "branch-coverage");
+
+  assert.match(sourceJob, /tool:\s*cargo-llvm-cov/);
+  assert.match(sourceJob, /vp install --frozen-lockfile --prefer-offline/);
+  assert.match(sourceJob, /vp run --workspace-root coverage:source/);
+  assert.match(sourceJob, /source-summary\.json/);
+  assert.match(sourceJob, /rust-source-coverage-summary/);
+
+  assert.match(branchJob, /toolchain:\s*nightly/);
+  assert.match(branchJob, /tool:\s*cargo-llvm-cov/);
+  assert.match(branchJob, /vp install --frozen-lockfile --prefer-offline/);
+  assert.match(branchJob, /vp run --workspace-root coverage:source:branch/);
+  assert.match(branchJob, /source-branch-summary\.json/);
+  assert.match(branchJob, /rust-branch-coverage-summary/);
+});
+
+test("check workflow gates Vue parity against official compiler and vue-tsc fixtures", () => {
+  const workflow = readRepoFile(".github", "workflows", "check.yml");
+  const job = workflowJobBody(workflow, "vue-parity");
+
+  assert.match(job, /vp install --frozen-lockfile --prefer-offline/);
+  assert.match(job, /cargo build --profile ci -p vize/);
+  assert.match(job, /vp run --filter '\.\/tests' test:check:fixtures/);
+});
+
+test("native smoke workflow covers host platforms before release tags", () => {
+  const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const job = workflowJobBody(workflow, "host-native-smoke");
+
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.match(workflow, /schedule:/);
+  assert.doesNotMatch(workflow, /pull_request:/);
+  assert.match(
+    workflow,
+    /Full native\/fresh-install smoke is release evidence, not a per-push gate/,
+  );
+  for (const [runner, target] of [
+    ["ubuntu-latest", "linux-x64-gnu"],
+    ["ubuntu-24.04-arm", "linux-arm64-gnu"],
+    ["macos-15-intel", "darwin-x64"],
+    ["macos-latest", "darwin-arm64"],
+    ["windows-latest", "win32-x64-msvc"],
+    ["windows-11-arm", "win32-arm64-msvc"],
+  ] as const) {
+    assert.match(
+      job,
+      new RegExp(`runner:\\s*${escapeRegExp(runner)}[\\s\\S]*target:\\s*${target}`),
+    );
+  }
+  assert.match(job, /cargo build --profile ci -p vize/);
+  assert.match(job, /vp run --filter '\.\/npm\/vize-native' build:ci/);
+  assert.match(job, /require\('\.\/npm\/vize-native'\)/);
+  assert.match(job, /smoke-release-install\.mjs --prepare-manifests npm\/vize-native/);
+});
+
+test("native smoke workflow fresh-installs runtime tarballs across supported targets", () => {
+  const workflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const job = workflowJobBody(workflow, "fresh-install-smoke");
+
+  for (const [runner, target] of [
+    ["ubuntu-latest", "linux-x64-gnu"],
+    ["ubuntu-24.04-arm", "linux-arm64-gnu"],
+    ["macos-15-intel", "darwin-x64"],
+    ["macos-latest", "darwin-arm64"],
+    ["windows-latest", "win32-x64-msvc"],
+    ["windows-11-arm", "win32-arm64-msvc"],
+  ] as const) {
+    assert.match(
+      job,
+      new RegExp(`runner:\\s*${escapeRegExp(runner)}[\\s\\S]*target:\\s*${target}`),
+    );
+  }
+  assert.match(job, /node-version:\s*\["22", "24"\]/);
+  assert.match(job, /echo "\$\{\{\s*matrix\.node-version\s*\}\}" > \.node-version\.ci/);
+  assert.match(job, /node-version-file:\s*"\.node-version\.ci"/);
+  assert.match(job, /vp exec napi create-npm-dirs/);
+  assert.match(job, /vp exec napi pre-publish -t npm --no-gh-release --skip-optional-publish/);
+  assert.match(
+    job,
+    /smoke-release-install\.mjs --prepare-manifests --runtime-checks[\s\S]*npm\/vize-native npm\/vize-native\/npm\/\*[\s\S]*npm\/vize npm\/vite-plugin-vize/,
+  );
+});
+
+test("release workflow builds native targets on MoonBit-supported runners", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const job = workflowJobBody(workflow, "build-native-all");
+
+  assert.doesNotMatch(
+    job,
+    /host:\s*macos-15-intel[\s\S]*target:\s*x86_64-apple-darwin/,
+    "MoonBit native scripts cannot run on macOS Intel runners",
+  );
+
+  for (const [host, target] of [
+    ["macos-latest", "x86_64-apple-darwin"],
+    ["macos-latest", "aarch64-apple-darwin"],
+    ["ubuntu-latest", "x86_64-unknown-linux-gnu"],
+    ["ubuntu-24.04-arm", "aarch64-unknown-linux-gnu"],
+    ["windows-latest", "x86_64-pc-windows-msvc"],
+    ["windows-11-arm", "aarch64-pc-windows-msvc"],
+  ] as const) {
+    assert.match(job, new RegExp(`host:\\s*${escapeRegExp(host)}[\\s\\S]*target:\\s*${target}`));
+  }
 });
 
 test("release workflow bundles fresco-native binaries into the root package instead of publishing platform packages", () => {
@@ -709,4 +947,30 @@ test("check and docs workflows use the CI Rust profile for non-release native bu
   assert.match(checkWorkflow, /cp target\/ci\/vize \/usr\/local\/bin\/vize/);
   assert.match(checkWorkflow, /vp run --filter '\.\/npm\/vize-native' build:ci/);
   assert.match(deployDocsWorkflow, /vp run --filter '\.\/npm\/vize-native' build:ci/);
+});
+
+test("pkg.pr.new workflow publishes built npm packages from the lockfile", () => {
+  const workflow = readRepoFile(".github", "workflows", "pkg-pr-new.yml");
+  const job = workflowJobBody(workflow, "publish-preview");
+
+  assert.match(job, /timeout-minutes:\s*30/);
+  assert.match(job, /vp run --workspace-root build:packages/);
+  assert.match(job, /vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update/);
+  assert.doesNotMatch(job, /\b(?:npx|bunx)\b|pnpm dlx|yarn dlx/);
+  assert.equal([...job.matchAll(/pkg-pr-new publish/g)].length, 1);
+
+  for (const packagePath of [
+    "./npm/vize",
+    "./npm/vite-plugin-vize",
+    "./npm/oxlint-plugin-vize",
+    "./npm/unplugin-vize",
+    "./npm/fresco",
+    "./npm/musea-mcp-server",
+    "./npm/vite-plugin-musea",
+    "./npm/rspack-vize-plugin",
+    "./npm/musea-nuxt",
+    "./npm/nuxt",
+  ]) {
+    assert.match(job, new RegExp(packagePath.replaceAll("/", "\\/").replace(".", "\\.")));
+  }
 });

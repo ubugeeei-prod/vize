@@ -1,0 +1,70 @@
+name: pkg.pr.new
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pkg-pr-new-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+
+jobs:
+  publish-preview:
+    name: Publish preview packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Install package build dependencies
+        run: moon run --target native - -- --filter './npm/vize...' --filter './npm/vite-plugin-vize...' --filter './npm/oxlint-plugin-vize...' --filter './npm/unplugin-vize...' --filter './npm/fresco...' --filter './npm/musea-mcp-server...' --filter './npm/vite-plugin-musea...' --filter './npm/rspack-vize-plugin...' --filter './npm/musea-nuxt...' --filter './npm/nuxt...' < tools/moon/scripts/github/vp_install.mbtx
+
+      - name: Build preview packages
+        run: vp run --workspace-root build:packages
+
+      - name: Publish pkg.pr.new preview
+        # The pkg.pr.new GitHub App must be installed on this repository for
+        # the publish call to succeed. Until it is, the job logs a clear
+        # message and is marked successful so the workflow does not red-light
+        # every PR while waiting on a one-time install action by a maintainer.
+        # https://github.com/apps/pkg-pr-new
+        run: |
+          set -e
+          OUTPUT_FILE=$(mktemp)
+          if vp exec pkg-pr-new publish --pnpm --packageManager=pnpm --comment=update \
+            './npm/vize' \
+            './npm/vite-plugin-vize' \
+            './npm/oxlint-plugin-vize' \
+            './npm/unplugin-vize' \
+            './npm/fresco' \
+            './npm/musea-mcp-server' \
+            './npm/vite-plugin-musea' \
+            './npm/rspack-vize-plugin' \
+            './npm/musea-nuxt' \
+            './npm/nuxt' 2>&1 | tee "$OUTPUT_FILE"; then
+            exit 0
+          fi
+          if grep -q "The app https://github.com/apps/pkg-pr-new is not installed" "$OUTPUT_FILE"; then
+            echo "::warning::pkg-pr-new GitHub App is not installed on this repository. Install https://github.com/apps/pkg-pr-new to enable preview publishing. Skipping for now."
+            exit 0
+          fi
+          exit 1

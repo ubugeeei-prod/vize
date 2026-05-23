@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import type { VizePluginState } from "./state.ts";
 import { getBoundaryPlaceholderCode } from "./load.ts";
 import { loadHook } from "./load.ts";
+import { normalizeVueServerRendererImport } from "./load.ts";
 import { transformHook } from "./load.ts";
 import { toVirtualId } from "../virtual.ts";
 
@@ -49,6 +50,14 @@ assert.equal(
   getBoundaryPlaceholderCode("/src/Foo.vue", true),
   null,
   "Regular SFCs must not be stubbed",
+);
+
+assert.equal(
+  normalizeVueServerRendererImport(
+    "import { ssrRenderAttrs } from '@vue/server-renderer';\nexport { ssrRenderAttrs };",
+  ),
+  'import { ssrRenderAttrs } from "vue/server-renderer";\nexport { ssrRenderAttrs };',
+  "SSR helper imports should use Vue's public server-renderer entry for Nuxt/Nitro externalization",
 );
 
 const realPath = "/src/Hmr.vue";
@@ -247,6 +256,38 @@ assert.doesNotMatch(
   definePageMetaLoad.code,
   /const msg/,
   "Nuxt definePageMeta macro queries should not return the component setup body",
+);
+
+const emptyPageMetaDir = createTempRoot("empty-page-meta");
+const emptyPageMetaPath = path.join(emptyPageMetaDir, "Plain.vue");
+fs.writeFileSync(
+  emptyPageMetaPath,
+  `<script setup lang="ts">
+const { t } = useI18n()
+useSeoMeta({ title: () => t("site.name") })
+</script>
+<template><div /></template>`,
+);
+
+const emptyPageMetaLoad = loadHook(
+  { ...hmrState, cache: new Map(), ssrCache: new Map(), root: emptyPageMetaDir },
+  `\0${emptyPageMetaPath}?macro=true`,
+  { ssr: false },
+);
+
+assert.ok(
+  emptyPageMetaLoad && typeof emptyPageMetaLoad === "object",
+  "Nuxt page macro queries without definePageMeta should still load as code objects",
+);
+assert.equal(
+  emptyPageMetaLoad.code,
+  "export default {}",
+  "Nuxt page macro queries without definePageMeta should return empty metadata",
+);
+assert.doesNotMatch(
+  emptyPageMetaLoad.code,
+  /useI18n|useSeoMeta/,
+  "Nuxt page macro queries must not evaluate setup composables outside setup",
 );
 
 const jsMacroDir = createTempRoot("js-macro");

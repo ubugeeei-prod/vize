@@ -39,6 +39,8 @@ const hugeJsonVuePath = path.join(fixtureDir, "HugeJson.vue");
 const snapshotsDir = path.join(packageDir, "__snapshots__");
 const ansiEscapePattern = new RegExp(String.raw`\u001B\[[0-9;]*m`, "gu");
 const workspaceRootPattern = new RegExp(escapeRegExp(workspaceRoot), "gu");
+const oxlintEnv = { ...process.env };
+delete oxlintEnv.GITHUB_ACTIONS;
 
 function findOxlintBin() {
   const pnpmStoreDir = path.join(workspaceRoot, "node_modules", ".pnpm");
@@ -429,6 +431,7 @@ function runOxlint(args: readonly string[]) {
       execFileSync(oxlintBin, args, {
         cwd: fixtureDir,
         encoding: "utf8",
+        env: oxlintEnv,
         stdio: "pipe",
       }),
     );
@@ -520,7 +523,7 @@ assert.doesNotMatch(
 );
 assert.match(
   defaultRun.output,
-  /^  [|│]     Help:/mu,
+  /(?:^  [|│]     Help:|%0A    Help:)/mu,
   "Default output should still include help text",
 );
 

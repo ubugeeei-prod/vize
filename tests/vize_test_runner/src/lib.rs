@@ -212,6 +212,20 @@ pub fn compile_sfc_template(input: &str, _options: &TestOptions) -> String {
     // Use "test.vue" as the filename to match Vue's expected output
     let mut compile_opts = SfcCompileOptions::default();
     compile_opts.script.id = Some("test.vue".to_compact_string());
+    let source_is_ts = descriptor
+        .script
+        .as_ref()
+        .and_then(|script| script.lang.as_deref())
+        .is_some_and(|lang| matches!(lang, "ts" | "tsx"))
+        || descriptor
+            .script_setup
+            .as_ref()
+            .and_then(|script| script.lang.as_deref())
+            .is_some_and(|lang| matches!(lang, "ts" | "tsx"));
+    if source_is_ts {
+        compile_opts.script.is_ts = true;
+        compile_opts.template.is_ts = true;
+    }
     match compile_sfc(&descriptor, compile_opts) {
         Ok(result) => result.code,
         Err(_) => String::default(),

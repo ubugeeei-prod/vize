@@ -101,6 +101,19 @@ export function syncCollectedCssForFile(
   }
 }
 
+export function clearBuildCaches(
+  state: Pick<
+    VizePluginState,
+    "cache" | "collectedCss" | "pendingHmrUpdateTypes" | "precompileMetadata" | "ssrCache"
+  >,
+): void {
+  state.cache.clear();
+  state.ssrCache.clear();
+  state.collectedCss.clear();
+  state.precompileMetadata.clear();
+  state.pendingHmrUpdateTypes.clear();
+}
+
 /**
  * Pre-compile all Vue files matching scan patterns.
  */

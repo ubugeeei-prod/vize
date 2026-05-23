@@ -79,8 +79,9 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         // Document formatting
         document_formatting_provider: features.formatting.then_some(OneOf::Left(true)),
 
-        // Range formatting
-        document_range_formatting_provider: features.formatting.then_some(OneOf::Left(true)),
+        // Range formatting is intentionally not advertised until the handler
+        // can produce edits scoped to the requested range.
+        document_range_formatting_provider: None,
 
         // Signature help is not implemented yet.
         signature_help_provider: None,
@@ -272,7 +273,7 @@ mod tests {
         assert!(capabilities.code_action_provider.is_some());
         assert!(capabilities.rename_provider.is_some());
         assert!(capabilities.document_formatting_provider.is_some());
-        assert!(capabilities.document_range_formatting_provider.is_some());
+        assert!(capabilities.document_range_formatting_provider.is_none());
         assert!(capabilities.code_lens_provider.is_some());
         assert!(capabilities.semantic_tokens_provider.is_some());
         assert!(capabilities.document_link_provider.is_some());

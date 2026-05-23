@@ -167,7 +167,11 @@ vize lsp
 
 `vize check` is powered by `vize_canon`, which now leans on [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) project sessions for native TypeScript diagnostics. Vize generates virtual TypeScript for Vue SFCs, asks Corsa for project-aware diagnostics, and then maps the results back onto the original `.vue`, `.ts`, `.tsx`, and `.d.ts` files.
 
-This path is still maturing, so editor type checking remains an opt-in capability for now. If you are developing Vize alongside Corsa, `vize check --corsa-path /path/to/corsa` lets you point at a custom executable.
+This path is still maturing, so editor type checking remains an opt-in capability for now. The
+runtime stack is the `@typescript/native-preview` package, Corsa/corsa-bind is the API layer Vize
+talks to, and the executable installed by the TypeScript native preview is still commonly named
+`tsgo`. Use `typeChecker.corsaPath` or `vize check --corsa-path /path/to/tsgo` when you want to pin
+that runtime. `typeChecker.tsgoPath` remains a deprecated compatibility alias.
 
 Useful type-checking commands:
 
@@ -205,6 +209,7 @@ export default defineConfig({
   typeChecker: {
     enabled: true,
     strict: true,
+    corsaPath: "./node_modules/.bin/tsgo",
   },
   formatter: {
     printWidth: 100,

@@ -67,9 +67,11 @@ export const packedPackages = [
 export const testedPackages = [
   "./npm/vite-plugin-vize",
   "./npm/oxlint-plugin-vize",
+  "./npm/vite-plugin-musea",
   "./npm/unplugin-vize",
   "./npm/rspack-vize-plugin",
   "./npm/nuxt",
+  "./npm/musea-mcp-server",
 ] satisfies PackagePath[];
 
 export const floatingPromiseTestPatterns = ["tests/**/*.ts"];

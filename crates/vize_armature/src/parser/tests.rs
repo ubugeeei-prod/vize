@@ -724,6 +724,18 @@ fn test_parse_open_tag_at_eof_does_not_panic() {
 }
 
 #[test]
+fn test_parse_malformed_close_tag_at_eof_does_not_panic() {
+    let allocator = Bump::new();
+    let (_root, errors) = parse(&allocator, "\n  <div class=\"root\">{{ title }}</di=\"{");
+
+    assert!(
+        errors
+            .iter()
+            .any(|error| error.code == ErrorCode::InvalidEndTag)
+    );
+}
+
+#[test]
 fn test_parse_recovers_open_tag_at_eof() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, r#"<div class="a""#);

@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Schedule trigger for slow jobs (nix-flake, playground-test) that should
+  # run on a cadence but no longer block PR review. See the conditional
+  # `if:` guards on those jobs.
+  schedule:
+    # 03:11 UTC daily (~12:11 JST). Offset from native-smoke and e2e to spread
+    # GitHub Actions concurrency budget.
+    - cron: "11 3 * * *"
 
 concurrency:
   group: check-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -21,6 +28,11 @@ jobs:
   nix-flake:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Nix store cache restore + `nix flake check` was the second-slowest PR
+    # gate after playground-test. The flake itself rarely changes between
+    # PRs, so run it on push-to-main (catches merge regressions within
+    # minutes) and on the daily schedule, not on every PR.
+    if: ${{ github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31
@@ -59,6 +71,75 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check JS/TS
         run: vp run --workspace-root check:ci
+
+  semver-checks:
+    name: cargo-semver-checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: "semver-checks"
+          cache-workspace-crates: "true"
+      - name: Install cargo-semver-checks
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-semver-checks
+      # Flags accidental breaking changes to a published crate's public API by
+      # comparing against the latest baseline on crates.io. Each `--package`
+      # flag adds another crate to the comparison; keep this list in sync with
+      # the publishable workspace crates that have at least one version on
+      # crates.io.
+      #
+      # cargo-semver-checks fails the whole run with "not found in registry"
+      # for crates that have no baseline yet, so a newly publishable crate
+      # must land on crates.io first, then be added to this list in a
+      # follow-up. `vize_croquis_cf` is currently in that state and is
+      # intentionally omitted until its first publish.
+      - name: Check public API SemVer compatibility
+        run: |
+          cargo semver-checks check-release \
+            --package vize_armature \
+            --package vize_atelier_core \
+            --package vize_atelier_dom \
+            --package vize_atelier_sfc \
+            --package vize_atelier_ssr \
+            --package vize_atelier_vapor \
+            --package vize_canon \
+            --package vize_carton \
+            --package vize_croquis \
+            --package vize_fresco \
+            --package vize_musea \
+            --package vize_patina \
+            --package vize_relief
+
+  security-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Audit production npm dependencies
+        run: vp exec pnpm audit --prod --audit-level moderate
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-audit
+      - name: Audit Rust dependencies
+        run: cargo audit --deny warnings
 
   node-engine-compat:
     runs-on: ubuntu-latest
@@ -109,8 +190,39 @@ jobs:
       - name: Check Vize app fixtures
         run: vp run --workspace-root check:ci:vize-apps
 
+  vue-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: "vue-parity"
+          cache-workspace-crates: "true"
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build vize CLI
+        run: cargo build --profile ci -p vize
+      - name: Check Vue compiler and typecheck parity
+        run: vp run --filter './tests' test:check:fixtures
+
   test-scripts:
     runs-on: ubuntu-latest
+    # Restoration of the original setup after the trim in #519 broke
+    # main: lsp-smoke.test.ts launches `vize lsp` (falls back to
+    # `cargo run -p vize` when no binary is staged), moonbit-*.test.ts
+    # files shell out to `moon run` for release-script coverage, and
+    # several tests assert on artifacts produced by the built CLI.
+    # Each of those was treated as not-needed and reintroduced a
+    # regression; keeping the full bootstrap is the safe answer.
     timeout-minutes: 15
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -199,6 +311,29 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  test-js-packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+      - uses: ./.github/actions/setup-moonbit
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: "native"
+          cache-workspace-crates: "true"
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Test JS packages
+        run: vp run --workspace-root test:js
+
   clippy-and-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -239,6 +374,109 @@ jobs:
 
       - name: Coverage report
         run: moon run --target native - -- < tools/moon/scripts/github/write_coverage_summary.mbtx
+
+  source-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    # cargo llvm-cov against the whole workspace consistently runs in the
+    # 4–6 minute range. Coverage is a trend metric, not a per-PR signal —
+    # a single PR rarely meaningfully changes workspace-wide percentages.
+    # Run on push-to-main (so regressions surface within minutes of merge)
+    # and on the daily schedule. The fixture-coverage job (`coverage`) and
+    # the compiler/lint suites still run on every PR.
+    if: ${{ github.event_name != 'pull_request' }}
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          components: llvm-tools-preview
+
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: "coverage-source"
+          cache-workspace-crates: "true"
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-llvm-cov
+
+      - name: Source coverage report
+        run: vp run --workspace-root coverage:source
+
+      - name: Upload source coverage summary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-source-coverage-summary
+          path: target/llvm-cov/source-summary.json
+          if-no-files-found: error
+          retention-days: 14
+
+  branch-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Nightly Rust branch coverage on the core compiler crates. Same
+    # rationale as source-coverage: a single PR does not move branch
+    # coverage in a way that needs gating per-PR. Push-to-main + schedule
+    # keeps the trend honest without paying ~2 minutes on every PR.
+    if: ${{ github.event_name != 'pull_request' }}
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+          run-install: false
+
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # nightly
+        with:
+          toolchain: nightly
+          components: llvm-tools-preview
+
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: "coverage-branch"
+          cache-workspace-crates: "true"
+
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-llvm-cov
+
+      - name: Branch coverage report
+        run: vp run --workspace-root coverage:source:branch
+
+      - name: Upload branch coverage summary
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-branch-coverage-summary
+          path: target/llvm-cov/source-branch-summary.json
+          if-no-files-found: error
+          retention-days: 14
 
   playground-test:
     runs-on: ubuntu-latest
@@ -350,13 +588,19 @@ jobs:
       - nix-flake
       - fmt-rust
       - check-js
+      - security-audit
+      - semver-checks
       - node-engine-compat
       - check-vize-apps
+      - vue-parity
       - test-scripts
       - editor-extensions
       - build-js-packages
+      - test-js-packages
       - clippy-and-test
       - coverage
+      - source-coverage
+      - branch-coverage
       - playground-test
     permissions:
       contents: read

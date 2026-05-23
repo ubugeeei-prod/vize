@@ -4,8 +4,7 @@ title: Configuration
 
 # Configuration
 
-Vize uses `vize.config.*` for shared npm CLI and Vite plugin settings. Some Rust CLI commands also
-read config directly, but their supported file formats and field names are currently narrower.
+Vize uses `vize.config.*` for shared npm CLI, Vite plugin, and Rust CLI settings.
 
 ## Config Files
 
@@ -17,8 +16,8 @@ The npm CLI and `@vizejs/vite-plugin` load these files from the project root:
 - `vize.config.pkl`
 - `vize.config.json`
 
-The Rust CLI currently reads `vize.config.pkl` first and then `vize.config.json` for command-native
-settings such as `check`, `lsp`, and `fmt`.
+The Rust CLI reads the same config file names in the order above for command-native settings such as
+`check`, `lint`, `lsp`, and `fmt`.
 
 ## TypeScript Config
 
@@ -193,24 +192,30 @@ export default defineConfig({
 ```
 
 `typeChecker.tsconfig` and `typeChecker.corsaPath` are part of the shared schema, but the
-project-backed Corsa path is the Rust CLI surface today. Use `vize check --tsconfig ...` and
-`vize check --corsa-path ...` when you need those controls.
+project-backed Corsa path is the Rust CLI surface today. `typeChecker.corsaPath` is shared by
+`vize check`, type-aware `vize lint`, and `vize lsp`; `typeChecker.tsgoPath` is a deprecated alias
+for older configs. Use `vize check --tsconfig ...` and `vize check --corsa-path ...` when you need
+command-line overrides.
 
-The Rust `vize check` command reads its own `check` block from `vize.config.pkl` or
-`vize.config.json` for command-native settings such as worker count. Keep ambient declarations,
-generated auto-import files, path aliases, and Vue `ComponentCustomProperties` declarations in your
-project `tsconfig.json`; use `vize check --tsconfig ...` to select that project file.
+The runtime stack is `@typescript/native-preview`, the Corsa/corsa-bind API layer, and the installed
+`tsgo` executable name. Keep ambient declarations, generated auto-import files, path aliases, and
+Vue `ComponentCustomProperties` declarations in your project `tsconfig.json`; use
+`vize check --tsconfig ...` to select that project file.
 
 ```json
 {
-  "check": {
-    "servers": 4
+  "typeChecker": {
+    "corsaPath": "./node_modules/.bin/tsgo",
+    "servers": 1
   },
   "lsp": {
     "typecheck": false
   }
 }
 ```
+
+`typeChecker.servers` is reserved for future Corsa worker pools. The direct project-session runner
+currently supports only `1`; larger values fail fast instead of pretending to tune concurrency.
 
 ## Musea Options
 

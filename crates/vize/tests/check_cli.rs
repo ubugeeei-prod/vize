@@ -1,4 +1,8 @@
-use std::{path::Path, process::Command};
+use std::{
+    io::{BufRead, Read, Write},
+    path::Path,
+    process::{Command, Stdio},
+};
 
 use vize_carton::cstr;
 
@@ -116,6 +120,416 @@ void props
 }
 
 #[test]
+fn check_respects_explicit_corsa_path() {
+    let project_root = create_cli_project(
+        "explicit-corsa-path",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count = 1;
+</script>
+"#,
+        )],
+    );
+    let missing_corsa = project_root.join("__missing_corsa__");
+    let missing_corsa_arg = missing_corsa.to_string_lossy().into_owned();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "check",
+            "src/App.vue",
+            "--quiet",
+            "--corsa-path",
+            missing_corsa_arg.as_str(),
+        ])
+        .output()
+        .unwrap();
+
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(!output.status.success());
+    assert!(
+        stderr.contains("Configured Corsa executable does not exist"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("__missing_corsa__"), "{stderr}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_respects_configured_tsgo_path() {
+    let project_root = create_cli_project(
+        "configured-tsgo-path",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count = 1;
+</script>
+"#,
+        )],
+    );
+    let missing_corsa = project_root.join("__missing_configured_tsgo__");
+    std::fs::write(
+        project_root.join("vize.config.json"),
+        cstr!(
+            r#"{{
+  "typeChecker": {{
+    "tsgoPath": "{}"
+  }}
+}}"#,
+            missing_corsa.display()
+        )
+        .as_str(),
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["check", "src/App.vue", "--quiet"])
+        .output()
+        .unwrap();
+
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(!output.status.success());
+    assert!(
+        stderr.contains("Configured Corsa executable does not exist"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("__missing_configured_tsgo__"), "{stderr}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_respects_configured_corsa_path() {
+    let project_root = create_cli_project(
+        "configured-corsa-path",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count = 1;
+</script>
+"#,
+        )],
+    );
+    let config_dir = project_root.join("config");
+    std::fs::create_dir_all(&config_dir).unwrap();
+    std::fs::write(
+        config_dir.join("vize.config.json"),
+        r#"{
+  "typeChecker": {
+    "corsaPath": "__missing_configured_corsa__"
+  }
+}"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "check",
+            "--config",
+            "config/vize.config.json",
+            "src/App.vue",
+            "--quiet",
+        ])
+        .output()
+        .unwrap();
+
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(!output.status.success());
+    assert!(
+        stderr.contains("Configured Corsa executable does not exist"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("__missing_configured_corsa__"), "{stderr}");
+    assert!(
+        stderr.contains("config/__missing_configured_corsa__"),
+        "{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn lint_type_aware_rules_respect_configured_corsa_path() {
+    let project_root = create_cli_project(
+        "lint-configured-corsa-path",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+async function loadData(): Promise<number> {
+  return 1
+}
+
+loadData()
+</script>
+"#,
+        )],
+    );
+    let missing_corsa = project_root.join("__missing_lint_corsa__");
+    std::fs::write(
+        project_root.join("vize.config.json"),
+        cstr!(
+            r#"{{
+  "typeChecker": {{
+    "corsaPath": "{}"
+  }}
+}}"#,
+            missing_corsa.display()
+        )
+        .as_str(),
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "lint",
+            "--preset",
+            "opinionated",
+            "--help-level",
+            "none",
+            "src/App.vue",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    assert!(output.status.success());
+    assert!(
+        stdout.contains("Configured Corsa executable does not exist"),
+        "{stdout}"
+    );
+    assert!(stdout.contains("__missing_lint_corsa__"), "{stdout}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_rejects_unsupported_corsa_server_count() {
+    let project_root = create_cli_project(
+        "unsupported-corsa-servers",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count = 1;
+</script>
+"#,
+        )],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["check", "src/App.vue", "--quiet", "--servers", "2"])
+        .output()
+        .unwrap();
+
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    assert!(
+        stderr.contains("typeChecker.servers=2 is not supported"),
+        "{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn lsp_corsa_smoke_publishes_diagnostics_and_hover() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        eprintln!("skipping LSP Corsa smoke: @typescript/native-preview runtime is unavailable");
+        return;
+    };
+    let project_root = create_cli_project(
+        "lsp-corsa-smoke",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count: number = 'oops'
+</script>
+
+<template>
+  <div>{{ count.toFixed(1) }}</div>
+</template>
+"#,
+        )],
+    );
+    std::fs::write(
+        project_root.join("vize.config.json"),
+        cstr!(
+            r#"{{
+  "typeChecker": {{
+    "corsaPath": "{}"
+  }},
+  "lsp": {{
+    "lint": true,
+    "typecheck": true,
+    "hover": true
+  }}
+}}"#,
+            corsa_path
+        )
+        .as_str(),
+    )
+    .unwrap();
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .arg("lsp")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut stdin = child.stdin.take().unwrap();
+    let stdout = child.stdout.take().unwrap();
+    let stderr = child.stderr.take().unwrap();
+    std::thread::spawn(move || {
+        let mut stderr = std::io::BufReader::new(stderr);
+        let mut buffer = Vec::new();
+        let _ = stderr.read_to_end(&mut buffer);
+    });
+    let (messages_tx, messages_rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let mut reader = std::io::BufReader::new(stdout);
+        while let Ok(message) = read_lsp_message(&mut reader) {
+            if messages_tx.send(message).is_err() {
+                break;
+            }
+        }
+    });
+
+    let root_uri = file_uri(&project_root);
+    let app_path = project_root.join("src/App.vue");
+    let app_uri = file_uri(&app_path);
+    let source = std::fs::read_to_string(&app_path).unwrap();
+
+    write_lsp_message(
+        &mut stdin,
+        &serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "processId": null,
+                "rootUri": root_uri,
+                "capabilities": {},
+                "initializationOptions": {
+                    "lint": true,
+                    "typecheck": true,
+                    "hover": true
+                }
+            }
+        }),
+    );
+    let initialize = recv_lsp_response(&messages_rx, 1);
+    assert!(
+        initialize["result"]["capabilities"]["hoverProvider"]
+            .as_bool()
+            .unwrap_or(false),
+        "{initialize}"
+    );
+
+    write_lsp_message(
+        &mut stdin,
+        &serde_json::json!({
+            "jsonrpc": "2.0",
+            "method": "initialized",
+            "params": {}
+        }),
+    );
+    write_lsp_message(
+        &mut stdin,
+        &serde_json::json!({
+            "jsonrpc": "2.0",
+            "method": "textDocument/didOpen",
+            "params": {
+                "textDocument": {
+                    "uri": app_uri,
+                    "languageId": "vue",
+                    "version": 1,
+                    "text": source
+                }
+            }
+        }),
+    );
+    let diagnostics = recv_lsp_notification(&messages_rx, "textDocument/publishDiagnostics");
+    assert!(
+        diagnostics["params"]["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|diagnostic| diagnostic["message"]
+                .as_str()
+                .is_some_and(|message| message.contains("number") || message.contains("TS2322"))),
+        "{diagnostics}"
+    );
+
+    write_lsp_message(
+        &mut stdin,
+        &serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "textDocument/hover",
+            "params": {
+                "textDocument": { "uri": app_uri },
+                "position": { "line": 5, "character": 11 }
+            }
+        }),
+    );
+    let hover = recv_lsp_response(&messages_rx, 2);
+    assert!(!hover["result"].is_null(), "{hover}");
+
+    let _ = child.kill();
+    let _ = child.wait();
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn lint_cross_file_reports_ssr_browser_api_risk() {
+    let project_root = create_cli_project(
+        "cross-file-ssr-browser-api",
+        &[
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import BrowserBadge from './BrowserBadge.vue'
+</script>
+
+<template>
+  <BrowserBadge />
+</template>
+"#,
+            ),
+            (
+                "src/BrowserBadge.vue",
+                r#"<template>
+  <span>{{ window.innerWidth }}</span>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args(["lint", "--cross-file", "--help-level", "none", "src"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    assert!(
+        stdout.contains("vize:croquis/cf/browser-api-ssr"),
+        "{stdout}"
+    );
+    assert!(stdout.contains("window"), "{stdout}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_json_reports_broken_sfc_parse_errors_without_secondary_noise() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
@@ -160,6 +574,93 @@ const count =
             .as_str()
             .unwrap()
             .contains("Cannot find name")
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[cfg(unix)]
+#[test]
+fn check_socket_json_preserves_json_output_contract() {
+    use std::os::unix::net::UnixListener;
+
+    let project_root = create_cli_project(
+        "socket-json",
+        &[(
+            "src/App.vue",
+            r#"<script setup lang="ts">
+const count: string = 0;
+</script>
+"#,
+        )],
+    );
+    let socket_path = project_root.join("check.sock");
+    let listener = UnixListener::bind(&socket_path).unwrap();
+    let server = std::thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        let mut line = std::string::String::new();
+        std::io::BufReader::new(stream.try_clone().unwrap())
+            .read_line(&mut line)
+            .unwrap();
+        let request: serde_json::Value = serde_json::from_str(&line).unwrap();
+        assert_eq!(request["method"], "check");
+
+        let response = serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": request["id"],
+            "result": {
+                "diagnostics": [
+                    {
+                        "message": "Type 'number' is not assignable to type 'string'.",
+                        "severity": "error",
+                        "line": 2,
+                        "column": 7,
+                        "code": "2322"
+                    },
+                    {
+                        "message": "Unused binding.",
+                        "severity": "warning",
+                        "line": 2,
+                        "column": 7,
+                        "code": null
+                    }
+                ],
+                "virtualTs": "const count: string = 0;",
+                "errorCount": 1
+            }
+        });
+        writeln!(stream, "{response}").unwrap();
+    });
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .args([
+            "check",
+            "src",
+            "--socket",
+            socket_path.to_str().unwrap(),
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    server.join().unwrap();
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(json["errorCount"], 1);
+    assert_eq!(json["warningCount"], 1);
+    assert_eq!(json["fileCount"], 1);
+    assert_eq!(json["files"][0]["file"], "src/App.vue");
+    assert_eq!(json["files"][0]["virtualTs"], "const count: string = 0;");
+    assert_eq!(
+        json["files"][0]["diagnostics"],
+        serde_json::json!([
+            "error:2:7 [TS2322] Type 'number' is not assignable to type 'string'.",
+            "warning:2:7 Unused binding."
+        ])
     );
 
     let _ = std::fs::remove_dir_all(&project_root);
@@ -444,6 +945,154 @@ defineProps<PublicProps>()
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+#[test]
+fn check_json_handles_monorepo_tsconfig_extends_paths_and_excludes() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "monorepo-tsconfig",
+        &[
+            (
+                "tsconfig.base.json",
+                r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["packages/shared/src/*"]
+    },
+    "noEmit": true
+  }
+}"#,
+            ),
+            (
+                "tsconfig.json",
+                r#"{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.vue"
+  ],
+  "exclude": [
+    "packages/*/src/generated/**"
+  ]
+}"#,
+            ),
+            (
+                "packages/app/tsconfig.json",
+                r#"{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}"#,
+            ),
+            (
+                "packages/ui/tsconfig.json",
+                r#"{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}"#,
+            ),
+            (
+                "packages/shared/tsconfig.json",
+                r#"{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*.ts"]
+}"#,
+            ),
+            (
+                "packages/shared/src/contracts.ts",
+                r#"export type Label = string
+"#,
+            ),
+            (
+                "packages/ui/src/UiButton.vue",
+                r#"<script setup lang="ts">
+import type { Label } from '@shared/contracts'
+
+defineProps<{
+  label: Label
+  count: number
+}>()
+</script>
+
+<template>
+  <button>{{ label }} {{ count }}</button>
+</template>
+"#,
+            ),
+            (
+                "packages/app/src/App.vue",
+                r#"<script setup lang="ts">
+import UiButton from '../../ui/src/UiButton.vue'
+import type { Label } from '@shared/contracts'
+
+const label: Label = 'Save'
+const count = 'not a number'
+</script>
+
+<template>
+  <UiButton :label="label" :count="count" />
+</template>
+"#,
+            ),
+            (
+                "packages/app/src/generated/Bad.vue",
+                r#"<script setup lang="ts">
+const shouldNotBeChecked: string = 0
+</script>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let diagnostics = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(|diagnostic| diagnostic.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["fileCount"], 3);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.contains("[TS2322]") && diagnostic.contains("number")),
+        "expected imported monorepo component prop type error, got: {diagnostics:#?}"
+    );
+    assert!(
+        diagnostics.iter().all(|diagnostic| {
+            !diagnostic.contains("Cannot find module")
+                && !diagnostic.contains("shouldNotBeChecked")
+                && !diagnostic.contains("generated/Bad.vue")
+        }),
+        "monorepo tsconfig paths/excludes should be respected: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 fn collect_declaration_snapshot(
     declaration_dir: &Path,
 ) -> Vec<(std::string::String, std::string::String)> {
@@ -533,6 +1182,115 @@ fn create_cli_project(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf 
     }
 
     project_root
+}
+
+fn write_lsp_message(stdin: &mut std::process::ChildStdin, message: &serde_json::Value) {
+    let body = message.to_string();
+    write!(stdin, "Content-Length: {}\r\n\r\n{}", body.len(), body).unwrap();
+    stdin.flush().unwrap();
+}
+
+fn read_lsp_message(
+    reader: &mut std::io::BufReader<std::process::ChildStdout>,
+) -> std::io::Result<serde_json::Value> {
+    let mut content_length = None;
+    loop {
+        let mut line = std::string::String::new();
+        let bytes = reader.read_line(&mut line)?;
+        if bytes == 0 {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::UnexpectedEof,
+                "lsp stdout closed",
+            ));
+        }
+        let line = line.trim_end_matches(['\r', '\n']);
+        if line.is_empty() {
+            break;
+        }
+        if let Some(value) = line.strip_prefix("Content-Length:") {
+            content_length =
+                Some(value.trim().parse::<usize>().map_err(|error| {
+                    std::io::Error::new(std::io::ErrorKind::InvalidData, error)
+                })?);
+        }
+    }
+
+    let Some(content_length) = content_length else {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "missing Content-Length header",
+        ));
+    };
+    let mut body = vec![0; content_length];
+    reader.read_exact(&mut body)?;
+    serde_json::from_slice(&body)
+        .map_err(|error| std::io::Error::new(std::io::ErrorKind::InvalidData, error))
+}
+
+fn recv_lsp_response(
+    receiver: &std::sync::mpsc::Receiver<serde_json::Value>,
+    id: i64,
+) -> serde_json::Value {
+    recv_lsp_matching(receiver, |message| message["id"].as_i64() == Some(id))
+}
+
+fn recv_lsp_notification(
+    receiver: &std::sync::mpsc::Receiver<serde_json::Value>,
+    method: &str,
+) -> serde_json::Value {
+    recv_lsp_matching(receiver, |message| {
+        message["method"].as_str() == Some(method)
+    })
+}
+
+fn recv_lsp_matching(
+    receiver: &std::sync::mpsc::Receiver<serde_json::Value>,
+    mut matches: impl FnMut(&serde_json::Value) -> bool,
+) -> serde_json::Value {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+    let mut seen = Vec::new();
+    loop {
+        let now = std::time::Instant::now();
+        assert!(
+            now < deadline,
+            "timed out waiting for LSP message; seen: {seen:#?}"
+        );
+        let remaining = deadline.saturating_duration_since(now);
+        let message = receiver.recv_timeout(remaining).unwrap();
+        if matches(&message) {
+            return message;
+        }
+        seen.push(message);
+    }
+}
+
+fn file_uri(path: &Path) -> std::string::String {
+    let path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    let path = path.to_string_lossy().replace('\\', "/");
+    let prefix = if path.starts_with('/') {
+        "file://"
+    } else {
+        "file:///"
+    };
+    format!("{prefix}{}", percent_encode_file_uri_path(&path))
+}
+
+fn percent_encode_file_uri_path(path: &str) -> std::string::String {
+    let mut encoded = std::string::String::with_capacity(path.len());
+    for byte in path.bytes() {
+        match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b'~' | b'/' | b':' => {
+                encoded.push(byte as char)
+            }
+            _ => {
+                const HEX: &[u8; 16] = b"0123456789ABCDEF";
+                encoded.push('%');
+                encoded.push(HEX[(byte >> 4) as usize] as char);
+                encoded.push(HEX[(byte & 0x0f) as usize] as char);
+            }
+        }
+    }
+    encoded
 }
 
 fn resolve_test_corsa_path() -> Option<String> {

@@ -406,6 +406,22 @@ export default [
 writeFileSync(join(benchDir, "eslint.config.mjs"), eslintConfig);
 console.log("Generated eslint.config.mjs");
 
+// Generate vize.config.json so benchmark runs cover shared config loading.
+const vizeConfig = {
+  linter: {
+    rules: {
+      "vue/prop-name-casing": "off",
+    },
+  },
+  typeChecker: {
+    checkProps: true,
+    checkTemplateBindings: true,
+    checkEmits: true,
+  },
+};
+writeFileSync(join(benchDir, "vize.config.json"), `${JSON.stringify(vizeConfig, null, 2)}\n`);
+console.log("Generated vize.config.json");
+
 // Generate vite entry file for vite-plugin benchmark
 const viteEntryImports = [];
 const viteEntryComponents = [];

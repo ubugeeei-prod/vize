@@ -57,6 +57,11 @@ Because all tools share the same parser and AST, they have a consistent understa
 
 For type checking, `vize_canon` adds one more step: it generates virtual TypeScript from Vue SFCs and asks Corsa project sessions from [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) for native diagnostics, then maps those results back onto the original files.
 
+The implementation workflow is documented in
+[Language Engineering Practices](./language-engineering-practices.md), which maps parser,
+compiler, analyzer, type-checker, formatter, LSP, and release changes to the fixture, snapshot,
+parity, benchmark, and readiness evidence expected for review.
+
 ## Crate Responsibilities
 
 | Layer         | Crate                | Role                                                   |

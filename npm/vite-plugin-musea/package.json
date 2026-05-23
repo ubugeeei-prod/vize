@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/vite-plugin-musea",
-  "version": "0.104.0",
+  "version": "0.115.0",
   "description": "Vite plugin for Musea - Component gallery for Vue components",
   "keywords": [
     "component-gallery",
@@ -81,6 +81,7 @@
     "marked": "catalog:content",
     "marked-highlight": "catalog:content",
     "monaco-editor": "catalog:content",
+    "tsx": "catalog:typescript",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",

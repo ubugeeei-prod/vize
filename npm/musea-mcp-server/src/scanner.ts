@@ -13,7 +13,7 @@ export async function findArtFiles(
 
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      const relative = path.relative(root, fullPath);
+      const relative = normalizePath(path.relative(root, fullPath));
 
       let excluded = false;
       for (const pattern of exclude) {
@@ -42,12 +42,58 @@ export async function findArtFiles(
   return files;
 }
 
-function matchGlob(filepath: string, pattern: string): boolean {
-  const regex = pattern
-    .replace(/\*\*/g, "{{DOUBLE_STAR}}")
-    .replace(/\*/g, "[^/]*")
-    .replace(/{{DOUBLE_STAR}}/g, ".*")
-    .replace(/\./g, "\\.");
+function normalizePath(value: string): string {
+  return value.replaceAll(path.sep, "/");
+}
 
-  return new RegExp(`^${regex}$`).test(filepath);
+function matchGlob(filepath: string, pattern: string): boolean {
+  return globToRegExp(pattern).test(normalizePath(filepath));
+}
+
+function globToRegExp(pattern: string): RegExp {
+  const normalized = normalizePath(pattern);
+  if (normalized.endsWith("/**")) {
+    return new RegExp(`^${globSource(normalized.slice(0, -3))}(?:/.*)?$`);
+  }
+  return new RegExp(`^${globSource(normalized)}$`);
+}
+
+function globSource(pattern: string): string {
+  let source = "";
+
+  for (let index = 0; index < pattern.length; ) {
+    const char = pattern[index];
+    const next = pattern[index + 1];
+    const afterNext = pattern[index + 2];
+
+    if (char === "*" && next === "*" && afterNext === "/") {
+      source += "(?:.*/)?";
+      index += 3;
+      continue;
+    }
+    if (char === "*" && next === "*") {
+      source += ".*";
+      index += 2;
+      continue;
+    }
+    if (char === "*") {
+      source += "[^/]*";
+      index += 1;
+      continue;
+    }
+    if (char === "?") {
+      source += "[^/]";
+      index += 1;
+      continue;
+    }
+
+    source += escapeRegExp(char);
+    index += 1;
+  }
+
+  return source;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
 }

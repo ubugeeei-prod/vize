@@ -77,6 +77,16 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         .tsconfig
         .clone()
         .or_else(|| config.type_checker.tsconfig.as_ref().map(PathBuf::from));
+    let effective_corsa_path = args.corsa_path.as_ref().map(PathBuf::from).or_else(|| {
+        config
+            .type_checker
+            .runtime_path()
+            .map(|candidate| resolve_from_config_dir(config_dir, candidate))
+    });
+    if let Err(error) = validate_corsa_server_count(args.servers.or(config.type_checker.servers)) {
+        eprintln!("\x1b[31mError:\x1b[0m {}", error);
+        std::process::exit(2);
+    }
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &[]);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
@@ -112,12 +122,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     }
 
     let gen_start = Instant::now();
-    let mut checker = match BatchTypeChecker::with_options(
+    let mut checker = match BatchTypeChecker::with_options_and_corsa_path(
         &project_root,
         BatchTypeCheckerOptions {
             tsconfig_path: tsconfig_path.clone(),
             virtual_ts_options,
         },
+        effective_corsa_path.as_deref(),
     ) {
         Ok(checker) => checker,
         Err(error) => {
@@ -125,6 +136,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             std::process::exit(1);
         }
     };
+    checker.set_virtual_ts_checks(
+        config.type_checker.check_props && !args.no_check_props,
+        config.type_checker.check_template_bindings && !args.no_check_template_bindings,
+        config.type_checker.check_emits && !args.no_check_emits,
+    );
 
     if let Err(error) = checker.scan_paths(&files) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
@@ -609,10 +625,8 @@ fn resolve_project_root(
             .unwrap_or_else(|| cwd.to_path_buf());
     }
 
-    for file in files {
-        if let Some(root) = find_nearest_tsconfig_dir(file) {
-            return root;
-        }
+    if let Some(root) = resolve_project_root_from_files(files) {
+        return root;
     }
 
     if let Some(root) = find_nearest_tsconfig_dir(cwd) {
@@ -637,6 +651,11 @@ fn resolve_tsconfig_path(
         return Some(tsconfig_path.canonicalize().unwrap_or(tsconfig_path));
     }
 
+    let candidate = project_root.join("tsconfig.json");
+    if candidate.exists() {
+        return Some(candidate);
+    }
+
     for file in files {
         let Some(root) = find_nearest_tsconfig_dir(file) else {
             continue;
@@ -647,8 +666,7 @@ fn resolve_tsconfig_path(
         }
     }
 
-    let candidate = project_root.join("tsconfig.json");
-    candidate.exists().then_some(candidate)
+    None
 }
 
 fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
@@ -668,6 +686,29 @@ fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
     None
 }
 
+fn resolve_project_root_from_files(files: &[PathBuf]) -> Option<PathBuf> {
+    let common = common_file_parent(files)?;
+    find_nearest_tsconfig_dir(&common)
+}
+
+fn common_file_parent(files: &[PathBuf]) -> Option<PathBuf> {
+    let mut common = files
+        .first()
+        .and_then(|path| path.parent())
+        .map(Path::to_path_buf)?;
+
+    for file in &files[1..] {
+        let parent = file.parent().unwrap_or(file.as_path());
+        while !parent.starts_with(&common) {
+            if !common.pop() {
+                return None;
+            }
+        }
+    }
+
+    Some(common)
+}
+
 fn display_path(base: &Path, path: &Path) -> vize_carton::String {
     path.strip_prefix(base)
         .map(|relative| cstr!("{}", relative.display()))
@@ -681,6 +722,22 @@ fn resolve_from_config_dir(config_dir: &Path, candidate: &str) -> PathBuf {
     }
 
     config_dir.join(path)
+}
+
+fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), String> {
+    let Some(servers) = servers else {
+        return Ok(());
+    };
+    if servers == 0 {
+        return Err("typeChecker.servers must be at least 1.".into());
+    }
+    if servers > 1 {
+        return Err(format!(
+            "typeChecker.servers={servers} is not supported by the direct Corsa project-session runner yet; use 1 or omit the option."
+        )
+        .into());
+    }
+    Ok(())
 }
 
 /// Parse a `.d.ts` file containing `ComponentCustomProperties` augmentation.
@@ -704,7 +761,10 @@ fn parse_dts_globals(
 
 #[cfg(test)]
 mod tests {
-    use super::{resolve_declaration_dir, resolve_declaration_emit_options};
+    use super::{
+        find_nearest_tsconfig_dir, resolve_declaration_dir, resolve_declaration_emit_options,
+        resolve_project_root, resolve_tsconfig_path, validate_corsa_server_count,
+    };
     use crate::commands::check::tsconfig_inputs::TsconfigDeclarationOptions;
     use std::{
         path::{Path, PathBuf},
@@ -722,6 +782,79 @@ mod tests {
                 "check-runner-{name}-{}-{case_id}",
                 std::process::id()
             ))
+    }
+
+    #[test]
+    fn resolves_monorepo_root_for_files_spanning_package_tsconfigs() {
+        let project_root = unique_case_dir("monorepo-root");
+        let _ = std::fs::remove_dir_all(&project_root);
+        let app_dir = project_root.join("packages/app");
+        let ui_dir = project_root.join("packages/ui");
+        std::fs::create_dir_all(app_dir.join("src")).unwrap();
+        std::fs::create_dir_all(ui_dir.join("src")).unwrap();
+        std::fs::write(project_root.join("tsconfig.json"), "{}").unwrap();
+        std::fs::write(app_dir.join("tsconfig.json"), "{}").unwrap();
+        std::fs::write(ui_dir.join("tsconfig.json"), "{}").unwrap();
+        let files = vec![app_dir.join("src/App.vue"), ui_dir.join("src/UiButton.vue")];
+        for file in &files {
+            std::fs::write(file, "<template />").unwrap();
+        }
+
+        let resolved_root = resolve_project_root(None, &project_root, &files);
+        let resolved_tsconfig = resolve_tsconfig_path(None, &project_root, &resolved_root, &files);
+
+        assert_eq!(resolved_root, project_root);
+        assert_eq!(resolved_tsconfig, Some(resolved_root.join("tsconfig.json")));
+
+        let _ = std::fs::remove_dir_all(&resolved_root);
+    }
+
+    #[test]
+    fn resolves_package_root_for_files_inside_one_package() {
+        let project_root = unique_case_dir("package-root");
+        let _ = std::fs::remove_dir_all(&project_root);
+        let app_dir = project_root.join("packages/app");
+        std::fs::create_dir_all(app_dir.join("src")).unwrap();
+        std::fs::write(project_root.join("tsconfig.json"), "{}").unwrap();
+        std::fs::write(app_dir.join("tsconfig.json"), "{}").unwrap();
+        let files = vec![app_dir.join("src/App.vue"), app_dir.join("src/main.ts")];
+        for file in &files {
+            std::fs::write(file, "").unwrap();
+        }
+
+        let resolved_root = resolve_project_root(None, &project_root, &files);
+        let resolved_tsconfig = resolve_tsconfig_path(None, &project_root, &resolved_root, &files);
+
+        assert_eq!(resolved_root, app_dir);
+        assert_eq!(resolved_tsconfig, Some(resolved_root.join("tsconfig.json")));
+
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn falls_back_to_cwd_resolution_when_files_have_no_tsconfig() {
+        let project_root = unique_case_dir("no-tsconfig");
+        let _ = std::fs::remove_dir_all(&project_root);
+        let src_dir = project_root.join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+        let files = vec![src_dir.join("App.vue")];
+        std::fs::write(&files[0], "<template />").unwrap();
+
+        let resolved_root = resolve_project_root(None, &project_root, &files);
+        let resolved_tsconfig = resolve_tsconfig_path(None, &project_root, &resolved_root, &files);
+        let expected_root =
+            find_nearest_tsconfig_dir(&project_root).unwrap_or_else(|| project_root.clone());
+
+        assert_eq!(resolved_root, expected_root);
+        assert_eq!(
+            resolved_tsconfig,
+            resolved_root
+                .join("tsconfig.json")
+                .exists()
+                .then_some(resolved_root.join("tsconfig.json"))
+        );
+
+        let _ = std::fs::remove_dir_all(&project_root);
     }
 
     #[test]
@@ -793,5 +926,13 @@ mod tests {
         assert!(options.declaration_map);
 
         let _ = std::fs::remove_dir_all(&project_root);
+    }
+
+    #[test]
+    fn validates_unsupported_corsa_server_counts() {
+        assert!(validate_corsa_server_count(None).is_ok());
+        assert!(validate_corsa_server_count(Some(1)).is_ok());
+        assert!(validate_corsa_server_count(Some(0)).is_err());
+        assert!(validate_corsa_server_count(Some(2)).is_err());
     }
 }

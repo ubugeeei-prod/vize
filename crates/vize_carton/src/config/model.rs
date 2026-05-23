@@ -3,6 +3,7 @@
 mod formatter;
 mod global_types;
 mod language_server;
+mod linter;
 mod type_checker;
 
 use serde::{Deserialize, Serialize};
@@ -14,6 +15,8 @@ pub use formatter::{
 };
 pub use global_types::{GlobalTypeDeclaration, GlobalTypesConfig, RawGlobalTypesConfig};
 pub use language_server::{LanguageServerConfig, LspConfig};
+#[allow(unused_imports)]
+pub use linter::{LintRuleSeverity, LinterConfig};
 pub use type_checker::TypeCheckerConfig;
 
 /// Effective shared configuration.
@@ -53,6 +56,7 @@ pub(crate) struct RawVizeConfig {
     #[serde(rename = "$schema")]
     pub schema: Option<String>,
     pub formatter: FormatterConfig,
+    pub linter: LinterConfig,
     #[serde(rename = "typeChecker")]
     pub type_checker: TypeCheckerConfig,
     #[serde(rename = "languageServer")]

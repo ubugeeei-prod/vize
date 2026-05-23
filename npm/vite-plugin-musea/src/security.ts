@@ -149,6 +149,17 @@ export function collectRequestBody(
   });
 }
 
+export function parseJsonBody<T = unknown>(body: string): T {
+  try {
+    return JSON.parse(body) as T;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new HttpError("Malformed JSON body", 400);
+    }
+    throw error;
+  }
+}
+
 export function validateDevApiRequest(
   req: IncomingMessage,
   sessionToken: string,

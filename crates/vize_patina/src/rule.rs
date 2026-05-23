@@ -97,6 +97,7 @@ pub trait Rule: Send + Sync {
 /// Registry holding all enabled lint rules
 pub struct RuleRegistry {
     rules: Vec<Box<dyn Rule>>,
+    rule_names: Vec<&'static str>,
 }
 
 impl RuleRegistry {
@@ -104,18 +105,23 @@ impl RuleRegistry {
     const HAPPY_PATH_CAPACITY: usize = 90;
     /// Create a new empty registry
     pub fn new() -> Self {
-        Self { rules: Vec::new() }
+        Self {
+            rules: Vec::new(),
+            rule_names: Vec::new(),
+        }
     }
 
     #[inline]
     fn with_capacity(capacity: usize) -> Self {
         Self {
             rules: Vec::with_capacity(capacity),
+            rule_names: Vec::with_capacity(capacity),
         }
     }
 
     /// Register a rule
     pub fn register(&mut self, rule: Box<dyn Rule>) {
+        self.rule_names.push(rule.meta().name);
         self.rules.push(rule);
     }
 
@@ -129,9 +135,14 @@ impl RuleRegistry {
         &self.rules
     }
 
+    /// Get all registered rule names in the same order as [`Self::rules`].
+    pub fn rule_names(&self) -> &[&'static str] {
+        &self.rule_names
+    }
+
     /// Check whether a rule with the given name is registered.
     pub fn has_rule(&self, name: &str) -> bool {
-        self.rules.iter().any(|rule| rule.meta().name == name)
+        self.rule_names.contains(&name)
     }
 
     /// Create a registry for a named preset.

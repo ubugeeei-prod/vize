@@ -165,7 +165,25 @@ impl<'a> Parser<'a> {
 
     /// Get source slice
     fn get_source(&self, start: usize, end: usize) -> &str {
+        let (start, end) = self.normalize_span(start, end);
         &self.source[start..end]
+    }
+
+    fn normalize_span(&self, start: usize, end: usize) -> (usize, usize) {
+        let mut start = self.clamp_to_char_boundary(start);
+        let end = self.clamp_to_char_boundary(end);
+        if start > end {
+            start = end;
+        }
+        (start, end)
+    }
+
+    fn clamp_to_char_boundary(&self, offset: usize) -> usize {
+        let mut offset = offset.min(self.source.len());
+        while offset > 0 && !self.source.is_char_boundary(offset) {
+            offset -= 1;
+        }
+        offset
     }
 
     /// Calculate position from byte offset
@@ -188,6 +206,7 @@ impl<'a> Parser<'a> {
 
     /// Create a source location
     fn create_loc(&self, start: usize, end: usize) -> SourceLocation {
+        let (start, end) = self.normalize_span(start, end);
         SourceLocation::new(
             self.get_pos(start),
             self.get_pos(end),

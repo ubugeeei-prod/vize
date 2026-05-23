@@ -12,7 +12,7 @@ use super::{
     },
     props::{collect_template_prop_names, generate_props_type, generate_props_variables},
     scope::generate_scope_closures,
-    types::{VirtualTsOptions, VirtualTsOutput, VizeMapping},
+    types::{VirtualTsCheckOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
 use vize_carton::append;
 use vize_carton::cstr;
@@ -56,6 +56,26 @@ pub fn generate_virtual_ts_with_offsets(
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,
+) -> VirtualTsOutput {
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsCheckOptions::default(),
+    )
+}
+
+pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::ast::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    check_options: VirtualTsCheckOptions,
 ) -> VirtualTsOutput {
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
@@ -157,23 +177,24 @@ pub fn generate_virtual_ts_with_offsets(
     // Collect imported names from all module-level import statements to handle
     // cases where plain <script> imports are not in summary.bindings (which
     // only holds <script setup> bindings when both blocks exist).
-    let imported_names: Vec<&str> = profile!("canon.virtual_ts.extract_imported_names", {
-        if let Some(script) = script_content {
-            summary
-                .import_statements
-                .iter()
-                .flat_map(|imp| {
-                    let text = script
-                        .get(imp.start as usize..imp.end as usize)
-                        .unwrap_or("");
-                    extract_import_names(text)
-                })
-                .collect()
-        } else {
-            Vec::new()
-        }
-    });
     if !options.auto_import_stubs.is_empty() {
+        let imported_names: FxHashSet<&str> = profile!(
+            "canon.virtual_ts.extract_imported_names",
+            if let Some(script) = script_content {
+                summary
+                    .import_statements
+                    .iter()
+                    .flat_map(|imp| {
+                        let text = script
+                            .get(imp.start as usize..imp.end as usize)
+                            .unwrap_or("");
+                        extract_import_names(text)
+                    })
+                    .collect()
+            } else {
+                FxHashSet::default()
+            }
+        );
         profile!("canon.virtual_ts.emit_auto_import_stubs", {
             let mut has_header = false;
             for stub in &options.auto_import_stubs {
@@ -221,8 +242,8 @@ pub fn generate_virtual_ts_with_offsets(
             // Use split('\n') to correctly track byte offsets for CRLF files.
             // Rust's lines() strips \r from CRLF but +1 for \n undercounts,
             // causing src_byte_offset drift that incorrectly skips user code.
-            let raw_lines: Vec<&str> = script.split('\n').collect();
             let mut src_byte_offset: usize = 0; // offset within script content
+            let mut module_span_index = 0usize;
 
             // Check if script uses import.meta and add a polyfill variable.
             // This avoids TS1343 when module is not set to es2020+.
@@ -231,7 +252,7 @@ pub fn generate_virtual_ts_with_offsets(
                 ts.push_str("  const __import_meta: any = {};\n");
             }
 
-            for raw_line in raw_lines.iter() {
+            for raw_line in script.split('\n') {
                 // Strip trailing \r for output (normalize CRLF to LF)
                 let line = raw_line.strip_suffix('\r').unwrap_or(raw_line);
                 // raw_line.len() includes \r if present; +1 for the \n from split
@@ -240,9 +261,15 @@ pub fn generate_virtual_ts_with_offsets(
                 // Skip lines that overlap with module-level spans (imports, re-exports, type decls)
                 let line_start = src_byte_offset;
                 let line_end = line_start + raw_line.len(); // use raw length for span check
-                let is_module_level = module_spans
+                while module_span_index < module_spans.len()
+                    && module_spans[module_span_index].1 as usize <= line_start
+                {
+                    module_span_index += 1;
+                }
+                let is_module_level = module_spans[module_span_index..]
                     .iter()
-                    .any(|&(s, e)| line_start < e as usize && line_end > s as usize);
+                    .take_while(|&&(start, _)| (start as usize) < line_end)
+                    .any(|&(start, end)| line_start < end as usize && line_end > start as usize);
                 if is_module_level {
                     src_byte_offset += raw_byte_len;
                     continue;
@@ -368,16 +395,19 @@ pub fn generate_virtual_ts_with_offsets(
             );
 
             // Generate scope closures
-            profile!(
-                "canon.virtual_ts.generate_scope_closures",
-                generate_scope_closures(
-                    &mut ts,
-                    &mut mappings,
-                    summary,
-                    &template_prop_names,
-                    template_offset
-                )
-            );
+            if check_options.any_enabled() {
+                profile!(
+                    "canon.virtual_ts.generate_scope_closures",
+                    generate_scope_closures(
+                        &mut ts,
+                        &mut mappings,
+                        summary,
+                        &template_prop_names,
+                        template_offset,
+                        check_options,
+                    )
+                );
+            }
 
             // Declare unresolved components (auto-imported or built-in) as `any`.
             // Names known to be provided by ambient project declarations stay

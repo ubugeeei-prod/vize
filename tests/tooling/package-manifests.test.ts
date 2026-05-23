@@ -167,9 +167,17 @@ test("native package catalog pins and generated loader version checks stay align
     const escapedName = escapeRegExp(name);
     const catalogVersion = workspacePins[name];
     assert.ok(catalogVersion, `${name} catalog pin`);
+    assert.equal(
+      catalogVersion,
+      nativePackage.version,
+      `${name} catalog pin should match @vizejs/native version`,
+    );
     const escapedVersion = escapeRegExp(catalogVersion);
-    assert.match(lockfile, new RegExp(`['"]?${escapedName}@${escapedVersion}['"]?:`));
-    assert.doesNotMatch(lockfile, new RegExp(`${escapedName}@(?!${escapedVersion})`));
+    assert.match(
+      lockfile,
+      new RegExp(`['"]?${escapedName}['"]?:\\n\\s+specifier: ${escapedVersion}\\n`),
+      `${name} lockfile catalog specifier should match @vizejs/native version`,
+    );
   }
 
   const nativeTargetsLoader = fs.readFileSync(
@@ -183,6 +191,48 @@ test("native package catalog pins and generated loader version checks stay align
   assert.match(nativeTargetsLoader, /bindingPackageVersion !== packageVersion/);
   assert.match(nativeTargetsLoader, /expected \$\{packageVersion\} but got/);
   assert.doesNotMatch(nativeTargetsLoader, /bindingPackageVersion !== "[^"]+"/);
+  assert.match(nativeTargetsLoader, /execFileSync\("ldd", \["--version"\]/);
+  assert.doesNotMatch(nativeTargetsLoader, /execSync\(/);
+
+  const oxlintNativeLoader = fs.readFileSync(
+    path.join(root, "npm/oxlint-plugin-vize/src/native.ts"),
+    "utf-8",
+  );
+  assert.match(oxlintNativeLoader, /spawnSync\("ldd", \["--version"\]/);
+  assert.doesNotMatch(oxlintNativeLoader, /execSync\(/);
+});
+
+test("pkl runtime stays optional for consumers of the vize package", () => {
+  const packageJson = JSON.parse(readRepoFile("npm/vize/package.json")) as {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+    peerDependenciesMeta?: Record<string, { optional?: boolean }>;
+  };
+
+  assert.equal(packageJson.dependencies?.["@pkl-community/pkl"], undefined);
+  assert.equal(packageJson.optionalDependencies?.["@pkl-community/pkl"], undefined);
+  assert.equal(packageJson.devDependencies?.["@pkl-community/pkl"], "catalog:repo-tooling");
+  assert.equal(packageJson.peerDependencies?.["@pkl-community/pkl"], "catalog:repo-tooling");
+  assert.deepEqual(packageJson.peerDependenciesMeta?.["@pkl-community/pkl"], {
+    optional: true,
+  });
+});
+
+test("musea Nuxt tests the same vue-router major that it declares as a peer", () => {
+  const workspaceYaml = readRepoFile("pnpm-workspace.yaml");
+  const catalogVersion = workspaceYaml.match(/^\s+vue-router: "([^"]+)"$/m)?.[1];
+  assert.ok(catalogVersion, "vue-router catalog pin");
+
+  const packageJson = JSON.parse(readRepoFile("npm/musea-nuxt/package.json")) as {
+    peerDependencies?: Record<string, string>;
+  };
+  const peerRange = packageJson.peerDependencies?.["vue-router"];
+  assert.ok(peerRange, "vue-router peer range");
+
+  assert.match(catalogVersion, /^4\./);
+  assert.match(peerRange, /\^4\./);
 });
 
 test("published package manifests declare support metadata", () => {
@@ -441,4 +491,12 @@ test("fresco-native publishes bundled binaries directly from the root package", 
     vizeNativePackage.scripts?.["build:ci"],
     "napi build --platform --profile ci --manifest-path ../../crates/vize_vitrine/Cargo.toml -p vize_vitrine --features napi --output-dir .",
   );
+
+  const frescoNativeLoader = fs.readFileSync(
+    path.join(root, "npm/fresco-native/index.js"),
+    "utf-8",
+  );
+  assert.match(frescoNativeLoader, /spawnSync\("ldd", \["--version"\]/);
+  assert.doesNotMatch(frescoNativeLoader, /execSync\("which ldd"\)/);
+  assert.doesNotMatch(frescoNativeLoader, /readFileSync\(lddPath/);
 });

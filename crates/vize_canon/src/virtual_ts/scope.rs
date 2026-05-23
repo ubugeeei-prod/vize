@@ -20,7 +20,7 @@ use super::{
         generated_text_range, get_dom_event_type, strip_as_assertion, to_camel_case,
         to_safe_identifier, to_safe_identifier_fragment,
     },
-    types::VizeMapping,
+    types::{VirtualTsCheckOptions, VizeMapping},
 };
 use vize_carton::append;
 use vize_carton::cstr;
@@ -32,6 +32,7 @@ pub(crate) struct ScopeGenContext<'a> {
     pub(crate) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(crate) template_prop_names: &'a FxHashSet<String>,
     pub(crate) template_offset: u32,
+    pub(crate) check_options: VirtualTsCheckOptions,
 }
 
 /// Context for recursive component prop checks inside v-for scopes.
@@ -60,6 +61,7 @@ pub(crate) fn generate_scope_closures(
     summary: &Croquis,
     template_prop_names: &FxHashSet<String>,
     template_offset: u32,
+    check_options: VirtualTsCheckOptions,
 ) {
     // Group expressions by scope_id
     let expressions_by_scope: FxHashMap<u32, Vec<_>> =
@@ -124,7 +126,9 @@ pub(crate) fn generate_scope_closures(
                 | ScopeKind::JsGlobalNode
                 | ScopeKind::VueGlobal
         ) {
-            if let Some(exprs) = expressions_by_scope.get(&scope_id) {
+            if let Some(exprs) = expressions_by_scope.get(&scope_id)
+                && check_options.check_template_bindings
+            {
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
@@ -148,6 +152,7 @@ pub(crate) fn generate_scope_closures(
             children_map: &children_map,
             template_prop_names,
             template_offset,
+            check_options,
         };
         profile!(
             "canon.virtual_ts.scope_node",
@@ -156,23 +161,27 @@ pub(crate) fn generate_scope_closures(
     }
 
     // Handle undefined references
-    profile!(
-        "canon.virtual_ts.undefined_refs",
-        generate_undefined_refs(ts, mappings, summary, template_offset)
-    );
+    if check_options.check_template_bindings {
+        profile!(
+            "canon.virtual_ts.undefined_refs",
+            generate_undefined_refs(ts, mappings, summary, template_offset)
+        );
+    }
 
     // Generate component props type checks (scope-aware)
-    profile!(
-        "canon.virtual_ts.component_props",
-        generate_component_props(
-            ts,
-            mappings,
-            summary,
-            &children_map,
-            template_prop_names,
-            template_offset
-        )
-    );
+    if check_options.check_props {
+        profile!(
+            "canon.virtual_ts.component_props",
+            generate_component_props(
+                ts,
+                mappings,
+                summary,
+                &children_map,
+                template_prop_names,
+                template_offset,
+            )
+        );
+    }
 }
 
 /// Handle undefined references from template.
@@ -448,7 +457,9 @@ fn generate_scope_node(
             }
 
             // Generate expressions in this scope
-            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
+            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
+                && ctx.check_options.check_template_bindings
+            {
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
@@ -493,7 +504,9 @@ fn generate_scope_node(
                 }
             }
 
-            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
+            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
+                && ctx.check_options.check_template_bindings
+            {
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",
@@ -518,7 +531,7 @@ fn generate_scope_node(
             ts.push_str(indent);
             ts.push_str("};\n");
         }
-        ScopeData::EventHandler(data) => {
+        ScopeData::EventHandler(data) if ctx.check_options.check_emits => {
             append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
 
             let safe_event_name = to_safe_identifier(data.event_name.as_str());
@@ -597,7 +610,9 @@ fn generate_scope_node(
             }
         }
         _ => {
-            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id) {
+            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
+                && ctx.check_options.check_template_bindings
+            {
                 for expr in exprs {
                     profile!(
                         "canon.virtual_ts.generate_expression",

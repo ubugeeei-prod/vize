@@ -170,6 +170,36 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const tempRoot = createTempRoot("ssr-vue-runtime");
+  const importer = path.join(tempRoot, "App.vue");
+  fs.writeFileSync(importer, "<template><div /></template>");
+
+  assert.deepEqual(
+    await resolveIdHook(
+      nullResolveContext,
+      createState(tempRoot),
+      "@vue/server-renderer",
+      toVirtualId(importer, true),
+      { ssr: true },
+    ),
+    { id: "vue/server-renderer", external: true },
+    "SSR virtual modules should externalize Vue's public server renderer entry",
+  );
+
+  assert.deepEqual(
+    await resolveIdHook(
+      nullResolveContext,
+      createState(tempRoot),
+      "vue/dist/vue.esm-bundler.js",
+      toVirtualId(importer, true),
+      { ssr: true },
+    ),
+    { id: "vue", external: true },
+    "SSR virtual modules should not bundle Vue runtime aliases into Nuxt server output",
+  );
+}
+
+{
   const tempRoot = createTempRoot("alias-vue");
   const importer = path.join(tempRoot, "src", "App.vue");
   const aliased = path.join(tempRoot, "src", "views", "Aliased.vue");
@@ -268,6 +298,29 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 {
   const projectRoot = createTempProject("preserve-vite-vue");
   const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const optimizedVueEntry = path.join(projectRoot, "node_modules", ".vite", "deps", "vue.js");
+  writeFixtureFile(optimizedVueEntry, "export const createBlock = () => null;");
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async (id) => (id === "vue" ? { id: `${optimizedVueEntry}?v=abc123` } : null),
+    },
+    createState(projectRoot),
+    "vue",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `${optimizedVueEntry}?v=abc123`,
+    "Vite-optimized Vue entries must not be replaced by Node's CommonJS entry",
+  );
+}
+
+{
+  const projectRoot = createTempProject("dev-vue-node-fallback");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
   const vueRoot = path.join(projectRoot, "node_modules", "vue");
   const vueCjsEntry = path.join(vueRoot, "index.js");
   const vueBundlerEntry = path.join(vueRoot, "dist", "vue.runtime.esm-bundler.js");
@@ -283,13 +336,49 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     ),
   );
   writeFixtureFile(vueCjsEntry, "module.exports = require('./dist/vue.cjs.js');");
-  writeFixtureFile(vueBundlerEntry, "export const createBlock = () => null;");
+  writeFixtureFile(vueBundlerEntry, "export const Transition = () => null;");
 
   const resolved = await resolveIdHook(
-    {
-      resolve: async (id) => (id === "vue" ? { id: vueBundlerEntry } : null),
-    },
+    nullResolveContext,
     createState(projectRoot),
+    "vue",
+    toVirtualId(importer),
+    undefined,
+  );
+
+  assert.equal(
+    resolved,
+    null,
+    "Dev virtual SFC Vue imports should stay bare so Vite can optimize and dedupe the runtime",
+  );
+}
+
+{
+  const projectRoot = createTempProject("build-vue-node-fallback");
+  const importer = path.join(projectRoot, "app", "pages", "index.vue");
+  const vueRoot = path.join(projectRoot, "node_modules", "vue");
+  const vueCjsEntry = path.join(vueRoot, "index.js");
+  const vueBundlerEntry = path.join(vueRoot, "dist", "vue.runtime.esm-bundler.js");
+  writeFixtureFile(
+    path.join(vueRoot, "package.json"),
+    JSON.stringify(
+      {
+        name: "vue",
+        main: "index.js",
+      },
+      null,
+      2,
+    ),
+  );
+  writeFixtureFile(vueCjsEntry, "module.exports = require('./dist/vue.cjs.js');");
+  writeFixtureFile(vueBundlerEntry, "export const Transition = () => null;");
+
+  const state = createState(projectRoot);
+  state.server = null;
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    state,
     "vue",
     toVirtualId(importer),
     undefined,
@@ -298,7 +387,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   assert.equal(
     expectResolvedId(resolved),
     vueBundlerEntry,
-    "Vite-resolved Vue ESM entries must not be replaced by Node's CommonJS entry",
+    "Build virtual SFC imports must resolve Vue to an ESM bundler entry, not the CommonJS package entry",
   );
 }
 
@@ -423,6 +512,54 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     expectResolvedId(resolved),
     /node_modules[\\/]@primevue[\\/]forms[\\/]resolvers[\\/]valibot[\\/]index\.mjs\?nuxt_component=async$/,
   );
+}
+
+{
+  const projectRoot = createTempProject("nuxt-component-query");
+  const source = path.join(
+    projectRoot,
+    "node_modules",
+    "@nuxtjs",
+    "mdc",
+    "dist",
+    "runtime",
+    "components",
+    "prose",
+    "ProseScript.vue",
+  );
+  writeFixtureFile(source, "<template><script /></template>");
+
+  const query =
+    "?nuxt_component=async&nuxt_component_name=ProseScript&nuxt_component_export=default";
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    `${source}${query}`,
+    undefined,
+    { ssr: true },
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    `${toVirtualId(source, true)}${query}`,
+    "Nuxt component-loader Vue queries should resolve to Vize virtual modules with the query preserved",
+  );
+}
+
+{
+  const projectRoot = createTempProject("vue-raw-query");
+  const source = path.join(projectRoot, "app", "components", "Raw.vue");
+  writeFixtureFile(source, "<template><div /></template>");
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    `${source}?raw`,
+    undefined,
+    undefined,
+  );
+
+  assert.equal(resolved, null, "Vue ?raw imports should not be compiled as components");
 }
 
 {

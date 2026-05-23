@@ -6,7 +6,8 @@ use super::{
 use crate::{LintPreset, Linter};
 
 fn corsa_available() -> bool {
-    let mut session = match super::CorsaTypeAwareSession::new("Component.vue") {
+    let mut session = match super::CorsaTypeAwareSession::new_with_corsa_path("Component.vue", None)
+    {
         Ok(session) => session,
         Err(_) => return false,
     };

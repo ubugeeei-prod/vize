@@ -4,6 +4,8 @@ import { floatingPromiseTestPatterns } from "./tools/vite-plus/task-inputs.ts";
 import { taskCatalog } from "./tools/vite-plus/task-groups.ts";
 import { rootBuildTaskPlugin } from "./tools/vite-plus/task-helpers.ts";
 
+const localGeneratedIgnorePatterns = [".cache/**", ".direnv/**", "target/**"];
+
 /**
  * Root Vite+ configuration.
  *
@@ -26,6 +28,7 @@ const config = {
   },
   fmt: {
     ignorePatterns: [
+      ...localGeneratedIgnorePatterns,
       "**/__snapshots__/**",
       "**/__snapshot__/**",
       "**/__agent_only/**",
@@ -35,6 +38,7 @@ const config = {
   },
   lint: {
     ignorePatterns: [
+      ...localGeneratedIgnorePatterns,
       "**/__snapshots__/**",
       "**/__snapshot__/**",
       "**/__agent_only/**",

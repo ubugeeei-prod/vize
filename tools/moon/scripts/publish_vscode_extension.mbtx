@@ -14,6 +14,7 @@
 import {
   "moonbitlang/core/env",
   "moonbitlang/core/json",
+  "moonbitlang/core/string",
   "moonbitlang/async@0.19.0",
   "moonbitlang/async@0.19.0/process",
   "moonbitlang/async@0.19.0/stdio",
@@ -42,6 +43,31 @@ fn cli_args() -> Array[String] {
 fn resolve_path(value : String) -> String {
   let path : @path.Path = value
   path.resolve().to_string()
+}
+
+///|
+fn parse_int(value : String) -> Int? {
+  try {
+    Some(@string.parse_int(value))
+  } catch {
+    _ => None
+  }
+}
+
+///|
+fn int_at_least_or(value : String, minimum : Int, fallback : Int) -> Int {
+  match parse_int(value) {
+    Some(parsed) if parsed >= minimum => parsed
+    _ => fallback
+  }
+}
+
+///|
+fn env_int_at_least(name : String, minimum : Int, fallback : Int) -> Int {
+  match @sys.get_env_var(name) {
+    Some(value) if value != "" => int_at_least_or(value, minimum, fallback)
+    _ => fallback
+  }
 }
 
 ///|
@@ -98,6 +124,32 @@ async fn extension_version_is_visible(vp_bin : String, extension_id : String, ve
 }
 
 ///|
+async fn wait_for_extension_visibility(
+  vp_bin : String,
+  extension_id : String,
+  version : String,
+  max_attempts : Int,
+  delay_seconds : Int,
+) -> Bool {
+  let mut attempt = 1
+  while attempt <= max_attempts {
+    if extension_version_is_visible(vp_bin, extension_id, version) {
+      println("\{extension_id} \{version} is visible in the VS Code Marketplace.")
+      return true
+    }
+    if attempt >= max_attempts {
+      return false
+    }
+    println(
+      "Waiting for \{extension_id} \{version} to appear in the VS Code Marketplace... (\{attempt}/\{max_attempts})",
+    )
+    @async.sleep(delay_seconds * 1000)
+    attempt = attempt + 1
+  }
+  false
+}
+
+///|
 async fn run_app() -> Int {
   let args = cli_args()
   if args.is_empty() || args.length() > 2 {
@@ -129,6 +181,8 @@ async fn run_app() -> Int {
     Some(value) if value != "" => value
     _ => "vp"
   }
+  let resolution_attempts = env_int_at_least("PUBLISH_RESOLUTION_RETRY_LIMIT", 1, 24)
+  let resolution_delay_seconds = env_int_at_least("PUBLISH_RESOLUTION_RETRY_DELAY", 0, 10)
   if extension_version_is_visible(
     vp_bin,
     extension_info.extension_id,
@@ -161,7 +215,13 @@ async fn run_app() -> Int {
   if exit_code == 0 {
     return 0
   }
-  if extension_version_is_visible(vp_bin, extension_info.extension_id, extension_info.version) {
+  if wait_for_extension_visibility(
+    vp_bin,
+    extension_info.extension_id,
+    extension_info.version,
+    resolution_attempts,
+    resolution_delay_seconds,
+  ) {
     println(
       "\{extension_info.extension_id} \{extension_info.version} was published despite a non-zero vsce publish exit.",
     )

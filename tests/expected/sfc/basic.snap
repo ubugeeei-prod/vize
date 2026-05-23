@@ -111,7 +111,7 @@ export default {
 --- OUTPUT ---
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
-export function render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg), 1 /* TEXT */))
 }
 
@@ -121,7 +121,7 @@ const _sfc_main = {
   }
 }
 
-_sfc_main.render = render
+_sfc_main.render = _sfc_render
 export default _sfc_main
 ===
 name: template only

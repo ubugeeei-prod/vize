@@ -176,7 +176,11 @@ export interface TypeCheckerConfig {
    */
   tsconfig?: string;
   /**
-   * Path to tsgo binary
+   * Path to the Corsa executable. This is the canonical runtime key; tsgoPath is kept as a compatibility alias.
+   */
+  corsaPath?: string;
+  /**
+   * Deprecated alias for typeChecker.corsaPath
    */
   tsgoPath?: string;
   /**
@@ -184,7 +188,7 @@ export interface TypeCheckerConfig {
    */
   globalsFile?: string;
   /**
-   * Number of parallel Corsa servers to use
+   * Reserved Corsa server count. The direct project-session runner currently supports only 1.
    */
   servers?: number;
 }

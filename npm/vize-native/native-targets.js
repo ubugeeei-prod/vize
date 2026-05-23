@@ -2,7 +2,7 @@
 // @ts-nocheck
 
 const { readFileSync } = require("node:fs");
-const { execSync } = require("node:child_process");
+const { execFileSync } = require("node:child_process");
 
 const binaryName = "vize-vitrine";
 const packageVersion = require("./package.json").version;
@@ -42,7 +42,7 @@ function isMuslFromReport() {
 
 function isMuslFromChildProcess() {
   try {
-    return execSync("ldd --version", { encoding: "utf8" }).includes("musl");
+    return execFileSync("ldd", ["--version"], { encoding: "utf8" }).includes("musl");
   } catch {
     return false;
   }

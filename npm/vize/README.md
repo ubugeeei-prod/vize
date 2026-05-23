@@ -58,6 +58,10 @@ Shared config discovery is supported for the npm CLI:
 - `vize.config.pkl`
 - `vize.config.json`
 
+Pkl config files require either `@pkl-community/pkl` installed in the project or a `pkl` binary on
+`PATH`. The Pkl runtime is optional so packages that only consume Vize through framework plugins do
+not install it by default.
+
 ```ts
 import { defineConfig } from "vize";
 

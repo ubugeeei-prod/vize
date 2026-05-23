@@ -1,6 +1,20 @@
 import { spawnSync } from "node:child_process";
 import type { Page } from "@playwright/test";
 
+const BROWSER_LOG_EMISSION = new WeakMap<
+  Page,
+  {
+    emitted: number;
+    truncated: boolean;
+  }
+>();
+const MAX_EMITTED_BROWSER_LOG_LINES = process.env.CI
+  ? parsePositiveInteger(process.env.VIZE_E2E_MAX_EMITTED_BROWSER_LOG_LINES, 200)
+  : Number.POSITIVE_INFINITY;
+const MAX_EMITTED_BROWSER_LOG_CHARS = process.env.CI
+  ? parsePositiveInteger(process.env.VIZE_E2E_MAX_EMITTED_BROWSER_LOG_CHARS, 2000)
+  : Number.POSITIVE_INFINITY;
+
 export function assertParsesAsModule(source: string, fileLabel: string): void {
   const result = spawnSync(process.execPath, ["--input-type=module", "--check"], {
     encoding: "utf-8",
@@ -27,13 +41,13 @@ export async function collectConsoleErrors(page: Page, appName: string): Promise
     if (msg.type() === "error") {
       const text = msg.text();
       errors.push(text);
-      console.log(`[${appName}:console:error] ${text}`);
+      emitBrowserDiagnostic(page, `[${appName}:console:error]`, text);
     }
   });
 
   page.on("pageerror", (err) => {
     errors.push(err.message);
-    console.log(`[${appName}:pageerror] ${err.message}`);
+    emitBrowserDiagnostic(page, `[${appName}:pageerror]`, err.message);
   });
 
   return errors;
@@ -77,7 +91,7 @@ export async function collectHydrationErrors(page: Page): Promise<string[]> {
     const text = msg.text();
     if (hydrationPatterns.some((p) => p.test(text))) {
       errors.push(text);
-      console.log(`[hydration:error] ${text}`);
+      emitBrowserDiagnostic(page, "[hydration:error]", text);
     }
   });
 
@@ -113,4 +127,49 @@ export async function getComputedStyleValue(
 export async function verifySSRContent(page: Page, url: string): Promise<string> {
   const response = await page.request.get(url);
   return response.text();
+}
+
+function emitBrowserDiagnostic(page: Page, label: string, text: string): void {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  let emission = BROWSER_LOG_EMISSION.get(page);
+  if (!emission) {
+    emission = { emitted: 0, truncated: false };
+    BROWSER_LOG_EMISSION.set(page, emission);
+  }
+
+  for (const line of lines) {
+    if (emission.emitted < MAX_EMITTED_BROWSER_LOG_LINES) {
+      emission.emitted++;
+      console.log(`${label} ${formatBrowserDiagnosticLine(line)}`);
+      continue;
+    }
+
+    if (!emission.truncated) {
+      emission.truncated = true;
+      console.log(
+        `${label} further browser diagnostics suppressed after ${MAX_EMITTED_BROWSER_LOG_LINES} lines; diagnostics remain available to assertions`,
+      );
+    }
+  }
+}
+
+function formatBrowserDiagnosticLine(line: string): string {
+  if (line.length <= MAX_EMITTED_BROWSER_LOG_CHARS) {
+    return line;
+  }
+  return `${line.slice(0, MAX_EMITTED_BROWSER_LOG_CHARS)}... [truncated ${
+    line.length - MAX_EMITTED_BROWSER_LOG_CHARS
+  } chars]`;
+}
+
+function parsePositiveInteger(value: string | undefined, fallback: number): number {
+  if (value === undefined) {
+    return fallback;
+  }
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }

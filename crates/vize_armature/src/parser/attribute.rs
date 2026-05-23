@@ -90,8 +90,8 @@ impl<'a> Parser<'a> {
 
     /// Process attribute data (value content)
     pub(super) fn on_attrib_data_impl(&mut self, start: usize, end: usize) {
-        let source = self.source;
-        self.accumulate_attr_or_dir_value(&source[start..end], start, end);
+        let source = self.get_source(start, end).to_owned();
+        self.accumulate_attr_or_dir_value(&source, start, end);
     }
 
     /// Process attribute entity

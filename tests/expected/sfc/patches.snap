@@ -45,7 +45,7 @@ const height = ref(50)
   <div :style="{ width, height }">Styled</div>
 </template>
 --- OUTPUT ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+import { normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 import { ref } from 'vue'
 
@@ -58,7 +58,7 @@ const height = ref(50)
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", {
-    style: { width: width.value, height: height.value }
+    style: _normalizeStyle({ width: width.value, height: height.value })
   }, "Styled", 4 /* STYLE */))
 }
 }
@@ -318,7 +318,7 @@ const text = ref('')
   <input v-if="show" v-model="text" />
 </template>
 --- OUTPUT ---
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
+import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue"
 
 import { ref } from 'vue'
 
@@ -331,10 +331,12 @@ const text = ref('')
 
 return (_ctx, _cache) => {
   return (show.value)
-    ? (_openBlock(), _createElementBlock("input", {
+    ? _withDirectives((_openBlock(), _createElementBlock("input", {
         key: 0,
         "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((text).value = $event))
-      }))
+      }, null, 512 /* NEED_PATCH */)), [
+        [_vModelText, text.value]
+      ])
     : _createCommentVNode("v-if", true)
 }
 }
@@ -373,7 +375,7 @@ return (_ctx, _cache) => {
         key: 0,
         modelValue: value.value,
         "onUpdate:modelValue": _cache[0] || (_cache[0] = $event => ((value).value = $event))
-      }))
+      }, null, 8 /* PROPS */, ["modelValue"]))
     : _createCommentVNode("v-if", true)
 }
 }
@@ -407,12 +409,12 @@ export default {
 const compiler = {}
 
 return (_ctx, _cache) => {
-  return show
-    ? (_openBlock(), _createBlock(PatinaPlayground, {
+  return (show)
+      ? (_openBlock(), _createBlock(PatinaPlayground, {
         key: 0,
         compiler: compiler
-      }))
-    : _createCommentVNode("v-if", true)
+      }, null, 8 /* PROPS */, ["compiler"]))
+      : _createCommentVNode("v-if", true)
 }
 }
 
@@ -448,7 +450,7 @@ const buttonProps = computed(() => ({ disabled: false, type: 'primary' }))
 
 return (_ctx, _cache) => {
   return (isActive.value)
-    ? (_openBlock(), _createBlock(Button, _mergeProps(buttonProps.value, {
+      ? (_openBlock(), _createBlock(Button, _mergeProps(buttonProps.value, {
         key: 0,
         onClick: _cache[0] || (_cache[0] = (...args) => (_ctx.handleClick && _ctx.handleClick(...args)))
       }), {
@@ -456,8 +458,8 @@ return (_ctx, _cache) => {
           _createTextVNode("\n    Click me\n  ")
         ]),
         _: 1 /* STABLE */
-      }))
-    : _createCommentVNode("v-if", true)
+      }, 16 /* FULL_PROPS */))
+      : _createCommentVNode("v-if", true)
 }
 }
 
@@ -493,16 +495,16 @@ const iconProps = { size: 24, color: 'blue' }
 
 return (_ctx, _cache) => {
   return (mode.value === 'view')
-    ? (_openBlock(), _createBlock(Icon, {
+      ? (_openBlock(), _createBlock(Icon, {
         key: 0,
         name: "eye"
       }))
-    : (mode.value === 'edit')
-      ? (_openBlock(), _createBlock(Icon, _mergeProps(iconProps, {
+      : (mode.value === 'edit')
+        ? (_openBlock(), _createBlock(Icon, _mergeProps(iconProps, {
           key: 1,
           name: "pencil"
-        })))
-    : (_openBlock(), _createBlock(Icon, {
+        }), null, 16 /* FULL_PROPS */))
+      : (_openBlock(), _createBlock(Icon, {
         key: 2,
         name: "default"
       }))
@@ -528,7 +530,7 @@ function closeItem(id) {
   </div>
 </template>
 --- OUTPUT ---
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 import { ref } from 'vue'
 
@@ -545,10 +547,12 @@ return (_ctx, _cache) => {
   const _directive_click_outside = _resolveDirective("click-outside")
 
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {
-    return (_openBlock(), _createElementBlock("div", {
-      key: item.id
-    }, _toDisplayString(item.name), 1 /* TEXT */))
-  }), 128 /* KEYED_FRAGMENT */))
+      return _withDirectives((_openBlock(), _createElementBlock("div", {
+        key: item.id
+      }, _toDisplayString(item.name), 1 /* TEXT */)), [
+        [_directive_click_outside, () => closeItem(item.id)]
+      ])
+    }), 128 /* KEYED_FRAGMENT */))
 }
 }
 
@@ -565,7 +569,7 @@ const list = [1, 2, 3]
   <span v-for="n in list" :key="n" v-focus>{{ n }}</span>
 </template>
 --- OUTPUT ---
-import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveDirective as _resolveDirective, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
 
 
 export default {
@@ -578,10 +582,12 @@ return (_ctx, _cache) => {
   const _directive_focus = _resolveDirective("focus")
 
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list, (n) => {
-    return (_openBlock(), _createElementBlock("span", {
-      key: n
-    }, _toDisplayString(n), 1 /* TEXT */))
-  }), 128 /* KEYED_FRAGMENT */))
+      return _withDirectives((_openBlock(), _createElementBlock("span", {
+        key: n
+      }, _toDisplayString(n), 1 /* TEXT */)), [
+        [_directive_focus]
+      ])
+    }), 128 /* KEYED_FRAGMENT */))
 }
 }
 
@@ -758,7 +764,7 @@ const data = await response.json()
 </template>
 --- OUTPUT ---
 import { withAsyncContext as _withAsyncContext } from 'vue'
-import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, unref as _unref } from "vue"
+import { unref as _unref, toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
 export default {
@@ -767,8 +773,18 @@ export default {
 
 let __temp, __restore
 
-const response = await fetch('/api/data')
-const data = await response.json()
+const response = (
+  ([__temp,__restore] = _withAsyncContext(() => fetch('/api/data'))),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
+const data = (
+  ([__temp,__restore] = _withAsyncContext(() => response.json())),
+  __temp = await __temp,
+  __restore(),
+  __temp
+)
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_unref(data)), 1 /* TEXT */))
@@ -900,7 +916,7 @@ interface Item {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    item: { type: null, required: true }
+    item: { type: Object, required: true }
   },
   setup(__props: any) {
 
@@ -908,8 +924,8 @@ const props = __props
 
 return (_ctx: any,_cache: any) => {
   return (__props.item.type === 'special')
-    ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(__props.item.value), 1 /* TEXT */))
-    : _createCommentVNode("v-if", true)
+      ? (_openBlock(), _createElementBlock("div", { key: 0 }, _toDisplayString(__props.item.value), 1 /* TEXT */))
+      : _createCommentVNode("v-if", true)
 }
 }
 
@@ -959,7 +975,7 @@ options: sfc
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
-const _hoisted_1 = { title: "Hello &quot;World&quot;" }
+const _hoisted_1 = { title: "Hello \"World\"" }
 
 export default {
   __name: 'test',
@@ -1347,15 +1363,15 @@ const items = ref([{ id: 1, value: 0 }])
 
 return (_ctx, _cache) => {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(items.value, (item) => {
-    return (_openBlock(), _createElementBlock("div", { key: item.id }, [
-      _createElementVNode("button", {
-        onClick: _cache[0] || (_cache[0] = () => {
+      return (_openBlock(), _createElementBlock("div", { key: item.id }, [
+        _createElementVNode("button", {
+          onClick: () => {
         item.value++;
         console.log(item.id);
-      })
-      }, _toDisplayString(item.value), 1 /* TEXT */)
-    ]))
-  }), 128 /* KEYED_FRAGMENT */))
+      }
+        }, _toDisplayString(item.value), 9 /* TEXT, PROPS */, ["onClick"])
+      ]))
+    }), 128 /* KEYED_FRAGMENT */))
 }
 }
 
@@ -1581,6 +1597,536 @@ export default {
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", { class: "wrapper" }, [ _createVNode(MyComponent, { class: "child" }) ]))
+}
+}
+
+}
+===
+name: component event rest params stay local
+options: sfc
+--- INPUT ---
+<script setup>
+const emit = defineEmits(['update'])
+</script>
+
+<template>
+  <Child
+    @update="(...$args) => emit('update', ...$args)"
+    @change="(...args) => emit('update', ...args)"
+  />
+</template>
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+
+export default {
+  __name: 'test',
+  emits: ['update'],
+  setup(__props, { emit: __emit }) {
+
+const emit = __emit
+
+return (_ctx, _cache) => {
+  const _component_Child = _resolveComponent("Child")
+
+  return (_openBlock(), _createBlock(_component_Child, {
+    onUpdate: _cache[0] || (_cache[0] = (...$args) => emit('update', ...$args)),
+    onChange: _cache[1] || (_cache[1] = (...args) => emit('update', ...args))
+  }))
+}
+}
+
+}
+===
+name: nullable runtime prop types keep null
+options: sfc
+--- INPUT ---
+<script setup lang="ts">
+defineProps<{
+  activeKey: string | null
+  items: string[] | null
+  groupName: string | null
+}>()
+</script>
+
+<template>
+  <div />
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  props: {
+    activeKey: { type: [String, null], required: true },
+    items: { type: [Array, null], required: true },
+    groupName: { type: [String, null], required: true }
+  },
+  setup(__props: any) {
+
+
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("div"))
+}
+}
+
+})
+===
+name: dynamic asset URL with import meta url
+options: sfc
+--- INPUT ---
+<script setup>
+const getBrandLogoUrl = (type, theme) => {
+  return new URL(`../../assets/logos/brand_${type}_${theme}.svg`, import.meta.url).href
+}
+</script>
+
+<template>
+  <img :src="getBrandLogoUrl('alpha', 'light')" alt="brand logo" />
+</template>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const getBrandLogoUrl = (type, theme) => {
+  return new URL(`../../assets/logos/brand_${type}_${theme}.svg`, import.meta.url).href
+}
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("img", {
+      src: getBrandLogoUrl('alpha', 'light'),
+      alt: "brand logo"
+    }, null, 8 /* PROPS */, ["src"]))
+}
+}
+
+}
+===
+name: v-if slot outlet with v-else
+options: sfc
+--- INPUT ---
+<template>
+  <div>
+    <slot v-if="showing" />
+    <slot v-else name="fallback" />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+const showing = ref(false)
+</script>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, renderSlot as _renderSlot } from "vue"
+
+import { ref } from 'vue'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const showing = ref(false)
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, [ (showing.value) ? _renderSlot(_ctx.$slots, "default", { key: 0}) : _renderSlot(_ctx.$slots, "fallback", { key: 1}) ]))
+}
+}
+
+}
+===
+name: dynamic slot outlet name in loop
+options: sfc
+--- INPUT ---
+<script setup>
+const tabs = [
+  { key: 'basic', label: 'Basic' },
+  { key: 'parts', label: 'Parts' },
+]
+</script>
+
+<template>
+  <div>
+    <template v-for="tab in tabs" :key="tab.key">
+      <slot :name="tab.key" :tab="tab" />
+    </template>
+  </div>
+</template>
+--- OUTPUT ---
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, renderList as _renderList, renderSlot as _renderSlot } from "vue"
+
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const tabs = [
+  { key: 'basic', label: 'Basic' },
+  { key: 'parts', label: 'Parts' },
+]
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(tabs, (tab) => {
+        return (_openBlock(), _createElementBlock(_Fragment, { key: tab.key }, [
+          _renderSlot(_ctx.$slots, tab.key, {tab: tab})
+        ], 64 /* STABLE_FRAGMENT */))
+      }), 128 /* KEYED_FRAGMENT */)) ]))
+}
+}
+
+}
+===
+name: v for template else interpolation wraps text vnode
+options: sfc
+--- INPUT ---
+<script setup>
+function splitByQuery(name) {
+  return [{ text: name, match: false }]
+}
+const name = 'paper'
+</script>
+
+<template>
+  <p>
+    <template v-for="(seg, i) in splitByQuery(name)" :key="i">
+      <mark v-if="seg.match">{{ seg.text }}</mark>
+      <template v-else>{{ seg.text }}</template>
+    </template>
+  </p>
+</template>
+--- OUTPUT ---
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, renderList as _renderList, toDisplayString as _toDisplayString } from "vue"
+
+const name = 'paper'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+function splitByQuery(name) {
+  return [{ text: name, match: false }]
+}
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("p", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(splitByQuery(name), (seg, i) => {
+        return (_openBlock(), _createElementBlock(_Fragment, { key: i }, [
+          (seg.match)
+            ? (_openBlock(), _createElementBlock("mark", { key: 0 }, _toDisplayString(seg.text), 1 /* TEXT */))
+            : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [
+              _createTextVNode(_toDisplayString(seg.text), 1 /* TEXT */)
+            ], 64 /* STABLE_FRAGMENT */))
+        ], 64 /* STABLE_FRAGMENT */))
+      }), 128 /* KEYED_FRAGMENT */)) ]))
+}
+}
+
+}
+===
+name: v if branch keeps maybe ref style patch flag
+options: sfc
+--- INPUT ---
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const show = ref(true)
+const floatingStyles = ref({ left: '10px', top: '20px' })
+</script>
+
+<template>
+  <div v-if="show" :style="floatingStyles"></div>
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, normalizeStyle as _normalizeStyle } from "vue"
+
+import { ref } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+const show = ref(true)
+const floatingStyles = ref({ left: '10px', top: '20px' })
+
+return (_ctx: any,_cache: any) => {
+  return (show.value)
+      ? (_openBlock(), _createElementBlock("div", {
+        key: 0,
+        style: _normalizeStyle(floatingStyles.value)
+      }, null, 4 /* STYLE */))
+      : _createCommentVNode("v-if", true)
+}
+}
+
+})
+===
+name: template ref with dynamic props in v if branch
+options: sfc
+--- INPUT ---
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+const reference = ref<HTMLElement>()
+const floating = ref<HTMLElement>()
+const isOpen = ref(true)
+const klass = computed(() => 'x')
+const styles = computed(() => ({ left: '0px', top: '0px' }))
+function toggle() {}
+</script>
+
+<template>
+  <button
+    v-if="isOpen"
+    ref="reference"
+    :id="isOpen ? 'open' : undefined"
+    class="base"
+    :class="klass"
+    @click="toggle"
+  >
+    open
+  </button>
+  <div
+    v-if="isOpen"
+    ref="floating"
+    :style="styles"
+  >
+    panel
+  </div>
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle } from "vue"
+
+import { computed, ref } from 'vue'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+const reference = ref<HTMLElement>()
+const floating = ref<HTMLElement>()
+const isOpen = ref(true)
+const klass = computed(() => 'x')
+const styles = computed(() => ({ left: '0px', top: '0px' }))
+function toggle() {}
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [ (isOpen.value) ? (_openBlock(), _createElementBlock("button", {
+          key: 0,
+          ref_key: "reference", ref: reference,
+          id: isOpen.value ? 'open' : undefined,
+          class: _normalizeClass(["base", klass.value]),
+          onClick: toggle
+        }, "\n    open\n  ", 10 /* CLASS, PROPS */, ["id"])) : _createCommentVNode("v-if", true), (isOpen.value) ? (_openBlock(), _createElementBlock("div", {
+          key: 0,
+          ref_key: "floating", ref: floating,
+          style: _normalizeStyle(styles.value)
+        }, "\n    panel\n  ", 4 /* STYLE */)) : _createCommentVNode("v-if", true) ], 64 /* STABLE_FRAGMENT */))
+}
+}
+
+})
+===
+name: options api dynamic style and class keep patch flags
+options: sfc
+--- INPUT ---
+<script>
+export default {
+  computed: {
+    knobStyle() {
+      return { transform: 'translate(10px, 20px)' }
+    },
+  },
+}
+</script>
+
+<template>
+  <div class="map">
+    <div :style="knobStyle" :class="{ dragging }"></div>
+  </div>
+</template>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle } from "vue"
+
+function _sfc_render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { class: "map" }, [
+    _createElementVNode("div", {
+      style: _normalizeStyle(_ctx.knobStyle),
+      class: _normalizeClass({ dragging: _ctx.dragging })
+    }, null, 6 /* CLASS, STYLE */)
+  ]))
+}
+
+const _sfc_main = {
+  computed: {
+    knobStyle() {
+      return { transform: 'translate(10px, 20px)' }
+    },
+  },
+}
+
+_sfc_main.render = _sfc_render
+export default _sfc_main
+===
+name: imported custom directive binding in script setup
+options: sfc
+--- INPUT ---
+<script setup lang="ts">
+import { vElementHover } from '@vueuse/components'
+</script>
+
+<template>
+  <div v-element-hover="() => {}" />
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, withDirectives as _withDirectives } from "vue"
+
+import { vElementHover } from '@vueuse/components'
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+
+return (_ctx: any,_cache: any) => {
+  const _directive_element_hover = vElementHover
+
+  return _withDirectives((_openBlock(), _createElementBlock("div", null, null, 512 /* NEED_PATCH */)), [ [_directive_element_hover, () => {}] ])
+}
+}
+
+})
+===
+name: component event member expression handler is invoked
+options: sfc
+--- INPUT ---
+<script setup>
+const actionHandler = useActionHandler()
+</script>
+
+<template>
+  <ActionPanel @selectItem="actionHandler.selectItem" />
+</template>
+--- OUTPUT ---
+import { openBlock as _openBlock, createBlock as _createBlock, resolveComponent as _resolveComponent, unref as _unref } from "vue"
+
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const actionHandler = useActionHandler()
+
+return (_ctx, _cache) => {
+  const _component_ActionPanel = _resolveComponent("ActionPanel")
+
+  return (_openBlock(), _createBlock(_component_ActionPanel, {
+      onSelectItem: _cache[0] || (_cache[0] = (...args) => (_unref(actionHandler).selectItem && _unref(actionHandler).selectItem(...args)))
+    }))
+}
+}
+
+}
+===
+name: function typed prop param does not shadow local t
+options: sfc
+--- INPUT ---
+<script setup lang="ts">
+const { format } = useFormatter(catalog)
+const props = defineProps<{
+  renderLabel: (value: string, format: any) => string
+}>()
+</script>
+
+<template>
+  <PopupMenu>
+    <template #items="{ close }">
+      <OptionRow v-slot="{ active }">
+        <li :class="{ active }" @click="close()">
+          <span>{{ format('hello') }}</span>
+          <span>{{ renderLabel('x', format) }}</span>
+        </li>
+      </OptionRow>
+    </template>
+  </PopupMenu>
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  props: {
+    renderLabel: { type: Function, required: true }
+  },
+  setup(__props: any) {
+
+const props = __props
+const { format } = useFormatter(catalog)
+
+return (_ctx: any,_cache: any) => {
+  const _component_OptionRow = _resolveComponent("OptionRow")
+  const _component_PopupMenu = _resolveComponent("PopupMenu")
+
+  return (_openBlock(), _createBlock(_component_PopupMenu, null, {
+      items: _withCtx(({ close }) => [
+        _createVNode(_component_OptionRow, null, {
+          default: _withCtx(({ active }) => [
+            _createElementVNode("li", {
+              class: _normalizeClass({ active: active }),
+              onClick: ($event: any) => (close())
+            }, [
+              _createElementVNode("span", null, _toDisplayString(_unref(format)('hello')), 1 /* TEXT */),
+              _createElementVNode("span", null, _toDisplayString(__props.renderLabel('x', _unref(format))), 1 /* TEXT */)
+            ], 10 /* CLASS, PROPS */, ["onClick"])
+          ]),
+          _: 1 /* STABLE */
+        })
+      ]),
+      _: 1 /* STABLE */
+    }))
+}
+}
+
+})
+===
+name: v-if with custom directive on element
+options: sfc
+--- INPUT ---
+<script setup>
+import { ref } from 'vue'
+const showHelp = ref(true)
+const helpText = ref('Help')
+</script>
+
+<template>
+  <button v-if="showHelp" v-tooltip.noDelay="helpText">Help</button>
+</template>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, resolveDirective as _resolveDirective, withDirectives as _withDirectives } from "vue"
+
+import { ref } from 'vue'
+
+export default {
+  __name: 'test',
+  setup(__props) {
+
+const showHelp = ref(true)
+const helpText = ref('Help')
+
+return (_ctx, _cache) => {
+  const _directive_tooltip = _resolveDirective("tooltip")
+
+  return (showHelp.value)
+      ? _withDirectives((_openBlock(), _createElementBlock("button", { key: 0 }, "Help")), [ [_directive_tooltip, helpText.value, void 0, { noDelay: true }] ])
+      : _createCommentVNode("v-if", true)
 }
 }
 

@@ -18,8 +18,8 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        let source = self.source;
-        self.append_or_merge_text(&source[start..end], start, end);
+        let source = self.get_source(start, end).to_owned();
+        self.append_or_merge_text(&source, start, end);
     }
 
     /// Process text entity content
@@ -104,7 +104,7 @@ impl<'a> Parser<'a> {
     pub(super) fn on_open_tag_end_impl(&mut self, end: usize) {
         if let Some(current) = self.current_element.take() {
             let tag_start = current.tag_start;
-            let loc = self.create_loc(tag_start - 1, end + 1); // Include < and >
+            let loc = self.create_loc(tag_start.saturating_sub(1), end + 1); // Include < and >
 
             let mut element = ElementNode::new(self.allocator, current.tag.clone(), loc);
             element.ns = current.ns;
@@ -245,7 +245,7 @@ impl<'a> Parser<'a> {
         }
 
         if !found {
-            let loc = self.create_loc(start - 2, end + 1); // Include </ and >
+            let loc = self.create_loc(start.saturating_sub(2), end + 1); // Include </ and >
             self.errors
                 .push(CompilerError::new(ErrorCode::InvalidEndTag, Some(loc)));
         }

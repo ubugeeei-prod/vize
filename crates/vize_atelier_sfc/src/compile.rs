@@ -66,6 +66,22 @@ fn is_ts_lang(lang: Option<&str>) -> bool {
     matches!(lang, Some("ts" | "tsx"))
 }
 
+fn rewrite_client_render_for_sfc_main(template_code: &str) -> String {
+    if template_code.contains("export function render(") {
+        return template_code
+            .replacen("export function render(", "function _sfc_render(", 1)
+            .to_compact_string();
+    }
+
+    if template_code.contains("function render(") {
+        return template_code
+            .replacen("function render(", "function _sfc_render(", 1)
+            .to_compact_string();
+    }
+
+    template_code.to_compact_string()
+}
+
 fn extract_descriptor_macro_artifacts(descriptor: &SfcDescriptor) -> Vec<SfcMacroArtifact> {
     let mut artifacts = Vec::new();
 
@@ -311,11 +327,16 @@ pub fn compile_sfc(
             match template_result {
                 Ok(template_code) => {
                     // Build output matching Vue's compiler-sfc:
-                    // 1. Full template output (imports + hoisted + export function render(...))
+                    // 1. Full template output (imports + hoisted + function _sfc_render(...))
                     // 2. Rewritten script
-                    // 3. _sfc_main.render = render / _sfc_main.ssrRender = ssrRender
+                    // 3. _sfc_main.render = _sfc_render / _sfc_main.ssrRender = ssrRender
                     // 4. export default _sfc_main
-                    code.push_str(&template_code);
+                    if is_vapor || options.template.ssr {
+                        code.push_str(&template_code);
+                    } else {
+                        let template_code = rewrite_client_render_for_sfc_main(&template_code);
+                        code.push_str(&template_code);
+                    }
                     code.push_str(&final_script);
                     code.push('\n');
 
@@ -325,8 +346,10 @@ pub fn compile_sfc(
                     }
                     if options.template.ssr {
                         code.push_str("_sfc_main.ssrRender = ssrRender\n");
-                    } else {
+                    } else if is_vapor {
                         code.push_str("_sfc_main.render = render\n");
+                    } else {
+                        code.push_str("_sfc_main.render = _sfc_render\n");
                     }
                     code.push_str("export default _sfc_main\n");
                 }

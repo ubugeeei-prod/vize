@@ -25,21 +25,40 @@ pub(crate) fn format_document(
         return Some(vec![]);
     }
 
-    let line_count = content.lines().count() as u32;
-    let last_line_len = content.lines().last().map_or(0, |l| l.len()) as u32;
     Some(vec![TextEdit {
         range: Range {
             start: Position::new(0, 0),
-            end: Position::new(line_count, last_line_len),
+            end: eof_position(content),
         },
         #[allow(clippy::disallowed_methods)]
         new_text: formatted.code.to_string(),
     }])
 }
 
+#[cfg(feature = "glyph")]
+fn eof_position(content: &str) -> Position {
+    let mut line = 0u32;
+    let mut character = 0u32;
+    let mut chars = content.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '\r' && chars.peek() == Some(&'\n') {
+            continue;
+        }
+        if ch == '\n' {
+            line += 1;
+            character = 0;
+            continue;
+        }
+        character += ch.len_utf16() as u32;
+    }
+
+    Position::new(line, character)
+}
+
 #[cfg(all(test, feature = "glyph"))]
 mod tests {
-    use super::format_document;
+    use super::{eof_position, format_document};
     use crate::server::ServerState;
     use tower_lsp::lsp_types::Position;
 
@@ -103,8 +122,31 @@ mod tests {
         if !edits.is_empty() {
             let edit = &edits[0];
             assert_eq!(edit.range.start, Position::new(0, 0));
-            let line_count = source.lines().count() as u32;
-            assert_eq!(edit.range.end.line, line_count);
+            assert_eq!(edit.range.end, eof_position(source));
+        }
+    }
+
+    #[test]
+    fn format_document_edit_uses_real_eof_for_trailing_newline() {
+        let source = "<template>\n<div>hello</div>\n</template>\n";
+        let options = vize_glyph::FormatOptions::default();
+        let result = format_document(source, &options);
+        assert!(result.is_some());
+        let edits = result.unwrap();
+        if !edits.is_empty() {
+            assert_eq!(edits[0].range.end, Position::new(3, 0));
+        }
+    }
+
+    #[test]
+    fn format_document_edit_uses_utf16_columns() {
+        let source = "<template><div>😀</div></template>";
+        let options = vize_glyph::FormatOptions::default();
+        let result = format_document(source, &options);
+        assert!(result.is_some());
+        let edits = result.unwrap();
+        if !edits.is_empty() {
+            assert_eq!(edits[0].range.end, Position::new(0, 34));
         }
     }
 

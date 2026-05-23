@@ -2,6 +2,7 @@
 name = "vize_croquis"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 description = "Croquis - Semantic analysis layer for Vize. Quick sketches of meaning from Vue templates."

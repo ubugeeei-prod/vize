@@ -35,6 +35,7 @@ import {
   decodeUrlComponent,
   DEFAULT_API_BODY_LIMIT_BYTES,
   HttpError,
+  parseJsonBody,
   resolveInside,
   validateDevApiRequest,
 } from "../security.js";
@@ -133,7 +134,7 @@ export function createApiMiddleware(ctx: ApiRoutesContext) {
 
           const safeArtPath = resolveInside(ctx.config.root, artPath, "art path");
           const body = await readBody();
-          const { source } = JSON.parse(body) as { source: string };
+          const { source } = parseJsonBody<{ source: string }>(body);
           if (typeof source !== "string") {
             sendError("Missing required field: source", 400);
             return;

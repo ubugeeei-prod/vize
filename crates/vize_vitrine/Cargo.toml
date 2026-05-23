@@ -2,6 +2,7 @@
 name = "vize_vitrine"
 version.workspace = true
 edition = "2024"
+rust-version.workspace = true
 license = "MIT"
 repository = "https://github.com/ubugeeei/vize"
 description = "Vitrine - The display case for Vize (Node.js/WASM bindings)"

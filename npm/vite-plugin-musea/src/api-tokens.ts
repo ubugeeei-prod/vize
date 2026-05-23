@@ -10,7 +10,7 @@
  */
 
 import type { ApiRoutesContext, SendJson, SendError, ReadBody } from "./api-routes/index.js";
-import { HttpError, resolveInside } from "./security.js";
+import { HttpError, parseJsonBody, resolveInside } from "./security.js";
 import {
   parseTokens,
   buildTokenMap,
@@ -123,10 +123,10 @@ export async function handleTokensCreate(
 
   const body = await readBody();
   try {
-    const { path: dotPath, token } = JSON.parse(body) as {
+    const { path: dotPath, token } = parseJsonBody<{
       path: string;
       token: Omit<DesignToken, "$resolvedValue">;
-    };
+    }>(body);
     if (!dotPath || !token || token.value === undefined) {
       sendError("Missing required fields: path, token.value", 400);
       return;
@@ -178,10 +178,10 @@ export async function handleTokensUpdate(
 
   const body = await readBody();
   try {
-    const { path: dotPath, token } = JSON.parse(body) as {
+    const { path: dotPath, token } = parseJsonBody<{
       path: string;
       token: Omit<DesignToken, "$resolvedValue">;
-    };
+    }>(body);
     if (!dotPath || !token || token.value === undefined) {
       sendError("Missing required fields: path, token.value", 400);
       return;
@@ -228,7 +228,7 @@ export async function handleTokensDelete(
 
   const body = await readBody();
   try {
-    const { path: dotPath } = JSON.parse(body) as { path: string };
+    const { path: dotPath } = parseJsonBody<{ path: string }>(body);
     if (!dotPath) {
       sendError("Missing required field: path", 400);
       return;

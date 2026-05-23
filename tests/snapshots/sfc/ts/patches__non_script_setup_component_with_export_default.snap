@@ -1,10 +1,11 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+assertion_line: 198
 expression: ts_output.as_str()
 ---
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from "vue"
 
-export function render(_ctx, _cache) {
+function _sfc_render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString(_ctx.msg) + " - " + _toDisplayString(_ctx.count), 1 /* TEXT */))
 }
 
@@ -20,5 +21,5 @@ const _sfc_main = {
   }
 }
 
-_sfc_main.render = render
+_sfc_main.render = _sfc_render
 export default _sfc_main
