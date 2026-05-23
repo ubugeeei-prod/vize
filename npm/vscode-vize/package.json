@@ -356,6 +356,7 @@
     "onCommand:vize.disable",
     "onCommand:vize.enableLintOnlyProfile",
     "onCommand:vize.enableRecommendedProfile",
+    "onCommand:vize.findReferences",
     "onCommand:vize.restartServer",
     "onCommand:vize.selectServerPath",
     "onCommand:vize.showOutput",

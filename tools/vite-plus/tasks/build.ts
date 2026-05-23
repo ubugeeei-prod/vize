@@ -46,7 +46,10 @@ export const buildTasks = defineTasks({
   "build:vscode-extension": noCacheTask(runInVscodeExtension("pnpm exec vp pack")),
   "build:editor-extensions": noCacheTask(runTasks("build:vscode-extension", "check:zed-extension")),
   "package:vscode-extension": noCacheTask(
-    runInVscodeExtension("pnpm exec vsce package --no-dependencies --out dist/vize.vsix"),
+    runInVscodeExtension(
+      "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+    ),
   ),
   "check:zed-extension": task("cargo check --manifest-path npm/zed-vize/Cargo.toml", {
     input: ["npm/zed-vize/**"],
@@ -59,6 +62,7 @@ export const buildTasks = defineTasks({
       "pnpm exec tsgo --noEmit",
       "pnpm exec vp check src vite.config.ts",
       "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     )} && ${runTask("check:zed-extension")} && ${runTask("package:zed-extension")}`,
   ),
   "install:plugin": noCacheTask("vp install --filter './npm/vite-plugin-vize'"),

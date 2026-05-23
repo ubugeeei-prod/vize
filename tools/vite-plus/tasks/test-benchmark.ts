@@ -4,6 +4,7 @@ import {
   moonScript,
   noCacheTask,
   runInPackages,
+  runInVscodeExtension,
   runTask,
   runTasks,
   task,
@@ -64,6 +65,12 @@ export const testAndBenchmarkTasks = defineTasks({
   // dev profile (~1m20s). Building once in the CI profile saves both legs.
   "test:js": noCacheTask(`${runTask("build:native:test")} && ${jsPackageTestCommand}`),
   "test:scripts": noCacheTask("node --test --test-concurrency=1 tests/tooling/*.test.ts"),
+  "test:vscode-extension:vsix": noCacheTask(
+    runInVscodeExtension(
+      "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
+      "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
+    ),
+  ),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),

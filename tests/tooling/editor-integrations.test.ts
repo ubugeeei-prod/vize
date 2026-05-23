@@ -206,8 +206,17 @@ test("zed-vize registers art-vue as a first-party language", () => {
 
 test("CI packages editor extension artifacts", () => {
   const workflow = fs.readFileSync(path.join(root, ".github/workflows/check.yml"), "utf-8");
+  const buildTasks = fs.readFileSync(path.join(root, "tools/vite-plus/tasks/build.ts"), "utf-8");
+  const testTasks = fs.readFileSync(
+    path.join(root, "tools/vite-plus/tasks/test-benchmark.ts"),
+    "utf-8",
+  );
+
   assert.match(
     workflow,
     /name: Check and package editor extensions[\s\S]*package:editor-extensions/,
   );
+  assert.match(buildTasks, /package:vscode-extension[\s\S]*assert-vsix-package\.mjs/);
+  assert.match(buildTasks, /package:editor-extensions[\s\S]*assert-vsix-package\.mjs/);
+  assert.match(testTasks, /test:vscode-extension:vsix[\s\S]*assert-vsix-package\.mjs/);
 });

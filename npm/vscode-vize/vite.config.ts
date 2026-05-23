@@ -18,6 +18,17 @@ export default defineConfig({
     minify: true,
     deps: {
       neverBundle: ["vscode"],
+      alwaysBundle: [/^vscode-languageclient(?:\/|$)/],
+      onlyBundle: [
+        "balanced-match",
+        "brace-expansion",
+        "minimatch",
+        "semver",
+        "vscode-jsonrpc",
+        "vscode-languageclient",
+        "vscode-languageserver-protocol",
+        "vscode-languageserver-types",
+      ],
     },
   },
 });
