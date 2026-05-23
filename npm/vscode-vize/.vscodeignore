@@ -1,6 +1,9 @@
 node_modules/
 src/
+.vscode-test/
 .vscode/
+test/
+test-fixtures/
 *.vsix
 **/*.vsix
 tsconfig.json

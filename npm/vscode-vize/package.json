@@ -35,6 +35,7 @@
     "check:fix": "vp check --fix src vite.config.ts && tsgo --noEmit",
     "fmt": "vp fmt --write src vite.config.ts",
     "package": "vsce package --no-dependencies --out dist/vize.vsix",
+    "test:host": "node test/run-extension-host.mjs",
     "publish": "vsce publish --no-dependencies",
     "publish:pre": "vsce publish --no-dependencies --pre-release"
   },
@@ -45,6 +46,7 @@
     "@types/node": "25.6.0",
     "@types/vscode": "1.75.0",
     "@typescript/native-preview": "7.0.0-dev.20260421.1",
+    "@vscode/test-electron": "2.5.2",
     "@vscode/vsce": "3.9.1",
     "typescript": "6.0.3",
     "vite-plus": "0.1.19"

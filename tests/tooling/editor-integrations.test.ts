@@ -219,6 +219,7 @@ test("CI packages editor extension artifacts", () => {
   assert.match(buildTasks, /package:vscode-extension[\s\S]*assert-vsix-package\.mjs/);
   assert.match(buildTasks, /package:editor-extensions[\s\S]*assert-vsix-package\.mjs/);
   assert.match(testTasks, /test:vscode-extension:vsix[\s\S]*assert-vsix-package\.mjs/);
+  assert.match(testTasks, /test:vscode-extension:host[\s\S]*pnpm run test:host/);
   assert.match(buildTasks, /package:zed-extension[\s\S]*assert-zed-package\.mjs/);
   assert.match(testTasks, /test:zed-extension:package[\s\S]*package:zed-extension/);
 });

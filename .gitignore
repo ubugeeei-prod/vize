@@ -9,6 +9,7 @@ _build/
 # npm package build outputs
 npm/*/dist/
 npm/vite-plugin-vize/wasm/
+npm/vscode-vize/.vscode-test/
 npm/zed-vize/target/
 
 # Native (NAPI) build output

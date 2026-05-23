@@ -79,6 +79,7 @@ for (const name of entryNames.filter((entry) => entry.startsWith("extension/")))
 
 const forbiddenEntries = [
   /^extension\/\.github\//,
+  /^extension\/\.vscode-test\//,
   /^extension\/\.vscode\//,
   /^extension\/dist\/.*\.map$/,
   /^extension\/node_modules\//,
@@ -86,6 +87,7 @@ const forbiddenEntries = [
   /^extension\/pnpm-lock\.yaml$/,
   /^extension\/src\//,
   /^extension\/test(?:s)?\//,
+  /^extension\/test-fixtures\//,
   /^extension\/tsconfig\.json$/,
   /^extension\/vite\.config\.ts$/,
   /\.vsix$/,

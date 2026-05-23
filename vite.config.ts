@@ -4,7 +4,12 @@ import { floatingPromiseTestPatterns } from "./tools/vite-plus/task-inputs.ts";
 import { taskCatalog } from "./tools/vite-plus/task-groups.ts";
 import { rootBuildTaskPlugin } from "./tools/vite-plus/task-helpers.ts";
 
-const localGeneratedIgnorePatterns = [".cache/**", ".direnv/**", "target/**"];
+const localGeneratedIgnorePatterns = [
+  ".cache/**",
+  ".direnv/**",
+  "npm/vscode-vize/.vscode-test/**",
+  "target/**",
+];
 
 /**
  * Root Vite+ configuration.
