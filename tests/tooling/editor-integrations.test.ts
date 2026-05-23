@@ -228,4 +228,8 @@ test("CI packages editor extension artifacts", () => {
   assert.match(buildTasks, /package:editor-extensions[\s\S]*package:nvim-extension/);
   assert.match(testTasks, /test:nvim-extension:headless[\s\S]*nvim --headless/);
   assert.match(testTasks, /test:nvim-extension:package[\s\S]*package:nvim-extension/);
+  assert.match(buildTasks, /package:vim-extension[\s\S]*assert-vim-package\.mjs/);
+  assert.match(buildTasks, /package:editor-extensions[\s\S]*package:vim-extension/);
+  assert.match(testTasks, /test:vim-extension:headless[\s\S]*vim -Nu NONE/);
+  assert.match(testTasks, /test:vim-extension:package[\s\S]*package:vim-extension/);
 });

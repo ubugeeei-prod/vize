@@ -36,6 +36,7 @@ examples/*/.vite/
 *.tgz
 *.vsix
 nvim-vize-extension.tar.gz
+vim-vize-extension.tar.gz
 zed-vize-extension.tar.gz
 
 # Benchmark input/output files

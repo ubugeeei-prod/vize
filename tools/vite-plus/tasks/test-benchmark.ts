@@ -82,6 +82,10 @@ export const testAndBenchmarkTasks = defineTasks({
     "nvim --headless -u NONE --noplugin '+set runtimepath^=npm/nvim-vize' '+luafile npm/nvim-vize/test/vize_spec.lua' '+qa'",
   ),
   "test:nvim-extension:package": noCacheTask("vp run --workspace-root package:nvim-extension"),
+  "test:vim-extension:headless": noCacheTask(
+    "vim -Nu NONE -n -es -S npm/vim-vize/test/vize_spec.vim",
+  ),
+  "test:vim-extension:package": noCacheTask("vp run --workspace-root package:vim-extension"),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),
