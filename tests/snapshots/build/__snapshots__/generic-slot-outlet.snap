@@ -1,0 +1,14 @@
+import { openBlock as _openBlock, createElementBlock as _createElementBlock, createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, renderSlot as _renderSlot, toDisplayString as _toDisplayString } from "vue";
+const fallbackLabel = "No records yet";
+export default {
+  __name: "SlotOutlet",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return _openBlock(), _createElementBlock("section", null, [
+        _createElementVNode("header", null, [_renderSlot(_ctx.$slots, "title", {}, () => [_createTextVNode("Generic Title")])]),
+        _renderSlot(_ctx.$slots, "default"),
+        _renderSlot(_ctx.$slots, "empty", { label: fallbackLabel }, () => [_createElementVNode("p", null, _toDisplayString(fallbackLabel))])
+      ]);
+    };
+  }
+};
