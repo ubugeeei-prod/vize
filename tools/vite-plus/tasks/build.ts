@@ -55,7 +55,7 @@ export const buildTasks = defineTasks({
     input: ["npm/zed-vize/**"],
   }),
   "package:zed-extension": noCacheTask(
-    "tar --exclude 'zed-vize/target' -czf zed-vize-extension.tar.gz -C npm zed-vize",
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed-vize/target' -czf zed-vize-extension.tar.gz -C npm zed-vize && node tools/zed-vize/assert-zed-package.mjs zed-vize-extension.tar.gz",
   ),
   "package:editor-extensions": noCacheTask(
     `${runInVscodeExtension(

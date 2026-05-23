@@ -71,6 +71,7 @@ export const testAndBenchmarkTasks = defineTasks({
       "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     ),
   ),
+  "test:zed-extension:package": noCacheTask("vp run --workspace-root package:zed-extension"),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),
