@@ -321,6 +321,7 @@ async function applyLintOnlyConfiguration(): Promise<void> {
     ["diagnostics.enable", false],
     ["typecheck.enable", false],
     ["editor.enable", false],
+    ["ecosystem.enable", false],
     ["completion.enable", false],
     ["hover.enable", false],
     ["definition.enable", false],
