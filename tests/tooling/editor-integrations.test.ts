@@ -232,4 +232,7 @@ test("CI packages editor extension artifacts", () => {
   assert.match(buildTasks, /package:editor-extensions[\s\S]*package:vim-extension/);
   assert.match(testTasks, /test:vim-extension:headless[\s\S]*vim -Nu NONE/);
   assert.match(testTasks, /test:vim-extension:package[\s\S]*package:vim-extension/);
+  assert.match(buildTasks, /package:helix-extension[\s\S]*assert-helix-package\.mjs/);
+  assert.match(buildTasks, /package:editor-extensions[\s\S]*package:helix-extension/);
+  assert.match(testTasks, /test:helix-extension:package[\s\S]*package:helix-extension/);
 });

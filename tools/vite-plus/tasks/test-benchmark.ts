@@ -86,6 +86,7 @@ export const testAndBenchmarkTasks = defineTasks({
     "vim -Nu NONE -n -es -S npm/vim-vize/test/vize_spec.vim",
   ),
   "test:vim-extension:package": noCacheTask("vp run --workspace-root package:vim-extension"),
+  "test:helix-extension:package": noCacheTask("vp run --workspace-root package:helix-extension"),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),
