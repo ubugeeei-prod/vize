@@ -57,7 +57,7 @@ const rustBranchCoverageCommand = [
  * performance regressions difficult to miss.
  */
 export const testAndBenchmarkTasks = defineTasks({
-  test: noCacheTask(runTasks("test:rust", "test:js", "test:scripts")),
+  test: noCacheTask(runTasks("test:rust", "test:js", "test:scripts", "test:zed-extension:unit")),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
   // Use the CI-profile native build instead of the release-profile one.
   // The release build was ~3m+ on GitHub Actions and was being immediately
@@ -75,6 +75,9 @@ export const testAndBenchmarkTasks = defineTasks({
     runInVscodeExtension("pnpm exec vp pack", "pnpm run test:host"),
   ),
   "test:zed-extension:package": noCacheTask("vp run --workspace-root package:zed-extension"),
+  "test:zed-extension:unit": task("cargo test --manifest-path npm/zed-vize/Cargo.toml", {
+    input: ["npm/zed-vize/**"],
+  }),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),

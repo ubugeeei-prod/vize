@@ -63,7 +63,9 @@ export const buildTasks = defineTasks({
       "pnpm exec vp check src vite.config.ts",
       "pnpm exec vsce package --no-dependencies --out dist/vize.vsix",
       "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
-    )} && ${runTask("check:zed-extension")} && ${runTask("package:zed-extension")}`,
+    )} && ${runTask("check:zed-extension")} && ${runTask(
+      "test:zed-extension:unit",
+    )} && ${runTask("package:zed-extension")}`,
   ),
   "install:plugin": noCacheTask("vp install --filter './npm/vite-plugin-vize'"),
 });
