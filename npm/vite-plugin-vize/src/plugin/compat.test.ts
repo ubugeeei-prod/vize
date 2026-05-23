@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 
-import { createPostTransformPlugin } from "./compat.ts";
+import { createPostTransformPlugin, transformScopedPreprocessorCss } from "./compat.ts";
 import type { VizePluginState } from "./state.ts";
 
 function createState(overrides: Partial<VizePluginState> = {}): VizePluginState {
@@ -74,6 +74,19 @@ const msg = 'hello'
     result.map,
     null,
     "SSR post-transforms should not allocate discarded OXC sourcemaps",
+  );
+}
+
+{
+  const transformed = transformScopedPreprocessorCss(
+    ".rrevdjwu > .group + .group { color: red; }",
+    "\0/src/MkSuperMenu.vue?vue=&type=style&index=0&scoped=data-v-menu&lang=scss.scss",
+  );
+
+  assert.equal(
+    transformed,
+    ".rrevdjwu > .group + .group[data-v-menu] { color: red; }",
+    "Scoped preprocessor CSS should be scoped after preprocessing, matching Vue selector placement",
   );
 }
 

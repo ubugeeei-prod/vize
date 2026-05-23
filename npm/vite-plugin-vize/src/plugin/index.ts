@@ -18,7 +18,11 @@ import {
 import { resolveIdHook } from "./resolve.ts";
 import { loadHook, transformHook } from "./load.ts";
 import { handleHotUpdateHook, handleGenerateBundleHook } from "./hmr.ts";
-import { createVueCompatPlugin, createPostTransformPlugin } from "./compat.ts";
+import {
+  createPostTransformPlugin,
+  createStylePostTransformPlugin,
+  createVueCompatPlugin,
+} from "./compat.ts";
 import { patchUnoCssBridge } from "./unocss.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installVirtualAssetMiddleware } from "./dev-middleware.ts";
@@ -250,5 +254,10 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     },
   };
 
-  return [createVueCompatPlugin(state), mainPlugin, createPostTransformPlugin(state)];
+  return [
+    createVueCompatPlugin(state),
+    mainPlugin,
+    createStylePostTransformPlugin(),
+    createPostTransformPlugin(state),
+  ];
 }

@@ -165,28 +165,6 @@ export function loadHook(
         styleContent = scopeCssForPipeline(styleContent, scoped);
       }
 
-      // For scoped preprocessor styles, wrap content in a scope selector
-      if (scoped && block.scoped && lang && lang !== "css") {
-        const lines = styleContent.split("\n");
-        const hoisted: string[] = [];
-        const body: string[] = [];
-        for (const line of lines) {
-          const trimmed = line.trimStart();
-          if (
-            trimmed.startsWith("@use ") ||
-            trimmed.startsWith("@forward ") ||
-            trimmed.startsWith("@import ")
-          ) {
-            hoisted.push(line);
-          } else {
-            body.push(line);
-          }
-        }
-        const bodyContent = body.join("\n");
-        const hoistedContent = hoisted.length > 0 ? hoisted.join("\n") + "\n\n" : "";
-        styleContent = `${hoistedContent}[${scoped}] {\n${bodyContent}\n}`;
-      }
-
       styleContent = transformCssVarsForPipeline(styleContent, fallbackCompiled.scopeId);
 
       return {

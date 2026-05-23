@@ -583,6 +583,51 @@ assert.doesNotMatch(
   "Delegated style CSS should not leak v-bind() to Vite",
 );
 
+const scssPath = "/src/MkSuperMenu.vue";
+const scssState: VizePluginState = {
+  ...hmrState,
+  cache: new Map([
+    [
+      scssPath,
+      {
+        code: `const _sfc_main = { name: "MkSuperMenu" }
+export default _sfc_main`,
+        scopeId: "scssscope",
+        hasScoped: true,
+        styles: [
+          {
+            content: `.rrevdjwu {
+  > .group {
+    & + .group { color: red; }
+  }
+}`,
+            lang: "scss",
+            scoped: true,
+            module: false,
+            index: 0,
+          },
+        ],
+      },
+    ],
+  ]),
+  ssrCache: new Map(),
+};
+
+const scssVirtualLoad = loadHook(
+  scssState,
+  "\0/src/MkSuperMenu.vue?vue=&type=style&index=0&scoped=data-v-scssscope&lang=scss.scss",
+  { ssr: false },
+);
+assert.ok(
+  scssVirtualLoad && typeof scssVirtualLoad === "object",
+  "Delegated SCSS should load as a virtual style module",
+);
+assert.doesNotMatch(
+  scssVirtualLoad.code,
+  /^\[data-v-scssscope\]/,
+  "Scoped preprocessors should not be wrapped before Sass expands nested selectors",
+);
+
 const onDemandProdDir = createTempRoot("load");
 const onDemandProdPath = path.join(onDemandProdDir, "OnDemandProd.vue");
 fs.writeFileSync(

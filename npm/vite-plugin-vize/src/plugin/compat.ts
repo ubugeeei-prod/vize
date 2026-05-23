@@ -1,6 +1,7 @@
 import type { Plugin, TransformResult } from "vite";
 import { transformWithOxc } from "vite";
 import { createRequire } from "node:module";
+import { classifyVitePluginRequest } from "@vizejs/native";
 
 import {
   getCompileOptionsForRequest,
@@ -10,6 +11,7 @@ import {
 } from "./state.ts";
 import { compileFile } from "../compiler.ts";
 import { generateOutput } from "../utils/index.ts";
+import { scopeCssForPipeline } from "../utils/css.ts";
 import { applyDefineReplacements } from "../transform.ts";
 
 export function createVueCompatPlugin(state: VizePluginState): Plugin {
@@ -37,6 +39,41 @@ export function createVueCompatPlugin(state: VizePluginState): Plugin {
           template: {},
         };
       },
+    },
+  };
+}
+
+export function normalizeVirtualStyleId(id: string): string {
+  if (!id.startsWith("\0") || !id.includes("?vue")) {
+    return id;
+  }
+
+  return id
+    .slice(1)
+    .replace(/\.module\.\w+$/, "")
+    .replace(/\.\w+$/, "");
+}
+
+export function transformScopedPreprocessorCss(code: string, id: string): string | null {
+  const request = classifyVitePluginRequest(normalizeVirtualStyleId(id));
+  if (
+    !request.isVueStyleQuery ||
+    !request.styleScoped ||
+    !request.styleLang ||
+    request.styleLang === "css"
+  ) {
+    return null;
+  }
+
+  return scopeCssForPipeline(code, request.styleScoped);
+}
+
+export function createStylePostTransformPlugin(): Plugin {
+  return {
+    name: "vize:style-post-transform",
+    transform(code: string, id: string): TransformResult | null {
+      const scoped = transformScopedPreprocessorCss(code, id);
+      return scoped === null ? null : { code: scoped, map: null };
     },
   };
 }
