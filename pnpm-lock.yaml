@@ -196,6 +196,7 @@ catalogs:
       version: 4.5.1
 
 overrides:
+  '@azure/msal-node>uuid': 11.1.1
   '@unhead/vue': 2.1.15
   defu: 6.1.7
   devalue: 5.8.1
@@ -205,11 +206,11 @@ overrides:
   nitropack: 2.13.4
   node-forge: 1.4.0
   nuxt: 4.4.6
+  qs: 6.15.2
   simple-git: 3.36.0
   srvx: 0.11.15
   svgo: 4.0.1
   tar: 7.5.15
-  '@azure/msal-node>uuid': 11.1.1
   yaml: 2.9.0
 
 importers:
@@ -7829,8 +7830,8 @@ packages:
     deprecated: < 24.15.0 is no longer supported
     hasBin: true
 
-  qs@6.15.1:
-    resolution: {integrity: sha512-6YHEFRL9mfgcAvql/XhwTvf5jKcOiiupt2FiJxHkiX1z4j7WL8J/jRHYLluORvc1XxB5rV20KoeK00gVJamspg==}
+  qs@6.15.2:
+    resolution: {integrity: sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw==}
     engines: {node: '>=0.6'}
 
   quansync@0.2.11:
@@ -13189,7 +13190,7 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.7.2
       on-finished: 2.4.1
-      qs: 6.15.1
+      qs: 6.15.2
       raw-body: 3.0.2
       type-is: 2.1.0
     transitivePeerDependencies:
@@ -14191,7 +14192,7 @@ snapshots:
       once: 1.4.0
       parseurl: 1.3.3
       proxy-addr: 2.0.7
-      qs: 6.15.1
+      qs: 6.15.2
       range-parser: 1.2.1
       router: 2.2.0
       send: 1.2.1
@@ -16124,7 +16125,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  qs@6.15.1:
+  qs@6.15.2:
     dependencies:
       side-channel: 1.1.0
 
