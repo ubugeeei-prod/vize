@@ -27,6 +27,8 @@ When you open a Vue file with the extension still disabled, or with no capabilit
 That setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, and `vize.editor.enable` for the current workspace.
 If you manually set only `vize.enable: true`, Vize also uses that recommended diagnostics and
 editor profile instead of starting an empty language server.
+The Vize status bar item opens `Vize: Show Status`, which gives you the profile switcher, server
+binary picker, restart action, settings, and logs from one place.
 
 ### Recommended Starting Point
 
@@ -60,6 +62,18 @@ existing Vue tooling.
 | `vize.codeActions.enable`    | Enable lint quick fixes                            |
 | `vize.semanticTokens.enable` | Enable semantic tokens                             |
 | `vize.trace.server`          | Trace LSP communication                            |
+
+### Useful Commands
+
+| Command                                   | Purpose                                             |
+| ----------------------------------------- | --------------------------------------------------- |
+| `Vize: Show Status`                       | Open the status and setup action hub                |
+| `Vize: Enable Recommended Profile`        | Enable lint, type checking, and editor assistance   |
+| `Vize: Enable Lint-Only Profile`          | Enable diagnostics while keeping other tools in use |
+| `Vize: Select Language Server Executable` | Set `vize.serverPath` from a file picker            |
+| `Vize: Disable Language Server`           | Stop Vize for the current configuration target      |
+| `Vize: Restart Language Server`           | Restart the language server                         |
+| `Vize: Show Output Channel`               | Show extension and LSP logs                         |
 
 ### What the Extension Uses
 

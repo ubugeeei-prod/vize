@@ -32,7 +32,7 @@ test("vscode-vize wires art-vue documents into editor features", () => {
       grammars?: Array<{ language?: string; path?: string; scopeName?: string }>;
       languages?: Array<{ id?: string; extensions?: string[] }>;
       menus?: {
-        commandPalette?: Array<{ when?: string }>;
+        commandPalette?: Array<{ command?: string; when?: string }>;
       };
     };
   }>("npm/vscode-vize/package.json");
@@ -54,8 +54,11 @@ test("vscode-vize wires art-vue documents into editor features", () => {
     true,
   );
 
+  const languageScopedCommands = new Set(["vize.restartServer", "vize.showOutput"]);
   for (const item of manifest.contributes?.menus?.commandPalette ?? []) {
-    assert.match(item.when ?? "", /editorLangId == art-vue/);
+    if (languageScopedCommands.has(item.command ?? "")) {
+      assert.match(item.when ?? "", /editorLangId == art-vue/);
+    }
   }
 
   const extensionSource = fs.readFileSync(
@@ -67,7 +70,9 @@ test("vscode-vize wires art-vue documents into editor features", () => {
   assert.match(extensionSource, /SUPPORTED_URI_SCHEMES\s*=\s*\["file", "untitled"\]/);
   assert.match(extensionSource, /documentSelector:\s*SUPPORTED_URI_SCHEMES\.flatMap/);
   assert.match(extensionSource, /onDidChangeConfiguration/);
-  assert.match(extensionSource, /syncClientToConfiguration\(context,\s*"configuration changed"\)/);
+  assert.match(extensionSource, /scheduleClientSync\(context,\s*"configuration changed"\)/);
+  assert.match(extensionSource, /function scheduleClientSync/);
+  assert.match(extensionSource, /void syncClientToConfiguration\(context,\s*reason\)/);
   assert.match(extensionSource, /nextClient\.setTrace\(trace\)/);
   assert.match(extensionSource, /Trace\.(Verbose|Messages|Off)/);
 });
