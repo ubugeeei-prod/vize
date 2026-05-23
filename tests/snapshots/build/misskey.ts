@@ -6,9 +6,11 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { misskeyApp, VIZE_BIN, requireVizeBin } from "../../_helpers/apps.ts";
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
+import { assertSnapshot } from "../../_helpers/snapshot.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = misskeyApp;
+const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 
 describe(`${app.name} build (compiler)`, () => {
   before(() => {
@@ -158,14 +160,6 @@ describe(`${app.name} build (compiler)`, () => {
       "MkPagination.js should keep the appear binding on the upward load-more button",
     );
 
-    const draggable = readOutput("MkDraggable.js");
-    assert.ok(
-      !draggable.includes("_ctx.dragging"),
-      "MkDraggable.js should not read the normal <script> dragging ref from instance context",
-    );
-    assert.ok(
-      draggable.includes("dragging.value"),
-      "MkDraggable.js should read the normal <script> dragging ref as a setup/module binding",
-    );
+    assertSnapshot(SNAPSHOT_DIR, `${app.name}-mk-draggable`, readOutput("MkDraggable.js"));
   });
 });

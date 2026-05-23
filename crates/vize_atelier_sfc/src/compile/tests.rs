@@ -822,16 +822,7 @@ function start() {
     };
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains("dragging.value"),
-        "template should read normal-script ref binding directly: {}",
-        result.code
-    );
-    assert!(
-        !result.code.contains("_ctx.dragging"),
-        "normal-script ref binding should not be emitted as instance context access: {}",
-        result.code
-    );
+    insta::assert_snapshot!(result.code.as_str());
 
     let bindings = result.bindings.expect("bindings should be available");
     assert!(
