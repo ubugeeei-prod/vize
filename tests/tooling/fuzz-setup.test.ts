@@ -5,13 +5,15 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const fuzzWorkspace = "tests/fuzz";
+const fuzzManifestPath = `${fuzzWorkspace}/Cargo.toml`;
 
 function readRepoFile(relativePath: string): string {
   return fs.readFileSync(path.join(repoRoot, relativePath), "utf8");
 }
 
 test("fuzz workspace declares libfuzzer-sys and an isolated [workspace]", () => {
-  const manifest = readRepoFile("fuzz/Cargo.toml");
+  const manifest = readRepoFile(fuzzManifestPath);
 
   // The fuzz crate must be its own workspace so the root workspace stable
   // toolchain is not pinned to libfuzzer-sys's nightly requirement.
@@ -23,9 +25,9 @@ test("fuzz workspace declares libfuzzer-sys and an isolated [workspace]", () => 
   // Every declared bin target must have a corresponding harness file so
   // `cargo fuzz run <target>` resolves cleanly on CI.
   const binMatches = [...manifest.matchAll(/\[\[bin\]\]\s+name = "([^"]+)"\s+path = "([^"]+)"/g)];
-  assert.ok(binMatches.length > 0, "fuzz/Cargo.toml must declare at least one [[bin]] target");
+  assert.ok(binMatches.length > 0, `${fuzzManifestPath} must declare at least one [[bin]] target`);
   for (const [, , relativePath] of binMatches) {
-    const fullPath = path.join(repoRoot, "fuzz", relativePath);
+    const fullPath = path.join(repoRoot, fuzzWorkspace, relativePath);
     assert.ok(
       fs.existsSync(fullPath),
       `fuzz target file ${relativePath} declared in Cargo.toml is missing`,
@@ -39,9 +41,11 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
   assert.match(workflow, /name:\s*Fuzz/);
   assert.match(workflow, /schedule:[\s\S]*?-\s*cron:/);
   assert.match(workflow, /pull_request:[\s\S]*paths:/);
+  assert.match(workflow, /"tests\/fuzz\/\*\*"/);
+  assert.doesNotMatch(workflow, /"fuzz\/\*\*"/);
 
-  // The matrix must drive each fuzz_target declared in fuzz/Cargo.toml.
-  const manifest = readRepoFile("fuzz/Cargo.toml");
+  // The matrix must drive each fuzz_target declared in tests/fuzz/Cargo.toml.
+  const manifest = readRepoFile(fuzzManifestPath);
   const targets = [...manifest.matchAll(/\[\[bin\]\]\s+name = "([^"]+)"/g)].map(([, name]) => name);
   for (const target of targets) {
     assert.match(
@@ -56,14 +60,14 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
 
   // Reproducers on failure must be uploaded so triage does not have to
   // re-run the fuzzer to recover the failing input.
-  assert.match(workflow, /upload-artifact[\s\S]*fuzz\/artifacts\//);
+  assert.match(workflow, /upload-artifact[\s\S]*tests\/fuzz\/artifacts\//);
   assert.match(workflow, /issues:\s*write/);
   assert.match(workflow, /github\.event_name != 'pull_request'/);
   assert.match(workflow, /gh issue (create|comment)/);
 });
 
 test("fuzz workspace covers parser, lexer, and compiler harnesses", () => {
-  const manifest = readRepoFile("fuzz/Cargo.toml");
+  const manifest = readRepoFile(fuzzManifestPath);
 
   for (const target of [
     "sfc_parse",
@@ -85,9 +89,10 @@ test("fuzz workspace covers parser, lexer, and compiler harnesses", () => {
 
 test("seed_corpus.mjs writes seeds for every declared fuzz target", () => {
   const script = readRepoFile("tools/fuzz/seed_corpus.mjs");
-  const manifest = readRepoFile("fuzz/Cargo.toml");
+  const manifest = readRepoFile(fuzzManifestPath);
   const targets = [...manifest.matchAll(/\[\[bin\]\]\s+name = "([^"]+)"/g)].map(([, name]) => name);
 
+  assert.match(script, /tests", "fuzz", "corpus"/);
   for (const target of targets) {
     assert.match(
       script,

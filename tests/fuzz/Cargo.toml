@@ -4,7 +4,7 @@
 # - Mixing a stable-pinned root toolchain with the nightly toolchain
 #   cargo-fuzz requires for libfuzzer.
 #
-# Run with: `cargo +nightly fuzz run <target>` from the fuzz/ directory.
+# Run with: `cargo +nightly fuzz run <target>` from the tests/fuzz/ directory.
 # Targets are bootstrapped from `corpus/<target>/` (seeded from
 # repository fixtures by `tools/fuzz/seed_corpus.mjs`).
 [package]
@@ -21,12 +21,12 @@ libfuzzer-sys = "0.4"
 oxc_allocator = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
 oxc_parser = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
 oxc_span = { version = "=0.127.0", git = "https://github.com/oxc-project/oxc", rev = "8265ed94b8f743a11dbf6f81fdd6fd248906f366" }
-vize_armature = { path = "../crates/vize_armature" }
-vize_atelier_sfc = { path = "../crates/vize_atelier_sfc", default-features = false, features = [
+vize_armature = { path = "../../crates/vize_armature" }
+vize_atelier_sfc = { path = "../../crates/vize_atelier_sfc", default-features = false, features = [
   "native",
 ] }
-vize_atelier_dom = { path = "../crates/vize_atelier_dom" }
-vize_carton = { path = "../crates/vize_carton" }
+vize_atelier_dom = { path = "../../crates/vize_atelier_dom" }
+vize_carton = { path = "../../crates/vize_carton" }
 
 [[bin]]
 name = "sfc_parse"

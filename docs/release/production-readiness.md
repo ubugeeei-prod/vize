@@ -30,7 +30,12 @@ A production-ready claim for any supported surface requires current evidence for
 - `cargo test --workspace`
 - `vp exec pnpm audit --prod --audit-level moderate`
 - `cargo audit --deny warnings`
+- `security-audit` workflow status for npm and Rust dependency advisories
 - `cargo semver-checks check-release --package <each publishable crate>`
+- `pr-benchmark-budget` status for parser, compiler, lint, type-check, formatter, bundler, and
+  CLI hot-path changes
+- `.github/workflows/fuzz.yml` (`fuzz` workflow) status, seeded corpus health, and retained crash
+  reproducers for parser, template, CSS, expression, and compiler-recovery surfaces
 - release-artifact signatures and SBOMs land on the GitHub Release (see
   [supply-chain.md](./supply-chain.md))
 - package build coverage for the surface being promoted
@@ -39,6 +44,8 @@ A production-ready claim for any supported surface requires current evidence for
 - native host smoke coverage when native binaries are involved
 - real-world fixture coverage for the supported Vue/compiler/typecheck behavior
 - Vue parity matrix coverage for compiler, type checking, Vite, and runtime smoke behavior
+- language-engineering change-class evidence for parser, compiler, analyzer, type-checker,
+  formatter, LSP, packaging, and release changes
 - release rollback instructions for npm, crates.io, GitHub Releases, docs, and editor channels
 
 ## Current Audit Snapshot

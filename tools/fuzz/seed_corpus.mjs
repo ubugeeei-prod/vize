@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Seeds fuzz/corpus/<target>/ from repository fixtures so libFuzzer starts
+// Seeds tests/fuzz/corpus/<target>/ from repository fixtures so libFuzzer starts
 // with a coverage map that reflects realistic SFC and template shapes. The
 // seed file content is reproducible from the repo (the .vue and template
 // fixtures are all in git), so the grown corpus does not need to be
@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..");
-const corpusRoot = join(repoRoot, "fuzz", "corpus");
+const corpusRoot = join(repoRoot, "tests", "fuzz", "corpus");
 
 const VUE_GLOBS = [
   "tests/fixtures/**/*.vue",
