@@ -57,6 +57,9 @@ export const buildTasks = defineTasks({
   "package:zed-extension": noCacheTask(
     "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar --exclude 'zed-vize/target' -czf zed-vize-extension.tar.gz -C npm zed-vize && node tools/zed-vize/assert-zed-package.mjs zed-vize-extension.tar.gz",
   ),
+  "package:nvim-extension": noCacheTask(
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf nvim-vize-extension.tar.gz -C npm nvim-vize && node tools/nvim-vize/assert-nvim-package.mjs nvim-vize-extension.tar.gz",
+  ),
   "package:editor-extensions": noCacheTask(
     `${runInVscodeExtension(
       "pnpm exec tsgo --noEmit",
@@ -65,7 +68,7 @@ export const buildTasks = defineTasks({
       "node ../../tools/vscode-vize/assert-vsix-package.mjs dist/vize.vsix",
     )} && ${runTask("check:zed-extension")} && ${runTask(
       "test:zed-extension:unit",
-    )} && ${runTask("package:zed-extension")}`,
+    )} && ${runTask("package:zed-extension")} && ${runTask("package:nvim-extension")}`,
   ),
   "install:plugin": noCacheTask("vp install --filter './npm/vite-plugin-vize'"),
 });

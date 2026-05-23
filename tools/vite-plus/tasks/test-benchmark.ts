@@ -78,6 +78,10 @@ export const testAndBenchmarkTasks = defineTasks({
   "test:zed-extension:unit": task("cargo test --manifest-path npm/zed-vize/Cargo.toml", {
     input: ["npm/zed-vize/**"],
   }),
+  "test:nvim-extension:headless": noCacheTask(
+    "nvim --headless -u NONE --noplugin '+set runtimepath^=npm/nvim-vize' '+luafile npm/nvim-vize/test/vize_spec.lua' '+qa'",
+  ),
+  "test:nvim-extension:package": noCacheTask("vp run --workspace-root package:nvim-extension"),
   "test:playground": task(runInPackages("test:browser", ["./playground"]), {
     input: cacheInputs.jsChecks,
   }),

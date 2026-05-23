@@ -224,4 +224,8 @@ test("CI packages editor extension artifacts", () => {
   assert.match(testTasks, /test:zed-extension:package[\s\S]*package:zed-extension/);
   assert.match(testTasks, /test:zed-extension:unit[\s\S]*cargo test/);
   assert.match(buildTasks, /package:editor-extensions[\s\S]*test:zed-extension:unit/);
+  assert.match(buildTasks, /package:nvim-extension[\s\S]*assert-nvim-package\.mjs/);
+  assert.match(buildTasks, /package:editor-extensions[\s\S]*package:nvim-extension/);
+  assert.match(testTasks, /test:nvim-extension:headless[\s\S]*nvim --headless/);
+  assert.match(testTasks, /test:nvim-extension:package[\s\S]*package:nvim-extension/);
 });

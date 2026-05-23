@@ -35,6 +35,7 @@ examples/*/.vite/
 .DS_Store
 *.tgz
 *.vsix
+nvim-vize-extension.tar.gz
 zed-vize-extension.tar.gz
 
 # Benchmark input/output files
