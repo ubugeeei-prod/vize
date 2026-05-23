@@ -12,19 +12,16 @@ pub enum LintPreset {
     Essential,
     /// Starts with no built-in bundle so hosts can opt in rule-by-rule.
     Incremental,
-    /// Happy path rules plus Vue ecosystem integrations.
-    Ecosystem,
     /// Opinionated rules adjusted for Nuxt auto-import conventions.
     Nuxt,
 }
 
 impl LintPreset {
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 5] = [
         Self::HappyPath,
         Self::Opinionated,
         Self::Essential,
         Self::Incremental,
-        Self::Ecosystem,
         Self::Nuxt,
     ];
 
@@ -35,7 +32,6 @@ impl LintPreset {
             Self::Opinionated => "opinionated",
             Self::Essential => "essential",
             Self::Incremental => "incremental",
-            Self::Ecosystem => "ecosystem",
             Self::Nuxt => "nuxt",
         }
     }
@@ -49,7 +45,6 @@ impl LintPreset {
             "opinionated" | "strict" | "all" => Some(Self::Opinionated),
             "essential" => Some(Self::Essential),
             "incremental" => Some(Self::Incremental),
-            "ecosystem" | "eco" => Some(Self::Ecosystem),
             "nuxt" => Some(Self::Nuxt),
             _ => None,
         }
@@ -65,13 +60,16 @@ const ECOSYSTEM_SCRIPT_RULE_NAMES: &[&str] = &[
 pub(crate) const fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
     match preset {
         LintPreset::HappyPath | LintPreset::Essential | LintPreset::Incremental => &[],
-        LintPreset::Ecosystem => ECOSYSTEM_SCRIPT_RULE_NAMES,
         LintPreset::Opinionated | LintPreset::Nuxt => &[
             "script/no-options-api",
             "script/no-get-current-instance",
             "script/no-next-tick",
         ],
     }
+}
+
+pub(crate) const fn ecosystem_builtin_script_rule_names() -> &'static [&'static str] {
+    ECOSYSTEM_SCRIPT_RULE_NAMES
 }
 
 #[cfg(test)]
@@ -92,7 +90,7 @@ mod tests {
             LintPreset::parse("incremental"),
             Some(LintPreset::Incremental)
         );
-        assert_eq!(LintPreset::parse("ecosystem"), Some(LintPreset::Ecosystem));
+        assert_eq!(LintPreset::parse("ecosystem"), None);
         assert_eq!(LintPreset::parse("nuxt"), Some(LintPreset::Nuxt));
         assert_eq!(LintPreset::parse("unknown"), None);
     }
@@ -103,7 +101,7 @@ mod tests {
             "happy_path": rule_names(LintPreset::HappyPath),
             "opinionated": rule_names(LintPreset::Opinionated),
             "essential": rule_names(LintPreset::Essential),
-            "ecosystem": rule_names(LintPreset::Ecosystem),
+            "ecosystem": ecosystem_rule_names(),
             "incremental": rule_names(LintPreset::Incremental),
             "nuxt": rule_names(LintPreset::Nuxt),
             "opt_in": opt_in_rule_names(),
@@ -163,14 +161,8 @@ mod tests {
         assert!(opinionated.has_rule("vue/multi-word-component-names"));
         assert!(opinionated.has_rule("a11y/use-list"));
         assert!(!opinionated.has_rule("ecosystem/router-link-require-to"));
-        assert!(
-            RuleRegistry::with_preset(LintPreset::Ecosystem)
-                .has_rule("ecosystem/router-link-require-to")
-        );
-        assert!(
-            RuleRegistry::with_preset(LintPreset::Ecosystem)
-                .has_rule("ecosystem/vue-i18n-no-missing-key")
-        );
+        assert!(RuleRegistry::with_ecosystem().has_rule("ecosystem/router-link-require-to"));
+        assert!(RuleRegistry::with_ecosystem().has_rule("ecosystem/vue-i18n-no-missing-key"));
         assert!(
             !RuleRegistry::with_preset(LintPreset::Nuxt)
                 .has_rule("ecosystem/nuxt-prefer-nuxt-link")
@@ -202,7 +194,7 @@ mod tests {
                 .contains(&"ecosystem/pinia-prefer-store-to-refs")
         );
         assert!(
-            super::builtin_script_rule_names(LintPreset::Ecosystem)
+            super::ecosystem_builtin_script_rule_names()
                 .contains(&"ecosystem/vue-router-prefer-named-push")
         );
     }
@@ -232,6 +224,16 @@ mod tests {
             .map(|rule| rule.meta().name)
             .collect();
         rules.extend_from_slice(crate::linter::script_rules::opt_in_script_rule_names());
+        rules
+    }
+
+    fn ecosystem_rule_names() -> Vec<&'static str> {
+        let mut rules: Vec<_> = RuleRegistry::with_ecosystem()
+            .rules()
+            .iter()
+            .map(|rule| rule.meta().name)
+            .collect();
+        rules.extend_from_slice(super::ecosystem_builtin_script_rule_names());
         rules
     }
 }

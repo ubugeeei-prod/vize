@@ -348,7 +348,7 @@ impl DiagnosticService {
 
         // Create linter and lint the full SFC so editor diagnostics match the CLI.
         let linter = if ecosystem_enabled {
-            vize_patina::Linter::with_preset(vize_patina::LintPreset::Ecosystem)
+            vize_patina::Linter::with_ecosystem()
         } else {
             vize_patina::Linter::new()
         };

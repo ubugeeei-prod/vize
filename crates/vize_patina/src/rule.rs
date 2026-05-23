@@ -152,7 +152,6 @@ impl RuleRegistry {
             LintPreset::Opinionated => Self::with_opinionated(),
             LintPreset::Essential => Self::with_essential(),
             LintPreset::Incremental => Self::with_incremental(),
-            LintPreset::Ecosystem => Self::with_ecosystem(),
             LintPreset::Nuxt => Self::with_nuxt(),
         }
     }

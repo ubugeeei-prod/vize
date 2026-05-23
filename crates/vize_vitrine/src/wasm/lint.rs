@@ -46,25 +46,32 @@ const fn severity_name(severity: vize_patina::Severity) -> &'static str {
     }
 }
 
-fn parse_lint_preset(options: &JsValue) -> LintPreset {
+enum WasmPresetSelection {
+    Builtin(LintPreset),
+    Ecosystem,
+}
+
+fn parse_lint_preset(options: &JsValue) -> WasmPresetSelection {
     js_sys::Reflect::get(options, &JsValue::from_str("preset"))
         .ok()
         .and_then(|v| v.as_string())
         .as_deref()
         .and_then(|value| match value {
             "general-recommended" | "GeneralRecommended" | "generalRecommended" => {
-                Some(LintPreset::HappyPath)
+                Some(WasmPresetSelection::Builtin(LintPreset::HappyPath))
             }
-            "essential" | "Essential" => Some(LintPreset::Essential),
-            "incremental" | "Incremental" => Some(LintPreset::Incremental),
+            "essential" | "Essential" => Some(WasmPresetSelection::Builtin(LintPreset::Essential)),
+            "incremental" | "Incremental" => {
+                Some(WasmPresetSelection::Builtin(LintPreset::Incremental))
+            }
             "opinionated" | "Opinionated" | "Opnionated" | "opnionated" => {
-                Some(LintPreset::Opinionated)
+                Some(WasmPresetSelection::Builtin(LintPreset::Opinionated))
             }
-            "ecosystem" | "Ecosystem" | "eco" | "Eco" => Some(LintPreset::Ecosystem),
-            "nuxt" | "Nuxt" => Some(LintPreset::Nuxt),
-            _ => LintPreset::parse(value),
+            "ecosystem" | "Ecosystem" | "eco" | "Eco" => Some(WasmPresetSelection::Ecosystem),
+            "nuxt" | "Nuxt" => Some(WasmPresetSelection::Builtin(LintPreset::Nuxt)),
+            _ => LintPreset::parse(value).map(WasmPresetSelection::Builtin),
         })
-        .unwrap_or_default()
+        .unwrap_or(WasmPresetSelection::Builtin(LintPreset::default()))
 }
 
 #[inline]
@@ -74,7 +81,6 @@ const fn plugin_preset_name(preset: LintPreset) -> &'static str {
         LintPreset::Opinionated => "opinionated",
         LintPreset::Essential => "essential",
         LintPreset::Incremental => "incremental",
-        LintPreset::Ecosystem => "ecosystem",
         LintPreset::Nuxt => "nuxt",
     }
 }
@@ -112,14 +118,17 @@ fn parse_enabled_rules(options: &JsValue) -> Option<Vec<vize_carton::CompactStri
 fn create_linter(locale: vize_patina::Locale, options: &JsValue) -> vize_patina::Linter {
     let enabled_rules = parse_enabled_rules(options);
     let preset = if enabled_rules.is_some() {
-        LintPreset::Opinionated
+        WasmPresetSelection::Builtin(LintPreset::Opinionated)
     } else {
         parse_lint_preset(options)
     };
 
-    vize_patina::Linter::with_preset(preset)
-        .with_locale(locale)
-        .with_enabled_rules(enabled_rules)
+    let linter = match preset {
+        WasmPresetSelection::Builtin(preset) => vize_patina::Linter::with_preset(preset),
+        WasmPresetSelection::Ecosystem => vize_patina::Linter::with_ecosystem(),
+    };
+
+    linter.with_locale(locale).with_enabled_rules(enabled_rules)
 }
 
 /// Lint Vue SFC template
@@ -268,7 +277,7 @@ pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
     use vize_carton::FxHashSet;
     let template_rule_registries = [
         RuleRegistry::with_preset(LintPreset::Opinionated),
-        RuleRegistry::with_preset(LintPreset::Ecosystem),
+        RuleRegistry::with_ecosystem(),
         RuleRegistry::with_opt_in_rules(),
     ];
     let happy_path_rules: FxHashSet<&'static str> =
@@ -293,7 +302,7 @@ pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
             .iter()
             .map(|rule| rule.meta().name)
             .collect();
-    let ecosystem_rules: FxHashSet<&'static str> = RuleRegistry::with_preset(LintPreset::Ecosystem)
+    let ecosystem_rules: FxHashSet<&'static str> = RuleRegistry::with_ecosystem()
         .rules()
         .iter()
         .map(|rule| rule.meta().name)
@@ -318,7 +327,7 @@ pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
                 presets.push(plugin_preset_name(LintPreset::Nuxt));
             }
             if ecosystem_rules.contains(meta.name) {
-                presets.push(plugin_preset_name(LintPreset::Ecosystem));
+                presets.push("ecosystem");
             }
             if opinionated_rules.contains(meta.name) {
                 presets.push(plugin_preset_name(LintPreset::Opinionated));

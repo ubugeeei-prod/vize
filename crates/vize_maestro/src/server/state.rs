@@ -145,7 +145,7 @@ impl From<LanguageServerConfig> for LspConfigSection {
             lint: config.lint,
             typecheck: config.typecheck,
             editor: config.editor,
-            ecosystem: config.ecosystem,
+            ecosystem: None,
             completion: config.completion,
             hover: config.hover,
             definition: config.definition,

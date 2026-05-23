@@ -7,7 +7,7 @@
 use super::corsa_session::CorsaTypeAwareSession;
 use crate::{
     diagnostic::{HelpLevel, LintDiagnostic},
-    preset::{LintPreset, builtin_script_rule_names},
+    preset::{LintPreset, builtin_script_rule_names, ecosystem_builtin_script_rule_names},
     rule::RuleRegistry,
 };
 #[cfg(not(target_arch = "wasm32"))]
@@ -109,6 +109,25 @@ impl Linter {
             disabled_rules: FxHashSet::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
+            #[cfg(not(target_arch = "wasm32"))]
+            native_corsa: Mutex::new(None),
+            #[cfg(not(target_arch = "wasm32"))]
+            corsa_path: None,
+        }
+    }
+
+    /// Create a new linter with Vue ecosystem integration rules enabled.
+    #[inline]
+    pub fn with_ecosystem() -> Self {
+        Self {
+            preset: None,
+            registry: RuleRegistry::with_ecosystem(),
+            initial_capacity: Self::DEFAULT_INITIAL_CAPACITY,
+            locale: Locale::default(),
+            enabled_rules: None,
+            disabled_rules: FxHashSet::default(),
+            help_level: HelpLevel::default(),
+            script_rules: ecosystem_builtin_script_rule_names(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: Mutex::new(None),
             #[cfg(not(target_arch = "wasm32"))]

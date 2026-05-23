@@ -93,20 +93,36 @@ fn patina_help_level_from_option(help_level: Option<&str>) -> vize_patina::HelpL
     }
 }
 
-fn patina_preset_from_option(preset: Option<&str>) -> vize_patina::LintPreset {
+enum PatinaPresetSelection {
+    Builtin(vize_patina::LintPreset),
+    Ecosystem,
+}
+
+fn patina_preset_from_option(preset: Option<&str>) -> PatinaPresetSelection {
     match preset {
         Some("general-recommended" | "GeneralRecommended" | "generalRecommended")
         | Some("happy-path" | "happy_path" | "happy" | "default" | "recommended") => {
-            vize_patina::LintPreset::HappyPath
+            PatinaPresetSelection::Builtin(vize_patina::LintPreset::HappyPath)
         }
-        Some("essential" | "Essential") => vize_patina::LintPreset::Essential,
-        Some("incremental" | "Incremental") => vize_patina::LintPreset::Incremental,
-        Some("ecosystem" | "Ecosystem" | "eco" | "Eco") => vize_patina::LintPreset::Ecosystem,
+        Some("essential" | "Essential") => {
+            PatinaPresetSelection::Builtin(vize_patina::LintPreset::Essential)
+        }
+        Some("incremental" | "Incremental") => {
+            PatinaPresetSelection::Builtin(vize_patina::LintPreset::Incremental)
+        }
+        Some("ecosystem" | "Ecosystem" | "eco" | "Eco") => PatinaPresetSelection::Ecosystem,
         Some("opinionated" | "Opinionated" | "Opnionated" | "opnionated" | "strict" | "all") => {
-            vize_patina::LintPreset::Opinionated
+            PatinaPresetSelection::Builtin(vize_patina::LintPreset::Opinionated)
         }
-        Some("nuxt" | "Nuxt") => vize_patina::LintPreset::Nuxt,
-        _ => vize_patina::LintPreset::default(),
+        Some("nuxt" | "Nuxt") => PatinaPresetSelection::Builtin(vize_patina::LintPreset::Nuxt),
+        _ => PatinaPresetSelection::Builtin(vize_patina::LintPreset::default()),
+    }
+}
+
+fn create_patina_linter(preset: PatinaPresetSelection) -> vize_patina::Linter {
+    match preset {
+        PatinaPresetSelection::Builtin(preset) => vize_patina::Linter::with_preset(preset),
+        PatinaPresetSelection::Ecosystem => vize_patina::Linter::with_ecosystem(),
     }
 }
 
@@ -117,7 +133,6 @@ const fn plugin_preset_name(preset: vize_patina::LintPreset) -> &'static str {
         vize_patina::LintPreset::Opinionated => "opinionated",
         vize_patina::LintPreset::Essential => "essential",
         vize_patina::LintPreset::Incremental => "incremental",
-        vize_patina::LintPreset::Ecosystem => "ecosystem",
         vize_patina::LintPreset::Nuxt => "nuxt",
     }
 }
@@ -167,7 +182,7 @@ fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>> {
 
     let template_rule_registries = [
         RuleRegistry::with_preset(LintPreset::Opinionated),
-        RuleRegistry::with_preset(LintPreset::Ecosystem),
+        RuleRegistry::with_ecosystem(),
         RuleRegistry::with_opt_in_rules(),
     ];
     let happy_path_rules: FxHashSet<&'static str> =
@@ -192,7 +207,7 @@ fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>> {
             .iter()
             .map(|rule| rule.meta().name)
             .collect();
-    let ecosystem_rules: FxHashSet<&'static str> = RuleRegistry::with_preset(LintPreset::Ecosystem)
+    let ecosystem_rules: FxHashSet<&'static str> = RuleRegistry::with_ecosystem()
         .rules()
         .iter()
         .map(|rule| rule.meta().name)
@@ -217,7 +232,7 @@ fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>> {
                 presets.push(plugin_preset_name(LintPreset::Nuxt));
             }
             if ecosystem_rules.contains(meta.name) {
-                presets.push(plugin_preset_name(LintPreset::Ecosystem));
+                presets.push("ecosystem");
             }
             if opinionated_rules.contains(meta.name) {
                 presets.push(plugin_preset_name(LintPreset::Opinionated));
@@ -277,7 +292,7 @@ fn create_location_object(
 /// Lint a single Vue SFC with Patina and return structured diagnostics.
 #[napi(js_name = "lintPatinaSfc")]
 pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -> Result<Value> {
-    use vize_patina::{Linter, LspEmitter, Severity};
+    use vize_patina::{LspEmitter, Severity};
 
     let opts = options.unwrap_or_default();
     let filename = opts.filename.unwrap_or_else(|| "anonymous.vue".to_string());
@@ -287,7 +302,7 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
     let enabled_rules = opts
         .enabled_rules
         .map(|rules| rules.into_iter().map(Into::into).collect());
-    let linter = Linter::with_preset(preset)
+    let linter = create_patina_linter(preset)
         .with_locale(locale)
         .with_help_level(help_level)
         .with_enabled_rules(enabled_rules);
@@ -365,7 +380,7 @@ pub fn get_patina_rules() -> Result<Value> {
 pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<LintResultNapi> {
     use ignore::Walk;
     use std::time::Instant;
-    use vize_patina::{HelpLevel, Linter, OutputFormat, format_results, format_summary};
+    use vize_patina::{HelpLevel, OutputFormat, format_results, format_summary};
 
     let opts = options.unwrap_or_default();
     let start = Instant::now();
@@ -413,7 +428,7 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
         _ => HelpLevel::Full,
     };
     let preset = patina_preset_from_option(opts.preset.as_deref());
-    let linter = Linter::with_preset(preset).with_help_level(help_level);
+    let linter = create_patina_linter(preset).with_help_level(help_level);
     let error_count = AtomicUsize::new(0);
     let warning_count = AtomicUsize::new(0);
 
