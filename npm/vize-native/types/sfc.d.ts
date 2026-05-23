@@ -5,6 +5,7 @@ export interface BatchCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  vueParserQuirks?: boolean;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   threads?: number;
@@ -104,6 +105,7 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  vueParserQuirks?: boolean;
   /** Preserve TypeScript in output when true */
   isTs?: boolean;
   /** Scope ID for scoped CSS (e.g., "data-v-abc123") */

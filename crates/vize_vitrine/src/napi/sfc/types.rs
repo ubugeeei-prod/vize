@@ -69,6 +69,7 @@ pub struct SfcCompileOptionsNapi {
     pub ssr: Option<bool>,
     pub vapor: Option<bool>,
     pub custom_renderer: Option<bool>,
+    pub vue_parser_quirks: Option<bool>,
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
     /// Scope ID for scoped CSS (e.g., "data-v-abc123")
@@ -96,6 +97,7 @@ pub struct BatchCompileOptionsNapi {
     pub ssr: Option<bool>,
     pub vapor: Option<bool>,
     pub custom_renderer: Option<bool>,
+    pub vue_parser_quirks: Option<bool>,
     /// Preserve TypeScript in output when true
     pub is_ts: Option<bool>,
     pub threads: Option<u32>,

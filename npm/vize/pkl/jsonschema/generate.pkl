@@ -35,6 +35,11 @@ local compilerConfigDef: JsonSchema = new JsonSchema {
       description = "Enable SSR mode"
       default = false
     }
+    ["vueParserQuirks"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable Vue parser quirk compatibility"
+      default = false
+    }
     ["sourceMap"] = new JsonSchema {
       type = "boolean"
       description = "Enable source map generation"

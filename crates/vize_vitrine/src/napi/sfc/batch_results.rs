@@ -39,6 +39,7 @@ pub fn compile_sfc_batch_with_results(
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
     let custom_renderer = opts.custom_renderer.unwrap_or(false);
+    let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
     let start = Instant::now();
 
     files.par_iter().for_each(|file| {
@@ -108,6 +109,7 @@ pub fn compile_sfc_batch_with_results(
                 ssr,
                 is_ts,
                 custom_renderer,
+                vue_parser_quirks,
                 compiler_options: template_compiler_options,
                 ..Default::default()
             },

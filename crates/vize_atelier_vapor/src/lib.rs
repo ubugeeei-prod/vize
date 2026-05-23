@@ -68,6 +68,8 @@ pub struct VaporCompilerOptions {
     pub inline: bool,
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
+    /// Enable Vue parser quirk compatibility for known edge cases.
+    pub vue_parser_quirks: bool,
 }
 
 /// Vapor compilation result
@@ -115,6 +117,7 @@ pub fn compile_vapor<'a>(
         inline: options.inline,
         vapor: true,
         custom_renderer: options.custom_renderer,
+        vue_parser_quirks: options.vue_parser_quirks,
         ..Default::default()
     };
     transform(allocator, &mut root, transform_opts, None);

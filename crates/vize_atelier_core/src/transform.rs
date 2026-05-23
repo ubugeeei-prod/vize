@@ -266,6 +266,47 @@ mod tests {
     }
 
     #[test]
+    fn test_transform_v_for_rejects_unmatched_edge_parens_by_default() {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, r#"<div v-for="item) in items"></div>"#);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        transform(&allocator, &mut root, TransformOptions::default(), None);
+
+        assert!(
+            !matches!(&root.children[0], crate::ast::TemplateChildNode::For(_)),
+            "strict parser mode should not accept unmatched v-for alias parens"
+        );
+    }
+
+    #[test]
+    fn test_transform_v_for_vue_parser_quirks_accepts_unmatched_edge_parens() {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, r#"<div v-for="item) in items"></div>"#);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        transform(
+            &allocator,
+            &mut root,
+            TransformOptions {
+                vue_parser_quirks: true,
+                ..Default::default()
+            },
+            None,
+        );
+
+        match &root.children[0] {
+            crate::ast::TemplateChildNode::For(for_node) => match &for_node.value_alias {
+                Some(crate::ast::ExpressionNode::Simple(value)) => {
+                    assert_eq!(value.content.as_str(), "item");
+                }
+                _ => panic!("expected value alias"),
+            },
+            other => panic!("expected ForNode, got {:?}", std::mem::discriminant(other)),
+        }
+    }
+
+    #[test]
     fn test_v_if_creates_if_node() {
         let allocator = Bump::new();
         let (mut root, errors) = parse(&allocator, r#"<div v-if="show">visible</div>"#);

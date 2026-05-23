@@ -50,6 +50,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         cache_handlers: opts.cache_handlers.unwrap_or(false),
         scope_id: opts.scope_id.clone().map(|s| s.into()),
         ssr: opts.ssr.unwrap_or(false),
+        vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
         ..Default::default()
     };
     transform(&allocator, &mut root, transform_opts, None);
@@ -93,6 +94,7 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
     let vapor_opts = VaporCompilerOptions {
         prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
         ssr: opts.ssr.unwrap_or(false),
+        vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
         ..Default::default()
     };
     let result = vapor_compile(&allocator, &template, vapor_opts);

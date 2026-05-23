@@ -118,6 +118,8 @@ pub struct TransformOptions {
     pub vapor: bool,
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
+    /// Enable Vue parser quirk compatibility for known edge cases.
+    pub vue_parser_quirks: bool,
 }
 
 impl Default for TransformOptions {
@@ -135,6 +137,7 @@ impl Default for TransformOptions {
             is_ts: false,
             vapor: false,
             custom_renderer: false,
+            vue_parser_quirks: false,
         }
     }
 }

@@ -31,6 +31,7 @@ export function normalizeOptions(
     sourceMap: rawOptions.sourceMap ?? !isProduction,
     vapor: rawOptions.vapor ?? false,
     customRenderer: rawOptions.customRenderer ?? false,
+    vueParserQuirks: rawOptions.vueParserQuirks ?? false,
     root: rawOptions.root ?? process.cwd(),
     debug: rawOptions.debug ?? false,
   };

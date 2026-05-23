@@ -42,7 +42,7 @@ use vize_atelier_sfc::{
     SfcMacroArtifact, SfcParseOptions, StyleCompileOptions, TemplateCompileOptions,
     compile_sfc as sfc_compile, parse_sfc,
 };
-use vize_atelier_ssr::compile_ssr as ssr_compile;
+use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor as vapor_compile};
 
 /// Helper function to serialize values to JsValue with maps as objects
@@ -99,6 +99,7 @@ fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions {
             output_mode: get_string("outputMode"),
             is_ts: get_bool("isTs"),
             custom_renderer: get_bool("customRenderer"),
+            vue_parser_quirks: get_bool("vueParserQuirks"),
             script_ext: get_string("scriptExt"),
         },
         binding_metadata,
@@ -625,6 +626,7 @@ impl Compiler {
                 ssr: opts.ssr.unwrap_or(false),
                 is_ts: output_is_ts,
                 custom_renderer: opts.custom_renderer.unwrap_or(false),
+                vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
                 ..Default::default()
             },
             style: StyleCompileOptions {
@@ -712,7 +714,16 @@ fn compile_internal(
 
     // SSR mode - use dedicated SSR compiler
     if opts.ssr.unwrap_or(false) && !vapor && binding_metadata.is_none() {
-        let (root, errors, result) = ssr_compile(&allocator, template);
+        let (root, errors, result) = compile_ssr_with_options(
+            &allocator,
+            template,
+            SsrCompilerOptions {
+                is_ts: opts.is_ts.unwrap_or(false),
+                custom_renderer: opts.custom_renderer.unwrap_or(false),
+                vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
+                ..Default::default()
+            },
+        );
 
         if !errors.is_empty() {
             return Err(format!("SSR compile errors: {:?}", errors));
@@ -740,6 +751,7 @@ fn compile_internal(
             prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
             ssr: opts.ssr.unwrap_or(false),
             custom_renderer: opts.custom_renderer.unwrap_or(false),
+            vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
             binding_metadata,
             ..Default::default()
         };
@@ -785,6 +797,7 @@ fn compile_internal(
         source_map: opts.source_map.unwrap_or(false),
         is_ts: opts.is_ts.unwrap_or(false),
         custom_renderer: opts.custom_renderer.unwrap_or(false),
+        vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
         binding_metadata,
         inline: has_binding_metadata,
         ..Default::default()

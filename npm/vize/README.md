@@ -70,6 +70,7 @@ export default defineConfig({
     sourceMap: true,
     vapor: false,
     customRenderer: false,
+    vueParserQuirks: false,
   },
   vite: {
     scanPatterns: ["src/**/*.vue"],
@@ -126,6 +127,7 @@ Important shared fields:
 | `compiler.ssr`            | npm build, Vite plugin | Force SSR compilation                                   |
 | `compiler.vapor`          | npm build, Vite plugin | Enable Vapor compilation                                |
 | `compiler.customRenderer` | npm build, Vite plugin | Support custom renderer element semantics               |
+| `compiler.vueParserQuirks` | npm build, Vite plugin | Enable Vue parser quirk compatibility                   |
 | `compiler.scriptExt`      | npm build              | Preserve TypeScript output or downcompile to JavaScript |
 | `vite.scanPatterns`       | Vite plugin            | Pre-compile matching Vue files                          |
 | `linter.preset`           | npm lint               | Select the Patina lint preset                           |

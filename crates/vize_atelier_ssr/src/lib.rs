@@ -94,6 +94,7 @@ pub fn compile_ssr_with_options<'a>(
         is_ts: codegen_options.is_ts,
         inline: codegen_options.inline,
         custom_renderer: codegen_options.custom_renderer,
+        vue_parser_quirks: codegen_options.vue_parser_quirks,
         binding_metadata: codegen_options.binding_metadata.clone(),
         ..Default::default()
     };

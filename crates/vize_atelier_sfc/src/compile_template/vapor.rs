@@ -13,6 +13,7 @@ pub(crate) fn compile_template_block_vapor(
     has_scoped: bool,
     bindings: Option<&BindingMetadata>,
     custom_renderer: bool,
+    vue_parser_quirks: bool,
 ) -> Result<String, SfcError> {
     let allocator = Bump::new();
 
@@ -22,6 +23,7 @@ pub(crate) fn compile_template_block_vapor(
         ssr: false,
         binding_metadata: bindings.cloned(),
         custom_renderer,
+        vue_parser_quirks,
         ..Default::default()
     };
 

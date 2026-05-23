@@ -40,6 +40,8 @@ export interface CompilerOptions {
   isTs?: boolean;
   /** Whether the template targets a custom renderer instead of the DOM. */
   customRenderer?: boolean;
+  /** Enable Vue parser quirk compatibility for known edge cases. */
+  vueParserQuirks?: boolean;
   /**
    * Script extension handling: "preserve" (keep TypeScript) or "downcompile" (transpile to JS)
    * Defaults to "downcompile"

@@ -48,6 +48,9 @@ pub struct CompilerOptions {
     /// Whether the template targets a custom renderer instead of the DOM.
     #[serde(default)]
     pub custom_renderer: Option<bool>,
+    /// Enable Vue parser quirk compatibility for known edge cases.
+    #[serde(default)]
+    pub vue_parser_quirks: Option<bool>,
     /// Script extension handling: "preserve" (keep TypeScript) or "downcompile" (transpile to JS)
     /// Defaults to "downcompile"
     #[serde(default)]

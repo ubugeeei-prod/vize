@@ -62,6 +62,11 @@ pub(crate) fn compile_template_block(
             inline: false,
             is_ts,
             custom_renderer: options.custom_renderer,
+            vue_parser_quirks: options.vue_parser_quirks
+                || options
+                    .compiler_options
+                    .as_ref()
+                    .is_some_and(|opts| opts.vue_parser_quirks),
             ssr_css_vars: options.ssr_css_vars.clone(),
             binding_metadata: bindings.cloned(),
             croquis: croquis.map(Box::new),
@@ -99,6 +104,7 @@ pub(crate) fn compile_template_block(
     dom_opts.ssr = options.ssr;
     dom_opts.is_ts = is_ts;
     dom_opts.custom_renderer = options.custom_renderer;
+    dom_opts.vue_parser_quirks |= options.vue_parser_quirks;
     dom_opts.component_name = component_name.map(|name| name.to_compact_string());
 
     // For script setup, use inline mode to match Vue's actual compiler behavior

@@ -53,6 +53,10 @@ pub struct DomCompilerOptions {
     #[serde(default)]
     pub custom_renderer: bool,
 
+    /// Enable Vue parser quirk compatibility for known edge cases.
+    #[serde(default)]
+    pub vue_parser_quirks: bool,
+
     /// Binding metadata from script setup
     #[serde(skip)]
     pub binding_metadata: Option<BindingMetadata>,
@@ -80,6 +84,7 @@ impl Clone for DomCompilerOptions {
             component_name: self.component_name.clone(),
             inline: self.inline,
             custom_renderer: self.custom_renderer,
+            vue_parser_quirks: self.vue_parser_quirks,
             binding_metadata: self.binding_metadata.clone(),
             is_ts: self.is_ts,
             // Croquis is not cloneable; it will be consumed when passed to the compiler
@@ -102,6 +107,7 @@ impl Default for DomCompilerOptions {
             component_name: None,
             inline: false,
             custom_renderer: false,
+            vue_parser_quirks: false,
             binding_metadata: None,
             is_ts: false,
             croquis: None,
@@ -226,6 +232,7 @@ mod tests {
         assert!(!opts.prefix_identifiers);
         assert!(opts.hoist_static);
         assert!(!opts.ssr);
+        assert!(!opts.vue_parser_quirks);
     }
 
     #[test]

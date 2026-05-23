@@ -11,6 +11,9 @@ class CompilerConfig {
   /// Enable SSR mode.
   ssr: Boolean = false
 
+  /// Enable Vue parser quirk compatibility.
+  vueParserQuirks: Boolean = false
+
   /// Enable source map generation.
   sourceMap: Boolean = false
 

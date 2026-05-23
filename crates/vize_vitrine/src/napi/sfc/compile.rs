@@ -54,6 +54,7 @@ pub fn compile_sfc(
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
+    let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
     let external_scope_id: Option<vize_carton::CompactString> = opts
         .scope_id
         .as_ref()
@@ -85,6 +86,7 @@ pub fn compile_sfc(
             ssr: opts.ssr.unwrap_or(false),
             is_ts,
             custom_renderer: opts.custom_renderer.unwrap_or(false),
+            vue_parser_quirks,
             compiler_options: template_compiler_options,
             ..Default::default()
         },

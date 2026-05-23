@@ -64,6 +64,10 @@ pub struct BuildArgs {
     #[arg(long)]
     pub custom_renderer: bool,
 
+    /// Enable Vue parser quirk compatibility for known edge cases
+    #[arg(long)]
+    pub vue_parser_quirks: bool,
+
     /// Script extension handling: 'preserve' keeps original extension (.ts/.tsx/.jsx), 'downcompile' converts to .js
     #[arg(long, value_enum, default_value = "downcompile")]
     pub script_ext: ScriptExtension,

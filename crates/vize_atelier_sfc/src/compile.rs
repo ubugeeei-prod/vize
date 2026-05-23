@@ -184,6 +184,7 @@ pub fn compile_sfc(
                     has_scoped,
                     None,
                     options.template.custom_renderer,
+                    options.template.vue_parser_quirks,
                 )
             )
         } else {
@@ -299,6 +300,7 @@ pub fn compile_sfc(
                         has_scoped,
                         None,
                         options.template.custom_renderer,
+                        options.template.vue_parser_quirks,
                     )
                 )
             } else {
@@ -539,6 +541,7 @@ pub fn compile_sfc(
                     has_scoped,
                     Some(&script_bindings),
                     options.template.custom_renderer,
+                    options.template.vue_parser_quirks,
                 )
             ))
         } else {

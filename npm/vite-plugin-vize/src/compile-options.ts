@@ -6,12 +6,14 @@ export interface CompileFileOptions {
   ssr: boolean;
   vapor: boolean;
   customRenderer?: boolean;
+  vueParserQuirks?: boolean;
 }
 
 export interface CompileBatchOptions {
   ssr: boolean;
   vapor: boolean;
   customRenderer?: boolean;
+  vueParserQuirks?: boolean;
 }
 
 export function buildCompileFileOptions(
@@ -24,6 +26,7 @@ export function buildCompileFileOptions(
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,
+    vueParserQuirks: options.vueParserQuirks ?? false,
     scopeId: `data-v-${generateScopeId(filePath)}`,
   };
 }
@@ -33,5 +36,6 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer ?? false,
+    vueParserQuirks: options.vueParserQuirks ?? false,
   };
 }

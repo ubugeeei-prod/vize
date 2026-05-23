@@ -457,6 +457,9 @@ pub struct TemplateCompileOptions {
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
 
+    /// Enable Vue parser quirk compatibility for known edge cases.
+    pub vue_parser_quirks: bool,
+
     /// Compiler options
     pub compiler_options: Option<vize_atelier_dom::DomCompilerOptions>,
 }

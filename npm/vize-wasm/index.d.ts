@@ -26,6 +26,10 @@ export interface CompilerOptions {
   outputMode?: "vdom" | "vapor";
   /** Whether the template contains TypeScript */
   isTs?: boolean;
+  /** Whether the template targets a custom renderer instead of the DOM. */
+  customRenderer?: boolean;
+  /** Enable Vue parser quirk compatibility for known edge cases. */
+  vueParserQuirks?: boolean;
 }
 
 /** Result of template compilation */

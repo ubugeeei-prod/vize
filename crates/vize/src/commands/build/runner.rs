@@ -91,6 +91,7 @@ pub(crate) fn run(args: BuildArgs) {
                 args.ssr,
                 args.vapor,
                 args.custom_renderer,
+                args.vue_parser_quirks,
                 args.script_ext,
                 &stats,
                 args.profile,
@@ -541,6 +542,7 @@ fn compile_file_with_profile(
     ssr: bool,
     vapor: bool,
     custom_renderer: bool,
+    vue_parser_quirks: bool,
     script_ext: ScriptExtension,
     stats: &CompileStats,
     record_profile_totals: bool,
@@ -638,6 +640,7 @@ fn compile_file_with_profile(
             ssr,
             is_ts,
             custom_renderer,
+            vue_parser_quirks,
             ..Default::default()
         },
         style: StyleCompileOptions {

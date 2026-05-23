@@ -92,6 +92,7 @@ pub fn compile_template_with_options<'a>(
         is_ts: options.is_ts,
         inline: options.inline,
         custom_renderer: options.custom_renderer,
+        vue_parser_quirks: options.vue_parser_quirks,
         binding_metadata: options.binding_metadata.clone(),
         ..Default::default()
     };
@@ -199,6 +200,23 @@ mod tests {
         assert!(errors.is_empty());
         // Empty div generates minimal code
         assert!(!result.code.is_empty());
+    }
+
+    #[test]
+    fn test_compile_v_for_vue_parser_quirks_accepts_unmatched_alias_paren() {
+        let allocator = Bump::new();
+        let opts = DomCompilerOptions {
+            vue_parser_quirks: true,
+            ..Default::default()
+        };
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            r#"<div v-for="item) in items">{{ item }}</div>"#,
+            opts,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        assert!(result.code.contains("_renderList(items, (item) =>"));
     }
 
     #[test]

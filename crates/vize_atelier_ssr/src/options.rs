@@ -33,6 +33,10 @@ pub struct SsrCompilerOptions {
     #[serde(default)]
     pub custom_renderer: bool,
 
+    /// Enable Vue parser quirk compatibility for known edge cases.
+    #[serde(default)]
+    pub vue_parser_quirks: bool,
+
     /// CSS variables to inject (from SFC <style> blocks with v-bind)
     #[serde(default)]
     pub ssr_css_vars: Option<String>,
@@ -55,6 +59,7 @@ impl Clone for SsrCompilerOptions {
             inline: self.inline,
             is_ts: self.is_ts,
             custom_renderer: self.custom_renderer,
+            vue_parser_quirks: self.vue_parser_quirks,
             ssr_css_vars: self.ssr_css_vars.clone(),
             binding_metadata: self.binding_metadata.clone(),
             // Croquis is consumed by the compiler; clones intentionally drop it.
@@ -75,6 +80,7 @@ mod tests {
         assert!(opts.component_name.is_none());
         assert!(!opts.inline);
         assert!(!opts.is_ts);
+        assert!(!opts.vue_parser_quirks);
         assert!(opts.ssr_css_vars.is_none());
         assert!(opts.binding_metadata.is_none());
         assert!(opts.croquis.is_none());

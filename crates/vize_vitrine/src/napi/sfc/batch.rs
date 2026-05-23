@@ -86,6 +86,7 @@ pub fn compile_sfc_batch(
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
+    let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
     let start = Instant::now();
     let stats = files
         .par_iter()
@@ -120,6 +121,7 @@ pub fn compile_sfc_batch(
                     scoped: has_scoped,
                     ssr,
                     is_ts,
+                    vue_parser_quirks,
                     ..Default::default()
                 },
                 style: StyleCompileOptions {
