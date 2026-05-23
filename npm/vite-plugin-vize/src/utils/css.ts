@@ -1,4 +1,8 @@
-import { resolveViteCssImports, scopeViteCssForPipeline } from "@vizejs/native";
+import {
+  resolveViteCssImports,
+  scopeViteCssForPipeline,
+  transformViteCssVarsForPipeline,
+} from "@vizejs/native";
 
 export interface CssAliasRule {
   find: string | RegExp;
@@ -14,6 +18,10 @@ export interface NativeCssAliasRule {
 
 export function scopeCssForPipeline(css: string, scopeId: string): string {
   return scopeViteCssForPipeline(css, scopeId);
+}
+
+export function transformCssVarsForPipeline(css: string, scopeId: string): string {
+  return transformViteCssVarsForPipeline(css, scopeId);
 }
 
 /**

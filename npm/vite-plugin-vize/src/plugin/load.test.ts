@@ -532,7 +532,7 @@ export default _sfc_main`,
         hasScoped: true,
         styles: [
           {
-            content: ".root { @apply text-fg; }",
+            content: `.root { @apply text-fg; height: v-bind("height + 'px'"); }`,
             lang: "css",
             scoped: true,
             module: false,
@@ -572,10 +572,15 @@ assert.ok(
   applyCssVirtualLoad && typeof applyCssVirtualLoad === "object",
   "Delegated @apply CSS should load as a virtual style module",
 );
-assert.match(
+assert.equal(
   applyCssVirtualLoad.code,
-  /\.root\[data-v-applycss\] \{ @apply text-fg; \}/,
-  "Delegated @apply CSS should keep @apply while applying the scoped selector",
+  String.raw`.root[data-v-applycss] { @apply text-fg; height: var(--applycss-height\ \+\ \'px\'); }`,
+  "Delegated @apply CSS should keep @apply while applying scoped selector and CSS vars",
+);
+assert.doesNotMatch(
+  applyCssVirtualLoad.code,
+  /v-bind\(/,
+  "Delegated style CSS should not leak v-bind() to Vite",
 );
 
 const onDemandProdDir = createTempRoot("load");

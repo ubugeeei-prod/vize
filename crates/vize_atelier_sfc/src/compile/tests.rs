@@ -81,6 +81,51 @@ const items = [{ name: 'dist', children: [{ name: 'file.js', children: [] }] }]
 }
 
 #[test]
+fn test_script_setup_css_v_bind_uses_scoped_vars() {
+    let source = r#"<script setup>
+const height = 12
+const color = 'tomato'
+</script>
+
+<template>
+  <div class="box">Box</div>
+</template>
+
+<style scoped>
+.box {
+  height: v-bind("height + 'px'");
+  color: v-bind(color);
+}
+</style>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions {
+        scope_id: Some("test".into()),
+        ..Default::default()
+    };
+    opts.script.id = Some("src/Box.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result.css.as_deref().is_some_and(|css| {
+            css.contains(r#"height: var(--test-height\ \+\ \'px\')"#)
+                && css.contains("color: var(--test-color)")
+                && !css.contains("v-bind(")
+        }),
+        "CSS v-bind should compile to scoped custom properties:\n{:?}",
+        result.css
+    );
+    assert!(
+        result
+            .code
+            .contains(r#""test-height\ \+\ \'px\'": (_unref(height + 'px'))"#)
+            && result.code.contains(r#""test-color": (_unref(color))"#),
+        "useCssVars keys should match compiled CSS vars:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_script_setup_define_page_is_compile_time_only() {
     let source = r#"<script setup lang="ts">
 definePage({

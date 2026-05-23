@@ -209,6 +209,8 @@ export declare function rewriteViteStaticAssetUrls(
 
 export declare function scopeViteCssForPipeline(css: string, scopeId: string): string;
 
+export declare function transformViteCssVarsForPipeline(css: string, scopeId: string): string;
+
 export declare function shouldApplyViteDefineInVirtualModule(key: string): boolean;
 
 export declare function splitViteIdQuery(id: string): ViteIdPartsNapi;

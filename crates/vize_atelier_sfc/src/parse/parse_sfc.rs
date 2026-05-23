@@ -181,6 +181,16 @@ pub fn parse_sfc<'a>(
                         None
                     };
 
+                    for css_var in crate::style::extract_css_vars(&content) {
+                        if !descriptor
+                            .css_vars
+                            .iter()
+                            .any(|existing| existing.as_ref() == css_var.as_str())
+                        {
+                            descriptor.css_vars.push(Cow::Owned(css_var.into()));
+                        }
+                    }
+
                     descriptor.styles.push(SfcStyleBlock {
                         content,
                         loc,

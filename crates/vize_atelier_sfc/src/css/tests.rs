@@ -149,6 +149,23 @@ fn test_v_bind_extraction() {
 }
 
 #[test]
+fn test_v_bind_extraction_with_scope_id() {
+    let result = compile_css(
+        ".foo { height: v-bind(\"height + 'px'\"); color: v-bind(color); }",
+        &CssCompileOptions {
+            scope_id: Some("data-v-test".to_compact_string()),
+            ..Default::default()
+        },
+    );
+
+    assert!(result.errors.is_empty());
+    assert!(!result.code.contains("v-bind("));
+    assert!(result.code.contains(r#"var(--test-height\ \+\ \'px\')"#));
+    assert!(result.code.contains("var(--test-color)"));
+    assert_eq!(result.css_vars, vec!["height + 'px'", "color"]);
+}
+
+#[test]
 fn test_scope_deep() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);

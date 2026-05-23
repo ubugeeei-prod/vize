@@ -86,10 +86,9 @@ pub(super) fn emit_setup_body(
     if has_css_vars {
         output.extend_from_slice(b"_useCssVars((_ctx) => ({\n");
         for (i, var_expr) in css_vars.iter().enumerate() {
+            let var_name = crate::css::scoped_v_bind_name(scope_id, var_expr);
             output.extend_from_slice(b"  \"");
-            output.extend_from_slice(scope_id.as_bytes());
-            output.extend_from_slice(b"-");
-            output.extend_from_slice(var_expr.as_bytes());
+            output.extend_from_slice(var_name.as_bytes());
             output.extend_from_slice(b"\": (_unref(");
             output.extend_from_slice(var_expr.as_bytes());
             output.extend_from_slice(b"))");

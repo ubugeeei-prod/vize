@@ -26,7 +26,15 @@ use vize_carton::Bump;
 use crate::types::SfcStyleBlock;
 
 use self::scoped::apply_scoped_css;
-use self::transform::extract_and_transform_v_bind;
+use self::transform::extract_and_transform_v_bind_with_scope;
+pub(crate) use self::transform::scoped_v_bind_name;
+pub(crate) use self::transform::trim_outer_quotes;
+
+pub(crate) fn transform_css_v_bind(css: &str, scope_id: Option<&str>) -> (String, Vec<String>) {
+    let bump = Bump::new();
+    let (code, css_vars) = extract_and_transform_v_bind_with_scope(&bump, css, scope_id);
+    (String::from(code), css_vars)
+}
 
 /// CSS compilation options
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -212,7 +220,8 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
     let filename = options.filename.as_deref().unwrap_or("style.css");
 
     // Extract v-bind() expressions before parsing
-    let (processed_css, css_vars) = extract_and_transform_v_bind(&bump, css);
+    let (processed_css, css_vars) =
+        extract_and_transform_v_bind_with_scope(&bump, css, options.scope_id.as_deref());
 
     // Apply scoped transformation if needed
     let scoped_css = if options.scoped {
@@ -258,7 +267,8 @@ pub fn compile_css(css: &str, options: &CssCompileOptions) -> CssCompileResult {
     let bump = Bump::new();
 
     // Extract v-bind() expressions before parsing
-    let (processed_css, css_vars) = extract_and_transform_v_bind(&bump, css);
+    let (processed_css, css_vars) =
+        extract_and_transform_v_bind_with_scope(&bump, css, options.scope_id.as_deref());
 
     // Apply scoped transformation if needed
     let scoped_css = if options.scoped {

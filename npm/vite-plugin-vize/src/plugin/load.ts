@@ -13,7 +13,11 @@ import {
 } from "./state.ts";
 import { compileFile } from "../compiler.ts";
 import { generateOutput, hasDelegatedStyles } from "../utils/index.ts";
-import { resolveCssImports, scopeCssForPipeline } from "../utils/css.ts";
+import {
+  resolveCssImports,
+  scopeCssForPipeline,
+  transformCssVarsForPipeline,
+} from "../utils/css.ts";
 import {
   LEGACY_VIZE_PREFIX,
   RESOLVED_CSS_MODULE,
@@ -182,6 +186,8 @@ export function loadHook(
         const hoistedContent = hoisted.length > 0 ? hoisted.join("\n") + "\n\n" : "";
         styleContent = `${hoistedContent}[${scoped}] {\n${bodyContent}\n}`;
       }
+
+      styleContent = transformCssVarsForPipeline(styleContent, fallbackCompiled.scopeId);
 
       return {
         code: styleContent,

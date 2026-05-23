@@ -9,7 +9,7 @@ pub fn compile_style(
     style: &SfcStyleBlock,
     options: &StyleCompileOptions,
 ) -> Result<String, SfcError> {
-    let mut output: String = style.content.to_compact_string();
+    let (mut output, _) = crate::css::transform_css_v_bind(&style.content, Some(&options.id));
 
     // Apply scoped transformation if needed
     if style.scoped || options.scoped {
@@ -357,7 +357,7 @@ pub fn extract_css_vars(css: &str) -> Vec<String> {
         if let Some(end) = css[start..].find(')') {
             let expr = css[start..start + end].trim();
             // Remove quotes if present
-            let expr = expr.trim_matches(|c| c == '"' || c == '\'');
+            let expr = crate::css::trim_outer_quotes(expr);
             vars.push(expr.to_compact_string());
             search_from = start + end + 1;
         } else {

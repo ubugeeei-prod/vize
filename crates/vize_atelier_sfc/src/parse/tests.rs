@@ -45,6 +45,20 @@ fn test_parse_multiple_styles() {
 }
 
 #[test]
+fn test_parse_css_vars_from_styles() {
+    let source = r#"
+<style>
+.a { color: v-bind(color); }
+.b { height: v-bind("height + 'px'"); }
+.c { background: v-bind(color); }
+</style>
+"#;
+    let result = parse_sfc(source, Default::default()).unwrap();
+
+    assert_eq!(result.css_vars, vec!["color", "height + 'px'"]);
+}
+
+#[test]
 fn test_parse_custom_block() {
     let source = r#"
 <template><div></div></template>

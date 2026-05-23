@@ -7,9 +7,19 @@
 use vize_carton::{Bump, BumpVec, String, ToCompactString};
 
 /// Extract v-bind() expressions and transform them to CSS variables
+#[cfg(test)]
 pub(crate) fn extract_and_transform_v_bind<'a>(
     bump: &'a Bump,
     css: &str,
+) -> (&'a str, Vec<String>) {
+    extract_and_transform_v_bind_with_scope(bump, css, None)
+}
+
+/// Extract v-bind() expressions and transform them using a Vue SFC scope id.
+pub(crate) fn extract_and_transform_v_bind_with_scope<'a>(
+    bump: &'a Bump,
+    css: &str,
+    scope_id: Option<&str>,
 ) -> (&'a str, Vec<String>) {
     let css_bytes = css.as_bytes();
     let mut vars = Vec::new();
@@ -31,12 +41,16 @@ pub(crate) fn extract_and_transform_v_bind<'a>(
                     result.extend_from_slice(&css_bytes[actual_pos..pos]);
                     continue;
                 };
-                let expr_str = expr_str.trim_matches(|c| c == '"' || c == '\'');
+                let expr_str = trim_outer_quotes(expr_str);
                 vars.push(expr_str.to_compact_string());
 
-                // Generate hash and write var(--hash-expr)
+                // Generate CSS custom property reference.
                 result.extend_from_slice(b"var(--");
-                write_v_bind_hash(&mut result, expr_str);
+                if let Some(scope_id) = scope_id {
+                    result.extend_from_slice(scoped_v_bind_name(scope_id, expr_str).as_bytes());
+                } else {
+                    write_v_bind_hash(&mut result, expr_str);
+                }
                 result.push(b')');
 
                 pos = start + end + 1;
@@ -58,6 +72,39 @@ pub(crate) fn extract_and_transform_v_bind<'a>(
     // validation pass on this hot CSS transform path.
     let result_str = unsafe { std::str::from_utf8_unchecked(bump.alloc_slice_copy(&result)) };
     (result_str, vars)
+}
+
+pub(crate) fn trim_outer_quotes(expr: &str) -> &str {
+    let bytes = expr.as_bytes();
+    if bytes.len() >= 2
+        && matches!(bytes.first(), Some(b'"' | b'\''))
+        && bytes.first() == bytes.last()
+    {
+        &expr[1..expr.len() - 1]
+    } else {
+        expr
+    }
+}
+
+/// Generate the Vue-compatible CSS variable name for a scoped SFC v-bind().
+pub(crate) fn scoped_v_bind_name(scope_id: &str, expr: &str) -> String {
+    let scope_id = scope_id.strip_prefix("data-v-").unwrap_or(scope_id);
+    let mut result = String::with_capacity(scope_id.len() + expr.len() + 1);
+    result.push_str(scope_id);
+    result.push('-');
+    write_escaped_css_var_suffix(&mut result, expr);
+    result
+}
+
+fn write_escaped_css_var_suffix(out: &mut String, expr: &str) {
+    for c in expr.chars() {
+        if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
+            out.push(c);
+        } else {
+            out.push('\\');
+            out.push(c);
+        }
+    }
 }
 
 /// Write v-bind variable hash to output

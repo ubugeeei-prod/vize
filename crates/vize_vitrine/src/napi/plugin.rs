@@ -34,6 +34,11 @@ pub fn scope_vite_css_for_pipeline(css: String, scope_id: String) -> String {
     vize_atelier_sfc::vite_plugin::scope_css_for_pipeline(&css, &scope_id).into()
 }
 
+#[napi(js_name = "transformViteCssVarsForPipeline")]
+pub fn transform_vite_css_vars_for_pipeline(css: String, scope_id: String) -> String {
+    vize_atelier_sfc::vite_plugin::transform_css_vars_for_pipeline(&css, &scope_id).into()
+}
+
 #[napi(js_name = "resolveViteCssImports")]
 pub fn resolve_vite_css_imports(
     css: String,
