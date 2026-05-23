@@ -345,7 +345,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 .filter(|(name, binding_type)| {
                     summary.reactivity.needs_value_access(name.as_str())
                         || matches!(binding_type, BindingType::SetupMaybeRef)
-                            && is_use_template_ref_binding(summary, script_content, name.as_str())
+                            && is_local_setup_binding(summary, name.as_str())
                 })
                 .map(|(name, _)| name.as_str())
                 .collect();
@@ -369,7 +369,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             if !ref_bindings.is_empty() {
                 ts.push_str("    // Auto-unwrap Vue refs in template scope\n");
                 ts.push_str(
-                    "    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;\n",
+                    "    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;\n",
                 );
                 for name in &ref_bindings {
                     append!(ts, "    var {name}: __U<__R_{name}> = undefined as any;\n");
@@ -685,33 +685,13 @@ fn extract_import_names(import_text: &str) -> Vec<&str> {
     names
 }
 
-fn is_use_template_ref_binding(
-    summary: &Croquis,
-    script_content: Option<&str>,
-    name: &str,
-) -> bool {
-    let Some(script) = script_content else {
-        return false;
-    };
+fn is_local_setup_binding(summary: &Croquis, name: &str) -> bool {
     let Some(&(start, end)) = summary.binding_spans.get(name) else {
-        return false;
+        return true;
     };
 
-    if summary
+    !summary
         .import_statements
         .iter()
         .any(|import| start >= import.start && end <= import.end)
-    {
-        return false;
-    }
-
-    let tail_end = (end as usize + 256).min(script.len());
-    let Some(tail) = script.get(end as usize..tail_end) else {
-        return false;
-    };
-    let Some(eq_pos) = tail.find('=') else {
-        return false;
-    };
-    let rhs = tail[eq_pos + 1..].trim_start();
-    rhs.starts_with("useTemplateRef") || rhs.starts_with("(useTemplateRef")
 }
