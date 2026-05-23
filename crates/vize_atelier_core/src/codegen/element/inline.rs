@@ -20,7 +20,7 @@ use super::{
         },
         props::generate_props,
         slots::{
-            generate_slot_outlet_name, generate_slot_outlet_props_entries, generate_slots,
+            generate_slot_outlet_name, generate_slot_outlet_props, generate_slots,
             has_dynamic_slots_flag, has_slot_children, has_slot_outlet_props,
         },
     },
@@ -381,9 +381,8 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 if !has_slot_props {
                     ctx.push(", {}");
                 } else {
-                    ctx.push(", {");
-                    generate_slot_outlet_props_entries(ctx, el);
-                    ctx.push("}");
+                    ctx.push(", ");
+                    generate_slot_outlet_props(ctx, el);
                 }
                 ctx.push(", () => [");
                 ctx.skip_scope_id = prev_skip_scope_id;
@@ -404,10 +403,9 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.newline();
                 ctx.push("])");
             } else if has_slot_props {
-                ctx.push(", {");
-                generate_slot_outlet_props_entries(ctx, el);
+                ctx.push(", ");
+                generate_slot_outlet_props(ctx, el);
                 ctx.skip_scope_id = prev_skip_scope_id;
-                ctx.push("}");
                 ctx.push(")");
             } else {
                 ctx.skip_scope_id = prev_skip_scope_id;

@@ -9,7 +9,10 @@ use super::context::CodegenContext;
 use super::expression::generate_expression;
 use super::helpers::{escape_js_string, is_valid_js_identifier};
 use super::node::generate_node;
-use super::props::{generate_directive_prop_with_static, is_supported_directive};
+use super::props::{
+    generate_directive_prop_with_static, generate_vbind_object_exp, generate_von_object_exp,
+    is_supported_directive,
+};
 use vize_carton::String;
 use vize_carton::ToCompactString;
 
@@ -106,6 +109,58 @@ fn is_slot_name_prop(prop: &PropNode<'_>) -> bool {
     }
 }
 
+fn is_slot_outlet_object_spread(prop: &PropNode<'_>) -> bool {
+    matches!(
+        prop,
+        PropNode::Directive(dir)
+            if (dir.name.as_str() == "bind" || dir.name.as_str() == "on")
+                && dir.arg.is_none()
+                && dir.exp.is_some()
+    )
+}
+
+fn slot_outlet_prop_generates_output(prop: &PropNode<'_>) -> bool {
+    if is_slot_name_prop(prop) {
+        return false;
+    }
+
+    match prop {
+        PropNode::Attribute(_) => true,
+        PropNode::Directive(dir) => {
+            if (dir.name.as_str() == "bind" || dir.name.as_str() == "on") && dir.arg.is_none() {
+                return dir.exp.is_some();
+            }
+            is_supported_directive(dir)
+        }
+    }
+}
+
+fn has_slot_outlet_vbind_object(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(dir)
+                if dir.name.as_str() == "bind" && dir.arg.is_none() && dir.exp.is_some()
+        )
+    })
+}
+
+fn has_slot_outlet_von_object(el: &ElementNode<'_>) -> bool {
+    el.props.iter().any(|prop| {
+        matches!(
+            prop,
+            PropNode::Directive(dir)
+                if dir.name.as_str() == "on" && dir.arg.is_none() && dir.exp.is_some()
+        )
+    })
+}
+
+fn has_slot_outlet_entry_props(el: &ElementNode<'_>) -> bool {
+    el.props
+        .iter()
+        .any(|prop| !is_slot_outlet_object_spread(prop) && slot_outlet_prop_generates_output(prop))
+}
+
 pub(crate) fn get_slot_outlet_name<'a>(el: &'a ElementNode<'a>) -> SlotOutletName<'a> {
     for prop in &el.props {
         match prop {
@@ -141,7 +196,7 @@ pub(crate) fn generate_slot_outlet_name(ctx: &mut CodegenContext, el: &ElementNo
 }
 
 pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
-    el.props.iter().any(|prop| !is_slot_name_prop(prop))
+    el.props.iter().any(slot_outlet_prop_generates_output)
 }
 
 pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
@@ -228,7 +283,8 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
             }
             PropNode::Directive(dir) => {
                 if !is_supported_directive(dir)
-                    || (dir.name.as_str() == "bind" && dir.arg.is_none())
+                    || (dir.arg.is_none()
+                        && (dir.name.as_str() == "bind" || dir.name.as_str() == "on"))
                 {
                     continue;
                 }
@@ -241,6 +297,107 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
             }
         }
     }
+}
+
+pub(crate) fn generate_slot_outlet_props(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    generate_slot_outlet_props_inner(ctx, el, None);
+}
+
+pub(crate) fn generate_slot_outlet_props_with_key(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+    generate_key: &dyn Fn(&mut CodegenContext),
+) {
+    generate_slot_outlet_props_inner(ctx, el, Some(generate_key));
+}
+
+fn generate_slot_outlet_props_inner(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+    generate_key: Option<&dyn Fn(&mut CodegenContext)>,
+) {
+    let has_vbind_object = has_slot_outlet_vbind_object(el);
+    let has_von_object = has_slot_outlet_von_object(el);
+    let has_entries = has_slot_outlet_entry_props(el);
+    let has_key = generate_key.is_some();
+
+    if has_vbind_object || has_von_object {
+        let needs_merge = has_key || has_entries || (has_vbind_object && has_von_object);
+
+        if needs_merge {
+            ctx.use_helper(RuntimeHelper::MergeProps);
+            ctx.push(ctx.helper(RuntimeHelper::MergeProps));
+            ctx.push("(");
+            let mut first = true;
+
+            if has_vbind_object {
+                generate_vbind_object_exp(ctx, &el.props);
+                first = false;
+            }
+
+            if has_von_object {
+                if !first {
+                    ctx.push(", ");
+                }
+                generate_von_object_exp(ctx, &el.props);
+                first = false;
+            }
+
+            if has_key || has_entries {
+                if !first {
+                    ctx.push(", ");
+                }
+                generate_slot_outlet_props_object(ctx, el, generate_key, has_entries);
+            }
+
+            ctx.push(")");
+        } else if has_vbind_object {
+            ctx.use_helper(RuntimeHelper::NormalizeProps);
+            ctx.use_helper(RuntimeHelper::GuardReactiveProps);
+            ctx.push(ctx.helper(RuntimeHelper::NormalizeProps));
+            ctx.push("(");
+            ctx.push(ctx.helper(RuntimeHelper::GuardReactiveProps));
+            ctx.push("(");
+            generate_vbind_object_exp(ctx, &el.props);
+            ctx.push("))");
+        } else {
+            generate_von_object_exp(ctx, &el.props);
+        }
+        return;
+    }
+
+    generate_slot_outlet_props_object(ctx, el, generate_key, has_entries);
+}
+
+fn generate_slot_outlet_props_object(
+    ctx: &mut CodegenContext,
+    el: &ElementNode<'_>,
+    generate_key: Option<&dyn Fn(&mut CodegenContext)>,
+    has_entries: bool,
+) {
+    ctx.push("{");
+    let mut needs_separator = false;
+
+    if let Some(generate_key) = generate_key {
+        ctx.push(" key: ");
+        generate_key(ctx);
+        needs_separator = true;
+    }
+
+    if has_entries {
+        if needs_separator {
+            ctx.push(", ");
+        } else {
+            ctx.push(" ");
+        }
+        generate_slot_outlet_props_entries(ctx, el);
+        needs_separator = true;
+    }
+
+    if needs_separator {
+        ctx.push(" ");
+    }
+    ctx.push("}");
 }
 
 /// Check if component has slot children that need to be generated as slots object

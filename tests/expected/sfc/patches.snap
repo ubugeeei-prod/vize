@@ -1735,7 +1735,7 @@ export default {
 const showing = ref(false)
 
 return (_ctx, _cache) => {
-  return (_openBlock(), _createElementBlock("div", null, [ (showing.value) ? _renderSlot(_ctx.$slots, "default", { key: 0}) : _renderSlot(_ctx.$slots, "fallback", { key: 1}) ]))
+  return (_openBlock(), _createElementBlock("div", null, [ (showing.value) ? _renderSlot(_ctx.$slots, "default", { key: 0 }) : _renderSlot(_ctx.$slots, "fallback", { key: 1 }) ]))
 }
 }
 
@@ -1774,7 +1774,7 @@ const tabs = [
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock("div", null, [ (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(tabs, (tab) => {
         return (_openBlock(), _createElementBlock(_Fragment, { key: tab.key }, [
-          _renderSlot(_ctx.$slots, tab.key, {tab: tab})
+          _renderSlot(_ctx.$slots, tab.key, { tab: tab })
         ], 64 /* STABLE_FRAGMENT */))
       }), 128 /* KEYED_FRAGMENT */)) ]))
 }

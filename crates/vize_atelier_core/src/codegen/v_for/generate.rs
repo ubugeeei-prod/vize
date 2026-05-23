@@ -9,7 +9,7 @@ use crate::{
 };
 
 use super::super::{
-    children::{generate_children, generate_children_force_array},
+    children::{generate_children, generate_children_force_array, is_directive_comment},
     context::CodegenContext,
     element::helpers::{is_dynamic_component, is_is_prop},
     element::{
@@ -22,7 +22,10 @@ use super::super::{
     patch_flag::{
         calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
     },
-    slots::{generate_slots, has_slot_children},
+    slots::{
+        generate_slot_outlet_name, generate_slot_outlet_props, generate_slots, has_slot_children,
+        has_slot_outlet_props,
+    },
 };
 use super::helpers::{get_element_key, has_other_props, should_skip_prop};
 use vize_carton::ToCompactString;
@@ -81,7 +84,9 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
                 ctx.skip_scope_id = true;
             }
 
-            if is_stable {
+            if el.tag_type == ElementType::Slot {
+                generate_for_slot_outlet(ctx, el);
+            } else if is_stable {
                 if gen_is_template {
                     ctx.use_helper(RuntimeHelper::OpenBlock);
                     ctx.use_helper(RuntimeHelper::CreateElementBlock);
@@ -384,6 +389,47 @@ fn unwrap_template_single_element<'a>(el: &'a ElementNode<'a>) -> Option<&'a Ele
         Some(child_el)
     } else {
         None
+    }
+}
+
+fn generate_for_slot_outlet(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
+    ctx.use_helper(RuntimeHelper::RenderSlot);
+    ctx.push(ctx.helper(RuntimeHelper::RenderSlot));
+    ctx.push("(_ctx.$slots, ");
+    generate_slot_outlet_name(ctx, el);
+
+    let has_slot_props = has_slot_outlet_props(el);
+    let filtered: Vec<_> = el
+        .children
+        .iter()
+        .filter(|c| !is_directive_comment(c))
+        .collect();
+
+    if !filtered.is_empty() {
+        if has_slot_props {
+            ctx.push(", ");
+            generate_slot_outlet_props(ctx, el);
+        } else {
+            ctx.push(", {}");
+        }
+        ctx.push(", () => [");
+        ctx.indent();
+        for (i, child) in filtered.iter().enumerate() {
+            if i > 0 {
+                ctx.push(",");
+            }
+            ctx.newline();
+            generate_node(ctx, child);
+        }
+        ctx.deindent();
+        ctx.newline();
+        ctx.push("])");
+    } else if has_slot_props {
+        ctx.push(", ");
+        generate_slot_outlet_props(ctx, el);
+        ctx.push(")");
+    } else {
+        ctx.push(")");
     }
 }
 

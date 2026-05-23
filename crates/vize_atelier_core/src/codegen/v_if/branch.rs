@@ -25,8 +25,8 @@ use super::{
             calculate_element_patch_info, calculate_element_patch_info_skip_is, patch_flag_name,
         },
         slots::{
-            generate_slot_outlet_name, generate_slot_outlet_props_entries, generate_slots,
-            has_dynamic_slots_flag, has_slot_children, has_slot_outlet_props,
+            generate_slot_outlet_name, generate_slot_outlet_props_with_key, generate_slots,
+            has_dynamic_slots_flag, has_slot_children,
         },
     },
     generate::{
@@ -112,13 +112,9 @@ fn generate_if_branch_slot(
     ctx.push(ctx.helper(RuntimeHelper::RenderSlot));
     ctx.push("(_ctx.$slots, ");
     generate_slot_outlet_name(ctx, el);
-    ctx.push(", { key: ");
-    generate_if_branch_key(ctx, branch, branch_index);
-    if has_slot_outlet_props(el) {
-        ctx.push(", ");
-        generate_slot_outlet_props_entries(ctx, el);
-    }
-    ctx.push("}");
+    ctx.push(", ");
+    let generate_key = |ctx: &mut CodegenContext| generate_if_branch_key(ctx, branch, branch_index);
+    generate_slot_outlet_props_with_key(ctx, el, &generate_key);
 
     if !el.children.is_empty() {
         ctx.push(", () => [");

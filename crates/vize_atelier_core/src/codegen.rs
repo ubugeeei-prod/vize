@@ -328,6 +328,54 @@ mod tests {
     }
 
     #[test]
+    fn test_codegen_conditional_slot_outlet_with_bound_props_uses_render_slot() {
+        let result = compile!(r#"<slot v-if="show" name="updater" v-bind="{ number, update }" />"#);
+        let output = result_output(&result);
+
+        assert!(
+            output.contains(r#"_renderSlot(_ctx.$slots, "updater""#),
+            "conditional slot outlet should use renderSlot. Got:\n{}",
+            output
+        );
+        assert!(
+            output.contains(r#"_mergeProps({ number, update }, { key: 0 })"#),
+            "v-bind object props should be merged with the branch key. Got:\n{}",
+            output
+        );
+        assert!(
+            !output.contains(r#"_createElementBlock("slot""#)
+                && !output.contains(r#"_createElementVNode("slot""#),
+            "slot outlets should not be emitted as literal slot elements. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_codegen_v_for_slot_outlet_with_bound_props_uses_render_slot() {
+        let result = compile!(
+            r#"<slot v-for="(item, index) of items" v-bind="{ key: item.id }" :item="item" :index="index" />"#
+        );
+        let output = result_output(&result);
+
+        assert!(
+            output.contains(r#"_renderSlot(_ctx.$slots, "default""#),
+            "v-for slot outlet should use renderSlot. Got:\n{}",
+            output
+        );
+        assert!(
+            output.contains(r#"_mergeProps({ key: item.id }, { item: item, index: index })"#),
+            "slot v-bind object props should be preserved with explicit props. Got:\n{}",
+            output
+        );
+        assert!(
+            !output.contains(r#"_createElementBlock("slot""#)
+                && !output.contains(r#"_createElementVNode("slot""#),
+            "slot outlets should not be emitted as literal slot elements. Got:\n{}",
+            output
+        );
+    }
+
+    #[test]
     fn test_codegen_conditional_slot_with_else_does_not_append_undefined() {
         let result = compile!(
             r#"<MyDialog>
