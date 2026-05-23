@@ -9,7 +9,7 @@ use tower_lsp::lsp_types::{
     InlayHintLabel, Position, Range, Url,
 };
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::{FxHashMap, String};
+use vize_carton::{FxHashMap, String, cstr};
 
 use super::context::string_literal_at_cursor;
 use crate::ide::{IdeContext, offset_to_position};
@@ -406,7 +406,7 @@ fn collect_missing_call_keys(
             diagnostics.push(super::warning_diagnostic(
                 offset_range(content, key_start, key_end),
                 "ecosystem/vue-i18n-no-missing-key",
-                format!("vue-i18n key `{key}` is missing from workspace locale messages"),
+                cstr!("vue-i18n key `{key}` is missing from workspace locale messages"),
             ));
         }
 

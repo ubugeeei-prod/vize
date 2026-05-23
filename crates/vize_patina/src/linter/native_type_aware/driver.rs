@@ -43,18 +43,17 @@ pub(super) fn lint_with_descriptor<'a>(
         )
     });
 
-    let mut result = if let (Some((root, offset)), Some(template)) =
+    let mut result = if let (Some((root, _)), Some(template)) =
         (template_ast.as_ref(), descriptor.template.as_ref())
     {
         profile!(
             "patina.type_aware.template_rules",
             linter.lint_sfc_template_root(
                 filename,
-                &template.content,
-                *offset,
+                template,
                 &allocator,
                 root,
-                Some(&descriptor),
+                Some(descriptor),
                 Some(&analysis),
             )
         )

@@ -60,6 +60,7 @@ fn parse_lint_preset(options: &JsValue) -> LintPreset {
             "opinionated" | "Opinionated" | "Opnionated" | "opnionated" => {
                 Some(LintPreset::Opinionated)
             }
+            "ecosystem" | "Ecosystem" | "eco" | "Eco" => Some(LintPreset::Ecosystem),
             "nuxt" | "Nuxt" => Some(LintPreset::Nuxt),
             _ => LintPreset::parse(value),
         })
@@ -73,6 +74,7 @@ const fn plugin_preset_name(preset: LintPreset) -> &'static str {
         LintPreset::Opinionated => "opinionated",
         LintPreset::Essential => "essential",
         LintPreset::Incremental => "incremental",
+        LintPreset::Ecosystem => "ecosystem",
         LintPreset::Nuxt => "nuxt",
     }
 }
@@ -86,6 +88,7 @@ fn plugin_preset_name_from_raw(preset: &'static str) -> &'static str {
         "happy-path" | "happy_path" | "happy" | "default" | "recommended" => "general-recommended",
         "essential" | "Essential" => "essential",
         "incremental" | "Incremental" => "incremental",
+        "ecosystem" | "Ecosystem" | "eco" | "Eco" => "ecosystem",
         "opinionated" | "Opinionated" | "strict" | "all" | "opnionated" => "opinionated",
         "nuxt" | "Nuxt" => "nuxt",
         _ => preset,
@@ -263,9 +266,11 @@ pub fn lint_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue>
 #[allow(clippy::disallowed_macros)]
 pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
     use vize_carton::FxHashSet;
-    use vize_patina::Linter;
-
-    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let template_rule_registries = [
+        RuleRegistry::with_preset(LintPreset::Opinionated),
+        RuleRegistry::with_preset(LintPreset::Ecosystem),
+        RuleRegistry::with_opt_in_rules(),
+    ];
     let happy_path_rules: FxHashSet<&'static str> =
         RuleRegistry::with_preset(LintPreset::HappyPath)
             .rules()
@@ -282,13 +287,27 @@ pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
         .iter()
         .map(|rule| rule.meta().name)
         .collect();
-
-    let rules: Vec<LintRuleWasm> = linter
+    let opinionated_rules: FxHashSet<&'static str> =
+        RuleRegistry::with_preset(LintPreset::Opinionated)
+            .rules()
+            .iter()
+            .map(|rule| rule.meta().name)
+            .collect();
+    let ecosystem_rules: FxHashSet<&'static str> = RuleRegistry::with_preset(LintPreset::Ecosystem)
         .rules()
         .iter()
-        .map(|r| {
-            let meta = r.meta();
-            let mut presets = Vec::with_capacity(4);
+        .map(|rule| rule.meta().name)
+        .collect();
+
+    let mut seen = FxHashSet::default();
+    let mut rules = Vec::new();
+    for registry in &template_rule_registries {
+        for rule in registry.rules() {
+            let meta = rule.meta();
+            if !seen.insert(meta.name) {
+                continue;
+            }
+            let mut presets = Vec::with_capacity(5);
             if essential_rules.contains(meta.name) {
                 presets.push(plugin_preset_name(LintPreset::Essential));
             }
@@ -298,36 +317,23 @@ pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
             if nuxt_rules.contains(meta.name) {
                 presets.push(plugin_preset_name(LintPreset::Nuxt));
             }
-            presets.push(plugin_preset_name(LintPreset::Opinionated));
+            if ecosystem_rules.contains(meta.name) {
+                presets.push(plugin_preset_name(LintPreset::Ecosystem));
+            }
+            if opinionated_rules.contains(meta.name) {
+                presets.push(plugin_preset_name(LintPreset::Opinionated));
+            }
 
-            LintRuleWasm {
+            rules.push(LintRuleWasm {
                 name: meta.name,
                 description: meta.description,
                 category: rule_category_name(meta.category),
                 fixable: meta.fixable,
                 default_severity: severity_name(meta.default_severity),
                 presets,
-            }
-        })
-        .collect();
-    let mut rules = rules;
-
-    rules.extend(
-        RuleRegistry::with_opt_in_rules()
-            .rules()
-            .iter()
-            .map(|rule| {
-                let meta = rule.meta();
-                LintRuleWasm {
-                    name: meta.name,
-                    description: meta.description,
-                    category: rule_category_name(meta.category),
-                    fixable: meta.fixable,
-                    default_severity: severity_name(meta.default_severity),
-                    presets: Vec::new(),
-                }
-            }),
-    );
+            });
+        }
+    }
 
     for script_rule in builtin_script_rules() {
         rules.push(LintRuleWasm {

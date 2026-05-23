@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use serde_json::Value;
 use tower_lsp::lsp_types::{CompletionItem, CompletionItemKind, Diagnostic, Position, Range, Url};
 use vize_atelier_sfc::SfcDescriptor;
-use vize_carton::{FxHashSet, String};
+use vize_carton::{FxHashSet, String, cstr};
 
 use super::context::{preceding_property_is_name, string_literal_at_cursor};
 use crate::ide::{IdeContext, offset_to_position};
@@ -326,12 +326,12 @@ fn route_param_detail(param: &RouteParam) -> std::string::String {
         (false, true) => "string[]",
         (false, false) => "string",
     };
-    format!("Vue Router file route param: {ty}")
+    cstr!("Vue Router file route param: {ty}").to_string()
 }
 
 fn unknown_param_message(name: &str, params: &[RouteParam]) -> std::string::String {
     if params.is_empty() {
-        return format!("Route param `{name}` is not defined by this page file");
+        return cstr!("Route param `{name}` is not defined by this page file").to_string();
     }
 
     let available = params
@@ -339,7 +339,8 @@ fn unknown_param_message(name: &str, params: &[RouteParam]) -> std::string::Stri
         .map(|param| param.name.as_str())
         .collect::<Vec<_>>()
         .join(", ");
-    format!("Route param `{name}` is not defined by this page file. Available params: {available}")
+    cstr!("Route param `{name}` is not defined by this page file. Available params: {available}")
+        .to_string()
 }
 
 fn is_route_name_context(content: &str, offset: usize) -> bool {

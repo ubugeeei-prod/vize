@@ -299,8 +299,7 @@ impl Linter {
     pub(crate) fn lint_sfc_template_root<'a>(
         &self,
         filename: &str,
-        template_content: &'a str,
-        template_offset: u32,
+        template: &'a vize_atelier_sfc::SfcTemplateBlock<'a>,
         allocator: &'a Allocator,
         root: &RootNode<'a>,
         descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
@@ -308,13 +307,13 @@ impl Linter {
     ) -> LintResult {
         let mut result = self.lint_template_root(
             allocator,
-            template_content,
+            &template.content,
             filename,
             root,
             descriptor,
             analysis,
         );
-        Self::offset_result(&mut result, template_offset);
+        Self::offset_result(&mut result, template.loc.start as u32);
         result
     }
 
@@ -349,8 +348,7 @@ impl Linter {
 
         self.lint_sfc_template_root(
             filename,
-            &template.content,
-            template.loc.start as u32,
+            template,
             &allocator,
             &root,
             Some(descriptor),

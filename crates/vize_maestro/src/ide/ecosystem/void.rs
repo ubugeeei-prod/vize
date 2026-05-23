@@ -4,7 +4,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{CompletionItem, CompletionItemKind};
-use vize_carton::{FxHashSet, String};
+use vize_carton::{FxHashSet, String, cstr};
 
 use super::context::{is_ident_byte, string_literal_at_cursor};
 use crate::ide::IdeContext;
@@ -207,7 +207,8 @@ fn route_from_page_file(root: &Path, path: &Path) -> Option<String> {
     if segments.is_empty() {
         Some(String::from("/"))
     } else {
-        Some(format!("/{}", segments.join("/")).into())
+        let path = segments.join("/");
+        Some(cstr!("/{path}"))
     }
 }
 
@@ -254,21 +255,21 @@ fn route_segment(segment: &str) -> Option<String> {
                 .and_then(|value| value.strip_suffix(']'))
         })
     {
-        return (!name.is_empty()).then(|| format!(":{name}*").into());
+        return (!name.is_empty()).then(|| cstr!(":{name}*"));
     }
 
     if let Some(name) = segment
         .strip_prefix("[[")
         .and_then(|value| value.strip_suffix("]]"))
     {
-        return (!name.is_empty()).then(|| format!(":{name}?").into());
+        return (!name.is_empty()).then(|| cstr!(":{name}?"));
     }
 
     if let Some(name) = segment
         .strip_prefix('[')
         .and_then(|value| value.strip_suffix(']'))
     {
-        return (!name.is_empty()).then(|| format!(":{name}").into());
+        return (!name.is_empty()).then(|| cstr!(":{name}"));
     }
 
     Some(String::from(segment))
