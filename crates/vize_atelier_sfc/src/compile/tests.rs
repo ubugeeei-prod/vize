@@ -781,6 +781,83 @@ const { items } = defineProps<{
 }
 
 #[test]
+fn test_compile_both_script_blocks_exposes_normal_script_bindings_to_template() {
+    let source = r#"<script lang="ts">
+import { ref } from "vue";
+
+const dragging = ref(false);
+let dropCallback = null;
+
+function resetDragging() {
+  dragging.value = false;
+}
+</script>
+
+<script setup lang="ts">
+const items = [{ id: "a" }];
+
+function start() {
+  dragging.value = true;
+  dropCallback = resetDragging;
+}
+</script>
+
+<template>
+  <div :class="{ dragging }">
+    <button v-for="item in items" :key="item.id" @click="start">{{ item.id }}</button>
+  </div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains("dragging.value"),
+        "template should read normal-script ref binding directly: {}",
+        result.code
+    );
+    assert!(
+        !result.code.contains("_ctx.dragging"),
+        "normal-script ref binding should not be emitted as instance context access: {}",
+        result.code
+    );
+
+    let bindings = result.bindings.expect("bindings should be available");
+    assert!(
+        matches!(
+            bindings.bindings.get("dragging"),
+            Some(BindingType::SetupRef)
+        ),
+        "dragging should be registered as a ref binding"
+    );
+    assert!(
+        matches!(
+            bindings.bindings.get("dropCallback"),
+            Some(BindingType::SetupLet)
+        ),
+        "dropCallback should be registered as a let binding"
+    );
+    assert!(
+        matches!(
+            bindings.bindings.get("resetDragging"),
+            Some(BindingType::SetupConst)
+        ),
+        "resetDragging should be registered as a normal-script function binding"
+    );
+}
+
+#[test]
 fn test_script_setup_typescript_downcompiles_to_javascript_by_default() {
     let source = r#"<script setup lang="ts">
 const props = withDefaults(defineProps<{

@@ -24,7 +24,9 @@ use crate::types::{
     BindingType, SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError, SfcMacroArtifact,
 };
 
-use self::bindings::{croquis_to_legacy_bindings, register_normal_script_bindings};
+use self::bindings::{
+    collect_normal_script_bindings, croquis_to_legacy_bindings, merge_normal_script_bindings,
+};
 use self::helpers::{
     demote_v_model_reactive_const_bindings, extract_component_name, generate_scope_id,
 };
@@ -491,16 +493,18 @@ pub fn compile_sfc(
     }
 
     // Register bindings from normal <script> block.
-    // When both <script> and <script setup> exist, all imports and exported
-    // variables from the normal script are accessible in the template.
+    // When both <script> and <script setup> exist, top-level imports and
+    // declarations from the normal script are accessible in the template.
     // This enables proper component resolution (e.g., `import { Form as PForm }`)
     // and identifier prefix resolution (avoiding incorrect `_ctx.` prefix).
     if has_script {
         let script = descriptor.script.as_ref().unwrap();
-        profile!(
+        let normal_script_bindings = profile!(
             "atelier.sfc.normal_script.register_bindings",
-            register_normal_script_bindings(&script.content, &mut script_bindings)
+            collect_normal_script_bindings(&script.content)
         );
+        merge_normal_script_bindings(&mut script_bindings, &normal_script_bindings);
+        merge_normal_script_bindings(&mut ctx.bindings, &normal_script_bindings);
     }
 
     if let Some(template) = &descriptor.template {

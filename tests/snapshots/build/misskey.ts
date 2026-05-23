@@ -157,5 +157,15 @@ describe(`${app.name} build (compiler)`, () => {
       ),
       "MkPagination.js should keep the appear binding on the upward load-more button",
     );
+
+    const draggable = readOutput("MkDraggable.js");
+    assert.ok(
+      !draggable.includes("_ctx.dragging"),
+      "MkDraggable.js should not read the normal <script> dragging ref from instance context",
+    );
+    assert.ok(
+      draggable.includes("dragging.value"),
+      "MkDraggable.js should read the normal <script> dragging ref as a setup/module binding",
+    );
   });
 });

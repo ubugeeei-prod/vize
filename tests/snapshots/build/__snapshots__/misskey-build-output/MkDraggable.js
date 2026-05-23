@@ -108,7 +108,7 @@ export default {
         leaveToClass: _ctx.$style.transition_items_leaveTo,
         moveClass: _ctx.$style.transition_items_move,
         class: _normalizeClass([_ctx.$style.items, {
-          [_ctx.$style.dragging]: _ctx.dragging,
+          [_ctx.$style.dragging]: dragging.value,
           [_ctx.$style.horizontal]: __props.direction === "horizontal",
           [_ctx.$style.vertical]: __props.direction === "vertical",
           [_ctx.$style.withGaps]: __props.withGaps,
