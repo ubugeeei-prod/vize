@@ -235,4 +235,7 @@ test("CI packages editor extension artifacts", () => {
   assert.match(buildTasks, /package:helix-extension[\s\S]*assert-helix-package\.mjs/);
   assert.match(buildTasks, /package:editor-extensions[\s\S]*package:helix-extension/);
   assert.match(testTasks, /test:helix-extension:package[\s\S]*package:helix-extension/);
+  assert.match(buildTasks, /package:emacs-extension[\s\S]*assert-emacs-package\.mjs/);
+  assert.match(buildTasks, /package:editor-extensions[\s\S]*package:emacs-extension/);
+  assert.match(testTasks, /test:emacs-extension:package[\s\S]*package:emacs-extension/);
 });

@@ -35,6 +35,7 @@ examples/*/.vite/
 .DS_Store
 *.tgz
 *.vsix
+emacs-vize-extension.tar.gz
 helix-vize-extension.tar.gz
 nvim-vize-extension.tar.gz
 vim-vize-extension.tar.gz

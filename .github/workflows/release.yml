@@ -147,6 +147,7 @@ jobs:
         with:
           name: editor-extensions
           path: |
+            emacs-vize-extension.tar.gz
             helix-vize-extension.tar.gz
             npm/vscode-vize/dist/vize.vsix
             nvim-vize-extension.tar.gz

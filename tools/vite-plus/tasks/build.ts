@@ -66,6 +66,9 @@ export const buildTasks = defineTasks({
   "package:helix-extension": noCacheTask(
     "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf helix-vize-extension.tar.gz -C npm helix-vize && node tools/helix-vize/assert-helix-package.mjs helix-vize-extension.tar.gz",
   ),
+  "package:emacs-extension": noCacheTask(
+    "COPYFILE_DISABLE=1 LC_ALL=C LANG=C tar -czf emacs-vize-extension.tar.gz -C npm emacs-vize && node tools/emacs-vize/assert-emacs-package.mjs emacs-vize-extension.tar.gz",
+  ),
   "package:editor-extensions": noCacheTask(
     `${runInVscodeExtension(
       "pnpm exec tsgo --noEmit",
@@ -76,7 +79,9 @@ export const buildTasks = defineTasks({
       "test:zed-extension:unit",
     )} && ${runTask("package:zed-extension")} && ${runTask(
       "package:nvim-extension",
-    )} && ${runTask("package:vim-extension")} && ${runTask("package:helix-extension")}`,
+    )} && ${runTask("package:vim-extension")} && ${runTask(
+      "package:helix-extension",
+    )} && ${runTask("package:emacs-extension")}`,
   ),
   "install:plugin": noCacheTask("vp install --filter './npm/vite-plugin-vize'"),
 });
