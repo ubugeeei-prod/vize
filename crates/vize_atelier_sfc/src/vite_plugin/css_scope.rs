@@ -6,7 +6,10 @@ pub(super) fn scope_css_for_pipeline(css: &str, scope_id: &str) -> String {
 }
 
 pub(super) fn unwrap_deep_selectors(css: &str) -> String {
-    unwrap_pseudo_function(css, ":deep(")
+    unwrap_pseudo_functions(
+        css,
+        &["::v-deep(", "::deep(", ":deep(", "::v-global(", ":global("],
+    )
 }
 
 fn transform_css_block(css: &str, scope_id: &str) -> String {
@@ -209,16 +212,20 @@ fn scope_selector(selector: &str, scope_id: &str) -> String {
     let leading = &selector[..leading_length];
     let body_end = trailing_trim_end(selector);
     let trailing = &selector[body_end..];
-    let mut body = unwrap_pseudo_function(&selector[leading_length..body_end], ":global(");
+    let mut body = unwrap_pseudo_functions(
+        &selector[leading_length..body_end],
+        &["::v-global(", ":global("],
+    );
 
-    if let Some(deep) = find_pseudo_function(body.as_str(), ":deep(") {
+    if let Some(deep) = find_pseudo_function_any(body.as_str(), &["::v-deep(", "::deep(", ":deep("])
+    {
         let before = body[..deep.start].trim_end();
         let inner = &body[deep.inner_start..deep.inner_end];
         let after = &body[deep.end..];
         let scoped_before = if before.is_empty() {
             scope_attr(scope_id)
         } else {
-            add_scope_to_selector_end(before, scope_id)
+            add_scope_before_trailing_combinator(before, scope_id)
         };
         let mut scoped = String::with_capacity(scoped_before.len() + inner.len() + after.len() + 1);
         scoped.push_str(scoped_before.as_str());
@@ -234,6 +241,27 @@ fn scope_selector(selector: &str, scope_id: &str) -> String {
     output.push_str(leading);
     output.push_str(body.as_str());
     output.push_str(trailing);
+    output
+}
+
+fn add_scope_before_trailing_combinator(selector: &str, scope_id: &str) -> String {
+    let Some((combinator_start, _)) = selector
+        .trim_end()
+        .char_indices()
+        .next_back()
+        .filter(|(_, char)| matches!(char, '>' | '+' | '~'))
+    else {
+        return add_scope_to_selector_end(selector, scope_id);
+    };
+
+    let target = selector[..combinator_start].trim_end();
+    let suffix = &selector[target.len()..];
+    let mut output = if target.is_empty() {
+        scope_attr(scope_id)
+    } else {
+        add_scope_to_selector_end(target, scope_id)
+    };
+    output.push_str(suffix);
     output
 }
 
@@ -324,16 +352,15 @@ struct PseudoFunction {
     end: usize,
 }
 
-fn unwrap_pseudo_function(input: &str, marker: &str) -> String {
+fn unwrap_pseudo_functions(input: &str, markers: &[&str]) -> String {
     let mut output = String::with_capacity(input.len());
     let mut cursor = 0usize;
     let mut changed = false;
 
-    while let Some(relative) = input[cursor..].find(marker) {
-        let start = cursor + relative;
-        let Some(function) = find_pseudo_function_from(input, marker, start) else {
+    while let Some(function) = find_pseudo_function_any_from(input, markers, cursor) {
+        if function.start < cursor {
             break;
-        };
+        }
 
         output.push_str(&input[cursor..function.start]);
         output.push_str(&input[function.inner_start..function.inner_end]);
@@ -349,10 +376,22 @@ fn unwrap_pseudo_function(input: &str, marker: &str) -> String {
     output
 }
 
-fn find_pseudo_function(input: &str, marker: &str) -> Option<PseudoFunction> {
-    input
-        .find(marker)
-        .and_then(|start| find_pseudo_function_from(input, marker, start))
+fn find_pseudo_function_any(input: &str, markers: &[&str]) -> Option<PseudoFunction> {
+    find_pseudo_function_any_from(input, markers, 0)
+}
+
+fn find_pseudo_function_any_from(
+    input: &str,
+    markers: &[&str],
+    cursor: usize,
+) -> Option<PseudoFunction> {
+    markers
+        .iter()
+        .filter_map(|marker| {
+            let start = cursor + input[cursor..].find(marker)?;
+            find_pseudo_function_from(input, marker, start)
+        })
+        .min_by_key(|function| function.start)
 }
 
 fn find_pseudo_function_from(input: &str, marker: &str, start: usize) -> Option<PseudoFunction> {
@@ -446,6 +485,28 @@ mod tests {
             )
             .as_str(),
             ".parent[data-v-x] .child:nth-child(2) { color: red; }"
+        );
+    }
+
+    #[test]
+    fn unwraps_legacy_v_deep_inside_scoped_selector() {
+        assert_eq!(
+            scope_css_for_pipeline(
+                ".parent > ::v-deep(.child:nth-child(2)) { color: red; }",
+                "data-v-x"
+            )
+            .as_str(),
+            ".parent[data-v-x] > .child:nth-child(2) { color: red; }"
+        );
+    }
+
+    #[test]
+    fn unwraps_preprocessor_special_selectors() {
+        let css = "[data-v-x] .parent > ::v-deep(.child), [data-v-x] .foo:global(.bar) {}";
+
+        assert_eq!(
+            unwrap_deep_selectors(css).as_str(),
+            "[data-v-x] .parent > .child, [data-v-x] .foo.bar {}"
         );
     }
 
