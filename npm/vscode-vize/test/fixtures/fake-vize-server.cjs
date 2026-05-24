@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const args = process.argv.slice(2);
 const logPath = process.env.VIZE_TEST_SERVER_LOG;
 const version = process.env.VIZE_TEST_SERVER_VERSION ?? "0.0.0";
+let activeInitializationOptions = {};
 let workspaceRootUri = "file:///fake-vize-workspace";
 
 appendLog({
@@ -83,6 +84,7 @@ function handleMessage(message) {
   });
 
   if (message.method === "initialize") {
+    activeInitializationOptions = message.params?.initializationOptions ?? {};
     workspaceRootUri = message.params?.rootUri ?? workspaceRootUri;
     send({
       id: message.id,
@@ -109,6 +111,11 @@ function handleMessage(message) {
 
   if (message.method === "exit") {
     process.exit(0);
+  }
+
+  if (message.method === "textDocument/didOpen") {
+    publishDiagnostics(message.params?.textDocument?.uri);
+    return;
   }
 
   if (message.id !== undefined && message.method) {
@@ -216,21 +223,24 @@ function createResponse(message) {
         isIncomplete: false,
         items: [
           {
-            detail: "provided by fake-vize",
+            detail: "Fake Vize autocomplete property",
+            documentation: {
+              kind: "markdown",
+              value: "Completion supplied by fake-vize.",
+            },
+            insertText: "fakeCompletion",
             kind: 10,
             label: "Fake Vize Completion",
+            sortText: "0001",
           },
         ],
       };
 
     case "textDocument/definition":
+      return [definitionLocation(uri)];
+
     case "textDocument/references":
-      return [
-        {
-          range: fixtureRange(),
-          uri,
-        },
-      ];
+      return [definitionLocation(uri), referenceLocation(uri)];
 
     case "textDocument/documentLink":
       return [
@@ -318,7 +328,7 @@ function createResponse(message) {
 
     case "textDocument/semanticTokens/full":
       return {
-        data: [0, 0, 5, 0, 0],
+        data: [1, 6, 7, 0, 1, 4, 2, 4, 1, 0],
       };
 
     case "workspace/symbol":
@@ -350,6 +360,66 @@ function fixtureRange() {
       line: 1,
     },
   };
+}
+
+function definitionLocation(uri) {
+  return {
+    range: fixtureRange(),
+    uri,
+  };
+}
+
+function referenceLocation(uri) {
+  return {
+    range: {
+      end: {
+        character: 19,
+        line: 5,
+      },
+      start: {
+        character: 12,
+        line: 5,
+      },
+    },
+    uri,
+  };
+}
+
+function publishDiagnostics(uri) {
+  if (!uri) {
+    return;
+  }
+
+  const diagnostics = [];
+
+  if (activeInitializationOptions.typecheck === true) {
+    diagnostics.push({
+      code: "fake-type-mismatch",
+      message: "Fake Vize type error: string is not assignable to number.",
+      range: fixtureRange(),
+      severity: 1,
+      source: "vize:typecheck",
+    });
+  }
+
+  if (activeInitializationOptions.lint === true) {
+    diagnostics.push({
+      code: "fake-lint-rule",
+      message: "Fake Vize lint error: template expression should be simplified.",
+      range: referenceLocation(uri).range,
+      severity: 2,
+      source: "vize:lint",
+    });
+  }
+
+  send({
+    jsonrpc: "2.0",
+    method: "textDocument/publishDiagnostics",
+    params: {
+      diagnostics,
+      uri,
+    },
+  });
 }
 
 function summarizeTextDocument(textDocument) {
