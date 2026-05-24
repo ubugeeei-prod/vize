@@ -306,7 +306,11 @@ pub fn lint_patina_sfc(source: String, options: Option<PatinaLintOptionsNapi>) -
         .with_locale(locale)
         .with_help_level(help_level)
         .with_enabled_rules(enabled_rules);
-    let result = linter.lint_sfc(&source, &filename);
+    let result = if is_standalone_html_filename(&filename) {
+        linter.lint_standalone_html(&source, &filename)
+    } else {
+        linter.lint_sfc(&source, &filename)
+    };
     let lsp_diagnostics = LspEmitter::to_lsp_diagnostics_with_source(&result, &source);
 
     if result.diagnostics.len() != lsp_diagnostics.len() {
@@ -397,7 +401,9 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
                     .flatten()
                     .filter_map(|r| r.ok())
                     .filter(|p| {
-                        p.extension().is_some_and(|ext| ext == "vue")
+                        p.extension()
+                            .and_then(|ext| ext.to_str())
+                            .is_some_and(is_lintable_extension)
                             && !p.components().any(|c| c.as_os_str() == "node_modules")
                     })
                     .collect::<Vec<_>>()
@@ -405,7 +411,12 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
                 // Use directory walking for paths (respects .gitignore)
                 Walk::new(pattern)
                     .filter_map(|e| e.ok())
-                    .filter(|e| e.path().extension().is_some_and(|ext| ext == "vue"))
+                    .filter(|e| {
+                        e.path()
+                            .extension()
+                            .and_then(|ext| ext.to_str())
+                            .is_some_and(is_lintable_extension)
+                    })
                     .map(|e| e.path().to_path_buf())
                     .collect::<Vec<_>>()
             }
@@ -414,7 +425,10 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
 
     if files.is_empty() {
         return Ok(LintResultNapi {
-            output: format!("No .vue files found matching patterns: {:?}", patterns),
+            output: format!(
+                "No .vue or .html files found matching patterns: {:?}",
+                patterns
+            ),
             error_count: 0,
             warning_count: 0,
             file_count: 0,
@@ -442,7 +456,11 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
             };
 
             let filename = path.to_string_lossy().to_string();
-            let result = linter.lint_sfc(&source, &filename);
+            let result = if is_standalone_html_filename(&filename) {
+                linter.lint_standalone_html(&source, &filename)
+            } else {
+                linter.lint_sfc(&source, &filename)
+            };
 
             error_count.fetch_add(result.error_count, Ordering::Relaxed);
             warning_count.fetch_add(result.warning_count, Ordering::Relaxed);
@@ -499,6 +517,14 @@ pub fn lint(patterns: Vec<String>, options: Option<LintOptionsNapi>) -> Result<L
         file_count: files.len() as u32,
         time_ms: elapsed.as_secs_f64() * 1000.0,
     })
+}
+
+fn is_standalone_html_filename(filename: &str) -> bool {
+    filename.ends_with(".html") || filename.ends_with(".htm")
+}
+
+fn is_lintable_extension(extension: &str) -> bool {
+    matches!(extension, "vue" | "html" | "htm")
 }
 
 #[cfg(test)]

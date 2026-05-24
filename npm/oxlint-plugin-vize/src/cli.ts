@@ -11,8 +11,8 @@ async function main(): Promise<void> {
   const cwd = process.cwd();
   const forwardedArgs = process.argv.slice(2);
   const targets = getLintTargets(forwardedArgs);
-  const vueFiles = collectVueFilesFromTargets(cwd, targets);
-  const prepared = prepareScriptlessWorkaroundFiles(cwd, vueFiles);
+  const lintFiles = collectVueFilesFromTargets(cwd, targets);
+  const prepared = prepareScriptlessWorkaroundFiles(cwd, lintFiles);
   const oxlintEntrypoint = resolveOxlintCliEntrypoint(cwd);
   const args = [oxlintEntrypoint, ...forwardedArgs, ...prepared.appendedArgs];
 
@@ -32,7 +32,7 @@ async function main(): Promise<void> {
     if (prepared.usedScriptlessWorkaround && forwardedArgs.includes("--fix")) {
       await writeStream(
         process.stderr,
-        "\n[oxlint-plugin-vize] Scriptless SFC workaround is active; fixes are not applied back to original .vue files yet.\n",
+        "\n[oxlint-plugin-vize] Temporary Vue workaround is active; fixes are not applied back to original files yet.\n",
       );
     }
 

@@ -22,12 +22,16 @@ export function prepareScriptlessWorkaroundFiles(
 
   for (const filename of filenames) {
     const source = fs.readFileSync(filename, "utf8");
-    if (hasScriptLikeBlock(source)) {
+    const isStandaloneHtml = isStandaloneHtmlFile(filename);
+    if (!isStandaloneHtml && hasScriptLikeBlock(source)) {
       continue;
     }
 
     const relativeFilename = path.relative(cwd, filename);
-    const tempFilename = path.join(tempDir, `${counter}-${path.basename(filename)}`);
+    const tempBasename = isStandaloneHtml
+      ? `${path.basename(filename)}.vue`
+      : path.basename(filename);
+    const tempFilename = path.join(tempDir, `${counter}-${tempBasename}`);
     counter += 1;
 
     fs.mkdirSync(path.dirname(tempFilename), { recursive: true });
@@ -54,6 +58,10 @@ export function prepareScriptlessWorkaroundFiles(
 
 function toCliPath(filename: string): string {
   return filename.split(path.sep).join("/");
+}
+
+function isStandaloneHtmlFile(filename: string): boolean {
+  return filename.endsWith(".html") || filename.endsWith(".htm");
 }
 
 function registerPathReplacementVariants(

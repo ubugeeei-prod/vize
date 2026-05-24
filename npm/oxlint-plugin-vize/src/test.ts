@@ -35,6 +35,7 @@ const optionsApiVuePath = path.join(fixtureDir, "OptionsApi.vue");
 const dualScriptVuePath = path.join(fixtureDir, "DualScript.vue");
 const coreRulesVuePath = path.join(fixtureDir, "CoreRules.vue");
 const scriptlessVuePath = path.join(fixtureDir, "Scriptless.vue");
+const standaloneHtmlPath = path.join(fixtureDir, "Standalone.html");
 const hugeJsonVuePath = path.join(fixtureDir, "HugeJson.vue");
 const snapshotsDir = path.join(packageDir, "__snapshots__");
 const ansiEscapePattern = new RegExp(String.raw`\u001B\[[0-9;]*m`, "gu");
@@ -415,6 +416,27 @@ fs.writeFileSync(
 );
 
 fs.writeFileSync(
+  standaloneHtmlPath,
+  `<!doctype html>
+<html>
+<head>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app">{{ count }}</div>
+  <script>
+Vue.createApp({
+  data() {
+    return { count: 1 };
+  },
+}).mount("#app");
+  </script>
+</body>
+</html>
+`,
+);
+
+fs.writeFileSync(
   hugeJsonVuePath,
   `<template>
 ${Array.from({ length: 700 }, (_, index) => `  <demo-card  :title="'Item ${index}'" />`).join("\n")}
@@ -789,6 +811,30 @@ assert.doesNotMatch(
   "scriptless workaround should not leak temporary cache paths to users",
 );
 assert.equal(scriptlessRun.output, readSnapshot("stylish-scriptless-workaround-output.txt"));
+
+const standaloneHtmlRun = runOxlintVize([
+  "-c",
+  ".oxlintrc.opinionated-script.json",
+  "-f",
+  "stylish",
+  "Standalone.html",
+]);
+assert.notEqual(
+  standaloneHtmlRun.exitCode,
+  0,
+  "oxlint-vize should lint standalone HTML that uses Vue from a CDN",
+);
+assert.match(
+  standaloneHtmlRun.output,
+  /Standalone\.html[\s\S]*9:15[\s\S]*Options API component declarations are not supported/u,
+  "standalone HTML output should report the original inline script location",
+);
+assert.doesNotMatch(
+  standaloneHtmlRun.output,
+  /__oxlint_plugin_vize_temp__/u,
+  "standalone HTML output should not leak temporary workaround paths",
+);
+assert.equal(standaloneHtmlRun.output, readSnapshot("stylish-standalone-html-output.txt"));
 
 const sampleBlocks = extractSfcBlocks(
   `<script setup lang="ts">\nconst count = 1\n</script>\n<template>\n  <div>{{ count }}</div>\n</template>\n<style scoped>\n.foo {}\n</style>\n<i18n>\n{}\n</i18n>\n`,

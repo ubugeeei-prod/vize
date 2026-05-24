@@ -144,6 +144,13 @@ fn find_component_options(source: &str) -> Option<ComponentOptionsMatch> {
         return Some(build_component_options_match(options.object));
     }
 
+    for statement in parsed.program.body.iter() {
+        let Some(options) = extract_create_app_options_from_statement(statement, &bindings) else {
+            continue;
+        };
+        return Some(build_component_options_match(options.object));
+    }
+
     None
 }
 
@@ -214,6 +221,83 @@ fn extract_component_options_from_call<'a>(
 
     let first_arg = call.arguments.first()?;
     extract_component_options_from_argument(first_arg, bindings)
+}
+
+fn extract_create_app_options_from_statement<'a>(
+    statement: &'a Statement<'a>,
+    bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+) -> Option<ComponentOptionsRef<'a>> {
+    match statement {
+        Statement::ExpressionStatement(statement) => {
+            extract_create_app_options_from_expression(&statement.expression, bindings)
+        }
+        Statement::VariableDeclaration(declaration) => {
+            for declarator in &declaration.declarations {
+                let Some(init) = declarator.init.as_ref() else {
+                    continue;
+                };
+                if let Some(options) = extract_create_app_options_from_expression(init, bindings) {
+                    return Some(options);
+                }
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
+fn extract_create_app_options_from_expression<'a>(
+    expression: &'a Expression<'a>,
+    bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+) -> Option<ComponentOptionsRef<'a>> {
+    match expression {
+        Expression::CallExpression(call) => {
+            extract_create_app_options_from_create_app_call(call, bindings)
+                .or_else(|| extract_create_app_options_from_expression(&call.callee, bindings))
+        }
+        Expression::StaticMemberExpression(member) => {
+            extract_create_app_options_from_expression(&member.object, bindings)
+        }
+        Expression::ParenthesizedExpression(paren) => {
+            extract_create_app_options_from_expression(&paren.expression, bindings)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            extract_create_app_options_from_expression(&ts_as.expression, bindings)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            extract_create_app_options_from_expression(&ts_satisfies.expression, bindings)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            extract_create_app_options_from_expression(&ts_non_null.expression, bindings)
+        }
+        _ => None,
+    }
+}
+
+fn extract_create_app_options_from_create_app_call<'a>(
+    call: &'a oxc_ast::ast::CallExpression<'a>,
+    bindings: &FxHashMap<&'a str, ComponentOptionsRef<'a>>,
+) -> Option<ComponentOptionsRef<'a>> {
+    if !is_create_app_callee(&call.callee) {
+        return None;
+    }
+
+    let first_arg = call.arguments.first()?;
+    extract_component_options_from_argument(first_arg, bindings)
+}
+
+fn is_create_app_callee(callee: &Expression<'_>) -> bool {
+    match callee {
+        Expression::Identifier(callee) => callee.name.as_str() == "createApp",
+        Expression::StaticMemberExpression(member) => {
+            member.property.name.as_str() == "createApp"
+                && matches!(
+                    &member.object,
+                    Expression::Identifier(object) if object.name.as_str() == "Vue"
+                )
+        }
+        _ => false,
+    }
 }
 
 fn extract_component_options_from_argument<'a>(
@@ -379,6 +463,51 @@ export default {
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_cdn_create_app_options() {
+        let source = r##"
+Vue.createApp({
+  data() {
+    return { count: 0 }
+  }
+}).mount("#app")
+"##;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 1);
+        assert!(
+            result.diagnostics[0]
+                .labels
+                .iter()
+                .any(|label| label.message.contains("data() option"))
+        );
+    }
+
+    #[test]
+    fn test_invalid_destructured_create_app_options() {
+        let source = r##"
+const { createApp } = Vue
+const options = {
+  methods: {
+    increment() {}
+  }
+}
+
+createApp(options).mount("#app")
+"##;
+        let rule = NoOptionsApi;
+        let mut result = ScriptLintResult::default();
+        rule.check(source, 0, &mut result);
+        assert_eq!(result.error_count, 1);
+        assert!(
+            result.diagnostics[0]
+                .labels
+                .iter()
+                .any(|label| label.message.contains("methods option"))
+        );
     }
 
     #[test]

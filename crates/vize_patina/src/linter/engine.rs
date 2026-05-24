@@ -446,6 +446,25 @@ impl Linter {
 
         Self::merge_lint_results(result, sfc_result)
     }
+
+    /// Lint a standalone HTML document that may use Vue from a CDN.
+    #[inline]
+    pub fn lint_standalone_html(&self, source: &str, filename: &str) -> LintResult {
+        let mut result = self.lint_template(source, filename);
+
+        if super::script_rules::has_active_builtin_script_rules(self) {
+            super::script_rules::append_builtin_script_diagnostics_from_html(
+                self,
+                source,
+                &mut result,
+            );
+            result
+                .diagnostics
+                .sort_unstable_by_key(|diagnostic| (diagnostic.start, diagnostic.end));
+        }
+
+        result
+    }
 }
 
 /// Ultra-fast template extraction using memchr for SIMD-accelerated search.

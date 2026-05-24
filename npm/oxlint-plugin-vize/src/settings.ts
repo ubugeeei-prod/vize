@@ -21,7 +21,7 @@ const PRESET_ALIASES = new Map<string, PatinaPreset>([
 ]);
 
 export function isVueLikeFile(filename: string): boolean {
-  return filename.endsWith(".vue");
+  return filename.endsWith(".vue") || filename.endsWith(".html") || filename.endsWith(".htm");
 }
 
 export function getVizeSettings(context: Context): PatinaSettings {

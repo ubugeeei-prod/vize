@@ -24,7 +24,7 @@ function collectVueFilesFromTarget(cwd: string, target: string): string[] {
         exclude: ["**/node_modules/**", "**/.git/**"],
       })
       .map((entry) => path.resolve(cwd, entry))
-      .filter(isVueFile);
+      .filter(isSupportedLintFile);
   }
 
   const absoluteTarget = path.resolve(cwd, target);
@@ -35,17 +35,18 @@ function collectVueFilesFromTarget(cwd: string, target: string): string[] {
   const stat = fs.statSync(absoluteTarget);
   if (stat.isDirectory()) {
     return fs
-      .globSync("**/*.vue", {
+      .globSync("**/*", {
         cwd: absoluteTarget,
         withFileTypes: false,
         exclude: ["**/node_modules/**", "**/.git/**"],
       })
-      .map((entry) => path.resolve(absoluteTarget, entry));
+      .map((entry) => path.resolve(absoluteTarget, entry))
+      .filter(isSupportedLintFile);
   }
 
-  return isVueFile(absoluteTarget) ? [absoluteTarget] : [];
+  return isSupportedLintFile(absoluteTarget) ? [absoluteTarget] : [];
 }
 
-function isVueFile(filename: string): boolean {
-  return filename.endsWith(".vue");
+function isSupportedLintFile(filename: string): boolean {
+  return filename.endsWith(".vue") || filename.endsWith(".html") || filename.endsWith(".htm");
 }

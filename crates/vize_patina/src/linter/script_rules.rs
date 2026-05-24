@@ -209,6 +209,73 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     );
 }
 
+pub(crate) fn append_builtin_script_diagnostics_from_html(
+    linter: &Linter,
+    source: &str,
+    result: &mut LintResult,
+) {
+    if linter.script_rules.is_empty() {
+        return;
+    }
+
+    for (script, offset) in extract_inline_scripts(source) {
+        append_builtin_script_rule_for_source(
+            linter,
+            script,
+            offset,
+            result,
+            RULE_NO_OPTIONS_API,
+            "patina.script_rule.no_options_api",
+            &NoOptionsApi,
+        );
+        append_builtin_script_rule_for_source(
+            linter,
+            script,
+            offset,
+            result,
+            RULE_NO_GET_CURRENT_INSTANCE,
+            "patina.script_rule.no_get_current_instance",
+            &NoGetCurrentInstance,
+        );
+        append_builtin_script_rule_for_source(
+            linter,
+            script,
+            offset,
+            result,
+            RULE_NO_NEXT_TICK,
+            "patina.script_rule.no_next_tick",
+            &NoNextTick,
+        );
+        append_builtin_script_rule_for_source(
+            linter,
+            script,
+            offset,
+            result,
+            RULE_PINIA_PREFER_STORE_TO_REFS,
+            "patina.script_rule.pinia_prefer_store_to_refs",
+            &PiniaPreferStoreToRefs,
+        );
+        append_builtin_script_rule_for_source(
+            linter,
+            script,
+            offset,
+            result,
+            RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
+            "patina.script_rule.vue_router_prefer_named_push",
+            &VueRouterPreferNamedPush,
+        );
+        append_builtin_script_rule_for_source(
+            linter,
+            script,
+            offset,
+            result,
+            RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
+            "patina.script_rule.vue_test_utils_no_html_snapshot",
+            &VueTestUtilsNoHtmlSnapshot,
+        );
+    }
+}
+
 fn merge_script_result(
     result: &mut LintResult,
     script_result: crate::rules::script::ScriptLintResult,
@@ -231,25 +298,45 @@ fn append_builtin_script_rule<'a, R: ScriptRule>(
     }
 
     if let Some(script) = descriptor.script.as_ref() {
-        let mut lint = crate::rules::script::ScriptLintResult::default();
-        profile!(
+        append_builtin_script_rule_for_source(
+            linter,
+            script.content.as_ref(),
+            script.loc.start,
+            result,
+            rule_name,
             profile_name,
-            rule.check(script.content.as_ref(), script.loc.start, &mut lint)
+            &rule,
         );
-        merge_script_result(result, lint);
     }
     if let Some(script_setup) = descriptor.script_setup.as_ref() {
-        let mut lint = crate::rules::script::ScriptLintResult::default();
-        profile!(
+        append_builtin_script_rule_for_source(
+            linter,
+            script_setup.content.as_ref(),
+            script_setup.loc.start,
+            result,
+            rule_name,
             profile_name,
-            rule.check(
-                script_setup.content.as_ref(),
-                script_setup.loc.start,
-                &mut lint,
-            )
+            &rule,
         );
-        merge_script_result(result, lint);
     }
+}
+
+fn append_builtin_script_rule_for_source<R: ScriptRule>(
+    linter: &Linter,
+    source: &str,
+    offset: usize,
+    result: &mut LintResult,
+    rule_name: &str,
+    profile_name: &'static str,
+    rule: &R,
+) {
+    if !linter.is_rule_enabled(rule_name) || !linter.script_rules.contains(&rule_name) {
+        return;
+    }
+
+    let mut lint = crate::rules::script::ScriptLintResult::default();
+    profile!(profile_name, rule.check(source, offset, &mut lint));
+    merge_script_result(result, lint);
 }
 
 #[inline]
@@ -257,5 +344,97 @@ fn sfc_parse_options(filename: &str) -> SfcParseOptions {
     SfcParseOptions {
         filename: filename.into(),
         ..Default::default()
+    }
+}
+
+fn extract_inline_scripts(source: &str) -> Vec<(&str, usize)> {
+    let mut scripts = Vec::new();
+    let mut cursor = 0;
+
+    while let Some(open_start) = find_script_open(source, cursor) {
+        let Some(open_end) = find_tag_end(source, open_start) else {
+            break;
+        };
+
+        let content_start = open_end + 1;
+        let Some(close_start) = find_ascii_case_insensitive(source, "</script", content_start)
+        else {
+            break;
+        };
+
+        let content = &source[content_start..close_start];
+        if !content.trim().is_empty() {
+            scripts.push((content, content_start));
+        }
+
+        cursor = find_tag_end(source, close_start).map_or(close_start + 9, |end| end + 1);
+    }
+
+    scripts
+}
+
+fn find_script_open(source: &str, from: usize) -> Option<usize> {
+    let mut cursor = from;
+    while let Some(index) = find_ascii_case_insensitive(source, "<script", cursor) {
+        let boundary = source.as_bytes().get(index + 7).copied();
+        if matches!(
+            boundary,
+            None | Some(b'>' | b'/' | b' ' | b'\n' | b'\r' | b'\t' | b'\x0c')
+        ) {
+            return Some(index);
+        }
+        cursor = index + 7;
+    }
+    None
+}
+
+fn find_tag_end(source: &str, from: usize) -> Option<usize> {
+    let mut quote = None;
+    for (relative, byte) in source.as_bytes()[from..].iter().copied().enumerate() {
+        match (quote, byte) {
+            (Some(current), value) if value == current => quote = None,
+            (None, b'"' | b'\'') => quote = Some(byte),
+            (None, b'>') => return Some(from + relative),
+            _ => {}
+        }
+    }
+    None
+}
+
+fn find_ascii_case_insensitive(source: &str, needle: &str, from: usize) -> Option<usize> {
+    let haystack = source.as_bytes();
+    let needle = needle.as_bytes();
+    if needle.is_empty() || from >= haystack.len() {
+        return None;
+    }
+
+    haystack[from..]
+        .windows(needle.len())
+        .position(|window| window.eq_ignore_ascii_case(needle))
+        .map(|index| from + index)
+}
+
+#[cfg(test)]
+mod standalone_html_tests {
+    use super::extract_inline_scripts;
+
+    #[test]
+    fn extracts_inline_scripts_from_standalone_html() {
+        let source = r##"<!doctype html>
+<html>
+<head>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <script>
+Vue.createApp({ data() { return { count: 0 } } }).mount("#app")
+  </script>
+</body>
+</html>"##;
+
+        let scripts = extract_inline_scripts(source);
+        assert_eq!(scripts.len(), 1);
+        assert!(scripts[0].0.contains("Vue.createApp"));
+        assert_eq!(&source[scripts[0].1..scripts[0].1 + 3], "\nVu");
     }
 }
