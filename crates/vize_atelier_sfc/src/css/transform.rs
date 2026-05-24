@@ -31,12 +31,17 @@ pub(crate) fn extract_and_transform_v_bind_with_scope<'a>(
             let actual_pos = pos + rel_pos;
             let start = actual_pos + 7;
 
-            if let Some(end) = find_byte(&css_bytes[start..], b')') {
+            let Some(after_open) = css.get(start..) else {
+                result.extend_from_slice(&css_bytes[pos..]);
+                break;
+            };
+
+            if let Some(end) = find_matching_paren(after_open) {
                 // Copy everything before v-bind(
                 result.extend_from_slice(&css_bytes[pos..actual_pos]);
 
                 // Extract expression
-                let Some(expr_str) = css.get(start..start + end).map(str::trim) else {
+                let Some(expr_str) = after_open.get(..end).map(str::trim) else {
                     pos = start + end + 1;
                     result.extend_from_slice(&css_bytes[actual_pos..pos]);
                     continue;
@@ -145,12 +150,6 @@ pub(crate) fn find_bytes(haystack: &[u8], needle: &[u8]) -> Option<usize> {
     haystack.windows(needle.len()).position(|w| w == needle)
 }
 
-/// Find single byte in slice
-#[inline]
-pub(crate) fn find_byte(haystack: &[u8], needle: u8) -> Option<usize> {
-    haystack.iter().position(|&b| b == needle)
-}
-
 /// Reverse find single byte in slice
 #[inline]
 pub(crate) fn rfind_byte(haystack: &[u8], needle: u8) -> Option<usize> {
@@ -160,8 +159,32 @@ pub(crate) fn rfind_byte(haystack: &[u8], needle: u8) -> Option<usize> {
 /// Find the matching closing parenthesis
 pub(crate) fn find_matching_paren(s: &str) -> Option<usize> {
     let mut depth = 1u32;
+    let mut quote = None;
+    let mut escaped = false;
+
     for (i, c) in s.char_indices() {
+        if let Some(quote_char) = quote {
+            if escaped {
+                escaped = false;
+                continue;
+            }
+
+            if c == '\\' {
+                escaped = true;
+                continue;
+            }
+
+            if c == quote_char {
+                quote = None;
+            }
+
+            continue;
+        }
+
         match c {
+            '"' | '\'' | '`' => {
+                quote = Some(c);
+            }
             '(' => depth += 1,
             ')' => {
                 depth -= 1;

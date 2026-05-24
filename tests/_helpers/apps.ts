@@ -1175,6 +1175,22 @@ export const stylePreprocessorsApp: AppConfig = {
   },
 };
 
+export const ecosystemProductsApp: AppConfig = {
+  name: "ecosystem-products",
+  cwd: path.join(PROJECTS_DIR, "ecosystem-products"),
+  command: "",
+  args: [],
+  port: 0,
+  url: "",
+  mountSelector: "",
+  readyPattern: /./,
+  startupTimeout: 0,
+  check: {
+    cwd: path.join(PROJECTS_DIR, "ecosystem-products"),
+    patterns: ["src/**/*.vue"],
+  },
+};
+
 export const SCREENSHOT_DIR = path.resolve(TESTS_DIR, "app", "screenshots");
 const BIN_EXT = process.platform === "win32" ? ".exe" : "";
 const VIZE_CI_BIN = path.resolve(TESTS_DIR, `../target/ci/vize${BIN_EXT}`);

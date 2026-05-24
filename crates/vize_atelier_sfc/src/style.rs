@@ -349,23 +349,7 @@ fn transform_global(selector: &str) -> String {
 
 /// Extract CSS v-bind() expressions
 pub fn extract_css_vars(css: &str) -> Vec<String> {
-    let mut vars = Vec::new();
-    let mut search_from = 0;
-
-    while let Some(pos) = css[search_from..].find("v-bind(") {
-        let start = search_from + pos + 7;
-        if let Some(end) = css[start..].find(')') {
-            let expr = css[start..start + end].trim();
-            // Remove quotes if present
-            let expr = crate::css::trim_outer_quotes(expr);
-            vars.push(expr.to_compact_string());
-            search_from = start + end + 1;
-        } else {
-            break;
-        }
-    }
-
-    vars
+    crate::css::transform_css_v_bind(css, None).1
 }
 
 #[cfg(test)]
@@ -409,6 +393,30 @@ mod tests {
         let css = ".foo { color: v-bind(color); background: v-bind('bgColor'); }";
         let vars = extract_css_vars(css);
         assert_eq!(vars, vec!["color", "bgColor"]);
+    }
+
+    #[test]
+    fn test_extract_css_vars_with_quoted_parentheses() {
+        let css = r#"
+.header {
+  background-color: color(from v-bind("parentBg ?? 'var(--bg)'") srgb r g b / 0.85);
+}
+.textCountGraph {
+  background-image: conic-gradient(
+    var(--countColor) 0% v-bind("Math.min(100, textCountPercentage) + '%'"),
+    rgba(0, 0, 0, .2) v-bind("Math.min(100, textCountPercentage) + '%'") 100%
+  );
+}
+"#;
+        let vars = extract_css_vars(css);
+        assert_eq!(
+            vars,
+            vec![
+                "parentBg ?? 'var(--bg)'",
+                "Math.min(100, textCountPercentage) + '%'",
+                "Math.min(100, textCountPercentage) + '%'",
+            ]
+        );
     }
 
     #[test]

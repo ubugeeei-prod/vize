@@ -10,7 +10,9 @@ use super::CssTargets;
 use super::scoped::{
     add_scope_to_element, apply_scoped_css, transform_deep, transform_global, transform_slotted,
 };
-use super::transform::extract_and_transform_v_bind;
+use super::transform::{
+    extract_and_transform_v_bind, extract_and_transform_v_bind_with_scope, scoped_v_bind_name,
+};
 use super::{CssCompileOptions, bundle_css, compile_css, parse_css_ast, print_css_ast};
 
 fn test_utf8(bytes: &[u8]) -> &str {
@@ -163,6 +165,47 @@ fn test_v_bind_extraction_with_scope_id() {
     assert!(result.code.contains(r#"var(--test-height\ \+\ \'px\')"#));
     assert!(result.code.contains("var(--test-color)"));
     assert_eq!(result.css_vars, vec!["height + 'px'", "color"]);
+}
+
+#[test]
+fn test_v_bind_extraction_handles_quoted_expressions_with_parentheses() {
+    let bump = Bump::new();
+    let css = r#"
+.header {
+  background-color: color(from v-bind("parentBg ?? 'var(--bg)'") srgb r g b / 0.85);
+}
+
+.textCountGraph {
+  background-image: conic-gradient(
+    var(--countColor) 0% v-bind("Math.min(100, textCountPercentage) + '%'"),
+    rgba(0, 0, 0, .2) v-bind("Math.min(100, textCountPercentage) + '%'") 100%
+  );
+}
+"#;
+
+    let (transformed, vars) =
+        extract_and_transform_v_bind_with_scope(&bump, css, Some("data-v-test"));
+
+    assert!(!transformed.contains("v-bind("));
+    assert_eq!(
+        vars,
+        vec![
+            "parentBg ?? 'var(--bg)'".to_compact_string(),
+            "Math.min(100, textCountPercentage) + '%'".to_compact_string(),
+            "Math.min(100, textCountPercentage) + '%'".to_compact_string(),
+        ]
+    );
+
+    for expr in [
+        "parentBg ?? 'var(--bg)'",
+        "Math.min(100, textCountPercentage) + '%'",
+    ] {
+        let var_ref = format!("var(--{})", scoped_v_bind_name("data-v-test", expr));
+        assert!(
+            transformed.contains(&var_ref),
+            "missing {var_ref} in transformed CSS:\n{transformed}"
+        );
+    }
 }
 
 #[test]

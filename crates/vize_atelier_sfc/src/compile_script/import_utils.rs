@@ -10,6 +10,37 @@ use oxc_span::SourceType;
 
 use vize_carton::ToCompactString;
 
+/// Returns true when an import block already declares a local binding from a
+/// specific module.
+pub fn import_block_has_local_from(imports: &str, module_source: &str, local_name: &str) -> bool {
+    let allocator = Allocator::default();
+    let source_type = SourceType::ts();
+    let parser = Parser::new(&allocator, imports, source_type);
+    let result = parser.parse();
+
+    if !result.errors.is_empty() {
+        return false;
+    }
+
+    result.program.body.iter().any(|stmt| {
+        let Statement::ImportDeclaration(decl) = stmt else {
+            return false;
+        };
+        if decl.source.value.as_str() != module_source {
+            return false;
+        }
+        decl.specifiers.as_ref().is_some_and(|specifiers| {
+            specifiers.iter().any(|spec| match spec {
+                ImportDeclarationSpecifier::ImportSpecifier(s) => s.local.name == local_name,
+                ImportDeclarationSpecifier::ImportDefaultSpecifier(s) => s.local.name == local_name,
+                ImportDeclarationSpecifier::ImportNamespaceSpecifier(s) => {
+                    s.local.name == local_name
+                }
+            })
+        })
+    })
+}
+
 /// Process import statement to remove TypeScript type-only imports using OXC
 /// Returns None if the entire import should be removed, Some(processed) otherwise
 pub fn process_import_for_types(import: &str) -> Option<vize_carton::String> {
@@ -167,7 +198,17 @@ pub fn extract_import_identifiers(import: &str) -> Vec<vize_carton::String> {
 
 #[cfg(test)]
 mod tests {
-    use super::process_import_for_types;
+    use super::{import_block_has_local_from, process_import_for_types};
+
+    #[test]
+    fn test_import_block_has_local_from() {
+        let input = r#"import { openBlock as _openBlock, unref as _unref } from "vue"
+import { foo } from "other""#;
+
+        assert!(import_block_has_local_from(input, "vue", "_unref"));
+        assert!(!import_block_has_local_from(input, "vue", "_useCssVars"));
+        assert!(!import_block_has_local_from(input, "other", "_unref"));
+    }
 
     #[test]
     fn test_default_import_with_type_named_import() {

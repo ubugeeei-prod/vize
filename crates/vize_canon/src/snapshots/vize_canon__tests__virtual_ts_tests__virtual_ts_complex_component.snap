@@ -100,7 +100,7 @@ function __setup() {
   type __R_doubled = typeof doubled;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;
+    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;
     var count: __U<__R_count> = undefined as any;
     var doubled: __U<__R_doubled> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
