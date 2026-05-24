@@ -1,5 +1,8 @@
+import type { UserConfigExport } from "../../vize/src/types/index.ts";
+
 export type {
   VizeConfig,
+  ResolvedVizeConfig,
   LoadConfigOptions,
   ConfigEnv,
   UserConfigExport,
@@ -44,6 +47,12 @@ export type CompileSfcFn = (
 ) => SfcCompileResultNapi;
 
 export interface VizeOptions {
+  /**
+   * Inline shared Vize config for Vite Plus-first projects.
+   * Direct plugin options still take precedence over these values.
+   */
+  config?: UserConfigExport;
+
   /**
    * Override the public base used for dev-time asset URLs such as /@fs paths.
    * Useful for frameworks like Nuxt that serve Vite from a subpath (e.g. /_nuxt/).

@@ -21,6 +21,26 @@ export type RuleCategory = "correctness" | "suspicious" | "style" | "perf" | "a1
  * Configuration file for vize - High-performance Vue.js toolchain
  */
 export interface VizeConfig {
+  /**
+   * Human-readable entry name for inspect output and diagnostics
+   */
+  name?: string;
+  /**
+   * Directory used as the base for scoped file patterns and relative paths
+   */
+  basePath?: string;
+  /**
+   * Glob patterns this config applies to
+   */
+  files?: string[];
+  /**
+   * Glob patterns this config excludes
+   */
+  ignores?: string[];
+  /**
+   * Base config files or presets to compose
+   */
+  extends?: string | string[];
   compiler?: CompilerConfig;
   vite?: VitePluginConfig;
   linter?: LinterConfig;
@@ -30,6 +50,10 @@ export interface VizeConfig {
   lsp?: LanguageServerConfig;
   musea?: MuseaConfig;
   globalTypes?: GlobalTypesConfig;
+  /**
+   * Scoped config entries for monorepos and workspaces
+   */
+  entries?: VizeConfigEntry[];
 }
 /**
  * Vue compiler options
@@ -487,4 +511,38 @@ export interface GlobalTypeDeclaration {
    * Default value
    */
   defaultValue?: string;
+}
+/**
+ * Scoped Vize config entry for monorepos and workspaces
+ */
+export interface VizeConfigEntry {
+  /**
+   * Human-readable entry name for inspect output and diagnostics
+   */
+  name?: string;
+  /**
+   * Directory used as the base for scoped file patterns and relative paths
+   */
+  basePath?: string;
+  /**
+   * Glob patterns this entry applies to
+   */
+  files?: string[];
+  /**
+   * Glob patterns this entry excludes
+   */
+  ignores?: string[];
+  /**
+   * Base config files or presets to compose
+   */
+  extends?: string | string[];
+  compiler?: CompilerConfig;
+  vite?: VitePluginConfig;
+  linter?: LinterConfig;
+  typeChecker?: TypeCheckerConfig;
+  formatter?: FormatterConfig;
+  languageServer?: LanguageServerConfig;
+  lsp?: LanguageServerConfig;
+  musea?: MuseaConfig;
+  globalTypes?: GlobalTypesConfig;
 }

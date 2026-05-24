@@ -23,6 +23,71 @@ import "LanguageServerConfig.pkl"
 import "MuseaConfig.pkl"
 import "GlobalTypesConfig.pkl"
 
+typealias ConfigExtends = String | Listing<String>
+
+class ConfigEntry {
+  /// Human-readable entry name for inspect output and diagnostics.
+  name: String? = null
+
+  /// Directory used as the base for scoped file patterns and relative paths.
+  basePath: String? = null
+
+  /// Glob patterns this entry applies to.
+  files: Listing<String>? = null
+
+  /// Glob patterns this entry excludes.
+  ignores: Listing<String>? = null
+
+  /// Base config files or presets amended by this entry.
+  `extends`: ConfigExtends? = null
+
+  /// Vue compiler options.
+  compiler: CompilerConfig.CompilerConfig = new CompilerConfig.CompilerConfig {}
+
+  /// Vite plugin options.
+  vite: VitePluginConfig.VitePluginConfig = new VitePluginConfig.VitePluginConfig {}
+
+  /// Linter options.
+  linter: LinterConfig.LinterConfig = new LinterConfig.LinterConfig {}
+
+  /// Type checker options.
+  typeChecker: TypeCheckerConfig.TypeCheckerConfig = new TypeCheckerConfig.TypeCheckerConfig {}
+
+  /// Formatter options.
+  formatter: FormatterConfig.FormatterConfig = new FormatterConfig.FormatterConfig {}
+
+  /// Language server options.
+  languageServer: LanguageServerConfig.LanguageServerConfig = new LanguageServerConfig.LanguageServerConfig {}
+
+  /// Legacy alias for `languageServer`.
+  @Deprecated {
+    message = "Use languageServer instead."
+    replaceWith = "languageServer"
+  }
+  lsp: LanguageServerConfig.LanguageServerConfig = languageServer
+
+  /// Musea component gallery options.
+  musea: MuseaConfig.MuseaConfig = new MuseaConfig.MuseaConfig {}
+
+  /// Global type declarations.
+  globalTypes: GlobalTypesConfig.GlobalTypesConfig = new GlobalTypesConfig.GlobalTypesConfig {}
+}
+
+/// Human-readable entry name for inspect output and diagnostics.
+name: String? = null
+
+/// Directory used as the base for scoped file patterns and relative paths.
+basePath: String? = null
+
+/// Glob patterns this config applies to.
+files: Listing<String>? = null
+
+/// Glob patterns this config excludes.
+ignores: Listing<String>? = null
+
+/// Base config files or presets amended by this config.
+`extends`: ConfigExtends? = null
+
 /// Vue compiler options.
 compiler: CompilerConfig.CompilerConfig = new CompilerConfig.CompilerConfig {}
 
@@ -53,3 +118,6 @@ musea: MuseaConfig.MuseaConfig = new MuseaConfig.MuseaConfig {}
 
 /// Global type declarations.
 globalTypes: GlobalTypesConfig.GlobalTypesConfig = new GlobalTypesConfig.GlobalTypesConfig {}
+
+/// Scoped config entries for monorepos and workspaces.
+entries: Listing<ConfigEntry>? = null

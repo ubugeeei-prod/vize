@@ -15,6 +15,19 @@ local lintPresetEnum: JsonSchema = new JsonSchema {
   enum = new Listing { "happy-path"; "opinionated"; "essential"; "incremental"; "ecosystem"; "nuxt" }
 }
 
+local stringListDef: JsonSchema = new JsonSchema {
+  type = "array"
+  items = new JsonSchema { type = "string" }
+}
+
+local configExtendsDef: JsonSchema = new JsonSchema {
+  description = "Base config files or presets to compose"
+  oneOf = new Listing {
+    new JsonSchema { type = "string" }
+    stringListDef
+  }
+}
+
 local compilerConfigDef: JsonSchema = new JsonSchema {
   type = "object"
   description = "Vue compiler options"
@@ -594,6 +607,42 @@ local globalTypesConfigDef: JsonSchema = new JsonSchema {
   }
 }
 
+local configEntryDef: JsonSchema = new JsonSchema {
+  type = "object"
+  description = "Scoped Vize config entry for monorepos and workspaces"
+  properties {
+    ["name"] = new JsonSchema {
+      type = "string"
+      description = "Human-readable entry name for inspect output and diagnostics"
+    }
+    ["basePath"] = new JsonSchema {
+      type = "string"
+      description = "Directory used as the base for scoped file patterns and relative paths"
+    }
+    ["files"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+      description = "Glob patterns this entry applies to"
+    }
+    ["ignores"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+      description = "Glob patterns this entry excludes"
+    }
+    ["extends"] = configExtendsDef
+    ["compiler"] = new JsonSchema { `$ref` = "#/definitions/CompilerConfig" }
+    ["vite"] = new JsonSchema { `$ref` = "#/definitions/VitePluginConfig" }
+    ["linter"] = new JsonSchema { `$ref` = "#/definitions/LinterConfig" }
+    ["typeChecker"] = new JsonSchema { `$ref` = "#/definitions/TypeCheckerConfig" }
+    ["formatter"] = new JsonSchema { `$ref` = "#/definitions/FormatterConfig" }
+    ["languageServer"] = new JsonSchema { `$ref` = "#/definitions/LanguageServerConfig" }
+    ["lsp"] = new JsonSchema { `$ref` = "#/definitions/LanguageServerConfig" }
+    ["musea"] = new JsonSchema { `$ref` = "#/definitions/MuseaConfig" }
+    ["globalTypes"] = new JsonSchema { `$ref` = "#/definitions/GlobalTypesConfig" }
+  }
+  additionalProperties = false
+}
+
 output {
   value = new JsonSchema {
     `$schema` = "http://json-schema.org/draft-07/schema#"
@@ -614,12 +663,32 @@ output {
       ["MuseaConfig"] = museaConfigDef
       ["GlobalTypeDeclaration"] = globalTypeDeclarationDef
       ["GlobalTypesConfig"] = globalTypesConfigDef
+      ["VizeConfigEntry"] = configEntryDef
     }
     properties {
       ["$schema"] = new JsonSchema {
         type = "string"
         description = "JSON Schema reference for editor autocompletion"
       }
+      ["name"] = new JsonSchema {
+        type = "string"
+        description = "Human-readable entry name for inspect output and diagnostics"
+      }
+      ["basePath"] = new JsonSchema {
+        type = "string"
+        description = "Directory used as the base for scoped file patterns and relative paths"
+      }
+      ["files"] = new JsonSchema {
+        type = "array"
+        items = new JsonSchema { type = "string" }
+        description = "Glob patterns this config applies to"
+      }
+      ["ignores"] = new JsonSchema {
+        type = "array"
+        items = new JsonSchema { type = "string" }
+        description = "Glob patterns this config excludes"
+      }
+      ["extends"] = configExtendsDef
       ["compiler"] = new JsonSchema { `$ref` = "#/definitions/CompilerConfig" }
       ["vite"] = new JsonSchema { `$ref` = "#/definitions/VitePluginConfig" }
       ["linter"] = new JsonSchema { `$ref` = "#/definitions/LinterConfig" }
@@ -629,6 +698,11 @@ output {
       ["lsp"] = new JsonSchema { `$ref` = "#/definitions/LanguageServerConfig" }
       ["musea"] = new JsonSchema { `$ref` = "#/definitions/MuseaConfig" }
       ["globalTypes"] = new JsonSchema { `$ref` = "#/definitions/GlobalTypesConfig" }
+      ["entries"] = new JsonSchema {
+        type = "array"
+        items = new JsonSchema { `$ref` = "#/definitions/VizeConfigEntry" }
+        description = "Scoped config entries for monorepos and workspaces"
+      }
     }
     additionalProperties = false
   }

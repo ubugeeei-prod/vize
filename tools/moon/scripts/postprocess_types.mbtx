@@ -122,7 +122,7 @@ fn postprocess_generated_types(content : String) -> String {
   let marker = "regenerate this file.\n */\n"
   let type_aliases =
     "\n" +
-    "export type LintPreset = \"happy-path\" | \"opinionated\" | \"essential\" | \"incremental\" | \"nuxt\";\n" +
+    "export type LintPreset = \"happy-path\" | \"opinionated\" | \"essential\" | \"incremental\" | \"ecosystem\" | \"nuxt\";\n" +
     "\n" +
     "export type RuleSeverity = \"off\" | \"warn\" | \"error\";\n" +
     "\n" +

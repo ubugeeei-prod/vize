@@ -8,12 +8,13 @@ Vize uses `vize.config.*` for shared npm CLI, Vite plugin, and Rust CLI settings
 
 ## Config Files
 
-The npm CLI and `@vizejs/vite-plugin` load these files from the project root:
+The npm CLI and `@vizejs/vite-plugin` load these files from the project root in this priority
+order:
 
+- `vize.config.pkl`
 - `vize.config.ts`
 - `vize.config.js`
 - `vize.config.mjs`
-- `vize.config.pkl`
 - `vize.config.json`
 
 The Rust CLI reads the same config file names in the order above for command-native settings such as
@@ -63,6 +64,38 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
 }));
 ```
 
+## Experimental Flat Entries
+
+Monorepos can describe root defaults and package-scoped overrides with `entries`. Plain object
+configs are normalized to one entry internally, and array exports are accepted by `defineConfig` for
+ESLint-flat-config-style authoring.
+
+```ts
+export default defineConfig({
+  formatter: {
+    printWidth: 100,
+  },
+  entries: [
+    {
+      name: "web app",
+      basePath: "apps/web",
+      files: ["src/**/*.vue"],
+      typeChecker: {
+        tsconfig: "tsconfig.app.json",
+      },
+    },
+    {
+      name: "ui package",
+      basePath: "packages/ui",
+      files: ["src/**/*.vue"],
+      formatter: {
+        singleQuote: true,
+      },
+    },
+  ],
+});
+```
+
 ## PKL Config
 
 ```pkl
@@ -88,6 +121,17 @@ linter {
 typeChecker {
   enabled = true
   strict = true
+}
+
+entries = new Listing {
+  new ConfigEntry {
+    name = "web app"
+    basePath = "apps/web"
+    files = new Listing { "src/**/*.vue" }
+    typeChecker {
+      tsconfig = "tsconfig.app.json"
+    }
+  }
 }
 
 lsp {

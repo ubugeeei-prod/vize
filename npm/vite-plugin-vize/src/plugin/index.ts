@@ -2,11 +2,11 @@
 
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite";
 
-import type { VizeOptions, ConfigEnv } from "../types.ts";
+import type { VizeOptions, ConfigEnv, ResolvedVizeConfig } from "../types.ts";
 import { createFilter } from "../utils/index.ts";
 import { toBrowserImportPrefix } from "../virtual.ts";
 import { shouldApplyDefineInVirtualModule, createLogger } from "../transform.ts";
-import { loadConfig, vizeConfigStore } from "../config.ts";
+import { loadConfig, resolveConfigExport, vizeConfigStore } from "../config.ts";
 import {
   DEFAULT_PRECOMPILE_BATCH_SIZE,
   DEFAULT_PRECOMPILE_IGNORE_PATTERNS,
@@ -31,6 +31,52 @@ export type { VizePluginState } from "./state.ts";
 
 function aliasSortKey(find: string | RegExp): number {
   return typeof find === "string" ? find.length : find.source.length;
+}
+
+function mergeSharedConfig(
+  baseConfig: ResolvedVizeConfig | null,
+  overrideConfig: ResolvedVizeConfig | null,
+): ResolvedVizeConfig | null {
+  if (!baseConfig) return overrideConfig;
+  if (!overrideConfig) return baseConfig;
+
+  return {
+    ...baseConfig,
+    ...overrideConfig,
+    compiler: {
+      ...baseConfig.compiler,
+      ...overrideConfig.compiler,
+    },
+    vite: {
+      ...baseConfig.vite,
+      ...overrideConfig.vite,
+    },
+    linter: {
+      ...baseConfig.linter,
+      ...overrideConfig.linter,
+    },
+    typeChecker: {
+      ...baseConfig.typeChecker,
+      ...overrideConfig.typeChecker,
+    },
+    formatter: {
+      ...baseConfig.formatter,
+      ...overrideConfig.formatter,
+    },
+    languageServer: {
+      ...baseConfig.languageServer,
+      ...overrideConfig.languageServer,
+    },
+    musea: {
+      ...baseConfig.musea,
+      ...overrideConfig.musea,
+    },
+    globalTypes: {
+      ...baseConfig.globalTypes,
+      ...overrideConfig.globalTypes,
+    },
+    entries: [...baseConfig.entries, ...overrideConfig.entries],
+  };
 }
 
 export function vize(options: VizeOptions = {}): Plugin[] {
@@ -128,7 +174,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         isSsrBuild: !!resolvedConfig.build?.ssr,
       };
 
-      let fileConfig = null;
+      let fileConfig: ResolvedVizeConfig | null = null;
       if (options.configMode !== false) {
         try {
           fileConfig = await loadConfig(state.root, {
@@ -138,7 +184,6 @@ export function vize(options: VizeOptions = {}): Plugin[] {
           });
           if (fileConfig) {
             state.logger.log("Loaded config from vize.config file");
-            vizeConfigStore.set(state.root, fileConfig);
           }
         } catch (error) {
           state.logger.warn(
@@ -148,8 +193,23 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         }
       }
 
-      const viteConfig = fileConfig?.vite ?? {};
-      const compilerConfig = fileConfig?.compiler ?? {};
+      let inlineConfig: ResolvedVizeConfig | null = null;
+      if (options.config) {
+        try {
+          inlineConfig = await resolveConfigExport(options.config, configEnv);
+          state.logger.log("Loaded inline vize config from plugin options");
+        } catch (error) {
+          state.logger.warn("Failed to resolve inline vize config:", error);
+        }
+      }
+
+      const sharedConfig = mergeSharedConfig(fileConfig, inlineConfig);
+      if (sharedConfig) {
+        vizeConfigStore.set(state.root, sharedConfig);
+      }
+
+      const viteConfig = sharedConfig?.vite ?? {};
+      const compilerConfig = sharedConfig?.compiler ?? {};
 
       state.mergedOptions = {
         ...options,

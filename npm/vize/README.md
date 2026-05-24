@@ -52,10 +52,10 @@ Recommended scripts:
 
 Shared config discovery is supported for the npm CLI:
 
+- `vize.config.pkl`
 - `vize.config.ts`
 - `vize.config.js`
 - `vize.config.mjs`
-- `vize.config.pkl`
 - `vize.config.json`
 
 Pkl config files require either `@pkl-community/pkl` installed in the project or a `pkl` binary on

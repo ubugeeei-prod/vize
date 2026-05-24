@@ -3,13 +3,15 @@
  */
 
 export { vize } from "./plugin/index.ts";
-export { defineConfig, loadConfig, vizeConfigStore } from "./config.ts";
+export { defineConfig, loadConfig, resolveConfigExport, vizeConfigStore } from "./config.ts";
 export { rewriteStaticAssetUrls as __internal_rewriteStaticAssetUrls } from "./transform.ts";
 export type {
   VizeOptions,
   CompiledModule,
   MacroArtifact,
   VizeConfig,
+  ResolvedVizeConfig,
+  UserConfigExport,
   LoadConfigOptions,
 } from "./types.ts";
 

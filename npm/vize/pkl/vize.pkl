@@ -15,6 +15,7 @@ typealias LintPreset = "happy-path" | "opinionated" | "essential" | "incremental
 typealias TrailingComma = "all" | "none" | "es5"
 typealias FilterPattern = String | Listing<String>
 typealias GlobalTypeValue = String | GlobalTypeDeclaration
+typealias ConfigExtends = String | Listing<String>
 
 class CompilerConfig {
   mode: CompilerMode? = null
@@ -139,6 +140,29 @@ class GlobalTypeDeclaration {
   defaultValue: String? = null
 }
 
+class ConfigEntry {
+  name: String? = null
+  basePath: String? = null
+  files: Listing<String>? = null
+  ignores: Listing<String>? = null
+  `extends`: ConfigExtends? = null
+  compiler: CompilerConfig?
+  vite: VitePluginConfig?
+  linter: LinterConfig?
+  typeChecker: TypeCheckerConfig?
+  formatter: FormatterConfig?
+  languageServer: LspConfig?
+  /// Deprecated: use `languageServer`.
+  lsp: LspConfig?
+  musea: MuseaConfig?
+  globalTypes: Mapping<String, GlobalTypeValue>? = null
+}
+
+name: String? = null
+basePath: String? = null
+files: Listing<String>? = null
+ignores: Listing<String>? = null
+`extends`: ConfigExtends? = null
 compiler: CompilerConfig?
 vite: VitePluginConfig?
 linter: LinterConfig?
@@ -149,3 +173,4 @@ languageServer: LspConfig?
 lsp: LspConfig?
 musea: MuseaConfig?
 globalTypes: Mapping<String, GlobalTypeValue>? = null
+entries: Listing<ConfigEntry>? = null

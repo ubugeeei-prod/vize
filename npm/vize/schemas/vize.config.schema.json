@@ -619,6 +619,76 @@
           }
         ]
       }
+    },
+    "VizeConfigEntry": {
+      "description": "Scoped Vize config entry for monorepos and workspaces",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Human-readable entry name for inspect output and diagnostics",
+          "type": "string"
+        },
+        "basePath": {
+          "description": "Directory used as the base for scoped file patterns and relative paths",
+          "type": "string"
+        },
+        "files": {
+          "description": "Glob patterns this entry applies to",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ignores": {
+          "description": "Glob patterns this entry excludes",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extends": {
+          "description": "Base config files or presets to compose",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "compiler": {
+          "$ref": "#/definitions/CompilerConfig"
+        },
+        "vite": {
+          "$ref": "#/definitions/VitePluginConfig"
+        },
+        "linter": {
+          "$ref": "#/definitions/LinterConfig"
+        },
+        "typeChecker": {
+          "$ref": "#/definitions/TypeCheckerConfig"
+        },
+        "formatter": {
+          "$ref": "#/definitions/FormatterConfig"
+        },
+        "languageServer": {
+          "$ref": "#/definitions/LanguageServerConfig"
+        },
+        "lsp": {
+          "$ref": "#/definitions/LanguageServerConfig"
+        },
+        "musea": {
+          "$ref": "#/definitions/MuseaConfig"
+        },
+        "globalTypes": {
+          "$ref": "#/definitions/GlobalTypesConfig"
+        }
+      },
+      "additionalProperties": false
     }
   },
   "title": "VizeConfig",
@@ -628,6 +698,42 @@
     "$schema": {
       "description": "JSON Schema reference for editor autocompletion",
       "type": "string"
+    },
+    "name": {
+      "description": "Human-readable entry name for inspect output and diagnostics",
+      "type": "string"
+    },
+    "basePath": {
+      "description": "Directory used as the base for scoped file patterns and relative paths",
+      "type": "string"
+    },
+    "files": {
+      "description": "Glob patterns this config applies to",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ignores": {
+      "description": "Glob patterns this config excludes",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extends": {
+      "description": "Base config files or presets to compose",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "compiler": {
       "$ref": "#/definitions/CompilerConfig"
@@ -655,6 +761,13 @@
     },
     "globalTypes": {
       "$ref": "#/definitions/GlobalTypesConfig"
+    },
+    "entries": {
+      "description": "Scoped config entries for monorepos and workspaces",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/VizeConfigEntry"
+      }
     }
   },
   "additionalProperties": false

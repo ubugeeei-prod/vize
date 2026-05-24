@@ -50,10 +50,10 @@ vp install -D vize
 
 Supported config files:
 
+- `vize.config.pkl`
 - `vize.config.ts`
 - `vize.config.js`
 - `vize.config.mjs`
-- `vize.config.pkl`
 - `vize.config.json`
 
 TypeScript config:
@@ -106,9 +106,40 @@ Importing `defineConfig` from `@vizejs/vite-plugin` still works for backward com
 
 See [Configuration](./configuration.md) for the full shared config shape.
 
+Vite Plus-first projects can also keep startup-only settings inline in `vite.config.ts`:
+
+```ts
+import { defineConfig } from "vite-plus";
+import vize from "@vizejs/vite-plugin";
+
+export default defineConfig({
+  plugins: [
+    vize({
+      config: {
+        compiler: {
+          sourceMap: true,
+          vapor: false,
+        },
+        vite: {
+          scanPatterns: ["src/**/*.vue"],
+        },
+        musea: {
+          include: ["src/**/*.art.vue"],
+        },
+      },
+    }),
+  ],
+});
+```
+
+Inline config is available to the Vite plugin and shared plugin store during Vite Plus execution.
+Use `vize.config.*` for settings that must also be read by CLI and LSP commands.
+
 ## Compiler Options
 
 Direct options passed to `vize()` override `vize.config.*`.
+The full precedence is direct plugin options, then inline `config`, then `vize.config.*`, then
+defaults.
 
 ```ts
 vize({
@@ -135,6 +166,7 @@ vize({
 | `ignorePatterns`       | `vite.ignorePatterns` or `vize({ ignorePatterns })`       | Glob patterns skipped during startup pre-compilation.                                                     |
 | `configMode`           | `vize({ configMode })`                                    | Use `"root"`, `"auto"`, or `false` for shared config loading.                                             |
 | `configFile`           | `vize({ configFile })`                                    | Load a specific config file.                                                                              |
+| `config`               | `vize({ config })`                                        | Inline shared config for Vite Plus runtime settings.                                                      |
 | `handleNodeModulesVue` | `vize({ handleNodeModulesVue })`                          | Compile `.vue` files imported from `node_modules` on demand.                                              |
 | `debug`                | `vize({ debug })`                                         | Print plugin debug logs.                                                                                  |
 

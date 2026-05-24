@@ -186,10 +186,10 @@ vize check --declaration --declaration-dir dist/types
 
 The npm CLI and `@vizejs/vite-plugin` share config discovery:
 
+- `vize.config.pkl`
 - `vize.config.ts`
 - `vize.config.js`
 - `vize.config.mjs`
-- `vize.config.pkl`
 - `vize.config.json`
 
 TypeScript config:

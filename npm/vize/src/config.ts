@@ -7,6 +7,8 @@ import { transform } from "oxc-transform";
 import type {
   LanguageServerConfig,
   VizeConfig,
+  VizeConfigEntry,
+  ResolvedVizeConfig,
   LoadConfigOptions,
   UserConfigExport,
   ConfigEnv,
@@ -44,6 +46,10 @@ type CompatVizeConfig = VizeConfig & {
   lsp?: LanguageServerConfig;
 };
 
+type CompatVizeConfigEntry = VizeConfigEntry & {
+  lsp?: LanguageServerConfig;
+};
+
 /**
  * Define a Vize configuration with type checking.
  * Accepts a plain object or a function that receives ConfigEnv.
@@ -58,7 +64,7 @@ export function defineConfig(config: UserConfigExport): UserConfigExport {
 export async function loadConfig(
   root: string,
   options: LoadConfigOptions = {},
-): Promise<VizeConfig | null> {
+): Promise<ResolvedVizeConfig | null> {
   const { mode = "root", configFile, env } = options;
 
   if (mode === "none") {
@@ -80,7 +86,7 @@ export async function loadConfig(
   return loadConfigFromDir(root, env);
 }
 
-async function loadConfigFromDir(dir: string, env?: ConfigEnv): Promise<VizeConfig | null> {
+async function loadConfigFromDir(dir: string, env?: ConfigEnv): Promise<ResolvedVizeConfig | null> {
   for (const name of CONFIG_FILE_NAMES) {
     const filePath = path.join(dir, name);
     if (!fs.existsSync(filePath)) {
@@ -98,7 +104,7 @@ async function loadConfigFromDir(dir: string, env?: ConfigEnv): Promise<VizeConf
 async function loadConfigFromDirAuto(
   startDir: string,
   env?: ConfigEnv,
-): Promise<VizeConfig | null> {
+): Promise<ResolvedVizeConfig | null> {
   let currentDir = path.resolve(startDir);
 
   while (true) {
@@ -116,7 +122,10 @@ async function loadConfigFromDirAuto(
   }
 }
 
-async function loadConfigFile(filePath: string, env?: ConfigEnv): Promise<VizeConfig | null> {
+async function loadConfigFile(
+  filePath: string,
+  env?: ConfigEnv,
+): Promise<ResolvedVizeConfig | null> {
   const absolutePath = path.resolve(filePath);
   if (!fs.existsSync(absolutePath)) {
     return null;
@@ -175,7 +184,7 @@ function findPklBinary(): string | null {
   }
 }
 
-function loadPklConfig(filePath: string): VizeConfig | null {
+function loadPklConfig(filePath: string): ResolvedVizeConfig | null {
   const pklBin = findPklBinary();
   if (!pklBin) {
     console.warn(
@@ -240,10 +249,10 @@ function createPklConfigWithBundledSchemaImports(filePath: string): string | nul
   return tempFile;
 }
 
-async function resolveConfigExport(
+export async function resolveConfigExport(
   exported: UserConfigExport,
   env?: ConfigEnv,
-): Promise<VizeConfig> {
+): Promise<ResolvedVizeConfig> {
   if (typeof exported === "function") {
     return normalizeLoadedConfig(await exported(env ?? DEFAULT_CONFIG_ENV));
   }
@@ -251,7 +260,10 @@ async function resolveConfigExport(
   return normalizeLoadedConfig(exported);
 }
 
-async function loadTypeScriptConfig(filePath: string, env?: ConfigEnv): Promise<VizeConfig> {
+async function loadTypeScriptConfig(
+  filePath: string,
+  env?: ConfigEnv,
+): Promise<ResolvedVizeConfig> {
   const source = fs.readFileSync(filePath, "utf-8");
   const result = await transform(filePath, source, {
     typescript: {
@@ -274,7 +286,7 @@ async function loadTypeScriptConfig(filePath: string, env?: ConfigEnv): Promise<
   }
 }
 
-async function loadESMConfig(filePath: string, env?: ConfigEnv): Promise<VizeConfig> {
+async function loadESMConfig(filePath: string, env?: ConfigEnv): Promise<ResolvedVizeConfig> {
   const module = await importFresh(filePath);
   const exported: UserConfigExport = module.default || module;
   return resolveConfigExport(exported, env);
@@ -286,7 +298,7 @@ async function importFresh(filePath: string): Promise<Record<string, unknown>> {
   return import(fileUrl.href);
 }
 
-function parseJsonConfig(content: string, filePath: string): VizeConfig {
+function parseJsonConfig(content: string, filePath: string): ResolvedVizeConfig {
   try {
     return normalizeLoadedConfig(JSON.parse(content));
   } catch (error) {
@@ -294,9 +306,86 @@ function parseJsonConfig(content: string, filePath: string): VizeConfig {
   }
 }
 
-function normalizeLoadedConfig(config: unknown): VizeConfig {
+function normalizeLoadedConfig(config: unknown): ResolvedVizeConfig {
   const normalized = stripNullish(config);
-  return normalizeConfigAliases((normalized ?? {}) as CompatVizeConfig);
+  if (Array.isArray(normalized)) {
+    return normalizeConfigEntries(normalized as CompatVizeConfigEntry[]);
+  }
+
+  return normalizeConfigObject((normalized ?? {}) as CompatVizeConfig);
+}
+
+function normalizeConfigObject(config: CompatVizeConfig): ResolvedVizeConfig {
+  const { entries: rawEntries, ...rootConfig } = normalizeConfigAliases(config) as VizeConfig & {
+    entries?: CompatVizeConfigEntry[];
+  };
+  const rootEntry = rootConfig as VizeConfigEntry;
+  const entries = [
+    ...(isEmptyConfigEntry(rootEntry) ? [] : [rootEntry]),
+    ...(rawEntries ?? []).map((entry) => normalizeConfigAliases(entry) as VizeConfigEntry),
+  ];
+
+  return {
+    ...rootEntry,
+    entries,
+  };
+}
+
+function normalizeConfigEntries(entries: CompatVizeConfigEntry[]): ResolvedVizeConfig {
+  const normalizedEntries = entries.map(
+    (entry) => normalizeConfigAliases(entry) as VizeConfigEntry,
+  );
+  const globalConfig = mergeConfigEntries(normalizedEntries.filter(isGlobalConfigEntry));
+
+  return {
+    ...globalConfig,
+    entries: normalizedEntries,
+  };
+}
+
+function mergeConfigEntries(entries: VizeConfigEntry[]): VizeConfigEntry {
+  const result: Record<string, unknown> = {};
+  for (const entry of entries) {
+    deepMerge(result, stripEntryMetadata(entry));
+  }
+  return result as VizeConfigEntry;
+}
+
+function stripEntryMetadata(entry: VizeConfigEntry): Partial<VizeConfigEntry> {
+  const { name, basePath, files, ignores, extends: extendsConfig, ...config } = entry;
+  void name;
+  void basePath;
+  void files;
+  void ignores;
+  void extendsConfig;
+  return config;
+}
+
+function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(source)) {
+    if (value === undefined) {
+      continue;
+    }
+
+    const current = target[key];
+    if (isPlainObject(current) && isPlainObject(value)) {
+      deepMerge(current, value);
+    } else {
+      target[key] = value;
+    }
+  }
+}
+
+function isGlobalConfigEntry(entry: VizeConfigEntry): boolean {
+  return entry.basePath === undefined && entry.files === undefined && entry.ignores === undefined;
+}
+
+function isEmptyConfigEntry(entry: VizeConfigEntry): boolean {
+  return Object.keys(entry).length === 0;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function stripNullish(value: unknown): unknown {

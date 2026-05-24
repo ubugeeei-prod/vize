@@ -3,6 +3,7 @@ export type {
   RuleSeverity,
   RuleCategory,
   VizeConfig,
+  VizeConfigEntry,
   CompilerConfig,
   VitePluginConfig,
   LinterConfig,
@@ -25,4 +26,11 @@ export type { LintRuleName, LintRulesConfig } from "./rules.js";
  */
 export type LspConfig = import("./generated.js").LanguageServerConfig;
 
-export type { MaybePromise, ConfigEnv, UserConfigExport, LoadConfigOptions } from "./runtime.js";
+export type {
+  MaybePromise,
+  ConfigEnv,
+  UserConfigInput,
+  UserConfigExport,
+  ResolvedVizeConfig,
+  LoadConfigOptions,
+} from "./runtime.js";

@@ -1,4 +1,4 @@
-import type { LanguageServerConfig, VizeConfig } from "./generated.js";
+import type { LanguageServerConfig, VizeConfig, VizeConfigEntry } from "./generated.js";
 
 // ============================================================================
 // TS-specific runtime types (cannot be expressed in Pkl)
@@ -20,7 +20,19 @@ export type UserConfig = VizeConfig & {
   lsp?: LanguageServerConfig;
 };
 
-export type UserConfigExport = UserConfig | ((env: ConfigEnv) => MaybePromise<UserConfig>);
+export type UserConfigInput = UserConfig | VizeConfigEntry[];
+
+export type ResolvedVizeConfig = VizeConfig & {
+  /**
+   * Normalized flat entries. Plain object configs become one entry; array configs
+   * keep their order.
+   */
+  entries: VizeConfigEntry[];
+};
+
+export type UserConfigExport =
+  | UserConfigInput
+  | ((env: ConfigEnv) => MaybePromise<UserConfigInput>);
 
 // ============================================================================
 // LoadConfigOptions
