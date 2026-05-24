@@ -314,6 +314,7 @@ export default {
   linter: {
     rules: {
       "vue/prop-name-casing": "off",
+      "script/no-options-api": "error",
     },
   },
 }
@@ -330,6 +331,11 @@ export default {
             linter_from_loaded_config.disabled_rules(),
             ["vue/prop-name-casing"]
         );
+        assert_eq!(
+            linter_from_loaded_config.enabled_rules(),
+            ["script/no-options-api"]
+        );
         assert_eq!(linter.disabled_rules(), ["vue/prop-name-casing"]);
+        assert_eq!(linter.enabled_rules(), ["script/no-options-api"]);
     }
 }

@@ -618,7 +618,7 @@ impl ServerState {
         }
 
         if is_standalone_html_path(uri.path()) {
-            self.remove_virtual_docs(uri);
+            self.update_standalone_html_virtual_docs(uri, content);
             return;
         }
 
@@ -635,6 +635,24 @@ impl ServerState {
         let base_uri = uri.path();
         let virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
         self.virtual_docs_cache.insert(uri.clone(), virtual_docs);
+    }
+
+    /// Generate and cache virtual documents for standalone HTML files.
+    fn update_standalone_html_virtual_docs(&self, uri: &Url, content: &str) {
+        use crate::virtual_code::{TemplateCodeGenerator, VirtualDocuments};
+
+        let allocator = vize_carton::Bump::new();
+        let (ast, _errors) = vize_armature::parse(&allocator, content);
+        let base_uri = uri.path();
+
+        let mut template_gen = TemplateCodeGenerator::new();
+        template_gen.set_block_offset(0);
+        let mut template_doc = template_gen.generate(&ast, content);
+        template_doc.uri = vize_carton::cstr!("{base_uri}.__template.ts").to_string();
+
+        let mut docs = VirtualDocuments::new();
+        docs.template = Some(template_doc);
+        self.virtual_docs_cache.insert(uri.clone(), docs);
     }
 
     /// Generate and cache virtual documents for an art file (*.art.vue).
@@ -1061,6 +1079,20 @@ const secondaryLabel = ref('secondary')
             .source_map
             .to_generated(info.relative_offset as u32);
         assert!(generated_offset.is_some());
+    }
+
+    #[test]
+    fn update_virtual_docs_generates_standalone_html_template_doc() {
+        let state = ServerState::new();
+        let uri = Url::parse("file:///index.html").unwrap();
+        let source = r#"<div v-scope="{ count: 0 }">{{ count }}</div>"#;
+
+        state.update_virtual_docs(&uri, source);
+
+        let virtual_docs = state.get_virtual_docs(&uri).unwrap();
+        let template = virtual_docs.template.as_ref().unwrap();
+        assert!(template.uri.ends_with("index.html.__template.ts"));
+        assert!(template.content.contains("count"));
     }
 
     #[test]

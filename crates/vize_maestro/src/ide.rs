@@ -49,6 +49,7 @@ pub use workspace_symbols::WorkspaceSymbolsService;
 use tower_lsp::lsp_types::Url;
 
 use crate::server::ServerState;
+use crate::utils::is_standalone_html_path;
 use crate::virtual_code::{
     ArtCursorPosition, BlockType, VirtualDocuments, find_art_block_at_offset, find_block_at_offset,
 };
@@ -309,6 +310,57 @@ fn is_in_vue_directive_attribute_value(content: &str, offset: usize) -> bool {
         || attr_name.starts_with("v-")
 }
 
+fn standalone_html_block_at_offset(content: &str, offset: usize) -> BlockType {
+    if is_inside_raw_html_element(content, offset, "script") {
+        BlockType::Script
+    } else if is_inside_raw_html_element(content, offset, "style") {
+        BlockType::Style(0)
+    } else {
+        BlockType::Template
+    }
+}
+
+fn is_inside_raw_html_element(content: &str, offset: usize, tag_name: &str) -> bool {
+    let cursor = offset.min(content.len());
+    let before = content[..cursor].to_ascii_lowercase();
+    let Some(open_start) = last_start_tag(&before, tag_name) else {
+        return false;
+    };
+
+    let close_needle = format!("</{tag_name}");
+    if before
+        .rfind(&close_needle)
+        .is_some_and(|close_start| close_start > open_start)
+    {
+        return false;
+    }
+
+    before[open_start..].contains('>')
+}
+
+fn last_start_tag(content: &str, tag_name: &str) -> Option<usize> {
+    let needle = format!("<{tag_name}");
+    let bytes = content.as_bytes();
+    let mut search_start = 0;
+    let mut last = None;
+
+    while let Some(relative) = content[search_start..].find(&needle) {
+        let start = search_start + relative;
+        let after_name = start + needle.len();
+        if after_name == bytes.len()
+            || matches!(
+                bytes[after_name],
+                b'>' | b'/' | b' ' | b'\t' | b'\n' | b'\r'
+            )
+        {
+            last = Some(start);
+        }
+        search_start = after_name;
+    }
+
+    last
+}
+
 /// Context for IDE operations.
 pub struct IdeContext<'a> {
     /// Server state
@@ -335,6 +387,8 @@ impl<'a> IdeContext<'a> {
         let block_type = if uri.path().ends_with(".art.vue") {
             // For art files, use art-specific block detection
             find_art_block_at_offset(&content, offset)
+        } else if is_standalone_html_path(uri.path()) {
+            Some(standalone_html_block_at_offset(&content, offset))
         } else {
             // Parse SFC to determine block type
             let options = vize_atelier_sfc::SfcParseOptions {

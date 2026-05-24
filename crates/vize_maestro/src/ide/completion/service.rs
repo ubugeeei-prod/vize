@@ -175,7 +175,7 @@ impl super::CompletionService {
             if !corsa_items.is_empty() {
                 let mut items = corsa_items;
                 items.extend(match block_type {
-                    BlockType::Template => template::directive_completions(),
+                    BlockType::Template => template::contextual_directive_completions(ctx),
                     BlockType::Script => script::composition_api_completions(),
                     BlockType::ScriptSetup => {
                         let mut v = script::composition_api_completions();

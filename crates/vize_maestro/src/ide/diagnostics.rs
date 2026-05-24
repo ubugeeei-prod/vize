@@ -503,13 +503,17 @@ mod tests {
     }
 
     #[test]
-    fn collect_lints_standalone_html_with_configured_preset() {
+    fn collect_lints_standalone_html_with_configured_rule() {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(
             dir.path().join("vize.config.json"),
             r#"{
                 "lsp": { "lint": true },
-                "linter": { "preset": "opinionated" }
+                "linter": {
+                    "rules": {
+                        "script/no-options-api": "error"
+                    }
+                }
             }"#,
         )
         .unwrap();
@@ -543,7 +547,7 @@ Vue.createApp({
 
         let diagnostics = DiagnosticService::collect(&state, &uri);
 
-        assert!(state.get_virtual_docs(&uri).is_none());
+        assert!(state.get_virtual_docs(&uri).is_some());
         assert!(
             diagnostics
                 .iter()

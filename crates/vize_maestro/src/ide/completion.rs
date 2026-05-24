@@ -110,6 +110,17 @@ mod tests {
     }
 
     #[test]
+    fn test_petite_vue_directive_completions() {
+        let items = template::petite_vue_directive_completions();
+        let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
+
+        assert!(labels.contains(&"v-scope"));
+        assert!(labels.contains(&"v-effect"));
+        assert!(labels.contains(&"@vue:mounted"));
+        assert!(labels.contains(&"@vue:unmounted"));
+    }
+
+    #[test]
     fn test_composition_api_completions() {
         let items = script::composition_api_completions();
         assert!(!items.is_empty());
@@ -218,6 +229,32 @@ const message = ref('hello')
         let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
 
         assert!(!has_label(&labels, "message"));
+        assert!(has_label(&labels, "v-if"));
+    }
+
+    #[test]
+    fn test_standalone_html_completion_includes_petite_vue_directives() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("index.html");
+        let source = r#"<script src="https://unpkg.com/petite-vue" defer init></script>
+<div v-scope="{ count: 0 }" >{{ count }}</div>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "html".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.find("<div ").unwrap() + "<div ".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert!(has_label(&labels, "v-scope"));
+        assert!(has_label(&labels, "v-effect"));
+        assert!(has_label(&labels, "@vue:mounted"));
         assert!(has_label(&labels, "v-if"));
     }
 

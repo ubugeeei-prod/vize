@@ -26,6 +26,14 @@ impl HoverService {
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let template = virtual_docs.template.as_ref()?;
 
+        if crate::utils::is_standalone_html_path(ctx.uri.path()) {
+            return template
+                .source_map
+                .to_generated(sfc_offset as u32)
+                .map(|o| o as usize)
+                .or(Some(sfc_offset));
+        }
+
         // Get template block start offset in SFC
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: ctx.uri.path().to_string().into(),

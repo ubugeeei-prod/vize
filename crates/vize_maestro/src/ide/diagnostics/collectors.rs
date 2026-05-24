@@ -364,6 +364,7 @@ impl DiagnosticService {
         } else {
             vize_patina::Linter::with_preset(preset)
         }
+        .with_additional_rules(linter_config.enabled_rules())
         .with_disabled_rules(linter_config.disabled_rules());
         let result = if is_standalone_html {
             linter.lint_standalone_html(content, uri.path())

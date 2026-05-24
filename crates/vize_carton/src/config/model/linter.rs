@@ -39,6 +39,18 @@ impl LinterConfig {
         rules.sort();
         rules
     }
+
+    /// Rule names explicitly enabled by config.
+    pub fn enabled_rules(&self) -> Vec<String> {
+        let mut rules = self
+            .rules
+            .iter()
+            .filter(|(_, severity)| !matches!(severity, LintRuleSeverity::Off))
+            .map(|(rule, _)| rule.clone())
+            .collect::<Vec<_>>();
+        rules.sort();
+        rules
+    }
 }
 
 impl Default for LinterConfig {

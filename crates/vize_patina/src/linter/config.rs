@@ -185,6 +185,34 @@ impl Linter {
         self
     }
 
+    /// Enable additional opt-in rules while preserving the active preset's rules.
+    #[inline]
+    pub fn with_additional_rules(mut self, rules: Vec<String>) -> Self {
+        if rules.is_empty() {
+            return self;
+        }
+
+        let mut enabled_rules = self.enabled_rules.take().unwrap_or_else(|| {
+            let mut names = self
+                .registry
+                .rule_names()
+                .iter()
+                .map(|name| String::from(*name))
+                .collect::<FxHashSet<_>>();
+            names.extend(self.script_rules.iter().map(|name| String::from(*name)));
+            names
+        });
+
+        if matches!(self.preset, Some(LintPreset::Incremental)) {
+            self.registry = RuleRegistry::with_preset(LintPreset::Opinionated);
+        }
+        self.registry.register_opt_in_rules();
+        self.script_rules = super::script_rules::all_builtin_script_rule_names();
+        enabled_rules.extend(rules);
+        self.enabled_rules = Some(enabled_rules);
+        self
+    }
+
     /// Disable selected rules while preserving the active preset.
     #[inline]
     pub fn with_disabled_rules(mut self, rules: Vec<String>) -> Self {

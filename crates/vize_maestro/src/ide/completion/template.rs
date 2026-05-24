@@ -30,7 +30,7 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
     let mut items_vec = Vec::new();
 
     // Add Vue directives
-    items_vec.extend(directive_completions());
+    items_vec.extend(contextual_directive_completions(ctx));
 
     // Add built-in components
     items_vec.extend(builtin_component_completions());
@@ -225,6 +225,71 @@ pub(crate) fn directive_completions() -> Vec<CompletionItem> {
         items::directive_item(":", "Bind shorthand", ":$1=\"$2\""),
         items::directive_item("#", "Slot shorthand", "#$1"),
     ]
+}
+
+/// Vue directive completions, extended with opt-in document-specific directives.
+pub(crate) fn contextual_directive_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
+    let mut completions = directive_completions();
+    if crate::utils::is_standalone_html_path(ctx.uri.path())
+        && crate::utils::is_petite_vue_document(&ctx.content)
+    {
+        completions.extend(petite_vue_directive_completions());
+    }
+    completions
+}
+
+/// petite-vue directive and lifecycle event completions.
+pub(crate) fn petite_vue_directive_completions() -> Vec<CompletionItem> {
+    vec![
+        petite_vue_item(
+            "v-scope",
+            "petite-vue scope root",
+            "v-scope=\"{ $1 }\"",
+            "Marks an HTML region controlled by petite-vue.",
+        ),
+        petite_vue_item(
+            "v-effect",
+            "Reactive inline effect",
+            "v-effect=\"$1\"",
+            "Runs reactive inline statements when referenced state changes.",
+        ),
+        petite_vue_item(
+            "@vue:mounted",
+            "petite-vue mounted event",
+            "@vue:mounted=\"$1\"",
+            "Listens for the petite-vue mounted lifecycle event.",
+        ),
+        petite_vue_item(
+            "@vue:unmounted",
+            "petite-vue unmounted event",
+            "@vue:unmounted=\"$1\"",
+            "Listens for the petite-vue unmounted lifecycle event.",
+        ),
+    ]
+}
+
+#[allow(clippy::disallowed_macros)]
+fn petite_vue_item(
+    label: &str,
+    detail: &str,
+    snippet: &str,
+    documentation: &str,
+) -> CompletionItem {
+    CompletionItem {
+        label: label.to_string(),
+        kind: Some(CompletionItemKind::KEYWORD),
+        detail: Some(detail.to_string()),
+        insert_text: Some(snippet.to_string()),
+        insert_text_format: Some(InsertTextFormat::SNIPPET),
+        documentation: Some(Documentation::MarkupContent(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: format!(
+                "**{}**\n\n{}\n\n[petite-vue](https://github.com/vuejs/petite-vue)",
+                label, documentation
+            ),
+        })),
+        ..Default::default()
+    }
 }
 
 /// Vize directive completions for use inside HTML comments.

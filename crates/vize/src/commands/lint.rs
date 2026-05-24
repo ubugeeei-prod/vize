@@ -156,6 +156,7 @@ pub fn run(args: LintArgs) {
         .unwrap_or(args.preset.as_str());
     let preset = LintPreset::parse(preset_name).unwrap_or_default();
     let mut linter = Linter::with_preset(preset)
+        .with_additional_rules(linter_config.enabled_rules())
         .with_disabled_rules(linter_config.disabled_rules())
         .with_help_level(help_level);
     #[cfg(not(target_arch = "wasm32"))]

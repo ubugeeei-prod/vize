@@ -455,6 +455,68 @@ const secondaryLabel = ref('secondary')
     }
 
     #[test]
+    fn test_definition_resolves_standalone_html_v_scope_property() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("index.html");
+        let source = r#"<script src="https://unpkg.com/petite-vue" defer init></script>
+<div v-scope="{ count: 0, inc() { count++ } }">
+  {{ count }}
+  <button @click="inc">inc</button>
+</div>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "html".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.rfind("count").unwrap() + "count".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let location = scalar_location(DefinitionService::definition(&ctx).unwrap());
+        let expected_binding_offset = source.find("count: 0").unwrap();
+        let (line, character) = crate::ide::offset_to_position(source, expected_binding_offset);
+
+        assert_eq!(location.uri, uri);
+        assert_eq!(location.range.start.line, line);
+        assert_eq!(location.range.start.character, character);
+    }
+
+    #[test]
+    fn test_definition_resolves_standalone_html_create_app_property() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("index.html");
+        let source = r#"<script src="https://unpkg.com/petite-vue"></script>
+<script>
+PetiteVue.createApp({
+  count: 0
+}).mount()
+</script>
+<div v-scope>{{ count }}</div>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "html".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.rfind("count").unwrap() + "count".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let location = scalar_location(DefinitionService::definition(&ctx).unwrap());
+        let expected_binding_offset = source.find("count: 0").unwrap();
+        let (line, character) = crate::ide::offset_to_position(source, expected_binding_offset);
+
+        assert_eq!(location.uri, uri);
+        assert_eq!(location.range.start.line, line);
+        assert_eq!(location.range.start.character, character);
+    }
+
+    #[test]
     fn test_definition_in_style_resolves_inside_v_bind_argument() {
         let dir = tempfile::tempdir().unwrap();
         let source_path = dir.path().join("Styled.vue");
