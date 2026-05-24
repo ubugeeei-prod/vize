@@ -1,6 +1,5 @@
 ---
 source: crates/vize_canon/src/tests.rs
-assertion_line: 336
 expression: virtual_ts
 ---
 /// <reference lib="es2022" />
@@ -88,7 +87,7 @@ function __setup<T extends string | number>() {
   type __R_activeItem = typeof activeItem;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends import('vue').Ref<infer V, unknown> ? V : T;
+    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;
     var activeItem: __U<__R_activeItem> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;

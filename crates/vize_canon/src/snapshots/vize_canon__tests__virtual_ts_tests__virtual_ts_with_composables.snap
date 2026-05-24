@@ -71,7 +71,14 @@ function __setup() {
   // @vize-map: 4231:4270 -> 0:70
 
   // ========== Template Scope (inherits from setup) ==========
+  // Ref type captures (before template scope shadows them)
+  type __R_x = typeof x;
+  type __R_y = typeof y;
   ;(function __template() {
+    // Auto-unwrap Vue refs in template scope
+    type __U<T> = T extends import('vue').Ref<infer V, any> ? V : T;
+    var x: __U<__R_x> = undefined as any;
+    var y: __U<__R_y> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     type __Ctx = import('vue').ComponentPublicInstance;
     const __ctx = undefined as unknown as __Ctx;

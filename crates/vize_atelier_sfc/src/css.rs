@@ -28,7 +28,6 @@ use crate::types::SfcStyleBlock;
 use self::scoped::apply_scoped_css;
 use self::transform::extract_and_transform_v_bind_with_scope;
 pub(crate) use self::transform::scoped_v_bind_name;
-pub(crate) use self::transform::trim_outer_quotes;
 
 pub(crate) fn transform_css_v_bind(css: &str, scope_id: Option<&str>) -> (String, Vec<String>) {
     let bump = Bump::new();
