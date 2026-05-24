@@ -4,6 +4,7 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  vueParserQuirks?: boolean;
   scopeId?: string;
 }
 
@@ -48,6 +49,7 @@ export interface VizeUnpluginOptions {
   sourceMap?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  vueParserQuirks?: boolean;
   root?: string;
   debug?: boolean;
 }
@@ -87,6 +89,7 @@ export interface NormalizedVizeUnpluginOptions {
   sourceMap: boolean;
   vapor: boolean;
   customRenderer: boolean;
+  vueParserQuirks: boolean;
   root: string;
   debug: boolean;
 }

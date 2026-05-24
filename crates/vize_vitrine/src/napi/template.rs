@@ -19,9 +19,12 @@ use vize_atelier_core::{
     codegen::generate,
     options::{CodegenMode, CodegenOptions, TransformOptions},
     parser::parse,
-    transform::transform,
+    transform::{transform, transform_with_vue_parser_quirks},
 };
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor as vapor_compile};
+use vize_atelier_vapor::{
+    VaporCompilerOptions, compile_vapor as vapor_compile,
+    compile_vapor_with_vue_parser_quirks as vapor_compile_with_vue_parser_quirks,
+};
 
 /// Compile Vue template to VDom render function
 #[napi]
@@ -52,7 +55,11 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         ssr: opts.ssr.unwrap_or(false),
         ..Default::default()
     };
-    transform(&allocator, &mut root, transform_opts, None);
+    if opts.vue_parser_quirks.unwrap_or(false) {
+        transform_with_vue_parser_quirks(&allocator, &mut root, transform_opts, None);
+    } else {
+        transform(&allocator, &mut root, transform_opts, None);
+    }
 
     // Codegen
     let codegen_opts = CodegenOptions {
@@ -95,7 +102,11 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
         ssr: opts.ssr.unwrap_or(false),
         ..Default::default()
     };
-    let result = vapor_compile(&allocator, &template, vapor_opts);
+    let result = if opts.vue_parser_quirks.unwrap_or(false) {
+        vapor_compile_with_vue_parser_quirks(&allocator, &template, vapor_opts)
+    } else {
+        vapor_compile(&allocator, &template, vapor_opts)
+    };
 
     if !result.error_messages.is_empty() {
         return Err(Error::new(

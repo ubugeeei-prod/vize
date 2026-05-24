@@ -47,7 +47,7 @@ pub(crate) fn diagnostics(content: &str, uri: &Url) -> Vec<Diagnostic> {
         return Vec::new();
     };
 
-    let mut diagnostics = router::route_param_diagnostics(content, uri);
+    let mut diagnostics = router::route_param_diagnostics(content, uri, &descriptor);
     diagnostics.extend(i18n::missing_key_diagnostics(content, &descriptor, uri));
     diagnostics
 }

@@ -14,7 +14,9 @@ pub fn compile_sfc(
 ) -> Result<SfcCompileResultNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions, compile_sfc as sfc_compile, parse_sfc as sfc_parse,
+        TemplateCompileOptions, compile_sfc as sfc_compile,
+        compile_sfc_with_vue_parser_quirks as sfc_compile_with_vue_parser_quirks,
+        parse_sfc as sfc_parse,
     };
 
     let opts = options.unwrap_or_default();
@@ -54,6 +56,7 @@ pub fn compile_sfc(
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
+    let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
     let external_scope_id: Option<vize_carton::CompactString> = opts
         .scope_id
         .as_ref()
@@ -97,7 +100,13 @@ pub fn compile_sfc(
         scope_id: external_scope_id,
     };
 
-    match sfc_compile(&descriptor, compile_opts) {
+    let compile_result = if vue_parser_quirks {
+        sfc_compile_with_vue_parser_quirks(&descriptor, compile_opts)
+    } else {
+        sfc_compile(&descriptor, compile_opts)
+    };
+
+    match compile_result {
         Ok(result) => Ok(SfcCompileResultNapi {
             code: result.code.into(),
             css: result.css.map(Into::into),

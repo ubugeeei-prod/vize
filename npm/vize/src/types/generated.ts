@@ -48,6 +48,10 @@ export interface CompilerConfig {
    */
   ssr?: boolean;
   /**
+   * Enable Vue parser quirk compatibility
+   */
+  vueParserQuirks?: boolean;
+  /**
    * Enable source map generation
    */
   sourceMap?: boolean;

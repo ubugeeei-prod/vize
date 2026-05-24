@@ -72,6 +72,7 @@ export function getCompileOptionsForRequest(
   ssr: boolean;
   vapor: boolean;
   customRenderer: boolean;
+  vueParserQuirks: boolean;
 } {
   return {
     sourceMap: state.mergedOptions?.sourceMap ?? !state.isProduction,
@@ -79,6 +80,7 @@ export function getCompileOptionsForRequest(
     // Vapor runtime is client-oriented today; use VDOM for SSR and Vapor on the client.
     vapor: !ssr && (state.mergedOptions?.vapor ?? false),
     customRenderer: state.mergedOptions?.customRenderer ?? false,
+    vueParserQuirks: state.mergedOptions?.vueParserQuirks ?? false,
   };
 }
 
@@ -200,6 +202,7 @@ export async function compileAll(state: VizePluginState): Promise<void> {
       ssr: false,
       vapor: state.mergedOptions.vapor ?? false,
       customRenderer: state.mergedOptions.customRenderer ?? false,
+      vueParserQuirks: state.mergedOptions.vueParserQuirks ?? false,
     });
 
     const chunkFailedCount = result.results.filter(

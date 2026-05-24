@@ -11,6 +11,7 @@ export interface SfcCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  vueParserQuirks?: boolean;
   scopeId?: string;
 }
 
@@ -91,6 +92,12 @@ export interface VizeOptions {
    * @default false
    */
   customRenderer?: boolean;
+
+  /**
+   * Enable compatibility for known Vue compiler parser quirks.
+   * @default false
+   */
+  vueParserQuirks?: boolean;
 
   /**
    * Root directory to scan for .vue files
@@ -216,6 +223,7 @@ export interface BatchCompileOptionsNapi {
   ssr?: boolean;
   vapor?: boolean;
   customRenderer?: boolean;
+  vueParserQuirks?: boolean;
   threads?: number;
 }
 

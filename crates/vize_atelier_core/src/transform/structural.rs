@@ -399,6 +399,16 @@ pub fn transform_v_for<'a>(
         return None;
     };
 
+    let Some(parse_result) = crate::transforms::parse_for_expression_with_options(
+        allocator,
+        &exp.content,
+        &exp.loc,
+        ctx.vue_parser_quirks(),
+    ) else {
+        ctx.on_error(ErrorCode::VForMalformedExpression, Some(exp.loc.clone()));
+        return None;
+    };
+
     // Take the current element from parent
     let taken = ctx.take_current_node();
     let taken_node = taken?;
@@ -408,7 +418,6 @@ pub fn transform_v_for<'a>(
         _ => return None,
     };
 
-    let parse_result = crate::transforms::parse_for_expression(allocator, &exp.content, &exp.loc);
     let mut source = parse_result.source;
     let value_alias = parse_result.value;
     let key_alias = parse_result.key;

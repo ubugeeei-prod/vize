@@ -21,6 +21,7 @@ class CompilerConfig {
   vapor: Boolean? = null
   customRenderer: Boolean? = null
   ssr: Boolean? = null
+  vueParserQuirks: Boolean? = null
   sourceMap: Boolean? = null
   prefixIdentifiers: Boolean? = null
   hoistStatic: Boolean? = null

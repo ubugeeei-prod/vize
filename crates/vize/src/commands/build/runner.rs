@@ -14,7 +14,7 @@ use ignore::Walk;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-    TemplateCompileOptions, compile_sfc, parse_sfc,
+    TemplateCompileOptions, compile_sfc, compile_sfc_with_vue_parser_quirks, parse_sfc,
 };
 use vize_carton::String;
 use vize_carton::ToCompactString;
@@ -83,18 +83,18 @@ pub(crate) fn run(args: BuildArgs) {
     let profiles: Mutex<Vec<FileProfile>> = Mutex::new(Vec::new());
 
     let compile_start = Instant::now();
+    let compile_settings = CompileFileSettings {
+        ssr: args.ssr,
+        vapor: args.vapor,
+        custom_renderer: args.custom_renderer,
+        vue_parser_quirks: args.vue_parser_quirks,
+        script_ext: args.script_ext,
+        record_profile_totals: args.profile,
+    };
     let results: Vec<_> = files
         .par_iter()
         .map(|path| {
-            match compile_file_with_profile(
-                path,
-                args.ssr,
-                args.vapor,
-                args.custom_renderer,
-                args.script_ext,
-                &stats,
-                args.profile,
-            ) {
+            match compile_file_with_profile(path, compile_settings, &stats) {
                 Ok((output, profile)) => {
                     stats.success.fetch_add(1, Ordering::Relaxed);
                     stats
@@ -536,14 +536,20 @@ fn pattern_matches(path: &std::path::Path, pattern: &str) -> bool {
 }
 
 /// Compile a single `.vue` file with profiling information.
-fn compile_file_with_profile(
-    path: &PathBuf,
+#[derive(Clone, Copy)]
+struct CompileFileSettings {
     ssr: bool,
     vapor: bool,
     custom_renderer: bool,
+    vue_parser_quirks: bool,
     script_ext: ScriptExtension,
-    stats: &CompileStats,
     record_profile_totals: bool,
+}
+
+fn compile_file_with_profile(
+    path: &PathBuf,
+    settings: CompileFileSettings,
+    stats: &CompileStats,
 ) -> Result<(CompileOutput, FileProfile), CompileError> {
     let file_start = Instant::now();
 
@@ -588,7 +594,7 @@ fn compile_file_with_profile(
             }
         })?;
     let parse_time = parse_start.elapsed();
-    if record_profile_totals {
+    if settings.record_profile_totals {
         stats.add_parse_time(parse_time);
     }
 
@@ -621,7 +627,7 @@ fn compile_file_with_profile(
     // Compile
     let compile_start = Instant::now();
     let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
-    let is_ts = matches!(script_ext, ScriptExtension::Preserve);
+    let is_ts = matches!(settings.script_ext, ScriptExtension::Preserve);
     let compile_opts = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),
@@ -635,9 +641,9 @@ fn compile_file_with_profile(
         template: TemplateCompileOptions {
             id: Some(filename.clone()),
             scoped: has_scoped,
-            ssr,
+            ssr: settings.ssr,
             is_ts,
-            custom_renderer,
+            custom_renderer: settings.custom_renderer,
             ..Default::default()
         },
         style: StyleCompileOptions {
@@ -645,13 +651,17 @@ fn compile_file_with_profile(
             scoped: has_scoped,
             ..Default::default()
         },
-        vapor,
+        vapor: settings.vapor,
         scope_id: None,
     };
 
     let result = profile!(
         "atelier.sfc.compile",
-        compile_sfc(&descriptor, compile_opts)
+        if settings.vue_parser_quirks {
+            compile_sfc_with_vue_parser_quirks(&descriptor, compile_opts)
+        } else {
+            compile_sfc(&descriptor, compile_opts)
+        }
     )
     .map_err(|e| CompileError {
         path: path.clone(),
@@ -659,7 +669,7 @@ fn compile_file_with_profile(
         phase: ErrorPhase::Compile,
     })?;
     let compile_time = compile_start.elapsed();
-    if record_profile_totals {
+    if settings.record_profile_totals {
         stats.add_compile_time(compile_time);
     }
 

@@ -106,6 +106,22 @@ pub fn compile_sfc(
     descriptor: &SfcDescriptor,
     options: SfcCompileOptions,
 ) -> Result<SfcCompileResult, SfcError> {
+    compile_sfc_inner(descriptor, options, false)
+}
+
+/// Compile an SFC descriptor with Vue parser quirk compatibility.
+pub fn compile_sfc_with_vue_parser_quirks(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+) -> Result<SfcCompileResult, SfcError> {
+    compile_sfc_inner(descriptor, options, true)
+}
+
+fn compile_sfc_inner(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    vue_parser_quirks: bool,
+) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
     let mut code = String::default();
@@ -184,6 +200,7 @@ pub fn compile_sfc(
                     has_scoped,
                     None,
                     options.template.custom_renderer,
+                    vue_parser_quirks,
                 )
             )
         } else {
@@ -208,6 +225,7 @@ pub fn compile_sfc(
                         bindings: None,
                         croquis: None,
                     },
+                    vue_parser_quirks,
                 )
             )
         };
@@ -299,6 +317,7 @@ pub fn compile_sfc(
                         has_scoped,
                         None,
                         options.template.custom_renderer,
+                        vue_parser_quirks,
                     )
                 )
             } else {
@@ -322,6 +341,7 @@ pub fn compile_sfc(
                             bindings: None,
                             croquis: None,
                         },
+                        vue_parser_quirks,
                     )
                 )
             };
@@ -539,6 +559,7 @@ pub fn compile_sfc(
                     has_scoped,
                     Some(&script_bindings),
                     options.template.custom_renderer,
+                    vue_parser_quirks,
                 )
             ))
         } else {
@@ -557,6 +578,7 @@ pub fn compile_sfc(
                         bindings: Some(&script_bindings),
                         croquis: Some(croquis),
                     },
+                    vue_parser_quirks,
                 )
             ))
         }

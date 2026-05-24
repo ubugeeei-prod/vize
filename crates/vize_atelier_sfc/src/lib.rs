@@ -58,7 +58,7 @@ pub use bundler::{
     extract_style_blocks, generate_bundler_scope_id, has_scoped_style, is_importable_asset_url,
     strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
 };
-pub use compile::{ScriptCompileResult, compile_sfc};
+pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_vue_parser_quirks};
 pub use css::{
     CssAstResult, CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css,
     compile_style_block, parse_css_ast, print_css_ast,
@@ -270,6 +270,7 @@ const isRootSelected = ref(false)
                 bindings: Some(&binding_metadata),
                 croquis: Some(croquis),
             },
+            false,
         )
         .expect("template compile should succeed");
         assert!(

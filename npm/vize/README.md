@@ -70,6 +70,7 @@ export default defineConfig({
     sourceMap: true,
     vapor: false,
     customRenderer: false,
+    vueParserQuirks: false,
   },
   vite: {
     scanPatterns: ["src/**/*.vue"],
@@ -120,17 +121,42 @@ Use the Rust CLI when you need Corsa project diagnostics across Vue, TS, TSX, an
 
 Important shared fields:
 
-| Field                     | Used by                | Purpose                                                 |
-| ------------------------- | ---------------------- | ------------------------------------------------------- |
-| `compiler.sourceMap`      | Vite plugin            | Enable source maps                                      |
-| `compiler.ssr`            | npm build, Vite plugin | Force SSR compilation                                   |
-| `compiler.vapor`          | npm build, Vite plugin | Enable Vapor compilation                                |
-| `compiler.customRenderer` | npm build, Vite plugin | Support custom renderer element semantics               |
-| `compiler.scriptExt`      | npm build              | Preserve TypeScript output or downcompile to JavaScript |
-| `vite.scanPatterns`       | Vite plugin            | Pre-compile matching Vue files                          |
-| `linter.preset`           | npm lint               | Select the Patina lint preset                           |
-| `typeChecker.strict`      | npm check              | Enable strict checks                                    |
-| `formatter.printWidth`    | npm fmt                | Set formatting width                                    |
+| Field                      | Used by                | Purpose                                                 |
+| -------------------------- | ---------------------- | ------------------------------------------------------- |
+| `compiler.sourceMap`       | Vite plugin            | Enable source maps                                      |
+| `compiler.ssr`             | npm build, Vite plugin | Force SSR compilation                                   |
+| `compiler.vapor`           | npm build, Vite plugin | Enable Vapor compilation                                |
+| `compiler.customRenderer`  | npm build, Vite plugin | Support custom renderer element semantics               |
+| `compiler.vueParserQuirks` | npm build, Vite plugin | Enable Vue parser quirk compatibility                   |
+| `compiler.scriptExt`       | npm build              | Preserve TypeScript output or downcompile to JavaScript |
+| `vite.scanPatterns`        | Vite plugin            | Pre-compile matching Vue files                          |
+| `linter.preset`            | npm lint               | Select the Patina lint preset                           |
+| `typeChecker.strict`       | npm check              | Enable strict checks                                    |
+| `formatter.printWidth`     | npm fmt                | Set formatting width                                    |
+
+### Vue parser quirks
+
+`compiler.vueParserQuirks` is off by default. Keep it disabled for strict parsing, and enable it
+when a project must compile templates that Vue currently accepts through parser edge-case behavior.
+
+The supported quirk covers `v-for` aliases with an unmatched edge parenthesis. Vue strips a leading
+`(` or trailing `)` from the alias before splitting `value`, `key`, and `index`; Vize reports those
+as malformed in strict mode and mirrors Vue only when this flag is enabled.
+
+```vue
+<template>
+  <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
+  <div v-for="item in items">{{ item }}</div>
+
+  <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
+  <div v-for="item in items">{{ item }}</div>
+</template>
+```
+
+Vue upstream reference:
+
+- [`forAliasRE`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571)
+- [`stripParensRE` in `parseForExpression`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530)
 
 ## Programmatic Config Helpers
 

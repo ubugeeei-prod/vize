@@ -49,7 +49,7 @@ pub use codegen::{CodegenContext, CodegenResult, generate};
 pub use runtime_helpers::{RuntimeHelpers, get_vnode_block_helper, get_vnode_helper};
 pub use transform::{
     DirectiveTransform, DirectiveTransformResult, ExitFn, NodeTransform, ParentNode,
-    StructuralDirectiveTransform, TransformContext, transform,
+    StructuralDirectiveTransform, TransformContext, transform, transform_with_vue_parser_quirks,
 };
 pub use transforms::{
     ChildrenType, EventModifiers, MemoInfo, PropItem, SlotInfo, SlotOutletInfo, StaticType,
@@ -63,12 +63,12 @@ pub use transforms::{
     has_v_else, has_v_else_if, has_v_for, has_v_if, has_v_memo, has_v_once, has_v_slot,
     hoist_static, is_condensible_whitespace, is_dynamic_binding, is_dynamic_event, is_dynamic_slot,
     is_simple_identifier, is_static_node, is_whitespace_only, needs_guard, parse_event_modifiers,
-    parse_for_expression, parse_model_modifiers, prefix_identifiers_in_expression,
-    process_expression, process_inline_handler, process_v_bind, process_v_for, process_v_if,
-    process_v_memo, process_v_on, remove_for_directive, remove_if_directive, remove_v_memo,
-    remove_v_once, resolve_element_type, should_use_block, strip_typescript_from_expression,
-    supports_v_model, transform_slot_outlet, transform_text_children, transform_v_model,
-    transform_v_once,
+    parse_for_expression, parse_for_expression_with_options, parse_model_modifiers,
+    prefix_identifiers_in_expression, process_expression, process_inline_handler, process_v_bind,
+    process_v_for, process_v_if, process_v_memo, process_v_on, remove_for_directive,
+    remove_if_directive, remove_v_memo, remove_v_once, resolve_element_type, should_use_block,
+    strip_typescript_from_expression, supports_v_model, transform_slot_outlet,
+    transform_text_children, transform_v_model, transform_v_once,
 };
 
 /// Re-export allocator types for convenience

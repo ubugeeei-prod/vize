@@ -36,7 +36,7 @@ use vize_atelier_core::{
     codegen::generate,
     options::{CodegenOptions, ParserOptions, TransformOptions},
     parser::parse_with_options,
-    transform::transform as do_transform,
+    transform::{transform as do_transform, transform_with_vue_parser_quirks},
 };
 use vize_carton::{Bump, String, profile};
 use vize_croquis::Croquis;
@@ -54,6 +54,24 @@ pub fn compile_template_with_options<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: DomCompilerOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(allocator, source, options, false)
+}
+
+/// Compile a Vue template for DOM with Vue parser quirk compatibility.
+pub fn compile_template_with_vue_parser_quirks<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
+    compile_template_inner(allocator, source, options, true)
+}
+
+fn compile_template_inner<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: DomCompilerOptions,
+    vue_parser_quirks: bool,
 ) -> (RootNode<'a>, Vec<CompilerError>, CodegenResult) {
     // Create parser options with DOM-specific settings
     let parser_opts = ParserOptions {
@@ -99,7 +117,11 @@ pub fn compile_template_with_options<'a>(
     let analysis: Option<&Croquis> = options.croquis.map(|c| &*allocator.alloc(*c));
     profile!(
         "atelier.dom.template.transform",
-        do_transform(allocator, &mut root, transform_opts, analysis)
+        if vue_parser_quirks {
+            transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, analysis)
+        } else {
+            do_transform(allocator, &mut root, transform_opts, analysis)
+        }
     );
 
     // Codegen
@@ -152,7 +174,7 @@ fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
 mod tests {
     use super::{
         DomCompilerOptions, Namespace, TemplateChildNode, compile_template,
-        compile_template_with_options,
+        compile_template_with_options, compile_template_with_vue_parser_quirks,
     };
     use vize_atelier_core::options::CodegenMode;
     use vize_carton::Bump;
@@ -199,6 +221,20 @@ mod tests {
         assert!(errors.is_empty());
         // Empty div generates minimal code
         assert!(!result.code.is_empty());
+    }
+
+    #[test]
+    fn test_compile_v_for_vue_parser_quirks_accepts_unmatched_alias_paren() {
+        let allocator = Bump::new();
+        let opts = DomCompilerOptions::default();
+        let (_, errors, result) = compile_template_with_vue_parser_quirks(
+            &allocator,
+            r#"<div v-for="item) in items">{{ item }}</div>"#,
+            opts,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        assert!(result.code.contains("_renderList(items, (item) =>"));
     }
 
     #[test]

@@ -13,6 +13,16 @@ use super::TransformContext;
 impl<'a> TransformContext<'a> {
     /// Create a new transform context
     pub fn new(allocator: &'a Bump, source: String, options: TransformOptions) -> Self {
+        Self::new_with_vue_parser_quirks(allocator, source, options, false)
+    }
+
+    /// Create a new transform context with Vue parser quirk compatibility.
+    pub fn new_with_vue_parser_quirks(
+        allocator: &'a Bump,
+        source: String,
+        options: TransformOptions,
+        vue_parser_quirks: bool,
+    ) -> Self {
         let ssr = options.ssr;
         Self {
             allocator,
@@ -34,6 +44,7 @@ impl<'a> TransformContext<'a> {
             in_v_once: false,
             in_ssr: ssr,
             errors: std::vec::Vec::new(),
+            vue_parser_quirks,
             node_removed: false,
             analysis: None,
         }
@@ -46,7 +57,19 @@ impl<'a> TransformContext<'a> {
         options: TransformOptions,
         analysis: &'a Croquis,
     ) -> Self {
-        let mut ctx = Self::new(allocator, source, options);
+        Self::with_analysis_and_vue_parser_quirks(allocator, source, options, analysis, false)
+    }
+
+    /// Create a new transform context with semantic analysis data and Vue parser quirks.
+    pub fn with_analysis_and_vue_parser_quirks(
+        allocator: &'a Bump,
+        source: String,
+        options: TransformOptions,
+        analysis: &'a Croquis,
+        vue_parser_quirks: bool,
+    ) -> Self {
+        let mut ctx =
+            Self::new_with_vue_parser_quirks(allocator, source, options, vue_parser_quirks);
         ctx.analysis = Some(analysis);
         ctx
     }
@@ -66,6 +89,12 @@ impl<'a> TransformContext<'a> {
     #[inline]
     pub fn has_analysis(&self) -> bool {
         self.analysis.is_some()
+    }
+
+    /// Whether Vue parser quirk compatibility is enabled.
+    #[inline]
+    pub fn vue_parser_quirks(&self) -> bool {
+        self.vue_parser_quirks
     }
 
     /// Check if a variable is defined (from analysis or binding metadata)

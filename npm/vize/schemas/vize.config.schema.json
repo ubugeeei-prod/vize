@@ -21,6 +21,11 @@
           "default": false,
           "type": "boolean"
         },
+        "vueParserQuirks": {
+          "description": "Enable Vue parser quirk compatibility",
+          "default": false,
+          "type": "boolean"
+        },
         "sourceMap": {
           "description": "Enable source map generation",
           "type": "boolean"

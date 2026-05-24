@@ -55,7 +55,9 @@ pub fn compile_sfc_batch(
 ) -> Result<BatchCompileResultNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions, compile_sfc as sfc_compile, parse_sfc as sfc_parse,
+        TemplateCompileOptions, compile_sfc as sfc_compile,
+        compile_sfc_with_vue_parser_quirks as sfc_compile_with_vue_parser_quirks,
+        parse_sfc as sfc_parse,
     };
 
     let opts = options.unwrap_or_default();
@@ -86,6 +88,7 @@ pub fn compile_sfc_batch(
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
     let is_ts = opts.is_ts.unwrap_or(false);
+    let vue_parser_quirks = opts.vue_parser_quirks.unwrap_or(false);
     let start = Instant::now();
     let stats = files
         .par_iter()
@@ -131,7 +134,13 @@ pub fn compile_sfc_batch(
                 scope_id: None,
             };
 
-            match sfc_compile(&descriptor, compile_opts) {
+            let compile_result = if vue_parser_quirks {
+                sfc_compile_with_vue_parser_quirks(&descriptor, compile_opts)
+            } else {
+                sfc_compile(&descriptor, compile_opts)
+            };
+
+            match compile_result {
                 Ok(result) => BatchStats::success(source_len, result.code.len()),
                 Err(_) => BatchStats::failed_with_input(source_len),
             }

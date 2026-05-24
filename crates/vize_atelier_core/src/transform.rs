@@ -85,6 +85,8 @@ pub struct TransformContext<'a> {
     pub in_ssr: bool,
     /// Errors collected
     pub errors: std::vec::Vec<CompilerError>,
+    /// Enables compatibility for Vue parser edge-case behavior.
+    pub(crate) vue_parser_quirks: bool,
     /// Node was removed flag
     pub(crate) node_removed: bool,
     /// Semantic analysis summary (optional, for enhanced transforms)
@@ -144,11 +146,37 @@ pub fn transform<'a>(
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
 ) {
+    transform_inner(allocator, root, options, analysis, false);
+}
+
+/// Transform the root AST node with Vue parser quirk compatibility enabled.
+pub fn transform_with_vue_parser_quirks<'a>(
+    allocator: &'a Bump,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    analysis: Option<&'a Croquis>,
+) {
+    transform_inner(allocator, root, options, analysis, true);
+}
+
+fn transform_inner<'a>(
+    allocator: &'a Bump,
+    root: &mut RootNode<'a>,
+    options: TransformOptions,
+    analysis: Option<&'a Croquis>,
+    vue_parser_quirks: bool,
+) {
     let source = root.source.clone();
     let mut ctx = if let Some(analysis) = analysis {
-        TransformContext::with_analysis(allocator, source, options, analysis)
+        TransformContext::with_analysis_and_vue_parser_quirks(
+            allocator,
+            source,
+            options,
+            analysis,
+            vue_parser_quirks,
+        )
     } else {
-        TransformContext::new(allocator, source, options)
+        TransformContext::new_with_vue_parser_quirks(allocator, source, options, vue_parser_quirks)
     };
     ctx.root = Some(root as *mut _);
 
@@ -209,7 +237,7 @@ fn create_root_codegen<'a>(ctx: &mut TransformContext<'a>, root: &mut RootNode<'
 #[cfg(test)]
 #[allow(clippy::disallowed_macros)]
 mod tests {
-    use super::transform;
+    use super::{transform, transform_with_vue_parser_quirks};
     use crate::codegen::generate;
     use crate::options::{CodegenOptions, TransformOptions};
     use crate::parser::parse;
@@ -263,6 +291,39 @@ mod tests {
     #[test]
     fn test_transform_v_for() {
         assert_transform!("<div v-for=\"item in items\">{{ item }}</div>" => helpers: [RenderList, OpenBlock, CreateBlock, Fragment]);
+    }
+
+    #[test]
+    fn test_transform_v_for_rejects_unmatched_edge_parens_by_default() {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, r#"<div v-for="item) in items"></div>"#);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        transform(&allocator, &mut root, TransformOptions::default(), None);
+
+        assert!(
+            !matches!(&root.children[0], crate::ast::TemplateChildNode::For(_)),
+            "strict parser mode should not accept unmatched v-for alias parens"
+        );
+    }
+
+    #[test]
+    fn test_transform_v_for_vue_parser_quirks_accepts_unmatched_edge_parens() {
+        let allocator = Bump::new();
+        let (mut root, errors) = parse(&allocator, r#"<div v-for="item) in items"></div>"#);
+        assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+        transform_with_vue_parser_quirks(&allocator, &mut root, TransformOptions::default(), None);
+
+        match &root.children[0] {
+            crate::ast::TemplateChildNode::For(for_node) => match &for_node.value_alias {
+                Some(crate::ast::ExpressionNode::Simple(value)) => {
+                    assert_eq!(value.content.as_str(), "item");
+                }
+                _ => panic!("expected value alias"),
+            },
+            other => panic!("expected ForNode, got {:?}", std::mem::discriminant(other)),
+        }
     }
 
     #[test]

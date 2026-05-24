@@ -18,6 +18,7 @@ function buildSignature(options: NormalizedVizeUnpluginOptions): string {
     options.ssr ? "1" : "0",
     options.vapor ? "1" : "0",
     options.customRenderer ? "1" : "0",
+    options.vueParserQuirks ? "1" : "0",
     options.sourceMap ? "1" : "0",
     options.root,
   ].join(":");
@@ -48,6 +49,7 @@ export function compileVueModule(
     ssr: options.ssr,
     vapor: options.vapor,
     customRenderer: options.customRenderer,
+    vueParserQuirks: options.vueParserQuirks,
     scopeId: `data-v-${scopeId}`,
   });
 
