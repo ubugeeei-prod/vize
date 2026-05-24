@@ -30,6 +30,7 @@ export default defineConfig(({ command, mode, isSsrBuild }) => ({
     ssr: isSsrBuild,
     vapor: false,
     customRenderer: false,
+    vueParserQuirks: false,
   },
   vite: {
     include: [/\.vue$/],
@@ -71,6 +72,7 @@ compiler {
   sourceMap = true
   vapor = false
   customRenderer = false
+  vueParserQuirks = false
 }
 
 vite {
@@ -104,7 +106,8 @@ lsp {
   "compiler": {
     "sourceMap": true,
     "vapor": false,
-    "customRenderer": false
+    "customRenderer": false,
+    "vueParserQuirks": false
   },
   "vite": {
     "scanPatterns": ["src/**/*.vue"]
@@ -134,6 +137,7 @@ every integration consumes every field yet.
 | `ssr`               | `boolean`                  | Compile for SSR when not relying on Vite's SSR build flag        |
 | `vapor`             | `boolean`                  | Enable Vapor-mode compilation                                    |
 | `customRenderer`    | `boolean`                  | Treat lowercase non-HTML tags as custom renderer elements        |
+| `vueParserQuirks`   | `boolean`                  | Match Vue parser quirks for known edge cases                     |
 | `scriptExt`         | `"ts"` or `"js"`           | Preserve TS output or downcompile to JS in the npm build command |
 | `mode`              | `"module"` or `"function"` | Lower-level compiler output mode                                 |
 | `prefixIdentifiers` | `boolean`                  | Prefix template identifiers with `_ctx`                          |
@@ -155,10 +159,35 @@ export default defineConfig({
       vapor: true,
       sourceMap: true,
       customRenderer: true,
+      vueParserQuirks: false,
     }),
   ],
 });
 ```
+
+## Vue Parser Quirks
+
+`compiler.vueParserQuirks` defaults to `false`. Keep strict mode unless you need to compile
+existing templates that Vue accepts through parser edge-case behavior.
+
+The current compatibility case is `v-for` alias parsing. Vue strips a leading `(` or trailing `)`
+from the alias before it splits `value`, `key`, and `index`; strict Vize reports those aliases as
+malformed.
+
+```vue
+<template>
+  <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
+  <div v-for="item in items">{{ item }}</div>
+
+  <!-- Strict mode rejects this. Quirk mode compiles it as `item in items`. -->
+  <div v-for="item in items">{{ item }}</div>
+</template>
+```
+
+Vue upstream implementation:
+
+- [`forAliasRE`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571)
+- [`stripParensRE` in `parseForExpression`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530)
 
 ## Static Analysis Options
 

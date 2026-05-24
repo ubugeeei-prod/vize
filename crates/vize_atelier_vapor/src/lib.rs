@@ -51,7 +51,7 @@ use vize_atelier_core::{
     Namespace,
     options::{ParserOptions, TransformOptions},
     parser::parse_with_options,
-    transform::transform,
+    transform::{transform, transform_with_vue_parser_quirks},
 };
 use vize_carton::{Bump, String};
 
@@ -68,8 +68,6 @@ pub struct VaporCompilerOptions {
     pub inline: bool,
     /// Whether the template targets a custom renderer instead of the DOM.
     pub custom_renderer: bool,
-    /// Enable Vue parser quirk compatibility for known edge cases.
-    pub vue_parser_quirks: bool,
 }
 
 /// Vapor compilation result
@@ -88,6 +86,24 @@ pub fn compile_vapor<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: VaporCompilerOptions,
+) -> VaporCompileResult {
+    compile_vapor_inner(allocator, source, options, false)
+}
+
+/// Compile a Vue template to Vapor mode with Vue parser quirk compatibility.
+pub fn compile_vapor_with_vue_parser_quirks<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: VaporCompilerOptions,
+) -> VaporCompileResult {
+    compile_vapor_inner(allocator, source, options, true)
+}
+
+fn compile_vapor_inner<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: VaporCompilerOptions,
+    vue_parser_quirks: bool,
 ) -> VaporCompileResult {
     // Parse
     let parser_opts = ParserOptions {
@@ -117,10 +133,13 @@ pub fn compile_vapor<'a>(
         inline: options.inline,
         vapor: true,
         custom_renderer: options.custom_renderer,
-        vue_parser_quirks: options.vue_parser_quirks,
         ..Default::default()
     };
-    transform(allocator, &mut root, transform_opts, None);
+    if vue_parser_quirks {
+        transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, None);
+    } else {
+        transform(allocator, &mut root, transform_opts, None);
+    }
 
     // Transform to Vapor IR
     let ir = transform_to_ir(allocator, &root);

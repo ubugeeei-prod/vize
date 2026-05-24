@@ -403,7 +403,7 @@ pub fn transform_v_for<'a>(
         allocator,
         &exp.content,
         &exp.loc,
-        ctx.options.vue_parser_quirks,
+        ctx.vue_parser_quirks(),
     ) else {
         ctx.on_error(ErrorCode::VForMalformedExpression, Some(exp.loc.clone()));
         return None;

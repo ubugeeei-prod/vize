@@ -56,6 +56,10 @@ pub fn parse_for_expression<'a>(
 /// `item) in items` are accepted by Vue even though they look malformed. Vize
 /// keeps strict parsing by default and exposes the compatibility path behind
 /// `vue_parser_quirks`.
+///
+/// Upstream references:
+/// - https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571
+/// - https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530
 pub fn parse_for_expression_with_options<'a>(
     allocator: &'a Bump,
     content: &str,

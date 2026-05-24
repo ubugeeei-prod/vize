@@ -32,6 +32,7 @@ pub(crate) fn compile_template_block(
     template: &SfcTemplateBlock,
     options: &TemplateCompileOptions,
     ctx: TemplateBlockCompileContext<'_>,
+    vue_parser_quirks: bool,
 ) -> Result<String, SfcError> {
     let TemplateBlockCompileContext {
         scope_id,
@@ -62,11 +63,6 @@ pub(crate) fn compile_template_block(
             inline: false,
             is_ts,
             custom_renderer: options.custom_renderer,
-            vue_parser_quirks: options.vue_parser_quirks
-                || options
-                    .compiler_options
-                    .as_ref()
-                    .is_some_and(|opts| opts.vue_parser_quirks),
             ssr_css_vars: options.ssr_css_vars.clone(),
             binding_metadata: bindings.cloned(),
             croquis: croquis.map(Box::new),
@@ -74,7 +70,15 @@ pub(crate) fn compile_template_block(
 
         let (_, errors, result) = profile!(
             "atelier.sfc.template.ssr",
-            vize_atelier_ssr::compile_ssr_with_options(&allocator, &template.content, ssr_opts)
+            if vue_parser_quirks {
+                vize_atelier_ssr::compile_ssr_with_vue_parser_quirks(
+                    &allocator,
+                    &template.content,
+                    ssr_opts,
+                )
+            } else {
+                vize_atelier_ssr::compile_ssr_with_options(&allocator, &template.content, ssr_opts)
+            }
         );
 
         if !errors.is_empty() {
@@ -104,7 +108,6 @@ pub(crate) fn compile_template_block(
     dom_opts.ssr = options.ssr;
     dom_opts.is_ts = is_ts;
     dom_opts.custom_renderer = options.custom_renderer;
-    dom_opts.vue_parser_quirks |= options.vue_parser_quirks;
     dom_opts.component_name = component_name.map(|name| name.to_compact_string());
 
     // For script setup, use inline mode to match Vue's actual compiler behavior
@@ -127,7 +130,15 @@ pub(crate) fn compile_template_block(
     // Compile template
     let (_, errors, result) = profile!(
         "atelier.sfc.template.dom",
-        vize_atelier_dom::compile_template_with_options(&allocator, &template.content, dom_opts)
+        if vue_parser_quirks {
+            vize_atelier_dom::compile_template_with_vue_parser_quirks(
+                &allocator,
+                &template.content,
+                dom_opts,
+            )
+        } else {
+            vize_atelier_dom::compile_template_with_options(&allocator, &template.content, dom_opts)
+        }
     );
 
     if !errors.is_empty() {

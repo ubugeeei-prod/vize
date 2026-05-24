@@ -49,7 +49,7 @@ pub use codegen::{CodegenContext, CodegenResult, generate};
 pub use runtime_helpers::{RuntimeHelpers, get_vnode_block_helper, get_vnode_helper};
 pub use transform::{
     DirectiveTransform, DirectiveTransformResult, ExitFn, NodeTransform, ParentNode,
-    StructuralDirectiveTransform, TransformContext, transform,
+    StructuralDirectiveTransform, TransformContext, transform, transform_with_vue_parser_quirks,
 };
 pub use transforms::{
     ChildrenType, EventModifiers, MemoInfo, PropItem, SlotInfo, SlotOutletInfo, StaticType,

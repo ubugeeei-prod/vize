@@ -22,7 +22,9 @@ pub fn compile_sfc_batch_with_results(
 ) -> Result<BatchCompileResultWithFilesNapi> {
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, StyleCompileOptions,
-        TemplateCompileOptions, compile_sfc as sfc_compile, parse_sfc as sfc_parse,
+        TemplateCompileOptions, compile_sfc as sfc_compile,
+        compile_sfc_with_vue_parser_quirks as sfc_compile_with_vue_parser_quirks,
+        parse_sfc as sfc_parse,
     };
 
     let opts = options.unwrap_or_default();
@@ -109,7 +111,6 @@ pub fn compile_sfc_batch_with_results(
                 ssr,
                 is_ts,
                 custom_renderer,
-                vue_parser_quirks,
                 compiler_options: template_compiler_options,
                 ..Default::default()
             },
@@ -122,7 +123,13 @@ pub fn compile_sfc_batch_with_results(
             scope_id: Some(scope_id.clone()),
         };
 
-        match sfc_compile(&descriptor, compile_opts) {
+        let compile_result = if vue_parser_quirks {
+            sfc_compile_with_vue_parser_quirks(&descriptor, compile_opts)
+        } else {
+            sfc_compile(&descriptor, compile_opts)
+        };
+
+        match compile_result {
             Ok(result) => {
                 success_count.fetch_add(1, Ordering::Relaxed);
                 push_result(

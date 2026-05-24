@@ -35,15 +35,23 @@ use wasm_bindgen::prelude::*;
 use crate::{CompileResult, CompilerOptions};
 use vize_atelier_core::options::CodegenMode;
 use vize_atelier_core::parser::parse;
-use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
+use vize_atelier_dom::{
+    DomCompilerOptions, compile_template_with_options, compile_template_with_vue_parser_quirks,
+};
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 use vize_atelier_sfc::{
     CssCompileOptions, CssTargets, ScriptCompileOptions, SfcCompileOptions, SfcDescriptor,
     SfcMacroArtifact, SfcParseOptions, StyleCompileOptions, TemplateCompileOptions,
-    compile_sfc as sfc_compile, parse_sfc,
+    compile_sfc as sfc_compile,
+    compile_sfc_with_vue_parser_quirks as sfc_compile_with_vue_parser_quirks, parse_sfc,
 };
-use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor as vapor_compile};
+use vize_atelier_ssr::{
+    SsrCompilerOptions, compile_ssr_with_options, compile_ssr_with_vue_parser_quirks,
+};
+use vize_atelier_vapor::{
+    VaporCompilerOptions, compile_vapor as vapor_compile,
+    compile_vapor_with_vue_parser_quirks as vapor_compile_with_vue_parser_quirks,
+};
 
 /// Helper function to serialize values to JsValue with maps as objects
 pub(crate) fn to_js_value<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
@@ -626,7 +634,6 @@ impl Compiler {
                 ssr: opts.ssr.unwrap_or(false),
                 is_ts: output_is_ts,
                 custom_renderer: opts.custom_renderer.unwrap_or(false),
-                vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
                 ..Default::default()
             },
             style: StyleCompileOptions {
@@ -639,7 +646,12 @@ impl Compiler {
         };
 
         // Compile the full SFC
-        let sfc_result = match sfc_compile(&descriptor, sfc_opts) {
+        let compile_result = if opts.vue_parser_quirks.unwrap_or(false) {
+            sfc_compile_with_vue_parser_quirks(&descriptor, sfc_opts)
+        } else {
+            sfc_compile(&descriptor, sfc_opts)
+        };
+        let sfc_result = match compile_result {
             Ok(r) => r,
             Err(e) => return Err(JsValue::from_str(&e.message)),
         };
@@ -714,16 +726,16 @@ fn compile_internal(
 
     // SSR mode - use dedicated SSR compiler
     if opts.ssr.unwrap_or(false) && !vapor && binding_metadata.is_none() {
-        let (root, errors, result) = compile_ssr_with_options(
-            &allocator,
-            template,
-            SsrCompilerOptions {
-                is_ts: opts.is_ts.unwrap_or(false),
-                custom_renderer: opts.custom_renderer.unwrap_or(false),
-                vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
-                ..Default::default()
-            },
-        );
+        let ssr_opts = SsrCompilerOptions {
+            is_ts: opts.is_ts.unwrap_or(false),
+            custom_renderer: opts.custom_renderer.unwrap_or(false),
+            ..Default::default()
+        };
+        let (root, errors, result) = if opts.vue_parser_quirks.unwrap_or(false) {
+            compile_ssr_with_vue_parser_quirks(&allocator, template, ssr_opts)
+        } else {
+            compile_ssr_with_options(&allocator, template, ssr_opts)
+        };
 
         if !errors.is_empty() {
             return Err(format!("SSR compile errors: {:?}", errors));
@@ -751,11 +763,14 @@ fn compile_internal(
             prefix_identifiers: opts.prefix_identifiers.unwrap_or(false),
             ssr: opts.ssr.unwrap_or(false),
             custom_renderer: opts.custom_renderer.unwrap_or(false),
-            vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
             binding_metadata,
             ..Default::default()
         };
-        let result = vapor_compile(&allocator, template, vapor_opts);
+        let result = if opts.vue_parser_quirks.unwrap_or(false) {
+            vapor_compile_with_vue_parser_quirks(&allocator, template, vapor_opts)
+        } else {
+            vapor_compile(&allocator, template, vapor_opts)
+        };
 
         if !result.error_messages.is_empty() {
             return Err(result
@@ -797,13 +812,16 @@ fn compile_internal(
         source_map: opts.source_map.unwrap_or(false),
         is_ts: opts.is_ts.unwrap_or(false),
         custom_renderer: opts.custom_renderer.unwrap_or(false),
-        vue_parser_quirks: opts.vue_parser_quirks.unwrap_or(false),
         binding_metadata,
         inline: has_binding_metadata,
         ..Default::default()
     };
 
-    let (root, errors, result) = compile_template_with_options(&allocator, template, dom_opts);
+    let (root, errors, result) = if opts.vue_parser_quirks.unwrap_or(false) {
+        compile_template_with_vue_parser_quirks(&allocator, template, dom_opts)
+    } else {
+        compile_template_with_options(&allocator, template, dom_opts)
+    };
 
     if !errors.is_empty() {
         return Err(format!("Compile errors: {:?}", errors));

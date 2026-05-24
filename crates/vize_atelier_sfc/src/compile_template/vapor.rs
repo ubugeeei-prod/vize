@@ -1,7 +1,9 @@
 //! Vapor mode template compilation.
 
 use super::string_tracking::{StringTrackState, count_braces_with_state};
-use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
+use vize_atelier_vapor::{
+    VaporCompilerOptions, compile_vapor, compile_vapor_with_vue_parser_quirks,
+};
 use vize_carton::{Bump, String, ToCompactString};
 
 use crate::types::{BindingMetadata, SfcError, SfcTemplateBlock};
@@ -23,12 +25,15 @@ pub(crate) fn compile_template_block_vapor(
         ssr: false,
         binding_metadata: bindings.cloned(),
         custom_renderer,
-        vue_parser_quirks,
         ..Default::default()
     };
 
     // Compile template with Vapor
-    let result = compile_vapor(&allocator, &template.content, vapor_opts);
+    let result = if vue_parser_quirks {
+        compile_vapor_with_vue_parser_quirks(&allocator, &template.content, vapor_opts)
+    } else {
+        compile_vapor(&allocator, &template.content, vapor_opts)
+    };
 
     if !result.error_messages.is_empty() {
         let mut message = String::from("Vapor template compilation errors: ");

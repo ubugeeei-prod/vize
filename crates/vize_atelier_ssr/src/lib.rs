@@ -38,7 +38,7 @@ pub use vize_atelier_core::{
 use vize_atelier_core::{
     options::{ParserOptions, TransformOptions},
     parser::parse_with_options,
-    transform::transform as do_transform,
+    transform::{transform as do_transform, transform_with_vue_parser_quirks},
 };
 use vize_carton::{Bump, String, profile};
 
@@ -55,6 +55,24 @@ pub fn compile_ssr_with_options<'a>(
     allocator: &'a Bump,
     source: &'a str,
     options: SsrCompilerOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner(allocator, source, options, false)
+}
+
+/// Compile a Vue template for SSR with Vue parser quirk compatibility.
+pub fn compile_ssr_with_vue_parser_quirks<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: SsrCompilerOptions,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner(allocator, source, options, true)
+}
+
+fn compile_ssr_inner<'a>(
+    allocator: &'a Bump,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    vue_parser_quirks: bool,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
 
@@ -94,14 +112,17 @@ pub fn compile_ssr_with_options<'a>(
         is_ts: codegen_options.is_ts,
         inline: codegen_options.inline,
         custom_renderer: codegen_options.custom_renderer,
-        vue_parser_quirks: codegen_options.vue_parser_quirks,
         binding_metadata: codegen_options.binding_metadata.clone(),
         ..Default::default()
     };
     let analysis = options.croquis.map(|c| &*allocator.alloc(*c));
     profile!(
         "atelier.ssr.template.transform",
-        do_transform(allocator, &mut root, transform_opts, analysis)
+        if vue_parser_quirks {
+            transform_with_vue_parser_quirks(allocator, &mut root, transform_opts, analysis)
+        } else {
+            do_transform(allocator, &mut root, transform_opts, analysis)
+        }
     );
 
     // SSR codegen
