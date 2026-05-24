@@ -301,11 +301,11 @@
         },
         {
           "command": "vize.restartServer",
-          "when": "editorLangId == vue || editorLangId == art-vue"
+          "when": "editorLangId == vue || editorLangId == art-vue || editorLangId == html"
         },
         {
           "command": "vize.showOutput",
-          "when": "editorLangId == vue || editorLangId == art-vue"
+          "when": "editorLangId == vue || editorLangId == art-vue || editorLangId == html"
         }
       ]
     },
@@ -364,6 +364,7 @@
     "onCommand:vize.showOutput",
     "onCommand:vize.showStatus",
     "onLanguage:art-vue",
+    "onLanguage:html",
     "onLanguage:vue"
   ],
   "icon": "icons/logo.png",

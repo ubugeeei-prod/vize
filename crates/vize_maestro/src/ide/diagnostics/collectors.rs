@@ -12,7 +12,8 @@ use tower_lsp::lsp_types::{
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
-use vize_patina::{HelpRenderTarget, render_help};
+use vize_carton::config::LinterConfig;
+use vize_patina::{HelpRenderTarget, LintPreset, render_help};
 
 use super::{DiagnosticService, offset_to_line_col, sources};
 use vize_carton::append;
@@ -336,23 +337,39 @@ impl DiagnosticService {
         uri: &Url,
         content: &str,
         ecosystem_enabled: bool,
+        linter_config: &LinterConfig,
     ) -> Vec<Diagnostic> {
+        if !linter_config.enabled {
+            return vec![];
+        }
+
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: uri.path().to_string().into(),
             ..Default::default()
         };
 
-        if vize_atelier_sfc::parse_sfc(content, options).is_err() {
+        let is_standalone_html = crate::utils::is_standalone_html_path(uri.path());
+        if !is_standalone_html && vize_atelier_sfc::parse_sfc(content, options).is_err() {
             return vec![];
         }
 
         // Create linter and lint the full SFC so editor diagnostics match the CLI.
-        let linter = if ecosystem_enabled {
+        let preset = linter_config
+            .preset
+            .as_deref()
+            .and_then(LintPreset::parse)
+            .unwrap_or_default();
+        let linter = if ecosystem_enabled && linter_config.preset.is_none() {
             vize_patina::Linter::with_ecosystem()
         } else {
-            vize_patina::Linter::new()
+            vize_patina::Linter::with_preset(preset)
+        }
+        .with_disabled_rules(linter_config.disabled_rules());
+        let result = if is_standalone_html {
+            linter.lint_standalone_html(content, uri.path())
+        } else {
+            linter.lint_sfc(content, uri.path())
         };
-        let result = linter.lint_sfc(content, uri.path());
 
         // Convert lint diagnostics to LSP diagnostics
         result

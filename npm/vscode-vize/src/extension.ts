@@ -57,7 +57,7 @@ type VizeStatusAction =
 type VizeStatusQuickPickItem = QuickPickItem & {
   action: VizeStatusAction;
 };
-const SUPPORTED_LANGUAGE_IDS = ["vue", "art-vue"] as const;
+const SUPPORTED_LANGUAGE_IDS = ["vue", "art-vue", "html"] as const;
 const SUPPORTED_URI_SCHEMES = ["file", "untitled"] as const;
 const RECOMMENDED_SETUP_ACTION = "Enable Recommended";
 const LINT_ONLY_SETUP_ACTION = "Enable Lint Only";
@@ -193,12 +193,14 @@ function scheduleClientSync(context: ExtensionContext, reason: string): void {
 
 async function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
   let config = workspace.getConfiguration("vize");
+  let enabled = shouldStartFromConfiguration(config);
 
-  if (!config.get<boolean>("enable", false)) {
+  if (!enabled) {
     await maybeOfferInitialSetup(context, config);
     config = workspace.getConfiguration("vize");
+    enabled = shouldStartFromConfiguration(config);
 
-    if (!config.get<boolean>("enable", false)) {
+    if (!enabled) {
       if (client) {
         updateStatusBar("starting", "Stopping language server");
         outputChannel.appendLine(`Stopping Vize language server (${reason}; extension disabled).`);
@@ -213,6 +215,8 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
     }
 
     outputChannel.appendLine("Recommended Vize setup was applied. Starting language server...");
+  } else if (!config.get<boolean>("enable", false)) {
+    outputChannel.appendLine("Starting Vize language server from workspace vize.config.");
   }
 
   if (client) {
@@ -524,6 +528,20 @@ function hasAnyExplicitCapabilityValue(
   return FEATURE_SETTING_KEYS.some((key) => hasExplicitConfigurationValue(config, key));
 }
 
+function shouldStartFromConfiguration(
+  config: ReturnType<typeof workspace.getConfiguration>,
+): boolean {
+  if (config.get<boolean>("enable", false)) {
+    return true;
+  }
+
+  if (hasExplicitConfigurationValue(config, "enable")) {
+    return false;
+  }
+
+  return hasWorkspaceLspConfig();
+}
+
 function hasWorkspaceLspConfig(): boolean {
   const workspaceFolders = workspace.workspaceFolders;
   if (!workspaceFolders) {
@@ -636,7 +654,10 @@ function createClientOptions(
     ),
     synchronize: {
       configurationSection: "vize",
-      fileEvents: workspace.createFileSystemWatcher("**/*.vue"),
+      fileEvents: [
+        workspace.createFileSystemWatcher("**/*.vue"),
+        workspace.createFileSystemWatcher("**/*.{html,htm}"),
+      ],
     },
     outputChannel,
     traceOutputChannel: outputChannel,

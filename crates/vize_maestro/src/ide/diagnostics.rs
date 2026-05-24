@@ -15,6 +15,7 @@ use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range
 
 use crate::ide::ecosystem;
 use crate::server::ServerState;
+use crate::utils::is_standalone_html_path;
 
 /// Diagnostic source identifiers.
 pub mod sources {
@@ -106,6 +107,24 @@ impl DiagnosticService {
             return diagnostics;
         }
 
+        if is_standalone_html_path(path) {
+            if features.lint {
+                let linter_config = state.get_linter_config();
+                let lint_diags = Self::collect_lint_diagnostics(
+                    uri,
+                    &content,
+                    features.ecosystem,
+                    &linter_config,
+                );
+                tracing::info!(
+                    "collect: standalone HTML patina lint diagnostics: {}",
+                    lint_diags.len()
+                );
+                diagnostics.extend(lint_diags);
+            }
+            return diagnostics;
+        }
+
         // Standard SFC processing
         // Collect parser diagnostics when any diagnostic pipeline is enabled.
         let sfc_diags = Self::collect_sfc_diagnostics(uri, &content);
@@ -139,7 +158,9 @@ impl DiagnosticService {
 
         if features.lint {
             // Collect linter diagnostics (vize_patina)
-            let lint_diags = Self::collect_lint_diagnostics(uri, &content, features.ecosystem);
+            let linter_config = state.get_linter_config();
+            let lint_diags =
+                Self::collect_lint_diagnostics(uri, &content, features.ecosystem, &linter_config);
             tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
             diagnostics.extend(lint_diags);
         } else {
@@ -187,6 +208,10 @@ impl DiagnosticService {
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
         if has_blocking_parser_error(&diagnostics) {
             tracing::info!("collect_async: Corsa diagnostics skipped after parser error");
+            return diagnostics;
+        }
+        if is_standalone_html_path(uri.path()) {
+            tracing::info!("collect_async: Corsa diagnostics skipped for standalone HTML");
             return diagnostics;
         }
 
@@ -475,6 +500,60 @@ mod tests {
 
         assert_eq!(diagnostic.range.start.line, 1);
         assert!(diagnostic.message.contains("<script> should come before"));
+    }
+
+    #[test]
+    fn collect_lints_standalone_html_with_configured_preset() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{
+                "lsp": { "lint": true },
+                "linter": { "preset": "opinionated" }
+            }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+
+        let source_path = dir.path().join("index.html");
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let source = r##"<!doctype html>
+<html>
+<head>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app">{{ count }}</div>
+  <script>
+Vue.createApp({
+  data() {
+    return { count: 0 }
+  }
+}).mount("#app")
+  </script>
+</body>
+</html>
+"##;
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "html".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+
+        assert!(state.get_virtual_docs(&uri).is_none());
+        assert!(
+            diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.source.as_deref() != Some(sources::SFC_PARSER))
+        );
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.source.as_deref() == Some(sources::LINTER)
+                && diagnostic.code
+                    == Some(NumberOrString::String("script/no-options-api".to_string()))
+        }));
     }
 
     #[test]

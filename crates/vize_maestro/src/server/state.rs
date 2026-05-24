@@ -10,7 +10,7 @@ use parking_lot::RwLock;
 use serde::Deserialize;
 use tokio::sync::OnceCell;
 use tower_lsp::lsp_types::Url;
-use vize_carton::config::{LanguageServerConfig, TypeCheckerConfig};
+use vize_carton::config::{LanguageServerConfig, LinterConfig, TypeCheckerConfig};
 
 #[cfg(feature = "glyph")]
 use vize_carton::config::FormatterConfig;
@@ -25,6 +25,7 @@ use vize_canon::{
 };
 
 use crate::document::DocumentStore;
+use crate::utils::is_standalone_html_path;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
 #[derive(Debug, Default, Deserialize)]
@@ -288,6 +289,8 @@ pub struct ServerState {
     lsp_typecheck_enabled: AtomicBool,
     /// Type checker options shared by LSP diagnostics.
     type_checker_config: RwLock<TypeCheckerConfig>,
+    /// Linter options shared by LSP diagnostics.
+    linter_config: RwLock<LinterConfig>,
     /// Formatting options (loaded from vize.config.json)
     #[cfg(feature = "glyph")]
     format_options: RwLock<vize_glyph::FormatOptions>,
@@ -324,6 +327,7 @@ impl ServerState {
             lsp_features: RwLock::new(LspFeatureConfig::default()),
             lsp_typecheck_enabled: AtomicBool::new(false),
             type_checker_config: RwLock::new(TypeCheckerConfig::default()),
+            linter_config: RwLock::new(LinterConfig::default()),
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),
             #[cfg(feature = "native")]
@@ -388,9 +392,20 @@ impl ServerState {
         self.type_checker_config.read().clone()
     }
 
+    /// Get a clone of the current linter config.
+    #[inline]
+    pub fn get_linter_config(&self) -> LinterConfig {
+        self.linter_config.read().clone()
+    }
+
     fn apply_type_checker_config(&self, config: TypeCheckerConfig, source: &str) {
         *self.type_checker_config.write() = config;
         tracing::info!("Loaded type checker config from {}", source);
+    }
+
+    fn apply_linter_config(&self, config: LinterConfig, source: &str) {
+        *self.linter_config.write() = config;
+        tracing::info!("Loaded linter config from {}", source);
     }
 
     fn apply_lsp_config(&self, config: LspConfigSection, source: &str) {
@@ -403,7 +418,8 @@ impl ServerState {
 
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
     pub fn load_workspace_config(&self, dir: &Path) {
-        let loaded = vize_carton::config::load_config_with_source(Some(dir));
+        let (loaded, linter_config) =
+            vize_carton::config::load_config_and_linter_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
@@ -412,6 +428,7 @@ impl ServerState {
                 *self.format_options.write() = format_options_from_config(&config.formatter);
                 tracing::info!("Loaded format config from {}", source);
             }
+            self.apply_linter_config(linter_config, &source);
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_lsp_config(config.language_server.into(), &source);
         }
@@ -419,9 +436,11 @@ impl ServerState {
 
     /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
     pub fn load_lsp_config(&self, dir: &Path) {
-        let loaded = vize_carton::config::load_config_with_source(Some(dir));
+        let (loaded, linter_config) =
+            vize_carton::config::load_config_and_linter_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
+            self.apply_linter_config(linter_config, &source);
             self.apply_type_checker_config(loaded.config.type_checker, &source);
             self.apply_lsp_config(loaded.config.language_server.into(), &source);
         }
@@ -595,6 +614,11 @@ impl ServerState {
     pub fn update_virtual_docs(&self, uri: &Url, content: &str) {
         if uri.path().ends_with(".art.vue") {
             self.update_art_virtual_docs(uri, content);
+            return;
+        }
+
+        if is_standalone_html_path(uri.path()) {
+            self.remove_virtual_docs(uri);
             return;
         }
 
@@ -933,6 +957,29 @@ mod tests {
         assert!(!config.check_emits);
         assert_eq!(config.tsconfig.as_deref(), Some("tsconfig.app.json"));
         assert_eq!(config.runtime_path(), Some("./node_modules/.bin/corsa"));
+    }
+
+    #[test]
+    fn load_lsp_config_updates_linter_config() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("vize.config.json"),
+            r#"{
+                "linter": {
+                    "preset": "opinionated",
+                    "rules": {
+                        "vue/prop-name-casing": "off"
+                    }
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        state.load_lsp_config(dir.path());
+        let config = state.get_linter_config();
+        assert_eq!(config.preset.as_deref(), Some("opinionated"));
+        assert_eq!(config.disabled_rules(), ["vue/prop-name-casing"]);
     }
 
     #[test]
