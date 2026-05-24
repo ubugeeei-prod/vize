@@ -507,6 +507,38 @@ route.params.slug
     }
 
     #[test]
+    fn collect_reports_unknown_route_path_params() {
+        let source = r#"<script setup lang="ts">
+import { useRoute } from "vue-router"
+const route = useRoute()
+route.params.slug
+</script>
+<route lang="json">
+{ "path": "/users/:id" }
+</route>"#;
+
+        let state = state_with_ecosystem_diagnostics();
+        let uri = Url::parse("file:///RoutePathParams.vue").unwrap();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+        let diagnostic = diagnostics
+            .iter()
+            .find(|diagnostic| {
+                diagnostic.source.as_deref() == Some("vize/ecosystem")
+                    && diagnostic.code
+                        == Some(NumberOrString::String(
+                            "ecosystem/vue-router-route-param".to_string(),
+                        ))
+            })
+            .expect("unknown route path param diagnostic");
+
+        assert!(diagnostic.message.contains("Available params: id"));
+    }
+
+    #[test]
     fn collect_reports_workspace_i18n_missing_key() {
         let dir = tempfile::tempdir().unwrap();
         let source_path = dir.path().join("src/components/LoginButton.vue");

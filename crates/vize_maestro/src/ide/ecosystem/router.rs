@@ -24,7 +24,7 @@ pub(crate) fn completions(
     ctx: &IdeContext<'_>,
     descriptor: &SfcDescriptor<'_>,
 ) -> Vec<CompletionItem> {
-    if let Some(items) = route_param_completions(ctx) {
+    if let Some(items) = route_param_completions(ctx, descriptor) {
         return items;
     }
 
@@ -70,8 +70,12 @@ pub(crate) fn route_names(descriptor: &SfcDescriptor<'_>) -> Vec<String> {
     names
 }
 
-pub(crate) fn route_param_diagnostics(content: &str, uri: &Url) -> Vec<Diagnostic> {
-    let params = route_params_for_file(uri);
+pub(crate) fn route_param_diagnostics(
+    content: &str,
+    uri: &Url,
+    descriptor: &SfcDescriptor<'_>,
+) -> Vec<Diagnostic> {
+    let params = route_params_for_context(uri, descriptor);
     if params.is_empty() && !is_page_file(uri) {
         return Vec::new();
     }
@@ -110,12 +114,15 @@ pub(crate) fn route_param_diagnostics(content: &str, uri: &Url) -> Vec<Diagnosti
     diagnostics
 }
 
-fn route_param_completions(ctx: &IdeContext<'_>) -> Option<Vec<CompletionItem>> {
+fn route_param_completions(
+    ctx: &IdeContext<'_>,
+    descriptor: &SfcDescriptor<'_>,
+) -> Option<Vec<CompletionItem>> {
     if !is_route_param_completion_context(&ctx.content, ctx.offset) {
         return None;
     }
 
-    let params = route_params_for_file(ctx.uri);
+    let params = route_params_for_context(ctx.uri, descriptor);
     if params.is_empty() {
         return None;
     }
@@ -152,6 +159,17 @@ fn is_route_param_completion_context(content: &str, offset: usize) -> bool {
     object_name == "$route" || route_identifiers(content).contains(object_name)
 }
 
+fn route_params_for_context(uri: &Url, descriptor: &SfcDescriptor<'_>) -> Vec<RouteParam> {
+    let mut params = route_params_for_file(uri);
+    let mut seen = params
+        .iter()
+        .map(|param| param.name.clone())
+        .collect::<FxHashSet<_>>();
+
+    collect_descriptor_route_params(descriptor, &mut seen, &mut params);
+    params
+}
+
 fn route_params_for_file(uri: &Url) -> Vec<RouteParam> {
     let Ok(file_path) = uri.to_file_path() else {
         return Vec::new();
@@ -170,6 +188,31 @@ fn route_params_for_file(uri: &Url) -> Vec<RouteParam> {
         collect_segment_params(part, &mut seen, &mut params);
     }
     params
+}
+
+fn collect_descriptor_route_params(
+    descriptor: &SfcDescriptor<'_>,
+    seen: &mut FxHashSet<String>,
+    params: &mut Vec<RouteParam>,
+) {
+    for block in &descriptor.custom_blocks {
+        if block.block_type != "route" || !is_json_lang(block) {
+            continue;
+        }
+        let Ok(value) = serde_json::from_str::<Value>(&block.content) else {
+            continue;
+        };
+        if let Some(path) = value.get("path").and_then(Value::as_str) {
+            collect_path_params(path, seen, params);
+        }
+    }
+
+    if let Some(script) = &descriptor.script {
+        collect_define_page_paths(&script.content, seen, params);
+    }
+    if let Some(script_setup) = &descriptor.script_setup {
+        collect_define_page_paths(&script_setup.content, seen, params);
+    }
 }
 
 fn is_page_file(uri: &Url) -> bool {
@@ -234,6 +277,95 @@ fn collect_segment_params(
         }
         cursor = close + close_marker.len() + usize::from(repeatable);
     }
+}
+
+fn collect_path_params(path: &str, seen: &mut FxHashSet<String>, params: &mut Vec<RouteParam>) {
+    let bytes = path.as_bytes();
+    let mut cursor = 0usize;
+    while cursor < bytes.len() {
+        let Some(colon_rel) = path[cursor..].find(':') else {
+            break;
+        };
+        let colon = cursor + colon_rel;
+        if colon > 0 && bytes[colon - 1] == b'\\' {
+            cursor = colon + 1;
+            continue;
+        }
+
+        let name_start = colon + 1;
+        let Some((name, name_end)) = route_path_param_name(path, name_start) else {
+            cursor = name_start;
+            continue;
+        };
+
+        let mut modifier_pos = skip_route_path_custom_regex(path, name_end);
+        let modifier = bytes.get(modifier_pos).copied();
+        let optional = matches!(modifier, Some(b'?' | b'*'));
+        let repeatable = matches!(modifier, Some(b'+' | b'*'));
+        if matches!(modifier, Some(b'?' | b'+' | b'*')) {
+            modifier_pos += 1;
+        }
+
+        let name = String::from(name);
+        if seen.insert(name.clone()) {
+            params.push(RouteParam {
+                name,
+                optional,
+                repeatable,
+            });
+        }
+
+        cursor = modifier_pos;
+    }
+}
+
+fn route_path_param_name(path: &str, start: usize) -> Option<(&str, usize)> {
+    let bytes = path.as_bytes();
+    let first = *bytes.get(start)?;
+    if !is_route_path_param_name_byte(first) {
+        return None;
+    }
+
+    let mut end = start + 1;
+    while bytes
+        .get(end)
+        .is_some_and(|byte| is_route_path_param_name_byte(*byte))
+    {
+        end += 1;
+    }
+    Some((&path[start..end], end))
+}
+
+fn is_route_path_param_name_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_'
+}
+
+fn skip_route_path_custom_regex(path: &str, mut pos: usize) -> usize {
+    let bytes = path.as_bytes();
+    if bytes.get(pos).copied() != Some(b'(') {
+        return pos;
+    }
+
+    let mut depth = 1usize;
+    pos += 1;
+    while pos < bytes.len() {
+        match bytes[pos] {
+            b'\\' => pos = pos.saturating_add(2),
+            b'(' => {
+                depth += 1;
+                pos += 1;
+            }
+            b')' => {
+                depth -= 1;
+                pos += 1;
+                if depth == 0 {
+                    break;
+                }
+            }
+            _ => pos += 1,
+        }
+    }
+    pos
 }
 
 fn route_identifiers(content: &str) -> FxHashSet<&str> {
@@ -397,6 +529,22 @@ fn collect_define_page_names(source: &str, seen: &mut FxHashSet<String>, names: 
     }
 }
 
+fn collect_define_page_paths(
+    source: &str,
+    seen: &mut FxHashSet<String>,
+    params: &mut Vec<RouteParam>,
+) {
+    let mut pos = 0usize;
+    while let Some(found) = source[pos..].find("definePage") {
+        let call_start = pos + found;
+        let window_end = (call_start + 512).min(source.len());
+        if let Some(path) = property_string(&source[call_start..window_end], "path") {
+            collect_path_params(path, seen, params);
+        }
+        pos = call_start + "definePage".len();
+    }
+}
+
 fn property_string<'a>(source: &'a str, property: &str) -> Option<&'a str> {
     let mut pos = 0usize;
     while let Some(found) = source[pos..].find(property) {
@@ -462,8 +610,9 @@ fn push_name(name: &str, seen: &mut FxHashSet<String>, names: &mut Vec<String>) 
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::Url;
+    use vize_carton::{FxHashSet, String};
 
-    use super::{is_route_name_context, route_names, route_params_for_file};
+    use super::{collect_path_params, is_route_name_context, route_names, route_params_for_file};
 
     #[test]
     fn detects_router_push_and_router_link_name_contexts() {
@@ -508,6 +657,31 @@ definePage({ name: "settings" })
                 ("slug", true, true),
                 ("skuId", false, false),
                 ("seo", false, false)
+            ]
+        );
+    }
+
+    #[test]
+    fn infers_params_from_vue_router_paths() {
+        let mut seen = FxHashSet::<String>::default();
+        let mut params = Vec::new();
+        collect_path_params(
+            "/articles/:id(\\d+)/:tab?/:chapters+/:pathMatch(.*)*",
+            &mut seen,
+            &mut params,
+        );
+        let names = params
+            .iter()
+            .map(|param| (param.name.as_str(), param.optional, param.repeatable))
+            .collect::<Vec<_>>();
+
+        assert_eq!(
+            names,
+            vec![
+                ("id", false, false),
+                ("tab", true, false),
+                ("chapters", false, true),
+                ("pathMatch", true, true)
             ]
         );
     }

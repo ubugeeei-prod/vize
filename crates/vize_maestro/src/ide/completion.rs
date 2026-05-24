@@ -368,6 +368,26 @@ route.params.
     }
 
     #[test]
+    fn test_route_param_completion_from_route_path() {
+        let source = r#"<script setup lang="ts">
+import { useRoute } from "vue-router"
+const route = useRoute()
+route.params.
+</script>
+<route lang="json">
+{ "name": "article", "path": "/articles/:id(\\d+)/:tab?" }
+</route>
+"#;
+        let (state, uri) = state_with_document("RoutePathCompletion.vue", source);
+        state.apply_lsp_initialization_options(Some(&serde_json::json!({ "ecosystem": true })));
+        let offset = source.find("route.params.").unwrap() + "route.params.".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert_eq!(labels, vec!["id", "tab"]);
+    }
+
+    #[test]
     fn test_i18n_key_completion_from_workspace_json_catalog() {
         let dir = tempfile::tempdir().unwrap();
         let source_path = dir.path().join("src/components/LoginButton.vue");
