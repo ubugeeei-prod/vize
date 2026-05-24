@@ -327,9 +327,13 @@ fn is_inside_raw_html_element(content: &str, offset: usize, tag_name: &str) -> b
         return false;
     };
 
-    let close_needle = format!("</{tag_name}");
+    let close_needle = if tag_name == "script" {
+        "</script"
+    } else {
+        "</style"
+    };
     if before
-        .rfind(&close_needle)
+        .rfind(close_needle)
         .is_some_and(|close_start| close_start > open_start)
     {
         return false;
@@ -339,12 +343,16 @@ fn is_inside_raw_html_element(content: &str, offset: usize, tag_name: &str) -> b
 }
 
 fn last_start_tag(content: &str, tag_name: &str) -> Option<usize> {
-    let needle = format!("<{tag_name}");
+    let needle = if tag_name == "script" {
+        "<script"
+    } else {
+        "<style"
+    };
     let bytes = content.as_bytes();
     let mut search_start = 0;
     let mut last = None;
 
-    while let Some(relative) = content[search_start..].find(&needle) {
+    while let Some(relative) = content[search_start..].find(needle) {
         let start = search_start + relative;
         let after_name = start + needle.len();
         if after_name == bytes.len()

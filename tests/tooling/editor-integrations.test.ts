@@ -66,7 +66,7 @@ test("vscode-vize wires art-vue documents into editor features", () => {
     "utf-8",
   );
 
-  assert.match(extensionSource, /SUPPORTED_LANGUAGE_IDS\s*=\s*\["vue", "art-vue"\]/);
+  assert.match(extensionSource, /SUPPORTED_LANGUAGE_IDS\s*=\s*\["vue", "art-vue", "html"\]/);
   assert.match(extensionSource, /SUPPORTED_URI_SCHEMES\s*=\s*\["file", "untitled"\]/);
   assert.match(extensionSource, /documentSelector:\s*SUPPORTED_URI_SCHEMES\.flatMap/);
   assert.match(extensionSource, /onDidChangeConfiguration/);
