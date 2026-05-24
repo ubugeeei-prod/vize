@@ -126,6 +126,45 @@ const color = 'tomato'
 }
 
 #[test]
+fn test_script_setup_css_v_bind_dedupes_template_unref_import() {
+    let source = r#"<script setup>
+let color = 'tomato'
+</script>
+
+<template>
+  <div class="box">{{ color }}</div>
+</template>
+
+<style scoped>
+.box {
+  color: v-bind(color);
+}
+</style>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions {
+        scope_id: Some("test".into()),
+        ..Default::default()
+    };
+    opts.script.id = Some("src/Box.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert_eq!(
+        result.code.matches("unref as _unref").count(),
+        1,
+        "CSS vars and template unwrapping should share the same _unref import:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("useCssVars as _useCssVars")
+            && result.code.contains(r#""test-color": (_unref(color))"#)
+            && result.code.contains("_toDisplayString(_unref(color))"),
+        "CSS vars and render output should both use _unref:\n{}",
+        result.code
+    );
+}
+
+#[test]
 fn test_script_setup_define_page_is_compile_time_only() {
     let source = r#"<script setup lang="ts">
 definePage({

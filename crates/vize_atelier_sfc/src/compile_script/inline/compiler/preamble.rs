@@ -2,6 +2,7 @@ use vize_carton::{String, profile};
 
 use super::super::super::TemplateParts;
 use super::super::super::function_mode::dedupe_imports;
+use super::super::super::import_utils::import_block_has_local_from;
 use super::parser::parse_script_content;
 
 pub(super) struct PreambleState {
@@ -43,9 +44,13 @@ pub(super) fn emit_preamble(
 
     // useCssVars import if style has v-bind()
     if has_css_vars {
-        output.extend_from_slice(
-            b"import { useCssVars as _useCssVars, unref as _unref } from 'vue'\n",
-        );
+        if import_block_has_local_from(template.imports, "vue", "_unref") {
+            output.extend_from_slice(b"import { useCssVars as _useCssVars } from 'vue'\n");
+        } else {
+            output.extend_from_slice(
+                b"import { useCssVars as _useCssVars, unref as _unref } from 'vue'\n",
+            );
+        }
     }
 
     // Component helper import (skip if already emitted with withAsyncContext)
