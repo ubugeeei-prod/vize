@@ -182,10 +182,7 @@ async function runSyntaxHighlightContributionSmoke() {
     vueGrammar.repository["vue-css-vbind"].beginCaptures["1"].name,
     "support.function.vue",
   );
-  assert.equal(
-    vueGrammar.repository["vue-css-vbind"].patterns[0].name,
-    "variable.other.vue",
-  );
+  assert.equal(vueGrammar.repository["vue-css-vbind"].patterns[0].name, "variable.other.vue");
   assert.deepEqual(artVueGrammar.patterns, [{ include: "source.vue" }]);
 }
 
@@ -240,13 +237,14 @@ async function runConfigurationEdgeCaseSmoke() {
   await updateVizeConfiguration("enable", true);
   let entries = await waitForReadyServer(logPath, "manual enable default profile");
   assertInitializationOptions(entries, recommendedInitializationOptions);
-  assert.ok(entries.some((entry) => entry.event === "version"), "expected trimmed server path");
+  assert.ok(
+    entries.some((entry) => entry.event === "version"),
+    "expected trimmed server path",
+  );
   await disableVizeAndWaitForShutdown(logPath);
 
   await prepareConfiguredFakeServer({ logPath, serverPath });
-  await updateVizeConfigurationEntries(
-    featureSettingKeys.map((key) => [key, false]),
-  );
+  await updateVizeConfigurationEntries(featureSettingKeys.map((key) => [key, false]));
   await updateVizeConfiguration("enable", true);
   entries = await waitForReadyServer(logPath, "explicitly empty capability profile");
   assertInitializationOptions(entries, {});
@@ -286,26 +284,20 @@ async function runDiagnosticSmoke() {
     (nextDiagnostics) => nextDiagnostics.length === 2,
     "recommended profile type and lint diagnostics",
   );
-  assertDiagnostic(
-    diagnostics,
-    {
-      code: "fake-type-mismatch",
-      message: "Fake Vize type error: string is not assignable to number.",
-      range: new vscode.Range(1, 6, 1, 13),
-      severity: vscode.DiagnosticSeverity.Error,
-      source: "vize:typecheck",
-    },
-  );
-  assertDiagnostic(
-    diagnostics,
-    {
-      code: "fake-lint-rule",
-      message: "Fake Vize lint error: template expression should be simplified.",
-      range: new vscode.Range(5, 12, 5, 19),
-      severity: vscode.DiagnosticSeverity.Warning,
-      source: "vize:lint",
-    },
-  );
+  assertDiagnostic(diagnostics, {
+    code: "fake-type-mismatch",
+    message: "Fake Vize type error: string is not assignable to number.",
+    range: new vscode.Range(1, 6, 1, 13),
+    severity: vscode.DiagnosticSeverity.Error,
+    source: "vize:typecheck",
+  });
+  assertDiagnostic(diagnostics, {
+    code: "fake-lint-rule",
+    message: "Fake Vize lint error: template expression should be simplified.",
+    range: new vscode.Range(5, 12, 5, 19),
+    severity: vscode.DiagnosticSeverity.Warning,
+    source: "vize:lint",
+  });
 
   await vscode.commands.executeCommand("vize.enableLintOnlyProfile");
   await waitForLogEntries(
@@ -326,16 +318,13 @@ async function runDiagnosticSmoke() {
     (nextDiagnostics) => nextDiagnostics.length === 1,
     "lint-only profile diagnostics",
   );
-  assertDiagnostic(
-    diagnostics,
-    {
-      code: "fake-lint-rule",
-      message: "Fake Vize lint error: template expression should be simplified.",
-      range: new vscode.Range(5, 12, 5, 19),
-      severity: vscode.DiagnosticSeverity.Warning,
-      source: "vize:lint",
-    },
-  );
+  assertDiagnostic(diagnostics, {
+    code: "fake-lint-rule",
+    message: "Fake Vize lint error: template expression should be simplified.",
+    range: new vscode.Range(5, 12, 5, 19),
+    severity: vscode.DiagnosticSeverity.Warning,
+    source: "vize:lint",
+  });
   assert.equal(
     diagnostics.some((diagnostic) => diagnostic.source === "vize:typecheck"),
     false,
@@ -501,7 +490,10 @@ async function runEditorCapabilityProviderSmoke() {
     label: "inlay hints",
     method: "textDocument/inlayHint",
     validate(result) {
-      assert.ok(result?.some((hint) => hint.label === ": string"), "expected inlay hint");
+      assert.ok(
+        result?.some((hint) => hint.label === ": string"),
+        "expected inlay hint",
+      );
     },
   });
 
@@ -566,7 +558,8 @@ async function runDocumentSelectorAndWatcherSmoke() {
   await waitForMethodWithUri(logPath, "textDocument/didOpen", artVueDocument.uri.toString());
 
   const untitledDocument = await vscode.workspace.openTextDocument({
-    content: "<script setup lang=\"ts\">\nconst value = 1\n</script>\n<template>{{ value }}</template>\n",
+    content:
+      '<script setup lang="ts">\nconst value = 1\n</script>\n<template>{{ value }}</template>\n',
     language: "vue",
   });
   await vscode.window.showTextDocument(untitledDocument);
@@ -588,7 +581,7 @@ async function runDocumentSelectorAndWatcherSmoke() {
 
   await vscode.workspace.fs.writeFile(
     watchedUri,
-    Buffer.from("<script setup lang=\"ts\">\nconst watched = true\n</script>\n", "utf-8"),
+    Buffer.from('<script setup lang="ts">\nconst watched = true\n</script>\n', "utf-8"),
   );
   await waitForWatchedFileChange(logPath, watchedUri.toString(), 1, "watched Vue file create");
 
