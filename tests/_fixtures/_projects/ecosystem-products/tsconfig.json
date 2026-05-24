@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowSyntheticDefaultImports": true,
+    "allowArbitraryExtensions": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@nuxt/ui/components/*.vue": ["src/vendors/nuxt-ui-component.ts"]
+    }
+  },
+  "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.vue"]
+}
