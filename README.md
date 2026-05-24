@@ -123,6 +123,16 @@ This project draws inspiration from
 [Storybook](https://github.com/storybookjs/storybook), and
 [OXC](https://github.com/oxc-project/oxc).
 
+Special thanks to:
+
+- [かっこかり](https://github.com/kakkokari-gtyih) for regular debugging and monitoring around
+  Misskey, including many compiler-focused bug reports.
+- [ushironoko](https://github.com/ushironoko) for compiler, linter, and CLI bug reports,
+  reference implementations, and reproduction repositories.
+- [dannote](https://github.com/dannote) for Elixier ecosystem feedback and pull requests,
+  especially for CSS-facing APIs and fixes.
+- Everyone who has mentioned, shared, tested, or amplified Vize across the community.
+
 ## License
 
 [MIT](./LICENSE)

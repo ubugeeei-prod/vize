@@ -231,6 +231,7 @@ void test("applyNavigationOrder keeps the stability contract in Start", () => {
     ["/", "index"],
     ["/getting-started", "Getting Started"],
     ["/stability", "Stability"],
+    ["/credits", "Credits"],
   ]);
 
   applyNavigation(document);
@@ -238,7 +239,7 @@ void test("applyNavigationOrder keeps the stability contract in Start", () => {
   assert.deepEqual(sections(document), [
     {
       title: "Start",
-      labels: ["Overview", "Getting Started", "Stability"],
+      labels: ["Overview", "Getting Started", "Stability", "Credits"],
     },
   ]);
 });

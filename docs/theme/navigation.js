@@ -38,6 +38,7 @@ const vizeDocsNavigation = (() => {
     ["/", "Overview"],
     ["/getting-started", "Getting Started"],
     ["/stability", "Stability"],
+    ["/credits", "Credits"],
     ["/guide/configuration", "Configuration"],
     ["/guide/cli", "CLI"],
     ["/guide/vite-plugin", "Vite Plugin"],
@@ -77,7 +78,7 @@ const vizeDocsNavigation = (() => {
   const navGroups = [
     {
       title: "Start",
-      paths: ["/", "/getting-started", "/stability"],
+      paths: ["/", "/getting-started", "/stability", "/credits"],
     },
     {
       title: "Project Setup",
