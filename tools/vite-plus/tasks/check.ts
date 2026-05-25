@@ -33,6 +33,11 @@ const ciVizeAppCheckCommand = [
     "vp check src 'e2e/*.ts' 'e2e/vrt/*.ts' vite.config.ts vite.app.config.ts vite.test.config.ts vite.node.config.ts playwright.config.ts && vize lint --max-warnings 0",
   ),
 ].join(" && ");
+const localActrunCommand = [
+  "actrun lint .github/workflows/check.yml",
+  "actrun workflow run .github/workflows/check.yml --dry-run",
+  "actrun workflow run .github/workflows/check.yml --job check-js",
+].join(" && ");
 
 /**
  * Repository-wide formatting, linting, package checks, and CI aggregate tasks.
@@ -77,5 +82,6 @@ export const checkTasks = defineTasks({
   "lint:rust": task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
   "lint:all": noCacheTask(runTasks("lint:rust", "check")),
   "fmt:check": noCacheTask(runTask("check")),
+  actrun: noCacheTask(localActrunCommand),
   ci: noCacheTask(runTasks("fmt:all", "clippy", "test", "check:ci")),
 });

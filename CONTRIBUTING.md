@@ -30,13 +30,14 @@ Before opening a PR that changes shared tooling, release automation, native bind
 For GitHub Actions changes, use `actrun` to lint or preview the workflow graph before pushing:
 
 ```sh
-actrun lint .github/workflows/check.yml
-actrun workflow run .github/workflows/check.yml --dry-run
+vp run actrun
 ```
 
-When a focused job is practical on your machine, run it locally before opening the PR:
+The aggregate task wraps the focused local Actions check:
 
 ```sh
+actrun lint .github/workflows/check.yml
+actrun workflow run .github/workflows/check.yml --dry-run
 actrun workflow run .github/workflows/check.yml --job check-js
 ```
 
