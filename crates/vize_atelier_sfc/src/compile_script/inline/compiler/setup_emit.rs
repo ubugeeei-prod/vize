@@ -1,10 +1,96 @@
 use std::borrow::Cow;
 
-use vize_carton::{String, profile};
+use vize_atelier_core::{
+    BindingMetadata, ExpressionNode, Position, SimpleExpressionNode, SourceLocation,
+    TransformContext, TransformOptions, process_expression,
+};
+use vize_carton::{Box as CoreBox, String, profile};
 
-use crate::script::ScriptCompileContext;
+use crate::script::{ScriptCompileContext, gen_props_access_exp};
 
 use super::await_transform::transform_await_expressions;
+
+fn is_identifier_continue(c: char) -> bool {
+    c.is_alphanumeric() || c == '_' || c == '$'
+}
+
+fn replace_props_alias_access(code: &str, local: &str, replacement: &str) -> String {
+    let needle = {
+        let mut needle = String::with_capacity(local.len() + 8);
+        needle.push_str("__props.");
+        needle.push_str(local);
+        needle
+    };
+
+    let mut result = String::with_capacity(code.len());
+    let mut cursor = 0;
+    while let Some(rel_pos) = code[cursor..].find(needle.as_str()) {
+        let start = cursor + rel_pos;
+        let end = start + needle.len();
+        let after_ok = code[end..]
+            .chars()
+            .next()
+            .is_none_or(|c| !is_identifier_continue(c));
+
+        result.push_str(&code[cursor..start]);
+        if after_ok {
+            result.push_str(replacement);
+        } else {
+            result.push_str(&code[start..end]);
+        }
+        cursor = end;
+    }
+    result.push_str(&code[cursor..]);
+    result
+}
+
+fn rewrite_props_aliases(code: String, bindings: &BindingMetadata) -> String {
+    if bindings.props_aliases.is_empty() {
+        return code;
+    }
+
+    let mut rewritten = code;
+    for (local, key) in &bindings.props_aliases {
+        let replacement = gen_props_access_exp(key);
+        rewritten = replace_props_alias_access(&rewritten, local, &replacement);
+    }
+    rewritten
+}
+
+fn transform_css_var_expression(
+    ctx: &ScriptCompileContext,
+    var_expr: &str,
+    source_is_ts: bool,
+) -> String {
+    let allocator = vize_carton::Bump::new();
+    let loc = SourceLocation::new(
+        Position::new(0, 1, 1),
+        Position::new(var_expr.len() as u32, 1, var_expr.len() as u32 + 1),
+        var_expr,
+    );
+    let exp = ExpressionNode::Simple(CoreBox::new_in(
+        SimpleExpressionNode::new(var_expr, false, loc),
+        &allocator,
+    ));
+    let mut transform_ctx = TransformContext::new(
+        &allocator,
+        String::default(),
+        TransformOptions {
+            prefix_identifiers: true,
+            inline: true,
+            is_ts: source_is_ts,
+            binding_metadata: Some(ctx.bindings.clone()),
+            ..Default::default()
+        },
+    );
+
+    let code = match process_expression(&mut transform_ctx, &exp, false) {
+        ExpressionNode::Simple(simple) => simple.content.clone(),
+        ExpressionNode::Compound(_) => String::new(var_expr),
+    };
+
+    rewrite_props_aliases(code, &ctx.bindings)
+}
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn emit_setup_body(
@@ -87,11 +173,12 @@ pub(super) fn emit_setup_body(
         output.extend_from_slice(b"_useCssVars((_ctx) => ({\n");
         for (i, var_expr) in css_vars.iter().enumerate() {
             let var_name = crate::css::scoped_v_bind_name(scope_id, var_expr);
+            let var_value = transform_css_var_expression(ctx, var_expr, source_is_ts);
             output.extend_from_slice(b"  \"");
             output.extend_from_slice(var_name.as_bytes());
-            output.extend_from_slice(b"\": (_unref(");
-            output.extend_from_slice(var_expr.as_bytes());
-            output.extend_from_slice(b"))");
+            output.extend_from_slice(b"\": (");
+            output.extend_from_slice(var_value.as_bytes());
+            output.extend_from_slice(b")");
             if i < css_vars.len() - 1 {
                 output.extend_from_slice(b",");
             }

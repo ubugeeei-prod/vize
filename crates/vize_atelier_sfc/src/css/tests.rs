@@ -209,6 +209,37 @@ fn test_v_bind_extraction_handles_quoted_expressions_with_parentheses() {
 }
 
 #[test]
+fn test_v_bind_extraction_ignores_strings_and_comments() {
+    let bump = Bump::new();
+    let css = r#"
+.icon::before {
+  content: "v-bind(icon)";
+  color: v-bind(color /* keep ) inside comments */);
+}
+
+/* background: v-bind(bg); */
+// width: v-bind(width);
+.label {
+  background: 'v-bind(bg)';
+}
+"#;
+
+    let (transformed, vars) =
+        extract_and_transform_v_bind_with_scope(&bump, css, Some("data-v-test"));
+
+    assert_eq!(vars, vec!["color /* keep ) inside comments */"]);
+    assert!(transformed.contains(r#"content: "v-bind(icon)";"#));
+    assert!(transformed.contains("/* background: v-bind(bg); */"));
+    assert!(transformed.contains("// width: v-bind(width);"));
+    assert!(transformed.contains("background: 'v-bind(bg)'"));
+    assert!(
+        transformed.contains(
+            "color: var(--test-color\\ \\/\\*\\ keep\\ \\)\\ inside\\ comments\\ \\*\\/);"
+        )
+    );
+}
+
+#[test]
 fn test_scope_deep() {
     let bump = Bump::new();
     let mut out = BumpVec::new_in(&bump);

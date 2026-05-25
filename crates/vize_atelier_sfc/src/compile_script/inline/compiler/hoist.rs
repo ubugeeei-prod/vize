@@ -71,6 +71,9 @@ pub(super) fn separate_hoisted_consts(
                     setup_body_lines.push(line.to_compact_string());
                     continue;
                 }
+            } else {
+                setup_body_lines.push(line.to_compact_string());
+                continue;
             }
             // Extract variable name and check if it's LiteralConst
             if let Some(name) = extract_const_name(trimmed)

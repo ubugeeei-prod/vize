@@ -118,8 +118,8 @@ const color = 'tomato'
     assert!(
         result
             .code
-            .contains(r#""test-height\ \+\ \'px\'": (_unref(height + 'px'))"#)
-            && result.code.contains(r#""test-color": (_unref(color))"#),
+            .contains(r#""test-height\ \+\ \'px\'": (height + 'px')"#)
+            && result.code.contains(r#""test-color": (color)"#),
         "useCssVars keys should match compiled CSS vars:\n{}",
         result.code
     );
@@ -175,10 +175,10 @@ const textCountPercentage = 64
         result.css
     );
     assert!(
-        result.code.contains(r#"(_unref(parentBg ?? 'var(--bg)'))"#)
+        result.code.contains(r#"(parentBg ?? 'var(--bg)')"#)
             && result
                 .code
-                .contains(r#"(_unref(Math.min(100, textCountPercentage) + '%'))"#),
+                .contains(r#"(Math.min(100, textCountPercentage) + '%')"#),
         "useCssVars should receive complete expressions:\n{}",
         result.code
     );
@@ -219,6 +219,144 @@ let color = 'tomato'
             && result.code.contains(r#""test-color": (_unref(color))"#)
             && result.code.contains("_toDisplayString(_unref(color))"),
         "CSS vars and render output should both use _unref:\n{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_script_setup_css_v_bind_reads_define_props() {
+    let source = r#"<script setup lang="ts">
+withDefaults(defineProps<{
+  icon: string
+  color: string
+  offset: number
+}>(), {})
+</script>
+
+<template>
+  <div v-panel :class="$style.root">
+    <img :src="icon" />
+  </div>
+</template>
+
+<style module lang="scss">
+.root {
+  background: linear-gradient(
+    180deg,
+    color(from v-bind(color) srgb r g b / 0.1),
+    color(from v-bind(color) srgb r g b / 0)
+  );
+  padding-top: v-bind("offset + 'px'");
+}
+</style>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions {
+        scope_id: Some("test".into()),
+        ..Default::default()
+    };
+    opts.script.id = Some("src/MkFeatureBanner.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    let reads_prop_css_vars = (result.code.contains(r#""test-color": (__props.color)"#)
+        || result.code.contains(r#""test-color": __props.color"#))
+        && result
+            .code
+            .contains(r#""test-offset + 'px'": __props.offset + "px""#)
+        && !result.code.contains("_unref(color)")
+        && !result.code.contains("_unref(offset");
+    assert!(
+        reads_prop_css_vars,
+        "CSS vars for defineProps should read from __props:\n{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("_withDirectives")
+            && result.code.contains(r#"_resolveDirective("panel")"#),
+        "custom directives on the root should remain intact:\n{}",
+        result.code
+    );
+    assert!(
+        result.css.as_deref().is_some_and(|css| {
+            css.contains("var(--test-color)")
+                && css.contains(r#"var(--test-offset\ \+\ \'px\')"#)
+                && !css.contains("v-bind(")
+        }),
+        "CSS should use the same scoped variable names:\n{:?}",
+        result.css
+    );
+}
+
+#[test]
+fn test_script_setup_css_v_bind_reads_destructured_prop_aliases() {
+    let source = r#"<script setup lang="ts">
+const { color: bannerColor } = defineProps<{
+  color: string
+}>()
+</script>
+
+<template>
+  <div class="root"></div>
+</template>
+
+<style scoped>
+.root {
+  color: v-bind(bannerColor);
+}
+</style>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions {
+        scope_id: Some("test".into()),
+        ..Default::default()
+    };
+    opts.script.id = Some("src/Alias.vue".into());
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains(r#""test-bannerColor": __props.color"#)
+            && !result.code.contains("__props.bannerColor"),
+        "CSS vars should resolve destructured prop aliases to the source prop key:\n{}",
+        result.code
+    );
+}
+
+#[test]
+fn test_script_setup_multiline_type_annotation_is_not_hoisted() {
+    let source = r#"<script setup lang="ts">
+const _: SomeType<
+  false
+> = true;
+</script>
+
+<template>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.is_ts = true;
+    opts.template.is_ts = true;
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    let setup_pos = result
+        .code
+        .find("setup(__props)")
+        .expect("expected setup function");
+    let const_pos = result
+        .code
+        .find("const _: SomeType<")
+        .expect("expected source const");
+
+    assert!(
+        setup_pos < const_pos,
+        "multiline type-only const should stay inside setup:\n{}",
+        result.code
+    );
+    assert!(
+        !result
+            .code
+            .contains("const _: SomeType<\n \nexport default"),
+        "component export must not be inserted inside a multiline type annotation:\n{}",
         result.code
     );
 }
