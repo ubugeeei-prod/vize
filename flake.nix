@@ -81,6 +81,10 @@
                             pkgs.glibc
                             pkgs.stdenv.cc.cc.lib
                             pkgs.zlib
+                            # `moonc` started dynamically linking libLLVM.so.18.1
+                            # in the latest upstream binary; keep it on the rpath
+                            # so the patched ELF can resolve it.
+                            pkgs.llvmPackages_18.libllvm.lib
                           ]
                         }" \
                         "$binary"
