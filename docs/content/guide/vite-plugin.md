@@ -37,6 +37,31 @@ export default defineConfig({
 
 That's it. Replace `@vitejs/plugin-vue` with `@vizejs/vite-plugin` and your project compiles through Rust.
 
+## TypeScript Vue Imports
+
+Add the plugin package to `compilerOptions.types` to make direct `.vue` imports resolvable by
+TypeScript without writing a local `env.d.ts` shim:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite/client", "@vizejs/vite-plugin"]
+  }
+}
+```
+
+This does not require adding `vize` as a direct project dependency.
+
+For Vite Plus projects, keep the Vite Plus client type and append the plugin package:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite-plus/client", "@vizejs/vite-plugin"]
+  }
+}
+```
+
 For most projects, keep direct plugin options small and put stable compiler settings in
 `vize.config.ts`.
 

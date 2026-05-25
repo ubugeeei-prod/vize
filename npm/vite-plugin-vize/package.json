@@ -22,15 +22,17 @@
     "directory": "npm/vite-plugin-vize"
   },
   "files": [
+    "client.d.ts",
+    "index.d.mts",
     "dist"
   ],
   "type": "module",
   "main": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "types": "./index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.mts"
+      "types": "./index.d.mts",
+      "import": "./dist/index.mjs"
     }
   },
   "publishConfig": {

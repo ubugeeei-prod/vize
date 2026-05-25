@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const require = createRequire(import.meta.url);
 const npmDir = path.join(root, "npm");
 
 function collectStrings(value: unknown, out: string[]): void {
@@ -136,6 +140,89 @@ test("esm packed npm manifests point at mjs and d.mts outputs", () => {
   }
 
   assert.deepEqual(failures, []);
+});
+
+test("vite plugin publishes TypeScript client types for Vue imports", () => {
+  const packageJson = JSON.parse(readRepoFile("npm/vite-plugin-vize/package.json")) as {
+    exports?: Record<string, { import?: string; types?: string }>;
+    files?: string[];
+    types?: string;
+  };
+  const typeEntry = readRepoFile("npm/vite-plugin-vize/index.d.mts");
+  const clientTypes = readRepoFile("npm/vite-plugin-vize/client.d.ts");
+
+  assert.equal(packageJson.types, "./index.d.mts");
+  assert.deepEqual(packageJson.exports?.["."], {
+    types: "./index.d.mts",
+    import: "./dist/index.mjs",
+  });
+  assert.ok(packageJson.files?.includes("client.d.ts"));
+  assert.ok(packageJson.files?.includes("index.d.mts"));
+  assert.match(typeEntry, /import "\.\/client\.d\.ts"/);
+  assert.match(typeEntry, /from "\.\/dist\/index\.mjs"/);
+  assert.match(clientTypes, /declare module "\*\.vue"/);
+});
+
+test("vite plugin type entry resolves direct Vue imports", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-vite-plugin-types-"));
+  try {
+    const pluginDir = path.join(tempDir, "node_modules", "@vizejs", "vite-plugin");
+    const vueDir = path.join(tempDir, "node_modules", "vue");
+    const srcDir = path.join(tempDir, "src");
+    fs.mkdirSync(path.join(pluginDir, "dist"), { recursive: true });
+    fs.mkdirSync(vueDir, { recursive: true });
+    fs.mkdirSync(srcDir, { recursive: true });
+
+    for (const file of ["package.json", "index.d.mts", "client.d.ts"]) {
+      fs.copyFileSync(path.join(root, "npm", "vite-plugin-vize", file), path.join(pluginDir, file));
+    }
+
+    fs.writeFileSync(path.join(pluginDir, "dist", "index.mjs"), "\n");
+    fs.writeFileSync(
+      path.join(pluginDir, "dist", "index.d.mts"),
+      "declare const vize: () => unknown;\nexport { vize as default, vize };\n",
+    );
+    fs.writeFileSync(path.join(vueDir, "package.json"), '{"name":"vue","types":"./index.d.ts"}\n');
+    fs.writeFileSync(
+      path.join(vueDir, "index.d.ts"),
+      "export type DefineComponent<P = {}, B = {}, D = any> = { __props?: P; __bindings?: B; __data?: D };\n",
+    );
+    fs.writeFileSync(
+      path.join(tempDir, "tsconfig.json"),
+      JSON.stringify(
+        {
+          compilerOptions: {
+            module: "ESNext",
+            moduleResolution: "Bundler",
+            strict: true,
+            target: "ES2022",
+            types: ["@vizejs/vite-plugin"],
+          },
+          include: ["src"],
+        },
+        null,
+        2,
+      ),
+    );
+    fs.writeFileSync(path.join(srcDir, "App.vue"), "<template />\n");
+    fs.writeFileSync(path.join(srcDir, "main.ts"), 'import App from "./App.vue";\nApp;\n');
+
+    const result = spawnSync(
+      process.execPath,
+      [require.resolve("typescript/bin/tsc"), "-p", tempDir, "--noEmit", "--pretty", "false"],
+      {
+        encoding: "utf8",
+      },
+    );
+
+    assert.equal(
+      result.status,
+      0,
+      `${result.error?.message ?? ""}\n${result.stderr}\n${result.stdout}`.trim(),
+    );
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
 });
 
 test("native package catalog pins and generated loader version checks stay aligned", () => {

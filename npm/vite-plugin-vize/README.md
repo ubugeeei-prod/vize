@@ -38,6 +38,31 @@ export default defineConfig({
 });
 ```
 
+### TypeScript
+
+Add `@vizejs/vite-plugin` to `compilerOptions.types` so TypeScript can resolve direct `.vue`
+imports without a project-local `env.d.ts` shim:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite/client", "@vizejs/vite-plugin"]
+  }
+}
+```
+
+This does not require adding `vize` as a direct project dependency.
+
+For Vite Plus projects, keep `vite-plus/client` and append `@vizejs/vite-plugin`:
+
+```json
+{
+  "compilerOptions": {
+    "types": ["vite-plus/client", "@vizejs/vite-plugin"]
+  }
+}
+```
+
 ### Shared config
 
 `vize.config.ts`
