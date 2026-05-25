@@ -167,6 +167,13 @@ The 500-SFC profile fixture keeps most wall time inside the Corsa CLI command, w
 | Corsa diagnostics phase      | 1.67s   | 482ms   |
 | Corsa CLI parse              | n/a     | 10.41ms |
 
+The Rust-side `virtual project` phase — per-file SFC parse, Croquis analysis,
+Virtual TS generation, and import rewriting — is fanned across rayon's thread
+pool inside `VirtualProject::register_paths`. Each `.vue` file is independent
+once the workspace options are resolved, so a single batch parallelizes
+cleanly. On a 1,000-SFC fixture the phase drops from ~71 ms to ~25 ms before
+Corsa is even invoked.
+
 ### Diagnostics-heavy e2e fixture
 
 `bench/check.ts` also measures the `tests/_fixtures/_git/npmx.dev` app when the fixture is present. This catches the diagnostics mapping path on a real application fixture:
