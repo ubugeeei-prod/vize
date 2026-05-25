@@ -39,6 +39,8 @@ The aggregate task wraps the focused local Actions check:
 actrun lint .github/workflows/check.yml
 actrun workflow run .github/workflows/check.yml --dry-run
 actrun workflow run .github/workflows/check.yml --job check-js
+actrun lint .github/workflows/benchmark.yml
+actrun workflow run .github/workflows/benchmark.yml --dry-run
 ```
 
 To run focused jobs independently, use the split Vite+ tasks:
@@ -47,7 +49,11 @@ To run focused jobs independently, use the split Vite+ tasks:
 vp run actrun:lint
 vp run actrun:dry-run
 vp run actrun:job --job check-js
+vp run actrun:benchmark:lint
+vp run actrun:benchmark:dry-run
 ```
+
+Prefer the Vite+ tasks when launching multiple local workflow runs in parallel; they assign separate actrun workspaces.
 
 ## Language Processor Change Discipline
 
