@@ -125,26 +125,26 @@ impl DiagnosticService {
             return diagnostics;
         }
 
-        // Standard SFC processing
-        // Collect parser diagnostics when any diagnostic pipeline is enabled.
-        let sfc_diags = Self::collect_sfc_diagnostics(uri, &content);
-        let has_sfc_parse_error = !sfc_diags.is_empty();
-        tracing::info!("collect: SFC parser diagnostics: {}", sfc_diags.len());
-        diagnostics.extend(sfc_diags);
-        if has_sfc_parse_error {
-            tracing::info!("collect: skipping dependent diagnostics after SFC parse error");
-            return diagnostics;
-        }
+        // Standard SFC processing — parse once and share the descriptor with
+        // every block-level collector below.
+        let descriptor = match Self::parse_sfc_for_collect(uri, &content) {
+            Ok(descriptor) => descriptor,
+            Err(parse_diagnostic) => {
+                tracing::info!("collect: skipping dependent diagnostics after SFC parse error");
+                diagnostics.push(parse_diagnostic);
+                return diagnostics;
+            }
+        };
 
         // Collect parser diagnostics for script and template blocks before
         // dependent analyzers, so broken blocks do not fan out into noisy
         // lint/type/Corsa diagnostics.
-        let script_diags = Self::collect_script_diagnostics(uri, &content);
+        let script_diags = Self::collect_script_diagnostics(uri, &content, &descriptor);
         let has_script_parse_error = !script_diags.is_empty();
         tracing::info!("collect: script parser diagnostics: {}", script_diags.len());
         diagnostics.extend(script_diags);
 
-        let template_diags = Self::collect_template_diagnostics(uri, &content);
+        let template_diags = Self::collect_template_diagnostics(uri, &content, &descriptor);
         let has_template_parse_error = !template_diags.is_empty();
         tracing::info!(
             "collect: template parser diagnostics: {}",
@@ -187,7 +187,7 @@ impl DiagnosticService {
 
         // Also lint inline <art> blocks in regular .vue files
         if features.lint {
-            let inline_art_diags = Self::collect_inline_art_diagnostics(uri, &content);
+            let inline_art_diags = Self::collect_inline_art_diagnostics(uri, &content, &descriptor);
             tracing::info!(
                 "collect: inline art diagnostics: {}",
                 inline_art_diags.len()

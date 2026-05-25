@@ -12,6 +12,7 @@ use tower_lsp::lsp_types::{
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
+use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::config::LinterConfig;
 use vize_patina::{HelpRenderTarget, LintPreset, render_help};
 
@@ -77,17 +78,12 @@ impl DiagnosticService {
     }
 
     /// Collect diagnostics for inline <art> custom blocks in regular .vue files.
-    pub(super) fn collect_inline_art_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+    pub(super) fn collect_inline_art_diagnostics(
+        _uri: &Url,
+        content: &str,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Vec<Diagnostic> {
         use vize_patina::rules::musea::MuseaLinter;
-
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return vec![];
-        };
 
         let mut diagnostics = Vec::new();
 
@@ -211,15 +207,20 @@ impl DiagnosticService {
         diagnostics
     }
 
-    /// Collect SFC parser diagnostics.
-    pub(super) fn collect_sfc_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+    /// Parse the SFC once for the diagnostic pipeline, returning either the
+    /// parsed descriptor or a single SFC parser error diagnostic to surface.
+    #[allow(clippy::result_large_err)]
+    pub(super) fn parse_sfc_for_collect<'a>(
+        uri: &Url,
+        content: &'a str,
+    ) -> Result<SfcDescriptor<'a>, Diagnostic> {
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: uri.path().to_string().into(),
             ..Default::default()
         };
 
         match vize_atelier_sfc::parse_sfc(content, options) {
-            Ok(_) => vec![],
+            Ok(descriptor) => Ok(descriptor),
             Err(err) => {
                 let range = if let Some(ref loc) = err.loc {
                     Range {
@@ -236,29 +237,24 @@ impl DiagnosticService {
                     Range::default()
                 };
 
-                vec![Diagnostic {
+                Err(Diagnostic {
                     range,
                     severity: Some(DiagnosticSeverity::ERROR),
                     source: Some(sources::SFC_PARSER.to_string()),
                     #[allow(clippy::disallowed_methods)]
                     message: err.message.to_string(),
                     ..Default::default()
-                }]
+                })
             }
         }
     }
 
     /// Collect template parser diagnostics.
-    pub(super) fn collect_template_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return vec![];
-        };
-
+    pub(super) fn collect_template_diagnostics(
+        _uri: &Url,
+        _content: &str,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Vec<Diagnostic> {
         let Some(ref template) = descriptor.template else {
             return vec![];
         };
@@ -299,16 +295,11 @@ impl DiagnosticService {
     }
 
     /// Collect script parser diagnostics.
-    pub(super) fn collect_script_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
-            return vec![];
-        };
-
+    pub(super) fn collect_script_diagnostics(
+        _uri: &Url,
+        content: &str,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Vec<Diagnostic> {
         let mut diagnostics = Vec::new();
 
         if let Some(ref script) = descriptor.script {
@@ -343,15 +334,7 @@ impl DiagnosticService {
             return vec![];
         }
 
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: uri.path().to_string().into(),
-            ..Default::default()
-        };
-
         let is_standalone_html = crate::utils::is_standalone_html_path(uri.path());
-        if !is_standalone_html && vize_atelier_sfc::parse_sfc(content, options).is_err() {
-            return vec![];
-        }
 
         // Create linter and lint the full SFC so editor diagnostics match the CLI.
         let preset = linter_config
