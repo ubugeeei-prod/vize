@@ -34,9 +34,9 @@ const ciVizeAppCheckCommand = [
   ),
 ].join(" && ");
 const localActrunCommand = [
-  "actrun lint .github/workflows/check.yml",
-  "actrun workflow run .github/workflows/check.yml --dry-run",
-  "actrun workflow run .github/workflows/check.yml --job check-js",
+  runTask("actrun:lint"),
+  runTask("actrun:dry-run"),
+  runTask("actrun:check-js"),
 ].join(" && ");
 
 /**
@@ -83,5 +83,11 @@ export const checkTasks = defineTasks({
   "lint:all": noCacheTask(runTasks("lint:rust", "check")),
   "fmt:check": noCacheTask(runTask("check")),
   actrun: noCacheTask(localActrunCommand),
+  "actrun:lint": noCacheTask("actrun lint .github/workflows/check.yml"),
+  "actrun:dry-run": noCacheTask("actrun workflow run .github/workflows/check.yml --dry-run"),
+  "actrun:job": noCacheTask('actrun workflow run .github/workflows/check.yml "$@"', {
+    forwardArguments: true,
+  }),
+  "actrun:check-js": noCacheTask(runTask("actrun:job") + " --job check-js"),
   ci: noCacheTask(runTasks("fmt:all", "clippy", "test", "check:ci")),
 });

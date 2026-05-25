@@ -41,6 +41,14 @@ actrun workflow run .github/workflows/check.yml --dry-run
 actrun workflow run .github/workflows/check.yml --job check-js
 ```
 
+To run focused jobs independently, use the split Vite+ tasks:
+
+```sh
+vp run actrun:lint
+vp run actrun:dry-run
+vp run actrun:job --job check-js
+```
+
 ## Language Processor Change Discipline
 
 Vize follows compiler-project practice from rustc, TypeScript, TypeScript-Go, and Flow: classify the
