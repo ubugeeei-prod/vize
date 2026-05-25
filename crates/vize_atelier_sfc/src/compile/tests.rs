@@ -1,5 +1,7 @@
 use super::{compile_sfc, helpers, normal_script};
-use crate::types::{BindingType, ScriptCompileOptions, SfcCompileOptions, TemplateCompileOptions};
+use crate::types::{
+    BindingType, ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, TemplateCompileOptions,
+};
 use crate::{SfcParseOptions, parse_sfc};
 use std::fs;
 use std::path::PathBuf;
@@ -16,6 +18,23 @@ fn fixtures_path() -> PathBuf {
         .join("fixtures")
         .join("sfc")
         .join("imported_types")
+}
+
+fn sfc_compile_snapshot(
+    css_vars: &[std::borrow::Cow<'_, str>],
+    result: &SfcCompileResult,
+) -> String {
+    let css_vars = css_vars
+        .iter()
+        .map(|var| format!("- {var}"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    format!(
+        "css vars:\n{}\n\ncss:\n{}\n\ncode:\n{}",
+        css_vars,
+        result.css.as_deref().unwrap_or("<none>"),
+        result.code
+    )
 }
 
 #[test]
@@ -71,12 +90,9 @@ const items = [{ name: 'dist', children: [{ name: 'file.js', children: [] }] }]
     opts.script.id = Some("src/components/diff/FileTree.vue".into());
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result
-            .code
-            .contains(r#"_resolveComponent("FileTree", true)"#),
-        "recursive SFC should resolve its own component name with maybeSelfReference. Got:\n{}",
-        result.code
+    insta::assert_snapshot!(
+        "script_setup_self_component_resolves_for_recursion",
+        result.code.as_str()
     );
 }
 
@@ -106,22 +122,9 @@ const color = 'tomato'
     opts.script.id = Some("src/Box.vue".into());
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.css.as_deref().is_some_and(|css| {
-            css.contains(r#"height: var(--test-height\ \+\ \'px\')"#)
-                && css.contains("color: var(--test-color)")
-                && !css.contains("v-bind(")
-        }),
-        "CSS v-bind should compile to scoped custom properties:\n{:?}",
-        result.css
-    );
-    assert!(
-        result
-            .code
-            .contains(r#""test-height\ \+\ \'px\'": (height + 'px')"#)
-            && result.code.contains(r#""test-color": (color)"#),
-        "useCssVars keys should match compiled CSS vars:\n{}",
-        result.code
+    insta::assert_snapshot!(
+        "script_setup_css_v_bind_uses_scoped_vars",
+        sfc_compile_snapshot(&descriptor.css_vars, &result)
     );
 }
 
@@ -157,30 +160,9 @@ const textCountPercentage = 64
     opts.script.id = Some("src/Box.vue".into());
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert_eq!(
-        descriptor.css_vars,
-        vec![
-            "parentBg ?? 'var(--bg)'",
-            "Math.min(100, textCountPercentage) + '%'",
-        ]
-    );
-    assert!(
-        result
-            .css
-            .as_deref()
-            .is_some_and(|css| !css.contains("v-bind(")
-                && css.contains("parentBg")
-                && css.contains("textCountPercentage")),
-        "CSS v-bind should preserve full expressions with nested parentheses:\n{:?}",
-        result.css
-    );
-    assert!(
-        result.code.contains(r#"(parentBg ?? 'var(--bg)')"#)
-            && result
-                .code
-                .contains(r#"(Math.min(100, textCountPercentage) + '%')"#),
-        "useCssVars should receive complete expressions:\n{}",
-        result.code
+    insta::assert_snapshot!(
+        "script_setup_css_v_bind_handles_quoted_parentheses",
+        sfc_compile_snapshot(&descriptor.css_vars, &result)
     );
 }
 
@@ -208,18 +190,9 @@ let color = 'tomato'
     opts.script.id = Some("src/Box.vue".into());
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert_eq!(
-        result.code.matches("unref as _unref").count(),
-        1,
-        "CSS vars and template unwrapping should share the same _unref import:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("useCssVars as _useCssVars")
-            && result.code.contains(r#""test-color": (_unref(color))"#)
-            && result.code.contains("_toDisplayString(_unref(color))"),
-        "CSS vars and render output should both use _unref:\n{}",
-        result.code
+    insta::assert_snapshot!(
+        "script_setup_css_v_bind_dedupes_template_unref_import",
+        sfc_compile_snapshot(&descriptor.css_vars, &result)
     );
 }
 
@@ -258,32 +231,9 @@ withDefaults(defineProps<{
     opts.script.id = Some("src/MkFeatureBanner.vue".into());
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    let reads_prop_css_vars = (result.code.contains(r#""test-color": (__props.color)"#)
-        || result.code.contains(r#""test-color": __props.color"#))
-        && result
-            .code
-            .contains(r#""test-offset + 'px'": __props.offset + "px""#)
-        && !result.code.contains("_unref(color)")
-        && !result.code.contains("_unref(offset");
-    assert!(
-        reads_prop_css_vars,
-        "CSS vars for defineProps should read from __props:\n{}",
-        result.code
-    );
-    assert!(
-        result.code.contains("_withDirectives")
-            && result.code.contains(r#"_resolveDirective("panel")"#),
-        "custom directives on the root should remain intact:\n{}",
-        result.code
-    );
-    assert!(
-        result.css.as_deref().is_some_and(|css| {
-            css.contains("var(--test-color)")
-                && css.contains(r#"var(--test-offset\ \+\ \'px\')"#)
-                && !css.contains("v-bind(")
-        }),
-        "CSS should use the same scoped variable names:\n{:?}",
-        result.css
+    insta::assert_snapshot!(
+        "script_setup_css_v_bind_reads_define_props",
+        sfc_compile_snapshot(&descriptor.css_vars, &result)
     );
 }
 
@@ -313,11 +263,9 @@ const { color: bannerColor } = defineProps<{
     opts.script.id = Some("src/Alias.vue".into());
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    assert!(
-        result.code.contains(r#""test-bannerColor": __props.color"#)
-            && !result.code.contains("__props.bannerColor"),
-        "CSS vars should resolve destructured prop aliases to the source prop key:\n{}",
-        result.code
+    insta::assert_snapshot!(
+        "script_setup_css_v_bind_reads_destructured_prop_aliases",
+        sfc_compile_snapshot(&descriptor.css_vars, &result)
     );
 }
 
@@ -338,26 +286,9 @@ const _: SomeType<
     opts.template.is_ts = true;
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
-    let setup_pos = result
-        .code
-        .find("setup(__props)")
-        .expect("expected setup function");
-    let const_pos = result
-        .code
-        .find("const _: SomeType<")
-        .expect("expected source const");
-
-    assert!(
-        setup_pos < const_pos,
-        "multiline type-only const should stay inside setup:\n{}",
-        result.code
-    );
-    assert!(
-        !result
-            .code
-            .contains("const _: SomeType<\n \nexport default"),
-        "component export must not be inserted inside a multiline type annotation:\n{}",
-        result.code
+    insta::assert_snapshot!(
+        "script_setup_multiline_type_annotation_is_not_hoisted",
+        result.code.as_str()
     );
 }
 

@@ -10,9 +10,7 @@ use super::CssTargets;
 use super::scoped::{
     add_scope_to_element, apply_scoped_css, transform_deep, transform_global, transform_slotted,
 };
-use super::transform::{
-    extract_and_transform_v_bind, extract_and_transform_v_bind_with_scope, scoped_v_bind_name,
-};
+use super::transform::{extract_and_transform_v_bind, extract_and_transform_v_bind_with_scope};
 use super::{CssCompileOptions, bundle_css, compile_css, parse_css_ast, print_css_ast};
 
 fn test_utf8(bytes: &[u8]) -> &str {
@@ -20,6 +18,15 @@ fn test_utf8(bytes: &[u8]) -> &str {
         Ok(value) => value,
         Err(error) => panic!("CSS helper emitted invalid UTF-8: {error}"),
     }
+}
+
+fn v_bind_snapshot<T: AsRef<str>>(transformed: &str, vars: &[T]) -> String {
+    let vars = vars
+        .iter()
+        .map(|var| format!("- {}", var.as_ref()))
+        .collect::<Vec<_>>()
+        .join("\n");
+    format!("vars:\n{vars}\n\ncss:\n{transformed}")
 }
 
 #[test]
@@ -144,10 +151,7 @@ fn test_v_bind_extraction() {
     let bump = Bump::new();
     let css = ".foo { color: v-bind(color); background: v-bind('bgColor'); }";
     let (transformed, vars) = extract_and_transform_v_bind(&bump, css);
-    assert_eq!(vars.len(), 2);
-    assert!(vars.contains(&"color".to_compact_string()));
-    assert!(vars.contains(&"bgColor".to_compact_string()));
-    insta::assert_snapshot!(transformed);
+    insta::assert_snapshot!("v_bind_extraction", v_bind_snapshot(&transformed, &vars));
 }
 
 #[test]
@@ -161,10 +165,7 @@ fn test_v_bind_extraction_with_scope_id() {
     );
 
     assert!(result.errors.is_empty());
-    assert!(!result.code.contains("v-bind("));
-    assert!(result.code.contains(r#"var(--test-height\ \+\ \'px\')"#));
-    assert!(result.code.contains("var(--test-color)"));
-    assert_eq!(result.css_vars, vec!["height + 'px'", "color"]);
+    insta::assert_debug_snapshot!(result);
 }
 
 #[test]
@@ -186,26 +187,10 @@ fn test_v_bind_extraction_handles_quoted_expressions_with_parentheses() {
     let (transformed, vars) =
         extract_and_transform_v_bind_with_scope(&bump, css, Some("data-v-test"));
 
-    assert!(!transformed.contains("v-bind("));
-    assert_eq!(
-        vars,
-        vec![
-            "parentBg ?? 'var(--bg)'".to_compact_string(),
-            "Math.min(100, textCountPercentage) + '%'".to_compact_string(),
-            "Math.min(100, textCountPercentage) + '%'".to_compact_string(),
-        ]
+    insta::assert_snapshot!(
+        "v_bind_extraction_handles_quoted_expressions_with_parentheses",
+        v_bind_snapshot(&transformed, &vars)
     );
-
-    for expr in [
-        "parentBg ?? 'var(--bg)'",
-        "Math.min(100, textCountPercentage) + '%'",
-    ] {
-        let var_ref = format!("var(--{})", scoped_v_bind_name("data-v-test", expr));
-        assert!(
-            transformed.contains(&var_ref),
-            "missing {var_ref} in transformed CSS:\n{transformed}"
-        );
-    }
 }
 
 #[test]
@@ -227,15 +212,9 @@ fn test_v_bind_extraction_ignores_strings_and_comments() {
     let (transformed, vars) =
         extract_and_transform_v_bind_with_scope(&bump, css, Some("data-v-test"));
 
-    assert_eq!(vars, vec!["color /* keep ) inside comments */"]);
-    assert!(transformed.contains(r#"content: "v-bind(icon)";"#));
-    assert!(transformed.contains("/* background: v-bind(bg); */"));
-    assert!(transformed.contains("// width: v-bind(width);"));
-    assert!(transformed.contains("background: 'v-bind(bg)'"));
-    assert!(
-        transformed.contains(
-            "color: var(--test-color\\ \\/\\*\\ keep\\ \\)\\ inside\\ comments\\ \\*\\/);"
-        )
+    insta::assert_snapshot!(
+        "v_bind_extraction_ignores_strings_and_comments",
+        v_bind_snapshot(&transformed, &vars)
     );
 }
 

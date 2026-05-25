@@ -1057,12 +1057,7 @@ export default defineComponent({
         project.register_vue_file(&vue_path, vue_content).unwrap();
 
         let virtual_file = project.find_by_original(&vue_path).unwrap();
-        assert!(
-            virtual_file
-                .content
-                .contains("const __default__ = defineComponent({")
-        );
-        assert!(!virtual_file.content.contains("default defineComponent({"));
+        insta::assert_snapshot!(virtual_file.content.as_str());
         assert_ts_parses(virtual_file.content.as_str());
 
         let _ = fs::remove_dir_all(&case_dir);

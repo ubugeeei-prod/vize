@@ -1,0 +1,29 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: result.code.as_str()
+---
+import { Fragment as _Fragment, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, renderList as _renderList } from "vue";
+export default {
+  __name: "FileTree",
+  setup(__props) {
+    const items = [{
+      name: "dist",
+      children: [{
+        name: "file.js",
+        children: []
+      }]
+    }];
+    return (_ctx, _cache) => {
+      const _component_FileTree = _resolveComponent("FileTree", true);
+      return _openBlock(), _createElementBlock("ul", null, [(_openBlock(true), _createElementBlock(
+        _Fragment,
+        null,
+        _renderList(items, (item) => {
+          return _openBlock(), _createElementBlock("li", { key: item.name }, [item.children.length ? (_openBlock(), _createBlock(_component_FileTree, { key: 0 })) : _createCommentVNode("v-if", true)]);
+        }),
+        128
+        /* KEYED_FRAGMENT */
+      ))]);
+    };
+  }
+};

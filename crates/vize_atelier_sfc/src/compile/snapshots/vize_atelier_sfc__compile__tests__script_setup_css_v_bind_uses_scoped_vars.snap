@@ -1,0 +1,39 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests.rs
+expression: "sfc_compile_snapshot(&descriptor.css_vars, &result)"
+---
+css vars:
+- height + 'px'
+- color
+
+css:
+.box[data-v-test]{
+  height: var(--test-height\ \+\ \'px\');
+  color: var(--test-color);
+}
+
+
+code:
+import { useCssVars as _useCssVars, unref as _unref } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+const _hoisted_1 = { class: "box" }
+const height = 12
+const color = 'tomato'
+
+export default {
+  __name: 'Box',
+  setup(__props) {
+
+_useCssVars((_ctx) => ({
+  "test-height\ \+\ \'px\'": (height + 'px'),
+  "test-color": (color)
+}))
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", _hoisted_1, "Box"))
+}
+}
+
+}

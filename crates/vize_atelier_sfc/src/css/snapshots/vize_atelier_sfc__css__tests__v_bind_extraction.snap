@@ -1,5 +1,10 @@
 ---
 source: crates/vize_atelier_sfc/src/css/tests.rs
-expression: transformed
+expression: "v_bind_snapshot(&transformed, &vars)"
 ---
+vars:
+- color
+- bgColor
+
+css:
 .foo { color: var(--05a72f63-color); background: var(--f3ca161e-bgColor); }
