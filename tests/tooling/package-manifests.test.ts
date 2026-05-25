@@ -306,7 +306,7 @@ test("release workflow publishes npm packages after their npm dependencies", () 
   assert.ok(nuxtNeeds.includes("release-npm-musea-nuxt"));
 });
 
-test("editor extension manifests stay opt-in and version aligned", () => {
+test("editor extension manifests keep expected defaults and version alignment", () => {
   const workspaceVersion = fs
     .readFileSync(path.join(root, "Cargo.toml"), "utf-8")
     .match(/^version = "(.+)"$/m)?.[1];
@@ -328,18 +328,22 @@ test("editor extension manifests stay opt-in and version aligned", () => {
   assert.equal(vscodePackage.version, workspaceVersion);
   assert.equal(
     vscodePackage.contributes?.configuration?.properties?.["vize.enable"]?.default,
-    false,
+    true,
   );
   assert.equal(
     vscodePackage.contributes?.configuration?.properties?.["vize.lint.enable"]?.default,
-    false,
+    true,
   );
   assert.equal(
     vscodePackage.contributes?.configuration?.properties?.["vize.typecheck.enable"]?.default,
-    false,
+    true,
   );
   assert.equal(
     vscodePackage.contributes?.configuration?.properties?.["vize.editor.enable"]?.default,
+    true,
+  );
+  assert.equal(
+    vscodePackage.contributes?.configuration?.properties?.["vize.formatting.enable"]?.default,
     false,
   );
   assert.equal(vscodePackage.scripts?.["vscode:prepublish"], "vp pack");

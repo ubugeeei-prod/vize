@@ -133,6 +133,7 @@ const fn plugin_preset_name(preset: vize_patina::LintPreset) -> &'static str {
         vize_patina::LintPreset::Opinionated => "opinionated",
         vize_patina::LintPreset::Essential => "essential",
         vize_patina::LintPreset::Incremental => "incremental",
+        vize_patina::LintPreset::Ecosystem => "ecosystem",
         vize_patina::LintPreset::Nuxt => "nuxt",
     }
 }

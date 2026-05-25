@@ -244,8 +244,10 @@ fn is_identifier_continue(byte: u8) -> bool {
 }
 
 fn is_property_access(expression: &str, start: usize) -> bool {
-    expression[..start]
+    expression
         .as_bytes()
+        .get(..start)
+        .unwrap_or_default()
         .iter()
         .rev()
         .find(|byte| !byte.is_ascii_whitespace())

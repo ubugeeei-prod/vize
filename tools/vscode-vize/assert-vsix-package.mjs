@@ -141,7 +141,7 @@ assertGrammar(grammars, "vue", "source.vue", "./syntaxes/vue.tmLanguage.json");
 assertGrammar(grammars, "art-vue", "source.art-vue", "./syntaxes/art-vue.tmLanguage.json");
 
 const configurationProperties = packageJson.contributes.configuration.properties;
-assert.equal(configurationProperties["vize.enable"].default, false);
+assert.equal(configurationProperties["vize.enable"].default, true);
 assert.equal(configurationProperties["vize.serverPath"].default, "");
 assert.equal(configurationProperties["vize.trace.server"].default, "off");
 
@@ -149,7 +149,9 @@ for (const [key, property] of Object.entries(configurationProperties)) {
   if (key === "vize.serverPath" || key === "vize.trace.server") {
     continue;
   }
-  assert.equal(property.default, false, `${key} must stay opt-in by default`);
+  const expectedDefault =
+    key === "vize.diagnostics.enable" || key === "vize.formatting.enable" ? false : true;
+  assert.equal(property.default, expectedDefault, `${key} has an unexpected default`);
 }
 
 const extensionBundle = readTextEntry(archive, "extension/dist/extension.cjs");
