@@ -12,10 +12,22 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::LazyLock;
 
 use dashmap::DashMap;
 use serde::Deserialize;
 use vize_carton::{CompactString, FxHashMap, String, ToCompactString, cstr, profiler::CacheStats};
+
+static EXPORT_INTERFACE_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(
+        r"(?s)export\s+interface\s+(\w+)(?:<[^>]*>)?\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}",
+    )
+    .expect("valid export interface regex")
+});
+static EXPORT_TYPE_ALIAS_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r"export\s+type\s+(\w+)(?:<[^>]*>)?\s*=\s*([^;]+);")
+        .expect("valid export type alias regex")
+});
 
 /// Resolved module information
 #[derive(Debug, Clone)]
@@ -389,30 +401,22 @@ impl ImportResolver {
         // TODO: Use OXC for more accurate parsing
 
         // Extract interface definitions
-        let interface_re = regex::Regex::new(
-            r"(?s)export\s+interface\s+(\w+)(?:<[^>]*>)?\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}",
-        );
-        if let Ok(re) = interface_re {
-            for cap in re.captures_iter(content) {
-                if let (Some(name), Some(body)) = (cap.get(1), cap.get(2)) {
-                    definitions.insert(
-                        CompactString::new(name.as_str()),
-                        cstr!("{{ {} }}", body.as_str().trim()),
-                    );
-                }
+        for cap in EXPORT_INTERFACE_RE.captures_iter(content) {
+            if let (Some(name), Some(body)) = (cap.get(1), cap.get(2)) {
+                definitions.insert(
+                    CompactString::new(name.as_str()),
+                    cstr!("{{ {} }}", body.as_str().trim()),
+                );
             }
         }
 
         // Extract type alias definitions
-        let type_re = regex::Regex::new(r"export\s+type\s+(\w+)(?:<[^>]*>)?\s*=\s*([^;]+);");
-        if let Ok(re) = type_re {
-            for cap in re.captures_iter(content) {
-                if let (Some(name), Some(body)) = (cap.get(1), cap.get(2)) {
-                    definitions.insert(
-                        CompactString::new(name.as_str()),
-                        CompactString::new(body.as_str().trim()),
-                    );
-                }
+        for cap in EXPORT_TYPE_ALIAS_RE.captures_iter(content) {
+            if let (Some(name), Some(body)) = (cap.get(1), cap.get(2)) {
+                definitions.insert(
+                    CompactString::new(name.as_str()),
+                    CompactString::new(body.as_str().trim()),
+                );
             }
         }
 

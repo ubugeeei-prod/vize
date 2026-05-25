@@ -15,6 +15,19 @@ use super::context::ScriptCompileContext;
 
 pub use vize_croquis::macros::DEFINE_EMITS;
 
+static FUNCTION_TYPE_EMIT_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*[,)]"#)
+        .expect("valid defineEmits function type regex")
+});
+static CALL_SIGNATURE_EMIT_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*(?:,\s*[^)]+)?\)\s*:"#)
+        .expect("valid defineEmits call signature regex")
+});
+static EMIT_PROPERTY_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r#"(?:^|[{;,])\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:"#)
+        .expect("valid defineEmits property regex")
+});
+
 /// Result of processing defineEmits
 #[derive(Debug, Clone, Default)]
 #[allow(dead_code)]
@@ -178,38 +191,28 @@ pub fn extract_runtime_emits(ctx: &ScriptCompileContext) -> FxHashSet<String> {
 /// Extract event name from a function type like (e: 'click') => void
 fn extract_event_name_from_function_type(type_str: &str) -> Option<String> {
     // Look for pattern like (e: 'eventName') or (e: "eventName")
-    let re = regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*[,)]"#).ok()?;
-    re.captures(type_str)
+    FUNCTION_TYPE_EMIT_RE
+        .captures(type_str)
         .and_then(|cap| cap.get(1).map(|m| m.as_str().to_compact_string()))
 }
 
 /// Extract events from a type literal (object type)
 fn extract_events_from_type_literal(type_str: &str, emits: &mut FxHashSet<String>) {
-    static CALL_SIG_RE: LazyLock<Result<regex::Regex, regex::Error>> = LazyLock::new(|| {
-        regex::Regex::new(r#"\(\s*\w+\s*:\s*['"]([^'"]+)['"]\s*(?:,\s*[^)]+)?\)\s*:"#)
-    });
-    static PROP_RE: LazyLock<Result<regex::Regex, regex::Error>> =
-        LazyLock::new(|| regex::Regex::new(r#"(?:^|[{;,])\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:"#));
-
     // Handle call signatures: { (e: 'click'): void; (e: 'update'): void }
-    if let Ok(call_sig_re) = &*CALL_SIG_RE {
-        for cap in call_sig_re.captures_iter(type_str) {
-            if let Some(event_name) = cap.get(1) {
-                emits.insert(event_name.as_str().to_compact_string());
-            }
+    for cap in CALL_SIGNATURE_EMIT_RE.captures_iter(type_str) {
+        if let Some(event_name) = cap.get(1) {
+            emits.insert(event_name.as_str().to_compact_string());
         }
     }
 
     // Handle property syntax: { click: [...], update: [...] }
     // This is for the newer emit type syntax
-    if let Ok(prop_re) = &*PROP_RE {
-        for cap in prop_re.captures_iter(type_str) {
-            if let Some(prop_name) = cap.get(1) {
-                let name = prop_name.as_str();
-                // Skip common type keywords
-                if !matches!(name, "type" | "required" | "default" | "validator") {
-                    emits.insert(name.to_compact_string());
-                }
+    for cap in EMIT_PROPERTY_RE.captures_iter(type_str) {
+        if let Some(prop_name) = cap.get(1) {
+            let name = prop_name.as_str();
+            // Skip common type keywords
+            if !matches!(name, "type" | "required" | "default" | "validator") {
+                emits.insert(name.to_compact_string());
             }
         }
     }

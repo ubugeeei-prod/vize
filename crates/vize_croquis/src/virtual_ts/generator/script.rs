@@ -8,7 +8,15 @@ use super::{
     BindingMetadata, BindingType, CompactString, MacroTracker, Path, RootNode, ScopeChain,
     ScopeData, ScopeKind, ScriptParseResult, VirtualTsConfig, VirtualTsGenerator, VirtualTsOutput,
 };
+use std::sync::LazyLock;
 use vize_carton::{String, ToCompactString, profile};
+
+static RELATIVE_IMPORT_RE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(
+        r#"(import\s+(?:type\s+)?(?:\{[^}]*\}|[^{}\s]+)\s+from\s+['"])(\.[^'"]+)(['"])"#,
+    )
+    .expect("valid relative import regex")
+});
 
 impl VirtualTsGenerator {
     /// Extract setup scope info from ScopeChain.
@@ -372,29 +380,22 @@ impl VirtualTsGenerator {
             return content.to_compact_string();
         };
 
-        let import_re = regex::Regex::new(
-            r#"(import\s+(?:type\s+)?(?:\{[^}]*\}|[^{}\s]+)\s+from\s+['"])(\.[^'"]+)(['"])"#,
-        );
+        RELATIVE_IMPORT_RE
+            .replace_all(content, |caps: &regex::Captures| {
+                let prefix = caps.get(1).map(|m| m.as_str()).unwrap_or("");
+                let rel_path = caps.get(2).map(|m| m.as_str()).unwrap_or("");
+                let suffix = caps.get(3).map(|m| m.as_str()).unwrap_or("");
 
-        match import_re {
-            Ok(re) => re
-                .replace_all(content, |caps: &regex::Captures| {
-                    let prefix = caps.get(1).map(|m| m.as_str()).unwrap_or("");
-                    let rel_path = caps.get(2).map(|m| m.as_str()).unwrap_or("");
-                    let suffix = caps.get(3).map(|m| m.as_str()).unwrap_or("");
+                let resolved = parent.join(rel_path);
+                let abs_path = resolved
+                    .canonicalize()
+                    .ok()
+                    .and_then(|p| p.to_str().map(String::from))
+                    .unwrap_or_else(|| resolved.to_string_lossy().to_compact_string());
 
-                    let resolved = parent.join(rel_path);
-                    let abs_path = resolved
-                        .canonicalize()
-                        .ok()
-                        .and_then(|p| p.to_str().map(String::from))
-                        .unwrap_or_else(|| resolved.to_string_lossy().to_compact_string());
-
-                    format!("{}{}{}", prefix, abs_path, suffix)
-                })
-                .to_compact_string(),
-            Err(_) => content.to_compact_string(),
-        }
+                format!("{}{}{}", prefix, abs_path, suffix)
+            })
+            .to_compact_string()
     }
 
     /// Generate props type definition.
