@@ -226,6 +226,7 @@ impl Linter {
         let rule_name = rule.meta().name;
         if !self.registry.has_rule(rule_name) {
             self.registry.register(rule);
+            self.registry.mark_has_exit_element_rules();
         }
         self
     }

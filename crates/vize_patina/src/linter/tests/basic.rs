@@ -56,6 +56,21 @@ fn test_ecosystem_template_rules_are_enabled_by_default() {
 }
 
 #[test]
+fn test_ecosystem_template_source_hints_use_full_sfc() {
+    let source = r#"<script setup>
+import { Link } from "@void/vue";
+</script>
+<template><Link>Home</Link></template>"#;
+
+    let result = Linter::new().lint_sfc(source, "test.vue");
+    assert_eq!(result.error_count, 1);
+    assert_eq!(
+        result.diagnostics[0].rule_name,
+        "ecosystem/void-link-require-href"
+    );
+}
+
+#[test]
 fn test_ecosystem_script_rules_are_enabled_by_default() {
     let source = r#"<script setup lang="ts">
 router.push('/settings')

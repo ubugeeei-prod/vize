@@ -15,6 +15,7 @@ pub struct LintVisitor<'a, 'ctx, 'rules> {
     ctx: &'ctx mut LintContext<'a>,
     rules: &'rules [Box<dyn Rule>],
     rule_names: &'rules [&'static str],
+    run_exit_element_rules: bool,
     /// When true, suppress all diagnostics for the next element
     forget_next_element: bool,
 }
@@ -26,11 +27,13 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         ctx: &'ctx mut LintContext<'a>,
         rules: &'rules [Box<dyn Rule>],
         rule_names: &'rules [&'static str],
+        run_exit_element_rules: bool,
     ) -> Self {
         Self {
             ctx,
             rules,
             rule_names,
+            run_exit_element_rules,
             forget_next_element: false,
         }
     }
@@ -226,13 +229,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             self.visit_child(child);
         }
 
-        // Exit element - run rules
-        profile!("patina.rules.exit_element", {
-            for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied()) {
-                self.ctx.current_rule = rule_name;
-                rule.exit_element(self.ctx, el);
-            }
-        });
+        if self.run_exit_element_rules {
+            // Exit element - run rules
+            profile!("patina.rules.exit_element", {
+                for (rule, rule_name) in self.rules.iter().zip(self.rule_names.iter().copied()) {
+                    self.ctx.current_rule = rule_name;
+                    rule.exit_element(self.ctx, el);
+                }
+            });
+        }
 
         self.ctx.pop_element();
     }

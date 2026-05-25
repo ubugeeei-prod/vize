@@ -3,7 +3,9 @@
 //! Contains the core linting methods: single-file template linting,
 //! full SFC linting with template extraction, and batch file processing.
 
-use crate::{context::LintContext, diagnostic::LintSummary, visitor::LintVisitor};
+use crate::{
+    context::LintContext, diagnostic::LintSummary, preset::LintPreset, visitor::LintVisitor,
+};
 use vize_armature::Parser;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
@@ -39,6 +41,25 @@ pub(crate) fn analyze_descriptor_for_lint(
 }
 
 impl Linter {
+    fn template_rule_count_for_source(
+        &self,
+        template_source: &str,
+        sfc_source: Option<&str>,
+    ) -> usize {
+        if !matches!(self.preset, Some(LintPreset::Ecosystem))
+            || self.enabled_rules.is_some()
+            || !self.disabled_rules.is_empty()
+            || source_may_contain_ecosystem_template_rule(template_source, sfc_source)
+        {
+            return self.registry.rules().len();
+        }
+
+        self.registry
+            .rules()
+            .len()
+            .saturating_sub(crate::rules::ecosystem::TEMPLATE_RULE_COUNT)
+    }
+
     fn lint_sfc_level<'a>(
         &self,
         source: &'a str,
@@ -194,7 +215,16 @@ impl Linter {
             ctx.set_analysis_excluded_rules(super::native_type_aware::TYPE_AWARE_RULES);
         }
 
-        let mut visitor = LintVisitor::new(&mut ctx, self.registry.rules(), self.rule_names());
+        let rule_count = self.template_rule_count_for_source(
+            source,
+            sfc_descriptor.map(|descriptor| descriptor.source.as_ref()),
+        );
+        let mut visitor = LintVisitor::new(
+            &mut ctx,
+            &self.registry.rules()[..rule_count],
+            &self.rule_names()[..rule_count],
+            self.registry.has_exit_element_rules(),
+        );
         profile!("patina.template.visit", visitor.visit_root(root));
 
         let error_count = ctx.error_count();
@@ -467,6 +497,114 @@ impl Linter {
     }
 }
 
+fn source_may_contain_ecosystem_template_rule(
+    template_source: &str,
+    sfc_source: Option<&str>,
+) -> bool {
+    let template_bytes = template_source.as_bytes();
+    if template_may_contain_ecosystem_element(template_bytes, sfc_source) {
+        return true;
+    }
+
+    sfc_source.is_some_and(|source| source.contains("<i18n"))
+        && template_may_call_i18n(template_bytes)
+}
+
+fn template_may_contain_ecosystem_element(bytes: &[u8], sfc_source: Option<&str>) -> bool {
+    let imports_void_vue = sfc_source.is_some_and(|source| source.contains("@void/vue"));
+    let mut cursor = 0;
+    while let Some(relative) = memchr::memchr(b'<', &bytes[cursor..]) {
+        let tag_start = cursor + relative;
+        let Some((tag_name, name_end)) = tag_name_at(bytes, tag_start) else {
+            cursor = tag_start + 1;
+            continue;
+        };
+
+        if matches!(
+            tag_name,
+            b"RouterLink" | b"router-link" | b"NuxtLink" | b"nuxt-link"
+        ) {
+            return true;
+        }
+        if tag_name == b"Link" && imports_void_vue {
+            return true;
+        }
+
+        let Some(tag_end) = find_tag_end(bytes, name_end) else {
+            return false;
+        };
+        if tag_name.eq_ignore_ascii_case(b"a")
+            && static_internal_href_may_exist(&bytes[name_end..tag_end])
+        {
+            return true;
+        }
+
+        cursor = tag_end + 1;
+    }
+    false
+}
+
+fn template_may_call_i18n(bytes: &[u8]) -> bool {
+    memchr::memmem::find(bytes, b"$t(").is_some()
+        || memchr::memmem::find(bytes, b"$te(").is_some()
+        || memchr::memmem::find(bytes, b"$tm(").is_some()
+        || memchr::memmem::find(bytes, b"t(").is_some()
+        || memchr::memmem::find(bytes, b"te(").is_some()
+        || memchr::memmem::find(bytes, b"tm(").is_some()
+}
+
+fn static_internal_href_may_exist(bytes: &[u8]) -> bool {
+    let mut search_start = 0;
+    while let Some(relative) = memchr::memmem::find(&bytes[search_start..], b"href") {
+        let href_start = search_start + relative;
+        search_start = href_start + "href".len();
+
+        if href_start > 0 && is_identifier_byte(bytes[href_start - 1]) {
+            continue;
+        }
+        if previous_non_whitespace(bytes, href_start)
+            .is_some_and(|byte| matches!(byte, b':' | b'-' | b'.' | b'@'))
+        {
+            continue;
+        }
+
+        let mut cursor = skip_ascii_whitespace(bytes, search_start);
+        if bytes.get(cursor) != Some(&b'=') {
+            continue;
+        }
+        cursor = skip_ascii_whitespace(bytes, cursor + 1);
+        if !matches!(bytes.get(cursor), Some(b'\'' | b'"')) {
+            continue;
+        }
+        if bytes.get(cursor + 1) == Some(&b'/') && bytes.get(cursor + 2) != Some(&b'/') {
+            return true;
+        }
+    }
+    false
+}
+
+fn previous_non_whitespace(bytes: &[u8], before: usize) -> Option<u8> {
+    bytes[..before]
+        .iter()
+        .rev()
+        .copied()
+        .find(|byte| !byte.is_ascii_whitespace())
+}
+
+fn skip_ascii_whitespace(bytes: &[u8], mut cursor: usize) -> usize {
+    while bytes
+        .get(cursor)
+        .is_some_and(|byte| byte.is_ascii_whitespace())
+    {
+        cursor += 1;
+    }
+    cursor
+}
+
+fn is_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
+}
+
 /// Ultra-fast template extraction using memchr for SIMD-accelerated search.
 #[inline]
 pub(crate) fn extract_template_fast(source: &str) -> Option<(String, u32)> {
@@ -630,7 +768,7 @@ fn is_tag_boundary(bytes: &[u8], idx: usize) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::extract_template_fast;
+    use super::{extract_template_fast, source_may_contain_ecosystem_template_rule};
 
     fn extract(source: &str) -> Option<vize_carton::String> {
         extract_template_fast(source).map(|(content, _)| content)
@@ -659,5 +797,26 @@ mod tests {
             extract(source).as_deref(),
             Some("<template #default><slot /></template>")
         );
+    }
+
+    #[test]
+    fn ecosystem_template_hint_detects_static_internal_href() {
+        assert!(source_may_contain_ecosystem_template_rule(
+            r#"<a href = "/docs">Docs</a>"#,
+            None
+        ));
+    }
+
+    #[test]
+    fn ecosystem_template_hint_ignores_bound_href_with_script_path_strings() {
+        let template = r#"<a :href="link.url">Docs</a>"#;
+        let sfc = r#"<template><a :href="link.url">Docs</a></template>
+<script setup>
+const links = [{ url: '/docs' }]
+</script>"#;
+        assert!(!source_may_contain_ecosystem_template_rule(
+            template,
+            Some(sfc)
+        ));
     }
 }

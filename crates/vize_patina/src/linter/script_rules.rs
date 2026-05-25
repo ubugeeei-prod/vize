@@ -3,6 +3,7 @@ use crate::rules::script::{
     NoGetCurrentInstance, NoNextTick, NoOptionsApi, PiniaPreferStoreToRefs, ScriptRule,
     VueRouterPreferNamedPush, VueTestUtilsNoHtmlSnapshot,
 };
+use memchr::memmem;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_carton::profile;
 
@@ -156,6 +157,15 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     result: &mut LintResult,
 ) {
     if linter.script_rules.is_empty() {
+        return;
+    }
+    if linter
+        .script_rules
+        .iter()
+        .copied()
+        .all(is_ecosystem_script_rule)
+        && !descriptor_scripts_may_match_ecosystem_rule(descriptor)
+    {
         return;
     }
 
@@ -333,10 +343,62 @@ fn append_builtin_script_rule_for_source<R: ScriptRule>(
     if !linter.is_rule_enabled(rule_name) || !linter.script_rules.contains(&rule_name) {
         return;
     }
+    if !script_rule_may_match(rule_name, source) {
+        return;
+    }
 
     let mut lint = crate::rules::script::ScriptLintResult::default();
     profile!(profile_name, rule.check(source, offset, &mut lint));
     merge_script_result(result, lint);
+}
+
+fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
+    let bytes = source.as_bytes();
+    match rule_name {
+        RULE_PINIA_PREFER_STORE_TO_REFS => memmem::find(bytes, b"Store").is_some(),
+        RULE_VUE_ROUTER_PREFER_NAMED_PUSH => {
+            (memmem::find(bytes, b".push").is_some() || memmem::find(bytes, b".replace").is_some())
+                && (memmem::find(bytes, b"'/").is_some() || memmem::find(bytes, b"\"/").is_some())
+                && (memmem::find(bytes, b"router").is_some()
+                    || memmem::find(bytes, b"Router").is_some())
+        }
+        RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT => {
+            memmem::find(bytes, b"toMatchSnapshot").is_some()
+                && memmem::find(bytes, b".html").is_some()
+        }
+        _ => true,
+    }
+}
+
+fn descriptor_scripts_may_match_ecosystem_rule(descriptor: &SfcDescriptor<'_>) -> bool {
+    descriptor
+        .script
+        .as_ref()
+        .is_some_and(|script| source_may_match_ecosystem_rule(script.content.as_ref()))
+        || descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|script| source_may_match_ecosystem_rule(script.content.as_ref()))
+}
+
+fn is_ecosystem_script_rule(rule_name: &str) -> bool {
+    matches!(
+        rule_name,
+        RULE_PINIA_PREFER_STORE_TO_REFS
+            | RULE_VUE_ROUTER_PREFER_NAMED_PUSH
+            | RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT
+    )
+}
+
+fn source_may_match_ecosystem_rule(source: &str) -> bool {
+    let bytes = source.as_bytes();
+    memmem::find(bytes, b"Store").is_some()
+        || ((memmem::find(bytes, b".push").is_some() || memmem::find(bytes, b".replace").is_some())
+            && (memmem::find(bytes, b"'/").is_some() || memmem::find(bytes, b"\"/").is_some())
+            && (memmem::find(bytes, b"router").is_some()
+                || memmem::find(bytes, b"Router").is_some()))
+        || (memmem::find(bytes, b"toMatchSnapshot").is_some()
+            && memmem::find(bytes, b".html").is_some())
 }
 
 #[inline]

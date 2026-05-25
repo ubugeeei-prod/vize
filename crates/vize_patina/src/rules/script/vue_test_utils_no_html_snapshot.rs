@@ -8,6 +8,7 @@
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
+use memchr::memmem;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Argument, CallExpression, Expression};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
@@ -28,6 +29,13 @@ impl ScriptRule for VueTestUtilsNoHtmlSnapshot {
     }
 
     fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
+        let bytes = source.as_bytes();
+        if memmem::find(bytes, b"toMatchSnapshot").is_none()
+            || memmem::find(bytes, b".html").is_none()
+        {
+            return;
+        }
+
         let allocator = Allocator::default();
         let source_type =
             SourceType::from_path("component.test.ts").unwrap_or_else(|_| SourceType::ts());

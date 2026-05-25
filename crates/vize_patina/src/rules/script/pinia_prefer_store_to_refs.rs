@@ -8,6 +8,7 @@
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
+use memchr::memmem;
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, CallExpression, Expression, VariableDeclarator};
 use oxc_ast_visit::{Visit, walk::walk_variable_declarator};
@@ -29,6 +30,10 @@ impl ScriptRule for PiniaPreferStoreToRefs {
     }
 
     fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
+        if memmem::find(source.as_bytes(), b"Store").is_none() {
+            return;
+        }
+
         let allocator = Allocator::default();
         let source_type =
             SourceType::from_path("component.ts").unwrap_or_else(|_| SourceType::ts());
