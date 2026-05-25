@@ -980,6 +980,17 @@ mod tests {
             .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
     }
 
+    fn assert_ts_parses(source: &str) {
+        let allocator = oxc_allocator::Allocator::default();
+        let parsed =
+            oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::ts()).parse();
+        assert!(
+            parsed.errors.is_empty(),
+            "virtual TS should parse without errors: {:?}",
+            parsed.errors
+        );
+    }
+
     #[test]
     fn test_virtual_project_new() {
         let case_dir = unique_case_dir("new");
@@ -1017,6 +1028,42 @@ const count = 1
 
         let virtual_file = project.find_by_original(&vue_path).unwrap();
         insta::assert_snapshot!(virtual_file.content.as_str());
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn test_register_vue_file_rewrites_options_api_export_default() {
+        let case_dir = unique_case_dir("options-api-export-default");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let vue_path = src_dir.join("OptionsApi.vue");
+        let vue_content = r#"<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  name: "OptionsApi",
+});
+</script>
+
+<template>
+  <div>hello</div>
+</template>
+"#;
+        fs::write(&vue_path, vue_content).unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_vue_file(&vue_path, vue_content).unwrap();
+
+        let virtual_file = project.find_by_original(&vue_path).unwrap();
+        assert!(
+            virtual_file
+                .content
+                .contains("const __default__ = defineComponent({")
+        );
+        assert!(!virtual_file.content.contains("default defineComponent({"));
+        assert_ts_parses(virtual_file.content.as_str());
 
         let _ = fs::remove_dir_all(&case_dir);
     }

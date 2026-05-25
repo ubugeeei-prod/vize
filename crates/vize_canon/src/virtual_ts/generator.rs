@@ -284,7 +284,18 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
                 // Strip `export` from non-import lines inside setup scope
                 let trimmed_line = output_line.trim_start();
-                if trimmed_line.starts_with("export ")
+                if let Some(default_expr) = trimmed_line
+                    .strip_prefix("export default")
+                    .filter(|rest| rest.chars().next().is_none_or(char::is_whitespace))
+                {
+                    let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
+                    #[allow(clippy::disallowed_types)]
+                    {
+                        output_line = std::borrow::Cow::Owned(
+                            cstr!("{leading_ws}const __default__ ={}", default_expr).into(),
+                        );
+                    }
+                } else if trimmed_line.starts_with("export ")
                     && !trimmed_line.starts_with("export type ")
                     && !trimmed_line.starts_with("export interface ")
                 {
