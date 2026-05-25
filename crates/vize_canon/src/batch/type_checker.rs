@@ -159,12 +159,7 @@ impl BatchTypeChecker {
 
     /// Scan an explicit set of project files.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
-        for path in paths {
-            if !path.is_file() {
-                continue;
-            }
-            self.project.register_path(path)?;
-        }
+        self.project.register_paths(paths)?;
         self.scanned = true;
         Ok(())
     }
@@ -173,6 +168,7 @@ impl BatchTypeChecker {
     pub fn scan_project(&mut self) -> CorsaResult<()> {
         let project_root = self.project.project_root().to_path_buf();
 
+        let mut paths: Vec<PathBuf> = Vec::new();
         for entry in walkdir::WalkDir::new(&project_root)
             .into_iter()
             .filter_entry(|e| {
@@ -196,9 +192,10 @@ impl BatchTypeChecker {
                 continue;
             }
 
-            self.project.register_path(path)?;
+            paths.push(path.to_path_buf());
         }
 
+        self.project.register_paths(&paths)?;
         self.scanned = true;
         Ok(())
     }

@@ -16,6 +16,7 @@ use crate::virtual_ts::{
     VirtualTsCheckOptions, VirtualTsOptions, generate_virtual_ts_with_offsets_and_checks,
 };
 use oxc_span::SourceType;
+use rayon::prelude::*;
 use serde_json::{Map, Value};
 use vize_atelier_core::parser::parse;
 use vize_atelier_sfc::{
@@ -147,77 +148,81 @@ impl VirtualProject {
 
     /// Register a supported file path with already-loaded content.
     pub fn register_path_with_content(&mut self, path: &Path, content: &str) -> CorsaResult<()> {
-        if path.extension().and_then(|extension| extension.to_str()) == Some("vue") {
-            return self.register_vue_file(path, content);
+        let registered = build_registered_file(
+            path,
+            content,
+            &self.project_root,
+            &self.virtual_root,
+            &self.virtual_ts_options,
+            self.virtual_ts_check_options,
+            &self.rewriter,
+        )?;
+        self.absorb_registered_file(registered);
+        Ok(())
+    }
+
+    /// Register a batch of file paths, parallelizing per-file parse and Virtual TS
+    /// generation across rayon's thread pool. Falls back to sequential work when
+    /// the batch is small enough that the fan-out cost would dominate.
+    pub fn register_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
+        let valid_paths: Vec<&Path> = paths
+            .iter()
+            .filter(|path| path.is_file())
+            .map(PathBuf::as_path)
+            .collect();
+        if valid_paths.is_empty() {
+            return Ok(());
         }
 
-        if path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.ends_with(".d.ts"))
-        {
-            return self.register_declaration_file(path, content);
+        // Sequential is cheaper for tiny batches than firing up rayon workers.
+        if valid_paths.len() <= 1 {
+            for path in valid_paths {
+                self.register_path(path)?;
+            }
+            return Ok(());
         }
 
-        let source_type = source_type_for_path(path).ok_or_else(|| CorsaError::PathError {
-            path: path.to_path_buf(),
-        })?;
-        self.register_script_file(path, content, source_type)
+        let project_root = self.project_root.as_path();
+        let virtual_root = self.virtual_root.as_path();
+        let virtual_ts_options = &self.virtual_ts_options;
+        let virtual_ts_check_options = self.virtual_ts_check_options;
+        let rewriter = &self.rewriter;
+
+        let registered: Result<Vec<RegisteredFile>, CorsaError> = valid_paths
+            .par_iter()
+            .map(|&path| {
+                let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
+                build_registered_file(
+                    path,
+                    &content,
+                    project_root,
+                    virtual_root,
+                    virtual_ts_options,
+                    virtual_ts_check_options,
+                    rewriter,
+                )
+            })
+            .collect();
+
+        self.virtual_files.reserve(valid_paths.len());
+        for registered in registered? {
+            self.absorb_registered_file(registered);
+        }
+        Ok(())
     }
 
     /// Register a `.vue` file.
     pub fn register_vue_file(&mut self, path: &Path, content: &str) -> CorsaResult<()> {
-        let descriptor = profile!(
-            "canon.sfc.parse",
-            parse_sfc(
-                content,
-                SfcParseOptions {
-                    filename: path.to_string_lossy().to_compact_string(),
-                    ..Default::default()
-                },
-            )
-            .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
+        let registered = build_vue_registered_file(
+            path,
+            content,
+            &self.project_root,
+            &self.virtual_root,
+            &self.virtual_ts_options,
+            self.virtual_ts_check_options,
+            &self.rewriter,
         )?;
-
-        let mut effective_options =
-            virtual_ts_options_for_descriptor(&self.virtual_ts_options, &descriptor);
-        effective_options.auto_import_stubs.clear();
-        let generated = profile!(
-            "canon.vue.virtual_ts",
-            generate_vue_virtual_ts(
-                path,
-                content,
-                &descriptor,
-                &effective_options,
-                self.virtual_ts_check_options,
-            )
-        )?;
-        let GeneratedVueFile {
-            code,
-            mappings,
-            diagnostics,
-        } = generated;
-        self.diagnostics.extend(diagnostics);
-        let rewritten = profile!(
-            "canon.import.rewrite.vue",
-            self.rewriter.rewrite(&code, SourceType::ts())
-        );
-        let source_map = CompositeSourceMap::new_vue(
-            SfcSourceMap::new(mappings, collect_sfc_block_ranges(&descriptor)),
-            rewritten.source_map,
-        );
-        let virtual_path = virtual_vue_path(&self.project_root, &self.virtual_root, path)?;
-
-        self.virtual_files.insert(
-            virtual_path.clone(),
-            VirtualFile {
-                content: rewritten.code,
-                source_map,
-                original_path: path.to_path_buf(),
-                virtual_path,
-            },
-        );
-
+        self.absorb_registered_file(registered);
         Ok(())
     }
 
@@ -242,23 +247,22 @@ impl VirtualProject {
         content: &str,
         source_type: SourceType,
     ) -> CorsaResult<()> {
-        let rewritten = profile!(
-            "canon.import.rewrite.script",
-            self.rewriter.rewrite(content, source_type)
-        );
-        let virtual_path = mirrored_virtual_path(&self.project_root, &self.virtual_root, path)?;
-
-        self.virtual_files.insert(
-            virtual_path.clone(),
-            VirtualFile {
-                content: rewritten.code,
-                source_map: CompositeSourceMap::new_script(rewritten.source_map),
-                original_path: path.to_path_buf(),
-                virtual_path,
-            },
-        );
-
+        let registered = build_script_registered_file(
+            path,
+            content,
+            source_type,
+            &self.project_root,
+            &self.virtual_root,
+            &self.rewriter,
+        )?;
+        self.absorb_registered_file(registered);
         Ok(())
+    }
+
+    fn absorb_registered_file(&mut self, registered: RegisteredFile) {
+        self.diagnostics.extend(registered.diagnostics);
+        self.virtual_files
+            .insert(registered.file.virtual_path.clone(), registered.file);
     }
 
     /// Materialize the virtual project to disk for diagnostics collection.
@@ -282,10 +286,10 @@ impl VirtualProject {
         profile!(
             "canon.project.write_files",
             (|| -> CorsaResult<()> {
-                let mut created_dirs = FxHashSet::default();
+                let mut created_dirs: FxHashSet<&Path> = FxHashSet::default();
                 for file in self.virtual_files.values() {
                     if let Some(parent) = file.virtual_path.parent()
-                        && created_dirs.insert(parent.to_path_buf())
+                        && created_dirs.insert(parent)
                     {
                         std::fs::create_dir_all(parent)?;
                     }
@@ -783,6 +787,146 @@ fn push_block_range(
         end: start + len,
         block_type,
     });
+}
+
+/// Result of building a virtual file for a registered path, owned and
+/// independent of any `&mut VirtualProject` so it can be produced in parallel.
+struct RegisteredFile {
+    file: VirtualFile,
+    diagnostics: Vec<Diagnostic>,
+}
+
+fn build_registered_file(
+    path: &Path,
+    content: &str,
+    project_root: &Path,
+    virtual_root: &Path,
+    virtual_ts_options: &VirtualTsOptions,
+    virtual_ts_check_options: VirtualTsCheckOptions,
+    rewriter: &ImportRewriter,
+) -> CorsaResult<RegisteredFile> {
+    if path.extension().and_then(|extension| extension.to_str()) == Some("vue") {
+        return build_vue_registered_file(
+            path,
+            content,
+            project_root,
+            virtual_root,
+            virtual_ts_options,
+            virtual_ts_check_options,
+            rewriter,
+        );
+    }
+
+    if path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".d.ts"))
+    {
+        return build_script_registered_file(
+            path,
+            content,
+            SourceType::ts(),
+            project_root,
+            virtual_root,
+            rewriter,
+        );
+    }
+
+    let source_type = source_type_for_path(path).ok_or_else(|| CorsaError::PathError {
+        path: path.to_path_buf(),
+    })?;
+    build_script_registered_file(
+        path,
+        content,
+        source_type,
+        project_root,
+        virtual_root,
+        rewriter,
+    )
+}
+
+fn build_vue_registered_file(
+    path: &Path,
+    content: &str,
+    project_root: &Path,
+    virtual_root: &Path,
+    virtual_ts_options: &VirtualTsOptions,
+    virtual_ts_check_options: VirtualTsCheckOptions,
+    rewriter: &ImportRewriter,
+) -> CorsaResult<RegisteredFile> {
+    let descriptor = profile!(
+        "canon.sfc.parse",
+        parse_sfc(
+            content,
+            SfcParseOptions {
+                filename: path.to_string_lossy().to_compact_string(),
+                ..Default::default()
+            },
+        )
+        .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
+    )?;
+
+    let mut effective_options = virtual_ts_options_for_descriptor(virtual_ts_options, &descriptor);
+    effective_options.auto_import_stubs.clear();
+    let generated = profile!(
+        "canon.vue.virtual_ts",
+        generate_vue_virtual_ts(
+            path,
+            content,
+            &descriptor,
+            &effective_options,
+            virtual_ts_check_options,
+        )
+    )?;
+    let GeneratedVueFile {
+        code,
+        mappings,
+        diagnostics,
+    } = generated;
+    let rewritten = profile!(
+        "canon.import.rewrite.vue",
+        rewriter.rewrite(&code, SourceType::ts())
+    );
+    let source_map = CompositeSourceMap::new_vue(
+        SfcSourceMap::new(mappings, collect_sfc_block_ranges(&descriptor)),
+        rewritten.source_map,
+    );
+    let virtual_path = virtual_vue_path(project_root, virtual_root, path)?;
+
+    Ok(RegisteredFile {
+        file: VirtualFile {
+            content: rewritten.code,
+            source_map,
+            original_path: path.to_path_buf(),
+            virtual_path,
+        },
+        diagnostics,
+    })
+}
+
+fn build_script_registered_file(
+    path: &Path,
+    content: &str,
+    source_type: SourceType,
+    project_root: &Path,
+    virtual_root: &Path,
+    rewriter: &ImportRewriter,
+) -> CorsaResult<RegisteredFile> {
+    let rewritten = profile!(
+        "canon.import.rewrite.script",
+        rewriter.rewrite(content, source_type)
+    );
+    let virtual_path = mirrored_virtual_path(project_root, virtual_root, path)?;
+
+    Ok(RegisteredFile {
+        file: VirtualFile {
+            content: rewritten.code,
+            source_map: CompositeSourceMap::new_script(rewritten.source_map),
+            original_path: path.to_path_buf(),
+            virtual_path,
+        },
+        diagnostics: Vec::new(),
+    })
 }
 
 fn virtual_ts_options_for_descriptor(
