@@ -6,9 +6,9 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use dashmap::DashMap;
+use futures::lock::Mutex as AsyncMutex;
 use parking_lot::RwLock;
 use serde::Deserialize;
-use tokio::sync::OnceCell;
 use tower_lsp::lsp_types::Url;
 use vize_carton::config::{LanguageServerConfig, LinterConfig, TypeCheckerConfig};
 
@@ -342,7 +342,10 @@ pub struct ServerState {
     format_options: RwLock<vize_glyph::FormatOptions>,
     /// Corsa bridge for native TypeScript language features (lazy initialized)
     #[cfg(feature = "native")]
-    corsa_bridge: OnceCell<Arc<CorsaBridge>>,
+    corsa_bridge: OnceLock<Arc<CorsaBridge>>,
+    /// Serializes Corsa bridge initialization without tying us to a runtime.
+    #[cfg(feature = "native")]
+    corsa_init_lock: AsyncMutex<()>,
     /// Flag to track if Corsa initialization has been attempted and failed
     #[cfg(feature = "native")]
     corsa_init_failed: std::sync::atomic::AtomicBool,
@@ -378,7 +381,9 @@ impl ServerState {
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),
             #[cfg(feature = "native")]
-            corsa_bridge: OnceCell::new(),
+            corsa_bridge: OnceLock::new(),
+            #[cfg(feature = "native")]
+            corsa_init_lock: AsyncMutex::new(()),
             #[cfg(feature = "native")]
             corsa_init_failed: std::sync::atomic::AtomicBool::new(false),
             #[cfg(feature = "native")]
@@ -607,44 +612,44 @@ impl ServerState {
             return None;
         }
 
+        let _guard = self.corsa_init_lock.lock().await;
+
+        // Another request may have completed initialization while we were waiting.
+        if let Some(bridge) = self.corsa_bridge.get() {
+            return Some(bridge.clone());
+        }
+
+        if self.corsa_init_failed.load(Ordering::SeqCst) {
+            return None;
+        }
+
         // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
         let type_checker_config = self.get_type_checker_config();
 
-        let result = self
-            .corsa_bridge
-            .get_or_try_init(|| async {
-                let config = CorsaBridgeConfig {
-                    corsa_path: type_checker_config.runtime_path().map(PathBuf::from),
-                    working_dir: workspace_root,
-                    timeout_ms: 30000, // Corsa needs time to build project state on first load.
-                    ..Default::default()
-                };
-                let bridge = CorsaBridge::with_config(config);
+        let config = CorsaBridgeConfig {
+            corsa_path: type_checker_config.runtime_path().map(PathBuf::from),
+            working_dir: workspace_root,
+            timeout_ms: 30000, // Corsa needs time to build project state on first load.
+            ..Default::default()
+        };
+        let bridge = CorsaBridge::with_config(config);
 
-                // Add a guardrail timeout around the initial spawn.
-                match tokio::time::timeout(std::time::Duration::from_secs(5), bridge.spawn()).await
-                {
-                    Ok(Ok(())) => {
-                        tracing::info!("corsa bridge initialized successfully");
-                        Ok(Arc::new(bridge))
-                    }
-                    Ok(Err(e)) => {
-                        tracing::warn!("corsa bridge spawn failed: {}", e);
-                        Err(())
-                    }
-                    Err(_) => {
-                        tracing::warn!("corsa bridge spawn timed out");
-                        Err(())
-                    }
-                }
-            })
-            .await;
-
-        match result {
-            Ok(bridge) => Some(bridge.clone()),
-            Err(()) => {
+        match crate::runtime::timeout(std::time::Duration::from_secs(5), bridge.spawn()).await {
+            Ok(Ok(())) => {
+                tracing::info!("corsa bridge initialized successfully");
+                let bridge = Arc::new(bridge);
+                let _ = self.corsa_bridge.set(bridge.clone());
+                Some(bridge)
+            }
+            Ok(Err(e)) => {
+                tracing::warn!("corsa bridge spawn failed: {}", e);
                 // Mark as failed so we don't retry
+                self.corsa_init_failed.store(true, Ordering::SeqCst);
+                None
+            }
+            Err(_) => {
+                tracing::warn!("corsa bridge spawn timed out");
                 self.corsa_init_failed.store(true, Ordering::SeqCst);
                 None
             }
@@ -654,7 +659,7 @@ impl ServerState {
     /// Check if the Corsa bridge is available (without initializing).
     #[cfg(feature = "native")]
     pub fn has_corsa_bridge(&self) -> bool {
-        self.is_lsp_typecheck_enabled() && self.corsa_bridge.initialized()
+        self.is_lsp_typecheck_enabled() && self.corsa_bridge.get().is_some()
     }
 
     /// Generate and cache virtual documents for a document.

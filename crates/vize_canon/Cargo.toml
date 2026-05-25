@@ -49,5 +49,4 @@ libc.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
-tokio = { workspace = true, features = ["full", "test-util"] }
 insta.workspace = true

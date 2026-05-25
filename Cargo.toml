@@ -74,9 +74,8 @@ pklrust = "=0.9.0"
 
 # CLI, async, and IDE runtime
 clap = { version = "=4.6.1", features = ["derive"] }
-tokio = "=1.52.3"
 futures = "=0.3.32"
-tower-lsp = "=0.20.0"
+tower-lsp = { version = "=0.20.0", default-features = false, features = ["runtime-agnostic"] }
 async-trait = "=0.1.89"
 tracing = "=0.1.44"
 tracing-subscriber = "=0.3.23"

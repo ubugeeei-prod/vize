@@ -18,25 +18,14 @@ pub struct LspArgs {
 }
 
 pub fn run(args: LspArgs) {
-    // Create tokio runtime for async LSP server
-    let runtime = match tokio::runtime::Runtime::new() {
-        Ok(runtime) => runtime,
-        Err(error) => {
-            eprintln!("Failed to create tokio runtime: {error}");
-            std::process::exit(1);
-        }
+    let result = if let Some(port) = args.port {
+        vize_maestro::serve_tcp_blocking(port)
+    } else {
+        vize_maestro::serve_blocking()
     };
 
-    runtime.block_on(async {
-        let result = if let Some(port) = args.port {
-            vize_maestro::serve_tcp(port).await
-        } else {
-            vize_maestro::serve().await
-        };
-
-        if let Err(e) = result {
-            eprintln!("LSP server error: {}", e);
-            std::process::exit(1);
-        }
-    });
+    if let Err(e) = result {
+        eprintln!("LSP server error: {}", e);
+        std::process::exit(1);
+    }
 }

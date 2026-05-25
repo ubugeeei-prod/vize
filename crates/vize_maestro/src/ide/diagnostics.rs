@@ -219,7 +219,7 @@ impl DiagnosticService {
             // Try to get Corsa diagnostics (with timeout, skip on failure).
             // Use 10s timeout - polling for diagnostics internally uses 5s
             let corsa_future = Self::collect_corsa_diagnostics(state, uri);
-            match tokio::time::timeout(std::time::Duration::from_secs(10), corsa_future).await {
+            match crate::runtime::timeout(std::time::Duration::from_secs(10), corsa_future).await {
                 Ok(corsa_diags) => {
                     tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
                     diagnostics.extend(corsa_diags);

@@ -380,11 +380,12 @@ const message = 'hello'
     }
 
     #[cfg(feature = "native")]
-    #[tokio::test]
-    async fn test_definition_with_corsa_fallback_resolves_template_binding_at_boundary() {
-        let dir = tempfile::tempdir().unwrap();
-        let source_path = dir.path().join("Boundary.vue");
-        let source = r#"<script setup lang="ts">
+    #[test]
+    fn test_definition_with_corsa_fallback_resolves_template_binding_at_boundary() {
+        crate::runtime::block_on(async {
+            let dir = tempfile::tempdir().unwrap();
+            let source_path = dir.path().join("Boundary.vue");
+            let source = r#"<script setup lang="ts">
 const count = ref(0)
 </script>
 
@@ -392,28 +393,29 @@ const count = ref(0)
   {{ count }}
 </template>
 "#;
-        fs::write(&source_path, source).unwrap();
+            fs::write(&source_path, source).unwrap();
 
-        let uri = Url::from_file_path(&source_path).unwrap();
-        let state = ServerState::new();
-        state
-            .documents
-            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
-        state.update_virtual_docs(&uri, source);
+            let uri = Url::from_file_path(&source_path).unwrap();
+            let state = ServerState::new();
+            state
+                .documents
+                .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+            state.update_virtual_docs(&uri, source);
 
-        let offset = source.rfind("count").unwrap() + "count".len();
-        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let location = scalar_location(
-            DefinitionService::definition_with_corsa(&ctx, None)
-                .await
-                .unwrap(),
-        );
-        let expected_binding_offset = source.find("const count").unwrap() + "const ".len();
-        let (line, character) = crate::ide::offset_to_position(source, expected_binding_offset);
+            let offset = source.rfind("count").unwrap() + "count".len();
+            let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+            let location = scalar_location(
+                DefinitionService::definition_with_corsa(&ctx, None)
+                    .await
+                    .unwrap(),
+            );
+            let expected_binding_offset = source.find("const count").unwrap() + "const ".len();
+            let (line, character) = crate::ide::offset_to_position(source, expected_binding_offset);
 
-        assert_eq!(location.uri, uri);
-        assert_eq!(location.range.start.line, line);
-        assert_eq!(location.range.start.character, character);
+            assert_eq!(location.uri, uri);
+            assert_eq!(location.range.start.line, line);
+            assert_eq!(location.range.start.character, character);
+        });
     }
 
     #[test]

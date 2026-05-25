@@ -50,8 +50,7 @@ glob.workspace = true
 # Multithreading
 rayon.workspace = true
 
-# Async runtime (for LSP)
-tokio = { workspace = true, features = ["rt-multi-thread"] }
+# Async helpers (for LSP)
 futures.workspace = true
 
 # Serialization (for JSON output)
