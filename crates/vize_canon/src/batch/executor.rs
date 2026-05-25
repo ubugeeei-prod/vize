@@ -12,7 +12,7 @@ use super::import_rewriter::ImportRewriter;
 use super::type_checker::{
     DeclarationEmitOptions, DeclarationEmitResult, DeclarationOutput, TypeCheckResult,
 };
-use super::virtual_project::VirtualProject;
+use super::virtual_project::{AUTO_IMPORT_STUBS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 use crate::{
     corsa_client::CorsaProjectClient,
     file_uri::path_to_file_uri,
@@ -260,6 +260,9 @@ fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
         if !path.is_file() {
             continue;
         }
+        if is_internal_virtual_project_stub(path) {
+            continue;
+        }
         if let Some("ts" | "tsx") = path.extension().and_then(|extension| extension.to_str()) {
             uris.push(path_to_file_uri(path));
         }
@@ -267,6 +270,12 @@ fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
 
     uris.sort();
     Ok(uris)
+}
+
+fn is_internal_virtual_project_stub(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| matches!(name, AUTO_IMPORT_STUBS_FILE | VUE_MODULE_STUBS_FILE))
 }
 
 fn collect_declaration_outputs(out_dir: &Path) -> CorsaResult<Vec<DeclarationOutput>> {
@@ -387,6 +396,8 @@ mod tests {
 
         fs::write(root.join("index.ts"), "").unwrap();
         fs::write(root.join("component.vue.ts"), "").unwrap();
+        fs::write(root.join("__vize_vue_modules.d.ts"), "").unwrap();
+        fs::write(root.join("__vize_auto_imports.d.ts"), "").unwrap();
         fs::write(root.join("tsconfig.json"), "{}").unwrap();
         fs::write(root.join("ignored.js"), "").unwrap();
 

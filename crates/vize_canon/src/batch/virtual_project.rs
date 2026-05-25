@@ -28,8 +28,8 @@ use vize_carton::{
     Bump, FxHashMap, FxHashSet, String as CompactString, ToCompactString, cstr, profile,
 };
 
-const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
-const VUE_MODULE_STUBS_FILE: &str = "__vize_vue_modules.d.ts";
+pub(super) const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
+pub(super) const VUE_MODULE_STUBS_FILE: &str = "__vize_vue_modules.d.ts";
 const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
     "baseUrl",
     "paths",
