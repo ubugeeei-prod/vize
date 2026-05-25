@@ -3,7 +3,7 @@
 Vize is still pre-1.0; the surfaces that are ready for adopters and the ones
 that are not are listed in
 [`docs/release/production-readiness.md`](./docs/release/production-readiness.md)
-and [`docs/release/stability.md`](./docs/release/stability.md). Please check
+and [`docs/content/stability.md`](./docs/content/stability.md). Please check
 those before opening a support thread.
 
 ## Where to ask

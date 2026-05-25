@@ -35,7 +35,7 @@ The project uses a lazy-consensus model:
    - an issue or RFC-style discussion before the PR,
    - sign-off from the surface owner listed in the release checklist,
    - a release note that mentions the change under the appropriate SemVer
-     level (see [`docs/release/stability.md`](./docs/release/stability.md)).
+     level (see [`docs/content/stability.md`](./docs/content/stability.md)).
 3. Releases follow [`docs/release/v1-alpha-go-no-go.md`](./docs/release/v1-alpha-go-no-go.md).
    The release captain has final go/no-go authority.
 4. Security issues follow [`SECURITY.md`](./SECURITY.md) and are handled
