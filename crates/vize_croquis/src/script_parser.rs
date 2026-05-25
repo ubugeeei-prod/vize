@@ -362,6 +362,8 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
         source_len,
     );
 
+    process::collect_options_api_component_registrations(&mut result, &ret.program);
+
     // Process all statements
     profile!("croquis.script_plain.walk_statements", {
         for stmt in ret.program.body.iter() {
@@ -495,7 +497,7 @@ mod tests {
 
     #[test]
     fn test_parse_options_api_component_registrations() {
-        let result = parse_script(
+        let output = options_api_parse_snapshot(
             r#"
             import Style from './style.vue'
             import Basic from './basic.vue'
@@ -512,20 +514,64 @@ mod tests {
         "#,
         );
 
-        let registrations: Vec<_> = result
-            .component_registrations
-            .iter()
-            .map(|registration| (registration.name.as_str(), registration.local_name.as_str()))
-            .collect();
+        insta::assert_snapshot!(output);
+    }
 
-        assert_eq!(
-            registrations,
-            vec![
-                ("FourStyle", "Style"),
-                ("Basic", "Basic"),
-                ("string-name", "Basic")
-            ]
+    #[test]
+    fn test_parse_options_api_component_registrations_through_bindings() {
+        let output = options_api_parse_snapshot(
+            r#"
+            import LocalButton from './LocalButton.vue'
+            import SharedBadge from './SharedBadge.vue'
+            import LateCard from './LateCard.vue'
+            import { defineComponent } from 'vue'
+
+            const component = defineComponent(options)
+            const sharedComponents = {
+                SharedBadge,
+            }
+            const components = {
+                ...sharedComponents,
+                PrimaryButton: LocalButton,
+                LocalButton,
+                'late-card': LateCard as any,
+            }
+            const options = {
+                components,
+            }
+
+            export default component
+        "#,
         );
+
+        insta::assert_snapshot!(output);
+    }
+
+    fn options_api_parse_snapshot(source: &str) -> String {
+        let result = parse_script(source);
+        let mut output = String::new();
+
+        output.push_str("=== Component Registrations ===\n");
+        for registration in &result.component_registrations {
+            append!(
+                output,
+                "{} -> {}\n",
+                registration.name,
+                registration.local_name
+            );
+        }
+
+        output.push_str("=== Invalid Exports ===\n");
+        for invalid_export in &result.invalid_exports {
+            append!(
+                output,
+                "{}: {:?}\n",
+                invalid_export.name,
+                invalid_export.kind
+            );
+        }
+
+        output
     }
 
     #[test]

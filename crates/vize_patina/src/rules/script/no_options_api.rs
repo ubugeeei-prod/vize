@@ -634,12 +634,7 @@ Vue.createApp({
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
-        assert!(
-            result.diagnostics[0]
-                .labels
-                .iter()
-                .any(|label| label.message.contains("data() option"))
-        );
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]
@@ -658,12 +653,7 @@ createApp(options).mount("#app")
         let mut result = ScriptLintResult::default();
         rule.check(source, 0, &mut result);
         assert_eq!(result.error_count, 1);
-        assert!(
-            result.diagnostics[0]
-                .labels
-                .iter()
-                .any(|label| label.message.contains("methods option"))
-        );
+        insta::assert_debug_snapshot!(result.diagnostics);
     }
 
     #[test]

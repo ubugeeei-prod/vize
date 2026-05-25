@@ -1,0 +1,10 @@
+---
+source: crates/vize_croquis/src/script_parser.rs
+expression: output
+---
+=== Component Registrations ===
+SharedBadge -> SharedBadge
+PrimaryButton -> LocalButton
+LocalButton -> LocalButton
+late-card -> LateCard
+=== Invalid Exports ===
