@@ -15,7 +15,7 @@ use oxc_span::SourceType;
 use vize_carton::{Box, Bump, String};
 
 use crate::{
-    ast::{CompoundExpressionNode, ConstantType, ExpressionNode, SimpleExpressionNode},
+    ast::{ConstantType, ExpressionNode, SimpleExpressionNode},
     transform::TransformContext,
 };
 
@@ -123,7 +123,13 @@ pub fn process_expression<'a>(
     ))
 }
 
-/// Clone an expression node
+/// Clone an expression node.
+///
+/// Compound expressions are flattened to a [`SimpleExpressionNode`] whose
+/// content is the original source text. This mirrors the strategy used by
+/// [`normalize_expression`] and `transform::context::clone_expression`,
+/// and avoids the previous behavior of producing a `Compound` node with
+/// an empty `children` list (which silently dropped the expression).
 pub(crate) fn clone_expression<'a>(
     exp: &ExpressionNode<'a>,
     allocator: &'a Bump,
@@ -143,18 +149,20 @@ pub(crate) fn clone_expression<'a>(
             },
             allocator,
         )),
-        ExpressionNode::Compound(compound) => {
-            // TODO: proper compound expression cloning
-            ExpressionNode::Compound(Box::new_in(
-                CompoundExpressionNode {
-                    children: bumpalo::collections::Vec::new_in(allocator),
-                    loc: compound.loc.clone(),
-                    identifiers: None,
-                    is_handler_key: compound.is_handler_key,
-                },
-                allocator,
-            ))
-        }
+        ExpressionNode::Compound(compound) => ExpressionNode::Simple(Box::new_in(
+            SimpleExpressionNode {
+                content: compound.loc.source.clone(),
+                is_static: false,
+                const_type: ConstantType::NotConstant,
+                loc: compound.loc.clone(),
+                js_ast: None,
+                hoisted: None,
+                identifiers: None,
+                is_handler_key: compound.is_handler_key,
+                is_ref_transformed: false,
+            },
+            allocator,
+        )),
     }
 }
 
@@ -196,7 +204,7 @@ pub(crate) fn normalize_expression<'a>(
 
 #[cfg(test)]
 mod tests {
-    use super::process_expression;
+    use super::{clone_expression, process_expression};
     use crate::{
         ast::{CompoundExpressionNode, ExpressionNode, Position, RuntimeHelper, SourceLocation},
         options::{BindingMetadata, BindingType, TransformOptions},
@@ -290,6 +298,20 @@ mod tests {
             "_unref($setup.isExternal) && $setup.isExternal.value"
         );
         assert!(ctx.has_helper(RuntimeHelper::Unref));
+    }
+
+    #[test]
+    fn test_clone_expression_preserves_compound_source() {
+        let allocator = Bump::new();
+        let source = "foo + bar";
+        let expr = compound_expression(&allocator, source);
+
+        let cloned = clone_expression(&expr, &allocator);
+        let ExpressionNode::Simple(simple) = cloned else {
+            panic!("expected clone_expression to flatten Compound to Simple");
+        };
+
+        assert_eq!(simple.content.as_str(), source);
     }
 }
 
