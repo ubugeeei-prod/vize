@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
  * Keeping this path in one module avoids each helper guessing how many
  * directory segments it needs to climb, which matters because these smoke tests
  * launch the real `vize lsp` binary and create temporary workspaces under the
- * repository-local `__agent_only` directory.
+ * repository-local test output directory.
  */
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
+export const testOutputRoot = path.join(root, "target", "vize-tests");

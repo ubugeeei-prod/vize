@@ -302,10 +302,12 @@ impl super::CompletionService {
                     };
 
                     if let Ok(items) = bridge.completion(&uri, line, character).await {
-                        return items
+                        let mut items: Vec<_> = items
                             .into_iter()
                             .map(Self::convert_lsp_completion)
                             .collect();
+                        improve_unknown_reactive_completions(ctx, is_setup, &mut items);
+                        return items;
                     }
                 }
             }
@@ -378,4 +380,46 @@ impl super::CompletionService {
             _ => CompletionItemKind::TEXT,
         }
     }
+}
+
+#[cfg(feature = "native")]
+fn improve_unknown_reactive_completions(
+    ctx: &IdeContext<'_>,
+    is_setup: bool,
+    items: &mut [CompletionItem],
+) {
+    if !items.iter().any(completion_has_unknown_reactive_type) {
+        return;
+    }
+
+    let local_items = script::complete_script(ctx, is_setup);
+    for item in items
+        .iter_mut()
+        .filter(|item| completion_has_unknown_reactive_type(item))
+    {
+        let Some(local) = local_items
+            .iter()
+            .find(|local| local.label == item.label && local_has_specific_reactive_type(local))
+        else {
+            continue;
+        };
+        item.detail = local.detail.clone();
+        item.label_details = local.label_details.clone();
+        item.documentation = local.documentation.clone();
+    }
+}
+
+#[cfg(feature = "native")]
+fn completion_has_unknown_reactive_type(item: &CompletionItem) -> bool {
+    item.detail.as_deref().is_some_and(|detail| {
+        detail.contains("Ref<unknown>") || detail.contains("ComputedRef<unknown>")
+    })
+}
+
+#[cfg(feature = "native")]
+fn local_has_specific_reactive_type(item: &CompletionItem) -> bool {
+    item.detail.as_deref().is_some_and(|detail| {
+        (detail.contains("Ref<") || detail.contains("ComputedRef<"))
+            && !detail.contains("<unknown>")
+    })
 }

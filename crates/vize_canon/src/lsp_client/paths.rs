@@ -34,10 +34,9 @@ pub(super) fn resolve_temp_dir_base(project_root: Option<&Path>) -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("."));
 
     find_node_modules_with_vue(&fallback_root)
-        .and_then(|path| path.parent().map(Path::to_path_buf))
-        .unwrap_or(fallback_root)
-        .join("__agent_only")
-        .join("vize-corsa")
+        .unwrap_or_else(|| fallback_root.join("node_modules"))
+        .join(".vize")
+        .join("corsa")
 }
 
 /// Resolve the directories we should search when looking for a Corsa executable.

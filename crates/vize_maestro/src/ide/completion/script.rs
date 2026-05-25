@@ -69,13 +69,26 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
 
             // Add bindings with type information
             for (name, binding_type) in croquis.bindings.iter() {
-                let (kind, type_detail, doc) = items::binding_type_to_completion_info(binding_type);
+                let (kind, mut type_detail, mut doc) =
+                    items::binding_type_to_completion_info(binding_type);
+                let reactive_source = croquis.reactivity.lookup(name);
+                if let Some(source) = reactive_source
+                    && let Some((reactive_detail, reactive_doc)) =
+                        reactive_completion_info(&script.content, name, source.kind)
+                {
+                    type_detail = reactive_detail;
+                    doc = reactive_doc;
+                }
 
                 // For refs in script, add .value hint
-                let needs_value = matches!(
-                    binding_type,
-                    BindingType::SetupRef | BindingType::SetupMaybeRef
-                );
+                let needs_value = reactive_source
+                    .map(|source| source.kind.needs_value_access())
+                    .unwrap_or_else(|| {
+                        matches!(
+                            binding_type,
+                            BindingType::SetupRef | BindingType::SetupMaybeRef
+                        )
+                    });
 
                 #[allow(clippy::disallowed_macros)]
                 items_vec.push(CompletionItem {
@@ -102,28 +115,34 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
             // Add reactive sources
             for source in croquis.reactivity.sources() {
                 let needs_value = source.kind.needs_value_access();
-                let kind_str = source.kind.to_display();
+                let (type_detail, doc) =
+                    reactive_completion_info(&script.content, source.name.as_str(), source.kind)
+                        .unwrap_or_else(|| {
+                            let kind_str = source.kind.to_display().to_string();
+                            let doc = if needs_value {
+                                "Needs `.value` access in script.".to_string()
+                            } else {
+                                "Direct access (no `.value` needed).".to_string()
+                            };
+                            (kind_str, doc)
+                        });
 
                 #[allow(clippy::disallowed_macros)]
                 items_vec.push(CompletionItem {
                     label: source.name.to_string(),
                     kind: Some(CompletionItemKind::VARIABLE),
                     label_details: Some(CompletionItemLabelDetails {
-                        detail: Some(kind_str.to_string()),
+                        detail: Some(type_detail.clone()),
                         description: if needs_value {
                             Some(".value".to_string())
                         } else {
                             None
                         },
                     }),
-                    detail: Some(kind_str.to_string()),
+                    detail: Some(type_detail),
                     documentation: Some(Documentation::MarkupContent(MarkupContent {
                         kind: MarkupKind::Markdown,
-                        value: if needs_value {
-                            "Needs `.value` access in script.".to_string()
-                        } else {
-                            "Direct access (no `.value` needed).".to_string()
-                        },
+                        value: doc,
                     })),
                     sort_text: Some(format!("0{}", source.name)),
                     ..Default::default()
@@ -133,6 +152,32 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
     }
 
     items_vec
+}
+
+fn reactive_completion_info(
+    script_content: &str,
+    name: &str,
+    kind: ReactiveKind,
+) -> Option<(String, String)> {
+    let wrapper = reactive_wrapper_type(kind)?;
+    let value_type = infer_reactive_value_type(script_content, name, kind)
+        .unwrap_or_else(|| "unknown".to_string());
+    let detail = format!("{wrapper}<{value_type}>");
+    let access = if kind.needs_value_access() {
+        "Access with `.value` in script."
+    } else {
+        "Direct access in script."
+    };
+    let doc = format!("```typescript\n{name}: {detail}\n```\n\n{access}");
+    Some((detail, doc))
+}
+
+fn reactive_wrapper_type(kind: ReactiveKind) -> Option<&'static str> {
+    match kind {
+        ReactiveKind::Computed => Some("ComputedRef"),
+        ReactiveKind::Ref | ReactiveKind::ShallowRef | ReactiveKind::ToRef => Some("Ref"),
+        _ => None,
+    }
 }
 
 fn complete_member_access(ctx: &IdeContext, is_setup: bool) -> Option<Vec<CompletionItem>> {

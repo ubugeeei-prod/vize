@@ -171,7 +171,7 @@ impl CorsaProjectClient {
     }
 
     pub(super) fn sync_overlay_document(&mut self, uri: &str, content: &str) -> Result<(), String> {
-        self.document_texts.insert(uri.into(), content.into());
+        let previous = self.document_texts.insert(uri.into(), content.into());
         if !self.supports_overlay_api() {
             return Err(
                 "Corsa overlay changes are unavailable for this project-session runtime".into(),
@@ -179,6 +179,10 @@ impl CorsaProjectClient {
         }
 
         let document_uri = self.session_document_uri(uri);
+        if previous.as_deref() == Some(content) {
+            return Ok(());
+        }
+
         let file_changes = materialize_session_document(uri, document_uri.as_str(), content);
         if document_uri != uri {
             return block_on(self.session.refresh(file_changes))
@@ -274,7 +278,7 @@ fn load_file_text(uri: &str) -> Option<String> {
     std::fs::read_to_string(path).ok().map(Into::into)
 }
 
-fn build_session_document_uri(uri: &str, project_root: &Path) -> String {
+pub(super) fn build_session_document_uri(uri: &str, project_root: &Path) -> String {
     let Some(external_path) = external_document_path(uri) else {
         return uri.into();
     };
@@ -283,7 +287,7 @@ fn build_session_document_uri(uri: &str, project_root: &Path) -> String {
         return path_to_file_uri(&external_path);
     }
 
-    let mut session_path = project_root.join("__agent_only").join("vize-corsa-overlay");
+    let mut session_path = overlay_root_for_project(project_root);
     for component in external_path.components() {
         match component {
             Component::Prefix(prefix) => session_path.push(prefix.as_os_str()),
@@ -294,6 +298,32 @@ fn build_session_document_uri(uri: &str, project_root: &Path) -> String {
     }
 
     path_to_file_uri(&session_path)
+}
+
+fn overlay_root_for_project(project_root: &Path) -> PathBuf {
+    if is_under_node_modules_vize(project_root) {
+        return project_root.join("overlays");
+    }
+
+    project_root
+        .join("node_modules")
+        .join(".vize")
+        .join("corsa-overlay")
+}
+
+fn is_under_node_modules_vize(path: &Path) -> bool {
+    let mut previous = None;
+    for component in path.components() {
+        let Some(name) = component.as_os_str().to_str() else {
+            previous = None;
+            continue;
+        };
+        if previous == Some("node_modules") && name == ".vize" {
+            return true;
+        }
+        previous = Some(name);
+    }
+    false
 }
 
 fn external_document_path(uri: &str) -> Option<PathBuf> {

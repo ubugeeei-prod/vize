@@ -6,7 +6,13 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const packageRoot = path.resolve(currentDir, "..", "..");
 export const workspaceRoot = path.resolve(packageRoot, "..", "..");
-const outputRoot = path.join(workspaceRoot, "__agent_only", "test-output", "rspack-vize-plugin");
+const outputRoot = path.join(
+  workspaceRoot,
+  "target",
+  "vize-tests",
+  "test-output",
+  "rspack-vize-plugin",
+);
 
 export function resolveFixturePath(name: string, file: string): string {
   return path.join(packageRoot, "src", "test", "fixtures", name, file);

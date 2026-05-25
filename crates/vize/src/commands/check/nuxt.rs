@@ -902,8 +902,8 @@ export {}
             .expect("workspace root should exist");
         let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
         workspace_root
-            .join("__agent_only")
-            .join("tests")
+            .join("target")
+            .join("vize-tests")
             .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
     }
 }

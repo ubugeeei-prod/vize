@@ -13,7 +13,7 @@ import {
 } from "./tokens/resolver.ts";
 
 async function makeAgentTempDir() {
-  const root = path.resolve("__agent_only");
+  const root = path.resolve("target", "vize-tests");
   await fs.promises.mkdir(root, { recursive: true });
   return fs.promises.mkdtemp(path.join(root, "musea-tokens-"));
 }

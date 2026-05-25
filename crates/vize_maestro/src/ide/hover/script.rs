@@ -99,7 +99,13 @@ impl HoverService {
 
                         // Request hover from Corsa.
                         if let Ok(Some(hover)) = bridge.hover(&uri, line, character).await {
-                            return Some(Self::convert_lsp_hover(hover));
+                            let converted = Self::convert_lsp_hover(hover);
+                            if hover_has_unknown_reactive_type(&converted)
+                                && let Some(fallback) = Self::hover_script(ctx, is_setup)
+                            {
+                                return Some(fallback);
+                            }
+                            return Some(converted);
                         }
                     }
                 }
@@ -372,4 +378,23 @@ impl HoverService {
             BindingType::ExternalModule => "Imported from external module.",
         }
     }
+}
+
+fn hover_has_unknown_reactive_type(hover: &Hover) -> bool {
+    let value = match &hover.contents {
+        HoverContents::Markup(markup) => markup.value.as_str(),
+        HoverContents::Scalar(value) => return marked_string_has_unknown_reactive_type(value),
+        HoverContents::Array(values) => {
+            return values.iter().any(marked_string_has_unknown_reactive_type);
+        }
+    };
+    value.contains("Ref<unknown>") || value.contains("ComputedRef<unknown>")
+}
+
+fn marked_string_has_unknown_reactive_type(value: &tower_lsp::lsp_types::MarkedString) -> bool {
+    let value = match value {
+        tower_lsp::lsp_types::MarkedString::String(value) => value.as_str(),
+        tower_lsp::lsp_types::MarkedString::LanguageString(value) => value.value.as_str(),
+    };
+    value.contains("Ref<unknown>") || value.contains("ComputedRef<unknown>")
 }

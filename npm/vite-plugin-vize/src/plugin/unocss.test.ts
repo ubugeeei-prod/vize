@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { patchUnoCssBridge } from "./unocss.ts";
 
-const testRoot = path.resolve(process.cwd(), "__agent_only", "vite-plugin-unocss-tests");
+const testRoot = path.resolve(process.cwd(), "target", "vize-tests", "vite-plugin-unocss-tests");
 fs.mkdirSync(testRoot, { recursive: true });
 const tempRoot = fs.mkdtempSync(path.join(testRoot, "fixture-"));
 process.once("exit", () => {

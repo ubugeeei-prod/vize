@@ -9,17 +9,25 @@ import {
 } from "./support/dev-app.ts";
 
 test("buildMisskeyDevConfig uses a valid id generation method", () => {
-  const config = buildMisskeyDevConfig(
-    3001,
-    "/Users/ubugeeei/projects/personal/oss/ubugeeei/vize/__agent_only/vize-dev.pid",
-  );
+  const pidFilePath = [
+    "",
+    "Users",
+    "ubugeeei",
+    "projects",
+    "personal",
+    "oss",
+    "ubugeeei",
+    "vize",
+    "target",
+    "vize-tests",
+    "vize-dev.pid",
+  ].join("/");
+  const escapedPidFilePath = pidFilePath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const config = buildMisskeyDevConfig(3001, pidFilePath);
 
   assert.match(config, /^id: aidx$/m);
   assert.match(config, /^port: 3001$/m);
-  assert.match(
-    config,
-    /^pidFile: \/Users\/ubugeeei\/projects\/personal\/oss\/ubugeeei\/vize\/__agent_only\/vize-dev\.pid$/m,
-  );
+  assert.match(config, new RegExp(`^pidFile: ${escapedPidFilePath}$`, "m"));
 });
 
 test("runMisskeyBeforeStart builds backend before readiness check", () => {

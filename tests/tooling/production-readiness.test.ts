@@ -29,7 +29,7 @@ test("CLI typechecker reports mapped TypeScript diagnostics", () => {
 });
 
 test("CLI linter reports production JSON diagnostics", () => {
-  const smokeDir = path.join(root, "__agent_only", "production-readiness");
+  const smokeDir = path.join(root, "target", "vize-tests", "production-readiness");
   const fixturePath = path.join(smokeDir, "Lint.vue");
 
   fs.rmSync(smokeDir, { force: true, recursive: true });

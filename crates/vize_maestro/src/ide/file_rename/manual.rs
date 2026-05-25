@@ -754,7 +754,9 @@ mod tests {
     use crate::server::ServerState;
 
     fn test_dir() -> tempfile::TempDir {
-        let base = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("__agent_only");
+        let base = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join("vize-tests");
         fs::create_dir_all(&base).unwrap();
         tempfile::tempdir_in(base).unwrap()
     }

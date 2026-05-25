@@ -278,6 +278,29 @@ count.
     }
 
     #[test]
+    fn test_script_completion_infers_computed_ref_type() {
+        let source = r#"<script setup lang="ts">
+import { ref, computed } from 'vue'
+
+const count = ref(0)
+const double = computed(() => count.value * 2)
+
+doub
+</script>
+"#;
+        let (state, uri) = state_with_document("ScriptComputedCompletion.vue", source);
+        let offset = source.find("doub").unwrap() + "doub".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let items = completion_items(CompletionService::complete(&ctx).unwrap());
+        let double = items
+            .iter()
+            .find(|item| item.label == "double")
+            .expect("double completion should be present");
+
+        assert_eq!(double.detail.as_deref(), Some("ComputedRef<number>"));
+    }
+
+    #[test]
     fn test_template_completion_skips_bindings_in_static_attribute_value() {
         let source = r#"<script setup lang="ts">
 const message = ref('hello')
@@ -474,12 +497,17 @@ const title = t("auth.")
     }
 
     fn completion_labels(response: CompletionResponse) -> Vec<String> {
-        let items = match response {
+        completion_items(response)
+            .into_iter()
+            .map(|item| item.label)
+            .collect()
+    }
+
+    fn completion_items(response: CompletionResponse) -> Vec<tower_lsp::lsp_types::CompletionItem> {
+        match response {
             CompletionResponse::Array(items) => items,
             CompletionResponse::List(list) => list.items,
-        };
-
-        items.into_iter().map(|item| item.label).collect()
+        }
     }
 
     fn has_label(labels: &[String], expected: &str) -> bool {

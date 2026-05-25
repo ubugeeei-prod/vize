@@ -4,7 +4,6 @@ use std::{
 };
 use vize_carton::{String, ToCompactString, cstr};
 
-const SESSION_DIR: &str = "vize-patina";
 const EXECUTABLE_ENV_VARS: [&str; 2] = ["CORSA_EXECUTABLE", "CORSA_PATH"];
 const LEGACY_EXECUTABLE_ENV_VARS: [&str; 2] = ["TSGO_EXECUTABLE", "TSGO_PATH"];
 const EXECUTABLE_NAMES: [&str; 2] = ["corsa", "tsgo"];
@@ -32,8 +31,9 @@ pub(super) fn path_to_wire(path: &Path) -> String {
 pub(super) fn allocate_session_root(project_root: &Path) -> PathBuf {
     let session_name = next_session_directory_name();
     project_root
-        .join("__agent_only")
-        .join(SESSION_DIR)
+        .join("node_modules")
+        .join(".vize")
+        .join("patina")
         .join(session_name.as_str())
 }
 
@@ -336,8 +336,8 @@ mod tests {
     fn case_dir(name: &str) -> PathBuf {
         let id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("__agent_only")
-            .join("tests")
+            .join("target")
+            .join("vize-tests")
             .join(&*cstr!(
                 "patina-corsa-paths-{name}-{}-{id}",
                 std::process::id()

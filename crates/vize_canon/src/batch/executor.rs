@@ -371,7 +371,8 @@ mod tests {
 
         let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("__agent_only")
+            .join("target")
+            .join("vize-tests")
             .join("tests")
             .join(&*cstr!(
                 "corsa-executor-{name}-{}-{case_id}",

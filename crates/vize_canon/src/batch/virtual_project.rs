@@ -1141,7 +1141,8 @@ mod tests {
             std::sync::atomic::AtomicUsize::new(0);
         let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("__agent_only")
+            .join("target")
+            .join("vize-tests")
             .join("tests")
             .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
     }

@@ -573,7 +573,8 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .expect("workspace root should exist");
     let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
     workspace_root
-        .join("__agent_only")
+        .join("target")
+        .join("vize-tests")
         .join("tests")
         .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
 }
@@ -674,7 +675,8 @@ fn corsa_type_mismatch_snapshot(
         .expect("workspace root should exist");
     let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
     let project_root = workspace_root
-        .join("__agent_only")
+        .join("target")
+        .join("vize-tests")
         .join("tests")
         .join(format!("corsa-type-probe-{}-{case_id}", std::process::id()));
     let _ = std::fs::remove_dir_all(&project_root);

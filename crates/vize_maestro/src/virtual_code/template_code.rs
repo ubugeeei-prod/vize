@@ -241,6 +241,14 @@ fn is_template_context_path(content: &str) -> bool {
         return false;
     }
 
+    if content.trim() != content
+        || !content
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$' | b'.'))
+    {
+        return false;
+    }
+
     content.split('.').all(is_valid_identifier)
 }
 
@@ -461,6 +469,29 @@ mod tests {
             doc.content
                 .contains("const __VIZE_0 = () => { count++ };\n")
         );
+        assert!(!doc.content.contains("__VIZE_ctx.() =>"));
+    }
+
+    #[test]
+    fn test_multiline_event_arrow_expression_is_not_prefixed_as_member() {
+        let source = r#"<button
+  @click="
+    () => {
+      count++;
+    }
+  "
+>
+  {{ count }}
+</button>"#;
+        let allocator = vize_carton::Bump::new();
+        let (ast, _) = vize_armature::parse(&allocator, source);
+
+        let mut generator = TemplateCodeGenerator::new();
+        let doc = generator.generate(&ast, source);
+
+        assert!(doc.content.contains("() =>"));
+        assert!(doc.content.contains("count++;"));
+        assert!(!doc.content.contains("__VIZE_ctx.\n"));
         assert!(!doc.content.contains("__VIZE_ctx.() =>"));
     }
 }

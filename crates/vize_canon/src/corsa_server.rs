@@ -17,8 +17,8 @@
 //!
 //! ## Unix Socket Mode
 //!
-//! Start server: `vize check-server --socket ./__agent_only/vize.sock`
-//! Connect: `echo '{"jsonrpc":"2.0","id":1,"method":"check",...}' | nc -U ./__agent_only/vize.sock`
+//! Start server: `vize check-server --socket ./node_modules/.vize/vize.sock`
+//! Connect: `echo '{"jsonrpc":"2.0","id":1,"method":"check",...}' | nc -U ./node_modules/.vize/vize.sock`
 
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};

@@ -776,8 +776,8 @@ mod tests {
 
         let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("__agent_only")
-            .join("tests")
+            .join("target")
+            .join("vize-tests")
             .join(format!(
                 "check-runner-{name}-{}-{case_id}",
                 std::process::id()

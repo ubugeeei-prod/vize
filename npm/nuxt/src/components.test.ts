@@ -10,7 +10,7 @@ type Fixture = {
   buildDir: string;
 };
 
-const TEST_TMP_ROOT = path.resolve(process.cwd(), "__agent_only", "nuxt-components-tests");
+const TEST_TMP_ROOT = path.resolve(process.cwd(), "target", "vize-tests", "nuxt-components-tests");
 
 function writeFile(filePath: string, content = ""): string {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });

@@ -9,6 +9,10 @@ use glob::{MatchOptions, Pattern};
 use ignore::WalkBuilder;
 use vize_carton::{FxHashSet, String};
 
+const TARGET_DIR: &str = "target";
+const NODE_MODULES_DIR: &str = "node_modules";
+const VIZE_CACHE_DIR: &str = ".vize";
+
 #[allow(clippy::disallowed_types)]
 pub(super) fn collect_check_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
     let mut files = Vec::new();
@@ -201,18 +205,39 @@ fn normalize_input_path(path: &Path) -> PathBuf {
 }
 
 fn should_skip_generated_for_root(root: &Path) -> bool {
-    !root
-        .components()
-        .any(|component| component.as_os_str().to_str() == Some("__agent_only"))
+    !path_is_generated_root(root)
 }
 
 fn is_generated_path(path: &Path) -> bool {
+    let mut previous = None;
     path.components().any(|component| {
-        component
-            .as_os_str()
-            .to_str()
-            .is_some_and(|name| matches!(name, "__agent_only" | "target"))
+        let Some(name) = component.as_os_str().to_str() else {
+            previous = None;
+            return false;
+        };
+        let generated = is_generated_component(previous, name);
+        previous = Some(name);
+        generated
     })
+}
+
+fn path_is_generated_root(path: &Path) -> bool {
+    let mut previous = None;
+    for component in path.components() {
+        let Some(name) = component.as_os_str().to_str() else {
+            previous = None;
+            continue;
+        };
+        if is_generated_component(previous, name) {
+            return true;
+        }
+        previous = Some(name);
+    }
+    false
+}
+
+fn is_generated_component(previous: Option<&str>, name: &str) -> bool {
+    name == TARGET_DIR || (previous == Some(NODE_MODULES_DIR) && name == VIZE_CACHE_DIR)
 }
 
 fn is_supported_collect_file(path: &Path, vue_only: bool) -> bool {
@@ -256,8 +281,8 @@ mod tests {
             std::sync::atomic::AtomicUsize::new(0);
         let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("__agent_only")
-            .join("tests")
+            .join("target")
+            .join("vize-tests")
             .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
     }
 

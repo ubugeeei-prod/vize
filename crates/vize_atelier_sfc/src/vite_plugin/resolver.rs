@@ -440,7 +440,8 @@ mod tests {
     fn resolves_relative_import_fallbacks_under_agent_workspace() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
-            .join("__agent_only")
+            .join("target")
+            .join("vize-tests")
             .join("tests")
             .join("vite-resolver-native");
         let root = lexical_normalize(&root);

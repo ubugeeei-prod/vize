@@ -1,4 +1,4 @@
-<workspaceRoot>/__agent_only/oxlint-plugin-vize-test/App.vue
+<workspaceRoot>/target/vize-tests/oxlint-plugin-vize-test/App.vue
   2:2  error  Elements in iteration expect to have 'v-bind:key' directives. (at <template>:6:9)
     Details:
       Element: <li>  vize(vue/require-v-for-key)

@@ -22,6 +22,9 @@ use crate::commands::profile::{
 };
 use crate::config;
 
+const NODE_MODULES_DIR: &str = "node_modules";
+const VIZE_CACHE_DIR: &str = ".vize";
+
 #[derive(Args)]
 #[allow(clippy::disallowed_types)]
 pub struct FmtArgs {
@@ -367,14 +370,18 @@ fn collect_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
         } else if contains_glob_char(&normalized) {
             if let Ok(paths) = glob(&normalized) {
                 for path in paths.flatten() {
-                    if path.extension().is_some_and(|ext| ext == "vue") {
+                    if path.extension().is_some_and(|ext| ext == "vue") && !is_generated_path(&path)
+                    {
                         files.push(path);
                     }
                 }
             }
         } else {
             let path = PathBuf::from(&normalized);
-            if path.extension().is_some_and(|ext| ext == "vue") && path.is_file() {
+            if path.extension().is_some_and(|ext| ext == "vue")
+                && path.is_file()
+                && !is_generated_path(&path)
+            {
                 files.push(path);
             }
         }
@@ -398,7 +405,10 @@ fn collect_walked_files(pattern: &FmtPattern, files: &mut Vec<PathBuf>) {
 
     for entry in walker.filter_map(Result::ok) {
         let path = entry.path();
-        if path.extension().is_some_and(|ext| ext == "vue") && pattern.matches(path) {
+        if path.extension().is_some_and(|ext| ext == "vue")
+            && pattern.matches(path)
+            && !is_generated_path(path)
+        {
             files.push(path.to_path_buf());
         }
     }
@@ -472,6 +482,21 @@ fn normalize_path(path: &Path) -> vize_carton::String {
 #[inline]
 fn contains_glob_char(pattern: &str) -> bool {
     pattern.contains(['*', '?', '['])
+}
+
+fn is_generated_path(path: &Path) -> bool {
+    let mut previous = None;
+    for component in path.components() {
+        let Some(name) = component.as_os_str().to_str() else {
+            previous = None;
+            continue;
+        };
+        if previous == Some(NODE_MODULES_DIR) && name == VIZE_CACHE_DIR {
+            return true;
+        }
+        previous = Some(name);
+    }
+    false
 }
 
 #[inline]
@@ -615,6 +640,24 @@ mod tests {
     }
 
     #[test]
+    fn collect_files_skips_generated_vize_workspace() {
+        let root = unique_case_dir("generated-vize");
+        let src = root.join("src");
+        let generated = root.join("node_modules/.vize/corsa-overlay/src");
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&src).unwrap();
+        fs::create_dir_all(&generated).unwrap();
+        fs::write(src.join("App.vue"), "<template><div/></template>").unwrap();
+        fs::write(generated.join("App.vue"), "<template><div/></template>").unwrap();
+
+        let pattern = root.join("**/*.vue").to_string_lossy().into_owned();
+        let files = collect_files(&[pattern]);
+        let _ = fs::remove_dir_all(&root);
+
+        assert_eq!(files, vec![src.join("App.vue")]);
+    }
+
+    #[test]
     fn relative_glob_does_not_match_every_vue_file() {
         let cwd = std::env::current_dir().unwrap();
         let pattern = FmtPattern::new("bench/__in__/*.vue", &cwd).unwrap();
@@ -637,8 +680,8 @@ mod tests {
         dir_name.push_str(nanos.as_str());
         std::env::current_dir()
             .unwrap()
-            .join("__agent_only")
-            .join("tests")
+            .join("target")
+            .join("vize-tests")
             .join("fmt")
             .join(dir_name.as_str())
     }

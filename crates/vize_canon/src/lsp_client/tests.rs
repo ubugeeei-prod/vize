@@ -4,6 +4,7 @@ use super::{
         corsa_search_roots, find_corsa_in_local_node_modules, find_corsa_in_search_roots,
         resolve_temp_dir_base,
     },
+    session::build_session_document_uri,
     utils::convert_diagnostics,
 };
 use lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
@@ -13,15 +14,16 @@ use std::{
     sync::atomic::{AtomicUsize, Ordering},
 };
 use tempfile::TempDir;
+use vize_carton::cstr;
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
 
     let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("__agent_only")
-        .join("tests")
-        .join(format!(
+        .join("target")
+        .join("vize-tests")
+        .join(&*cstr!(
             "corsa-temp-dir-{name}-{}-{case_id}",
             std::process::id()
         ))
@@ -43,8 +45,9 @@ fn resolves_temp_dir_under_package_root_when_node_modules_exists() {
         resolved,
         case_dir
             .join("playground")
-            .join("__agent_only")
-            .join("vize-corsa")
+            .join("node_modules")
+            .join(".vize")
+            .join("corsa")
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -65,11 +68,53 @@ fn falls_back_to_nearest_available_node_modules_root() {
 
     assert_eq!(
         resolved,
-        workspace_root.join("__agent_only").join("vize-corsa")
+        workspace_root
+            .join("node_modules")
+            .join(".vize")
+            .join("corsa")
     );
     assert!(!resolved.starts_with(&source_dir));
 
     let _ = fs::remove_dir_all(&case_dir);
+}
+
+#[test]
+fn overlay_documents_materialize_under_node_modules_vize() {
+    let temp_dir = TempDir::new().unwrap();
+    let project_root = temp_dir.path().join("project");
+    fs::create_dir_all(&project_root).unwrap();
+
+    let external_uri = "file:///external/App.vue.setup.ts";
+    let document_uri = build_session_document_uri(external_uri, &project_root);
+    let test_output_fragment = PathBuf::from("target")
+        .join("vize-tests")
+        .to_string_lossy()
+        .replace('\\', "/");
+
+    assert!(document_uri.contains("/node_modules/.vize/corsa-overlay/"));
+    assert!(!document_uri.contains(test_output_fragment.as_str()));
+}
+
+#[test]
+fn internal_vize_sessions_keep_overlays_inside_session_root() {
+    let temp_dir = TempDir::new().unwrap();
+    let project_root = temp_dir
+        .path()
+        .join("node_modules")
+        .join(".vize")
+        .join("corsa")
+        .join("session");
+    fs::create_dir_all(&project_root).unwrap();
+
+    let external_uri = "file:///external/App.vue.setup.ts";
+    let document_uri = build_session_document_uri(external_uri, &project_root);
+    let test_output_fragment = PathBuf::from("target")
+        .join("vize-tests")
+        .to_string_lossy()
+        .replace('\\', "/");
+
+    assert!(document_uri.contains("/node_modules/.vize/corsa/session/overlays/"));
+    assert!(!document_uri.contains(test_output_fragment.as_str()));
 }
 
 #[test]

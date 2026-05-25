@@ -10,6 +10,7 @@ const localGeneratedIgnorePatterns = [
   "npm/vscode-vize/.vscode-test/**",
   "target/**",
 ];
+const testOutputIgnorePattern = ["**", "target", "vize-tests", "**"].join("/");
 
 /**
  * Root Vite+ configuration.
@@ -36,7 +37,7 @@ const config = {
       ...localGeneratedIgnorePatterns,
       "**/__snapshots__/**",
       "**/__snapshot__/**",
-      "**/__agent_only/**",
+      testOutputIgnorePattern,
       "**/__ubugeeei__/**",
       "tests/_fixtures/**",
     ],
@@ -46,7 +47,7 @@ const config = {
       ...localGeneratedIgnorePatterns,
       "**/__snapshots__/**",
       "**/__snapshot__/**",
-      "**/__agent_only/**",
+      testOutputIgnorePattern,
       "**/__ubugeeei__/**",
       "npm/vscode-vize/**",
       "tests/_fixtures/**",

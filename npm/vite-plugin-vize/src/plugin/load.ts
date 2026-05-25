@@ -46,7 +46,7 @@ export function getBoundaryPlaceholderCode(realPath: string, ssr: boolean): stri
 }
 
 function getOxcDumpPath(root: string, realPath: string): string {
-  const dumpDir = path.resolve(root || process.cwd(), "__agent_only", "oxc-dumps");
+  const dumpDir = path.resolve(root || process.cwd(), "node_modules", ".vize", "oxc-dumps");
   fs.mkdirSync(dumpDir, { recursive: true });
   return path.join(dumpDir, `vize-oxc-error-${path.basename(realPath)}.ts`);
 }

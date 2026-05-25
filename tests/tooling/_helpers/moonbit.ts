@@ -4,13 +4,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const testOutputRoot = path.join(repoRoot, "target", "vize-tests");
 const workspaceMoonHome = path.join(repoRoot, ".cache", "moonbit");
 const workspaceMoonCommand = path.join(
   workspaceMoonHome,
   "bin",
   process.platform === "win32" ? "moon.cmd" : "moon",
 );
-const agentTempDir = path.join(repoRoot, "__agent_only", "moonbit-tmp");
+const moonbitTempDir = path.join(testOutputRoot, "moonbit-tmp");
 
 export function moonScriptPath(name: string): string {
   return path.join(repoRoot, "tools", "moon", "scripts", `${name}.mbtx`);
@@ -61,19 +62,19 @@ export function runMoonScript(
     env?: NodeJS.ProcessEnv;
   } = {},
 ) {
-  fs.mkdirSync(agentTempDir, { recursive: true });
+  fs.mkdirSync(moonbitTempDir, { recursive: true });
   const env = {
     ...process.env,
     ...options.env,
   };
   if (!hasExplicitEnvValue(options.env, "TMPDIR")) {
-    env.TMPDIR = agentTempDir;
+    env.TMPDIR = moonbitTempDir;
   }
   if (!hasExplicitEnvValue(options.env, "TEMP")) {
-    env.TEMP = agentTempDir;
+    env.TEMP = moonbitTempDir;
   }
   if (!hasExplicitEnvValue(options.env, "TMP")) {
-    env.TMP = agentTempDir;
+    env.TMP = moonbitTempDir;
   }
   const moonCommand = resolveMoonCommand(env);
   if (moonCommand === workspaceMoonCommand && !hasExplicitEnvValue(options.env, "MOON_HOME")) {

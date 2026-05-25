@@ -303,7 +303,8 @@ fn test_compile_with_targets() {
 #[cfg(feature = "native")]
 fn test_bundle_css_inlines_imports_recursively() {
     let case_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("__agent_only")
+        .join("target")
+        .join("vize-tests")
         .join("tests")
         .join("css-bundle-native");
     let nested_dir = case_dir.join("nested");

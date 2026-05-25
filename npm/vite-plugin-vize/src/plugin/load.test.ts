@@ -13,11 +13,18 @@ import { toVirtualId } from "../virtual.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const workspaceRoot = path.resolve(__dirname, "../../../..");
-const agentTestRoot = path.join(workspaceRoot, "__agent_only", "tests", "vite-plugin-vize", "load");
-fs.mkdirSync(agentTestRoot, { recursive: true });
+const testRoot = path.join(
+  workspaceRoot,
+  "target",
+  "vize-tests",
+  "tests",
+  "vite-plugin-vize",
+  "load",
+);
+fs.mkdirSync(testRoot, { recursive: true });
 
 function createTempRoot(prefix: string): string {
-  return fs.mkdtempSync(path.join(agentTestRoot, prefix + "-"));
+  return fs.mkdtempSync(path.join(testRoot, prefix + "-"));
 }
 
 const ssrClientPlaceholder = getBoundaryPlaceholderCode("/src/Foo.client.vue", true);

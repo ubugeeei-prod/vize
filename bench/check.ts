@@ -52,7 +52,7 @@ function prepareBenchInputDir(selectedVueFiles: string[], totalVueFileCount: num
     return INPUT_DIR;
   }
 
-  const subsetDir = join(__dirname, "__agent_only", `check-${selectedVueFiles.length}`);
+  const subsetDir = join(__dirname, "target", "vize-tests", `check-${selectedVueFiles.length}`);
   rmSync(subsetDir, { recursive: true, force: true });
   mkdirSync(subsetDir, { recursive: true });
 

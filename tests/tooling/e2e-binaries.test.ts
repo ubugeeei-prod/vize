@@ -14,8 +14,8 @@ interface HelperCommandResult {
 }
 
 test("compiler e2e binary helpers respect explicit env overrides", () => {
-  const vizeBin = path.join(root, "__agent_only", "vize-override");
-  const corsaBin = path.join(root, "__agent_only", "corsa-override");
+  const vizeBin = path.join(root, "target", "vize-tests", "vize-override");
+  const corsaBin = path.join(root, "target", "vize-tests", "corsa-override");
   const result = runAppsHelper({
     env: {
       CORSA_BIN: corsaBin,
@@ -31,8 +31,8 @@ test("compiler e2e binary helpers respect explicit env overrides", () => {
 });
 
 test("compiler e2e binary helpers fail loudly when the vize override is missing", () => {
-  const vizeBin = path.join(root, "__agent_only", "missing-vize");
-  const corsaBin = path.join(root, "__agent_only", "missing-corsa");
+  const vizeBin = path.join(root, "target", "vize-tests", "missing-vize");
+  const corsaBin = path.join(root, "target", "vize-tests", "missing-corsa");
   const result = runAppsHelper({
     env: {
       CORSA_BIN: corsaBin,
@@ -47,7 +47,7 @@ test("compiler e2e binary helpers fail loudly when the vize override is missing"
 });
 
 test("compiler e2e binary helpers fail loudly when the checker override is missing", () => {
-  const corsaBin = path.join(root, "__agent_only", "missing-corsa");
+  const corsaBin = path.join(root, "target", "vize-tests", "missing-corsa");
   const result = runAppsHelper({
     env: {
       CORSA_BIN: corsaBin,

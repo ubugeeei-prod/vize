@@ -14,14 +14,14 @@ import {
   isDiagnosticsForUri,
   offsetToPosition,
 } from "./support/lsp/assertions.ts";
-import { root } from "./support/lsp/paths.ts";
+import { testOutputRoot } from "./support/lsp/paths.ts";
 import type { LspDiagnostic, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
 test("vize lsp smoke-tests production editor flows", async (t) => {
-  const agentOnlyDir = path.join(root, "__agent_only", "lsp-smoke");
-  fs.mkdirSync(agentOnlyDir, { recursive: true });
-  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const testRootDir = path.join(testOutputRoot, "lsp-smoke");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
   const session = new LspSession();
 
   try {
@@ -306,14 +306,14 @@ const emoji = "😀"; const message = ref(emoji)
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
-    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
   }
 });
 
 test("vize lsp returns empty results for unopened and closed editor documents", async () => {
-  const agentOnlyDir = path.join(root, "__agent_only", "lsp-empty-editor-docs");
-  fs.mkdirSync(agentOnlyDir, { recursive: true });
-  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const testRootDir = path.join(testOutputRoot, "lsp-empty-editor-docs");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
   const session = new LspSession();
 
   try {
@@ -367,14 +367,14 @@ const message = 'hello'
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
-    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
   }
 });
 
 test("vize lsp rename fallback returns UTF-16 edit ranges", async () => {
-  const agentOnlyDir = path.join(root, "__agent_only", "lsp-rename-utf16");
-  fs.mkdirSync(agentOnlyDir, { recursive: true });
-  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const testRootDir = path.join(testOutputRoot, "lsp-rename-utf16");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
   const session = new LspSession();
 
   try {
@@ -459,14 +459,14 @@ const emoji = "😀"; const message = ref(emoji)
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
-    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
   }
 });
 
 test("vize lsp code actions return UTF-16 quick fix edit ranges", async () => {
-  const agentOnlyDir = path.join(root, "__agent_only", "lsp-code-action-utf16");
-  fs.mkdirSync(agentOnlyDir, { recursive: true });
-  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const testRootDir = path.join(testOutputRoot, "lsp-code-action-utf16");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
   const session = new LspSession();
 
   try {
@@ -561,14 +561,14 @@ test("vize lsp code actions return UTF-16 quick fix edit ranges", async () => {
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
-    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
   }
 });
 
 test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
-  const agentOnlyDir = path.join(root, "__agent_only", "lsp-malformed");
-  fs.mkdirSync(agentOnlyDir, { recursive: true });
-  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const testRootDir = path.join(testOutputRoot, "lsp-malformed");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
   const session = new LspSession();
 
   try {
@@ -631,14 +631,14 @@ test("vize lsp publishes and clears malformed SFC diagnostics", async () => {
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
-    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
   }
 });
 
 test("vize lsp keeps type diagnostics disabled by initialization options", async () => {
-  const agentOnlyDir = path.join(root, "__agent_only", "lsp-typecheck-disabled");
-  fs.mkdirSync(agentOnlyDir, { recursive: true });
-  const workspaceDir = fs.mkdtempSync(path.join(agentOnlyDir, "workspace-"));
+  const testRootDir = path.join(testOutputRoot, "lsp-typecheck-disabled");
+  fs.mkdirSync(testRootDir, { recursive: true });
+  const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
   const session = new LspSession();
 
   try {
@@ -688,6 +688,6 @@ const items = [1, 2]
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
-    fs.rmSync(agentOnlyDir, { recursive: true, force: true });
+    fs.rmSync(testRootDir, { recursive: true, force: true });
   }
 });

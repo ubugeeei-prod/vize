@@ -5,7 +5,7 @@ import { test } from "node:test";
 
 import { repoRoot, runMoonScript } from "./_helpers/moonbit.ts";
 
-const scratchRoot = path.join(repoRoot, "__agent_only", "tooling-tests");
+const scratchRoot = path.join(repoRoot, "target", "vize-tests", "tooling-tests");
 
 function createFixtureRoot(): string {
   fs.mkdirSync(scratchRoot, { recursive: true });
