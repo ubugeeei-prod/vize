@@ -721,11 +721,12 @@ const secondaryLabel = ref('secondary')
     }
 
     #[cfg(feature = "native")]
-    #[tokio::test]
-    async fn test_hover_with_corsa_fallback_supports_identifier_boundaries() {
-        let dir = tempfile::tempdir().unwrap();
-        let source_path = dir.path().join("HoverBoundary.vue");
-        let source = r#"<script setup lang="ts">
+    #[test]
+    fn test_hover_with_corsa_fallback_supports_identifier_boundaries() {
+        crate::runtime::block_on(async {
+            let dir = tempfile::tempdir().unwrap();
+            let source_path = dir.path().join("HoverBoundary.vue");
+            let source = r#"<script setup lang="ts">
 const count = ref(0)
 </script>
 
@@ -733,49 +734,52 @@ const count = ref(0)
   {{ count }}
 </template>
 "#;
-        fs::write(&source_path, source).unwrap();
+            fs::write(&source_path, source).unwrap();
 
-        let uri = Url::from_file_path(&source_path).unwrap();
-        let state = ServerState::new();
-        state
-            .documents
-            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
-        state.update_virtual_docs(&uri, source);
+            let uri = Url::from_file_path(&source_path).unwrap();
+            let state = ServerState::new();
+            state
+                .documents
+                .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+            state.update_virtual_docs(&uri, source);
 
-        let offset = source.rfind("count").unwrap() + "count".len();
-        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let hover = HoverService::hover_with_corsa(&ctx, None).await.unwrap();
-        let value = hover_markdown(hover);
+            let offset = source.rfind("count").unwrap() + "count".len();
+            let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+            let hover = HoverService::hover_with_corsa(&ctx, None).await.unwrap();
+            let value = hover_markdown(hover);
 
-        assert!(value.contains("count"));
-        assert!(value.contains("Ref<number>"));
+            assert!(value.contains("count"));
+            assert!(value.contains("Ref<number>"));
+        });
     }
 
     #[cfg(feature = "native")]
-    #[tokio::test]
-    async fn test_hover_with_corsa_fallback_supports_directive_boundaries() {
-        let dir = tempfile::tempdir().unwrap();
-        let source_path = dir.path().join("HoverDirective.vue");
-        let source = r#"<template>
+    #[test]
+    fn test_hover_with_corsa_fallback_supports_directive_boundaries() {
+        crate::runtime::block_on(async {
+            let dir = tempfile::tempdir().unwrap();
+            let source_path = dir.path().join("HoverDirective.vue");
+            let source = r#"<template>
   <div v-if="visible" />
 </template>
 "#;
-        fs::write(&source_path, source).unwrap();
+            fs::write(&source_path, source).unwrap();
 
-        let uri = Url::from_file_path(&source_path).unwrap();
-        let state = ServerState::new();
-        state
-            .documents
-            .open(uri.clone(), source.to_string(), 1, "vue".to_string());
-        state.update_virtual_docs(&uri, source);
+            let uri = Url::from_file_path(&source_path).unwrap();
+            let state = ServerState::new();
+            state
+                .documents
+                .open(uri.clone(), source.to_string(), 1, "vue".to_string());
+            state.update_virtual_docs(&uri, source);
 
-        let offset = source.find("v-if").unwrap() + "v-if".len();
-        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
-        let hover = HoverService::hover_with_corsa(&ctx, None).await.unwrap();
-        let value = hover_markdown(hover);
+            let offset = source.find("v-if").unwrap() + "v-if".len();
+            let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+            let hover = HoverService::hover_with_corsa(&ctx, None).await.unwrap();
+            let value = hover_markdown(hover);
 
-        assert!(value.contains("**v-if**"));
-        assert!(value.contains("Conditionally render"));
+            assert!(value.contains("**v-if**"));
+            assert!(value.contains("Conditionally render"));
+        });
     }
 
     fn hover_markdown(hover: tower_lsp::lsp_types::Hover) -> String {

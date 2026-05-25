@@ -19,7 +19,7 @@ tower-lsp.workspace = true
 # lsp-types is re-exported by tower-lsp, use that version
 
 # Async Runtime
-tokio = { workspace = true, features = ["full"] }
+futures.workspace = true
 async-trait.workspace = true
 
 # Text Processing
