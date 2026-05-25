@@ -14,8 +14,10 @@ mod props;
 mod scope;
 mod types;
 
+#[cfg(any(test, feature = "native"))]
 pub(crate) use generator::generate_virtual_ts_with_offsets_and_checks;
 pub use generator::{generate_virtual_ts, generate_virtual_ts_with_offsets};
+#[cfg(any(test, feature = "native"))]
 pub(crate) use types::VirtualTsCheckOptions;
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping};
 

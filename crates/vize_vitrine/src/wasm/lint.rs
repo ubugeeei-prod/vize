@@ -81,6 +81,7 @@ const fn plugin_preset_name(preset: LintPreset) -> &'static str {
         LintPreset::Opinionated => "opinionated",
         LintPreset::Essential => "essential",
         LintPreset::Incremental => "incremental",
+        LintPreset::Ecosystem => "ecosystem",
         LintPreset::Nuxt => "nuxt",
     }
 }
