@@ -208,7 +208,7 @@ fn run_new(args: NewArgs) {
     // Create art directory structure
     let stories_dir = target_dir.join("stories");
     if let Err(e) = fs::create_dir_all(&stories_dir) {
-        eprintln!("Error creating stories directory: {}", e);
+        eprintln!("vize musea new: failed to create stories directory: {}", e);
         std::process::exit(1);
     }
 
@@ -243,7 +243,7 @@ import Button from '../src/Button.vue'
 "#;
 
     if let Err(e) = fs::write(&example_story, example_content) {
-        eprintln!("Error creating example story: {}", e);
+        eprintln!("vize musea new: failed to create example story: {}", e);
         std::process::exit(1);
     }
 
@@ -259,7 +259,7 @@ export default defineConfig({
 })
 "#;
         if let Err(e) = fs::write(&config_path, config_content) {
-            eprintln!("Error creating vize.config.ts: {}", e);
+            eprintln!("vize musea new: failed to create vize.config.ts: {}", e);
             std::process::exit(1);
         }
         eprintln!("  Created vize.config.ts");
