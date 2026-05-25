@@ -323,10 +323,13 @@ pub struct LspPosition {
 }
 
 impl LspEmitter {
-    /// Convert a LintResult to LSP diagnostics
+    /// Convert a LintResult to LSP diagnostics without source context.
     ///
-    /// Note: This performs a simple byte-offset to line/column conversion.
-    /// For accurate results, pass the source code to `to_lsp_diagnostics_with_source`.
+    /// This is a degraded variant that cannot resolve line/column from byte
+    /// offsets and therefore always reports `line: 0` with the raw byte offset
+    /// in `character`. Prefer [`Self::to_lsp_diagnostics_with_source`] whenever
+    /// the source text is available; the `Emitter<LintTransmission>` impl
+    /// already does so.
     pub fn to_lsp_diagnostics(result: &LintResult) -> Vec<LspDiagnostic> {
         result
             .diagnostics
@@ -435,7 +438,8 @@ impl Emitter<LintTransmission> for LspEmitter {
     }
 
     fn emit(&self, transmission: &LintTransmission) -> String {
-        let diagnostics = Self::to_lsp_diagnostics(&transmission.result);
+        let diagnostics =
+            Self::to_lsp_diagnostics_with_source(&transmission.result, &transmission.source);
         serde_json::to_string_pretty(&diagnostics)
             .unwrap_or_default()
             .into()
@@ -542,6 +546,34 @@ mod tests {
         let lsp_diagnostics = LspEmitter::to_lsp_diagnostics_with_source(&result, source);
         assert_eq!(lsp_diagnostics.len(), 1);
         assert_eq!(lsp_diagnostics[0].range.start.line, 2); // 0-indexed, third line
+    }
+
+    #[test]
+    fn test_lsp_emitter_emit_uses_source_for_line_column() {
+        use super::{Emitter, LintTransmission};
+
+        let source = "line1\nline2\nline3 v-for=\"item in items\"";
+        let result = LintResult {
+            filename: "test.vue".to_compact_string(),
+            diagnostics: vec![LintDiagnostic::error(
+                "vue/require-v-for-key",
+                "Missing key",
+                18, // Start of "v-for" on the third line
+                44,
+            )],
+            error_count: 1,
+            warning_count: 0,
+        };
+        let transmission = LintTransmission::new(result, source);
+
+        let json = LspEmitter.emit(&transmission);
+        // The emitter must convert the byte offset to a real (line, column),
+        // not the degraded `line: 0` fallback of `to_lsp_diagnostics`.
+        assert!(
+            json.contains("\"line\": 2"),
+            "expected emit() to report line 2, got: {json}"
+        );
+        assert!(!json.contains("\"character\": 18"));
     }
 
     #[test]
