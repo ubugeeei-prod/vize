@@ -15,6 +15,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = ecosystemProductsApp;
 
+function dropPlatformDependentDeprecationHints(parsed: any): any {
+  return {
+    ...parsed,
+    files: parsed.files.map((file: any) => ({
+      ...file,
+      diagnostics: file.diagnostics.filter((diagnostic: string) => {
+        return !/^hint:.* \[TS638[57]\] /.test(diagnostic);
+      }),
+    })),
+  };
+}
+
 describe(`${app.name} check (type checker)`, () => {
   before(requireVizeAndCorsaBins);
 
@@ -39,7 +51,7 @@ describe(`${app.name} check (type checker)`, () => {
       }
     }
 
-    const parsed = JSON.parse(stdout);
+    const parsed = dropPlatformDependentDeprecationHints(JSON.parse(stdout));
     console.log(`fileCount=${parsed.fileCount}, errorCount=${parsed.errorCount}`);
     assert.ok(parsed.fileCount > 0, "fileCount should be > 0");
 
