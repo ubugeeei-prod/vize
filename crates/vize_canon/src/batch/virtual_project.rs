@@ -29,6 +29,7 @@ use vize_carton::{
 };
 
 const AUTO_IMPORT_STUBS_FILE: &str = "__vize_auto_imports.d.ts";
+const VUE_MODULE_STUBS_FILE: &str = "__vize_vue_modules.d.ts";
 const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
     "baseUrl",
     "paths",
@@ -305,6 +306,11 @@ impl VirtualProject {
         )?;
 
         profile!(
+            "canon.project.write_vue_module_stubs",
+            self.write_vue_module_stubs()
+        )?;
+
+        profile!(
             "canon.project.write_tsconfig",
             self.write_tsconfig_file(&self.virtual_root.join("tsconfig.json"), None, false)
         )?;
@@ -504,6 +510,7 @@ impl VirtualProject {
         if !self.virtual_ts_options.auto_import_stubs.is_empty() {
             includes.push(AUTO_IMPORT_STUBS_FILE.into());
         }
+        includes.push(VUE_MODULE_STUBS_FILE.into());
         includes.sort();
         includes
     }
@@ -527,6 +534,21 @@ impl VirtualProject {
         }
 
         std::fs::write(self.virtual_root.join(AUTO_IMPORT_STUBS_FILE), content)?;
+        Ok(())
+    }
+
+    fn write_vue_module_stubs(&self) -> CorsaResult<()> {
+        let content = r#"declare module "*.vue" {
+  const component: import("vue").DefineComponent<any, any, any>;
+  export default component;
+}
+
+declare module "*.vue.ts" {
+  const component: import("vue").DefineComponent<any, any, any>;
+  export default component;
+}
+"#;
+        std::fs::write(self.virtual_root.join(VUE_MODULE_STUBS_FILE), content)?;
         Ok(())
     }
 
@@ -1145,6 +1167,26 @@ mod tests {
 
         assert_eq!(project.project_root(), case_dir.as_path());
         assert!(project.virtual_root().ends_with("node_modules/.vize/canon"));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn test_materialize_writes_vue_module_stubs() {
+        let case_dir = unique_case_dir("vue-module-stubs");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let main_path = src_dir.join("main.ts");
+        fs::write(&main_path, "import App from './App.vue';\nvoid App;\n").unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&main_path).unwrap();
+        project.materialize().unwrap();
+
+        let stubs =
+            fs::read_to_string(project.virtual_root().join("__vize_vue_modules.d.ts")).unwrap();
+        assert!(stubs.contains(r#"declare module "*.vue.ts""#));
 
         let _ = fs::remove_dir_all(&case_dir);
     }

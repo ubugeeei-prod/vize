@@ -565,9 +565,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Close setup function
     ts.push_str("}\n\n");
 
-    // Invoke setup (void suppresses TS2349 for async/generic functions)
+    // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
-    ts.push_str("void __setup();\n\n");
+    ts.push_str("__setup();\n\n");
 
     // Emits type
     let emits_already_defined = summary

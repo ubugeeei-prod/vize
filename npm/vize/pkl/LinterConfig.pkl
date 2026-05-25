@@ -5,9 +5,14 @@ typealias RuleSeverity = "off"|"warn"|"error"
 
 typealias RuleCategory = "correctness"|"suspicious"|"style"|"perf"|"a11y"|"security"
 
+typealias LintPreset = "happy-path"|"opinionated"|"essential"|"incremental"|"ecosystem"|"nuxt"
+
 class LinterConfig {
   /// Enable linting.
   enabled: Boolean = true
+
+  /// Built-in lint preset.
+  preset: LintPreset = "ecosystem"
 
   /// Rules to enable/disable.
   rules: Mapping<String, RuleSeverity> = new Mapping {}

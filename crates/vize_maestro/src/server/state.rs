@@ -60,7 +60,7 @@ struct LspConfigSection {
 impl LspConfigSection {
     fn apply_to(self, features: &mut LspFeatureConfig) {
         if self.enabled == Some(false) {
-            *features = LspFeatureConfig::default();
+            *features = LspFeatureConfig::disabled();
             return;
         }
 
@@ -146,7 +146,7 @@ impl From<LanguageServerConfig> for LspConfigSection {
             lint: config.lint,
             typecheck: config.typecheck,
             editor: config.editor,
-            ecosystem: None,
+            ecosystem: config.ecosystem,
             completion: config.completion,
             hover: config.hover,
             definition: config.definition,
@@ -170,11 +170,9 @@ impl From<LanguageServerConfig> for LspConfigSection {
 
 /// Feature switches for Maestro LSP capabilities.
 ///
-/// Everything defaults to off so editor integrations can opt in incrementally:
-/// lint diagnostics first, type checking second, and editor navigation/completion
-/// features only when a workspace is ready for Vize to overlap with other Vue
-/// language tooling.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+/// Non-opinionated diagnostics and editor features default to on. Formatting stays
+/// opt-in because it encodes style preferences and can overlap with project formatters.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LspFeatureConfig {
     pub(crate) lint: bool,
     pub(crate) typecheck: bool,
@@ -197,6 +195,29 @@ pub struct LspFeatureConfig {
 }
 
 impl LspFeatureConfig {
+    fn disabled() -> Self {
+        Self {
+            lint: false,
+            typecheck: false,
+            ecosystem: false,
+            completion: false,
+            hover: false,
+            definition: false,
+            references: false,
+            document_symbols: false,
+            workspace_symbols: false,
+            code_actions: false,
+            rename: false,
+            formatting: false,
+            code_lens: false,
+            semantic_tokens: false,
+            document_links: false,
+            folding_ranges: false,
+            inlay_hints: false,
+            file_rename: false,
+        }
+    }
+
     pub(crate) fn has_diagnostics(self) -> bool {
         self.lint || self.typecheck || self.ecosystem
     }
@@ -216,6 +237,31 @@ impl LspFeatureConfig {
         self.folding_ranges = enabled;
         self.inlay_hints = enabled;
         self.file_rename = enabled;
+    }
+}
+
+impl Default for LspFeatureConfig {
+    fn default() -> Self {
+        Self {
+            lint: true,
+            typecheck: true,
+            ecosystem: true,
+            completion: true,
+            hover: true,
+            definition: true,
+            references: true,
+            document_symbols: true,
+            workspace_symbols: true,
+            code_actions: true,
+            rename: true,
+            formatting: false,
+            code_lens: true,
+            semantic_tokens: true,
+            document_links: true,
+            folding_ranges: true,
+            inlay_hints: true,
+            file_rename: true,
+        }
     }
 }
 
@@ -320,12 +366,13 @@ impl Default for ServerState {
 impl ServerState {
     /// Create a new server state.
     pub fn new() -> Self {
+        let default_features = LspFeatureConfig::default();
         Self {
             documents: DocumentStore::new(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
-            lsp_features: RwLock::new(LspFeatureConfig::default()),
-            lsp_typecheck_enabled: AtomicBool::new(false),
+            lsp_features: RwLock::new(default_features),
+            lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new(TypeCheckerConfig::default()),
             linter_config: RwLock::new(LinterConfig::default()),
             #[cfg(feature = "glyph")]
@@ -916,11 +963,17 @@ mod tests {
     }
 
     #[test]
-    fn lsp_features_are_opt_in_by_default() {
+    fn lsp_features_enable_non_opinionated_defaults() {
         let state = ServerState::new();
-        assert_eq!(state.lsp_features(), super::LspFeatureConfig::default());
-        assert!(!state.is_lsp_lint_enabled());
-        assert!(!state.is_lsp_typecheck_enabled());
+        let features = state.lsp_features();
+        assert!(features.lint);
+        assert!(features.typecheck);
+        assert!(features.ecosystem);
+        assert!(features.completion);
+        assert!(features.code_actions);
+        assert!(!features.formatting);
+        assert!(state.is_lsp_lint_enabled());
+        assert!(state.is_lsp_typecheck_enabled());
     }
 
     #[test]
@@ -1027,7 +1080,7 @@ mod tests {
         assert!(features.code_actions);
         assert!(features.definition);
         assert!(features.ecosystem);
-        assert!(!features.typecheck);
+        assert!(features.typecheck);
     }
 
     #[test]

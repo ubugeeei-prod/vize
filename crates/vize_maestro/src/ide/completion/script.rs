@@ -12,6 +12,7 @@ use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, Documentation, MarkupContent,
     MarkupKind,
 };
+use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 use vize_relief::BindingType;
 
@@ -20,6 +21,12 @@ use crate::ide::IdeContext;
 
 /// Get completions for script context.
 pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<CompletionItem> {
+    if let Some(items) = complete_member_access(ctx, is_setup)
+        && !items.is_empty()
+    {
+        return items;
+    }
+
     let mut items_vec = Vec::new();
 
     // Add Vue Composition API
@@ -126,6 +133,267 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
     }
 
     items_vec
+}
+
+fn complete_member_access(ctx: &IdeContext, is_setup: bool) -> Option<Vec<CompletionItem>> {
+    let receiver = member_access_receiver(&ctx.content, ctx.offset)?;
+    let script_content = script_content_for_context(ctx, is_setup)?;
+    let kind = reactive_kind_for_name(&script_content, receiver)?;
+
+    if !kind.needs_value_access() {
+        return None;
+    }
+
+    let value_type = infer_reactive_value_type(&script_content, receiver, kind)
+        .unwrap_or_else(|| "unknown".to_string());
+    let readonly = kind == ReactiveKind::Computed;
+
+    Some(vec![value_completion_item(&value_type, readonly)])
+}
+
+fn script_content_for_context(ctx: &IdeContext<'_>, is_setup: bool) -> Option<String> {
+    let options = vize_atelier_sfc::SfcParseOptions {
+        filename: ctx.uri.path().to_string().into(),
+        ..Default::default()
+    };
+
+    let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+    if is_setup {
+        descriptor
+            .script_setup
+            .map(|script| script.content.into_owned())
+    } else {
+        descriptor.script.map(|script| script.content.into_owned())
+    }
+}
+
+fn member_access_receiver(content: &str, offset: usize) -> Option<&str> {
+    let before = &content[..offset.min(content.len())];
+    let before = before.trim_end();
+    let receiver_end = before.strip_suffix('.')?.len();
+    let mut receiver_start = receiver_end;
+
+    while receiver_start > 0 {
+        let byte = before.as_bytes()[receiver_start - 1];
+        if is_ident_byte(byte) {
+            receiver_start -= 1;
+        } else {
+            break;
+        }
+    }
+
+    if receiver_start == receiver_end {
+        return None;
+    }
+
+    Some(&before[receiver_start..receiver_end])
+}
+
+#[inline]
+fn is_ident_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+}
+
+fn reactive_kind_for_name(script_content: &str, name: &str) -> Option<ReactiveKind> {
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions {
+        analyze_script: true,
+        ..Default::default()
+    });
+    analyzer.analyze_script_setup(script_content);
+    let croquis = analyzer.finish();
+
+    if let Some(source) = croquis.reactivity.lookup(name) {
+        return Some(source.kind);
+    }
+
+    infer_reactive_kind_from_source(script_content, name)
+}
+
+fn infer_reactive_kind_from_source(script_content: &str, name: &str) -> Option<ReactiveKind> {
+    let declaration_starts = [
+        format!("const {name} = "),
+        format!("let {name} = "),
+        format!("var {name} = "),
+    ];
+
+    for declaration_start in declaration_starts {
+        let Some(start) = script_content.find(declaration_start.as_str()) else {
+            continue;
+        };
+        let initializer = script_content[start + declaration_start.len()..].trim_start();
+        let callee = initializer
+            .split_once('(')
+            .map(|(callee, _)| callee.trim())
+            .unwrap_or(initializer);
+
+        if let Some(kind) = ReactiveKind::from_name(callee) {
+            return Some(kind);
+        }
+    }
+
+    None
+}
+
+fn infer_reactive_value_type(
+    script_content: &str,
+    name: &str,
+    kind: ReactiveKind,
+) -> Option<String> {
+    let wrapper = match kind {
+        ReactiveKind::Computed => "ComputedRef",
+        ReactiveKind::Ref | ReactiveKind::ShallowRef | ReactiveKind::ToRef => "Ref",
+        _ => return None,
+    };
+
+    let patterns = [
+        format!(
+            "const {name} = {callee}<",
+            callee = reactive_kind_callee(kind)
+        ),
+        format!(
+            "let {name} = {callee}<",
+            callee = reactive_kind_callee(kind)
+        ),
+    ];
+    for pattern in patterns {
+        if let Some(pos) = script_content.find(pattern.as_str()) {
+            let after = &script_content[pos + pattern.len()..];
+            if let Some(end) = find_matching_angle(after) {
+                return Some(after[..end].trim().to_string());
+            }
+        }
+    }
+
+    let patterns = [
+        format!(
+            "const {name} = {callee}(",
+            callee = reactive_kind_callee(kind)
+        ),
+        format!(
+            "let {name} = {callee}(",
+            callee = reactive_kind_callee(kind)
+        ),
+    ];
+    for pattern in patterns {
+        if let Some(pos) = script_content.find(pattern.as_str()) {
+            let after = &script_content[pos + pattern.len()..];
+            return infer_value_type_from_initializer(after, wrapper);
+        }
+    }
+
+    None
+}
+
+fn reactive_kind_callee(kind: ReactiveKind) -> &'static str {
+    match kind {
+        ReactiveKind::Computed => "computed",
+        ReactiveKind::ShallowRef => "shallowRef",
+        ReactiveKind::ToRef => "toRef",
+        _ => "ref",
+    }
+}
+
+fn find_matching_angle(s: &str) -> Option<usize> {
+    let mut depth = 1;
+    for (i, c) in s.chars().enumerate() {
+        match c {
+            '<' => depth += 1,
+            '>' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(i);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn infer_value_type_from_initializer(initializer: &str, wrapper: &str) -> Option<String> {
+    let initializer = initializer.trim_start();
+    if wrapper == "ComputedRef"
+        && let Some(body) = extract_arrow_body(initializer)
+    {
+        return infer_expression_type(body);
+    }
+
+    infer_expression_type(initializer)
+}
+
+fn extract_arrow_body(initializer: &str) -> Option<&str> {
+    let arrow = initializer.find("=>")?;
+    let body = initializer[arrow + 2..].trim_start();
+
+    if let Some(body) = body.strip_prefix('{')
+        && let Some(return_pos) = body.find("return")
+    {
+        let returned = body[return_pos + "return".len()..].trim_start();
+        let end = returned.find([';', '}']).unwrap_or(returned.len());
+        return Some(returned[..end].trim());
+    }
+
+    let end = body.find(['\n', ';']).unwrap_or(body.len());
+    Some(body[..end].trim().trim_end_matches(')').trim())
+}
+
+fn infer_expression_type(expression: &str) -> Option<String> {
+    let expression = expression.trim();
+
+    if expression.starts_with('"') || expression.starts_with('\'') || expression.starts_with('`') {
+        return Some("string".to_string());
+    }
+    if expression.starts_with("true") || expression.starts_with("false") {
+        return Some("boolean".to_string());
+    }
+    if expression.starts_with(|c: char| c.is_ascii_digit() || c == '-') {
+        return Some("number".to_string());
+    }
+    if expression.contains(".toUpperCase(")
+        || expression.contains(".toLowerCase(")
+        || expression.contains(".trim(")
+    {
+        return Some("string".to_string());
+    }
+    if expression.contains("===")
+        || expression.contains("!==")
+        || expression.contains(">=")
+        || expression.contains("<=")
+        || expression.contains(" > ")
+        || expression.contains(" < ")
+    {
+        return Some("boolean".to_string());
+    }
+    if expression.contains('*') || expression.contains('/') || expression.contains(" - ") {
+        return Some("number".to_string());
+    }
+
+    None
+}
+
+#[allow(clippy::disallowed_macros)]
+fn value_completion_item(value_type: &str, readonly: bool) -> CompletionItem {
+    CompletionItem {
+        label: "value".to_string(),
+        kind: Some(CompletionItemKind::PROPERTY),
+        detail: Some(if readonly {
+            format!("readonly value: {value_type}")
+        } else {
+            format!("value: {value_type}")
+        }),
+        documentation: Some(Documentation::MarkupContent(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: if readonly {
+                format!(
+                    "Readonly computed value.\n\n```typescript\nreadonly value: {value_type}\n```"
+                )
+            } else {
+                format!("Inner ref value.\n\n```typescript\nvalue: {value_type}\n```")
+            },
+        })),
+        sort_text: Some("0value".to_string()),
+        ..Default::default()
+    }
 }
 
 /// Vue Composition API completions.

@@ -71,7 +71,7 @@ pub fn run(args: ReadyArgs) {
         max_warnings: None,
         quiet: false,
         help_level: "full".into(),
-        preset: "happy-path".into(),
+        preset: "ecosystem".into(),
         cross_file: false,
         cross_file_tree: false,
         strict_reactivity: false,

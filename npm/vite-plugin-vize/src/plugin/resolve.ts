@@ -287,12 +287,13 @@ export async function resolveIdHook(
 
   // Skip all virtual module IDs
   if (id.startsWith("\0")) {
-    // This is one of our .vue.ts virtual modules -- pass through
+    // This is one of our .vue.ts virtual modules. Return the ID so Rolldown/Rollup
+    // treats imports of Vize virtual modules from other virtual modules as resolved.
     if (request.isVizeVirtual) {
       if (isSsrRequest && !request.isVizeSsrVirtual && request.vizeVirtualPath) {
-        return toVirtualId(request.vizeVirtualPath, true);
+        return `${toVirtualId(request.vizeVirtualPath, true)}${request.querySuffix}`;
       }
-      return null;
+      return id;
     }
     // Legacy: handle old \0vize: prefixed non-vue files
     if (id.startsWith(LEGACY_VIZE_PREFIX)) {

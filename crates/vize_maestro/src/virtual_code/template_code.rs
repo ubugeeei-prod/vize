@@ -181,11 +181,12 @@ impl TemplateCodeGenerator {
         let var_name = cstr!("__VIZE_{}", self.expr_counter);
         self.expr_counter += 1;
 
-        // Generate TypeScript: const __VIZE_N = __VIZE_ctx.expr;
-        let line = cstr!("const {var_name} = __VIZE_ctx.{};\n", expr.content);
+        let (generated_expr, mapping_prefix_len) = generate_template_expression(&expr.content);
+        let line = cstr!("const {var_name} = {generated_expr};\n");
 
         // Calculate positions
-        let expr_start_in_line = cstr!("const {var_name} = __VIZE_ctx.").len() as u32;
+        let expr_start_in_line =
+            cstr!("const {var_name} = ").len() as u32 + mapping_prefix_len as u32;
         let gen_start = self.gen_offset + expr_start_in_line;
         let gen_end = gen_start + expr.content.len() as u32;
 
@@ -224,6 +225,41 @@ impl Default for TemplateCodeGenerator {
     fn default() -> Self {
         Self::new()
     }
+}
+
+fn generate_template_expression(content: &str) -> (String, usize) {
+    if is_template_context_path(content) {
+        let prefix = "__VIZE_ctx.";
+        (cstr!("{prefix}{content}").to_string(), prefix.len())
+    } else {
+        (content.to_string(), 0)
+    }
+}
+
+fn is_template_context_path(content: &str) -> bool {
+    if content.is_empty() || is_reserved_expression(content) {
+        return false;
+    }
+
+    content.split('.').all(is_valid_identifier)
+}
+
+fn is_reserved_expression(content: &str) -> bool {
+    matches!(
+        content,
+        "true" | "false" | "null" | "undefined" | "this" | "NaN" | "Infinity"
+    )
+}
+
+fn is_valid_identifier(s: &str) -> bool {
+    let mut chars = s.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !matches!(first, 'a'..='z' | 'A'..='Z' | '_' | '$') {
+        return false;
+    }
+    chars.all(|ch| matches!(ch, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '$'))
 }
 
 /// Extract expressions from a template for quick analysis.
@@ -410,5 +446,21 @@ mod tests {
         let doc = generator.generate(&ast, source);
 
         insta::assert_snapshot!(doc.content.as_str());
+    }
+
+    #[test]
+    fn test_event_arrow_expression_is_not_prefixed_as_member() {
+        let source = r#"<button @click="() => { count++ }">{{ count }}</button>"#;
+        let allocator = vize_carton::Bump::new();
+        let (ast, _) = vize_armature::parse(&allocator, source);
+
+        let mut generator = TemplateCodeGenerator::new();
+        let doc = generator.generate(&ast, source);
+
+        assert!(
+            doc.content
+                .contains("const __VIZE_0 = () => { count++ };\n")
+        );
+        assert!(!doc.content.contains("__VIZE_ctx.() =>"));
     }
 }

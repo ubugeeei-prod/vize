@@ -69,8 +69,8 @@ pub struct LintArgs {
     #[arg(long, default_value = "full")]
     pub help_level: String,
 
-    /// Lint preset: happy-path (default), opinionated, essential, incremental, ecosystem, nuxt
-    #[arg(long, default_value = "happy-path")]
+    /// Lint preset: ecosystem (default), happy-path, opinionated, essential, incremental, nuxt
+    #[arg(long, default_value = "ecosystem")]
     pub preset: String,
 
     /// Enable opt-in cross-file lint checks for provide/inject, reactivity flow, and race risks.

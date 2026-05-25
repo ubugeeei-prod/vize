@@ -265,6 +265,66 @@ impl HoverService {
             return Some("undefined".to_string());
         }
 
+        // Computed getters: `computed(() => count.value * 2)`.
+        if let Some(body) = Self::extract_arrow_function_body(arg_str)
+            && let Some(return_type) = Self::infer_type_from_expression(body)
+        {
+            return Some(return_type);
+        }
+
+        None
+    }
+
+    fn extract_arrow_function_body(arg_str: &str) -> Option<&str> {
+        let arrow = arg_str.find("=>")?;
+        let body = arg_str[arrow + 2..].trim_start();
+
+        if let Some(body) = body.strip_prefix('{')
+            && let Some(return_pos) = body.find("return")
+        {
+            let returned = body[return_pos + "return".len()..].trim_start();
+            let end = returned.find([';', '}']).unwrap_or(returned.len());
+            return Some(returned[..end].trim());
+        }
+
+        let end = body.find(['\n', ';']).unwrap_or(body.len());
+        Some(body[..end].trim().trim_end_matches(')').trim())
+    }
+
+    fn infer_type_from_expression(expression: &str) -> Option<String> {
+        let expression = expression.trim();
+
+        if expression.starts_with('"')
+            || expression.starts_with('\'')
+            || expression.starts_with('`')
+        {
+            return Some("string".to_string());
+        }
+        if expression.starts_with("true") || expression.starts_with("false") {
+            return Some("boolean".to_string());
+        }
+        if expression.starts_with(|c: char| c.is_ascii_digit() || c == '-') {
+            return Some("number".to_string());
+        }
+        if expression.contains(".toUpperCase(")
+            || expression.contains(".toLowerCase(")
+            || expression.contains(".trim(")
+        {
+            return Some("string".to_string());
+        }
+        if expression.contains("===")
+            || expression.contains("!==")
+            || expression.contains(">=")
+            || expression.contains("<=")
+            || expression.contains(" > ")
+            || expression.contains(" < ")
+        {
+            return Some("boolean".to_string());
+        }
+        if expression.contains('*') || expression.contains('/') || expression.contains(" - ") {
+            return Some("number".to_string());
+        }
+
         None
     }
 
@@ -558,6 +618,25 @@ const message = ref('hello')
 
         assert!(value.contains("message"));
         assert!(value.contains("Ref<string>"));
+    }
+
+    #[test]
+    fn test_hover_infers_computed_getter_return_type() {
+        let source = r#"<script setup lang="ts">
+const count = ref(0)
+const double = computed(() => count.value * 2)
+</script>
+"#;
+        let (state, uri) = state_with_document("ComputedHover.vue", source);
+
+        let offset = source.rfind("double").unwrap() + "double".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let hover = HoverService::hover(&ctx).unwrap();
+        let value = hover_markdown(hover);
+
+        assert!(value.contains("double"));
+        assert!(value.contains("ComputedRef<number>"));
+        assert!(!value.contains("ComputedRef<unknown>"));
     }
 
     #[test]

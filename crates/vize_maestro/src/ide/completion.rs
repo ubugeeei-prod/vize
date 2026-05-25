@@ -259,6 +259,25 @@ const message = ref('hello')
     }
 
     #[test]
+    fn test_script_ref_member_completion_includes_value() {
+        let source = r#"<script setup lang="ts">
+import { ref, computed } from 'vue'
+
+const count = ref(0)
+const double = computed(() => count.value * 2)
+
+count.
+</script>
+"#;
+        let (state, uri) = state_with_document("ScriptRefMemberCompletion.vue", source);
+        let offset = source.find("count.").unwrap() + "count.".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert_eq!(labels, vec!["value"]);
+    }
+
+    #[test]
     fn test_template_completion_skips_bindings_in_static_attribute_value() {
         let source = r#"<script setup lang="ts">
 const message = ref('hello')

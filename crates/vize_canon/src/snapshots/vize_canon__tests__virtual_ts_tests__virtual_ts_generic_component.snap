@@ -123,7 +123,7 @@ function __setup<T extends string | number>() {
 }
 
 // Invoke setup to verify types
-void __setup();
+__setup();
 
 export type Emits = {};
 export type Slots = {};

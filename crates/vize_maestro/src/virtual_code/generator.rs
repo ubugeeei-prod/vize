@@ -10,6 +10,8 @@ use vize_carton::cstr;
 use super::{
     ScriptCodeGenerator, StyleCodeGenerator, TemplateCodeGenerator, VirtualDocument,
     VirtualDocuments, VirtualLanguage,
+    script_code::extract_simple_bindings,
+    template_code::{TemplateExpression, extract_expressions},
 };
 
 /// Virtual code generator for SFC files.
@@ -52,11 +54,13 @@ impl VirtualCodeGenerator {
         let mut docs = VirtualDocuments::new();
 
         // Generate template virtual code
+        let mut template_expressions = Vec::new();
         if let Some(ref template) = descriptor.template {
             let template_content = template.content.as_ref();
 
             // Parse template with arena allocation
             let (ast, _errors) = vize_armature::parse(&allocator, template_content);
+            template_expressions = extract_expressions(&ast);
 
             // Set block offset for source mapping
             self.template_gen
@@ -78,7 +82,11 @@ impl VirtualCodeGenerator {
 
         // Generate script setup virtual code
         if let Some(ref script_setup) = descriptor.script_setup {
-            let mut script_doc = self.script_gen.generate(script_setup, true);
+            let template_bindings =
+                template_used_script_bindings(script_setup.content.as_ref(), &template_expressions);
+            let mut script_doc =
+                self.script_gen
+                    .generate_with_exports(script_setup, true, &template_bindings);
             script_doc.uri = cstr!("{base_uri}.__script_setup.ts").to_string();
             docs.script_setup = Some(script_doc);
         }
@@ -109,11 +117,13 @@ impl VirtualCodeGenerator {
         let mut docs = VirtualDocuments::new();
 
         // Generate template virtual code
+        let mut template_expressions = Vec::new();
         if let Some(ref template) = descriptor.template {
             let template_content = template.content.as_ref();
 
             // Parse template with provided allocator
             let (ast, _errors) = vize_armature::parse(allocator, template_content);
+            template_expressions = extract_expressions(&ast);
 
             self.template_gen
                 .set_block_offset(template.loc.start as u32);
@@ -132,7 +142,11 @@ impl VirtualCodeGenerator {
 
         // Generate script setup virtual code
         if let Some(ref script_setup) = descriptor.script_setup {
-            let mut script_doc = self.script_gen.generate(script_setup, true);
+            let template_bindings =
+                template_used_script_bindings(script_setup.content.as_ref(), &template_expressions);
+            let mut script_doc =
+                self.script_gen
+                    .generate_with_exports(script_setup, true, &template_bindings);
             script_doc.uri = cstr!("{base_uri}.__script_setup.ts").to_string();
             docs.script_setup = Some(script_doc);
         }
@@ -167,6 +181,120 @@ impl Default for VirtualCodeGenerator {
     fn default() -> Self {
         Self::new()
     }
+}
+
+fn template_used_script_bindings(
+    script_content: &str,
+    expressions: &[TemplateExpression],
+) -> Vec<String> {
+    let script_bindings = extract_simple_bindings(script_content, true)
+        .into_iter()
+        .collect::<std::collections::BTreeSet<_>>();
+    if script_bindings.is_empty() {
+        return Vec::new();
+    }
+
+    let mut used = std::collections::BTreeSet::new();
+    for expression in expressions {
+        collect_expression_identifiers(&expression.text, &script_bindings, &mut used);
+    }
+
+    used.into_iter().collect()
+}
+
+fn collect_expression_identifiers(
+    expression: &str,
+    script_bindings: &std::collections::BTreeSet<String>,
+    used: &mut std::collections::BTreeSet<String>,
+) {
+    let bytes = expression.as_bytes();
+    let mut index = 0usize;
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if !is_identifier_start(byte) {
+            index += 1;
+            continue;
+        }
+
+        let start = index;
+        index += 1;
+        while index < bytes.len() && is_identifier_continue(bytes[index]) {
+            index += 1;
+        }
+
+        if is_property_access(expression, start) {
+            continue;
+        }
+
+        let name = &expression[start..index];
+        if !is_js_keyword(name) && script_bindings.contains(name) {
+            used.insert(name.to_string());
+        }
+    }
+}
+
+#[inline]
+fn is_identifier_start(byte: u8) -> bool {
+    byte.is_ascii_alphabetic() || byte == b'_' || byte == b'$'
+}
+
+#[inline]
+fn is_identifier_continue(byte: u8) -> bool {
+    is_identifier_start(byte) || byte.is_ascii_digit()
+}
+
+fn is_property_access(expression: &str, start: usize) -> bool {
+    expression[..start]
+        .as_bytes()
+        .iter()
+        .rev()
+        .find(|byte| !byte.is_ascii_whitespace())
+        .is_some_and(|byte| *byte == b'.')
+}
+
+fn is_js_keyword(name: &str) -> bool {
+    matches!(
+        name,
+        "as" | "async"
+            | "await"
+            | "break"
+            | "case"
+            | "catch"
+            | "class"
+            | "const"
+            | "continue"
+            | "default"
+            | "delete"
+            | "do"
+            | "else"
+            | "export"
+            | "extends"
+            | "false"
+            | "finally"
+            | "for"
+            | "from"
+            | "function"
+            | "if"
+            | "import"
+            | "in"
+            | "instanceof"
+            | "let"
+            | "new"
+            | "null"
+            | "return"
+            | "switch"
+            | "this"
+            | "throw"
+            | "true"
+            | "try"
+            | "typeof"
+            | "undefined"
+            | "var"
+            | "void"
+            | "while"
+            | "with"
+            | "yield"
+    )
 }
 
 /// Batch generator for processing multiple SFC files efficiently.
@@ -444,6 +572,39 @@ const message = ref('hello')
         let template = docs.template.unwrap();
         assert!(!template.source_map.is_empty());
         insta::assert_snapshot!(template.content.as_str());
+    }
+
+    #[test]
+    fn test_script_setup_exports_template_used_bindings() {
+        let source = r#"<script setup lang="ts">
+const count = ref(0)
+function handleClick() {
+  count.value++
+}
+const double = computed(() => count.value * 2)
+const unused = 1
+</script>
+
+<template>
+  <button @click="handleClick">{{ count }}</button>
+  <p>{{ double }}</p>
+</template>"#;
+
+        let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+        let mut generator = VirtualCodeGenerator::new();
+        let docs = generator.generate(&descriptor, "test.vue");
+        let script_setup = docs.script_setup.unwrap();
+
+        assert!(
+            script_setup
+                .content
+                .contains("export { count, double, handleClick };")
+        );
+        assert!(
+            !script_setup
+                .content
+                .contains("export { count, double, handleClick, unused };")
+        );
     }
 
     #[test]

@@ -547,6 +547,38 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
+  const projectRoot = createTempProject("nuxt-component-query-virtual-import");
+  const source = path.join(
+    projectRoot,
+    "node_modules",
+    "@nuxtjs",
+    "mdc",
+    "dist",
+    "runtime",
+    "components",
+    "prose",
+    "ProseH2.vue",
+  );
+  writeFixtureFile(source, "<template><h2 /></template>");
+
+  const query = "?nuxt_component=async&nuxt_component_name=ProseH2&nuxt_component_export=default";
+  const virtualId = toVirtualId(source);
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    virtualId,
+    `${virtualId}${query}`,
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    virtualId,
+    "Vize virtual Vue imports emitted from Nuxt component query modules should stay resolved",
+  );
+}
+
+{
   const projectRoot = createTempProject("vue-raw-query");
   const source = path.join(projectRoot, "app", "components", "Raw.vue");
   writeFixtureFile(source, "<template><div /></template>");

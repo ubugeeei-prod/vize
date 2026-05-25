@@ -39,16 +39,15 @@ fn test_lint_template_uses_semantic_analysis_for_unused_v_for_vars() {
 }
 
 #[test]
-fn test_ecosystem_template_rules_are_opt_in() {
+fn test_ecosystem_template_rules_are_enabled_by_default() {
     let source = r#"<template><RouterLink>Home</RouterLink></template>"#;
 
-    let default_result = Linter::new().lint_sfc(source, "test.vue");
-    assert_eq!(default_result.error_count, 0);
-    assert_eq!(default_result.warning_count, 0);
+    let happy_path = Linter::with_preset(LintPreset::HappyPath);
+    let happy_path_result = happy_path.lint_sfc(source, "test.vue");
+    assert_eq!(happy_path_result.error_count, 0);
+    assert_eq!(happy_path_result.warning_count, 0);
 
-    let opt_in =
-        Linter::new().with_enabled_rules(Some(vec!["ecosystem/router-link-require-to".into()]));
-    let result = opt_in.lint_sfc(source, "test.vue");
+    let result = Linter::new().lint_sfc(source, "test.vue");
     assert_eq!(result.error_count, 1);
     assert_eq!(
         result.diagnostics[0].rule_name,
@@ -57,18 +56,17 @@ fn test_ecosystem_template_rules_are_opt_in() {
 }
 
 #[test]
-fn test_ecosystem_script_rules_are_opt_in() {
+fn test_ecosystem_script_rules_are_enabled_by_default() {
     let source = r#"<script setup lang="ts">
 router.push('/settings')
 </script>"#;
 
-    let default_result = Linter::new().lint_sfc(source, "test.vue");
-    assert_eq!(default_result.error_count, 0);
-    assert_eq!(default_result.warning_count, 0);
+    let happy_path = Linter::with_preset(LintPreset::HappyPath);
+    let happy_path_result = happy_path.lint_sfc(source, "test.vue");
+    assert_eq!(happy_path_result.error_count, 0);
+    assert_eq!(happy_path_result.warning_count, 0);
 
-    let opt_in = Linter::new()
-        .with_enabled_rules(Some(vec!["ecosystem/vue-router-prefer-named-push".into()]));
-    let result = opt_in.lint_sfc(source, "test.vue");
+    let result = Linter::new().lint_sfc(source, "test.vue");
     assert_eq!(result.warning_count, 1);
     assert_eq!(
         result.diagnostics[0].rule_name,

@@ -183,12 +183,15 @@ pub fn extract_simple_bindings(content: &str, is_setup: bool) -> Vec<String> {
 
     if is_setup {
         // In script setup, top-level bindings are exposed
-        // Look for: const x, let x, function x, import { x }
+        // Look for: const x, let x, function x, import Foo, import { x }
         for line in content.lines() {
             let trimmed = line.trim();
 
+            if trimmed.starts_with("import ") {
+                extract_import_bindings(trimmed, &mut bindings);
+            }
             // const/let declarations
-            if trimmed.starts_with("const ") || trimmed.starts_with("let ") {
+            else if trimmed.starts_with("const ") || trimmed.starts_with("let ") {
                 if let Some(rest) = trimmed
                     .strip_prefix("const ")
                     .or_else(|| trimmed.strip_prefix("let "))
@@ -240,6 +243,66 @@ pub fn extract_simple_bindings(content: &str, is_setup: bool) -> Vec<String> {
     }
 
     bindings
+}
+
+fn extract_import_bindings(line: &str, bindings: &mut Vec<String>) {
+    let Some(rest) = line.strip_prefix("import ") else {
+        return;
+    };
+    if rest.starts_with("type ") || rest.starts_with('"') || rest.starts_with('\'') {
+        return;
+    }
+
+    let before_from = rest.split(" from ").next().unwrap_or(rest).trim();
+    if before_from.starts_with('{') {
+        extract_named_import_bindings(before_from, bindings);
+        return;
+    }
+
+    if let Some((default_name, named)) = before_from.split_once(',') {
+        let default_name = default_name.trim();
+        if is_valid_identifier(default_name) {
+            bindings.push(default_name.to_string());
+        }
+        extract_named_import_bindings(named.trim(), bindings);
+        return;
+    }
+
+    if before_from.starts_with("* as ") {
+        let name = before_from.trim_start_matches("* as ").trim();
+        if is_valid_identifier(name) {
+            bindings.push(name.to_string());
+        }
+        return;
+    }
+
+    if is_valid_identifier(before_from) {
+        bindings.push(before_from.to_string());
+    }
+}
+
+fn extract_named_import_bindings(specifiers: &str, bindings: &mut Vec<String>) {
+    let Some(inner) = specifiers
+        .trim()
+        .strip_prefix('{')
+        .and_then(|value| value.strip_suffix('}'))
+    else {
+        return;
+    };
+
+    for part in inner.split(',') {
+        let part = part.trim();
+        if part.is_empty() {
+            continue;
+        }
+        let local = part
+            .split_once(" as ")
+            .map(|(_, local)| local.trim())
+            .unwrap_or(part);
+        if is_valid_identifier(local) {
+            bindings.push(local.to_string());
+        }
+    }
 }
 
 /// Check if a string is a valid JavaScript identifier.

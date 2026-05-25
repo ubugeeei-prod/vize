@@ -687,26 +687,26 @@ function getInitializationOptions(
 ): LspInitializationOptions {
   const options: LspInitializationOptions = {};
 
-  setIfEnabled(options, "lint", config.get<boolean>("lint.enable", false));
-  setIfEnabled(options, "lint", config.get<boolean>("diagnostics.enable", false));
-  setIfEnabled(options, "typecheck", config.get<boolean>("typecheck.enable", false));
-  setIfEnabled(options, "editor", config.get<boolean>("editor.enable", false));
-  setIfEnabled(options, "ecosystem", config.get<boolean>("ecosystem.enable", false));
-  setIfEnabled(options, "completion", config.get<boolean>("completion.enable", false));
-  setIfEnabled(options, "hover", config.get<boolean>("hover.enable", false));
-  setIfEnabled(options, "definition", config.get<boolean>("definition.enable", false));
-  setIfEnabled(options, "references", config.get<boolean>("references.enable", false));
-  setIfEnabled(options, "documentSymbols", config.get<boolean>("documentSymbols.enable", false));
-  setIfEnabled(options, "workspaceSymbols", config.get<boolean>("workspaceSymbols.enable", false));
-  setIfEnabled(options, "codeActions", config.get<boolean>("codeActions.enable", false));
-  setIfEnabled(options, "rename", config.get<boolean>("rename.enable", false));
-  setIfEnabled(options, "codeLens", config.get<boolean>("codeLens.enable", false));
-  setIfEnabled(options, "formatting", config.get<boolean>("formatting.enable", false));
-  setIfEnabled(options, "semanticTokens", config.get<boolean>("semanticTokens.enable", false));
-  setIfEnabled(options, "documentLinks", config.get<boolean>("documentLinks.enable", false));
-  setIfEnabled(options, "foldingRanges", config.get<boolean>("foldingRanges.enable", false));
-  setIfEnabled(options, "inlayHints", config.get<boolean>("inlayHints.enable", false));
-  setIfEnabled(options, "fileRename", config.get<boolean>("fileRename.enable", false));
+  setFeatureOption(options, config, "lint.enable", "lint", true);
+  setDiagnosticsAliasOption(options, config);
+  setFeatureOption(options, config, "typecheck.enable", "typecheck", true);
+  setFeatureOption(options, config, "editor.enable", "editor", true);
+  setFeatureOption(options, config, "ecosystem.enable", "ecosystem", true);
+  setFeatureOption(options, config, "completion.enable", "completion", true);
+  setFeatureOption(options, config, "hover.enable", "hover", true);
+  setFeatureOption(options, config, "definition.enable", "definition", true);
+  setFeatureOption(options, config, "references.enable", "references", true);
+  setFeatureOption(options, config, "documentSymbols.enable", "documentSymbols", true);
+  setFeatureOption(options, config, "workspaceSymbols.enable", "workspaceSymbols", true);
+  setFeatureOption(options, config, "codeActions.enable", "codeActions", true);
+  setFeatureOption(options, config, "rename.enable", "rename", true);
+  setFeatureOption(options, config, "codeLens.enable", "codeLens", true);
+  setFeatureOption(options, config, "formatting.enable", "formatting", false);
+  setFeatureOption(options, config, "semanticTokens.enable", "semanticTokens", true);
+  setFeatureOption(options, config, "documentLinks.enable", "documentLinks", true);
+  setFeatureOption(options, config, "foldingRanges.enable", "foldingRanges", true);
+  setFeatureOption(options, config, "inlayHints.enable", "inlayHints", true);
+  setFeatureOption(options, config, "fileRename.enable", "fileRename", true);
 
   if (
     Object.keys(options).length === 0 &&
@@ -728,13 +728,33 @@ function getInitializationOptions(
   return options;
 }
 
-function setIfEnabled(
+function setDiagnosticsAliasOption(
   options: LspInitializationOptions,
-  name: string,
-  enabled: boolean | undefined,
+  config: ReturnType<typeof workspace.getConfiguration>,
 ): void {
+  const enabled = config.get<boolean>("diagnostics.enable", false);
   if (enabled === true) {
-    options[name] = true;
+    options.lint = true;
+    return;
+  }
+  if (
+    hasExplicitConfigurationValue(config, "diagnostics.enable") &&
+    !hasExplicitConfigurationValue(config, "lint.enable")
+  ) {
+    options.lint = false;
+  }
+}
+
+function setFeatureOption(
+  options: LspInitializationOptions,
+  config: ReturnType<typeof workspace.getConfiguration>,
+  key: string,
+  name: string,
+  defaultValue: boolean,
+): void {
+  const enabled = config.get<boolean>(key, defaultValue);
+  if (enabled === true || hasExplicitConfigurationValue(config, key)) {
+    options[name] = enabled;
   }
 }
 

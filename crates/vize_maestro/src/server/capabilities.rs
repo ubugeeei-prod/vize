@@ -242,12 +242,16 @@ mod tests {
     }
 
     #[test]
-    fn default_features_do_not_advertise_unimplemented_providers() {
+    fn default_features_advertise_non_opinionated_providers() {
         let capabilities = server_capabilities(LspFeatureConfig::default());
 
         assert!(capabilities.signature_help_provider.is_none());
         assert!(capabilities.selection_range_provider.is_none());
-        assert!(capabilities.document_link_provider.is_none());
+        assert!(capabilities.completion_provider.is_some());
+        assert!(capabilities.hover_provider.is_some());
+        assert!(capabilities.definition_provider.is_some());
+        assert!(capabilities.document_link_provider.is_some());
+        assert!(capabilities.document_formatting_provider.is_none());
     }
 
     #[test]

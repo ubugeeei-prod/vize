@@ -119,8 +119,8 @@
       "properties": {
         "vize.enable": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable the Vize language server. If no capability switches are explicitly set, Vize starts with the recommended diagnostics and editor profile."
+          "default": true,
+          "description": "Enable the Vize language server."
         },
         "vize.serverPath": {
           "type": "string",
@@ -139,22 +139,22 @@
         },
         "vize.lint.enable": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable Vize linter diagnostics. This is the recommended first opt-in step and can run alongside vuejs/language-tools."
+          "default": true,
+          "description": "Enable Vize linter diagnostics."
         },
         "vize.typecheck.enable": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable Vize type checking diagnostics and type-aware backend features. Enable after evaluating lint-only mode."
+          "default": true,
+          "description": "Enable Vize type checking diagnostics and type-aware backend features."
         },
         "vize.editor.enable": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable the editor assistance bundle: completion, hover, navigation, symbols, rename, code lens, semantic tokens, links, folding, inlay hints, and file rename handling. Keep off while vuejs/language-tools owns editor navigation."
+          "default": true,
+          "description": "Enable the editor assistance bundle: completion, hover, navigation, symbols, rename, code lens, semantic tokens, links, folding, inlay hints, and file rename handling."
         },
         "vize.ecosystem.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vue ecosystem diagnostics and editor helpers for Vue Router route names and file-route params, Vue I18n catalogs, Nuxt, and Void Vue."
         },
         "vize.diagnostics.enable": {
@@ -165,47 +165,47 @@
         },
         "vize.completion.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize completions. This may overlap with vuejs/language-tools."
         },
         "vize.hover.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize hover information. This may overlap with vuejs/language-tools."
         },
         "vize.definition.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize go-to-definition. This may overlap with vuejs/language-tools."
         },
         "vize.references.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize find references. This may overlap with vuejs/language-tools."
         },
         "vize.documentSymbols.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize document symbols."
         },
         "vize.workspaceSymbols.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize workspace symbols."
         },
         "vize.codeActions.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize lint quick fixes and suppressions. Requires vize.lint.enable."
         },
         "vize.rename.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize rename support. This may overlap with vuejs/language-tools."
         },
         "vize.codeLens.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize code lens."
         },
         "vize.formatting.enable": {
@@ -215,27 +215,27 @@
         },
         "vize.semanticTokens.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize semantic tokens."
         },
         "vize.documentLinks.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize document links."
         },
         "vize.foldingRanges.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize folding ranges."
         },
         "vize.inlayHints.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize inlay hints."
         },
         "vize.fileRename.enable": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Enable Vize edits for file rename operations."
         }
       }

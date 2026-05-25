@@ -4,7 +4,6 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum LintPreset {
     /// General-purpose defaults that focus on the common Vue happy path.
-    #[default]
     HappyPath,
     /// Happy path rules plus stricter conventions and framework assumptions.
     Opinionated,
@@ -12,16 +11,20 @@ pub enum LintPreset {
     Essential,
     /// Starts with no built-in bundle so hosts can opt in rule-by-rule.
     Incremental,
+    /// Broad defaults plus ecosystem integration rules, without opinionated conventions.
+    #[default]
+    Ecosystem,
     /// Opinionated rules adjusted for Nuxt auto-import conventions.
     Nuxt,
 }
 
 impl LintPreset {
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 6] = [
         Self::HappyPath,
         Self::Opinionated,
         Self::Essential,
         Self::Incremental,
+        Self::Ecosystem,
         Self::Nuxt,
     ];
 
@@ -32,6 +35,7 @@ impl LintPreset {
             Self::Opinionated => "opinionated",
             Self::Essential => "essential",
             Self::Incremental => "incremental",
+            Self::Ecosystem => "ecosystem",
             Self::Nuxt => "nuxt",
         }
     }
@@ -39,12 +43,12 @@ impl LintPreset {
     #[inline]
     pub fn parse(value: &str) -> Option<Self> {
         match value {
-            "happy-path" | "happy_path" | "happy" | "default" | "recommended" => {
-                Some(Self::HappyPath)
-            }
+            "happy-path" | "happy_path" | "happy" => Some(Self::HappyPath),
+            "default" | "recommended" => Some(Self::Ecosystem),
             "opinionated" | "strict" | "all" => Some(Self::Opinionated),
             "essential" => Some(Self::Essential),
             "incremental" => Some(Self::Incremental),
+            "ecosystem" => Some(Self::Ecosystem),
             "nuxt" => Some(Self::Nuxt),
             _ => None,
         }
@@ -60,6 +64,7 @@ const ECOSYSTEM_SCRIPT_RULE_NAMES: &[&str] = &[
 pub(crate) const fn builtin_script_rule_names(preset: LintPreset) -> &'static [&'static str] {
     match preset {
         LintPreset::HappyPath | LintPreset::Essential | LintPreset::Incremental => &[],
+        LintPreset::Ecosystem => ECOSYSTEM_SCRIPT_RULE_NAMES,
         LintPreset::Opinionated | LintPreset::Nuxt => &[
             "script/no-options-api",
             "script/no-get-current-instance",
@@ -79,10 +84,10 @@ mod tests {
 
     #[test]
     fn parses_common_aliases() {
-        assert_eq!(LintPreset::parse("default"), Some(LintPreset::HappyPath));
+        assert_eq!(LintPreset::parse("default"), Some(LintPreset::Ecosystem));
         assert_eq!(
             LintPreset::parse("recommended"),
-            Some(LintPreset::HappyPath)
+            Some(LintPreset::Ecosystem)
         );
         assert_eq!(LintPreset::parse("all"), Some(LintPreset::Opinionated));
         assert_eq!(LintPreset::parse("strict"), Some(LintPreset::Opinionated));
@@ -90,7 +95,7 @@ mod tests {
             LintPreset::parse("incremental"),
             Some(LintPreset::Incremental)
         );
-        assert_eq!(LintPreset::parse("ecosystem"), None);
+        assert_eq!(LintPreset::parse("ecosystem"), Some(LintPreset::Ecosystem));
         assert_eq!(LintPreset::parse("nuxt"), Some(LintPreset::Nuxt));
         assert_eq!(LintPreset::parse("unknown"), None);
     }

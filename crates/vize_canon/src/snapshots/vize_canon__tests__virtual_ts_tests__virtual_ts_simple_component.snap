@@ -111,7 +111,7 @@ function __setup() {
 }
 
 // Invoke setup to verify types
-void __setup();
+__setup();
 
 export type Emits = {};
 export type Slots = {};
