@@ -60,7 +60,7 @@
               };
               coreSrc = pkgs.fetchurl {
                 url = "https://cli.moonbitlang.com/cores/core-latest.tar.gz";
-                hash = "sha256-29JAjdJqvXh3XN/JeyQ4gzhFwsLPlTSnoP0dthW4s+g=";
+                hash = "sha256-nfVjWYUgPMFpV6dJAPwCLxbVlJGAMr7vpgdOaBwXGMk=";
               };
               nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.patchelf ];
               dontUnpack = true;
