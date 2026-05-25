@@ -1,0 +1,32 @@
+# Local GitHub Actions runner configuration.
+#
+# The workflow files remain the source of truth. This config trims cloud-only
+# setup, cache, and artifact steps so local runs exercise the repository
+# commands with the host toolchain inside an isolated git worktree.
+
+workspace_mode = "worktree"
+include_dirty = true
+trust_actions = true
+nix_mode = "off"
+
+local_skip_actions = [
+  "actions/checkout",
+  "actions/setup-node",
+  "actions/setup-python",
+  "actions/setup-go",
+  "actions/cache",
+  "actions/upload-artifact",
+  "actions/download-artifact",
+  "./.github/actions/setup-moonbit",
+  "actions-rust-lang/setup-rust-toolchain",
+  "cachix/install-nix-action",
+  "dtolnay/rust-toolchain",
+  "ilammy/msvc-dev-cmd",
+  "nix-community/cache-nix-action",
+  "Swatinem/rust-cache",
+  "taiki-e/install-action",
+  "voidzero-dev/setup-vp",
+]
+
+[lint]
+preset = "default"

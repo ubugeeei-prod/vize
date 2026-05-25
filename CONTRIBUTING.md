@@ -27,6 +27,19 @@ cargo test -p <crate>
 
 Before opening a PR that changes shared tooling, release automation, native bindings, or compiler behavior, run the relevant workspace task from CI locally when practical.
 
+For GitHub Actions changes, use `actrun` to lint or preview the workflow graph before pushing:
+
+```sh
+actrun lint .github/workflows/check.yml
+actrun workflow run .github/workflows/check.yml --dry-run
+```
+
+When a focused job is practical on your machine, run it locally before opening the PR:
+
+```sh
+actrun workflow run .github/workflows/check.yml --job check-js
+```
+
 ## Language Processor Change Discipline
 
 Vize follows compiler-project practice from rustc, TypeScript, TypeScript-Go, and Flow: classify the
