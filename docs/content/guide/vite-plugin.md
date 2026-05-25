@@ -263,7 +263,7 @@ For Nuxt compatibility, the plugin isolates `define` values per Vite environment
 
 The plugin exposes a compatibility shim for tools that probe for `@vitejs/plugin-vue`'s API (like Nuxt). This means Vize works with Nuxt's built-in Vue integration without special configuration:
 
-```typescript
+```ts
 // nuxt.config.ts — using the dedicated Nuxt module
 export default defineNuxtConfig({
   modules: ["@vizejs/nuxt"],

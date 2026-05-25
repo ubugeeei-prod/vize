@@ -38,7 +38,7 @@ You need [`cosign`](https://docs.sigstore.dev/system_config/installation/) on
 `create-github-release` job in `.github/workflows/release.yml` on the
 `ubugeeei/vize` repository.
 
-```sh
+```bash
 # Verify a CLI tarball
 cosign verify-blob \
   --bundle vize-x86_64-unknown-linux-gnu.tar.gz.cosign.bundle \
@@ -49,7 +49,7 @@ cosign verify-blob \
 
 Same call works for the SBOM:
 
-```sh
+```bash
 cosign verify-blob \
   --bundle vize-<tag>-cyclonedx.sbom.json.cosign.bundle \
   --certificate-identity-regexp 'https://github.com/ubugeeei/vize/.+' \

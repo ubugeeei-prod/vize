@@ -27,7 +27,7 @@ vp install vize
 
 ### 2. Register the Nuxt Module
 
-```typescript
+```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
   modules: ["@vizejs/nuxt"],
@@ -56,7 +56,7 @@ as `%40fs/` and encoded `assets/` paths while dropping decoded null-byte or trav
 `@vizejs/nuxt` keeps the simple `compiler: true | false` switch, but the module options also expose
 the Vize compiler and Nuxt compatibility bridges for projects that need tighter control:
 
-```typescript
+```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
   modules: ["@vizejs/nuxt"],
@@ -107,7 +107,7 @@ export default defineNuxtConfig({
 
 Alternatively, you can use the Vite plugin directly. Since Nuxt uses Vite under the hood, this works but lacks some Nuxt-specific optimizations:
 
-```typescript
+```ts
 // nuxt.config.ts
 import vize from "@vizejs/vite-plugin";
 
@@ -122,7 +122,7 @@ export default defineNuxtConfig({
 
 The Nuxt module also supports Musea (component gallery) integration:
 
-```typescript
+```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
   modules: ["@vizejs/nuxt"],
@@ -147,7 +147,7 @@ When configured, the Musea gallery is available at `/__musea__/` during developm
 
 Nuxt projects often use features that need to be mocked in the Musea preview environment (vue-i18n, NuxtLink, useNuxtApp, etc.):
 
-```typescript
+```ts
 // musea.preview.ts
 import { createI18n } from "vue-i18n";
 import { createRouter, createMemoryHistory } from "vue-router";
@@ -205,7 +205,7 @@ When the Nuxt module is installed:
 
 The [Vue Fes Japan 2026](https://vuefes.jp/2026) conference website uses Vize with Nuxt 4:
 
-```typescript
+```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
   modules: ["@vizejs/nuxt"],
