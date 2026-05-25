@@ -99,6 +99,7 @@ fn collect_from_dir_filtered(
     matcher: Option<&InputGlob>,
 ) {
     let skip_generated = should_skip_generated_for_root(dir);
+    let normalized_dir = normalize_input_path(dir);
     let walker = WalkBuilder::new(dir)
         .standard_filters(true)
         .hidden(true)
@@ -107,6 +108,7 @@ fn collect_from_dir_filtered(
     let collected = std::sync::Mutex::new(Vec::<PathBuf>::new());
     walker.run(|| {
         let collected = &collected;
+        let normalized_dir = normalized_dir.clone();
         Box::new(move |entry| {
             if let Ok(entry) = entry {
                 let path = entry.path();
@@ -116,7 +118,7 @@ fn collect_from_dir_filtered(
                     && (!skip_generated || !is_generated_path(path))
                     && let Ok(mut collected) = collected.lock()
                 {
-                    collected.push(path.to_path_buf());
+                    collected.push(normalize_walked_path(dir, &normalized_dir, path));
                 }
             }
             ignore::WalkState::Continue
@@ -127,7 +129,6 @@ fn collect_from_dir_filtered(
         return;
     };
     for path in collected {
-        let path = normalize_input_path(&path);
         if seen.insert(path.clone()) {
             files.push(path);
         }
@@ -202,6 +203,13 @@ fn strip_leading_current_dir(value: &str) -> String {
 
 fn normalize_input_path(path: &Path) -> PathBuf {
     path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
+}
+
+fn normalize_walked_path(root: &Path, normalized_root: &Path, path: &Path) -> PathBuf {
+    // Avoid a canonicalize syscall per walked file; normalize the root once.
+    path.strip_prefix(root)
+        .map(|relative| normalized_root.join(relative))
+        .unwrap_or_else(|_| normalize_input_path(path))
 }
 
 fn should_skip_generated_for_root(root: &Path) -> bool {

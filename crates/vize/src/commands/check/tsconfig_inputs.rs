@@ -183,6 +183,7 @@ fn collect_supported_files(
     excludes: &[GlobSpec],
 ) -> Vec<PathBuf> {
     let skip_generated = should_skip_generated_for_root(root);
+    let normalized_root = normalize_input_path(root);
     let walker = WalkBuilder::new(root)
         .standard_filters(true)
         .hidden(true)
@@ -191,6 +192,7 @@ fn collect_supported_files(
     let collected = std::sync::Mutex::new(Vec::<PathBuf>::new());
     walker.run(|| {
         let collected = &collected;
+        let normalized_root = normalized_root.clone();
         Box::new(move |entry| {
             if let Ok(entry) = entry {
                 let path = entry.path();
@@ -200,7 +202,7 @@ fn collect_supported_files(
                     && matches_tsconfig_patterns(path, includes, excludes)
                     && let Ok(mut collected) = collected.lock()
                 {
-                    collected.push(normalize_input_path(path));
+                    collected.push(normalize_walked_path(root, &normalized_root, path));
                 }
             }
             ignore::WalkState::Continue
@@ -500,6 +502,13 @@ fn normalize_path_separators(path: &Path) -> std::string::String {
 
 fn normalize_input_path(path: &Path) -> PathBuf {
     path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
+}
+
+fn normalize_walked_path(root: &Path, normalized_root: &Path, path: &Path) -> PathBuf {
+    // Avoid a canonicalize syscall per walked file; normalize the root once.
+    path.strip_prefix(root)
+        .map(|relative| normalized_root.join(relative))
+        .unwrap_or_else(|_| normalize_input_path(path))
 }
 
 fn should_skip_generated_for_root(root: &Path) -> bool {
