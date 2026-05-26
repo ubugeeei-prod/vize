@@ -3627,7 +3627,7 @@ dependencies = [
 
 [[package]]
 name = "vize_curator"
-version = "0.133.0"
+version = "0.134.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -3799,6 +3799,7 @@ dependencies = [
  "vize_carton",
  "vize_croquis",
  "vize_croquis_cf",
+ "vize_curator",
  "vize_glyph",
  "vize_musea",
  "vize_patina",

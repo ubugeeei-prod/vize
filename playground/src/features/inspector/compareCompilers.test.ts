@@ -81,11 +81,56 @@ describe("compileInspectorReport", () => {
       },
       filePaths: ["src/App.vue", "src/Child.vue"],
     }));
+    const buildInspectorGraph = vi.fn(() => ({
+      nodes: [
+        {
+          path: "src/App.vue",
+          kind: "vue",
+          isEntry: true,
+          sourceLines: 1,
+          sourceBytes: 110,
+        },
+        {
+          path: "src/Child.vue",
+          kind: "vue",
+          isEntry: false,
+          sourceLines: 1,
+          sourceBytes: 28,
+        },
+      ],
+      edges: [
+        {
+          from: "src/App.vue",
+          to: "src/Child.vue",
+          kind: "component",
+          specifier: "./Child.vue",
+        },
+        {
+          from: "src/App.vue",
+          to: "src/Child.vue",
+          kind: "import",
+          specifier: "./Child.vue",
+        },
+      ],
+    }));
+    const buildInspectorDiff = vi.fn(() => ({
+      lines: [
+        { kind: "remove", leftLine: 1, rightLine: null, text: "[babel]" },
+        { kind: "add", leftLine: null, rightLine: 1, text: "[babel]" },
+      ],
+      stats: {
+        additions: 1,
+        removals: 1,
+        unchanged: 0,
+      },
+    }));
     const compiler = {
       compileSfc,
       typeCheck,
       analyzeSfc,
       analyzeCrossFile,
+      buildInspectorGraph,
+      buildInspectorDiff,
     } as unknown as WasmModule;
 
     const report = await compileInspectorReport({
@@ -118,19 +163,32 @@ describe("compileInspectorReport", () => {
       {
         from: "src/App.vue",
         to: "src/Child.vue",
-        kind: "import",
+        kind: "component",
         specifier: "./Child.vue",
       },
       {
         from: "src/App.vue",
         to: "src/Child.vue",
-        kind: "component",
+        kind: "import",
         specifier: "./Child.vue",
       },
     ]);
+    expect(report.stats).toEqual({ additions: 1, removals: 1, unchanged: 0 });
     expect(typeCheck).toHaveBeenCalledWith(expect.any(String), {
       filename: "src/App.vue",
       includeVirtualTs: true,
     });
+    expect(buildInspectorGraph).toHaveBeenCalledWith([
+      {
+        path: "src/App.vue",
+        source:
+          "<script setup>import Child from './Child.vue'; const msg = 'hi'</script><template><Child />{{ msg }}</template>",
+      },
+      {
+        path: "src/Child.vue",
+        source: "<template><span /></template>",
+      },
+    ]);
+    expect(buildInspectorDiff).toHaveBeenCalled();
   });
 });

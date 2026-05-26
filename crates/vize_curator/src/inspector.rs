@@ -25,7 +25,7 @@ pub struct InspectorOptions {
     pub vue_parser_quirks: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub struct InspectorSourceFile {
     pub path: String,
     pub source: String,
@@ -101,6 +101,29 @@ pub struct InspectorGraphEdge {
     pub to: String,
     pub kind: &'static str,
     pub specifier: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InspectorDiff {
+    pub lines: Vec<InspectorDiffLine>,
+    pub stats: InspectorDiffStats,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InspectorDiffLine {
+    pub kind: &'static str,
+    pub left_line: Option<usize>,
+    pub right_line: Option<usize>,
+    pub text: String,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, serde::Serialize)]
+pub struct InspectorDiffStats {
+    pub additions: usize,
+    pub removals: usize,
+    pub unchanged: usize,
 }
 
 pub fn build_payload(
@@ -193,29 +216,51 @@ pub fn build_playground_url(base: &str, payload_json: &str) -> String {
 }
 
 pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
-    let nodes = files
+    let normalized_files: Vec<_> = files
         .iter()
-        .map(|file| InspectorGraphNode {
-            path: file.path.clone(),
-            kind: file_kind(file.path.as_str()),
-            is_entry: is_entry_path(file.path.as_str()),
-            source_bytes: file.source.len(),
-            source_lines: line_count(file.source.as_str()),
+        .map(|file| (normalize_path(file.path.as_str()), file.source.as_str()))
+        .collect();
+
+    let nodes = normalized_files
+        .iter()
+        .map(|(path, source)| InspectorGraphNode {
+            path: path.clone(),
+            kind: file_kind(path.as_str()),
+            is_entry: is_entry_path(path.as_str()),
+            source_bytes: source.len(),
+            source_lines: line_count(source),
         })
         .collect();
 
     let mut edges = Vec::new();
-    for file in files {
-        for import in extract_imports(file.source.as_str()) {
-            if let Some(to) = resolve_import(files, file.path.as_str(), import.specifier.as_str()) {
-                let edge = InspectorGraphEdge {
-                    from: file.path.clone(),
-                    to,
-                    kind: import.kind,
-                    specifier: import.specifier,
-                };
-                if !edges.contains(&edge) {
-                    edges.push(edge);
+    for (path, source) in &normalized_files {
+        for import in extract_imports(source) {
+            if let Some(to) =
+                resolve_import(&normalized_files, path.as_str(), import.specifier.as_str())
+            {
+                push_graph_edge(
+                    &mut edges,
+                    InspectorGraphEdge {
+                        from: path.clone(),
+                        to: to.clone(),
+                        kind: import.kind,
+                        specifier: import.specifier.clone(),
+                    },
+                );
+
+                if to.ends_with(".vue")
+                    && import.kind == "import"
+                    && component_is_used(source, &import.locals)
+                {
+                    push_graph_edge(
+                        &mut edges,
+                        InspectorGraphEdge {
+                            from: path.clone(),
+                            to,
+                            kind: "component",
+                            specifier: import.specifier,
+                        },
+                    );
                 }
             }
         }
@@ -230,6 +275,111 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
     });
 
     InspectorGraph { nodes, edges }
+}
+
+pub fn build_diff(left: &str, right: &str) -> InspectorDiff {
+    let lines = build_line_diff(left, right);
+    let stats = diff_stats(&lines);
+    InspectorDiff { lines, stats }
+}
+
+pub fn build_line_diff(left: &str, right: &str) -> Vec<InspectorDiffLine> {
+    let left_lines = split_diff_lines(left);
+    let right_lines = split_diff_lines(right);
+    let rows = left_lines.len() + 1;
+    let cols = right_lines.len() + 1;
+    let mut table = vec![vec![0usize; cols]; rows];
+
+    for left_index in (0..left_lines.len()).rev() {
+        for right_index in (0..right_lines.len()).rev() {
+            table[left_index][right_index] = if left_lines[left_index] == right_lines[right_index] {
+                table[left_index + 1][right_index + 1] + 1
+            } else {
+                table[left_index + 1][right_index].max(table[left_index][right_index + 1])
+            };
+        }
+    }
+
+    let mut diff = Vec::new();
+    let mut left_index = 0;
+    let mut right_index = 0;
+
+    while left_index < left_lines.len() && right_index < right_lines.len() {
+        if left_lines[left_index] == right_lines[right_index] {
+            diff.push(InspectorDiffLine {
+                kind: "same",
+                left_line: Some(left_index + 1),
+                right_line: Some(right_index + 1),
+                text: left_lines[left_index].clone(),
+            });
+            left_index += 1;
+            right_index += 1;
+        } else if table[left_index + 1][right_index] >= table[left_index][right_index + 1] {
+            diff.push(InspectorDiffLine {
+                kind: "remove",
+                left_line: Some(left_index + 1),
+                right_line: None,
+                text: left_lines[left_index].clone(),
+            });
+            left_index += 1;
+        } else {
+            diff.push(InspectorDiffLine {
+                kind: "add",
+                left_line: None,
+                right_line: Some(right_index + 1),
+                text: right_lines[right_index].clone(),
+            });
+            right_index += 1;
+        }
+    }
+
+    while left_index < left_lines.len() {
+        diff.push(InspectorDiffLine {
+            kind: "remove",
+            left_line: Some(left_index + 1),
+            right_line: None,
+            text: left_lines[left_index].clone(),
+        });
+        left_index += 1;
+    }
+
+    while right_index < right_lines.len() {
+        diff.push(InspectorDiffLine {
+            kind: "add",
+            left_line: None,
+            right_line: Some(right_index + 1),
+            text: right_lines[right_index].clone(),
+        });
+        right_index += 1;
+    }
+
+    diff
+}
+
+pub fn diff_stats(lines: &[InspectorDiffLine]) -> InspectorDiffStats {
+    lines
+        .iter()
+        .fold(InspectorDiffStats::default(), |mut stats, line| {
+            match line.kind {
+                "add" => stats.additions += 1,
+                "remove" => stats.removals += 1,
+                "same" => stats.unchanged += 1,
+                _ => {}
+            }
+            stats
+        })
+}
+
+fn split_diff_lines(value: &str) -> Vec<String> {
+    if value.is_empty() {
+        return Vec::new();
+    }
+
+    value
+        .replace("\r\n", "\n")
+        .split('\n')
+        .map(|line| line.to_compact_string())
+        .collect()
 }
 
 fn percent_encode(value: &str) -> String {
@@ -251,39 +401,132 @@ fn percent_encode(value: &str) -> String {
 struct ImportEdge {
     specifier: String,
     kind: &'static str,
+    locals: Vec<String>,
 }
 
 fn extract_imports(source: &str) -> Vec<ImportEdge> {
     let mut imports = Vec::new();
-    collect_imports_after(source, "from", "import", &mut imports);
-    collect_imports_after(source, "import(", "dynamic-import", &mut imports);
+    collect_static_imports(source, &mut imports);
+    collect_dynamic_imports(source, &mut imports);
     imports
 }
 
-fn collect_imports_after(
-    source: &str,
-    marker: &str,
-    kind: &'static str,
-    imports: &mut Vec<ImportEdge>,
-) {
+fn collect_static_imports(source: &str, imports: &mut Vec<ImportEdge>) {
     let mut offset = 0;
-    while let Some(index) = source[offset..].find(marker) {
-        let start = offset + index + marker.len();
+    while let Some(index) = source[offset..].find("import") {
+        let import_start = offset + index;
+        let clause_start = import_start + "import".len();
+        if !is_word_boundary(source, import_start, clause_start) {
+            offset = clause_start;
+            continue;
+        }
+
+        let start = skip_whitespace(source, clause_start);
+        if source[start..].starts_with('(') {
+            offset = start + 1;
+            continue;
+        }
+        if source[start..].starts_with('.') {
+            offset = start + 1;
+            continue;
+        }
+
         if let Some((specifier, end)) = read_quoted(source, start) {
-            imports.push(ImportEdge { specifier, kind });
+            imports.push(ImportEdge {
+                specifier,
+                kind: "import",
+                locals: Vec::new(),
+            });
+            offset = end;
+            continue;
+        }
+
+        let Some(from_index) = find_import_from(source, start) else {
+            offset = clause_start;
+            continue;
+        };
+
+        if let Some((specifier, end)) = read_quoted(source, from_index + "from".len()) {
+            let clause = &source[start..from_index];
+            imports.push(ImportEdge {
+                specifier,
+                kind: "import",
+                locals: extract_import_locals(clause),
+            });
             offset = end;
         } else {
-            offset = start;
+            offset = from_index + "from".len();
         }
     }
 }
 
-fn read_quoted(source: &str, start: usize) -> Option<(String, usize)> {
+fn collect_dynamic_imports(source: &str, imports: &mut Vec<ImportEdge>) {
+    let mut offset = 0;
+    while let Some(index) = source[offset..].find("import") {
+        let import_start = offset + index;
+        let import_end = import_start + "import".len();
+        if !is_word_boundary(source, import_start, import_end) {
+            offset = import_end;
+            continue;
+        }
+
+        let start = skip_whitespace(source, import_end);
+        if !source[start..].starts_with('(') {
+            offset = import_end;
+            continue;
+        }
+
+        if let Some((specifier, end)) = read_quoted(source, start + 1) {
+            imports.push(ImportEdge {
+                specifier,
+                kind: "dynamic-import",
+                locals: Vec::new(),
+            });
+            offset = end;
+        } else {
+            offset = start + 1;
+        }
+    }
+}
+
+fn skip_whitespace(source: &str, mut index: usize) -> usize {
     let bytes = source.as_bytes();
-    let mut index = start;
     while index < bytes.len() && bytes[index].is_ascii_whitespace() {
         index += 1;
     }
+    index
+}
+
+fn is_word_boundary(source: &str, start: usize, end: usize) -> bool {
+    let bytes = source.as_bytes();
+    let before = start
+        .checked_sub(1)
+        .and_then(|index| bytes.get(index))
+        .is_none_or(|byte| !is_identifier_byte(*byte));
+    let after = bytes.get(end).is_none_or(|byte| !is_identifier_byte(*byte));
+    before && after
+}
+
+fn is_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+}
+
+fn find_import_from(source: &str, start: usize) -> Option<usize> {
+    let mut offset = start;
+    while let Some(index) = source[offset..].find("from") {
+        let from_index = offset + index;
+        let from_end = from_index + "from".len();
+        if is_word_boundary(source, from_index, from_end) {
+            return Some(from_index);
+        }
+        offset = from_end;
+    }
+    None
+}
+
+fn read_quoted(source: &str, start: usize) -> Option<(String, usize)> {
+    let bytes = source.as_bytes();
+    let mut index = skip_whitespace(source, start);
     let quote = *bytes.get(index)?;
     if quote != b'\'' && quote != b'"' {
         return None;
@@ -299,7 +542,113 @@ fn read_quoted(source: &str, start: usize) -> Option<(String, usize)> {
     Some((String::from(&source[value_start..index]), index + 1))
 }
 
-fn resolve_import(files: &[InspectorSourceFile], from: &str, specifier: &str) -> Option<String> {
+fn extract_import_locals(clause: &str) -> Vec<String> {
+    let mut locals = Vec::new();
+    let trimmed = clause.trim();
+    if trimmed.starts_with("type ") {
+        return locals;
+    }
+
+    if let Some(default_name) = trimmed.split(',').next().map(str::trim)
+        && is_identifier(default_name)
+    {
+        locals.push(default_name.to_compact_string());
+    }
+
+    if let Some(namespace_name) = trimmed.strip_prefix("* as ").map(str::trim)
+        && is_identifier(namespace_name)
+    {
+        locals.push(namespace_name.to_compact_string());
+    }
+
+    if let Some(named_start) = trimmed.find('{')
+        && let Some(named_end) = trimmed[named_start + 1..].find('}')
+    {
+        let named = &trimmed[named_start + 1..named_start + 1 + named_end];
+        for part in named.split(',') {
+            let part = part.trim();
+            if part.starts_with("type ") {
+                continue;
+            }
+            let local = part
+                .rsplit_once(" as ")
+                .map(|(_, local)| local)
+                .unwrap_or(part);
+            if is_identifier(local.trim()) {
+                locals.push(local.trim().to_compact_string());
+            }
+        }
+    }
+
+    locals
+}
+
+fn is_identifier(value: &str) -> bool {
+    let mut chars = value.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    (first == '_' || first == '$' || first.is_ascii_alphabetic())
+        && chars.all(|char| char == '_' || char == '$' || char.is_ascii_alphanumeric())
+}
+
+fn component_is_used(source: &str, locals: &[String]) -> bool {
+    locals.iter().any(|local| {
+        tag_is_used(source, local.as_str())
+            || tag_is_used(source, to_kebab_case(local.as_str()).as_str())
+    })
+}
+
+fn tag_is_used(source: &str, tag: &str) -> bool {
+    if tag.is_empty() {
+        return false;
+    }
+
+    let bytes = source.as_bytes();
+    let tag_bytes = tag.as_bytes();
+    let mut offset = 0;
+    while let Some(index) = source[offset..].find('<') {
+        let mut cursor = offset + index + 1;
+        cursor = skip_whitespace(source, cursor);
+        if bytes
+            .get(cursor..cursor + tag_bytes.len())
+            .is_some_and(|candidate| candidate == tag_bytes)
+            && bytes
+                .get(cursor + tag_bytes.len())
+                .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(*byte, b'/' | b'>'))
+        {
+            return true;
+        }
+        offset = cursor.saturating_add(1);
+    }
+
+    false
+}
+
+fn to_kebab_case(value: &str) -> String {
+    let mut output = String::default();
+    for (index, char) in value.chars().enumerate() {
+        if char == '_' {
+            output.push('-');
+        } else if char.is_ascii_uppercase() {
+            if index > 0 {
+                output.push('-');
+            }
+            output.extend(char.to_lowercase());
+        } else {
+            output.push(char);
+        }
+    }
+    output
+}
+
+fn push_graph_edge(edges: &mut Vec<InspectorGraphEdge>, edge: InspectorGraphEdge) {
+    if !edges.contains(&edge) {
+        edges.push(edge);
+    }
+}
+
+fn resolve_import(files: &[(String, &str)], from: &str, specifier: &str) -> Option<String> {
     if !specifier.starts_with('.') {
         return None;
     }
@@ -309,7 +658,7 @@ fn resolve_import(files: &[InspectorSourceFile], from: &str, specifier: &str) ->
         .find(|candidate| {
             files
                 .iter()
-                .any(|file| file.path.as_str() == candidate.as_str())
+                .any(|(path, _)| path.as_str() == candidate.as_str())
         })
 }
 
@@ -390,15 +739,16 @@ fn line_count(source: &str) -> usize {
     if source.is_empty() {
         0
     } else {
-        source.lines().count()
+        source.split('\n').count()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        InspectorOptions, InspectorSourceFile, InspectorTarget, build_agent_report, build_graph,
-        build_payload, build_playground_url, serialize_agent_report, serialize_payload,
+        InspectorOptions, InspectorSourceFile, InspectorTarget, build_agent_report, build_diff,
+        build_graph, build_payload, build_playground_url, serialize_agent_report,
+        serialize_payload,
     };
     use vize_carton::cstr;
 
@@ -447,6 +797,78 @@ mod tests {
         assert_eq!(graph.edges[0].from.as_str(), "src/App.vue");
         assert_eq!(graph.edges[0].to.as_str(), "src/Child.vue");
         assert_eq!(graph.edges[0].kind, "import");
+    }
+
+    #[test]
+    fn builds_graph_component_edges_for_used_imports() {
+        let files = vec![
+            InspectorSourceFile {
+                path: cstr!("./src/App.vue"),
+                source: cstr!(
+                    "<script setup>import ChildCard from './ChildCard.vue'</script><template><child-card /></template>"
+                ),
+            },
+            InspectorSourceFile {
+                path: cstr!("src/ChildCard.vue"),
+                source: cstr!("<template><span /></template>\n"),
+            },
+        ];
+
+        let graph = build_graph(&files);
+
+        assert_eq!(graph.nodes[0].path.as_str(), "src/App.vue");
+        assert_eq!(graph.edges.len(), 2);
+        assert_eq!(graph.edges[0].kind, "component");
+        assert_eq!(graph.edges[1].kind, "import");
+    }
+
+    #[test]
+    fn graph_ignores_import_meta_and_type_only_component_imports() {
+        let files = vec![
+            InspectorSourceFile {
+                path: cstr!("src/App.vue"),
+                source: cstr!(
+                    "<script setup lang=\"ts\">
+const mode = import.meta.env.MODE;
+import type TypeOnly from './TypeOnly.vue';
+import RuntimeOnly from './RuntimeOnly.vue';
+</script>
+<template><TypeOnly /><RuntimeOnly /></template>"
+                ),
+            },
+            InspectorSourceFile {
+                path: cstr!("src/TypeOnly.vue"),
+                source: cstr!("<template><span /></template>\n"),
+            },
+            InspectorSourceFile {
+                path: cstr!("src/RuntimeOnly.vue"),
+                source: cstr!("<template><span /></template>\n"),
+            },
+        ];
+
+        let graph = build_graph(&files);
+        let component_edges: Vec<_> = graph
+            .edges
+            .iter()
+            .filter(|edge| edge.kind == "component")
+            .collect();
+
+        assert_eq!(component_edges.len(), 1);
+        assert_eq!(component_edges[0].to.as_str(), "src/RuntimeOnly.vue");
+    }
+
+    #[test]
+    fn builds_line_diff_and_stats() {
+        let diff = build_diff("one\ntwo\nthree", "one\nTWO\nthree\nfour");
+
+        assert_eq!(diff.stats.additions, 2);
+        assert_eq!(diff.stats.removals, 1);
+        assert_eq!(diff.stats.unchanged, 2);
+        assert_eq!(diff.lines.len(), 5);
+        assert_eq!(diff.lines[0].kind, "same");
+        assert_eq!(diff.lines[1].kind, "remove");
+        assert_eq!(diff.lines[2].kind, "add");
+        assert_eq!(diff.lines[4].right_line, Some(4));
     }
 
     #[test]

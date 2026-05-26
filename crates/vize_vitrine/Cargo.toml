@@ -44,6 +44,7 @@ vize_glyph = { workspace = true, optional = true }
 vize_croquis = { workspace = true }
 vize_croquis_cf = { workspace = true }
 vize_canon = { workspace = true }
+vize_curator = { workspace = true }
 vize = { path = "../vize", default-features = false, features = ["glyph"], optional = true }
 
 serde = { workspace = true }

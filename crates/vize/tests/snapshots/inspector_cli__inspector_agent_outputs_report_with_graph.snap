@@ -9,6 +9,12 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
     "edges": [
       {
         "from": "src/App.vue",
+        "kind": "component",
+        "specifier": "./Child",
+        "to": "src/Child.vue"
+      },
+      {
+        "from": "src/App.vue",
         "kind": "import",
         "specifier": "./Child",
         "to": "src/Child.vue"
@@ -20,14 +26,14 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
         "kind": "vue",
         "path": "src/App.vue",
         "sourceBytes": 99,
-        "sourceLines": 7
+        "sourceLines": 8
       },
       {
         "isEntry": false,
         "kind": "vue",
         "path": "src/Child.vue",
         "sourceBytes": 44,
-        "sourceLines": 3
+        "sourceLines": 4
       }
     ]
   },
@@ -60,7 +66,7 @@ expression: "serde_json::to_string_pretty(&json).unwrap()"
     },
     "selectedFile": "src/App.vue",
     "sourceBytes": 143,
-    "sourceLines": 10,
+    "sourceLines": 12,
     "target": "dom"
   },
   "version": 1

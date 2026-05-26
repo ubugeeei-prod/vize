@@ -55,6 +55,16 @@ export type {
   CrossFileStats,
   CrossFileResult,
   CrossFileInput,
+  InspectorSourceFile,
+  InspectorGraphNodeKind,
+  InspectorGraphNode,
+  InspectorGraphEdgeKind,
+  InspectorGraphEdge,
+  InspectorGraph,
+  InspectorDiffLineKind,
+  InspectorDiffLine,
+  InspectorDiffStats,
+  InspectorDiff,
   WasmModule,
 } from "./types";
 
@@ -136,6 +146,8 @@ export async function loadWasm(): Promise<WasmModule> {
       formatScript: wasm.formatScript,
       typeCheck: wasm.typeCheck,
       getTypeCheckCapabilities: wasm.getTypeCheckCapabilities,
+      buildInspectorGraph: wasm.buildInspectorGraph,
+      buildInspectorDiff: wasm.buildInspectorDiff,
       Compiler: wasm.Compiler as unknown as WasmModule["Compiler"],
     };
     wasmModule = module;

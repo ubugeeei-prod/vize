@@ -235,6 +235,8 @@ cross-file graph, then produces a permalink plus a prefilled pull request link.
 
 Use `--format agent` when another local tool or AI agent needs the same repro without opening the
 browser. The report contains the exact payload, playground URL, summary metrics, and import graph.
+Payload, graph, and line diff metadata are built by the local-only `vize_curator` crate so CLI and
+playground inspection stay aligned.
 
 Key options:
 

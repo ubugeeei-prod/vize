@@ -11,6 +11,7 @@ mod analyze;
 mod cross_file;
 #[cfg(feature = "glyph")]
 mod format;
+mod inspector;
 mod lint;
 mod musea;
 
@@ -23,6 +24,7 @@ pub use analyze::*;
 pub use cross_file::*;
 #[cfg(feature = "glyph")]
 pub use format::*;
+pub use inspector::*;
 pub use lint::*;
 pub use musea::*;
 pub use wasm_typecheck::*;

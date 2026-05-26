@@ -3,6 +3,7 @@ export type * from "./compiler";
 export type * from "./croquis";
 export type * from "./features";
 export type * from "./analysis";
+export type * from "./inspector";
 
 import type {
   CompilerOptions,
@@ -32,6 +33,7 @@ import type {
   CrossFileOptions,
   CrossFileResult,
 } from "./analysis";
+import type { InspectorDiff, InspectorGraph, InspectorSourceFile } from "./inspector";
 
 export interface WasmModule {
   compile: (template: string, options: CompilerOptions) => CompileResult;
@@ -58,6 +60,9 @@ export interface WasmModule {
   // Canon (TypeCheck) functions
   typeCheck: (source: string, options: TypeCheckOptions) => TypeCheckResult;
   getTypeCheckCapabilities: () => TypeCheckCapabilities;
+  // Curator (Inspector) functions
+  buildInspectorGraph: (files: InspectorSourceFile[]) => InspectorGraph;
+  buildInspectorDiff: (left: string, right: string) => InspectorDiff;
   Compiler: new () => {
     compile: (template: string, options: CompilerOptions) => CompileResult;
     compileVapor: (template: string, options: CompilerOptions) => CompileResult;

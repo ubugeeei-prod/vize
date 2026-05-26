@@ -12,8 +12,6 @@ import type {
   WasmModule,
 } from "../../wasm/index";
 import { formatCode } from "../atelier/formatters";
-import { buildLineDiff, getDiffStats } from "./diff";
-import { buildInspectorGraph } from "./graph";
 import type {
   CompilerRun,
   InspectorFile,
@@ -243,13 +241,25 @@ function inspectVir(compiler: WasmModule, file: InspectorFile): CompilerRun {
 
 function inspectCrossFileGraph(compiler: WasmModule, files: InspectorFile[]): InspectorGraphRun {
   const start = performance.now();
-  const graph = buildInspectorGraph(files);
+  const graphInput = files.map((file) => ({ path: file.path, source: file.source }));
+  let graph: ReturnType<WasmModule["buildInspectorGraph"]>;
 
   try {
-    const result = compiler.analyzeCrossFile(
-      files.map((file) => ({ path: file.path, source: file.source })),
-      { all: true, maxImportDepth: 10 },
-    );
+    graph = compiler.buildInspectorGraph(graphInput);
+  } catch (error) {
+    return {
+      nodes: [],
+      edges: [],
+      diagnostics: [],
+      circularDependencies: [],
+      stats: null,
+      error: toErrorMessage(error),
+      timeMs: performance.now() - start,
+    };
+  }
+
+  try {
+    const result = compiler.analyzeCrossFile(graphInput, { all: true, maxImportDepth: 10 });
     const issueCounts = new Map<string, number>();
     for (const diagnostic of result.diagnostics) {
       issueCounts.set(diagnostic.file, (issueCounts.get(diagnostic.file) ?? 0) + 1);
@@ -269,7 +279,7 @@ function inspectCrossFileGraph(compiler: WasmModule, files: InspectorFile[]): In
     };
   } catch (error) {
     return {
-      nodes: graph.nodes,
+      nodes: graph.nodes.map((node) => ({ ...node, issueCount: 0 })),
       edges: graph.edges,
       diagnostics: [],
       circularDependencies: [],
@@ -302,7 +312,7 @@ export async function compileInspectorReport({
     Promise.resolve(inspectVir(compiler, file)),
     Promise.resolve(inspectCrossFileGraph(compiler, inspectedFiles)),
   ]);
-  const diff = buildLineDiff(outputText(official), outputText(vize));
+  const diff = compiler.buildInspectorDiff(outputText(official), outputText(vize));
 
   return {
     filename: file.path,
@@ -312,7 +322,7 @@ export async function compileInspectorReport({
     virtualTs,
     vir,
     graph,
-    diff,
-    stats: getDiffStats(diff),
+    diff: diff.lines,
+    stats: diff.stats,
   };
 }
