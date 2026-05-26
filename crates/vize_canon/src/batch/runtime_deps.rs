@@ -60,6 +60,7 @@ export declare function reactive<T extends object>(value: T): T;
 export declare function readonly<T>(value: T): Readonly<T>;
 export declare function createApp(rootComponent: any, rootProps?: any): App;
 export declare function createSSRApp(rootComponent: any, rootProps?: any): App;
+export declare function defineComponent<Props = any>(options: any): DefineComponent<Props>;
 export declare function provide<T>(key: InjectionKey<T> | string | symbol, value: T): void;
 export declare function inject<T>(key: InjectionKey<T> | string | symbol): T | undefined;
 export declare function inject<T>(key: InjectionKey<T> | string | symbol, defaultValue: T): T;

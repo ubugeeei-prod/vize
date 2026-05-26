@@ -139,6 +139,40 @@ const count = 1
     }
 
     #[test]
+    fn test_kebab_case_component_names_are_sanitized_in_type_helpers() {
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"const value = 'hello'
+function handleUpdate(value: string) {
+  void value
+}
+"#;
+        let template = r#"<my-widget :label="value" @update:model-value="handleUpdate" />"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts_with_offsets(
+            &summary,
+            Some(script),
+            Some(&root),
+            0,
+            0,
+            &Default::default(),
+        );
+
+        assert_virtual_ts_snapshot(
+            "virtual_ts_kebab_case_component_names",
+            output.code.as_str(),
+        );
+    }
+
+    #[test]
     fn test_check_props_option_disables_component_prop_checks() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 

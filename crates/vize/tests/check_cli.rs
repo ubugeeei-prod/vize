@@ -120,6 +120,67 @@ void props
 }
 
 #[test]
+fn check_options_api_can_import_define_component_from_stubbed_vue() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "options-api-define-component",
+        &[(
+            "src/OptionsApi.vue",
+            r#"<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  name: "OptionsApi",
+});
+</script>
+
+<template>
+  <div>hello</div>
+</template>
+"#,
+        )],
+    );
+
+    // Force the virtual project to use vize's fallback Vue stub instead of a
+    // workspace-linked full Vue installation.
+    remove_path_if_exists(&project_root.join("node_modules").join("@vue")).unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/OptionsApi.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_respects_explicit_corsa_path() {
     let project_root = create_cli_project(
         "explicit-corsa-path",
@@ -1395,11 +1456,7 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
     let workspace_node_modules = resolve_workspace_node_modules();
 
     let target = project_root.join("node_modules");
-    if target.is_symlink() || target.is_file() {
-        std::fs::remove_file(&target)?;
-    } else if target.exists() {
-        std::fs::remove_dir_all(&target)?;
-    }
+    remove_path_if_exists(&target)?;
     std::fs::create_dir_all(&target)?;
 
     if let Some(ref workspace_node_modules) = workspace_node_modules {
@@ -1443,6 +1500,15 @@ fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
         }
     }
 
+    Ok(())
+}
+
+fn remove_path_if_exists(path: &Path) -> std::io::Result<()> {
+    if path.is_symlink() || path.is_file() {
+        std::fs::remove_file(path)?;
+    } else if path.exists() {
+        std::fs::remove_dir_all(path)?;
+    }
     Ok(())
 }
 
@@ -1508,8 +1574,23 @@ export interface ComponentPublicInstance {
   $emit: (...args: any[]) => void;
 }
 
+export type DefineComponent<
+  Props = any,
+  _RawBindings = any,
+  _Data = any,
+  _Computed = any,
+  _Methods = any,
+  _Mixin = any,
+  _Extends = any,
+  Emits = any,
+> = new (...args: any[]) => ComponentPublicInstance & {
+  $props: Props;
+  $emit: Emits extends (...args: any[]) => any ? Emits : (...args: any[]) => void;
+};
+
 export declare function ref<T>(value: T): Ref<T>;
 export declare function useTemplateRef<T = any>(key: string): ShallowRef<T | null>;
+export declare function defineComponent<Props = any>(options: any): DefineComponent<Props>;
 "#,
     )?;
     Ok(())
@@ -1530,11 +1611,7 @@ fn write_test_vite_stub(target: &Path) -> std::io::Result<()> {
 }
 
 fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
-    if target.is_symlink() || target.is_file() {
-        std::fs::remove_file(target)?;
-    } else if target.exists() {
-        std::fs::remove_dir_all(target)?;
-    }
+    remove_path_if_exists(target)?;
     if let Some(parent) = target.parent() {
         std::fs::create_dir_all(parent)?;
     }

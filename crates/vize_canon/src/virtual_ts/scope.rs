@@ -275,7 +275,8 @@ fn generate_component_props(
     // (TypeScript type aliases cannot be inside function bodies)
     ts.push_str("\n  // Component props type declarations\n");
     for (idx, usage) in summary.component_usages.iter().enumerate() {
-        let component_name = &usage.name;
+        let component_ref = to_safe_identifier(usage.name.as_str());
+        let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
         // Only emit type when there are dynamic props to check
         let has_dynamic_props = usage.props.iter().any(|p| {
@@ -294,7 +295,7 @@ fn generate_component_props(
         append!(*ts, "  // @vize-map: component -> {src_start}:{src_end}\n",);
         append!(
             *ts,
-            "  type __{component_name}_Props_{idx} = typeof {component_name} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_name} extends (props: infer __P) => any ? __P : {{}});\n",
+            "  type __{component_type_name}_Props_{idx} = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }} ? __P : (typeof {component_ref} extends (props: infer __P) => any ? __P : {{}});\n",
         );
 
         for prop in &usage.props {
@@ -303,10 +304,10 @@ fn generate_component_props(
             }
             if prop.value.is_some() && prop.is_dynamic {
                 let camel_prop_name = to_camel_case(prop.name.as_str());
-                let safe_prop_name = prop.name.replace('-', "_");
+                let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
                 append!(
                     *ts,
-                    "  type __{component_name}_{idx}_prop_{safe_prop_name} = __{component_name}_Props_{idx} extends {{ '{camel_prop_name}'?: infer T }} ? T : __{component_name}_Props_{idx} extends {{ '{camel_prop_name}': infer T }} ? T : unknown;\n",
+                    "  type __{component_type_name}_{idx}_prop_{safe_prop_name} = __{component_type_name}_Props_{idx} extends {{ '{camel_prop_name}'?: infer T }} ? T : __{component_type_name}_Props_{idx} extends {{ '{camel_prop_name}': infer T }} ? T : unknown;\n",
                 );
             }
         }
@@ -537,6 +538,8 @@ fn generate_scope_node(
             let safe_event_name = to_safe_identifier(data.event_name.as_str());
 
             if let Some(ref component_name) = data.target_component {
+                let component_ref = to_safe_identifier(component_name.as_str());
+                let component_type_name = to_safe_identifier_fragment(component_name.as_str());
                 let pascal_event = to_pascal_case(data.event_name.as_str());
                 let on_handler = cstr!("on{pascal_event}");
 
@@ -550,7 +553,7 @@ fn generate_scope_node(
                 // Include scope_id to deduplicate when same component+event appears multiple times
                 append!(
                     *ts,
-                    "{indent}type __{component_name}_{scope_id}_{safe_event_name}_event = typeof {component_name} extends {{ new (): {{ $props: infer __P }} }}\n",
+                    "{indent}type __{component_type_name}_{scope_id}_{safe_event_name}_event = typeof {component_ref} extends {{ new (): {{ $props: infer __P }} }}\n",
                 );
                 append!(
                     *ts,
@@ -558,7 +561,7 @@ fn generate_scope_node(
                 );
                 append!(
                     *ts,
-                    "{indent}  : typeof {component_name} extends (props: infer __P) => any\n",
+                    "{indent}  : typeof {component_ref} extends (props: infer __P) => any\n",
                 );
                 append!(
                     *ts,
@@ -566,7 +569,8 @@ fn generate_scope_node(
                 );
                 append!(*ts, "{indent}    : unknown;\n");
 
-                let event_type = cstr!("__{component_name}_{scope_id}_{safe_event_name}_event");
+                let event_type =
+                    cstr!("__{component_type_name}_{scope_id}_{safe_event_name}_event");
                 append!(*ts, "{indent}(($event: {event_type}) => {{\n");
 
                 profile!(

@@ -4,7 +4,7 @@
 //! v-if narrowing) and component prop value type assertions.
 
 use super::{
-    helpers::{generated_text_range, is_reserved_identifier},
+    helpers::{generated_text_range, is_reserved_identifier, to_safe_identifier_fragment},
     types::VizeMapping,
 };
 use vize_carton::FxHashSet;
@@ -120,7 +120,7 @@ pub(crate) fn generate_component_prop_checks(
     template_offset: u32,
     indent: &str,
 ) {
-    let component_name = &usage.name;
+    let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     for prop in &usage.props {
         if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
             continue;
@@ -145,7 +145,7 @@ pub(crate) fn generate_component_prop_checks(
                 "{indent}// @vize-map: prop -> {prop_src_start}:{prop_src_end}\n",
             );
 
-            let safe_prop_name = prop.name.replace('-', "_");
+            let safe_prop_name = to_safe_identifier_fragment(prop.name.as_str());
             let expr_indent = if usage.vif_guard.is_some() {
                 cstr!("{indent}  ")
             } else {
@@ -160,7 +160,7 @@ pub(crate) fn generate_component_prop_checks(
             let check_name = cstr!("__vize_prop_check_{idx}_{safe_prop_name}");
             append!(
                 *ts,
-                "{expr_indent}const {check_name}: __{component_name}_{idx}_prop_{safe_prop_name} = {};\n",
+                "{expr_indent}const {check_name}: __{component_type_name}_{idx}_prop_{safe_prop_name} = {};\n",
                 generated_value,
             );
             let gen_stmt_end = ts.len();
