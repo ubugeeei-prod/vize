@@ -1,5 +1,7 @@
 import * as fs from "fs";
+import * as https from "https";
 import * as path from "path";
+import * as zlib from "zlib";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import {
@@ -36,7 +38,13 @@ let configurationSyncTimer: ReturnType<typeof setTimeout> | undefined;
 let suppressConfigurationSync = false;
 
 type LspInitializationOptions = Partial<Record<string, boolean>>;
-type ServerCandidateSource = "configured" | "bundled" | "development" | "cargo" | "path";
+type ServerCandidateSource =
+  | "configured"
+  | "bundled"
+  | "development"
+  | "release"
+  | "cargo"
+  | "path";
 type ServerCandidate = {
   path: string;
   source: ServerCandidateSource;
@@ -44,6 +52,10 @@ type ServerCandidate = {
 type InspectedServerCandidate = ServerCandidate & {
   version?: string;
   versionError?: string;
+};
+type ReleaseServerTarget = {
+  archiveName: string;
+  targetName: string;
 };
 type VizeStatus = "disabled" | "starting" | "ready" | "missing-server" | "failed";
 type VizeStatusAction =
@@ -68,6 +80,8 @@ const SELECT_SERVER_ACTION = "Select Binary";
 const SHOW_OUTPUT_ACTION = "Show Output";
 const INITIAL_SETUP_PROMPT_DISMISSED_KEY = "vize.initialSetupPrompt.dismissed";
 const CAPABILITY_PROMPT_DISMISSED_KEY = "vize.capabilityPrompt.dismissed";
+const RELEASE_DOWNLOAD_TIMEOUT_MS = 30_000;
+const RELEASE_DOWNLOAD_MAX_REDIRECTS = 5;
 const FEATURE_SETTING_KEYS = [
   "lint.enable",
   "diagnostics.enable",
@@ -557,7 +571,7 @@ function hasWorkspaceLspConfig(): boolean {
 
 async function showServerNotFoundMessage(context: ExtensionContext): Promise<void> {
   const selection = await window.showErrorMessage(
-    "Vize: Could not find the language server. Install the vize CLI with `cargo install vize` or set vize.serverPath.",
+    "Vize: Could not find the language server. Install a matching GitHub release binary or set vize.serverPath.",
     SELECT_SERVER_ACTION,
     OPEN_SETUP_DOCS_ACTION,
     OPEN_SETTINGS_ACTION,
@@ -752,10 +766,12 @@ function setFeatureOption(
   name: string,
   defaultValue: boolean,
 ): void {
-  const enabled = config.get<boolean>(key, defaultValue);
-  if (enabled === true || hasExplicitConfigurationValue(config, key)) {
-    options[name] = enabled;
+  if (!hasExplicitConfigurationValue(config, key)) {
+    return;
   }
+
+  const enabled = config.get<boolean>(key, defaultValue);
+  options[name] = enabled;
 }
 
 export async function deactivate(): Promise<void> {
@@ -794,6 +810,13 @@ async function findServerPath(
       logSelectedServer(matchingCandidate, expectedVersion);
       selectedServerCandidate = matchingCandidate;
       return matchingCandidate.path;
+    }
+
+    const releaseCandidate = await resolveReleaseServerCandidate(context, exeName, expectedVersion);
+    if (releaseCandidate) {
+      logSelectedServer(releaseCandidate, expectedVersion);
+      selectedServerCandidate = releaseCandidate;
+      return releaseCandidate.path;
     }
   }
 
@@ -913,7 +936,8 @@ function collectServerCandidates(context: ExtensionContext, exeName: string): Se
 
   const pathEnv = process.env.PATH || "";
   const pathSeparator = process.platform === "win32" ? ";" : ":";
-  for (const dir of pathEnv.split(pathSeparator)) {
+  const pathDirs = [...pathEnv.split(pathSeparator), ...getImplicitPathDirs()];
+  for (const dir of pathDirs) {
     if (dir) {
       candidates.push({ path: path.join(dir, exeName), source: "path" });
     }
@@ -1023,6 +1047,348 @@ function getWorkspaceDevPaths(exeName: string): string[] {
     }
   }
   return paths;
+}
+
+function getImplicitPathDirs(): string[] {
+  const dirs: string[] = [];
+  const homeDir = process.env.HOME || process.env.USERPROFILE || "";
+  if (homeDir) {
+    dirs.push(path.join(homeDir, ".local", "bin"), path.join(homeDir, ".nix-profile", "bin"));
+  }
+
+  if (process.platform !== "win32") {
+    dirs.push(
+      "/opt/homebrew/bin",
+      "/usr/local/bin",
+      "/usr/bin",
+      "/bin",
+      "/nix/var/nix/profiles/default/bin",
+      "/run/current-system/sw/bin",
+    );
+  }
+
+  return dirs;
+}
+
+async function resolveReleaseServerCandidate(
+  context: ExtensionContext,
+  exeName: string,
+  expectedVersion: string,
+): Promise<InspectedServerCandidate | undefined> {
+  const target = getReleaseServerTarget();
+  if (!target) {
+    outputChannel.appendLine(
+      `No Vize release binary is available for ${process.platform}/${process.arch}.`,
+    );
+    return undefined;
+  }
+
+  const installDir = path.join(
+    context.globalStorageUri.fsPath,
+    "servers",
+    expectedVersion,
+    target.targetName,
+  );
+  const serverPath = path.join(installDir, exeName);
+  const cachedCandidate = await inspectCachedReleaseServer(serverPath, expectedVersion);
+  if (cachedCandidate) {
+    return cachedCandidate;
+  }
+
+  const archivePath = path.join(installDir, target.archiveName);
+  const downloadUrl = createReleaseDownloadUrl(expectedVersion, target.archiveName);
+
+  try {
+    updateStatusBar("starting", `Downloading Vize language server ${expectedVersion}`);
+    outputChannel.appendLine(`Downloading Vize language server ${expectedVersion}: ${downloadUrl}`);
+    fs.rmSync(installDir, { force: true, recursive: true });
+    await fs.promises.mkdir(installDir, { recursive: true });
+    await downloadFile(downloadUrl, archivePath);
+    await extractReleaseArchive(archivePath, installDir, exeName);
+
+    const candidate = await inspectServerCandidate({
+      path: serverPath,
+      source: "release",
+    });
+    if (candidate.version === expectedVersion) {
+      return candidate;
+    }
+
+    outputChannel.appendLine(
+      `Downloaded Vize language server version ${candidate.version ?? "unknown"} does not match extension ${expectedVersion}.`,
+    );
+  } catch (error) {
+    outputChannel.appendLine(`Failed to download Vize language server: ${String(error)}`);
+  }
+
+  return undefined;
+}
+
+async function inspectCachedReleaseServer(
+  serverPath: string,
+  expectedVersion: string,
+): Promise<InspectedServerCandidate | undefined> {
+  if (!fs.existsSync(serverPath)) {
+    return undefined;
+  }
+
+  const candidate = await inspectServerCandidate({
+    path: serverPath,
+    source: "release",
+  });
+  if (candidate.version === expectedVersion) {
+    return candidate;
+  }
+
+  outputChannel.appendLine(
+    `Cached Vize language server ${candidate.version ?? "unknown"} does not match extension ${expectedVersion}. Refreshing cache.`,
+  );
+  return undefined;
+}
+
+function getReleaseServerTarget(): ReleaseServerTarget | undefined {
+  if (process.platform === "darwin") {
+    if (process.arch === "arm64") {
+      return releaseTarget("aarch64-apple-darwin", "tar.gz");
+    }
+    if (process.arch === "x64") {
+      return releaseTarget("x86_64-apple-darwin", "tar.gz");
+    }
+  }
+
+  if (process.platform === "linux") {
+    if (process.arch === "arm64") {
+      return releaseTarget("aarch64-unknown-linux-gnu", "tar.gz");
+    }
+    if (process.arch === "x64") {
+      return releaseTarget("x86_64-unknown-linux-gnu", "tar.gz");
+    }
+  }
+
+  if (process.platform === "win32") {
+    if (process.arch === "arm64") {
+      return releaseTarget("aarch64-pc-windows-msvc", "zip");
+    }
+    if (process.arch === "x64") {
+      return releaseTarget("x86_64-pc-windows-msvc", "zip");
+    }
+  }
+
+  return undefined;
+}
+
+function releaseTarget(targetName: string, extension: "tar.gz" | "zip"): ReleaseServerTarget {
+  return {
+    archiveName: `vize-${targetName}.${extension}`,
+    targetName,
+  };
+}
+
+function createReleaseDownloadUrl(version: string, archiveName: string): string {
+  return `https://github.com/ubugeeei/vize/releases/download/v${version}/${archiveName}`;
+}
+
+async function downloadFile(url: string, destination: string, redirectCount = 0): Promise<void> {
+  if (redirectCount > RELEASE_DOWNLOAD_MAX_REDIRECTS) {
+    throw new Error(`too many redirects while downloading ${url}`);
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    const request = https.get(
+      url,
+      {
+        headers: {
+          "User-Agent": "vscode-vize",
+        },
+      },
+      (response) => {
+        const statusCode = response.statusCode ?? 0;
+        if (statusCode >= 300 && statusCode < 400 && response.headers.location) {
+          response.resume();
+          const redirectUrl = new URL(response.headers.location, url).toString();
+          downloadFile(redirectUrl, destination, redirectCount + 1).then(resolve, reject);
+          return;
+        }
+
+        if (statusCode !== 200) {
+          response.resume();
+          reject(new Error(`download failed with HTTP ${statusCode}: ${url}`));
+          return;
+        }
+
+        const file = fs.createWriteStream(destination);
+        file.on("error", reject);
+        file.on("finish", () => {
+          file.close((error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+            resolve();
+          });
+        });
+        response.pipe(file);
+      },
+    );
+
+    request.setTimeout(RELEASE_DOWNLOAD_TIMEOUT_MS, () => {
+      request.destroy(new Error(`download timed out after ${RELEASE_DOWNLOAD_TIMEOUT_MS}ms`));
+    });
+    request.on("error", reject);
+  }).catch(async (error) => {
+    await fs.promises.rm(destination, { force: true });
+    throw error;
+  });
+}
+
+async function extractReleaseArchive(
+  archivePath: string,
+  destinationDir: string,
+  exeName: string,
+): Promise<void> {
+  const archive = await fs.promises.readFile(archivePath);
+  if (archivePath.endsWith(".zip")) {
+    await extractServerFromZip(archive, destinationDir, exeName);
+    return;
+  }
+
+  const tar = zlib.gunzipSync(archive);
+  await extractServerFromTar(tar, destinationDir, exeName);
+}
+
+async function extractServerFromTar(
+  tar: Buffer,
+  destinationDir: string,
+  exeName: string,
+): Promise<void> {
+  for (let offset = 0; offset + 512 <= tar.byteLength; offset += 512) {
+    const header = tar.subarray(offset, offset + 512);
+    if (header.every((byte) => byte === 0)) {
+      break;
+    }
+
+    const name = readTarString(header, 0, 100);
+    const prefix = readTarString(header, 345, 155);
+    const entryName = prefix ? `${prefix}/${name}` : name;
+    const size = parseInt(readTarString(header, 124, 12).trim() || "0", 8);
+    const typeFlag = readTarString(header, 156, 1);
+    const dataOffset = offset + 512;
+    const nextOffset = dataOffset + Math.ceil(size / 512) * 512;
+
+    if ((typeFlag === "" || typeFlag === "0") && path.basename(entryName) === exeName) {
+      await writeExtractedServer(
+        tar.subarray(dataOffset, dataOffset + size),
+        path.join(destinationDir, exeName),
+      );
+      return;
+    }
+
+    offset = nextOffset - 512;
+  }
+
+  throw new Error(`archive did not contain ${exeName}`);
+}
+
+async function extractServerFromZip(
+  zip: Buffer,
+  destinationDir: string,
+  exeName: string,
+): Promise<void> {
+  const eocdOffset = findEndOfCentralDirectory(zip);
+  const entryCount = zip.readUInt16LE(eocdOffset + 10);
+  let centralOffset = zip.readUInt32LE(eocdOffset + 16);
+
+  for (let index = 0; index < entryCount; index++) {
+    if (zip.readUInt32LE(centralOffset) !== 0x02014b50) {
+      throw new Error("invalid zip central directory");
+    }
+
+    const compressionMethod = zip.readUInt16LE(centralOffset + 10);
+    const compressedSize = zip.readUInt32LE(centralOffset + 20);
+    const uncompressedSize = zip.readUInt32LE(centralOffset + 24);
+    const fileNameLength = zip.readUInt16LE(centralOffset + 28);
+    const extraLength = zip.readUInt16LE(centralOffset + 30);
+    const commentLength = zip.readUInt16LE(centralOffset + 32);
+    const localHeaderOffset = zip.readUInt32LE(centralOffset + 42);
+    const entryName = zip
+      .subarray(centralOffset + 46, centralOffset + 46 + fileNameLength)
+      .toString("utf-8");
+
+    if (path.basename(entryName) === exeName) {
+      const extracted = extractZipEntry(zip, {
+        compressedSize,
+        compressionMethod,
+        localHeaderOffset,
+        uncompressedSize,
+      });
+      await writeExtractedServer(extracted, path.join(destinationDir, exeName));
+      return;
+    }
+
+    centralOffset += 46 + fileNameLength + extraLength + commentLength;
+  }
+
+  throw new Error(`archive did not contain ${exeName}`);
+}
+
+function extractZipEntry(
+  zip: Buffer,
+  entry: {
+    compressedSize: number;
+    compressionMethod: number;
+    localHeaderOffset: number;
+    uncompressedSize: number;
+  },
+): Buffer {
+  if (zip.readUInt32LE(entry.localHeaderOffset) !== 0x04034b50) {
+    throw new Error("invalid zip local header");
+  }
+
+  const fileNameLength = zip.readUInt16LE(entry.localHeaderOffset + 26);
+  const extraLength = zip.readUInt16LE(entry.localHeaderOffset + 28);
+  const dataOffset = entry.localHeaderOffset + 30 + fileNameLength + extraLength;
+  const compressed = zip.subarray(dataOffset, dataOffset + entry.compressedSize);
+
+  if (entry.compressionMethod === 0) {
+    if (compressed.byteLength !== entry.uncompressedSize) {
+      throw new Error("stored zip entry has an unexpected size");
+    }
+    return compressed;
+  }
+
+  if (entry.compressionMethod === 8) {
+    const inflated = zlib.inflateRawSync(compressed);
+    if (inflated.byteLength !== entry.uncompressedSize) {
+      throw new Error("deflated zip entry has an unexpected size");
+    }
+    return inflated;
+  }
+
+  throw new Error(`unsupported zip compression method ${entry.compressionMethod}`);
+}
+
+function findEndOfCentralDirectory(zip: Buffer): number {
+  const minimumOffset = Math.max(0, zip.byteLength - 65_557);
+  for (let offset = zip.byteLength - 22; offset >= minimumOffset; offset--) {
+    if (zip.readUInt32LE(offset) === 0x06054b50) {
+      return offset;
+    }
+  }
+
+  throw new Error("invalid zip archive");
+}
+
+function readTarString(buffer: Buffer, start: number, length: number): string {
+  const raw = buffer.subarray(start, start + length);
+  const end = raw.indexOf(0);
+  return raw.subarray(0, end === -1 ? raw.byteLength : end).toString("utf-8");
+}
+
+async function writeExtractedServer(contents: Buffer, serverPath: string): Promise<void> {
+  await fs.promises.writeFile(serverPath, contents);
+  if (process.platform !== "win32") {
+    await fs.promises.chmod(serverPath, 0o755);
+  }
 }
 
 function createServerOptions(serverPath: string): ServerOptions {

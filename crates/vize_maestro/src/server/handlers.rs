@@ -9,17 +9,17 @@ use tower_lsp::{
     jsonrpc::Result,
     lsp_types::{
         CodeActionParams, CodeActionResponse, CodeLens, CodeLensParams, CompletionItem,
-        CompletionParams, CompletionResponse, DidChangeTextDocumentParams,
-        DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-        DocumentFormattingParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
-        DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
-        FoldingRangeKind, FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover,
-        HoverParams, InitializeParams, InitializeResult, InitializedParams, InlayHint,
-        InlayHintParams, Location, MessageType, Position, PrepareRenameResponse, Range,
-        ReferenceParams, RenameFilesParams, RenameParams, SemanticTokensParams,
-        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
-        SymbolInformation, SymbolKind, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
-        WorkspaceSymbolParams,
+        CompletionParams, CompletionResponse, DidChangeConfigurationParams,
+        DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
+        DidSaveTextDocumentParams, DocumentFormattingParams, DocumentLink, DocumentLinkParams,
+        DocumentRangeFormattingParams, DocumentSymbol, DocumentSymbolParams,
+        DocumentSymbolResponse, FoldingRange, FoldingRangeKind, FoldingRangeParams,
+        GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, InitializeParams,
+        InitializeResult, InitializedParams, InlayHint, InlayHintParams, Location, MessageType,
+        Position, PrepareRenameResponse, Range, ReferenceParams, RenameFilesParams, RenameParams,
+        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
+        SemanticTokensResult, ServerInfo, SymbolInformation, SymbolKind,
+        TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
     },
 };
 
@@ -74,6 +74,12 @@ impl LanguageServer for MaestroServer {
         self.client
             .log_message(MessageType::INFO, "vize_maestro LSP server initialized")
             .await;
+    }
+
+    async fn did_change_configuration(&self, _params: DidChangeConfigurationParams) {
+        tracing::debug!(
+            "Received workspace/didChangeConfiguration; VS Code restarts the server for Vize configuration changes"
+        );
     }
 
     async fn shutdown(&self) -> Result<()> {

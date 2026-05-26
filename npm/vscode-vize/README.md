@@ -43,7 +43,9 @@ vp exec vsce package --no-dependencies --out dist/vize.vsix
 ## Requirements
 
 - VS Code 1.75+
-- `vize` CLI installed (`cargo install vize`) unless you are using a build that bundles the server binary
+- A matching Vize language server binary. The extension auto-detects bundled, development, cached
+  GitHub release, cargo, and `PATH` binaries, and downloads the matching GitHub release binary when
+  no local binary matches the extension version. `vize.serverPath` is only needed for custom builds.
 
 ## Configuration
 
