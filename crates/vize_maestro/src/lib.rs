@@ -56,9 +56,7 @@
 //! ## Usage
 //!
 //! ```no_run
-//! fn main() {
-//!     vize_maestro::serve_blocking().unwrap();
-//! }
+//! vize_maestro::serve_blocking().unwrap();
 //! ```
 
 pub mod document;
@@ -149,12 +147,11 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
 
     tracing::info!("Starting vize_maestro LSP server on port {}", port);
 
-    #[allow(clippy::disallowed_macros)]
-    let addr = format!("127.0.0.1:{}", port);
-    let listener = TcpListener::bind(addr)?;
+    let addr = vize_carton::cstr!("127.0.0.1:{port}");
+    let listener = TcpListener::bind(addr.as_str())?;
     tracing::info!("Listening on 127.0.0.1:{}", port);
 
-    let (stream, addr) = listener.accept()?;
+    let (stream, addr) = runtime::accept_tcp("vize-lsp-tcp-accept", listener).await?;
     tracing::info!("Accepted connection from {}", addr);
 
     let _ = stream.set_nodelay(true);
