@@ -292,11 +292,16 @@ pub fn build_line_diff(left: &str, right: &str) -> Vec<InspectorDiffLine> {
 
     for left_index in (0..left_lines.len()).rev() {
         for right_index in (0..right_lines.len()).rev() {
-            table[left_index][right_index] = if left_lines[left_index] == right_lines[right_index] {
-                table[left_index + 1][right_index + 1] + 1
+            let same_score =
+                diff_line_match_weight(&left_lines[left_index], &right_lines[right_index]);
+            let take_same = if same_score > 0 {
+                table[left_index + 1][right_index + 1] + same_score
             } else {
-                table[left_index + 1][right_index].max(table[left_index][right_index + 1])
+                0
             };
+            table[left_index][right_index] = take_same
+                .max(table[left_index + 1][right_index])
+                .max(table[left_index][right_index + 1]);
         }
     }
 
@@ -305,7 +310,16 @@ pub fn build_line_diff(left: &str, right: &str) -> Vec<InspectorDiffLine> {
     let mut right_index = 0;
 
     while left_index < left_lines.len() && right_index < right_lines.len() {
-        if left_lines[left_index] == right_lines[right_index] {
+        let same_score = diff_line_match_weight(&left_lines[left_index], &right_lines[right_index]);
+        let take_same = if same_score > 0 {
+            table[left_index + 1][right_index + 1] + same_score
+        } else {
+            0
+        };
+        if same_score > 0
+            && take_same >= table[left_index + 1][right_index]
+            && take_same >= table[left_index][right_index + 1]
+        {
             diff.push(InspectorDiffLine {
                 kind: "same",
                 left_line: Some(left_index + 1),
@@ -354,6 +368,24 @@ pub fn build_line_diff(left: &str, right: &str) -> Vec<InspectorDiffLine> {
     }
 
     diff
+}
+
+fn diff_line_match_weight(left: &str, right: &str) -> usize {
+    if left != right {
+        return 0;
+    }
+
+    let trimmed = left.trim();
+    if trimmed.is_empty() {
+        1
+    } else if trimmed
+        .chars()
+        .any(|character| character.is_alphanumeric() || character == '_' || character == '$')
+    {
+        32 + trimmed.chars().take(80).count()
+    } else {
+        2 + trimmed.chars().take(8).count()
+    }
 }
 
 pub fn diff_stats(lines: &[InspectorDiffLine]) -> InspectorDiffStats {
@@ -747,7 +779,7 @@ fn line_count(source: &str) -> usize {
 mod tests {
     use super::{
         InspectorOptions, InspectorSourceFile, InspectorTarget, build_agent_report, build_diff,
-        build_graph, build_payload, build_playground_url, serialize_agent_report,
+        build_graph, build_line_diff, build_payload, build_playground_url, serialize_agent_report,
         serialize_payload,
     };
     use vize_carton::cstr;
@@ -869,6 +901,38 @@ import RuntimeOnly from './RuntimeOnly.vue';
         assert_eq!(diff.lines[1].kind, "remove");
         assert_eq!(diff.lines[2].kind, "add");
         assert_eq!(diff.lines[4].right_line, Some(4));
+    }
+
+    #[test]
+    fn line_diff_prefers_content_matches_over_empty_line_anchors() {
+        let left = "\
+import { defineComponent as _defineComponent } from 'vue'
+import { computed, watch } from 'vue'
+
+// Reactive Props Destructure
+export default {}";
+        let right = "\
+import { defineComponent as _defineComponent } from 'vue'
+import {
+  openBlock as _openBlock,
+} from 'vue'
+
+import { computed, watch } from 'vue'
+
+export default {}";
+
+        let diff = build_line_diff(left, right);
+        let matched_import = diff
+            .iter()
+            .find(|line| line.text == "import { computed, watch } from 'vue'")
+            .expect("matching import line exists");
+
+        assert_eq!(matched_import.kind, "same");
+        assert_eq!(matched_import.left_line, Some(2));
+        assert_eq!(matched_import.right_line, Some(6));
+        assert!(!diff.iter().any(|line| {
+            line.kind == "remove" && line.text == "import { computed, watch } from 'vue'"
+        }));
     }
 
     #[test]

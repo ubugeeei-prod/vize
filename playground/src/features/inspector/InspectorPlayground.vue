@@ -4,16 +4,18 @@ import { mdiGithub } from "@mdi/js";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import CodeHighlight from "../../shared/CodeHighlight.vue";
-import {
-  codeToThemedTokenLines,
-  type CodeHighlightLanguage,
-  type ThemedCodeToken,
-} from "../../shared/codeHighlighting";
+import { codeToThemedTokenLines, type CodeHighlightLanguage } from "../../shared/codeHighlighting";
 import { PRESETS } from "../../presets";
 import { useClipboard } from "../../utils/useClipboard";
 import { useTheme } from "../../utils/useTheme";
 import { type loadWasm, getWasm } from "../../wasm/index";
 import { compileInspectorReport } from "./compareCompilers";
+import {
+  buildSplitDiffRows,
+  diffLineText,
+  renderPlainDiffLines,
+  type HighlightedDiffLine,
+} from "./diffRows";
 import { parseVirLines } from "../croquis/useVirTokenizer";
 import { createInspectorUrl, createPullRequestUrl, readInspectorPayloadFromUrl } from "./share";
 import type {
@@ -23,7 +25,6 @@ import type {
   InspectorPayload,
   InspectorReport,
   InspectorTarget,
-  DiffLine,
 } from "./types";
 
 const props = defineProps<{
@@ -54,21 +55,6 @@ const activeOutputTab = ref<
 const diffViewMode = ref<"merged" | "split">("merged");
 const highlightedDiffLines = ref<HighlightedDiffLine[]>([]);
 let latestDiffHighlightId = 0;
-
-type HighlightedDiffLine = DiffLine & {
-  tokens: ThemedCodeToken[];
-};
-
-interface SplitDiffSide {
-  kind: "same" | "remove" | "add" | "empty";
-  line: number | null;
-  tokens: ThemedCodeToken[];
-}
-
-interface SplitDiffRow {
-  left: SplitDiffSide;
-  right: SplitDiffSide;
-}
 
 const selectedFile = computed(() => files.value[selectedFileIndex.value] ?? files.value[0]!);
 const source = computed({
@@ -198,83 +184,6 @@ function scheduleCompile() {
 
 function openPullRequest() {
   window.open(pullRequestUrl.value, "_blank", "noopener,noreferrer");
-}
-
-function diffLineText(line: DiffLine): string {
-  return line.text || " ";
-}
-
-function renderPlainDiffLines(lines: DiffLine[]): HighlightedDiffLine[] {
-  return lines.map((line) => ({
-    ...line,
-    tokens: [
-      {
-        content: diffLineText(line),
-        darkColor: undefined,
-        lightColor: undefined,
-      },
-    ],
-  }));
-}
-
-function emptySplitSide(): SplitDiffSide {
-  return {
-    kind: "empty",
-    line: null,
-    tokens: [
-      {
-        content: "",
-        darkColor: undefined,
-        lightColor: undefined,
-      },
-    ],
-  };
-}
-
-function toSplitSide(line: HighlightedDiffLine, side: "left" | "right"): SplitDiffSide {
-  return {
-    kind: line.kind,
-    line: side === "left" ? line.leftLine : line.rightLine,
-    tokens: line.tokens,
-  };
-}
-
-function buildSplitDiffRows(lines: HighlightedDiffLine[]): SplitDiffRow[] {
-  const rows: SplitDiffRow[] = [];
-
-  for (let index = 0; index < lines.length; ) {
-    const line = lines[index]!;
-    if (line.kind === "same") {
-      rows.push({
-        left: toSplitSide(line, "left"),
-        right: toSplitSide(line, "right"),
-      });
-      index += 1;
-      continue;
-    }
-
-    const removals: HighlightedDiffLine[] = [];
-    const additions: HighlightedDiffLine[] = [];
-    while (index < lines.length && lines[index]!.kind !== "same") {
-      const changedLine = lines[index]!;
-      if (changedLine.kind === "remove") {
-        removals.push(changedLine);
-      } else {
-        additions.push(changedLine);
-      }
-      index += 1;
-    }
-
-    const rowCount = Math.max(removals.length, additions.length);
-    for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
-      rows.push({
-        left: removals[rowIndex] ? toSplitSide(removals[rowIndex], "left") : emptySplitSide(),
-        right: additions[rowIndex] ? toSplitSide(additions[rowIndex], "right") : emptySplitSide(),
-      });
-    }
-  }
-
-  return rows;
 }
 
 async function updateDiffHighlights() {
