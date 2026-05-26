@@ -79,23 +79,40 @@ async function compileOfficialVue(
     const warnings = normalizeCompilerMessages(parsed.errors);
     let bindingMetadata: BindingMetadata = {};
     let scriptCode = "";
+    const scoped = descriptor.styles.some((style) => style.scoped);
+    const inlineTemplate = Boolean(
+      descriptor.scriptSetup && descriptor.template && target === "dom",
+    );
 
     if (descriptor.script || descriptor.scriptSetup) {
       const script = compileScript(descriptor, {
         id: file.path,
-        inlineTemplate: false,
+        inlineTemplate,
+        isProd: true,
+        templateOptions: inlineTemplate
+          ? {
+              filename: file.path,
+              id: file.path,
+              scoped,
+              isProd: true,
+              compilerOptions: {
+                expressionPlugins: isTypeScript ? ["typescript"] : undefined,
+              },
+            }
+          : undefined,
       });
       scriptCode = script.content;
       bindingMetadata = script.bindings;
     }
 
     let templateCode = "";
-    if (descriptor.template) {
+    if (descriptor.template && !inlineTemplate) {
       const template = compileTemplate({
         source: descriptor.template.content,
         filename: file.path,
         id: file.path,
-        scoped: descriptor.styles.some((style) => style.scoped),
+        scoped,
+        isProd: true,
         ssr: target === "ssr",
         compilerOptions: {
           bindingMetadata,

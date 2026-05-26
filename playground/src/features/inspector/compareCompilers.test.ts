@@ -191,4 +191,117 @@ describe("compileInspectorReport", () => {
     ]);
     expect(buildInspectorDiff).toHaveBeenCalled();
   });
+
+  it("compares script setup DOM output with Vue's inline production render shape", async () => {
+    const buildInspectorDiff = vi.fn(() => ({
+      lines: [],
+      stats: {
+        additions: 0,
+        removals: 0,
+        unchanged: 0,
+      },
+    }));
+    const compiler = {
+      compileSfc: vi.fn(() => ({
+        descriptor: {
+          filename: "src/App.vue",
+          source: "",
+          template: {
+            content: "{{ msg }}",
+            loc: { start: 0, end: 0 },
+            attrs: {},
+          },
+          script: undefined,
+          scriptSetup: {
+            content: "const msg: string = 'hi'",
+            loc: { start: 0, end: 0 },
+            attrs: { lang: "ts" },
+            lang: "ts",
+            setup: true,
+          },
+          styles: [],
+          customBlocks: [],
+        },
+        script: { code: "export default {}" },
+        warnings: [],
+      })),
+      typeCheck: vi.fn(() => ({
+        diagnostics: [],
+        virtualTs: "",
+        errorCount: 0,
+        warningCount: 0,
+      })),
+      analyzeSfc: vi.fn(() => ({
+        croquis: {
+          is_setup: true,
+          bindings: [],
+          scopes: [],
+          macros: [],
+          props: [],
+          emits: [],
+          provides: [],
+          injects: [],
+          typeExports: [],
+          invalidExports: [],
+          diagnostics: [],
+          stats: {
+            binding_count: 0,
+            unused_binding_count: 0,
+            scope_count: 0,
+            macro_count: 0,
+            type_export_count: 0,
+            invalid_export_count: 0,
+            error_count: 0,
+            warning_count: 0,
+          },
+        },
+        diagnostics: [],
+        vir: "",
+      })),
+      analyzeCrossFile: vi.fn(() => ({
+        diagnostics: [],
+        circularDependencies: [],
+        stats: null,
+        filePaths: ["src/App.vue"],
+      })),
+      buildInspectorGraph: vi.fn(() => ({
+        nodes: [],
+        edges: [],
+      })),
+      buildInspectorDiff,
+    } as unknown as WasmModule;
+
+    await compileInspectorReport({
+      compiler,
+      file: {
+        path: "src/App.vue",
+        source:
+          "<script setup lang=\"ts\">const msg: string = 'hi'</script><template><div>{{ msg }}</div></template>",
+      },
+      target: "dom",
+    });
+
+    const [officialOutput] = buildInspectorDiff.mock.calls[0]!;
+
+    expect(officialOutput).toContain("return (_ctx: any,_cache: any) => {");
+    expect(officialOutput).not.toContain("export function render");
+    expect(officialOutput).not.toContain("Object.defineProperty(__returned__");
+
+    buildInspectorDiff.mockClear();
+
+    await compileInspectorReport({
+      compiler,
+      file: {
+        path: "src/App.vue",
+        source:
+          "<script setup lang=\"ts\">const msg: string = 'hi'</script><template><div>{{ msg }}</div></template>",
+      },
+      target: "ssr",
+    });
+
+    const [ssrOfficialOutput] = buildInspectorDiff.mock.calls[0]!;
+
+    expect(ssrOfficialOutput).toContain("export function ssrRender");
+    expect(ssrOfficialOutput).not.toContain("return (_ctx: any,_cache: any) => {");
+  });
 });
