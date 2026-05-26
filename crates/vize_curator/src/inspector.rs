@@ -225,7 +225,7 @@ pub fn build_graph(files: &[InspectorSourceFile]) -> InspectorGraph {
         left.from
             .cmp(&right.from)
             .then_with(|| left.to.cmp(&right.to))
-            .then_with(|| left.kind.cmp(&right.kind))
+            .then_with(|| left.kind.cmp(right.kind))
             .then_with(|| left.specifier.cmp(&right.specifier))
     });
 
