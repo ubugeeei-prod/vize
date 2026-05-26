@@ -11,6 +11,7 @@ Commands:
   fmt           Format Vue SFC files [aliases: glyph]
   lint          Lint Vue SFC files [aliases: patina]
   check         Type check Vue SFC files
+  clean         Remove Vize-generated cache artifacts
   check-server  Start type check JSON-RPC server (Unix only)
   musea         Start component gallery server
   lsp           Start Language Server Protocol server [aliases: maestro]

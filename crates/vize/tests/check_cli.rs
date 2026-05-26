@@ -594,7 +594,10 @@ const count: string = 0;
 "#,
         )],
     );
-    let socket_path = project_root.join("check.sock");
+    let socket_path = std::path::PathBuf::from(
+        cstr!("/tmp/vize-check-{}-socket-json.sock", std::process::id()).as_str(),
+    );
+    let _ = std::fs::remove_file(&socket_path);
     let listener = UnixListener::bind(&socket_path).unwrap();
     let server = std::thread::spawn(move || {
         let (mut stream, _) = listener.accept().unwrap();
@@ -646,6 +649,7 @@ const count: string = 0;
         .unwrap();
 
     server.join().unwrap();
+    let _ = std::fs::remove_file(&socket_path);
     let stdout = std::string::String::from_utf8(output.stdout).unwrap();
     let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
 

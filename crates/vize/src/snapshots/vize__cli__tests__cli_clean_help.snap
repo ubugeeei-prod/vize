@@ -1,0 +1,24 @@
+---
+source: crates/vize/src/cli.rs
+assertion_line: 127
+expression: "command_help(\"clean\")"
+---
+Remove Vize-generated cache artifacts
+
+Usage: clean [OPTIONS] [ROOT]
+
+Arguments:
+  [ROOT]
+          Project root whose node_modules/.vize cache should be removed
+
+          [default: .]
+
+Options:
+      --dry-run
+          Print the cache path without deleting it
+
+  -q, --quiet
+          Suppress status output
+
+  -h, --help
+          Print help

@@ -8,6 +8,10 @@ use std::path::{Path, PathBuf};
 
 use super::error::{CorsaError, CorsaResult};
 use super::import_rewriter::ImportRewriter;
+use super::materialize_fs::{
+    ensure_dir, ensure_materialize_root, prune_unexpected_entries, record_write_batch,
+    write_file_untracked, write_if_changed,
+};
 use super::runtime_deps::materialize_runtime_dependencies;
 use super::source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
 use super::{Diagnostic, SfcBlockType};
@@ -268,15 +272,19 @@ impl VirtualProject {
 
     /// Materialize the virtual project to disk for diagnostics collection.
     pub fn materialize(&self) -> CorsaResult<()> {
+        let expected_files = self.expected_materialized_files();
         profile!(
             "canon.project.prepare_dir",
-            (|| -> CorsaResult<()> {
-                if self.virtual_root.exists() {
-                    std::fs::remove_dir_all(&self.virtual_root)?;
-                }
-                std::fs::create_dir_all(&self.virtual_root)?;
-                Ok(())
-            })()
+            ensure_materialize_root(&self.virtual_root)
+        )?;
+
+        profile!(
+            "canon.project.gc",
+            prune_unexpected_entries(
+                &self.virtual_root,
+                &expected_files,
+                &[self.virtual_root.join("node_modules")]
+            )
         )?;
 
         profile!(
@@ -288,14 +296,19 @@ impl VirtualProject {
             "canon.project.write_files",
             (|| -> CorsaResult<()> {
                 let mut created_dirs: FxHashSet<&Path> = FxHashSet::default();
+                let mut write_calls = 0u64;
+                let mut written_bytes = 0u64;
                 for file in self.virtual_files.values() {
                     if let Some(parent) = file.virtual_path.parent()
                         && created_dirs.insert(parent)
                     {
-                        std::fs::create_dir_all(parent)?;
+                        ensure_dir(parent)?;
                     }
-                    std::fs::write(&file.virtual_path, &file.content)?;
+                    write_file_untracked(&file.virtual_path, file.content.as_bytes())?;
+                    write_calls += 1;
+                    written_bytes += file.content.len() as u64;
                 }
+                record_write_batch(write_calls, written_bytes);
                 Ok(())
             })()
         )?;
@@ -436,7 +449,8 @@ impl VirtualProject {
         declaration_map: bool,
     ) -> CorsaResult<()> {
         let tsconfig = self.generate_tsconfig_value(out_dir, declaration_map)?;
-        std::fs::write(path, serde_json::to_string_pretty(&tsconfig)?)?;
+        let content = serde_json::to_string_pretty(&tsconfig)?;
+        write_if_changed(path, content.as_bytes())?;
         Ok(())
     }
 
@@ -533,7 +547,10 @@ impl VirtualProject {
             content.push('\n');
         }
 
-        std::fs::write(self.virtual_root.join(AUTO_IMPORT_STUBS_FILE), content)?;
+        write_if_changed(
+            &self.virtual_root.join(AUTO_IMPORT_STUBS_FILE),
+            content.as_bytes(),
+        )?;
         Ok(())
     }
 
@@ -548,8 +565,23 @@ declare module "*.vue.ts" {
   export default component;
 }
 "#;
-        std::fs::write(self.virtual_root.join(VUE_MODULE_STUBS_FILE), content)?;
+        write_if_changed(
+            &self.virtual_root.join(VUE_MODULE_STUBS_FILE),
+            content.as_bytes(),
+        )?;
         Ok(())
+    }
+
+    fn expected_materialized_files(&self) -> FxHashSet<PathBuf> {
+        let mut files = FxHashSet::default();
+        files.reserve(self.virtual_files.len() + 3);
+        files.extend(self.virtual_files.keys().cloned());
+        if !self.virtual_ts_options.auto_import_stubs.is_empty() {
+            files.insert(self.virtual_root.join(AUTO_IMPORT_STUBS_FILE));
+        }
+        files.insert(self.virtual_root.join(VUE_MODULE_STUBS_FILE));
+        files.insert(self.virtual_root.join("tsconfig.json"));
+        files
     }
 
     fn common_virtual_source_dir(&self) -> PathBuf {
@@ -1129,7 +1161,10 @@ fn strip_trailing_commas(content: &str) -> CompactString {
 
 #[cfg(test)]
 mod tests {
-    use super::{VirtualProject, parse_jsonc_value, source_type_for_path, strip_json_comments};
+    use super::{
+        AUTO_IMPORT_STUBS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject, parse_jsonc_value,
+        source_type_for_path, strip_json_comments,
+    };
     use crate::batch::SfcBlockType;
     use crate::virtual_ts::VirtualTsOptions;
     use std::fs;
@@ -1369,6 +1404,83 @@ const message = 'Hello'
                 .unwrap()
                 .contains("__vize_auto_imports.d.ts")
         );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn materialize_prunes_stale_virtual_project_entries() {
+        let case_dir = unique_case_dir("materialize-gc");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let vue_path = src_dir.join("App.vue");
+        fs::write(
+            &vue_path,
+            r#"<script setup lang="ts">
+const message = 'Hello'
+</script>
+
+<template>
+  <div>{{ message }}</div>
+</template>
+"#,
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        let mut options = VirtualTsOptions::default();
+        options
+            .auto_import_stubs
+            .push("declare function autoGenerated(): string;".into());
+        project.set_virtual_ts_options(options);
+        project.register_path(&vue_path).unwrap();
+        project.materialize().unwrap();
+
+        let virtual_root = project.virtual_root().to_path_buf();
+        let stale_file = virtual_root.join("src/Old.vue.ts");
+        let stale_dir_file = virtual_root.join("stale/nested/Unused.vue.ts");
+        let stale_dts_config = virtual_root.join("tsconfig.declaration.json");
+        let stale_package = virtual_root.join("node_modules/unused/package.json");
+        fs::write(&stale_file, "export default {}").unwrap();
+        fs::create_dir_all(stale_dir_file.parent().unwrap()).unwrap();
+        fs::write(&stale_dir_file, "export default {}").unwrap();
+        fs::write(&stale_dts_config, "{}").unwrap();
+        fs::create_dir_all(stale_package.parent().unwrap()).unwrap();
+        fs::write(&stale_package, "{}").unwrap();
+        #[cfg(unix)]
+        {
+            let expected_virtual_file = virtual_root.join("src/App.vue.ts");
+            let hijack_target = case_dir.join("hijack.ts");
+            fs::write(&hijack_target, "hijacked").unwrap();
+            fs::remove_file(&expected_virtual_file).unwrap();
+            std::os::unix::fs::symlink(&hijack_target, &expected_virtual_file).unwrap();
+        }
+
+        let mut next_project = VirtualProject::new(&case_dir).unwrap();
+        next_project.register_path(&vue_path).unwrap();
+        next_project.materialize().unwrap();
+
+        assert!(!stale_file.exists());
+        assert!(!stale_dir_file.exists());
+        assert!(!stale_dir_file.parent().unwrap().exists());
+        assert!(!stale_dts_config.exists());
+        assert!(!virtual_root.join(AUTO_IMPORT_STUBS_FILE).exists());
+        assert!(!stale_package.exists());
+        assert!(!stale_package.parent().unwrap().exists());
+        assert!(virtual_root.join("src/App.vue.ts").exists());
+        #[cfg(unix)]
+        {
+            let virtual_file_metadata =
+                fs::symlink_metadata(virtual_root.join("src/App.vue.ts")).unwrap();
+            assert!(!virtual_file_metadata.file_type().is_symlink());
+            assert_eq!(
+                fs::read_to_string(case_dir.join("hijack.ts")).unwrap(),
+                "hijacked"
+            );
+        }
+        assert!(virtual_root.join(VUE_MODULE_STUBS_FILE).exists());
+        assert!(virtual_root.join("tsconfig.json").exists());
 
         let _ = fs::remove_dir_all(&case_dir);
     }

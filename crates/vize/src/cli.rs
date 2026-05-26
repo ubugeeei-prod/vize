@@ -32,6 +32,9 @@ enum Commands {
     /// Type check Vue SFC files
     Check(crate::commands::check::CheckArgs),
 
+    /// Remove Vize-generated cache artifacts
+    Clean(crate::commands::clean::CleanArgs),
+
     /// Start type check JSON-RPC server (Unix only)
     #[cfg(unix)]
     CheckServer(crate::commands::check_server::CheckServerArgs),
@@ -74,6 +77,7 @@ fn run(cli: Cli) {
         Some(Commands::Fmt(args)) => crate::commands::fmt::run(args),
         Some(Commands::Lint(args)) => crate::commands::lint::run(args),
         Some(Commands::Check(args)) => crate::commands::check::run(args),
+        Some(Commands::Clean(args)) => crate::commands::clean::run(args),
         #[cfg(unix)]
         Some(Commands::CheckServer(args)) => crate::commands::check_server::run(args),
         Some(Commands::Musea(args)) => crate::commands::musea::run(args),
@@ -116,6 +120,11 @@ mod tests {
     #[test]
     fn check_help_snapshot() {
         insta::assert_snapshot!("cli_check_help", command_help("check"));
+    }
+
+    #[test]
+    fn clean_help_snapshot() {
+        insta::assert_snapshot!("cli_clean_help", command_help("clean"));
     }
 
     fn command_help(command_name: &str) -> String {

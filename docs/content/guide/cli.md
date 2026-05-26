@@ -8,7 +8,7 @@ title: CLI
 
 This page describes the Rust-native `vize` binary.
 The npm `vize` package exposes shared config helpers plus NAPI-backed `build`, `fmt`, `lint`,
-`check`, `ready`, and `upgrade` commands. Install the Rust binary when you need LSP, IDE,
+`check`, `clean`, `ready`, and `upgrade` commands. Install the Rust binary when you need LSP, IDE,
 `check-server`, or Corsa project diagnostics.
 
 For a higher-level explanation of the analysis pipeline, see [Static Analysis](./static-analysis.md).
@@ -54,6 +54,7 @@ When invoked without a command, `vize` defaults to `build`.
 | `fmt`          | Format Vue SFC files                            |
 | `lint`         | Lint Vue SFC files                              |
 | `check`        | Type check Vue SFC, TS, TSX, and `.d.ts` inputs |
+| `clean`        | Remove Vize-generated cache artifacts           |
 | `ready`        | Run `fmt`, `lint`, `check`, and `build`         |
 | `upgrade`      | Update the installed CLI                        |
 | `check-server` | Start the Unix JSON-RPC typecheck server        |
@@ -217,6 +218,17 @@ declare module "vue" {
 ```bash
 vize check --tsconfig tsconfig.app.json src
 ```
+
+## Clean
+
+```bash
+vize clean
+vize clean --dry-run
+vize clean path/to/project
+```
+
+`vize clean` removes `node_modules/.vize` for the selected project root. Use it when profile
+artifacts or materialized Corsa project files should be rebuilt from a blank cache directory.
 
 ## Ready
 

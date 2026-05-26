@@ -1,6 +1,8 @@
 use std::path::{Path, PathBuf};
 
 use super::error::CorsaResult;
+use super::materialize_fs::{ensure_dir, prune_dir_entries, remove_path, write_if_changed};
+use vize_carton::FxHashSet;
 
 const VUE_STUB_PACKAGE_JSON: &str = r#"{
   "name": "vue",
@@ -98,10 +100,11 @@ pub(super) fn materialize_runtime_dependencies(
     virtual_root: &Path,
 ) -> CorsaResult<()> {
     let node_modules_dir = virtual_root.join("node_modules");
-    std::fs::create_dir_all(&node_modules_dir)?;
+    ensure_dir(&node_modules_dir)?;
 
     materialize_vue_support(project_root, &node_modules_dir)?;
     materialize_vite_support(project_root, &node_modules_dir)?;
+    prune_runtime_node_modules(&node_modules_dir)?;
 
     Ok(())
 }
@@ -151,34 +154,48 @@ fn resolve_ancestor_package(project_root: &Path, package: &str) -> Option<PathBu
 
 fn write_vue_stub(node_modules_dir: &Path) -> std::io::Result<()> {
     let vue_dir = node_modules_dir.join("vue");
-    remove_path(&vue_dir)?;
-    std::fs::create_dir_all(&vue_dir)?;
-    std::fs::write(vue_dir.join("package.json"), VUE_STUB_PACKAGE_JSON)?;
-    std::fs::write(vue_dir.join("index.d.ts"), VUE_STUB_TYPES)?;
+    ensure_stub_dir(&vue_dir)?;
+    write_if_changed(
+        &vue_dir.join("package.json"),
+        VUE_STUB_PACKAGE_JSON.as_bytes(),
+    )?;
+    write_if_changed(&vue_dir.join("index.d.ts"), VUE_STUB_TYPES.as_bytes())?;
+    prune_stub_dir(&vue_dir, &["package.json", "index.d.ts"])?;
     Ok(())
 }
 
 fn write_vite_stub(node_modules_dir: &Path) -> std::io::Result<()> {
     let vite_dir = node_modules_dir.join("vite");
-    remove_path(&vite_dir)?;
-    std::fs::create_dir_all(&vite_dir)?;
-    std::fs::write(vite_dir.join("package.json"), VITE_STUB_PACKAGE_JSON)?;
-    std::fs::write(vite_dir.join("client.d.ts"), VITE_CLIENT_STUB)?;
+    ensure_stub_dir(&vite_dir)?;
+    write_if_changed(
+        &vite_dir.join("package.json"),
+        VITE_STUB_PACKAGE_JSON.as_bytes(),
+    )?;
+    write_if_changed(&vite_dir.join("client.d.ts"), VITE_CLIENT_STUB.as_bytes())?;
+    prune_stub_dir(&vite_dir, &["package.json", "client.d.ts"])?;
     Ok(())
 }
 
-fn remove_path(path: &Path) -> std::io::Result<()> {
-    if path.is_symlink() || path.is_file() {
-        std::fs::remove_file(path)?;
-    } else if path.exists() {
-        std::fs::remove_dir_all(path)?;
+fn ensure_stub_dir(path: &Path) -> std::io::Result<()> {
+    match std::fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_dir() && !metadata.file_type().is_symlink() => {}
+        Ok(_) => {
+            remove_path(path)?;
+            ensure_dir(path)?;
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => ensure_dir(path)?,
+        Err(error) => return Err(error),
     }
     Ok(())
 }
 
 fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
+    if symlink_matches(source, target)? {
+        return Ok(());
+    }
+
     if let Some(parent) = target.parent() {
-        std::fs::create_dir_all(parent)?;
+        ensure_dir(parent)?;
     }
 
     remove_path(target)?;
@@ -196,4 +213,39 @@ fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
             std::os::windows::fs::symlink_file(source, target)
         }
     }
+}
+
+fn symlink_matches(source: &Path, target: &Path) -> std::io::Result<bool> {
+    let metadata = match std::fs::symlink_metadata(target) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+        Err(error) => return Err(error),
+    };
+    if !metadata.file_type().is_symlink() {
+        return Ok(false);
+    }
+    let linked = std::fs::read_link(target)?;
+    Ok(linked == source)
+}
+
+fn prune_stub_dir(dir: &Path, file_names: &[&str]) -> std::io::Result<()> {
+    let expected_files = file_names
+        .iter()
+        .map(|name| dir.join(name))
+        .collect::<FxHashSet<_>>();
+    prune_dir_entries(dir, &expected_files)
+}
+
+fn prune_runtime_node_modules(node_modules_dir: &Path) -> std::io::Result<()> {
+    let expected_files = FxHashSet::default();
+    let preserved_roots = ["vue", "vite", "@vue"]
+        .into_iter()
+        .map(|name| node_modules_dir.join(name))
+        .filter(|path| path.exists() || path.is_symlink())
+        .collect::<Vec<_>>();
+    super::materialize_fs::prune_unexpected_entries(
+        node_modules_dir,
+        &expected_files,
+        &preserved_roots,
+    )
 }
