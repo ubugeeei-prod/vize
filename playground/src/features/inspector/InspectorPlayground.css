@@ -107,38 +107,33 @@
   accent-color: var(--accent-rust);
 }
 
-.inspector-summary {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.inspector-stat {
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 10px;
-  background: var(--bg-secondary);
-  min-width: 0;
-}
-
-.inspector-stat-value {
-  display: block;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.inspector-stat-label {
-  display: block;
-  margin-top: 2px;
-  color: var(--text-muted);
-  font-size: 11px;
-}
-
 .inspector-tab-panel {
   min-height: 0;
+}
+
+.inspector-diff-toolbar {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  padding: 2px;
+}
+
+.inspector-diff-mode {
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.inspector-diff-mode.active {
+  background: var(--bg-panel);
+  color: var(--text-primary);
 }
 
 .inspector-diff {
@@ -186,11 +181,51 @@
   text-align: center;
 }
 
+.inspector-diff-split {
+  overflow-x: auto;
+}
+
+.inspector-split-line {
+  display: grid;
+  grid-template-columns: 46px minmax(280px, 1fr) 46px minmax(280px, 1fr);
+  min-width: 720px;
+  min-height: 22px;
+  border-bottom: 1px solid rgba(127, 127, 127, 0.08);
+}
+
+.inspector-split-line:last-child {
+  border-bottom: 0;
+}
+
+.inspector-split-code {
+  border-left: 1px solid rgba(127, 127, 127, 0.08);
+}
+
+.inspector-split-code.remove {
+  background: var(--color-error-bg);
+}
+
+.inspector-split-code.add {
+  background: var(--color-success-bg);
+}
+
+.inspector-split-code.empty {
+  background: color-mix(in srgb, var(--bg-tertiary) 45%, transparent);
+}
+
 .inspector-diff-code {
   padding: 2px 10px;
   color: var(--text-primary);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.inspector-diff-code span {
+  color: var(--l, inherit);
+}
+
+body[data-theme="dark"] .inspector-diff-code span {
+  color: var(--d, inherit);
 }
 
 .inspector-empty-diff {
@@ -471,10 +506,6 @@
 }
 
 @media (max-width: 900px) {
-  .inspector-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .inspector-diff-line {
     grid-template-columns: 38px 38px 20px minmax(0, 1fr);
   }

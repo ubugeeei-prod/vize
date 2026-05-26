@@ -4,6 +4,11 @@ import { mdiGithub } from "@mdi/js";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import CodeHighlight from "../../shared/CodeHighlight.vue";
+import {
+  codeToThemedTokenLines,
+  type CodeHighlightLanguage,
+  type ThemedCodeToken,
+} from "../../shared/codeHighlighting";
 import { PRESETS } from "../../presets";
 import { useClipboard } from "../../utils/useClipboard";
 import { useTheme } from "../../utils/useTheme";
@@ -18,6 +23,7 @@ import type {
   InspectorPayload,
   InspectorReport,
   InspectorTarget,
+  DiffLine,
 } from "./types";
 
 const props = defineProps<{
@@ -45,6 +51,24 @@ const isCompiling = ref(false);
 const activeOutputTab = ref<
   "compare" | "official" | "vize" | "virtual-ts" | "vir" | "graph" | "payload"
 >("compare");
+const diffViewMode = ref<"merged" | "split">("merged");
+const highlightedDiffLines = ref<HighlightedDiffLine[]>([]);
+let latestDiffHighlightId = 0;
+
+type HighlightedDiffLine = DiffLine & {
+  tokens: ThemedCodeToken[];
+};
+
+interface SplitDiffSide {
+  kind: "same" | "remove" | "add" | "empty";
+  line: number | null;
+  tokens: ThemedCodeToken[];
+}
+
+interface SplitDiffRow {
+  left: SplitDiffSide;
+  right: SplitDiffSide;
+}
 
 const selectedFile = computed(() => files.value[selectedFileIndex.value] ?? files.value[0]!);
 const source = computed({
@@ -75,9 +99,6 @@ const pullRequestUrl = computed(() =>
   }),
 );
 const permalinkTooLong = computed(() => permalink.value.length > 7000);
-const hasChanges = computed(
-  () => (report.value?.stats.additions ?? 0) > 0 || (report.value?.stats.removals ?? 0) > 0,
-);
 const inspectorMessages = computed(() => {
   if (!report.value) return [];
   return [
@@ -118,6 +139,12 @@ const graphEdgesBySource = computed(() => {
   }
   return grouped;
 });
+const diffLanguage = computed<CodeHighlightLanguage>(() =>
+  report.value?.official.parser === "typescript" || report.value?.vize.parser === "typescript"
+    ? "typescript"
+    : "javascript",
+);
+const splitDiffRows = computed(() => buildSplitDiffRows(highlightedDiffLines.value));
 
 function graphEdgesFor(path: string): InspectorGraphEdge[] {
   return graphEdgesBySource.value[path] ?? [];
@@ -173,6 +200,113 @@ function openPullRequest() {
   window.open(pullRequestUrl.value, "_blank", "noopener,noreferrer");
 }
 
+function diffLineText(line: DiffLine): string {
+  return line.text || " ";
+}
+
+function renderPlainDiffLines(lines: DiffLine[]): HighlightedDiffLine[] {
+  return lines.map((line) => ({
+    ...line,
+    tokens: [
+      {
+        content: diffLineText(line),
+        darkColor: undefined,
+        lightColor: undefined,
+      },
+    ],
+  }));
+}
+
+function emptySplitSide(): SplitDiffSide {
+  return {
+    kind: "empty",
+    line: null,
+    tokens: [
+      {
+        content: "",
+        darkColor: undefined,
+        lightColor: undefined,
+      },
+    ],
+  };
+}
+
+function toSplitSide(line: HighlightedDiffLine, side: "left" | "right"): SplitDiffSide {
+  return {
+    kind: line.kind,
+    line: side === "left" ? line.leftLine : line.rightLine,
+    tokens: line.tokens,
+  };
+}
+
+function buildSplitDiffRows(lines: HighlightedDiffLine[]): SplitDiffRow[] {
+  const rows: SplitDiffRow[] = [];
+
+  for (let index = 0; index < lines.length; ) {
+    const line = lines[index]!;
+    if (line.kind === "same") {
+      rows.push({
+        left: toSplitSide(line, "left"),
+        right: toSplitSide(line, "right"),
+      });
+      index += 1;
+      continue;
+    }
+
+    const removals: HighlightedDiffLine[] = [];
+    const additions: HighlightedDiffLine[] = [];
+    while (index < lines.length && lines[index]!.kind !== "same") {
+      const changedLine = lines[index]!;
+      if (changedLine.kind === "remove") {
+        removals.push(changedLine);
+      } else {
+        additions.push(changedLine);
+      }
+      index += 1;
+    }
+
+    const rowCount = Math.max(removals.length, additions.length);
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
+      rows.push({
+        left: removals[rowIndex] ? toSplitSide(removals[rowIndex], "left") : emptySplitSide(),
+        right: additions[rowIndex] ? toSplitSide(additions[rowIndex], "right") : emptySplitSide(),
+      });
+    }
+  }
+
+  return rows;
+}
+
+async function updateDiffHighlights() {
+  const diff = report.value?.diff ?? [];
+  const renderId = ++latestDiffHighlightId;
+  highlightedDiffLines.value = renderPlainDiffLines(diff);
+
+  if (diff.length === 0) {
+    return;
+  }
+
+  const highlightedLines = await codeToThemedTokenLines(
+    diff.map(diffLineText).join("\n"),
+    diffLanguage.value,
+  );
+
+  if (renderId !== latestDiffHighlightId) {
+    return;
+  }
+
+  highlightedDiffLines.value = diff.map((line, index) => ({
+    ...line,
+    tokens: highlightedLines[index] ?? [
+      {
+        content: diffLineText(line),
+        darkColor: undefined,
+        lightColor: undefined,
+      },
+    ],
+  }));
+}
+
 watch(
   [source, target, options, selectedFileIndex],
   () => {
@@ -188,6 +322,10 @@ watch(
   },
   { immediate: true },
 );
+
+watch([() => report.value?.diff, diffLanguage], () => void updateDiffHighlights(), {
+  immediate: true,
+});
 
 let hasCompilerInitialized = false;
 let pollInterval: ReturnType<typeof setInterval> | null = null;
@@ -362,25 +500,6 @@ onUnmounted(() => {
       </div>
 
       <template v-else-if="report">
-        <div class="inspector-summary">
-          <div class="inspector-stat">
-            <span class="inspector-stat-value">{{ report.target.toUpperCase() }}</span>
-            <span class="inspector-stat-label">target</span>
-          </div>
-          <div class="inspector-stat">
-            <span class="inspector-stat-value">{{ hasChanges ? "changed" : "same" }}</span>
-            <span class="inspector-stat-label">compiler output</span>
-          </div>
-          <div class="inspector-stat">
-            <span class="inspector-stat-value">+{{ report.stats.additions }}</span>
-            <span class="inspector-stat-label">Vize-only lines</span>
-          </div>
-          <div class="inspector-stat">
-            <span class="inspector-stat-value">-{{ report.stats.removals }}</span>
-            <span class="inspector-stat-label">Vue-only lines</span>
-          </div>
-        </div>
-
         <div v-if="inspectorMessages.length > 0" class="inspector-warning-list">
           <pre
             v-for="(warning, index) in inspectorMessages"
@@ -391,12 +510,26 @@ onUnmounted(() => {
         </div>
 
         <div v-if="activeOutputTab === 'compare'" class="inspector-tab-panel">
-          <div v-if="report.diff.length === 0" class="inspector-empty-diff">
+          <div class="inspector-diff-toolbar" aria-label="Diff view">
+            <button
+              :class="['inspector-diff-mode', { active: diffViewMode === 'merged' }]"
+              @click="diffViewMode = 'merged'"
+            >
+              Merged
+            </button>
+            <button
+              :class="['inspector-diff-mode', { active: diffViewMode === 'split' }]"
+              @click="diffViewMode = 'split'"
+            >
+              Split
+            </button>
+          </div>
+          <div v-if="highlightedDiffLines.length === 0" class="inspector-empty-diff">
             Both compiler outputs are empty.
           </div>
-          <div v-else class="inspector-diff">
+          <div v-else-if="diffViewMode === 'merged'" class="inspector-diff">
             <div
-              v-for="(line, index) in report.diff"
+              v-for="(line, index) in highlightedDiffLines"
               :key="index"
               :class="['inspector-diff-line', line.kind]"
             >
@@ -405,7 +538,40 @@ onUnmounted(() => {
               <span class="inspector-diff-mark">{{
                 line.kind === "add" ? "+" : line.kind === "remove" ? "-" : ""
               }}</span>
-              <code class="inspector-diff-code">{{ line.text || " " }}</code>
+              <code class="inspector-diff-code"
+                ><span
+                  v-for="(token, tokenIndex) in line.tokens"
+                  :key="tokenIndex"
+                  :style="{ '--d': token.darkColor, '--l': token.lightColor }"
+                  >{{ token.content }}</span
+                ></code
+              >
+            </div>
+          </div>
+          <div v-else class="inspector-diff inspector-diff-split">
+            <div
+              v-for="(row, index) in splitDiffRows"
+              :key="index"
+              :class="['inspector-split-line', `left-${row.left.kind}`, `right-${row.right.kind}`]"
+            >
+              <span class="inspector-diff-num">{{ row.left.line ?? "" }}</span>
+              <code :class="['inspector-diff-code', 'inspector-split-code', row.left.kind]"
+                ><span
+                  v-for="(token, tokenIndex) in row.left.tokens"
+                  :key="tokenIndex"
+                  :style="{ '--d': token.darkColor, '--l': token.lightColor }"
+                  >{{ token.content }}</span
+                ></code
+              >
+              <span class="inspector-diff-num">{{ row.right.line ?? "" }}</span>
+              <code :class="['inspector-diff-code', 'inspector-split-code', row.right.kind]"
+                ><span
+                  v-for="(token, tokenIndex) in row.right.tokens"
+                  :key="tokenIndex"
+                  :style="{ '--d': token.darkColor, '--l': token.lightColor }"
+                  >{{ token.content }}</span
+                ></code
+              >
             </div>
           </div>
         </div>
@@ -526,7 +692,7 @@ onUnmounted(() => {
         </div>
 
         <div v-else>
-          <pre class="inspector-payload">{{ payloadJson }}</pre>
+          <CodeHighlight :code="payloadJson" language="json" :theme show-line-numbers />
           <p v-if="permalinkTooLong" class="inspector-url-note">
             Permalink is long; prefer copying the payload for this batch.
           </p>
