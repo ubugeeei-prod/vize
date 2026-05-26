@@ -1311,4 +1311,5 @@ ScriptParseResult {
             79,
         ),
     },
+    type_export_typeof_refs: [],
 }

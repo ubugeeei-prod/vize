@@ -302,6 +302,48 @@ const count = ref(0);
     }
 
     #[test]
+    fn test_type_check_typeof_setup_const_stays_in_setup_scope() {
+        // Regression: vize check used to lift `type Name = ...` to module
+        // scope while the `const names` it referenced via `typeof` stayed
+        // inside `__setup`, producing a spurious
+        // "Cannot find name 'names'" diagnostic.
+        // See https://github.com/ushironoko/vize-config-repro#repro-8.
+        let source = r#"<script setup lang="ts">
+type Name = (typeof names)[number]
+const names = ['a', 'b', 'c'] as const
+const value: Name = 'a'
+</script>
+<template>
+    <div>{{ value }}</div>
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
+        let result = type_check_sfc(source, &options);
+
+        // The type alias must not be lifted above the const it depends on.
+        let virtual_ts = result.virtual_ts.clone().expect("virtual ts produced");
+        let setup_start = virtual_ts
+            .find("function __setup()")
+            .expect("__setup function emitted");
+        let type_pos = virtual_ts
+            .find("type Name = (typeof names)[number]")
+            .expect("type alias emitted somewhere");
+        assert!(
+            type_pos > setup_start,
+            "type alias was hoisted above __setup; setup_start={setup_start}, \
+             type_pos={type_pos}:\n{virtual_ts}"
+        );
+
+        assert!(
+            !result
+                .diagnostics
+                .iter()
+                .any(|d| d.message.as_str().contains("Cannot find name 'names'")),
+            "regressed: 'Cannot find name names' surfaced again: {:#?}",
+            result.diagnostics
+        );
+    }
+
+    #[test]
     fn test_type_check_virtual_ts_generation() {
         let source = r#"<script setup lang="ts">
 const props = defineProps<{ count: number }>();

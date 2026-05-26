@@ -2073,24 +2073,31 @@ pub fn get_binding_type_from_kind(kind: VariableDeclarationKind) -> BindingType 
 
 /// Process type export (export type / export interface)
 pub fn process_type_export(result: &mut ScriptParseResult, decl: &Declaration<'_>, span: Span) {
+    let typeof_refs = super::typeof_refs::collect_from_declaration(decl);
     match decl {
         Declaration::TSTypeAliasDeclaration(type_alias) => {
-            result.type_exports.push(TypeExport {
-                name: CompactString::new(type_alias.id.name.as_str()),
-                kind: TypeExportKind::Type,
-                start: span.start,
-                end: span.end,
-                hoisted: true,
-            });
+            result.record_type_export(
+                TypeExport {
+                    name: CompactString::new(type_alias.id.name.as_str()),
+                    kind: TypeExportKind::Type,
+                    start: span.start,
+                    end: span.end,
+                    hoisted: true,
+                },
+                typeof_refs,
+            );
         }
         Declaration::TSInterfaceDeclaration(interface) => {
-            result.type_exports.push(TypeExport {
-                name: CompactString::new(interface.id.name.as_str()),
-                kind: TypeExportKind::Interface,
-                start: span.start,
-                end: span.end,
-                hoisted: true,
-            });
+            result.record_type_export(
+                TypeExport {
+                    name: CompactString::new(interface.id.name.as_str()),
+                    kind: TypeExportKind::Interface,
+                    start: span.start,
+                    end: span.end,
+                    hoisted: true,
+                },
+                typeof_refs,
+            );
         }
         _ => {}
     }

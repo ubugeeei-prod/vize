@@ -239,25 +239,33 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
         Statement::TSTypeAliasDeclaration(type_alias) => {
             // Type aliases are allowed (not bindings, but tracked)
             let name = type_alias.id.name.as_str();
-            result.type_exports.push(TypeExport {
-                name: CompactString::new(name),
-                kind: TypeExportKind::Type,
-                start: type_alias.span.start,
-                end: type_alias.span.end,
-                hoisted: true,
-            });
+            let typeof_refs = super::typeof_refs::collect_from_type_alias(type_alias);
+            result.record_type_export(
+                TypeExport {
+                    name: CompactString::new(name),
+                    kind: TypeExportKind::Type,
+                    start: type_alias.span.start,
+                    end: type_alias.span.end,
+                    hoisted: true,
+                },
+                typeof_refs,
+            );
         }
 
         Statement::TSInterfaceDeclaration(interface) => {
             // Interfaces are allowed (not bindings, but tracked)
             let name = interface.id.name.as_str();
-            result.type_exports.push(TypeExport {
-                name: CompactString::new(name),
-                kind: TypeExportKind::Interface,
-                start: interface.span.start,
-                end: interface.span.end,
-                hoisted: true,
-            });
+            let typeof_refs = super::typeof_refs::collect_from_interface(interface);
+            result.record_type_export(
+                TypeExport {
+                    name: CompactString::new(name),
+                    kind: TypeExportKind::Interface,
+                    start: interface.span.start,
+                    end: interface.span.end,
+                    hoisted: true,
+                },
+                typeof_refs,
+            );
         }
 
         // Block statements at top level (scoped blocks)

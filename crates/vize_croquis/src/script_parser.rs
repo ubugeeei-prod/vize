@@ -16,6 +16,7 @@
 
 mod extract;
 mod process;
+mod typeof_refs;
 mod walk;
 
 use oxc_allocator::Allocator;
@@ -109,9 +110,65 @@ pub struct ScriptParseResult {
     pub component_registrations: Vec<ComponentRegistration>,
     /// Definition spans for bindings (name -> (start, end) offset in script)
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
+    /// Names referenced via `typeof X` in the body of each `type_exports`
+    /// entry, indexed in parallel with `type_exports`. Used by
+    /// `resolve_type_export_hoisting` to keep types adjacent to the
+    /// setup-scope values they depend on. Pushed to in lockstep with
+    /// `type_exports` via `record_type_export`.
+    pub(crate) type_export_typeof_refs: Vec<FxHashSet<CompactString>>,
 }
 
 impl ScriptParseResult {
+    /// Record a `TypeExport` together with the `typeof` value-identifier
+    /// references found in its body. Must be the only call site that pushes
+    /// to `type_exports` so the two vectors stay in lockstep for
+    /// `resolve_type_export_hoisting`.
+    pub(crate) fn record_type_export(
+        &mut self,
+        export: TypeExport,
+        typeof_refs: FxHashSet<CompactString>,
+    ) {
+        self.type_exports.push(export);
+        self.type_export_typeof_refs.push(typeof_refs);
+    }
+
+    /// Demote `TypeExport::hoisted` to `false` for any type whose body
+    /// references a setup-scope value binding via `typeof`. The virtual TS
+    /// generator only lifts hoisted types to module scope, so demoted types
+    /// stay inside the synthetic `__setup` function alongside the values
+    /// they depend on — which is the only place TS can resolve them.
+    ///
+    /// Imports add value bindings at module scope, so a `typeof importedName`
+    /// reference is left as hoisted: the import is visible from the module
+    /// scope where the type lands.
+    pub(crate) fn resolve_type_export_hoisting(&mut self) {
+        if self.type_export_typeof_refs.is_empty() {
+            return;
+        }
+        let imported_names: FxHashSet<&str> = self
+            .import_statements
+            .iter()
+            .flat_map(|imp| {
+                // Bindings whose declaration site falls inside an import
+                // statement are module-scoped imports, not setup values.
+                self.binding_spans
+                    .iter()
+                    .filter(move |(_, (start, end))| *start >= imp.start && *end <= imp.end)
+                    .map(|(name, _)| name.as_str())
+            })
+            .collect();
+
+        for (idx, refs) in self.type_export_typeof_refs.iter().enumerate() {
+            let touches_setup_value = refs.iter().any(|name| {
+                let key = name.as_str();
+                self.bindings.bindings.contains_key(key) && !imported_names.contains(key)
+            });
+            if touches_setup_value && let Some(te) = self.type_exports.get_mut(idx) {
+                te.hoisted = false;
+            }
+        }
+    }
+
     /// Apply script analysis fields to an existing SFC analysis summary.
     ///
     /// This keeps script parsing as the single owner of script-scoped data while
@@ -312,6 +369,14 @@ pub fn parse_script_setup_with_generic(source: &str, generic: Option<&str>) -> S
         }
     });
 
+    // After every binding is known, demote any `type` / `interface` that
+    // references a setup-scope value via `typeof` so the virtual TS keeps
+    // it inside `__setup` instead of hoisting it to module scope.
+    profile!(
+        "croquis.script_setup.resolve_type_hoisting",
+        result.resolve_type_export_hoisting()
+    );
+
     result
 }
 
@@ -370,6 +435,13 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
             process::process_statement(&mut result, stmt, source);
         }
     });
+
+    // Mirror the setup path so non-setup scripts also keep typeof-anchored
+    // types adjacent to their value bindings in any downstream emitters.
+    profile!(
+        "croquis.script_plain.resolve_type_hoisting",
+        result.resolve_type_export_hoisting()
+    );
 
     result
 }

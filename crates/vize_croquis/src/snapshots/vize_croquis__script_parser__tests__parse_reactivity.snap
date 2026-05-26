@@ -1299,4 +1299,5 @@ ScriptParseResult {
             24,
         ),
     },
+    type_export_typeof_refs: [],
 }

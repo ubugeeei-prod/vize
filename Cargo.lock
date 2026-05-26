@@ -3598,6 +3598,7 @@ dependencies = [
  "once_cell",
  "oxc_allocator",
  "oxc_ast",
+ "oxc_ast_visit",
  "oxc_parser",
  "oxc_span",
  "phf 0.13.1",

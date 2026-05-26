@@ -133,7 +133,11 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             module_spans.push((re.start, re.end));
         }
         for te in &summary.type_exports {
-            module_spans.push((te.start, te.end));
+            // Non-hoisted types reference setup-scope values via `typeof`
+            // and must stay inside `__setup` so TS can resolve them.
+            if te.hoisted {
+                module_spans.push((te.start, te.end));
+            }
         }
         module_spans.sort_by_key(|&(start, _)| start);
         module_spans

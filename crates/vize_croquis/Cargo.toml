@@ -21,6 +21,7 @@ regex.workspace = true
 # OXC for high-performance AST parsing
 oxc_parser.workspace = true
 oxc_ast.workspace = true
+oxc_ast_visit.workspace = true
 oxc_span.workspace = true
 oxc_allocator.workspace = true
 
