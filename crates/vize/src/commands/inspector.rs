@@ -9,11 +9,11 @@ use clap::{Args, ValueEnum};
 use ignore::Walk;
 use std::{
     collections::BTreeSet,
-    fmt::Write as _,
     fs,
     path::{Path, PathBuf},
 };
-use vize_carton::{String, ToCompactString};
+use vize_carton::ToCompactString;
+use vize_curator::inspector as curator_inspector;
 
 #[derive(Debug, Clone, Copy, ValueEnum, Default, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -23,10 +23,11 @@ pub enum InspectorOutputFormat {
     Url,
     /// Print the raw inspector JSON payload
     Json,
+    /// Print an AI-agent friendly JSON report with payload, URL, and graph metadata
+    Agent,
 }
 
-#[derive(Debug, Clone, Copy, ValueEnum, Default, serde::Serialize)]
-#[serde(rename_all = "kebab-case")]
+#[derive(Debug, Clone, Copy, ValueEnum, Default)]
 pub enum InspectorTarget {
     /// Compare DOM compiler output
     #[default]
@@ -35,11 +36,11 @@ pub enum InspectorTarget {
     Ssr,
 }
 
-impl InspectorTarget {
-    fn as_payload_str(self) -> &'static str {
-        match self {
-            Self::Dom => "dom",
-            Self::Ssr => "ssr",
+impl From<InspectorTarget> for curator_inspector::InspectorTarget {
+    fn from(target: InspectorTarget) -> Self {
+        match target {
+            InspectorTarget::Dom => Self::Dom,
+            InspectorTarget::Ssr => Self::Ssr,
         }
     }
 }
@@ -80,29 +81,6 @@ pub struct InspectorArgs {
     pub vue_parser_quirks: bool,
 }
 
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-struct InspectorPayload {
-    version: u8,
-    target: &'static str,
-    selected_file: Option<String>,
-    options: InspectorPayloadOptions,
-    files: Vec<InspectorPayloadFile>,
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-struct InspectorPayloadOptions {
-    custom_renderer: bool,
-    vue_parser_quirks: bool,
-}
-
-#[derive(serde::Serialize)]
-struct InspectorPayloadFile {
-    path: String,
-    source: String,
-}
-
 pub fn run(args: InspectorArgs) {
     let files = collect_files(&args.patterns, args.max_files);
     if files.is_empty() {
@@ -110,22 +88,32 @@ pub fn run(args: InspectorArgs) {
         std::process::exit(1);
     }
 
-    let payload = build_payload(&args, &files);
-    let json = serde_json::to_string(&payload).unwrap_or_else(|error| {
+    let source_files = collect_source_files(&files);
+    let payload = build_payload(&args, source_files.clone());
+    let json = curator_inspector::serialize_payload(&payload).unwrap_or_else(|error| {
         eprintln!("Failed to serialize inspector payload: {error}");
         std::process::exit(1);
     });
+    let playground_url =
+        curator_inspector::build_playground_url(&args.playground_url, json.as_str());
     let output = match args.format {
-        InspectorOutputFormat::Json => json.to_compact_string(),
+        InspectorOutputFormat::Json => json,
         InspectorOutputFormat::Url => {
-            let url = build_playground_url(&args.playground_url, &json);
-            if url.len() > 7000 {
+            if playground_url.len() > 7000 {
                 eprintln!(
                     "Inspector URL is {} bytes; use --format json for large batches if the browser rejects it.",
-                    url.len()
+                    playground_url.len()
                 );
             }
-            url
+            playground_url
+        }
+        InspectorOutputFormat::Agent => {
+            let report =
+                curator_inspector::build_agent_report(payload, playground_url, source_files);
+            curator_inspector::serialize_agent_report(&report).unwrap_or_else(|error| {
+                eprintln!("Failed to serialize inspector agent report: {error}");
+                std::process::exit(1);
+            })
         }
     };
 
@@ -194,9 +182,9 @@ fn is_vue_file(path: &Path) -> bool {
     path.extension().is_some_and(|extension| extension == "vue")
 }
 
-fn build_payload(args: &InspectorArgs, files: &[PathBuf]) -> InspectorPayload {
+fn collect_source_files(files: &[PathBuf]) -> Vec<curator_inspector::InspectorSourceFile> {
     let current_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let files: Vec<_> = files
+    files
         .iter()
         .map(|path| {
             let source = fs::read_to_string(path).unwrap_or_else(|error| {
@@ -210,58 +198,24 @@ fn build_payload(args: &InspectorArgs, files: &[PathBuf]) -> InspectorPayload {
                 .replace('\\', "/")
                 .to_compact_string();
 
-            InspectorPayloadFile {
+            curator_inspector::InspectorSourceFile {
                 path: display_path,
                 source: source.to_compact_string(),
             }
         })
-        .collect();
+        .collect()
+}
 
-    let selected_file = files.first().map(|file| file.path.clone());
-
-    InspectorPayload {
-        version: 1,
-        target: args.target.as_payload_str(),
-        selected_file,
-        options: InspectorPayloadOptions {
+fn build_payload(
+    args: &InspectorArgs,
+    files: Vec<curator_inspector::InspectorSourceFile>,
+) -> curator_inspector::InspectorPayload {
+    curator_inspector::build_payload(
+        args.target.into(),
+        curator_inspector::InspectorOptions {
             custom_renderer: args.custom_renderer,
             vue_parser_quirks: args.vue_parser_quirks,
         },
         files,
-    }
-}
-
-fn build_playground_url(base: &str, payload_json: &str) -> String {
-    let base_without_hash = base.split('#').next().unwrap_or(base);
-    let separator = if base_without_hash.contains('?') {
-        if base_without_hash.ends_with('?') || base_without_hash.ends_with('&') {
-            ""
-        } else {
-            "&"
-        }
-    } else {
-        "?"
-    };
-
-    let mut url = String::default();
-    url.push_str(base_without_hash);
-    url.push_str(separator);
-    url.push_str("tab=inspector#inspector=");
-    url.push_str(percent_encode(payload_json).as_str());
-    url
-}
-
-fn percent_encode(value: &str) -> String {
-    let mut encoded = String::default();
-    for byte in value.bytes() {
-        match byte {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
-                encoded.push(byte as char);
-            }
-            _ => {
-                let _ = write!(encoded, "%{byte:02X}");
-            }
-        }
-    }
-    encoded
+    )
 }

@@ -3427,6 +3427,7 @@ dependencies = [
  "vize_carton",
  "vize_croquis",
  "vize_croquis_cf",
+ "vize_curator",
  "vize_glyph",
  "vize_maestro",
  "vize_musea",
@@ -3633,6 +3634,15 @@ dependencies = [
  "vize_armature",
  "vize_carton",
  "vize_croquis",
+]
+
+[[package]]
+name = "vize_curator"
+version = "0.133.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "vize_carton",
 ]
 
 [[package]]

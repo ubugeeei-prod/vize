@@ -13,6 +13,8 @@ export interface CompilerOptions {
   isTs?: boolean;
   // Script extension: 'preserve' keeps TypeScript, 'downcompile' (default) transpiles to JS
   scriptExt?: "preserve" | "downcompile";
+  customRenderer?: boolean;
+  vueParserQuirks?: boolean;
   bindingMetadata?: SfcBindingMetadata;
 }
 

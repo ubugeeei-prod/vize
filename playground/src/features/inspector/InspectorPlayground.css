@@ -230,6 +230,240 @@
   word-break: break-word;
 }
 
+.inspector-vir-output {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.inspector-vir-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.inspector-vir-content {
+  min-height: 280px;
+  max-height: 58vh;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 6px 6px;
+  background: var(--bg-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.inspector-vir-line {
+  display: flex;
+  white-space: pre;
+}
+
+.inspector-vir-ln {
+  min-width: 42px;
+  padding: 0 8px;
+  border-right: 1px solid var(--border-color);
+  color: var(--text-muted);
+  text-align: right;
+  user-select: none;
+}
+
+.inspector-vir-line-text {
+  padding: 0 10px;
+}
+
+.vir-token {
+  color: var(--text-secondary);
+}
+
+.vir-section,
+.vir-section-name,
+.vir-binding,
+.vir-identifier {
+  color: var(--text-primary);
+}
+
+.vir-macro {
+  color: var(--accent-rust);
+}
+
+.vir-type,
+.vir-source,
+.vir-keyword,
+.vir-number,
+.vir-colon,
+.vir-bracket,
+.vir-tag,
+.vir-arrow,
+.vir-border {
+  color: var(--text-muted);
+}
+
+.vir-line-diagnostic {
+  background: var(--color-error-bg);
+}
+
+.inspector-graph-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inspector-graph-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.inspector-graph-summary span,
+.inspector-graph-kind,
+.inspector-graph-edge-kind,
+.inspector-graph-issues {
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.inspector-graph {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px;
+}
+
+.inspector-graph-node {
+  min-width: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  padding: 10px;
+}
+
+.inspector-graph-node.active {
+  border-color: var(--accent-rust);
+}
+
+.inspector-graph-node.issues {
+  border-color: color-mix(in srgb, var(--color-warning) 42%, var(--border-color));
+}
+
+.inspector-graph-node-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.inspector-graph-file {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspector-graph-issues {
+  border-color: color-mix(in srgb, var(--color-warning) 55%, transparent);
+  color: var(--color-warning);
+}
+
+.inspector-graph-node-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.inspector-graph-edges {
+  margin-top: 10px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 8px;
+}
+
+.inspector-graph-edge {
+  display: grid;
+  grid-template-columns: auto 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.inspector-graph-edge + .inspector-graph-edge {
+  margin-top: 5px;
+}
+
+.inspector-graph-target {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspector-graph-arrow {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.inspector-graph-diagnostics {
+  display: flex;
+  max-height: 220px;
+  flex-direction: column;
+  gap: 6px;
+  overflow: auto;
+}
+
+.inspector-graph-diagnostic {
+  display: grid;
+  grid-template-columns: minmax(76px, auto) minmax(90px, 0.8fr) minmax(0, 1.4fr);
+  gap: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  padding: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.inspector-graph-diagnostic.error {
+  border-color: color-mix(in srgb, var(--color-error) 45%, var(--border-color));
+}
+
+.inspector-graph-diagnostic.warning {
+  border-color: color-mix(in srgb, var(--color-warning) 45%, var(--border-color));
+}
+
+.inspector-graph-diagnostic-code,
+.inspector-graph-diagnostic-file {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspector-graph-diagnostic-message {
+  min-width: 0;
+}
+
 .inspector-url-note {
   margin-top: 8px;
   color: var(--color-warning);
@@ -243,5 +477,9 @@
 
   .inspector-diff-line {
     grid-template-columns: 38px 38px 20px minmax(0, 1fr);
+  }
+
+  .inspector-graph-diagnostic {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

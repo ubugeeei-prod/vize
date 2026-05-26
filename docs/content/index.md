@@ -39,7 +39,7 @@ features:
     details: Compile, format, lint, and type-check Vue SFC files from native commands when scripts or terminal workflows are the right entry point.
     link: guide/cli.md
   - title: Compiler Inspector
-    details: Compare official Vue compiler output against Vize output, share permalinked diffs, and open parity PRs from focused repros.
+    details: Inspect Vue output, Vize output, Virtual TS, VIR, and cross-file graphs, then share permalinked repros or agent reports.
     link: guide/compiler-inspector.md
   - title: Oxlint Plugin
     details: Run Vize's Vue diagnostics inside Oxlint and combine them with OXC's JS and TS rules in one pass.

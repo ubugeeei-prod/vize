@@ -36,6 +36,7 @@ vize_canon = { workspace = true, features = ["native"] }
 vize_croquis = { workspace = true }
 vize_croquis_cf = { workspace = true }
 vize_musea = { workspace = true }
+vize_curator = { workspace = true }
 vize_maestro = { workspace = true, optional = true }
 
 # CLI

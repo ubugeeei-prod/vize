@@ -55,7 +55,8 @@ Playground permalink: https://vizejs.dev/play/?tab=inspector#inspector=abc
 
 - Target: DOM
 - Files: 1
-- Diff: +2 / -1
+- Output delta: +2 / -1
+- Includes: Vue output, Vize output, Virtual TS, VIR, and cross-file graph
 
 ### Repro files
 
@@ -63,6 +64,6 @@ Playground permalink: https://vizejs.dev/play/?tab=inspector#inspector=abc
 
 ### Notes
 
-Generated from the Vize playground compiler inspector. Please add the minimized fixture or snapshot that explains the parity change.`);
+Generated from the Vize playground compiler inspector. Please add the minimized fixture or full snapshot that explains the parity change.`);
   });
 });

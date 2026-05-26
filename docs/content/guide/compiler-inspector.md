@@ -4,9 +4,9 @@ title: Compiler Inspector
 
 # Compiler Inspector
 
-The playground inspector compares the official Vue SFC compiler output with Vize's compiler output
-for the same `.vue` source. Use it when a report, fixture, or pull request needs a concrete parity
-artifact instead of a prose description of the mismatch.
+The playground inspector collects the compiler and analysis surfaces needed to review a `.vue`
+repro. It shows the official Vue SFC compiler output, Vize compiler output, Virtual TS, VIR, and a
+cross-file graph for local batches.
 
 Open the inspector from the playground:
 
@@ -14,14 +14,17 @@ Open the inspector from the playground:
 https://vizejs.dev/play/?tab=inspector
 ```
 
-The inspector runs both compilers in the browser:
+The inspector runs these checks in the browser:
 
 - `@vue/compiler-sfc` for the reference output
 - Vize WASM for the Vize output
+- Canon-backed Virtual TS for the selected file
+- Croquis VIR for the selected file
+- Cross-file graph and diagnostics for the payload files
 - DOM or SSR target selection
 - Optional custom renderer and Vue parser quirk toggles
 - Full output tabs for both compilers
-- A unified diff tab with Vue-only and Vize-only lines
+- A compare tab with Vue-only and Vize-only lines
 - A permalink and prefilled pull request link
 
 ## CLI Payloads
@@ -47,12 +50,20 @@ For large batches, emit JSON instead of a long URL:
 vize inspector "src/**/*.vue" --format json --output inspector-payload.json
 ```
 
+For AI agents or terminal handoff, emit the agent report. It includes the payload, playground URL,
+summary metrics, and cross-file graph metadata.
+
+```bash
+vize inspector "src/**/*.vue" --format agent --output inspector-agent.json
+```
+
 Useful options:
 
 | Option                | Description                                    |
 | --------------------- | ---------------------------------------------- |
 | `--target dom`        | Compare DOM compiler output                    |
 | `--target ssr`        | Compare SSR compiler output                    |
+| `--format agent`      | Emit agent-readable JSON with graph metadata   |
 | `--custom-renderer`   | Enable custom renderer mode in the playground  |
 | `--vue-parser-quirks` | Enable Vue parser compatibility quirks in Vize |
 | `--max-files <n>`     | Limit the number of files in a batch payload   |
@@ -61,13 +72,14 @@ Useful options:
 ## PR Workflow
 
 When opening a compiler parity PR, include the inspector permalink in the PR body and add the
-minimal fixture or snapshot that makes the diff reviewable in CI. The prefilled PR link is a
-starting point; after pushing your branch, replace the compare head if GitHub asks for it.
+minimal fixture or full snapshot that makes the output change reviewable in CI. The prefilled PR
+link is a starting point; after pushing your branch, replace the compare head if GitHub asks for it.
 
 The useful PR evidence is:
 
 - The inspector permalink
 - The selected target and options
-- The minimized `.vue` fixture or snapshot diff
+- The minimized `.vue` fixture or full snapshot
+- Relevant Virtual TS, VIR, or graph context when the issue crosses compiler surfaces
 - The reason the Vize output should match or intentionally differ from Vue
 - The local verification command that covers the touched compiler surface

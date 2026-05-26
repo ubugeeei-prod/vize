@@ -101,3 +101,61 @@ fn inspector_url_supports_batch_payloads() {
     assert!(stdout.contains("App.vue"), "{stdout}");
     assert!(stdout.contains("Nested.vue"), "{stdout}");
 }
+
+#[test]
+fn inspector_agent_outputs_report_with_graph() {
+    let project = tempfile::tempdir().unwrap();
+    let src = project.path().join("src");
+    fs::create_dir_all(&src).unwrap();
+    fs::write(
+        src.join("App.vue"),
+        r#"<script setup lang="ts">
+import Child from './Child'
+</script>
+
+<template>
+  <Child />
+</template>
+"#,
+    )
+    .unwrap();
+    fs::write(
+        src.join("Child.vue"),
+        r#"<template>
+  <span>child</span>
+</template>
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args([
+            "inspector",
+            "src",
+            "--format",
+            "agent",
+            "--playground-url",
+            "https://example.test/play/",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+
+    insta::with_settings!({
+        snapshot_path => "snapshots"
+    }, {
+        insta::assert_snapshot!(
+            "inspector_agent_outputs_report_with_graph",
+            serde_json::to_string_pretty(&json).unwrap()
+        );
+    });
+}

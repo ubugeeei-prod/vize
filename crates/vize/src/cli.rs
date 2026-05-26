@@ -32,7 +32,7 @@ enum Commands {
     /// Type check Vue SFC files
     Check(crate::commands::check::CheckArgs),
 
-    /// Create playground compiler inspector payloads
+    /// Create playground compiler inspector payloads and agent reports
     Inspector(crate::commands::inspector::InspectorArgs),
 
     /// Remove Vize-generated cache artifacts

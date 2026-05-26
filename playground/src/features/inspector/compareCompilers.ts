@@ -5,12 +5,19 @@ import {
   type BindingMetadata,
   type SFCDescriptor,
 } from "vue/compiler-sfc";
-import type { CompilerOptions, WasmModule } from "../../wasm/index";
+import type {
+  CompilerOptions,
+  CroquisDiagnostic,
+  TypeCheckDiagnostic,
+  WasmModule,
+} from "../../wasm/index";
 import { formatCode } from "../atelier/formatters";
 import { buildLineDiff, getDiffStats } from "./diff";
+import { buildInspectorGraph } from "./graph";
 import type {
   CompilerRun,
   InspectorFile,
+  InspectorGraphRun,
   InspectorOptions,
   InspectorReport,
   InspectorTarget,
@@ -43,6 +50,16 @@ function descriptorUsesTypeScript(descriptor: SFCDescriptor): boolean {
 
 function outputText(run: CompilerRun): string {
   return run.error ?? run.formattedCode ?? run.code;
+}
+
+function formatTypeCheckDiagnostic(diagnostic: TypeCheckDiagnostic): string {
+  const code = diagnostic.code ? ` ${diagnostic.code}` : "";
+  return `${diagnostic.severity}${code}: ${diagnostic.message}`;
+}
+
+function formatCroquisDiagnostic(diagnostic: CroquisDiagnostic): string {
+  const code = diagnostic.code ? ` ${diagnostic.code}` : "";
+  return `${diagnostic.severity}${code}: ${diagnostic.message}`;
 }
 
 async function formatRunCode(code: string, parser: CompilerRun["parser"]): Promise<string> {
@@ -162,21 +179,128 @@ async function compileVize(
   }
 }
 
+async function inspectVirtualTs(compiler: WasmModule, file: InspectorFile): Promise<CompilerRun> {
+  const start = performance.now();
+
+  try {
+    const result = compiler.typeCheck(file.source, {
+      filename: file.path,
+      includeVirtualTs: true,
+    });
+    const code = result.virtualTs ?? "";
+    const formattedCode = await formatRunCode(code, "typescript");
+
+    return {
+      label: "Virtual TS",
+      code,
+      formattedCode,
+      parser: "typescript",
+      warnings: result.diagnostics.map(formatTypeCheckDiagnostic),
+      error: null,
+      timeMs: performance.now() - start,
+    };
+  } catch (error) {
+    return {
+      label: "Virtual TS",
+      code: "",
+      formattedCode: "",
+      parser: "typescript",
+      warnings: [],
+      error: toErrorMessage(error),
+      timeMs: performance.now() - start,
+    };
+  }
+}
+
+function inspectVir(compiler: WasmModule, file: InspectorFile): CompilerRun {
+  const start = performance.now();
+
+  try {
+    const result = compiler.analyzeSfc(file.source, { filename: file.path });
+    const code = result.vir ?? "";
+
+    return {
+      label: "VIR",
+      code,
+      formattedCode: code,
+      parser: "babel",
+      warnings: result.diagnostics.map(formatCroquisDiagnostic),
+      error: null,
+      timeMs: performance.now() - start,
+    };
+  } catch (error) {
+    return {
+      label: "VIR",
+      code: "",
+      formattedCode: "",
+      parser: "babel",
+      warnings: [],
+      error: toErrorMessage(error),
+      timeMs: performance.now() - start,
+    };
+  }
+}
+
+function inspectCrossFileGraph(compiler: WasmModule, files: InspectorFile[]): InspectorGraphRun {
+  const start = performance.now();
+  const graph = buildInspectorGraph(files);
+
+  try {
+    const result = compiler.analyzeCrossFile(
+      files.map((file) => ({ path: file.path, source: file.source })),
+      { all: true, maxImportDepth: 10 },
+    );
+    const issueCounts = new Map<string, number>();
+    for (const diagnostic of result.diagnostics) {
+      issueCounts.set(diagnostic.file, (issueCounts.get(diagnostic.file) ?? 0) + 1);
+    }
+
+    return {
+      nodes: graph.nodes.map((node) => ({
+        ...node,
+        issueCount: issueCounts.get(node.path) ?? 0,
+      })),
+      edges: graph.edges,
+      diagnostics: result.diagnostics,
+      circularDependencies: result.circularDependencies,
+      stats: result.stats,
+      error: null,
+      timeMs: performance.now() - start,
+    };
+  } catch (error) {
+    return {
+      nodes: graph.nodes,
+      edges: graph.edges,
+      diagnostics: [],
+      circularDependencies: [],
+      stats: null,
+      error: toErrorMessage(error),
+      timeMs: performance.now() - start,
+    };
+  }
+}
+
 export async function compileInspectorReport({
   compiler,
   file,
+  files,
   target,
   options,
 }: {
   compiler: WasmModule;
   file: InspectorFile;
+  files?: InspectorFile[];
   target: InspectorTarget;
   options?: Partial<InspectorOptions>;
 }): Promise<InspectorReport> {
   const normalizedOptions = { ...DEFAULT_OPTIONS, ...options };
-  const [official, vize] = await Promise.all([
+  const inspectedFiles = files?.length ? files : [file];
+  const [official, vize, virtualTs, vir, graph] = await Promise.all([
     compileOfficialVue(file, target),
     compileVize(compiler, file, target, normalizedOptions),
+    inspectVirtualTs(compiler, file),
+    Promise.resolve(inspectVir(compiler, file)),
+    Promise.resolve(inspectCrossFileGraph(compiler, inspectedFiles)),
   ]);
   const diff = buildLineDiff(outputText(official), outputText(vize));
 
@@ -185,6 +309,9 @@ export async function compileInspectorReport({
     target,
     official,
     vize,
+    virtualTs,
+    vir,
+    graph,
     diff,
     stats: getDiffStats(diff),
   };

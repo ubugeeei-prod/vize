@@ -1,8 +1,9 @@
 ---
 source: crates/vize/src/cli.rs
+assertion_line: 136
 expression: "command_help(\"inspector\")"
 ---
-Create playground compiler inspector payloads
+Create playground compiler inspector payloads and agent reports
 
 Usage: inspector [OPTIONS] [PATTERNS]...
 
@@ -17,8 +18,9 @@ Options:
           Output format
 
           Possible values:
-          - url:  Print a playground URL containing the encoded inspector payload
-          - json: Print the raw inspector JSON payload
+          - url:   Print a playground URL containing the encoded inspector payload
+          - json:  Print the raw inspector JSON payload
+          - agent: Print an AI-agent friendly JSON report with payload, URL, and graph metadata
 
           [default: url]
 

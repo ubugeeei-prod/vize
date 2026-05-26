@@ -9,9 +9,11 @@ import { useClipboard } from "../../utils/useClipboard";
 import { useTheme } from "../../utils/useTheme";
 import { type loadWasm, getWasm } from "../../wasm/index";
 import { compileInspectorReport } from "./compareCompilers";
+import { parseVirLines } from "../croquis/useVirTokenizer";
 import { createInspectorUrl, createPullRequestUrl, readInspectorPayloadFromUrl } from "./share";
 import type {
   InspectorFile,
+  InspectorGraphEdge,
   InspectorOptions,
   InspectorPayload,
   InspectorReport,
@@ -40,7 +42,9 @@ const options = ref<InspectorOptions>({
 const report = ref<InspectorReport | null>(null);
 const error = ref<string | null>(null);
 const isCompiling = ref(false);
-const activeOutputTab = ref<"diff" | "official" | "vize" | "payload">("diff");
+const activeOutputTab = ref<
+  "compare" | "official" | "vize" | "virtual-ts" | "vir" | "graph" | "payload"
+>("compare");
 
 const selectedFile = computed(() => files.value[selectedFileIndex.value] ?? files.value[0]!);
 const source = computed({
@@ -74,6 +78,50 @@ const permalinkTooLong = computed(() => permalink.value.length > 7000);
 const hasChanges = computed(
   () => (report.value?.stats.additions ?? 0) > 0 || (report.value?.stats.removals ?? 0) > 0,
 );
+const inspectorMessages = computed(() => {
+  if (!report.value) return [];
+  return [
+    ...report.value.official.warnings,
+    ...report.value.vize.warnings,
+    ...report.value.virtualTs.warnings,
+    ...report.value.vir.warnings,
+    ...(report.value.virtualTs.error ? [`Virtual TS: ${report.value.virtualTs.error}`] : []),
+    ...(report.value.vir.error ? [`VIR: ${report.value.vir.error}`] : []),
+    ...(report.value.graph.error ? [`Graph: ${report.value.graph.error}`] : []),
+  ];
+});
+const totalInspectTime = computed(() =>
+  report.value
+    ? report.value.official.timeMs +
+      report.value.vize.timeMs +
+      report.value.virtualTs.timeMs +
+      report.value.vir.timeMs +
+      report.value.graph.timeMs
+    : 0,
+);
+const virLines = computed(() => parseVirLines(report.value?.vir.code ?? ""));
+const graphDiagnostics = computed(() => report.value?.graph.diagnostics ?? []);
+const graphSummary = computed(() => {
+  const graph = report.value?.graph;
+  return {
+    nodes: graph?.nodes.length ?? 0,
+    edges: graph?.edges.length ?? 0,
+    diagnostics: graph?.diagnostics.length ?? 0,
+    cycles: graph?.circularDependencies.length ?? 0,
+  };
+});
+const graphEdgesBySource = computed(() => {
+  const grouped: Record<string, InspectorGraphEdge[]> = {};
+  for (const edge of report.value?.graph.edges ?? []) {
+    if (!grouped[edge.from]) grouped[edge.from] = [];
+    grouped[edge.from].push(edge);
+  }
+  return grouped;
+});
+
+function graphEdgesFor(path: string): InspectorGraphEdge[] {
+  return graphEdgesBySource.value[path] ?? [];
+}
 
 function applyPayload(nextPayload: InspectorPayload) {
   files.value = nextPayload.files.map((file, index) => ({
@@ -102,6 +150,7 @@ async function compile() {
     report.value = await compileInspectorReport({
       compiler,
       file: selectedFile.value,
+      files: files.value,
       target: target.value,
       options: options.value,
     });
@@ -240,17 +289,15 @@ onUnmounted(() => {
   <div class="panel output-panel">
     <div class="panel-header">
       <h2>
-        Compiler Diff
-        <span v-if="report" class="compile-time">
-          {{ (report.official.timeMs + report.vize.timeMs).toFixed(2) }}ms
-        </span>
+        Compiler Inspector
+        <span v-if="report" class="compile-time"> {{ totalInspectTime.toFixed(2) }}ms </span>
       </h2>
       <div class="tabs">
         <button
-          :class="['tab', { active: activeOutputTab === 'diff' }]"
-          @click="activeOutputTab = 'diff'"
+          :class="['tab', { active: activeOutputTab === 'compare' }]"
+          @click="activeOutputTab = 'compare'"
         >
-          Diff
+          Compare
         </button>
         <button
           :class="['tab', { active: activeOutputTab === 'official' }]"
@@ -263,6 +310,24 @@ onUnmounted(() => {
           @click="activeOutputTab = 'vize'"
         >
           Vize
+        </button>
+        <button
+          :class="['tab', { active: activeOutputTab === 'virtual-ts' }]"
+          @click="activeOutputTab = 'virtual-ts'"
+        >
+          Virtual TS
+        </button>
+        <button
+          :class="['tab', { active: activeOutputTab === 'vir' }]"
+          @click="activeOutputTab = 'vir'"
+        >
+          VIR
+        </button>
+        <button
+          :class="['tab', { active: activeOutputTab === 'graph' }]"
+          @click="activeOutputTab = 'graph'"
+        >
+          Graph
         </button>
         <button
           :class="['tab', { active: activeOutputTab === 'payload' }]"
@@ -303,8 +368,8 @@ onUnmounted(() => {
             <span class="inspector-stat-label">target</span>
           </div>
           <div class="inspector-stat">
-            <span class="inspector-stat-value">{{ hasChanges ? "diff" : "same" }}</span>
-            <span class="inspector-stat-label">status</span>
+            <span class="inspector-stat-value">{{ hasChanges ? "changed" : "same" }}</span>
+            <span class="inspector-stat-label">compiler output</span>
           </div>
           <div class="inspector-stat">
             <span class="inspector-stat-value">+{{ report.stats.additions }}</span>
@@ -316,21 +381,18 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div
-          v-if="report.official.warnings.length > 0 || report.vize.warnings.length > 0"
-          class="inspector-warning-list"
-        >
+        <div v-if="inspectorMessages.length > 0" class="inspector-warning-list">
           <pre
-            v-for="(warning, index) in [...report.official.warnings, ...report.vize.warnings]"
+            v-for="(warning, index) in inspectorMessages"
             :key="index"
             class="inspector-warning"
             >{{ warning }}</pre
           >
         </div>
 
-        <div v-if="activeOutputTab === 'diff'" class="inspector-tab-panel">
+        <div v-if="activeOutputTab === 'compare'" class="inspector-tab-panel">
           <div v-if="report.diff.length === 0" class="inspector-empty-diff">
-            Both compilers produced empty output.
+            Both compiler outputs are empty.
           </div>
           <div v-else class="inspector-diff">
             <div
@@ -363,6 +425,105 @@ onUnmounted(() => {
           :theme
           show-line-numbers
         />
+
+        <CodeHighlight
+          v-else-if="activeOutputTab === 'virtual-ts'"
+          :code="
+            report.virtualTs.formattedCode ||
+            report.virtualTs.error ||
+            report.virtualTs.code ||
+            'No Virtual TS generated.'
+          "
+          language="typescript"
+          :theme
+          show-line-numbers
+        />
+
+        <div v-else-if="activeOutputTab === 'vir'" class="inspector-vir-output">
+          <div class="inspector-vir-header">
+            <span>VIR</span>
+            <span>{{ virLines.length }} lines</span>
+          </div>
+          <div class="inspector-vir-content">
+            <div
+              v-for="line in virLines"
+              :key="line.index"
+              :class="['inspector-vir-line', `vir-line-${line.lineType}`]"
+            >
+              <span class="inspector-vir-ln">{{ line.index + 1 }}</span>
+              <span class="inspector-vir-line-text"
+                ><template v-if="line.tokens.length > 0"
+                  ><span
+                    v-for="(token, tokenIndex) in line.tokens"
+                    :key="tokenIndex"
+                    :class="['vir-token', `vir-${token.type}`]"
+                    >{{ token.text }}</span
+                  ></template
+                ><template v-else><span>&#160;</span></template></span
+              >
+            </div>
+          </div>
+          <div v-if="virLines.length === 0" class="inspector-empty-diff">No VIR generated.</div>
+        </div>
+
+        <div v-else-if="activeOutputTab === 'graph'" class="inspector-graph-panel">
+          <div class="inspector-graph-summary">
+            <span>{{ graphSummary.nodes }} files</span>
+            <span>{{ graphSummary.edges }} edges</span>
+            <span>{{ graphSummary.diagnostics }} diagnostics</span>
+            <span>{{ graphSummary.cycles }} cycles</span>
+          </div>
+
+          <div class="inspector-graph">
+            <div
+              v-for="node in report.graph.nodes"
+              :key="node.path"
+              :class="[
+                'inspector-graph-node',
+                {
+                  active: node.path === selectedFile.path,
+                  entry: node.isEntry,
+                  issues: node.issueCount > 0,
+                },
+              ]"
+            >
+              <div class="inspector-graph-node-main">
+                <span class="inspector-graph-file">{{ node.path }}</span>
+                <span class="inspector-graph-kind">{{ node.kind }}</span>
+                <span v-if="node.issueCount > 0" class="inspector-graph-issues">
+                  {{ node.issueCount }}
+                </span>
+              </div>
+              <div class="inspector-graph-node-meta">
+                <span>{{ node.sourceLines }} lines</span>
+                <span>{{ node.sourceBytes }} bytes</span>
+              </div>
+              <div v-if="graphEdgesFor(node.path).length > 0" class="inspector-graph-edges">
+                <div
+                  v-for="edge in graphEdgesFor(node.path)"
+                  :key="`${edge.from}-${edge.to}-${edge.kind}-${edge.specifier}`"
+                  class="inspector-graph-edge"
+                >
+                  <span class="inspector-graph-edge-kind">{{ edge.kind }}</span>
+                  <span class="inspector-graph-arrow">-&gt;</span>
+                  <span class="inspector-graph-target">{{ edge.to }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="graphDiagnostics.length > 0" class="inspector-graph-diagnostics">
+            <div
+              v-for="(diagnostic, index) in graphDiagnostics"
+              :key="`${diagnostic.file}-${diagnostic.code}-${index}`"
+              :class="['inspector-graph-diagnostic', diagnostic.severity]"
+            >
+              <span class="inspector-graph-diagnostic-code">{{ diagnostic.code }}</span>
+              <span class="inspector-graph-diagnostic-file">{{ diagnostic.file }}</span>
+              <span class="inspector-graph-diagnostic-message">{{ diagnostic.message }}</span>
+            </div>
+          </div>
+        </div>
 
         <div v-else>
           <pre class="inspector-payload">{{ payloadJson }}</pre>

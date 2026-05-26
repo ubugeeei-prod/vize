@@ -1,0 +1,136 @@
+import { describe, expect, it, vi } from "vite-plus/test";
+import { compileInspectorReport } from "./compareCompilers";
+import type { CompilerOptions, WasmModule } from "../../wasm/index";
+
+vi.mock("../atelier/formatters", () => ({
+  formatCode: vi.fn(async (code: string, parser: string) => `[${parser}]\n${code}`),
+}));
+
+describe("compileInspectorReport", () => {
+  it("includes virtual ts, vir, and graph inspector outputs", async () => {
+    const compileSfc = vi.fn((_: string, options: CompilerOptions) => ({
+      descriptor: {
+        filename: "src/App.vue",
+        source: "",
+        template: {
+          content: "{{ msg }}",
+          loc: { start: 0, end: 0 },
+          attrs: {},
+        },
+        script: undefined,
+        scriptSetup: { content: "", loc: { start: 0, end: 0 }, attrs: {}, setup: true },
+        styles: [],
+        customBlocks: [],
+      },
+      script: { code: options.ssr ? "export const ssr = true;" : "export const dom = true;" },
+      warnings: [],
+    }));
+    const typeCheck = vi.fn(() => ({
+      diagnostics: [
+        {
+          severity: "warning" as const,
+          message: "virtual note",
+          start: 0,
+          end: 0,
+          code: "vts-note",
+          related: [],
+        },
+      ],
+      virtualTs: "const __vts = 1;",
+      errorCount: 0,
+      warningCount: 1,
+    }));
+    const analyzeSfc = vi.fn(() => ({
+      croquis: {
+        is_setup: true,
+        bindings: [],
+        scopes: [],
+        macros: [],
+        props: [],
+        emits: [],
+        provides: [],
+        injects: [],
+        typeExports: [],
+        invalidExports: [],
+        diagnostics: [],
+        stats: {
+          binding_count: 0,
+          unused_binding_count: 0,
+          scope_count: 0,
+          macro_count: 0,
+          type_export_count: 0,
+          invalid_export_count: 0,
+          error_count: 0,
+          warning_count: 0,
+        },
+      },
+      diagnostics: [],
+      vir: "[vir]\nbindings=0\n",
+    }));
+    const analyzeCrossFile = vi.fn(() => ({
+      diagnostics: [],
+      circularDependencies: [],
+      stats: {
+        filesAnalyzed: 2,
+        vueComponents: 2,
+        dependencyEdges: 1,
+        errorCount: 0,
+        warningCount: 0,
+        infoCount: 0,
+        analysisTimeMs: 0,
+      },
+      filePaths: ["src/App.vue", "src/Child.vue"],
+    }));
+    const compiler = {
+      compileSfc,
+      typeCheck,
+      analyzeSfc,
+      analyzeCrossFile,
+    } as unknown as WasmModule;
+
+    const report = await compileInspectorReport({
+      compiler,
+      file: {
+        path: "src/App.vue",
+        source:
+          "<script setup>import Child from './Child.vue'; const msg = 'hi'</script><template><Child />{{ msg }}</template>",
+      },
+      files: [
+        {
+          path: "src/App.vue",
+          source:
+            "<script setup>import Child from './Child.vue'; const msg = 'hi'</script><template><Child />{{ msg }}</template>",
+        },
+        {
+          path: "src/Child.vue",
+          source: "<template><span /></template>",
+        },
+      ],
+      target: "dom",
+    });
+
+    expect(report.virtualTs.code).toBe("const __vts = 1;");
+    expect(report.virtualTs.formattedCode).toContain("[typescript]");
+    expect(report.virtualTs.warnings).toEqual(["warning vts-note: virtual note"]);
+    expect(report.vir.code).toBe("[vir]\nbindings=0\n");
+    expect(report.graph.nodes).toHaveLength(2);
+    expect(report.graph.edges).toEqual([
+      {
+        from: "src/App.vue",
+        to: "src/Child.vue",
+        kind: "import",
+        specifier: "./Child.vue",
+      },
+      {
+        from: "src/App.vue",
+        to: "src/Child.vue",
+        kind: "component",
+        specifier: "./Child.vue",
+      },
+    ]);
+    expect(typeCheck).toHaveBeenCalledWith(expect.any(String), {
+      filename: "src/App.vue",
+      includeVirtualTs: true,
+    });
+  });
+});

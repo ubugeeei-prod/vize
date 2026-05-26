@@ -58,7 +58,8 @@ export function createPullRequestBody({
     "",
     `- Target: ${target}`,
     `- Files: ${payload.files.length}`,
-    `- Diff: +${stats.additions} / -${stats.removals}`,
+    `- Output delta: +${stats.additions} / -${stats.removals}`,
+    "- Includes: Vue output, Vize output, Virtual TS, VIR, and cross-file graph",
     "",
     "### Repro files",
     "",
@@ -66,7 +67,7 @@ export function createPullRequestBody({
     "",
     "### Notes",
     "",
-    "Generated from the Vize playground compiler inspector. Please add the minimized fixture or snapshot that explains the parity change.",
+    "Generated from the Vize playground compiler inspector. Please add the minimized fixture or full snapshot that explains the parity change.",
   ].join("\n");
 }
 
