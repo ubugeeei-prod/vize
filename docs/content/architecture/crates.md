@@ -6,7 +6,7 @@ title: Crates
 
 > **⚠️ Work in Progress:** Vize is under active development. Crate APIs are still changing.
 
-Vize's Rust workspace is organized around 17 primary crates. Each crate owns one slice of the
+Vize's Rust workspace is organized around 18 primary crates. Each crate owns one slice of the
 pipeline so parsing, semantic analysis, code generation, linting, formatting, type checking, and
 editor tooling can share the same syntax model.
 
@@ -38,6 +38,7 @@ editor tooling can share the same syntax model.
 | `vize_canon`   | Vue-aware type checking and virtual TypeScript generation          |
 | `vize_maestro` | Language Server Protocol implementation                            |
 | `vize_musea`   | Musea art parsing, docs, palette generation, autogen, and VRT core |
+| `vize_curator` | Local inspector payloads, graph/diff metadata, and profile reports |
 | `vize_fresco`  | Terminal UI primitives used by TUI-oriented experiments            |
 
 ## Distribution Layers
@@ -51,6 +52,9 @@ editor tooling can share the same syntax model.
 
 - `vize_musea` is the Rust core for Musea art tooling. The gallery UI and dev-server workflow are
   provided by `@vizejs/vite-plugin-musea`.
+- `vize_curator` is not published. It owns local developer artifacts such as inspector payloads,
+  agent reports, cross-file graph metadata, and CLI profile report rendering. The low-level
+  profiler remains in `vize_carton` because shared crates instrument their own hot paths.
 - `vize_vitrine` is the bridge from Rust to JS. Packages such as `@vizejs/native` and
   `@vizejs/wasm` publish its bindings.
 - `vize` is the full Rust CLI crate in the workspace. For v1 alpha, its public binary channel is
@@ -64,6 +68,7 @@ editor tooling can share the same syntax model.
 | `vize fmt`                  | `vize`, `vize_glyph`                                                                     |
 | `vize lint`                 | `vize`, `vize_patina`                                                                    |
 | `vize check`                | `vize`, `vize_canon`                                                                     |
+| `vize inspector`            | `vize`, `vize_curator`                                                                   |
 | `vize lsp`                  | `vize`, `vize_maestro`                                                                   |
 | `@vizejs/vite-plugin`       | `vize_vitrine`, `vize_atelier_sfc`                                                       |
 | `@vizejs/native`            | `vize_vitrine`                                                                           |

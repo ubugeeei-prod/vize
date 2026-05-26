@@ -5,3 +5,4 @@
 //! published crate set.
 
 pub mod inspector;
+pub mod profile;

@@ -12,3 +12,6 @@ publish = false
 serde = { workspace = true }
 serde_json = { workspace = true }
 vize_carton = { workspace = true }
+
+[dev-dependencies]
+insta.workspace = true

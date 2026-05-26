@@ -21,9 +21,7 @@ use vize_carton::{
     profiler::{allocation_snapshot, global_profiler},
 };
 
-use crate::commands::profile::{
-    ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
-};
+use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
 
 use super::{
     CheckArgs,

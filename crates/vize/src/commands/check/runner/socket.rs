@@ -17,15 +17,13 @@ use vize_carton::{
     profiler::{allocation_snapshot, global_profiler},
 };
 
-use crate::commands::{
-    check::{
-        CheckArgs, JsonRpcResponse, ServerCheckResult,
-        reporting::{JsonFileResult, JsonOutput},
-    },
-    profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report},
+use crate::commands::check::{
+    CheckArgs, JsonRpcResponse, ServerCheckResult,
+    reporting::{JsonFileResult, JsonOutput},
 };
 
 use super::{collect::collect_vue_files, display_path};
+use vize_curator::profile::{ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report};
 
 /// Run type checking via Unix socket connection to check-server.
 pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {

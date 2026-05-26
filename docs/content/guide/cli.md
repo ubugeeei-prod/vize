@@ -63,6 +63,10 @@ When invoked without a command, `vize` defaults to `build`.
 | `lsp`          | Start the language server                       |
 | `ide`          | Install or manage editor integrations           |
 
+All `--profile` terminal reports are rendered by the local-only `vize_curator` crate. The
+instrumentation hooks remain in `vize_carton`, while curator owns the CLI report shape alongside
+inspector and agent-facing artifacts.
+
 ## Build
 
 ```bash

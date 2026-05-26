@@ -22,7 +22,7 @@ use vize_carton::cstr;
 use vize_carton::profile;
 use vize_carton::profiler::{allocation_snapshot, global_profiler};
 
-use crate::commands::profile::{
+use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
 

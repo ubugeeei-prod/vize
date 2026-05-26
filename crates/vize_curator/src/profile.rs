@@ -1,4 +1,4 @@
-//! Shared CLI profile report rendering.
+//! Profile report rendering for local CLI tools.
 
 use std::path::PathBuf;
 use std::time::Duration;
@@ -15,13 +15,13 @@ const RED: &str = "\x1b[31m";
 const CYAN: &str = "\x1b[36m";
 
 #[derive(Debug, Clone, Copy)]
-pub(crate) enum ProfilePhaseKind {
+pub enum ProfilePhaseKind {
     Wall,
     Cumulative,
 }
 
 #[derive(Debug, Clone, Copy)]
-pub(crate) struct ProfilePhase {
+pub struct ProfilePhase {
     pub name: &'static str,
     pub duration: Duration,
     pub kind: ProfilePhaseKind,
@@ -29,7 +29,7 @@ pub(crate) struct ProfilePhase {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct ProfileFileRow {
+pub struct ProfileFileRow {
     pub path: PathBuf,
     pub bytes: usize,
     pub total: Duration,
@@ -40,7 +40,7 @@ pub(crate) struct ProfileFileRow {
     pub note: Option<String>,
 }
 
-pub(crate) struct ProfileReport<'a> {
+pub struct ProfileReport<'a> {
     pub title: &'a str,
     pub summary: &'a str,
     pub total: Duration,
@@ -54,11 +54,11 @@ pub(crate) struct ProfileReport<'a> {
     pub recommendations: &'a [String],
 }
 
-pub(crate) fn print_profile_report(report: &ProfileReport<'_>) {
+pub fn print_profile_report(report: &ProfileReport<'_>) {
     eprint!("{}", render_profile_report(report));
 }
 
-pub(crate) fn render_profile_report(report: &ProfileReport<'_>) -> String {
+pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
     let mut out = String::default();
 
     appendln!(out);

@@ -1,5 +1,5 @@
 ---
-source: crates/vize/src/commands/profile.rs
+source: crates/vize_curator/src/profile.rs
 expression: render_profile_report(&report)
 ---
 

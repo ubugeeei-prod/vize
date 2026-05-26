@@ -30,7 +30,7 @@ use vize_patina::{
     format_summary,
 };
 
-use crate::commands::profile::{
+use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
 

@@ -17,10 +17,10 @@ use vize_carton::{
 };
 use vize_glyph::{Allocator, FormatOptions, format_sfc_with_allocator};
 
-use crate::commands::profile::{
+use crate::config;
+use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
-use crate::config;
 
 const NODE_MODULES_DIR: &str = "node_modules";
 const VIZE_CACHE_DIR: &str = ".vize";
