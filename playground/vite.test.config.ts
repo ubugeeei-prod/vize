@@ -7,7 +7,7 @@ const testOutputIgnorePattern = ["**", "target", "vize-tests", "**"].join("/");
 export default defineConfig({
   plugins: [vize()],
   resolve: {
-    alias: [{ find: "vue", replacement: "vue/dist/vue.runtime.esm-bundler.js" }],
+    alias: [{ find: /^vue$/, replacement: "vue/dist/vue.runtime.esm-bundler.js" }],
     dedupe: ["vue"],
   },
   optimizeDeps: {

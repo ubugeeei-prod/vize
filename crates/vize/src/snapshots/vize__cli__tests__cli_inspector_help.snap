@@ -1,0 +1,52 @@
+---
+source: crates/vize/src/cli.rs
+expression: "command_help(\"inspector\")"
+---
+Create playground compiler inspector payloads
+
+Usage: inspector [OPTIONS] [PATTERNS]...
+
+Arguments:
+  [PATTERNS]...
+          File, directory, or glob pattern(s) to include (default: ./**/*.vue)
+
+          [default: ./**/*.vue]
+
+Options:
+  -f, --format <FORMAT>
+          Output format
+
+          Possible values:
+          - url:  Print a playground URL containing the encoded inspector payload
+          - json: Print the raw inspector JSON payload
+
+          [default: url]
+
+      --playground-url <PLAYGROUND_URL>
+          Playground URL used when --format url is selected
+
+          [default: https://vizejs.dev/play/]
+
+      --target <TARGET>
+          Compiler target to compare
+
+          Possible values:
+          - dom: Compare DOM compiler output
+          - ssr: Compare SSR compiler output
+
+          [default: dom]
+
+  -o, --output <OUTPUT>
+          Write output to a file instead of stdout
+
+      --max-files <MAX_FILES>
+          Limit the number of files in the payload
+
+      --custom-renderer
+          Enable custom renderer comparison in the playground
+
+      --vue-parser-quirks
+          Enable Vue parser compatibility quirks in the Vize side of the comparison
+
+  -h, --help
+          Print help (see a summary with '-h')

@@ -8,7 +8,7 @@ export default defineConfig({
     alias: [
       { find: "@mdi/js", replacement: "@mdi/js/mdi.js" },
       { find: /^monaco-editor$/, replacement: "monaco-editor/esm/vs/editor/editor.main.js" },
-      { find: "vue", replacement: "vue/dist/vue.runtime.esm-bundler.js" },
+      { find: /^vue$/, replacement: "vue/dist/vue.runtime.esm-bundler.js" },
     ],
     dedupe: ["vue"],
   },

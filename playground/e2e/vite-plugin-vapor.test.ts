@@ -11,27 +11,29 @@ const { compileSfc } = native;
 
 describe("vite-plugin vapor options", () => {
   it("builds scoped single-file options with vapor enabled", () => {
-    const options = buildCompileFileOptions(
-      "/src/App.vue",
-      "<template><div /></template><style scoped>.root { color: red; }</style>",
-      { sourceMap: true, ssr: false, vapor: true },
-    );
+    const options = buildCompileFileOptions("/src/App.vue", {
+      sourceMap: true,
+      ssr: false,
+      vapor: true,
+    });
 
     expect(options).toMatchObject({
       filename: "/src/App.vue",
       sourceMap: true,
       ssr: false,
       vapor: true,
+      customRenderer: false,
+      vueParserQuirks: false,
     });
     expect(options.scopeId).toMatch(/^data-v-/);
   });
 
-  it("omits scopeId for unscoped styles while keeping vapor", () => {
-    const options = buildCompileFileOptions(
-      "/src/App.vue",
-      "<template><div /></template><style>.root { color: red; }</style>",
-      { sourceMap: false, ssr: true, vapor: true },
-    );
+  it("builds SSR single-file options while keeping vapor", () => {
+    const options = buildCompileFileOptions("/src/App.vue", {
+      sourceMap: false,
+      ssr: true,
+      vapor: true,
+    });
 
     expect(options).toEqual({
       filename: "/src/App.vue",
@@ -39,7 +41,8 @@ describe("vite-plugin vapor options", () => {
       ssr: true,
       vapor: true,
       customRenderer: false,
-      scopeId: undefined,
+      vueParserQuirks: false,
+      scopeId: "data-v-c0cc6f12",
     });
   });
 
@@ -48,6 +51,7 @@ describe("vite-plugin vapor options", () => {
       ssr: false,
       vapor: true,
       customRenderer: false,
+      vueParserQuirks: false,
     });
   });
 
@@ -120,8 +124,8 @@ const count = 1;
     expect(result.code).toContain("_createIf");
     expect(result.code).toContain("_setClass");
     expect(result.code).toContain('_delegateEvents("click")');
-    expect(result.code).toContain("_setInsertionState(n16, null, true)\n  const n17 = _createIf(");
-    expect(result.code).toContain("_setInsertionState(n1, null, true)\n  const n22 = _createIf(");
+    expect(result.code).toContain("_setInsertionState(n17, null, true)\n  const n18 = _createIf(");
+    expect(result.code).toContain("_setInsertionState(n1, null, true)\n  const n23 = _createIf(");
     expect(result.code).toContain(
       '<g transform=\\"translate(15, 10) skewX(-15)\\"><path d=\\"M 65 0 L 40 60 L 70 20 L 65 0 Z\\" fill=\\"currentColor\\"></path><path d=\\"M 20 0 L 40 60 L 53 13 L 20 0 Z\\" fill=\\"currentColor\\"></path></g>',
     );

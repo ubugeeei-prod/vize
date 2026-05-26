@@ -8,6 +8,7 @@ import GlyphPlayground from "./features/glyph/GlyphPlayground.vue";
 import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
 import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
 import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
+import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
 
 // Theme toggle
 const isDark = ref(false);
@@ -19,9 +20,18 @@ function toggleTheme() {
 }
 
 // Main tab
-type MainTab = "atelier" | "patina" | "canon" | "croquis" | "cross-file" | "musea" | "glyph";
+type MainTab =
+  | "atelier"
+  | "inspector"
+  | "patina"
+  | "canon"
+  | "croquis"
+  | "cross-file"
+  | "musea"
+  | "glyph";
 const validTabs: MainTab[] = [
   "atelier",
+  "inspector",
   "patina",
   "canon",
   "croquis",
@@ -98,6 +108,13 @@ onMounted(async () => {
         >
           <span class="tab-name">Atelier</span>
           <span class="tab-desc">compiler</span>
+        </button>
+        <button
+          :class="['main-tab', { active: mainTab === 'inspector' }]"
+          @click="mainTab = 'inspector'"
+        >
+          <span class="tab-name">Inspector</span>
+          <span class="tab-desc">diff</span>
         </button>
         <button :class="['main-tab', { active: mainTab === 'patina' }]" @click="mainTab = 'patina'">
           <span class="tab-name">Patina</span>
@@ -192,6 +209,9 @@ onMounted(async () => {
     <main class="main">
       <template v-if="mainTab === 'patina'">
         <PatinaPlayground :compiler />
+      </template>
+      <template v-else-if="mainTab === 'inspector'">
+        <InspectorPlayground :compiler />
       </template>
       <template v-else-if="mainTab === 'canon'">
         <TypeCheckPlayground :compiler />

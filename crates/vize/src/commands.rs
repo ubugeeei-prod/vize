@@ -7,6 +7,7 @@ pub mod clean;
 pub mod fmt;
 #[cfg(feature = "maestro")]
 pub mod ide;
+pub mod inspector;
 pub mod lint;
 #[cfg(feature = "maestro")]
 pub mod lsp;

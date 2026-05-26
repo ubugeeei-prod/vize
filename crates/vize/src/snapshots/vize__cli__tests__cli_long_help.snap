@@ -1,6 +1,6 @@
 ---
 source: crates/vize/src/cli.rs
-expression: "String::from_utf8(help).unwrap()"
+expression: normalize_help(help)
 ---
 High-performance Vue.js toolchain in Rust
 
@@ -11,6 +11,7 @@ Commands:
   fmt           Format Vue SFC files [aliases: glyph]
   lint          Lint Vue SFC files [aliases: patina]
   check         Type check Vue SFC files
+  inspector     Create playground compiler inspector payloads
   clean         Remove Vize-generated cache artifacts
   check-server  Start type check JSON-RPC server (Unix only)
   musea         Start component gallery server
