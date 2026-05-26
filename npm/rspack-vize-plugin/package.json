@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/rspack-plugin",
-  "version": "0.132.0",
+  "version": "0.133.0",
   "description": "High-performance Rspack plugin for Vue SFC compilation powered by Vize",
   "keywords": [
     "compiler",
