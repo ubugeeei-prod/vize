@@ -59,7 +59,7 @@ impl Analyzer {
             {
                 profile!(
                     "croquis.template.v_if.condition_refs",
-                    self.check_expression_refs(cond, scope_vars, branch.loc.start.offset)
+                    self.check_expression_refs(cond, scope_vars)
                 );
             }
 
@@ -70,7 +70,7 @@ impl Analyzer {
             {
                 profile!(
                     "croquis.template.v_if.key_refs",
-                    self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                    self.check_expression_refs(exp, scope_vars)
                 );
             }
 
@@ -152,7 +152,7 @@ impl Analyzer {
         if self.options.detect_undefined && self.script_analyzed {
             profile!(
                 "croquis.template.v_for.source_refs",
-                self.check_expression_refs(&for_node.source, scope_vars, for_node.loc.start.offset)
+                self.check_expression_refs(&for_node.source, scope_vars)
             );
         }
 

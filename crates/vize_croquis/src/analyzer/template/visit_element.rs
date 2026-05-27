@@ -350,7 +350,7 @@ impl Analyzer {
                         && dir.name != "on"
                         && dir.name != "bind"
                     {
-                        self.check_expression_refs(exp, scope_vars, dir.loc.start.offset);
+                        self.check_expression_refs(exp, scope_vars);
                     }
                 }
             }

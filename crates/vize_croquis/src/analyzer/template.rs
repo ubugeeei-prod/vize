@@ -113,11 +113,7 @@ impl Analyzer {
                         );
                     }
                     if self.options.detect_undefined && self.script_analyzed {
-                        self.check_expression_refs(
-                            &interp.content,
-                            scope_vars,
-                            interp.content.loc().start.offset,
-                        );
+                        self.check_expression_refs(&interp.content, scope_vars);
                     }
                 })
             }

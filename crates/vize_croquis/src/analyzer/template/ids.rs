@@ -171,12 +171,12 @@ impl Analyzer {
         &mut self,
         expr: &ExpressionNode<'_>,
         scope_vars: &[CompactString],
-        base_offset: u32,
     ) {
         let content = match expr {
             ExpressionNode::Simple(s) => s.content.as_str(),
             ExpressionNode::Compound(c) => c.loc.source.as_str(),
         };
+        let base_offset = expr.loc().start.offset;
 
         for ident in profile!(
             "croquis.template.expression.extract_identifiers",

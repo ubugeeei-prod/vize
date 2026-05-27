@@ -304,11 +304,11 @@ const count = ref(0);
     #[test]
     fn test_type_check_plain_script_exported_binding_in_template() {
         let source = r#"<script lang="ts">
-export const SUB_AI_FEEDBACK_USER_INPUT_DELETE_BUTTON_ID =
+export const buttonId =
   "sub-ai-feedback-user-input-delete-button";
 </script>
 <template>
-    <button :id="SUB_AI_FEEDBACK_USER_INPUT_DELETE_BUTTON_ID" />
+    <button :id="buttonId" />
 </template>"#;
         let options = SfcTypeCheckOptions::new("test.vue");
         let result = type_check_sfc(source, &options);
@@ -321,6 +321,28 @@ export const SUB_AI_FEEDBACK_USER_INPUT_DELETE_BUTTON_ID =
             "unexpected diagnostics: {:#?}",
             result.diagnostics
         );
+    }
+
+    #[test]
+    fn test_type_check_template_undefined_binding_uses_expression_offset() {
+        let source = r#"<script lang="ts"></script>
+<template>
+    <button :id="missingButtonId" />
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue");
+        let result = type_check_sfc(source, &options);
+
+        let diagnostic = result
+            .diagnostics
+            .iter()
+            .find(|d| d.code.as_deref() == Some("undefined-binding"))
+            .expect("expected an undefined-binding diagnostic");
+
+        let expected_start = source.find("missingButtonId").unwrap() as u32;
+        let expected_end = expected_start + "missingButtonId".len() as u32;
+
+        assert_eq!(diagnostic.start, expected_start);
+        assert_eq!(diagnostic.end, expected_end);
     }
 
     #[test]

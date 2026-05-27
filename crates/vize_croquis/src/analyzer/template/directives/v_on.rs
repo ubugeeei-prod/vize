@@ -81,7 +81,7 @@ impl Analyzer {
                 if self.options.detect_undefined && self.script_analyzed {
                     profile!(
                         "croquis.template.v_on.refs",
-                        self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                        self.check_expression_refs(exp, scope_vars)
                     );
                 }
 
@@ -137,7 +137,7 @@ impl Analyzer {
                     if self.options.detect_undefined && self.script_analyzed {
                         profile!(
                             "croquis.template.v_on.refs",
-                            self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                            self.check_expression_refs(exp, scope_vars)
                         );
                     }
 
@@ -161,7 +161,7 @@ impl Analyzer {
                     if self.options.detect_undefined && self.script_analyzed {
                         profile!(
                             "croquis.template.v_on.refs",
-                            self.check_expression_refs(exp, scope_vars, dir.loc.start.offset)
+                            self.check_expression_refs(exp, scope_vars)
                         );
                     }
                 }
