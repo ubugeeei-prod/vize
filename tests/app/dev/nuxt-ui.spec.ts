@@ -79,8 +79,12 @@ test.describe("nuxt-ui dev", () => {
     expect(response?.status()).toBeDefined();
 
     await expect(page.locator(app.mountSelector)).toBeAttached();
-    await expect(page.locator(app.mountSelector).getByRole("heading", { name: "Playground" })).toBeVisible();
-    await expect(page.locator(app.mountSelector).getByRole("button", { name: "Button" }).first()).toBeVisible();
+    await expect(
+      page.locator(app.mountSelector).getByRole("heading", { name: "Playground" }),
+    ).toBeVisible();
+    await expect(
+      page.locator(app.mountSelector).getByRole("button", { name: "Button" }).first(),
+    ).toBeVisible();
 
     const html = await verifySSRContent(page, app.url);
     expect(normalizeNuxtUiSnapshotHtml(html)).toMatchSnapshot("home-ssr");

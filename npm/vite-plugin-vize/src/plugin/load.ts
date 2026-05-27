@@ -298,7 +298,9 @@ export function loadHook(
   }
 
   if (request.isVueSfcPath && hasNuxtComponentQuery(request)) {
-    const realPath = classifyVitePluginRequest(request.normalizedFsId ?? request.path).normalizedVuePath;
+    const realPath = classifyVitePluginRequest(
+      request.normalizedFsId ?? request.path,
+    ).normalizedVuePath;
     const isSsr = !!loadOptions?.ssr;
     return loadCompiledSfcModule(state, realPath, isSsr, currentBase, loadOptions);
   }
