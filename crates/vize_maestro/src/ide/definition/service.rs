@@ -197,6 +197,15 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
+        if let Some(definition) = script::definition_in_script(ctx) {
+            let is_define_art_source =
+                crate::ide::musea::define_art_source_at_offset(&ctx.content, ctx.uri, ctx.offset)
+                    .is_some();
+            if is_define_art_source {
+                return Some(definition);
+            }
+        }
+
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
         if word.is_empty() {

@@ -141,6 +141,9 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
                     // Only add to bindings if not type-only
                     if !is_type_only && !is_type_spec {
                         result.bindings.add(name, binding_type);
+                        result
+                            .import_sources
+                            .insert(CompactString::new(name), CompactString::new(source_name));
                     }
                 }
             }

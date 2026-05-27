@@ -21,6 +21,13 @@ use crate::ide::IdeContext;
 
 /// Get completions for script context.
 pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<CompletionItem> {
+    if is_setup
+        && ctx.uri.path().ends_with(".art.vue")
+        && let Some(items) = crate::ide::musea::define_art_source_completions(ctx)
+    {
+        return items;
+    }
+
     if let Some(items) = complete_member_access(ctx, is_setup)
         && !items.is_empty()
     {
@@ -184,13 +191,6 @@ fn complete_member_access(ctx: &IdeContext, is_setup: bool) -> Option<Vec<Comple
 }
 
 fn script_content_for_context(ctx: &IdeContext<'_>, is_setup: bool) -> Option<String> {
-    if is_setup
-        && ctx.uri.path().ends_with(".art.vue")
-        && let Some(script) = art_state_script_for_offset(ctx)
-    {
-        return Some(script);
-    }
-
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: ctx.uri.path().to_string().into(),
         ..Default::default()
@@ -204,40 +204,6 @@ fn script_content_for_context(ctx: &IdeContext<'_>, is_setup: bool) -> Option<St
     } else {
         descriptor.script.map(|script| script.content.into_owned())
     }
-}
-
-fn art_state_script_for_offset(ctx: &IdeContext<'_>) -> Option<String> {
-    let allocator = vize_carton::Bump::new();
-    let art_desc = vize_musea::parse_art(
-        &allocator,
-        &ctx.content,
-        vize_musea::ArtParseOptions::default(),
-    )
-    .ok()?;
-
-    let mut script = String::new();
-    for (variant_index, variant) in art_desc.variants.iter().enumerate() {
-        let Some(loc) = variant.loc.as_ref() else {
-            continue;
-        };
-        let blocks = crate::virtual_code::find_variant_state_blocks(
-            &ctx.content,
-            loc.start as usize,
-            loc.end as usize,
-            variant_index,
-        );
-        for block in blocks {
-            if block.contains_content_offset(ctx.offset) {
-                script.push_str(block.content(&ctx.content));
-                if !script.ends_with('\n') {
-                    script.push('\n');
-                }
-                return Some(script);
-            }
-        }
-    }
-
-    None
 }
 
 fn member_access_receiver(content: &str, offset: usize) -> Option<&str> {
@@ -583,6 +549,12 @@ pub(crate) fn composition_api_completions() -> Vec<CompletionItem> {
 /// Vue macro completions (script setup only).
 pub(crate) fn macro_completions() -> Vec<CompletionItem> {
     vec![
+        items::macro_item(
+            "defineArt",
+            "defineArt(source, options)",
+            "Declare Musea art metadata",
+            "defineArt(\"$1\", {\n\ttitle: \"$2\",\n});",
+        ),
         items::macro_item(
             "defineProps",
             "defineProps<T>()",

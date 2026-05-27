@@ -2,6 +2,7 @@
 //!
 //! High-performance parser for extracting the `<art>` block and its metadata.
 
+use super::DefineArtMetadata;
 use super::{BlockInfo, extract_attr, has_attr};
 use crate::types::{ArtMetadata, ArtParseError, ArtStatus};
 use memchr::{memchr, memmem};
@@ -65,16 +66,22 @@ pub(crate) fn find_art_block<'a>(
 pub(crate) fn parse_metadata<'a>(
     allocator: &'a Bump,
     block: &BlockInfo<'a>,
+    define_art: Option<&DefineArtMetadata<'a>>,
 ) -> Result<ArtMetadata<'a>, ArtParseError> {
     let attrs = block.attrs_str;
 
-    // Title is required
-    let title = extract_attr(attrs, "title").ok_or(ArtParseError::MissingTitle)?;
+    let title = extract_attr(attrs, "title")
+        .or_else(|| define_art.and_then(|metadata| metadata.title))
+        .or_else(|| define_art.and_then(|metadata| metadata.component_name))
+        .ok_or(ArtParseError::MissingTitle)?;
 
     // Optional attributes - all borrowed from source
-    let description = extract_attr(attrs, "description");
-    let component = extract_attr(attrs, "component");
-    let category = extract_attr(attrs, "category");
+    let description = extract_attr(attrs, "description")
+        .or_else(|| define_art.and_then(|metadata| metadata.description));
+    let component = extract_attr(attrs, "component")
+        .or_else(|| define_art.and_then(|metadata| metadata.component));
+    let category = extract_attr(attrs, "category")
+        .or_else(|| define_art.and_then(|metadata| metadata.category));
 
     // Parse tags (comma-separated) into arena-allocated vec
     let mut tags = vize_carton::Vec::new_in(allocator);
@@ -86,13 +93,19 @@ pub(crate) fn parse_metadata<'a>(
                 tags.push(trimmed);
             }
         }
+    } else if let Some(define_art) = define_art {
+        tags.extend(define_art.tags.iter().copied());
     }
 
     // Parse status
-    let status = parse_status(attrs);
+    let status = parse_status(attrs)
+        .or_else(|| define_art.and_then(|metadata| metadata.status))
+        .unwrap_or_default();
 
     // Parse order
-    let order = extract_attr(attrs, "order").and_then(|s| s.parse::<u32>().ok());
+    let order = extract_attr(attrs, "order")
+        .and_then(|s| s.parse::<u32>().ok())
+        .or_else(|| define_art.and_then(|metadata| metadata.order));
 
     Ok(ArtMetadata {
         title,
@@ -108,23 +121,23 @@ pub(crate) fn parse_metadata<'a>(
 /// Parse the status attribute value.
 /// Uses fast byte comparison instead of string matching.
 #[inline]
-fn parse_status(attrs: &str) -> ArtStatus {
+fn parse_status(attrs: &str) -> Option<ArtStatus> {
     if let Some(status_str) = extract_attr(attrs, "status") {
         let bytes = status_str.as_bytes();
         // Fast matching without allocations
         if bytes.eq_ignore_ascii_case(b"draft") {
-            ArtStatus::Draft
+            Some(ArtStatus::Draft)
         } else if bytes.eq_ignore_ascii_case(b"deprecated") {
-            ArtStatus::Deprecated
+            Some(ArtStatus::Deprecated)
         } else {
-            ArtStatus::Ready
+            Some(ArtStatus::Ready)
         }
     } else if has_attr(attrs, "draft") {
-        ArtStatus::Draft
+        Some(ArtStatus::Draft)
     } else if has_attr(attrs, "deprecated") {
-        ArtStatus::Deprecated
+        Some(ArtStatus::Deprecated)
     } else {
-        ArtStatus::Ready
+        None
     }
 }
 
@@ -149,7 +162,7 @@ mod tests {
         let allocator = Bump::new();
         let source = r#"<art title="Button"></art>"#;
         let block = find_art_block(source.as_bytes(), source).unwrap();
-        let metadata = parse_metadata(&allocator, &block).unwrap();
+        let metadata = parse_metadata(&allocator, &block, None).unwrap();
 
         assert_eq!(metadata.title, "Button");
         assert_eq!(metadata.description, None);
@@ -161,7 +174,7 @@ mod tests {
         let allocator = Bump::new();
         let source = r#"<art title="Button" description="A button" category="atoms" tags="ui,input" status="draft"></art>"#;
         let block = find_art_block(source.as_bytes(), source).unwrap();
-        let metadata = parse_metadata(&allocator, &block).unwrap();
+        let metadata = parse_metadata(&allocator, &block, None).unwrap();
 
         assert_eq!(metadata.title, "Button");
         assert_eq!(metadata.description, Some("A button"));
@@ -174,14 +187,14 @@ mod tests {
 
     #[test]
     fn test_parse_status() {
-        assert_eq!(parse_status(r#"status="draft""#), ArtStatus::Draft);
-        assert_eq!(parse_status(r#"status="ready""#), ArtStatus::Ready);
+        assert_eq!(parse_status(r#"status="draft""#), Some(ArtStatus::Draft));
+        assert_eq!(parse_status(r#"status="ready""#), Some(ArtStatus::Ready));
         assert_eq!(
             parse_status(r#"status="deprecated""#),
-            ArtStatus::Deprecated
+            Some(ArtStatus::Deprecated)
         );
-        assert_eq!(parse_status(r#"draft"#), ArtStatus::Draft);
-        assert_eq!(parse_status(r#"deprecated"#), ArtStatus::Deprecated);
-        assert_eq!(parse_status(r#""#), ArtStatus::Ready);
+        assert_eq!(parse_status(r#"draft"#), Some(ArtStatus::Draft));
+        assert_eq!(parse_status(r#"deprecated"#), Some(ArtStatus::Deprecated));
+        assert_eq!(parse_status(r#""#), None);
     }
 }

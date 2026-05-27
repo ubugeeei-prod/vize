@@ -7,8 +7,8 @@ mod art_block;
 mod variant;
 
 use crate::types::{
-    ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult, ArtScriptBlock, ArtStyleBlock,
-    SourceLocation,
+    ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult, ArtScriptBlock, ArtStatus,
+    ArtStyleBlock, SourceLocation,
 };
 use memchr::{memchr, memmem};
 use vize_carton::Bump;
@@ -65,8 +65,14 @@ pub fn parse_art<'a>(
     // Find <art> block using fast byte search
     let art_block = art_block::find_art_block(bytes, source)?;
 
-    // Parse metadata from <art> attributes
-    let metadata = art_block::parse_metadata(allocator, &art_block)?;
+    // Parse standard SFC blocks (script, style)
+    let (script_setup, script, styles) = parse_sfc_blocks(allocator, source)?;
+    let define_art = script_setup
+        .as_ref()
+        .and_then(|script| parse_define_art_metadata(allocator, script.content));
+
+    // Parse metadata from <art> attributes and defineArt() fallback.
+    let metadata = art_block::parse_metadata(allocator, &art_block, define_art.as_ref())?;
 
     // Parse <variant> blocks inside <art>
     let variants = variant::parse_variants(
@@ -75,9 +81,6 @@ pub fn parse_art<'a>(
         source,
         art_block.content_start,
     )?;
-
-    // Parse standard SFC blocks (script, style)
-    let (script_setup, script, styles) = parse_sfc_blocks(allocator, source)?;
 
     Ok(ArtDescriptor {
         filename,
@@ -99,6 +102,33 @@ pub(crate) struct BlockInfo<'a> {
     pub content: &'a str,
     /// Byte offset where content starts (for line calculation)
     pub content_start: usize,
+}
+
+#[derive(Debug)]
+pub(crate) struct DefineArtMetadata<'a> {
+    pub component_name: Option<&'a str>,
+    pub component: Option<&'a str>,
+    pub title: Option<&'a str>,
+    pub description: Option<&'a str>,
+    pub category: Option<&'a str>,
+    pub tags: vize_carton::Vec<'a, &'a str>,
+    pub status: Option<ArtStatus>,
+    pub order: Option<u32>,
+}
+
+impl<'a> DefineArtMetadata<'a> {
+    fn new(allocator: &'a Bump) -> Self {
+        Self {
+            component_name: None,
+            component: None,
+            title: None,
+            description: None,
+            category: None,
+            tags: vize_carton::Vec::new_in(allocator),
+            status: None,
+            order: None,
+        }
+    }
 }
 
 /// Parse SFC blocks (script, style) from source.
@@ -166,6 +196,53 @@ fn parse_sfc_blocks<'a>(allocator: &'a Bump, source: &'a str) -> SfcBlocksParseR
     }
 
     Ok((script_setup, script, styles))
+}
+
+fn parse_define_art_metadata<'a>(
+    allocator: &'a Bump,
+    script: &'a str,
+) -> Option<DefineArtMetadata<'a>> {
+    let parsed = vize_croquis::script_parser::parse_script_setup(script);
+    let art = parsed.macros.define_art()?;
+    let mut meta = DefineArtMetadata::new(allocator);
+
+    meta.component_name = Some(allocator.alloc_str(art.component_name.as_str()));
+    meta.component = art
+        .component_source
+        .as_ref()
+        .map(|source| &*allocator.alloc_str(source.as_str()));
+    meta.title = art
+        .title
+        .as_ref()
+        .map(|value| &*allocator.alloc_str(value.as_str()));
+    meta.description = art
+        .description
+        .as_ref()
+        .map(|value| &*allocator.alloc_str(value.as_str()));
+    meta.category = art
+        .category
+        .as_ref()
+        .map(|value| &*allocator.alloc_str(value.as_str()));
+    meta.status = art
+        .status
+        .as_ref()
+        .map(|value| parse_status_value(value.as_str()));
+    meta.order = art.order;
+    for tag in &art.tags {
+        meta.tags.push(allocator.alloc_str(tag.as_str()));
+    }
+
+    Some(meta)
+}
+
+fn parse_status_value(value: &str) -> ArtStatus {
+    if value.eq_ignore_ascii_case("draft") {
+        ArtStatus::Draft
+    } else if value.eq_ignore_ascii_case("deprecated") {
+        ArtStatus::Deprecated
+    } else {
+        ArtStatus::Ready
+    }
 }
 
 /// Parse a script block starting at `start`.
@@ -390,7 +467,7 @@ mod tests {
 </art>
 
 <script setup lang="ts">
-import Button from './Button.vue'
+import Button from "./Button.vue";
 </script>
 "#;
 
@@ -431,6 +508,66 @@ import Button from './Button.vue'
         assert_eq!(desc.variants[0].name, "Primary");
         assert_eq!(desc.variants[1].name, "Secondary");
         assert_eq!(desc.variants[2].name, "Disabled");
+    }
+
+    #[test]
+    fn test_parse_define_art_metadata() {
+        let allocator = Bump::new();
+        let source = r#"
+<script setup lang="ts">
+import Button from "./Button.vue";
+
+defineArt(Button, {
+  title: "Button",
+  description: "A button component",
+  category: "Components",
+  tags: ["button", "ui"],
+  status: "draft",
+  order: 2,
+});
+</script>
+
+<art>
+  <variant name="Primary" default>
+    <Button>Click</Button>
+  </variant>
+</art>
+"#;
+
+        let desc = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+
+        assert_eq!(desc.metadata.title, "Button");
+        assert_eq!(desc.metadata.component, Some("./Button.vue"));
+        assert_eq!(desc.metadata.description, Some("A button component"));
+        assert_eq!(desc.metadata.category, Some("Components"));
+        assert_eq!(desc.metadata.tags.as_slice(), ["button", "ui"]);
+        assert_eq!(desc.metadata.status, crate::types::ArtStatus::Draft);
+        assert_eq!(desc.metadata.order, Some(2));
+    }
+
+    #[test]
+    fn test_parse_define_art_source_literal_metadata() {
+        let allocator = Bump::new();
+        let source = r#"
+<script setup lang="ts">
+defineArt("./base-button.vue", {
+  title: "Base Button",
+  category: "Components",
+});
+</script>
+
+<art>
+  <variant name="Primary" default>
+    <BaseButton>Click</BaseButton>
+  </variant>
+</art>
+"#;
+
+        let desc = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+
+        assert_eq!(desc.metadata.title, "Base Button");
+        assert_eq!(desc.metadata.component, Some("./base-button.vue"));
+        assert_eq!(desc.metadata.category, Some("Components"));
     }
 
     #[test]

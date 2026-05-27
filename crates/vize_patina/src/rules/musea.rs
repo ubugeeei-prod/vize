@@ -129,7 +129,7 @@ impl MuseaLinter {
         let bytes = source.as_bytes();
 
         // Phase 1: Check <art> block (single scan)
-        self.check_art_block(bytes, &mut result);
+        self.check_art_block(source, bytes, &mut result);
 
         // Phase 2: Check <variant> blocks (single scan for all variant rules)
         self.check_variant_blocks(bytes, &mut result);
@@ -144,7 +144,7 @@ impl MuseaLinter {
 
     /// Check <art> block for required attributes
     #[inline]
-    fn check_art_block(&self, bytes: &[u8], result: &mut MuseaLintResult) {
+    fn check_art_block(&self, source: &str, bytes: &[u8], result: &mut MuseaLintResult) {
         // Find <art tag
         let Some(art_start) = memmem::find(bytes, b"<art") else {
             return;
@@ -156,9 +156,10 @@ impl MuseaLinter {
         };
 
         let art_tag = &bytes[art_start..art_start + tag_end];
+        let define_art = define_art_rule_info(source);
 
         // Check for title attribute
-        if self.check_require_title && !has_attribute(art_tag, b"title=") {
+        if self.check_require_title && !has_attribute(art_tag, b"title=") && !define_art.has_title {
             result.add_diagnostic(
                 LintDiagnostic::error(
                     "musea/require-title",
@@ -171,7 +172,10 @@ impl MuseaLinter {
         }
 
         // Check for component attribute
-        if self.check_require_component && !has_attribute(art_tag, b"component=") {
+        if self.check_require_component
+            && !has_attribute(art_tag, b"component=")
+            && !define_art.has_component
+        {
             result.add_diagnostic(
                 LintDiagnostic::warn(
                     "musea/require-component",
@@ -291,6 +295,31 @@ impl Default for MuseaLinter {
 #[inline]
 fn has_attribute(tag: &[u8], attr: &[u8]) -> bool {
     memmem::find(tag, attr).is_some()
+}
+
+#[derive(Default)]
+struct DefineArtRuleInfo {
+    has_title: bool,
+    has_component: bool,
+}
+
+fn define_art_rule_info(source: &str) -> DefineArtRuleInfo {
+    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, Default::default()) else {
+        return DefineArtRuleInfo::default();
+    };
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
+        return DefineArtRuleInfo::default();
+    };
+
+    let parsed = vize_croquis::script_parser::parse_script_setup(script_setup.content.as_ref());
+    let Some(art) = parsed.macros.define_art() else {
+        return DefineArtRuleInfo::default();
+    };
+
+    DefineArtRuleInfo {
+        has_title: art.title.is_some() || !art.component_name.is_empty(),
+        has_component: art.component_source.is_some(),
+    }
 }
 
 /// Extract the value of the name attribute from a tag (byte-level)

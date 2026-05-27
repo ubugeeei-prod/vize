@@ -464,7 +464,7 @@ impl DiagnosticService {
         .ok()?;
 
         // Get default variant's template
-        let (variant_index, variant) = art_desc
+        let (_, variant) = art_desc
             .variants
             .iter()
             .enumerate()
@@ -487,58 +487,43 @@ impl DiagnosticService {
         };
         let descriptor = parse_sfc(content, sfc_options).ok()?;
 
-        let state_blocks = variant.loc.as_ref().map_or_else(Vec::new, |loc| {
-            crate::virtual_code::find_variant_state_blocks(
-                content,
-                loc.start as usize,
-                loc.end as usize,
-                variant_index,
-            )
-        });
-
-        // Get script block info and append the default variant's state script as setup usage.
-        let script_block = descriptor
-            .script_setup
-            .as_ref()
-            .map(|s| {
-                (
-                    s.content.as_ref(),
-                    s.loc.start as u32,
-                    s.loc.start_line as u32,
-                )
-            })
-            .or_else(|| {
-                descriptor.script.as_ref().map(|s| {
-                    (
-                        s.content.as_ref(),
-                        s.loc.start as u32,
-                        s.loc.start_line as u32,
-                    )
-                })
-            });
-
-        let first_state_start = state_blocks.first().map(|block| block.content_start);
         let mut combined_script = String::new();
         let (script_offset, sfc_script_start_line) =
-            if let Some((script, offset, line)) = script_block {
-                combined_script.push_str(script);
+            if let Some(script_setup) = descriptor.script_setup.as_ref() {
+                let isolate = !script_setup
+                    .attrs
+                    .get("isolate")
+                    .is_some_and(|value| value.as_ref().eq_ignore_ascii_case("false"));
+                let parts = crate::virtual_code::analyze_art_script_setup(
+                    script_setup.content.as_ref(),
+                    script_setup.loc.start,
+                    isolate,
+                );
+
+                for chunk in parts
+                    .shared_imports
+                    .iter()
+                    .chain(parts.isolated_body.iter())
+                {
+                    combined_script.push_str(&chunk.text);
+                    if !combined_script.ends_with('\n') {
+                        combined_script.push('\n');
+                    }
+                }
+
+                (
+                    script_setup.loc.start as u32,
+                    script_setup.loc.start_line as u32,
+                )
+            } else if let Some(script) = descriptor.script.as_ref() {
+                combined_script.push_str(script.content.as_ref());
                 if !combined_script.ends_with('\n') {
                     combined_script.push('\n');
                 }
-                (offset, line)
-            } else if let Some(offset) = first_state_start {
-                let (line, _) = source_offset_to_position(content, offset);
-                (offset as u32, line + 1)
+                (script.loc.start as u32, script.loc.start_line as u32)
             } else {
                 return None;
             };
-
-        for state in &state_blocks {
-            combined_script.push_str(state.content(content));
-            if !combined_script.ends_with('\n') {
-                combined_script.push('\n');
-            }
-        }
 
         let script_content = combined_script.as_str();
 

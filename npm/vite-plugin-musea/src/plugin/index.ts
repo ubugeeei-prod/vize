@@ -21,7 +21,7 @@ import { vizeConfigStore } from "@vizejs/vite-plugin";
 import type { MuseaOptions, ArtFileInfo, ArtMetadata } from "../types/index.js";
 
 import { loadNative } from "../native-loader.js";
-import { extractScriptSetupContent } from "../art-module.js";
+import { extractScriptSetupContent, extractScriptSetupIsolated } from "../art-module.js";
 import {
   shouldProcess,
   scanArtFiles,
@@ -382,6 +382,8 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         hasScriptSetup: isInline ? false : parsed.hasScriptSetup,
         scriptSetupContent:
           !isInline && parsed.hasScriptSetup ? extractScriptSetupContent(source) : undefined,
+        scriptSetupIsolated:
+          !isInline && parsed.hasScriptSetup ? extractScriptSetupIsolated(source) : true,
         hasScript: parsed.hasScript,
         styleCount: parsed.styleCount,
         styleBlocks: isInline ? [] : extractStyleBlocks(source),

@@ -20,6 +20,7 @@ ScriptParseResult {
         models: [],
         exposes: [],
         slots: [],
+        art: None,
         props_destructure: None,
         top_level_awaits: [],
         next_id: 0,
@@ -27,6 +28,7 @@ ScriptParseResult {
         define_emits_idx: None,
         define_expose_idx: None,
         define_slots_idx: None,
+        define_art_idx: None,
     },
     reactivity: ReactivityTracker {
         sources: [
@@ -1299,5 +1301,6 @@ ScriptParseResult {
             24,
         ),
     },
+    import_sources: {},
     type_export_typeof_refs: [],
 }

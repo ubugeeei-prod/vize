@@ -215,10 +215,14 @@ fn run_new(args: NewArgs) {
     // Create example art file
     let example_story = stories_dir.join("Button.art.vue");
     let example_content = r#"<script setup lang="ts">
-import Button from '../src/Button.vue'
+defineArt("../src/Button.vue", {
+  title: "Button",
+  category: "Components",
+  tags: ["button", "ui"],
+});
 </script>
 
-<art title="Button" component="../src/Button.vue" category="Components" tags="button, ui">
+<art>
   <variant name="Primary" default>
     <Button variant="primary">Click me</Button>
   </variant>
@@ -250,13 +254,13 @@ import Button from '../src/Button.vue'
     // Create vize.config.ts
     let config_path = target_dir.join("vize.config.ts");
     if !config_path.exists() {
-        let config_content = r#"import { defineConfig } from 'vize'
+        let config_content = r#"import { defineConfig } from "vize";
 
 export default defineConfig({
   musea: {
-    include: ['./stories/**/*.art.vue'],
+    include: ["./stories/**/*.art.vue"],
   },
-})
+});
 "#;
         if let Err(e) = fs::write(&config_path, config_content) {
             eprintln!("vize musea new: failed to create vize.config.ts: {}", e);

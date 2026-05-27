@@ -72,8 +72,8 @@
 //! - `script/no-next-tick` - Disallow nextTick() scheduling in Vapor-oriented code
 //!
 //! ### Musea Rules (for *.art.vue files)
-//! - `musea/require-title` - Require title attribute in `<art>` block
-//! - `musea/require-component` - Require component attribute in `<art>` block
+//! - `musea/require-title` - Require a title via `<art>` metadata or `defineArt`
+//! - `musea/require-component` - Require a target component via `<art>` metadata or `defineArt`
 //! - `musea/valid-variant` - Require name attribute in `<variant>` blocks
 //! - `musea/no-empty-variant` - Disallow empty variant blocks
 //! - `musea/unique-variant-names` - Require unique variant names

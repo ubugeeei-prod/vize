@@ -12,6 +12,7 @@ pub const DEFINE_OPTIONS: &str = "defineOptions";
 pub const DEFINE_SLOTS: &str = "defineSlots";
 pub const DEFINE_MODEL: &str = "defineModel";
 pub const WITH_DEFAULTS: &str = "withDefaults";
+pub const DEFINE_ART: &str = "defineArt";
 
 /// How a macro participates in the script setup compilation lifecycle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -67,6 +68,11 @@ pub static BUILTIN_MACROS: &[&str] = &[
 /// Vize does not expand them into component runtime itself, but it may extract
 /// artifacts for surrounding tooling before removing top-level calls.
 pub static ECOSYSTEM_COMPILE_TIME_MACROS: &[MacroDefinition] = &[
+    MacroDefinition {
+        name: DEFINE_ART,
+        lifecycle: MacroLifecycle::AnalyzeAndErase,
+        artifact_kind: None,
+    },
     MacroDefinition {
         name: "definePage",
         lifecycle: MacroLifecycle::ExtractAndErase,
@@ -191,6 +197,7 @@ pub enum MacroKind {
     DefineSlots = 4,
     DefineModel = 5,
     WithDefaults = 6,
+    DefineArt = 7,
     Custom = 255,
 }
 
@@ -205,6 +212,7 @@ impl MacroKind {
             DEFINE_SLOTS => Some(Self::DefineSlots),
             DEFINE_MODEL => Some(Self::DefineModel),
             WITH_DEFAULTS => Some(Self::WithDefaults),
+            DEFINE_ART => Some(Self::DefineArt),
             _ => None,
         }
     }
@@ -324,6 +332,23 @@ pub struct SlotsDefinition {
     pub props_type: Option<CompactString>,
 }
 
+/// Musea art metadata from defineArt(component, options).
+#[derive(Debug, Clone)]
+pub struct ArtDefinition {
+    pub component_name: CompactString,
+    pub component_source: Option<CompactString>,
+    /// Source string literal range including quotes, relative to the parsed script.
+    pub component_source_span: Option<(u32, u32)>,
+    /// Source string literal value range excluding quotes, relative to the parsed script.
+    pub component_source_value_span: Option<(u32, u32)>,
+    pub title: Option<CompactString>,
+    pub description: Option<CompactString>,
+    pub category: Option<CompactString>,
+    pub tags: Vec<CompactString>,
+    pub status: Option<CompactString>,
+    pub order: Option<u32>,
+}
+
 /// Macro binding kind for props destructure
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MacroBindingKind {
@@ -348,6 +373,8 @@ pub struct MacroTracker {
     exposes: Vec<ExposeDefinition>,
     /// Slots from defineSlots
     slots: Vec<SlotsDefinition>,
+    /// Art metadata from defineArt
+    art: Option<ArtDefinition>,
     props_destructure: Option<PropsDestructuredBindings>,
     top_level_awaits: Vec<TopLevelAwait>,
     next_id: u32,
@@ -356,6 +383,7 @@ pub struct MacroTracker {
     define_emits_idx: Option<usize>,
     define_expose_idx: Option<usize>,
     define_slots_idx: Option<usize>,
+    define_art_idx: Option<usize>,
 }
 
 impl MacroTracker {
@@ -385,6 +413,7 @@ impl MacroTracker {
             MacroKind::DefineEmits => self.define_emits_idx = Some(idx),
             MacroKind::DefineExpose => self.define_expose_idx = Some(idx),
             MacroKind::DefineSlots => self.define_slots_idx = Some(idx),
+            MacroKind::DefineArt => self.define_art_idx = Some(idx),
             _ => {}
         }
 
@@ -429,6 +458,24 @@ impl MacroTracker {
     #[inline]
     pub fn define_slots(&self) -> Option<&MacroCall> {
         self.define_slots_idx.map(|idx| &self.calls[idx])
+    }
+
+    /// Get defineArt call (cached lookup)
+    #[inline]
+    pub fn define_art_call(&self) -> Option<&MacroCall> {
+        self.define_art_idx.map(|idx| &self.calls[idx])
+    }
+
+    /// Set defineArt metadata.
+    #[inline]
+    pub fn set_define_art(&mut self, art: ArtDefinition) {
+        self.art = Some(art);
+    }
+
+    /// Get defineArt metadata.
+    #[inline]
+    pub fn define_art(&self) -> Option<&ArtDefinition> {
+        self.art.as_ref()
     }
 
     /// Add a prop definition
@@ -620,9 +667,18 @@ mod tests {
             macro_lifecycle("defineLazyHydrationComponent"),
             Some(MacroLifecycle::Expand)
         );
+        assert_eq!(
+            macro_lifecycle("defineArt"),
+            Some(MacroLifecycle::AnalyzeAndErase)
+        );
         assert_eq!(macro_lifecycle("notAMacro"), None);
         assert_eq!(macro_lifecycle("useTemplateRef"), None);
 
+        assert!(is_compile_time_macro("defineArt"));
+        assert!(is_ecosystem_compile_time_macro("defineArt"));
+        assert!(is_runtime_erased_macro("defineArt"));
+        assert!(!is_artifact_macro("defineArt"));
+        assert_eq!(macro_artifact_kind("defineArt"), None);
         assert!(is_compile_time_macro("definePage"));
         assert!(is_ecosystem_compile_time_macro("definePage"));
         assert!(is_runtime_erased_macro("definePage"));
@@ -658,6 +714,7 @@ mod tests {
         assert!(runtime_erased_macro_names().any(|name| name == "definePageMeta"));
         assert!(runtime_erased_macro_names().any(|name| name == "defineRouteRules"));
         assert!(!runtime_erased_macro_names().any(|name| name == "defineLazyHydrationComponent"));
+        assert!(runtime_erased_macro_names().any(|name| name == "defineArt"));
         assert!(artifact_macro_names().any(|name| name == "definePage"));
         assert!(artifact_macro_names().any(|name| name == "definePageMeta"));
         assert!(artifact_macro_names().any(|name| name == "defineRouteRules"));

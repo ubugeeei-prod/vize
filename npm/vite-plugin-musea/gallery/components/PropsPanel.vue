@@ -4,6 +4,7 @@ import hljs from "highlight.js/lib/core";
 import xml from "highlight.js/lib/languages/xml";
 import json from "highlight.js/lib/languages/json";
 import { usePalette } from "../composables/usePalette";
+import { useArts } from "../composables/useArts";
 import { getPreviewUrl } from "../api";
 import { sendMessage } from "../composables/usePostMessage";
 import TextControl from "./controls/TextControl.vue";
@@ -40,11 +41,13 @@ const {
   removeProp,
   resetValues,
 } = usePalette();
+const { getArt } = useArts();
 
 const iframeRef = ref<HTMLIFrameElement | null>(null);
 const iframeReady = ref(false);
 const slotContent = ref<Record<string, string>>({});
 const copiedUsage = ref(false);
+const art = computed(() => getArt(props.artPath));
 
 // Mode toggle
 const controlsMode = ref<"controls" | "code">("controls");
@@ -206,29 +209,38 @@ const usageCode = computed(() => {
   const propsEntries = Object.entries(mergedValues.value).filter(
     ([, v]) => v !== undefined && v !== "",
   );
-  if (propsEntries.length === 0 && !hasSlotContent.value) {
-    return `<${componentName} />`;
-  }
-  const propsStr = propsEntries
-    .map(([k, v]) => {
-      if (typeof v === "boolean") return v ? ` ${k}` : ` :${k}="false"`;
-      if (typeof v === "number") return ` :${k}="${v}"`;
-      return ` ${k}="${String(v)}"`;
-    })
-    .join("");
-  if (hasSlotContent.value) {
-    const slotParts: string[] = [];
-    for (const [name, content] of Object.entries(slotContent.value)) {
-      if (!content.trim()) continue;
-      if (name === "default") {
-        slotParts.push(`  ${content}`);
-      } else {
-        slotParts.push(`  <template #${name}>\n    ${content}\n  </template>`);
-      }
+  const templateOnly = (() => {
+    if (propsEntries.length === 0 && !hasSlotContent.value) {
+      return `<${componentName} />`;
     }
-    return `<${componentName}${propsStr}>\n${slotParts.join("\n")}\n</${componentName}>`;
-  }
-  return `<${componentName}${propsStr} />`;
+    const propsStr = propsEntries
+      .map(([k, v]) => {
+        if (typeof v === "boolean") return v ? ` ${k}` : ` :${k}="false"`;
+        if (typeof v === "number") return ` :${k}="${v}"`;
+        return ` ${k}="${String(v)}"`;
+      })
+      .join("");
+    if (hasSlotContent.value) {
+      const slotParts: string[] = [];
+      for (const [name, content] of Object.entries(slotContent.value)) {
+        if (!content.trim()) continue;
+        if (name === "default") {
+          slotParts.push(`  ${content}`);
+        } else {
+          slotParts.push(`  <template #${name}>\n    ${content}\n  </template>`);
+        }
+      }
+      return `<${componentName}${propsStr}>\n${slotParts.join("\n")}\n</${componentName}>`;
+    }
+    return `<${componentName}${propsStr} />`;
+  })();
+
+  const script = usageScript(art.value?.scriptSetupContent, art.value?.scriptSetupIsolated);
+  if (!script) return templateOnly;
+  return (
+    `<script setup lang="ts">\n${script}\n</` +
+    `script>\n\n<template>\n${indentUsage(templateOnly)}\n</template>`
+  );
 });
 
 const usageHighlighted = computed(() => hljs.highlight(usageCode.value, { language: "xml" }).value);
@@ -247,6 +259,73 @@ async function copyUsage() {
   } catch {
     // fallback
   }
+}
+
+function usageScript(content?: string, isolated = true): string {
+  if (!content) return "";
+  const lines = content.split("\n");
+  const componentName = extractDefineArtComponentName(content);
+  const kept: string[] = [];
+  let defineArtBalance = 0;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (defineArtBalance > 0) {
+      defineArtBalance += parenBalance(line);
+      continue;
+    }
+    if (/\bdefineArt\s*\(/.test(trimmed)) {
+      defineArtBalance = Math.max(0, parenBalance(line));
+      continue;
+    }
+    if (isolated && componentName && importDeclaresName(line, componentName)) {
+      continue;
+    }
+    kept.push(line);
+  }
+
+  return kept.join("\n").trim();
+}
+
+function extractDefineArtComponentName(content: string): string | undefined {
+  const sourceMatch = content.match(/\bdefineArt\s*\(\s*(['"])([^'"]+)\1/);
+  if (sourceMatch) {
+    return componentNameFromSource(sourceMatch[2]);
+  }
+  return content.match(/\bdefineArt\s*\(\s*([A-Za-z_$][\w$]*)/)?.[1];
+}
+
+function componentNameFromSource(source: string): string {
+  const withoutQuery = source.split(/[?#]/, 1)[0] || source;
+  const filename = withoutQuery.split(/[\\/]/).pop() || "Component";
+  const stem = filename.replace(/\.[^.]+$/, "");
+  const name = stem
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join("");
+  return name || "Component";
+}
+
+function importDeclaresName(line: string, name: string): boolean {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("import ") || trimmed.startsWith("import type ")) return false;
+  return new RegExp(`^import\\s+${name}(?:\\s|,|$)`).test(trimmed);
+}
+
+function parenBalance(line: string): number {
+  return [...line].reduce((balance, char) => {
+    if (char === "(") return balance + 1;
+    if (char === ")") return balance - 1;
+    return balance;
+  }, 0);
+}
+
+function indentUsage(code: string): string {
+  return code
+    .split("\n")
+    .map((line) => (line.trim() ? `  ${line}` : line))
+    .join("\n");
 }
 
 function getControlComponent(kind: string) {

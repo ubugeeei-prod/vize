@@ -293,6 +293,47 @@ import MyButton from './MyButton.vue'
     }
 
     #[test]
+    fn test_definition_resolves_define_art_source() {
+        let dir = tempfile::tempdir().unwrap();
+        let component_path = dir.path().join("Button.vue");
+        let source_path = dir.path().join("Button.art.vue");
+
+        fs::write(&component_path, "<template><button /></template>\n").unwrap();
+
+        let source = r#"<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+});
+</script>
+
+<art>
+  <variant name="Default">
+    <Button />
+  </variant>
+</art>
+"#;
+        fs::write(&source_path, source).unwrap();
+
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.find("Button.vue").unwrap() + "Button".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let location = scalar_location(DefinitionService::definition(&ctx).unwrap());
+
+        assert_eq!(
+            location.uri.to_file_path().unwrap().canonicalize().unwrap(),
+            component_path.canonicalize().unwrap()
+        );
+        assert_eq!(location.range.start.line, 0);
+        assert_eq!(location.range.start.character, 0);
+    }
+
+    #[test]
     fn test_definition_prefers_component_prop_on_attribute_name_only() {
         let dir = tempfile::tempdir().unwrap();
         let component_path = dir.path().join("Child.vue");

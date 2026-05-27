@@ -8,6 +8,7 @@ go-to-definition, and references inside `*.art.vue`.
 ## Features
 
 - Syntax highlighting for `<art>` and `<variant>` blocks
+- Syntax highlighting for root `<script setup>` and the `isolate` attribute
 - Highlighting for Art-specific attributes (`title`, `component`, `description`, etc.)
 - Highlighting for variant attributes (`name`, `default`, `args`, etc.)
 - Embedded language support for `<script>` (TypeScript) and `<style>` (CSS)
@@ -17,7 +18,14 @@ go-to-definition, and references inside `*.art.vue`.
 
 ```vue
 <!-- Button.art.vue -->
-<art title="Button" component="./Button.vue" category="UI">
+<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+  category: "UI",
+});
+</script>
+
+<art>
   <variant name="Primary" default>
     <Button variant="primary">Click me</Button>
   </variant>
@@ -25,11 +33,13 @@ go-to-definition, and references inside `*.art.vue`.
     <Button variant="secondary">Click me</Button>
   </variant>
 </art>
-
-<script setup lang="ts">
-import Button from "./Button.vue";
-</script>
 ```
+
+`defineArt(source, options)` is a compiler macro. It is the preferred way to declare the target
+component and metadata without writing a component import. The source string supports path
+completion, missing-file diagnostics, document links, and go-to-definition. Root `<script setup>`
+state is isolated per variant by default; add `isolate="false"` to share one setup instance across
+all variants.
 
 ## Installation
 
@@ -58,8 +68,8 @@ Then press F5 in VS Code to launch the Extension Development Host.
 
 ### Art Block (`<art>`)
 
-- `title` - Component title (required)
-- `component` - Path to component file
+- `title` - Component title (compatibility metadata, otherwise use `defineArt`)
+- `component` - Path to component file (compatibility metadata, otherwise use `defineArt`)
 - `description` - Component description
 - `category` - Category for grouping
 - `tags` - Comma-separated tags

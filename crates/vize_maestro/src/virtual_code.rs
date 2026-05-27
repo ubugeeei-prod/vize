@@ -35,9 +35,9 @@ mod style_code;
 mod template_code;
 
 pub use generator::{
-    ArtCursorPosition, ArtStateBlockRange, ArtVariantInfo, BatchVirtualCodeGenerator, BlockType,
-    VirtualCodeGenerator, find_art_block_at_offset, find_block_at_offset,
-    find_variant_state_blocks,
+    ArtCursorPosition, ArtScriptChunk, ArtScriptSetupParts, ArtVariantInfo,
+    BatchVirtualCodeGenerator, BlockType, VirtualCodeGenerator, analyze_art_script_setup,
+    find_art_block_at_offset, find_block_at_offset, find_define_art_component_name,
 };
 pub use script_code::{ScriptCodeGenerator, extract_simple_bindings};
 pub use source_map::{MappingData, MappingFeatures, SourceMap, SourceMapping};

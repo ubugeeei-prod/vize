@@ -424,6 +424,7 @@ pub(crate) fn collect_script_tokens(script: &str, base_line: u32, tokens: &mut V
 
     // Vue compiler macros (special highlighting)
     let compiler_macros = [
+        "defineArt",
         "defineProps",
         "defineEmits",
         "defineExpose",

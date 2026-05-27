@@ -590,6 +590,40 @@ route.params.slug
     }
 
     #[test]
+    fn collect_reports_missing_define_art_source_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let source_path = dir.path().join("MissingSource.art.vue");
+        let uri = Url::from_file_path(&source_path).unwrap();
+        let source = r#"<script setup lang="ts">
+defineArt("./Missing.vue", {
+  title: "Missing",
+});
+</script>
+
+<art>
+  <variant name="Default">
+    <Missing />
+  </variant>
+</art>
+"#;
+
+        let state = state_with_lsp_diagnostics(true, false);
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.source.as_deref() == Some(sources::MUSEA)
+                && diagnostic.code
+                    == Some(NumberOrString::String(
+                        "musea/define-art-source-not-found".to_string(),
+                    ))
+        }));
+    }
+
+    #[test]
     fn collect_reports_unknown_route_path_params() {
         let source = r#"<script setup lang="ts">
 import { useRoute } from "vue-router"

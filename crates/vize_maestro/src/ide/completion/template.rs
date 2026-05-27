@@ -150,96 +150,10 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
         }
     }
 
-    if let Some(state_script) = current_art_variant_state_script(ctx) {
-        extend_script_setup_binding_completions(&mut items_vec, &state_script);
-    }
-
     // Add common template snippets
     items_vec.extend(template_snippets());
 
     items_vec
-}
-
-fn extend_script_setup_binding_completions(items_vec: &mut Vec<CompletionItem>, script: &str) {
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions {
-        analyze_script: true,
-        ..Default::default()
-    });
-    analyzer.analyze_script_setup(script);
-    let croquis = analyzer.finish();
-
-    for (name, binding_type) in croquis.bindings.iter() {
-        let (kind, type_detail, doc) = items::binding_type_to_completion_info(binding_type);
-        items_vec.push(CompletionItem {
-            label: name.to_string(),
-            kind: Some(kind),
-            label_details: Some(CompletionItemLabelDetails {
-                detail: Some(type_detail.clone()),
-                description: Some("variant state".to_string()),
-            }),
-            detail: Some(type_detail),
-            documentation: Some(Documentation::MarkupContent(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: doc,
-            })),
-            sort_text: Some(format!("0{}", name)),
-            ..Default::default()
-        });
-    }
-
-    for source in croquis.reactivity.sources() {
-        let kind_str = source.kind.to_display();
-        items_vec.push(CompletionItem {
-            label: source.name.to_string(),
-            kind: Some(CompletionItemKind::VARIABLE),
-            label_details: Some(CompletionItemLabelDetails {
-                detail: Some(format!(" ({kind_str})")),
-                description: Some("variant state".to_string()),
-            }),
-            detail: Some(format!("Reactive: {kind_str}")),
-            documentation: Some(Documentation::MarkupContent(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: "Variant-local state. Auto-unwrapped in template.".to_string(),
-            })),
-            sort_text: Some(format!("0{}", source.name)),
-            ..Default::default()
-        });
-    }
-}
-
-fn current_art_variant_state_script(ctx: &IdeContext<'_>) -> Option<String> {
-    let crate::virtual_code::BlockType::Art(
-        crate::virtual_code::ArtCursorPosition::VariantTemplate(info),
-    ) = ctx.block_type?
-    else {
-        return None;
-    };
-
-    let allocator = vize_carton::Bump::new();
-    let art_desc = vize_musea::parse_art(
-        &allocator,
-        &ctx.content,
-        vize_musea::ArtParseOptions::default(),
-    )
-    .ok()?;
-    let variant = art_desc.variants.get(info.variant_index)?;
-    let loc = variant.loc.as_ref()?;
-    let blocks = crate::virtual_code::find_variant_state_blocks(
-        &ctx.content,
-        loc.start as usize,
-        loc.end as usize,
-        info.variant_index,
-    );
-
-    let mut script = String::new();
-    for block in blocks {
-        script.push_str(block.content(&ctx.content));
-        if !script.ends_with('\n') {
-            script.push('\n');
-        }
-    }
-
-    (!script.trim().is_empty()).then_some(script)
 }
 
 /// Get completions for Art files (*.art.vue).
@@ -674,7 +588,7 @@ fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<Componen
         ));
     }
 
-    if let Some(import_path) = art_component_attr_path(ctx, component_name) {
+    if let Some(import_path) = art_component_path(ctx, component_name) {
         let resolved = definition_helpers::resolve_import_path(ctx.uri, &import_path)?;
         let component_content = std::fs::read_to_string(&resolved).ok()?;
         return Some(extract_component_metadata(
@@ -686,7 +600,7 @@ fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<Componen
     None
 }
 
-fn art_component_attr_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {
+fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {
     if !ctx.uri.path().ends_with(".art.vue") {
         return None;
     }
@@ -699,6 +613,22 @@ fn art_component_attr_path(ctx: &IdeContext<'_>, component_name: &str) -> Option
     )
     .ok()?;
     let component_path = art_desc.metadata.component?;
+    if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(
+        &ctx.content,
+        vize_atelier_sfc::SfcParseOptions {
+            filename: ctx.uri.path().to_string().into(),
+            ..Default::default()
+        },
+    ) && let Some(script_setup) = descriptor.script_setup.as_ref()
+        && let Some(defined_component) =
+            crate::virtual_code::find_define_art_component_name(script_setup.content.as_ref())
+    {
+        let pascal_component = kebab_to_pascal(component_name);
+        if component_name == defined_component || pascal_component == defined_component {
+            return Some(component_path.to_string());
+        }
+    }
+
     let stem = std::path::Path::new(component_path)
         .file_stem()
         .and_then(|stem| stem.to_str())?;
@@ -773,9 +703,13 @@ fn extract_component_metadata(content: &str, filename: &str) -> ComponentMetadat
             }
         }
 
-        for slot in extract_define_slots(script_content) {
-            if seen_slots.insert(slot.name.clone()) {
-                slots.push(slot);
+        for slot in summary.macros.slots() {
+            let name = slot.name.to_string();
+            if seen_slots.insert(name.clone()) {
+                slots.push(ComponentSlot {
+                    name,
+                    props_type: slot.props_type.as_ref().map(|props| props.to_string()),
+                });
             }
         }
     }
@@ -998,43 +932,6 @@ fn infer_define_props_type_map(script: &str) -> BTreeMap<String, InferredProp> {
     props
 }
 
-fn extract_define_slots(script: &str) -> Vec<ComponentSlot> {
-    let mut slots = Vec::new();
-    let mut seen = BTreeSet::new();
-    let mut search_start = 0usize;
-
-    while let Some(relative) = script[search_start..].find("defineSlots") {
-        let name_start = search_start + relative;
-        let after_name = name_start + "defineSlots".len();
-        let pos = skip_ws(script, after_name);
-        if script.as_bytes().get(pos) != Some(&b'<') {
-            search_start = after_name;
-            continue;
-        }
-
-        let Some((type_arg, end)) = extract_balanced_after(script, pos, '<', '>') else {
-            search_start = after_name;
-            continue;
-        };
-        search_start = end;
-
-        let Some(body) = braced_body(type_arg.trim()) else {
-            continue;
-        };
-
-        for member in parse_type_literal_members(body) {
-            let Some((name, props_type)) = parse_slot_member(member) else {
-                continue;
-            };
-            if seen.insert(name.clone()) {
-                slots.push(ComponentSlot { name, props_type });
-            }
-        }
-    }
-
-    slots
-}
-
 fn extract_template_slot_outlets(template: &str) -> Vec<ComponentSlot> {
     let mut slots = Vec::new();
     let mut seen = BTreeSet::new();
@@ -1069,47 +966,6 @@ fn extract_template_slot_outlets(template: &str) -> Vec<ComponentSlot> {
     slots
 }
 
-fn parse_slot_member(member: &str) -> Option<(String, Option<String>)> {
-    let member = strip_readonly(member.trim());
-    if member.is_empty() {
-        return None;
-    }
-
-    let (name, name_end) = parse_type_member_name(member)?;
-    let rest = member[name_end..].trim_start();
-    let rest = rest.strip_prefix('?').unwrap_or(rest).trim_start();
-
-    let props_type = if rest.starts_with('(') {
-        extract_balanced_after(rest, 0, '(', ')')
-            .and_then(|(params, _)| extract_slot_props_type(params))
-    } else if let Some(after_colon) = rest.strip_prefix(':') {
-        let after_colon = after_colon.trim_start();
-        after_colon
-            .find('(')
-            .and_then(|paren| extract_balanced_after(after_colon, paren, '(', ')'))
-            .and_then(|(params, _)| extract_slot_props_type(params))
-    } else {
-        None
-    };
-
-    Some((name, props_type))
-}
-
-fn extract_slot_props_type(params: &str) -> Option<String> {
-    let first_param = split_top_level(params, ',').into_iter().next()?;
-    let first_param = first_param.trim();
-    if first_param.is_empty() {
-        return None;
-    }
-
-    let type_part = first_param
-        .split_once(':')
-        .map(|(_, ty)| ty.trim())
-        .unwrap_or(first_param);
-
-    (!type_part.is_empty() && type_part != "()").then(|| type_part.to_string())
-}
-
 fn parse_type_literal_members(body: &str) -> Vec<&str> {
     let mut members = Vec::new();
     let mut start = 0usize;
@@ -1134,23 +990,6 @@ fn parse_type_literal_members(body: &str) -> Vec<&str> {
     members
 }
 
-fn split_top_level(value: &str, delimiter: char) -> Vec<&str> {
-    let mut parts = Vec::new();
-    let mut start = 0usize;
-    let mut state = SplitState::default();
-
-    for (idx, ch) in value.char_indices() {
-        state.accept(ch, value, idx);
-        if state.depth == 0 && state.quote.is_none() && ch == delimiter {
-            parts.push(value[start..idx].trim());
-            start = idx + ch.len_utf8();
-        }
-    }
-
-    parts.push(value[start..].trim());
-    parts
-}
-
 #[derive(Default)]
 struct SplitState {
     depth: i32,
@@ -1170,9 +1009,9 @@ impl SplitState {
             self.quote = Some(ch);
         } else if matches!(ch, '{' | '[' | '(' | '<') {
             self.depth += 1;
-        } else if matches!(ch, '}' | ']' | ')') {
-            self.depth = self.depth.saturating_sub(1);
-        } else if ch == '>' && !previous_non_ws_is(source, idx, '=') {
+        } else if matches!(ch, '}' | ']' | ')')
+            || (ch == '>' && !previous_non_ws_is(source, idx, '='))
+        {
             self.depth = self.depth.saturating_sub(1);
         }
     }
@@ -1349,12 +1188,12 @@ fn art_block_completions() -> Vec<CompletionItem> {
         kind: Some(CompletionItemKind::SNIPPET),
         detail: Some("Create Art block".to_string()),
         insert_text: Some(
-            "<art title=\"$1\" component=\"$2\">\n\t<variant name=\"$3\" default>\n\t\t$0\n\t</variant>\n</art>".to_string()
+            "<art>\n\t<variant name=\"$1\" default>\n\t\t$0\n\t</variant>\n</art>".to_string()
         ),
         insert_text_format: Some(InsertTextFormat::SNIPPET),
         documentation: Some(Documentation::MarkupContent(MarkupContent {
             kind: MarkupKind::Markdown,
-            value: "**Art Block**\n\nDefines a component gallery entry with metadata and variants.\n\n```vue\n<art title=\"Button\" component=\"./Button.vue\">\n  <variant name=\"Primary\" default>\n    <Button>Click</Button>\n  </variant>\n</art>\n```".to_string(),
+            value: "**Art Block**\n\nDefines component variants. Metadata and target component are declared with `defineArt` in `<script setup>`.\n\n```vue\n<script setup lang=\"ts\">\ndefineArt(\"./Button.vue\", { title: \"Button\" });\n</script>\n\n<art>\n  <variant name=\"Primary\" default>\n    <Button>Click</Button>\n  </variant>\n</art>\n```".to_string(),
         })),
         ..Default::default()
     }]
@@ -1448,7 +1287,8 @@ fn art_script_completions() -> Vec<CompletionItem> {
             kind: Some(CompletionItemKind::SNIPPET),
             detail: Some("Add script setup block".to_string()),
             insert_text: Some(
-                "<script setup lang=\"ts\">\nimport $1 from '$2'\n</script>".to_string(),
+                "<script setup lang=\"ts\">\ndefineArt(\"$1\", {\n\ttitle: \"$2\",\n});\n</script>"
+                    .to_string(),
             ),
             insert_text_format: Some(InsertTextFormat::SNIPPET),
             ..Default::default()

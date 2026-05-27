@@ -49,12 +49,19 @@ fn render_art_file(
     variants: &[GeneratedVariant],
 ) -> String {
     let mut output = String::default();
+    let component_path_literal = escape_double_quoted(component_path);
+    let component_name_literal = escape_double_quoted(component_name);
 
-    // <art> block
+    // Script setup
+    output.push_str("<script setup lang=\"ts\">\n");
     append!(
         output,
-        "<art title=\"{component_name}\" component=\"{component_path}\">\n"
+        "defineArt(\"{component_path_literal}\", {{\n  title: \"{component_name_literal}\",\n}});\n"
     );
+    output.push_str("</script>\n\n");
+
+    // <art> block
+    append!(output, "<art>\n");
 
     // Variants
     for variant in variants {
@@ -79,14 +86,21 @@ fn render_art_file(
         output.push_str("  </variant>\n\n");
     }
 
-    output.push_str("</art>\n\n");
-
-    // Script setup
-    output.push_str("<script setup lang=\"ts\">\n");
-    append!(output, "import {component_name} from '{component_path}'\n");
-    output.push_str("</script>\n");
+    output.push_str("</art>\n");
 
     output
+}
+
+fn escape_double_quoted(value: &str) -> String {
+    let mut escaped = String::default();
+    for ch in value.chars() {
+        match ch {
+            '\\' => escaped.push_str("\\\\"),
+            '"' => escaped.push_str("\\\""),
+            _ => escaped.push(ch),
+        }
+    }
+    escaped
 }
 
 /// Render props as Vue template attributes.

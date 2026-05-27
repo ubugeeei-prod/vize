@@ -94,41 +94,93 @@ directly to `musea()`.
 
 ```art-vue
 <script setup lang="ts">
-import MyButton from "./MyButton.vue";
+import { ref } from "vue";
+
+defineArt("./MyButton.vue", {
+  title: "MyButton",
+  category: "Components",
+  status: "ready",
+  tags: ["button", "ui", "input"],
+});
+
+const pressed = ref(false);
 </script>
 
-<art
-  title="MyButton"
-  component="./MyButton.vue"
-  category="Components"
-  status="ready"
-  tags="button, ui, input"
-  action-events="click, focus"
->
+<art>
   <variant name="Default" default>
-    <MyButton type="button">Click me</MyButton>
+    <MyButton type="button" :pressed="pressed">Click me</MyButton>
   </variant>
 
   <variant name="Outlined">
-    <MyButton type="button" outlined>Click me</MyButton>
+    <MyButton type="button" outlined :pressed="pressed">Click me</MyButton>
   </variant>
 </art>
 ```
 
+`defineArt(source, options)` is a compiler macro. It declares the component that Musea should load,
+plus metadata that used to live on `<art>`. Prefer a relative component path string such as
+`defineArt("./MyButton.vue", { title: "MyButton" })`; Musea imports that component in generated
+runtime code and the language server uses the same source for prop and slot inference.
+The source string participates in path completion, unresolved-file diagnostics, document links, and
+go-to-definition.
+
+`<art title="..." component="...">` still works for compatibility, and explicit `<art>` attributes
+override `defineArt` metadata when both are present.
+
+### Variant-local state
+
+Root `<script setup>` state is isolated per variant by default. Each variant receives its own setup
+instance, so refs and computed values in one variant do not leak into another:
+
+```art-vue
+<script setup lang="ts">
+import { computed, ref } from "vue";
+
+defineArt("./Counter.vue", { title: "Counter" });
+
+const count = ref(0);
+const doubled = computed(() => count.value * 2);
+</script>
+
+<art>
+  <variant name="Base" default>
+    <Counter :count="count" />
+  </variant>
+  <variant name="Doubled">
+    <Counter :count="doubled" />
+  </variant>
+</art>
+```
+
+Use `<script setup isolate="false">` only when the art file intentionally needs one shared setup
+instance across every variant:
+
+```art-vue
+<script setup lang="ts" isolate="false">
+import { ref } from "vue";
+
+defineArt("./Counter.vue", { title: "Counter" });
+
+const sharedCount = ref(0);
+</script>
+```
+
 ### Anatomy
 
-| Element / Attribute | Purpose                               |
-| ------------------- | ------------------------------------- |
-| `<art>`             | Root metadata block                   |
-| `title`             | Display name                          |
-| `component`         | Relative path to the source component |
-| `category`          | Sidebar grouping                      |
-| `status`            | Optional status badge                 |
-| `tags`              | Search and filtering tags             |
-| `action-events`     | Events to capture in the gallery      |
-| `capture-mousemove` | Include mousemove in captured actions |
-| `<variant>`         | Named component variation             |
-| `default`           | Marks the default variant             |
+| Element / Macro                  | Purpose                                |
+| -------------------------------- | -------------------------------------- |
+| `defineArt(source, options)`     | Target component and art metadata      |
+| `defineArt(...).title`           | Display name                           |
+| `defineArt(...).category`        | Sidebar grouping                       |
+| `defineArt(...).status`          | Optional status badge                  |
+| `defineArt(...).tags`            | Search and filtering tags              |
+| `<script setup>`                 | Variant-local setup state by default   |
+| `<script setup isolate="false">` | Shared setup state across all variants |
+| `<art>`                          | Root variants block                    |
+| `<art title component ...>`      | Compatibility metadata attributes      |
+| `<variant>`                      | Named component variation              |
+| `default`                        | Marks the default variant              |
+| `args`, `viewport`, `skip-vrt`   | Optional variant configuration         |
 
 Keep art files close to the component when variants are part of the component's contract:
 

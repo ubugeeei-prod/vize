@@ -69,10 +69,14 @@ Direct `musea()` options override shared config. Pass preview-only options such 
 ```vue
 <!-- Button.art.vue -->
 <script setup lang="ts">
-import Button from "./Button.vue";
+defineArt("./Button.vue", {
+  title: "Button",
+  category: "UI",
+  tags: ["button", "form"],
+});
 </script>
 
-<art title="Button" component="./Button.vue">
+<art>
   <variant name="Primary" default>
     <Button variant="primary">Click me</Button>
   </variant>
@@ -82,7 +86,36 @@ import Button from "./Button.vue";
 </art>
 ```
 
-Common `<art>` attributes:
+`defineArt(source, options)` is a compiler macro. It declares the Vue component Musea should render
+and the metadata shown in the gallery. Prefer a relative component path string; the macro call is
+removed and Musea generates the component import. The Musea language server uses the same source
+for path completion, missing-file diagnostics, go-to-definition, and prop/slot inference.
+
+Root `<script setup>` state is variant-local by default, so each variant gets its own refs,
+computed values, and composable calls:
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+
+defineArt("./Counter.vue", { title: "Counter" });
+
+const count = ref(0);
+</script>
+
+<art>
+  <variant name="Initial" default>
+    <Counter :count="count" />
+  </variant>
+  <variant name="Interactive">
+    <Counter :count="count" />
+  </variant>
+</art>
+```
+
+Use `<script setup isolate="false">` when variants intentionally share one setup instance.
+
+Legacy `<art>` metadata attributes are still supported:
 
 | Attribute           | Purpose                               |
 | ------------------- | ------------------------------------- |

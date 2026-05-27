@@ -4,8 +4,8 @@
 //! detection, unused variable tracking, and export validation.
 
 use crate::macros::{
-    DEFINE_EMITS, DEFINE_EXPOSE, DEFINE_MODEL, DEFINE_OPTIONS, DEFINE_PROPS, DEFINE_SLOTS,
-    WITH_DEFAULTS,
+    DEFINE_ART, DEFINE_EMITS, DEFINE_EXPOSE, DEFINE_MODEL, DEFINE_OPTIONS, DEFINE_PROPS,
+    DEFINE_SLOTS, WITH_DEFAULTS,
 };
 use vize_carton::{CompactString, FxHashMap, String};
 
@@ -22,6 +22,7 @@ pub const COMPILER_MACRO_NAMES: &[&str] = &[
     DEFINE_OPTIONS,
     DEFINE_SLOTS,
     WITH_DEFAULTS,
+    DEFINE_ART,
 ];
 use vize_relief::BindingType;
 

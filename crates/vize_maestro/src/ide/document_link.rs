@@ -50,6 +50,7 @@ impl DocumentLinkService {
                 base_path.as_deref(),
                 &mut links,
             );
+            Self::collect_define_art_source_links(content, uri, &mut links);
         }
 
         // Collect links from script
@@ -102,6 +103,24 @@ impl DocumentLinkService {
         }
 
         links
+    }
+
+    fn collect_define_art_source_links(content: &str, uri: &Url, links: &mut Vec<DocumentLink>) {
+        for source in crate::ide::musea::define_art_sources(content, uri) {
+            let Some(target) = crate::ide::musea::resolve_define_art_source(uri, &source.source)
+            else {
+                continue;
+            };
+            let Ok(target) = Url::from_file_path(target) else {
+                continue;
+            };
+            links.push(Self::create_link(
+                content,
+                source.value_start,
+                source.value_end,
+                target,
+            ));
+        }
     }
 
     /// Collect import statement links from script content.
@@ -349,7 +368,10 @@ impl DocumentLinkService {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use super::DocumentLinkService;
+    use tower_lsp::lsp_types::Url;
 
     #[test]
     fn test_extract_import_path() {
@@ -379,5 +401,35 @@ mod tests {
 
         let (content, _, _) = DocumentLinkService::extract_string_literal("'world'").unwrap();
         assert_eq!(content, "world");
+    }
+
+    #[test]
+    fn test_define_art_source_link() {
+        let dir = tempfile::tempdir().unwrap();
+        let component_path = dir.path().join("Button.vue");
+        let art_path = dir.path().join("Button.art.vue");
+        fs::write(&component_path, "<template />").unwrap();
+
+        let source = r#"<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+});
+</script>
+
+<art>
+  <variant name="Default"><Button /></variant>
+</art>
+"#;
+        fs::write(&art_path, source).unwrap();
+        let uri = Url::from_file_path(&art_path).unwrap();
+
+        let links = DocumentLinkService::get_links(source, &uri);
+
+        assert!(links.iter().any(|link| {
+            link.target
+                .as_ref()
+                .and_then(|target| target.to_file_path().ok())
+                .is_some_and(|target| target == component_path.canonicalize().unwrap())
+        }));
     }
 }

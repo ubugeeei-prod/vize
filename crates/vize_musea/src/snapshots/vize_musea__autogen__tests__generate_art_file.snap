@@ -53,6 +53,6 @@ AutogenOutput {
             ),
         },
     ],
-    art_file_content: "<art title=\"Button\" component=\"./Button.vue\">\n  <variant name=\"Default\" default>\n    <Button\n      :disabled=\"false\"\n      label=\"Click me\"\n      variant=\"primary\"\n    />\n  </variant>\n\n  <variant name=\"Primary\">\n    <Button\n      :disabled=\"false\"\n      label=\"Click me\"\n      variant=\"primary\"\n    />\n  </variant>\n\n  <variant name=\"Secondary\">\n    <Button\n      :disabled=\"false\"\n      label=\"Click me\"\n      variant=\"secondary\"\n    />\n  </variant>\n\n  <variant name=\"Disabled\">\n    <Button\n      disabled\n      label=\"Click me\"\n      variant=\"primary\"\n    />\n  </variant>\n\n</art>\n\n<script setup lang=\"ts\">\nimport Button from './Button.vue'\n</script>\n",
+    art_file_content: "<script setup lang=\"ts\">\ndefineArt(\"./Button.vue\", {\n  title: \"Button\",\n});\n</script>\n\n<art>\n  <variant name=\"Default\" default>\n    <Button\n      :disabled=\"false\"\n      label=\"Click me\"\n      variant=\"primary\"\n    />\n  </variant>\n\n  <variant name=\"Primary\">\n    <Button\n      :disabled=\"false\"\n      label=\"Click me\"\n      variant=\"primary\"\n    />\n  </variant>\n\n  <variant name=\"Secondary\">\n    <Button\n      :disabled=\"false\"\n      label=\"Click me\"\n      variant=\"secondary\"\n    />\n  </variant>\n\n  <variant name=\"Disabled\">\n    <Button\n      disabled\n      label=\"Click me\"\n      variant=\"primary\"\n    />\n  </variant>\n\n</art>\n",
     component_name: "Button",
 }

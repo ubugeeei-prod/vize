@@ -9,7 +9,8 @@ patterns that keep component styles themeable, predictable, and compatible with 
 
 ## `musea/require-title`
 
-Requires every `<art>` block to have a `title`.
+Requires every art file to provide a display title. The title can come from `<art title="...">`,
+`defineArt("./Button.vue", { title: "..." })`, or the `defineArt` component source fallback.
 
 Default severity: `error`
 
@@ -24,14 +25,19 @@ Bad:
 Good:
 
 ```vue
-<art title="Button" component="./Button.vue">
+<script setup>
+defineArt("./Button.vue", { title: "Button" });
+</script>
+
+<art>
   <variant name="primary" />
 </art>
 ```
 
 ## `musea/require-component`
 
-Requires every `<art>` block to name the component it documents.
+Requires every art file to name the component it documents. Prefer `defineArt("./Button.vue", ...)`;
+`<art component="...">` remains supported for compatibility.
 
 Default severity: `warning`
 
@@ -46,7 +52,11 @@ Bad:
 Good:
 
 ```vue
-<art title="Button" component="./Button.vue">
+<script setup>
+defineArt("./Button.vue", { title: "Button" });
+</script>
+
+<art>
   <variant name="primary" />
 </art>
 ```

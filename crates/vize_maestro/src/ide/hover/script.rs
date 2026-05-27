@@ -279,6 +279,10 @@ impl HoverService {
     /// Get hover for Vue macros.
     pub(super) fn hover_vue_macro(word: &str) -> Option<Hover> {
         let (signature, description) = match word {
+            "defineArt" => (
+                "function defineArt<T>(component: T | string, options?: ArtOptions): void",
+                "Musea compiler macro to declare the art target component and metadata.",
+            ),
             "defineProps" => (
                 "function defineProps<T>(): T",
                 "Compiler macro to declare component props. Only usable inside `<script setup>`.",

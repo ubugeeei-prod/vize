@@ -20,6 +20,7 @@ ScriptParseResult {
         models: [],
         exposes: [],
         slots: [],
+        art: None,
         props_destructure: None,
         top_level_awaits: [],
         next_id: 0,
@@ -27,6 +28,7 @@ ScriptParseResult {
         define_emits_idx: None,
         define_expose_idx: None,
         define_slots_idx: None,
+        define_art_idx: None,
     },
     reactivity: ReactivityTracker {
         sources: [],
@@ -1310,6 +1312,11 @@ ScriptParseResult {
             68,
             79,
         ),
+    },
+    import_sources: {
+        "computed": "vue",
+        "ref": "vue",
+        "MyComponent": "./MyComponent.vue",
     },
     type_export_typeof_refs: [],
 }

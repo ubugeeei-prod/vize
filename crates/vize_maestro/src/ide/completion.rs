@@ -520,15 +520,94 @@ defineProps<{ checked?: boolean }>()
     }
 
     #[test]
-    fn test_art_variant_completion_includes_variant_state_bindings() {
+    fn test_art_variant_completion_uses_define_art_component_for_props() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(
+            dir.path().join("Switch.vue"),
+            r#"<script setup lang="ts">
+defineProps<{ checked?: boolean }>()
+</script>
+"#,
+        )
+        .unwrap();
+
+        let art_path = dir.path().join("Switch.art.vue");
+        let source = r#"<script setup lang="ts">
+defineArt("./Switch.vue", {
+  title: "Switch",
+})
+</script>
+
+<art>
+  <variant name="Default">
+    <Switch  />
+  </variant>
+</art>
+"#;
+        fs::write(&art_path, source).unwrap();
+
+        let uri = Url::from_file_path(&art_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.find("<Switch  />").unwrap() + "<Switch ".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert!(has_label(&labels, "checked"));
+    }
+
+    #[test]
+    fn test_define_art_source_completion_suggests_vue_files() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir_all(dir.path().join("components")).unwrap();
+        fs::write(dir.path().join("Button.vue"), "<template />").unwrap();
+        fs::write(dir.path().join("components/IconButton.vue"), "<template />").unwrap();
+
+        let art_path = dir.path().join("Button.art.vue");
+        let source = r#"<script setup lang="ts">
+defineArt("./", {
+  title: "Button",
+});
+</script>
+
+<art>
+  <variant name="Default">
+    <Button />
+  </variant>
+</art>
+"#;
+        fs::write(&art_path, source).unwrap();
+
+        let uri = Url::from_file_path(&art_path).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), source.to_string(), 1, "art-vue".to_string());
+        state.update_virtual_docs(&uri, source);
+
+        let offset = source.find("\"./").unwrap() + "\"./".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert!(has_label(&labels, "./Button.vue"));
+        assert!(has_label(&labels, "./components/"));
+    }
+
+    #[test]
+    fn test_art_variant_completion_includes_script_setup_state_bindings() {
         let dir = tempfile::tempdir().unwrap();
         let source_path = dir.path().join("Counter.art.vue");
-        let source = r#"<art title="Counter" component="./Counter.vue">
-  <variant name="Default">
-    <state>
+        let source = r#"<script setup lang="ts">
 const count = ref(0)
 const doubled = computed(() => count.value * 2)
-    </state>
+</script>
+
+<art title="Counter" component="./Counter.vue">
+  <variant name="Default">
     <Counter :count="" />
   </variant>
 </art>

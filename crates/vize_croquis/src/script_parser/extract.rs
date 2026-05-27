@@ -1,14 +1,16 @@
 //! Extraction functions for props, emits, and reactivity detection.
 
 use oxc_ast::ast::{
-    Argument, AssignmentTarget, CallExpression, Declaration, Expression, FormalParameters,
-    ObjectPropertyKind, PropertyKey, SimpleAssignmentTarget, Statement, TSType,
-    VariableDeclarationKind,
+    Argument, ArrayExpressionElement, AssignmentTarget, CallExpression, Declaration, Expression,
+    FormalParameters, ObjectExpression, ObjectPropertyKind, PropertyKey, SimpleAssignmentTarget,
+    Statement, TSType, VariableDeclarationKind,
 };
 use oxc_span::{GetSpan, Span};
 
 use crate::analysis::{InvalidExport, InvalidExportKind, TypeExport, TypeExportKind};
-use crate::macros::{EmitDefinition, MacroKind, ModelDefinition, PropDefinition};
+use crate::macros::{
+    ArtDefinition, EmitDefinition, MacroKind, ModelDefinition, PropDefinition, SlotsDefinition,
+};
 use crate::provide::ProvideKey;
 use crate::race::RaceConditionRiskKind;
 use crate::reactivity::ReactiveKind;
@@ -106,6 +108,12 @@ pub fn process_call_expression(
             }
         }
 
+        MacroKind::DefineSlots => {
+            if let Some(ref type_params) = call.type_arguments {
+                extract_slots_from_type(result, &type_params.params, source);
+            }
+        }
+
         MacroKind::DefineModel => {
             // Extract model name (first string argument or 'modelValue' by default)
             let model_name = call
@@ -136,10 +144,332 @@ pub fn process_call_expression(
             }
         }
 
+        MacroKind::DefineArt => {
+            if let Some(art) = extract_define_art(result, call) {
+                result.macros.set_define_art(art);
+            }
+        }
+
         _ => {}
     }
 
     Some(macro_kind)
+}
+
+fn extract_define_art(
+    result: &ScriptParseResult,
+    call: &CallExpression<'_>,
+) -> Option<ArtDefinition> {
+    let first_arg = call.arguments.first()?;
+    let mut component_source_span = None;
+    let mut component_source_value_span = None;
+    let (component_name, component_source) =
+        if let Some(source) = argument_string_literal(first_arg) {
+            component_source_span = Some((source.literal_start, source.literal_end));
+            component_source_value_span = Some((source.value_start, source.value_end));
+            (
+                component_name_from_source(source.value),
+                Some(CompactString::new(source.value)),
+            )
+        } else {
+            let component_name = argument_identifier(first_arg)?;
+            (
+                CompactString::new(component_name),
+                result.import_sources.get(component_name).cloned(),
+            )
+        };
+    let mut art = ArtDefinition {
+        component_name,
+        component_source,
+        component_source_span,
+        component_source_value_span,
+        title: None,
+        description: None,
+        category: None,
+        tags: Vec::new(),
+        status: None,
+        order: None,
+    };
+
+    if let Some(options) = call.arguments.get(1).and_then(argument_object) {
+        art.title = object_string_property(options, "title");
+        art.description = object_string_property(options, "description");
+        art.category = object_string_property(options, "category");
+        art.status = object_string_property(options, "status");
+        art.order = object_u32_property(options, "order");
+        fill_define_art_tags(options, &mut art.tags);
+    }
+
+    Some(art)
+}
+
+struct StringLiteralArgument<'a> {
+    value: &'a str,
+    literal_start: u32,
+    literal_end: u32,
+    value_start: u32,
+    value_end: u32,
+}
+
+fn argument_string_literal<'a>(argument: &'a Argument<'a>) -> Option<StringLiteralArgument<'a>> {
+    match argument {
+        Argument::StringLiteral(literal) => Some(StringLiteralArgument {
+            value: literal.value.as_str(),
+            literal_start: literal.span.start,
+            literal_end: literal.span.end,
+            value_start: literal.span.start.saturating_add(1),
+            value_end: literal.span.end.saturating_sub(1),
+        }),
+        Argument::ParenthesizedExpression(expr) => expression_string_literal(&expr.expression),
+        Argument::TSAsExpression(expr) => expression_string_literal(&expr.expression),
+        Argument::TSSatisfiesExpression(expr) => expression_string_literal(&expr.expression),
+        Argument::TSNonNullExpression(expr) => expression_string_literal(&expr.expression),
+        _ => None,
+    }
+}
+
+fn component_name_from_source(source: &str) -> CompactString {
+    let without_query = source.split(['?', '#']).next().unwrap_or(source);
+    let filename = without_query
+        .rsplit(['/', '\\'])
+        .next()
+        .filter(|name| !name.is_empty())
+        .unwrap_or("Component");
+    let stem = filename
+        .rsplit_once('.')
+        .map_or(filename, |(name, _extension)| name);
+
+    let mut component_name = String::default();
+    for segment in stem.split(|ch: char| !(ch.is_ascii_alphanumeric())) {
+        if segment.is_empty() {
+            continue;
+        }
+
+        let mut chars = segment.chars();
+        if let Some(first) = chars.next() {
+            component_name.push(first.to_ascii_uppercase());
+            component_name.extend(chars);
+        }
+    }
+
+    if component_name.is_empty() {
+        cstr!("Component")
+    } else {
+        CompactString::new(component_name)
+    }
+}
+
+fn argument_identifier<'a>(argument: &'a Argument<'a>) -> Option<&'a str> {
+    match argument {
+        Argument::Identifier(identifier) => Some(identifier.name.as_str()),
+        Argument::ParenthesizedExpression(expr) => expression_identifier(&expr.expression),
+        Argument::TSAsExpression(expr) => expression_identifier(&expr.expression),
+        Argument::TSSatisfiesExpression(expr) => expression_identifier(&expr.expression),
+        Argument::TSNonNullExpression(expr) => expression_identifier(&expr.expression),
+        _ => None,
+    }
+}
+
+fn expression_identifier<'a>(expression: &'a Expression<'a>) -> Option<&'a str> {
+    match expression {
+        Expression::Identifier(identifier) => Some(identifier.name.as_str()),
+        Expression::ParenthesizedExpression(expr) => expression_identifier(&expr.expression),
+        Expression::TSAsExpression(expr) => expression_identifier(&expr.expression),
+        Expression::TSSatisfiesExpression(expr) => expression_identifier(&expr.expression),
+        Expression::TSNonNullExpression(expr) => expression_identifier(&expr.expression),
+        _ => None,
+    }
+}
+
+fn argument_object<'a>(argument: &'a Argument<'a>) -> Option<&'a ObjectExpression<'a>> {
+    match argument {
+        Argument::ObjectExpression(object) => Some(object),
+        Argument::ParenthesizedExpression(expr) => expression_object(&expr.expression),
+        Argument::TSAsExpression(expr) => expression_object(&expr.expression),
+        Argument::TSSatisfiesExpression(expr) => expression_object(&expr.expression),
+        Argument::TSNonNullExpression(expr) => expression_object(&expr.expression),
+        _ => None,
+    }
+}
+
+fn expression_object<'a>(expression: &'a Expression<'a>) -> Option<&'a ObjectExpression<'a>> {
+    match expression {
+        Expression::ObjectExpression(object) => Some(object),
+        Expression::ParenthesizedExpression(expr) => expression_object(&expr.expression),
+        Expression::TSAsExpression(expr) => expression_object(&expr.expression),
+        Expression::TSSatisfiesExpression(expr) => expression_object(&expr.expression),
+        Expression::TSNonNullExpression(expr) => expression_object(&expr.expression),
+        _ => None,
+    }
+}
+
+fn object_string_property(object: &ObjectExpression<'_>, name: &str) -> Option<CompactString> {
+    object_property(object, name)
+        .and_then(expression_string_value)
+        .map(CompactString::new)
+}
+
+fn object_u32_property(object: &ObjectExpression<'_>, name: &str) -> Option<u32> {
+    let value = object_property(object, name)?;
+    match value {
+        Expression::NumericLiteral(literal)
+            if literal.value.is_finite()
+                && literal.value >= 0.0
+                && literal.value.fract() == 0.0 =>
+        {
+            Some(literal.value as u32)
+        }
+        _ => None,
+    }
+}
+
+fn fill_define_art_tags(object: &ObjectExpression<'_>, tags: &mut Vec<CompactString>) {
+    let Some(value) = object_property(object, "tags") else {
+        return;
+    };
+
+    match value {
+        Expression::ArrayExpression(array) => {
+            for element in &array.elements {
+                let ArrayExpressionElement::StringLiteral(literal) = element else {
+                    continue;
+                };
+                let tag = literal.value.as_str();
+                if !tag.is_empty() {
+                    tags.push(CompactString::new(tag));
+                }
+            }
+        }
+        _ => {
+            if let Some(csv) = expression_string_value(value) {
+                for tag in csv.split(',') {
+                    let tag = tag.trim();
+                    if !tag.is_empty() {
+                        tags.push(CompactString::new(tag));
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn object_property<'a>(object: &'a ObjectExpression<'a>, name: &str) -> Option<&'a Expression<'a>> {
+    object.properties.iter().find_map(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return None;
+        };
+        (static_property_name(&property.key) == Some(name)).then_some(&property.value)
+    })
+}
+
+fn static_property_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
+    match key {
+        PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+        PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+        _ => None,
+    }
+}
+
+fn expression_string_value<'a>(expression: &'a Expression<'a>) -> Option<&'a str> {
+    expression_string_literal(expression).map(|literal| literal.value)
+}
+
+fn expression_string_literal<'a>(
+    expression: &'a Expression<'a>,
+) -> Option<StringLiteralArgument<'a>> {
+    match expression {
+        Expression::StringLiteral(literal) => Some(StringLiteralArgument {
+            value: literal.value.as_str(),
+            literal_start: literal.span.start,
+            literal_end: literal.span.end,
+            value_start: literal.span.start.saturating_add(1),
+            value_end: literal.span.end.saturating_sub(1),
+        }),
+        Expression::ParenthesizedExpression(expr) => expression_string_literal(&expr.expression),
+        Expression::TSAsExpression(expr) => expression_string_literal(&expr.expression),
+        Expression::TSSatisfiesExpression(expr) => expression_string_literal(&expr.expression),
+        Expression::TSNonNullExpression(expr) => expression_string_literal(&expr.expression),
+        _ => None,
+    }
+}
+
+fn extract_slots_from_type(
+    result: &mut ScriptParseResult,
+    type_params: &oxc_allocator::Vec<'_, TSType<'_>>,
+    source: &str,
+) {
+    for type_param in type_params {
+        extract_slots_from_ts_type(result, type_param, source);
+    }
+}
+
+fn extract_slots_from_ts_type(result: &mut ScriptParseResult, ty: &TSType<'_>, source: &str) {
+    match ty {
+        TSType::TSTypeLiteral(literal) => {
+            for member in &literal.members {
+                match member {
+                    oxc_ast::ast::TSSignature::TSPropertySignature(property) => {
+                        let Some(name) = static_property_name(&property.key) else {
+                            continue;
+                        };
+                        let props_type = property.type_annotation.as_ref().and_then(|annotation| {
+                            slot_props_type_from_ts_type(&annotation.type_annotation, source)
+                        });
+                        result.macros.add_slot(SlotsDefinition {
+                            name: CompactString::new(name),
+                            props_type,
+                        });
+                    }
+                    oxc_ast::ast::TSSignature::TSMethodSignature(method) => {
+                        let Some(name) = static_property_name(&method.key) else {
+                            continue;
+                        };
+                        result.macros.add_slot(SlotsDefinition {
+                            name: CompactString::new(name),
+                            props_type: first_param_type(&method.params, source),
+                        });
+                    }
+                    _ => {}
+                }
+            }
+        }
+        TSType::TSIntersectionType(intersection) => {
+            for ty in &intersection.types {
+                extract_slots_from_ts_type(result, ty, source);
+            }
+        }
+        TSType::TSParenthesizedType(parenthesized) => {
+            extract_slots_from_ts_type(result, &parenthesized.type_annotation, source);
+        }
+        _ => {}
+    }
+}
+
+fn slot_props_type_from_ts_type(ty: &TSType<'_>, source: &str) -> Option<CompactString> {
+    match ty {
+        TSType::TSFunctionType(function) => first_param_type(&function.params, source),
+        TSType::TSParenthesizedType(parenthesized) => {
+            slot_props_type_from_ts_type(&parenthesized.type_annotation, source)
+        }
+        TSType::TSUnionType(union) => union
+            .types
+            .iter()
+            .find_map(|ty| slot_props_type_from_ts_type(ty, source)),
+        _ => None,
+    }
+}
+
+fn first_param_type(
+    params: &oxc_ast::ast::FormalParameters<'_>,
+    source: &str,
+) -> Option<CompactString> {
+    let annotation = params.items.first()?.type_annotation.as_ref()?;
+    let span = annotation.type_annotation.span();
+    source
+        .get(span.start as usize..span.end as usize)
+        .map(str::trim)
+        .filter(|text| !text.is_empty() && *text != "()")
+        .map(CompactString::new)
 }
 
 /// Extract props from TypeScript type parameters

@@ -38,6 +38,8 @@ export interface ArtFileInfo {
   hasScriptSetup: boolean;
   /** Raw content of the <script setup> block */
   scriptSetupContent?: string;
+  /** Whether <script setup> state is isolated for each variant */
+  scriptSetupIsolated?: boolean;
   /** Whether file has regular script */
   hasScript: boolean;
   /** Number of style blocks */

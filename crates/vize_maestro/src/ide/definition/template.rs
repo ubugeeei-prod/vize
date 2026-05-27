@@ -101,52 +101,6 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         }
     }
 
-    if let Some(def) = find_art_variant_state_definition(ctx, &word) {
-        return Some(def);
-    }
-
-    None
-}
-
-fn find_art_variant_state_definition(
-    ctx: &IdeContext<'_>,
-    word: &str,
-) -> Option<GotoDefinitionResponse> {
-    let crate::virtual_code::BlockType::Art(
-        crate::virtual_code::ArtCursorPosition::VariantTemplate(info),
-    ) = ctx.block_type?
-    else {
-        return None;
-    };
-
-    let allocator = vize_carton::Bump::new();
-    let art_desc = vize_musea::parse_art(
-        &allocator,
-        &ctx.content,
-        vize_musea::ArtParseOptions::default(),
-    )
-    .ok()?;
-    let variant = art_desc.variants.get(info.variant_index)?;
-    let loc = variant.loc.as_ref()?;
-    let blocks = crate::virtual_code::find_variant_state_blocks(
-        &ctx.content,
-        loc.start as usize,
-        loc.end as usize,
-        info.variant_index,
-    );
-
-    for block in blocks {
-        if let Some(binding_loc) =
-            super::script::find_binding_location_raw(block.content(&ctx.content), word)
-        {
-            return Some(location_response(
-                ctx,
-                block.content_start + binding_loc.offset,
-                word.len(),
-            ));
-        }
-    }
-
     None
 }
 
@@ -438,7 +392,7 @@ pub(crate) fn find_component_prop_definition(
     }
 
     let import_path = helpers::find_import_path(ctx, &component_name)
-        .or_else(|| art_component_attr_path(ctx, &component_name))?;
+        .or_else(|| art_component_path(ctx, &component_name))?;
     let resolved_path = helpers::resolve_import_path(ctx.uri, &import_path)?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
 
@@ -564,7 +518,7 @@ pub(crate) fn find_component_definition(
         }
     }
 
-    if let Some(import_path) = art_component_attr_path(ctx, tag_name)
+    if let Some(import_path) = art_component_path(ctx, tag_name)
         && let Some(resolved) = helpers::resolve_import_path(ctx.uri, &import_path)
         && let Ok(file_uri) = tower_lsp::lsp_types::Url::from_file_path(&resolved)
     {
@@ -586,7 +540,7 @@ pub(crate) fn find_component_definition(
     None
 }
 
-fn art_component_attr_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {
+fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {
     if !ctx.uri.path().ends_with(".art.vue") {
         return None;
     }
@@ -599,6 +553,24 @@ fn art_component_attr_path(ctx: &IdeContext<'_>, component_name: &str) -> Option
     )
     .ok()?;
     let component_path = art_desc.metadata.component?;
+    let descriptor = vize_atelier_sfc::parse_sfc(
+        &ctx.content,
+        vize_atelier_sfc::SfcParseOptions {
+            filename: ctx.uri.path().to_string().into(),
+            ..Default::default()
+        },
+    )
+    .ok()?;
+    if let Some(script_setup) = descriptor.script_setup.as_ref()
+        && let Some(defined_component) =
+            crate::virtual_code::find_define_art_component_name(script_setup.content.as_ref())
+    {
+        let pascal_component = kebab_to_pascal(component_name);
+        if component_name == defined_component || pascal_component == defined_component {
+            return Some(component_path.to_string());
+        }
+    }
+
     let stem = std::path::Path::new(component_path)
         .file_stem()
         .and_then(|stem| stem.to_str())?;

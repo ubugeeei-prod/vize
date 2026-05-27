@@ -110,6 +110,8 @@ pub struct ScriptParseResult {
     pub component_registrations: Vec<ComponentRegistration>,
     /// Definition spans for bindings (name -> (start, end) offset in script)
     pub binding_spans: FxHashMap<CompactString, (u32, u32)>,
+    /// Value import source by local binding name.
+    pub import_sources: FxHashMap<CompactString, CompactString>,
     /// Names referenced via `typeof X` in the body of each `type_exports`
     /// entry, indexed in parallel with `type_exports`. Used by
     /// `resolve_type_export_hoisting` to keep types adjacent to the
@@ -496,6 +498,78 @@ mod tests {
 
         assert_eq!(result.macros.all_calls().len(), 1);
         assert_eq!(result.macros.emits().len(), 2);
+    }
+
+    #[test]
+    fn test_parse_define_art() {
+        let result = parse_script_setup(
+            r#"
+import Button from "./Button.vue";
+
+defineArt(Button, {
+  title: "Button",
+  description: "A button component",
+  category: "Components",
+  tags: ["button", "ui"],
+  status: "draft",
+  order: 2,
+});
+"#,
+        );
+
+        let art = result.macros.define_art().expect("defineArt metadata");
+        assert_eq!(art.component_name.as_str(), "Button");
+        assert_eq!(art.component_source.as_deref(), Some("./Button.vue"));
+        assert_eq!(art.title.as_deref(), Some("Button"));
+        assert_eq!(art.description.as_deref(), Some("A button component"));
+        assert_eq!(art.category.as_deref(), Some("Components"));
+        assert_eq!(
+            art.tags.iter().map(|tag| tag.as_str()).collect::<Vec<_>>(),
+            ["button", "ui"]
+        );
+        assert_eq!(art.status.as_deref(), Some("draft"));
+        assert_eq!(art.order, Some(2));
+        assert!(result.macros.define_art_call().is_some());
+    }
+
+    #[test]
+    fn test_parse_define_art_with_source_literal() {
+        let result = parse_script_setup(
+            r#"
+defineArt("./forms/base-button.vue", {
+  title: "Base Button",
+});
+"#,
+        );
+
+        let art = result.macros.define_art().expect("defineArt metadata");
+        assert_eq!(art.component_name.as_str(), "BaseButton");
+        assert_eq!(
+            art.component_source.as_deref(),
+            Some("./forms/base-button.vue")
+        );
+        assert!(art.component_source_span.is_some());
+        assert!(art.component_source_value_span.is_some());
+        assert_eq!(art.title.as_deref(), Some("Base Button"));
+    }
+
+    #[test]
+    fn test_parse_define_slots() {
+        let result = parse_script_setup(
+            r#"
+defineSlots<{
+  default(props: { user: User }): any
+  icon: (props: { size: number }) => any
+}>()
+"#,
+        );
+
+        let slots = result.macros.slots();
+        assert_eq!(slots.len(), 2);
+        assert_eq!(slots[0].name.as_str(), "default");
+        assert_eq!(slots[0].props_type.as_deref(), Some("{ user: User }"));
+        assert_eq!(slots[1].name.as_str(), "icon");
+        assert_eq!(slots[1].props_type.as_deref(), Some("{ size: number }"));
     }
 
     #[test]

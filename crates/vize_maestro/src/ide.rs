@@ -26,6 +26,7 @@ pub(crate) mod ecosystem;
 pub mod file_rename;
 pub mod hover;
 pub mod inlay_hint;
+pub(crate) mod musea;
 pub mod references;
 pub mod rename;
 pub mod semantic_tokens;

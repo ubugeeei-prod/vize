@@ -81,40 +81,11 @@
     "art-template-content": {
       "patterns": [
         { "include": "#art-comments" },
-        { "include": "#variant-state-block" },
         { "include": "source.vue#vue-script" },
         { "include": "source.vue#vue-interpolation" },
         { "include": "source.vue#vue-directives" },
         { "include": "source.vue#html-tags" },
         { "include": "source.vue#html-entities" }
-      ]
-    },
-    "variant-state-block": {
-      "begin": "(<)(state)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
-      "beginCaptures": {
-        "1": { "name": "punctuation.definition.tag.begin.html" },
-        "2": { "name": "entity.name.tag.state.vue" }
-      },
-      "end": "(</)(state)(>)",
-      "endCaptures": {
-        "1": { "name": "punctuation.definition.tag.begin.html" },
-        "2": { "name": "entity.name.tag.state.vue" },
-        "3": { "name": "punctuation.definition.tag.end.html" }
-      },
-      "patterns": [{ "include": "#variant-state-open-tag" }, { "include": "source.ts" }]
-    },
-    "variant-state-open-tag": {
-      "begin": "\\G",
-      "end": ">",
-      "endCaptures": {
-        "0": { "name": "punctuation.definition.tag.end.html" }
-      },
-      "patterns": [
-        {
-          "match": "\\b(lang)\\b",
-          "name": "entity.other.attribute-name.state.vue"
-        },
-        { "include": "source.vue#vue-tag-attributes" }
       ]
     },
     "art-attributes": {

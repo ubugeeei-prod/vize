@@ -33,7 +33,11 @@
 //!
 //! let allocator = Bump::new();
 //! let source = r#"
-//! <art title="Button" component="./Button.vue">
+//! <script setup lang="ts">
+//! defineArt("./Button.vue", { title: "Button" });
+//! </script>
+//!
+//! <art>
 //!   <variant name="Primary" default>
 //!     <Button variant="primary">Click me</Button>
 //!   </variant>
@@ -41,10 +45,6 @@
 //!     <Button variant="secondary">Click me</Button>
 //!   </variant>
 //! </art>
-//!
-//! <script setup lang="ts">
-//! import Button from './Button.vue'
-//! </script>
 //! "#;
 //!
 //! // Parse Art file with arena allocator
@@ -106,7 +106,16 @@ mod tests {
     fn test_full_workflow() {
         let allocator = Bump::new();
         let source = r#"
-<art title="Button" description="A versatile button component" component="./Button.vue" category="atoms" tags="ui,input">
+<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+  description: "A versatile button component",
+  category: "atoms",
+  tags: ["ui", "input"],
+});
+</script>
+
+<art>
   <variant name="Primary" default>
     <Button variant="primary">Primary Button</Button>
   </variant>
@@ -117,10 +126,6 @@ mod tests {
     <Button variant="primary" icon="plus">Add Item</Button>
   </variant>
 </art>
-
-<script setup lang="ts">
-import Button from './Button.vue'
-</script>
 
 <style scoped>
 .art-container {

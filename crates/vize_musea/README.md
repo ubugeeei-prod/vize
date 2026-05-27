@@ -6,9 +6,33 @@ support.
 ## Highlights
 
 - Parse `*.art.vue` files into `ArtDescriptor`
+- Read `defineArt(source, options)` compiler-macro metadata from root `<script setup>`
 - Transform art files into Vue and Storybook-compatible outputs
 - Generate Markdown docs, catalogs, and prop palettes
 - Autogenerate art variants and VRT configuration data
+
+## Art Authoring
+
+The preferred `.art.vue` shape keeps metadata and the target component in `defineArt`:
+
+```vue
+<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+  category: "UI",
+  tags: ["button"],
+});
+</script>
+
+<art>
+  <variant name="Primary" default>
+    <Button variant="primary">Click</Button>
+  </variant>
+</art>
+```
+
+`<art title="..." component="...">` remains supported for compatibility. When both are present,
+explicit `<art>` attributes override `defineArt` values.
 
 ## Key Entry Points
 

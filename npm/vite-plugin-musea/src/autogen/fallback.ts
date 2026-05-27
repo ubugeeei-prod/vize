@@ -42,15 +42,17 @@ export function extractPropsSimple(source: string): PropDefinition[] {
  * Minimal art file for components with no props.
  */
 export function generateMinimalArt(componentName: string, componentPath: string): string {
-  return `<art title="${componentName}" component="${componentPath}">
+  return `<script setup lang="ts">
+defineArt(${JSON.stringify(componentPath)}, {
+  title: ${JSON.stringify(componentName)},
+});
+</script>
+
+<art>
   <variant name="Default" default>
     <${componentName} />
   </variant>
 </art>
-
-<script setup lang="ts">
-import ${componentName} from '${componentPath}'
-</script>
 `;
 }
 
@@ -118,7 +120,7 @@ export function generateArtFileJs(
   }
 
   // Generate art file content
-  let content = `<art title="${componentName}" component="${relPath}">\n`;
+  let content = `<script setup lang="ts">\ndefineArt(${JSON.stringify(relPath)}, {\n  title: ${JSON.stringify(componentName)},\n});\n</script>\n\n<art>\n`;
   for (const variant of variants) {
     const attrs = variant.isDefault ? `name="${variant.name}" default` : `name="${variant.name}"`;
     content += `  <variant ${attrs}>\n`;
@@ -135,7 +137,7 @@ export function generateArtFileJs(
     content += `    <${componentName}${propsStr ? " " + propsStr : ""} />\n`;
     content += `  </variant>\n\n`;
   }
-  content += `</art>\n\n<script setup lang="ts">\nimport ${componentName} from '${relPath}'\n</script>\n`;
+  content += `</art>\n`;
 
   return {
     variants,

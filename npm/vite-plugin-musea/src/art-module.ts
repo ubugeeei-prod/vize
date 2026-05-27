@@ -19,6 +19,14 @@ export function extractScriptSetupContent(source: string): string | undefined {
   return match?.[1]?.trim();
 }
 
+export function extractScriptSetupIsolated(source: string): boolean {
+  const match = source.match(/<script\s+([^>]*)\bsetup\b([^>]*)>/);
+  if (!match) return true;
+  const attrs = `${match[1] ?? ""} ${match[2] ?? ""}`;
+  const isolate = attrs.match(/\bisolate\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/);
+  return (isolate?.[1] ?? isolate?.[2] ?? isolate?.[3]) !== "false";
+}
+
 function resolveRelativeSpecifier(specifier: string, artDir: string): string {
   if (!specifier.startsWith(".")) {
     return specifier;
@@ -158,6 +166,12 @@ function collectImportedNames(statement: string, returnNames: Set<string>): void
   }
 }
 
+function importDeclaresName(statement: string, name: string): boolean {
+  const names = new Set<string>();
+  collectImportedNames(statement, names);
+  return names.has(name);
+}
+
 function collectObjectDestructuredNames(statement: string, returnNames: Set<string>): void {
   const match = statement.match(/^(?:export\s+)?(?:const|let|var)\s+\{([\s\S]*?)\}\s*=/);
   if (!match) {
@@ -292,15 +306,24 @@ export function parseScriptSetupForArt(content: string): {
   imports: string[];
   setupBody: string[];
   returnNames: string[];
+  defineArtComponentName?: string;
+  defineArtComponentSource?: string;
 } {
   const lines = content.split("\n");
   const imports: string[] = [];
   const setupBody: string[] = [];
   const returnNames: Set<string> = new Set();
   let currentImport: string[] | null = null;
+  const defineArtComponent = extractDefineArtComponent(content);
+  let defineArtBalance = 0;
 
   for (const line of lines) {
     const trimmed = line.trim();
+
+    if (defineArtBalance > 0) {
+      defineArtBalance += countCharBalance(line, "(", ")");
+      continue;
+    }
 
     if (currentImport) {
       currentImport.push(line);
@@ -324,6 +347,11 @@ export function parseScriptSetupForArt(content: string): {
       continue;
     }
 
+    if (isDefineArtLine(trimmed)) {
+      defineArtBalance = Math.max(0, countCharBalance(line, "(", ")"));
+      continue;
+    }
+
     setupBody.push(line);
   }
 
@@ -337,12 +365,43 @@ export function parseScriptSetupForArt(content: string): {
 
   // Remove 'type' keyword imports and common Vue utilities that shouldn't be returned
   returnNames.delete("type");
+  if (defineArtComponent.name) {
+    returnNames.delete(defineArtComponent.name);
+  }
 
   return {
     imports,
     setupBody,
     returnNames: [...returnNames],
+    defineArtComponentName: defineArtComponent.name,
+    defineArtComponentSource: defineArtComponent.source,
   };
+}
+
+function extractDefineArtComponent(content: string): { name?: string; source?: string } {
+  const sourceMatch = content.match(/\bdefineArt\s*\(\s*(['"])([^'"]+)\1/);
+  if (sourceMatch) {
+    return {
+      name: componentNameFromSource(sourceMatch[2]),
+      source: sourceMatch[2],
+    };
+  }
+
+  const identifierMatch = content.match(/\bdefineArt\s*\(\s*([A-Za-z_$][\w$]*)/);
+  return { name: identifierMatch?.[1] };
+}
+
+function componentNameFromSource(source: string): string {
+  const withoutQuery = source.split(/[?#]/, 1)[0] || source;
+  const filename = path.basename(withoutQuery);
+  const extension = path.extname(filename);
+  const stem = extension ? filename.slice(0, -extension.length) : filename;
+  const name = toPascalCase(stem);
+  return name === "Variant" ? "MuseaComponent" : name;
+}
+
+function isDefineArtLine(trimmed: string): boolean {
+  return /\bdefineArt\s*\(/.test(trimmed);
 }
 
 interface GenerateArtModuleOptions {
@@ -357,7 +416,12 @@ export function generateArtModule(
 ): string {
   let componentImportPath: string | undefined;
   let componentTagName: string | undefined;
-  const componentBindingName = "__MuseaComponent";
+  let componentBindingName = "__MuseaComponent";
+  const scriptSetup = art.scriptSetupContent
+    ? parseScriptSetupForArt(art.scriptSetupContent)
+    : null;
+  const defineArtComponentName = scriptSetup?.defineArtComponentName;
+  const defineArtComponentSource = scriptSetup?.defineArtComponentSource;
 
   if (art.isInline && art.componentPath) {
     // Inline art: import the host .vue file itself as the component
@@ -369,24 +433,29 @@ export function generateArtModule(
         ) ?? undefined)
       : art.componentPath;
     componentTagName = "MuseaComponent";
-  } else if (art.metadata.component) {
-    // Traditional .art.vue: resolve component from the component attribute
-    componentImportPath = options.root
-      ? (resolveComponentSourcePath(
-          art,
-          filePath,
-          allowedSourceRoots(options.root, options.scanRoots ?? []),
-        ) ?? undefined)
-      : path.isAbsolute(art.metadata.component)
-        ? art.metadata.component
-        : path.resolve(path.dirname(filePath), art.metadata.component);
-    componentTagName = "MuseaComponent";
+  } else if (defineArtComponentSource || art.metadata.component) {
+    // .art.vue: resolve component from defineArt(source, ...) or the legacy component attribute.
+    const componentSource = defineArtComponentSource ?? art.metadata.component;
+    if (componentSource) {
+      const sourceArt =
+        componentSource === art.metadata.component
+          ? art
+          : { ...art, metadata: { ...art.metadata, component: componentSource } };
+      componentImportPath = options.root
+        ? (resolveComponentSourcePath(
+            sourceArt,
+            filePath,
+            allowedSourceRoots(options.root, options.scanRoots ?? []),
+          ) ?? undefined)
+        : path.isAbsolute(componentSource)
+          ? componentSource
+          : path.resolve(path.dirname(filePath), componentSource);
+    }
+    componentTagName =
+      defineArtComponentName ??
+      (art.metadata.component ? componentNameFromSource(art.metadata.component) : "MuseaComponent");
+    componentBindingName = componentTagName;
   }
-
-  // Parse script setup if present
-  const scriptSetup = art.scriptSetupContent
-    ? parseScriptSetupForArt(art.scriptSetupContent)
-    : null;
 
   let code = `
 // Auto-generated module for: ${path.basename(filePath)}
@@ -406,7 +475,7 @@ import { defineComponent, h } from 'vue';
   if (componentImportPath && componentTagName) {
     // Only add component import if not already imported by script setup
     const alreadyImported = scriptSetup?.imports.some((imp) =>
-      new RegExp(`^import\\s+${componentBindingName}[\\s,]`).test(imp.trim()),
+      importDeclaresName(imp, componentBindingName),
     );
     if (!alreadyImported) {
       code += `import ${componentBindingName} from ${JSON.stringify(componentImportPath)};\n`;
@@ -419,6 +488,20 @@ export const metadata = ${JSON.stringify(art.metadata)};
 export const variants = ${JSON.stringify(art.variants)};
 export const __styles__ = ${JSON.stringify(art.styleBlocks ?? [])};
 `;
+
+  const hasSetupBody = scriptSetup?.setupBody.some((line) => line.trim().length > 0) ?? false;
+  const hasSetup = !!scriptSetup && (hasSetupBody || scriptSetup.returnNames.length > 0);
+  const setupReturn = `{ ${scriptSetup?.returnNames.join(", ") ?? ""} }`;
+  const isolatedSetup = art.scriptSetupIsolated !== false;
+
+  if (scriptSetup && hasSetup && !isolatedSetup) {
+    code += `
+const __museaSharedSetup = (() => {
+${scriptSetup.setupBody.map((l) => `  ${l}`).join("\n")}
+  return ${setupReturn};
+})();
+`;
+  }
 
   // Generate variant components
   for (const variant of art.variants) {
@@ -459,16 +542,24 @@ export const __styles__ = ${JSON.stringify(art.styleBlocks ?? [])};
             .join(", ")} },\n`
         : "";
 
-    const hasSetupBody = scriptSetup?.setupBody.some((line) => line.trim().length > 0) ?? false;
-
-    if (scriptSetup && (hasSetupBody || scriptSetup.returnNames.length > 0)) {
+    if (scriptSetup && hasSetup && isolatedSetup) {
       // Generate variant with setup function from art file's <script setup>
       code += `
 export const ${variantComponentName} = defineComponent({
   name: '${variantComponentName}',
 ${components}  setup() {
 ${scriptSetup.setupBody.map((l) => `    ${l}`).join("\n")}
-    return { ${scriptSetup.returnNames.join(", ")} };
+    return ${setupReturn};
+  },
+  template: \`${fullTemplate}\`,
+});
+`;
+    } else if (scriptSetup && hasSetup) {
+      code += `
+export const ${variantComponentName} = defineComponent({
+  name: '${variantComponentName}',
+${components}  setup() {
+    return __museaSharedSetup;
   },
   template: \`${fullTemplate}\`,
 });

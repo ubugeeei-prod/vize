@@ -21,13 +21,13 @@ use vize_carton::append;
 
 impl DiagnosticService {
     /// Collect diagnostics for Art files (*.art.vue) using vize_patina's MuseaLinter.
-    pub(super) fn collect_musea_diagnostics(_uri: &Url, content: &str) -> Vec<Diagnostic> {
+    pub(super) fn collect_musea_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
         use vize_patina::rules::musea::MuseaLinter;
 
         let linter = MuseaLinter::new();
         let result = linter.lint(content);
 
-        result
+        let mut diagnostics: Vec<_> = result
             .diagnostics
             .into_iter()
             .map(|lint_diag| {
@@ -74,7 +74,10 @@ impl DiagnosticService {
                     ..Default::default()
                 }
             })
-            .collect()
+            .collect();
+
+        diagnostics.extend(collect_define_art_source_diagnostics(uri, content));
+        diagnostics
     }
 
     /// Collect diagnostics for inline <art> custom blocks in regular .vue files.
@@ -411,6 +414,54 @@ impl DiagnosticService {
             })
             .collect()
     }
+}
+
+fn collect_define_art_source_diagnostics(uri: &Url, content: &str) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+
+    for source in crate::ide::musea::define_art_sources(content, uri) {
+        if source.source.is_empty() {
+            diagnostics.push(Diagnostic {
+                range: crate::ide::musea::range_for_offsets(
+                    content,
+                    source.value_start,
+                    source.value_end,
+                ),
+                severity: Some(DiagnosticSeverity::ERROR),
+                code: Some(NumberOrString::String(
+                    "musea/define-art-empty-source".to_string(),
+                )),
+                source: Some(sources::MUSEA.to_string()),
+                message: "defineArt component source must not be empty".to_string(),
+                ..Default::default()
+            });
+            continue;
+        }
+
+        if crate::ide::musea::should_check_define_art_source(&source.source)
+            && crate::ide::musea::resolve_define_art_source(uri, &source.source).is_none()
+        {
+            diagnostics.push(Diagnostic {
+                range: crate::ide::musea::range_for_offsets(
+                    content,
+                    source.value_start,
+                    source.value_end,
+                ),
+                severity: Some(DiagnosticSeverity::ERROR),
+                code: Some(NumberOrString::String(
+                    "musea/define-art-source-not-found".to_string(),
+                )),
+                source: Some(sources::MUSEA.to_string()),
+                message: format!(
+                    "Cannot resolve defineArt component source \"{}\" for <{}>",
+                    source.source, source.component_name
+                ),
+                ..Default::default()
+            });
+        }
+    }
+
+    diagnostics
 }
 
 fn collect_script_block_diagnostics(
