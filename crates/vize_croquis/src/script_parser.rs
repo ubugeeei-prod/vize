@@ -540,6 +540,22 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_plain_script_exported_bindings() {
+        let result = parse_script(
+            r#"
+export const foo = 'bar'
+export function hello() {}
+export class MyClass {}
+"#,
+        );
+
+        assert!(result.bindings.contains("foo"));
+        assert!(result.bindings.contains("hello"));
+        assert!(result.bindings.contains("MyClass"));
+        assert!(result.invalid_exports.is_empty());
+    }
+
+    #[test]
     fn test_parse_reactivity() {
         let result = parse_script_setup(
             r#"

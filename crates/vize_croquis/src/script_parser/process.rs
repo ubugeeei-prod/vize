@@ -14,8 +14,9 @@ mod bindings;
 mod macros;
 
 use oxc_ast::ast::{
-    Argument, BindingPattern, CallExpression, Declaration, ExportDefaultDeclarationKind,
-    Expression, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
+    Argument, BindingPattern, CallExpression, Class, Declaration, ExportDefaultDeclarationKind,
+    Expression, Function, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
+    VariableDeclaration,
 };
 use oxc_span::GetSpan;
 
@@ -39,60 +40,13 @@ use super::walk::{extract_function_params, walk_expression, walk_statement};
 pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, source: &str) {
     match stmt {
         // Variable declarations: const, let, var
-        Statement::VariableDeclaration(decl) => {
-            for declarator in decl.declarations.iter() {
-                macros::process_variable_declarator(result, declarator, decl.kind, source);
-            }
-        }
+        Statement::VariableDeclaration(decl) => process_variable_declaration(result, decl, source),
 
         // Function declarations
-        Statement::FunctionDeclaration(func) => {
-            if let Some(id) = &func.id {
-                let name = id.name.as_str();
-                result.bindings.add(name, BindingType::SetupConst);
-                result
-                    .binding_spans
-                    .insert(CompactString::new(name), (id.span.start, id.span.end));
-            }
-
-            // Create closure scope and walk body
-            let params = extract_function_params(&func.params);
-            let name = func
-                .id
-                .as_ref()
-                .map(|id| CompactString::new(id.name.as_str()));
-
-            result.scopes.enter_closure_scope(
-                ClosureScopeData {
-                    name,
-                    param_names: params,
-                    is_arrow: false,
-                    is_async: func.r#async,
-                    is_generator: func.generator,
-                },
-                func.span.start,
-                func.span.end,
-            );
-
-            if let Some(body) = &func.body {
-                for stmt in body.statements.iter() {
-                    walk_statement(result, stmt, source);
-                }
-            }
-
-            result.scopes.exit_scope();
-        }
+        Statement::FunctionDeclaration(func) => process_function_declaration(result, func, source),
 
         // Class declarations
-        Statement::ClassDeclaration(class) => {
-            if let Some(id) = &class.id {
-                let name = id.name.as_str();
-                result.bindings.add(name, BindingType::SetupConst);
-                result
-                    .binding_spans
-                    .insert(CompactString::new(name), (id.span.start, id.span.end));
-            }
-        }
+        Statement::ClassDeclaration(class) => process_class_declaration(result, class),
 
         // Expression statements (may contain macro calls and callback scopes)
         Statement::ExpressionStatement(expr_stmt) => {
@@ -216,6 +170,10 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
                         // Check if it's a type-only export (export type { ... })
                         if export.export_kind.is_type() {
                             process_type_export(result, decl, stmt.span());
+                        } else if result.is_non_setup_script {
+                            // Plain <script> exports stay in the synthetic setup
+                            // scope, so keep their bindings available to the template.
+                            process_exported_value_declaration(result, decl, source);
                         } else if !result.is_non_setup_script {
                             // Value exports are invalid in script setup
                             process_invalid_export(result, decl, stmt.span());
@@ -283,6 +241,80 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
             result.scopes.exit_scope();
         }
 
+        _ => {}
+    }
+}
+
+fn process_variable_declaration(
+    result: &mut ScriptParseResult,
+    decl: &VariableDeclaration<'_>,
+    source: &str,
+) {
+    for declarator in decl.declarations.iter() {
+        macros::process_variable_declarator(result, declarator, decl.kind, source);
+    }
+}
+
+fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<'_>, source: &str) {
+    if let Some(id) = &func.id {
+        let name = id.name.as_str();
+        result.bindings.add(name, BindingType::SetupConst);
+        result
+            .binding_spans
+            .insert(CompactString::new(name), (id.span.start, id.span.end));
+    }
+
+    // Create closure scope and walk body
+    let params = extract_function_params(&func.params);
+    let name = func
+        .id
+        .as_ref()
+        .map(|id| CompactString::new(id.name.as_str()));
+
+    result.scopes.enter_closure_scope(
+        ClosureScopeData {
+            name,
+            param_names: params,
+            is_arrow: false,
+            is_async: func.r#async,
+            is_generator: func.generator,
+        },
+        func.span.start,
+        func.span.end,
+    );
+
+    if let Some(body) = &func.body {
+        for stmt in body.statements.iter() {
+            walk_statement(result, stmt, source);
+        }
+    }
+
+    result.scopes.exit_scope();
+}
+
+fn process_class_declaration(result: &mut ScriptParseResult, class: &Class<'_>) {
+    if let Some(id) = &class.id {
+        let name = id.name.as_str();
+        result.bindings.add(name, BindingType::SetupConst);
+        result
+            .binding_spans
+            .insert(CompactString::new(name), (id.span.start, id.span.end));
+    }
+}
+
+fn process_exported_value_declaration(
+    result: &mut ScriptParseResult,
+    decl: &Declaration<'_>,
+    source: &str,
+) {
+    match decl {
+        Declaration::VariableDeclaration(variable) => {
+            process_variable_declaration(result, variable, source)
+        }
+        Declaration::FunctionDeclaration(func) => {
+            process_function_declaration(result, func, source)
+        }
+        Declaration::ClassDeclaration(class) => process_class_declaration(result, class),
         _ => {}
     }
 }

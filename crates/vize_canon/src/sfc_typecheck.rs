@@ -302,6 +302,28 @@ const count = ref(0);
     }
 
     #[test]
+    fn test_type_check_plain_script_exported_binding_in_template() {
+        let source = r#"<script lang="ts">
+export const SUB_AI_FEEDBACK_USER_INPUT_DELETE_BUTTON_ID =
+  "sub-ai-feedback-user-input-delete-button";
+</script>
+<template>
+    <button :id="SUB_AI_FEEDBACK_USER_INPUT_DELETE_BUTTON_ID" />
+</template>"#;
+        let options = SfcTypeCheckOptions::new("test.vue");
+        let result = type_check_sfc(source, &options);
+
+        assert!(
+            !result
+                .diagnostics
+                .iter()
+                .any(|d| d.code.as_deref() == Some("undefined-binding")),
+            "unexpected diagnostics: {:#?}",
+            result.diagnostics
+        );
+    }
+
+    #[test]
     fn test_type_check_typeof_setup_const_stays_in_setup_scope() {
         // Regression: vize check used to lift `type Name = ...` to module
         // scope while the `const names` it referenced via `typeof` stayed
