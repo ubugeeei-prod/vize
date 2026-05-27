@@ -41,113 +41,100 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
     items_vec.extend(import_completions());
 
     // Use vize_croquis for accurate bindings in script
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
+    if let Some(script_content) = script_content_for_context(ctx, is_setup) {
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions {
+            analyze_script: true,
+            ..Default::default()
+        });
 
-    if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) {
-        let script = if is_setup {
-            descriptor.script_setup.as_ref()
+        if is_setup {
+            analyzer.analyze_script_setup(&script_content);
         } else {
-            descriptor.script.as_ref()
-        };
+            analyzer.analyze_script_plain(&script_content);
+        }
 
-        if let Some(script) = script {
-            let mut analyzer = Analyzer::with_options(AnalyzerOptions {
-                analyze_script: true,
+        let croquis = analyzer.finish();
+
+        // Add bindings with type information
+        for (name, binding_type) in croquis.bindings.iter() {
+            let (kind, mut type_detail, mut doc) =
+                items::binding_type_to_completion_info(binding_type);
+            let reactive_source = croquis.reactivity.lookup(name);
+            if let Some(source) = reactive_source
+                && let Some((reactive_detail, reactive_doc)) =
+                    reactive_completion_info(&script_content, name, source.kind)
+            {
+                type_detail = reactive_detail;
+                doc = reactive_doc;
+            }
+
+            // For refs in script, add .value hint
+            let needs_value = reactive_source
+                .map(|source| source.kind.needs_value_access())
+                .unwrap_or_else(|| {
+                    matches!(
+                        binding_type,
+                        BindingType::SetupRef | BindingType::SetupMaybeRef
+                    )
+                });
+
+            #[allow(clippy::disallowed_macros)]
+            items_vec.push(CompletionItem {
+                label: name.to_string(),
+                kind: Some(kind),
+                label_details: Some(CompletionItemLabelDetails {
+                    detail: Some(type_detail.clone()),
+                    description: if needs_value {
+                        Some(".value".to_string())
+                    } else {
+                        None
+                    },
+                }),
+                detail: Some(type_detail),
+                documentation: Some(Documentation::MarkupContent(MarkupContent {
+                    kind: MarkupKind::Markdown,
+                    value: doc,
+                })),
+                sort_text: Some(format!("0{}", name)),
                 ..Default::default()
             });
+        }
 
-            if is_setup {
-                analyzer.analyze_script_setup(&script.content);
-            } else {
-                analyzer.analyze_script_plain(&script.content);
-            }
-
-            let croquis = analyzer.finish();
-
-            // Add bindings with type information
-            for (name, binding_type) in croquis.bindings.iter() {
-                let (kind, mut type_detail, mut doc) =
-                    items::binding_type_to_completion_info(binding_type);
-                let reactive_source = croquis.reactivity.lookup(name);
-                if let Some(source) = reactive_source
-                    && let Some((reactive_detail, reactive_doc)) =
-                        reactive_completion_info(&script.content, name, source.kind)
-                {
-                    type_detail = reactive_detail;
-                    doc = reactive_doc;
-                }
-
-                // For refs in script, add .value hint
-                let needs_value = reactive_source
-                    .map(|source| source.kind.needs_value_access())
+        // Add reactive sources
+        for source in croquis.reactivity.sources() {
+            let needs_value = source.kind.needs_value_access();
+            let (type_detail, doc) =
+                reactive_completion_info(&script_content, source.name.as_str(), source.kind)
                     .unwrap_or_else(|| {
-                        matches!(
-                            binding_type,
-                            BindingType::SetupRef | BindingType::SetupMaybeRef
-                        )
+                        let kind_str = source.kind.to_display().to_string();
+                        let doc = if needs_value {
+                            "Needs `.value` access in script.".to_string()
+                        } else {
+                            "Direct access (no `.value` needed).".to_string()
+                        };
+                        (kind_str, doc)
                     });
 
-                #[allow(clippy::disallowed_macros)]
-                items_vec.push(CompletionItem {
-                    label: name.to_string(),
-                    kind: Some(kind),
-                    label_details: Some(CompletionItemLabelDetails {
-                        detail: Some(type_detail.clone()),
-                        description: if needs_value {
-                            Some(".value".to_string())
-                        } else {
-                            None
-                        },
-                    }),
-                    detail: Some(type_detail),
-                    documentation: Some(Documentation::MarkupContent(MarkupContent {
-                        kind: MarkupKind::Markdown,
-                        value: doc,
-                    })),
-                    sort_text: Some(format!("0{}", name)),
-                    ..Default::default()
-                });
-            }
-
-            // Add reactive sources
-            for source in croquis.reactivity.sources() {
-                let needs_value = source.kind.needs_value_access();
-                let (type_detail, doc) =
-                    reactive_completion_info(&script.content, source.name.as_str(), source.kind)
-                        .unwrap_or_else(|| {
-                            let kind_str = source.kind.to_display().to_string();
-                            let doc = if needs_value {
-                                "Needs `.value` access in script.".to_string()
-                            } else {
-                                "Direct access (no `.value` needed).".to_string()
-                            };
-                            (kind_str, doc)
-                        });
-
-                #[allow(clippy::disallowed_macros)]
-                items_vec.push(CompletionItem {
-                    label: source.name.to_string(),
-                    kind: Some(CompletionItemKind::VARIABLE),
-                    label_details: Some(CompletionItemLabelDetails {
-                        detail: Some(type_detail.clone()),
-                        description: if needs_value {
-                            Some(".value".to_string())
-                        } else {
-                            None
-                        },
-                    }),
-                    detail: Some(type_detail),
-                    documentation: Some(Documentation::MarkupContent(MarkupContent {
-                        kind: MarkupKind::Markdown,
-                        value: doc,
-                    })),
-                    sort_text: Some(format!("0{}", source.name)),
-                    ..Default::default()
-                });
-            }
+            #[allow(clippy::disallowed_macros)]
+            items_vec.push(CompletionItem {
+                label: source.name.to_string(),
+                kind: Some(CompletionItemKind::VARIABLE),
+                label_details: Some(CompletionItemLabelDetails {
+                    detail: Some(type_detail.clone()),
+                    description: if needs_value {
+                        Some(".value".to_string())
+                    } else {
+                        None
+                    },
+                }),
+                detail: Some(type_detail),
+                documentation: Some(Documentation::MarkupContent(MarkupContent {
+                    kind: MarkupKind::Markdown,
+                    value: doc,
+                })),
+                sort_text: Some(format!("0{}", source.name)),
+                ..Default::default()
+            });
         }
     }
 
@@ -197,6 +184,13 @@ fn complete_member_access(ctx: &IdeContext, is_setup: bool) -> Option<Vec<Comple
 }
 
 fn script_content_for_context(ctx: &IdeContext<'_>, is_setup: bool) -> Option<String> {
+    if is_setup
+        && ctx.uri.path().ends_with(".art.vue")
+        && let Some(script) = art_state_script_for_offset(ctx)
+    {
+        return Some(script);
+    }
+
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: ctx.uri.path().to_string().into(),
         ..Default::default()
@@ -210,6 +204,40 @@ fn script_content_for_context(ctx: &IdeContext<'_>, is_setup: bool) -> Option<St
     } else {
         descriptor.script.map(|script| script.content.into_owned())
     }
+}
+
+fn art_state_script_for_offset(ctx: &IdeContext<'_>) -> Option<String> {
+    let allocator = vize_carton::Bump::new();
+    let art_desc = vize_musea::parse_art(
+        &allocator,
+        &ctx.content,
+        vize_musea::ArtParseOptions::default(),
+    )
+    .ok()?;
+
+    let mut script = String::new();
+    for (variant_index, variant) in art_desc.variants.iter().enumerate() {
+        let Some(loc) = variant.loc.as_ref() else {
+            continue;
+        };
+        let blocks = crate::virtual_code::find_variant_state_blocks(
+            &ctx.content,
+            loc.start as usize,
+            loc.end as usize,
+            variant_index,
+        );
+        for block in blocks {
+            if block.contains_content_offset(ctx.offset) {
+                script.push_str(block.content(&ctx.content));
+                if !script.ends_with('\n') {
+                    script.push('\n');
+                }
+                return Some(script);
+            }
+        }
+    }
+
+    None
 }
 
 fn member_access_receiver(content: &str, offset: usize) -> Option<&str> {

@@ -390,6 +390,38 @@ pub struct ArtVariantInfo {
     pub relative_offset: usize,
 }
 
+/// Information about a state script block inside an art variant.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ArtStateBlockRange {
+    /// Index of the variant in the art descriptor
+    pub variant_index: usize,
+    /// Tag name that introduced the state block (`state` or `script`)
+    pub tag_name: String,
+    /// Byte offset where the whole state block starts in the art file
+    pub block_start: usize,
+    /// Byte offset where the whole state block ends in the art file
+    pub block_end: usize,
+    /// Byte offset where script content starts in the art file
+    pub content_start: usize,
+    /// Byte offset where script content ends in the art file
+    pub content_end: usize,
+}
+
+impl ArtStateBlockRange {
+    /// Script source contained in this state block.
+    pub fn content<'a>(&self, source: &'a str) -> &'a str {
+        source
+            .get(self.content_start..self.content_end)
+            .unwrap_or_default()
+    }
+
+    /// Whether the offset is inside the script content.
+    #[inline]
+    pub fn contains_content_offset(&self, offset: usize) -> bool {
+        offset >= self.content_start && offset < self.content_end
+    }
+}
+
 /// Where the cursor is within an art block.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ArtCursorPosition {
@@ -515,19 +547,42 @@ pub fn find_art_block_at_offset(source: &str, offset: usize) -> Option<BlockType
             let variant_end = loc.end as usize;
 
             if offset >= variant_start && offset < variant_end {
-                // Determine template content position using pointer arithmetic
+                if find_variant_state_blocks(source, variant_start, variant_end, i)
+                    .iter()
+                    .any(|state| state.contains_content_offset(offset))
+                {
+                    return Some(BlockType::ScriptSetup);
+                }
+
                 let template_ptr = variant.template.as_ptr() as usize;
                 let source_ptr = source.as_ptr() as usize;
-                let template_start = template_ptr - source_ptr;
-                let template_end = template_start + variant.template.len();
+                let trimmed_template_start = if variant.template.is_empty() {
+                    find_variant_template_body_range(source, variant_start, variant_end)
+                        .map(|(body_start, _)| body_start)
+                        .unwrap_or(variant_start)
+                } else {
+                    template_ptr.saturating_sub(source_ptr)
+                };
+                let trimmed_template_end = trimmed_template_start + variant.template.len();
+                let (body_start, body_end) =
+                    find_variant_template_body_range(source, variant_start, variant_end)
+                        .unwrap_or((trimmed_template_start, trimmed_template_end));
 
-                if offset >= template_start && offset < template_end {
+                if offset >= body_start && offset < body_end {
+                    let relative_offset = if offset <= trimmed_template_start {
+                        0
+                    } else if offset >= trimmed_template_end {
+                        variant.template.len()
+                    } else {
+                        offset - trimmed_template_start
+                    };
+
                     return Some(BlockType::Art(ArtCursorPosition::VariantTemplate(
                         ArtVariantInfo {
                             variant_index: i,
-                            template_start,
-                            template_end,
-                            relative_offset: offset - template_start,
+                            template_start: trimmed_template_start,
+                            template_end: trimmed_template_end,
+                            relative_offset,
                         },
                     )));
                 }
@@ -538,6 +593,114 @@ pub fn find_art_block_at_offset(source: &str, offset: usize) -> Option<BlockType
     }
 
     Some(BlockType::Art(ArtCursorPosition::ArtContent))
+}
+
+fn find_variant_template_body_range(
+    source: &str,
+    variant_start: usize,
+    variant_end: usize,
+) -> Option<(usize, usize)> {
+    if variant_start >= variant_end || variant_end > source.len() {
+        return None;
+    }
+
+    let tag_end = source[variant_start..variant_end].find('>')? + variant_start;
+    let body_start = tag_end + 1;
+    let close_start = source[body_start..variant_end].rfind("</variant>")? + body_start;
+
+    Some((body_start, close_start))
+}
+
+/// Find state script blocks inside a single art variant.
+pub fn find_variant_state_blocks(
+    source: &str,
+    variant_start: usize,
+    variant_end: usize,
+    variant_index: usize,
+) -> Vec<ArtStateBlockRange> {
+    let Some((body_start, body_end)) =
+        find_variant_template_body_range(source, variant_start, variant_end)
+    else {
+        return Vec::new();
+    };
+
+    let mut blocks = Vec::new();
+    let mut pos = body_start;
+    while pos < body_end {
+        let Some(relative_start) = source[pos..body_end].find('<') else {
+            break;
+        };
+        let block_start = pos + relative_start;
+        let Some((tag_name, tag_name_end)) = read_state_tag_name(source, block_start) else {
+            pos = block_start + 1;
+            continue;
+        };
+        let Some(open_end) = find_tag_end(source, tag_name_end, body_end) else {
+            break;
+        };
+
+        let close = cstr!("</{tag_name}>");
+        let content_start = open_end + 1;
+        let Some(relative_close) = source[content_start..body_end].find(close.as_str()) else {
+            pos = open_end + 1;
+            continue;
+        };
+        let content_end = content_start + relative_close;
+        let block_end = content_end + close.len();
+
+        blocks.push(ArtStateBlockRange {
+            variant_index,
+            tag_name: tag_name.to_string(),
+            block_start,
+            block_end,
+            content_start,
+            content_end,
+        });
+
+        pos = block_end;
+    }
+
+    blocks
+}
+
+fn read_state_tag_name(source: &str, tag_start: usize) -> Option<(&str, usize)> {
+    let rest = source.get(tag_start..)?;
+    let tag_name = if rest.starts_with("<state") {
+        "state"
+    } else if rest.starts_with("<script") {
+        "script"
+    } else {
+        return None;
+    };
+
+    let tag_name_end = tag_start + tag_name.len() + 1;
+    let next = source.as_bytes().get(tag_name_end).copied();
+    if next.is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_')) {
+        return None;
+    }
+
+    Some((tag_name, tag_name_end))
+}
+
+fn find_tag_end(source: &str, start: usize, limit: usize) -> Option<usize> {
+    let mut quote = None;
+    let mut pos = start;
+
+    while pos < limit.min(source.len()) {
+        let ch = source[pos..].chars().next()?;
+        if let Some(open_quote) = quote {
+            if ch == open_quote {
+                quote = None;
+            }
+        } else if ch == '"' || ch == '\'' {
+            quote = Some(ch);
+        } else if ch == '>' {
+            return Some(pos);
+        }
+        pos += ch.len_utf8();
+    }
+
+    None
 }
 
 #[cfg(test)]
@@ -731,6 +894,50 @@ import Button from './Button.vue'
         assert!(matches!(
             find_art_block_at_offset(source, art_content_offset),
             Some(BlockType::Art(_))
+        ));
+    }
+
+    #[test]
+    fn test_find_art_block_at_offset_treats_variant_body_whitespace_as_template() {
+        let source = r#"<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+
+    <Button>Click me</Button>
+  </variant>
+</art>"#;
+
+        let body_whitespace_offset = source.find("\n\n    <Button>").unwrap() + 1;
+        let result = find_art_block_at_offset(source, body_whitespace_offset);
+
+        let Some(BlockType::Art(ArtCursorPosition::VariantTemplate(info))) = result else {
+            panic!("expected variant template, got {result:?}");
+        };
+
+        assert_eq!(info.relative_offset, 0);
+        assert_eq!(info.template_start, source.find("<Button>").unwrap());
+    }
+
+    #[test]
+    fn test_find_art_block_at_offset_treats_variant_state_as_script_setup() {
+        let source = r#"<art title="Counter" component="./Counter.vue">
+  <variant name="Interactive">
+    <state>
+const count = ref(0)
+    </state>
+    <Counter :count="count" />
+  </variant>
+</art>"#;
+
+        let offset = source.find("count = ref").unwrap();
+        assert_eq!(
+            find_art_block_at_offset(source, offset),
+            Some(BlockType::ScriptSetup)
+        );
+
+        let template_offset = source.find(":count=\"count\"").unwrap();
+        assert!(matches!(
+            find_art_block_at_offset(source, template_offset),
+            Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
         ));
     }
 }

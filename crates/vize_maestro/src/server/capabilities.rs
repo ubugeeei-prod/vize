@@ -51,6 +51,9 @@ pub fn server_capabilities(features: LspFeatureConfig) -> ServerCapabilities {
         // Find references
         references_provider: features.references.then_some(OneOf::Left(true)),
 
+        // Highlight matching tags and symbol occurrences in the current document.
+        document_highlight_provider: features.references.then_some(OneOf::Left(true)),
+
         // Document symbols (outline)
         document_symbol_provider: features.document_symbols.then_some(OneOf::Left(true)),
 

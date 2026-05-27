@@ -122,10 +122,40 @@
       "end": "(?=</variant>)",
       "patterns": [
         { "include": "#vue-comments" },
+        { "include": "#variant-state-block" },
+        { "include": "#vue-script" },
         { "include": "#vue-interpolation" },
         { "include": "#vue-directives" },
         { "include": "#html-tags" },
         { "include": "#html-entities" }
+      ]
+    },
+    "variant-state-block": {
+      "begin": "(<)(state)\\b(?=(?:[^\"'<>]|\"[^\"]*\"|'[^']*')*>)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.state.vue" }
+      },
+      "end": "(</)(state)(>)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.state.vue" },
+        "3": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [{ "include": "#variant-state-tag" }, { "include": "source.ts" }]
+    },
+    "variant-state-tag": {
+      "begin": "\\G",
+      "end": ">",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [
+        {
+          "match": "\\b(lang)\\b",
+          "name": "entity.other.attribute-name.state.vue"
+        },
+        { "include": "#vue-tag-attributes" }
       ]
     },
     "vue-template": {

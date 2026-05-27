@@ -7,7 +7,7 @@
 //! - Real definitions from Corsa (when available)
 
 pub mod bindings;
-mod helpers;
+pub(crate) mod helpers;
 mod script;
 mod service;
 mod template;

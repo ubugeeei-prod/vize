@@ -464,7 +464,12 @@ impl DiagnosticService {
         .ok()?;
 
         // Get default variant's template
-        let variant = art_desc.default_variant()?;
+        let (variant_index, variant) = art_desc
+            .variants
+            .iter()
+            .enumerate()
+            .find(|(_, variant)| variant.is_default)
+            .or_else(|| art_desc.variants.iter().enumerate().next())?;
         let template_content = variant.template;
         if template_content.trim().is_empty() {
             return None;
@@ -482,8 +487,17 @@ impl DiagnosticService {
         };
         let descriptor = parse_sfc(content, sfc_options).ok()?;
 
-        // Get script block info
-        let (script_content, script_offset, sfc_script_start_line) = descriptor
+        let state_blocks = variant.loc.as_ref().map_or_else(Vec::new, |loc| {
+            crate::virtual_code::find_variant_state_blocks(
+                content,
+                loc.start as usize,
+                loc.end as usize,
+                variant_index,
+            )
+        });
+
+        // Get script block info and append the default variant's state script as setup usage.
+        let script_block = descriptor
             .script_setup
             .as_ref()
             .map(|s| {
@@ -501,7 +515,32 @@ impl DiagnosticService {
                         s.loc.start_line as u32,
                     )
                 })
-            })?;
+            });
+
+        let first_state_start = state_blocks.first().map(|block| block.content_start);
+        let mut combined_script = String::new();
+        let (script_offset, sfc_script_start_line) =
+            if let Some((script, offset, line)) = script_block {
+                combined_script.push_str(script);
+                if !combined_script.ends_with('\n') {
+                    combined_script.push('\n');
+                }
+                (offset, line)
+            } else if let Some(offset) = first_state_start {
+                let (line, _) = source_offset_to_position(content, offset);
+                (offset as u32, line + 1)
+            } else {
+                return None;
+            };
+
+        for state in &state_blocks {
+            combined_script.push_str(state.content(content));
+            if !combined_script.ends_with('\n') {
+                combined_script.push('\n');
+            }
+        }
+
+        let script_content = combined_script.as_str();
 
         // Parse template AST
         let template_allocator = vize_carton::Bump::new();

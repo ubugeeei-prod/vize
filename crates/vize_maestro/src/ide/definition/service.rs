@@ -70,6 +70,10 @@ impl super::DefinitionService {
             return Some(def);
         }
 
+        if let Some(def) = template::find_component_prop_definition(ctx) {
+            return Some(def);
+        }
+
         if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
             return None;
         }

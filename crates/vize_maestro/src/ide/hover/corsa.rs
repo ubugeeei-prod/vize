@@ -67,6 +67,13 @@ impl HoverService {
     ) -> Option<usize> {
         let virtual_docs = ctx.virtual_docs.as_ref()?;
 
+        if ctx.uri.path().ends_with(".art.vue")
+            && let Some(ref script_setup_doc) = virtual_docs.script_setup
+            && let Some(offset) = script_setup_doc.source_map.to_generated(sfc_offset as u32)
+        {
+            return Some(offset as usize);
+        }
+
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: ctx.uri.path().to_string().into(),
             ..Default::default()

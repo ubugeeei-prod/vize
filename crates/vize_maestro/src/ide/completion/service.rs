@@ -98,7 +98,7 @@ impl super::CompletionService {
                         let items = Self::complete_art_variant_with_corsa(ctx, info, bridge).await;
                         if !items.is_empty() {
                             let mut all = items;
-                            all.extend(template::directive_completions());
+                            all.extend(template::complete_template(ctx));
                             return Some(CompletionResponse::Array(all));
                         }
                     }

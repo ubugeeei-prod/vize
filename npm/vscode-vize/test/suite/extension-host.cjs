@@ -10,6 +10,31 @@ const recommendedInitializationOptions = {
   lint: true,
   typecheck: true,
 };
+const explicitlyDisabledInitializationOptions = {
+  codeActions: false,
+  codeLens: false,
+  completion: false,
+  definition: false,
+  documentLinks: false,
+  documentSymbols: false,
+  ecosystem: false,
+  editor: false,
+  fileRename: false,
+  foldingRanges: false,
+  formatting: false,
+  hover: false,
+  inlayHints: false,
+  lint: false,
+  references: false,
+  rename: false,
+  semanticTokens: false,
+  typecheck: false,
+  workspaceSymbols: false,
+};
+const lintOnlyInitializationOptions = {
+  ...explicitlyDisabledInitializationOptions,
+  lint: true,
+};
 const featureSettingKeys = [
   "lint.enable",
   "diagnostics.enable",
@@ -183,7 +208,30 @@ async function runSyntaxHighlightContributionSmoke() {
     "support.function.vue",
   );
   assert.equal(vueGrammar.repository["vue-css-vbind"].patterns[0].name, "variable.other.vue");
-  assert.deepEqual(artVueGrammar.patterns, [{ include: "source.vue" }]);
+  assert.equal(artVueGrammar.scopeName, "source.art-vue");
+  assert.deepEqual(artVueGrammar.patterns, [
+    { include: "#art-comments" },
+    { include: "#art-block" },
+    { include: "source.vue" },
+  ]);
+  assert.equal(
+    artVueGrammar.repository["art-block"].beginCaptures["2"].name,
+    "entity.name.tag.art.vue",
+  );
+  assert.equal(
+    artVueGrammar.repository["variant-block"].beginCaptures["2"].name,
+    "entity.name.tag.variant.vue",
+  );
+  assert.ok(
+    artVueGrammar.repository["art-template-content"].patterns.some(
+      (pattern) => pattern.include === "source.vue#html-tags",
+    ),
+    "art template content should reuse Vue HTML tag highlighting",
+  );
+  assert.equal(
+    artVueGrammar.repository["variant-json-attribute-values"].patterns[0].contentName,
+    "meta.embedded.block.json",
+  );
 }
 
 async function runFakeServerLifecycleSmoke() {
@@ -206,7 +254,7 @@ async function runFakeServerLifecycleSmoke() {
     (nextEntries) => initializeMessages(nextEntries).length >= 2,
     "lint-only profile initialization",
   );
-  assertInitializationOptions(entries, { lint: true });
+  assertInitializationOptions(entries, lintOnlyInitializationOptions);
 
   await vscode.commands.executeCommand("vize.restartServer");
   entries = await waitForLogEntries(
@@ -214,7 +262,7 @@ async function runFakeServerLifecycleSmoke() {
     (nextEntries) => initializeMessages(nextEntries).length >= 3,
     "manual restart initialization",
   );
-  assertInitializationOptions(entries, { lint: true });
+  assertInitializationOptions(entries, lintOnlyInitializationOptions);
 
   await vscode.commands.executeCommand("vize.disable");
   entries = await waitForLogEntries(
@@ -247,7 +295,7 @@ async function runConfigurationEdgeCaseSmoke() {
   await updateVizeConfigurationEntries(featureSettingKeys.map((key) => [key, false]));
   await updateVizeConfiguration("enable", true);
   entries = await waitForReadyServer(logPath, "explicitly empty capability profile");
-  assertInitializationOptions(entries, {});
+  assertInitializationOptions(entries, explicitlyDisabledInitializationOptions);
   await disableVizeAndWaitForShutdown(logPath);
 
   await prepareConfiguredFakeServer({ logPath, serverPath });

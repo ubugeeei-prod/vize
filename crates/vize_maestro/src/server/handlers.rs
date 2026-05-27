@@ -11,23 +11,25 @@ use tower_lsp::{
         CodeActionParams, CodeActionResponse, CodeLens, CodeLensParams, CompletionItem,
         CompletionParams, CompletionResponse, DidChangeConfigurationParams,
         DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams,
-        DidSaveTextDocumentParams, DocumentFormattingParams, DocumentLink, DocumentLinkParams,
-        DocumentRangeFormattingParams, DocumentSymbol, DocumentSymbolParams,
-        DocumentSymbolResponse, FoldingRange, FoldingRangeKind, FoldingRangeParams,
-        GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverParams, InitializeParams,
-        InitializeResult, InitializedParams, InlayHint, InlayHintParams, Location, MessageType,
-        Position, PrepareRenameResponse, Range, ReferenceParams, RenameFilesParams, RenameParams,
-        SemanticTokensParams, SemanticTokensRangeParams, SemanticTokensRangeResult,
-        SemanticTokensResult, ServerInfo, SymbolInformation, SymbolKind,
-        TextDocumentPositionParams, TextEdit, WorkspaceEdit, WorkspaceSymbolParams,
+        DidSaveTextDocumentParams, DocumentFormattingParams, DocumentHighlight,
+        DocumentHighlightParams, DocumentLink, DocumentLinkParams, DocumentRangeFormattingParams,
+        DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
+        FoldingRangeKind, FoldingRangeParams, GotoDefinitionParams, GotoDefinitionResponse, Hover,
+        HoverParams, InitializeParams, InitializeResult, InitializedParams, InlayHint,
+        InlayHintParams, Location, MessageType, Position, PrepareRenameResponse, Range,
+        ReferenceParams, RenameFilesParams, RenameParams, SemanticTokensParams,
+        SemanticTokensRangeParams, SemanticTokensRangeResult, SemanticTokensResult, ServerInfo,
+        SymbolInformation, SymbolKind, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
+        WorkspaceSymbolParams,
     },
 };
 
 use super::{MaestroServer, server_capabilities};
 use crate::ide::{
-    CodeActionService, CodeLensService, CompletionService, DefinitionService, DocumentLinkService,
-    FileRenameService, HoverService, IdeContext, InlayHintService, ReferencesService,
-    RenameService, SemanticTokensService, WorkspaceSymbolsService, position_to_offset,
+    CodeActionService, CodeLensService, CompletionService, DefinitionService,
+    DocumentHighlightService, DocumentLinkService, FileRenameService, HoverService, IdeContext,
+    InlayHintService, ReferencesService, RenameService, SemanticTokensService,
+    WorkspaceSymbolsService, position_to_offset,
 };
 
 #[tower_lsp::async_trait]
@@ -305,6 +307,33 @@ impl LanguageServer for MaestroServer {
         }
 
         Ok(None)
+    }
+
+    async fn document_highlight(
+        &self,
+        params: DocumentHighlightParams,
+    ) -> Result<Option<Vec<DocumentHighlight>>> {
+        if !self.state.lsp_features().references {
+            return Ok(None);
+        }
+
+        let uri = &params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+
+        let Some(doc) = self.state.documents.get(uri) else {
+            return Ok(None);
+        };
+
+        let content = doc.text();
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+            return Ok(None);
+        };
+
+        let Some(ctx) = IdeContext::new(&self.state, uri, offset) else {
+            return Ok(None);
+        };
+
+        Ok(DocumentHighlightService::highlights(&ctx))
     }
 
     #[allow(deprecated)]

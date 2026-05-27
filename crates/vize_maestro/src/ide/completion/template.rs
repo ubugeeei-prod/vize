@@ -8,6 +8,8 @@
     clippy::disallowed_macros
 )]
 
+use std::collections::{BTreeMap, BTreeSet};
+
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, CompletionResponse,
     Documentation, InsertTextFormat, MarkupContent, MarkupKind,
@@ -18,7 +20,8 @@ use super::{
     is_inside_art_tag, is_inside_html_comment, is_inside_variant_tag, items,
     should_suggest_art_block, should_suggest_variant_block,
 };
-use crate::ide::IdeContext;
+use crate::ide::definition::helpers as definition_helpers;
+use crate::ide::{IdeContext, is_component_tag, kebab_to_pascal, pascal_to_kebab};
 
 /// Get completions for template context.
 pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
@@ -34,6 +37,7 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
 
     // Add built-in components
     items_vec.extend(builtin_component_completions());
+    items_vec.extend(component_surface_completions(ctx));
 
     if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
         items_vec.extend(template_snippets());
@@ -146,10 +150,96 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
         }
     }
 
+    if let Some(state_script) = current_art_variant_state_script(ctx) {
+        extend_script_setup_binding_completions(&mut items_vec, &state_script);
+    }
+
     // Add common template snippets
     items_vec.extend(template_snippets());
 
     items_vec
+}
+
+fn extend_script_setup_binding_completions(items_vec: &mut Vec<CompletionItem>, script: &str) {
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions {
+        analyze_script: true,
+        ..Default::default()
+    });
+    analyzer.analyze_script_setup(script);
+    let croquis = analyzer.finish();
+
+    for (name, binding_type) in croquis.bindings.iter() {
+        let (kind, type_detail, doc) = items::binding_type_to_completion_info(binding_type);
+        items_vec.push(CompletionItem {
+            label: name.to_string(),
+            kind: Some(kind),
+            label_details: Some(CompletionItemLabelDetails {
+                detail: Some(type_detail.clone()),
+                description: Some("variant state".to_string()),
+            }),
+            detail: Some(type_detail),
+            documentation: Some(Documentation::MarkupContent(MarkupContent {
+                kind: MarkupKind::Markdown,
+                value: doc,
+            })),
+            sort_text: Some(format!("0{}", name)),
+            ..Default::default()
+        });
+    }
+
+    for source in croquis.reactivity.sources() {
+        let kind_str = source.kind.to_display();
+        items_vec.push(CompletionItem {
+            label: source.name.to_string(),
+            kind: Some(CompletionItemKind::VARIABLE),
+            label_details: Some(CompletionItemLabelDetails {
+                detail: Some(format!(" ({kind_str})")),
+                description: Some("variant state".to_string()),
+            }),
+            detail: Some(format!("Reactive: {kind_str}")),
+            documentation: Some(Documentation::MarkupContent(MarkupContent {
+                kind: MarkupKind::Markdown,
+                value: "Variant-local state. Auto-unwrapped in template.".to_string(),
+            })),
+            sort_text: Some(format!("0{}", source.name)),
+            ..Default::default()
+        });
+    }
+}
+
+fn current_art_variant_state_script(ctx: &IdeContext<'_>) -> Option<String> {
+    let crate::virtual_code::BlockType::Art(
+        crate::virtual_code::ArtCursorPosition::VariantTemplate(info),
+    ) = ctx.block_type?
+    else {
+        return None;
+    };
+
+    let allocator = vize_carton::Bump::new();
+    let art_desc = vize_musea::parse_art(
+        &allocator,
+        &ctx.content,
+        vize_musea::ArtParseOptions::default(),
+    )
+    .ok()?;
+    let variant = art_desc.variants.get(info.variant_index)?;
+    let loc = variant.loc.as_ref()?;
+    let blocks = crate::virtual_code::find_variant_state_blocks(
+        &ctx.content,
+        loc.start as usize,
+        loc.end as usize,
+        info.variant_index,
+    );
+
+    let mut script = String::new();
+    for block in blocks {
+        script.push_str(block.content(&ctx.content));
+        if !script.ends_with('\n') {
+            script.push('\n');
+        }
+    }
+
+    (!script.trim().is_empty()).then_some(script)
 }
 
 /// Get completions for Art files (*.art.vue).
@@ -395,6 +485,861 @@ fn template_snippets() -> Vec<CompletionItem> {
         items::snippet_item("von", "v-on handler", "<$1 @$2=\"$3\">$0</$1>"),
         items::snippet_item("vbind", "v-bind attribute", "<$1 :$2=\"$3\">$0</$1>"),
     ]
+}
+
+fn component_surface_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
+    let Some(tag_ctx) = opening_tag_context_at_offset(&ctx.content, ctx.offset) else {
+        return Vec::new();
+    };
+
+    if tag_ctx.inside_attribute_value {
+        return Vec::new();
+    }
+
+    if tag_ctx.tag_name == "template" {
+        if !is_slot_completion_prefix(&tag_ctx.current_token) {
+            return Vec::new();
+        }
+
+        let Some(component_name) = nearest_open_component_before(&ctx.content, tag_ctx.tag_start)
+        else {
+            return Vec::new();
+        };
+        let Some(metadata) = component_metadata(ctx, &component_name) else {
+            return Vec::new();
+        };
+
+        return metadata
+            .slots
+            .iter()
+            .map(|slot| slot_completion_item(slot, &tag_ctx.current_token))
+            .collect();
+    }
+
+    if !is_component_tag(&tag_ctx.tag_name) || !is_prop_completion_prefix(&tag_ctx.current_token) {
+        return Vec::new();
+    }
+
+    let Some(metadata) = component_metadata(ctx, &tag_ctx.tag_name) else {
+        return Vec::new();
+    };
+    let dynamic = is_dynamic_prop_prefix(&tag_ctx.current_token);
+
+    metadata
+        .props
+        .iter()
+        .map(|prop| prop_completion_item(prop, dynamic))
+        .collect()
+}
+
+#[derive(Debug)]
+struct OpenTagContext {
+    tag_name: String,
+    tag_start: usize,
+    current_token: String,
+    inside_attribute_value: bool,
+}
+
+fn opening_tag_context_at_offset(content: &str, offset: usize) -> Option<OpenTagContext> {
+    let cursor = offset.min(content.len());
+    let tag_start = content[..cursor].rfind('<')?;
+    if content[tag_start..cursor].contains('>') {
+        return None;
+    }
+
+    let bytes = content.as_bytes();
+    let name_start = tag_start + 1;
+    if matches!(bytes.get(name_start), Some(b'/' | b'!' | b'?')) {
+        return None;
+    }
+
+    let mut name_end = name_start;
+    while name_end < content.len() {
+        let byte = bytes[name_end];
+        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
+            name_end += 1;
+        } else {
+            break;
+        }
+    }
+
+    if name_start == name_end || cursor <= name_end {
+        return None;
+    }
+
+    let tag_name = content[name_start..name_end].to_string();
+    let inside_attribute_value = is_inside_open_tag_attribute_value(content, tag_start, cursor);
+    let current_token = current_open_tag_token(content, tag_start, cursor);
+
+    Some(OpenTagContext {
+        tag_name,
+        tag_start,
+        current_token,
+        inside_attribute_value,
+    })
+}
+
+fn is_inside_open_tag_attribute_value(content: &str, tag_start: usize, cursor: usize) -> bool {
+    let mut quote = None;
+    let mut pos = tag_start;
+
+    while pos < cursor {
+        let Some(ch) = content[pos..].chars().next() else {
+            break;
+        };
+        if let Some(open_quote) = quote {
+            if ch == open_quote {
+                quote = None;
+            }
+        } else if ch == '"' || ch == '\'' {
+            quote = Some(ch);
+        }
+        pos += ch.len_utf8();
+    }
+
+    quote.is_some()
+}
+
+fn current_open_tag_token(content: &str, tag_start: usize, cursor: usize) -> String {
+    let slice = &content[tag_start..cursor];
+    let mut token_start = tag_start;
+
+    for (relative, ch) in slice.char_indices() {
+        if ch.is_ascii_whitespace() || ch == '<' {
+            token_start = tag_start + relative + ch.len_utf8();
+        }
+    }
+
+    content[token_start..cursor].trim_start().to_string()
+}
+
+fn is_prop_completion_prefix(prefix: &str) -> bool {
+    prefix.is_empty()
+        || is_dynamic_prop_prefix(prefix)
+        || (!prefix.starts_with('@')
+            && !prefix.starts_with('#')
+            && !prefix.starts_with("v-")
+            && !prefix.contains('='))
+}
+
+fn is_dynamic_prop_prefix(prefix: &str) -> bool {
+    prefix.starts_with(':') || prefix.starts_with("v-bind:")
+}
+
+fn is_slot_completion_prefix(prefix: &str) -> bool {
+    prefix.is_empty() || prefix.starts_with('#') || prefix.starts_with("v-slot:")
+}
+
+#[derive(Debug, Clone)]
+struct ComponentMetadata {
+    props: Vec<ComponentProp>,
+    slots: Vec<ComponentSlot>,
+}
+
+#[derive(Debug, Clone)]
+struct ComponentProp {
+    name: String,
+    type_detail: Option<String>,
+    required: bool,
+}
+
+#[derive(Debug, Clone)]
+struct InferredProp {
+    type_detail: String,
+    required: bool,
+}
+
+#[derive(Debug, Clone)]
+struct ComponentSlot {
+    name: String,
+    props_type: Option<String>,
+}
+
+fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<ComponentMetadata> {
+    let mut names = vec![component_name.to_string()];
+    let pascal = kebab_to_pascal(component_name);
+    if !names.iter().any(|name| name == &pascal) {
+        names.push(pascal);
+    }
+
+    for name in names {
+        let Some(import_path) = definition_helpers::find_import_path(ctx, &name) else {
+            continue;
+        };
+        let resolved = definition_helpers::resolve_import_path(ctx.uri, &import_path)?;
+        let component_content = std::fs::read_to_string(&resolved).ok()?;
+        return Some(extract_component_metadata(
+            &component_content,
+            &resolved.to_string_lossy(),
+        ));
+    }
+
+    if let Some(import_path) = art_component_attr_path(ctx, component_name) {
+        let resolved = definition_helpers::resolve_import_path(ctx.uri, &import_path)?;
+        let component_content = std::fs::read_to_string(&resolved).ok()?;
+        return Some(extract_component_metadata(
+            &component_content,
+            &resolved.to_string_lossy(),
+        ));
+    }
+
+    None
+}
+
+fn art_component_attr_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {
+    if !ctx.uri.path().ends_with(".art.vue") {
+        return None;
+    }
+
+    let allocator = vize_carton::Bump::new();
+    let art_desc = vize_musea::parse_art(
+        &allocator,
+        &ctx.content,
+        vize_musea::ArtParseOptions::default(),
+    )
+    .ok()?;
+    let component_path = art_desc.metadata.component?;
+    let stem = std::path::Path::new(component_path)
+        .file_stem()
+        .and_then(|stem| stem.to_str())?;
+
+    let pascal_component = kebab_to_pascal(component_name);
+    let pascal_stem = kebab_to_pascal(stem);
+    (component_name == stem || pascal_component == pascal_stem).then(|| component_path.to_string())
+}
+
+fn extract_component_metadata(content: &str, filename: &str) -> ComponentMetadata {
+    let options = vize_atelier_sfc::SfcParseOptions {
+        filename: filename.to_string().into(),
+        ..Default::default()
+    };
+    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+        return ComponentMetadata {
+            props: Vec::new(),
+            slots: Vec::new(),
+        };
+    };
+
+    let mut props = Vec::new();
+    let mut slots = Vec::new();
+    let mut seen_props = BTreeSet::new();
+    let mut seen_slots = BTreeSet::new();
+
+    if let Some(script_content) = descriptor
+        .script_setup
+        .as_ref()
+        .map(|script| script.content.as_ref())
+        .or_else(|| {
+            descriptor
+                .script
+                .as_ref()
+                .map(|script| script.content.as_ref())
+        })
+    {
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions {
+            analyze_script: true,
+            ..Default::default()
+        });
+        if descriptor.script_setup.is_some() {
+            analyzer.analyze_script_setup(script_content);
+        } else {
+            analyzer.analyze_script_plain(script_content);
+        }
+        let summary = analyzer.finish();
+        let inferred_prop_types = infer_define_props_type_map(script_content);
+
+        for prop in summary.macros.props() {
+            if seen_props.insert(prop.name.to_string()) {
+                let inferred = inferred_prop_types.get(prop.name.as_str());
+                props.push(ComponentProp {
+                    name: prop.name.to_string(),
+                    type_detail: prop
+                        .prop_type
+                        .as_ref()
+                        .map(|ty| ty.to_string())
+                        .or_else(|| inferred.map(|prop| prop.type_detail.clone())),
+                    required: inferred.map_or(prop.required, |prop| prop.required),
+                });
+            }
+        }
+
+        for (name, prop) in inferred_prop_types {
+            if seen_props.insert(name.clone()) {
+                props.push(ComponentProp {
+                    name,
+                    type_detail: Some(prop.type_detail),
+                    required: prop.required,
+                });
+            }
+        }
+
+        for slot in extract_define_slots(script_content) {
+            if seen_slots.insert(slot.name.clone()) {
+                slots.push(slot);
+            }
+        }
+    }
+
+    if let Some(template) = descriptor.template.as_ref() {
+        for slot in extract_template_slot_outlets(template.content.as_ref()) {
+            if seen_slots.insert(slot.name.clone()) {
+                slots.push(slot);
+            }
+        }
+    }
+
+    ComponentMetadata { props, slots }
+}
+
+fn prop_completion_item(prop: &ComponentProp, dynamic: bool) -> CompletionItem {
+    let kebab_name = pascal_to_kebab(&prop.name);
+    let label = if dynamic {
+        prop.name.clone()
+    } else {
+        kebab_name.clone()
+    };
+    let insert_name = label.clone();
+    let insert_text = if !dynamic && prop.type_detail.as_deref() == Some("boolean") {
+        insert_name
+    } else {
+        format!("{insert_name}=\"$1\"")
+    };
+    let required = if prop.required {
+        "required"
+    } else {
+        "optional"
+    };
+    let type_detail = prop.type_detail.as_deref().unwrap_or("unknown");
+
+    CompletionItem {
+        label,
+        kind: Some(CompletionItemKind::PROPERTY),
+        detail: Some(format!("prop: {type_detail} ({required})")),
+        label_details: Some(CompletionItemLabelDetails {
+            detail: Some(format!(": {type_detail}")),
+            description: Some(required.to_string()),
+        }),
+        insert_text: Some(insert_text),
+        insert_text_format: Some(InsertTextFormat::SNIPPET),
+        documentation: Some(Documentation::MarkupContent(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: format!(
+                "**Prop** `{}`\n\n```typescript\n{}: {}\n```",
+                prop.name, prop.name, type_detail
+            ),
+        })),
+        sort_text: Some(format!("00-prop-{kebab_name}")),
+        ..Default::default()
+    }
+}
+
+fn slot_completion_item(slot: &ComponentSlot, prefix: &str) -> CompletionItem {
+    let after_hash = prefix.starts_with('#');
+    let after_v_slot = prefix.starts_with("v-slot:");
+    let label = if after_hash || after_v_slot {
+        slot.name.clone()
+    } else {
+        format!("#{}", slot.name)
+    };
+    let insert_text = if slot.props_type.is_some() {
+        if after_hash || after_v_slot {
+            format!("{}=\"$1\"", slot.name)
+        } else {
+            format!("#{}=\"$1\"", slot.name)
+        }
+    } else if after_hash || after_v_slot {
+        slot.name.clone()
+    } else {
+        format!("#{}", slot.name)
+    };
+
+    CompletionItem {
+        label,
+        kind: Some(CompletionItemKind::FIELD),
+        detail: Some(
+            slot.props_type
+                .as_ref()
+                .map(|props| format!("slot props: {props}"))
+                .unwrap_or_else(|| "slot".to_string()),
+        ),
+        insert_text: Some(insert_text),
+        insert_text_format: Some(InsertTextFormat::SNIPPET),
+        documentation: slot.props_type.as_ref().map(|props| {
+            Documentation::MarkupContent(MarkupContent {
+                kind: MarkupKind::Markdown,
+                value: format!("**Slot** `{}`\n\n```typescript\n{}\n```", slot.name, props),
+            })
+        }),
+        sort_text: Some(format!("00-slot-{}", slot.name)),
+        ..Default::default()
+    }
+}
+
+fn nearest_open_component_before(content: &str, before_offset: usize) -> Option<String> {
+    let before = &content[..before_offset.min(content.len())];
+    let mut stack = Vec::new();
+    let mut pos = 0usize;
+
+    while let Some(relative_start) = before[pos..].find('<') {
+        let tag_start = pos + relative_start;
+        if before[tag_start..].starts_with("<!--") {
+            let Some(end) = before[tag_start + 4..].find("-->") else {
+                break;
+            };
+            pos = tag_start + 4 + end + 3;
+            continue;
+        }
+
+        let Some(tag_end) = find_tag_end(before, tag_start) else {
+            break;
+        };
+        let tag = &before[tag_start..=tag_end];
+        let name_start = tag_start + if tag.starts_with("</") { 2 } else { 1 };
+        if matches!(before.as_bytes().get(name_start), Some(b'!' | b'?')) {
+            pos = tag_end + 1;
+            continue;
+        }
+
+        let name_end = read_tag_name_end(before, name_start);
+        if name_start == name_end {
+            pos = tag_end + 1;
+            continue;
+        }
+
+        let tag_name = &before[name_start..name_end];
+        if tag.starts_with("</") {
+            if let Some(index) = stack.iter().rposition(|open: &String| open == tag_name) {
+                stack.truncate(index);
+            }
+        } else if is_component_tag(tag_name) && !is_self_closing_tag(tag) {
+            stack.push(tag_name.to_string());
+        }
+
+        pos = tag_end + 1;
+    }
+
+    stack.pop()
+}
+
+fn find_tag_end(content: &str, tag_start: usize) -> Option<usize> {
+    let mut quote = None;
+    let mut pos = tag_start;
+
+    while pos < content.len() {
+        let ch = content[pos..].chars().next()?;
+        if let Some(open_quote) = quote {
+            if ch == open_quote {
+                quote = None;
+            }
+        } else if ch == '"' || ch == '\'' {
+            quote = Some(ch);
+        } else if ch == '>' {
+            return Some(pos);
+        }
+        pos += ch.len_utf8();
+    }
+
+    None
+}
+
+fn read_tag_name_end(content: &str, mut pos: usize) -> usize {
+    while pos < content.len() {
+        let byte = content.as_bytes()[pos];
+        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
+            pos += 1;
+        } else {
+            break;
+        }
+    }
+    pos
+}
+
+fn is_self_closing_tag(tag: &str) -> bool {
+    tag.trim_end_matches('>').trim_end().ends_with('/')
+}
+
+fn infer_define_props_type_map(script: &str) -> BTreeMap<String, InferredProp> {
+    let mut props = BTreeMap::new();
+    let mut search_start = 0usize;
+
+    while let Some(relative) = script[search_start..].find("defineProps") {
+        let name_start = search_start + relative;
+        let after_name = name_start + "defineProps".len();
+        let mut pos = skip_ws(script, after_name);
+        if script.as_bytes().get(pos) != Some(&b'<') {
+            search_start = after_name;
+            continue;
+        }
+
+        let Some((type_arg, end)) = extract_balanced_after(script, pos, '<', '>') else {
+            search_start = after_name;
+            continue;
+        };
+        pos = end;
+
+        let type_arg = type_arg.trim();
+        if let Some(body) = braced_body(type_arg) {
+            for member in parse_type_literal_members(body) {
+                if let Some((name, optional, type_detail)) = parse_member_name_and_type(member) {
+                    props.insert(
+                        name,
+                        InferredProp {
+                            type_detail,
+                            required: !optional,
+                        },
+                    );
+                }
+            }
+        }
+
+        search_start = pos;
+    }
+
+    props
+}
+
+fn extract_define_slots(script: &str) -> Vec<ComponentSlot> {
+    let mut slots = Vec::new();
+    let mut seen = BTreeSet::new();
+    let mut search_start = 0usize;
+
+    while let Some(relative) = script[search_start..].find("defineSlots") {
+        let name_start = search_start + relative;
+        let after_name = name_start + "defineSlots".len();
+        let pos = skip_ws(script, after_name);
+        if script.as_bytes().get(pos) != Some(&b'<') {
+            search_start = after_name;
+            continue;
+        }
+
+        let Some((type_arg, end)) = extract_balanced_after(script, pos, '<', '>') else {
+            search_start = after_name;
+            continue;
+        };
+        search_start = end;
+
+        let Some(body) = braced_body(type_arg.trim()) else {
+            continue;
+        };
+
+        for member in parse_type_literal_members(body) {
+            let Some((name, props_type)) = parse_slot_member(member) else {
+                continue;
+            };
+            if seen.insert(name.clone()) {
+                slots.push(ComponentSlot { name, props_type });
+            }
+        }
+    }
+
+    slots
+}
+
+fn extract_template_slot_outlets(template: &str) -> Vec<ComponentSlot> {
+    let mut slots = Vec::new();
+    let mut seen = BTreeSet::new();
+    let mut pos = 0usize;
+
+    while let Some(relative_start) = template[pos..].find("<slot") {
+        let tag_start = pos + relative_start;
+        let after_name = tag_start + "<slot".len();
+        if template
+            .as_bytes()
+            .get(after_name)
+            .is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+        {
+            pos = after_name;
+            continue;
+        }
+
+        let Some(tag_end) = find_tag_end(template, tag_start) else {
+            break;
+        };
+        let tag = &template[tag_start..=tag_end];
+        let name = find_attr_value(tag, "name").unwrap_or_else(|| "default".to_string());
+        if seen.insert(name.clone()) {
+            slots.push(ComponentSlot {
+                name,
+                props_type: None,
+            });
+        }
+        pos = tag_end + 1;
+    }
+
+    slots
+}
+
+fn parse_slot_member(member: &str) -> Option<(String, Option<String>)> {
+    let member = strip_readonly(member.trim());
+    if member.is_empty() {
+        return None;
+    }
+
+    let (name, name_end) = parse_type_member_name(member)?;
+    let rest = member[name_end..].trim_start();
+    let rest = rest.strip_prefix('?').unwrap_or(rest).trim_start();
+
+    let props_type = if rest.starts_with('(') {
+        extract_balanced_after(rest, 0, '(', ')')
+            .and_then(|(params, _)| extract_slot_props_type(params))
+    } else if let Some(after_colon) = rest.strip_prefix(':') {
+        let after_colon = after_colon.trim_start();
+        after_colon
+            .find('(')
+            .and_then(|paren| extract_balanced_after(after_colon, paren, '(', ')'))
+            .and_then(|(params, _)| extract_slot_props_type(params))
+    } else {
+        None
+    };
+
+    Some((name, props_type))
+}
+
+fn extract_slot_props_type(params: &str) -> Option<String> {
+    let first_param = split_top_level(params, ',').into_iter().next()?;
+    let first_param = first_param.trim();
+    if first_param.is_empty() {
+        return None;
+    }
+
+    let type_part = first_param
+        .split_once(':')
+        .map(|(_, ty)| ty.trim())
+        .unwrap_or(first_param);
+
+    (!type_part.is_empty() && type_part != "()").then(|| type_part.to_string())
+}
+
+fn parse_type_literal_members(body: &str) -> Vec<&str> {
+    let mut members = Vec::new();
+    let mut start = 0usize;
+    let mut state = SplitState::default();
+
+    for (idx, ch) in body.char_indices() {
+        state.accept(ch, body, idx);
+        if state.depth == 0 && state.quote.is_none() && matches!(ch, ';' | ',' | '\n') {
+            let member = body[start..idx].trim();
+            if !member.is_empty() {
+                members.push(member);
+            }
+            start = idx + ch.len_utf8();
+        }
+    }
+
+    let member = body[start..].trim();
+    if !member.is_empty() {
+        members.push(member);
+    }
+
+    members
+}
+
+fn split_top_level(value: &str, delimiter: char) -> Vec<&str> {
+    let mut parts = Vec::new();
+    let mut start = 0usize;
+    let mut state = SplitState::default();
+
+    for (idx, ch) in value.char_indices() {
+        state.accept(ch, value, idx);
+        if state.depth == 0 && state.quote.is_none() && ch == delimiter {
+            parts.push(value[start..idx].trim());
+            start = idx + ch.len_utf8();
+        }
+    }
+
+    parts.push(value[start..].trim());
+    parts
+}
+
+#[derive(Default)]
+struct SplitState {
+    depth: i32,
+    quote: Option<char>,
+}
+
+impl SplitState {
+    fn accept(&mut self, ch: char, source: &str, idx: usize) {
+        if let Some(quote) = self.quote {
+            if ch == quote && !is_escaped(source, idx) {
+                self.quote = None;
+            }
+            return;
+        }
+
+        if ch == '"' || ch == '\'' || ch == '`' {
+            self.quote = Some(ch);
+        } else if matches!(ch, '{' | '[' | '(' | '<') {
+            self.depth += 1;
+        } else if matches!(ch, '}' | ']' | ')') {
+            self.depth = self.depth.saturating_sub(1);
+        } else if ch == '>' && !previous_non_ws_is(source, idx, '=') {
+            self.depth = self.depth.saturating_sub(1);
+        }
+    }
+}
+
+fn parse_member_name_and_type(member: &str) -> Option<(String, bool, String)> {
+    let member = strip_readonly(member.trim());
+    let (name, name_end) = parse_type_member_name(member)?;
+    let rest = member[name_end..].trim_start();
+    let (optional, rest) = if let Some(rest) = rest.strip_prefix('?') {
+        (true, rest.trim_start())
+    } else {
+        (false, rest)
+    };
+    let type_detail = rest.strip_prefix(':')?.trim();
+    if type_detail.is_empty() {
+        return None;
+    }
+
+    Some((name, optional, type_detail.to_string()))
+}
+
+fn parse_type_member_name(member: &str) -> Option<(String, usize)> {
+    let mut chars = member.char_indices();
+    let (_, first) = chars.next()?;
+    if first == '"' || first == '\'' {
+        for (idx, ch) in chars {
+            if ch == first && !is_escaped(member, idx) {
+                return Some((member[1..idx].to_string(), idx + ch.len_utf8()));
+            }
+        }
+        return None;
+    }
+
+    let mut end = 0usize;
+    for (idx, ch) in member.char_indices() {
+        if idx == 0 {
+            if !(ch == '_' || ch == '$' || ch.is_ascii_alphabetic()) {
+                return None;
+            }
+        } else if !(ch == '_' || ch == '$' || ch.is_ascii_alphanumeric() || ch == '-') {
+            break;
+        }
+        end = idx + ch.len_utf8();
+    }
+
+    (end > 0).then(|| (member[..end].to_string(), end))
+}
+
+fn strip_readonly(value: &str) -> &str {
+    value
+        .strip_prefix("readonly ")
+        .map(str::trim_start)
+        .unwrap_or(value)
+}
+
+fn extract_balanced_after(
+    source: &str,
+    open_offset: usize,
+    open: char,
+    close: char,
+) -> Option<(&str, usize)> {
+    if !source[open_offset..].starts_with(open) {
+        return None;
+    }
+
+    let mut depth = 0i32;
+    let mut quote = None;
+    let content_start = open_offset + open.len_utf8();
+    let mut pos = open_offset;
+
+    while pos < source.len() {
+        let ch = source[pos..].chars().next()?;
+        if let Some(open_quote) = quote {
+            if ch == open_quote && !is_escaped(source, pos) {
+                quote = None;
+            }
+            pos += ch.len_utf8();
+            continue;
+        }
+
+        if ch == '"' || ch == '\'' || ch == '`' {
+            quote = Some(ch);
+        } else if ch == open {
+            depth += 1;
+        } else if ch == close && !(close == '>' && previous_non_ws_is(source, pos, '=')) {
+            depth -= 1;
+            if depth == 0 {
+                return Some((&source[content_start..pos], pos + ch.len_utf8()));
+            }
+        }
+
+        pos += ch.len_utf8();
+    }
+
+    None
+}
+
+fn braced_body(value: &str) -> Option<&str> {
+    let start = skip_ws(value, 0);
+    if value.as_bytes().get(start) != Some(&b'{') {
+        return None;
+    }
+    extract_balanced_after(value, start, '{', '}').map(|(body, _)| body)
+}
+
+fn find_attr_value(tag: &str, attr: &str) -> Option<String> {
+    let mut pos = 0usize;
+    while let Some(relative) = tag[pos..].find(attr) {
+        let start = pos + relative;
+        let end = start + attr.len();
+        let boundary_before = start == 0
+            || tag
+                .as_bytes()
+                .get(start - 1)
+                .is_none_or(|byte| !byte.is_ascii_alphanumeric() && *byte != b'-' && *byte != b'_');
+        let boundary_after = tag
+            .as_bytes()
+            .get(end)
+            .is_none_or(|byte| !byte.is_ascii_alphanumeric() && *byte != b'-' && *byte != b'_');
+        if !boundary_before || !boundary_after {
+            pos = end;
+            continue;
+        }
+
+        let mut value_start = skip_ws(tag, end);
+        if tag.as_bytes().get(value_start) != Some(&b'=') {
+            pos = end;
+            continue;
+        }
+        value_start = skip_ws(tag, value_start + 1);
+        let quote = tag.as_bytes().get(value_start).copied()?;
+        if quote != b'"' && quote != b'\'' {
+            return None;
+        }
+        let value_content_start = value_start + 1;
+        let value_end = tag[value_content_start..].find(quote as char)? + value_content_start;
+        return Some(tag[value_content_start..value_end].to_string());
+    }
+
+    None
+}
+
+fn skip_ws(source: &str, mut pos: usize) -> usize {
+    while pos < source.len() {
+        let byte = source.as_bytes()[pos];
+        if byte.is_ascii_whitespace() {
+            pos += 1;
+        } else {
+            break;
+        }
+    }
+    pos
+}
+
+fn is_escaped(source: &str, idx: usize) -> bool {
+    let mut count = 0usize;
+    let mut pos = idx;
+    while pos > 0 && source.as_bytes()[pos - 1] == b'\\' {
+        count += 1;
+        pos -= 1;
+    }
+    count % 2 == 1
+}
+
+fn previous_non_ws_is(source: &str, idx: usize, expected: char) -> bool {
+    source[..idx].chars().rev().find(|ch| !ch.is_whitespace()) == Some(expected)
 }
 
 /// Art block completions at root level.

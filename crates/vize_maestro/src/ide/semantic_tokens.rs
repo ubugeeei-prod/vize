@@ -148,6 +148,7 @@ impl SemanticTokensService {
         Self::collect_art_block_tokens(content, &mut tokens);
         Self::collect_variant_block_tokens(content, &mut tokens);
         Self::collect_art_attribute_tokens(content, &mut tokens);
+        Self::collect_art_variant_template_tokens(content, &mut tokens);
         Self::collect_art_script_tokens(content, &mut tokens);
 
         // Sort by position
@@ -331,6 +332,51 @@ impl SemanticTokensService {
                 }
             }
             pos = abs_start + 7;
+        }
+    }
+
+    /// Collect Vue template semantic tokens from each `<variant>` body in an `.art.vue` file.
+    fn collect_art_variant_template_tokens(content: &str, tokens: &mut Vec<AbsoluteToken>) {
+        let allocator = vize_carton::Bump::new();
+        let Ok(art_desc) =
+            vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default())
+        else {
+            return;
+        };
+
+        for variant in art_desc.variants.iter() {
+            Self::collect_template_slice_tokens(content, variant.template, tokens);
+        }
+    }
+
+    fn collect_template_slice_tokens(
+        full_content: &str,
+        template_slice: &str,
+        tokens: &mut Vec<AbsoluteToken>,
+    ) {
+        if template_slice.trim().is_empty() {
+            return;
+        }
+
+        let source_ptr = full_content.as_ptr() as usize;
+        let template_ptr = template_slice.as_ptr() as usize;
+        let Some(start_offset) = template_ptr.checked_sub(source_ptr) else {
+            return;
+        };
+        if start_offset > full_content.len() {
+            return;
+        }
+
+        let (base_line, base_col) = offset_to_line_col(full_content, start_offset);
+        let mut local_tokens = Vec::new();
+        template::collect_template_tokens(template_slice, 0, &mut local_tokens);
+
+        for mut token in local_tokens {
+            if token.line == 0 {
+                token.start = token.start.saturating_add(base_col);
+            }
+            token.line = token.line.saturating_add(base_line);
+            tokens.push(token);
         }
     }
 
@@ -597,6 +643,41 @@ impl SemanticTokensService {
                 pos = rel_pos + 7;
             }
         }
+
+        let allocator = vize_carton::Bump::new();
+        let Ok(art_desc) =
+            vize_musea::parse_art(&allocator, slice, vize_musea::ArtParseOptions::default())
+        else {
+            return;
+        };
+
+        for variant in art_desc.variants.iter() {
+            if variant.template.trim().is_empty() {
+                continue;
+            }
+
+            let slice_ptr = slice.as_ptr() as usize;
+            let template_ptr = variant.template.as_ptr() as usize;
+            let Some(relative_start) = template_ptr.checked_sub(slice_ptr) else {
+                continue;
+            };
+            if relative_start > slice.len() {
+                continue;
+            }
+
+            let absolute_start = range_start + relative_start;
+            let (base_line, base_col) = offset_to_line_col(content, absolute_start);
+            let mut local_tokens = Vec::new();
+            template::collect_template_tokens(variant.template, 0, &mut local_tokens);
+
+            for mut token in local_tokens {
+                if token.line == 0 {
+                    token.start = token.start.saturating_add(base_col);
+                }
+                token.line = token.line.saturating_add(base_line);
+                tokens.push(token);
+            }
+        }
     }
 }
 
@@ -755,6 +836,36 @@ import Button from './Button.vue'
 
         // Should find title, "Button", component, "./Button.vue"
         assert!(tokens.len() >= 4);
+    }
+
+    #[test]
+    fn test_art_variant_template_tokens() {
+        let content = r#"<art title="Button" component="./Button.vue">
+  <variant name="Primary" default>
+    <Button :label="label" @click="handleClick">{{ label }}</Button>
+  </variant>
+</art>"#;
+        let mut tokens = Vec::new();
+        SemanticTokensService::collect_art_variant_template_tokens(content, &mut tokens);
+
+        assert!(
+            tokens
+                .iter()
+                .any(|token| token.line == 2 && token.token_type == TokenType::Property as u32),
+            "{tokens:#?}"
+        );
+        assert!(
+            tokens
+                .iter()
+                .any(|token| token.line == 2 && token.token_type == TokenType::Event as u32),
+            "{tokens:#?}"
+        );
+        assert!(
+            tokens
+                .iter()
+                .any(|token| token.line == 2 && token.token_type == TokenType::Variable as u32),
+            "{tokens:#?}"
+        );
     }
 
     #[test]
