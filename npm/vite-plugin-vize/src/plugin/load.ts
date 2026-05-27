@@ -88,6 +88,84 @@ function findMacroArtifactModule(
   return compiled?.macroArtifacts?.find((artifact) => artifact.kind === kind)?.moduleCode ?? null;
 }
 
+function hasNuxtComponentQuery(request: ReturnType<typeof classifyVitePluginRequest>): boolean {
+  if (!request.querySuffix) {
+    return false;
+  }
+
+  return new URLSearchParams(request.querySuffix.slice(1)).has("nuxt_component");
+}
+
+function loadCompiledSfcModule(
+  state: VizePluginState,
+  realPath: string,
+  isSsr: boolean,
+  currentBase: string,
+  loadOptions?: { ssr?: boolean },
+): { code: string; map: null } | string | null {
+  const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
+  if (placeholderCode) {
+    state.logger.log(`load: using boundary placeholder for ${realPath}`);
+    return {
+      code: placeholderCode,
+      map: null,
+    };
+  }
+
+  const cache = getEnvironmentCache(state, isSsr);
+  let compiled = cache.get(realPath);
+
+  // On-demand compile if not cached
+  if (!compiled && fs.existsSync(realPath)) {
+    state.logger.log(`load: on-demand compiling ${realPath}`);
+    compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, isSsr));
+    syncCollectedCssForFile(state, realPath, compiled);
+  }
+
+  if (!compiled) {
+    return null;
+  }
+
+  const hasDelegated = hasDelegatedStyles(compiled);
+  const pendingHmrUpdateType = loadOptions?.ssr
+    ? undefined
+    : state.pendingHmrUpdateTypes.get(realPath);
+  if (compiled.css && !hasDelegated) {
+    compiled = {
+      ...compiled,
+      css: resolveCssImports(
+        compiled.css,
+        realPath,
+        state.cssAliasRules,
+        state.server !== null,
+        currentBase,
+      ),
+    };
+  }
+  const generatedOutput = generateOutput(compiled, {
+    isProduction: state.isProduction,
+    isDev: state.server !== null && !isSsr,
+    ssr: isSsr,
+    hmrUpdateType: pendingHmrUpdateType,
+    extractCss: state.extractCss,
+    filePath: realPath,
+  });
+  const output = rewriteStaticAssetUrls(
+    rewriteDynamicTemplateImports(
+      isSsr ? normalizeVueServerRendererImport(generatedOutput) : generatedOutput,
+      state.dynamicImportAliasRules,
+    ),
+    state.dynamicImportAliasRules,
+  );
+  if (!loadOptions?.ssr) {
+    state.pendingHmrUpdateTypes.delete(realPath);
+  }
+  return {
+    code: output,
+    map: null,
+  };
+}
+
 function loadDefinePageArtifact(
   state: VizePluginState,
   realPath: string,
@@ -114,13 +192,15 @@ export function loadHook(
   id: string,
   loadOptions?: { ssr?: boolean },
 ): string | { code: string; map: null } | null {
+  const request = classifyVitePluginRequest(id);
   if (id !== RESOLVED_CSS_MODULE && !id.startsWith("\0")) {
-    return null;
+    if (!request.isVueSfcPath || !hasNuxtComponentQuery(request)) {
+      return null;
+    }
   }
 
   // Pick the correct viteBase for URL resolution based on the build environment.
   const currentBase = loadOptions?.ssr ? state.serverViteBase : state.clientViteBase;
-  const request = classifyVitePluginRequest(id);
 
   // Handle virtual CSS module for production extraction
   if (id === RESOLVED_CSS_MODULE) {
@@ -214,66 +294,13 @@ export function loadHook(
       state.logger.log(`load: skipping non-vue virtual module ${realPath}`);
       return null;
     }
+    return loadCompiledSfcModule(state, realPath, isSsr, currentBase, loadOptions);
+  }
 
-    const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
-    if (placeholderCode) {
-      state.logger.log(`load: using boundary placeholder for ${realPath}`);
-      return {
-        code: placeholderCode,
-        map: null,
-      };
-    }
-
-    const cache = getEnvironmentCache(state, isSsr);
-    let compiled = cache.get(realPath);
-
-    // On-demand compile if not cached
-    if (!compiled && fs.existsSync(realPath)) {
-      state.logger.log(`load: on-demand compiling ${realPath}`);
-      compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, isSsr));
-      syncCollectedCssForFile(state, realPath, compiled);
-    }
-
-    if (compiled) {
-      const hasDelegated = hasDelegatedStyles(compiled);
-      const pendingHmrUpdateType = loadOptions?.ssr
-        ? undefined
-        : state.pendingHmrUpdateTypes.get(realPath);
-      if (compiled.css && !hasDelegated) {
-        compiled = {
-          ...compiled,
-          css: resolveCssImports(
-            compiled.css,
-            realPath,
-            state.cssAliasRules,
-            state.server !== null,
-            currentBase,
-          ),
-        };
-      }
-      const generatedOutput = generateOutput(compiled, {
-        isProduction: state.isProduction,
-        isDev: state.server !== null && !isSsr,
-        ssr: isSsr,
-        hmrUpdateType: pendingHmrUpdateType,
-        extractCss: state.extractCss,
-        filePath: realPath,
-      });
-      const output = rewriteStaticAssetUrls(
-        rewriteDynamicTemplateImports(
-          isSsr ? normalizeVueServerRendererImport(generatedOutput) : generatedOutput,
-          state.dynamicImportAliasRules,
-        ),
-        state.dynamicImportAliasRules,
-      );
-      if (!loadOptions?.ssr) {
-        state.pendingHmrUpdateTypes.delete(realPath);
-      }
-      return {
-        code: output,
-        map: null,
-      };
-    }
+  if (request.isVueSfcPath && hasNuxtComponentQuery(request)) {
+    const realPath = classifyVitePluginRequest(request.normalizedFsId ?? request.path).normalizedVuePath;
+    const isSsr = !!loadOptions?.ssr;
+    return loadCompiledSfcModule(state, realPath, isSsr, currentBase, loadOptions);
   }
 
   // Handle \0-prefixed non-vue files leaked from virtual module dynamic imports.

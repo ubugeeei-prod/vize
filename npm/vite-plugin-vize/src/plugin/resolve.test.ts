@@ -541,8 +541,8 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
   assert.equal(
     expectResolvedId(resolved),
-    `${toVirtualId(source, true)}${query}`,
-    "Nuxt component-loader Vue queries should resolve to Vize virtual modules with the query preserved",
+    `${source}${query}`,
+    "Nuxt component-loader Vue queries should stay on the real Vue path so Nuxt can rewrite the async wrapper",
   );
 }
 

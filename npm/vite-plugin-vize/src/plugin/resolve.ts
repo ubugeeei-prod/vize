@@ -230,6 +230,14 @@ function shouldCompileVueSfcRequest(
   return params.has("nuxt_component");
 }
 
+function hasNuxtComponentQuery(request: ReturnType<typeof classifyVitePluginRequest>): boolean {
+  if (!request.querySuffix) {
+    return false;
+  }
+
+  return new URLSearchParams(request.querySuffix.slice(1)).has("nuxt_component");
+}
+
 async function resolveAliasedVueImport(
   ctx: ResolveContext,
   state: VizePluginState,
@@ -237,6 +245,8 @@ async function resolveAliasedVueImport(
   importer: string | undefined,
   isSsrRequest: boolean,
   handleNodeModules: boolean,
+  querySuffix: string,
+  preserveQueryAsPath: boolean,
 ): Promise<string | null> {
   if (path.isAbsolute(id)) {
     return null;
@@ -263,7 +273,9 @@ async function resolveAliasedVueImport(
 
   if (state.cache.has(realPath) || fs.existsSync(realPath)) {
     state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
-    return `${toVirtualId(realPath, isSsrRequest)}${request.querySuffix}`;
+    return preserveQueryAsPath
+      ? `${realPath}${querySuffix}`
+      : `${toVirtualId(realPath, isSsrRequest)}${querySuffix}`;
   }
 
   return null;
@@ -364,6 +376,15 @@ export async function resolveIdHook(
   //   Component.vue?vue&type=style&index=0&lang=scss
   //   Component.vue?vue&type=style&index=0&lang=scss&module
   if (request.isVueStyleQuery && request.styleVirtualSuffix) {
+    if (id.includes("vitepress-plugin-llms")) {
+      state.logger.log(`resolveId: skipping vitepress-plugin-llms style import ${id}`);
+      return null;
+    }
+    const handleNodeModules = state.mergedOptions.handleNodeModulesVue ?? true;
+    if (!handleNodeModules && request.path.includes("node_modules")) {
+      state.logger.log(`resolveId: skipping node_modules style import ${id}`);
+      return null;
+    }
     return `\0${id}${request.styleVirtualSuffix}`;
   }
 
@@ -562,9 +583,8 @@ export async function resolveIdHook(
 
   // Handle Vue SFC component imports, including Nuxt component-loader queries.
   if (shouldCompileVueSfcRequest(request)) {
-    const handleNodeModules = state.initialized
-      ? (state.mergedOptions.handleNodeModulesVue ?? true)
-      : true;
+    const handleNodeModules = state.mergedOptions.handleNodeModulesVue ?? true;
+    const preserveQueryAsPath = hasNuxtComponentQuery(request);
 
     const vueRequestPath = request.path;
 
@@ -583,6 +603,8 @@ export async function resolveIdHook(
         importer,
         isSsrRequest,
         handleNodeModules,
+        request.querySuffix,
+        preserveQueryAsPath,
       );
       if (aliased) {
         return aliased;
@@ -608,6 +630,9 @@ export async function resolveIdHook(
 
     // Return virtual module ID: \0/path/to/Component.vue.ts
     if (hasCache || fileExists) {
+      if (preserveQueryAsPath) {
+        return `${resolved}${request.querySuffix}`;
+      }
       return `${toVirtualId(resolved, isSsrRequest)}${request.querySuffix}`;
     }
   }

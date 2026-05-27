@@ -124,6 +124,15 @@ function ensureLocalVizePackagesBuilt(): void {
   }
 }
 
+function installPnpmDependencies(cwd: string): void {
+  console.log(`[vize:setup] pnpm install in ${cwd}...`);
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile --prefer-offline", {
+    cwd,
+    stdio: "inherit",
+    timeout: 600_000,
+  });
+}
+
 function ensureSymlink(link: string, target: string): void {
   try {
     const stat = fs.lstatSync(link);
@@ -205,6 +214,76 @@ function patchNpmxPrerenderRoutes(configPath: string): void {
   const nextSource = source.replace(/prerender: true/g, "prerender: false");
   if (nextSource !== source) {
     fs.writeFileSync(configPath, nextSource);
+  }
+}
+
+function patchVitepressConfig(configPath: string): void {
+  let config = fs.readFileSync(configPath, "utf-8");
+  let changed = false;
+
+  if (!config.includes("from '@vizejs/vite-plugin'")) {
+    config = config.replace(
+      "import llmstxt, { copyOrDownloadAsMarkdownButtons } from 'vitepress-plugin-llms'",
+      "import llmstxt, { copyOrDownloadAsMarkdownButtons } from 'vitepress-plugin-llms'\nimport vize from '@vizejs/vite-plugin'",
+    );
+    changed = true;
+  }
+
+  if (!config.includes("vize()")) {
+    config = config.replace(
+      "plugins: [llmstxt({",
+      "plugins: [vize({ handleNodeModulesVue: false }), llmstxt({",
+    );
+    changed = true;
+  }
+
+  if (changed) {
+    fs.writeFileSync(configPath, config);
+  }
+}
+
+function patchNuxtUiLinkComponent(linkPath: string): void {
+  let source = fs.readFileSync(linkPath, "utf-8");
+  const nextSource = source
+    .replace(
+      "          rel: (rest as NuxtLinkDefaultSlotProps).rel,",
+      "          rel: (rest as Partial<NuxtLinkDefaultSlotProps> | undefined)?.rel,",
+    )
+    .replace(
+      "          target: (rest as NuxtLinkDefaultSlotProps).target,",
+      "          target: (rest as Partial<NuxtLinkDefaultSlotProps> | undefined)?.target,",
+    )
+    .replace(
+      "          isExternal: (rest as NuxtLinkDefaultSlotProps).isExternal,",
+      "          isExternal: (rest as Partial<NuxtLinkDefaultSlotProps> | undefined)?.isExternal,",
+    )
+    .replace(
+      "        rel: (rest as NuxtLinkDefaultSlotProps).rel,",
+      "        rel: (rest as Partial<NuxtLinkDefaultSlotProps> | undefined)?.rel,",
+    )
+    .replace(
+      "        target: (rest as NuxtLinkDefaultSlotProps).target,",
+      "        target: (rest as Partial<NuxtLinkDefaultSlotProps> | undefined)?.target,",
+    )
+    .replace(
+      "        isExternal: (rest as NuxtLinkDefaultSlotProps).isExternal",
+      "        isExternal: (rest as Partial<NuxtLinkDefaultSlotProps> | undefined)?.isExternal",
+    );
+
+  if (nextSource !== source) {
+    fs.writeFileSync(linkPath, nextSource);
+  }
+}
+
+function patchNuxtUiFormComponent(formPath: string): void {
+  const source = fs.readFileSync(formPath, "utf-8");
+  const nextSource = source.replace(
+    "  validateOn() {\n    return ['input', 'blur', 'change'] as FormInputEvents[]\n  },",
+    "  validateOn: () => {\n    return ['input', 'blur', 'change'] as FormInputEvents[]\n  },",
+  );
+
+  if (nextSource !== source) {
+    fs.writeFileSync(formPath, nextSource);
   }
 }
 
@@ -492,6 +571,8 @@ function syncGitFixtureWorktree(name: string, variant?: string): string {
 const ELK_WORK_DIR = getMutableGitFixtureDir("elk");
 export const MISSKEY_WORK_DIR = getMutableGitFixtureDir("misskey");
 const NPMX_WORK_DIR = getMutableGitFixtureDir("npmx.dev");
+const NUXT_UI_WORK_DIR = getMutableGitFixtureDir("nuxt-ui", "playground");
+const REKA_UI_DOCS_WORK_DIR = getMutableGitFixtureDir("reka-ui", "docs");
 const VUEFES_WORK_DIR = getMutableGitFixtureDir("vuefes-2025");
 
 // --- App configurations ---
@@ -561,7 +642,7 @@ export const misskeyApp: AppConfig = {
   command: "npx",
   args: ["-y", "pnpm@10", "exec", "vite"],
   port: 5173,
-  url: "http://localhost:5173/vite/",
+  url: "http://127.0.0.1:5173/vite/",
   mountSelector: "#misskey_app",
   readyPattern: /Local:\s+http:\/\//,
   allowNon200: true,
@@ -1083,17 +1164,51 @@ export const antDesignVueApp: AppConfig = {
 
 export const nuxtUiApp: AppConfig = {
   name: "nuxt-ui",
-  cwd: path.join(GIT_DIR, "nuxt-ui"),
+  cwd: NUXT_UI_WORK_DIR,
   command: "npx",
-  args: ["pnpm@10", "dev"],
+  args: ["-y", "pnpm@10", "dev", "--port", "5317", "--host", "0.0.0.0"],
   port: 5317,
   url: "http://localhost:5317",
-  mountSelector: "#app",
+  mountSelector: "#__nuxt",
   readyPattern: /Local:\s+http:\/\/localhost:5317/,
   allowNon200: true,
   waitUntil: "load",
   readyDelay: 10_000,
-  startupTimeout: 120_000,
+  startupTimeout: 180_000,
+  setup() {
+    const nuxtUiDir = syncGitFixtureWorktree("nuxt-ui", "playground");
+    const nuxtConfigPath = path.join(nuxtUiDir, "playgrounds", "nuxt", "nuxt.config.ts");
+    const nuxtUiLinkPath = path.join(nuxtUiDir, "src", "runtime", "components", "Link.vue");
+    const nuxtUiFormPath = path.join(nuxtUiDir, "src", "runtime", "components", "Form.vue");
+
+    ensureLocalVizePackagesBuilt();
+    installPnpmDependencies(nuxtUiDir);
+    createVizeSymlinks(path.join(nuxtUiDir, "node_modules"));
+    patchNuxtConfig(nuxtConfigPath);
+    patchNuxtUiLinkComponent(nuxtUiLinkPath);
+    patchNuxtUiFormComponent(nuxtUiFormPath);
+    let nuxtConfig = fs.readFileSync(nuxtConfigPath, "utf-8");
+    if (!nuxtConfig.includes("@nuxt/content")) {
+      nuxtConfig = nuxtConfig.replace(
+        "modules: [\n    '@vizejs/nuxt',",
+        "modules: [\n    '@vizejs/nuxt',\n    '@nuxt/content',",
+      );
+      fs.writeFileSync(nuxtConfigPath, nuxtConfig);
+    }
+    if (!nuxtConfig.includes("handleNodeModulesVue: false")) {
+      nuxtConfig = nuxtConfig.replace(
+        "vize: {\n    musea: false,\n  },",
+        "vize: {\n    musea: false,\n    compiler: {\n      handleNodeModulesVue: false,\n    },\n  },",
+      );
+      fs.writeFileSync(nuxtConfigPath, nuxtConfig);
+    }
+    console.log("[nuxt-ui:setup] pnpm dev:prepare...");
+    execSync("npx -y pnpm@10 dev:prepare", {
+      cwd: nuxtUiDir,
+      stdio: "inherit",
+      timeout: 900_000,
+    });
+  },
   check: {
     cwd: path.join(GIT_DIR, "nuxt-ui"),
     patterns: ["src/**/*.vue"],
@@ -1124,6 +1239,35 @@ export const rekaUiApp: AppConfig = {
   lint: {
     cwd: path.join(GIT_DIR, "reka-ui"),
     patterns: ["packages/**/*.vue"],
+  },
+};
+
+export const rekaUiDocsApp: AppConfig = {
+  name: "reka-ui-docs",
+  cwd: REKA_UI_DOCS_WORK_DIR,
+  command: "npx",
+  args: ["-y", "pnpm@10", "--filter", "docs", "docs:dev", "--port", "5318", "--host", "0.0.0.0"],
+  port: 5318,
+  url: "http://localhost:5318",
+  mountSelector: "#app",
+  readyPattern: /Local:\s+http:\/\/localhost:5318/,
+  allowNon200: true,
+  waitUntil: "load",
+  readyDelay: 10_000,
+  startupTimeout: 180_000,
+  setup() {
+    const rekaUiDir = syncGitFixtureWorktree("reka-ui", "docs");
+
+    ensureLocalVizePackagesBuilt();
+    installPnpmDependencies(rekaUiDir);
+    createVizeSymlinks(path.join(rekaUiDir, "node_modules"));
+    patchVitepressConfig(path.join(rekaUiDir, "docs", ".vitepress", "config.ts"));
+    console.log("[reka-ui-docs:setup] pnpm --filter ./packages/core build...");
+    execSync("npx -y pnpm@10 --filter ./packages/core build", {
+      cwd: rekaUiDir,
+      stdio: "inherit",
+      timeout: 900_000,
+    });
   },
 };
 

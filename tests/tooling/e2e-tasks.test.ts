@@ -13,6 +13,9 @@ function readRepoFile(...segments: string[]): string {
 test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
   const taskInputs = readRepoFile("tools/vite-plus/task-inputs.ts");
   const taskGroups = readRepoFile("tools/vite-plus/tasks/test-benchmark.ts");
+  const testPackage = JSON.parse(readRepoFile("tests", "package.json")) as {
+    scripts?: Record<string, string>;
+  };
 
   assert.match(taskInputs, /e2e:\s*\[/);
   assert.match(taskInputs, /"tests\/app\/\*\*"/);
@@ -30,4 +33,5 @@ test("workspace exposes app e2e task aliases with scoped cache inputs", () => {
   );
   assert.match(taskGroups, /"test:e2e:vrt":\s*task\(runInPackages\("test:vrt", \["\.\/tests"\]\)/);
   assert.match(taskGroups, /input:\s*cacheInputs\.e2e/);
+  assert.match(testPackage.scripts?.["test:dev:ci"] ?? "", /app\/dev\/nuxt-ui\.spec\.ts/);
 });

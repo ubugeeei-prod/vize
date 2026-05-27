@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: "./dev",
   testMatch: "**/*.spec.ts",
   testIgnore: ["**/node_modules/**", "**/_git/**"],
+  snapshotPathTemplate: "{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}{ext}",
   timeout: 300_000,
   expect: { timeout: 30_000 },
   fullyParallel: false,
