@@ -252,7 +252,6 @@ async function resolveAliasedVueImport(
     return null;
   }
 
-  const request = classifyVitePluginRequest(id);
   const viteImporter = normalizeViteRequireBase(importer) ?? importer;
   const viteResolved = await ctx.resolve(id, viteImporter, { skipSelf: true });
   const realPath = viteResolved ? normalizeResolvedVuePath(viteResolved.id) : null;
