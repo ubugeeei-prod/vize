@@ -20,7 +20,7 @@ env:
 jobs:
   pr-benchmark:
     name: pr-benchmark
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 30
     permissions:
       contents: read
@@ -161,7 +161,7 @@ jobs:
 
   pr-benchmark-budget:
     name: pr-benchmark-budget
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 5
     needs:
       - pr-benchmark
@@ -185,7 +185,7 @@ jobs:
 
   pr-benchmark-comment:
     name: pr-benchmark-comment
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 5
     needs:
       - pr-benchmark

@@ -40,10 +40,10 @@ env:
 jobs:
   fuzz:
     name: Fuzz ${{ matrix.target }}
-    # libFuzzer requires Linux or macOS; this matrix uses ubuntu-latest for
-    # speed and consistency. macOS coverage can be added in a follow-up if
-    # platform-divergent panics ever appear in triage.
-    runs-on: ubuntu-latest
+    # libFuzzer requires Linux or macOS; this matrix uses a Blacksmith Ubuntu
+    # runner for speed and consistency. macOS coverage can be added in a
+    # follow-up if platform-divergent panics ever appear in triage.
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 60
     # The fuzz matrix is advisory at bootstrap. libFuzzer immediately surfaces
     # real parser/compiler bugs (the first PR run already found one — see the
@@ -92,9 +92,10 @@ jobs:
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz --locked --version "^0.13"
 
-      # ubuntu-latest still ships Node 20.x today, but seed_corpus.mjs uses
-      # `fs.globSync` which is Node 22+. Pin to the repo's `.node-version`
-      # so the script runs on the same Node line as `vp` / `node-engine-compat`.
+      # The runner image does not define this repository's Node floor, and
+      # seed_corpus.mjs uses `fs.globSync` which is Node 22+. Pin to the repo's
+      # `.node-version` so the script runs on the same Node line as `vp` /
+      # `node-engine-compat`.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: ".node-version"

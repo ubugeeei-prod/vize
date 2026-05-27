@@ -14,7 +14,7 @@ on:
     - cron: "11 3 * * *"
 
 concurrency:
-  group: check-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: check-v2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -26,7 +26,7 @@ env:
 
 jobs:
   nix-flake:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 30
     # Nix store cache restore + `nix flake check` was the second-slowest PR
     # gate after playground-test. The flake itself rarely changes between
@@ -45,7 +45,7 @@ jobs:
         run: nix flake check
 
   fmt-rust:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -56,7 +56,7 @@ jobs:
         run: cargo fmt --all -- --check
 
   check-js:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 15
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -74,7 +74,7 @@ jobs:
 
   semver-checks:
     name: cargo-semver-checks
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 25
     permissions:
       contents: read
@@ -118,7 +118,7 @@ jobs:
             --package vize_relief
 
   security-audit:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 20
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -142,7 +142,7 @@ jobs:
         run: cargo audit --deny warnings
 
   node-engine-compat:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -165,7 +165,7 @@ jobs:
         run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts
 
   check-vize-apps:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 20
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -191,7 +191,7 @@ jobs:
         run: vp run --workspace-root check:ci:vize-apps
 
   vue-parity:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -215,7 +215,7 @@ jobs:
         run: vp run --filter './tests' test:check:fixtures
 
   test-scripts:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     # Restoration of the original setup after the trim in #519 broke
     # main: lsp-smoke.test.ts launches `vize lsp` (falls back to
     # `cargo run -p vize` when no binary is staged), moonbit-*.test.ts
@@ -249,7 +249,7 @@ jobs:
         run: vp run --workspace-root test:scripts
 
   editor-extensions:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 15
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -271,7 +271,7 @@ jobs:
         run: vp run --workspace-root package:editor-extensions
 
   build-js-packages:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -312,7 +312,7 @@ jobs:
           retention-days: 7
 
   test-js-packages:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -335,7 +335,7 @@ jobs:
         run: vp run --workspace-root test:js
 
   clippy-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -358,7 +358,7 @@ jobs:
         run: cargo test --workspace
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -376,7 +376,7 @@ jobs:
         run: moon run --target native - -- < tools/moon/scripts/github/write_coverage_summary.mbtx
 
   source-coverage:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 40
     # cargo llvm-cov against the whole workspace consistently runs in the
     # 4–6 minute range. Coverage is a trend metric, not a per-PR signal —
@@ -428,7 +428,7 @@ jobs:
           retention-days: 14
 
   branch-coverage:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 45
     # Nightly Rust branch coverage on the core compiler crates. Same
     # rationale as source-coverage: a single PR does not move branch
@@ -479,7 +479,7 @@ jobs:
           retention-days: 14
 
   playground-test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 30
     needs:
       - build-js-packages
@@ -581,7 +581,7 @@ jobs:
 
   test-report:
     name: test-report
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 5
     if: ${{ always() && github.event_name == 'pull_request' }}
     needs:
@@ -617,7 +617,7 @@ jobs:
 
   test-report-comment:
     name: test-report-comment
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 5
     if: ${{ always() && github.event_name == 'pull_request' }}
     needs:

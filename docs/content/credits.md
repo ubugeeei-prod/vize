@@ -8,6 +8,8 @@ description: People and community feedback that have shaped Vize.
 Vize is shaped by practical feedback from people using it against real applications, adjacent
 tooling, and ecosystem experiments. In particular, thank you to:
 
+- [Blacksmith](https://www.blacksmith.sh/) for sponsoring the CI/CD runner infrastructure that
+  keeps the full workflow matrix practical to run.
 - [かっこかり](https://github.com/kakkokari-gtyih) for regular debugging and monitoring around
   Misskey, with many reports around compiler behavior and edge cases.
 - [ushironoko](https://github.com/ushironoko) for bug reports from the compiler, linter, and CLI

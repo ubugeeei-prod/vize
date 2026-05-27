@@ -125,6 +125,7 @@ This project draws inspiration from
 
 Special thanks to:
 
+- [Blacksmith](https://www.blacksmith.sh/) for sponsoring CI/CD runner infrastructure.
 - [かっこかり](https://github.com/kakkokari-gtyih) for regular debugging and monitoring around
   Misskey, including many compiler-focused bug reports.
 - [ushironoko](https://github.com/ushironoko) for compiler, linter, and CLI bug reports,

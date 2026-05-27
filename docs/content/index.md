@@ -104,6 +104,7 @@ Vize is a free and open-source project licensed under MIT. Developing and mainta
 
 If Vize saves you time, improves your development experience, or you believe in the vision of a high-performance Vue.js toolchain, please consider sponsoring the project:
 
+- CI/CD runner infrastructure is sponsored by [Blacksmith](https://www.blacksmith.sh/).
 - [GitHub Sponsors](https://github.com/sponsors/ubugeeei)
 
 Your support helps fund continued development, infrastructure costs, and ensures Vize remains free for everyone. Every contribution — no matter the size — makes a real difference.

@@ -76,6 +76,35 @@ test("GitHub workflows use the current cache action", () => {
   }
 });
 
+test("GitHub workflows use Blacksmith runners where available", () => {
+  const legacyRunnerPattern =
+    /^\s*(?:runs-on|runner|host):\s*(ubuntu-latest|ubuntu-24\.04-arm|macos-latest|windows-latest)\s*(?:#.*)?$/gm;
+  const violations: string[] = [];
+
+  for (const { relativePath, content } of readGithubYamlFiles()) {
+    for (const match of content.matchAll(legacyRunnerPattern)) {
+      violations.push(`${relativePath}: ${match[1]}`);
+    }
+  }
+
+  assert.deepEqual(violations, []);
+
+  const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
+  const nativeWorkflow = readRepoFile(".github", "workflows", "native-smoke.yml");
+  const releaseWorkflow = readRepoFile(".github", "workflows", "release.yml");
+
+  assert.match(
+    checkWorkflow,
+    /runs-on:\s*\$\{\{\s*github\.event_name == 'pull_request' && 'ubuntu-latest' \|\| 'blacksmith-2vcpu-ubuntu-2404'\s*\}\}/,
+  );
+  assert.match(nativeWorkflow, /runner:\s*blacksmith-2vcpu-ubuntu-2404-arm/);
+  assert.match(nativeWorkflow, /runner:\s*blacksmith-6vcpu-macos-15/);
+  assert.match(nativeWorkflow, /runner:\s*blacksmith-2vcpu-windows-2025/);
+  assert.match(releaseWorkflow, /host:\s*blacksmith-2vcpu-ubuntu-2404-arm/);
+  assert.match(releaseWorkflow, /host:\s*blacksmith-6vcpu-macos-15/);
+  assert.match(releaseWorkflow, /host:\s*blacksmith-2vcpu-windows-2025/);
+});
+
 test("GitHub workflows use Node 24-compatible artifact downloads", () => {
   const violations: string[] = [];
 
@@ -614,7 +643,7 @@ test("release workflow publishes npm packages through Trusted Publishing only", 
 
   for (const jobName of npmPublishJobs) {
     const job = workflowJobBody(workflow, jobName);
-    assert.match(job, /runs-on:\s*ubuntu-latest/);
+    assert.match(job, /runs-on:\s*blacksmith-2vcpu-ubuntu-2404/);
     assert.match(job, /environment:\s*npm/);
     assert.match(job, /id-token:\s*write/);
     assert.match(job, /--provenance/);
@@ -769,11 +798,11 @@ test("native smoke workflow covers host platforms before release tags", () => {
     /Full native\/fresh-install smoke is release evidence, not a per-push gate/,
   );
   for (const [runner, target] of [
-    ["ubuntu-latest", "linux-x64-gnu"],
-    ["ubuntu-24.04-arm", "linux-arm64-gnu"],
+    ["blacksmith-2vcpu-ubuntu-2404", "linux-x64-gnu"],
+    ["blacksmith-2vcpu-ubuntu-2404-arm", "linux-arm64-gnu"],
     ["macos-15-intel", "darwin-x64"],
-    ["macos-latest", "darwin-arm64"],
-    ["windows-latest", "win32-x64-msvc"],
+    ["blacksmith-6vcpu-macos-15", "darwin-arm64"],
+    ["blacksmith-2vcpu-windows-2025", "win32-x64-msvc"],
     ["windows-11-arm", "win32-arm64-msvc"],
   ] as const) {
     assert.match(
@@ -792,11 +821,11 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   const job = workflowJobBody(workflow, "fresh-install-smoke");
 
   for (const [runner, target] of [
-    ["ubuntu-latest", "linux-x64-gnu"],
-    ["ubuntu-24.04-arm", "linux-arm64-gnu"],
+    ["blacksmith-2vcpu-ubuntu-2404", "linux-x64-gnu"],
+    ["blacksmith-2vcpu-ubuntu-2404-arm", "linux-arm64-gnu"],
     ["macos-15-intel", "darwin-x64"],
-    ["macos-latest", "darwin-arm64"],
-    ["windows-latest", "win32-x64-msvc"],
+    ["blacksmith-6vcpu-macos-15", "darwin-arm64"],
+    ["blacksmith-2vcpu-windows-2025", "win32-x64-msvc"],
     ["windows-11-arm", "win32-arm64-msvc"],
   ] as const) {
     assert.match(
@@ -826,11 +855,11 @@ test("release workflow builds native targets on MoonBit-supported runners", () =
   );
 
   for (const [host, target] of [
-    ["macos-latest", "x86_64-apple-darwin"],
-    ["macos-latest", "aarch64-apple-darwin"],
-    ["ubuntu-latest", "x86_64-unknown-linux-gnu"],
-    ["ubuntu-24.04-arm", "aarch64-unknown-linux-gnu"],
-    ["windows-latest", "x86_64-pc-windows-msvc"],
+    ["blacksmith-6vcpu-macos-15", "x86_64-apple-darwin"],
+    ["blacksmith-6vcpu-macos-15", "aarch64-apple-darwin"],
+    ["blacksmith-2vcpu-ubuntu-2404", "x86_64-unknown-linux-gnu"],
+    ["blacksmith-2vcpu-ubuntu-2404-arm", "aarch64-unknown-linux-gnu"],
+    ["blacksmith-2vcpu-windows-2025", "x86_64-pc-windows-msvc"],
     ["windows-11-arm", "aarch64-pc-windows-msvc"],
   ] as const) {
     assert.match(job, new RegExp(`host:\\s*${escapeRegExp(host)}[\\s\\S]*target:\\s*${target}`));
