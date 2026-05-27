@@ -305,7 +305,7 @@ const count = ref(0);
     fn test_type_check_plain_script_exported_binding_in_template() {
         let source = r#"<script lang="ts">
 export const buttonId =
-  "sub-ai-feedback-user-input-delete-button";
+  "button-id";
 </script>
 <template>
     <button :id="buttonId" />
