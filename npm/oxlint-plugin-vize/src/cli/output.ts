@@ -21,15 +21,18 @@ if (import.meta.vitest) {
   describe("rewriteReportedPaths", () => {
     it("rewrites both absolute and relative temporary filenames", () => {
       const replacements = new Map<string, string>([
-        ["/repo/__oxlint_plugin_vize_temp__/100/0-Example.vue", "/repo/src/Example.vue"],
-        ["__oxlint_plugin_vize_temp__/100/0-Example.vue", "/repo/src/Example.vue"],
+        [
+          "/repo/node_modules/.vize/oxlint-plugin-vize/100-abcd/0-Example.vue",
+          "/repo/src/Example.vue",
+        ],
+        ["node_modules/.vize/oxlint-plugin-vize/100-abcd/0-Example.vue", "/repo/src/Example.vue"],
       ]);
 
       expect(
         rewriteReportedPaths(
           [
-            "__oxlint_plugin_vize_temp__/100/0-Example.vue",
-            "/repo/__oxlint_plugin_vize_temp__/100/0-Example.vue",
+            "node_modules/.vize/oxlint-plugin-vize/100-abcd/0-Example.vue",
+            "/repo/node_modules/.vize/oxlint-plugin-vize/100-abcd/0-Example.vue",
           ].join("\n"),
           replacements,
         ),

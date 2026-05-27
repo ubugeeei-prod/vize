@@ -14,7 +14,10 @@ export function prepareScriptlessWorkaroundFiles(
   cwd: string,
   filenames: readonly string[],
 ): PreparedWorkaroundFiles {
-  const tempDir = path.join(cwd, "__oxlint_plugin_vize_temp__", String(process.pid));
+  const nodeModulesDir = path.join(cwd, "node_modules");
+  const tempRoot = path.join(nodeModulesDir, ".vize", "oxlint-plugin-vize");
+  let tempDir: string | undefined;
+  let createdNodeModules = false;
   const ignoreArgs: string[] = [];
   const tempArgs: string[] = [];
   const pathReplacements = new Map<string, string>();
@@ -28,6 +31,11 @@ export function prepareScriptlessWorkaroundFiles(
     }
 
     const relativeFilename = path.relative(cwd, filename);
+    if (tempDir == null) {
+      const created = createWorkaroundTempDir(nodeModulesDir, tempRoot);
+      tempDir = created.tempDir;
+      createdNodeModules = created.createdNodeModules;
+    }
     const tempBasename = isStandaloneHtml
       ? `${path.basename(filename)}.vue`
       : path.basename(filename);
@@ -45,15 +53,53 @@ export function prepareScriptlessWorkaroundFiles(
   return {
     appendedArgs: [...ignoreArgs, ...tempArgs],
     cleanup() {
-      if (pathReplacements.size === 0) {
+      if (tempDir == null) {
         return;
       }
 
       fs.rmSync(tempDir, { force: true, recursive: true });
+      removeEmptyDirectory(tempRoot);
+      removeEmptyDirectory(path.dirname(tempRoot));
+      if (createdNodeModules) {
+        removeEmptyDirectory(nodeModulesDir);
+      }
     },
     pathReplacements,
     usedScriptlessWorkaround: pathReplacements.size > 0,
   };
+}
+
+function createWorkaroundTempDir(
+  nodeModulesDir: string,
+  tempRoot: string,
+): { createdNodeModules: boolean; tempDir: string } {
+  const createdNodeModules = !fs.existsSync(nodeModulesDir);
+  fs.mkdirSync(tempRoot, { recursive: true });
+  return {
+    createdNodeModules,
+    tempDir: fs.mkdtempSync(path.join(tempRoot, `${process.pid}-`)),
+  };
+}
+
+function removeEmptyDirectory(dirname: string): void {
+  try {
+    fs.rmdirSync(dirname);
+  } catch (error) {
+    if (!isIgnorableRemoveDirError(error)) {
+      throw error;
+    }
+  }
+}
+
+function isIgnorableRemoveDirError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    (error.code === "ENOENT" ||
+      error.code === "ENOTDIR" ||
+      error.code === "ENOTEMPTY" ||
+      error.code === "EEXIST")
+  );
 }
 
 function toCliPath(filename: string): string {

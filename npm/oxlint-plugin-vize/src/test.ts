@@ -526,6 +526,19 @@ function readSnapshot(name: string): string {
   return normalizeOutput(fs.readFileSync(path.join(snapshotsDir, name), "utf8"));
 }
 
+function assertNoWorkaroundGarbage(): void {
+  assert.equal(
+    fs.existsSync(path.join(fixtureDir, "__oxlint_plugin_vize_temp__")),
+    false,
+    "scriptless workaround should not create project-local legacy temp directories",
+  );
+  assert.equal(
+    fs.existsSync(path.join(fixtureDir, "node_modules", ".vize", "oxlint-plugin-vize")),
+    false,
+    "scriptless workaround cleanup should remove generated node_modules/.vize files",
+  );
+}
+
 const defaultRun = runOxlint(["-c", ".oxlintrc.json", "App.vue"]);
 assert.notEqual(defaultRun.exitCode, 0, "oxlint should fail when Patina reports an error");
 assert.match(
@@ -584,6 +597,7 @@ const scriptlessJsonRun = runOxlintVize([
   "json",
   "Scriptless.vue",
 ]);
+assertNoWorkaroundGarbage();
 assert.notEqual(
   scriptlessJsonRun.exitCode,
   0,
@@ -596,7 +610,7 @@ assert.match(
 );
 assert.doesNotMatch(
   scriptlessJsonRun.output,
-  /__oxlint_plugin_vize_temp__/u,
+  /node_modules\/\.vize\/oxlint-plugin-vize|__oxlint_plugin_vize_temp__/u,
   "scriptless JSON output should not leak temporary workaround paths",
 );
 assert.equal(scriptlessJsonRun.output, readSnapshot("json-scriptless-workaround-output.txt"));
@@ -795,6 +809,7 @@ const scriptlessRun = runOxlintVize([
   "stylish",
   "Scriptless.vue",
 ]);
+assertNoWorkaroundGarbage();
 assert.notEqual(
   scriptlessRun.exitCode,
   0,
@@ -807,8 +822,8 @@ assert.match(
 );
 assert.doesNotMatch(
   scriptlessRun.output,
-  /node_modules\/\.cache\/oxlint-plugin-vize/u,
-  "scriptless workaround should not leak temporary cache paths to users",
+  /node_modules\/\.vize\/oxlint-plugin-vize/u,
+  "scriptless workaround should not leak temporary workaround paths to users",
 );
 assert.equal(scriptlessRun.output, readSnapshot("stylish-scriptless-workaround-output.txt"));
 
@@ -819,6 +834,7 @@ const standaloneHtmlRun = runOxlintVize([
   "stylish",
   "Standalone.html",
 ]);
+assertNoWorkaroundGarbage();
 assert.notEqual(
   standaloneHtmlRun.exitCode,
   0,
@@ -831,7 +847,7 @@ assert.match(
 );
 assert.doesNotMatch(
   standaloneHtmlRun.output,
-  /__oxlint_plugin_vize_temp__/u,
+  /node_modules\/\.vize\/oxlint-plugin-vize|__oxlint_plugin_vize_temp__/u,
   "standalone HTML output should not leak temporary workaround paths",
 );
 assert.equal(standaloneHtmlRun.output, readSnapshot("stylish-standalone-html-output.txt"));
