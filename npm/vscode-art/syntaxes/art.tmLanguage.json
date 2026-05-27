@@ -122,7 +122,6 @@
       "end": "(?=</variant>)",
       "patterns": [
         { "include": "#vue-comments" },
-        { "include": "#vue-script" },
         { "include": "#vue-interpolation" },
         { "include": "#vue-directives" },
         { "include": "#html-tags" },

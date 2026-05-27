@@ -105,7 +105,11 @@ test("vscode-vize grammar keeps quote-aware block lookaheads", () => {
     scopeName?: string;
   }>("npm/vscode-vize/syntaxes/art-vue.tmLanguage.json");
   assert.equal(artGrammar.scopeName, "source.art-vue");
-  assert.deepEqual(artGrammar.patterns, [{ include: "source.vue" }]);
+  assert.deepEqual(artGrammar.patterns, [
+    { include: "#art-comments" },
+    { include: "#art-block" },
+    { include: "source.vue" },
+  ]);
 });
 
 test("vscode-art grammar stays aligned with vue-aware editor support", () => {

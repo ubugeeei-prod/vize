@@ -9,7 +9,8 @@ use oxc_span::{GetSpan, Span};
 
 use crate::analysis::{InvalidExport, InvalidExportKind, TypeExport, TypeExportKind};
 use crate::macros::{
-    ArtDefinition, EmitDefinition, MacroKind, ModelDefinition, PropDefinition, SlotsDefinition,
+    ArtDefinition, DEFINE_ART, EmitDefinition, MacroKind, ModelDefinition, PropDefinition,
+    SlotsDefinition,
 };
 use crate::provide::ProvideKey;
 use crate::race::RaceConditionRiskKind;
@@ -144,7 +145,7 @@ pub fn process_call_expression(
             }
         }
 
-        MacroKind::DefineArt => {
+        MacroKind::Custom if callee_name == DEFINE_ART => {
             if let Some(art) = extract_define_art(result, call) {
                 result.macros.set_define_art(art);
             }

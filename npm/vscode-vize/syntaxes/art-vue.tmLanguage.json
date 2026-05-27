@@ -81,7 +81,6 @@
     "art-template-content": {
       "patterns": [
         { "include": "#art-comments" },
-        { "include": "source.vue#vue-script" },
         { "include": "source.vue#vue-interpolation" },
         { "include": "source.vue#vue-directives" },
         { "include": "source.vue#html-tags" },

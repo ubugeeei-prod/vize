@@ -197,7 +197,6 @@ pub enum MacroKind {
     DefineSlots = 4,
     DefineModel = 5,
     WithDefaults = 6,
-    DefineArt = 7,
     Custom = 255,
 }
 
@@ -212,7 +211,7 @@ impl MacroKind {
             DEFINE_SLOTS => Some(Self::DefineSlots),
             DEFINE_MODEL => Some(Self::DefineModel),
             WITH_DEFAULTS => Some(Self::WithDefaults),
-            DEFINE_ART => Some(Self::DefineArt),
+            DEFINE_ART => Some(Self::Custom),
             _ => None,
         }
     }
@@ -402,6 +401,7 @@ impl MacroTracker {
         runtime_args: Option<CompactString>,
         type_args: Option<CompactString>,
     ) -> MacroCallId {
+        let name = name.into();
         let id = MacroCallId::new(self.next_id);
         self.next_id += 1;
 
@@ -413,13 +413,15 @@ impl MacroTracker {
             MacroKind::DefineEmits => self.define_emits_idx = Some(idx),
             MacroKind::DefineExpose => self.define_expose_idx = Some(idx),
             MacroKind::DefineSlots => self.define_slots_idx = Some(idx),
-            MacroKind::DefineArt => self.define_art_idx = Some(idx),
             _ => {}
+        }
+        if name.as_str() == DEFINE_ART {
+            self.define_art_idx = Some(idx);
         }
 
         self.calls.push(MacroCall {
             id,
-            name: name.into(),
+            name,
             kind,
             start,
             end,
