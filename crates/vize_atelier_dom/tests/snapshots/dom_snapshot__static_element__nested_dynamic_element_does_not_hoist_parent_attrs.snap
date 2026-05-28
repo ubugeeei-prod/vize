@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_dom/tests/dom_snapshot.rs
+expression: "get_compiled(r#\"<div class=\"wrapper\"><span :class=\"active\">hello</span></div>\"#)"
+---
+const { openBlock: _openBlock, createElementBlock: _createElementBlock, createElementVNode: _createElementVNode, normalizeClass: _normalizeClass } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return (_openBlock(), _createElementBlock("div", { class: "wrapper" }, [
+    _createElementVNode("span", {
+      class: _normalizeClass(active)
+    }, "hello", 2 /* CLASS */)
+  ]))
+}
