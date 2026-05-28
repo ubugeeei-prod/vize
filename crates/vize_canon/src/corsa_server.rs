@@ -483,6 +483,9 @@ fn collect_sfc_compile_diagnostic(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
 ) -> Option<Diagnostic> {
     let script_setup = descriptor.script_setup.as_ref()?;
+    if !script_setup_has_validator_candidates(&script_setup.content) {
+        return None;
+    }
 
     let Err(error) = vize_atelier_sfc::validate_script_setup_semantics(&script_setup.content)
     else {
@@ -511,6 +514,12 @@ fn collect_sfc_compile_diagnostic(
         column,
         code: error.code.clone(),
     })
+}
+
+/// See the canon batch path for rationale — keep this in sync with
+/// `crates/vize_canon/src/batch/virtual_project.rs`.
+fn script_setup_has_validator_candidates(content: &str) -> bool {
+    content.contains("defineProps<") && content.contains("= defineProps")
 }
 
 fn sfc_block_fallback_offset(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> usize {

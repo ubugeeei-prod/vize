@@ -310,6 +310,9 @@ impl DiagnosticService {
         let Some(script_setup) = descriptor.script_setup.as_ref() else {
             return Vec::new();
         };
+        if !script_setup_has_validator_candidates(&script_setup.content) {
+            return Vec::new();
+        }
 
         let Err(err) = vize_atelier_sfc::validate_script_setup_semantics(&script_setup.content)
         else {
@@ -587,6 +590,12 @@ fn script_source_type(lang: Option<&str>) -> Option<SourceType> {
     };
 
     SourceType::from_path(format!("script.{extension}")).ok()
+}
+
+/// See the canon batch path for rationale — keep this in sync with
+/// `crates/vize_canon/src/batch/virtual_project.rs`.
+fn script_setup_has_validator_candidates(content: &str) -> bool {
+    content.contains("defineProps<") && content.contains("= defineProps")
 }
 
 /// Best-effort fallback offset (byte) for SFC compile errors that ship
