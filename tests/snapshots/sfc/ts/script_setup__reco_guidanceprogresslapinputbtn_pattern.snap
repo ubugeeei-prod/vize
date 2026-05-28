@@ -21,7 +21,7 @@ interface Props {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    guidanceProgress: { type: Object, required: true },
+    guidanceProgress: { type: Object },
     disabled: { type: Boolean, required: false },
     readonly: { type: Boolean, required: false }
   },

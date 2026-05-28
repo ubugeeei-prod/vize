@@ -9,7 +9,7 @@ import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    title: { type: String, required: true },
+    title: { type: String },
     count: { type: Number, required: false, default: 0 },
     disabled: { type: Boolean, required: false, default: false },
     items: { type: Array, required: false, default: () => [] }

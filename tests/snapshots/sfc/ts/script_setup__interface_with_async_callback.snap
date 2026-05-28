@@ -14,7 +14,7 @@ interface Props {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    onSubmit: { type: Function, required: true },
+    onSubmit: { type: Function },
     onError: { type: Function, required: false }
   },
   setup(__props: any) {

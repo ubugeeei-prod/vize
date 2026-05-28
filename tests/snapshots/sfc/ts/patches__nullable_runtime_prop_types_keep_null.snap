@@ -9,9 +9,9 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    activeKey: { type: [String, null], required: true },
-    items: { type: [Array, null], required: true },
-    groupName: { type: [String, null], required: true }
+    activeKey: { type: [String, null] },
+    items: { type: [Array, null] },
+    groupName: { type: [String, null] }
   },
   setup(__props: any) {
 

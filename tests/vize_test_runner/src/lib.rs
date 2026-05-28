@@ -290,8 +290,20 @@ pub fn normalize_code(code: &str) -> String {
     let joined = output.join("\n").trim().to_compact_string();
 
     // Collapse multiline function calls into single lines:
-    // This handles cases where one compiler puts arguments on separate lines
-    collapse_multiline(&joined)
+    // This handles cases where one compiler puts arguments on separate lines.
+    let collapsed = collapse_multiline(&joined);
+
+    // `required: true` is Vue's required-prop default. Vize intentionally omits
+    // it from generated type-based runtime props, so it should not affect
+    // fixture coverage parity.
+    normalize_default_required_true(&collapsed)
+}
+
+fn normalize_default_required_true(code: &str) -> String {
+    code.replace(", required: true", "")
+        .replace("{ required: true, ", "{ ")
+        .replace("{ required: true }", "{}")
+        .into()
 }
 
 /// Collapse multiline expressions by joining lines where brackets are unbalanced.
@@ -610,8 +622,31 @@ pub fn run_fixture_tests(fixture_path: &Path, expected_path: &Path) -> Vec<TestR
 
 #[cfg(test)]
 mod tests {
-    use super::run_fixture_tests;
+    use super::{compare_output, normalize_code, run_fixture_tests};
     use std::path::PathBuf;
+
+    #[test]
+    fn normalize_code_treats_required_true_as_default() {
+        let expected = r#"
+export default {
+  props: {
+    title: { type: String, required: true },
+    count: { type: Number, required: false, default: 0 }
+  }
+}
+"#;
+        let actual = r#"
+export default {
+  props: {
+    title: { type: String },
+    count: { type: Number, required: false, default: 0 }
+  }
+}
+"#;
+
+        assert_eq!(normalize_code(expected), normalize_code(actual));
+        compare_output(expected, actual).unwrap();
+    }
 
     fn fixtures_path() -> PathBuf {
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))

@@ -9,7 +9,7 @@ import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _c
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    renderLabel: { type: Function, required: true }
+    renderLabel: { type: Function }
   },
   setup(__props: any) {
 

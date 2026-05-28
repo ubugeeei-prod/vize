@@ -13,7 +13,7 @@ type ButtonVariant =
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    variant: { type: [null, Object], required: true }
+    variant: { type: [null, Object] }
   },
   setup(__props: any) {
 

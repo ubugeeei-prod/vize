@@ -5,18 +5,9 @@ expression: output.as_str()
 export default {
   __name: "TestComponent",
   props: {
-    id: {
-      type: String,
-      required: true
-    },
-    label: {
-      type: String,
-      required: true
-    },
-    routeName: {
-      type: String,
-      required: true
-    },
+    id: { type: String },
+    label: { type: String },
+    routeName: { type: String },
     disabled: {
       type: Boolean,
       required: false

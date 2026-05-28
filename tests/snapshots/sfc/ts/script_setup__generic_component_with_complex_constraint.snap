@@ -10,8 +10,8 @@ import { ref } from 'vue'
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    initialState: { type: null, required: true },
-    onSubmit: { type: Function, required: true }
+    initialState: { type: null },
+    onSubmit: { type: Function }
   },
   setup(__props: any) {
 

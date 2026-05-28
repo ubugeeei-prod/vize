@@ -5,10 +5,7 @@ expression: js_output.as_str()
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString } from "vue";
 export default {
   __name: "test",
-  props: { item: {
-    type: Object,
-    required: true
-  } },
+  props: { item: { type: Object } },
   setup(__props) {
     const props = __props;
     return (_ctx, _cache) => {

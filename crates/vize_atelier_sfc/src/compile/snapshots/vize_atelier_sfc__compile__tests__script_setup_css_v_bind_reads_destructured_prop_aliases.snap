@@ -17,10 +17,7 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 const _hoisted_1 = { class: "root" };
 export default {
   __name: "Alias",
-  props: { color: {
-    type: String,
-    required: true
-  } },
+  props: { color: { type: String } },
   setup(__props) {
     _useCssVars((_ctx) => ({ "test-bannerColor": __props.color }));
     return (_ctx, _cache) => {

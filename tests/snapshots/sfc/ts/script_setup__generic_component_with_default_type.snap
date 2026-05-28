@@ -9,7 +9,7 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock, toD
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    value: { type: null, required: true }
+    value: { type: null }
   },
   setup(__props: any) {
 

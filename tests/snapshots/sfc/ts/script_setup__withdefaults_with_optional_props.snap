@@ -15,7 +15,7 @@ interface Props {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    msg: { type: String, required: true },
+    msg: { type: String },
     count: { type: Number, required: false, default: 0 },
     disabled: { type: Boolean, required: false, default: false }
   },

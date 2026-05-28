@@ -1,15 +1,11 @@
 ---
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
-assertion_line: 221
 expression: js_output.as_str()
 ---
 import { openBlock as _openBlock, createBlock as _createBlock, createVNode as _createVNode, createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, withCtx as _withCtx, unref as _unref } from "vue";
 export default {
   __name: "test",
-  props: { renderLabel: {
-    type: Function,
-    required: true
-  } },
+  props: { renderLabel: { type: Function } },
   setup(__props) {
     const props = __props;
     const { format } = useFormatter(catalog);

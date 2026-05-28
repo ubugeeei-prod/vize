@@ -9,8 +9,8 @@ import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    value: { type: null, required: true },
-    options: { type: Array, required: true }
+    value: { type: null },
+    options: { type: Array }
   },
   setup(__props: any) {
 

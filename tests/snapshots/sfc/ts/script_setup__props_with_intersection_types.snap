@@ -17,9 +17,9 @@ interface ExtendedProps {
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    id: { type: String, required: true },
-    name: { type: String, required: true },
-    extra: { type: Boolean, required: true }
+    id: { type: String },
+    name: { type: String },
+    extra: { type: Boolean }
   },
   setup(__props: any) {
 

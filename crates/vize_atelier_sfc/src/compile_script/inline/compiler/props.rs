@@ -67,12 +67,9 @@ pub(super) fn build_props_emits(
                         props_emits_buf.extend_from_slice(normalized.as_bytes());
                         props_emits_buf.push(b'>');
                     }
-                    props_emits_buf.extend_from_slice(b", required: ");
-                    props_emits_buf.extend_from_slice(if prop_type.optional {
-                        b"false"
-                    } else {
-                        b"true"
-                    });
+                    if prop_type.optional {
+                        props_emits_buf.extend_from_slice(b", required: false");
+                    }
                     let mut has_default = false;
                     if let Some(ref defaults) = with_defaults_args
                         && let Some(default_val) = defaults.get(name.as_str())

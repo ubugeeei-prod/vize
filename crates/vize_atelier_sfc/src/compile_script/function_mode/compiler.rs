@@ -405,12 +405,9 @@ fn emit_props_definition(
                         output.extend_from_slice(normalized.as_bytes());
                         output.push(b'>');
                     }
-                    output.extend_from_slice(b", required: ");
-                    output.extend_from_slice(if prop_type.optional {
-                        b"false"
-                    } else {
-                        b"true"
-                    });
+                    if prop_type.optional {
+                        output.extend_from_slice(b", required: false");
+                    }
                     output.extend_from_slice(b" },\n");
                 }
                 output.extend_from_slice(b"  },\n");

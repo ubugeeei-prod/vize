@@ -18,7 +18,7 @@ export type { TabItem };
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
   props: {
-    items: { type: Array, required: true }
+    items: { type: Array }
   },
   setup(__props: any) {
 

@@ -16,10 +16,7 @@ export default {
       required: false,
       default: "md"
     },
-    items: {
-      type: Array,
-      required: true
-    },
+    items: { type: Array },
     "modelValue": { default: undefined }
   },
   emits: ["update:modelValue"],

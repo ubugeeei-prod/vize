@@ -6,10 +6,7 @@ import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _
 export default {
   __name: "test",
   props: {
-    title: {
-      type: String,
-      required: true
-    },
+    title: { type: String },
     count: {
       type: Number,
       required: false,
