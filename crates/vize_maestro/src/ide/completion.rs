@@ -278,6 +278,47 @@ count.
     }
 
     #[test]
+    fn test_template_completion_includes_v_for_binding() {
+        // Cursor inside the v-for body should see the iteration variable.
+        let source = r#"<script setup lang="ts">
+const items = [1, 2, 3]
+</script>
+<template>
+  <div v-for="item in items">{{ it }}</div>
+</template>
+"#;
+        let (state, uri) = state_with_document("VForCompletion.vue", source);
+        let offset = source.find("{{ it ").unwrap() + "{{ it".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+        assert!(
+            labels.contains(&"item".to_string()),
+            "v-for binding must be visible inside v-for body, got {labels:?}",
+        );
+    }
+
+    #[test]
+    fn test_template_completion_excludes_v_for_binding_outside() {
+        // The same v-for binding must NOT leak outside the v-for subtree.
+        let source = r#"<script setup lang="ts">
+const items = [1, 2, 3]
+</script>
+<template>
+  <div v-for="item in items">{{ item }}</div>
+  <p>{{ ite }}</p>
+</template>
+"#;
+        let (state, uri) = state_with_document("VForLeak.vue", source);
+        let offset = source.find("{{ ite ").unwrap() + "{{ ite".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+        assert!(
+            !labels.iter().any(|l| l == "item"),
+            "v-for binding must not leak outside its subtree, got {labels:?}",
+        );
+    }
+
+    #[test]
     fn test_script_completion_includes_closure_local_binding() {
         // Cursor inside a closure body should see the binding declared in
         // that closure as well as setup-scope siblings.

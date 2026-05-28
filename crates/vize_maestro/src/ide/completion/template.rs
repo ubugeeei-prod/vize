@@ -17,7 +17,7 @@ use tower_lsp::lsp_types::{
 use vize_atelier_sfc::croquis::{
     SfcCroquisOptions, analyze_sfc_descriptor, analyze_sfc_descriptor_with_context_legacy_vue2,
 };
-use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_croquis::{Analyzer, AnalyzerOptions, ScopeKind};
 use vize_relief::BindingType;
 
 use super::{
@@ -337,14 +337,47 @@ fn analyzed_template_binding_completions(
         return Vec::new();
     };
 
+    // Parse the template so v-for / v-slot scopes land in the Croquis scope
+    // chain. Without the AST, `analyze_sfc_descriptor` skips template-level
+    // analysis and we lose nested binding visibility.
+    let template_block = descriptor.template.as_ref();
+    let allocator = vize_carton::Bump::new();
+    let template_parse =
+        template_block.map(|tb| (vize_armature::parse(&allocator, &tb.content), tb.loc.start));
+
     let croquis_options = SfcCroquisOptions::full();
     let croquis = if ctx.state.lsp_features().legacy_vue2 {
-        analyze_sfc_descriptor_with_context_legacy_vue2(&descriptor, None, croquis_options).croquis
+        analyze_sfc_descriptor_with_context_legacy_vue2(
+            &descriptor,
+            template_parse.as_ref().map(|((ast, _), _)| ast),
+            croquis_options,
+        )
+        .croquis
     } else {
-        analyze_sfc_descriptor(&descriptor, None, croquis_options)
+        analyze_sfc_descriptor(
+            &descriptor,
+            template_parse.as_ref().map(|((ast, _), _)| ast),
+            croquis_options,
+        )
     };
 
     let mut items_vec = Vec::new();
+
+    // Scope-aware completion: include bindings introduced by v-for / v-slot /
+    // event-handler scopes that contain the cursor. Top-level setup bindings
+    // are added by the loop below; we de-dup by name.
+    if let Some((_, template_start)) = template_parse.as_ref() {
+        let template_local = ctx.offset.saturating_sub(*template_start) as u32;
+        for (name, _binding, scope_kind) in croquis.scopes.bindings_visible_at(template_local) {
+            if !is_template_scope_kind(scope_kind) {
+                continue;
+            }
+            if croquis.bindings.contains(name) {
+                continue;
+            }
+            items_vec.push(template_scope_completion_item(name, scope_kind));
+        }
+    }
     let macro_prop_names: BTreeSet<&str> = if include_vue3_details {
         BTreeSet::new()
     } else {
@@ -451,6 +484,49 @@ fn analyzed_template_binding_completions(
     }
 
     items_vec
+}
+
+/// True for scopes introduced by template-level constructs that bring new
+/// names into expression scope (v-for, v-slot, event handlers, callbacks).
+fn is_template_scope_kind(kind: ScopeKind) -> bool {
+    matches!(
+        kind,
+        ScopeKind::VFor | ScopeKind::VSlot | ScopeKind::EventHandler | ScopeKind::Callback
+    )
+}
+
+#[allow(clippy::disallowed_macros)]
+fn template_scope_completion_item(name: &str, scope_kind: ScopeKind) -> CompletionItem {
+    let label = template_scope_label(scope_kind);
+    CompletionItem {
+        label: name.to_string(),
+        kind: Some(CompletionItemKind::VARIABLE),
+        label_details: Some(CompletionItemLabelDetails {
+            detail: Some(format!(" ({label})")),
+            description: Some("local".to_string()),
+        }),
+        detail: Some(format!("Local {label} binding")),
+        documentation: Some(Documentation::MarkupContent(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: format!(
+                "**Local** binding from `{label}` scope.\n\nVisible only inside the current `{label}` subtree."
+            ),
+        })),
+        // Inner-scope bindings sort above setup-scope candidates that use
+        // a plain `0` prefix.
+        sort_text: Some(format!("00{name}")),
+        ..Default::default()
+    }
+}
+
+fn template_scope_label(kind: ScopeKind) -> &'static str {
+    match kind {
+        ScopeKind::VFor => "v-for",
+        ScopeKind::VSlot => "v-slot",
+        ScopeKind::EventHandler => "event handler",
+        ScopeKind::Callback => "callback",
+        _ => "local",
+    }
 }
 
 fn is_legacy_vue2_binding(binding_type: BindingType) -> bool {
