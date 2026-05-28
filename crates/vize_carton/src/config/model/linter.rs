@@ -28,6 +28,17 @@ impl LinterConfig {
         self == &Self::default()
     }
 
+    /// Whether the host wants the strict-reactivity rule enabled. The rule
+    /// shows up when `type/no-reactivity-loss` is explicitly configured to
+    /// `warn` or `error` (rather than `off`). CLI users opt in via
+    /// `--strict-reactivity`; LSP users opt in via the same rule entry.
+    pub fn strict_reactivity_enabled(&self) -> bool {
+        self.rules
+            .get("type/no-reactivity-loss")
+            .map(|severity| !matches!(severity, LintRuleSeverity::Off))
+            .unwrap_or(false)
+    }
+
     /// Rule names explicitly disabled by config.
     pub fn disabled_rules(&self) -> Vec<String> {
         let mut rules = self

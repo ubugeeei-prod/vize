@@ -422,6 +422,20 @@ impl DiagnosticService {
         }
         .with_additional_rules(linter_config.enabled_rules())
         .with_disabled_rules(linter_config.disabled_rules());
+
+        // Opt-in strict-reactivity rule, mirroring `vize lint --strict-reactivity`.
+        // The CLI registers this via a flag; in the LSP it follows the
+        // `languageServer.crossFile` knob (#685) for now, on the principle
+        // that the rule needs broader analysis. A dedicated `strictReactivity`
+        // knob can split off later if usage warrants it.
+        #[cfg(not(target_arch = "wasm32"))]
+        let linter = if linter_config.strict_reactivity_enabled() {
+            linter.with_rule(Box::new(
+                vize_patina::rules::type_aware::NoReactivityLoss::new(),
+            ))
+        } else {
+            linter
+        };
         let result = if is_standalone_html {
             linter.lint_standalone_html(content, uri.path())
         } else {
