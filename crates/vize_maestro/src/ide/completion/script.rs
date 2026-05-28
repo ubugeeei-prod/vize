@@ -18,6 +18,7 @@ use vize_relief::BindingType;
 
 use super::items;
 use crate::ide::IdeContext;
+use crate::ide::cursor_context::CursorContext;
 
 /// Get completions for script context.
 pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<CompletionItem> {
@@ -28,20 +29,32 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
         return items;
     }
 
-    if let Some(items) = complete_member_access(ctx, is_setup)
-        && !items.is_empty()
-    {
-        return items;
-    }
-
-    // If the cursor is right after a `.`, the user is asking for member
-    // completion. We don't have Corsa here, so we cannot resolve arbitrary
-    // member chains — but proposing the full setup-binding list is actively
-    // misleading: none of those names make sense after a dot. Return empty
-    // and let the Corsa-backed `complete_with_corsa` path (when available)
-    // produce the real members.
-    if is_cursor_after_dot(&ctx.content, ctx.offset) {
-        return Vec::new();
+    // Route by cursor context so trigger characters get a focused list.
+    // Member-access sites either return the ref-`.value` shortcut or fall
+    // through to an empty response (Corsa's `complete_with_corsa` path is the
+    // source of truth when available). All other shapes fall through to the
+    // standard composition-API + bindings list below.
+    match CursorContext::detect(&ctx.content, ctx.offset) {
+        CursorContext::MemberAccess { receiver, .. } => {
+            // The shared detector treats `1.` as member access on `1`. In a
+            // script context this is almost always a decimal literal in
+            // progress, not a member chain — fall through to the standard
+            // completion list so the user keeps seeing Composition-API items.
+            if !receiver_is_member_chain(receiver) {
+                // continue to standard list
+            } else if let Some(items) = complete_member_access(ctx, is_setup)
+                && !items.is_empty()
+            {
+                return items;
+            } else {
+                return Vec::new();
+            }
+        }
+        CursorContext::HtmlComment => {
+            // Inside a script block this should not normally fire, but the
+            // detector is shared. Fall through to identifier behavior.
+        }
+        CursorContext::Other | CursorContext::Identifier { .. } => {}
     }
 
     let mut items_vec = Vec::new();
@@ -319,37 +332,13 @@ fn scope_kind_short_label(kind: ScopeKind) -> &'static str {
     }
 }
 
-/// True when the cursor sits immediately after a `.` (allowing intermediate
-/// whitespace) on a receiver that looks like an identifier or member chain.
-/// Used to suppress the full setup-binding completion list at member-access
-/// sites where it would be misleading.
-fn is_cursor_after_dot(content: &str, offset: usize) -> bool {
-    let before = &content[..offset.min(content.len())];
-    let trimmed = before.trim_end();
-    let Some(stripped) = trimmed.strip_suffix('.') else {
-        return false;
-    };
-
-    // Guard against decimal literals like `1.|` and standalone `.` in
-    // operator positions (e.g. `... .foo`). Require at least one identifier
-    // byte right before the dot, and at least one *non-digit* identifier byte
-    // somewhere in the trailing identifier so we don't claim `1.|` as a
-    // member access on the number `1`.
-    let bytes = stripped.as_bytes();
-    let mut idx = bytes.len();
-    let mut saw_non_digit = false;
-    while idx > 0 {
-        let byte = bytes[idx - 1];
-        if !is_ident_byte(byte) && byte != b']' {
-            break;
-        }
-        if !byte.is_ascii_digit() && byte != b']' {
-            saw_non_digit = true;
-        }
-        idx -= 1;
-    }
-    let prefix_len = stripped.len() - idx;
-    prefix_len > 0 && saw_non_digit
+/// True when the receiver looks like an identifier or member chain rather
+/// than a numeric literal. `1.` and `42.` are decimal-literal contexts even
+/// though `CursorContext` exposes them as `MemberAccess { receiver: "1" }`.
+fn receiver_is_member_chain(receiver: &str) -> bool {
+    receiver
+        .bytes()
+        .any(|b| !b.is_ascii_digit() && b != b']' && b != b'.')
 }
 
 fn member_access_receiver(content: &str, offset: usize) -> Option<&str> {
