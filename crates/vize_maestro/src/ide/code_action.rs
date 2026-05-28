@@ -28,8 +28,89 @@ impl CodeActionService {
         // Vue-flavored quick fixes: today this surfaces a "Wrap with `.value`"
         // edit when the cursor sits on a known reactive ref. See #691.
         actions.extend(Self::collect_wrap_with_value(ctx, range));
+        actions.extend(Self::collect_unwrap_value(ctx, range));
 
         actions
+    }
+
+    /// Offer an "Unwrap `.value`" quick fix when the cursor sits on the
+    /// `.value` segment of a reactive ref access in script context. Useful
+    /// when the user copies template code (where refs auto-unwrap) into
+    /// script and the trailing `.value` is now redundant — or when they
+    /// pass `count.value` to a function that expects the wrapper itself.
+    fn collect_unwrap_value(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
+        if !matches!(
+            ctx.block_type,
+            Some(crate::virtual_code::BlockType::ScriptSetup)
+                | Some(crate::virtual_code::BlockType::Script)
+        ) {
+            return Vec::new();
+        }
+
+        // Look for a `.value` token straddling the cursor.
+        let cursor = ctx.offset.min(ctx.content.len());
+        let before = &ctx.content[..cursor];
+        let after = &ctx.content[cursor..];
+        let dot_pos = match (before.rfind(".value"), after.starts_with("value")) {
+            (Some(p), _) if cursor >= p && cursor <= p + ".value".len() => p,
+            (Some(p), _) if cursor == p + ".value".len() => p,
+            _ if before.ends_with('.') && after.starts_with("value") => cursor - 1,
+            _ => return Vec::new(),
+        };
+        if !before[..dot_pos].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '$') {
+            return Vec::new();
+        }
+        // Resolve the receiver identifier just before the `.`.
+        let bytes = ctx.content.as_bytes();
+        let mut start = dot_pos;
+        while start > 0 && is_ident_byte(bytes[start - 1]) {
+            start -= 1;
+        }
+        let receiver = &ctx.content[start..dot_pos];
+        if !is_reactive_ref_in_script(&ctx.content, ctx.uri, receiver) {
+            return Vec::new();
+        }
+
+        let value_end = dot_pos + ".value".len();
+        let (start_line, start_col) = offset_to_line_col(&ctx.content, dot_pos);
+        let (end_line, end_col) = offset_to_line_col(&ctx.content, value_end);
+        let edit_range = Range {
+            start: Position {
+                line: start_line,
+                character: start_col,
+            },
+            end: Position {
+                line: end_line,
+                character: end_col,
+            },
+        };
+
+        let mut changes = std::collections::HashMap::new();
+        changes.insert(
+            ctx.uri.clone(),
+            vec![TextEdit {
+                range: edit_range,
+                new_text: String::new(),
+            }],
+        );
+
+        #[allow(clippy::disallowed_macros)]
+        let action = CodeAction {
+            title: format!("Unwrap `.value` from `{receiver}`"),
+            kind: Some(CodeActionKind::QUICKFIX),
+            diagnostics: None,
+            edit: Some(WorkspaceEdit {
+                changes: Some(changes),
+                document_changes: None,
+                change_annotations: None,
+            }),
+            command: None,
+            is_preferred: None,
+            disabled: None,
+            data: None,
+        };
+        let _ = range;
+        vec![CodeActionOrCommand::CodeAction(action)]
     }
 
     /// Offer a "Wrap with `.value`" quick fix when the cursor sits on an
