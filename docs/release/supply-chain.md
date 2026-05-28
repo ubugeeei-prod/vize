@@ -65,7 +65,7 @@ do not install it.
 
 All npm publishing in `.github/workflows/release.yml` is expected to use npm
 Trusted Publishing through GitHub Actions OIDC. The release jobs run on
-Blacksmith Ubuntu runners, request `id-token: write`, and use the `npm`
+GitHub-hosted Ubuntu runners, request `id-token: write`, and use the `npm`
 deployment environment. They intentionally do not configure
 `secrets.NPM_TOKEN` or write an npm auth token fallback.
 

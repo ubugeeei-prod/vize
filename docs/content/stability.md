@@ -41,9 +41,8 @@ current project Node version.
 
 The full fresh-install smoke matrix (`.github/workflows/native-smoke.yml`) runs on a weekly
 cadence and on demand, not on every PR push. It exercises the published package install path on
-Blacksmith runners for linux-x64-gnu, linux-arm64-gnu, darwin-arm64, and win32-x64-msvc; the
-remaining darwin-x64 and win32-arm64-msvc targets stay on hosted runners that match those
-architectures.
+GitHub-hosted runners for linux-x64-gnu, linux-arm64-gnu, darwin-arm64, and win32-x64-msvc; the
+remaining darwin-x64 and win32-arm64-msvc targets stay on architecture-specific hosted runners.
 The matrix runs against Node 22 and Node 24. Release tags remain blocked by the release workflow's
 tarball install smoke before npm packages publish. The runtime smoke checks `vize --version`,
 `vize check`, `@vizejs/native` through both `require` and `import`, and a

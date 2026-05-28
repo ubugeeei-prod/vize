@@ -40,10 +40,10 @@ env:
 jobs:
   fuzz:
     name: Fuzz ${{ matrix.target }}
-    # libFuzzer requires Linux or macOS; this matrix uses a Blacksmith Ubuntu
-    # runner for speed and consistency. macOS coverage can be added in a
+    # libFuzzer requires Linux or macOS; this matrix uses GitHub-hosted Ubuntu
+    # for consistency. macOS coverage can be added in a
     # follow-up if platform-divergent panics ever appear in triage.
-    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'ubuntu-24.04' }}
     timeout-minutes: 60
     # The fuzz matrix is advisory at bootstrap. libFuzzer immediately surfaces
     # real parser/compiler bugs (the first PR run already found one — see the
