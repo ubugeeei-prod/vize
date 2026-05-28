@@ -3,7 +3,7 @@ use super::{
     errors::{compact_error, io_error_message},
     paths::{
         TSCONFIG_CONTENTS, TSCONFIG_FILE_NAME, VIRTUAL_FILE_NAME, allocate_session_root,
-        path_to_wire, resolve_corsa_executable, resolve_project_root,
+        path_to_wire, remove_session_root, resolve_corsa_executable, resolve_project_root,
     },
 };
 use corsa::{
@@ -21,7 +21,9 @@ impl CorsaTypeAwareSession {
         corsa_path: Option<&std::path::Path>,
     ) -> Result<Self, String> {
         let project_root = resolve_project_root(filename);
+        let executable = resolve_corsa_executable(&project_root, corsa_path)?;
         let session_root = allocate_session_root(&project_root);
+        let cleanup_guard = SessionRootCleanup::new(session_root.clone());
         profile!(
             "patina.corsa_session.create_dir",
             std::fs::create_dir_all(&session_root)
@@ -58,7 +60,6 @@ impl CorsaTypeAwareSession {
 
         let config_path_wire = path_to_wire(&config_path);
         let virtual_file_wire = path_to_wire(&virtual_file_path);
-        let executable = resolve_corsa_executable(&project_root, corsa_path)?;
         let api_mode = api_mode_for_executable(&executable);
         let session = profile!(
             "patina.corsa_session.spawn",
@@ -83,6 +84,7 @@ impl CorsaTypeAwareSession {
         .map(|capabilities| capabilities.overlay.update_snapshot_overlay_changes)
         .unwrap_or(false);
 
+        let session_root = cleanup_guard.keep();
         Ok(Self {
             session,
             project_root,
@@ -166,7 +168,29 @@ impl CorsaTypeAwareSession {
         }
         self.closed = true;
         let _ = block_on(self.session.close());
-        let _ = std::fs::remove_dir_all(&self.session_root);
+        remove_session_root(&self.session_root);
+    }
+}
+
+struct SessionRootCleanup {
+    path: Option<std::path::PathBuf>,
+}
+
+impl SessionRootCleanup {
+    fn new(path: std::path::PathBuf) -> Self {
+        Self { path: Some(path) }
+    }
+
+    fn keep(mut self) -> std::path::PathBuf {
+        self.path.take().expect("session root cleanup path")
+    }
+}
+
+impl Drop for SessionRootCleanup {
+    fn drop(&mut self) {
+        if let Some(path) = &self.path {
+            remove_session_root(path);
+        }
     }
 }
 
@@ -203,8 +227,13 @@ fn api_mode_for_executable(path: &std::path::Path) -> ApiMode {
 #[cfg(test)]
 mod tests {
     use super::api_mode_for_executable;
+    use crate::linter::corsa_session::CorsaTypeAwareSession;
     use corsa::api::ApiMode;
     use std::path::Path;
+    use std::sync::atomic::{AtomicU64, Ordering};
+    use vize_carton::cstr;
+
+    static NEXT_CASE_ID: AtomicU64 = AtomicU64::new(0);
 
     #[test]
     fn uses_json_rpc_for_node_wrappers() {
@@ -228,5 +257,44 @@ mod tests {
             )),
             ApiMode::SyncMsgpackStdio
         );
+    }
+
+    #[test]
+    fn cleans_session_root_when_spawn_fails() {
+        let root = case_dir("spawn-fails");
+        let _ = std::fs::remove_dir_all(&root);
+        let source = root.join("Component.vue");
+        let invalid_corsa = root.join("not-corsa");
+
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::write(root.join("package.json"), "{}").unwrap();
+        std::fs::write(&invalid_corsa, "").unwrap();
+
+        let error = match CorsaTypeAwareSession::new_with_corsa_path(
+            source.to_str().unwrap(),
+            Some(invalid_corsa.as_path()),
+        ) {
+            Ok(mut session) => {
+                session.close();
+                panic!("invalid corsa executable unexpectedly started");
+            }
+            Err(error) => error,
+        };
+
+        assert!(error.contains("Failed to start corsa type-aware session"));
+        assert!(!root.join(".vize").join("patina").exists());
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    fn case_dir(name: &str) -> std::path::PathBuf {
+        let id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
+        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join("vize-tests")
+            .join(&*cstr!(
+                "patina-corsa-session-{name}-{}-{id}",
+                std::process::id()
+            ))
     }
 }

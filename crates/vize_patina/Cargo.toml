@@ -40,6 +40,9 @@ memchr.workspace = true
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 corsa.workspace = true
 
+[target.'cfg(all(not(target_arch = "wasm32"), unix))'.dependencies]
+libc.workspace = true
+
 [dev-dependencies]
 insta.workspace = true
 criterion.workspace = true
