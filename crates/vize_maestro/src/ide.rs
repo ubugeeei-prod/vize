@@ -14,6 +14,7 @@
 //! - Workspace symbols
 #![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
+pub mod auto_import;
 pub mod code_action;
 pub mod code_lens;
 pub mod completion;
