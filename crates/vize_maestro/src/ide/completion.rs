@@ -348,6 +348,46 @@ out
     }
 
     #[test]
+    fn test_script_member_access_on_non_ref_returns_empty_in_sync_fallback() {
+        // When Corsa is not available, the synchronous completion path used to
+        // fall through to the full Composition-API + setup-bindings list at
+        // `.|` sites, which is misleading because none of those names make
+        // sense after a dot. The empty response lets the editor either show
+        // nothing or pick up Corsa-backed members from `complete_with_corsa`.
+        let source = r#"<script setup lang="ts">
+const arr = [1, 2, 3]
+arr.
+</script>
+"#;
+        let (state, uri) = state_with_document("MemberAccessNonRef.vue", source);
+        let offset = source.find("arr.").unwrap() + "arr.".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let response = CompletionService::complete(&ctx);
+        assert!(
+            response.is_none(),
+            "expected no completion at `arr.|`, got {response:?}",
+        );
+    }
+
+    #[test]
+    fn test_script_member_access_after_decimal_literal_is_not_member_access() {
+        // `1.` is a decimal literal in progress, not a member access. The
+        // sync fallback should NOT swallow completion here — the user is
+        // still typing a number.
+        let source = r#"<script setup lang="ts">
+const n = 1.
+</script>
+"#;
+        let (state, uri) = state_with_document("DecimalLiteralCompletion.vue", source);
+        let offset = source.find("1.").unwrap() + "1.".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+        // The response is not the empty short-circuit — completion proceeds
+        // and offers at least the standard Composition-API items.
+        assert!(labels.contains(&"ref".to_string()));
+    }
+
+    #[test]
     fn test_script_completion_infers_computed_ref_type() {
         let source = r#"<script setup lang="ts">
 import { ref, computed } from 'vue'

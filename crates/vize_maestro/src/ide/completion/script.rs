@@ -34,6 +34,16 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
         return items;
     }
 
+    // If the cursor is right after a `.`, the user is asking for member
+    // completion. We don't have Corsa here, so we cannot resolve arbitrary
+    // member chains — but proposing the full setup-binding list is actively
+    // misleading: none of those names make sense after a dot. Return empty
+    // and let the Corsa-backed `complete_with_corsa` path (when available)
+    // produce the real members.
+    if is_cursor_after_dot(&ctx.content, ctx.offset) {
+        return Vec::new();
+    }
+
     let mut items_vec = Vec::new();
 
     // Add Vue Composition API
@@ -307,6 +317,39 @@ fn scope_kind_short_label(kind: ScopeKind) -> &'static str {
         ScopeKind::Universal => "setup body",
         _ => "local",
     }
+}
+
+/// True when the cursor sits immediately after a `.` (allowing intermediate
+/// whitespace) on a receiver that looks like an identifier or member chain.
+/// Used to suppress the full setup-binding completion list at member-access
+/// sites where it would be misleading.
+fn is_cursor_after_dot(content: &str, offset: usize) -> bool {
+    let before = &content[..offset.min(content.len())];
+    let trimmed = before.trim_end();
+    let Some(stripped) = trimmed.strip_suffix('.') else {
+        return false;
+    };
+
+    // Guard against decimal literals like `1.|` and standalone `.` in
+    // operator positions (e.g. `... .foo`). Require at least one identifier
+    // byte right before the dot, and at least one *non-digit* identifier byte
+    // somewhere in the trailing identifier so we don't claim `1.|` as a
+    // member access on the number `1`.
+    let bytes = stripped.as_bytes();
+    let mut idx = bytes.len();
+    let mut saw_non_digit = false;
+    while idx > 0 {
+        let byte = bytes[idx - 1];
+        if !is_ident_byte(byte) && byte != b']' {
+            break;
+        }
+        if !byte.is_ascii_digit() && byte != b']' {
+            saw_non_digit = true;
+        }
+        idx -= 1;
+    }
+    let prefix_len = stripped.len() - idx;
+    prefix_len > 0 && saw_non_digit
 }
 
 fn member_access_receiver(content: &str, offset: usize) -> Option<&str> {
