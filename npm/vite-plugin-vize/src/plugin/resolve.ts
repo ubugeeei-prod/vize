@@ -172,6 +172,30 @@ function isOptimizedVueDependency(id: string): boolean {
   return normalized.includes("/node_modules/.vite/deps/vue.");
 }
 
+// Cache per project root: does `<root>/node_modules/vue` resolve via Node?
+//
+// When vize defers Vue runtime in dev (returns null), Vite re-runs resolveId
+// with the \0-prefixed virtual module ID as importer. With pnpm-isolated
+// installs the project root has no hoisted `node_modules/vue`, so that
+// secondary lookup fails with `Failed to resolve import "vue"`. The deferral
+// only makes sense when the project root can serve as a fallback base for
+// vite:resolve.
+const vueResolvableFromRootCache = new Map<string, boolean>();
+function isVueResolvableFromRoot(root: string): boolean {
+  let cached = vueResolvableFromRootCache.get(root);
+  if (cached === undefined) {
+    cached = false;
+    try {
+      createRequire(path.join(root, "__vize_probe__.js")).resolve("vue");
+      cached = true;
+    } catch {
+      // Not resolvable from root.
+    }
+    vueResolvableFromRootCache.set(root, cached);
+  }
+  return cached;
+}
+
 function normalizeResolvedVuePath(id: string): string | null {
   return normalizeViteResolvedVuePath(id);
 }
@@ -439,8 +463,18 @@ export async function resolveIdHook(
             }
 
             if (isVueRuntime && state.server !== null && !isOptimizedVueDependency(resolved.id)) {
-              state.logger.log(`resolveId: deferring Vue runtime ${resolved.id} to Vite optimizer`);
-              return null;
+              if (isVueResolvableFromRoot(state.root)) {
+                state.logger.log(
+                  `resolveId: deferring Vue runtime ${resolved.id} to Vite optimizer`,
+                );
+                return null;
+              }
+              const isolatedEntry =
+                resolveVueBundlerEntryWithNode(state, id, cleanImporter) ?? resolved.id;
+              state.logger.log(
+                `resolveId: isolated install — resolved Vue runtime to ${isolatedEntry}`,
+              );
+              return isolatedEntry;
             }
 
             if (isVueRuntime && isVuePackageEntry(resolved.id)) {
@@ -454,9 +488,10 @@ export async function resolveIdHook(
 
             if (isViteBareSpecifier(resolved.id)) {
               if (isVueRuntime) {
-                const vueBundlerEntry = isBuild
-                  ? resolveVueBundlerEntryWithNode(state, id, cleanImporter)
-                  : null;
+                const vueBundlerEntry =
+                  isBuild || !isVueResolvableFromRoot(state.root)
+                    ? resolveVueBundlerEntryWithNode(state, id, cleanImporter)
+                    : null;
                 if (vueBundlerEntry) {
                   state.logger.log(`resolveId: resolved Vue runtime to ${vueBundlerEntry}`);
                   return vueBundlerEntry;
@@ -486,9 +521,10 @@ export async function resolveIdHook(
         }
 
         if (isVueRuntime) {
-          const vueBundlerEntry = isBuild
-            ? resolveVueBundlerEntryWithNode(state, id, cleanImporter)
-            : null;
+          const vueBundlerEntry =
+            isBuild || !isVueResolvableFromRoot(state.root)
+              ? resolveVueBundlerEntryWithNode(state, id, cleanImporter)
+              : null;
           if (vueBundlerEntry) {
             state.logger.log(`resolveId: resolved Vue runtime to ${vueBundlerEntry}`);
             return vueBundlerEntry;

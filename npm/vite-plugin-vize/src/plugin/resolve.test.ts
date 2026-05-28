@@ -391,6 +391,130 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
   );
 }
 
+// pnpm-isolated dev install: the project root has no `node_modules/vue`, so
+// deferring to Vite's secondary resolveId pass (which uses the \0-prefixed
+// virtual ID as importer and falls back to root) cannot find Vue. The plugin
+// must resolve Vue from the importer's package subtree instead.
+{
+  const projectRoot = createTempProject("dev-vue-pnpm-isolated-ctx");
+  const nuxtImporter = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "nuxt",
+    "dist",
+    "app",
+    "components",
+    "nuxt-root.vue",
+  );
+  const vuePackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.5.30_x",
+    "node_modules",
+    "vue",
+  );
+  const vueLink = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "vue",
+  );
+  const vueBundlerEntry = path.join(vuePackage, "dist", "vue.runtime.esm-bundler.js");
+  writeFixtureFile(nuxtImporter, "<template><div /></template>");
+  writeFixtureFile(
+    path.join(vuePackage, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(vuePackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(vueBundlerEntry, "export const Transition = () => null;");
+  fs.mkdirSync(path.dirname(vueLink), { recursive: true });
+  fs.symlinkSync(vuePackage, vueLink, "dir");
+
+  const isolatedResolved = path.join(vueLink, "dist", "vue.runtime.esm-bundler.js");
+
+  const resolved = await resolveIdHook(
+    {
+      resolve: async (id) => (id === "vue" ? { id: isolatedResolved } : null),
+    },
+    createState(projectRoot),
+    "vue",
+    toVirtualId(nuxtImporter),
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    vueBundlerEntry,
+    "Dev virtual SFC Vue imports must resolve to the importer-local Vue runtime when the project root has no hoisted node_modules/vue",
+  );
+}
+
+// Same pnpm-isolated dev scenario, but Vite's own resolver cannot see Vue
+// (e.g. when the secondary lookup uses the virtual ID as importer). The
+// plugin must still find Vue via Node's resolution chain through the
+// importer's package subtree.
+{
+  const projectRoot = createTempProject("dev-vue-pnpm-isolated-node-fallback");
+  const nuxtImporter = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "nuxt",
+    "dist",
+    "app",
+    "components",
+    "nuxt-root.vue",
+  );
+  const vuePackage = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "vue@3.5.30_x",
+    "node_modules",
+    "vue",
+  );
+  const vueLink = path.join(
+    projectRoot,
+    "node_modules",
+    ".pnpm",
+    "nuxt@4.4.2_x",
+    "node_modules",
+    "vue",
+  );
+  const vueBundlerEntry = path.join(vuePackage, "dist", "vue.runtime.esm-bundler.js");
+  writeFixtureFile(nuxtImporter, "<template><div /></template>");
+  writeFixtureFile(
+    path.join(vuePackage, "package.json"),
+    JSON.stringify({ name: "vue", main: "index.js" }, null, 2),
+  );
+  writeFixtureFile(path.join(vuePackage, "index.js"), "module.exports = {};");
+  writeFixtureFile(vueBundlerEntry, "export const Transition = () => null;");
+  fs.mkdirSync(path.dirname(vueLink), { recursive: true });
+  fs.symlinkSync(vuePackage, vueLink, "dir");
+
+  const resolved = await resolveIdHook(
+    nullResolveContext,
+    createState(projectRoot),
+    "vue",
+    toVirtualId(nuxtImporter),
+    undefined,
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    vueBundlerEntry,
+    "Dev virtual SFC Vue imports must fall back to Node's importer-local resolution when Vite cannot see Vue from the project root",
+  );
+}
+
 {
   const tempRoot = createTempRoot("regexp-bare-alias");
   const viteRoot = path.join(tempRoot, "app");
