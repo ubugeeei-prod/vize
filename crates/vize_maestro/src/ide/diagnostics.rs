@@ -239,6 +239,20 @@ impl DiagnosticService {
                     tracing::warn!("corsa diagnostics timed out for {}", uri);
                 }
             }
+
+            // When the user opted into typecheck but Corsa never came up
+            // (init failed, timed out, or simply not yet attempted while we
+            // already produced zero corsa diagnostics for an SFC), surface a
+            // hint diagnostic so the Problems panel reflects what is
+            // happening. Without this, the editor goes silent and users
+            // assume their project is clean. See #681.
+            if !state.has_corsa_bridge()
+                && !diagnostics
+                    .iter()
+                    .any(|d| d.source.as_deref() == Some(sources::TYPE_CHECKER))
+            {
+                diagnostics.push(typecheck_unavailable_hint());
+            }
         } else {
             tracing::info!("collect_async: Corsa diagnostics skipped (disabled by config)");
         }
@@ -262,6 +276,33 @@ impl DiagnosticService {
             message,
             ..Default::default()
         }
+    }
+}
+
+/// Build the hint diagnostic surfaced when LSP type checking is requested
+/// but the Corsa bridge is not available. Single point of truth so the
+/// wording stays consistent for tests and follow-up code-action work.
+#[cfg(feature = "native")]
+fn typecheck_unavailable_hint() -> Diagnostic {
+    Diagnostic {
+        range: Range {
+            start: tower_lsp::lsp_types::Position {
+                line: 0,
+                character: 0,
+            },
+            end: tower_lsp::lsp_types::Position {
+                line: 0,
+                character: 0,
+            },
+        },
+        severity: Some(DiagnosticSeverity::HINT),
+        code: Some(NumberOrString::String("typecheck-unavailable".to_string())),
+        source: Some(sources::TYPE_CHECKER.to_string()),
+        message: "Type checking is unavailable in this workspace. \
+            Make sure `tsconfig.json` exists and the Corsa runtime is reachable; \
+            see https://vizejs.dev/guide/static-analysis."
+            .to_string(),
+        ..Default::default()
     }
 }
 
