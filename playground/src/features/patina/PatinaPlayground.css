@@ -333,26 +333,26 @@
 
 .help-content .help-code {
   margin: 0.5rem 0;
-  padding: 0.75rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 4px;
+  padding: 1rem 1.125rem;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 6px;
   overflow-x: auto;
   font-family: "JetBrains Mono", "Fira Code", monospace;
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 0.8125rem;
+  line-height: 1.55;
 }
 
 .help-content .help-code code {
-  color: var(--text-primary);
+  color: var(--code-foreground);
   background: none;
   padding: 0;
 }
 
 .help-content .help-inline-code {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  padding: 0.15rem 0.4rem;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  padding: 0.18rem 0.42rem;
   border-radius: 3px;
   font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 0.85em;

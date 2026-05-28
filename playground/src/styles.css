@@ -23,32 +23,44 @@
   --color-notice: #8b7040;
   --color-notice-bg: rgba(139, 112, 64, 0.1);
   --color-notice-border: rgba(139, 112, 64, 0.3);
-  --color-success: #2d6a35;
-  --color-success-bg: rgba(45, 106, 53, 0.12);
-  --color-error: #a04040;
-  --color-error-bg: rgba(160, 64, 64, 0.1);
-  --color-error-border: rgba(160, 64, 64, 0.3);
-  --color-warning: #6b5020;
-  --color-warning-bg: rgba(107, 80, 32, 0.12);
+  --color-success: #1f5b28;
+  --color-success-bg: rgba(31, 91, 40, 0.12);
+  --color-success-border: rgba(31, 91, 40, 0.34);
+  --color-error: #8a2f2f;
+  --color-error-bg: rgba(138, 47, 47, 0.1);
+  --color-error-border: rgba(138, 47, 47, 0.32);
+  --color-warning: #60430e;
+  --color-warning-bg: rgba(96, 67, 14, 0.12);
+  --color-warning-border: rgba(96, 67, 14, 0.34);
   --color-info: #4a6b8a;
   --color-info-bg: rgba(74, 107, 138, 0.1);
+  --color-info-border: rgba(74, 107, 138, 0.28);
   --color-purple: #6b5090;
   --color-purple-bg: rgba(107, 80, 144, 0.15);
+  --color-purple-border: rgba(107, 80, 144, 0.3);
   --color-teal: #3a7a70;
   --color-teal-bg: rgba(58, 122, 112, 0.15);
+  --color-teal-border: rgba(58, 122, 112, 0.3);
+
+  /* Readable code surfaces */
+  --code-bg: #f3efe2;
+  --code-gutter-bg: #ebe4d4;
+  --code-border: rgba(18, 18, 18, 0.2);
+  --code-foreground: #141414;
+  --code-line-number: #5f5a52;
 
   /* Syntax highlighting (for code blocks in hints etc.) */
-  --hl-keyword: #73603e;
-  --hl-function: #655232;
-  --hl-string: #486040;
-  --hl-comment: #9a9590;
-  --hl-tag: #65573e;
-  --hl-directive: #6b5f50;
-  --hl-delimiter: #6b6560;
-  --hl-type: #6b5f50;
-  --hl-number: #735c2e;
-  --hl-property: #65573e;
-  --hl-value: #4a5f3e;
+  --hl-keyword: #7a2f15;
+  --hl-function: #6b4a00;
+  --hl-string: #1b6a38;
+  --hl-comment: #59554f;
+  --hl-tag: #005f80;
+  --hl-directive: #5a3d86;
+  --hl-delimiter: #5c5750;
+  --hl-type: #3d4b80;
+  --hl-number: #73470d;
+  --hl-property: #005f73;
+  --hl-value: #40680f;
 }
 
 /* Variables — Dark */
@@ -73,30 +85,42 @@
   --color-notice-border: rgba(212, 186, 146, 0.25);
   --color-success: #a8b5a0;
   --color-success-bg: rgba(168, 181, 160, 0.1);
+  --color-success-border: rgba(168, 181, 160, 0.3);
   --color-error: #d09090;
   --color-error-bg: rgba(208, 144, 144, 0.1);
   --color-error-border: rgba(208, 144, 144, 0.3);
   --color-warning: #d4ba92;
   --color-warning-bg: rgba(212, 186, 146, 0.12);
+  --color-warning-border: rgba(212, 186, 146, 0.3);
   --color-info: #8aabca;
   --color-info-bg: rgba(138, 171, 202, 0.1);
+  --color-info-border: rgba(138, 171, 202, 0.28);
   --color-purple: #b8a0d0;
   --color-purple-bg: rgba(184, 160, 208, 0.12);
+  --color-purple-border: rgba(184, 160, 208, 0.28);
   --color-teal: #80bdb0;
   --color-teal-bg: rgba(128, 189, 176, 0.12);
+  --color-teal-border: rgba(128, 189, 176, 0.28);
+
+  /* Readable code surfaces */
+  --code-bg: #171717;
+  --code-gutter-bg: #202020;
+  --code-border: rgba(230, 226, 214, 0.2);
+  --code-foreground: #eee8db;
+  --code-line-number: #b2aaa0;
 
   /* Syntax highlighting */
-  --hl-keyword: #d4ba92;
-  --hl-function: #e2cba6;
-  --hl-string: #a8b5a0;
-  --hl-comment: #6b6560;
-  --hl-tag: #d0ba9e;
-  --hl-directive: #b8ada0;
-  --hl-delimiter: #8a8478;
-  --hl-type: #b8ada0;
-  --hl-number: #daba8c;
-  --hl-property: #d0ba9e;
-  --hl-value: #a8b5a0;
+  --hl-keyword: #f2b8a0;
+  --hl-function: #ffd08a;
+  --hl-string: #a7d8a8;
+  --hl-comment: #a39b8f;
+  --hl-tag: #8ecdf0;
+  --hl-directive: #d8b4fe;
+  --hl-delimiter: #b8afa2;
+  --hl-type: #c4c8ff;
+  --hl-number: #f1bc78;
+  --hl-property: #9dd4ff;
+  --hl-value: #bade9b;
 }
 
 /* Base */
@@ -571,10 +595,12 @@
 .ast-output pre {
   font-family: var(--font-mono);
   font-size: 13px;
-  line-height: 1;
-  background: var(--bg-secondary) !important;
+  line-height: 1.45;
+  background: var(--code-bg) !important;
+  border: 1px solid var(--code-border);
   border-radius: var(--radius-lg);
-  padding: 16px !important;
+  color: var(--code-foreground);
+  padding: 20px !important;
   overflow: auto;
   margin: 0;
 }
@@ -762,10 +788,12 @@
 .sfc-block pre {
   font-family: var(--font-mono);
   font-size: 13px;
-  line-height: 1;
-  background: var(--bg-secondary) !important;
+  line-height: 1.45;
+  background: var(--code-bg) !important;
+  border: 1px solid var(--code-border);
   border-radius: var(--radius-lg);
-  padding: 12px !important;
+  color: var(--code-foreground);
+  padding: 18px !important;
   overflow: auto;
   margin: 0;
 }
@@ -812,10 +840,12 @@
 .css-compiled pre {
   font-family: var(--font-mono);
   font-size: 13px;
-  line-height: 1;
-  background: var(--bg-secondary) !important;
+  line-height: 1.45;
+  background: var(--code-bg) !important;
+  border: 1px solid var(--code-border);
   border-radius: var(--radius-lg);
-  padding: 16px !important;
+  color: var(--code-foreground);
+  padding: 20px !important;
   overflow: auto;
   margin: 0;
 }

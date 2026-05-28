@@ -92,60 +92,68 @@ watch(
 
 <style scoped>
 .code-highlight {
+  --code-line-height: 21px;
+
   display: flex;
   font-family: "JetBrains Mono", monospace;
   font-size: 13px;
-  line-height: 20px;
-  border-radius: 4px;
+  line-height: var(--code-line-height);
+  border: 1px solid var(--code-border);
+  border-radius: 6px;
   overflow: auto;
-  background: var(--bg-secondary);
+  background: var(--code-bg);
+  color: var(--code-foreground);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-.line-numbers {
+.code-highlight :deep(.line-numbers) {
   display: flex;
   flex-direction: column;
-  padding-top: 12px;
-  padding-bottom: 12px;
-  background: var(--bg-tertiary);
-  border-right: 1px solid var(--border-color);
+  padding-top: 16px;
+  padding-bottom: 16px;
+  background: var(--code-gutter-bg);
+  border-right: 1px solid var(--code-border);
   user-select: none;
   flex-shrink: 0;
   position: sticky;
   left: 0;
 }
 
-.code-content {
+.code-highlight :deep(.code-content) {
   flex: 1;
-  padding-top: 12px;
-  padding-bottom: 12px;
-  padding-left: 16px;
-  padding-right: 16px;
+  min-width: 0;
+  padding: 16px 20px;
   overflow-x: auto;
+}
+
+.code-highlight.with-line-numbers :deep(.code-content) {
+  padding-left: 16px;
 }
 
 .code-highlight :deep(.line-number) {
   display: block;
-  padding: 0 12px;
+  padding: 0 14px;
   text-align: right;
-  color: var(--text-muted);
-  line-height: 20px;
-  height: 20px;
+  color: var(--code-line-number);
+  line-height: var(--code-line-height);
+  height: var(--code-line-height);
   box-sizing: border-box;
 }
 
 .code-highlight :deep(.code-line) {
   white-space: pre;
-  line-height: 20px;
-  height: 20px;
+  color: var(--code-foreground);
+  line-height: var(--code-line-height);
+  min-height: var(--code-line-height);
   box-sizing: border-box;
 }
 
 .code-highlight :deep(.code-line span) {
-  color: var(--l);
+  color: var(--l, var(--code-foreground));
   line-height: inherit;
 }
 
 body[data-theme="dark"] .code-highlight :deep(.code-line span) {
-  color: var(--d);
+  color: var(--d, var(--code-foreground));
 }
 </style>

@@ -146,16 +146,16 @@
 
 /* Error State */
 .error-panel {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
   border-radius: 6px;
   overflow: hidden;
 }
 
 .error-header {
   padding: 0.5rem 0.75rem;
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  background: var(--color-error-bg);
+  color: var(--color-error);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -163,7 +163,7 @@
 .error-content {
   padding: 0.75rem;
   font-size: 0.75rem;
-  color: #fca5a5;
+  color: var(--color-error);
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
@@ -197,7 +197,8 @@
 .file-badge {
   font-size: 0.5625rem;
   padding: 0.125rem 0.375rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
   color: var(--text-muted);
   border-radius: 2px;
   text-transform: uppercase;
@@ -244,14 +245,15 @@
 .meta-code {
   font-size: 0.75rem;
   font-family: "JetBrains Mono", monospace;
-  color: #60a5fa;
+  color: var(--color-info);
   background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
   padding: 0.125rem 0.375rem;
   border-radius: 3px;
 }
 
 .category-value {
-  color: #a78bfa;
+  color: var(--color-purple);
 }
 
 .tags-list {
@@ -269,25 +271,50 @@
 }
 
 .status-badge {
+  --status-color: var(--text-secondary);
+  --status-bg: var(--bg-tertiary);
+  --status-border: var(--border-primary);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
   font-size: 0.6875rem;
-  padding: 0.125rem 0.5rem;
-  border-radius: 3px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--status-border);
+  border-radius: 999px;
+  background: var(--status-bg);
+  color: var(--status-color);
   text-transform: capitalize;
 }
 
+.status-badge::before {
+  content: "";
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 2px var(--status-bg);
+  flex-shrink: 0;
+}
+
 .status-badge.ready {
-  background: rgba(74, 222, 128, 0.15);
-  color: #4ade80;
+  --status-bg: var(--color-success-bg);
+  --status-border: var(--color-success-border);
+  --status-color: var(--color-success);
 }
 
 .status-badge.draft {
-  background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
+  --status-bg: var(--color-warning-bg);
+  --status-border: var(--color-warning-border);
+  --status-color: var(--color-warning);
 }
 
 .status-badge.deprecated {
-  background: rgba(248, 113, 113, 0.15);
-  color: #f87171;
+  --status-bg: var(--color-error-bg);
+  --status-border: var(--color-error-border);
+  --status-color: var(--color-error);
 }
 
 /* Section Header */
@@ -488,8 +515,9 @@
 .skip-badge {
   font-size: 0.5625rem;
   padding: 0.0625rem 0.375rem;
-  background: rgba(251, 191, 36, 0.2);
-  color: #fbbf24;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning-border);
   border-radius: 2px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -532,7 +560,8 @@
   font-size: 0.625rem;
   font-family: "JetBrains Mono", monospace;
   color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
   padding: 0.125rem 0.375rem;
   border-radius: 3px;
 }

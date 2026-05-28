@@ -13,54 +13,54 @@ const vizeDarkTheme: ThemeRegistration = {
   name: "vize-dark",
   type: "dark",
   colors: {
-    "editor.background": "#1a1a1a",
-    "editor.foreground": "#E6E2D6",
+    "editor.background": "#171717",
+    "editor.foreground": "#EEE8DB",
   },
   tokenColors: [
     {
       scope: ["keyword", "storage.type", "storage.modifier"],
-      settings: { foreground: "#D4BA92" },
+      settings: { foreground: "#F2B8A0" },
     },
     {
       scope: ["entity.name.function", "support.function"],
-      settings: { foreground: "#E2CBA6" },
+      settings: { foreground: "#FFD08A" },
     },
     {
       scope: ["entity.name.tag", "punctuation.definition.tag"],
-      settings: { foreground: "#D0BA9E" },
+      settings: { foreground: "#8ECDF0" },
     },
     {
       scope: ["entity.other.attribute-name"],
-      settings: { foreground: "#9C9488" },
+      settings: { foreground: "#D8B4FE" },
     },
-    { scope: ["string", "string.quoted"], settings: { foreground: "#A8B5A0" } },
+    { scope: ["string", "string.quoted"], settings: { foreground: "#A7D8A8" } },
     {
       scope: ["constant.numeric", "constant.language"],
-      settings: { foreground: "#DABA8C" },
+      settings: { foreground: "#F1BC78" },
     },
     {
       scope: ["variable", "variable.other"],
-      settings: { foreground: "#E6E2D6" },
+      settings: { foreground: "#EEE8DB" },
     },
     {
       scope: ["comment", "punctuation.definition.comment"],
-      settings: { foreground: "#6B6560" },
+      settings: { foreground: "#A39B8F" },
     },
     {
       scope: ["punctuation", "meta.brace"],
-      settings: { foreground: "#8A8478" },
+      settings: { foreground: "#B8AFA2" },
     },
     {
       scope: ["entity.name.type", "support.type"],
-      settings: { foreground: "#B8ADA0" },
+      settings: { foreground: "#C4C8FF" },
     },
     {
       scope: ["meta.property-name", "support.type.property-name"],
-      settings: { foreground: "#D0BA9E" },
+      settings: { foreground: "#9DD4FF" },
     },
     {
       scope: ["meta.property-value", "support.constant.property-value"],
-      settings: { foreground: "#A8B5A0" },
+      settings: { foreground: "#BADE9B" },
     },
   ],
 };
@@ -69,54 +69,54 @@ const vizeLightTheme: ThemeRegistration = {
   name: "vize-light",
   type: "light",
   colors: {
-    "editor.background": "#ddd9cd",
-    "editor.foreground": "#121212",
+    "editor.background": "#F3EFE2",
+    "editor.foreground": "#141414",
   },
   tokenColors: [
     {
       scope: ["keyword", "storage.type", "storage.modifier"],
-      settings: { foreground: "#73603E" },
+      settings: { foreground: "#7A2F15" },
     },
     {
       scope: ["entity.name.function", "support.function"],
-      settings: { foreground: "#655232" },
+      settings: { foreground: "#6B4A00" },
     },
     {
       scope: ["entity.name.tag", "punctuation.definition.tag"],
-      settings: { foreground: "#65573E" },
+      settings: { foreground: "#005F80" },
     },
     {
       scope: ["entity.other.attribute-name"],
-      settings: { foreground: "#6B6050" },
+      settings: { foreground: "#5A3D86" },
     },
-    { scope: ["string", "string.quoted"], settings: { foreground: "#5A6B50" } },
+    { scope: ["string", "string.quoted"], settings: { foreground: "#1B6A38" } },
     {
       scope: ["constant.numeric", "constant.language"],
-      settings: { foreground: "#735C2E" },
+      settings: { foreground: "#73470D" },
     },
     {
       scope: ["variable", "variable.other"],
-      settings: { foreground: "#121212" },
+      settings: { foreground: "#141414" },
     },
     {
       scope: ["comment", "punctuation.definition.comment"],
-      settings: { foreground: "#9A9590" },
+      settings: { foreground: "#59554F" },
     },
     {
       scope: ["punctuation", "meta.brace"],
-      settings: { foreground: "#6B6560" },
+      settings: { foreground: "#5C5750" },
     },
     {
       scope: ["entity.name.type", "support.type"],
-      settings: { foreground: "#6B5F50" },
+      settings: { foreground: "#3D4B80" },
     },
     {
       scope: ["meta.property-name", "support.type.property-name"],
-      settings: { foreground: "#65573E" },
+      settings: { foreground: "#005F73" },
     },
     {
       scope: ["meta.property-value", "support.constant.property-value"],
-      settings: { foreground: "#4A5F3E" },
+      settings: { foreground: "#40680F" },
     },
   ],
 };
@@ -222,9 +222,9 @@ function codeTokensToHtml(tokens: ThemedCodeToken[]): string {
   return tokens
     .map(
       (token) =>
-        `<span style="--d:${token.darkColor};--l:${token.lightColor}">${escapeHtml(
-          token.content,
-        )}</span>`,
+        `<span style="--d:${token.darkColor ?? "var(--code-foreground)"};--l:${
+          token.lightColor ?? "var(--code-foreground)"
+        }">${escapeHtml(token.content)}</span>`,
     )
     .join("");
 }
