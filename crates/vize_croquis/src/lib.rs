@@ -54,6 +54,7 @@ pub mod provide;
 pub mod race;
 pub mod reactivity;
 pub mod reactivity_tracking;
+pub mod render_tree;
 pub mod script_parser;
 pub mod setup_context;
 pub mod types;
