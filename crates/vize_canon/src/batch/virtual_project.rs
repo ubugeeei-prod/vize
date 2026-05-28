@@ -25,12 +25,12 @@ use rayon::prelude::*;
 use serde_json::{Map, Value};
 use vize_atelier_core::parser::parse;
 use vize_atelier_sfc::{
-    SfcDescriptor, SfcParseOptions,
+    SfcDescriptor, SfcError, SfcParseOptions,
     croquis::{
         SfcCroquisOptions, analyze_sfc_descriptor_with_context,
         analyze_sfc_descriptor_with_context_legacy_vue2,
     },
-    parse_sfc,
+    parse_sfc, validate_script_setup_semantics,
 };
 use vize_carton::{
     Bump, FxHashMap, FxHashSet, String as CompactString, ToCompactString, cstr, profile,
@@ -770,14 +770,105 @@ fn generate_vue_virtual_ts(
         )
     );
 
-    let _ = source;
-    let _ = path;
+    // Surface Vue-specific semantic errors (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE)
+    // that the SFC compiler catches but TypeScript itself does not. Without this,
+    // `vize check` would silently accept SFCs that `vize build` rejects.
+    if let Some(diagnostic) = profile!(
+        "canon.sfc.compile_validate",
+        collect_sfc_compile_diagnostic(path, source, descriptor)
+    ) {
+        diagnostics.push(diagnostic);
+    }
 
     Ok(GeneratedVueFile {
         code: output.code,
         mappings: output.mappings,
         diagnostics,
     })
+}
+
+/// Run only the script-setup semantic validators on this SFC. We deliberately
+/// avoid `compile_sfc` here — it would do template codegen and script transform
+/// work that doubles the wall time of `vize check` (see the regression on PR
+/// #675). The validator covers the diagnostics TypeScript cannot derive on its
+/// own; parse-level errors are already collected above.
+fn collect_sfc_compile_diagnostic(
+    path: &Path,
+    source: &str,
+    descriptor: &SfcDescriptor,
+) -> Option<Diagnostic> {
+    let script_setup = descriptor.script_setup.as_ref()?;
+
+    // Cheap pre-filter: the only validator we currently run targets
+    // `const { ... = ... } = defineProps<...>()`. Skip the OXC parse entirely
+    // when none of those tokens appear, which is the common case for app
+    // components without destructured typed props.
+    if !script_setup_has_validator_candidates(&script_setup.content) {
+        return None;
+    }
+
+    match validate_script_setup_semantics(&script_setup.content) {
+        Ok(()) => None,
+        Err(error) => Some(sfc_error_to_diagnostic(path, source, descriptor, &error)),
+    }
+}
+
+/// Cheap byte-level filter — must be a strict superset of the patterns the
+/// underlying validators actually fire on, so we never miss a real diagnostic.
+fn script_setup_has_validator_candidates(content: &str) -> bool {
+    // Validator needs: typed defineProps (`defineProps<...>`) AND a destructure
+    // pattern (`{ ... = ... } = defineProps`). The combined presence of these
+    // two substrings is a tight enough filter for typical app code.
+    content.contains("defineProps<") && content.contains("= defineProps")
+}
+
+fn sfc_error_to_diagnostic(
+    path: &Path,
+    source: &str,
+    descriptor: &SfcDescriptor,
+    error: &SfcError,
+) -> Diagnostic {
+    let (line, column, block_type) = if let Some(loc) = error.loc.as_ref() {
+        // BlockLocation lines/columns are 1-based; Diagnostic stores them 0-based.
+        let line = (loc.start_line as u32).saturating_sub(1);
+        let column = (loc.start_column as u32).saturating_sub(1);
+        (line, column, None)
+    } else {
+        let (offset, block_type) = default_diagnostic_offset(descriptor);
+        let (line, column) = line_column_for_offset(source, offset);
+        (line, column, Some(block_type))
+    };
+
+    let message = match error.code.as_deref() {
+        Some(code) => cstr!("Vue compile error [{}]: {}", code, error.message),
+        None => cstr!("Vue compile error: {}", error.message),
+    };
+
+    Diagnostic {
+        file: path.to_path_buf(),
+        line,
+        column,
+        message,
+        code: None,
+        severity: 1,
+        block_type,
+    }
+}
+
+/// Best-effort fallback location for SFC compile errors that carry no `loc`.
+/// Points at the start of the most relevant block so the diagnostic lands
+/// somewhere clickable instead of at file offset 0.
+fn default_diagnostic_offset(descriptor: &SfcDescriptor) -> (u32, SfcBlockType) {
+    if let Some(setup) = descriptor.script_setup.as_ref() {
+        return (setup.loc.start as u32, SfcBlockType::ScriptSetup);
+    }
+    if let Some(script) = descriptor.script.as_ref() {
+        return (script.loc.start as u32, SfcBlockType::Script);
+    }
+    if let Some(template) = descriptor.template.as_ref() {
+        return (template.loc.start as u32, SfcBlockType::Template);
+    }
+    (0, SfcBlockType::Script)
 }
 
 fn invalid_sfc_fallback_virtual_ts() -> CompactString {
@@ -1335,6 +1426,77 @@ const count =
                 .contains("export default __vize_component")
         );
         assert!(!virtual_file.content.contains("const count ="));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn test_register_vue_file_reports_props_destructure_default_type_mismatch() {
+        // Regression for: `const { msg = 0 } = defineProps<{ msg?: string }>()` should
+        // surface in `vize check`. TypeScript itself does not flag the mismatch
+        // (destructure defaults widen the binding's type), so the diagnostic has
+        // to come from the SFC compiler's validator.
+        let case_dir = unique_case_dir("props-destructure-default-type");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let vue_path = src_dir.join("Bad.vue");
+        let vue_content = r#"<script setup lang="ts">
+const { msg = 0 } = defineProps<{ msg?: string }>();
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>
+"#;
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_vue_file(&vue_path, vue_content).unwrap();
+
+        let diagnostics = project.diagnostics();
+        assert_eq!(diagnostics.len(), 1, "expected one SFC compile diagnostic");
+        let diagnostic = &diagnostics[0];
+        assert!(
+            diagnostic
+                .message
+                .contains("DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE"),
+            "expected DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE in message, got: {}",
+            diagnostic.message
+        );
+        assert!(
+            diagnostic.message.contains("Default value of prop \"msg\""),
+            "expected message to name the prop, got: {}",
+            diagnostic.message
+        );
+        assert_eq!(diagnostic.severity, 1);
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn test_register_vue_file_allows_matching_props_destructure_default() {
+        let case_dir = unique_case_dir("props-destructure-default-ok");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        let vue_path = src_dir.join("Good.vue");
+        let vue_content = r#"<script setup lang="ts">
+const { msg = "ok" } = defineProps<{ msg?: string }>();
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>
+"#;
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_vue_file(&vue_path, vue_content).unwrap();
+
+        assert!(
+            project.diagnostics().is_empty(),
+            "no diagnostics expected for matching default, got: {:?}",
+            project.diagnostics()
+        );
 
         let _ = fs::remove_dir_all(&case_dir);
     }

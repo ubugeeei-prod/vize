@@ -368,7 +368,13 @@ impl CorsaServer {
         self.cache.insert(uri.into(), virtual_ts.clone());
 
         // Run Corsa on the virtual TypeScript through the project-session API.
-        let diagnostics = self.run_corsa(uri, &virtual_ts)?;
+        let mut diagnostics = self.run_corsa(uri, &virtual_ts)?;
+
+        // Merge in Vue-specific compile errors (e.g. props destructure default type
+        // mismatch) so the socket-mode check matches the direct `vize check` runner.
+        if let Some(sfc_diagnostic) = collect_sfc_compile_diagnostic(uri, content, &descriptor) {
+            diagnostics.push(sfc_diagnostic);
+        }
 
         let error_count = diagnostics.iter().filter(|d| d.severity == "error").count();
 
@@ -466,6 +472,84 @@ impl Default for CorsaServer {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Surface Vue-specific script-setup semantic errors (e.g.
+/// `DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE`). Uses the lightweight validator
+/// entry point so the socket-mode check stays as fast as the Virtual TS path.
+fn collect_sfc_compile_diagnostic(
+    _uri: &str,
+    source: &str,
+    descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+) -> Option<Diagnostic> {
+    let script_setup = descriptor.script_setup.as_ref()?;
+    if !script_setup_has_validator_candidates(&script_setup.content) {
+        return None;
+    }
+
+    let Err(error) = vize_atelier_sfc::validate_script_setup_semantics(&script_setup.content)
+    else {
+        return None;
+    };
+
+    let (line, column) = if let Some(loc) = error.loc.as_ref() {
+        (
+            (loc.start_line as u32).saturating_sub(1),
+            (loc.start_column as u32).saturating_sub(1),
+        )
+    } else {
+        let offset = sfc_block_fallback_offset(descriptor);
+        offset_to_line_column(source, offset)
+    };
+
+    let message = match error.code.as_deref() {
+        Some(code) => cstr!("[{}] {}", code, error.message),
+        None => error.message.clone(),
+    };
+
+    Some(Diagnostic {
+        message,
+        severity: "error".into(),
+        line,
+        column,
+        code: error.code.clone(),
+    })
+}
+
+/// See the canon batch path for rationale — keep this in sync with
+/// `crates/vize_canon/src/batch/virtual_project.rs`.
+fn script_setup_has_validator_candidates(content: &str) -> bool {
+    content.contains("defineProps<") && content.contains("= defineProps")
+}
+
+fn sfc_block_fallback_offset(descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) -> usize {
+    if let Some(setup) = descriptor.script_setup.as_ref() {
+        return setup.loc.start;
+    }
+    if let Some(script) = descriptor.script.as_ref() {
+        return script.loc.start;
+    }
+    if let Some(template) = descriptor.template.as_ref() {
+        return template.loc.start;
+    }
+    0
+}
+
+fn offset_to_line_column(source: &str, offset: usize) -> (u32, u32) {
+    let target = offset.min(source.len());
+    let mut line: u32 = 0;
+    let mut line_start: usize = 0;
+    for (index, ch) in source.char_indices() {
+        if index >= target {
+            break;
+        }
+        if ch == '\n' {
+            line += 1;
+            line_start = index + 1;
+        }
+    }
+    let column = source[line_start..target].chars().count() as u32;
+    (line, column)
 }
 
 #[cfg(test)]

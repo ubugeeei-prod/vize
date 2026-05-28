@@ -297,6 +297,76 @@ impl DiagnosticService {
             .collect()
     }
 
+    /// Collect Vue-specific compile diagnostics that TypeScript's checker
+    /// cannot derive on its own (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE).
+    /// Uses the lightweight validator entry point so the editor stays
+    /// responsive — `compile_sfc` would do template/style codegen we throw
+    /// away anyway.
+    pub(super) fn collect_sfc_compile_diagnostics(
+        _uri: &Url,
+        content: &str,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Vec<Diagnostic> {
+        let Some(script_setup) = descriptor.script_setup.as_ref() else {
+            return Vec::new();
+        };
+        if !script_setup_has_validator_candidates(&script_setup.content) {
+            return Vec::new();
+        }
+
+        let Err(err) = vize_atelier_sfc::validate_script_setup_semantics(&script_setup.content)
+        else {
+            return Vec::new();
+        };
+
+        let range = if let Some(ref loc) = err.loc {
+            Range {
+                start: Position {
+                    line: (loc.start_line as u32).saturating_sub(1),
+                    character: (loc.start_column as u32).saturating_sub(1),
+                },
+                end: Position {
+                    line: (loc.end_line as u32).saturating_sub(1),
+                    character: (loc.end_column as u32).saturating_sub(1),
+                },
+            }
+        } else {
+            // Fall back to the start of the most relevant block so the
+            // diagnostic lands somewhere clickable in the editor.
+            let (offset, _block) = sfc_block_fallback_offset(descriptor);
+            let (line, column) = offset_to_line_col(content, offset);
+            Range {
+                start: Position {
+                    line,
+                    character: column,
+                },
+                end: Position {
+                    line,
+                    character: column,
+                },
+            }
+        };
+
+        let message = if let Some(code) = err.code.as_deref() {
+            format!("[{}] {}", code, err.message)
+        } else {
+            err.message.to_string()
+        };
+        let code = err
+            .code
+            .as_deref()
+            .map(|code| NumberOrString::String(code.to_string()));
+
+        vec![Diagnostic {
+            range,
+            severity: Some(DiagnosticSeverity::ERROR),
+            code,
+            source: Some(sources::SFC_COMPILER.to_string()),
+            message,
+            ..Default::default()
+        }]
+    }
+
     /// Collect script parser diagnostics.
     pub(super) fn collect_script_diagnostics(
         _uri: &Url,
@@ -520,6 +590,27 @@ fn script_source_type(lang: Option<&str>) -> Option<SourceType> {
     };
 
     SourceType::from_path(format!("script.{extension}")).ok()
+}
+
+/// See the canon batch path for rationale — keep this in sync with
+/// `crates/vize_canon/src/batch/virtual_project.rs`.
+fn script_setup_has_validator_candidates(content: &str) -> bool {
+    content.contains("defineProps<") && content.contains("= defineProps")
+}
+
+/// Best-effort fallback offset (byte) for SFC compile errors that ship
+/// without a `loc`. Returns the start of the most relevant block.
+fn sfc_block_fallback_offset(descriptor: &SfcDescriptor<'_>) -> (usize, &'static str) {
+    if let Some(setup) = descriptor.script_setup.as_ref() {
+        return (setup.loc.start, "scriptSetup");
+    }
+    if let Some(script) = descriptor.script.as_ref() {
+        return (script.loc.start, "script");
+    }
+    if let Some(template) = descriptor.template.as_ref() {
+        return (template.loc.start, "template");
+    }
+    (0, "")
 }
 
 fn diagnostic_span(error: &oxc_diagnostics::OxcDiagnostic, source_len: usize) -> (usize, usize) {

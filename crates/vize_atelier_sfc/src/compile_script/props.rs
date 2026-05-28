@@ -716,6 +716,23 @@ pub(crate) fn normalize_destructure_default_value(default_value: &str) -> String
     default_value.to_compact_string()
 }
 
+/// Validate Vue-specific script-setup semantics that the TypeScript checker
+/// cannot derive on its own (currently: prop destructure defaults whose value
+/// disagrees with the declared prop type).
+///
+/// This runs only the analysis needed to drive the validators — no codegen,
+/// no template compile — so check/LSP can call it on every SFC without paying
+/// the cost of `compile_sfc`. Returns `Ok(())` when there is no `<script
+/// setup>` or no actionable issue.
+pub fn validate_script_setup_semantics(script_setup_content: &str) -> Result<(), SfcError> {
+    if script_setup_content.is_empty() {
+        return Ok(());
+    }
+    let mut ctx = ScriptCompileContext::new(script_setup_content);
+    ctx.analyze();
+    validate_props_destructure_default_types(&ctx)
+}
+
 /// Validate reactive props destructure defaults against inferred runtime prop types.
 pub(crate) fn validate_props_destructure_default_types(
     ctx: &ScriptCompileContext,
