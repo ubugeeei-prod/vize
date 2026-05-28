@@ -1628,6 +1628,87 @@ fn is_mutating_method(name: &str) -> bool {
     )
 }
 
+fn is_reactivity_loss_value_sink_call(
+    result: &ScriptParseResult,
+    call: &CallExpression<'_>,
+) -> bool {
+    match &call.callee {
+        Expression::Identifier(id) => {
+            is_reactivity_loss_value_sink_identifier(id.name.as_str())
+                || resolved_call_name(result, call)
+                    .is_some_and(|name| is_reactivity_loss_value_sink_identifier(name.as_str()))
+        }
+        Expression::StaticMemberExpression(member) => {
+            let Some(root) = member_chain_root_identifier(&member.object) else {
+                return false;
+            };
+            is_reactivity_loss_value_sink_member(root.as_str(), member.property.name.as_str())
+        }
+        Expression::ChainExpression(chain) => match &chain.expression {
+            oxc_ast::ast::ChainElement::StaticMemberExpression(member) => {
+                let Some(root) = member_chain_root_identifier(&member.object) else {
+                    return false;
+                };
+                is_reactivity_loss_value_sink_member(root.as_str(), member.property.name.as_str())
+            }
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
+fn is_reactivity_loss_value_sink_identifier(name: &str) -> bool {
+    matches!(
+        name,
+        "emit"
+            | "$emit"
+            | "Number"
+            | "String"
+            | "Boolean"
+            | "BigInt"
+            | "Symbol"
+            | "parseInt"
+            | "parseFloat"
+            | "isFinite"
+            | "isNaN"
+            | "encodeURI"
+            | "encodeURIComponent"
+            | "decodeURI"
+            | "decodeURIComponent"
+    )
+}
+
+fn is_reactivity_loss_value_sink_member(root: &str, property: &str) -> bool {
+    match root {
+        "console" => matches!(
+            property,
+            "assert"
+                | "debug"
+                | "dir"
+                | "error"
+                | "group"
+                | "groupCollapsed"
+                | "info"
+                | "log"
+                | "table"
+                | "time"
+                | "timeEnd"
+                | "timeLog"
+                | "trace"
+                | "warn"
+        ),
+        "Math" => true,
+        "JSON" => matches!(property, "parse" | "stringify"),
+        "Number" => matches!(
+            property,
+            "isFinite" | "isInteger" | "isNaN" | "isSafeInteger"
+        ),
+        "String" => matches!(property, "fromCharCode" | "fromCodePoint" | "raw"),
+        "Array" => matches!(property, "isArray"),
+        _ => false,
+    }
+}
+
 struct ReactivePlainValue {
     source_name: CompactString,
     argument_name: CompactString,
@@ -1643,6 +1724,10 @@ pub fn detect_call_argument_reactivity_loss(
     call: &CallExpression<'_>,
     source: &str,
 ) {
+    if is_reactivity_loss_value_sink_call(result, call) {
+        return;
+    }
+
     let callee_name = call_label(result, call, source);
 
     for arg in call.arguments.iter() {

@@ -1124,6 +1124,55 @@ watch(() => localCount, () => {})
     }
 
     #[test]
+    fn test_plain_reactive_values_ignore_value_sink_calls() {
+        use crate::reactivity::ReactivityLossKind;
+
+        let result = parse_script_setup(
+            r#"
+const { count } = defineProps<{ count: number }>()
+const emit = defineEmits<{ (e: 'update', value: number): void }>()
+
+console.log(count)
+console.warn({ count })
+emit('update', count)
+Math.max(count, 1)
+Number(count)
+JSON.stringify({ count })
+
+watch(count, () => {})
+useMyComposable(count)
+"#,
+        );
+
+        let losses = result.reactivity.losses();
+        for ignored_callee in ["log", "warn", "emit", "max", "Number", "stringify"] {
+            assert!(!losses.iter().any(|loss| matches!(
+                &loss.kind,
+                ReactivityLossKind::FunctionArgumentExtract {
+                    callee_name,
+                    ..
+                } if callee_name == ignored_callee
+            )));
+        }
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                argument_name,
+                callee_name,
+                ..
+            } if argument_name == "count" && callee_name == "watch"
+        )));
+        assert!(losses.iter().any(|loss| matches!(
+            &loss.kind,
+            ReactivityLossKind::FunctionArgumentExtract {
+                argument_name,
+                callee_name,
+                ..
+            } if argument_name == "count" && callee_name == "useMyComposable"
+        )));
+    }
+
+    #[test]
     fn test_plain_reactive_alias_chain_crosses_calls_and_getters() {
         use crate::reactivity::ReactivityLossKind;
 
