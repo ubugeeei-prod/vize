@@ -20,6 +20,7 @@ use crate::utils::is_standalone_html_path;
 /// Diagnostic source identifiers.
 pub mod sources {
     pub const SFC_PARSER: &str = "vize/sfc";
+    pub const SFC_COMPILER: &str = "vize/sfc-compile";
     pub const TEMPLATE_PARSER: &str = "vize/template";
     pub const SCRIPT_PARSER: &str = "vize/script";
     pub const LINTER: &str = "vize/lint";
@@ -155,6 +156,16 @@ impl DiagnosticService {
             tracing::info!("collect: skipping dependent diagnostics after block parse error");
             return diagnostics;
         }
+
+        // Surface Vue-specific compile errors (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE)
+        // that the TypeScript checker cannot derive on its own. Mirrors the
+        // canon path used by `vize check` so editor and CLI stay aligned.
+        let sfc_compile_diags = Self::collect_sfc_compile_diagnostics(uri, &content, &descriptor);
+        tracing::info!(
+            "collect: sfc compile diagnostics: {}",
+            sfc_compile_diags.len()
+        );
+        diagnostics.extend(sfc_compile_diags);
 
         if features.lint {
             // Collect linter diagnostics (vize_patina)
@@ -474,6 +485,75 @@ mod tests {
             !diagnostics
                 .iter()
                 .any(|diagnostic| diagnostic.source.as_deref() == Some(sources::SFC_PARSER))
+        );
+    }
+
+    #[test]
+    fn collect_reports_props_destructure_default_type_mismatch_for_lsp() {
+        // Editor should surface the same DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE
+        // error that `vize check` shows, since TypeScript's checker cannot
+        // detect a destructure default that conflicts with a Vue prop type.
+        let state = state_with_lsp_diagnostics(false, false);
+        let uri = Url::parse("file:///Bad.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            r#"<script setup lang="ts">
+const { msg = 0 } = defineProps<{ msg?: string }>();
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>
+"#
+            .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+        let diagnostic = diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.source.as_deref() == Some(sources::SFC_COMPILER))
+            .expect("expected an SFC compile diagnostic");
+        assert!(
+            diagnostic
+                .message
+                .contains("DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE"),
+            "expected DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE in message, got: {}",
+            diagnostic.message
+        );
+        assert_eq!(diagnostic.severity, Some(DiagnosticSeverity::ERROR));
+    }
+
+    #[test]
+    fn collect_does_not_report_sfc_compile_diagnostic_for_valid_default() {
+        let state = state_with_lsp_diagnostics(false, false);
+        let uri = Url::parse("file:///Good.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            r#"<script setup lang="ts">
+const { msg = "ok" } = defineProps<{ msg?: string }>();
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>
+"#
+            .to_string(),
+            1,
+            "vue".to_string(),
+        );
+
+        let diagnostics = DiagnosticService::collect(&state, &uri);
+        assert!(
+            diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.source.as_deref() != Some(sources::SFC_COMPILER)),
+            "expected no SFC compile diagnostics, got: {:?}",
+            diagnostics
+                .iter()
+                .map(|diagnostic| (diagnostic.source.as_deref(), diagnostic.message.as_str()))
+                .collect::<Vec<_>>()
         );
     }
 

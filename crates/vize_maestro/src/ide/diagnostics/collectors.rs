@@ -297,6 +297,92 @@ impl DiagnosticService {
             .collect()
     }
 
+    /// Collect Vue-specific compile diagnostics that TypeScript's checker
+    /// cannot derive on its own (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE).
+    /// Runs the full SFC compiler but discards the generated code — only the
+    /// validation errors are surfaced.
+    pub(super) fn collect_sfc_compile_diagnostics(
+        _uri: &Url,
+        content: &str,
+        descriptor: &SfcDescriptor<'_>,
+    ) -> Vec<Diagnostic> {
+        let filename = _uri.path().to_string();
+        let is_ts = descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|script| matches!(script.lang.as_deref(), Some("ts" | "tsx")))
+            || descriptor
+                .script
+                .as_ref()
+                .is_some_and(|script| matches!(script.lang.as_deref(), Some("ts" | "tsx")));
+
+        let compile_opts = vize_atelier_sfc::SfcCompileOptions {
+            parse: vize_atelier_sfc::SfcParseOptions {
+                filename: filename.clone().into(),
+                ..Default::default()
+            },
+            script: vize_atelier_sfc::ScriptCompileOptions {
+                id: Some(filename.clone().into()),
+                is_ts,
+                ..Default::default()
+            },
+            template: vize_atelier_sfc::TemplateCompileOptions {
+                id: Some(filename.into()),
+                is_ts,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let Err(err) = vize_atelier_sfc::compile_sfc(descriptor, compile_opts) else {
+            return Vec::new();
+        };
+
+        let range = if let Some(ref loc) = err.loc {
+            Range {
+                start: Position {
+                    line: (loc.start_line as u32).saturating_sub(1),
+                    character: (loc.start_column as u32).saturating_sub(1),
+                },
+                end: Position {
+                    line: (loc.end_line as u32).saturating_sub(1),
+                    character: (loc.end_column as u32).saturating_sub(1),
+                },
+            }
+        } else {
+            // Fall back to the start of the most relevant block so the
+            // diagnostic lands somewhere clickable in the editor.
+            let (offset, _block) = sfc_block_fallback_offset(descriptor);
+            let (line, column) = offset_to_line_col(content, offset);
+            Range {
+                start: Position {
+                    line,
+                    character: column,
+                },
+                end: Position {
+                    line,
+                    character: column,
+                },
+            }
+        };
+
+        let message = if let Some(code) = err.code.as_deref() {
+            format!("[{}] {}", code, err.message)
+        } else {
+            err.message.to_string()
+        };
+        let code = err.code.as_deref().map(|code| NumberOrString::String(code.to_string()));
+
+        vec![Diagnostic {
+            range,
+            severity: Some(DiagnosticSeverity::ERROR),
+            code,
+            source: Some(sources::SFC_COMPILER.to_string()),
+            message,
+            ..Default::default()
+        }]
+    }
+
     /// Collect script parser diagnostics.
     pub(super) fn collect_script_diagnostics(
         _uri: &Url,
@@ -520,6 +606,21 @@ fn script_source_type(lang: Option<&str>) -> Option<SourceType> {
     };
 
     SourceType::from_path(format!("script.{extension}")).ok()
+}
+
+/// Best-effort fallback offset (byte) for SFC compile errors that ship
+/// without a `loc`. Returns the start of the most relevant block.
+fn sfc_block_fallback_offset(descriptor: &SfcDescriptor<'_>) -> (usize, &'static str) {
+    if let Some(setup) = descriptor.script_setup.as_ref() {
+        return (setup.loc.start, "scriptSetup");
+    }
+    if let Some(script) = descriptor.script.as_ref() {
+        return (script.loc.start, "script");
+    }
+    if let Some(template) = descriptor.template.as_ref() {
+        return (template.loc.start, "template");
+    }
+    (0, "")
 }
 
 fn diagnostic_span(error: &oxc_diagnostics::OxcDiagnostic, source_len: usize) -> (usize, usize) {
