@@ -151,6 +151,15 @@ impl InlayHintService {
                 ReactiveKind::Computed => "ComputedRef",
                 _ => continue,
             };
+            // Resolve the inner type via the same heuristic that completion
+            // uses for the .value shortcut. Falls back to `_` when the source
+            // is too dynamic to infer (e.g. `ref(props.bar)`).
+            let value_type = crate::ide::completion::infer_reactive_value_type(
+                script,
+                source.name.as_str(),
+                source.kind,
+            )
+            .unwrap_or_else(|| "_".to_string());
 
             // Locate `const NAME =` in the script content. Anchoring on the
             // declaration keyword avoids matching usages inside expressions.
@@ -186,7 +195,7 @@ impl InlayHintService {
             if !Self::position_in_range(position, range) {
                 continue;
             }
-            let label = vize_carton::cstr!(": {}<{}>", wrapper, "_");
+            let label = vize_carton::cstr!(": {}<{}>", wrapper, value_type.as_str());
             hints.push(InlayHint {
                 position,
                 label: InlayHintLabel::String(label.to_string()),
@@ -378,11 +387,51 @@ const doubled = computed(() => count.value * 2)
             .collect();
         assert!(
             labels.iter().any(|s| s.contains("Ref")),
-            "expected a Ref<_> inlay hint, got {labels:?}",
+            "expected a Ref<...> inlay hint, got {labels:?}",
         );
         assert!(
             labels.iter().any(|s| s.contains("ComputedRef")),
-            "expected a ComputedRef<_> inlay hint, got {labels:?}",
+            "expected a ComputedRef<...> inlay hint, got {labels:?}",
+        );
+    }
+
+    #[test]
+    fn test_reactive_binding_inlay_hint_resolves_inner_type() {
+        // Follow-up to #696: the inlay hint must surface the inferred
+        // value type rather than a placeholder. `ref(0)` is number;
+        // `ref<string>()` carries an explicit type parameter.
+        let content = r#"<script setup lang="ts">
+import { ref } from 'vue'
+const counter = ref(0)
+const label = ref<string>()
+</script>
+"#;
+        let uri = Url::parse("file:///inferred.vue").unwrap();
+        let range = Range {
+            start: Position {
+                line: 0,
+                character: 0,
+            },
+            end: Position {
+                line: 100,
+                character: 0,
+            },
+        };
+        let hints = InlayHintService::get_hints(content, &uri, range);
+        let labels: Vec<String> = hints
+            .iter()
+            .filter_map(|h| match &h.label {
+                InlayHintLabel::String(s) => Some(s.clone()),
+                _ => None,
+            })
+            .collect();
+        assert!(
+            labels.iter().any(|s| s.contains("Ref<number>")),
+            "expected Ref<number> inlay hint for ref(0), got {labels:?}",
+        );
+        assert!(
+            labels.iter().any(|s| s.contains("Ref<string>")),
+            "expected Ref<string> inlay hint for ref<string>(), got {labels:?}",
         );
     }
 

@@ -15,6 +15,10 @@ mod service;
 mod style;
 mod template;
 
+// Cross-module reuse: inlay-hint code resolves reactive binding types with
+// the same heuristic that script completion uses.
+pub(crate) use script::infer_reactive_value_type;
+
 /// Completion service for providing context-aware completions.
 pub struct CompletionService;
 

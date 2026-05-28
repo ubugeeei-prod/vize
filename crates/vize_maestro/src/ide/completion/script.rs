@@ -408,7 +408,11 @@ fn infer_reactive_kind_from_source(script_content: &str, name: &str) -> Option<R
     None
 }
 
-fn infer_reactive_value_type(
+/// Inline-source heuristic for the inner type of a reactive binding.
+/// Returns `Some("number")` for `const n = ref(0)`, `Some("string")` for
+/// `const s = ref<string>()`, etc. Exposed to crate so inlay-hint code can
+/// reuse the same inference rather than duplicating it.
+pub(crate) fn infer_reactive_value_type(
     script_content: &str,
     name: &str,
     kind: ReactiveKind,
