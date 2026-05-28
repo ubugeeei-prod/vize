@@ -44,6 +44,8 @@
 
 mod checker;
 mod context;
+#[cfg(feature = "native")]
+pub mod corsa_session_cache;
 mod diagnostic;
 #[cfg(feature = "native")]
 mod file_uri;
