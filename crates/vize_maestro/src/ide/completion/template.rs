@@ -858,6 +858,20 @@ fn extract_component_metadata(
             }
         }
 
+        // defineModel<T>() introduces a prop alongside an `update:NAME`
+        // event. Prop completion only knew about defineProps before, so
+        // child components using defineModel showed no prop suggestions.
+        // See #686.
+        for model in summary.macros.models() {
+            if seen_props.insert(model.name.to_string()) {
+                props.push(ComponentProp {
+                    name: model.name.to_string(),
+                    type_detail: model.model_type.as_ref().map(|ty| ty.to_string()),
+                    required: model.required,
+                });
+            }
+        }
+
         if legacy_vue2 {
             for (name, binding_type) in summary.bindings.iter() {
                 if binding_type == BindingType::Props && seen_props.insert(name.to_string()) {
