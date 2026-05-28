@@ -45,6 +45,7 @@ pub mod call_graph;
 pub mod css;
 pub mod declaration_ts;
 pub mod display;
+pub mod effect_graph;
 pub mod hoist;
 pub mod import_resolver;
 pub mod macros;
