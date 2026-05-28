@@ -1,4 +1,5 @@
 export type VizeNuxtPattern = string | RegExp;
+export type VizeNuxtVueVersion = 0.11 | 1 | 2 | 3 | "legacy";
 
 /**
  * Nuxt-facing mirror of the public `@vizejs/vite-plugin` options.
@@ -8,6 +9,14 @@ export type VizeNuxtPattern = string | RegExp;
  * during monorepo lint runs.
  */
 export interface VizeNuxtCompilerOptions {
+  /**
+   * Vue major version for the host project.
+   *
+   * Legacy Vue projects keep the host Vue compiler in charge. When set to
+   * `0.11`, `1`, `2`, or `"legacy"`, the underlying Vite plugin runs in
+   * compatibility mode and does not intercept `.vue` files.
+   */
+  vueVersion?: VizeNuxtVueVersion;
   /** Override the public base used for dev-time asset URLs. */
   devUrlBase?: string;
   /** Files to include in compilation. */

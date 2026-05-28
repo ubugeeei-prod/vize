@@ -61,6 +61,11 @@ the Vize compiler and Nuxt compatibility bridges for projects that need tighter 
 export default defineNuxtConfig({
   modules: ["@vizejs/nuxt"],
   vize: {
+    compatibility: {
+      // Usually inferred automatically.
+      // Nuxt 2 defaults to Vue 2 compatibility mode; Nuxt 3/4 defaults to Vue 3.
+      vueVersion: 3,
+    },
     compiler: {
       // Any @vizejs/vite-plugin option can be passed here.
       configMode: "auto",
@@ -92,16 +97,42 @@ export default defineNuxtConfig({
 });
 ```
 
-| Option                | Type                                 | Default                    | Description                                                                                                                                                                           |
-| --------------------- | ------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                     | Enables Vize as the Vue SFC compiler. Passing an object forwards options to `@vizejs/vite-plugin` while keeping Nuxt defaults for `root`, `devUrlBase`, and on-demand `scanPatterns`. |
-| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                     | Controls the Nuxt transform bridge for auto-imports, component imports, i18n helpers, and stable async-data keys on Vize virtual modules.                                             |
-| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                     | Controls the UnoCSS bridge for Vize virtual modules. `originalSource: false` disables reading source SFCs; `maxBytes` limits memory use.                                              |
-| `dev.stylesheetLinks` | `boolean`                            | `true`                     | Enables dev-only SSR HTML stylesheet-link cleanup for Vize-generated Nuxt asset URLs.                                                                                                 |
-| `musea`               | `boolean \| MuseaOptions`            | `false`                    | Opts into Musea gallery integration. Use `true` for Musea defaults or pass an object to configure include patterns, tokens, preview CSS, and routing.                                 |
-| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }` | Documents the Nuxt mock shape used by Musea preview helpers. The Nuxt module does not install the mock layer globally because doing so would shadow Nuxt's own `#imports`.            |
+| Option                | Type                                 | Default                    | Description                                                                                                                                                                                 |
+| --------------------- | ------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `compatibility`       | `VizeNuxtCompatibilityOptions`       | auto-detected              | Overrides detected Nuxt/Vue major versions for unusual wrappers. Nuxt 2 defaults to Vue 2 host-compiler compatibility; Nuxt 3/4 defaults to Vue 3. Vue 0.11/1/2 all use host-compiler mode. |
+| `compiler`            | `boolean \| VizeNuxtCompilerOptions` | `true`                     | Enables Vize as the Vue SFC compiler. Passing an object forwards options to `@vizejs/vite-plugin` while keeping Nuxt defaults for `root`, `devUrlBase`, and on-demand `scanPatterns`.       |
+| `bridge`              | `boolean \| VizeNuxtBridgeOptions`   | `true`                     | Controls the Nuxt transform bridge for auto-imports, component imports, i18n helpers, and stable async-data keys on Vize virtual modules.                                                   |
+| `unocss`              | `boolean \| VizeNuxtUnoCssOptions`   | `true`                     | Controls the UnoCSS bridge for Vize virtual modules. `originalSource: false` disables reading source SFCs; `maxBytes` limits memory use.                                                    |
+| `dev.stylesheetLinks` | `boolean`                            | `true`                     | Enables dev-only SSR HTML stylesheet-link cleanup for Vize-generated Nuxt asset URLs.                                                                                                       |
+| `musea`               | `boolean \| MuseaOptions`            | `false`                    | Opts into Musea gallery integration. Use `true` for Musea defaults or pass an object to configure include patterns, tokens, preview CSS, and routing.                                       |
+| `nuxtMusea`           | `NuxtMuseaOptions`                   | `{ route: { path: "/" } }` | Documents the Nuxt mock shape used by Musea preview helpers. The Nuxt module does not install the mock layer globally because doing so would shadow Nuxt's own `#imports`.                  |
 
 ## Advanced Setup
+
+### Nuxt 2 and Legacy Vue
+
+Nuxt 2 projects use Vue 2 compiler output. Vize's native SFC compiler targets Vue 3, so the Nuxt
+module automatically avoids replacing the host compiler when it detects Nuxt 2. For Nuxt 2 Bridge
+or other Vite-based Vue 2 setups, the Vite plugin receives `vueVersion: 2`, which keeps
+`@vitejs/plugin-vue2`, `vue-loader`, or Nuxt's own compiler in charge of `.vue` files.
+
+The same host-compiler mode is available for older Vue projects via `vueVersion: 0.11`,
+`vueVersion: 1`, or `vueVersion: "legacy"`.
+
+If your project wraps Nuxt in a way that hides the version from Nuxt Kit, set the compatibility
+override explicitly:
+
+```ts
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  vize: {
+    compatibility: {
+      nuxtVersion: 2,
+      vueVersion: 2,
+    },
+  },
+});
+```
 
 ### Using the Vite Plugin Directly
 
@@ -229,4 +260,4 @@ This configuration uses Musea for component development and documentation while 
 - Vize is under active development — test thoroughly before using in production Nuxt projects
 - SSR compilation is supported via `vize_atelier_ssr`
 - Nuxt-specific features (auto-imports, composables, middleware) work through Nuxt's own transform layer
-- The Nuxt module supports both Nuxt 3 and Nuxt 4
+- The Nuxt module supports Nuxt 2, Nuxt 3, and Nuxt 4. Nuxt 2 uses host-compiler compatibility mode because Vize's native SFC compiler targets Vue 3 output.

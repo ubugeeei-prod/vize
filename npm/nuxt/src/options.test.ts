@@ -24,6 +24,29 @@ assert.equal(
   "compiler false should disable the Vize compiler",
 );
 
+assert.equal(
+  resolveNuxtCompilerOptions("/repo/app", "/", "/_nuxt/", true, {
+    supportsViteCompiler: false,
+    vueVersion: 2,
+  }),
+  false,
+  "Nuxt 2 projects without a Vite builder should not register Vite compiler plugins",
+);
+
+assert.deepEqual(
+  resolveNuxtCompilerOptions("/repo/app", "/", "/_nuxt/", true, {
+    supportsViteCompiler: true,
+    vueVersion: 1,
+  }),
+  {
+    devUrlBase: "/_nuxt/",
+    root: "/repo/app",
+    scanPatterns: [],
+    vueVersion: 1,
+  },
+  "Vite-based legacy Vue projects should pass host-compiler compatibility mode to the Vite plugin",
+);
+
 assert.deepEqual(
   resolveNuxtCompilerOptions("/repo/app", "/", "/_nuxt/", {
     configMode: "auto",
@@ -32,6 +55,7 @@ assert.deepEqual(
     include: [/\.vue$/, /\.ce\.vue$/],
     precompileBatchSize: 32,
     sourceMap: false,
+    vueVersion: 3,
   }),
   {
     configMode: "auto",
@@ -43,6 +67,7 @@ assert.deepEqual(
     root: "/repo/app",
     scanPatterns: [],
     sourceMap: false,
+    vueVersion: 3,
   },
   "compiler object should expose the underlying @vizejs/vite-plugin options",
 );

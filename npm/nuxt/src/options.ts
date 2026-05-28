@@ -1,9 +1,29 @@
 import type { MuseaOptions } from "@vizejs/vite-plugin-musea";
 import type { NuxtMuseaOptions } from "@vizejs/musea-nuxt";
-import type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
+import type { VizeNuxtCompilerOptions, VizeNuxtVueVersion } from "./compiler-options.ts";
 import { buildNuxtCompilerOptions } from "./utils.ts";
 
-export type { VizeNuxtCompilerOptions } from "./compiler-options.ts";
+export type { VizeNuxtCompilerOptions, VizeNuxtVueVersion } from "./compiler-options.ts";
+
+export type VizeNuxtMajorVersion = 2 | 3 | 4;
+
+export interface VizeNuxtCompatibilityOptions {
+  /**
+   * Override the detected Nuxt major version.
+   *
+   * This exists for projects with unusual module wrappers. Most projects should
+   * leave it on automatic detection.
+   */
+  nuxtVersion?: VizeNuxtMajorVersion;
+
+  /**
+   * Override the detected Vue major version.
+   *
+   * Nuxt 2 defaults to Vue 2 compatibility mode; Nuxt 3/4 defaults to Vue 3.
+   * Vue 0.11, Vue 1, and Vue 2 all use host-compiler compatibility mode.
+   */
+  vueVersion?: VizeNuxtVueVersion;
+}
 
 export interface VizeNuxtBridgeOptions {
   /**
@@ -63,6 +83,14 @@ export interface VizeNuxtDevOptions {
 }
 
 export interface VizeNuxtOptions {
+  /**
+   * Host framework compatibility overrides.
+   *
+   * These are usually inferred from Nuxt itself. Set `vueVersion: 0.11`, `1`,
+   * `2`, or `"legacy"` for setups that must keep the host compiler.
+   */
+  compatibility?: VizeNuxtCompatibilityOptions;
+
   /**
    * Enable/disable the Vize compiler (Vue SFC compilation via Vite plugin).
    * Pass an object to configure the underlying `@vizejs/vite-plugin`.
@@ -132,13 +160,21 @@ export function resolveNuxtCompilerOptions(
   baseURL: string | undefined,
   buildAssetsDir: string | undefined,
   compiler: VizeNuxtOptions["compiler"],
+  compatibility: VizeNuxtCompatibilityOptions & { supportsViteCompiler?: boolean } = {},
 ): VizeNuxtCompilerOptions | false {
   if (compiler === false) {
     return false;
   }
 
+  if (compatibility.supportsViteCompiler === false) {
+    return false;
+  }
+
   const overrides = typeof compiler === "object" && compiler != null ? compiler : {};
-  return buildNuxtCompilerOptions(rootDir, baseURL, buildAssetsDir, overrides);
+  return buildNuxtCompilerOptions(rootDir, baseURL, buildAssetsDir, {
+    vueVersion: compatibility.vueVersion,
+    ...overrides,
+  });
 }
 
 export function resolveNuxtBridgeOptions(
