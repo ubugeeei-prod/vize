@@ -689,6 +689,30 @@ pub fn extract_with_defaults_defaults(with_defaults_args: &str) -> FxHashMap<Str
     defaults
 }
 
+/// Normalize default values from reactive props destructure for runtime props.
+///
+/// Vue treats array/object destructure defaults as per-instance factories, while
+/// function defaults are already factories/values and must not be wrapped.
+pub(crate) fn normalize_destructure_default_value(default_value: &str) -> String {
+    let trimmed = default_value.trim();
+    if trimmed.starts_with('[') {
+        let mut wrapped = String::with_capacity(trimmed.len() + 6);
+        wrapped.push_str("() => ");
+        wrapped.push_str(trimmed);
+        return wrapped;
+    }
+
+    if trimmed.starts_with('{') {
+        let mut wrapped = String::with_capacity(trimmed.len() + 8);
+        wrapped.push_str("() => (");
+        wrapped.push_str(trimmed);
+        wrapped.push(')');
+        return wrapped;
+    }
+
+    default_value.to_compact_string()
+}
+
 /// Check if a string is a valid JS identifier
 pub fn is_valid_identifier(s: &str) -> bool {
     if s.is_empty() {

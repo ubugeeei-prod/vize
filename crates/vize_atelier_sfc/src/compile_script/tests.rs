@@ -6,6 +6,7 @@ mod compile_script_tests {
     use crate::compile_script::function_mode::compile_script_setup;
     use crate::compile_script::props::{
         extract_prop_types_from_type, extract_with_defaults_defaults, is_valid_identifier,
+        normalize_destructure_default_value,
     };
     use crate::compile_script::typescript::transform_typescript_to_js;
     use crate::types::SfcDescriptor;
@@ -77,6 +78,23 @@ mod compile_script_tests {
             defaults4.get("description"),
             Some(&"'a fast, modern browser for the **npm registry**'".to_compact_string())
         );
+    }
+
+    #[test]
+    fn test_normalize_destructure_default_value() {
+        assert_eq!(
+            normalize_destructure_default_value("[]").as_str(),
+            "() => []"
+        );
+        assert_eq!(
+            normalize_destructure_default_value("{ count: 0 }").as_str(),
+            "() => ({ count: 0 })"
+        );
+        assert_eq!(
+            normalize_destructure_default_value("() => []").as_str(),
+            "() => []"
+        );
+        assert_eq!(normalize_destructure_default_value("42").as_str(), "42");
     }
 
     #[test]

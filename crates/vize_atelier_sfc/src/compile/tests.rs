@@ -844,6 +844,34 @@ const doubled = computed(() => count * 2)
 }
 
 #[test]
+fn test_props_destructure_mutable_defaults_use_factories() {
+    let input = r#"<script setup lang="ts">
+const {
+  items = [],
+  options = { dense: true },
+  formatter = () => "ok",
+} = defineProps<{
+  items?: string[]
+  options?: { dense: boolean }
+  formatter?: () => string
+}>()
+</script>
+
+<template>
+  <div>{{ items.length }} {{ options.dense }} {{ formatter() }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(input, SfcParseOptions::default()).unwrap();
+    let mut compile_opts = SfcCompileOptions::default();
+    compile_opts.script.id = Some("test.vue".to_compact_string());
+    let result = compile_sfc(&descriptor, compile_opts).unwrap();
+
+    assert!(result.code.contains("default: () => []"));
+    assert!(result.code.contains("default: () => ({ dense: true })"));
+    assert!(result.code.contains("default: () => \"ok\""));
+}
+
+#[test]
 fn test_let_var_unref() {
     let input = r#"
 <script setup>
