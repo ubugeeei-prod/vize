@@ -173,6 +173,17 @@ impl WorkspaceSymbolsService {
 
         let container = Self::extract_component_name(uri);
 
+        // Range pointing at the start of the script setup block. Symbols
+        // discovered through Croquis don't yet carry their declaration span,
+        // so we anchor them at the block start as a follow-up improvement
+        // on top of the line-0-character-0 placeholder from #715.
+        let script_setup_position =
+            Self::offset_to_position(descriptor.source.as_ref(), script_setup.loc.start);
+        let placeholder_range = Range {
+            start: script_setup_position,
+            end: script_setup_position,
+        };
+
         // Emits declared via defineEmits<{...}>(). The macro tracker keeps the
         // raw names; expose each as an EVENT symbol so `@symbol` searches
         // discover "update:modelValue", "submit", etc.
@@ -188,20 +199,44 @@ impl WorkspaceSymbolsService {
                 deprecated: None,
                 location: Location {
                     uri: uri.clone(),
-                    range: Range {
-                        start: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                        end: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                    },
+                    range: placeholder_range,
                 },
                 container_name: container.clone(),
             });
         }
+
+        // Slots declared via defineSlots<{...}>(). Expose each as an
+        // INTERFACE symbol — slots define the parent-child contract, much
+        // like a TypeScript interface.
+        for slot in croquis.macros.slots() {
+            let name = slot.name.as_str();
+            if !query.is_empty() && !name.to_lowercase().contains(query) {
+                continue;
+            }
+            symbols.push(SymbolInformation {
+                name: name.to_string(),
+                kind: SymbolKind::INTERFACE,
+                tags: None,
+                deprecated: None,
+                location: Location {
+                    uri: uri.clone(),
+                    range: placeholder_range,
+                },
+                container_name: container.clone(),
+            });
+        }
+    }
+
+    /// Convert a byte offset in `source` to an LSP `Position`. Simple line/
+    /// column calculator — workspace symbols don't go through the heavier
+    /// position mapping used by diagnostics.
+    fn offset_to_position(source: &str, offset: usize) -> Position {
+        let bounded = offset.min(source.len());
+        let prefix = &source[..bounded];
+        let line = prefix.matches('\n').count() as u32;
+        let last_nl = prefix.rfind('\n').map(|p| p + 1).unwrap_or(0);
+        let character = (bounded - last_nl) as u32;
+        Position { line, character }
     }
 
     /// Extract component name from URI.
