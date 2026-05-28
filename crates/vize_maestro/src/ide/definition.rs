@@ -8,7 +8,7 @@
 
 pub mod bindings;
 pub(crate) mod helpers;
-mod script;
+pub(crate) mod script;
 mod service;
 mod template;
 

@@ -46,6 +46,12 @@ pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionR
         return Some(def);
     }
 
+    if ctx.state.lsp_features().legacy_vue2
+        && let Some(location) = super::script::find_analyzed_binding_location(ctx, &word, true)
+    {
+        return Some(GotoDefinitionResponse::Scalar(location));
+    }
+
     // Parse SFC to get the actual script content (not virtual code)
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: ctx.uri.path().to_string().into(),
@@ -442,6 +448,37 @@ pub(crate) fn find_component_prop_definition(
                     end: Position {
                         line,
                         character: character + "defineProps".len() as u32,
+                    },
+                },
+            }));
+        }
+    }
+
+    if ctx.state.lsp_features().legacy_vue2 {
+        use vize_atelier_sfc::croquis::{
+            SfcCroquisOptions, analyze_sfc_descriptor_with_context_legacy_vue2,
+        };
+
+        let analysis = analyze_sfc_descriptor_with_context_legacy_vue2(
+            &descriptor,
+            None,
+            SfcCroquisOptions::full(),
+        );
+        if let Some(&(start, end)) = analysis.croquis.binding_spans.get(prop_name.as_str())
+            && end > start
+        {
+            let sfc_offset = analysis.script_offset + start;
+            let (line, character) =
+                helpers::offset_to_position(&component_content, sfc_offset as usize);
+
+            let file_uri = tower_lsp::lsp_types::Url::from_file_path(&resolved_path).ok()?;
+            return Some(GotoDefinitionResponse::Scalar(Location {
+                uri: file_uri,
+                range: Range {
+                    start: Position { line, character },
+                    end: Position {
+                        line,
+                        character: character + (end - start),
                     },
                 },
             }));

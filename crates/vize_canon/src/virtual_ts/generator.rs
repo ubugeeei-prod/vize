@@ -12,7 +12,7 @@ use super::{
     },
     props::{collect_template_prop_names, generate_props_type, generate_props_variables},
     scope::generate_scope_closures,
-    types::{VirtualTsCheckOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
+    types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
 use vize_carton::append;
 use vize_carton::cstr;
@@ -64,7 +64,30 @@ pub fn generate_virtual_ts_with_offsets(
         script_offset,
         template_offset,
         options,
-        VirtualTsCheckOptions::default(),
+        VirtualTsGenerationOptions::default(),
+    )
+}
+
+/// Generate virtual TypeScript with Vue 2.7 / Nuxt 2 compatibility enabled.
+pub fn generate_virtual_ts_with_offsets_legacy_vue2(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::ast::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+) -> VirtualTsOutput {
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsGenerationOptions {
+            legacy_vue2: true,
+            ..Default::default()
+        },
     )
 }
 
@@ -75,8 +98,10 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     script_offset: u32,
     template_offset: u32,
     options: &VirtualTsOptions,
-    check_options: VirtualTsCheckOptions,
+    generation_options: VirtualTsGenerationOptions,
 ) -> VirtualTsOutput {
+    let check_options = generation_options.check_options;
+    let legacy_vue2 = generation_options.legacy_vue2;
     let mut ts = String::default();
     let mut mappings: Vec<VizeMapping> = Vec::new();
 
@@ -404,6 +429,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 "canon.virtual_ts.generate_props_variables",
                 generate_props_variables(&mut ts, summary, script_content, generic_param)
             );
+            if legacy_vue2 {
+                profile!(
+                    "canon.virtual_ts.generate_legacy_vue2_variables",
+                    generate_legacy_vue2_variables(&mut ts, summary, options)
+                );
+            }
             let template_prop_names = profile!(
                 "canon.virtual_ts.collect_template_prop_names",
                 collect_template_prop_names(summary, script_content)
@@ -709,4 +740,64 @@ fn is_local_setup_binding(summary: &Croquis, name: &str) -> bool {
         .import_statements
         .iter()
         .any(|import| start >= import.start && end <= import.end)
+}
+
+fn generate_legacy_vue2_variables(
+    mut ts: &mut String,
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+) {
+    let macro_prop_names: FxHashSet<&str> = summary
+        .macros
+        .props()
+        .iter()
+        .map(|prop| prop.name.as_str())
+        .collect();
+    let configured_globals: FxHashSet<&str> = options
+        .template_globals
+        .iter()
+        .map(|global| global.name.as_str())
+        .collect();
+    let mut names: Vec<&str> = summary
+        .bindings
+        .bindings
+        .iter()
+        .filter_map(|(name, binding_type)| {
+            let name = name.as_str();
+            match binding_type {
+                BindingType::Data | BindingType::Options | BindingType::VueGlobal => Some(name),
+                BindingType::Props if !macro_prop_names.contains(name) => Some(name),
+                _ => None,
+            }
+        })
+        .filter(|name| !configured_globals.contains(name))
+        .filter(|name| is_safe_value_identifier(name))
+        .collect();
+    names.sort_unstable();
+    names.dedup();
+
+    if names.is_empty() {
+        return;
+    }
+
+    ts.push_str("  // Vue 2.7 / Nuxt 2 Options API template bindings\n");
+    for name in &names {
+        append!(ts, "  const {name}: any = undefined as any;\n");
+    }
+    ts.push_str("  ");
+    for name in &names {
+        append!(ts, "void {name};");
+    }
+    ts.push('\n');
+}
+
+fn is_safe_value_identifier(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
+        return false;
+    }
+    chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
 }

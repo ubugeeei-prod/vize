@@ -7,6 +7,7 @@ use vize_carton::Bump;
 use vize_carton::cstr;
 
 use crate::script_parse::collect_script_parse_diagnostics;
+use crate::virtual_ts::generate_virtual_ts_with_offsets_legacy_vue2;
 
 use super::{
     analysis::{SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity},
@@ -27,10 +28,29 @@ use super::{
 ///
 /// For full TypeScript type checking with Corsa, use `TypeCheckService`.
 pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeCheckResult {
+    type_check_sfc_impl(source, options, false)
+}
+
+/// Perform type checking on a Vue SFC with Vue 2.7 / Nuxt 2 compatibility enabled.
+pub fn type_check_sfc_with_legacy_vue2(
+    source: &str,
+    options: &SfcTypeCheckOptions,
+) -> SfcTypeCheckResult {
+    type_check_sfc_impl(source, options, true)
+}
+
+fn type_check_sfc_impl(
+    source: &str,
+    options: &SfcTypeCheckOptions,
+    legacy_vue2: bool,
+) -> SfcTypeCheckResult {
     use vize_atelier_core::parser::parse;
     use vize_atelier_sfc::{
         SfcParseOptions,
-        croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+        croquis::{
+            SfcCroquisOptions, analyze_sfc_descriptor_with_context,
+            analyze_sfc_descriptor_with_context_legacy_vue2,
+        },
         parse_sfc,
     };
 
@@ -119,11 +139,17 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
         (0, None)
     };
 
-    let analysis = analyze_sfc_descriptor_with_context(
-        &descriptor,
-        template_ast.as_ref(),
-        SfcCroquisOptions::full(),
-    );
+    let croquis_options = SfcCroquisOptions::full();
+
+    let analysis = if legacy_vue2 {
+        analyze_sfc_descriptor_with_context_legacy_vue2(
+            &descriptor,
+            template_ast.as_ref(),
+            croquis_options,
+        )
+    } else {
+        analyze_sfc_descriptor_with_context(&descriptor, template_ast.as_ref(), croquis_options)
+    };
     let script_content = analysis.script_content;
     let script_offset = analysis.script_offset;
     let summary = analysis.croquis;
@@ -165,13 +191,25 @@ pub fn type_check_sfc(source: &str, options: &SfcTypeCheckOptions) -> SfcTypeChe
 
     // Generate virtual TypeScript with scope information if requested
     if options.include_virtual_ts && !has_template_parse_errors && !has_script_parse_errors {
-        result.virtual_ts = Some(generate_virtual_ts_with_scopes(
-            &summary,
-            script_content.as_deref(),
-            script_offset,
-            template_ast.as_ref(),
-            template_offset,
-        ));
+        result.virtual_ts = Some(if legacy_vue2 {
+            generate_virtual_ts_with_offsets_legacy_vue2(
+                &summary,
+                script_content.as_deref(),
+                template_ast.as_ref(),
+                script_offset,
+                template_offset,
+                &crate::virtual_ts::VirtualTsOptions::default(),
+            )
+            .code
+        } else {
+            generate_virtual_ts_with_scopes(
+                &summary,
+                script_content.as_deref(),
+                script_offset,
+                template_ast.as_ref(),
+                template_offset,
+            )
+        });
     }
 
     // Record analysis time on native only

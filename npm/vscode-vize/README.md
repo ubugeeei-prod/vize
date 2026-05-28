@@ -89,6 +89,9 @@ individual switches, make sure to include `vize.completion.enable`, `vize.hover.
 diagnostics for `useRoute()`, Vue I18n key completions, workspace key validation, inlay previews,
 Void Vue route completions, and ecosystem lint diagnostics.
 
+Vue 2.7 / Nuxt 2 support is opt-in. Set `vize.legacyVue2.enable: true` to include Options API
+template bindings and Nuxt 2 globals in type checking, completion, hover, definition, and references.
+
 When paired with the `Vize Art` extension, the same editor capabilities also apply to `*.art.vue`
 documents.
 

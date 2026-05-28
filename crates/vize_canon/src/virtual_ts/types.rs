@@ -77,6 +77,12 @@ impl Default for VirtualTsCheckOptions {
     }
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+pub(crate) struct VirtualTsGenerationOptions {
+    pub(crate) check_options: VirtualTsCheckOptions,
+    pub(crate) legacy_vue2: bool,
+}
+
 /// Default plugin globals.
 /// Returns empty by default. Configure via `vize.config.pkl` `globalTypes`
 /// or `typeChecker.globalsFile`.

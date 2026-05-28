@@ -200,6 +200,10 @@ export interface TypeCheckerConfig {
    */
   checkFallthroughAttrs?: boolean;
   /**
+   * Enable Vue 2.7 / Nuxt 2 Options API template binding support
+   */
+  legacyVue2?: boolean;
+  /**
    * Path to tsconfig.json
    */
   tsconfig?: string;
@@ -337,6 +341,10 @@ export interface LanguageServerConfig {
    * Enable Vue ecosystem lint and editor helpers
    */
   ecosystem?: boolean;
+  /**
+   * Enable Vue 2.7 / Nuxt 2 editor and type-checking compatibility
+   */
+  legacyVue2?: boolean;
   /**
    * Enable completions
    */

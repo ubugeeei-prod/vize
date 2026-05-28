@@ -142,6 +142,11 @@ impl BatchTypeChecker {
         })
     }
 
+    /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for generated virtual files.
+    pub fn enable_legacy_vue2(&mut self) {
+        self.project.set_legacy_vue2(true);
+    }
+
     /// Configure which virtual TypeScript checks are generated for Vue files.
     pub fn set_virtual_ts_checks(
         &mut self,

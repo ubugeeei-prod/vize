@@ -150,7 +150,11 @@ for (const [key, property] of Object.entries(configurationProperties)) {
     continue;
   }
   const expectedDefault =
-    key === "vize.diagnostics.enable" || key === "vize.formatting.enable" ? false : true;
+    key === "vize.diagnostics.enable" ||
+    key === "vize.formatting.enable" ||
+    key === "vize.legacyVue2.enable"
+      ? false
+      : true;
   assert.equal(property.default, expectedDefault, `${key} has an unexpected default`);
 }
 

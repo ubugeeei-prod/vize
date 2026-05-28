@@ -10,6 +10,7 @@
 
 use tower_lsp::lsp_types::Hover;
 use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_relief::BindingType;
 
 #[cfg(feature = "native")]
 use std::sync::Arc;
@@ -166,12 +167,17 @@ impl HoverService {
             .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
 
         // Create analyzer and analyze script
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        let analyzer_options = AnalyzerOptions::full();
+        let mut analyzer = Analyzer::with_options(analyzer_options);
+        if ctx.state.lsp_features().legacy_vue2 {
+            analyzer = analyzer.with_legacy_vue2();
+        }
 
+        if let Some(ref script) = descriptor.script {
+            analyzer.analyze_script_plain(&script.content);
+        }
         if let Some(ref script_setup) = descriptor.script_setup {
             analyzer.analyze_script_setup(&script_setup.content);
-        } else if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
         }
 
         // Analyze template if present
@@ -193,6 +199,25 @@ impl HoverService {
 
         // Format the hover content
         let kind_desc = Self::binding_type_to_description(binding_type);
+        let source = if matches!(
+            binding_type,
+            BindingType::Data | BindingType::Options | BindingType::VueGlobal
+        ) {
+            "`<script>`"
+        } else if descriptor.script_setup.is_some() {
+            "`<script setup>`"
+        } else {
+            "`<script>`"
+        };
+        let resolved_from = if descriptor.script_setup.is_some()
+            && !matches!(
+                binding_type,
+                BindingType::Data | BindingType::Options | BindingType::VueGlobal
+            ) {
+            "The binding is resolved from `<script setup>` analysis."
+        } else {
+            "The binding is resolved from `<script>` analysis."
+        };
 
         #[allow(clippy::disallowed_macros)]
         let signature = format!("{word}: {inferred_type}");
@@ -203,11 +228,12 @@ impl HoverService {
                 .meta("Template binding from script")
                 .code("typescript", &signature)
                 .description(kind_desc)
+                .section("Source", source)
                 .bullets(
                     "Template behavior",
                     &[
                         "Ref values are automatically unwrapped in templates.",
-                        "The binding is resolved from `<script setup>` analysis.",
+                        resolved_from,
                     ],
                 )
                 .build(),

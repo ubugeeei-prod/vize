@@ -38,6 +38,7 @@ struct LspConfigSection {
     typecheck: Option<bool>,
     editor: Option<bool>,
     ecosystem: Option<bool>,
+    legacy_vue2: Option<bool>,
     completion: Option<bool>,
     hover: Option<bool>,
     definition: Option<bool>,
@@ -88,6 +89,10 @@ impl LspConfigSection {
 
         if let Some(enabled) = self.ecosystem {
             features.ecosystem = enabled;
+        }
+
+        if let Some(enabled) = self.legacy_vue2 {
+            features.legacy_vue2 = enabled;
         }
 
         if let Some(enabled) = self.completion {
@@ -147,6 +152,7 @@ impl From<LanguageServerConfig> for LspConfigSection {
             typecheck: config.typecheck,
             editor: config.editor,
             ecosystem: config.ecosystem,
+            legacy_vue2: None,
             completion: config.completion,
             hover: config.hover,
             definition: config.definition,
@@ -177,6 +183,7 @@ pub struct LspFeatureConfig {
     pub(crate) lint: bool,
     pub(crate) typecheck: bool,
     pub(crate) ecosystem: bool,
+    pub(crate) legacy_vue2: bool,
     pub(crate) completion: bool,
     pub(crate) hover: bool,
     pub(crate) definition: bool,
@@ -200,6 +207,7 @@ impl LspFeatureConfig {
             lint: false,
             typecheck: false,
             ecosystem: false,
+            legacy_vue2: false,
             completion: false,
             hover: false,
             definition: false,
@@ -246,6 +254,7 @@ impl Default for LspFeatureConfig {
             lint: true,
             typecheck: true,
             ecosystem: true,
+            legacy_vue2: false,
             completion: true,
             hover: true,
             definition: true,
@@ -335,6 +344,8 @@ pub struct ServerState {
     lsp_typecheck_enabled: AtomicBool,
     /// Type checker options shared by LSP diagnostics.
     type_checker_config: RwLock<TypeCheckerConfig>,
+    /// Vue 2.7 / Nuxt 2 type checker compatibility flag from config.
+    type_checker_legacy_vue2: RwLock<bool>,
     /// Linter options shared by LSP diagnostics.
     linter_config: RwLock<LinterConfig>,
     /// Formatting options (loaded from vize.config.json)
@@ -377,6 +388,7 @@ impl ServerState {
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new(TypeCheckerConfig::default()),
+            type_checker_legacy_vue2: RwLock::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
             #[cfg(feature = "glyph")]
             format_options: RwLock::new(vize_glyph::FormatOptions::default()),
@@ -413,6 +425,11 @@ impl ServerState {
     #[inline]
     pub(crate) fn lsp_features(&self) -> LspFeatureConfig {
         *self.lsp_features.read()
+    }
+
+    #[inline]
+    pub(crate) fn legacy_vue2_enabled(&self) -> bool {
+        *self.type_checker_legacy_vue2.read() || self.lsp_features().legacy_vue2
     }
 
     /// Check whether LSP lint diagnostics are enabled.
@@ -455,6 +472,14 @@ impl ServerState {
         tracing::info!("Loaded type checker config from {}", source);
     }
 
+    fn apply_config_features(&self, features: vize_carton::config::ConfigFeatureFlags) {
+        *self.type_checker_legacy_vue2.write() = features.type_checker_legacy_vue2;
+        if let Some(enabled) = features.language_server_legacy_vue2 {
+            let mut lsp_features = self.lsp_features.write();
+            lsp_features.legacy_vue2 = enabled;
+        }
+    }
+
     fn apply_linter_config(&self, config: LinterConfig, source: &str) {
         *self.linter_config.write() = config;
         tracing::info!("Loaded linter config from {}", source);
@@ -471,7 +496,7 @@ impl ServerState {
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
     pub fn load_workspace_config(&self, dir: &Path) {
         let (loaded, linter_config) =
-            vize_carton::config::load_config_and_linter_with_source(Some(dir));
+            vize_carton::config::load_config_and_linter_with_features_and_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
@@ -483,18 +508,20 @@ impl ServerState {
             self.apply_linter_config(linter_config, &source);
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_lsp_config(config.language_server.into(), &source);
+            self.apply_config_features(loaded.features);
         }
     }
 
     /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
     pub fn load_lsp_config(&self, dir: &Path) {
         let (loaded, linter_config) =
-            vize_carton::config::load_config_and_linter_with_source(Some(dir));
+            vize_carton::config::load_config_and_linter_with_features_and_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             self.apply_linter_config(linter_config, &source);
             self.apply_type_checker_config(loaded.config.type_checker, &source);
             self.apply_lsp_config(loaded.config.language_server.into(), &source);
+            self.apply_config_features(loaded.features);
         }
     }
 
@@ -523,7 +550,7 @@ impl ServerState {
         let corsa_path = config.runtime_path().map(PathBuf::from);
         let options = BatchTypeCheckerOptions {
             tsconfig_path: config.tsconfig.as_ref().map(PathBuf::from),
-            ..Default::default()
+            virtual_ts_options: vize_canon::virtual_ts::VirtualTsOptions::default(),
         };
 
         match BatchTypeChecker::with_options_and_corsa_path(
@@ -531,7 +558,10 @@ impl ServerState {
             options,
             corsa_path.as_deref(),
         ) {
-            Ok(checker) => {
+            Ok(mut checker) => {
+                if self.legacy_vue2_enabled() {
+                    checker.enable_legacy_vue2();
+                }
                 let arc = Arc::new(RwLock::new(checker));
                 // get_or_init to handle race condition
                 Some(self.batch_checker.get_or_init(|| arc.clone()).clone())

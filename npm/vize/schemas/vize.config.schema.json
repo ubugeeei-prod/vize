@@ -223,6 +223,11 @@
           "default": true,
           "type": "boolean"
         },
+        "legacyVue2": {
+          "description": "Enable Vue 2.7 / Nuxt 2 Options API template binding support",
+          "default": false,
+          "type": "boolean"
+        },
         "tsconfig": {
           "description": "Path to tsconfig.json",
           "type": "string"
@@ -393,6 +398,10 @@
         },
         "ecosystem": {
           "description": "Enable Vue ecosystem lint and editor helpers",
+          "type": "boolean"
+        },
+        "legacyVue2": {
+          "description": "Enable Vue 2.7 / Nuxt 2 editor and type-checking compatibility",
           "type": "boolean"
         },
         "completion": {

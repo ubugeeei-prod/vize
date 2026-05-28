@@ -220,6 +220,11 @@ local typeCheckerConfigDef: JsonSchema = new JsonSchema {
       description = "Check fallthrough attrs on multi-root templates"
       default = true
     }
+    ["legacyVue2"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable Vue 2.7 / Nuxt 2 Options API template binding support"
+      default = false
+    }
     ["tsconfig"] = new JsonSchema {
       type = "string"
       description = "Path to tsconfig.json"
@@ -391,6 +396,10 @@ local languageServerConfigDef: JsonSchema = new JsonSchema {
     ["ecosystem"] = new JsonSchema {
       type = "boolean"
       description = "Enable Vue ecosystem lint and editor helpers"
+    }
+    ["legacyVue2"] = new JsonSchema {
+      type = "boolean"
+      description = "Enable Vue 2.7 / Nuxt 2 editor and type-checking compatibility"
     }
     ["completion"] = new JsonSchema {
       type = "boolean"

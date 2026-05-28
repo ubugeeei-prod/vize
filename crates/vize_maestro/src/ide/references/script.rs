@@ -14,6 +14,13 @@ impl ReferencesService {
         let options = vize_atelier_sfc::SfcParseOptions::default();
         let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
 
+        if ctx.state.lsp_features().legacy_vue2
+            && let Some(location) =
+                crate::ide::definition::script::find_analyzed_binding_location(ctx, word, true)
+        {
+            return Some(location);
+        }
+
         if let Some(ref script_setup) = descriptor.script_setup
             && let Some(loc) = Self::find_binding_in_script(&script_setup.content, word)
         {

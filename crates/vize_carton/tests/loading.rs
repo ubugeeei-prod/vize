@@ -1,6 +1,8 @@
 #![allow(clippy::disallowed_macros)]
 
-use vize_carton::config::{load_config, load_config_with_source};
+use vize_carton::config::{
+    load_config, load_config_with_features_and_source, load_config_with_source,
+};
 
 #[test]
 fn loads_pkl_defaults() {
@@ -53,6 +55,29 @@ fn loads_json_type_checker_settings() {
     let config = load_config(Some(dir.path()));
 
     insta::assert_snapshot!(serde_json::to_string_pretty(&config).unwrap());
+}
+
+#[test]
+fn loads_json_legacy_vue2_feature_flags() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("vize.config.json"),
+        r#"{
+          "typeChecker": {
+            "legacyVue2": true
+          },
+          "languageServer": {
+            "legacyVue2": true
+          }
+        }"#,
+    )
+    .unwrap();
+
+    let loaded = load_config_with_features_and_source(Some(dir.path()));
+
+    assert!(loaded.features.type_checker_legacy_vue2);
+    assert_eq!(loaded.features.language_server_legacy_vue2, Some(true));
+    assert!(loaded.config.type_checker.enabled);
 }
 
 #[test]

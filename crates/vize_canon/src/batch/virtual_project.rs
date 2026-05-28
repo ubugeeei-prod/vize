@@ -17,7 +17,8 @@ use super::source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
 use super::{Diagnostic, SfcBlockType};
 use crate::script_parse::collect_script_parse_diagnostics;
 use crate::virtual_ts::{
-    VirtualTsCheckOptions, VirtualTsOptions, generate_virtual_ts_with_offsets_and_checks,
+    VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
+    generate_virtual_ts_with_offsets_and_checks,
 };
 use oxc_span::SourceType;
 use rayon::prelude::*;
@@ -25,7 +26,10 @@ use serde_json::{Map, Value};
 use vize_atelier_core::parser::parse;
 use vize_atelier_sfc::{
     SfcDescriptor, SfcParseOptions,
-    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+    croquis::{
+        SfcCroquisOptions, analyze_sfc_descriptor_with_context,
+        analyze_sfc_descriptor_with_context_legacy_vue2,
+    },
     parse_sfc,
 };
 use vize_carton::{
@@ -88,6 +92,9 @@ pub struct VirtualProject {
     /// Internal check generation settings applied to every Vue file.
     virtual_ts_check_options: VirtualTsCheckOptions,
 
+    /// Enable Vue 2.7 / Nuxt 2 Options API compatibility for virtual files.
+    legacy_vue2: bool,
+
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
 
@@ -115,6 +122,7 @@ impl VirtualProject {
             tsconfig_path: None,
             virtual_ts_options: VirtualTsOptions::default(),
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
+            legacy_vue2: false,
             virtual_files: FxHashMap::default(),
             diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
@@ -133,6 +141,10 @@ impl VirtualProject {
 
     pub(crate) fn set_virtual_ts_check_options(&mut self, options: VirtualTsCheckOptions) {
         self.virtual_ts_check_options = options;
+    }
+
+    pub(crate) fn set_legacy_vue2(&mut self, enabled: bool) {
+        self.legacy_vue2 = enabled;
     }
 
     /// Get the project root.
@@ -156,11 +168,14 @@ impl VirtualProject {
         let registered = build_registered_file(
             path,
             content,
-            &self.project_root,
-            &self.virtual_root,
-            &self.virtual_ts_options,
-            self.virtual_ts_check_options,
-            &self.rewriter,
+            VirtualBuildContext {
+                project_root: &self.project_root,
+                virtual_root: &self.virtual_root,
+                virtual_ts_options: &self.virtual_ts_options,
+                virtual_ts_check_options: self.virtual_ts_check_options,
+                legacy_vue2: self.legacy_vue2,
+                rewriter: &self.rewriter,
+            },
         )?;
         self.absorb_registered_file(registered);
         Ok(())
@@ -187,25 +202,20 @@ impl VirtualProject {
             return Ok(());
         }
 
-        let project_root = self.project_root.as_path();
-        let virtual_root = self.virtual_root.as_path();
-        let virtual_ts_options = &self.virtual_ts_options;
-        let virtual_ts_check_options = self.virtual_ts_check_options;
-        let rewriter = &self.rewriter;
+        let build_context = VirtualBuildContext {
+            project_root: self.project_root.as_path(),
+            virtual_root: self.virtual_root.as_path(),
+            virtual_ts_options: &self.virtual_ts_options,
+            virtual_ts_check_options: self.virtual_ts_check_options,
+            legacy_vue2: self.legacy_vue2,
+            rewriter: &self.rewriter,
+        };
 
         let registered: Result<Vec<RegisteredFile>, CorsaError> = valid_paths
             .par_iter()
             .map(|&path| {
                 let content = profile!("canon.file.read", std::fs::read_to_string(path))?;
-                build_registered_file(
-                    path,
-                    &content,
-                    project_root,
-                    virtual_root,
-                    virtual_ts_options,
-                    virtual_ts_check_options,
-                    rewriter,
-                )
+                build_registered_file(path, &content, build_context)
             })
             .collect();
 
@@ -221,11 +231,14 @@ impl VirtualProject {
         let registered = build_vue_registered_file(
             path,
             content,
-            &self.project_root,
-            &self.virtual_root,
-            &self.virtual_ts_options,
-            self.virtual_ts_check_options,
-            &self.rewriter,
+            VirtualBuildContext {
+                project_root: &self.project_root,
+                virtual_root: &self.virtual_root,
+                virtual_ts_options: &self.virtual_ts_options,
+                virtual_ts_check_options: self.virtual_ts_check_options,
+                legacy_vue2: self.legacy_vue2,
+                rewriter: &self.rewriter,
+            },
         )?;
         self.absorb_registered_file(registered);
         Ok(())
@@ -651,6 +664,7 @@ fn generate_vue_virtual_ts(
     descriptor: &SfcDescriptor,
     options: &VirtualTsOptions,
     check_options: VirtualTsCheckOptions,
+    legacy_vue2: bool,
 ) -> CorsaResult<GeneratedVueFile> {
     let allocator = Bump::new();
     let mut diagnostics = Vec::new();
@@ -725,13 +739,19 @@ fn generate_vue_virtual_ts(
         });
     }
 
+    let croquis_options = SfcCroquisOptions::full();
+
     let analysis = profile!(
         "canon.croquis.analyze_sfc",
-        analyze_sfc_descriptor_with_context(
-            descriptor,
-            template_ast.as_ref(),
-            SfcCroquisOptions::full()
-        )
+        if legacy_vue2 {
+            analyze_sfc_descriptor_with_context_legacy_vue2(
+                descriptor,
+                template_ast.as_ref(),
+                croquis_options,
+            )
+        } else {
+            analyze_sfc_descriptor_with_context(descriptor, template_ast.as_ref(), croquis_options)
+        }
     );
 
     let output = profile!(
@@ -743,7 +763,10 @@ fn generate_vue_virtual_ts(
             analysis.script_offset,
             template_offset,
             options,
-            check_options,
+            VirtualTsGenerationOptions {
+                check_options,
+                legacy_vue2,
+            },
         )
     );
 
@@ -850,25 +873,23 @@ struct RegisteredFile {
     diagnostics: Vec<Diagnostic>,
 }
 
+#[derive(Clone, Copy)]
+struct VirtualBuildContext<'a> {
+    project_root: &'a Path,
+    virtual_root: &'a Path,
+    virtual_ts_options: &'a VirtualTsOptions,
+    virtual_ts_check_options: VirtualTsCheckOptions,
+    legacy_vue2: bool,
+    rewriter: &'a ImportRewriter,
+}
+
 fn build_registered_file(
     path: &Path,
     content: &str,
-    project_root: &Path,
-    virtual_root: &Path,
-    virtual_ts_options: &VirtualTsOptions,
-    virtual_ts_check_options: VirtualTsCheckOptions,
-    rewriter: &ImportRewriter,
+    context: VirtualBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
     if path.extension().and_then(|extension| extension.to_str()) == Some("vue") {
-        return build_vue_registered_file(
-            path,
-            content,
-            project_root,
-            virtual_root,
-            virtual_ts_options,
-            virtual_ts_check_options,
-            rewriter,
-        );
+        return build_vue_registered_file(path, content, context);
     }
 
     if path
@@ -880,9 +901,9 @@ fn build_registered_file(
             path,
             content,
             SourceType::ts(),
-            project_root,
-            virtual_root,
-            rewriter,
+            context.project_root,
+            context.virtual_root,
+            context.rewriter,
         );
     }
 
@@ -893,20 +914,16 @@ fn build_registered_file(
         path,
         content,
         source_type,
-        project_root,
-        virtual_root,
-        rewriter,
+        context.project_root,
+        context.virtual_root,
+        context.rewriter,
     )
 }
 
 fn build_vue_registered_file(
     path: &Path,
     content: &str,
-    project_root: &Path,
-    virtual_root: &Path,
-    virtual_ts_options: &VirtualTsOptions,
-    virtual_ts_check_options: VirtualTsCheckOptions,
-    rewriter: &ImportRewriter,
+    context: VirtualBuildContext<'_>,
 ) -> CorsaResult<RegisteredFile> {
     let descriptor = profile!(
         "canon.sfc.parse",
@@ -920,7 +937,8 @@ fn build_vue_registered_file(
         .map_err(|error| CorsaError::SfcParse(error.message.to_compact_string()))
     )?;
 
-    let mut effective_options = virtual_ts_options_for_descriptor(virtual_ts_options, &descriptor);
+    let mut effective_options =
+        virtual_ts_options_for_descriptor(context.virtual_ts_options, &descriptor);
     effective_options.auto_import_stubs.clear();
     let generated = profile!(
         "canon.vue.virtual_ts",
@@ -929,7 +947,8 @@ fn build_vue_registered_file(
             content,
             &descriptor,
             &effective_options,
-            virtual_ts_check_options,
+            context.virtual_ts_check_options,
+            context.legacy_vue2,
         )
     )?;
     let GeneratedVueFile {
@@ -939,13 +958,13 @@ fn build_vue_registered_file(
     } = generated;
     let rewritten = profile!(
         "canon.import.rewrite.vue",
-        rewriter.rewrite(&code, SourceType::ts())
+        context.rewriter.rewrite(&code, SourceType::ts())
     );
     let source_map = CompositeSourceMap::new_vue(
         SfcSourceMap::new(mappings, collect_sfc_block_ranges(&descriptor)),
         rewritten.source_map,
     );
-    let virtual_path = virtual_vue_path(project_root, virtual_root, path)?;
+    let virtual_path = virtual_vue_path(context.project_root, context.virtual_root, path)?;
 
     Ok(RegisteredFile {
         file: VirtualFile {

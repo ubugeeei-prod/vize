@@ -120,6 +120,13 @@ pub struct ScriptParseResult {
     pub(crate) type_export_typeof_refs: Vec<FxHashSet<CompactString>>,
 }
 
+/// Options for plain script parsing.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct ScriptParserOptions {
+    /// Extract Vue 2.7 / Nuxt 2 Options API template bindings.
+    pub legacy_vue2: bool,
+}
+
 impl ScriptParseResult {
     /// Record a `TypeExport` together with the `typeof` value-identifier
     /// references found in its body. Must be the only call site that pushes
@@ -392,6 +399,11 @@ pub fn parse_script_setup(source: &str) -> ScriptParseResult {
 
 /// Parse non-script-setup (Options API) source code using OXC parser.
 pub fn parse_script(source: &str) -> ScriptParseResult {
+    parse_script_with_options(source, ScriptParserOptions::default())
+}
+
+/// Parse non-script-setup source code using OXC parser with explicit options.
+pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> ScriptParseResult {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("script.ts").unwrap_or_default();
 
@@ -429,7 +441,7 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
         source_len,
     );
 
-    process::collect_options_api_component_registrations(&mut result, &ret.program);
+    process::collect_options_api_component_metadata(&mut result, &ret.program, options.legacy_vue2);
 
     // Process all statements
     profile!("croquis.script_plain.walk_statements", {
@@ -450,7 +462,7 @@ pub fn parse_script(source: &str) -> ScriptParseResult {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_script, parse_script_setup};
+    use super::{ScriptParserOptions, parse_script, parse_script_setup, parse_script_with_options};
     use vize_carton::{CompactString, append, cstr};
 
     #[test]
@@ -791,6 +803,56 @@ export class MyClass {}
             "Expected at least 3 scopes, got {}",
             result.scopes.len()
         );
+    }
+
+    #[test]
+    fn test_parse_legacy_vue2_options_api_template_bindings() {
+        let source = r#"
+export default {
+  props: {
+    message: String,
+    'user-id': Number
+  },
+  data() {
+    return {
+      count: 0
+    }
+  },
+  asyncData() {
+    return {
+      pageTitle: 'Hello'
+    }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    }
+  },
+  methods: {
+    save() {}
+  },
+  setup() {
+    return {
+      setupValue: 1
+    }
+  }
+}
+"#;
+        let result = parse_script_with_options(source, ScriptParserOptions { legacy_vue2: true });
+
+        for name in [
+            "message",
+            "userId",
+            "count",
+            "pageTitle",
+            "doubled",
+            "save",
+            "setupValue",
+            "$route",
+            "$nuxt",
+        ] {
+            assert!(result.bindings.contains(name), "missing binding {name}");
+        }
     }
 
     #[test]

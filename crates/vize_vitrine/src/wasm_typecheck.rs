@@ -9,7 +9,7 @@
 
 use wasm_bindgen::prelude::*;
 
-use crate::typecheck::{TypeCheckOptions, type_check_sfc};
+use crate::typecheck::{TypeCheckOptions, type_check_sfc, type_check_sfc_with_legacy_vue2};
 
 /// Helper function to serialize values to JsValue with maps as objects
 fn to_js_value<T: serde::Serialize>(value: &T) -> Result<JsValue, JsValue> {
@@ -59,6 +59,10 @@ pub fn type_check_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
             .ok()
             .and_then(|v| v.as_bool())
             .unwrap_or(true);
+    let legacy_vue2 = js_sys::Reflect::get(&options, &JsValue::from_str("legacyVue2"))
+        .ok()
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
 
     let mut opts = TypeCheckOptions::new(filename);
     opts.strict = strict;
@@ -67,7 +71,11 @@ pub fn type_check_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValu
     opts.check_emits = check_emits;
     opts.check_template_bindings = check_template_bindings;
 
-    let result = type_check_sfc(source, &opts);
+    let result = if legacy_vue2 {
+        type_check_sfc_with_legacy_vue2(source, &opts)
+    } else {
+        type_check_sfc(source, &opts)
+    };
 
     // Convert to JSON-friendly format
     let output = serde_json::json!({

@@ -49,6 +49,14 @@ pub struct VizeConfig {
     pub global_types: GlobalTypesConfig,
 }
 
+/// Feature flags parsed from config keys that are not exposed as stable Rust
+/// model fields.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ConfigFeatureFlags {
+    pub type_checker_legacy_vue2: bool,
+    pub language_server_legacy_vue2: Option<bool>,
+}
+
 /// Raw config representation with legacy aliases preserved for migration.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(default)]
@@ -58,9 +66,9 @@ pub(crate) struct RawVizeConfig {
     pub formatter: FormatterConfig,
     pub linter: LinterConfig,
     #[serde(rename = "typeChecker")]
-    pub type_checker: TypeCheckerConfig,
+    type_checker: RawTypeCheckerConfig,
     #[serde(rename = "languageServer")]
-    pub language_server: LanguageServerConfig,
+    language_server: RawLanguageServerConfig,
     #[serde(rename = "globalTypes")]
     pub global_types: RawGlobalTypesConfig,
     #[serde(rename = "check")]
@@ -68,7 +76,23 @@ pub(crate) struct RawVizeConfig {
     #[serde(rename = "fmt")]
     legacy_formatter: Option<FormatterConfig>,
     #[serde(rename = "lsp")]
-    legacy_lsp: Option<LanguageServerConfig>,
+    legacy_lsp: Option<RawLanguageServerConfig>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+struct RawTypeCheckerConfig {
+    #[serde(flatten)]
+    config: TypeCheckerConfig,
+    legacy_vue2: bool,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+struct RawLanguageServerConfig {
+    #[serde(flatten)]
+    config: LanguageServerConfig,
+    legacy_vue2: Option<bool>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -78,10 +102,23 @@ struct LegacyCheckConfig {
     servers: Option<usize>,
 }
 
-impl From<RawVizeConfig> for VizeConfig {
-    fn from(raw: RawVizeConfig) -> Self {
-        let mut type_checker = raw.type_checker;
-        if let Some(legacy_check) = raw.legacy_check {
+impl RawVizeConfig {
+    pub(crate) fn into_config_and_features(self) -> (VizeConfig, ConfigFeatureFlags) {
+        let RawVizeConfig {
+            schema,
+            formatter,
+            linter: _,
+            type_checker: raw_type_checker,
+            language_server: raw_language_server,
+            global_types,
+            legacy_check,
+            legacy_formatter,
+            legacy_lsp,
+        } = self;
+
+        let type_checker_legacy_vue2 = raw_type_checker.legacy_vue2;
+        let mut type_checker = raw_type_checker.config;
+        if let Some(legacy_check) = legacy_check {
             if type_checker.globals_file.is_none() {
                 type_checker.globals_file = legacy_check.globals;
             }
@@ -90,24 +127,37 @@ impl From<RawVizeConfig> for VizeConfig {
             }
         }
 
-        let formatter = if raw.formatter == FormatterConfig::default() {
-            raw.legacy_formatter.unwrap_or(raw.formatter)
+        let formatter = if formatter == FormatterConfig::default() {
+            legacy_formatter.unwrap_or(formatter)
         } else {
-            raw.formatter
+            formatter
         };
 
-        let language_server = if raw.language_server == LanguageServerConfig::default() {
-            raw.legacy_lsp.unwrap_or(raw.language_server)
+        let language_server_raw = if raw_language_server.config == LanguageServerConfig::default() {
+            legacy_lsp.unwrap_or(raw_language_server)
         } else {
-            raw.language_server
+            raw_language_server
+        };
+        let language_server = language_server_raw.config;
+        let features = ConfigFeatureFlags {
+            type_checker_legacy_vue2,
+            language_server_legacy_vue2: language_server_raw.legacy_vue2,
         };
 
-        Self {
-            schema: raw.schema,
+        let config = VizeConfig {
+            schema,
             formatter,
             type_checker,
             language_server,
-            global_types: raw.global_types.into(),
-        }
+            global_types: global_types.into(),
+        };
+
+        (config, features)
+    }
+}
+
+impl From<RawVizeConfig> for VizeConfig {
+    fn from(raw: RawVizeConfig) -> Self {
+        raw.into_config_and_features().0
     }
 }

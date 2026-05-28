@@ -10,7 +10,9 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 
-use crate::typecheck::{TypeCheckOptions, TypeSeverity, type_check_sfc};
+use crate::typecheck::{
+    TypeCheckOptions, TypeSeverity, type_check_sfc, type_check_sfc_with_legacy_vue2,
+};
 
 /// Type check options for NAPI
 #[napi(object)]
@@ -26,6 +28,7 @@ pub struct TypeCheckOptionsNapi {
     pub check_setup_context: Option<bool>,
     pub check_invalid_exports: Option<bool>,
     pub check_fallthrough_attrs: Option<bool>,
+    pub legacy_vue2: Option<bool>,
 }
 
 /// Related location for diagnostic (NAPI)
@@ -88,7 +91,11 @@ pub fn type_check_napi(
     let mut check_opts = TypeCheckOptions::new(filename);
     apply_napi_options(&opts, &mut check_opts);
 
-    let result = type_check_sfc(&source, &check_opts);
+    let result = if opts.legacy_vue2.unwrap_or(false) {
+        type_check_sfc_with_legacy_vue2(&source, &check_opts)
+    } else {
+        type_check_sfc(&source, &check_opts)
+    };
 
     Ok(TypeCheckResultNapi {
         diagnostics: result
@@ -348,7 +355,11 @@ pub fn type_check_batch_napi(
         apply_napi_options(&opts, &mut check_opts);
         check_opts.include_virtual_ts = false; // Don't generate virtual TS for batch
 
-        let result = type_check_sfc(&source, &check_opts);
+        let result = if opts.legacy_vue2.unwrap_or(false) {
+            type_check_sfc_with_legacy_vue2(&source, &check_opts)
+        } else {
+            type_check_sfc(&source, &check_opts)
+        };
 
         files_checked.fetch_add(1, Ordering::Relaxed);
         if result.error_count > 0 {

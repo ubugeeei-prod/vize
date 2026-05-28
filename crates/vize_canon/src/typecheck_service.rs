@@ -105,13 +105,36 @@ impl TypeCheckService {
         &self,
         source: &str,
         filename: &str,
+        options: &TypeCheckServiceOptions,
+    ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
+        self.check_sfc_impl(source, filename, options, false).await
+    }
+
+    /// Type check a Vue SFC with Vue 2.7 / Nuxt 2 compatibility enabled.
+    pub async fn check_sfc_with_legacy_vue2(
+        &self,
+        source: &str,
+        filename: &str,
+        options: &TypeCheckServiceOptions,
+    ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
+        self.check_sfc_impl(source, filename, options, true).await
+    }
+
+    async fn check_sfc_impl(
+        &self,
+        source: &str,
+        filename: &str,
         _options: &TypeCheckServiceOptions,
+        legacy_vue2: bool,
     ) -> Result<SfcTypeCheckResult, CorsaBridgeError> {
         use std::time::Instant;
         use vize_atelier_core::parser::parse;
         use vize_atelier_sfc::{
             SfcParseOptions,
-            croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+            croquis::{
+                SfcCroquisOptions, analyze_sfc_descriptor_with_context,
+                analyze_sfc_descriptor_with_context_legacy_vue2,
+            },
             parse_sfc,
         };
         use vize_carton::Bump;
@@ -201,11 +224,16 @@ impl TypeCheckService {
             (0, None)
         };
 
-        let analysis = analyze_sfc_descriptor_with_context(
-            &descriptor,
-            template_ast.as_ref(),
-            SfcCroquisOptions::full(),
-        );
+        let croquis_options = SfcCroquisOptions::full();
+        let analysis = if legacy_vue2 {
+            analyze_sfc_descriptor_with_context_legacy_vue2(
+                &descriptor,
+                template_ast.as_ref(),
+                croquis_options,
+            )
+        } else {
+            analyze_sfc_descriptor_with_context(&descriptor, template_ast.as_ref(), croquis_options)
+        };
 
         if has_template_parse_errors || has_script_parse_errors {
             result.analysis_time_ms = Some(start_time.elapsed().as_secs_f64() * 1000.0);
@@ -215,13 +243,19 @@ impl TypeCheckService {
         let script_offset = analysis.script_offset;
 
         // Generate virtual TypeScript
-        let virtual_ts_output = generate_virtual_ts_with_offsets(
+        let virtual_ts_options = VirtualTsOptions::default();
+        let generate_virtual_ts = if legacy_vue2 {
+            crate::virtual_ts::generate_virtual_ts_with_offsets_legacy_vue2
+        } else {
+            generate_virtual_ts_with_offsets
+        };
+        let virtual_ts_output = generate_virtual_ts(
             &analysis.croquis,
             analysis.script_content_ref(),
             template_ast.as_ref(),
             script_offset,
             template_offset,
-            &VirtualTsOptions::default(),
+            &virtual_ts_options,
         );
 
         result.virtual_ts = Some(virtual_ts_output.code.clone());

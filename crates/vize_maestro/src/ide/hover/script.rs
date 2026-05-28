@@ -134,12 +134,17 @@ impl HoverService {
             .or_else(|| descriptor.script.as_ref().map(|s| s.content.as_ref()));
 
         // Create analyzer and analyze script
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        let analyzer_options = AnalyzerOptions::full();
+        let mut analyzer = Analyzer::with_options(analyzer_options);
+        if ctx.state.lsp_features().legacy_vue2 {
+            analyzer = analyzer.with_legacy_vue2();
+        }
 
+        if let Some(ref script) = descriptor.script {
+            analyzer.analyze_script_plain(&script.content);
+        }
         if let Some(ref script_setup) = descriptor.script_setup {
             analyzer.analyze_script_setup(&script_setup.content);
-        } else if let Some(ref script) = descriptor.script {
-            analyzer.analyze_script_plain(&script.content);
         }
 
         let summary = analyzer.finish();

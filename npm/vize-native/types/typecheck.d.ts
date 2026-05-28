@@ -55,6 +55,7 @@ export interface TypeCheckOptionsNapi {
   checkSetupContext?: boolean;
   checkInvalidExports?: boolean;
   checkFallthroughAttrs?: boolean;
+  legacyVue2?: boolean;
 }
 
 /** Type check result for NAPI */

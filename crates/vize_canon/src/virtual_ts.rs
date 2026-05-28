@@ -16,17 +16,21 @@ mod types;
 
 #[cfg(any(test, feature = "native"))]
 pub(crate) use generator::generate_virtual_ts_with_offsets_and_checks;
-pub use generator::{generate_virtual_ts, generate_virtual_ts_with_offsets};
-#[cfg(any(test, feature = "native"))]
-pub(crate) use types::VirtualTsCheckOptions;
+pub use generator::{
+    generate_virtual_ts, generate_virtual_ts_with_offsets,
+    generate_virtual_ts_with_offsets_legacy_vue2,
+};
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping};
+#[cfg(any(test, feature = "native"))]
+pub(crate) use types::{VirtualTsCheckOptions, VirtualTsGenerationOptions};
 
 #[cfg(test)]
 mod tests {
     use super::helpers::{VUE_SETUP_HELPERS, generate_template_context, get_dom_event_type};
     use super::{
-        TemplateGlobal, VirtualTsCheckOptions, VirtualTsOptions, generate_virtual_ts,
-        generate_virtual_ts_with_offsets, generate_virtual_ts_with_offsets_and_checks,
+        TemplateGlobal, VirtualTsCheckOptions, VirtualTsGenerationOptions, VirtualTsOptions,
+        generate_virtual_ts, generate_virtual_ts_with_offsets,
+        generate_virtual_ts_with_offsets_and_checks,
     };
 
     fn assert_virtual_ts_snapshot(name: &str, value: &str) {
@@ -196,8 +200,11 @@ const wrong = 'not a number'
             0,
             0,
             &VirtualTsOptions::default(),
-            VirtualTsCheckOptions {
-                check_props: false,
+            VirtualTsGenerationOptions {
+                check_options: VirtualTsCheckOptions {
+                    check_props: false,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
         );
@@ -228,8 +235,11 @@ const wrong = 'not a number'
             0,
             0,
             &VirtualTsOptions::default(),
-            VirtualTsCheckOptions {
-                check_template_bindings: false,
+            VirtualTsGenerationOptions {
+                check_options: VirtualTsCheckOptions {
+                    check_template_bindings: false,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
         );

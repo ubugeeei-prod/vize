@@ -14,9 +14,9 @@ mod bindings;
 mod macros;
 
 use oxc_ast::ast::{
-    Argument, BindingPattern, CallExpression, Class, Declaration, ExportDefaultDeclarationKind,
-    Expression, Function, ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
-    VariableDeclaration,
+    Argument, ArrayExpression, ArrayExpressionElement, BindingPattern, CallExpression, Class,
+    Declaration, ExportDefaultDeclarationKind, Expression, Function, ObjectExpression,
+    ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclaration,
 };
 use oxc_span::GetSpan;
 
@@ -26,7 +26,7 @@ use crate::analysis::{
     TypeExport, TypeExportKind,
 };
 use crate::scope::{BlockKind, BlockScopeData, ClosureScopeData, ExternalModuleScopeData};
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
+use vize_carton::{CompactString, FxHashMap, FxHashSet, String};
 use vize_relief::BindingType;
 
 use super::ScriptParseResult;
@@ -327,9 +327,10 @@ struct ComponentOptionsRef<'a> {
     object: &'a ObjectExpression<'a>,
 }
 
-pub(in crate::script_parser) fn collect_options_api_component_registrations(
+pub(in crate::script_parser) fn collect_options_api_component_metadata(
     result: &mut ScriptParseResult,
     program: &Program<'_>,
+    legacy_vue2: bool,
 ) {
     let mut object_bindings = FxHashMap::default();
     collect_object_bindings(program, &mut object_bindings);
@@ -348,6 +349,17 @@ pub(in crate::script_parser) fn collect_options_api_component_registrations(
             continue;
         };
         collect_component_registrations_from_options(result, options.object, &object_bindings);
+        if legacy_vue2 {
+            collect_legacy_vue2_template_bindings_from_options(
+                result,
+                options.object,
+                &object_bindings,
+            );
+        }
+    }
+
+    if legacy_vue2 {
+        add_nuxt2_template_globals(result);
     }
 }
 
@@ -427,6 +439,266 @@ fn collect_component_registrations_from_options<'a>(
         &mut seen,
         &mut FxHashSet::default(),
     );
+}
+
+fn collect_legacy_vue2_template_bindings_from_options<'a>(
+    result: &mut ScriptParseResult,
+    options: &'a ObjectExpression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) {
+    collect_props_bindings(result, options, object_bindings);
+    collect_object_option_bindings(
+        result,
+        options,
+        object_bindings,
+        "computed",
+        BindingType::Options,
+    );
+    collect_object_option_bindings(
+        result,
+        options,
+        object_bindings,
+        "methods",
+        BindingType::Options,
+    );
+    collect_object_option_bindings(
+        result,
+        options,
+        object_bindings,
+        "inject",
+        BindingType::Options,
+    );
+    collect_returned_object_option_bindings(
+        result,
+        options,
+        object_bindings,
+        "data",
+        BindingType::Data,
+    );
+    collect_returned_object_option_bindings(
+        result,
+        options,
+        object_bindings,
+        "asyncData",
+        BindingType::Data,
+    );
+    collect_returned_object_option_bindings(
+        result,
+        options,
+        object_bindings,
+        "setup",
+        BindingType::Options,
+    );
+}
+
+fn add_nuxt2_template_globals(result: &mut ScriptParseResult) {
+    for name in [
+        "$config",
+        "$fetchState",
+        "$nuxt",
+        "$route",
+        "$router",
+        "$store",
+    ] {
+        add_template_binding(result, name, BindingType::VueGlobal, 0, 0);
+    }
+}
+
+fn collect_props_bindings<'a>(
+    result: &mut ScriptParseResult,
+    options: &'a ObjectExpression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) {
+    let Some(props) = option_expression_property(options, "props") else {
+        return;
+    };
+
+    match props {
+        Expression::ArrayExpression(array) => {
+            collect_array_string_bindings(result, array, BindingType::Props);
+        }
+        Expression::ObjectExpression(object) => {
+            collect_object_property_bindings(result, object, BindingType::Props);
+        }
+        Expression::Identifier(identifier) => {
+            if let Some(object) = object_bindings.get(identifier.name.as_str()).copied() {
+                collect_object_property_bindings(result, object, BindingType::Props);
+            }
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            collect_props_bindings_from_expression(
+                result,
+                &parenthesized.expression,
+                object_bindings,
+            )
+        }
+        Expression::TSAsExpression(ts_as) => {
+            collect_props_bindings_from_expression(result, &ts_as.expression, object_bindings)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => collect_props_bindings_from_expression(
+            result,
+            &ts_satisfies.expression,
+            object_bindings,
+        ),
+        Expression::TSNonNullExpression(ts_non_null) => {
+            collect_props_bindings_from_expression(result, &ts_non_null.expression, object_bindings)
+        }
+        _ => {}
+    }
+}
+
+fn collect_props_bindings_from_expression<'a>(
+    result: &mut ScriptParseResult,
+    expression: &'a Expression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) {
+    match expression {
+        Expression::ArrayExpression(array) => {
+            collect_array_string_bindings(result, array, BindingType::Props);
+        }
+        Expression::ObjectExpression(object) => {
+            collect_object_property_bindings(result, object, BindingType::Props);
+        }
+        Expression::Identifier(identifier) => {
+            if let Some(object) = object_bindings.get(identifier.name.as_str()).copied() {
+                collect_object_property_bindings(result, object, BindingType::Props);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_object_option_bindings<'a>(
+    result: &mut ScriptParseResult,
+    options: &'a ObjectExpression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    key_name: &str,
+    binding_type: BindingType,
+) {
+    let Some(object) = option_object_property(options, key_name, object_bindings) else {
+        return;
+    };
+
+    collect_object_property_bindings(result, object, binding_type);
+}
+
+fn collect_returned_object_option_bindings<'a>(
+    result: &mut ScriptParseResult,
+    options: &'a ObjectExpression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+    key_name: &str,
+    binding_type: BindingType,
+) {
+    let Some(expression) = option_expression_property(options, key_name) else {
+        return;
+    };
+    let Some(object) = returned_object_from_expression(expression, object_bindings) else {
+        return;
+    };
+
+    collect_object_property_bindings(result, object, binding_type);
+}
+
+fn collect_array_string_bindings(
+    result: &mut ScriptParseResult,
+    array: &ArrayExpression<'_>,
+    binding_type: BindingType,
+) {
+    for element in &array.elements {
+        let ArrayExpressionElement::StringLiteral(literal) = element else {
+            continue;
+        };
+        let name = normalize_template_binding_name(literal.value.as_str());
+        if let Some(name) = name {
+            let start = literal.span.start.saturating_add(1);
+            let end = literal.span.end.saturating_sub(1);
+            add_template_binding(result, name.as_str(), binding_type, start, end);
+        }
+    }
+}
+
+fn collect_object_property_bindings(
+    result: &mut ScriptParseResult,
+    object: &ObjectExpression<'_>,
+    binding_type: BindingType,
+) {
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        if property.computed {
+            continue;
+        }
+
+        let Some(raw_name) = property_key_name(&property.key) else {
+            continue;
+        };
+        let Some(name) = normalize_template_binding_name(raw_name) else {
+            continue;
+        };
+        let span = property.key.span();
+        add_template_binding(result, name.as_str(), binding_type, span.start, span.end);
+    }
+}
+
+fn add_template_binding(
+    result: &mut ScriptParseResult,
+    name: &str,
+    binding_type: BindingType,
+    start: u32,
+    end: u32,
+) {
+    result.bindings.add(name, binding_type);
+    result
+        .binding_spans
+        .entry(CompactString::new(name))
+        .or_insert((start, end));
+    result.scopes.add_binding(
+        CompactString::new(name),
+        ScopeBinding::new(binding_type, start),
+    );
+}
+
+fn normalize_template_binding_name(name: &str) -> Option<CompactString> {
+    if is_valid_template_binding_name(name) {
+        return Some(CompactString::new(name));
+    }
+
+    if name.contains('-') {
+        let camel = kebab_to_camel(name);
+        if is_valid_template_binding_name(&camel) {
+            return Some(CompactString::new(camel));
+        }
+    }
+
+    None
+}
+
+fn is_valid_template_binding_name(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
+        return false;
+    }
+    chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
+}
+
+fn kebab_to_camel(name: &str) -> String {
+    let mut result = String::with_capacity(name.len());
+    let mut upper_next = false;
+    for ch in name.chars() {
+        if ch == '-' {
+            upper_next = true;
+        } else if upper_next {
+            result.push(ch.to_ascii_uppercase());
+            upper_next = false;
+        } else {
+            result.push(ch);
+        }
+    }
+    result
 }
 
 fn collect_component_registrations_from_components_object<'a>(
@@ -612,6 +884,66 @@ fn object_expression_from_expression_or_binding<'a>(
     }
 }
 
+fn returned_object_from_expression<'a>(
+    expression: &'a Expression<'a>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> Option<&'a ObjectExpression<'a>> {
+    match expression {
+        Expression::ArrowFunctionExpression(arrow) => {
+            if arrow.expression {
+                let Statement::ExpressionStatement(expr_stmt) = arrow.body.statements.first()?
+                else {
+                    return None;
+                };
+                object_expression_from_expression_or_binding(&expr_stmt.expression, object_bindings)
+            } else {
+                function_body_return_object(&arrow.body.statements, object_bindings)
+            }
+        }
+        Expression::FunctionExpression(function) => {
+            function_body_return_object(&function.body.as_ref()?.statements, object_bindings)
+        }
+        Expression::ObjectExpression(object) => Some(object.as_ref()),
+        Expression::Identifier(identifier) => {
+            object_bindings.get(identifier.name.as_str()).copied()
+        }
+        Expression::ParenthesizedExpression(parenthesized) => {
+            returned_object_from_expression(&parenthesized.expression, object_bindings)
+        }
+        Expression::TSAsExpression(ts_as) => {
+            returned_object_from_expression(&ts_as.expression, object_bindings)
+        }
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            returned_object_from_expression(&ts_satisfies.expression, object_bindings)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            returned_object_from_expression(&ts_non_null.expression, object_bindings)
+        }
+        _ => None,
+    }
+}
+
+fn function_body_return_object<'a>(
+    statements: &'a oxc_allocator::Vec<'a, Statement<'a>>,
+    object_bindings: &FxHashMap<&'a str, &'a ObjectExpression<'a>>,
+) -> Option<&'a ObjectExpression<'a>> {
+    for statement in statements.iter() {
+        let Statement::ReturnStatement(ret) = statement else {
+            continue;
+        };
+        let Some(argument) = &ret.argument else {
+            continue;
+        };
+        if let Some(object) =
+            object_expression_from_expression_or_binding(argument, object_bindings)
+        {
+            return Some(object);
+        }
+    }
+
+    None
+}
+
 fn local_name_from_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a str> {
     match expression {
         Expression::Identifier(identifier) => Some(identifier.name.as_str()),
@@ -657,6 +989,21 @@ fn option_object_property<'a>(
             return None;
         }
         object_expression_from_expression_or_binding(&property.value, object_bindings)
+    })
+}
+
+fn option_expression_property<'a>(
+    object: &'a ObjectExpression<'a>,
+    key_name: &str,
+) -> Option<&'a Expression<'a>> {
+    object.properties.iter().find_map(|property| {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return None;
+        };
+        if property.computed || property_key_name(&property.key) != Some(key_name) {
+            return None;
+        }
+        Some(&property.value)
     })
 }
 

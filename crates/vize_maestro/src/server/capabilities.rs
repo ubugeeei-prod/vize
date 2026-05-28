@@ -226,6 +226,7 @@ mod tests {
             lint: true,
             typecheck: true,
             ecosystem: true,
+            legacy_vue2: true,
             completion: true,
             hover: true,
             definition: true,

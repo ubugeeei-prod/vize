@@ -108,10 +108,31 @@ pub fn analyze_sfc_descriptor_with_context(
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
 ) -> SfcCroquisAnalysis {
+    analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, false)
+}
+
+/// Analyze an SFC descriptor with Vue 2.7 / Nuxt 2 Options API compatibility enabled.
+pub fn analyze_sfc_descriptor_with_context_legacy_vue2(
+    descriptor: &SfcDescriptor<'_>,
+    template_ast: Option<&RootNode<'_>>,
+    options: SfcCroquisOptions,
+) -> SfcCroquisAnalysis {
+    analyze_sfc_descriptor_with_context_impl(descriptor, template_ast, options, true)
+}
+
+fn analyze_sfc_descriptor_with_context_impl(
+    descriptor: &SfcDescriptor<'_>,
+    template_ast: Option<&RootNode<'_>>,
+    options: SfcCroquisOptions,
+    legacy_vue2: bool,
+) -> SfcCroquisAnalysis {
     let script_analyzed = options.analyzer_options.analyze_script
         && (descriptor.script.is_some() || descriptor.script_setup.is_some());
-    let summary = analyze_scripts(descriptor, options);
+    let summary = analyze_scripts(descriptor, options, legacy_vue2);
     let mut analyzer = Analyzer::with_summary(options.analyzer_options, summary, script_analyzed);
+    if legacy_vue2 {
+        analyzer = analyzer.with_legacy_vue2();
+    }
 
     if let Some(root) = template_ast {
         profile!(
@@ -150,7 +171,11 @@ pub fn script_content_for_descriptor(
     }
 }
 
-fn analyze_scripts(descriptor: &SfcDescriptor<'_>, options: SfcCroquisOptions) -> Croquis {
+fn analyze_scripts(
+    descriptor: &SfcDescriptor<'_>,
+    options: SfcCroquisOptions,
+    legacy_vue2: bool,
+) -> Croquis {
     if !options.analyzer_options.analyze_script {
         return Croquis::new();
     }
@@ -158,6 +183,9 @@ fn analyze_scripts(descriptor: &SfcDescriptor<'_>, options: SfcCroquisOptions) -
     match (descriptor.script.as_ref(), descriptor.script_setup.as_ref()) {
         (Some(script), Some(script_setup)) if options.merge_scripts => {
             let mut plain_analyzer = Analyzer::with_options(options.analyzer_options);
+            if legacy_vue2 {
+                plain_analyzer = plain_analyzer.with_legacy_vue2();
+            }
             profile!(
                 "atelier.sfc.croquis.script_plain",
                 plain_analyzer.analyze_script_plain(script.content.as_ref())
@@ -165,6 +193,9 @@ fn analyze_scripts(descriptor: &SfcDescriptor<'_>, options: SfcCroquisOptions) -
             let plain = plain_analyzer.finish();
 
             let mut setup_analyzer = Analyzer::with_options(options.analyzer_options);
+            if legacy_vue2 {
+                setup_analyzer = setup_analyzer.with_legacy_vue2();
+            }
             let generic = script_setup
                 .attrs
                 .get("generic")
@@ -183,6 +214,9 @@ fn analyze_scripts(descriptor: &SfcDescriptor<'_>, options: SfcCroquisOptions) -
         }
         (_, Some(script_setup)) => {
             let mut analyzer = Analyzer::with_options(options.analyzer_options);
+            if legacy_vue2 {
+                analyzer = analyzer.with_legacy_vue2();
+            }
             let generic = script_setup
                 .attrs
                 .get("generic")
@@ -195,6 +229,9 @@ fn analyze_scripts(descriptor: &SfcDescriptor<'_>, options: SfcCroquisOptions) -
         }
         (Some(script), None) => {
             let mut analyzer = Analyzer::with_options(options.analyzer_options);
+            if legacy_vue2 {
+                analyzer = analyzer.with_legacy_vue2();
+            }
             profile!(
                 "atelier.sfc.croquis.script_plain",
                 analyzer.analyze_script_plain(script.content.as_ref())

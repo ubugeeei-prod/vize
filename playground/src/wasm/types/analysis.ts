@@ -8,6 +8,7 @@ export interface TypeCheckOptions {
   checkProps?: boolean;
   checkEmits?: boolean;
   checkTemplateBindings?: boolean;
+  legacyVue2?: boolean;
 }
 
 export interface TypeCheckRelatedLocation {

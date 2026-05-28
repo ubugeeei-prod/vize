@@ -17,6 +17,9 @@ class LanguageServerConfig {
   /// Enable editor-oriented IDE features.
   editor: Boolean? = null
 
+  /// Enable Vue 2.7 / Nuxt 2 editor and type-checking compatibility.
+  legacyVue2: Boolean? = null
+
   /// Enable completions.
   completion: Boolean? = null
 

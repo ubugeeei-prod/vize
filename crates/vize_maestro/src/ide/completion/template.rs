@@ -14,7 +14,11 @@ use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionItemLabelDetails, CompletionResponse,
     Documentation, InsertTextFormat, MarkupContent, MarkupKind,
 };
+use vize_atelier_sfc::croquis::{
+    SfcCroquisOptions, analyze_sfc_descriptor, analyze_sfc_descriptor_with_context_legacy_vue2,
+};
 use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_relief::BindingType;
 
 use super::{
     is_inside_art_tag, is_inside_html_comment, is_inside_variant_tag, items,
@@ -37,6 +41,9 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
 
     // Add built-in components
     items_vec.extend(builtin_component_completions());
+    if ctx.state.lsp_features().legacy_vue2 {
+        items_vec.extend(legacy_vue2_component_completions());
+    }
     items_vec.extend(component_surface_completions(ctx));
 
     if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
@@ -44,116 +51,24 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
         return items_vec;
     }
 
-    // Use vize_croquis for accurate scope analysis and type information
-    let options = vize_atelier_sfc::SfcParseOptions {
-        filename: ctx.uri.path().to_string().into(),
-        ..Default::default()
-    };
-
-    if let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options)
-        && let Some(ref script_setup) = descriptor.script_setup
-    {
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions {
-            analyze_script: true,
-            ..Default::default()
-        });
-        analyzer.analyze_script_setup(&script_setup.content);
-        let croquis = analyzer.finish();
-
-        // Add bindings with accurate type information
-        for (name, binding_type) in croquis.bindings.iter() {
-            let (kind, type_detail, doc) = items::binding_type_to_completion_info(binding_type);
-            #[allow(clippy::disallowed_macros)]
-            items_vec.push(CompletionItem {
-                label: name.to_string(),
-                kind: Some(kind),
-                label_details: Some(CompletionItemLabelDetails {
-                    detail: Some(type_detail.clone()),
-                    description: None,
-                }),
-                detail: Some(type_detail),
-                documentation: Some(Documentation::MarkupContent(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value: doc,
-                })),
-                sort_text: Some(format!("0{}", name)),
-                ..Default::default()
-            });
-        }
-
-        // Add props with type information
-        for prop in croquis.macros.props() {
-            let prop_type = prop
-                .prop_type
-                .as_ref()
-                .map(|t| t.as_str())
-                .unwrap_or("unknown");
-            let required = if prop.required { "" } else { "?" };
-
-            #[allow(clippy::disallowed_macros)]
-            items_vec.push(CompletionItem {
-                label: prop.name.to_string(),
-                kind: Some(CompletionItemKind::PROPERTY),
-                label_details: Some(CompletionItemLabelDetails {
-                    detail: Some(format!(": {}{}", prop_type, required)),
-                    description: None,
-                }),
-                detail: Some(format!("prop: {}", prop_type)),
-                documentation: Some(Documentation::MarkupContent(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value: format!(
-                        "**Prop** `{}`\n\n```typescript\n{}: {}{}\n```\n\n{}",
-                        prop.name,
-                        prop.name,
-                        prop_type,
-                        if prop.required { "" } else { " // optional" },
-                        if prop.default_value.is_some() {
-                            "Has default value"
-                        } else {
-                            ""
-                        }
-                    ),
-                })),
-                sort_text: Some(format!("0{}", prop.name)),
-                ..Default::default()
-            });
-        }
-
-        // Add reactive sources with special handling
-        for source in croquis.reactivity.sources() {
-            let kind_str = source.kind.to_display();
-            #[allow(clippy::disallowed_macros)]
-            items_vec.push(CompletionItem {
-                label: source.name.to_string(),
-                kind: Some(CompletionItemKind::VARIABLE),
-                label_details: Some(CompletionItemLabelDetails {
-                    detail: Some(format!(" ({})", kind_str)),
-                    description: None,
-                }),
-                detail: Some(format!("Reactive: {}", kind_str)),
-                documentation: Some(Documentation::MarkupContent(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value: format!(
-                        "**{}** `{}`\n\n{}\n\nAuto-unwrapped in template.",
-                        kind_str,
-                        source.name,
-                        if source.kind.needs_value_access() {
-                            "Needs `.value` in script"
-                        } else {
-                            "Direct access (no `.value` needed)"
-                        }
-                    ),
-                })),
-                sort_text: Some(format!("0{}", source.name)),
-                ..Default::default()
-            });
-        }
-    }
+    items_vec.extend(analyzed_template_binding_completions(ctx, true));
 
     // Add common template snippets
     items_vec.extend(template_snippets());
 
     items_vec
+}
+
+pub(crate) fn legacy_vue2_template_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
+    if !ctx.state.lsp_features().legacy_vue2 {
+        return Vec::new();
+    }
+
+    if crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
+        analyzed_template_binding_completions(ctx, false)
+    } else {
+        legacy_vue2_component_completions()
+    }
 }
 
 /// Get completions for Art files (*.art.vue).
@@ -381,6 +296,170 @@ pub(crate) fn builtin_component_completions() -> Vec<CompletionItem> {
     ]
 }
 
+fn legacy_vue2_component_completions() -> Vec<CompletionItem> {
+    vec![
+        items::component_item(
+            "NuxtLink",
+            "Nuxt 2 route link",
+            "<NuxtLink to=\"$1\">$0</NuxtLink>",
+        ),
+        items::component_item(
+            "nuxt-link",
+            "Nuxt 2 route link",
+            "<nuxt-link to=\"$1\">$0</nuxt-link>",
+        ),
+        items::component_item("Nuxt", "Nuxt 2 page outlet", "<Nuxt />"),
+        items::component_item("NuxtChild", "Nuxt 2 child route outlet", "<NuxtChild />"),
+        items::component_item(
+            "ClientOnly",
+            "Client-only render",
+            "<ClientOnly>$0</ClientOnly>",
+        ),
+        items::component_item(
+            "client-only",
+            "Client-only render",
+            "<client-only>$0</client-only>",
+        ),
+        items::component_item("NoSsr", "Client-only render", "<NoSsr>$0</NoSsr>"),
+    ]
+}
+
+fn analyzed_template_binding_completions(
+    ctx: &IdeContext,
+    include_vue3_details: bool,
+) -> Vec<CompletionItem> {
+    let options = vize_atelier_sfc::SfcParseOptions {
+        filename: ctx.uri.path().to_string().into(),
+        ..Default::default()
+    };
+
+    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+        return Vec::new();
+    };
+
+    let croquis_options = SfcCroquisOptions::full();
+    let croquis = if ctx.state.lsp_features().legacy_vue2 {
+        analyze_sfc_descriptor_with_context_legacy_vue2(&descriptor, None, croquis_options).croquis
+    } else {
+        analyze_sfc_descriptor(&descriptor, None, croquis_options)
+    };
+
+    let mut items_vec = Vec::new();
+    let macro_prop_names: BTreeSet<&str> = if include_vue3_details {
+        BTreeSet::new()
+    } else {
+        croquis
+            .macros
+            .props()
+            .iter()
+            .map(|prop| prop.name.as_str())
+            .collect()
+    };
+
+    for (name, binding_type) in croquis.bindings.iter() {
+        if !include_vue3_details
+            && (!is_legacy_vue2_binding(binding_type)
+                || binding_type == BindingType::Props && macro_prop_names.contains(name))
+        {
+            continue;
+        }
+        let (kind, type_detail, doc) = items::binding_type_to_completion_info(binding_type);
+        #[allow(clippy::disallowed_macros)]
+        items_vec.push(CompletionItem {
+            label: name.to_string(),
+            kind: Some(kind),
+            label_details: Some(CompletionItemLabelDetails {
+                detail: Some(type_detail.clone()),
+                description: None,
+            }),
+            detail: Some(type_detail),
+            documentation: Some(Documentation::MarkupContent(MarkupContent {
+                kind: MarkupKind::Markdown,
+                value: doc,
+            })),
+            sort_text: Some(format!("0{}", name)),
+            ..Default::default()
+        });
+    }
+
+    if include_vue3_details {
+        for prop in croquis.macros.props() {
+            let prop_type = prop
+                .prop_type
+                .as_ref()
+                .map(|t| t.as_str())
+                .unwrap_or("unknown");
+            let required = if prop.required { "" } else { "?" };
+
+            #[allow(clippy::disallowed_macros)]
+            items_vec.push(CompletionItem {
+                label: prop.name.to_string(),
+                kind: Some(CompletionItemKind::PROPERTY),
+                label_details: Some(CompletionItemLabelDetails {
+                    detail: Some(format!(": {}{}", prop_type, required)),
+                    description: None,
+                }),
+                detail: Some(format!("prop: {}", prop_type)),
+                documentation: Some(Documentation::MarkupContent(MarkupContent {
+                    kind: MarkupKind::Markdown,
+                    value: format!(
+                        "**Prop** `{}`\n\n```typescript\n{}: {}{}\n```\n\n{}",
+                        prop.name,
+                        prop.name,
+                        prop_type,
+                        if prop.required { "" } else { " // optional" },
+                        if prop.default_value.is_some() {
+                            "Has default value"
+                        } else {
+                            ""
+                        }
+                    ),
+                })),
+                sort_text: Some(format!("0{}", prop.name)),
+                ..Default::default()
+            });
+        }
+
+        for source in croquis.reactivity.sources() {
+            let kind_str = source.kind.to_display();
+            #[allow(clippy::disallowed_macros)]
+            items_vec.push(CompletionItem {
+                label: source.name.to_string(),
+                kind: Some(CompletionItemKind::VARIABLE),
+                label_details: Some(CompletionItemLabelDetails {
+                    detail: Some(format!(" ({})", kind_str)),
+                    description: None,
+                }),
+                detail: Some(format!("Reactive: {}", kind_str)),
+                documentation: Some(Documentation::MarkupContent(MarkupContent {
+                    kind: MarkupKind::Markdown,
+                    value: format!(
+                        "**{}** `{}`\n\n{}\n\nAuto-unwrapped in template.",
+                        kind_str,
+                        source.name,
+                        if source.kind.needs_value_access() {
+                            "Needs `.value` in script"
+                        } else {
+                            "Direct access (no `.value` needed)"
+                        }
+                    ),
+                })),
+                sort_text: Some(format!("0{}", source.name)),
+                ..Default::default()
+            });
+        }
+    }
+
+    items_vec
+}
+
+fn is_legacy_vue2_binding(binding_type: BindingType) -> bool {
+    matches!(
+        binding_type,
+        BindingType::Data | BindingType::Options | BindingType::Props | BindingType::VueGlobal
+    )
+}
+
 /// Template snippet completions.
 fn template_snippets() -> Vec<CompletionItem> {
     vec![
@@ -585,6 +664,7 @@ fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<Componen
         return Some(extract_component_metadata(
             &component_content,
             &resolved.to_string_lossy(),
+            ctx.state.lsp_features().legacy_vue2,
         ));
     }
 
@@ -594,6 +674,7 @@ fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<Componen
         return Some(extract_component_metadata(
             &component_content,
             &resolved.to_string_lossy(),
+            ctx.state.lsp_features().legacy_vue2,
         ));
     }
 
@@ -638,7 +719,11 @@ fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<Stri
     (component_name == stem || pascal_component == pascal_stem).then(|| component_path.to_string())
 }
 
-fn extract_component_metadata(content: &str, filename: &str) -> ComponentMetadata {
+fn extract_component_metadata(
+    content: &str,
+    filename: &str,
+    legacy_vue2: bool,
+) -> ComponentMetadata {
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: filename.to_string().into(),
         ..Default::default()
@@ -666,10 +751,14 @@ fn extract_component_metadata(content: &str, filename: &str) -> ComponentMetadat
                 .map(|script| script.content.as_ref())
         })
     {
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions {
+        let analyzer_options = AnalyzerOptions {
             analyze_script: true,
             ..Default::default()
-        });
+        };
+        let mut analyzer = Analyzer::with_options(analyzer_options);
+        if legacy_vue2 {
+            analyzer = analyzer.with_legacy_vue2();
+        }
         if descriptor.script_setup.is_some() {
             analyzer.analyze_script_setup(script_content);
         } else {
@@ -690,6 +779,18 @@ fn extract_component_metadata(content: &str, filename: &str) -> ComponentMetadat
                         .or_else(|| inferred.map(|prop| prop.type_detail.clone())),
                     required: inferred.map_or(prop.required, |prop| prop.required),
                 });
+            }
+        }
+
+        if legacy_vue2 {
+            for (name, binding_type) in summary.bindings.iter() {
+                if binding_type == BindingType::Props && seen_props.insert(name.to_string()) {
+                    props.push(ComponentProp {
+                        name: name.to_string(),
+                        type_detail: None,
+                        required: false,
+                    });
+                }
             }
         }
 

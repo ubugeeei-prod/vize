@@ -46,12 +46,13 @@ mod virtual_ts;
 pub use analysis::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity,
 };
-pub use runner::type_check_sfc;
+pub use runner::{type_check_sfc, type_check_sfc_with_legacy_vue2};
 
 #[cfg(test)]
 mod tests {
     use super::{
-        SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity, type_check_sfc,
+        SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity,
+        type_check_sfc, type_check_sfc_with_legacy_vue2,
     };
 
     fn stable_snapshot_result(mut result: SfcTypeCheckResult) -> SfcTypeCheckResult {
@@ -320,6 +321,55 @@ export const buttonId =
                 .any(|d| d.code.as_deref() == Some("undefined-binding")),
             "unexpected diagnostics: {:#?}",
             result.diagnostics
+        );
+    }
+
+    #[test]
+    fn test_type_check_legacy_vue2_options_api_opt_in() {
+        let source = r#"<script lang="ts">
+export default {
+  props: ['message', 'user-id'],
+  asyncData() {
+    return { pageTitle: 'Hello' }
+  },
+  data() {
+    return { count: 1 }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    }
+  },
+  methods: {
+    save() {}
+  }
+}
+</script>
+<template>
+  <div>
+    {{ message }} {{ userId }} {{ pageTitle }} {{ count }} {{ doubled }}
+    <button @click="save">{{ $route.path }}</button>
+  </div>
+</template>"#;
+
+        let default_result = type_check_sfc(source, &SfcTypeCheckOptions::new("Legacy.vue"));
+        assert!(
+            default_result
+                .diagnostics
+                .iter()
+                .any(|d| d.code.as_deref() == Some("undefined-binding")),
+            "expected default mode to keep Vue 2 Options API bindings disabled"
+        );
+
+        let options = SfcTypeCheckOptions::new("Legacy.vue");
+        let legacy_result = type_check_sfc_with_legacy_vue2(source, &options);
+        assert!(
+            !legacy_result
+                .diagnostics
+                .iter()
+                .any(|d| d.code.as_deref() == Some("undefined-binding")),
+            "unexpected diagnostics: {:#?}",
+            legacy_result.diagnostics
         );
     }
 

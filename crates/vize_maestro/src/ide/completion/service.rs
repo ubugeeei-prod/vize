@@ -178,7 +178,11 @@ impl super::CompletionService {
             if !corsa_items.is_empty() {
                 let mut items = corsa_items;
                 items.extend(match block_type {
-                    BlockType::Template => template::contextual_directive_completions(ctx),
+                    BlockType::Template => {
+                        let mut extras = template::contextual_directive_completions(ctx);
+                        extras.extend(template::legacy_vue2_template_completions(ctx));
+                        extras
+                    }
                     BlockType::Script => script::composition_api_completions(),
                     BlockType::ScriptSetup => {
                         let mut v = script::composition_api_completions();

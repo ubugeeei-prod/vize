@@ -102,6 +102,7 @@ impl AnalyzerOptions {
 /// Uses lazy evaluation and efficient data structures to minimize overhead.
 pub struct Analyzer {
     pub(crate) options: AnalyzerOptions,
+    pub(crate) legacy_vue2: bool,
     pub(crate) summary: Croquis,
     /// Track if script was analyzed (for undefined detection)
     pub(crate) script_analyzed: bool,
@@ -121,6 +122,7 @@ impl Analyzer {
     pub fn with_options(options: AnalyzerOptions) -> Self {
         Self {
             options,
+            legacy_vue2: false,
             summary: Croquis::new(),
             script_analyzed: false,
             vif_guard_stack: Vec::new(),
@@ -135,10 +137,18 @@ impl Analyzer {
     pub fn with_summary(options: AnalyzerOptions, summary: Croquis, script_analyzed: bool) -> Self {
         Self {
             options,
+            legacy_vue2: false,
             summary,
             script_analyzed,
             vif_guard_stack: Vec::new(),
         }
+    }
+
+    /// Enable Vue 2.7 / Nuxt 2 compatibility helpers.
+    #[inline]
+    pub fn with_legacy_vue2(mut self) -> Self {
+        self.legacy_vue2 = true;
+        self
     }
 
     /// Get the current v-if guard (combined from stack)
@@ -216,7 +226,12 @@ impl Analyzer {
         // Use OXC-based parser for non-script-setup
         let result = profile!(
             "croquis.analyzer.script_plain",
-            crate::script_parser::parse_script(source)
+            crate::script_parser::parse_script_with_options(
+                source,
+                crate::script_parser::ScriptParserOptions {
+                    legacy_vue2: self.legacy_vue2,
+                }
+            )
         );
 
         result.apply_to_croquis(&mut self.summary);

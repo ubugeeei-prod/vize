@@ -158,6 +158,11 @@
           "default": true,
           "description": "Enable Vue ecosystem diagnostics and editor helpers for Vue Router route names and file-route params, Vue I18n catalogs, Nuxt, and Void Vue."
         },
+        "vize.legacyVue2.enable": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable opt-in Vue 2.7 / Nuxt 2 template, typecheck, completion, hover, navigation, and reference helpers."
+        },
         "vize.diagnostics.enable": {
           "type": "boolean",
           "default": false,

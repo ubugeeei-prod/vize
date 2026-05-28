@@ -54,13 +54,15 @@ pub(crate) fn run_direct(args: &CheckArgs) {
 
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let loaded_config = if args.no_config {
-        crate::config::LoadedConfig {
+        crate::config::LoadedConfigWithFeatures {
             config: crate::config::VizeConfig::default(),
             source_path: None,
+            features: crate::config::ConfigFeatureFlags::default(),
         }
     } else {
-        crate::config::load_config_with_source(args.config.as_deref())
+        crate::config::load_config_with_features_and_source(args.config.as_deref())
     };
+    let legacy_vue2 = loaded_config.features.type_checker_legacy_vue2;
     let config = loaded_config.config;
     let config_dir = loaded_config
         .source_path
@@ -134,6 +136,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             std::process::exit(1);
         }
     };
+    if legacy_vue2 {
+        checker.enable_legacy_vue2();
+    }
     checker.set_virtual_ts_checks(
         config.type_checker.check_props && !args.no_check_props,
         config.type_checker.check_template_bindings && !args.no_check_template_bindings,

@@ -8,7 +8,7 @@ use std::{
 
 use pklrust::{Error as PklError, EvaluatorManager, EvaluatorOptions, ModuleSource};
 
-use super::model::{LinterConfig, RawVizeConfig, VizeConfig};
+use super::model::{ConfigFeatureFlags, LinterConfig, RawVizeConfig, VizeConfig};
 
 const CONFIG_FILE_NAMES: [&str; 5] = [
     "vize.config.pkl",
@@ -27,6 +27,17 @@ pub struct LoadedConfig {
     pub source_path: Option<PathBuf>,
 }
 
+/// Loaded config with auxiliary feature flags.
+#[derive(Debug, Clone)]
+pub struct LoadedConfigWithFeatures {
+    /// Effective configuration with defaults applied.
+    pub config: VizeConfig,
+    /// Path of the config file that was used, if any.
+    pub source_path: Option<PathBuf>,
+    /// Auxiliary feature flags parsed from config keys.
+    pub features: ConfigFeatureFlags,
+}
+
 struct LoadedRawConfig {
     config: RawVizeConfig,
     source_path: Option<PathBuf>,
@@ -40,9 +51,21 @@ pub fn load_config(path: Option<&Path>) -> VizeConfig {
 /// Load configuration from a directory or file path and return its source path.
 pub fn load_config_with_source(path: Option<&Path>) -> LoadedConfig {
     let loaded = load_raw_config_with_source(path);
+    let (config, _) = loaded.config.into_config_and_features();
     LoadedConfig {
-        config: loaded.config.into(),
+        config,
         source_path: loaded.source_path,
+    }
+}
+
+/// Load configuration and auxiliary feature flags from a directory or file path.
+pub fn load_config_with_features_and_source(path: Option<&Path>) -> LoadedConfigWithFeatures {
+    let loaded = load_raw_config_with_source(path);
+    let (config, features) = loaded.config.into_config_and_features();
+    LoadedConfigWithFeatures {
+        config,
+        source_path: loaded.source_path,
+        features,
     }
 }
 
@@ -50,10 +73,28 @@ pub fn load_config_with_source(path: Option<&Path>) -> LoadedConfig {
 pub fn load_config_and_linter_with_source(path: Option<&Path>) -> (LoadedConfig, LinterConfig) {
     let loaded = load_raw_config_with_source(path);
     let linter = loaded.config.linter.clone();
+    let (config, _) = loaded.config.into_config_and_features();
     (
         LoadedConfig {
-            config: loaded.config.into(),
+            config,
             source_path: loaded.source_path,
+        },
+        linter,
+    )
+}
+
+/// Load configuration, auxiliary feature flags, and linter settings in one pass.
+pub fn load_config_and_linter_with_features_and_source(
+    path: Option<&Path>,
+) -> (LoadedConfigWithFeatures, LinterConfig) {
+    let loaded = load_raw_config_with_source(path);
+    let linter = loaded.config.linter.clone();
+    let (config, features) = loaded.config.into_config_and_features();
+    (
+        LoadedConfigWithFeatures {
+            config,
+            source_path: loaded.source_path,
+            features,
         },
         linter,
     )

@@ -76,7 +76,71 @@ pub(crate) fn definition_in_script(ctx: &IdeContext) -> Option<GotoDefinitionRes
         }
     }
 
+    if ctx.state.lsp_features().legacy_vue2
+        && let Some(location) = find_analyzed_binding_location(ctx, &word, true)
+    {
+        return Some(GotoDefinitionResponse::Scalar(location));
+    }
+
     None
+}
+
+/// Find a binding location from Croquis analysis, including opt-in Options API spans.
+pub(crate) fn find_analyzed_binding_location(
+    ctx: &IdeContext,
+    word: &str,
+    legacy_vue2: bool,
+) -> Option<Location> {
+    use vize_atelier_sfc::{
+        SfcParseOptions,
+        croquis::{
+            SfcCroquisOptions, analyze_sfc_descriptor_with_context,
+            analyze_sfc_descriptor_with_context_legacy_vue2,
+        },
+        parse_sfc,
+    };
+
+    let descriptor = parse_sfc(
+        &ctx.content,
+        SfcParseOptions {
+            filename: ctx.uri.path().to_string().into(),
+            ..Default::default()
+        },
+    )
+    .ok()?;
+
+    let croquis_options = SfcCroquisOptions::full();
+    let analysis = if legacy_vue2 {
+        analyze_sfc_descriptor_with_context_legacy_vue2(&descriptor, None, croquis_options)
+    } else {
+        analyze_sfc_descriptor_with_context(&descriptor, None, croquis_options)
+    };
+    let &(start, end) = analysis.croquis.binding_spans.get(word)?;
+    if end <= start {
+        return None;
+    }
+
+    let offset = analysis.script_offset as usize + start as usize;
+    Some(location_from_sfc_offset(
+        ctx,
+        offset,
+        (end - start) as usize,
+    ))
+}
+
+pub(crate) fn location_from_sfc_offset(ctx: &IdeContext, offset: usize, len: usize) -> Location {
+    let (line, character) = helpers::offset_to_position(&ctx.content, offset);
+
+    Location {
+        uri: ctx.uri.clone(),
+        range: Range {
+            start: Position { line, character },
+            end: Position {
+                line,
+                character: character + len as u32,
+            },
+        },
+    }
 }
 
 /// Find definition for a symbol in style context.

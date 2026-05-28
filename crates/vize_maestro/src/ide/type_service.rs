@@ -43,6 +43,8 @@ pub struct LspTypeCheckOptions {
     pub check_invalid_exports: bool,
     /// Check fallthrough attrs with multi-root
     pub check_fallthrough_attrs: bool,
+    /// Include Vue 2.7 / Nuxt 2 Options API template bindings.
+    pub legacy_vue2: bool,
 }
 
 impl Default for LspTypeCheckOptions {
@@ -56,6 +58,7 @@ impl Default for LspTypeCheckOptions {
             check_setup_context: true,
             check_invalid_exports: true,
             check_fallthrough_attrs: true,
+            legacy_vue2: false,
         }
     }
 }

@@ -15,6 +15,6 @@ pub mod types;
 
 pub use typecheck::{
     RelatedLocation, TypeCheckOptions, TypeCheckResult, TypeDiagnostic, TypeSeverity,
-    type_check_sfc,
+    type_check_sfc, type_check_sfc_with_legacy_vue2,
 };
 pub use types::*;

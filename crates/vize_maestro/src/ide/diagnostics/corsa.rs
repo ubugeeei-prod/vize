@@ -44,10 +44,11 @@ impl DiagnosticService {
 
         // Generate virtual TypeScript
         let is_art_file = uri.path().ends_with(".art.vue");
+        let legacy_vue2 = state.legacy_vue2_enabled();
         let virtual_result = if is_art_file {
             Self::generate_virtual_ts_for_art(uri, &content)
         } else {
-            Self::generate_virtual_ts(uri, &content)
+            Self::generate_virtual_ts(uri, &content, legacy_vue2)
         };
         let Some(virtual_result) = virtual_result else {
             tracing::warn!("failed to generate virtual ts for {}", uri);
@@ -263,10 +264,23 @@ impl DiagnosticService {
     }
 
     /// Generate virtual TypeScript for a Vue SFC.
-    pub(super) fn generate_virtual_ts(uri: &Url, content: &str) -> Option<VirtualTsResult> {
-        use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-        use vize_canon::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
-        use vize_croquis::{Analyzer, AnalyzerOptions};
+    pub(super) fn generate_virtual_ts(
+        uri: &Url,
+        content: &str,
+        legacy_vue2: bool,
+    ) -> Option<VirtualTsResult> {
+        use vize_atelier_sfc::{
+            SfcParseOptions,
+            croquis::{
+                SfcCroquisOptions, analyze_sfc_descriptor_with_context,
+                analyze_sfc_descriptor_with_context_legacy_vue2,
+            },
+            parse_sfc,
+        };
+        use vize_canon::virtual_ts::{
+            VirtualTsOptions, generate_virtual_ts_with_offsets,
+            generate_virtual_ts_with_offsets_legacy_vue2,
+        };
 
         let options = SfcParseOptions {
             filename: uri.path().to_string().into(),
@@ -275,52 +289,47 @@ impl DiagnosticService {
 
         let descriptor = parse_sfc(content, options).ok()?;
 
-        // Get script block info
-        let (script_content, script_offset, sfc_script_start_line) = descriptor
-            .script_setup
-            .as_ref()
-            .map(|s| {
-                (
-                    s.content.as_ref(),
-                    s.loc.start as u32,
-                    s.loc.start_line as u32,
-                )
-            })
-            .or_else(|| {
-                descriptor.script.as_ref().map(|s| {
-                    (
-                        s.content.as_ref(),
-                        s.loc.start as u32,
-                        s.loc.start_line as u32,
-                    )
-                })
-            })?;
-
         let template_block = descriptor.template.as_ref()?;
         let template_offset = template_block.loc.start as u32;
 
         let allocator = vize_carton::Bump::new();
         let (template_ast, _) = vize_armature::parse(&allocator, &template_block.content);
 
-        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
-        analyzer.analyze_script(script_content);
-        analyzer.analyze_template(&template_ast);
+        let croquis_options = SfcCroquisOptions::full();
+        let analysis = if legacy_vue2 {
+            analyze_sfc_descriptor_with_context_legacy_vue2(
+                &descriptor,
+                Some(&template_ast),
+                croquis_options,
+            )
+        } else {
+            analyze_sfc_descriptor_with_context(&descriptor, Some(&template_ast), croquis_options)
+        };
+        let script_content = analysis.script_content?;
+        let script_offset = analysis.script_offset;
+        let sfc_script_start_line =
+            crate::ide::offset_to_position(content, script_offset as usize).0 + 1;
 
-        let summary = analyzer.finish();
-        let output = generate_virtual_ts_with_offsets(
-            &summary,
-            Some(script_content),
+        let virtual_ts_options = VirtualTsOptions::default();
+        let generate_virtual_ts = if legacy_vue2 {
+            generate_virtual_ts_with_offsets_legacy_vue2
+        } else {
+            generate_virtual_ts_with_offsets
+        };
+        let output = generate_virtual_ts(
+            &analysis.croquis,
+            Some(script_content.as_str()),
             Some(&template_ast),
             script_offset,
             template_offset,
-            &VirtualTsOptions::default(),
+            &virtual_ts_options,
         );
         let code = output.code;
         let source_mappings = output.mappings;
 
         // Count import lines in script content (these are moved to module scope)
         // Import lines are skipped from user setup code section
-        let skipped_import_lines = Self::count_import_lines(script_content);
+        let skipped_import_lines = Self::count_import_lines(script_content.as_str());
 
         // Find where user code starts in generated virtual TS
         // Look for "// User setup code" comment

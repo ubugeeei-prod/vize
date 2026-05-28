@@ -20,7 +20,7 @@
 // Re-export from canon for backwards compatibility
 pub use vize_canon::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic,
-    SfcTypeSeverity, type_check_sfc,
+    SfcTypeSeverity, type_check_sfc, type_check_sfc_with_legacy_vue2,
 };
 
 // Type aliases for backwards compatibility
