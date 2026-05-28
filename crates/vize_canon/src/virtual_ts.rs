@@ -10,6 +10,7 @@
 mod expressions;
 mod generator;
 mod helpers;
+pub mod incremental;
 mod props;
 mod scope;
 mod types;
