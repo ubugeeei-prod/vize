@@ -797,6 +797,10 @@ struct ComponentProp {
     name: String,
     type_detail: Option<String>,
     required: bool,
+    /// Default value source — populated from `withDefaults` or per-prop
+    /// `default` config. Renders into the completion documentation so the
+    /// user knows what the prop falls back to.
+    default_value: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -941,6 +945,7 @@ fn extract_component_metadata(
                         .map(|ty| ty.to_string())
                         .or_else(|| inferred.map(|prop| prop.type_detail.clone())),
                     required: inferred.map_or(prop.required, |prop| prop.required),
+                    default_value: prop.default_value.as_ref().map(|d| d.to_string()),
                 });
             }
         }
@@ -955,6 +960,7 @@ fn extract_component_metadata(
                     name: model.name.to_string(),
                     type_detail: model.model_type.as_ref().map(|ty| ty.to_string()),
                     required: model.required,
+                    default_value: model.default_value.as_ref().map(|d| d.to_string()),
                 });
             }
         }
@@ -966,6 +972,7 @@ fn extract_component_metadata(
                         name: name.to_string(),
                         type_detail: None,
                         required: false,
+                        default_value: None,
                     });
                 }
             }
@@ -977,6 +984,7 @@ fn extract_component_metadata(
                     name,
                     type_detail: Some(prop.type_detail),
                     required: prop.required,
+                    default_value: None,
                 });
             }
         }
@@ -1023,6 +1031,16 @@ fn prop_completion_item(prop: &ComponentProp, dynamic: bool) -> CompletionItem {
     };
     let type_detail = prop.type_detail.as_deref().unwrap_or("unknown");
 
+    let mut doc_body = format!(
+        "**Prop** `{}`\n\n```typescript\n{}: {}\n```",
+        prop.name, prop.name, type_detail
+    );
+    if let Some(ref default) = prop.default_value {
+        doc_body.push_str("\n\nDefault: `");
+        doc_body.push_str(default);
+        doc_body.push('`');
+    }
+
     CompletionItem {
         label,
         kind: Some(CompletionItemKind::PROPERTY),
@@ -1035,10 +1053,7 @@ fn prop_completion_item(prop: &ComponentProp, dynamic: bool) -> CompletionItem {
         insert_text_format: Some(InsertTextFormat::SNIPPET),
         documentation: Some(Documentation::MarkupContent(MarkupContent {
             kind: MarkupKind::Markdown,
-            value: format!(
-                "**Prop** `{}`\n\n```typescript\n{}: {}\n```",
-                prop.name, prop.name, type_detail
-            ),
+            value: doc_body,
         })),
         sort_text: Some(format!("00-prop-{kebab_name}")),
         ..Default::default()
