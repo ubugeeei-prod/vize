@@ -236,6 +236,7 @@ mod tests {
                     start: 50,
                     end: 150,
                 },
+                sub_spans: Vec::new(),
             }],
             vec![SfcBlockRange {
                 start: 50,

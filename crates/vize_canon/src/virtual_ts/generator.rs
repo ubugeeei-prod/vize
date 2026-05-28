@@ -181,6 +181,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     gen_range: gen_start..gen_end,
                     src_range: (script_offset as usize + start as usize)
                         ..(script_offset as usize + end as usize),
+                    sub_spans: Vec::new(),
                 });
             }
 
@@ -358,6 +359,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     mappings.push(VizeMapping {
                         gen_range: gen_content_start..gen_content_end,
                         src_range: src_line_start..src_line_end,
+                        sub_spans: Vec::new(),
                     });
                 }
                 let _ = gen_line_start; // suppress unused warning

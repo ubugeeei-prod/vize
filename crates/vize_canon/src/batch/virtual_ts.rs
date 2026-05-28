@@ -106,6 +106,7 @@ impl VirtualTsGenerator {
                 gen_range: start..end,
                 src_range: script_setup.loc.start
                     ..script_setup.loc.start + script_setup.content.len(),
+                sub_spans: Vec::new(),
             });
             blocks.push(SfcBlockRange {
                 start: script_setup.loc.start as u32,
@@ -119,6 +120,7 @@ impl VirtualTsGenerator {
             mappings.push(VizeMapping {
                 gen_range: start..end,
                 src_range: script.loc.start..script.loc.start + script.content.len(),
+                sub_spans: Vec::new(),
             });
             blocks.push(SfcBlockRange {
                 start: script.loc.start as u32,
@@ -137,6 +139,7 @@ impl VirtualTsGenerator {
             mappings.push(VizeMapping {
                 gen_range: start..end,
                 src_range: template.loc.start..template.loc.start + template.content.len(),
+                sub_spans: Vec::new(),
             });
             blocks.push(SfcBlockRange {
                 start: template.loc.start as u32,

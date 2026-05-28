@@ -227,6 +227,7 @@ fn generate_undefined_refs(
         mappings.push(VizeMapping {
             gen_range: gen_name_start..gen_name_end,
             src_range: src_start..src_end,
+            sub_spans: Vec::new(),
         });
         append!(
             *ts,
@@ -679,6 +680,7 @@ fn generate_event_handler_expressions(
                     generated_text_range(&ts[gen_stmt_start..gen_stmt_end], content, gen_stmt_start)
                 },
                 src_range: src_start..src_end,
+                sub_spans: Vec::new(),
             });
             append!(
                 *ts,

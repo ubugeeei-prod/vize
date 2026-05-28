@@ -10,6 +10,33 @@ pub struct VizeMapping {
     pub gen_range: Range<usize>,
     /// Byte range in the original SFC source.
     pub src_range: Range<usize>,
+    /// Sub-token spans inside `gen_range`, paired with the matching SFC
+    /// sub-range. Used to map TypeScript diagnostics that point at a
+    /// specific identifier inside a template expression back to its exact
+    /// position in the Vue source.
+    ///
+    /// Empty by default. Populated by template-expression generators that
+    /// know the inner positions (e.g. property access inside an
+    /// interpolation). Consumers fall back to `gen_range` / `src_range`
+    /// when no sub-span covers the diagnostic.
+    pub sub_spans: Vec<VizeSubSpan>,
+}
+
+/// A sub-token span inside a `VizeMapping`'s generated/source ranges.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VizeSubSpan {
+    pub gen_range: Range<usize>,
+    pub src_range: Range<usize>,
+}
+
+impl VizeMapping {
+    /// Look up the SFC sub-range that contains `gen_offset`. Returns `None`
+    /// when no sub-span covers it — callers should fall back to `src_range`.
+    pub fn sub_span_for_gen(&self, gen_offset: usize) -> Option<&VizeSubSpan> {
+        self.sub_spans
+            .iter()
+            .find(|span| span.gen_range.contains(&gen_offset))
+    }
 }
 
 /// A user-defined template global variable (e.g., `$t` from vue-i18n).

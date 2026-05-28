@@ -73,6 +73,7 @@ pub(crate) fn generate_expression(
                 gen_stmt_start,
             ),
             src_range: src_start..src_end,
+            sub_spans: Vec::new(),
         });
         append!(
             *ts,
@@ -95,6 +96,7 @@ pub(crate) fn generate_expression(
                 gen_stmt_start,
             ),
             src_range: src_start..src_end,
+            sub_spans: Vec::new(),
         });
         append!(*ts, "{indent}// @vize-map: expr -> {src_start}:{src_end}\n",);
     }
@@ -168,6 +170,7 @@ pub(crate) fn generate_component_prop_checks(
             mappings.push(VizeMapping {
                 gen_range: gen_stmt_start..gen_stmt_end,
                 src_range: prop_src_start..prop_src_end,
+                sub_spans: Vec::new(),
             });
 
             if usage.vif_guard.is_some() {
