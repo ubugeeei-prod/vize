@@ -242,6 +242,7 @@ mod tests {
             folding_ranges: true,
             inlay_hints: true,
             file_rename: true,
+            cross_file: true,
         }
     }
 

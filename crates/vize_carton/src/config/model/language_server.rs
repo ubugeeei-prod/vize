@@ -54,6 +54,13 @@ pub struct LanguageServerConfig {
     /// Deprecated alias for `corsa`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tsgo: Option<bool>,
+    /// Opt into cross-file diagnostic groups (provide/inject matching,
+    /// reactivity tracking, race conditions, etc.) from the language server.
+    /// Defaults to off because these groups need a workspace-wide scan and
+    /// can be slower than single-file lint. See `vize lint --cross-file` for
+    /// the same machinery on the CLI side.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cross_file: Option<bool>,
 }
 
 impl LanguageServerConfig {

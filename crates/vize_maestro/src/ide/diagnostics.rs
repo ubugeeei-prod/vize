@@ -174,6 +174,18 @@ impl DiagnosticService {
                 Self::collect_lint_diagnostics(uri, &content, features.ecosystem, &linter_config);
             tracing::info!("collect: patina lint diagnostics: {}", lint_diags.len());
             diagnostics.extend(lint_diags);
+            if features.cross_file {
+                // Cross-file analysis is opt-in (defaults to off) because it
+                // touches every Vue file in the workspace. When enabled, the
+                // same analyzer groups used by `vize lint --cross-file` join
+                // the editor's diagnostic stream. The actual cross-file
+                // analyzer wiring is being added incrementally — for now
+                // the gate is observable through tracing so callers can
+                // verify the config knob took effect.
+                tracing::info!(
+                    "collect: cross-file lint enabled (groups will surface as they are wired up)"
+                );
+            }
         } else {
             tracing::info!("collect: patina lint diagnostics skipped (disabled by config)");
         }

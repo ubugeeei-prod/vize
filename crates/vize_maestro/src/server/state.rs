@@ -56,6 +56,7 @@ struct LspConfigSection {
     file_rename: Option<bool>,
     corsa: Option<bool>,
     tsgo: Option<bool>,
+    cross_file: Option<bool>,
 }
 
 impl LspConfigSection {
@@ -140,6 +141,9 @@ impl LspConfigSection {
         if let Some(enabled) = self.file_rename {
             features.file_rename = enabled;
         }
+        if let Some(enabled) = self.cross_file {
+            features.cross_file = enabled;
+        }
     }
 }
 
@@ -170,6 +174,7 @@ impl From<LanguageServerConfig> for LspConfigSection {
             file_rename: config.file_rename,
             corsa: config.corsa,
             tsgo: config.tsgo,
+            cross_file: config.cross_file,
         }
     }
 }
@@ -199,6 +204,7 @@ pub struct LspFeatureConfig {
     pub(crate) folding_ranges: bool,
     pub(crate) inlay_hints: bool,
     pub(crate) file_rename: bool,
+    pub(crate) cross_file: bool,
 }
 
 impl LspFeatureConfig {
@@ -223,6 +229,7 @@ impl LspFeatureConfig {
             folding_ranges: false,
             inlay_hints: false,
             file_rename: false,
+            cross_file: false,
         }
     }
 
@@ -270,6 +277,11 @@ impl Default for LspFeatureConfig {
             folding_ranges: true,
             inlay_hints: true,
             file_rename: true,
+            // Cross-file diagnostic groups are off by default — they scan
+            // every Vue file in the workspace, which is too slow for the
+            // default editor experience. Opt in via
+            // `languageServer.crossFile = true`.
+            cross_file: false,
         }
     }
 }
