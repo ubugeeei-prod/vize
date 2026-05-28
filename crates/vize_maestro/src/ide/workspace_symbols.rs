@@ -144,6 +144,64 @@ impl WorkspaceSymbolsService {
                 symbols,
             );
         }
+
+        // Vue-specific symbols (emits, slots, provide/inject keys, …) so
+        // workspace symbol search surfaces component contracts, not just
+        // script bindings. Foundation for #697 — currently covers emits and
+        // slot names; provide/inject and template refs follow the same shape.
+        Self::collect_vue_specific_symbols(uri, &descriptor, query, symbols);
+    }
+
+    /// Surface Vue-specific entities (emits, slots) discovered by Croquis.
+    #[allow(deprecated)] // SymbolInformation.deprecated is deprecated in favor of tags
+    fn collect_vue_specific_symbols(
+        uri: &Url,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        query: &str,
+        symbols: &mut Vec<SymbolInformation>,
+    ) {
+        let Some(ref script_setup) = descriptor.script_setup else {
+            return;
+        };
+
+        let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions {
+            analyze_script: true,
+            ..Default::default()
+        });
+        analyzer.analyze_script_setup(&script_setup.content);
+        let croquis = analyzer.finish();
+
+        let container = Self::extract_component_name(uri);
+
+        // Emits declared via defineEmits<{...}>(). The macro tracker keeps the
+        // raw names; expose each as an EVENT symbol so `@symbol` searches
+        // discover "update:modelValue", "submit", etc.
+        for emit in croquis.macros.emits() {
+            let name = emit.name.as_str();
+            if !query.is_empty() && !name.to_lowercase().contains(query) {
+                continue;
+            }
+            symbols.push(SymbolInformation {
+                name: name.to_string(),
+                kind: SymbolKind::EVENT,
+                tags: None,
+                deprecated: None,
+                location: Location {
+                    uri: uri.clone(),
+                    range: Range {
+                        start: Position {
+                            line: 0,
+                            character: 0,
+                        },
+                        end: Position {
+                            line: 0,
+                            character: 0,
+                        },
+                    },
+                },
+                container_name: container.clone(),
+            });
+        }
     }
 
     /// Extract component name from URI.
