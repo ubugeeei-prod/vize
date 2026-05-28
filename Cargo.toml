@@ -141,9 +141,14 @@ corsa_lsp = { package = "corsa_lsp", version = "=0.7.0" }
 corsa_runtime = { package = "corsa_runtime", version = "=0.7.0" }
 
 [profile.release]
-lto = true
-codegen-units = 1
 opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+debug = false
+debug-assertions = false
+overflow-checks = false
+incremental = false
 
 [profile.ci]
 inherits = "dev"
