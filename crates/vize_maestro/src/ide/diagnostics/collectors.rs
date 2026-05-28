@@ -371,7 +371,10 @@ impl DiagnosticService {
         } else {
             err.message.to_string()
         };
-        let code = err.code.as_deref().map(|code| NumberOrString::String(code.to_string()));
+        let code = err
+            .code
+            .as_deref()
+            .map(|code| NumberOrString::String(code.to_string()));
 
         vec![Diagnostic {
             range,

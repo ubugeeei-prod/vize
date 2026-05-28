@@ -1474,9 +1474,7 @@ const { msg = 0 } = defineProps<{ msg?: string }>();
             diagnostic.message
         );
         assert!(
-            diagnostic
-                .message
-                .contains("Default value of prop \"msg\""),
+            diagnostic.message.contains("Default value of prop \"msg\""),
             "expected message to name the prop, got: {}",
             diagnostic.message
         );
