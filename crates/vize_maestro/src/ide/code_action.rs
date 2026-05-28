@@ -25,7 +25,73 @@ impl CodeActionService {
         // Collect "@vize:forget" suppress actions
         actions.extend(Self::collect_forget_suppress(ctx, range));
 
+        // Vue-flavored quick fixes: today this surfaces a "Wrap with `.value`"
+        // edit when the cursor sits on a known reactive ref. See #691.
+        actions.extend(Self::collect_wrap_with_value(ctx, range));
+
         actions
+    }
+
+    /// Offer a "Wrap with `.value`" quick fix when the cursor sits on an
+    /// identifier that resolves to a reactive ref in script context. This is
+    /// the most common Vue fix-up; complementary actions (unwrap, add to
+    /// defineEmits, etc.) follow the same shape and will land in follow-ups.
+    fn collect_wrap_with_value(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
+        // Only activate on script blocks — refs in template are auto-unwrapped.
+        if !matches!(
+            ctx.block_type,
+            Some(crate::virtual_code::BlockType::ScriptSetup)
+                | Some(crate::virtual_code::BlockType::Script)
+        ) {
+            return Vec::new();
+        }
+
+        let Some(identifier_range) = identifier_at_cursor(&ctx.content, ctx.offset) else {
+            return Vec::new();
+        };
+        let identifier = &ctx.content[identifier_range.clone()];
+        if !is_reactive_ref_in_script(&ctx.content, ctx.uri, identifier) {
+            return Vec::new();
+        }
+
+        let (start_line, start_col) = offset_to_line_col(&ctx.content, identifier_range.end);
+        let edit_range = Range {
+            start: Position {
+                line: start_line,
+                character: start_col,
+            },
+            end: Position {
+                line: start_line,
+                character: start_col,
+            },
+        };
+
+        let mut changes = std::collections::HashMap::new();
+        changes.insert(
+            ctx.uri.clone(),
+            vec![TextEdit {
+                range: edit_range,
+                new_text: ".value".to_string(),
+            }],
+        );
+
+        #[allow(clippy::disallowed_macros)]
+        let action = CodeAction {
+            title: format!("Wrap `{identifier}` with `.value`"),
+            kind: Some(CodeActionKind::QUICKFIX),
+            diagnostics: None,
+            edit: Some(WorkspaceEdit {
+                changes: Some(changes),
+                document_changes: None,
+                change_annotations: None,
+            }),
+            command: None,
+            is_preferred: Some(true),
+            disabled: None,
+            data: None,
+        };
+        let _ = range;
+        vec![CodeActionOrCommand::CodeAction(action)]
     }
 
     /// Collect lint fix actions from vize_patina diagnostics.
@@ -357,6 +423,61 @@ fn get_line_indent(source: &str, offset: usize) -> &str {
 }
 
 /// Check if two ranges overlap.
+/// Return the byte range of the identifier under the cursor, or `None` when
+/// the cursor is not on an identifier.
+fn identifier_at_cursor(content: &str, offset: usize) -> Option<std::ops::Range<usize>> {
+    let bytes = content.as_bytes();
+    let end = offset.min(content.len());
+    let mut start = end;
+    while start > 0 && is_ident_byte(bytes[start - 1]) {
+        start -= 1;
+    }
+    let mut walk = end;
+    while walk < bytes.len() && is_ident_byte(bytes[walk]) {
+        walk += 1;
+    }
+    if start == walk {
+        return None;
+    }
+    Some(start..walk)
+}
+
+fn is_ident_byte(b: u8) -> bool {
+    b.is_ascii_alphanumeric() || b == b'_' || b == b'$'
+}
+
+/// True when `name` resolves to a Vue ref (Ref / ShallowRef / ToRef /
+/// ComputedRef) declared anywhere in the SFC's script-setup block. Used to
+/// decide whether "Wrap with `.value`" makes sense at the cursor.
+fn is_reactive_ref_in_script(content: &str, uri: &tower_lsp::lsp_types::Url, name: &str) -> bool {
+    use vize_croquis::reactivity::ReactiveKind;
+    let options = vize_atelier_sfc::SfcParseOptions {
+        filename: uri.path().to_string().into(),
+        ..Default::default()
+    };
+    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+        return false;
+    };
+    let Some(ref script_setup) = descriptor.script_setup else {
+        return false;
+    };
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions {
+        analyze_script: true,
+        ..Default::default()
+    });
+    analyzer.analyze_script_setup(&script_setup.content);
+    let croquis = analyzer.finish();
+    croquis.reactivity.lookup(name).is_some_and(|source| {
+        matches!(
+            source.kind,
+            ReactiveKind::Ref
+                | ReactiveKind::ShallowRef
+                | ReactiveKind::ToRef
+                | ReactiveKind::Computed
+        )
+    })
+}
+
 fn ranges_overlap(a: &Range, b: &Range) -> bool {
     // Ranges overlap if neither is completely before or after the other
     !(a.end.line < b.start.line
