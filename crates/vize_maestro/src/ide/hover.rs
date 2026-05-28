@@ -109,17 +109,24 @@ impl HoverService {
             _ => return None,
         };
 
-        #[allow(clippy::disallowed_macros)]
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: format!(
-                    "**{}**\n\n{}\n\n[Vue SFC CSS Features](https://vuejs.org/api/sfc-css-features.html)",
-                    title, description
-                ),
-            }),
-            range: None,
-        })
+        Some(
+            HoverBuilder::new()
+                .title(title)
+                .meta("Vue SFC CSS feature")
+                .description(description)
+                .bullets(
+                    "Behavior",
+                    &[
+                        "Applies during Vue SFC scoped CSS compilation.",
+                        "Keep the selector explicit so the compiled output remains predictable.",
+                    ],
+                )
+                .link(
+                    "Vue SFC CSS Features",
+                    "https://vuejs.org/api/sfc-css-features.html",
+                )
+                .build(),
+        )
     }
 
     // =========================================================================
@@ -462,11 +469,41 @@ impl HoverBuilder {
         self
     }
 
+    /// Add compact metadata under the title.
+    #[allow(clippy::disallowed_macros)]
+    pub fn meta(mut self, text: &str) -> Self {
+        self.sections.push(format!("_{}_", text));
+        self
+    }
+
     /// Add a code block.
     #[allow(clippy::disallowed_macros)]
     pub fn code(mut self, language: &str, code: &str) -> Self {
         self.sections
             .push(format!("```{}\n{}\n```", language, code));
+        self
+    }
+
+    /// Add a named text section.
+    #[allow(clippy::disallowed_macros)]
+    pub fn section(mut self, heading: &str, text: &str) -> Self {
+        self.sections.push(format!("**{}**\n\n{}", heading, text));
+        self
+    }
+
+    /// Add a named bullet list.
+    #[allow(clippy::disallowed_macros)]
+    pub fn bullets(mut self, heading: &str, items: &[&str]) -> Self {
+        if items.is_empty() {
+            return self;
+        }
+
+        let body = items
+            .iter()
+            .map(|item| format!("- {}", item))
+            .collect::<Vec<_>>()
+            .join("\n");
+        self.sections.push(format!("**{}**\n{}", heading, body));
         self
     }
 
@@ -653,6 +690,21 @@ const double = computed(() => count.value * 2)
         } else {
             panic!("Expected Markup content");
         }
+    }
+
+    #[cfg(feature = "native")]
+    #[test]
+    fn test_corsa_hover_is_decorated_for_editor_clients() {
+        let hover = HoverService::convert_lsp_hover(vize_canon::LspHover {
+            contents: vize_canon::LspHoverContents::String("(property) count: number".to_string()),
+            range: None,
+        });
+        let value = hover_markdown(hover);
+
+        assert!(value.contains("TypeScript quick info"));
+        assert!(value.contains("Resolved through Vize virtual TypeScript"));
+        assert!(value.contains("```typescript"));
+        assert!(value.contains("count: number"));
     }
 
     #[test]

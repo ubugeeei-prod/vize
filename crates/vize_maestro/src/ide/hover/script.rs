@@ -8,7 +8,7 @@
     clippy::disallowed_macros
 )]
 
-use tower_lsp::lsp_types::{Hover, HoverContents, MarkupContent, MarkupKind};
+use tower_lsp::lsp_types::{Hover, HoverContents};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 use vize_relief::BindingType;
 
@@ -18,7 +18,7 @@ use std::sync::Arc;
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;
 
-use super::HoverService;
+use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
 impl HoverService {
     /// Get hover for script context.
@@ -152,33 +152,23 @@ impl HoverService {
             .and_then(|content| Self::infer_type_from_script(content, word, binding_type))
             .unwrap_or_else(|| Self::binding_type_to_ts_display(binding_type).to_string());
 
-        // Format the hover content with reactivity hints for script context
         let kind_desc = Self::binding_type_to_description(binding_type);
-
-        // Add .value hint for refs in script
         #[allow(clippy::disallowed_macros)]
-        let value_hint = if summary.needs_value_in_script(word) {
-            format!(
-                "\n\n**Tip:** Use `{}.value` to access the value in script.",
-                word
-            )
-        } else {
-            String::new()
-        };
+        let signature = format!("{word}: {inferred_type}");
 
-        #[allow(clippy::disallowed_macros)]
-        let value = format!(
-            "```typescript\n{}: {}\n```\n\n{}{}",
-            word, inferred_type, kind_desc, value_hint
-        );
+        let mut builder = HoverBuilder::new()
+            .title(word)
+            .meta("Script binding")
+            .code("typescript", &signature)
+            .description(kind_desc);
 
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value,
-            }),
-            range: None,
-        })
+        if summary.needs_value_in_script(word) {
+            #[allow(clippy::disallowed_macros)]
+            let tip = format!("Use `{}.value` to read or write this ref in script.", word);
+            builder = builder.section("Tip", &tip);
+        }
+
+        Some(builder.build())
     }
 
     /// Get hover for Vue Composition API.
@@ -263,17 +253,22 @@ impl HoverService {
             _ => return None,
         };
 
-        #[allow(clippy::disallowed_macros)]
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: format!(
-                    "```typescript\n{}\n```\n\n{}\n\n[Vue Documentation](https://vuejs.org/api/)",
-                    signature, description
-                ),
-            }),
-            range: None,
-        })
+        Some(
+            HoverBuilder::new()
+                .title(word)
+                .meta("Vue Composition API")
+                .code("typescript", signature)
+                .description(description)
+                .bullets(
+                    "Usage",
+                    &[
+                        "Import from `vue` in normal scripts.",
+                        "Works naturally in `<script setup>` and Composition API setup functions.",
+                    ],
+                )
+                .link("Vue API Reference", "https://vuejs.org/api/")
+                .build(),
+        )
     }
 
     /// Get hover for Vue macros.
@@ -314,17 +309,21 @@ impl HoverService {
             _ => return None,
         };
 
-        #[allow(clippy::disallowed_macros)]
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value: format!(
-                    "```typescript\n{}\n```\n\n{}\n\n*Compiler macro - only usable inside `<script setup>`*",
-                    signature, description
-                ),
-            }),
-            range: None,
-        })
+        Some(
+            HoverBuilder::new()
+                .title(word)
+                .meta("Vue compiler macro")
+                .code("typescript", signature)
+                .description(description)
+                .bullets(
+                    "Macro behavior",
+                    &[
+                        "Only usable inside `<script setup>`.",
+                        "No runtime import is required because the SFC compiler handles it.",
+                    ],
+                )
+                .build(),
+        )
     }
 
     /// Convert BindingType to TypeScript type display string.

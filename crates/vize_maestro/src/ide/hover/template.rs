@@ -8,7 +8,7 @@
     clippy::disallowed_macros
 )]
 
-use tower_lsp::lsp_types::{Hover, HoverContents, MarkupContent, MarkupKind};
+use tower_lsp::lsp_types::Hover;
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 #[cfg(feature = "native")]
@@ -17,9 +17,8 @@ use std::sync::Arc;
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;
 
-use super::HoverService;
+use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
-use vize_carton::append;
 
 impl HoverService {
     /// Get hover for template context.
@@ -48,19 +47,17 @@ impl HoverService {
         // Try to get type information from vize_canon
         if let Some(type_info) = crate::ide::TypeService::get_type_at(ctx) {
             #[allow(clippy::disallowed_macros)]
-            let mut value = format!("**{}**\n\n```typescript\n{}\n```", word, type_info.display);
+            let signature = format!("{word}: {}", type_info.display);
+            let mut builder = HoverBuilder::new()
+                .title(&word)
+                .meta("Template expression type")
+                .code("typescript", &signature);
 
             if let Some(ref doc) = type_info.documentation {
-                append!(value, "\n\n{doc}");
+                builder = builder.section("Documentation", doc);
             }
 
-            return Some(Hover {
-                contents: HoverContents::Markup(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value,
-                }),
-                range: None,
-            });
+            return Some(builder.build());
         }
 
         // Check for template bindings from script setup
@@ -70,26 +67,31 @@ impl HoverService {
             let bindings =
                 crate::virtual_code::extract_simple_bindings(&script_setup.content, true);
             if bindings.contains(&word) {
-                return Some(Hover {
-                    contents: HoverContents::Markup(MarkupContent {
-                        kind: MarkupKind::Markdown,
-                        #[allow(clippy::disallowed_macros)]
-                        value: format!("**{}**\n\n*Binding from `<script setup>`*", word),
-                    }),
-                    range: None,
-                });
+                return Some(
+                    HoverBuilder::new()
+                        .title(&word)
+                        .meta("Template binding")
+                        .description("Binding from `<script setup>`.")
+                        .bullets(
+                            "Behavior",
+                            &[
+                                "Available directly in the template scope.",
+                                "Vue automatically unwraps refs when rendering templates.",
+                            ],
+                        )
+                        .build(),
+                );
             }
         }
 
         // Default: show it's a template expression
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                #[allow(clippy::disallowed_macros)]
-                value: format!("**{}**\n\n*Template expression*", word),
-            }),
-            range: None,
-        })
+        Some(
+            HoverBuilder::new()
+                .title(&word)
+                .meta("Template expression")
+                .description("Expression evaluated against the component template scope.")
+                .build(),
+        )
     }
 
     /// Get hover for template context with Corsa support.
@@ -193,18 +195,23 @@ impl HoverService {
         let kind_desc = Self::binding_type_to_description(binding_type);
 
         #[allow(clippy::disallowed_macros)]
-        let value = format!(
-            "```typescript\n{}: {}\n```\n\n{}\n\n*Source: `<script setup>`*",
-            word, inferred_type, kind_desc
-        );
+        let signature = format!("{word}: {inferred_type}");
 
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                value,
-            }),
-            range: None,
-        })
+        Some(
+            HoverBuilder::new()
+                .title(word)
+                .meta("Template binding from script")
+                .code("typescript", &signature)
+                .description(kind_desc)
+                .bullets(
+                    "Template behavior",
+                    &[
+                        "Ref values are automatically unwrapped in templates.",
+                        "The binding is resolved from `<script setup>` analysis.",
+                    ],
+                )
+                .build(),
+        )
     }
 
     /// Get hover for Vue directives.
@@ -267,16 +274,23 @@ impl HoverService {
             _ => return None,
         };
 
-        Some(Hover {
-            contents: HoverContents::Markup(MarkupContent {
-                kind: MarkupKind::Markdown,
-                #[allow(clippy::disallowed_macros)]
-                value: format!(
-                    "**{}**\n\n{}\n\n[Vue Documentation](https://vuejs.org/api/built-in-directives.html)",
-                    title, description
-                ),
-            }),
-            range: None,
-        })
+        Some(
+            HoverBuilder::new()
+                .title(title)
+                .meta("Vue template directive")
+                .description(description)
+                .bullets(
+                    "Usage",
+                    &[
+                        "Use inside `<template>` markup.",
+                        "Directive expressions are evaluated in component scope.",
+                    ],
+                )
+                .link(
+                    "Vue Built-in Directives",
+                    "https://vuejs.org/api/built-in-directives.html",
+                )
+                .build(),
+        )
     }
 }

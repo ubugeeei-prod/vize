@@ -193,6 +193,49 @@ export function useMonacoTypeCheck({
     return null;
   }
 
+  function getSeverityLabel(severity: Diagnostic["severity"]): string {
+    if (severity === "error") return "Error";
+    if (severity === "warning") return "Warning";
+    return "Info";
+  }
+
+  function getDiagnosticRangeLabel(diag: Diagnostic): string {
+    const endLine = diag.endLine ?? diag.startLine;
+    const endColumn = diag.endColumn ?? diag.startColumn + 1;
+    if (endLine === diag.startLine) {
+      return `Line ${diag.startLine}, columns ${diag.startColumn}-${endColumn}`;
+    }
+    return `Lines ${diag.startLine}:${diag.startColumn}-${endLine}:${endColumn}`;
+  }
+
+  function getDiagnosticSourceLabel(diag: Diagnostic): string {
+    if (diag.code) return `TypeScript TS${diag.code}`;
+    if (diag.message.startsWith("[vize:")) return "Vize type checker";
+    return "Type analysis";
+  }
+
+  function buildDiagnosticHover(diag: Diagnostic): monaco.IMarkdownString[] {
+    const contents: monaco.IMarkdownString[] = [
+      {
+        value: [
+          `**${getSeverityLabel(diag.severity)}**`,
+          "",
+          `_${getDiagnosticSourceLabel(diag)}_ - ${getDiagnosticRangeLabel(diag)}`,
+          "",
+          diag.message,
+        ].join("\n"),
+      },
+    ];
+
+    if (diag.help) {
+      contents.push({
+        value: ["---", "**How to fix**", "", diag.help].join("\n"),
+      });
+    }
+
+    return contents;
+  }
+
   function registerHoverProvider() {
     if (hoverProviderDisposable) hoverProviderDisposable.dispose();
 
@@ -202,12 +245,7 @@ export function useMonacoTypeCheck({
 
         const diag = findDiagnosticAtPosition(position.lineNumber, position.column);
         if (diag) {
-          const severityLabel =
-            diag.severity === "error" ? "Error" : diag.severity === "warning" ? "Warning" : "Info";
-          contents.push({ value: `**[${severityLabel}]** ${diag.message}` });
-          if (diag.help) {
-            contents.push({ value: `---\n**Hint**\n\n${diag.help}` });
-          }
+          contents.push(...buildDiagnosticHover(diag));
         }
 
         const srcOffset = model.getOffsetAt(position);
@@ -216,7 +254,9 @@ export function useMonacoTypeCheck({
           const hoverContent = await getTypeScriptHover(genOffset);
           if (hoverContent) {
             if (contents.length > 0) contents.push({ value: "---" });
-            contents.push({ value: hoverContent });
+            contents.push({
+              value: ["**TypeScript quick info**", "", hoverContent].join("\n"),
+            });
           }
         }
 

@@ -176,46 +176,38 @@ impl HoverService {
 
     /// Convert a Corsa hover payload to tower-lsp Hover.
     pub(super) fn convert_lsp_hover(lsp_hover: LspHover) -> Hover {
-        let contents = match lsp_hover.contents {
+        let value = match lsp_hover.contents {
             LspHoverContents::Markup(markup) => {
-                let value = if markup.kind == "markdown" {
+                if markup.kind == "markdown" {
                     markup.value
                 } else {
                     // Wrap plaintext TypeScript type info in a code block for better rendering
                     Self::wrap_type_info_in_codeblock(&markup.value)
-                };
-                HoverContents::Markup(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value,
-                })
+                }
             }
             LspHoverContents::String(s) => {
                 // Wrap plaintext in a TypeScript code block
-                HoverContents::Markup(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value: Self::wrap_type_info_in_codeblock(&s),
-                })
+                Self::wrap_type_info_in_codeblock(&s)
             }
-            LspHoverContents::Array(items) => {
-                let value = items
-                    .into_iter()
-                    .map(|item| match item {
-                        LspMarkedString::String(s) => Self::wrap_type_info_in_codeblock(&s),
-                        LspMarkedString::LanguageString { language, value } => {
-                            #[allow(clippy::disallowed_macros)]
-                            {
-                                format!("```{}\n{}\n```", language, value)
-                            }
+            LspHoverContents::Array(items) => items
+                .into_iter()
+                .map(|item| match item {
+                    LspMarkedString::String(s) => Self::wrap_type_info_in_codeblock(&s),
+                    LspMarkedString::LanguageString { language, value } => {
+                        #[allow(clippy::disallowed_macros)]
+                        {
+                            format!("```{}\n{}\n```", language, value)
                         }
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n\n");
-                HoverContents::Markup(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value,
+                    }
                 })
-            }
+                .collect::<Vec<_>>()
+                .join("\n\n"),
         };
+
+        let contents = HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: Self::decorate_corsa_hover_markdown(&value),
+        });
 
         let range = lsp_hover.range.map(|r| Range {
             start: tower_lsp::lsp_types::Position {
@@ -262,6 +254,20 @@ impl HoverService {
             }
         } else {
             text.to_string()
+        }
+    }
+
+    fn decorate_corsa_hover_markdown(value: &str) -> String {
+        let value = value.trim();
+        if value.is_empty() {
+            return String::new();
+        }
+
+        #[allow(clippy::disallowed_macros)]
+        {
+            format!(
+                "**TypeScript quick info**\n\n_Resolved through Vize virtual TypeScript_\n\n{value}"
+            )
         }
     }
 }

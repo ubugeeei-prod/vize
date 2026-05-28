@@ -46,6 +46,8 @@ export function useCroquisAnalysis(getCompilerProp: () => WasmModule | null) {
         end: scope.end,
         kind: scope.kind,
         kindStr: scope.kindStr,
+        depth: scope.depth,
+        bindings: scope.bindings,
       }));
   });
 
