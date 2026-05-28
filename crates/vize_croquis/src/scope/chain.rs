@@ -14,7 +14,9 @@ mod resolution;
 
 use core::fmt;
 
-use vize_carton::{CompactString, FxHashMap, SmallVec, String, ToCompactString, smallvec};
+use vize_carton::{
+    CompactString, FxHashMap, FxHashSet, SmallVec, String, ToCompactString, smallvec,
+};
 use vize_relief::BindingType;
 
 use super::types::{
@@ -425,6 +427,89 @@ impl ScopeChain {
     #[inline]
     pub fn find_scope_by_kind(&self, kind: ScopeKind) -> Option<ScopeId> {
         self.scopes.iter().find(|s| s.kind == kind).map(|s| s.id)
+    }
+
+    /// Find the deepest scope whose span contains `offset`.
+    ///
+    /// Scopes are entered in depth-first order during analysis, so the deepest
+    /// containing scope is the one with the highest id among those that
+    /// contain the offset. Global scopes (universal, browser, vue) use the
+    /// default span and are never matched here — they are reached only by
+    /// walking the parent chain of the matched scope.
+    pub fn scope_at_offset(&self, offset: u32) -> Option<ScopeId> {
+        let mut best: Option<(ScopeId, u32)> = None;
+        for scope in &self.scopes {
+            if matches!(
+                scope.kind,
+                ScopeKind::JsGlobalUniversal
+                    | ScopeKind::JsGlobalBrowser
+                    | ScopeKind::JsGlobalNode
+                    | ScopeKind::JsGlobalDeno
+                    | ScopeKind::JsGlobalBun
+                    | ScopeKind::VueGlobal
+            ) {
+                continue;
+            }
+            if scope.span.contains(offset) {
+                // Smaller spans win (deepest); ties broken by higher id which
+                // is created later in DFS traversal.
+                let len = scope.span.len();
+                let should_replace = match best {
+                    None => true,
+                    Some((_, current_len)) if len < current_len => true,
+                    Some((current_id, current_len)) if len == current_len => {
+                        scope.id.as_u32() > current_id.as_u32()
+                    }
+                    _ => false,
+                };
+                if should_replace {
+                    best = Some((scope.id, len));
+                }
+            }
+        }
+        best.map(|(id, _)| id)
+    }
+
+    /// Collect every binding visible at `offset`, walking from the deepest
+    /// containing scope outward through its parents.
+    ///
+    /// Inner-scope bindings shadow outer ones — the first occurrence of each
+    /// name wins. Returns `(name, binding, scope_kind)` triples. The order is
+    /// inner-most first, which the LSP uses to prioritize closer scopes in
+    /// completion sort order.
+    pub fn bindings_visible_at(&self, offset: u32) -> Vec<(&str, ScopeBinding, ScopeKind)> {
+        let Some(start_id) = self.scope_at_offset(offset) else {
+            return Vec::new();
+        };
+
+        let mut seen: FxHashSet<&str> = FxHashSet::default();
+        let mut out: Vec<(&str, ScopeBinding, ScopeKind)> = Vec::new();
+        let mut stack: Vec<ScopeId> = Vec::new();
+        let mut to_visit: Vec<ScopeId> = vec![start_id];
+
+        while let Some(id) = to_visit.pop() {
+            // Avoid revisiting the same scope through multiple parent paths.
+            if stack.contains(&id) {
+                continue;
+            }
+            stack.push(id);
+
+            let Some(scope) = self.get_scope(id) else {
+                continue;
+            };
+
+            for (name, binding) in scope.bindings() {
+                if seen.insert(name) {
+                    out.push((name, *binding, scope.kind));
+                }
+            }
+
+            for parent in scope.parents.iter().copied() {
+                to_visit.push(parent);
+            }
+        }
+
+        out
     }
 
     /// Get mutable scope by ID

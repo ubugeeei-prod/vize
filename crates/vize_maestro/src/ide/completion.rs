@@ -278,6 +278,76 @@ count.
     }
 
     #[test]
+    fn test_script_completion_includes_closure_local_binding() {
+        // Cursor inside a closure body should see the binding declared in
+        // that closure as well as setup-scope siblings.
+        let source = r#"<script setup lang="ts">
+import { ref } from 'vue'
+
+const outer = ref(0)
+
+function increment() {
+  const localStep = 1
+  loc
+}
+</script>
+"#;
+        let (state, uri) = state_with_document("ScopeAwareCompletion.vue", source);
+        let offset = source.find("\n  loc\n").unwrap() + "\n  loc".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let items = completion_items(CompletionService::complete(&ctx).unwrap());
+        let labels: Vec<&str> = items.iter().map(|item| item.label.as_str()).collect();
+
+        assert!(
+            labels.contains(&"localStep"),
+            "closure local should be visible, got {labels:?}",
+        );
+        assert!(
+            labels.contains(&"outer"),
+            "setup-scope binding should be visible, got {labels:?}",
+        );
+
+        let local_item = items.iter().find(|item| item.label == "localStep").unwrap();
+        let outer_item = items.iter().find(|item| item.label == "outer").unwrap();
+        assert!(
+            local_item.sort_text.as_deref().unwrap_or("")
+                < outer_item.sort_text.as_deref().unwrap_or(""),
+            "inner scope binding must sort before setup-scope binding: \
+             local={:?}, outer={:?}",
+            local_item.sort_text,
+            outer_item.sort_text,
+        );
+    }
+
+    #[test]
+    fn test_script_completion_excludes_inner_binding_outside_its_scope() {
+        // The same binding declared inside a closure must NOT leak into
+        // completion at the module level.
+        let source = r#"<script setup lang="ts">
+import { ref } from 'vue'
+
+function helper() {
+  const onlyHere = 1
+  void onlyHere
+}
+
+const outer = ref(0)
+out
+</script>
+"#;
+        let (state, uri) = state_with_document("ScopeAwareLeak.vue", source);
+        let offset = source.find("\nout\n").unwrap() + "\nout".len();
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert!(
+            !labels.iter().any(|l| l == "onlyHere"),
+            "closure-local binding must not leak to setup scope, got {labels:?}",
+        );
+        assert!(labels.iter().any(|l| l == "outer"));
+    }
+
+    #[test]
     fn test_script_completion_infers_computed_ref_type() {
         let source = r#"<script setup lang="ts">
 import { ref, computed } from 'vue'

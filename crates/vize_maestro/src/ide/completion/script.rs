@@ -13,7 +13,7 @@ use tower_lsp::lsp_types::{
     MarkupKind,
 };
 use vize_croquis::reactivity::ReactiveKind;
-use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_croquis::{Analyzer, AnalyzerOptions, ScopeKind};
 use vize_relief::BindingType;
 
 use super::items;
@@ -48,7 +48,9 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
     items_vec.extend(import_completions());
 
     // Use vize_croquis for accurate bindings in script
-    if let Some(script_content) = script_content_for_context(ctx, is_setup) {
+    if let Some((script_content, script_offset)) =
+        script_content_and_offset_for_context(ctx, is_setup)
+    {
         let mut analyzer = Analyzer::with_options(AnalyzerOptions {
             analyze_script: true,
             ..Default::default()
@@ -61,6 +63,29 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
         }
 
         let croquis = analyzer.finish();
+
+        // Scope-aware completion: include nested bindings (closures, blocks,
+        // v-for params, etc.) that are visible at the cursor. We avoid
+        // duplicating top-level bindings that the loop below already adds.
+        let local_offset = ctx.offset.saturating_sub(script_offset) as u32;
+        if local_offset <= script_content.len() as u32 {
+            for (name, binding, scope_kind) in croquis.scopes.bindings_visible_at(local_offset) {
+                if croquis.bindings.contains(name) {
+                    continue;
+                }
+                if !is_nested_user_scope(scope_kind) {
+                    // Module / global scopes are surfaced via the existing
+                    // composition_api and import completion blocks; skip them
+                    // here to avoid duplicating well-known names.
+                    continue;
+                }
+                items_vec.push(inner_scope_completion_item(
+                    name,
+                    binding.binding_type,
+                    scope_kind,
+                ));
+            }
+        }
 
         // Add bindings with type information
         for (name, binding_type) in croquis.bindings.iter() {
@@ -191,6 +216,17 @@ fn complete_member_access(ctx: &IdeContext, is_setup: bool) -> Option<Vec<Comple
 }
 
 fn script_content_for_context(ctx: &IdeContext<'_>, is_setup: bool) -> Option<String> {
+    script_content_and_offset_for_context(ctx, is_setup).map(|(content, _)| content)
+}
+
+/// Returns the script (or script setup) content along with the byte offset of
+/// the block's content within the full SFC. The offset lets callers translate
+/// SFC-absolute cursor positions into script-local positions, which is the
+/// coordinate system used by Croquis scope spans.
+fn script_content_and_offset_for_context(
+    ctx: &IdeContext<'_>,
+    is_setup: bool,
+) -> Option<(String, usize)> {
     let options = vize_atelier_sfc::SfcParseOptions {
         filename: ctx.uri.path().to_string().into(),
         ..Default::default()
@@ -200,9 +236,76 @@ fn script_content_for_context(ctx: &IdeContext<'_>, is_setup: bool) -> Option<St
     if is_setup {
         descriptor
             .script_setup
-            .map(|script| script.content.into_owned())
+            .map(|script| (script.content.into_owned(), script.loc.start))
     } else {
-        descriptor.script.map(|script| script.content.into_owned())
+        descriptor
+            .script
+            .map(|script| (script.content.into_owned(), script.loc.start))
+    }
+}
+
+/// True for scope kinds that only become visible from inside the script setup
+/// body (closures, blocks, v-for, etc.). Module-level and global scopes are
+/// excluded so we don't re-add Vue Composition API names that
+/// `composition_api_completions` already covers.
+fn is_nested_user_scope(kind: ScopeKind) -> bool {
+    matches!(
+        kind,
+        ScopeKind::Closure
+            | ScopeKind::Block
+            | ScopeKind::Function
+            | ScopeKind::Callback
+            | ScopeKind::EventHandler
+            | ScopeKind::VFor
+            | ScopeKind::VSlot
+            | ScopeKind::ClientOnly
+            | ScopeKind::Universal
+    )
+}
+
+#[allow(clippy::disallowed_macros)]
+fn inner_scope_completion_item(
+    name: &str,
+    binding_type: BindingType,
+    scope_kind: ScopeKind,
+) -> CompletionItem {
+    let (kind, type_detail, doc) = items::binding_type_to_completion_info(binding_type);
+    let scope_label = scope_kind_short_label(scope_kind);
+    let description = format!("local · {scope_label}");
+    CompletionItem {
+        label: name.to_string(),
+        kind: Some(kind),
+        label_details: Some(CompletionItemLabelDetails {
+            detail: Some(type_detail.clone()),
+            description: Some(description.clone()),
+        }),
+        detail: Some(format!("{type_detail} (in {scope_label})")),
+        documentation: Some(Documentation::MarkupContent(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: format!(
+                "**Local binding** in `{scope_label}` scope.\n\n```typescript\n{name}: {type_detail}\n```\n\n{doc}",
+            ),
+        })),
+        // `00` is lexicographically smaller than the `0` prefix used for
+        // top-level setup bindings, so closer-scope candidates rank higher in
+        // the editor's completion list.
+        sort_text: Some(format!("00{name}")),
+        ..Default::default()
+    }
+}
+
+fn scope_kind_short_label(kind: ScopeKind) -> &'static str {
+    match kind {
+        ScopeKind::Closure => "closure",
+        ScopeKind::Block => "block",
+        ScopeKind::Function => "function",
+        ScopeKind::Callback => "callback",
+        ScopeKind::EventHandler => "event handler",
+        ScopeKind::VFor => "v-for",
+        ScopeKind::VSlot => "v-slot",
+        ScopeKind::ClientOnly => "lifecycle hook",
+        ScopeKind::Universal => "setup body",
+        _ => "local",
     }
 }
 
