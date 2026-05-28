@@ -30,6 +30,12 @@
         lib = pkgs.lib;
         workspaceCargo = builtins.fromTOML (builtins.readFile ./Cargo.toml);
         workspaceVersion = workspaceCargo.workspace.package.version;
+        cratesIoIndex = "registry+https://github.com/rust-lang/crates.io-index";
+        cratesIoNixIndexUrl = "https://vize.invalid/nix-crates.io-index";
+        cratesIoNixIndex = "registry+${cratesIoNixIndexUrl}";
+        nixCargoLockContents = builtins.replaceStrings [ cratesIoIndex ] [ cratesIoNixIndex ] (
+          builtins.readFile ./Cargo.lock
+        );
         moonbitArtifacts = {
           aarch64-darwin = {
             version = "0.9.3-2026-05-22";
@@ -214,9 +220,20 @@
           src = lib.cleanSource ./.;
 
           cargoLock = {
-            lockFile = ./Cargo.lock;
+            lockFileContents = nixCargoLockContents;
             allowBuiltinFetchGit = true;
+            extraRegistries = {
+              # crates.io's API endpoint rejects fetchurl's default request
+              # headers. Use a Nix-only registry alias so Cargo does not
+              # define crates-io twice, then fetch the same tarballs from
+              # the static endpoint.
+              "${cratesIoNixIndexUrl}" = "https://static.crates.io/crates";
+            };
           };
+          postPatch = ''
+            substituteInPlace Cargo.lock \
+              --replace-fail ${lib.escapeShellArg cratesIoIndex} ${lib.escapeShellArg cratesIoNixIndex}
+          '';
 
           cargoBuildFlags = [
             "-p"
