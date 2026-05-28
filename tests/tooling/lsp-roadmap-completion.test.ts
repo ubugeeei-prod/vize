@@ -3,10 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import {
-  completionLabels,
-  offsetToPosition,
-} from "./support/lsp/assertions.ts";
+import { completionLabels, offsetToPosition } from "./support/lsp/assertions.ts";
 import { testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
