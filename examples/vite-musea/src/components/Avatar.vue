@@ -1,9 +1,18 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 const props = defineProps<{
   name?: string;
   src?: string;
   size?: "sm" | "md" | "lg";
 }>();
+
+defineArt("./Avatar.vue", {
+  title: "Avatar",
+  category: "Components",
+  tags: ["avatar", "user", "profile"],
+  status: "ready",
+});
 
 const initials = computed(() => {
   if (!props.name) return "?";
@@ -14,10 +23,6 @@ const initials = computed(() => {
     .slice(0, 2)
     .toUpperCase();
 });
-</script>
-
-<script lang="ts">
-import { computed } from "vue";
 </script>
 
 <template>
@@ -70,7 +75,7 @@ import { computed } from "vue";
 }
 </style>
 
-<art title="Avatar" category="Components" status="ready" tags="avatar,user,profile">
+<art>
   <variant name="Default" default>
     <Self name="Jane Doe" />
   </variant>

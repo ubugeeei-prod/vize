@@ -143,18 +143,27 @@ vp dev
 
 ### File Structure
 
-| File                            | Description                          |
-| ------------------------------- | ------------------------------------ |
-| `src/components/Button.vue`     | Button component                     |
-| `src/components/Button.art.vue` | Musea art file (variant definitions) |
-| `vite.config.ts`                | Vite + Musea configuration           |
+| File                        | Description                                     |
+| --------------------------- | ----------------------------------------------- |
+| `src/components/Button.vue` | Button component with co-located Musea variants |
+| `src/tokens.json`           | Design tokens shown in the Musea gallery        |
+| `vite.config.ts`            | Vite + Musea configuration                      |
 
 ### Writing Art Files
 
-`.art.vue` files define component variants:
+Use `defineArt(source, options)` in root `<script setup>` to declare the target component and gallery metadata. The `<art>` block then focuses on variants:
 
 ```vue
-<art title="Button" component="./Button.vue" category="Components" status="ready">
+<script setup lang="ts">
+defineArt("./Button.vue", {
+  title: "Button",
+  category: "Components",
+  tags: ["button", "form"],
+  status: "ready",
+});
+</script>
+
+<art>
   <variant name="Default" default>
     <Button>Default Button</Button>
   </variant>
@@ -162,20 +171,19 @@ vp dev
     <Button variant="primary">Primary Button</Button>
   </variant>
 </art>
-
-<script setup lang="ts">
-import Button from "./Button.vue";
-</script>
 ```
 
-**`<art>` attributes:**
+**`defineArt()` options:**
 
-| Attribute   | Description                               |
-| ----------- | ----------------------------------------- |
-| `title`     | Component title (required)                |
-| `component` | Path to the target component              |
-| `category`  | Category                                  |
-| `status`    | Status (`draft` / `ready` / `deprecated`) |
+| Option        | Description                               |
+| ------------- | ----------------------------------------- |
+| `title`       | Component title                           |
+| `description` | Component summary                         |
+| `category`    | Category                                  |
+| `tags`        | Search tags                               |
+| `status`      | Status (`draft` / `ready` / `deprecated`) |
+
+Legacy `<art title="..." component="...">` metadata attributes are still supported for compatibility, but new examples should prefer `defineArt()`.
 
 **`<variant>` attributes:**
 

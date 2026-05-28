@@ -4,6 +4,13 @@ defineProps<{
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
 }>();
+
+defineArt("./Button.vue", {
+  title: "Button",
+  category: "Components",
+  tags: ["button", "action", "form"],
+  status: "ready",
+});
 </script>
 
 <template>
@@ -79,7 +86,7 @@ defineProps<{
 }
 </style>
 
-<art title="Button" category="Components" status="ready">
+<art>
   <variant name="Default" default>
     <Self>Default Button</Self>
   </variant>

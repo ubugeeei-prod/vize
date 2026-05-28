@@ -3,6 +3,13 @@ defineProps<{
   variant?: "default" | "success" | "warning" | "error" | "info";
   size?: "sm" | "md" | "lg";
 }>();
+
+defineArt("./Badge.vue", {
+  title: "Badge",
+  category: "Components",
+  tags: ["badge", "tag", "label"],
+  status: "ready",
+});
 </script>
 
 <template>
@@ -61,7 +68,7 @@ defineProps<{
 }
 </style>
 
-<art title="Badge" category="Components" status="ready" tags="badge,tag,label">
+<art>
   <variant name="Default" default>
     <Self>Default</Self>
   </variant>

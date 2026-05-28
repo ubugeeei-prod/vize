@@ -7,6 +7,13 @@ defineProps<{
 const emit = defineEmits<{
   close: [];
 }>();
+
+defineArt("./Alert.vue", {
+  title: "Alert",
+  category: "Feedback",
+  tags: ["alert", "message", "feedback"],
+  status: "ready",
+});
 </script>
 
 <template>
@@ -89,7 +96,7 @@ const emit = defineEmits<{
 }
 </style>
 
-<art title="Alert" category="Feedback" status="ready" tags="alert,message,feedback">
+<art>
   <variant name="Default" default>
     <Self>This is a default informational alert.</Self>
   </variant>
