@@ -393,6 +393,31 @@ out
     }
 
     #[test]
+    fn test_script_member_access_lists_reactive_object_keys() {
+        // Follow-up to #678: `const obj = reactive({ a: 1, b: '' })` then
+        // `obj.|` should surface `a` and `b` from the initializer even
+        // when Corsa isn't available.
+        let source = r#"<script setup lang="ts">
+import { reactive } from 'vue'
+const obj = reactive({ count: 0, label: 'hello' })
+obj.
+</script>
+"#;
+        let (state_, uri) = state_with_document("ReactiveKeys.vue", source);
+        let offset = source.find("obj.\n").unwrap() + "obj.".len();
+        let ctx = IdeContext::new(&state_, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+        assert!(
+            labels.iter().any(|l| l == "count"),
+            "expected `count` from reactive() keys, got {labels:?}",
+        );
+        assert!(
+            labels.iter().any(|l| l == "label"),
+            "expected `label` from reactive() keys, got {labels:?}",
+        );
+    }
+
+    #[test]
     fn test_script_member_access_on_non_ref_returns_empty_in_sync_fallback() {
         // When Corsa is not available, the synchronous completion path used to
         // fall through to the full Composition-API + setup-bindings list at
