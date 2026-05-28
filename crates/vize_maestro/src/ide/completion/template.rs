@@ -1053,11 +1053,24 @@ fn slot_completion_item(slot: &ComponentSlot, prefix: &str) -> CompletionItem {
     } else {
         format!("#{}", slot.name)
     };
+    let destructure = slot
+        .props_type
+        .as_ref()
+        .and_then(|ty| extract_slot_prop_names(ty));
+    let value_snippet = match destructure {
+        Some(names) if !names.is_empty() => {
+            // Pre-populate the destructure with the resolved slot prop names
+            // so the user gets `{ row, col }` rather than just `="$1"`.
+            // The `${1:...}` placeholder lets the editor select the names.
+            format!("{{ ${{1:{}}} }}", names.join(", "))
+        }
+        _ => "$1".to_string(),
+    };
     let insert_text = if slot.props_type.is_some() {
         if after_hash || after_v_slot {
-            format!("{}=\"$1\"", slot.name)
+            format!("{}=\"{value_snippet}\"", slot.name)
         } else {
-            format!("#{}=\"$1\"", slot.name)
+            format!("#{}=\"{value_snippet}\"", slot.name)
         }
     } else if after_hash || after_v_slot {
         slot.name.clone()
@@ -1085,6 +1098,54 @@ fn slot_completion_item(slot: &ComponentSlot, prefix: &str) -> CompletionItem {
         sort_text: Some(format!("00-slot-{}", slot.name)),
         ..Default::default()
     }
+}
+
+/// Extract slot prop names from a TS function-shape type like
+/// `(props: { foo: T; bar: U }): any` or `{ foo: T; bar: U }`. Returns the
+/// names in source order. The extractor is approximate — it stops at the
+/// first `{` and reads property names up to `:` — but it's enough to
+/// pre-populate a slot destructure for editor convenience.
+fn extract_slot_prop_names(ts_type: &str) -> Option<Vec<String>> {
+    let brace_start = ts_type.find('{')?;
+    let body = &ts_type[brace_start + 1..];
+    let mut depth: i32 = 0;
+    let mut name = String::new();
+    let mut waiting_for_colon = false;
+    let mut names = Vec::new();
+    for ch in body.chars() {
+        match ch {
+            '{' | '<' | '(' | '[' => depth += 1,
+            '}' if depth == 0 => break,
+            '}' | '>' | ')' | ']' => depth -= 1,
+            _ => {}
+        }
+        if depth != 0 {
+            continue;
+        }
+        if !waiting_for_colon {
+            if ch == ':' {
+                let trimmed = name.trim();
+                if !trimmed.is_empty()
+                    && trimmed
+                        .chars()
+                        .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
+                {
+                    names.push(trimmed.to_string());
+                }
+                name.clear();
+                waiting_for_colon = true;
+                continue;
+            }
+            if ch == ';' || ch == ',' || ch == '\n' {
+                name.clear();
+                continue;
+            }
+            name.push(ch);
+        } else if ch == ';' || ch == ',' || ch == '\n' {
+            waiting_for_colon = false;
+        }
+    }
+    if names.is_empty() { None } else { Some(names) }
 }
 
 fn nearest_open_component_before(content: &str, before_offset: usize) -> Option<String> {
