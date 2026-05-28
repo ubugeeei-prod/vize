@@ -7,6 +7,7 @@ use vize_carton::{String, ToCompactString, cstr};
 const EXECUTABLE_ENV_VARS: [&str; 2] = ["CORSA_EXECUTABLE", "CORSA_PATH"];
 const LEGACY_EXECUTABLE_ENV_VARS: [&str; 2] = ["TSGO_EXECUTABLE", "TSGO_PATH"];
 const EXECUTABLE_NAMES: [&str; 2] = ["corsa", "tsgo"];
+const SESSION_DIRECTORY_PREFIX: &str = "session-";
 pub(super) const VIRTUAL_FILE_NAME: &str = "active.patina.ts";
 pub(super) const TSCONFIG_FILE_NAME: &str = "tsconfig.json";
 static SESSION_COUNTER: AtomicU64 = AtomicU64::new(0);
@@ -30,11 +31,13 @@ pub(super) fn path_to_wire(path: &Path) -> String {
 
 pub(super) fn allocate_session_root(project_root: &Path) -> PathBuf {
     let session_name = next_session_directory_name();
-    project_root
-        .join("node_modules")
-        .join(".vize")
-        .join("patina")
-        .join(session_name.as_str())
+    cleanup_stale_session_roots(project_root);
+    session_store_root(project_root).join(session_name.as_str())
+}
+
+pub(super) fn remove_session_root(session_root: &Path) {
+    let _ = std::fs::remove_dir_all(session_root);
+    remove_empty_session_parents(session_root);
 }
 
 pub(super) fn next_session_directory_name() -> String {
@@ -46,6 +49,87 @@ pub(super) fn next_session_directory_name() -> String {
     name.push('-');
     push_u64(&mut name, counter);
     name
+}
+
+fn session_store_root(project_root: &Path) -> PathBuf {
+    project_root.join(".vize").join("patina")
+}
+
+fn legacy_session_store_root(project_root: &Path) -> PathBuf {
+    project_root
+        .join("node_modules")
+        .join(".vize")
+        .join("patina")
+}
+
+fn cleanup_stale_session_roots(project_root: &Path) {
+    cleanup_stale_sessions_in(&session_store_root(project_root));
+    cleanup_stale_sessions_in(&legacy_session_store_root(project_root));
+}
+
+fn cleanup_stale_sessions_in(session_store: &Path) {
+    let Ok(entries) = std::fs::read_dir(session_store) else {
+        return;
+    };
+
+    for entry in entries.flatten() {
+        let Ok(file_type) = entry.file_type() else {
+            continue;
+        };
+        if !file_type.is_dir() {
+            continue;
+        }
+
+        let name = entry.file_name();
+        let Some(name) = name.to_str() else {
+            continue;
+        };
+        if is_stale_session_directory(name) {
+            remove_session_root(&entry.path());
+        }
+    }
+}
+
+fn is_stale_session_directory(name: &str) -> bool {
+    let Some(pid) = session_directory_pid(name) else {
+        return false;
+    };
+    !process_is_running(pid)
+}
+
+fn session_directory_pid(name: &str) -> Option<u64> {
+    let rest = name.strip_prefix(SESSION_DIRECTORY_PREFIX)?;
+    let (pid, _) = rest.split_once('-')?;
+    pid.parse().ok()
+}
+
+#[cfg(unix)]
+fn process_is_running(pid: u64) -> bool {
+    if pid == 0 || pid > i32::MAX as u64 {
+        return false;
+    }
+
+    let result = unsafe { libc::kill(pid as libc::pid_t, 0) };
+    result == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
+}
+
+#[cfg(not(unix))]
+fn process_is_running(_pid: u64) -> bool {
+    true
+}
+
+fn remove_empty_session_parents(session_root: &Path) {
+    let Some(session_store) = session_root.parent() else {
+        return;
+    };
+    let _ = std::fs::remove_dir(session_store);
+
+    let Some(vize_dir) = session_store.parent() else {
+        return;
+    };
+    if vize_dir.file_name().and_then(|name| name.to_str()) == Some(".vize") {
+        let _ = std::fs::remove_dir(vize_dir);
+    }
 }
 
 pub(super) fn resolve_project_root(filename: &str) -> PathBuf {
@@ -324,7 +408,9 @@ fn push_u64(buffer: &mut String, value: u64) {
 
 #[cfg(test)]
 mod tests {
-    use super::resolve_corsa_executable;
+    #[cfg(unix)]
+    use super::is_stale_session_directory;
+    use super::{cleanup_stale_session_roots, resolve_corsa_executable, session_store_root};
     use std::{
         path::{Path, PathBuf},
         sync::atomic::{AtomicU64, Ordering},
@@ -385,6 +471,57 @@ mod tests {
 
         assert!(error.contains("Configured Corsa executable does not exist"));
         assert!(error.contains("missing-corsa"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn removes_dead_session_directories() {
+        let root = case_dir("dead-session-cleanup");
+        let _ = std::fs::remove_dir_all(&root);
+        let store = session_store_root(&root);
+        let stale = store.join("session-9999999999-0");
+        let legacy_stale = root
+            .join("node_modules")
+            .join(".vize")
+            .join("patina")
+            .join("session-9999999999-1");
+        let unrelated = store.join("cache");
+
+        std::fs::create_dir_all(&stale).unwrap();
+        std::fs::create_dir_all(&legacy_stale).unwrap();
+        std::fs::create_dir_all(&unrelated).unwrap();
+
+        cleanup_stale_session_roots(&root);
+
+        assert!(!stale.exists());
+        assert!(!legacy_stale.exists());
+        assert!(unrelated.exists());
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn keeps_live_session_directories() {
+        let root = case_dir("live-session-cleanup");
+        let _ = std::fs::remove_dir_all(&root);
+        let store = session_store_root(&root);
+        let live = store.join(&*cstr!("session-{}-0", std::process::id()));
+
+        std::fs::create_dir_all(&live).unwrap();
+
+        cleanup_stale_session_roots(&root);
+
+        assert!(live.exists());
+
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn identifies_session_directories_by_pid() {
+        assert!(is_stale_session_directory("session-9999999999-0"));
+        assert!(!is_stale_session_directory("session-not-a-pid-0"));
+        assert!(!is_stale_session_directory("cache"));
     }
 
     fn write_file(path: &Path) {
