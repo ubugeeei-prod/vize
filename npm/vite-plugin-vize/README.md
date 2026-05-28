@@ -150,6 +150,13 @@ export default defineNuxtConfig({
 ```ts
 interface VizeNativeOptions {
   /**
+   * Vue major version for the host project.
+   * Set to 0.11, 1, 2, or "legacy" to let the existing compiler plugin/loader handle SFCs.
+   * @default 3
+   */
+  vueVersion?: 0.11 | 1 | 2 | 3 | "legacy";
+
+  /**
    * Files to include in compilation
    * @default /\.vue$/
    */
@@ -204,6 +211,19 @@ interface VizeNativeOptions {
   ignorePatterns?: string[];
 }
 ```
+
+### Legacy Vue / Nuxt 2 compatibility
+
+Vize's native SFC compiler targets Vue 3 runtime output. In Vue 0.11, Vue 1, Vue 2,
+and Nuxt 2 projects, keep the existing host compiler in charge and set:
+
+```ts
+vize({ vueVersion: 2 });
+```
+
+Use `0.11`, `1`, `2`, or `"legacy"` for the same host-compiler compatibility mode. This makes the
+plugin non-invasive: it does not intercept `.vue` requests, does not expose the Vue 3 `vite:vue`
+compatibility API, and does not inject Vue 3 bundler feature flags.
 
 ## How It Works
 

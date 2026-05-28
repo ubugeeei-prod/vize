@@ -26,6 +26,7 @@ import {
 import { patchUnoCssBridge } from "./unocss.ts";
 import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installVirtualAssetMiddleware } from "./dev-middleware.ts";
+import { createLegacyVueCompatibilityPlugin, isLegacyVueCompatibilityMode } from "./vue-version.ts";
 
 export type { VizePluginState } from "./state.ts";
 
@@ -80,6 +81,10 @@ function mergeSharedConfig(
 }
 
 export function vize(options: VizeOptions = {}): Plugin[] {
+  if (isLegacyVueCompatibilityMode(options)) {
+    return [createLegacyVueCompatibilityPlugin(options)];
+  }
+
   const state: VizePluginState = {
     cache: new Map(),
     ssrCache: new Map(),

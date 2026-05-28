@@ -13,6 +13,7 @@ export type {
   ResolvedVizeConfig,
   UserConfigExport,
   LoadConfigOptions,
+  VizeVueVersion,
 } from "./types.ts";
 
 // Test-only export for snapshot coverage (re-exported for backward compat).

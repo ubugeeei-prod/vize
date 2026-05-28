@@ -8,12 +8,19 @@
  * - Type Checker: `vize check` CLI command (via `vize` bin)
  */
 
-import { addServerPlugin, addVitePlugin, createResolver, defineNuxtModule } from "@nuxt/kit";
+import {
+  addServerPlugin,
+  addVitePlugin,
+  createResolver,
+  defineNuxtModule,
+  getNuxtVersion,
+  isNuxt2,
+} from "@nuxt/kit";
 import vize from "@vizejs/vite-plugin";
 import { musea } from "@vizejs/vite-plugin-musea";
 import { createNuxtComponentResolver, injectNuxtComponentImports } from "./components";
 import { injectNuxtI18nHelpers } from "./i18n";
-import type { VizeNuxtOptions } from "./options";
+import type { VizeNuxtCompilerOptions, VizeNuxtOptions } from "./options";
 import {
   resolveNuxtBridgeOptions,
   resolveNuxtCompilerOptions,
@@ -30,6 +37,64 @@ import {
 import { appendOriginalVueSourceForUnoCss } from "./unocss";
 
 type ViteTransformResult = string | { code?: string; map?: unknown } | null | undefined;
+type NuxtWithBuilderOptions = {
+  options: {
+    app?: {
+      baseURL?: string;
+      buildAssetsDir?: string;
+    };
+    builder?: string;
+    build?: {
+      publicPath?: string;
+    };
+    router?: {
+      base?: string;
+    };
+    vite?: { plugins?: unknown[] };
+    nitro?: { virtual?: Record<string, string> };
+  };
+};
+
+function getDetectedNuxtMajor(nuxt: unknown): 2 | 3 | 4 | null {
+  try {
+    const version = getNuxtVersion(nuxt as never);
+    const major = Number.parseInt(version.split(".")[0] ?? "", 10);
+    return major === 2 || major === 3 || major === 4 ? major : null;
+  } catch {
+    return null;
+  }
+}
+
+function hasNuxtViteCompilerSupport(nuxt: NuxtWithBuilderOptions): boolean {
+  const builder = nuxt.options.builder;
+  if (typeof builder === "string") {
+    return builder === "vite" || builder.includes("vite-builder");
+  }
+
+  if (nuxt.options.vite) {
+    return true;
+  }
+
+  try {
+    return !isNuxt2(nuxt as never);
+  } catch {
+    return true;
+  }
+}
+
+function getNuxtAppBaseURL(nuxt: NuxtWithBuilderOptions): string | undefined {
+  return nuxt.options.app?.baseURL ?? nuxt.options.router?.base;
+}
+
+function getNuxtBuildAssetsDir(nuxt: NuxtWithBuilderOptions): string | undefined {
+  return nuxt.options.app?.buildAssetsDir ?? nuxt.options.build?.publicPath;
+}
+
+function shouldUseVizeCompiler(
+  compilerOptions: false | VizeNuxtCompilerOptions,
+): compilerOptions is VizeNuxtCompilerOptions {
+  return compilerOptions !== false && (compilerOptions.vueVersion ?? 3) === 3;
+}
 
 function normalizeNuxtKeyedTransformResult(
   id: string,
@@ -88,31 +153,47 @@ export default defineNuxtModule<VizeNuxtOptions>({
   },
   setup(options, nuxt) {
     const resolver = createResolver(import.meta.url);
+    const detectedNuxtMajor = options.compatibility?.nuxtVersion ?? getDetectedNuxtMajor(nuxt) ?? 3;
+    const vueVersion = options.compatibility?.vueVersion ?? (detectedNuxtMajor === 2 ? 2 : 3);
+    const nuxtWithBuilderOptions = nuxt as NuxtWithBuilderOptions;
+    const supportsViteCompiler = hasNuxtViteCompilerSupport(nuxtWithBuilderOptions);
+    const appBaseURL = getNuxtAppBaseURL(nuxtWithBuilderOptions);
+    const buildAssetsDir = getNuxtBuildAssetsDir(nuxtWithBuilderOptions);
     const bridgeOptions = resolveNuxtBridgeOptions(options.bridge);
     const devOptions = resolveNuxtDevOptions(options.dev);
     const museaOptions = resolveNuxtMuseaOptions(options.musea);
     const unocssOptions = resolveNuxtUnoCssOptions(options.unocss);
 
-    nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
-
     // Compiler
     const compilerOptions = resolveNuxtCompilerOptions(
       nuxt.options.rootDir,
-      nuxt.options.app.baseURL,
-      nuxt.options.app.buildAssetsDir,
+      appBaseURL,
+      buildAssetsDir,
       options.compiler,
+      {
+        supportsViteCompiler,
+        vueVersion,
+      },
     );
     if (compilerOptions !== false) {
+      nuxt.options.vite ||= {};
+      nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
       nuxt.options.vite.plugins.push(vize(compilerOptions));
+    }
 
+    const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
+
+    if (usesVizeCompiler) {
       if (nuxt.options.dev && devOptions.stylesheetLinks) {
         const devAssetBase =
-          compilerOptions.devUrlBase ??
-          buildNuxtDevAssetBase(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir);
+          compilerOptions.devUrlBase ?? buildNuxtDevAssetBase(appBaseURL, buildAssetsDir);
+        nuxt.options.nitro ||= {};
         nuxt.options.nitro.virtual ||= {};
-        nuxt.options.nitro.virtual["#vizejs/nuxt/dev-stylesheet-links-config"] =
-          `export const devAssetBase = ${JSON.stringify(devAssetBase)};`;
-        addServerPlugin(resolver.resolve("./runtime/server/dev-stylesheet-links"));
+        if (nuxt.options.nitro.virtual) {
+          nuxt.options.nitro.virtual["#vizejs/nuxt/dev-stylesheet-links-config"] =
+            `export const devAssetBase = ${JSON.stringify(devAssetBase)};`;
+          addServerPlugin(resolver.resolve("./runtime/server/dev-stylesheet-links"));
+        }
       }
 
       // Remove Nuxt's built-in @vitejs/plugin-vue when vize is active.
@@ -152,21 +233,22 @@ export default defineNuxtModule<VizeNuxtOptions>({
         id?: string,
       ) => Promise<{ code: string; s: unknown; imports: unknown[] }>;
     } | null = null;
-    if (bridgeOptions.autoImports) {
+    if (usesVizeCompiler && bridgeOptions.autoImports) {
       nuxt.hook("imports:context", (ctx: unknown) => {
         unimportCtx = ctx as typeof unimportCtx;
       });
     }
 
-    const nuxtComponentResolver = bridgeOptions.components
-      ? createNuxtComponentResolver({
-          buildDir: nuxt.options.buildDir,
-          moduleNames: nuxt.options.modules.filter(
-            (moduleName): moduleName is string => typeof moduleName === "string",
-          ),
-          rootDir: nuxt.options.rootDir,
-        })
-      : null;
+    const nuxtComponentResolver =
+      usesVizeCompiler && bridgeOptions.components
+        ? createNuxtComponentResolver({
+            buildDir: nuxt.options.buildDir,
+            moduleNames: nuxt.options.modules.filter(
+              (moduleName): moduleName is string => typeof moduleName === "string",
+            ),
+            rootDir: nuxt.options.rootDir,
+          })
+        : null;
 
     // Capture component registry for component auto-imports (NuxtPage, NuxtLayout, etc.)
     if (nuxtComponentResolver) {
@@ -184,10 +266,11 @@ export default defineNuxtModule<VizeNuxtOptions>({
     }
 
     const shouldAddNuxtTransformBridge =
-      bridgeOptions.autoImports ||
-      bridgeOptions.components ||
-      bridgeOptions.i18n ||
-      bridgeOptions.stableInjectedKeys;
+      usesVizeCompiler &&
+      (bridgeOptions.autoImports ||
+        bridgeOptions.components ||
+        bridgeOptions.i18n ||
+        bridgeOptions.stableInjectedKeys);
 
     if (shouldAddNuxtTransformBridge) {
       addVitePlugin({
@@ -265,7 +348,7 @@ export default defineNuxtModule<VizeNuxtOptions>({
     // JS render functions where these become object properties (e.g.
     // `{ flex: "~ col gap1" }`). To support attributify, we also feed the
     // original .vue source to UnoCSS's extractor alongside the compiled JS.
-    if (unocssOptions !== false) {
+    if (usesVizeCompiler && unocssOptions !== false) {
       addVitePlugin({
         name: "vizejs:unocss-bridge",
         configResolved(config: { plugins: Array<{ name: string; transform?: Function }> }) {
@@ -310,11 +393,13 @@ export default defineNuxtModule<VizeNuxtOptions>({
     // In Nuxt context, real composables/components are already available
     // via Nuxt's own Vite plugins. Adding nuxtMusea globally would shadow
     // Nuxt's #imports resolution and break the app.
-    if (museaOptions !== false) {
+    if (museaOptions !== false && supportsViteCompiler) {
       const museaBasePath =
         "basePath" in museaOptions
           ? ((museaOptions as Record<string, unknown>).basePath as string)
           : "/__musea__";
+      nuxt.options.vite ||= {};
+      nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
       nuxt.options.vite.plugins.push(...musea(museaOptions));
 
       // Print Musea Gallery URL after dev server starts
@@ -333,8 +418,11 @@ export type { MuseaOptions } from "@vizejs/vite-plugin-musea";
 export type { NuxtMuseaOptions } from "@vizejs/musea-nuxt";
 export type {
   VizeNuxtBridgeOptions,
+  VizeNuxtCompatibilityOptions,
   VizeNuxtCompilerOptions,
   VizeNuxtDevOptions,
+  VizeNuxtMajorVersion,
   VizeNuxtOptions,
   VizeNuxtUnoCssOptions,
+  VizeNuxtVueVersion,
 } from "./options";

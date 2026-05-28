@@ -46,12 +46,26 @@ export type CompileSfcFn = (
   options?: SfcCompileOptionsNapi,
 ) => SfcCompileResultNapi;
 
+export type VizeVueVersion = 0.11 | 1 | 2 | 3 | "legacy";
+
 export interface VizeOptions {
   /**
    * Inline shared Vize config for Vite Plus-first projects.
    * Direct plugin options still take precedence over these values.
    */
   config?: UserConfigExport;
+
+  /**
+   * Vue major version for the host project.
+   *
+   * Legacy Vue projects must keep their existing compiler plugin/loader in
+   * charge of SFC compilation. Set this to `0.11`, `1`, `2`, or `"legacy"` to
+   * make Vize a non-invasive compatibility plugin that does not intercept
+   * `.vue` requests or inject Vue 3 bundler defines.
+   *
+   * @default 3
+   */
+  vueVersion?: VizeVueVersion;
 
   /**
    * Override the public base used for dev-time asset URLs such as /@fs paths.

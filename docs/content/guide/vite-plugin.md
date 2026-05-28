@@ -168,6 +168,7 @@ defaults.
 
 ```ts
 vize({
+  vueVersion: 3,
   sourceMap: true,
   ssr: false,
   vapor: false,
@@ -180,6 +181,7 @@ vize({
 
 | Option                 | Where to set it                                           | Description                                                                                               |
 | ---------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `vueVersion`           | `vize({ vueVersion })`                                    | Set `0.11`, `1`, `2`, or `"legacy"` to run in non-invasive legacy Vue compatibility mode and leave SFC compilation to the host compiler. |
 | `sourceMap`            | `compiler.sourceMap` or `vize({ sourceMap })`             | Generate source maps. Defaults to development on, production off.                                         |
 | `ssr`                  | `compiler.ssr` or `vize({ ssr })`                         | Force SSR compilation when Vite's SSR build flag is not enough.                                           |
 | `vapor`                | `compiler.vapor` or `vize({ vapor })`                     | Compile templates through the Vapor backend.                                                              |
@@ -212,7 +214,15 @@ vize({
   root: import.meta.dirname,
   scanPatterns: ["src/**/*.vue", "examples/**/*.vue"],
 });
+
+// Legacy Vue / Nuxt 2 Bridge project with an existing host compiler plugin
+vize({ vueVersion: 2 });
 ```
+
+`vueVersion: 0.11`, `1`, `2`, and `"legacy"` are host-compiler compatibility modes. Vize does not
+compile `.vue` files in these modes, does not expose the Vue 3 `vite:vue` API shim, and does not
+inject Vue 3 bundler feature flags. Keep the existing Vue compiler plugin, `vue-loader`, or Nuxt 2's
+own compiler configured normally.
 
 ## How It Works
 
