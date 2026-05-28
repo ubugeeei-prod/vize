@@ -299,42 +299,20 @@ impl DiagnosticService {
 
     /// Collect Vue-specific compile diagnostics that TypeScript's checker
     /// cannot derive on its own (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE).
-    /// Runs the full SFC compiler but discards the generated code — only the
-    /// validation errors are surfaced.
+    /// Uses the lightweight validator entry point so the editor stays
+    /// responsive — `compile_sfc` would do template/style codegen we throw
+    /// away anyway.
     pub(super) fn collect_sfc_compile_diagnostics(
         _uri: &Url,
         content: &str,
         descriptor: &SfcDescriptor<'_>,
     ) -> Vec<Diagnostic> {
-        let filename = _uri.path().to_string();
-        let is_ts = descriptor
-            .script_setup
-            .as_ref()
-            .is_some_and(|script| matches!(script.lang.as_deref(), Some("ts" | "tsx")))
-            || descriptor
-                .script
-                .as_ref()
-                .is_some_and(|script| matches!(script.lang.as_deref(), Some("ts" | "tsx")));
-
-        let compile_opts = vize_atelier_sfc::SfcCompileOptions {
-            parse: vize_atelier_sfc::SfcParseOptions {
-                filename: filename.clone().into(),
-                ..Default::default()
-            },
-            script: vize_atelier_sfc::ScriptCompileOptions {
-                id: Some(filename.clone().into()),
-                is_ts,
-                ..Default::default()
-            },
-            template: vize_atelier_sfc::TemplateCompileOptions {
-                id: Some(filename.into()),
-                is_ts,
-                ..Default::default()
-            },
-            ..Default::default()
+        let Some(script_setup) = descriptor.script_setup.as_ref() else {
+            return Vec::new();
         };
 
-        let Err(err) = vize_atelier_sfc::compile_sfc(descriptor, compile_opts) else {
+        let Err(err) = vize_atelier_sfc::validate_script_setup_semantics(&script_setup.content)
+        else {
             return Vec::new();
         };
 

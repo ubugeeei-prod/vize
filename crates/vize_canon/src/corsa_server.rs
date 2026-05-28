@@ -474,43 +474,18 @@ impl Default for CorsaServer {
     }
 }
 
-/// Run the SFC compile pipeline purely to surface Vue-specific semantic errors
-/// (most notably `DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE`). The generated code
-/// is discarded — only the validator diagnostics are returned.
+/// Surface Vue-specific script-setup semantic errors (e.g.
+/// `DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE`). Uses the lightweight validator
+/// entry point so the socket-mode check stays as fast as the Virtual TS path.
 fn collect_sfc_compile_diagnostic(
-    uri: &str,
+    _uri: &str,
     source: &str,
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
 ) -> Option<Diagnostic> {
-    let is_ts = descriptor
-        .script_setup
-        .as_ref()
-        .is_some_and(|script| matches!(script.lang.as_deref(), Some("ts" | "tsx")))
-        || descriptor
-            .script
-            .as_ref()
-            .is_some_and(|script| matches!(script.lang.as_deref(), Some("ts" | "tsx")));
+    let script_setup = descriptor.script_setup.as_ref()?;
 
-    let filename: String = uri.into();
-    let compile_opts = vize_atelier_sfc::SfcCompileOptions {
-        parse: vize_atelier_sfc::SfcParseOptions {
-            filename: filename.clone(),
-            ..Default::default()
-        },
-        script: vize_atelier_sfc::ScriptCompileOptions {
-            id: Some(filename.clone()),
-            is_ts,
-            ..Default::default()
-        },
-        template: vize_atelier_sfc::TemplateCompileOptions {
-            id: Some(filename),
-            is_ts,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-
-    let Err(error) = vize_atelier_sfc::compile_sfc(descriptor, compile_opts) else {
+    let Err(error) = vize_atelier_sfc::validate_script_setup_semantics(&script_setup.content)
+    else {
         return None;
     };
 

@@ -25,13 +25,12 @@ use rayon::prelude::*;
 use serde_json::{Map, Value};
 use vize_atelier_core::parser::parse;
 use vize_atelier_sfc::{
-    ScriptCompileOptions, SfcCompileOptions, SfcDescriptor, SfcError, SfcParseOptions,
-    TemplateCompileOptions, compile_sfc,
+    SfcDescriptor, SfcError, SfcParseOptions,
     croquis::{
         SfcCroquisOptions, analyze_sfc_descriptor_with_context,
         analyze_sfc_descriptor_with_context_legacy_vue2,
     },
-    parse_sfc,
+    parse_sfc, validate_script_setup_semantics,
 };
 use vize_carton::{
     Bump, FxHashMap, FxHashSet, String as CompactString, ToCompactString, cstr, profile,
@@ -788,46 +787,22 @@ fn generate_vue_virtual_ts(
     })
 }
 
-/// Run the full SFC compile pipeline purely for its semantic diagnostics. The
-/// generated code is discarded — `vize check` already produces its own Virtual
-/// TypeScript via `generate_vue_virtual_ts`. We only want compile errors that
-/// the TypeScript checker cannot derive on its own (most notably the prop
-/// destructure default validator added in #669).
+/// Run only the script-setup semantic validators on this SFC. We deliberately
+/// avoid `compile_sfc` here — it would do template codegen and script transform
+/// work that doubles the wall time of `vize check` (see the regression on PR
+/// #675). The validator covers the diagnostics TypeScript cannot derive on its
+/// own; parse-level errors are already collected above.
 fn collect_sfc_compile_diagnostic(
     path: &Path,
     source: &str,
     descriptor: &SfcDescriptor,
 ) -> Option<Diagnostic> {
-    let filename = path.to_string_lossy().to_compact_string();
-    let is_ts = descriptor
-        .script_setup
-        .as_ref()
-        .is_some_and(|script| matches!(script.lang.as_deref(), Some("ts" | "tsx")))
-        || descriptor
-            .script
-            .as_ref()
-            .is_some_and(|script| matches!(script.lang.as_deref(), Some("ts" | "tsx")));
-
-    let compile_opts = SfcCompileOptions {
-        parse: SfcParseOptions {
-            filename: filename.clone(),
-            ..Default::default()
-        },
-        script: ScriptCompileOptions {
-            id: Some(filename.clone()),
-            is_ts,
-            ..Default::default()
-        },
-        template: TemplateCompileOptions {
-            id: Some(filename),
-            is_ts,
-            ..Default::default()
-        },
-        ..Default::default()
+    let Some(script_setup) = descriptor.script_setup.as_ref() else {
+        return None;
     };
 
-    match compile_sfc(descriptor, compile_opts) {
-        Ok(_) => None,
+    match validate_script_setup_semantics(&script_setup.content) {
+        Ok(()) => None,
         Err(error) => Some(sfc_error_to_diagnostic(path, source, descriptor, &error)),
     }
 }
