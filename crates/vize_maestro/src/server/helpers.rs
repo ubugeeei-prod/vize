@@ -6,7 +6,7 @@
 
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, DiagnosticSeverity, Hover, HoverContents, InsertTextFormat,
-    MarkupContent, MarkupKind, NumberOrString, Position, Url,
+    MarkupContent, MarkupKind, MessageType, NumberOrString, Position, Url,
 };
 
 use crate::ide::DiagnosticService;
@@ -60,6 +60,25 @@ impl MaestroServer {
         self.client
             .publish_diagnostics(uri.clone(), diagnostics, Some(version))
             .await;
+
+        // Surface a one-shot UI notification when type checking is requested
+        // but Corsa never came up. The hint diagnostic emitted by
+        // collect_async (see #708) shows up in the Problems panel; this
+        // adds a window/showMessage so users with the Problems panel
+        // collapsed also notice. See #681.
+        #[cfg(feature = "native")]
+        if self.state.is_lsp_typecheck_enabled()
+            && !self.state.has_corsa_bridge()
+            && self.state.claim_typecheck_unavailable_notice()
+        {
+            self.client
+                .show_message(
+                    MessageType::WARNING,
+                    "Vize: type checking is unavailable in this workspace. \
+                     Make sure tsconfig.json exists and the Corsa runtime is reachable.",
+                )
+                .await;
+        }
     }
 
     /// Get block snippet completions (when outside all blocks).

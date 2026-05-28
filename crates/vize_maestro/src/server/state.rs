@@ -372,6 +372,11 @@ pub struct ServerState {
     /// Flag to track if Corsa initialization has been attempted and failed
     #[cfg(feature = "native")]
     corsa_init_failed: std::sync::atomic::AtomicBool,
+    /// True once the LSP server has shown the user a one-shot
+    /// `window/showMessage` explaining that type checking is unavailable.
+    /// Prevents the message from firing once per file.
+    #[cfg(feature = "native")]
+    typecheck_unavailable_notified: std::sync::atomic::AtomicBool,
     /// Workspace root path
     #[cfg(feature = "native")]
     workspace_root: RwLock<Option<PathBuf>>,
@@ -411,12 +416,25 @@ impl ServerState {
             #[cfg(feature = "native")]
             corsa_init_failed: std::sync::atomic::AtomicBool::new(false),
             #[cfg(feature = "native")]
+            typecheck_unavailable_notified: std::sync::atomic::AtomicBool::new(false),
+            #[cfg(feature = "native")]
             workspace_root: RwLock::new(None),
             #[cfg(feature = "native")]
             batch_checker: OnceLock::new(),
             #[cfg(feature = "native")]
             batch_cache: BatchTypeCheckCache::new(),
         }
+    }
+
+    /// Try to claim the right to fire the "type checking unavailable"
+    /// message. Returns true the first time it is called, false thereafter
+    /// for the lifetime of the server. The caller is responsible for
+    /// actually sending the message via the LSP client.
+    #[cfg(feature = "native")]
+    pub fn claim_typecheck_unavailable_notice(&self) -> bool {
+        !self
+            .typecheck_unavailable_notified
+            .swap(true, std::sync::atomic::Ordering::SeqCst)
     }
 
     /// Set the workspace root path.
