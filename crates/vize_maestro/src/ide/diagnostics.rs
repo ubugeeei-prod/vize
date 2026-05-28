@@ -311,7 +311,15 @@ fn has_blocking_parser_error(diagnostics: &[Diagnostic]) -> bool {
     diagnostics.iter().any(|diagnostic| {
         matches!(
             diagnostic.source.as_deref(),
-            Some(sources::SFC_PARSER | sources::SCRIPT_PARSER | sources::TEMPLATE_PARSER)
+            // Parser-level errors plus SFC compile-time validation errors
+            // both leave the script body in a state where Corsa would just
+            // cascade — the user already has the actionable diagnostic.
+            Some(
+                sources::SFC_PARSER
+                    | sources::SCRIPT_PARSER
+                    | sources::TEMPLATE_PARSER
+                    | sources::SFC_COMPILER
+            )
         ) && diagnostic.severity == Some(DiagnosticSeverity::ERROR)
     })
 }
