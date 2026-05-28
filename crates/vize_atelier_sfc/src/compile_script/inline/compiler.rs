@@ -23,6 +23,7 @@ use crate::types::SfcError;
 
 use super::super::function_mode::contains_top_level_await;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
+use super::super::props::validate_props_destructure_default_types;
 use super::super::{ScriptCompileResult, TemplateParts};
 use body::compile_script_setup_inline_body;
 use parser::parse_script_content;
@@ -116,6 +117,8 @@ pub(crate) fn compile_script_setup_inline_with_context(
             .as_ref()
             .map(|d| d.bindings.values().any(|b| b.default.is_some()))
             .unwrap_or(false);
+
+    validate_props_destructure_default_types(&ctx)?;
 
     let has_define_model = !ctx.macros.define_models.is_empty();
     let has_define_slots = ctx.macros.define_slots.is_some();

@@ -872,6 +872,61 @@ const {
 }
 
 #[test]
+fn test_props_destructure_default_type_mismatch_errors() {
+    let input = r#"<script setup lang="ts">
+const { count = "zero" } = defineProps<{
+  count?: number
+}>()
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(input, SfcParseOptions::default()).unwrap();
+    let mut compile_opts = SfcCompileOptions::default();
+    compile_opts.script.id = Some("test.vue".to_compact_string());
+    let error = compile_sfc(&descriptor, compile_opts).unwrap_err();
+
+    assert_eq!(
+        error.code.as_deref(),
+        Some("DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE")
+    );
+    assert_eq!(
+        error.message.as_str(),
+        "Default value of prop \"count\" does not match declared type."
+    );
+}
+
+#[test]
+fn test_props_destructure_default_factory_return_types_are_validated() {
+    let input = r#"<script setup lang="ts">
+const {
+  items = () => [],
+  options = () => ({ dense: true }),
+  formatter = () => "ok",
+} = defineProps<{
+  items?: string[]
+  options?: { dense: boolean }
+  formatter?: () => string
+}>()
+</script>
+
+<template>
+  <div>{{ items.length }} {{ options.dense }} {{ formatter() }}</div>
+</template>"#;
+
+    let descriptor = parse_sfc(input, SfcParseOptions::default()).unwrap();
+    let mut compile_opts = SfcCompileOptions::default();
+    compile_opts.script.id = Some("test.vue".to_compact_string());
+    let result = compile_sfc(&descriptor, compile_opts).unwrap();
+
+    assert!(result.code.contains("default: () => []"));
+    assert!(result.code.contains("default: () => ({ dense: true })"));
+    assert!(result.code.contains("default: () => \"ok\""));
+}
+
+#[test]
 fn test_let_var_unref() {
     let input = r#"
 <script setup>

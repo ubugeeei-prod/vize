@@ -10,6 +10,9 @@ use oxc_span::{GetSpan, SourceType};
 use vize_carton::FxHashMap;
 use vize_carton::{String, ToCompactString};
 
+use crate::script::ScriptCompileContext;
+use crate::types::SfcError;
+
 /// Prop type information
 #[derive(Debug, Clone)]
 pub struct PropTypeInfo {
@@ -711,6 +714,178 @@ pub(crate) fn normalize_destructure_default_value(default_value: &str) -> String
     }
 
     default_value.to_compact_string()
+}
+
+/// Validate reactive props destructure defaults against inferred runtime prop types.
+pub(crate) fn validate_props_destructure_default_types(
+    ctx: &ScriptCompileContext,
+) -> Result<(), SfcError> {
+    let Some(destructure) = ctx.macros.props_destructure.as_ref() else {
+        return Ok(());
+    };
+    let Some(props_macro) = ctx.macros.define_props.as_ref() else {
+        return Ok(());
+    };
+    let Some(type_args) = props_macro.type_args.as_ref() else {
+        return Ok(());
+    };
+
+    let resolved_type_args =
+        crate::script::resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
+    let prop_types = extract_prop_types_from_type(&resolved_type_args);
+
+    for (name, prop_type) in &prop_types {
+        let Some(binding) = destructure.bindings.get(name.as_str()) else {
+            continue;
+        };
+        let Some(default_value) = binding.default.as_deref() else {
+            continue;
+        };
+
+        let resolved_js_type = if prop_type.js_type == "null" {
+            prop_type
+                .ts_type
+                .as_ref()
+                .and_then(|ts_type| {
+                    resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases)
+                })
+                .unwrap_or_else(|| prop_type.js_type.clone())
+        } else {
+            prop_type.js_type.clone()
+        };
+
+        if resolved_js_type == "null" || prop_type.nullable {
+            continue;
+        }
+
+        let Some(default_type) =
+            infer_default_value_runtime_type(default_value, resolved_js_type.as_str())
+        else {
+            continue;
+        };
+
+        if !runtime_type_includes(resolved_js_type.as_str(), default_type) {
+            return Err(SfcError {
+                message: {
+                    let mut message = String::from("Default value of prop \"");
+                    message.push_str(name);
+                    message.push_str("\" does not match declared type.");
+                    message
+                },
+                code: Some("DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE".into()),
+                loc: None,
+            });
+        }
+    }
+
+    Ok(())
+}
+
+fn infer_default_value_runtime_type(
+    default_value: &str,
+    expected_runtime_type: &str,
+) -> Option<&'static str> {
+    const WRAP_PREFIX: &str = "const __vize_default__ = ";
+    let mut wrapped = String::with_capacity(WRAP_PREFIX.len() + default_value.len() + 1);
+    wrapped.push_str(WRAP_PREFIX);
+    wrapped.push_str(default_value);
+    wrapped.push(';');
+
+    let allocator = Allocator::default();
+    let parse_result = Parser::new(
+        &allocator,
+        &wrapped,
+        SourceType::default().with_typescript(true),
+    )
+    .parse();
+    if !parse_result.errors.is_empty() {
+        return None;
+    }
+
+    let Some(Statement::VariableDeclaration(var_decl)) = parse_result.program.body.first() else {
+        return None;
+    };
+    let declarator = var_decl.declarations.first()?;
+    let value = declarator.init.as_ref()?;
+
+    infer_expression_runtime_type(unwrap_ts_expression(value), expected_runtime_type)
+}
+
+fn unwrap_ts_expression<'a>(expr: &'a Expression<'a>) -> &'a Expression<'a> {
+    match expr {
+        Expression::ParenthesizedExpression(paren) => unwrap_ts_expression(&paren.expression),
+        Expression::TSAsExpression(ts_as) => unwrap_ts_expression(&ts_as.expression),
+        Expression::TSSatisfiesExpression(ts_satisfies) => {
+            unwrap_ts_expression(&ts_satisfies.expression)
+        }
+        Expression::TSNonNullExpression(ts_non_null) => {
+            unwrap_ts_expression(&ts_non_null.expression)
+        }
+        _ => expr,
+    }
+}
+
+fn infer_expression_runtime_type(
+    expr: &Expression<'_>,
+    expected_runtime_type: &str,
+) -> Option<&'static str> {
+    match expr {
+        Expression::StringLiteral(_) => Some("String"),
+        Expression::TemplateLiteral(template) if template.expressions.is_empty() => Some("String"),
+        Expression::NumericLiteral(_) => Some("Number"),
+        Expression::BooleanLiteral(_) => Some("Boolean"),
+        Expression::ObjectExpression(_) => Some("Object"),
+        Expression::ArrayExpression(_) => Some("Array"),
+        Expression::ArrowFunctionExpression(arrow) => {
+            if runtime_type_includes(expected_runtime_type, "Function") {
+                return Some("Function");
+            }
+            arrow_return_expression(arrow)
+                .and_then(|expr| infer_expression_runtime_type(expr, expected_runtime_type))
+        }
+        Expression::FunctionExpression(func) => {
+            if runtime_type_includes(expected_runtime_type, "Function") {
+                return Some("Function");
+            }
+            function_body_return_expression(&func.body.as_ref()?.statements)
+                .and_then(|expr| infer_expression_runtime_type(expr, expected_runtime_type))
+        }
+        _ => None,
+    }
+}
+
+fn arrow_return_expression<'a>(
+    arrow: &'a oxc_ast::ast::ArrowFunctionExpression<'a>,
+) -> Option<&'a Expression<'a>> {
+    if !arrow.expression {
+        return function_body_return_expression(&arrow.body.statements);
+    }
+
+    let Statement::ExpressionStatement(expr_stmt) = arrow.body.statements.first()? else {
+        return None;
+    };
+    Some(&expr_stmt.expression)
+}
+
+fn function_body_return_expression<'a>(
+    statements: &'a oxc_allocator::Vec<'a, Statement<'a>>,
+) -> Option<&'a Expression<'a>> {
+    for stmt in statements.iter() {
+        if let Statement::ReturnStatement(ret) = stmt
+            && let Some(argument) = &ret.argument
+        {
+            return Some(argument);
+        }
+    }
+    None
+}
+
+fn runtime_type_includes(runtime_type: &str, value_type: &str) -> bool {
+    runtime_type
+        .trim_matches(|c| c == '[' || c == ']')
+        .split(',')
+        .map(str::trim)
+        .any(|part| part == value_type)
 }
 
 /// Check if a string is a valid JS identifier

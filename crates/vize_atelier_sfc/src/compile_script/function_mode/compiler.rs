@@ -18,7 +18,7 @@ use super::super::import_utils::extract_import_identifiers;
 use super::super::lazy_hydration::transform_lazy_hydration_macros;
 use super::super::props::{
     add_null_to_runtime_type, extract_emit_names_from_type, extract_prop_types_from_type,
-    normalize_destructure_default_value,
+    normalize_destructure_default_value, validate_props_destructure_default_types,
 };
 use super::super::statement_sections::extract_script_sections;
 use super::super::typescript::transform_typescript_to_js;
@@ -42,6 +42,7 @@ pub fn compile_script_setup(
 
     let mut ctx = ScriptCompileContext::new(content);
     ctx.analyze();
+    validate_props_destructure_default_types(&ctx)?;
 
     // Use arena-allocated Vec for better performance
     let bump = vize_carton::Bump::new();
