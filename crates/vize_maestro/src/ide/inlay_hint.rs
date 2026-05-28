@@ -13,6 +13,7 @@ use tower_lsp::lsp_types::{InlayHint, Position, Range, Url};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use crate::ide::ecosystem;
+use crate::ide::offset_to_position;
 
 /// Inlay hint service.
 pub struct InlayHintService;
@@ -115,7 +116,90 @@ impl InlayHintService {
             );
         }
 
+        // Reactive-binding inlay hints: show `: Ref<…>` / `: ComputedRef<…>`
+        // after `const X = ref(...)` / `const X = computed(() => ...)` so the
+        // editor surfaces the inferred wrapper without requiring hover.
+        Self::collect_reactive_binding_hints(
+            &script_setup.content,
+            script_setup.loc.start,
+            content,
+            &croquis,
+            range,
+            &mut hints,
+        );
+
         hints
+    }
+
+    /// Append inlay hints for reactive binding declarations.
+    fn collect_reactive_binding_hints(
+        script: &str,
+        script_offset: usize,
+        full_content: &str,
+        croquis: &vize_croquis::Croquis,
+        range: Range,
+        hints: &mut Vec<InlayHint>,
+    ) {
+        use tower_lsp::lsp_types::{InlayHintKind, InlayHintLabel, Position};
+        use vize_croquis::reactivity::ReactiveKind;
+
+        for source in croquis.reactivity.sources() {
+            // Only attach the hint to ref-family bindings; reactive() objects
+            // are direct, no wrapper to surface.
+            let wrapper = match source.kind {
+                ReactiveKind::Ref | ReactiveKind::ShallowRef | ReactiveKind::ToRef => "Ref",
+                ReactiveKind::Computed => "ComputedRef",
+                _ => continue,
+            };
+
+            // Locate `const NAME =` in the script content. Anchoring on the
+            // declaration keyword avoids matching usages inside expressions.
+            let needle_const = vize_carton::cstr!("const {} =", source.name.as_str());
+            let needle_let = vize_carton::cstr!("let {} =", source.name.as_str());
+            let pos_in_script = script
+                .find(needle_const.as_str())
+                .map(|p| p + needle_const.len())
+                .or_else(|| {
+                    script
+                        .find(needle_let.as_str())
+                        .map(|p| p + needle_let.len())
+                });
+            let Some(pos_in_script) = pos_in_script else {
+                continue;
+            };
+            // Anchor the hint at the position right after the binding name
+            // (just before the `=`). That keeps the inlay rendered between
+            // the identifier and the initializer.
+            let name_end_in_script = {
+                let mut walk = pos_in_script - " =".len();
+                while walk > 0 && script.as_bytes()[walk - 1] == b' ' {
+                    walk -= 1;
+                }
+                walk
+            };
+            let sfc_offset = script_offset + name_end_in_script;
+            if sfc_offset > full_content.len() {
+                continue;
+            }
+            let (line, character) = offset_to_position(full_content, sfc_offset);
+            let position = Position { line, character };
+            if !Self::position_in_range(position, range) {
+                continue;
+            }
+            let label = vize_carton::cstr!(": {}<{}>", wrapper, "_");
+            hints.push(InlayHint {
+                position,
+                label: InlayHintLabel::String(label.to_string()),
+                kind: Some(InlayHintKind::TYPE),
+                text_edits: None,
+                tooltip: Some(tower_lsp::lsp_types::InlayHintTooltip::String(
+                    vize_carton::cstr!("Vue reactive binding ({})", wrapper).to_string(),
+                )),
+                padding_left: Some(true),
+                padding_right: None,
+                data: None,
+            });
+        }
     }
 
     /// Check if a position is within a range.
@@ -263,6 +347,43 @@ const { title } = defineProps<{
         assert!(InlayHintService::is_in_string("\"foo bar\"", 4));
         assert!(!InlayHintService::is_in_string("\"foo\" bar", 6));
         assert!(InlayHintService::is_in_string("`foo bar`", 4));
+    }
+
+    #[test]
+    fn test_reactive_binding_inlay_hint() {
+        let content = r#"<script setup lang="ts">
+import { ref, computed } from 'vue'
+const count = ref(0)
+const doubled = computed(() => count.value * 2)
+</script>
+"#;
+        let uri = Url::parse("file:///reactive.vue").unwrap();
+        let range = Range {
+            start: Position {
+                line: 0,
+                character: 0,
+            },
+            end: Position {
+                line: 100,
+                character: 0,
+            },
+        };
+        let hints = InlayHintService::get_hints(content, &uri, range);
+        let labels: Vec<String> = hints
+            .iter()
+            .filter_map(|h| match &h.label {
+                InlayHintLabel::String(s) => Some(s.clone()),
+                _ => None,
+            })
+            .collect();
+        assert!(
+            labels.iter().any(|s| s.contains("Ref")),
+            "expected a Ref<_> inlay hint, got {labels:?}",
+        );
+        assert!(
+            labels.iter().any(|s| s.contains("ComputedRef")),
+            "expected a ComputedRef<_> inlay hint, got {labels:?}",
+        );
     }
 
     #[test]
