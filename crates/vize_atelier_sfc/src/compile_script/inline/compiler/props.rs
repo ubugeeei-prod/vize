@@ -4,7 +4,7 @@ use crate::script::ScriptCompileContext;
 
 use super::super::super::props::{
     add_null_to_runtime_type, extract_prop_types_from_type, extract_with_defaults_defaults,
-    resolve_prop_js_type,
+    normalize_destructure_default_value, resolve_prop_js_type,
 };
 use super::{super::type_handling::resolve_type_args, model::collect_model_infos};
 
@@ -87,6 +87,7 @@ pub(super) fn build_props_emits(
                         && let Some(ref default_val) = binding.default
                     {
                         props_emits_buf.extend_from_slice(b", default: ");
+                        let default_val = normalize_destructure_default_value(default_val);
                         props_emits_buf.extend_from_slice(default_val.as_bytes());
                     }
                     props_emits_buf.extend_from_slice(b" }");
@@ -130,6 +131,7 @@ pub(super) fn build_props_emits(
                     props_emits_buf.extend_from_slice(b"  ");
                     props_emits_buf.extend_from_slice(key.as_bytes());
                     props_emits_buf.extend_from_slice(b": ");
+                    let default_val = normalize_destructure_default_value(default_val);
                     props_emits_buf.extend_from_slice(default_val.as_bytes());
                     if i < defaults.len() - 1 {
                         props_emits_buf.push(b',');
