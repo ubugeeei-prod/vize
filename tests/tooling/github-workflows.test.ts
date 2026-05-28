@@ -76,13 +76,17 @@ test("GitHub workflows use the current cache action", () => {
   }
 });
 
-test("GitHub workflows use GitHub-hosted runners", () => {
-  const blacksmithRunnerPattern = /\bblacksmith-[a-z0-9-]+/gi;
+test("GitHub workflows use Blacksmith super-spec runners where available", () => {
+  // Allow only the Blacksmith super-spec lineup (32 vcpu Linux/Windows, 12 vcpu
+  // macOS arm64) plus the GitHub-hosted niches Blacksmith does not provide
+  // (macos-15-intel, windows-11-arm).
+  const legacyRunnerPattern =
+    /^\s*(?:runs-on|runner|host):\s*(ubuntu-latest|ubuntu-24\.04|ubuntu-24\.04-arm|macos-latest|macos-15|windows-latest|windows-2025)\s*(?:#.*)?$/gm;
   const violations: string[] = [];
 
   for (const { relativePath, content } of readGithubYamlFiles()) {
-    for (const match of content.matchAll(blacksmithRunnerPattern)) {
-      violations.push(`${relativePath}: ${match[0]}`);
+    for (const match of content.matchAll(legacyRunnerPattern)) {
+      violations.push(`${relativePath}: ${match[1]}`);
     }
   }
 
@@ -92,16 +96,13 @@ test("GitHub workflows use GitHub-hosted runners", () => {
   const nativeWorkflow = readRepoFile(".github", "workflows", "native-smoke.yml");
   const releaseWorkflow = readRepoFile(".github", "workflows", "release.yml");
 
-  assert.match(
-    checkWorkflow,
-    /runs-on:\s*\$\{\{\s*github\.event_name == 'pull_request' && 'ubuntu-latest' \|\| 'ubuntu-24\.04'\s*\}\}/,
-  );
-  assert.match(nativeWorkflow, /runner:\s*ubuntu-24\.04-arm/);
-  assert.match(nativeWorkflow, /runner:\s*macos-15/);
-  assert.match(nativeWorkflow, /runner:\s*windows-2025/);
-  assert.match(releaseWorkflow, /host:\s*ubuntu-24\.04-arm/);
-  assert.match(releaseWorkflow, /host:\s*macos-15/);
-  assert.match(releaseWorkflow, /host:\s*windows-2025/);
+  assert.match(checkWorkflow, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404\b/);
+  assert.match(nativeWorkflow, /runner:\s*blacksmith-32vcpu-ubuntu-2404-arm/);
+  assert.match(nativeWorkflow, /runner:\s*blacksmith-12vcpu-macos-15/);
+  assert.match(nativeWorkflow, /runner:\s*blacksmith-32vcpu-windows-2025/);
+  assert.match(releaseWorkflow, /host:\s*blacksmith-32vcpu-ubuntu-2404-arm/);
+  assert.match(releaseWorkflow, /host:\s*blacksmith-12vcpu-macos-15/);
+  assert.match(releaseWorkflow, /host:\s*blacksmith-32vcpu-windows-2025/);
 });
 
 test("GitHub workflows use Node 24-compatible artifact downloads", () => {
@@ -642,7 +643,7 @@ test("release workflow publishes npm packages through Trusted Publishing only", 
 
   for (const jobName of npmPublishJobs) {
     const job = workflowJobBody(workflow, jobName);
-    assert.match(job, /runs-on:\s*ubuntu-24\.04/);
+    assert.match(job, /runs-on:\s*blacksmith-32vcpu-ubuntu-2404/);
     assert.match(job, /environment:\s*npm/);
     assert.match(job, /id-token:\s*write/);
     assert.match(job, /--provenance/);
@@ -797,11 +798,11 @@ test("native smoke workflow covers host platforms before release tags", () => {
     /Full native\/fresh-install smoke is release evidence, not a per-push gate/,
   );
   for (const [runner, target] of [
-    ["ubuntu-24.04", "linux-x64-gnu"],
-    ["ubuntu-24.04-arm", "linux-arm64-gnu"],
+    ["blacksmith-32vcpu-ubuntu-2404", "linux-x64-gnu"],
+    ["blacksmith-32vcpu-ubuntu-2404-arm", "linux-arm64-gnu"],
     ["macos-15-intel", "darwin-x64"],
-    ["macos-15", "darwin-arm64"],
-    ["windows-2025", "win32-x64-msvc"],
+    ["blacksmith-12vcpu-macos-15", "darwin-arm64"],
+    ["blacksmith-32vcpu-windows-2025", "win32-x64-msvc"],
     ["windows-11-arm", "win32-arm64-msvc"],
   ] as const) {
     assert.match(
@@ -820,11 +821,11 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
   const job = workflowJobBody(workflow, "fresh-install-smoke");
 
   for (const [runner, target] of [
-    ["ubuntu-24.04", "linux-x64-gnu"],
-    ["ubuntu-24.04-arm", "linux-arm64-gnu"],
+    ["blacksmith-32vcpu-ubuntu-2404", "linux-x64-gnu"],
+    ["blacksmith-32vcpu-ubuntu-2404-arm", "linux-arm64-gnu"],
     ["macos-15-intel", "darwin-x64"],
-    ["macos-15", "darwin-arm64"],
-    ["windows-2025", "win32-x64-msvc"],
+    ["blacksmith-12vcpu-macos-15", "darwin-arm64"],
+    ["blacksmith-32vcpu-windows-2025", "win32-x64-msvc"],
     ["windows-11-arm", "win32-arm64-msvc"],
   ] as const) {
     assert.match(
@@ -854,11 +855,11 @@ test("release workflow builds native targets on MoonBit-supported runners", () =
   );
 
   for (const [host, target] of [
-    ["macos-15", "x86_64-apple-darwin"],
-    ["macos-15", "aarch64-apple-darwin"],
-    ["ubuntu-24.04", "x86_64-unknown-linux-gnu"],
-    ["ubuntu-24.04-arm", "aarch64-unknown-linux-gnu"],
-    ["windows-2025", "x86_64-pc-windows-msvc"],
+    ["blacksmith-12vcpu-macos-15", "x86_64-apple-darwin"],
+    ["blacksmith-12vcpu-macos-15", "aarch64-apple-darwin"],
+    ["blacksmith-32vcpu-ubuntu-2404", "x86_64-unknown-linux-gnu"],
+    ["blacksmith-32vcpu-ubuntu-2404-arm", "aarch64-unknown-linux-gnu"],
+    ["blacksmith-32vcpu-windows-2025", "x86_64-pc-windows-msvc"],
     ["windows-11-arm", "aarch64-pc-windows-msvc"],
   ] as const) {
     assert.match(job, new RegExp(`host:\\s*${escapeRegExp(host)}[\\s\\S]*target:\\s*${target}`));
