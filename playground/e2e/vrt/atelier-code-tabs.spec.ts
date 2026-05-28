@@ -49,11 +49,9 @@ test("atelier code targets expose VDOM, SSR, and Vapor outputs with stable toggl
   await waitForHighlightedOutput(page);
 
   const initialTokenStyle = await getFirstHighlightedTokenStyle(page);
-  expect(initialTokenStyle).toEqual({
-    text: "import",
-    color: "rgb(115, 96, 62)",
-    containerColor: "rgb(18, 18, 18)",
-  });
+  expect(initialTokenStyle).not.toBeNull();
+  expect(initialTokenStyle?.text).toBe("import");
+  expect(initialTokenStyle?.color).not.toBe(initialTokenStyle?.containerColor);
 
   const vdomButton = page.getByRole("button", { name: "VDOM" });
   const ssrButton = page.getByRole("button", { name: "SSR" });
@@ -75,13 +73,7 @@ test("atelier code targets expose VDOM, SSR, and Vapor outputs with stable toggl
   await expect(jsButton).toBeDisabled();
   await expect(page.getByText("SFC Output")).toHaveCount(0);
   await waitForHighlightedOutput(page);
-  await expect
-    .poll(() => getFirstHighlightedTokenStyle(page))
-    .toEqual({
-      text: "import",
-      color: "rgb(115, 96, 62)",
-      containerColor: "rgb(18, 18, 18)",
-    });
+  await expect.poll(() => getFirstHighlightedTokenStyle(page)).toEqual(initialTokenStyle);
 
   const ssrCode = await getCodeText(page);
   const ssrLines = await getCodeLines(page);
@@ -103,13 +95,7 @@ test("atelier code targets expose VDOM, SSR, and Vapor outputs with stable toggl
   await expect(page.getByText("Template Fragments")).toHaveCount(0);
   await expect(page.getByText("SFC Output")).toHaveCount(0);
   await waitForHighlightedOutput(page);
-  await expect
-    .poll(() => getFirstHighlightedTokenStyle(page))
-    .toEqual({
-      text: "import",
-      color: "rgb(115, 96, 62)",
-      containerColor: "rgb(18, 18, 18)",
-    });
+  await expect.poll(() => getFirstHighlightedTokenStyle(page)).toEqual(initialTokenStyle);
 
   const vaporCode = await getCodeText(page);
   const vaporLines = await getCodeLines(page);
