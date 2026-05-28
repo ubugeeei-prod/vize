@@ -40,17 +40,17 @@
           aarch64-darwin = {
             version = "0.9.3-2026-05-22";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-darwin-aarch64.tar.gz";
-            hash = "sha256-xv9K8uh5mV5eHooKh6DjnIIKv1ickhl1JV/YSUVW44Q=";
+            hash = "sha256-wYckl/EM1e8w+Nj+2d7p0DtqTe6i71d2wPXjRG/j+Zs=";
           };
           x86_64-linux = {
             version = "0.9.3-2026-05-22";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz";
-            hash = "sha256-Beq5o8g6pV8bm16LnClAHhM7O9nI098jwin6ADAZMLY=";
+            hash = "sha256-tLcdrRjqJDb9hue7M0mnb5+Mq3M9YJu6lZA2CHjNaqY=";
           };
           aarch64-linux = {
             version = "0.9.3-2026-05-22";
             url = "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-aarch64.tar.gz";
-            hash = "sha256-9nRdhueeaA2kMthHVdXKzVleSjrbu7ZP+uWI0Uzs5dY=";
+            hash = "sha256-0Lrjab3LTISXN4/JRu8I1/78wS89/fLPS4y6F/JPG3w=";
           };
         };
         moonbit =
