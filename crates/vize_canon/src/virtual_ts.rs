@@ -386,6 +386,40 @@ const items = ['a', 'b']
     }
 
     #[test]
+    fn test_v_if_narrows_nullable_binding() {
+        // `<div v-if="user">{{ user.name }}</div>` must produce a virtual TS
+        // closure that opens an `if (user) { … }` block so TypeScript narrows
+        // `user` from `User | null` to `User` for the inner expression. See
+        // #693. The snapshot captures the generated narrowing structure.
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"interface User { name: string }
+const user: User | null = null as any
+"#;
+        let template = r#"<div v-if="user">
+  <p>{{ user.name }}</p>
+</div>"#;
+
+        let allocator = vize_carton::Bump::new();
+        let (root, _) = vize_armature::parse(&allocator, template);
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+
+        // The narrowing wrapper must appear in the generated TS so TS can
+        // narrow `user` for the inner property access.
+        assert!(
+            output.code.contains("if (user)"),
+            "expected `if (user)` narrowing wrapper in virtual TS, got:\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_reserved_prop_and_hyphenated_slot_names() {
         use vize_croquis::{Analyzer, AnalyzerOptions};
 
