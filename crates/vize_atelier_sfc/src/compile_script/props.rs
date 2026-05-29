@@ -122,11 +122,9 @@ pub fn extract_prop_types_from_type(type_args: &str) -> Vec<(String, PropTypeInf
     // Split by commas/semicolons/newlines (but not inside nested braces)
     let mut depth: i32 = 0;
     let mut current = String::default();
-    let chars: Vec<char> = content.chars().collect();
-    let mut i = 0;
+    let mut prev = '\0';
 
-    while i < chars.len() {
-        let c = chars[i];
+    for c in content.chars() {
         match c {
             '{' | '<' | '(' | '[' => {
                 depth += 1;
@@ -140,7 +138,7 @@ pub fn extract_prop_types_from_type(type_args: &str) -> Vec<(String, PropTypeInf
             }
             '>' => {
                 // Don't count `>` as closing angle bracket when preceded by `=` (arrow function `=>`)
-                if i > 0 && chars[i - 1] == '=' {
+                if prev == '=' {
                     current.push(c);
                 } else {
                     if depth > 0 {
@@ -166,7 +164,7 @@ pub fn extract_prop_types_from_type(type_args: &str) -> Vec<(String, PropTypeInf
             }
             _ => current.push(c),
         }
-        i += 1;
+        prev = c;
     }
     extract_prop_type_info(&current, &mut props);
 
@@ -258,11 +256,9 @@ fn split_type_at_top_level(s: &str, delimiter: char) -> Vec<String> {
     let mut parts = Vec::new();
     let mut current = String::default();
     let mut depth: i32 = 0;
-    let chars: Vec<char> = s.chars().collect();
-    let mut i = 0;
+    let mut prev = '\0';
 
-    while i < chars.len() {
-        let c = chars[i];
+    for c in s.chars() {
         match c {
             '(' | '[' | '{' | '<' => {
                 depth += 1;
@@ -276,7 +272,7 @@ fn split_type_at_top_level(s: &str, delimiter: char) -> Vec<String> {
             }
             '>' => {
                 // Don't count > as closing angle bracket when preceded by = (arrow =>)
-                if i > 0 && chars[i - 1] == '=' {
+                if prev == '=' {
                     current.push(c);
                 } else {
                     if depth > 0 {
@@ -290,7 +286,7 @@ fn split_type_at_top_level(s: &str, delimiter: char) -> Vec<String> {
             }
             _ => current.push(c),
         }
-        i += 1;
+        prev = c;
     }
     if !current.is_empty() || !parts.is_empty() {
         parts.push(current);
@@ -301,9 +297,9 @@ fn split_type_at_top_level(s: &str, delimiter: char) -> Vec<String> {
 /// Check if a type string contains a top-level `=>` (arrow function signature).
 fn contains_top_level_arrow(s: &str) -> bool {
     let mut depth: i32 = 0;
-    let chars: Vec<char> = s.chars().collect();
-    for i in 0..chars.len() {
-        match chars[i] {
+    let mut prev = '\0';
+    for c in s.chars() {
+        match c {
             '(' | '[' | '{' | '<' => depth += 1,
             ')' | ']' | '}' => {
                 if depth > 0 {
@@ -311,7 +307,7 @@ fn contains_top_level_arrow(s: &str) -> bool {
                 }
             }
             '>' => {
-                if i > 0 && chars[i - 1] == '=' {
+                if prev == '=' {
                     // This is `=>`
                     if depth == 0 {
                         return true;
@@ -323,6 +319,7 @@ fn contains_top_level_arrow(s: &str) -> bool {
             }
             _ => {}
         }
+        prev = c;
     }
     false
 }
@@ -461,9 +458,9 @@ fn ts_type_to_js_type(ts_type: &str) -> String {
 /// Used to detect object literal types like `{ key: string }` vs types like `Record<K, V>`.
 fn contains_top_level_colon(s: &str) -> bool {
     let mut depth: i32 = 0;
-    let chars: Vec<char> = s.chars().collect();
-    for i in 0..chars.len() {
-        match chars[i] {
+    let mut prev = '\0';
+    for c in s.chars() {
+        match c {
             '(' | '[' | '{' | '<' => depth += 1,
             ')' | ']' | '}' => {
                 if depth > 0 {
@@ -471,7 +468,7 @@ fn contains_top_level_colon(s: &str) -> bool {
                 }
             }
             '>' => {
-                if i > 0 && chars[i - 1] == '=' {
+                if prev == '=' {
                     // Arrow =>, don't change depth
                 } else if depth > 0 {
                     depth -= 1;
@@ -480,6 +477,7 @@ fn contains_top_level_colon(s: &str) -> bool {
             ':' if depth == 0 => return true,
             _ => {}
         }
+        prev = c;
     }
     false
 }
