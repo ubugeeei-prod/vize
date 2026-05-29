@@ -10,14 +10,17 @@ use super::{
         IMPORT_META_AUGMENTATION, SETUP_SCOPE_HELPER_NAMES, VUE_SETUP_HELPERS, VUE_TYPE_HELPERS,
         generate_template_context, to_safe_identifier,
     },
-    props::{collect_template_prop_names, generate_props_type, generate_props_variables},
+    props::{
+        add_generic_defaults, collect_template_prop_names, extract_generic_names,
+        generate_props_type, generate_props_variables,
+    },
     scope::generate_scope_closures,
     types::{VirtualTsGenerationOptions, VirtualTsOptions, VirtualTsOutput, VizeMapping},
 };
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
-use vize_carton::{FxHashSet, String};
+use vize_carton::{FxHashMap, FxHashSet, String};
 
 /// Generate virtual TypeScript from Vue SFC analysis.
 ///
@@ -168,11 +171,78 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         module_spans
     });
 
+    // For a `<script setup generic="...">` SFC, hoisted type declarations are
+    // lifted verbatim to module scope, but the generic parameters only live on
+    // `__setup<...>()`. A lifted declaration that mentions a generic parameter
+    // (e.g. `type Option = { key: T }`) would reference an unbound name there.
+    // Re-declare the SFC generics as defaulted parameters on each such
+    // declaration (`type Option<T extends string = any> = ...`) so the
+    // reference resolves at module scope while bare uses (`Option[]`) still
+    // work via the `= any` defaults.
+    let generic_injection: Option<(String, Vec<String>)> = generic_param.map(|g| {
+        let defaults = add_generic_defaults(g);
+        let names = extract_generic_names(g)
+            .split(',')
+            .map(|n| String::from(n.trim()))
+            .filter(|n| !n.is_empty())
+            .collect();
+        (defaults, names)
+    });
+    let hoisted_type_spans: FxHashMap<(u32, u32), &str> = if generic_injection.is_some() {
+        summary
+            .type_exports
+            .iter()
+            .filter(|te| te.hoisted)
+            .map(|te| ((te.start, te.end), te.name.as_str()))
+            .collect()
+    } else {
+        FxHashMap::default()
+    };
+
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_module_statements", {
             // Emit each module-level statement with source mapping
             for &(start, end) in &module_spans {
                 let text = &script[start as usize..end as usize];
+
+                // Splice the SFC generic parameters into a hoisted
+                // type/interface declaration that references them, so the
+                // reference resolves at module scope.
+                if let Some((defaults, names)) = &generic_injection
+                    && let Some(type_name) = hoisted_type_spans.get(&(start, end))
+                    && references_any_identifier(text, names)
+                    && let Some(inject_at) = generic_injection_point(text, type_name)
+                {
+                    let (prefix, suffix) = text.split_at(inject_at);
+                    let src_base = script_offset as usize + start as usize;
+
+                    let gen_start = ts.len();
+                    ts.push_str(prefix);
+                    mappings.push(VizeMapping {
+                        gen_range: gen_start..ts.len(),
+                        src_range: src_base..(src_base + prefix.len()),
+                        sub_spans: Vec::new(),
+                    });
+
+                    // Synthetic parameter list; no corresponding source span.
+                    append!(ts, "<{defaults}>");
+                    // Avoid forming `>=` when the alias has no space before `=`.
+                    if suffix.starts_with('=') {
+                        ts.push(' ');
+                    }
+
+                    let gen_start = ts.len();
+                    ts.push_str(suffix);
+                    ts.push('\n');
+                    mappings.push(VizeMapping {
+                        gen_range: gen_start..ts.len(),
+                        src_range: (src_base + prefix.len())
+                            ..(src_base + prefix.len() + suffix.len()),
+                        sub_spans: Vec::new(),
+                    });
+                    continue;
+                }
+
                 let gen_start = ts.len();
                 ts.push_str(text);
                 ts.push('\n');
@@ -802,4 +872,85 @@ fn is_safe_value_identifier(name: &str) -> bool {
         return false;
     }
     chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_' || ch == '$')
+}
+
+fn is_ident_byte(b: u8) -> bool {
+    b == b'_' || b == b'$' || b.is_ascii_alphanumeric()
+}
+
+fn skip_ascii_ws(bytes: &[u8], mut i: usize) -> usize {
+    while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+        i += 1;
+    }
+    i
+}
+
+/// Whether `haystack` mentions any of `idents` as a whole-word identifier.
+/// Used to decide whether a lifted type declaration depends on an SFC generic
+/// parameter and therefore needs that parameter re-declared on it.
+fn references_any_identifier(haystack: &str, idents: &[String]) -> bool {
+    let bytes = haystack.as_bytes();
+    idents.iter().any(|ident| {
+        let ident = ident.as_str();
+        if ident.is_empty() {
+            return false;
+        }
+        let mut from = 0;
+        while let Some(rel) = haystack[from..].find(ident) {
+            let at = from + rel;
+            let before_ok = at == 0 || !is_ident_byte(bytes[at - 1]);
+            let after = at + ident.len();
+            let after_ok = after >= bytes.len() || !is_ident_byte(bytes[after]);
+            if before_ok && after_ok {
+                return true;
+            }
+            from = at + ident.len();
+        }
+        false
+    })
+}
+
+/// Byte offset within a hoisted `type` / `interface` declaration immediately
+/// after the declared name, where synthetic generic parameters can be spliced
+/// in. Returns `None` if the declaration already has its own `<...>` parameter
+/// list or the name can't be located (the declaration is then emitted as-is).
+fn generic_injection_point(decl: &str, type_name: &str) -> Option<usize> {
+    let bytes = decl.as_bytes();
+    let mut i = skip_ascii_ws(bytes, 0);
+
+    // Optional `export` modifier.
+    if decl[i..].starts_with("export")
+        && matches!(bytes.get(i + 6), Some(b) if b.is_ascii_whitespace())
+    {
+        i = skip_ascii_ws(bytes, i + 6);
+    }
+
+    // Declaration keyword.
+    if decl[i..].starts_with("type")
+        && matches!(bytes.get(i + 4), Some(b) if b.is_ascii_whitespace())
+    {
+        i += 4;
+    } else if decl[i..].starts_with("interface")
+        && matches!(bytes.get(i + 9), Some(b) if b.is_ascii_whitespace())
+    {
+        i += 9;
+    } else {
+        return None;
+    }
+    i = skip_ascii_ws(bytes, i);
+
+    // Declared name.
+    if !decl[i..].starts_with(type_name) {
+        return None;
+    }
+    let name_end = i + type_name.len();
+    // Reject partial-name matches (`Foo` inside `Foobar`).
+    if matches!(bytes.get(name_end), Some(&b) if is_ident_byte(b)) {
+        return None;
+    }
+    // Skip declarations that already declare their own type parameters.
+    if bytes.get(skip_ascii_ws(bytes, name_end)) == Some(&b'<') {
+        return None;
+    }
+    Some(name_end)
 }

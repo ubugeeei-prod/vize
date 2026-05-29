@@ -345,7 +345,7 @@ fn find_matching_brace(s: &str, start: usize) -> usize {
 /// e.g., `"T extends Foo, P extends Bar"` → `"T, P"`
 /// e.g., `"T"` → `"T"`
 /// e.g., `"T extends Record<string, any>, U"` → `"T, U"`
-fn extract_generic_names(generic_param: &str) -> String {
+pub(crate) fn extract_generic_names(generic_param: &str) -> String {
     let mut names = String::default();
     let mut depth = 0i32; // track <> nesting
     let mut current_name = String::default();
@@ -393,7 +393,7 @@ fn extract_generic_names(generic_param: &str) -> String {
 /// Add `= any` defaults to each generic parameter that doesn't already have a default.
 /// e.g., `"T extends Foo, P"` → `"T extends Foo = any, P = any"`
 /// e.g., `"T = string"` → `"T = string"` (unchanged, already has default)
-fn add_generic_defaults(generic_param: &str) -> String {
+pub(crate) fn add_generic_defaults(generic_param: &str) -> String {
     let mut result = String::default();
     let mut depth = 0i32;
     let mut current_param = String::default();
