@@ -541,6 +541,11 @@ fn analyzed_template_binding_completions(
         }
 
         for source in croquis.reactivity.sources() {
+            // Reactive bindings are already surfaced by the bindings loop
+            // above; skip known bindings so an identifier is not offered twice.
+            if croquis.bindings.contains(source.name.as_str()) {
+                continue;
+            }
             let kind_str = source.kind.to_display();
             #[allow(clippy::disallowed_macros)]
             items_vec.push(CompletionItem {
