@@ -958,13 +958,7 @@ mod infer_tests {
         // (`count.value`), and the completion-side extractor used to disagree
         // (yielding just `value`). Pin the fix from issue #751 by asserting
         // both extractors agree.
-        for src in [
-            "count.value.",
-            "obj.foo.",
-            "a.b.c.",
-            "count.",
-            "foo[0].",
-        ] {
+        for src in ["count.value.", "obj.foo.", "a.b.c.", "count.", "foo[0]."] {
             let from_completion = member_access_receiver(src, src.len());
             let from_cursor = match CursorContext::detect(src, src.len()) {
                 CursorContext::MemberAccess { receiver, .. } => Some(receiver),
