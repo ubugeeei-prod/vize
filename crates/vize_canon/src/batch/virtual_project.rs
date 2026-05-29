@@ -98,6 +98,20 @@ pub struct VirtualProject {
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
 
+    /// Secondary index: original source path -> materialized (virtual) path.
+    /// Keeps `find_by_original` / `map_to_virtual` O(1) instead of scanning
+    /// every virtual file on each LSP position-mapping request.
+    original_index: FxHashMap<PathBuf, PathBuf>,
+
+    /// Original source text as registered, keyed by materialized (virtual)
+    /// path. Retained here (rather than on the public `VirtualFile`) so
+    /// position mapping can convert offsets to line/column without re-reading
+    /// the file from disk on every request, and without changing the public
+    /// `VirtualFile` API. This is also the exact text the source map's
+    /// original offsets refer to (e.g. an editor's unsaved buffer), so it is
+    /// more correct than re-reading live disk state.
+    original_contents: FxHashMap<PathBuf, CompactString>,
+
     /// Parser diagnostics collected before Corsa runs.
     diagnostics: Vec<Diagnostic>,
 
@@ -124,6 +138,8 @@ impl VirtualProject {
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             legacy_vue2: false,
             virtual_files: FxHashMap::default(),
+            original_index: FxHashMap::default(),
+            original_contents: FxHashMap::default(),
             diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
         })
@@ -279,6 +295,14 @@ impl VirtualProject {
 
     fn absorb_registered_file(&mut self, registered: RegisteredFile) {
         self.diagnostics.extend(registered.diagnostics);
+        self.original_index.insert(
+            registered.file.original_path.clone(),
+            registered.file.virtual_path.clone(),
+        );
+        self.original_contents.insert(
+            registered.file.virtual_path.clone(),
+            registered.original_content,
+        );
         self.virtual_files
             .insert(registered.file.virtual_path.clone(), registered.file);
     }
@@ -359,9 +383,8 @@ impl VirtualProject {
 
     /// Find a virtual file by its original path.
     pub fn find_by_original(&self, original_path: &Path) -> Option<&VirtualFile> {
-        self.virtual_files
-            .values()
-            .find(|file| file.original_path == original_path)
+        let virtual_path = self.original_index.get(original_path)?;
+        self.virtual_files.get(virtual_path)
     }
 
     /// Find a virtual file by its materialized path.
@@ -392,9 +415,9 @@ impl VirtualProject {
         let virtual_offset = super::source_map::line_col_to_offset(&file.content, line, column)?;
         let (original_offset, _, block_type) =
             file.source_map.get_original_position(virtual_offset)?;
-        let original_content = std::fs::read_to_string(&file.original_path).ok()?;
+        let original_content = self.original_contents.get(&file.virtual_path)?;
         let (original_line, original_column) =
-            super::source_map::offset_to_line_col(&original_content, original_offset)?;
+            super::source_map::offset_to_line_col(original_content, original_offset)?;
 
         Some(OriginalPosition {
             path: file.original_path.clone(),
@@ -412,9 +435,9 @@ impl VirtualProject {
         column: u32,
     ) -> Option<(PathBuf, u32, u32)> {
         let file = self.find_by_original(original_path)?;
-        let original_content = std::fs::read_to_string(&file.original_path).ok()?;
+        let original_content = self.original_contents.get(&file.virtual_path)?;
         let original_offset =
-            super::source_map::line_col_to_offset(&original_content, line, column)?;
+            super::source_map::line_col_to_offset(original_content, line, column)?;
         let virtual_offset = if let Some(ref sfc_map) = file.source_map.sfc_map {
             for block in [
                 SfcBlockType::ScriptSetup,
@@ -1031,6 +1054,10 @@ fn push_block_range(
 /// independent of any `&mut VirtualProject` so it can be produced in parallel.
 struct RegisteredFile {
     file: VirtualFile,
+    /// Original source text as registered, retained for offset<->line/col
+    /// mapping without a disk re-read. Stored on the project, not the public
+    /// `VirtualFile`.
+    original_content: CompactString,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -1134,6 +1161,7 @@ fn build_vue_registered_file(
             original_path: path.to_path_buf(),
             virtual_path,
         },
+        original_content: content.to_compact_string(),
         diagnostics,
     })
 }
@@ -1159,6 +1187,7 @@ fn build_script_registered_file(
             original_path: path.to_path_buf(),
             virtual_path,
         },
+        original_content: content.to_compact_string(),
         diagnostics: Vec::new(),
     })
 }
