@@ -350,6 +350,12 @@ pub struct ServerState {
     virtual_gen: RwLock<VirtualCodeGenerator>,
     /// Cached virtual documents per file
     virtual_docs_cache: DashMap<Url, VirtualDocuments>,
+    /// Parsed metadata for imported components, keyed by resolved path.
+    /// Lets template completion skip re-reading + re-parsing + re-analyzing an
+    /// imported component on every keystroke; entries are invalidated by the
+    /// component file's length + modification time.
+    component_metadata_cache:
+        DashMap<PathBuf, crate::ide::completion::template::CachedComponentMetadata>,
     /// Enabled LSP feature surface.
     lsp_features: RwLock<LspFeatureConfig>,
     /// Fast path for checking whether type-aware features are enabled.
@@ -402,6 +408,7 @@ impl ServerState {
             documents: DocumentStore::new(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
+            component_metadata_cache: DashMap::new(),
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new(TypeCheckerConfig::default()),
@@ -861,6 +868,15 @@ impl ServerState {
     /// Clear all cached virtual documents.
     pub fn clear_virtual_docs(&self) {
         self.virtual_docs_cache.clear();
+    }
+
+    /// Cache of parsed imported-component metadata, keyed by resolved path.
+    /// Used by template completion to avoid re-parsing imported components on
+    /// every keystroke. Callers handle staleness via the entry's file stamp.
+    pub(crate) fn component_metadata_cache(
+        &self,
+    ) -> &DashMap<PathBuf, crate::ide::completion::template::CachedComponentMetadata> {
+        &self.component_metadata_cache
     }
 
     /// Get a clone of the current format options.

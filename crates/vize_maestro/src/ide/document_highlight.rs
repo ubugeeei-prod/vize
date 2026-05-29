@@ -2,11 +2,69 @@
 //!
 //! Highlights matching tag names and identifier occurrences in Vue and Art documents.
 
-use tower_lsp::lsp_types::{DocumentHighlight, DocumentHighlightKind, Range};
+use tower_lsp::lsp_types::{DocumentHighlight, DocumentHighlightKind, Position, Range};
 
-use super::{IdeContext, offset_to_position, token_span_at_offset};
+use super::{IdeContext, token_span_at_offset};
 
 pub struct DocumentHighlightService;
+
+/// Forward-only cursor that converts ascending byte offsets to LSP positions
+/// in a single pass over the document.
+///
+/// The previous code called `offset_to_position` (which re-walks the document
+/// from offset 0) twice per match, making highlighting O(occurrences × length).
+/// Matches are produced left-to-right, so a monotonic cursor turns the whole
+/// pass into O(length). Mirrors `offset_to_position_str`: lines count `\n`,
+/// columns count UTF-16 code units and reset at each newline.
+struct PositionWalker<'a> {
+    chars: std::str::CharIndices<'a>,
+    content_len: usize,
+    /// Byte offset of the next char to process.
+    offset: usize,
+    line: u32,
+    character: u32,
+    /// Byte offset where the current line begins (after the last `\n`).
+    line_start: usize,
+}
+
+impl<'a> PositionWalker<'a> {
+    fn new(content: &'a str) -> Self {
+        Self {
+            chars: content.char_indices(),
+            content_len: content.len(),
+            offset: 0,
+            line: 0,
+            character: 0,
+            line_start: 0,
+        }
+    }
+
+    /// Advance to `target` (a byte offset >= any previously requested target)
+    /// and return its (line, character) position.
+    fn position_at(&mut self, target: usize) -> (u32, u32) {
+        let target = target.min(self.content_len);
+        while self.offset < target {
+            let Some((byte, ch)) = self.chars.next() else {
+                break;
+            };
+            if ch == '\n' {
+                self.line += 1;
+                self.character = 0;
+                self.line_start = byte + 1;
+            } else {
+                self.character += ch.len_utf16() as u32;
+            }
+            self.offset = byte + ch.len_utf8();
+        }
+        (self.line, self.character)
+    }
+
+    /// Byte offset where the line containing the most recently visited target
+    /// begins. Valid immediately after a `position_at` call.
+    fn line_start(&self) -> usize {
+        self.line_start
+    }
+}
 
 impl DocumentHighlightService {
     pub fn highlights(ctx: &IdeContext<'_>) -> Option<Vec<DocumentHighlight>> {
@@ -27,35 +85,45 @@ impl DocumentHighlightService {
 }
 
 fn identifier_highlights(content: &str, symbol: &str) -> Vec<DocumentHighlight> {
-    let mut highlights = Vec::new();
+    // Collect matching spans first (ascending, non-overlapping), then convert
+    // every offset to a position with a single forward walk over the document.
+    let mut spans = Vec::new();
     let mut search_start = 0usize;
-
     while let Some(relative) = content[search_start..].find(symbol) {
         let start = search_start + relative;
         let end = start + symbol.len();
-
         if is_identifier_boundary(content.as_bytes(), start, end) {
-            highlights.push(highlight(
-                content,
-                start,
-                end,
-                identifier_highlight_kind(content, start),
-            ));
+            spans.push((start, end));
         }
-
         search_start = end;
     }
+    if spans.is_empty() {
+        return Vec::new();
+    }
 
+    let mut walker = PositionWalker::new(content);
+    let mut highlights = Vec::with_capacity(spans.len());
+    for (start, end) in spans {
+        let (start_line, start_character) = walker.position_at(start);
+        let kind = highlight_kind_for_prefix(&content[walker.line_start()..start]);
+        let (end_line, end_character) = walker.position_at(end);
+        highlights.push(span_highlight(
+            start_line,
+            start_character,
+            end_line,
+            end_character,
+            kind,
+        ));
+    }
     highlights
 }
 
 fn tag_highlights(content: &str, tag_name: &str) -> Vec<DocumentHighlight> {
-    let mut highlights = Vec::new();
+    let mut spans = Vec::new();
     let mut search_start = 0usize;
-
+    let bytes = content.as_bytes();
     while let Some(relative) = content[search_start..].find('<') {
         let tag_start = search_start + relative;
-        let bytes = content.as_bytes();
         let mut name_start = tag_start + 1;
 
         if bytes.get(name_start) == Some(&b'/') {
@@ -67,17 +135,28 @@ fn tag_highlights(content: &str, tag_name: &str) -> Vec<DocumentHighlight> {
             && &content[name_start..name_end] == tag_name
             && is_tag_name_boundary(bytes, name_start, name_end)
         {
-            highlights.push(highlight(
-                content,
-                name_start,
-                name_end,
-                Some(DocumentHighlightKind::TEXT),
-            ));
+            spans.push((name_start, name_end));
         }
 
         search_start = tag_start + 1;
     }
+    if spans.is_empty() {
+        return Vec::new();
+    }
 
+    let mut walker = PositionWalker::new(content);
+    let mut highlights = Vec::with_capacity(spans.len());
+    for (start, end) in spans {
+        let (start_line, start_character) = walker.position_at(start);
+        let (end_line, end_character) = walker.position_at(end);
+        highlights.push(span_highlight(
+            start_line,
+            start_character,
+            end_line,
+            end_character,
+            Some(DocumentHighlightKind::TEXT),
+        ));
+    }
     highlights
 }
 
@@ -156,22 +235,20 @@ fn tag_name_at_offset(content: &str, offset: usize) -> Option<(String, usize, us
     ))
 }
 
-fn highlight(
-    content: &str,
-    start: usize,
-    end: usize,
+fn span_highlight(
+    start_line: u32,
+    start_character: u32,
+    end_line: u32,
+    end_character: u32,
     kind: Option<DocumentHighlightKind>,
 ) -> DocumentHighlight {
-    let (start_line, start_character) = offset_to_position(content, start);
-    let (end_line, end_character) = offset_to_position(content, end);
-
     DocumentHighlight {
         range: Range {
-            start: tower_lsp::lsp_types::Position {
+            start: Position {
                 line: start_line,
                 character: start_character,
             },
-            end: tower_lsp::lsp_types::Position {
+            end: Position {
                 line: end_line,
                 character: end_character,
             },
@@ -180,9 +257,8 @@ fn highlight(
     }
 }
 
-fn identifier_highlight_kind(content: &str, start: usize) -> Option<DocumentHighlightKind> {
-    let line_start = content[..start].rfind('\n').map_or(0, |offset| offset + 1);
-    let prefix = content[line_start..start].trim_end();
+fn highlight_kind_for_prefix(prefix: &str) -> Option<DocumentHighlightKind> {
+    let prefix = prefix.trim_end();
 
     if prefix.ends_with("const")
         || prefix.ends_with("let")
@@ -244,9 +320,34 @@ fn is_tag_name_boundary(bytes: &[u8], start: usize, end: usize) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::DocumentHighlightService;
+    use super::{DocumentHighlightService, PositionWalker};
     use crate::{ide::IdeContext, server::ServerState};
     use tower_lsp::lsp_types::Url;
+
+    #[test]
+    fn position_walker_matches_offset_to_position_str() {
+        // Multi-line content with a multi-byte (UTF-16 surrogate pair) char so
+        // the walker's line/column tracking is exercised against the canonical
+        // converter at every char boundary, including ascending re-queries.
+        let content = "abc\ndé😀f\n\nghi";
+        let mut walker = PositionWalker::new(content);
+        let mut prev = 0usize;
+        for offset in 0..=content.len() {
+            if !content.is_char_boundary(offset) {
+                continue;
+            }
+            // Walker requires monotonic targets; advance from the previous one.
+            assert!(offset >= prev);
+            prev = offset;
+            let expected = crate::utils::offset_to_position_str(content, offset);
+            let (line, character) = walker.position_at(offset);
+            assert_eq!(
+                (line, character),
+                (expected.line, expected.character),
+                "mismatch at byte offset {offset}",
+            );
+        }
+    }
 
     fn context_for(source: &str, cursor_text: &str) -> (ServerState, Url, usize) {
         let state = ServerState::new();

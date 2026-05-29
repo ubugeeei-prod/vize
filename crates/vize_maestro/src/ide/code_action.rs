@@ -14,16 +14,29 @@ use tower_lsp::lsp_types::{
 /// Code action service for providing quick fixes and refactorings.
 pub struct CodeActionService;
 
+/// One SFC parse + template lint pass, shared across the lint-based collectors
+/// so a single code-action request doesn't parse and lint the same file twice.
+struct TemplateLint {
+    /// Template block content (the text the linter ran against).
+    content: String,
+    /// 1-indexed line where the template block starts inside the SFC.
+    start_line: u32,
+    /// Lint diagnostics for the template block.
+    result: vize_patina::LintResult,
+}
+
 impl CodeActionService {
     /// Get code actions for the given context and range.
     pub fn code_actions(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
-        // Collect lint fix actions
-        actions.extend(Self::collect_lint_fixes(ctx, range));
-
-        // Collect "@vize:forget" suppress actions
-        actions.extend(Self::collect_forget_suppress(ctx, range));
+        // Parse the SFC and run the template linter exactly once; both the
+        // lint-fix and `@vize:forget` collectors below operate on this shared
+        // result instead of re-parsing + re-linting the same content twice.
+        if let Some(lint) = Self::lint_template_once(ctx) {
+            actions.extend(Self::collect_lint_fixes(ctx, range, &lint));
+            actions.extend(Self::collect_forget_suppress(ctx, range, &lint));
+        }
 
         // Vue-flavored quick fixes: today this surfaces a "Wrap with `.value`"
         // edit when the cursor sits on a known reactive ref. See #691.
@@ -71,8 +84,8 @@ impl CodeActionService {
         let Some(workspace_dir) = workspace_dir else {
             return Vec::new();
         };
-        let index = crate::ide::auto_import::AutoImportIndex::from_directory(&workspace_dir);
-        let entry = index.lookup(identifier).next().cloned();
+        let entry =
+            crate::ide::auto_import::AutoImportIndex::find_in_directory(&workspace_dir, identifier);
         let Some(entry) = entry else {
             return Vec::new();
         };
@@ -284,33 +297,39 @@ impl CodeActionService {
         vec![CodeActionOrCommand::CodeAction(action)]
     }
 
-    /// Collect lint fix actions from vize_patina diagnostics.
-    fn collect_lint_fixes(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
-        let mut actions = Vec::new();
-
-        // Parse SFC to get template
+    /// Parse the SFC and run the template linter once, returning the template
+    /// content, its starting line in the SFC, and the lint result. Shared by
+    /// the lint-fix and `@vize:forget` collectors so the (expensive) SFC parse
+    /// and template lint run a single time per code-action request.
+    fn lint_template_once(ctx: &IdeContext) -> Option<TemplateLint> {
         #[allow(clippy::disallowed_methods)]
         let options = vize_atelier_sfc::SfcParseOptions {
             filename: ctx.uri.path().to_string().into(),
             ..Default::default()
         };
-
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
-            return actions;
-        };
-
-        let Some(ref template) = descriptor.template else {
-            return actions;
-        };
-
-        // Run linter to get diagnostics with fixes
+        let descriptor = vize_atelier_sfc::parse_sfc(&ctx.content, options).ok()?;
+        let template = descriptor.template.as_ref()?;
         let linter = vize_patina::Linter::new();
         let result = linter.lint_template(&template.content, ctx.uri.path());
+        Some(TemplateLint {
+            content: template.content.to_string(),
+            start_line: template.loc.start_line as u32,
+            result,
+        })
+    }
 
-        // Template block offset in SFC
-        let template_start_line = template.loc.start_line as u32;
+    /// Collect lint fix actions from vize_patina diagnostics.
+    fn collect_lint_fixes(
+        ctx: &IdeContext,
+        range: Range,
+        lint: &TemplateLint,
+    ) -> Vec<CodeActionOrCommand> {
+        let mut actions = Vec::new();
 
-        for lint_diag in result.diagnostics {
+        let template_content = lint.content.as_str();
+        let template_start_line = lint.start_line;
+
+        for lint_diag in &lint.result.diagnostics {
             // Check if diagnostic has a fix
             let Some(ref fix) = lint_diag.fix else {
                 continue;
@@ -318,8 +337,8 @@ impl CodeActionService {
 
             // Convert lint diagnostic position to SFC position
             let (start_line, start_col) =
-                offset_to_line_col(&template.content, lint_diag.start as usize);
-            let (end_line, end_col) = offset_to_line_col(&template.content, lint_diag.end as usize);
+                offset_to_line_col(template_content, lint_diag.start as usize);
+            let (end_line, end_col) = offset_to_line_col(template_content, lint_diag.end as usize);
 
             let diag_range = Range {
                 start: template_position(template_start_line, start_line, start_col),
@@ -337,9 +356,9 @@ impl CodeActionService {
                 .iter()
                 .map(|edit| {
                     let (edit_start_line, edit_start_col) =
-                        offset_to_line_col(&template.content, edit.start as usize);
+                        offset_to_line_col(template_content, edit.start as usize);
                     let (edit_end_line, edit_end_col) =
-                        offset_to_line_col(&template.content, edit.end as usize);
+                        offset_to_line_col(template_content, edit.end as usize);
 
                     TextEdit {
                         range: Range {
@@ -391,33 +410,21 @@ impl CodeActionService {
     }
 
     /// Collect `@vize:forget` suppress actions for diagnostics without auto-fix.
-    fn collect_forget_suppress(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
+    fn collect_forget_suppress(
+        ctx: &IdeContext,
+        range: Range,
+        lint: &TemplateLint,
+    ) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
-        #[allow(clippy::disallowed_methods)]
-        let options = vize_atelier_sfc::SfcParseOptions {
-            filename: ctx.uri.path().to_string().into(),
-            ..Default::default()
-        };
+        let template_content = lint.content.as_str();
+        let template_start_line = lint.start_line;
 
-        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
-            return actions;
-        };
-
-        let Some(ref template) = descriptor.template else {
-            return actions;
-        };
-
-        let linter = vize_patina::Linter::new();
-        let result = linter.lint_template(&template.content, ctx.uri.path());
-
-        let template_start_line = template.loc.start_line as u32;
-
-        for lint_diag in result.diagnostics {
+        for lint_diag in &lint.result.diagnostics {
             // Convert diagnostic position to SFC position
             let (start_line, start_col) =
-                offset_to_line_col(&template.content, lint_diag.start as usize);
-            let (end_line, end_col) = offset_to_line_col(&template.content, lint_diag.end as usize);
+                offset_to_line_col(template_content, lint_diag.start as usize);
+            let (end_line, end_col) = offset_to_line_col(template_content, lint_diag.end as usize);
 
             let diag_range = Range {
                 start: template_position(template_start_line, start_line, start_col),
@@ -429,7 +436,7 @@ impl CodeActionService {
             }
 
             // Compute indentation of the diagnostic line
-            let indent = get_line_indent(&template.content, lint_diag.start as usize);
+            let indent = get_line_indent(template_content, lint_diag.start as usize);
 
             // Insert `<!-- @vize:forget <rule_name> -->\n` before the line
             let sfc_line = template_position(template_start_line, start_line, 0).line;

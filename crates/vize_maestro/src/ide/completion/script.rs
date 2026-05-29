@@ -556,39 +556,29 @@ pub(crate) fn infer_reactive_value_type(
         _ => return None,
     };
 
-    let patterns = [
-        format!(
-            "const {name} = {callee}<",
-            callee = reactive_kind_callee(kind)
-        ),
-        format!(
-            "let {name} = {callee}<",
-            callee = reactive_kind_callee(kind)
-        ),
-    ];
-    for pattern in patterns {
-        if let Some(pos) = script_content.find(pattern.as_str()) {
-            let after = &script_content[pos + pattern.len()..];
-            if let Some(end) = find_matching_angle(after) {
-                return Some(after[..end].trim().to_string());
+    // The declaration is `const NAME = CALLEE<...>` or `const NAME = CALLEE(...)`
+    // (likewise for `let`). Rather than run four separate `format!` + full-string
+    // `find` scans (the `<` and `(` variants for each keyword), search the shared
+    // `KEYWORD NAME = CALLEE` prefix once per keyword and branch on the byte that
+    // immediately follows. A binding is declared once, so at most one keyword
+    // matches; behavior is identical to the four-pattern form.
+    let callee = reactive_kind_callee(kind);
+    for keyword in ["const", "let"] {
+        let prefix = format!("{keyword} {name} = {callee}");
+        let Some(pos) = script_content.find(prefix.as_str()) else {
+            continue;
+        };
+        let after = &script_content[pos + prefix.len()..];
+        match after.as_bytes().first() {
+            Some(b'<') => {
+                if let Some(end) = find_matching_angle(&after[1..]) {
+                    return Some(after[1..end + 1].trim().to_string());
+                }
             }
-        }
-    }
-
-    let patterns = [
-        format!(
-            "const {name} = {callee}(",
-            callee = reactive_kind_callee(kind)
-        ),
-        format!(
-            "let {name} = {callee}(",
-            callee = reactive_kind_callee(kind)
-        ),
-    ];
-    for pattern in patterns {
-        if let Some(pos) = script_content.find(pattern.as_str()) {
-            let after = &script_content[pos + pattern.len()..];
-            return infer_value_type_from_initializer(after, wrapper);
+            Some(b'(') => {
+                return infer_value_type_from_initializer(&after[1..], wrapper);
+            }
+            _ => {}
         }
     }
 
@@ -902,4 +892,79 @@ fn import_completions() -> Vec<CompletionItem> {
             "import { onMounted, onUnmounted } from 'vue'",
         ),
     ]
+}
+
+#[cfg(test)]
+mod infer_tests {
+    use super::infer_reactive_value_type;
+    use vize_croquis::reactivity::ReactiveKind;
+
+    fn infer(script: &str, name: &str, kind: ReactiveKind) -> Option<String> {
+        infer_reactive_value_type(script, name, kind)
+    }
+
+    #[test]
+    fn pins_angle_and_paren_inference_behavior() {
+        // Angle-bracket generic form.
+        assert_eq!(
+            infer("const count = ref<number>()", "count", ReactiveKind::Ref).as_deref(),
+            Some("number"),
+        );
+        assert_eq!(
+            infer("const item = ref<Foo>()", "item", ReactiveKind::Ref).as_deref(),
+            Some("Foo"),
+        );
+        // Parenthesized initializer form, `let` keyword.
+        assert_eq!(
+            infer("let name = ref(\"x\")", "name", ReactiveKind::Ref).as_deref(),
+            Some("string"),
+        );
+        assert_eq!(
+            infer("const n = ref(0)", "n", ReactiveKind::Ref).as_deref(),
+            Some("number"),
+        );
+        // Computed arrow body inference.
+        assert_eq!(
+            infer(
+                "const total = computed(() => 1 + 2)",
+                "total",
+                ReactiveKind::Computed
+            )
+            .as_deref(),
+            Some("number"),
+        );
+        // shallowRef / toRef callee mapping.
+        assert_eq!(
+            infer(
+                "const flag = shallowRef(true)",
+                "flag",
+                ReactiveKind::ShallowRef
+            )
+            .as_deref(),
+            Some("boolean"),
+        );
+    }
+
+    #[test]
+    fn pins_negative_and_non_inferrable_cases() {
+        // Reactive kind has no Ref/ComputedRef wrapper.
+        assert_eq!(
+            infer("const obj = reactive({})", "obj", ReactiveKind::Reactive),
+            None,
+        );
+        // Name not declared in the script.
+        assert_eq!(
+            infer("const a = ref(1)", "missing", ReactiveKind::Ref),
+            None
+        );
+        // Callee mismatch: a `ref` declaration is not matched when asked as toRef.
+        assert_eq!(infer("const t = ref(1)", "t", ReactiveKind::ToRef), None);
+        // Prefix-substring guard: `countX` must not match a query for `count`.
+        assert_eq!(
+            infer("const countX = ref(1)", "count", ReactiveKind::Ref),
+            None
+        );
+        // A space between callee and `<` defeats the heuristic (preserved).
+        assert_eq!(infer("const s = ref <Foo>()", "s", ReactiveKind::Ref), None);
+    }
 }

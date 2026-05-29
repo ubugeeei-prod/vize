@@ -792,9 +792,21 @@ fn is_slot_completion_prefix(prefix: &str) -> bool {
 }
 
 #[derive(Debug, Clone)]
-struct ComponentMetadata {
+pub(crate) struct ComponentMetadata {
     props: Vec<ComponentProp>,
     slots: Vec<ComponentSlot>,
+}
+
+/// Cached, parsed metadata for an imported component file, keyed in
+/// [`crate::server::ServerState`] by resolved path. The `len` + `modified`
+/// file stamp invalidates the entry when the component file changes on disk,
+/// so completion doesn't re-read + re-parse + re-analyze the same component on
+/// every keystroke inside an opening tag.
+#[derive(Clone)]
+pub(crate) struct CachedComponentMetadata {
+    pub len: u64,
+    pub modified: Option<std::time::SystemTime>,
+    pub metadata: std::sync::Arc<ComponentMetadata>,
 }
 
 #[derive(Debug, Clone)]
@@ -820,7 +832,10 @@ struct ComponentSlot {
     props_type: Option<String>,
 }
 
-fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<ComponentMetadata> {
+fn component_metadata(
+    ctx: &IdeContext,
+    component_name: &str,
+) -> Option<std::sync::Arc<ComponentMetadata>> {
     let mut names = vec![component_name.to_string()];
     let pascal = kebab_to_pascal(component_name);
     if !names.iter().any(|name| name == &pascal) {
@@ -832,25 +847,52 @@ fn component_metadata(ctx: &IdeContext, component_name: &str) -> Option<Componen
             continue;
         };
         let resolved = definition_helpers::resolve_import_path(ctx.uri, &import_path)?;
-        let component_content = std::fs::read_to_string(&resolved).ok()?;
-        return Some(extract_component_metadata(
-            &component_content,
-            &resolved.to_string_lossy(),
-            ctx.state.lsp_features().legacy_vue2,
-        ));
+        return cached_component_metadata(ctx, &resolved);
     }
 
     if let Some(import_path) = art_component_path(ctx, component_name) {
         let resolved = definition_helpers::resolve_import_path(ctx.uri, &import_path)?;
-        let component_content = std::fs::read_to_string(&resolved).ok()?;
-        return Some(extract_component_metadata(
-            &component_content,
-            &resolved.to_string_lossy(),
-            ctx.state.lsp_features().legacy_vue2,
-        ));
+        return cached_component_metadata(ctx, &resolved);
     }
 
     None
+}
+
+/// Return parsed metadata for the component at `resolved`, reusing a cached
+/// parse when the file's length + modification time are unchanged. Only the
+/// `fs::metadata` stat runs on the hot (cache-hit) path; the disk read, SFC
+/// parse, and Croquis analysis happen solely on a miss.
+fn cached_component_metadata(
+    ctx: &IdeContext,
+    resolved: &std::path::Path,
+) -> Option<std::sync::Arc<ComponentMetadata>> {
+    let cache = ctx.state.component_metadata_cache();
+    let (len, modified) = std::fs::metadata(resolved)
+        .map(|meta| (meta.len(), meta.modified().ok()))
+        .unwrap_or((0, None));
+
+    if let Some(entry) = cache.get(resolved)
+        && entry.len == len
+        && entry.modified == modified
+    {
+        return Some(entry.metadata.clone());
+    }
+
+    let component_content = std::fs::read_to_string(resolved).ok()?;
+    let metadata = std::sync::Arc::new(extract_component_metadata(
+        &component_content,
+        &resolved.to_string_lossy(),
+        ctx.state.lsp_features().legacy_vue2,
+    ));
+    cache.insert(
+        resolved.to_path_buf(),
+        CachedComponentMetadata {
+            len,
+            modified,
+            metadata: metadata.clone(),
+        },
+    );
+    Some(metadata)
 }
 
 fn art_component_path(ctx: &IdeContext<'_>, component_name: &str) -> Option<String> {
@@ -1661,4 +1703,61 @@ fn art_script_completions() -> Vec<CompletionItem> {
             ..Default::default()
         },
     ]
+}
+
+#[cfg(test)]
+mod cache_tests {
+    use super::cached_component_metadata;
+    use crate::ide::IdeContext;
+    use crate::server::ServerState;
+    use tower_lsp::lsp_types::Url;
+
+    #[test]
+    fn component_metadata_cache_hits_then_invalidates_on_change() {
+        let dir = tempfile::tempdir().unwrap();
+        let component = dir.path().join("Widget.vue");
+        std::fs::write(
+            &component,
+            "<script setup lang=\"ts\">\nconst props = defineProps<{ a: string }>()\n</script>\n",
+        )
+        .unwrap();
+
+        let state = ServerState::new();
+        let uri = Url::parse("file:///host.vue").unwrap();
+        state.documents.open(
+            uri.clone(),
+            "<template></template>".to_string(),
+            1,
+            "vue".to_string(),
+        );
+        let ctx = IdeContext::new(&state, &uri, 0).unwrap();
+
+        let first = cached_component_metadata(&ctx, &component).unwrap();
+        let second = cached_component_metadata(&ctx, &component).unwrap();
+        assert!(
+            std::sync::Arc::ptr_eq(&first, &second),
+            "an unchanged component file should hit the cache (same Arc, no re-parse)",
+        );
+        let first_prop_count = first.props.len();
+
+        // Rewrite with a different length so the file stamp changes; the next
+        // lookup must recompute rather than serve the stale cached parse.
+        std::fs::write(
+            &component,
+            "<script setup lang=\"ts\">\nconst props = defineProps<{ a: string; bb: number }>()\n</script>\n",
+        )
+        .unwrap();
+
+        let third = cached_component_metadata(&ctx, &component).unwrap();
+        assert!(
+            !std::sync::Arc::ptr_eq(&first, &third),
+            "a changed component file must invalidate the cached entry",
+        );
+        assert!(
+            third.props.len() > first_prop_count,
+            "recomputed metadata should reflect the added prop ({} -> {})",
+            first_prop_count,
+            third.props.len(),
+        );
+    }
 }

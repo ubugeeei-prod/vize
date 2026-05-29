@@ -13,7 +13,7 @@ mod items;
 mod script;
 mod service;
 mod style;
-mod template;
+pub(crate) mod template;
 
 // Cross-module reuse: inlay-hint code resolves reactive binding types with
 // the same heuristic that script completion uses.
