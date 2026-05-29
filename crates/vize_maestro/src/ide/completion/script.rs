@@ -155,8 +155,14 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
             });
         }
 
-        // Add reactive sources
+        // Add reactive sources. Reactive bindings (ref/computed/...) are
+        // already emitted by the bindings loop above with their reactive type
+        // detail, so skip any source whose name is a known binding to avoid
+        // listing the same identifier twice.
         for source in croquis.reactivity.sources() {
+            if croquis.bindings.contains(source.name.as_str()) {
+                continue;
+            }
             let needs_value = source.kind.needs_value_access();
             let (type_detail, doc) =
                 reactive_completion_info(&script_content, source.name.as_str(), source.kind)
