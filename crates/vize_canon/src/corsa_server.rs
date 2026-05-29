@@ -362,10 +362,26 @@ impl CorsaServer {
             template_offset,
         );
 
-        let virtual_ts = output.content.clone();
+        // Issue #752: rewrite `.vue` import specifiers to `.vue.ts` so the
+        // socket-mode Corsa session resolves siblings via the same virtual
+        // mirrors used by the batch path, then overlay each relative
+        // sibling's virtual TS into the session. The cached `virtual_ts`
+        // intentionally reflects what we ship to Corsa (rewritten form), so
+        // consumers that introspect the cache see the same coordinates.
+        let pre_rewrite_ts = output.content;
+        let rewriter = crate::batch::ImportRewriter::new();
+        let virtual_ts: String = rewriter
+            .rewrite(pre_rewrite_ts.as_str(), oxc_span::SourceType::ts())
+            .code;
 
-        // Cache the virtual TS
         self.cache.insert(uri.into(), virtual_ts.clone());
+
+        // Overlay sibling .vue.ts mirrors discovered from the host's imports.
+        let relative_specifiers = rewriter
+            .collect_relative_vue_specifiers(pre_rewrite_ts.as_str(), oxc_span::SourceType::ts());
+        if !relative_specifiers.is_empty() {
+            self.overlay_sibling_vue_mirrors(uri, &relative_specifiers);
+        }
 
         // Run Corsa on the virtual TypeScript through the project-session API.
         let mut diagnostics = self.run_corsa(uri, &virtual_ts)?;
@@ -438,6 +454,140 @@ impl CorsaServer {
         Ok(diagnostics)
     }
 
+    /// Overlay sibling `.vue.ts` mirrors for every relative `.vue` import,
+    /// recursively, so socket-mode Corsa can resolve `import App from
+    /// './app.vue'` (issue #752). Errors are logged and skipped so a missing
+    /// sibling still surfaces as TS2307 from the host check.
+    fn overlay_sibling_vue_mirrors(&mut self, host_uri: &str, initial_specifiers: &[String]) {
+        use vize_atelier_core::parser::parse;
+        use vize_atelier_sfc::{
+            SfcParseOptions,
+            croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+            parse_sfc,
+        };
+        use vize_carton::Bump;
+        use vize_croquis::virtual_ts::generate_virtual_ts;
+
+        let Some(host_path) = uri_to_path(host_uri, &self.working_dir()) else {
+            tracing::debug!("overlay_sibling_vue_mirrors: cannot resolve host path: {host_uri}");
+            return;
+        };
+        let host_dir = match host_path.parent() {
+            Some(dir) => dir.to_path_buf(),
+            None => return,
+        };
+
+        let mut visited: FxHashSet<PathBuf> = FxHashSet::default();
+        visited.insert(host_path.clone());
+
+        let mut queue: Vec<(PathBuf, Vec<String>)> = vec![(
+            host_dir,
+            initial_specifiers
+                .iter()
+                .map(|s| s.as_str().into())
+                .collect(),
+        )];
+        let rewriter = crate::batch::ImportRewriter::new();
+
+        while let Some((dir, specifiers)) = queue.pop() {
+            for specifier in specifiers {
+                let resolved = dir.join(&specifier);
+                let canonical = std::fs::canonicalize(&resolved).unwrap_or(resolved);
+                if !visited.insert(canonical.clone()) {
+                    continue;
+                }
+
+                let sibling_content = match std::fs::read_to_string(&canonical) {
+                    Ok(text) => text,
+                    Err(err) => {
+                        tracing::debug!(
+                            "socket overlay sibling skipped — read failed for {}: {err}",
+                            canonical.display(),
+                        );
+                        continue;
+                    }
+                };
+
+                let sibling_uri = crate::file_uri::path_to_file_uri(&canonical);
+                let sibling_virtual_uri = self.virtual_uri_for(&sibling_uri);
+
+                let parse_opts = SfcParseOptions {
+                    filename: sibling_uri.as_str().into(),
+                    ..Default::default()
+                };
+                let Ok(descriptor) = parse_sfc(&sibling_content, parse_opts) else {
+                    continue;
+                };
+
+                let allocator = Bump::new();
+                let template_offset = descriptor
+                    .template
+                    .as_ref()
+                    .map(|t| t.loc.start as u32)
+                    .unwrap_or(0);
+                let template_ast = descriptor.template.as_ref().map(|template| {
+                    let (root, _) = parse(&allocator, &template.content);
+                    root
+                });
+                let analysis = analyze_sfc_descriptor_with_context(
+                    &descriptor,
+                    template_ast.as_ref(),
+                    SfcCroquisOptions::full().without_script_merge(),
+                );
+                let sibling_output = generate_virtual_ts(
+                    analysis.script_content_ref(),
+                    template_ast.as_ref(),
+                    &analysis.croquis.bindings,
+                    None,
+                    Some(canonical.as_path()),
+                    template_offset,
+                );
+
+                let sibling_rewrite =
+                    rewriter.rewrite(sibling_output.content.as_str(), oxc_span::SourceType::ts());
+                let sibling_virtual_ts: String = sibling_rewrite.code;
+
+                let client = match self.corsa_client.as_mut() {
+                    Some(client) => client,
+                    None => return,
+                };
+
+                let result = if self
+                    .open_virtual_documents
+                    .contains(sibling_virtual_uri.as_str())
+                {
+                    client.did_change(&sibling_virtual_uri, &sibling_virtual_ts)
+                } else {
+                    let r = client.did_open(&sibling_virtual_uri, &sibling_virtual_ts);
+                    if r.is_ok() {
+                        self.open_virtual_documents
+                            .insert(sibling_virtual_uri.clone());
+                    }
+                    r
+                };
+                if let Err(err) = result {
+                    tracing::debug!(
+                        "socket overlay sibling failed for {}: {err}",
+                        canonical.display(),
+                    );
+                    continue;
+                }
+
+                let next_specifiers = rewriter.collect_relative_vue_specifiers(
+                    sibling_output.content.as_str(),
+                    oxc_span::SourceType::ts(),
+                );
+                if !next_specifiers.is_empty() {
+                    let next_dir = canonical
+                        .parent()
+                        .map(|p| p.to_path_buf())
+                        .unwrap_or_else(|| canonical.clone());
+                    queue.push((next_dir, next_specifiers));
+                }
+            }
+        }
+    }
+
     fn virtual_uri_for(&self, uri: &str) -> String {
         if uri.starts_with("file://") || uri.contains("://") {
             return cstr!("{uri}.ts");
@@ -477,6 +627,47 @@ impl Default for CorsaServer {
 /// Surface Vue-specific script-setup semantic errors (e.g.
 /// `DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE`). Uses the lightweight validator
 /// entry point so the socket-mode check stays as fast as the Virtual TS path.
+/// Resolve a URI (file:// or plain path) to an absolute filesystem path.
+/// Returns None when the URI is a non-`file` scheme or the path cannot be
+/// extracted. Used by socket-mode sibling overlay to read siblings from disk.
+fn uri_to_path(uri: &str, working_dir: &Path) -> Option<PathBuf> {
+    if let Some(stripped) = uri.strip_prefix("file://") {
+        let decoded = percent_decode(stripped);
+        return Some(PathBuf::from(decoded));
+    }
+    if uri.contains("://") {
+        return None;
+    }
+    let path = Path::new(uri);
+    if path.is_absolute() {
+        Some(path.to_path_buf())
+    } else {
+        Some(working_dir.join(path))
+    }
+}
+
+/// Minimal `%`-decoder for `file://` URIs. Only handles the small set of
+/// characters TypeScript and Corsa typically encode (space, special chars).
+fn percent_decode(input: &str) -> String {
+    let bytes = input.as_bytes();
+    let mut out = String::with_capacity(input.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'%' && i + 2 < bytes.len() {
+            let hi = (bytes[i + 1] as char).to_digit(16);
+            let lo = (bytes[i + 2] as char).to_digit(16);
+            if let (Some(hi), Some(lo)) = (hi, lo) {
+                out.push(((hi * 16 + lo) as u8) as char);
+                i += 3;
+                continue;
+            }
+        }
+        out.push(bytes[i] as char);
+        i += 1;
+    }
+    out
+}
+
 fn collect_sfc_compile_diagnostic(
     _uri: &str,
     source: &str,

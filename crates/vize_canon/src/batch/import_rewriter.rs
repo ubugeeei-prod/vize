@@ -198,6 +198,57 @@ impl ImportRewriter {
         }
     }
 
+    /// Collect relative `.vue` import specifiers (those starting with `./`
+    /// or `../`) from the source. The editor's Corsa session uses this to
+    /// enumerate siblings whose virtual `.vue.ts` mirrors must be overlaid
+    /// for relative resolution to succeed; alias and bare specifiers are
+    /// excluded because they are handled by tsconfig `paths` and the ambient
+    /// `*.vue.ts` declaration respectively. See issue #752.
+    pub fn collect_relative_vue_specifiers(
+        &self,
+        source: &str,
+        source_type: SourceType,
+    ) -> Vec<String> {
+        if !source.contains(".vue") {
+            return Vec::new();
+        }
+
+        let allocator = Allocator::default();
+        let parser = Parser::new(&allocator, source, source_type);
+        let result = parser.parse();
+
+        let mut specifiers: Vec<String> = Vec::new();
+        let mut push = |path: &str| {
+            if path.ends_with(".vue") && (path.starts_with("./") || path.starts_with("../")) {
+                let candidate = path.to_compact_string();
+                if !specifiers.iter().any(|s| s.as_str() == candidate.as_str()) {
+                    specifiers.push(candidate);
+                }
+            }
+        };
+
+        for stmt in &result.program.body {
+            match stmt {
+                Statement::ImportDeclaration(decl) => push(&decl.source.value),
+                Statement::ExportNamedDeclaration(decl) => {
+                    if let Some(source) = &decl.source {
+                        push(&source.value);
+                    }
+                }
+                Statement::ExportAllDeclaration(decl) => push(&decl.source.value),
+                _ => {}
+            }
+        }
+
+        let mut collector = DynamicImportCollector::new();
+        collector.visit_program(&result.program);
+        for (_, _, path) in collector.imports {
+            push(&path);
+        }
+
+        specifiers
+    }
+
     /// Rewrite a module specifier if it's a .vue import.
     fn rewrite_module_specifier(&self, path: &str) -> Option<String> {
         // Rewrite every `.vue` import to `.vue.ts` so Corsa resolves the
@@ -357,6 +408,31 @@ const x = 1;"#;
 
         // The adjustment is +3 (.ts added), so virtual - 3 = original
         assert!(original_offset < virtual_offset);
+    }
+
+    #[test]
+    fn test_collect_relative_vue_specifiers() {
+        let rewriter = ImportRewriter::new();
+        let source = r#"import App from './App.vue';
+import Sibling from '../shared/Sibling.vue';
+import Aliased from '@/Aliased.vue';
+import { ref } from 'vue';
+import Lazy from './App.vue';
+const Lazy2 = () => import('./Lazy.vue');
+export { default as Re } from './Re.vue';
+"#;
+        let mut found = rewriter.collect_relative_vue_specifiers(source, SourceType::ts());
+        found.sort();
+        // Aliased and bare specifiers are intentionally excluded.
+        assert_eq!(
+            found.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
+            [
+                "../shared/Sibling.vue",
+                "./App.vue",
+                "./Lazy.vue",
+                "./Re.vue"
+            ]
+        );
     }
 
     #[test]

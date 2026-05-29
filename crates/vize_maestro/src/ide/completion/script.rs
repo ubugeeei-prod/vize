@@ -482,7 +482,7 @@ fn member_access_receiver(content: &str, offset: usize) -> Option<&str> {
 
     while receiver_start > 0 {
         let byte = before.as_bytes()[receiver_start - 1];
-        if is_ident_byte(byte) {
+        if is_receiver_byte(byte) {
             receiver_start -= 1;
         } else {
             break;
@@ -496,9 +496,12 @@ fn member_access_receiver(content: &str, offset: usize) -> Option<&str> {
     Some(&before[receiver_start..receiver_end])
 }
 
+// Mirrors `CursorContext::is_receiver_byte`. Including `.` and `]` keeps
+// chained receivers like `count.value` and indexed receivers like `arr[0]`
+// intact so the two detectors agree (cf. issue #751).
 #[inline]
-fn is_ident_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+fn is_receiver_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$' | b'.' | b']')
 }
 
 fn reactive_kind_for_name(script_content: &str, name: &str) -> Option<ReactiveKind> {
@@ -943,6 +946,39 @@ mod infer_tests {
             .as_deref(),
             Some("boolean"),
         );
+    }
+
+    #[test]
+    fn receiver_extractor_matches_cursor_context_on_chains() {
+        use super::member_access_receiver;
+        use crate::ide::cursor_context::CursorContext;
+
+        // Chained member access must not silently truncate to the leaf
+        // identifier. `CursorContext::detect` exposes the full receiver
+        // (`count.value`), and the completion-side extractor used to disagree
+        // (yielding just `value`). Pin the fix from issue #751 by asserting
+        // both extractors agree.
+        for src in ["count.value.", "obj.foo.", "a.b.c.", "count.", "foo[0]."] {
+            let from_completion = member_access_receiver(src, src.len());
+            let from_cursor = match CursorContext::detect(src, src.len()) {
+                CursorContext::MemberAccess { receiver, .. } => Some(receiver),
+                _ => None,
+            };
+            assert_eq!(
+                from_completion, from_cursor,
+                "receiver mismatch for {src:?}",
+            );
+        }
+
+        // Specifically pin the chained `count.value.` shape — used to truncate
+        // to `value`.
+        assert_eq!(
+            member_access_receiver("count.value.", "count.value.".len()),
+            Some("count.value"),
+        );
+
+        // No trailing dot → not a member-access context.
+        assert_eq!(member_access_receiver("count", 5), None);
     }
 
     #[test]

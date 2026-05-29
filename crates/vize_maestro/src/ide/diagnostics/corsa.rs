@@ -9,7 +9,127 @@ use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Position, Range, Url}
 use crate::server::ServerState;
 
 use super::{DiagnosticService, SourceMapping, VirtualTsResult, sources};
+use vize_canon::{ImportRewriter, ImportSourceMap};
 use vize_carton::cstr;
+
+/// Apply `ImportRewriter` to the generated virtual TS so `.vue` imports
+/// resolve to the generated `.vue.ts` mirrors in the editor Corsa session.
+///
+/// The rewrite only changes bytes *inside* import specifier strings (single
+/// line), so line numbers are preserved — only column offsets within affected
+/// lines shift. Returns the rewritten code and a byte-offset source map that
+/// `map_diagnostic_with_source_mappings` uses to translate post-rewrite
+/// diagnostic offsets back into pre-rewrite virtual TS offsets (which are the
+/// coordinate system the byte-range source mappings operate in).
+fn rewrite_vue_imports(code: &str) -> (std::string::String, ImportSourceMap) {
+    use oxc_span::SourceType;
+    let result = ImportRewriter::new().rewrite(code, SourceType::ts());
+    #[allow(clippy::disallowed_methods)]
+    (result.code.to_string(), result.source_map)
+}
+
+fn collect_relative_vue_specifiers(code: &str) -> Vec<std::string::String> {
+    use oxc_span::SourceType;
+    #[allow(clippy::disallowed_methods)]
+    ImportRewriter::new()
+        .collect_relative_vue_specifiers(code, SourceType::ts())
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect()
+}
+
+/// Overlay the virtual TS for every relative `.vue` import of `host_uri`
+/// into the editor's Corsa session so TypeScript module resolution can find
+/// them (issue #752). Each sibling is opened at `<sibling_abs_path>.ts`,
+/// matching the `.vue.ts` suffix produced by `ImportRewriter`. Transitive
+/// `.vue` imports are followed recursively; cycles are avoided via a
+/// visited set keyed on the canonicalized sibling path. Failures are
+/// logged and skipped — a missing sibling falls through to the existing
+/// TS2307 surface, which is the desired behavior for genuinely missing
+/// modules.
+async fn overlay_sibling_vue_mirrors(
+    bridge: &std::sync::Arc<vize_canon::CorsaBridge>,
+    host_uri: &Url,
+    initial_specifiers: &[std::string::String],
+    legacy_vue2: bool,
+) {
+    use std::collections::HashSet;
+    use std::path::PathBuf;
+
+    if initial_specifiers.is_empty() {
+        return;
+    }
+
+    let Ok(host_path) = host_uri.to_file_path() else {
+        tracing::debug!("overlay_sibling_vue_mirrors: host URI is not a file path: {host_uri}",);
+        return;
+    };
+    let host_dir = match host_path.parent() {
+        Some(dir) => dir.to_path_buf(),
+        None => return,
+    };
+
+    let mut visited: HashSet<PathBuf> = HashSet::new();
+    visited.insert(host_path.clone());
+
+    let mut queue: Vec<(PathBuf, Vec<std::string::String>)> =
+        vec![(host_dir, initial_specifiers.to_vec())];
+
+    while let Some((dir, specifiers)) = queue.pop() {
+        for specifier in specifiers {
+            let resolved = dir.join(specifier.as_str());
+            // Canonicalize is best-effort: if the file doesn't exist we still
+            // try the lexical join so genuinely missing imports surface
+            // TS2307 just as before.
+            let canonical = std::fs::canonicalize(&resolved).unwrap_or(resolved);
+            if !visited.insert(canonical.clone()) {
+                continue;
+            }
+
+            let sibling_content = match std::fs::read_to_string(&canonical) {
+                Ok(text) => text,
+                Err(err) => {
+                    tracing::debug!(
+                        "overlay sibling skipped — read failed for {}: {err}",
+                        canonical.display(),
+                    );
+                    continue;
+                }
+            };
+
+            let sibling_uri = match Url::from_file_path(&canonical) {
+                Ok(uri) => uri,
+                Err(_) => continue,
+            };
+
+            let sibling_virtual = if canonical.to_string_lossy().ends_with(".art.vue") {
+                DiagnosticService::generate_virtual_ts_for_art(&sibling_uri, &sibling_content)
+            } else {
+                DiagnosticService::generate_virtual_ts(&sibling_uri, &sibling_content, legacy_vue2)
+            };
+            let Some(sibling_virtual) = sibling_virtual else {
+                continue;
+            };
+
+            let sibling_name = cstr!("{}.ts", canonical.to_string_lossy());
+            if let Err(err) = bridge
+                .open_or_update_virtual_document(&sibling_name, &sibling_virtual.code)
+                .await
+            {
+                tracing::debug!("overlay sibling failed for {}: {err}", canonical.display(),);
+                continue;
+            }
+
+            let next_dir = canonical
+                .parent()
+                .map(|p| p.to_path_buf())
+                .unwrap_or_else(|| canonical.clone());
+            if !sibling_virtual.relative_vue_imports.is_empty() {
+                queue.push((next_dir, sibling_virtual.relative_vue_imports));
+            }
+        }
+    }
+}
 
 type LspRangeParts = (u32, u32, u32, u32);
 
@@ -71,6 +191,19 @@ impl DiagnosticService {
 
         // Create the virtual document name used to derive a stable URI.
         let virtual_name = cstr!("{}.ts", uri.path());
+
+        // Issue #752: Overlay sibling `.vue.ts` mirrors for every relative
+        // `.vue` import so TypeScript's module resolution succeeds against
+        // the temp-dir Corsa session. Without this, `import App from
+        // './app.vue'` rewrites correctly to `./app.vue.ts` but still
+        // reports TS2307 because the sibling is not present.
+        overlay_sibling_vue_mirrors(
+            &bridge,
+            uri,
+            &virtual_result.relative_vue_imports,
+            legacy_vue2,
+        )
+        .await;
 
         // Open or update the document in Corsa (uses didChange if already open).
         tracing::info!("opening/updating virtual document: {}", virtual_name);
@@ -143,6 +276,7 @@ impl DiagnosticService {
                     virtual_ts,
                     content.as_str(),
                     source_mappings,
+                    &virtual_result.import_source_map,
                     diag.range.start.line,
                     diag.range.start.character,
                     diag.range.end.line,
@@ -352,12 +486,23 @@ impl DiagnosticService {
         // Parse @vize-map comments to build line mappings
         // Format: // @vize-map: TYPE -> START:END
         // Where START:END are byte offsets in the SFC
+        // @vize-map comments are inserted by the generator on dedicated lines,
+        // so line indices survive the `.vue` → `.vue.ts` import rewrite below
+        // (which only edits bytes inside string literals on import lines).
         let line_mappings = Self::parse_vize_map_comments(&code);
 
+        // Issue #752: rewrite `.vue` import specifiers to `.vue.ts` so the
+        // editor's Corsa session resolves sibling SFCs via the same virtual
+        // mirrors used by the batch path. Collect the relative specifiers
+        // from the pre-rewrite code so the caller can overlay siblings.
+        let relative_vue_imports = collect_relative_vue_specifiers(&code);
+        let (rewritten_code, import_source_map) = rewrite_vue_imports(&code);
+
         Some(VirtualTsResult {
-            #[allow(clippy::disallowed_methods)]
-            code: code.to_string(),
+            code: rewritten_code,
             source_mappings,
+            import_source_map,
+            relative_vue_imports,
             user_code_start_line,
             sfc_script_start_line,
             template_scope_start_line,
@@ -579,10 +724,16 @@ impl DiagnosticService {
         // Parse @vize-map comments
         let line_mappings = Self::parse_vize_map_comments(&code);
 
+        // Issue #752: same rewrite as the non-art path so `.vue` imports in
+        // the art file's `<script setup>` resolve to virtual `.vue.ts` mirrors.
+        let relative_vue_imports = collect_relative_vue_specifiers(&code);
+        let (rewritten_code, import_source_map) = rewrite_vue_imports(&code);
+
         Some(VirtualTsResult {
-            #[allow(clippy::disallowed_methods)]
-            code: code.to_string(),
+            code: rewritten_code,
             source_mappings,
+            import_source_map,
+            relative_vue_imports,
             user_code_start_line,
             sfc_script_start_line,
             template_scope_start_line,
@@ -592,18 +743,25 @@ impl DiagnosticService {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn map_diagnostic_with_source_mappings(
     virtual_ts: &str,
     source: &str,
     mappings: &[vize_canon::virtual_ts::VizeMapping],
+    import_source_map: &ImportSourceMap,
     start_line: u32,
     start_character: u32,
     end_line: u32,
     end_character: u32,
 ) -> Option<LspRangeParts> {
-    let start_offset = line_character_to_byte_offset(virtual_ts, start_line, start_character)?;
-    let end_offset = line_character_to_byte_offset(virtual_ts, end_line, end_character)
-        .unwrap_or(start_offset.saturating_add(1));
+    // Diagnostics come back from Corsa in coordinates of the *rewritten*
+    // virtual TS (the one we sent). The byte-range mappings, however, were
+    // produced before the `.vue` → `.vue.ts` rewrite. Translate first.
+    let start_offset_post = line_character_to_byte_offset(virtual_ts, start_line, start_character)?;
+    let end_offset_post = line_character_to_byte_offset(virtual_ts, end_line, end_character)
+        .unwrap_or(start_offset_post.saturating_add(1));
+    let start_offset = import_source_map.get_original_offset(start_offset_post as u32) as usize;
+    let end_offset = import_source_map.get_original_offset(end_offset_post as u32) as usize;
     let start_mapping = mapping_for_generated_offset(mappings, start_offset)?;
     let src_start = map_generated_offset_to_source(start_mapping, start_offset);
     let src_end = mapping_for_generated_offset(mappings, end_offset)
@@ -821,5 +979,75 @@ mod tests {
         let offset = source.find("missing").unwrap();
 
         assert_eq!(source_offset_to_position(source, offset), (0, 19));
+    }
+
+    /// Issue #752: editor-side virtual TS generation must rewrite `.vue`
+    /// import specifiers to `.vue.ts` so the Corsa session can resolve
+    /// siblings via the virtual mirror — alias *and* relative specifiers
+    /// both get rewritten, mirroring the batch pipeline.
+    #[test]
+    fn editor_virtual_ts_rewrites_dot_vue_imports() {
+        use crate::DiagnosticService;
+        use tower_lsp::lsp_types::Url;
+
+        let uri = Url::parse("file:///tmp/Host.vue").expect("parse uri");
+        let content = "<script setup lang=\"ts\">\n\
+                       import App from './app.vue'\n\
+                       import Sibling from '../shared/Sib.vue'\n\
+                       import Aliased from '@/Alias.vue'\n\
+                       import { ref } from 'vue'\n\
+                       const _u = App\n\
+                       const _v = Sibling\n\
+                       const _w = Aliased\n\
+                       const _r = ref(0)\n\
+                       </script>\n\
+                       <template><div /></template>";
+
+        let result = DiagnosticService::generate_virtual_ts(&uri, content, false)
+            .expect("virtual ts generated");
+
+        assert!(
+            !result.code.contains("'./app.vue'"),
+            "expected relative .vue import to be rewritten, got:\n{}",
+            result.code,
+        );
+        assert!(
+            result.code.contains("'./app.vue.ts'"),
+            "expected rewritten relative specifier, got:\n{}",
+            result.code,
+        );
+        assert!(
+            result.code.contains("'../shared/Sib.vue.ts'"),
+            "expected rewritten parent-path specifier, got:\n{}",
+            result.code,
+        );
+        assert!(
+            result.code.contains("'@/Alias.vue.ts'"),
+            "expected rewritten alias specifier, got:\n{}",
+            result.code,
+        );
+        // Only relative specifiers feed the sibling overlay; alias and bare
+        // imports are excluded since they resolve via tsconfig paths and the
+        // ambient stub respectively.
+        assert!(
+            result.relative_vue_imports.iter().any(|s| s == "./app.vue"),
+            "expected ./app.vue in relative_vue_imports, got {:?}",
+            result.relative_vue_imports,
+        );
+        assert!(
+            result
+                .relative_vue_imports
+                .iter()
+                .any(|s| s == "../shared/Sib.vue"),
+            "expected ../shared/Sib.vue in relative_vue_imports, got {:?}",
+            result.relative_vue_imports,
+        );
+        assert!(
+            !result
+                .relative_vue_imports
+                .iter()
+                .any(|s| s == "@/Alias.vue"),
+            "alias specifier must not appear in relative_vue_imports",
+        );
     }
 }
