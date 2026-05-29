@@ -29,8 +29,117 @@ impl CodeActionService {
         // edit when the cursor sits on a known reactive ref. See #691.
         actions.extend(Self::collect_wrap_with_value(ctx, range));
         actions.extend(Self::collect_unwrap_value(ctx, range));
+        actions.extend(Self::collect_auto_import(ctx, range));
 
         actions
+    }
+
+    /// Offer "Auto-import from <path>" when the cursor sits on an identifier
+    /// that the current SFC's script doesn't declare, but the workspace
+    /// index built in #722 knows about.
+    fn collect_auto_import(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
+        let _ = range;
+        let Some(identifier_range) = identifier_at_cursor(&ctx.content, ctx.offset) else {
+            return Vec::new();
+        };
+        let identifier = &ctx.content[identifier_range.clone()];
+        if identifier.is_empty()
+            || identifier
+                .chars()
+                .next()
+                .is_some_and(|c| c.is_ascii_digit())
+        {
+            return Vec::new();
+        }
+
+        // Skip names that the SFC already binds. Looking only at script
+        // setup is sufficient for the common case; the broader Croquis
+        // resolution moves in a follow-up.
+        if sfc_script_declares(&ctx.content, identifier) {
+            return Vec::new();
+        }
+
+        // Index the directory the current file lives in. Recursive scan
+        // and tsconfig path-alias resolution are tracked in #689; the
+        // single-directory scan is enough to demonstrate end-to-end value
+        // and keeps the action responsive on large workspaces.
+        let workspace_dir = ctx
+            .uri
+            .to_file_path()
+            .ok()
+            .and_then(|path| path.parent().map(|p| p.to_path_buf()));
+        let Some(workspace_dir) = workspace_dir else {
+            return Vec::new();
+        };
+        let index = crate::ide::auto_import::AutoImportIndex::from_directory(&workspace_dir);
+        let entry = index.lookup(identifier).next().cloned();
+        let Some(entry) = entry else {
+            return Vec::new();
+        };
+
+        let import_specifier = match relative_specifier(&workspace_dir, &entry.source) {
+            Some(s) => s,
+            None => return Vec::new(),
+        };
+        #[allow(clippy::disallowed_macros)]
+        let import_statement = match entry.kind {
+            crate::ide::auto_import::AutoImportKind::VueComponent => {
+                format!("import {} from '{}'\n", entry.name, import_specifier)
+            }
+            crate::ide::auto_import::AutoImportKind::Composable => {
+                format!("import {{ {} }} from '{}'\n", entry.name, import_specifier)
+            }
+        };
+
+        // Insert at the start of script setup if present, otherwise at the
+        // start of the regular script block.
+        let options = vize_atelier_sfc::SfcParseOptions {
+            filename: ctx.uri.path().to_string().into(),
+            ..Default::default()
+        };
+        let Ok(descriptor) = vize_atelier_sfc::parse_sfc(&ctx.content, options) else {
+            return Vec::new();
+        };
+        let insert_offset = descriptor
+            .script_setup
+            .as_ref()
+            .map(|s| s.loc.start)
+            .or_else(|| descriptor.script.as_ref().map(|s| s.loc.start));
+        let Some(insert_offset) = insert_offset else {
+            return Vec::new();
+        };
+        let (line, character) = offset_to_line_col(&ctx.content, insert_offset);
+        let insert_position = Position { line, character };
+        let edit_range = Range {
+            start: insert_position,
+            end: insert_position,
+        };
+
+        let mut changes = std::collections::HashMap::new();
+        changes.insert(
+            ctx.uri.clone(),
+            vec![TextEdit {
+                range: edit_range,
+                new_text: import_statement,
+            }],
+        );
+
+        #[allow(clippy::disallowed_macros)]
+        let action = CodeAction {
+            title: format!("Auto-import `{}` from `{}`", entry.name, import_specifier),
+            kind: Some(CodeActionKind::QUICKFIX),
+            diagnostics: None,
+            edit: Some(WorkspaceEdit {
+                changes: Some(changes),
+                document_changes: None,
+                change_annotations: None,
+            }),
+            command: None,
+            is_preferred: Some(true),
+            disabled: None,
+            data: None,
+        };
+        vec![CodeActionOrCommand::CodeAction(action)]
     }
 
     /// Offer an "Unwrap `.value`" quick fix when the cursor sits on the
@@ -506,6 +615,95 @@ fn get_line_indent(source: &str, offset: usize) -> &str {
 /// Check if two ranges overlap.
 /// Return the byte range of the identifier under the cursor, or `None` when
 /// the cursor is not on an identifier.
+/// True when the SFC's script (setup or plain) declares `name` via Croquis'
+/// binding analysis. Used by the auto-import code action to skip names the
+/// user already imported / declared.
+fn sfc_script_declares(content: &str, name: &str) -> bool {
+    let options = vize_atelier_sfc::SfcParseOptions::default();
+    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(content, options) else {
+        return false;
+    };
+    let script_content = descriptor
+        .script_setup
+        .as_ref()
+        .map(|s| s.content.to_string())
+        .or_else(|| descriptor.script.as_ref().map(|s| s.content.to_string()));
+    let Some(script_content) = script_content else {
+        return false;
+    };
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions {
+        analyze_script: true,
+        ..Default::default()
+    });
+    if descriptor.script_setup.is_some() {
+        analyzer.analyze_script_setup(&script_content);
+    } else {
+        analyzer.analyze_script_plain(&script_content);
+    }
+    analyzer.finish().bindings.contains(name)
+}
+
+/// Convert an absolute path to a relative module specifier suitable for an
+/// import statement (`./Button.vue`, `../shared/useCounter`). Returns `None`
+/// when the two paths share no common root.
+fn relative_specifier(from_dir: &std::path::Path, target: &std::path::Path) -> Option<String> {
+    let target = target
+        .canonicalize()
+        .unwrap_or_else(|_| target.to_path_buf());
+    let from_dir = from_dir
+        .canonicalize()
+        .unwrap_or_else(|_| from_dir.to_path_buf());
+    let rel = diff_paths(&target, &from_dir)?;
+    let mut s = rel.to_string_lossy().to_string();
+    if !s.starts_with('.') && !s.starts_with('/') {
+        s.insert_str(0, "./");
+    }
+    if s.ends_with(".ts") || s.ends_with(".js") {
+        // Strip trailing .ts/.js for the import specifier so the bundler /
+        // tsconfig resolution picks the right file.
+        s.truncate(s.len() - 3);
+    }
+    Some(s)
+}
+
+/// Compute `target` relative to `base`. Mirrors `pathdiff::diff_paths` —
+/// inlined here to avoid pulling a new dependency for one function.
+fn diff_paths(target: &std::path::Path, base: &std::path::Path) -> Option<std::path::PathBuf> {
+    use std::path::{Component, PathBuf};
+    if target.is_absolute() != base.is_absolute() {
+        if target.is_absolute() {
+            return Some(target.to_path_buf());
+        }
+        return None;
+    }
+    let mut ita = target.components();
+    let mut itb = base.components();
+    let mut comps = vec![];
+    loop {
+        match (ita.next(), itb.next()) {
+            (None, None) => break,
+            (Some(a), None) => {
+                comps.push(a);
+                comps.extend(ita.by_ref());
+                break;
+            }
+            (None, _) => comps.push(Component::ParentDir),
+            (Some(a), Some(b)) if comps.is_empty() && a == b => (),
+            (Some(_), Some(Component::CurDir)) => (),
+            (Some(_), Some(_)) => {
+                comps.push(Component::ParentDir);
+                for _ in itb {
+                    comps.push(Component::ParentDir);
+                }
+                comps.push(ita.next()?);
+                comps.extend(ita.by_ref());
+                break;
+            }
+        }
+    }
+    Some(comps.iter().map(|c| c.as_os_str()).collect::<PathBuf>())
+}
+
 fn identifier_at_cursor(content: &str, offset: usize) -> Option<std::ops::Range<usize>> {
     let bytes = content.as_bytes();
     let end = offset.min(content.len());
@@ -645,5 +843,27 @@ mod tests {
         assert_eq!(get_line_indent("  hello", 3), "  ");
         assert_eq!(get_line_indent("a\n  hello", 5), "  ");
         assert_eq!(get_line_indent("\t\thello", 3), "\t\t");
+    }
+
+    #[test]
+    fn test_diff_paths_relative_specifier() {
+        use super::relative_specifier;
+        let from = std::env::temp_dir().join("vize-ai-test-from");
+        let target_dir = std::env::temp_dir().join("vize-ai-test-target");
+        std::fs::create_dir_all(&from).unwrap();
+        std::fs::create_dir_all(&target_dir).unwrap();
+        let target = target_dir.join("MyButton.vue");
+        std::fs::write(&target, "").unwrap();
+        let result = relative_specifier(&from, &target).unwrap();
+        assert!(
+            result.contains("MyButton.vue"),
+            "expected MyButton.vue in result, got {result:?}",
+        );
+        assert!(
+            result.starts_with('.'),
+            "expected leading `./` or `../`, got {result:?}",
+        );
+        std::fs::remove_dir_all(&from).ok();
+        std::fs::remove_dir_all(&target_dir).ok();
     }
 }
