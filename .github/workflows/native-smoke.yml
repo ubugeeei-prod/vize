@@ -32,7 +32,7 @@ jobs:
           - runner: ubuntu-24.04
             target: linux-x64-gnu
             msvc_arch: amd64
-          - runner: ubuntu-24.04-arm
+          - runner: blacksmith-4vcpu-ubuntu-2404-arm
             target: linux-arm64-gnu
             msvc_arch: amd64
           - runner: macos-15-intel
@@ -103,7 +103,7 @@ jobs:
           - runner: ubuntu-24.04
             target: linux-x64-gnu
             msvc_arch: amd64
-          - runner: ubuntu-24.04-arm
+          - runner: blacksmith-4vcpu-ubuntu-2404-arm
             target: linux-arm64-gnu
             msvc_arch: amd64
           - runner: macos-15-intel
