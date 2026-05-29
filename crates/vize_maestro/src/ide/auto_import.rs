@@ -91,6 +91,45 @@ impl AutoImportIndex {
         self.entries.iter().filter(move |entry| entry.name == name)
     }
 
+    /// Find the first importable entry in `root` whose name equals `name`,
+    /// without building (and immediately discarding) a full directory index.
+    ///
+    /// The auto-import code action only ever needs one entry, and it fires
+    /// frequently (cursor moves, lightbulb refresh). Short-circuiting at the
+    /// first match keeps it from reading the whole directory into a `Vec` and
+    /// allocating an entry per `.vue` / composable just to throw all but one
+    /// away. Iteration order matches `from_directory` + `lookup().next()`.
+    pub fn find_in_directory(root: &Path, name: &str) -> Option<AutoImportEntry> {
+        let read_dir = std::fs::read_dir(root).ok()?;
+        for entry in read_dir.flatten() {
+            let path = entry.path();
+            let Some(file_name) = path.file_name().and_then(|n| n.to_str()) else {
+                continue;
+            };
+            if let Some(stem) = file_name.strip_suffix(".vue") {
+                if pascal_case(stem) == name {
+                    return Some(AutoImportEntry {
+                        name: name.to_string(),
+                        source: path,
+                        kind: AutoImportKind::VueComponent,
+                    });
+                }
+            } else if file_name.starts_with("use") {
+                let lowered = file_name.to_ascii_lowercase();
+                if (lowered.ends_with(".ts") || lowered.ends_with(".js"))
+                    && path.file_stem().and_then(|n| n.to_str()) == Some(name)
+                {
+                    return Some(AutoImportEntry {
+                        name: name.to_string(),
+                        source: path,
+                        kind: AutoImportKind::Composable,
+                    });
+                }
+            }
+        }
+        None
+    }
+
     /// Number of indexed entries. Useful for tests and tracing.
     pub fn len(&self) -> usize {
         self.entries.len()
@@ -145,5 +184,22 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let index = AutoImportIndex::from_directory(dir.path());
         assert!(index.is_empty());
+    }
+
+    #[test]
+    fn find_in_directory_matches_lookup_first() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("MyButton.vue"), "").unwrap();
+        std::fs::write(dir.path().join("useCounter.ts"), "").unwrap();
+        std::fs::write(dir.path().join("random.txt"), "").unwrap();
+
+        let index = AutoImportIndex::from_directory(dir.path());
+        for name in ["MyButton", "useCounter", "DoesNotExist"] {
+            assert_eq!(
+                AutoImportIndex::find_in_directory(dir.path(), name),
+                index.lookup(name).next().cloned(),
+                "find_in_directory should match lookup().next() for {name}",
+            );
+        }
     }
 }

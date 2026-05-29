@@ -584,6 +584,28 @@ const { msg = 0 } = defineProps<{ msg?: string }>();
             diagnostic.message
         );
         assert_eq!(diagnostic.severity, Some(DiagnosticSeverity::ERROR));
+
+        // The diagnostic must point at the offending default value (`0` on the
+        // second SFC line, after `const { msg = `), not at the start of the
+        // `<script setup>` block (line 0), which was the previous behavior.
+        assert_eq!(
+            diagnostic.range.start,
+            tower_lsp::lsp_types::Position {
+                line: 1,
+                character: 14,
+            },
+            "diagnostic should point at the default value `0`, got {:?}",
+            diagnostic.range,
+        );
+        assert_eq!(
+            diagnostic.range.end,
+            tower_lsp::lsp_types::Position {
+                line: 1,
+                character: 15,
+            },
+            "diagnostic should span the single-character default `0`, got {:?}",
+            diagnostic.range,
+        );
     }
 
     #[test]

@@ -11,6 +11,19 @@ use vize_relief::{
 
 use super::{CurrentElement, Parser, ParserStackEntry};
 
+/// Maximum element nesting depth retained by the parser.
+///
+/// Elements nested deeper than this are flattened with a recoverable error
+/// instead of being pushed onto the open-element stack. This keeps the depth
+/// of the produced AST bounded so the recursive passes that walk it later
+/// (transform, codegen, semantic analysis) stay within a predictable amount of
+/// stack space regardless of the input. The limit is far beyond any realistic
+/// template while still cheap to enforce.
+const MAX_ELEMENT_NESTING_DEPTH: usize = 256;
+
+/// Message attached to the recoverable error raised when the nesting limit is hit.
+const NESTING_TOO_DEEP_MESSAGE: &str = "Element nesting is too deep.";
+
 impl<'a> Parser<'a> {
     /// Process text content
     pub(super) fn on_text_impl(&mut self, start: usize, end: usize) {
@@ -178,6 +191,18 @@ impl<'a> Parser<'a> {
 
             if current.is_self_closing || (self.options.is_void_tag)(element.tag.as_str()) {
                 // Self-closing or void tag, add directly
+                let boxed = Box::new_in(element, self.allocator);
+                self.add_child(TemplateChildNode::Element(boxed));
+            } else if self.stack.len() >= MAX_ELEMENT_NESTING_DEPTH {
+                // Nesting limit reached: keep the element but do not descend any
+                // further, so the resulting tree depth stays bounded. The
+                // element is attached at the current level as a leaf and a
+                // recoverable error is recorded.
+                self.errors.push(CompilerError::with_message(
+                    ErrorCode::ExtendPoint,
+                    NESTING_TOO_DEEP_MESSAGE,
+                    Some(element.loc.clone()),
+                ));
                 let boxed = Box::new_in(element, self.allocator);
                 self.add_child(TemplateChildNode::Element(boxed));
             } else {

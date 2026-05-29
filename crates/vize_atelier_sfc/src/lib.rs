@@ -59,7 +59,9 @@ pub use bundler::{
     strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
 };
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_vue_parser_quirks};
-pub use compile_script::props::validate_script_setup_semantics;
+pub use compile_script::props::{
+    validate_script_setup_semantics, validate_script_setup_semantics_located,
+};
 pub use css::{
     CssAstResult, CssCompileOptions, CssCompileResult, CssTargets, bundle_css, compile_css,
     compile_style_block, parse_css_ast, print_css_ast,

@@ -170,6 +170,62 @@ pub(crate) fn collect_default_check_files(
     files
 }
 
+/// Collect ambient declaration (`.d.ts`) files that belong to the tsconfig
+/// "program" so their global types stay in scope when only a subset of files is
+/// checked explicitly (e.g. `vize check src/App.vue`).
+///
+/// Ambient declarations (`declare global`, top-level `declare const`) are not
+/// pulled in by imports, so the explicit-path collector drops them and `tsgo`
+/// then reports false `TS2304` errors for genuinely global names. This mirrors
+/// `tsc`, which always loads the declaration files matched by `files`/`include`
+/// regardless of which entry files are requested.
+///
+/// Module-shim declaration files (`declare module "vue"`, `declare module
+/// "*.css"`) are deliberately excluded: forcing them in as program roots makes
+/// their ambient external-module declarations shadow the real package types
+/// (a `declare module "vue"` block erases `vue`'s real exports). Those files are
+/// already reached through the imports that reference them, so dropping them
+/// from the ambient set is safe.
+pub(crate) fn collect_ambient_declaration_files(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+) -> Vec<PathBuf> {
+    collect_default_check_files(project_root, tsconfig_path)
+        .into_iter()
+        .filter(|path| is_declaration_file(path))
+        .filter(|path| match fs::read_to_string(path) {
+            Ok(content) => !declares_ambient_module(&content),
+            Err(_) => false,
+        })
+        .collect()
+}
+
+fn is_declaration_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".d.ts"))
+}
+
+/// Returns `true` when the file declares an ambient *external* module, i.e.
+/// `declare module "<specifier>"` with a quoted specifier. Such declarations
+/// shadow real package types when the file is loaded as a program root, so
+/// these files are excluded from the ambient-globals set. A namespace-style
+/// `declare module Foo {}` (no quotes) is a plain global and does not match.
+fn declares_ambient_module(content: &str) -> bool {
+    const NEEDLE: &str = "declare module";
+    content.match_indices(NEEDLE).any(|(index, _)| {
+        let preceded_by_boundary = content[..index]
+            .chars()
+            .next_back()
+            .is_none_or(|ch| !ch.is_alphanumeric() && ch != '_' && ch != '$');
+        preceded_by_boundary
+            && content[index + NEEDLE.len()..]
+                .chars()
+                .find(|ch| !ch.is_whitespace())
+                .is_some_and(|ch| ch == '"' || ch == '\'')
+    })
+}
+
 pub(crate) fn load_tsconfig_declaration_options(
     tsconfig_path: &Path,
 ) -> TsconfigDeclarationOptions {
@@ -688,7 +744,8 @@ fn strip_trailing_commas(content: &str) -> std::string::String {
 #[cfg(test)]
 mod tests {
     use super::{
-        collect_default_check_files, load_tsconfig_declaration_options, resolve_extended_tsconfig,
+        collect_ambient_declaration_files, collect_default_check_files,
+        load_tsconfig_declaration_options, resolve_extended_tsconfig,
     };
     use std::fs;
     use std::path::{Path, PathBuf};
@@ -913,6 +970,99 @@ mod tests {
         let resolved = resolve_extended_tsconfig(&app_dir.join("tsconfig.json"), "@scope/tsconfig");
 
         assert_eq!(resolved, Some(package_dir.join("configs/vue.json")));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn ambient_declaration_collection_keeps_only_dts_within_include() {
+        let case_dir = unique_case_dir("tsconfig-ambient-dts");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src/@types")).unwrap();
+        fs::write(
+            case_dir.join("src/@types/globals.d.ts"),
+            "export {};\ndeclare global { type GlobalTabType = 'a' | 'b'; }\n",
+        )
+        .unwrap();
+        fs::write(case_dir.join("src/env.d.ts"), "declare const X: string;").unwrap();
+        fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+        fs::write(case_dir.join("src/main.ts"), "export const ok = true").unwrap();
+        fs::write(case_dir.join("outside.d.ts"), "declare const Y: string;").unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "include": ["src/**/*"]
+}"#,
+        )
+        .unwrap();
+
+        let files =
+            collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert_eq!(files.len(), 2, "{files:?}");
+        assert!(
+            files
+                .iter()
+                .any(|path| path.ends_with("src/@types/globals.d.ts"))
+        );
+        assert!(files.iter().any(|path| path.ends_with("src/env.d.ts")));
+        assert!(!files.iter().any(|path| path.ends_with("src/App.vue")));
+        assert!(!files.iter().any(|path| path.ends_with("src/main.ts")));
+        assert!(!files.iter().any(|path| path.ends_with("outside.d.ts")));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn ambient_declaration_collection_skips_module_shim_dts() {
+        let case_dir = unique_case_dir("tsconfig-module-shim-dts");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src")).unwrap();
+        // Module-shim file: its `declare module "vue"` block would shadow the
+        // real `vue` package if force-loaded as a program root.
+        fs::write(
+            case_dir.join("src/shims.d.ts"),
+            "declare module \"*.css\";\ndeclare module \"vue\" {\n  export interface GlobalComponents {}\n}\n",
+        )
+        .unwrap();
+        // Genuine ambient-global file: must still be collected.
+        fs::write(
+            case_dir.join("src/globals.d.ts"),
+            "export {};\ndeclare global { type GlobalTabType = 'a' | 'b'; }\n",
+        )
+        .unwrap();
+        // Namespace-style `declare module Foo` is a plain global, not a shim.
+        fs::write(
+            case_dir.join("src/namespace.d.ts"),
+            "declare module Foo { const bar: string; }\n",
+        )
+        .unwrap();
+        fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "include": ["src/**/*"]
+}"#,
+        )
+        .unwrap();
+
+        let files =
+            collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert!(
+            files.iter().any(|path| path.ends_with("src/globals.d.ts")),
+            "declare-global file should be collected: {files:?}"
+        );
+        assert!(
+            files
+                .iter()
+                .any(|path| path.ends_with("src/namespace.d.ts")),
+            "namespace-style declaration should be collected: {files:?}"
+        );
+        assert!(
+            !files.iter().any(|path| path.ends_with("src/shims.d.ts")),
+            "module-shim declaration file should be skipped: {files:?}"
+        );
 
         let _ = fs::remove_dir_all(&case_dir);
     }

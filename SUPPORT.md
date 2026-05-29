@@ -8,15 +8,15 @@ those before opening a support thread.
 
 ## Where to ask
 
-| You want to                                                | Use                                                                    |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Read documentation                                         | https://vizejs.dev                                                     |
-| Try Vize without installing                                | https://vizejs.dev/play/                                               |
-| Report a reproducible bug, regression, or incorrect output | [GitHub Issues](https://github.com/ubugeeei/vize/issues/new/choose)    |
-| Propose a feature, integration, or workflow change         | [GitHub Issues](https://github.com/ubugeeei/vize/issues/new/choose)    |
-| Discuss design, ask "how do I", share usage feedback       | [GitHub Discussions](https://github.com/ubugeeei/vize/discussions)     |
-| Report a security vulnerability                            | Follow [`SECURITY.md`](./SECURITY.md) — do **not** open a public issue |
-| Sponsor / fund development                                 | https://github.com/sponsors/ubugeeei                                   |
+| You want to                                                | Use                                                                      |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Read documentation                                         | https://vizejs.dev                                                       |
+| Try Vize without installing                                | https://vizejs.dev/play/                                                 |
+| Report a reproducible bug, regression, or incorrect output | [GitHub Issues](https://github.com/ubugeeei-prod/vize/issues/new/choose) |
+| Propose a feature, integration, or workflow change         | [GitHub Issues](https://github.com/ubugeeei-prod/vize/issues/new/choose) |
+| Discuss design, ask "how do I", share usage feedback       | [GitHub Discussions](https://github.com/ubugeeei-prod/vize/discussions)  |
+| Report a security vulnerability                            | Follow [`SECURITY.md`](./SECURITY.md) — do **not** open a public issue   |
+| Sponsor / fund development                                 | https://github.com/sponsors/ubugeeei                                     |
 
 If GitHub Discussions are not enabled yet for this repository, open an issue
 with the `question` label and we will move the conversation if it grows.

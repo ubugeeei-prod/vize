@@ -200,8 +200,13 @@ impl ImportRewriter {
 
     /// Rewrite a module specifier if it's a .vue import.
     fn rewrite_module_specifier(&self, path: &str) -> Option<String> {
-        // Only rewrite relative .vue imports
-        if path.ends_with(".vue") && (path.starts_with("./") || path.starts_with("../")) {
+        // Rewrite every `.vue` import to `.vue.ts` so Corsa resolves the
+        // generated virtual module. Relative imports (`./Foo.vue`) map directly
+        // inside the mirror; tsconfig path-alias imports (`@/Foo.vue`) resolve
+        // through the mirror-anchored `paths` of the virtual tsconfig. Bare/npm
+        // `.vue` specifiers fall back to the ambient `*.vue.ts` stub, matching
+        // the previous `*.vue` behavior.
+        if path.ends_with(".vue") {
             Some(cstr!("{path}.ts"))
         } else {
             None
@@ -209,7 +214,7 @@ impl ImportRewriter {
     }
 
     fn rewrite_declaration_specifier(&self, path: &str) -> Option<String> {
-        if path.ends_with(".vue.ts") && (path.starts_with("./") || path.starts_with("../")) {
+        if path.ends_with(".vue.ts") {
             return path
                 .strip_suffix(".ts")
                 .map(|value| value.to_compact_string());
@@ -293,6 +298,18 @@ mod tests {
         let result = rewriter.rewrite(source, SourceType::ts());
 
         assert_eq!(result.code, r#"import { ref } from 'vue';"#);
+    }
+
+    #[test]
+    fn test_rewrite_alias_import() {
+        let rewriter = ImportRewriter::new();
+        let source = r#"import App, { type Props } from '@/App.vue';"#;
+        let result = rewriter.rewrite(source, SourceType::ts());
+
+        assert_eq!(
+            result.code,
+            r#"import App, { type Props } from '@/App.vue.ts';"#
+        );
     }
 
     #[test]

@@ -1,6 +1,6 @@
 # @vizejs/unplugin
 
-Experimental unplugin-based Vue SFC integration powered by [Vize](https://github.com/ubugeeei/vize).
+Experimental unplugin-based Vue SFC integration powered by [Vize](https://github.com/ubugeeei-prod/vize).
 
 > [!WARNING]
 > `@vizejs/unplugin` is still unstable.

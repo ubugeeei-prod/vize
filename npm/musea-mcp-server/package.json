@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/musea-mcp-server",
-  "version": "0.140.0",
+  "version": "0.142.0",
   "description": "MCP server for building Vue.js design systems - component analysis, documentation, variant generation, and design tokens",
   "keywords": [
     "ai",
@@ -11,15 +11,15 @@
     "musea",
     "vue"
   ],
-  "homepage": "https://github.com/ubugeeei/vize",
+  "homepage": "https://github.com/ubugeeei-prod/vize",
   "bugs": {
-    "url": "https://github.com/ubugeeei/vize/issues"
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
   },
   "license": "MIT",
   "author": "ubugeeei",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize.git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
     "directory": "npm/musea-mcp-server"
   },
   "bin": {

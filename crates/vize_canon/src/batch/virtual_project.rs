@@ -30,7 +30,7 @@ use vize_atelier_sfc::{
         SfcCroquisOptions, analyze_sfc_descriptor_with_context,
         analyze_sfc_descriptor_with_context_legacy_vue2,
     },
-    parse_sfc, validate_script_setup_semantics,
+    parse_sfc, validate_script_setup_semantics_located,
 };
 use vize_carton::{
     Bump, FxHashMap, FxHashSet, String as CompactString, ToCompactString, cstr, profile,
@@ -98,6 +98,20 @@ pub struct VirtualProject {
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
 
+    /// Secondary index: original source path -> materialized (virtual) path.
+    /// Keeps `find_by_original` / `map_to_virtual` O(1) instead of scanning
+    /// every virtual file on each LSP position-mapping request.
+    original_index: FxHashMap<PathBuf, PathBuf>,
+
+    /// Original source text as registered, keyed by materialized (virtual)
+    /// path. Retained here (rather than on the public `VirtualFile`) so
+    /// position mapping can convert offsets to line/column without re-reading
+    /// the file from disk on every request, and without changing the public
+    /// `VirtualFile` API. This is also the exact text the source map's
+    /// original offsets refer to (e.g. an editor's unsaved buffer), so it is
+    /// more correct than re-reading live disk state.
+    original_contents: FxHashMap<PathBuf, CompactString>,
+
     /// Parser diagnostics collected before Corsa runs.
     diagnostics: Vec<Diagnostic>,
 
@@ -124,6 +138,8 @@ impl VirtualProject {
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             legacy_vue2: false,
             virtual_files: FxHashMap::default(),
+            original_index: FxHashMap::default(),
+            original_contents: FxHashMap::default(),
             diagnostics: Vec::new(),
             rewriter: ImportRewriter::new(),
         })
@@ -279,6 +295,14 @@ impl VirtualProject {
 
     fn absorb_registered_file(&mut self, registered: RegisteredFile) {
         self.diagnostics.extend(registered.diagnostics);
+        self.original_index.insert(
+            registered.file.original_path.clone(),
+            registered.file.virtual_path.clone(),
+        );
+        self.original_contents.insert(
+            registered.file.virtual_path.clone(),
+            registered.original_content,
+        );
         self.virtual_files
             .insert(registered.file.virtual_path.clone(), registered.file);
     }
@@ -359,9 +383,8 @@ impl VirtualProject {
 
     /// Find a virtual file by its original path.
     pub fn find_by_original(&self, original_path: &Path) -> Option<&VirtualFile> {
-        self.virtual_files
-            .values()
-            .find(|file| file.original_path == original_path)
+        let virtual_path = self.original_index.get(original_path)?;
+        self.virtual_files.get(virtual_path)
     }
 
     /// Find a virtual file by its materialized path.
@@ -392,9 +415,9 @@ impl VirtualProject {
         let virtual_offset = super::source_map::line_col_to_offset(&file.content, line, column)?;
         let (original_offset, _, block_type) =
             file.source_map.get_original_position(virtual_offset)?;
-        let original_content = std::fs::read_to_string(&file.original_path).ok()?;
+        let original_content = self.original_contents.get(&file.virtual_path)?;
         let (original_line, original_column) =
-            super::source_map::offset_to_line_col(&original_content, original_offset)?;
+            super::source_map::offset_to_line_col(original_content, original_offset)?;
 
         Some(OriginalPosition {
             path: file.original_path.clone(),
@@ -412,9 +435,9 @@ impl VirtualProject {
         column: u32,
     ) -> Option<(PathBuf, u32, u32)> {
         let file = self.find_by_original(original_path)?;
-        let original_content = std::fs::read_to_string(&file.original_path).ok()?;
+        let original_content = self.original_contents.get(&file.virtual_path)?;
         let original_offset =
-            super::source_map::line_col_to_offset(&original_content, line, column)?;
+            super::source_map::line_col_to_offset(original_content, line, column)?;
         let virtual_offset = if let Some(ref sfc_map) = file.source_map.sfc_map {
             for block in [
                 SfcBlockType::ScriptSetup,
@@ -482,10 +505,29 @@ impl VirtualProject {
         }
 
         let mut compiler_options = self.load_compiler_options(original_tsconfig.as_deref())?;
+
+        // Capture the original path-alias map before stripping path-sensitive
+        // options, so it can be re-anchored into the virtual mirror below.
+        let original_paths = compiler_options
+            .get("paths")
+            .and_then(Value::as_object)
+            .cloned();
+
         for option in PATH_SENSITIVE_COMPILER_OPTIONS {
             compiler_options.remove(*option);
         }
         compiler_options.insert("allowImportingTsExtensions".into(), Value::Bool(true));
+
+        // Re-anchor tsconfig `paths` into the virtual mirror. Without this the
+        // aliases inherited via `extends` resolve against the real source tree,
+        // where `.vue` files only match the ambient `*.vue` stub (default export
+        // only) and named re-exports surface as false `TS2614`. Each alias
+        // target gets a mirror candidate first (so the generated `.vue.ts`
+        // modules win) and the real-tree path as a fallback (so aliases to files
+        // outside the checked set keep resolving).
+        if let Some(paths) = original_paths {
+            compiler_options.insert("paths".into(), Value::Object(self.remap_paths(&paths)));
+        }
 
         if let Some(out_dir) = out_dir {
             compiler_options.insert("noEmit".into(), Value::Bool(false));
@@ -650,6 +692,57 @@ declare module "*.vue.ts" {
             .cloned()
             .unwrap_or_default())
     }
+
+    /// Re-anchor tsconfig `paths` targets into the virtual mirror. Each relative
+    /// target yields two candidates: the mirror copy (resolved relative to the
+    /// virtual tsconfig, which lives in the mirror root) followed by the real
+    /// source-tree path as a fallback. Absolute and non-string targets pass
+    /// through unchanged.
+    #[allow(clippy::disallowed_types)]
+    fn remap_paths(
+        &self,
+        paths: &Map<std::string::String, Value>,
+    ) -> Map<std::string::String, Value> {
+        let up = self.virtual_root_to_project_prefix();
+        let mut remapped = Map::new();
+        for (alias, targets) in paths {
+            let Some(targets) = targets.as_array() else {
+                remapped.insert(alias.clone(), targets.clone());
+                continue;
+            };
+            let mut candidates = Vec::with_capacity(targets.len() * 2);
+            for target in targets {
+                let Some(target) = target.as_str() else {
+                    candidates.push(target.clone());
+                    continue;
+                };
+                if Path::new(target).is_absolute() {
+                    candidates.push(Value::String(target.to_owned()));
+                    continue;
+                }
+                let core = target.strip_prefix("./").unwrap_or(target);
+                candidates.push(Value::String(cstr!("./{core}").into()));
+                candidates.push(Value::String(cstr!("{up}{core}").into()));
+            }
+            remapped.insert(alias.clone(), Value::Array(candidates));
+        }
+        remapped
+    }
+
+    /// Relative prefix (e.g. `../../../`) from the virtual root back to the
+    /// project root, used to aim alias fallbacks at the real source tree.
+    fn virtual_root_to_project_prefix(&self) -> CompactString {
+        let depth = self
+            .virtual_root
+            .strip_prefix(&self.project_root)
+            .map(|relative| relative.components().count())
+            .unwrap_or(0);
+        let mut prefix = CompactString::with_capacity(depth * 3);
+        for _ in 0..depth {
+            prefix.push_str("../");
+        }
+        prefix
+    }
 }
 
 struct GeneratedVueFile {
@@ -807,7 +900,11 @@ fn collect_sfc_compile_diagnostic(
         return None;
     }
 
-    match validate_script_setup_semantics(&script_setup.content) {
+    match validate_script_setup_semantics_located(
+        &script_setup.content,
+        script_setup.loc.start,
+        source,
+    ) {
         Ok(()) => None,
         Err(error) => Some(sfc_error_to_diagnostic(path, source, descriptor, &error)),
     }
@@ -961,6 +1058,10 @@ fn push_block_range(
 /// independent of any `&mut VirtualProject` so it can be produced in parallel.
 struct RegisteredFile {
     file: VirtualFile,
+    /// Original source text as registered, retained for offset<->line/col
+    /// mapping without a disk re-read. Stored on the project, not the public
+    /// `VirtualFile`.
+    original_content: CompactString,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -1064,6 +1165,7 @@ fn build_vue_registered_file(
             original_path: path.to_path_buf(),
             virtual_path,
         },
+        original_content: content.to_compact_string(),
         diagnostics,
     })
 }
@@ -1089,6 +1191,7 @@ fn build_script_registered_file(
             original_path: path.to_path_buf(),
             virtual_path,
         },
+        original_content: content.to_compact_string(),
         diagnostics: Vec::new(),
     })
 }
@@ -1708,12 +1811,61 @@ const message = 'Hello'
             compiler_options["allowImportingTsExtensions"],
             serde_json::Value::Bool(true)
         );
-        for option in ["baseUrl", "paths", "rootDir", "rootDirs", "typeRoots"] {
+        for option in ["baseUrl", "rootDir", "rootDirs", "typeRoots"] {
             assert!(
                 !compiler_options.contains_key(option),
                 "{option} should remain owned by the extended tsconfig"
             );
         }
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn materialized_tsconfig_reanchors_paths_into_virtual_mirror() {
+        let case_dir = unique_case_dir("tsconfig-paths-reanchor");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r##"{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "#shared": ["./shared/index.ts"]
+    }
+  }
+}"##,
+        )
+        .unwrap();
+        let vue_path = src_dir.join("App.vue");
+        fs::write(
+            &vue_path,
+            "<script setup lang=\"ts\">const count = 1</script>",
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&vue_path).unwrap();
+        project.materialize().unwrap();
+
+        let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
+        let paths = value["compilerOptions"]["paths"].as_object().unwrap();
+
+        // Each target gets a mirror candidate (relative to the virtual tsconfig
+        // in `node_modules/.vize/canon`) first, then the real-tree fallback.
+        assert_eq!(
+            paths["@/*"],
+            serde_json::json!(["./src/*", "../../../src/*"])
+        );
+        assert_eq!(
+            paths["#shared"],
+            serde_json::json!(["./shared/index.ts", "../../../shared/index.ts"])
+        );
 
         let _ = fs::remove_dir_all(&case_dir);
     }

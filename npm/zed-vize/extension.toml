@@ -1,10 +1,10 @@
 id = "vize"
 name = "Vize"
-version = "0.140.0"
+version = "0.142.0"
 schema_version = 1
 authors = ["Vize contributors"]
 description = "Opt-in Vue diagnostics and language support powered by Vize"
-repository = "https://github.com/ubugeeei/vize"
+repository = "https://github.com/ubugeeei-prod/vize"
 
 [language_servers.vize]
 name = "Vize"

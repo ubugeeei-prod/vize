@@ -181,6 +181,303 @@ export default defineComponent({
 }
 
 #[test]
+fn check_resolves_named_exports_from_vue_imported_via_path_alias() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "vue-alias-named-export",
+        &[
+            (
+                "src/AliasProvider.vue",
+                r#"<script setup lang="ts">
+export interface AliasConfig {
+  key: string;
+  label: string;
+}
+
+defineProps<{ configs: AliasConfig[] }>();
+</script>
+
+<template>
+  <div />
+</template>
+"#,
+            ),
+            (
+                "src/AliasConsumer.vue",
+                r#"<script setup lang="ts">
+import AliasProvider, { type AliasConfig } from "@/AliasProvider.vue";
+
+const configs: AliasConfig[] = [{ key: "a", label: "A" }];
+</script>
+
+<template>
+  <AliasProvider :configs="configs" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    // The default helper tsconfig has no path aliases; rewrite it with the
+    // `@/*` -> `src/*` mapping that drives the repro.
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["src/*"] }
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/AliasProvider.vue",
+            "src/AliasConsumer.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_explicit_file_loads_ambient_declare_global_types() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "ambient-declare-global",
+        &[
+            (
+                "src/@types/globals.d.ts",
+                r#"export {};
+
+declare global {
+  type GlobalTabType = "default" | "wireframes" | "liked";
+}
+"#,
+            ),
+            (
+                "src/UseGlobalType.vue",
+                r#"<script setup lang="ts">
+const tab: GlobalTabType = "default";
+</script>
+
+<template>
+  <div>{{ tab }}</div>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/UseGlobalType.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_generic_script_setup_resolves_type_referencing_generic_param() {
+    // `<script setup generic="T">` declares a type that references `T`. The
+    // type is lifted to module scope, so the generic parameter must be
+    // re-declared on it; otherwise `T` is unbound there (TS2304).
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "generic-script-setup-hoisted-type",
+        &[(
+            "src/Generic.vue",
+            r#"<script setup lang="ts" generic="T extends string">
+type Option = { key: T; label: string }
+
+defineProps<{
+  options: Option[]
+  current: T | undefined
+}>()
+</script>
+
+<template>
+  <ul>
+    <li v-for="o in options" :key="o.key">{{ o.label }}</li>
+  </ul>
+</template>
+"#,
+        )],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/Generic.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_lifts_script_setup_type_reexports() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "script-setup-type-reexport",
+        &[
+            (
+                "src/ReExportType.ts",
+                "export type FilterType = 'image' | 'text'\n",
+            ),
+            (
+                "src/ReExportType.vue",
+                r#"<script setup lang="ts">
+import { type FilterType } from './ReExportType'
+
+export type { FilterType }
+
+defineProps<{ kind?: FilterType }>()
+</script>
+
+<template>
+  <div />
+</template>
+"#,
+            ),
+            (
+                "src/ReExportTypeConsumer.vue",
+                r#"<script setup lang="ts">
+import ReExportType, { type FilterType } from './ReExportType.vue'
+
+const v: FilterType = 'image'
+</script>
+
+<template>
+  <ReExportType :kind="v" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/ReExportType.vue",
+            "src/ReExportTypeConsumer.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_respects_explicit_corsa_path() {
     let project_root = create_cli_project(
         "explicit-corsa-path",

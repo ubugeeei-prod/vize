@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/vite-plugin",
-  "version": "0.140.0",
+  "version": "0.142.0",
   "description": "High-performance native Vite plugin for Vue SFC compilation powered by Vize",
   "keywords": [
     "compiler",
@@ -11,14 +11,14 @@
     "vite",
     "vue"
   ],
-  "homepage": "https://github.com/ubugeeei/vize",
+  "homepage": "https://github.com/ubugeeei-prod/vize",
   "bugs": {
-    "url": "https://github.com/ubugeeei/vize/issues"
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize",
+    "url": "https://github.com/ubugeeei-prod/vize",
     "directory": "npm/vite-plugin-vize"
   },
   "files": [

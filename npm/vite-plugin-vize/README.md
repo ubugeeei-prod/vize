@@ -1,6 +1,6 @@
 # @vizejs/vite-plugin
 
-High-performance native Vite plugin for Vue SFC compilation powered by [Vize](https://github.com/ubugeeei/vize).
+High-performance native Vite plugin for Vue SFC compilation powered by [Vize](https://github.com/ubugeeei-prod/vize).
 
 ## Features
 
@@ -18,7 +18,7 @@ Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/inst
 vp install -D @vizejs/vite-plugin
 ```
 
-Add `vize` as a direct dependency only if your project imports shared config helpers from `"vize"` (see [Shared Config](https://github.com/ubugeeei/vize/blob/main/docs/content/guide/vite-plugin.md#shared-config)).
+Add `vize` as a direct dependency only if your project imports shared config helpers from `"vize"` (see [Shared Config](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/guide/vite-plugin.md#shared-config)).
 
 ## Usage
 

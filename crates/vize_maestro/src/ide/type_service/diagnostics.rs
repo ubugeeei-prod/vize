@@ -134,10 +134,12 @@ impl TypeService {
                 #[allow(clippy::disallowed_macros)]
                 let code_description = diag.code.as_ref().map(|code| CodeDescription {
                     href: Url::parse(&format!(
-                        "https://github.com/ubugeeei/vize/wiki/type-errors#{}",
+                        "https://github.com/ubugeeei-prod/vize/wiki/type-errors#{}",
                         code
                     ))
-                    .unwrap_or_else(|_| Url::parse("https://github.com/ubugeeei/vize").unwrap()),
+                    .unwrap_or_else(|_| {
+                        Url::parse("https://github.com/ubugeeei-prod/vize").unwrap()
+                    }),
                 });
 
                 Diagnostic {

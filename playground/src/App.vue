@@ -191,7 +191,7 @@ onMounted(async () => {
         </button>
 
         <a
-          href="https://github.com/ubugeeei/vize"
+          href="https://github.com/ubugeeei-prod/vize"
           target="_blank"
           rel="noopener noreferrer"
           class="github-link"

@@ -487,8 +487,11 @@ fn collect_sfc_compile_diagnostic(
         return None;
     }
 
-    let Err(error) = vize_atelier_sfc::validate_script_setup_semantics(&script_setup.content)
-    else {
+    let Err(error) = vize_atelier_sfc::validate_script_setup_semantics_located(
+        &script_setup.content,
+        script_setup.loc.start,
+        source,
+    ) else {
         return None;
     };
 

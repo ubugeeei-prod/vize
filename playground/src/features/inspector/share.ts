@@ -1,7 +1,7 @@
 import type { DiffStats, InspectorPayload } from "./types";
 
 export const INSPECTOR_HASH_KEY = "inspector";
-const REPOSITORY_URL = "https://github.com/ubugeeei/vize";
+const REPOSITORY_URL = "https://github.com/ubugeeei-prod/vize";
 
 export function encodeInspectorPayload(payload: InspectorPayload): string {
   return encodeURIComponent(JSON.stringify(payload));

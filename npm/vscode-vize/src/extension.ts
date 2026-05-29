@@ -592,7 +592,7 @@ async function showServerNotFoundMessage(context: ExtensionContext): Promise<voi
 
   if (selection === OPEN_SETUP_DOCS_ACTION) {
     await env.openExternal(
-      Uri.parse("https://github.com/ubugeeei/vize/tree/main/npm/vscode-vize#readme"),
+      Uri.parse("https://github.com/ubugeeei-prod/vize/tree/main/npm/vscode-vize#readme"),
     );
     return;
   }
@@ -1188,7 +1188,7 @@ function releaseTarget(targetName: string, extension: "tar.gz" | "zip"): Release
 }
 
 function createReleaseDownloadUrl(version: string, archiveName: string): string {
-  return `https://github.com/ubugeeei/vize/releases/download/v${version}/${archiveName}`;
+  return `https://github.com/ubugeeei-prod/vize/releases/download/v${version}/${archiveName}`;
 }
 
 async function downloadFile(url: string, destination: string, redirectCount = 0): Promise<void> {

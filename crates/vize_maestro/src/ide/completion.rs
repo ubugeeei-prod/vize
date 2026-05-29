@@ -13,7 +13,7 @@ mod items;
 mod script;
 mod service;
 mod style;
-mod template;
+pub(crate) mod template;
 
 // Cross-module reuse: inlay-hint code resolves reactive binding types with
 // the same heuristic that script completion uses.
@@ -926,6 +926,46 @@ const title = t("auth.")
         let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
 
         assert_eq!(labels, vec!["auth.login"]);
+    }
+
+    #[test]
+    fn test_script_completion_lists_reactive_binding_once() {
+        // A ref/computed binding is both a binding and a reactive source.
+        // Completion must surface each name once, not twice.
+        let source = r#"<script setup lang="ts">
+import { ref, computed } from 'vue'
+const st = ref(0)
+const ts = computed(() => st.value * 2)
+st
+</script>
+"#;
+        let (state, uri) = state_with_document("ScriptDedup.vue", source);
+        let offset = source.rfind("st\n").unwrap() + 2;
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert_eq!(labels.iter().filter(|l| l.as_str() == "st").count(), 1);
+        assert_eq!(labels.iter().filter(|l| l.as_str() == "ts").count(), 1);
+    }
+
+    #[test]
+    fn test_template_completion_lists_reactive_binding_once() {
+        let source = r#"<script setup lang="ts">
+import { ref, computed } from 'vue'
+const st = ref(0)
+const ts = computed(() => st.value * 2)
+</script>
+<template>
+  <div>{{ st }}</div>
+</template>
+"#;
+        let (state, uri) = state_with_document("TemplateDedup.vue", source);
+        let offset = source.rfind("st }}").unwrap() + 2;
+        let ctx = IdeContext::new(&state, &uri, offset).unwrap();
+        let labels = completion_labels(CompletionService::complete(&ctx).unwrap());
+
+        assert_eq!(labels.iter().filter(|l| l.as_str() == "st").count(), 1);
+        assert_eq!(labels.iter().filter(|l| l.as_str() == "ts").count(), 1);
     }
 
     fn completion_labels(response: CompletionResponse) -> Vec<String> {

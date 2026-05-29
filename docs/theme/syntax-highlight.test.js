@@ -74,10 +74,13 @@ void test("createHighlightedHtml highlights bash commands and flags", () => {
 });
 
 void test("createHighlightedHtml does not treat URL fragments as bash comments", () => {
-  const html = syntax.createHighlightedHtml("nix run github:ubugeeei/vize#vize -- --help", "bash");
+  const html = syntax.createHighlightedHtml(
+    "nix run github:ubugeeei-prod/vize#vize -- --help",
+    "bash",
+  );
 
   assert.doesNotMatch(html, /v-code__comment/);
-  assert.match(html, /github:ubugeeei\//);
+  assert.match(html, /github:ubugeeei-prod\//);
   assert.match(html, /#<span class="v-code__token v-code__command">vize<\/span>/);
 });
 

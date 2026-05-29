@@ -640,6 +640,44 @@ fn test_parse_deep_nesting() {
 }
 
 #[test]
+fn test_parse_extreme_nesting_is_bounded() {
+    // Pathologically deep input should parse without unbounded growth and
+    // surface a recoverable error rather than producing an AST that later
+    // passes would have to recurse into without limit.
+    let allocator = Bump::new();
+    let depth = 5000;
+    let mut source = String::new();
+    for _ in 0..depth {
+        source.push_str("<div>");
+    }
+    for _ in 0..depth {
+        source.push_str("</div>");
+    }
+
+    let (root, errors) = parse(&allocator, &source);
+
+    // The nesting limit was reported.
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.message.contains("nesting is too deep")),
+        "expected a nesting-depth error for deeply nested input"
+    );
+
+    // The retained tree depth is bounded by the cap, not by the input depth.
+    let mut node = root.children.first();
+    let mut measured = 0usize;
+    while let Some(TemplateChildNode::Element(el)) = node {
+        measured += 1;
+        node = el.children.first();
+    }
+    assert!(
+        measured <= 257,
+        "tree depth should stay bounded near the cap, got {measured}"
+    );
+}
+
+#[test]
 fn test_parse_component() {
     let allocator = Bump::new();
     let (root, errors) = parse(&allocator, "<MyComponent></MyComponent>");

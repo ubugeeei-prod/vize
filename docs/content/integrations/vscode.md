@@ -93,7 +93,7 @@ vize lsp (vize_maestro)
 Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then:
 
 ```bash
-git clone https://github.com/ubugeeei/vize.git
+git clone https://github.com/ubugeeei-prod/vize.git
 cd vize
 cd npm/vscode-vize
 vp install --ignore-workspace
