@@ -61,9 +61,7 @@ async fn overlay_sibling_vue_mirrors(
     }
 
     let Ok(host_path) = host_uri.to_file_path() else {
-        tracing::debug!(
-            "overlay_sibling_vue_mirrors: host URI is not a file path: {host_uri}",
-        );
+        tracing::debug!("overlay_sibling_vue_mirrors: host URI is not a file path: {host_uri}",);
         return;
     };
     let host_dir = match host_path.parent() {
@@ -118,10 +116,7 @@ async fn overlay_sibling_vue_mirrors(
                 .open_or_update_virtual_document(&sibling_name, &sibling_virtual.code)
                 .await
             {
-                tracing::debug!(
-                    "overlay sibling failed for {}: {err}",
-                    canonical.display(),
-                );
+                tracing::debug!("overlay sibling failed for {}: {err}", canonical.display(),);
                 continue;
             }
 
@@ -1035,10 +1030,7 @@ mod tests {
         // imports are excluded since they resolve via tsconfig paths and the
         // ambient stub respectively.
         assert!(
-            result
-                .relative_vue_imports
-                .iter()
-                .any(|s| s == "./app.vue"),
+            result.relative_vue_imports.iter().any(|s| s == "./app.vue"),
             "expected ./app.vue in relative_vue_imports, got {:?}",
             result.relative_vue_imports,
         );

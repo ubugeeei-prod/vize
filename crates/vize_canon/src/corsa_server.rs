@@ -377,8 +377,8 @@ impl CorsaServer {
         self.cache.insert(uri.into(), virtual_ts.clone());
 
         // Overlay sibling .vue.ts mirrors discovered from the host's imports.
-        let relative_specifiers =
-            rewriter.collect_relative_vue_specifiers(pre_rewrite_ts.as_str(), oxc_span::SourceType::ts());
+        let relative_specifiers = rewriter
+            .collect_relative_vue_specifiers(pre_rewrite_ts.as_str(), oxc_span::SourceType::ts());
         if !relative_specifiers.is_empty() {
             self.overlay_sibling_vue_mirrors(uri, &relative_specifiers);
         }
@@ -560,7 +560,8 @@ impl CorsaServer {
                 } else {
                     let r = client.did_open(&sibling_virtual_uri, &sibling_virtual_ts);
                     if r.is_ok() {
-                        self.open_virtual_documents.insert(sibling_virtual_uri.clone());
+                        self.open_virtual_documents
+                            .insert(sibling_virtual_uri.clone());
                     }
                     r
                 };

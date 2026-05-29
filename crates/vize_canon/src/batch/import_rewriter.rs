@@ -425,11 +425,13 @@ export { default as Re } from './Re.vue';
         found.sort();
         // Aliased and bare specifiers are intentionally excluded.
         assert_eq!(
-            found
-                .iter()
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>(),
-            ["../shared/Sibling.vue", "./App.vue", "./Lazy.vue", "./Re.vue"]
+            found.iter().map(|s| s.as_str()).collect::<Vec<_>>(),
+            [
+                "../shared/Sibling.vue",
+                "./App.vue",
+                "./Lazy.vue",
+                "./Re.vue"
+            ]
         );
     }
 
