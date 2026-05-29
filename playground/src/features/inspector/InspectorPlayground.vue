@@ -384,7 +384,7 @@ onUnmounted(() => {
         </button>
         <a
           class="inspector-pr-link tab-copy-btn"
-          href="https://github.com/ubugeeei/vize/compare/main...compiler-inspector-repro"
+          href="https://github.com/ubugeeei-prod/vize/compare/main...compiler-inspector-repro"
           target="_blank"
           rel="noreferrer"
           @click.prevent="openPullRequest"

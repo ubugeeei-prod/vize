@@ -340,10 +340,10 @@ test("published package manifests declare support metadata", () => {
     };
     if (packageJson.private === true) continue;
 
-    if (packageJson.bugs?.url !== "https://github.com/ubugeeei/vize/issues") {
+    if (packageJson.bugs?.url !== "https://github.com/ubugeeei-prod/vize/issues") {
       failures.push(`${packageJson.name ?? packageDir}: missing canonical bugs.url`);
     }
-    if (packageJson.homepage !== "https://github.com/ubugeeei/vize") {
+    if (packageJson.homepage !== "https://github.com/ubugeeei-prod/vize") {
       failures.push(`${packageJson.name ?? packageDir}: missing canonical homepage`);
     }
   }

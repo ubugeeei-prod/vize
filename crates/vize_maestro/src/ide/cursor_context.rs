@@ -12,8 +12,8 @@
 //! consumes one variant and dispatches to its own provider.
 //!
 //! This module is intentionally minimal. The variants here cover the cases
-//! that block roadmap items [#678](https://github.com/ubugeeei/vize/issues/678)
-//! (member access) and [#680](https://github.com/ubugeeei/vize/issues/680)
+//! that block roadmap items [#678](https://github.com/ubugeeei-prod/vize/issues/678)
+//! (member access) and [#680](https://github.com/ubugeeei-prod/vize/issues/680)
 //! (trigger-character routing). Additional variants (event handler, prop
 //! name, slot name, …) will be added when their consumers migrate.
 

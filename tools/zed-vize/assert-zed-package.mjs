@@ -108,7 +108,7 @@ const highlights = readTextEntry(entryMap, "zed-vize/languages/art-vue/highlight
 assertTomlString(extensionToml, "id", "vize");
 assertTomlString(extensionToml, "name", "Vize");
 assertTomlString(extensionToml, "version", workspaceVersion);
-assertTomlString(extensionToml, "repository", "https://github.com/ubugeeei/vize");
+assertTomlString(extensionToml, "repository", "https://github.com/ubugeeei-prod/vize");
 assert.match(extensionToml, /^\[language_servers\.vize\]$/m);
 assert.match(extensionToml, /^languages = \["Vue", "Art Vue"\]$/m);
 assert.match(extensionToml, /^\[language_servers\.vize\.language_ids\]$/m);

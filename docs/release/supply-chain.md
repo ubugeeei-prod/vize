@@ -36,13 +36,13 @@ cosign with the same workflow identity as the binaries.
 You need [`cosign`](https://docs.sigstore.dev/system_config/installation/) on
 `$PATH`. The repository identity is fixed: signing only happens from the
 `create-github-release` job in `.github/workflows/release.yml` on the
-`ubugeeei/vize` repository.
+`ubugeeei-prod/vize` repository.
 
 ```bash
 # Verify a CLI tarball
 cosign verify-blob \
   --bundle vize-x86_64-unknown-linux-gnu.tar.gz.cosign.bundle \
-  --certificate-identity-regexp 'https://github.com/ubugeeei/vize/.+' \
+  --certificate-identity-regexp 'https://github.com/ubugeeei-prod/vize/.+' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   vize-x86_64-unknown-linux-gnu.tar.gz
 ```
@@ -52,7 +52,7 @@ Same call works for the SBOM:
 ```bash
 cosign verify-blob \
   --bundle vize-<tag>-cyclonedx.sbom.json.cosign.bundle \
-  --certificate-identity-regexp 'https://github.com/ubugeeei/vize/.+' \
+  --certificate-identity-regexp 'https://github.com/ubugeeei-prod/vize/.+' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   vize-<tag>-cyclonedx.sbom.json
 ```
@@ -71,7 +71,7 @@ deployment environment. They intentionally do not configure
 
 Configure each npm package's Trusted Publisher with:
 
-- Organization or user: `ubugeeei`
+- Organization or user: `ubugeeei-prod`
 - Repository: `vize`
 - Workflow filename: `release.yml`
 - Environment name: `npm`
@@ -95,7 +95,7 @@ once a maintained verification surface exists for those registries.
 ## Reporting a verification failure
 
 If `cosign verify-blob` fails for an artifact you downloaded from
-[GitHub Releases](https://github.com/ubugeeei/vize/releases), follow the
+[GitHub Releases](https://github.com/ubugeeei-prod/vize/releases), follow the
 disclosure process in [`SECURITY.md`](../../SECURITY.md). Do not open a public
 issue with the failure details until the maintainers have confirmed whether
 the artifact set should be revoked.

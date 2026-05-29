@@ -9,9 +9,9 @@ Vize is moving toward a v1 alpha. The alpha contract is intentionally narrower t
 contract: it names the surfaces that should be usable by early adopters, while keeping room to
 change internals and experimental integrations quickly. The full project is not yet a completely
 production-ready toolchain; release decisions should use the
-[production-readiness checklist](https://github.com/ubugeeei/vize/blob/main/docs/release/production-readiness.md).
+[production-readiness checklist](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness.md).
 Deprecation windows, SemVer rules, and release-line support are spelled out in the
-[support policy](https://github.com/ubugeeei/vize/blob/main/docs/release/support-policy.md).
+[support policy](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy.md).
 
 ## Versioning Contract
 
@@ -58,7 +58,7 @@ tarball:
 | linux-x64-musl   | No GitHub-hosted Alpine/musl VM is available as a native runner   | Build job emits the musl tarball; manual `node:alpine` smoke.      |
 | linux-arm64-musl | Arm64 hosted runners are Ubuntu GNU, not Alpine/musl native hosts | Build job emits the arm64 musl tarball; manual Alpine arm64 smoke. |
 
-Closing these gaps is tracked alongside [#493](https://github.com/ubugeeei/vize/issues/493).
+Closing these gaps is tracked alongside [#493](https://github.com/ubugeeei-prod/vize/issues/493).
 
 The minimum supported Rust version (MSRV) for the workspace is declared in `Cargo.toml` under
 `[workspace.package].rust-version`. The development toolchain pinned by `rust-toolchain.toml`
@@ -92,7 +92,7 @@ manager layout, every editor capability, or every framework integration. When Vi
 official Vue tooling, treat the official output as the compatibility baseline unless a Vize guide
 explicitly documents a different behavior. The release-blocking compiler, type-checking, runtime,
 and Vite build surfaces are named in the
-[Vue parity matrix](https://github.com/ubugeeei/vize/blob/main/docs/release/vue-parity-matrix.md).
+[Vue parity matrix](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix.md).
 
 For security handling, see the repository `SECURITY.md`. For contribution and issue workflow, see
 `CONTRIBUTING.md`.

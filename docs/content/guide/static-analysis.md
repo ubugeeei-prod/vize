@@ -188,7 +188,7 @@ vp exec vize ready src
 The Rust CLI currently has the fuller project-backed type-checking surface:
 
 ```bash
-nix run github:ubugeeei/vize#vize -- check --tsconfig tsconfig.app.json --profile src
+nix run github:ubugeeei-prod/vize#vize -- check --tsconfig tsconfig.app.json --profile src
 vize check --tsconfig tsconfig.app.json --profile src
 vize lsp
 ```

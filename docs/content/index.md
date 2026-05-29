@@ -15,7 +15,7 @@ hero:
       link: getting-started.md
     - theme: alt
       text: GitHub
-      link: https://github.com/ubugeeei/vize
+      link: https://github.com/ubugeeei-prod/vize
     - theme: alt
       text: Playground
       link: https://vizejs.dev/play
@@ -91,7 +91,7 @@ diagnostics, and component gallery metadata. The practical workflow is documente
 
 He is part of the [Vue.js Core Team](https://vuejs.org/about/team.html), [Vue.js Japan User Group](https://github.com/vuejs-jp) Core Staff, a [Vite+](https://github.com/voidzero-dev/vite-plus) Core Contributor, and Chief Engineer at [mates-dev](https://github.com/mates-dev).
 
-He is also the creator of [chibivue](https://github.com/chibivue-land/chibivue), [Vize](https://github.com/ubugeeei/vize), and [Ox Content](https://github.com/ubugeeei/ox-content).
+He is also the creator of [chibivue](https://github.com/chibivue-land/chibivue), [Vize](https://github.com/ubugeeei-prod/vize), and [Ox Content](https://github.com/ubugeeei/ox-content).
 
 - GitHub: [github.com/ubugeeei](https://github.com/ubugeeei)
 - X (Twitter): [@ubugeeei](https://x.com/ubugeeei)

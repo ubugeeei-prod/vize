@@ -2,14 +2,14 @@
   "name": "@vizejs/wasm",
   "version": "0.141.0",
   "description": "Vize WASM bindings for browser environments",
-  "homepage": "https://github.com/ubugeeei/vize",
+  "homepage": "https://github.com/ubugeeei-prod/vize",
   "bugs": {
-    "url": "https://github.com/ubugeeei/vize/issues"
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ubugeeei/vize.git",
+    "url": "git+https://github.com/ubugeeei-prod/vize.git",
     "directory": "npm/vize-wasm"
   },
   "files": [

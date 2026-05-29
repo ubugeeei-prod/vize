@@ -899,7 +899,7 @@ async fn run_app() -> Int {
   println("")
   println("Release \{new_version} complete!")
   println("GitHub Actions will now publish to npm and crates.io.")
-  println("Check: https://github.com/ubugeeei/vize/actions")
+  println("Check: https://github.com/ubugeeei-prod/vize/actions")
   0
 }
 

@@ -29,7 +29,7 @@ body = """
 ### {{ group | upper_first }}
 {% for commit in commits %}
 - {{ commit.message | upper_first | trim }}\
-{% if commit.id %} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/ubugeeei/vize/commit/{{ commit.id }})){% endif %}\
+{% if commit.id %} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/ubugeeei-prod/vize/commit/{{ commit.id }})){% endif %}\
 {% endfor %}
 {% endfor %}\n
 """

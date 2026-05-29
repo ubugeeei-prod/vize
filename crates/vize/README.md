@@ -13,7 +13,7 @@ For v1 alpha, the Rust CLI is distributed as GitHub release binaries and through
 point. This crate is not published through crates.io yet.
 
 ```bash
-nix run github:ubugeeei/vize#vize -- --help
+nix run github:ubugeeei-prod/vize#vize -- --help
 ```
 
 ## CLI

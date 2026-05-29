@@ -28,7 +28,7 @@ version = "0.141.0"
 edition = "2024"
 rust-version = "1.95.0"
 license = "MIT"
-repository = "https://github.com/ubugeeei/vize"
+repository = "https://github.com/ubugeeei-prod/vize"
 
 [workspace.dependencies]
 # Publishable internal crates (path for local dev, version fallback for crates.io)

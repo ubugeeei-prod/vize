@@ -19,11 +19,11 @@ For v1 alpha, use the prebuilt GitHub release binaries or the Nix entry point. T
 supported crates.io install channel yet.
 
 ```bash
-nix run github:ubugeeei/vize#vize -- --help
+nix run github:ubugeeei-prod/vize#vize -- --help
 ```
 
 You can also download platform-specific binaries from
-[GitHub Releases](https://github.com/ubugeeei/vize/releases).
+[GitHub Releases](https://github.com/ubugeeei-prod/vize/releases).
 
 For local development inside this repository, install the workspace build:
 

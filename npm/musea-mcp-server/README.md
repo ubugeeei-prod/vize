@@ -76,7 +76,7 @@ For Musea-specific workflows, check whether the assistant:
 - reported missing metadata instead of guessing
 
 The full MCP guide includes a longer reproducibility workflow and prompt template:
-[docs/content/integrations/mcp.md](https://github.com/ubugeeei/vize/blob/main/docs/content/integrations/mcp.md)
+[docs/content/integrations/mcp.md](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/integrations/mcp.md)
 
 ## License
 

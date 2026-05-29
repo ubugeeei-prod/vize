@@ -11,15 +11,15 @@
     "musea",
     "vue"
   ],
-  "homepage": "https://github.com/ubugeeei/vize",
+  "homepage": "https://github.com/ubugeeei-prod/vize",
   "bugs": {
-    "url": "https://github.com/ubugeeei/vize/issues"
+    "url": "https://github.com/ubugeeei-prod/vize/issues"
   },
   "license": "MIT",
   "author": "ubugeeei",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ubugeeei/vize.git",
+    "url": "https://github.com/ubugeeei-prod/vize.git",
     "directory": "npm/musea-mcp-server"
   },
   "bin": {

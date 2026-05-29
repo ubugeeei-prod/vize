@@ -79,7 +79,7 @@ export default defineConfig({
           },
 
           socialLinks: {
-            github: "https://github.com/ubugeeei/vize",
+            github: "https://github.com/ubugeeei-prod/vize",
           },
 
           embed: {

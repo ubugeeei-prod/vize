@@ -64,9 +64,9 @@ impl DiagnosticService {
                     }),
                     code: Some(NumberOrString::String(lint_diag.rule_name.to_string())),
                     code_description: Some(CodeDescription {
-                        href: Url::parse("https://github.com/ubugeeei/vize/wiki/musea-rules")
+                        href: Url::parse("https://github.com/ubugeeei-prod/vize/wiki/musea-rules")
                             .unwrap_or_else(|_| {
-                                Url::parse("https://github.com/ubugeeei/vize").unwrap()
+                                Url::parse("https://github.com/ubugeeei-prod/vize").unwrap()
                             }),
                     }),
                     source: Some(sources::MUSEA.to_string()),

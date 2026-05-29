@@ -71,7 +71,7 @@ vp exec vize fmt --check src
 Use the native binary when you need the full CLI:
 
 ```bash
-nix run github:ubugeeei/vize#vize -- --help
+nix run github:ubugeeei-prod/vize#vize -- --help
 ```
 
 ## Documentation Map
