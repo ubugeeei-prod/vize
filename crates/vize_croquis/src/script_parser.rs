@@ -154,23 +154,23 @@ impl ScriptParseResult {
         if self.type_export_typeof_refs.is_empty() {
             return;
         }
-        let imported_names: FxHashSet<&str> = self
-            .import_statements
-            .iter()
-            .flat_map(|imp| {
-                // Bindings whose declaration site falls inside an import
-                // statement are module-scoped imports, not setup values.
-                self.binding_spans
-                    .iter()
-                    .filter(move |(_, (start, end))| *start >= imp.start && *end <= imp.end)
-                    .map(|(name, _)| name.as_str())
-            })
-            .collect();
 
-        for (idx, refs) in self.type_export_typeof_refs.iter().enumerate() {
-            let touches_setup_value = refs.iter().any(|name| {
+        // A `typeof name` ref keeps a type hoisted only when `name` is a
+        // module-scoped import. Rather than materialize the full set of
+        // imported binding names up front (O(imports × bindings)), test each
+        // referenced name's declaration span against the import ranges on
+        // demand — `refs` is tiny, so this is O(refs × imports).
+        for idx in 0..self.type_export_typeof_refs.len() {
+            let touches_setup_value = self.type_export_typeof_refs[idx].iter().any(|name| {
                 let key = name.as_str();
-                self.bindings.bindings.contains_key(key) && !imported_names.contains(key)
+                self.bindings.bindings.contains_key(key)
+                    && !self.binding_spans.get(key).is_some_and(|(start, end)| {
+                        // Bindings whose declaration site falls inside an import
+                        // statement are module-scoped imports, not setup values.
+                        self.import_statements
+                            .iter()
+                            .any(|imp| *start >= imp.start && *end <= imp.end)
+                    })
             });
             if touches_setup_value && let Some(te) = self.type_exports.get_mut(idx) {
                 te.hoisted = false;
