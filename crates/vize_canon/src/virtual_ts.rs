@@ -604,6 +604,49 @@ const heightLimit = "65vh";
     }
 
     #[test]
+    fn test_script_setup_type_reexport_lifted_to_module_scope() {
+        // `export type { X }` re-exports must be emitted at module top level,
+        // not inside `__setup()` where `export` is a syntax error (TS1233).
+        use vize_croquis::{Analyzer, AnalyzerOptions};
+
+        let script = r#"import { type FilterType } from './ReExportType'
+
+export type { FilterType }
+
+defineProps<{ kind?: FilterType }>()
+"#;
+
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        let summary = analyzer.finish();
+
+        let output = generate_virtual_ts_with_offsets(
+            &summary,
+            Some(script),
+            None,
+            0,
+            0,
+            &Default::default(),
+        );
+
+        let (module_scope, setup_scope) = output
+            .code
+            .split_once("// ========== Setup Scope ==========")
+            .expect("setup scope marker present");
+
+        assert!(
+            module_scope.contains("export type { FilterType }"),
+            "re-export should be lifted to module scope:\n{}",
+            output.code
+        );
+        assert!(
+            !setup_scope.contains("export type { FilterType }"),
+            "re-export must not be trapped inside __setup():\n{}",
+            output.code
+        );
+    }
+
+    #[test]
     fn test_vfor_component_props_in_scope() {
         // Component inside v-for should have prop checks inside the forEach closure
         use vize_croquis::{Analyzer, AnalyzerOptions};

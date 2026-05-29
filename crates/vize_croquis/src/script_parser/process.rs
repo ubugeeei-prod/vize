@@ -161,6 +161,18 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
                 return;
             }
 
+            // Specifier-only export without a declaration, e.g.
+            // `export { Foo }` / `export type { Foo }`. These re-export
+            // local or imported bindings and are only valid at module top
+            // level, so lift them out of the synthetic `__setup` function.
+            if export.declaration.is_none() {
+                result.re_exports.push(ReExportInfo {
+                    start: export.span.start,
+                    end: export.span.end,
+                });
+                return;
+            }
+
             if let Some(decl) = &export.declaration {
                 // Check if the declaration itself is a type declaration
                 match decl {
