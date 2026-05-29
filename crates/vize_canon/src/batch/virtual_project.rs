@@ -482,10 +482,29 @@ impl VirtualProject {
         }
 
         let mut compiler_options = self.load_compiler_options(original_tsconfig.as_deref())?;
+
+        // Capture the original path-alias map before stripping path-sensitive
+        // options, so it can be re-anchored into the virtual mirror below.
+        let original_paths = compiler_options
+            .get("paths")
+            .and_then(Value::as_object)
+            .cloned();
+
         for option in PATH_SENSITIVE_COMPILER_OPTIONS {
             compiler_options.remove(*option);
         }
         compiler_options.insert("allowImportingTsExtensions".into(), Value::Bool(true));
+
+        // Re-anchor tsconfig `paths` into the virtual mirror. Without this the
+        // aliases inherited via `extends` resolve against the real source tree,
+        // where `.vue` files only match the ambient `*.vue` stub (default export
+        // only) and named re-exports surface as false `TS2614`. Each alias
+        // target gets a mirror candidate first (so the generated `.vue.ts`
+        // modules win) and the real-tree path as a fallback (so aliases to files
+        // outside the checked set keep resolving).
+        if let Some(paths) = original_paths {
+            compiler_options.insert("paths".into(), Value::Object(self.remap_paths(&paths)));
+        }
 
         if let Some(out_dir) = out_dir {
             compiler_options.insert("noEmit".into(), Value::Bool(false));
@@ -649,6 +668,57 @@ declare module "*.vue.ts" {
             .and_then(Value::as_object)
             .cloned()
             .unwrap_or_default())
+    }
+
+    /// Re-anchor tsconfig `paths` targets into the virtual mirror. Each relative
+    /// target yields two candidates: the mirror copy (resolved relative to the
+    /// virtual tsconfig, which lives in the mirror root) followed by the real
+    /// source-tree path as a fallback. Absolute and non-string targets pass
+    /// through unchanged.
+    #[allow(clippy::disallowed_types)]
+    fn remap_paths(
+        &self,
+        paths: &Map<std::string::String, Value>,
+    ) -> Map<std::string::String, Value> {
+        let up = self.virtual_root_to_project_prefix();
+        let mut remapped = Map::new();
+        for (alias, targets) in paths {
+            let Some(targets) = targets.as_array() else {
+                remapped.insert(alias.clone(), targets.clone());
+                continue;
+            };
+            let mut candidates = Vec::with_capacity(targets.len() * 2);
+            for target in targets {
+                let Some(target) = target.as_str() else {
+                    candidates.push(target.clone());
+                    continue;
+                };
+                if Path::new(target).is_absolute() {
+                    candidates.push(Value::String(target.to_owned()));
+                    continue;
+                }
+                let core = target.strip_prefix("./").unwrap_or(target);
+                candidates.push(Value::String(cstr!("./{core}").into()));
+                candidates.push(Value::String(cstr!("{up}{core}").into()));
+            }
+            remapped.insert(alias.clone(), Value::Array(candidates));
+        }
+        remapped
+    }
+
+    /// Relative prefix (e.g. `../../../`) from the virtual root back to the
+    /// project root, used to aim alias fallbacks at the real source tree.
+    fn virtual_root_to_project_prefix(&self) -> CompactString {
+        let depth = self
+            .virtual_root
+            .strip_prefix(&self.project_root)
+            .map(|relative| relative.components().count())
+            .unwrap_or(0);
+        let mut prefix = CompactString::with_capacity(depth * 3);
+        for _ in 0..depth {
+            prefix.push_str("../");
+        }
+        prefix
     }
 }
 
@@ -1708,12 +1778,61 @@ const message = 'Hello'
             compiler_options["allowImportingTsExtensions"],
             serde_json::Value::Bool(true)
         );
-        for option in ["baseUrl", "paths", "rootDir", "rootDirs", "typeRoots"] {
+        for option in ["baseUrl", "rootDir", "rootDirs", "typeRoots"] {
             assert!(
                 !compiler_options.contains_key(option),
                 "{option} should remain owned by the extended tsconfig"
             );
         }
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn materialized_tsconfig_reanchors_paths_into_virtual_mirror() {
+        let case_dir = unique_case_dir("tsconfig-paths-reanchor");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        fs::create_dir_all(&src_dir).unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r##"{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "#shared": ["./shared/index.ts"]
+    }
+  }
+}"##,
+        )
+        .unwrap();
+        let vue_path = src_dir.join("App.vue");
+        fs::write(
+            &vue_path,
+            "<script setup lang=\"ts\">const count = 1</script>",
+        )
+        .unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&vue_path).unwrap();
+        project.materialize().unwrap();
+
+        let tsconfig_path = case_dir.join("node_modules/.vize/canon/tsconfig.json");
+        let value: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
+        let paths = value["compilerOptions"]["paths"].as_object().unwrap();
+
+        // Each target gets a mirror candidate (relative to the virtual tsconfig
+        // in `node_modules/.vize/canon`) first, then the real-tree fallback.
+        assert_eq!(
+            paths["@/*"],
+            serde_json::json!(["./src/*", "../../../src/*"])
+        );
+        assert_eq!(
+            paths["#shared"],
+            serde_json::json!(["./shared/index.ts", "../../../shared/index.ts"])
+        );
 
         let _ = fs::remove_dir_all(&case_dir);
     }
