@@ -181,6 +181,83 @@ export default defineComponent({
 }
 
 #[test]
+fn check_lifts_script_setup_type_reexports() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "script-setup-type-reexport",
+        &[
+            (
+                "src/ReExportType.ts",
+                "export type FilterType = 'image' | 'text'\n",
+            ),
+            (
+                "src/ReExportType.vue",
+                r#"<script setup lang="ts">
+import { type FilterType } from './ReExportType'
+
+export type { FilterType }
+
+defineProps<{ kind?: FilterType }>()
+</script>
+
+<template>
+  <div />
+</template>
+"#,
+            ),
+            (
+                "src/ReExportTypeConsumer.vue",
+                r#"<script setup lang="ts">
+import ReExportType, { type FilterType } from './ReExportType.vue'
+
+const v: FilterType = 'image'
+</script>
+
+<template>
+  <ReExportType :kind="v" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/ReExportType.vue",
+            "src/ReExportTypeConsumer.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_respects_explicit_corsa_path() {
     let project_root = create_cli_project(
         "explicit-corsa-path",
