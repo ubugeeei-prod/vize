@@ -61,10 +61,19 @@ pub(super) struct SourceMapping {
 /// Virtual TypeScript generation result with position mapping info.
 #[cfg(feature = "native")]
 pub(super) struct VirtualTsResult {
-    /// Generated TypeScript code
+    /// Generated TypeScript code (post `.vue` → `.vue.ts` import rewrite).
     pub(super) code: String,
     /// Byte-range source mappings from generated TS back to the source SFC.
+    /// Offsets are in pre-rewrite generated TS coordinates; callers must
+    /// translate post-rewrite byte offsets via `import_source_map` first.
     pub(super) source_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,
+    /// Byte-offset mapping from post-rewrite to pre-rewrite virtual TS.
+    /// Empty when no `.vue` import specifiers were rewritten.
+    pub(super) import_source_map: vize_canon::ImportSourceMap,
+    /// Relative `.vue` import specifiers found in the SFC's script. The
+    /// editor session overlays each sibling's virtual TS so relative
+    /// imports resolve under the temp-dir Corsa session (issue #752).
+    pub(super) relative_vue_imports: Vec<std::string::String>,
     /// Line number where user code starts in virtual TS (0-indexed)
     pub(super) user_code_start_line: u32,
     /// Line number where script starts in original SFC (1-indexed)
