@@ -725,17 +725,124 @@ pub(crate) fn normalize_destructure_default_value(default_value: &str) -> String
 /// the cost of `compile_sfc`. Returns `Ok(())` when there is no `<script
 /// setup>` or no actionable issue.
 pub fn validate_script_setup_semantics(script_setup_content: &str) -> Result<(), SfcError> {
+    // Delegating with a zero block offset yields block-relative diagnostic
+    // locations. Callers that know where the `<script setup>` block sits in
+    // the full SFC should prefer `validate_script_setup_semantics_located` so
+    // diagnostics map to the correct document position.
+    validate_script_setup_semantics_located(script_setup_content, 0, script_setup_content)
+}
+
+/// Like [`validate_script_setup_semantics`], but rebases diagnostic locations
+/// onto the full SFC: `block_start` is the byte offset of the script-setup
+/// block content within `sfc_source` (i.e. `script_setup.loc.start`), and
+/// `sfc_source` is the whole SFC text used to resolve line/column. This lets
+/// editor/check diagnostics point at the offending span (e.g. a destructure
+/// default) instead of the start of the `<script setup>` block.
+pub fn validate_script_setup_semantics_located(
+    script_setup_content: &str,
+    block_start: usize,
+    sfc_source: &str,
+) -> Result<(), SfcError> {
     if script_setup_content.is_empty() {
         return Ok(());
     }
     let mut ctx = ScriptCompileContext::new(script_setup_content);
     ctx.analyze();
-    validate_props_destructure_default_types(&ctx)
+    validate_props_destructure_default_types(&ctx, block_start, sfc_source)
+}
+
+/// Build a 1-based [`BlockLocation`] for an absolute byte span in `source`.
+/// Columns count UTF-16 code units to match the LSP position convention.
+fn block_location_for_span(source: &str, start: usize, end: usize) -> crate::types::BlockLocation {
+    fn line_col_1based(source: &str, offset: usize) -> (usize, usize) {
+        let target = offset.min(source.len());
+        let mut line = 1usize;
+        let mut column = 1usize;
+        for (index, ch) in source.char_indices() {
+            if index >= target {
+                break;
+            }
+            if ch == '\n' {
+                line += 1;
+                column = 1;
+            } else {
+                column += ch.len_utf16();
+            }
+        }
+        (line, column)
+    }
+    let (start_line, start_column) = line_col_1based(source, start);
+    let (end_line, end_column) = line_col_1based(source, end);
+    crate::types::BlockLocation {
+        start,
+        end,
+        tag_start: start,
+        tag_end: end,
+        start_line,
+        start_column,
+        end_line,
+        end_column,
+    }
+}
+
+/// Locate the byte span `(start, end)` of a reactive props-destructure
+/// default's value expression for `prop_key`, relative to
+/// `script_setup_content` (e.g. the `0` in `const { msg = 0 } = defineProps<…>()`).
+///
+/// Used to point the default-type-mismatch diagnostic at the offending
+/// default rather than the start of the `<script setup>` block. Re-parses the
+/// script-setup content; only the rare diagnostic error path calls this, so
+/// the extra parse is not on the hot path. The span lives on the AST, not on
+/// the public `PropsDestructureBinding`, to keep that type's API stable.
+fn props_destructure_default_span(
+    script_setup_content: &str,
+    prop_key: &str,
+) -> Option<(u32, u32)> {
+    use oxc_ast::ast::BindingPattern;
+
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script_setup_content, SourceType::ts()).parse();
+    for stmt in &parsed.program.body {
+        let Statement::VariableDeclaration(var_decl) = stmt else {
+            continue;
+        };
+        for decl in &var_decl.declarations {
+            // Match `const { … } = defineProps(…)`.
+            let BindingPattern::ObjectPattern(obj_pat) = &decl.id else {
+                continue;
+            };
+            let is_define_props = matches!(
+                &decl.init,
+                Some(Expression::CallExpression(call))
+                    if matches!(&call.callee, Expression::Identifier(id) if id.name == "defineProps")
+            );
+            if !is_define_props {
+                continue;
+            }
+            for prop in obj_pat.properties.iter() {
+                let key = match &prop.key {
+                    PropertyKey::StaticIdentifier(id) => id.name.as_str(),
+                    PropertyKey::StringLiteral(lit) => lit.value.as_str(),
+                    _ => continue,
+                };
+                if key != prop_key {
+                    continue;
+                }
+                if let BindingPattern::AssignmentPattern(assign) = &prop.value {
+                    let span = assign.right.span();
+                    return Some((span.start, span.end));
+                }
+            }
+        }
+    }
+    None
 }
 
 /// Validate reactive props destructure defaults against inferred runtime prop types.
 pub(crate) fn validate_props_destructure_default_types(
     ctx: &ScriptCompileContext,
+    block_start: usize,
+    sfc_source: &str,
 ) -> Result<(), SfcError> {
     let Some(destructure) = ctx.macros.props_destructure.as_ref() else {
         return Ok(());
@@ -782,6 +889,18 @@ pub(crate) fn validate_props_destructure_default_types(
         };
 
         if !runtime_type_includes(resolved_js_type.as_str(), default_type) {
+            // Point the diagnostic at the offending default expression when we
+            // can locate it, rebasing the block-relative span onto the full
+            // SFC. Falls back to no location (callers then pick a block-start
+            // fallback) only when the span cannot be resolved.
+            let loc =
+                props_destructure_default_span(&ctx.source, name).map(|(rel_start, rel_end)| {
+                    block_location_for_span(
+                        sfc_source,
+                        block_start + rel_start as usize,
+                        block_start + rel_end as usize,
+                    )
+                });
             return Err(SfcError {
                 message: {
                     let mut message = String::from("Default value of prop \"");
@@ -790,7 +909,7 @@ pub(crate) fn validate_props_destructure_default_types(
                     message
                 },
                 code: Some("DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE".into()),
-                loc: None,
+                loc,
             });
         }
     }

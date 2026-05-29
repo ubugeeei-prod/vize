@@ -314,8 +314,11 @@ impl DiagnosticService {
             return Vec::new();
         }
 
-        let Err(err) = vize_atelier_sfc::validate_script_setup_semantics(&script_setup.content)
-        else {
+        let Err(err) = vize_atelier_sfc::validate_script_setup_semantics_located(
+            &script_setup.content,
+            script_setup.loc.start,
+            content,
+        ) else {
             return Vec::new();
         };
 

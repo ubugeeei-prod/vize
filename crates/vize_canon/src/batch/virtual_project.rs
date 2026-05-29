@@ -30,7 +30,7 @@ use vize_atelier_sfc::{
         SfcCroquisOptions, analyze_sfc_descriptor_with_context,
         analyze_sfc_descriptor_with_context_legacy_vue2,
     },
-    parse_sfc, validate_script_setup_semantics,
+    parse_sfc, validate_script_setup_semantics_located,
 };
 use vize_carton::{
     Bump, FxHashMap, FxHashSet, String as CompactString, ToCompactString, cstr, profile,
@@ -877,7 +877,11 @@ fn collect_sfc_compile_diagnostic(
         return None;
     }
 
-    match validate_script_setup_semantics(&script_setup.content) {
+    match validate_script_setup_semantics_located(
+        &script_setup.content,
+        script_setup.loc.start,
+        source,
+    ) {
         Ok(()) => None,
         Err(error) => Some(sfc_error_to_diagnostic(path, source, descriptor, &error)),
     }

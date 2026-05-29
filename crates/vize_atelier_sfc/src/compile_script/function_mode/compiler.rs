@@ -42,7 +42,7 @@ pub fn compile_script_setup(
 
     let mut ctx = ScriptCompileContext::new(content);
     ctx.analyze();
-    validate_props_destructure_default_types(&ctx)?;
+    validate_props_destructure_default_types(&ctx, 0, content)?;
 
     // Use arena-allocated Vec for better performance
     let bump = vize_carton::Bump::new();

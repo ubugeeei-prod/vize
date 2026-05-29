@@ -118,7 +118,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
             .map(|d| d.bindings.values().any(|b| b.default.is_some()))
             .unwrap_or(false);
 
-    validate_props_destructure_default_types(&ctx)?;
+    validate_props_destructure_default_types(&ctx, 0, content)?;
 
     let has_define_model = !ctx.macros.define_models.is_empty();
     let has_define_slots = ctx.macros.define_slots.is_some();
