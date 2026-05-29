@@ -170,6 +170,31 @@ pub(crate) fn collect_default_check_files(
     files
 }
 
+/// Collect ambient declaration (`.d.ts`) files that belong to the tsconfig
+/// "program" so their global types stay in scope when only a subset of files is
+/// checked explicitly (e.g. `vize check src/App.vue`).
+///
+/// Ambient declarations (`declare global`, module augmentations) are not pulled
+/// in by imports, so the explicit-path collector drops them and `tsgo` then
+/// reports false `TS2304` errors for genuinely global names. This mirrors `tsc`,
+/// which always loads the declaration files matched by `files`/`include`
+/// regardless of which entry files are requested.
+pub(crate) fn collect_ambient_declaration_files(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+) -> Vec<PathBuf> {
+    collect_default_check_files(project_root, tsconfig_path)
+        .into_iter()
+        .filter(|path| is_declaration_file(path))
+        .collect()
+}
+
+fn is_declaration_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".d.ts"))
+}
+
 pub(crate) fn load_tsconfig_declaration_options(
     tsconfig_path: &Path,
 ) -> TsconfigDeclarationOptions {
@@ -688,7 +713,8 @@ fn strip_trailing_commas(content: &str) -> std::string::String {
 #[cfg(test)]
 mod tests {
     use super::{
-        collect_default_check_files, load_tsconfig_declaration_options, resolve_extended_tsconfig,
+        collect_ambient_declaration_files, collect_default_check_files,
+        load_tsconfig_declaration_options, resolve_extended_tsconfig,
     };
     use std::fs;
     use std::path::{Path, PathBuf};
@@ -913,6 +939,45 @@ mod tests {
         let resolved = resolve_extended_tsconfig(&app_dir.join("tsconfig.json"), "@scope/tsconfig");
 
         assert_eq!(resolved, Some(package_dir.join("configs/vue.json")));
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn ambient_declaration_collection_keeps_only_dts_within_include() {
+        let case_dir = unique_case_dir("tsconfig-ambient-dts");
+        let _ = fs::remove_dir_all(&case_dir);
+        fs::create_dir_all(case_dir.join("src/@types")).unwrap();
+        fs::write(
+            case_dir.join("src/@types/globals.d.ts"),
+            "export {};\ndeclare global { type GlobalTabType = 'a' | 'b'; }\n",
+        )
+        .unwrap();
+        fs::write(case_dir.join("src/env.d.ts"), "declare const X: string;").unwrap();
+        fs::write(case_dir.join("src/App.vue"), "<template />").unwrap();
+        fs::write(case_dir.join("src/main.ts"), "export const ok = true").unwrap();
+        fs::write(case_dir.join("outside.d.ts"), "declare const Y: string;").unwrap();
+        fs::write(
+            case_dir.join("tsconfig.json"),
+            r#"{
+  "include": ["src/**/*"]
+}"#,
+        )
+        .unwrap();
+
+        let files =
+            collect_ambient_declaration_files(&case_dir, Some(&case_dir.join("tsconfig.json")));
+
+        assert_eq!(files.len(), 2, "{files:?}");
+        assert!(
+            files
+                .iter()
+                .any(|path| path.ends_with("src/@types/globals.d.ts"))
+        );
+        assert!(files.iter().any(|path| path.ends_with("src/env.d.ts")));
+        assert!(!files.iter().any(|path| path.ends_with("src/App.vue")));
+        assert!(!files.iter().any(|path| path.ends_with("src/main.ts")));
+        assert!(!files.iter().any(|path| path.ends_with("outside.d.ts")));
 
         let _ = fs::remove_dir_all(&case_dir);
     }

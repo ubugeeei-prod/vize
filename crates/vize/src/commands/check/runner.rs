@@ -27,7 +27,8 @@ use super::{
     CheckArgs,
     reporting::{JsonFileResult, JsonOutput},
     tsconfig_inputs::{
-        TsconfigDeclarationOptions, collect_default_check_files, load_tsconfig_declaration_options,
+        TsconfigDeclarationOptions, collect_ambient_declaration_files, collect_default_check_files,
+        load_tsconfig_declaration_options,
     },
 };
 
@@ -91,7 +92,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &[]);
     let collect_start = Instant::now();
-    let files = if args.patterns.is_empty() {
+    let mut files = if args.patterns.is_empty() {
         collect_default_check_files(&project_root, tsconfig_path.as_deref())
     } else {
         collect_check_files(&args.patterns)
@@ -109,6 +110,20 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let project_root = resolve_project_root(effective_tsconfig.as_deref(), &cwd, &files);
     let tsconfig_path =
         resolve_tsconfig_path(effective_tsconfig.as_deref(), &cwd, &project_root, &files);
+
+    // An explicit file subset (`vize check src/App.vue`) omits ambient
+    // declaration files, since nothing imports them; `declare global` types
+    // would then be missing and surface as false `TS2304` errors. Pull the
+    // tsconfig program's `.d.ts` files back in so global types stay in scope.
+    if !args.patterns.is_empty() && tsconfig_path.is_some() {
+        for path in collect_ambient_declaration_files(&project_root, tsconfig_path.as_deref()) {
+            if !files.contains(&path) {
+                files.push(path);
+            }
+        }
+        files.sort();
+        files.dedup();
+    }
 
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &project_root);
