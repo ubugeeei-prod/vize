@@ -64,14 +64,7 @@ fn flat_v_else_if_chain_accumulates_negated_guards() {
 </div>"#,
     );
 
-    let g = |name: &str| {
-        guards
-            .iter()
-            .find(|(c, _)| c == name)
-            .unwrap()
-            .1
-            .clone()
-    };
+    let g = |name: &str| guards.iter().find(|(c, _)| c == name).unwrap().1.clone();
     assert_eq!(g("a").as_deref(), Some("(s === 'a')"));
     assert_eq!(g("b").as_deref(), Some("!(s === 'a') && (s === 'b')"));
     assert_eq!(g("c").as_deref(), Some("!(s === 'a') && !(s === 'b')"));
@@ -91,14 +84,7 @@ fn non_conditional_sibling_breaks_v_if_chain() {
 </div>"#,
     );
 
-    let g = |name: &str| {
-        guards
-            .iter()
-            .find(|(c, _)| c == name)
-            .unwrap()
-            .1
-            .clone()
-    };
+    let g = |name: &str| guards.iter().find(|(c, _)| c == name).unwrap().1.clone();
     assert_eq!(g("x").as_deref(), Some("(a)"));
     assert_eq!(g("y"), None);
     assert_eq!(g("z").as_deref(), Some("(b)"));
