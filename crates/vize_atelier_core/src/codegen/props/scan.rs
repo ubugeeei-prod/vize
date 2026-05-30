@@ -109,9 +109,17 @@ impl<'props> PropsScan<'props> {
         };
 
         for (index, prop) in props.iter().enumerate() {
-            scan.observe_other_prop(prop);
-
             let visible = !skip_is || !is_is_prop(prop);
+
+            // The `is` binding of a dynamic `<component :is>` is consumed by
+            // resolveDynamicComponent, not emitted as a prop. Skipping it here
+            // keeps a lone `v-bind="obj"` on the same element on the
+            // normalizeProps(guardReactiveProps()) fast path instead of forcing
+            // mergeProps (matching @vue/compiler-dom).
+            if visible {
+                scan.observe_other_prop(prop);
+            }
+
             match prop {
                 PropNode::Attribute(attr) => {
                     if attr.name == "class" {
