@@ -50,7 +50,7 @@ impl<'a> DiagnosticMapper<'a> {
         diagnostic: LspDiagnostic,
     ) -> Option<Diagnostic> {
         let code = parse_diagnostic_code(diagnostic.code.as_ref());
-        if should_skip_diagnostic(code) {
+        if should_skip_diagnostic(code, &diagnostic.message) {
             return None;
         }
 
@@ -228,17 +228,48 @@ fn parse_severity(severity: Option<i32>) -> u8 {
     }
 }
 
-pub(super) fn should_skip_diagnostic(code: Option<u32>) -> bool {
-    matches!(
-        code,
-        Some(2307) | Some(2666) | Some(6133) | Some(7006) | Some(7043) | Some(7044)
-    )
+pub(super) fn should_skip_diagnostic(code: Option<u32>, message: &str) -> bool {
+    match code {
+        Some(2307) => is_vue_module_not_found(message),
+        Some(2666) | Some(6133) | Some(7006) | Some(7043) | Some(7044) => true,
+        _ => false,
+    }
+}
+
+fn is_vue_module_not_found(message: &str) -> bool {
+    let mut rest = message;
+    while let Some(idx) = rest.find("Cannot find module ") {
+        rest = &rest[idx + "Cannot find module ".len()..];
+        let Some(open) = rest.chars().next() else {
+            return false;
+        };
+        let close = match open {
+            '\'' => '\'',
+            '"' => '"',
+            '\u{2018}' => '\u{2019}',
+            _ => {
+                rest = &rest[open.len_utf8()..];
+                continue;
+            }
+        };
+        let after_open = &rest[open.len_utf8()..];
+        let Some(end) = after_open.find(close) else {
+            return false;
+        };
+        let spec = &after_open[..end];
+        if spec.ends_with(".vue") || spec.ends_with(".vue.ts") {
+            return true;
+        }
+        rest = &after_open[end + close.len_utf8()..];
+    }
+    false
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        LineIndex, map_batch_diagnostics, parse_diagnostic_code, parse_severity, uri_to_path,
+        LineIndex, map_batch_diagnostics, parse_diagnostic_code, parse_severity,
+        should_skip_diagnostic, uri_to_path,
     };
     use crate::batch::VirtualProject;
     use serde_json::json;
@@ -292,6 +323,29 @@ mod tests {
         let content = "é\n";
         let index = LineIndex::new(content);
         assert_eq!(index.offset_to_line_col(content, 1), Some((0, 1)));
+    }
+
+    #[test]
+    fn ts2307_suppression_is_narrowed_to_vue_modules() {
+        let vue_msg = "Cannot find module './app.vue' or its corresponding type declarations.";
+        let vue_ts_msg =
+            "Cannot find module './app.vue.ts' or its corresponding type declarations.";
+        let non_vue_msg =
+            "Cannot find module 'lodash-es' or its corresponding type declarations.";
+        let double_quoted = "Cannot find module \"./Sib.vue\" or its corresponding type declarations.";
+        let smart_quoted = "Cannot find module \u{2018}./Sib.vue\u{2019} or its corresponding type declarations.";
+
+        assert!(should_skip_diagnostic(Some(2307), vue_msg));
+        assert!(should_skip_diagnostic(Some(2307), vue_ts_msg));
+        assert!(!should_skip_diagnostic(Some(2307), non_vue_msg));
+        assert!(should_skip_diagnostic(Some(2307), double_quoted));
+        assert!(should_skip_diagnostic(Some(2307), smart_quoted));
+
+        // Non-2307 codes in the blanket list are still always suppressed.
+        assert!(should_skip_diagnostic(Some(6133), "any message"));
+        assert!(should_skip_diagnostic(Some(7006), "any message"));
+        assert!(!should_skip_diagnostic(Some(2322), "any message"));
+        assert!(!should_skip_diagnostic(None, "any message"));
     }
 
     #[test]

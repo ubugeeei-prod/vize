@@ -110,7 +110,7 @@ fn parse_cli_diagnostic_line(
     let code = code
         .strip_prefix("TS")
         .and_then(|code| code.parse::<u32>().ok());
-    if should_skip_diagnostic(code) {
+    if should_skip_diagnostic(code, message) {
         return None;
     }
 
