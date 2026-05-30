@@ -200,29 +200,7 @@ pub(crate) fn has_slot_outlet_props(el: &ElementNode<'_>) -> bool {
 }
 
 pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
-    let static_class = el.props.iter().find_map(|prop| {
-        if is_slot_name_prop(prop) {
-            return None;
-        }
-        if let PropNode::Attribute(attr) = prop
-            && attr.name.as_str() == "class"
-        {
-            return attr.value.as_ref().map(|v| v.content.as_str());
-        }
-        None
-    });
-
-    let static_style = el.props.iter().find_map(|prop| {
-        if is_slot_name_prop(prop) {
-            return None;
-        }
-        if let PropNode::Attribute(attr) = prop
-            && attr.name.as_str() == "style"
-        {
-            return attr.value.as_ref().map(|v| v.content.as_str());
-        }
-        None
-    });
+    let static_merge = crate::codegen::props::StaticMerge::from_props(&el.props);
 
     let has_dynamic_class = el.props.iter().any(|prop| match prop {
         PropNode::Directive(dir) if !is_slot_name_bind(dir) && dir.name.as_str() == "bind" => {
@@ -292,7 +270,7 @@ pub(crate) fn generate_slot_outlet_props_entries(ctx: &mut CodegenContext, el: &
                 if !first {
                     ctx.push(", ");
                 }
-                generate_directive_prop_with_static(ctx, dir, static_class, static_style);
+                generate_directive_prop_with_static(ctx, dir, static_merge);
                 first = false;
             }
         }

@@ -205,3 +205,27 @@ input = '<div :[key].attr="val"></div>'
 [[cases]]
 name = "v-bind dynamic arg plain"
 input = '<div :[key]="val"></div>'
+
+# =============================================================================
+# Static/dynamic class & style merge order (source order preserved)
+# =============================================================================
+
+[[cases]]
+name = "dynamic class before static class"
+input = '<div :class="a" class="b"></div>'
+
+[[cases]]
+name = "static class before dynamic class"
+input = '<div class="b" :class="a"></div>'
+
+[[cases]]
+name = "dynamic style before static style"
+input = '<div :style="s" style="color:red"></div>'
+
+[[cases]]
+name = "static style before dynamic style"
+input = '<div style="color:red" :style="s"></div>'
+
+[[cases]]
+name = "mixed class and style merge order"
+input = '<div class="b" :class="a" :style="s" style="x:1"></div>'

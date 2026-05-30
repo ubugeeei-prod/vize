@@ -38,16 +38,62 @@ pub fn is_supported_directive(dir: &DirectiveNode<'_>) -> bool {
     matches!(dir.name.as_str(), "bind" | "on" | "html" | "text")
 }
 
+/// A static class/style attribute that will be merged with a dynamic
+/// `:class`/`:style` binding, plus whether the static value appears before
+/// the dynamic one in source order (Vue preserves source order in the merged
+/// array).
+#[derive(Clone, Copy, Default)]
+pub struct StaticMerge<'a> {
+    pub class: Option<&'a str>,
+    pub class_before: bool,
+    pub style: Option<&'a str>,
+    pub style_before: bool,
+}
+
+impl<'a> StaticMerge<'a> {
+    /// Build the merge metadata from an element's props in source order.
+    pub fn from_props(props: &'a [crate::ast::PropNode<'a>]) -> Self {
+        let mut merge = StaticMerge::default();
+        let mut class_index = None;
+        let mut style_index = None;
+        for (index, prop) in props.iter().enumerate() {
+            match prop {
+                crate::ast::PropNode::Attribute(attr) => {
+                    if attr.name == "class" && merge.class.is_none() {
+                        merge.class = attr.value.as_ref().map(|v| v.content.as_str());
+                        class_index = Some(index);
+                    } else if attr.name == "style" && merge.style.is_none() {
+                        merge.style = attr.value.as_ref().map(|v| v.content.as_str());
+                        style_index = Some(index);
+                    }
+                }
+                crate::ast::PropNode::Directive(dir) => {
+                    if dir.name == "bind"
+                        && let Some(ExpressionNode::Simple(exp)) = &dir.arg
+                        && exp.is_static
+                    {
+                        if exp.content == "class" && class_index.is_some_and(|i| i < index) {
+                            merge.class_before = true;
+                        } else if exp.content == "style" && style_index.is_some_and(|i| i < index) {
+                            merge.style_before = true;
+                        }
+                    }
+                }
+            }
+        }
+        merge
+    }
+}
+
 /// Generate directive as prop with optional static class/style merging
 pub fn generate_directive_prop_with_static(
     ctx: &mut CodegenContext,
     dir: &DirectiveNode<'_>,
-    static_class: Option<&str>,
-    static_style: Option<&str>,
+    static_merge: StaticMerge<'_>,
 ) {
     match dir.name.as_str() {
         "bind" => {
-            generate_vbind_prop(ctx, dir, static_class, static_style);
+            generate_vbind_prop(ctx, dir, static_merge);
         }
         "on" => {
             generate_von_prop(ctx, dir);
@@ -88,9 +134,10 @@ pub fn generate_directive_prop_with_static(
 fn generate_vbind_prop(
     ctx: &mut CodegenContext,
     dir: &DirectiveNode<'_>,
-    static_class: Option<&str>,
-    static_style: Option<&str>,
+    static_merge: StaticMerge<'_>,
 ) {
+    let static_class = static_merge.class;
+    let static_style = static_merge.style;
     let mut is_class = false;
     let mut is_style = false;
 
@@ -198,12 +245,22 @@ fn generate_vbind_prop(
                 ctx.use_helper(RuntimeHelper::NormalizeClass);
                 ctx.push("_normalizeClass(");
             }
-            // Merge static class if present (needed even inside mergeProps)
+            // Merge static class if present (needed even inside mergeProps).
+            // The array order follows source order: `class` before `:class`
+            // yields `["static", dynamic]`, otherwise `[dynamic, "static"]`.
             if let Some(static_val) = static_class {
-                ctx.push("[\"");
-                ctx.push(&escape_js_string(static_val));
-                ctx.push("\", ");
-                generate_expression(ctx, exp);
+                ctx.push("[");
+                if static_merge.class_before {
+                    ctx.push("\"");
+                    ctx.push(&escape_js_string(static_val));
+                    ctx.push("\", ");
+                    generate_expression(ctx, exp);
+                } else {
+                    generate_expression(ctx, exp);
+                    ctx.push(", \"");
+                    ctx.push(&escape_js_string(static_val));
+                    ctx.push("\"");
+                }
                 ctx.push("]");
             } else {
                 generate_expression(ctx, exp);
@@ -218,31 +275,42 @@ fn generate_vbind_prop(
                 ctx.use_helper(RuntimeHelper::NormalizeStyle);
                 ctx.push("_normalizeStyle(");
             }
-            // Merge static style if present (needed even inside mergeProps)
+            // Merge static style if present (needed even inside mergeProps).
+            // The array order follows source order, like class merging above.
             if let Some(static_val) = static_style {
-                ctx.push("[{");
-                // Parse static style and convert to object
-                for (i, part) in static_val
-                    .split(';')
-                    .filter(|s| !s.trim().is_empty())
-                    .enumerate()
-                {
-                    if i > 0 {
-                        ctx.push(",");
+                let emit_static_style = |ctx: &mut CodegenContext| {
+                    ctx.push("{");
+                    for (i, part) in static_val
+                        .split(';')
+                        .filter(|s| !s.trim().is_empty())
+                        .enumerate()
+                    {
+                        if i > 0 {
+                            ctx.push(",");
+                        }
+                        let parts: Vec<&str> = part.splitn(2, ':').collect();
+                        if parts.len() == 2 {
+                            let key = parts[0].trim();
+                            let value = parts[1].trim();
+                            ctx.push("\"");
+                            ctx.push(key);
+                            ctx.push("\":\"");
+                            ctx.push(value);
+                            ctx.push("\"");
+                        }
                     }
-                    let parts: Vec<&str> = part.splitn(2, ':').collect();
-                    if parts.len() == 2 {
-                        let key = parts[0].trim();
-                        let value = parts[1].trim();
-                        ctx.push("\"");
-                        ctx.push(key);
-                        ctx.push("\":\"");
-                        ctx.push(value);
-                        ctx.push("\"");
-                    }
+                    ctx.push("}");
+                };
+                ctx.push("[");
+                if static_merge.style_before {
+                    emit_static_style(ctx);
+                    ctx.push(", ");
+                    generate_expression(ctx, exp);
+                } else {
+                    generate_expression(ctx, exp);
+                    ctx.push(", ");
+                    emit_static_style(ctx);
                 }
-                ctx.push("}, ");
-                generate_expression(ctx, exp);
                 ctx.push("]");
             } else {
                 generate_expression(ctx, exp);

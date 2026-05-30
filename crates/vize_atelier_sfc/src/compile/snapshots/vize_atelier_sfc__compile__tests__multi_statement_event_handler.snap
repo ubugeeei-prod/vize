@@ -1,5 +1,6 @@
 ---
 source: crates/vize_atelier_sfc/src/compile/tests.rs
+assertion_line: 614
 expression: result.code.as_str()
 ---
 import { defineComponent as _defineComponent } from 'vue'
@@ -14,10 +15,10 @@ const editDashboard = ref()
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock("div", {
-      onClick: _cache[0] || (_cache[0] = ($event: any) => { 
+      onClick: _cache[0] || (_cache[0] = ($event: any) => {
       editDashboard.value = 'test';
       console.log('done');
-     })
+    })
     }))
 }
 }

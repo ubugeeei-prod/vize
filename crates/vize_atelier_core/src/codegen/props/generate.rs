@@ -443,8 +443,12 @@ fn generate_props_object_inner(
                     generate_directive_prop_with_static(
                         ctx,
                         dir,
-                        scan.static_class,
-                        scan.static_style,
+                        super::directives::StaticMerge {
+                            class: scan.static_class,
+                            class_before: scan.static_class_before_dynamic,
+                            style: scan.static_style,
+                            style_before: scan.static_style_before_dynamic,
+                        },
                     );
                 }
             }

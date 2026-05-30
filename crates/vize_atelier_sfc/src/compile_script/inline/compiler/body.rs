@@ -162,7 +162,7 @@ pub(super) fn compile_script_setup_inline_body(
         let mut code = output_str;
         if is_ts {
             code = code.replace("$event => (", "($event: any) => (");
-            code = code.replace("$event => { ", "($event: any) => { ");
+            code = code.replace("$event => {", "($event: any) => {");
         }
         code.into()
     } else {
