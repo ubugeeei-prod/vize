@@ -11,15 +11,16 @@
 
 use std::path::{Path, PathBuf};
 
-use oxc_allocator::Allocator;
-use oxc_ast::ast::Statement;
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 /// Source extensions whose imports carry TypeScript types worth pulling into the
 /// virtual project, in module-resolution precedence order.
-const RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".d.ts", ".vue", ".mts", ".cts"];
+///
+/// `.d.ts` is deliberately excluded: ambient declaration files (e.g. a project
+/// `shims.d.ts` with a top-level `declare module "vue"`) shadow the real module
+/// when registered as program roots, so pulling them in would break `vue`
+/// resolution for every file. TypeScript still loads reachable `.d.ts` on demand.
+const RESOLVE_EXTENSIONS: &[&str] = &[".ts", ".tsx", ".vue", ".mts", ".cts"];
 
 /// Walk the relative-import graph reachable from `roots` and return the extra
 /// on-disk source files that should be registered alongside them. The roots
@@ -46,11 +47,18 @@ pub(super) fn collect_transitive_local_imports(roots: &[PathBuf], cwd: &Path) ->
         let Ok(source) = std::fs::read_to_string(&file) else {
             continue;
         };
-        let script = scriptable_source(&file, &source);
-        for specifier in extract_relative_specifiers(&script) {
+        // Scan the raw file text directly — the byte scanner only reacts to
+        // `import`/`from` string operands, so an SFC's `<template>`/`<style>`
+        // are inert and no `.vue` parse is needed on this hot path.
+        for specifier in extract_relative_specifiers(&source) {
             let Some(resolved) = resolve_relative_import(dir, &specifier) else {
                 continue;
             };
+            // Never register an ambient declaration file — its `declare module`
+            // statements would shadow real modules as a program root.
+            if is_declaration_file(&resolved) {
+                continue;
+            }
             if visited.insert(resolved.clone()) {
                 discovered.push(resolved.clone());
                 queue.push(resolved);
@@ -72,55 +80,78 @@ fn absolutize(path: &Path, cwd: &Path) -> Option<PathBuf> {
     Some(joined.canonicalize().unwrap_or(joined))
 }
 
-/// Extract the TypeScript-analyzable source from a file: the concatenated
-/// `<script>` / `<script setup>` blocks of a `.vue` SFC, or the file verbatim.
-fn scriptable_source(file: &Path, source: &str) -> String {
-    let is_vue = file
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .is_some_and(|ext| ext.eq_ignore_ascii_case("vue"));
-    if !is_vue {
-        return source.to_compact_string();
+/// Collect the relative (`./`, `../`) module specifiers of `source`'s `import` /
+/// `export … from` / dynamic-`import(...)` statements.
+///
+/// This is a deliberately lightweight byte scan rather than a full parse: the
+/// transitive walk runs on every checked file, so an AST per file regressed the
+/// benchmark. Over-matching (e.g. an import-like fragment inside a string) is
+/// harmless because each specifier is resolved against the filesystem and only
+/// real source files are registered.
+fn extract_relative_specifiers(source: &str) -> Vec<String> {
+    let bytes = source.as_bytes();
+    let len = bytes.len();
+    let mut specifiers = Vec::new();
+    let mut i = 0;
+
+    while i < len {
+        let keyword_len = if matches_keyword(bytes, i, b"from") {
+            4
+        } else if matches_keyword(bytes, i, b"import") {
+            6
+        } else {
+            i += 1;
+            continue;
+        };
+
+        let mut j = i + keyword_len;
+        while j < len && bytes[j].is_ascii_whitespace() {
+            j += 1;
+        }
+        // `import('./x')` / `import ( './x' )` — step over the call paren.
+        if j < len && bytes[j] == b'(' {
+            j += 1;
+            while j < len && bytes[j].is_ascii_whitespace() {
+                j += 1;
+            }
+        }
+
+        if j < len && (bytes[j] == b'"' || bytes[j] == b'\'') {
+            let quote = bytes[j];
+            let start = j + 1;
+            let mut k = start;
+            while k < len && bytes[k] != quote {
+                k += 1;
+            }
+            if k < len {
+                let specifier = &source[start..k];
+                if is_relative_specifier(specifier) {
+                    specifiers.push(specifier.to_compact_string());
+                }
+                i = k + 1;
+                continue;
+            }
+        }
+        // `import {` / `import Foo` — no string yet; keep scanning for `from`.
+        i += keyword_len;
     }
 
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, Default::default()) else {
-        return String::default();
-    };
-    let mut combined = String::default();
-    if let Some(script) = descriptor.script.as_ref() {
-        combined.push_str(&script.content);
-        combined.push('\n');
-    }
-    if let Some(script_setup) = descriptor.script_setup.as_ref() {
-        combined.push_str(&script_setup.content);
-    }
-    combined
+    specifiers
 }
 
-/// Parse `source` as TypeScript and collect the specifiers of its static
-/// `import` / `export … from` declarations that are relative (`./`, `../`).
-fn extract_relative_specifiers(source: &str) -> Vec<String> {
-    let allocator = Allocator::default();
-    let source_type = SourceType::default().with_typescript(true).with_jsx(true);
-    let parsed = Parser::new(&allocator, source, source_type).parse();
-
-    let mut specifiers = Vec::new();
-    for statement in &parsed.program.body {
-        let specifier = match statement {
-            Statement::ImportDeclaration(decl) => Some(decl.source.value.as_str()),
-            Statement::ExportNamedDeclaration(decl) => {
-                decl.source.as_ref().map(|s| s.value.as_str())
-            }
-            Statement::ExportAllDeclaration(decl) => Some(decl.source.value.as_str()),
-            _ => None,
-        };
-        if let Some(specifier) = specifier
-            && is_relative_specifier(specifier)
-        {
-            specifiers.push(specifier.to_compact_string());
-        }
+/// Whether `bytes[at..]` begins with `keyword` as a standalone identifier token.
+fn matches_keyword(bytes: &[u8], at: usize, keyword: &[u8]) -> bool {
+    if at + keyword.len() > bytes.len() || &bytes[at..at + keyword.len()] != keyword {
+        return false;
     }
-    specifiers
+    let before_ok = at == 0 || !is_identifier_byte(bytes[at - 1]);
+    let after = at + keyword.len();
+    let after_ok = after >= bytes.len() || !is_identifier_byte(bytes[after]);
+    before_ok && after_ok
+}
+
+fn is_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
 fn is_relative_specifier(specifier: &str) -> bool {
@@ -168,13 +199,21 @@ fn rewrite_js_to_ts(base: &Path) -> Option<PathBuf> {
         .strip_suffix(".js")
         .or_else(|| name.strip_suffix(".mjs"))
         .or_else(|| name.strip_suffix(".cjs"))?;
-    for ext in [".ts", ".tsx", ".d.ts", ".mts", ".cts"] {
+    for ext in [".ts", ".tsx", ".mts", ".cts"] {
         let candidate = base.with_file_name(cstr!("{stem}{ext}"));
         if candidate.is_file() {
             return canonicalize(&candidate);
         }
     }
     None
+}
+
+fn is_declaration_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            name.ends_with(".d.ts") || name.ends_with(".d.mts") || name.ends_with(".d.cts")
+        })
 }
 
 fn has_source_extension(path: &Path) -> bool {
