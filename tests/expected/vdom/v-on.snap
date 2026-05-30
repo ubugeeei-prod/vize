@@ -750,3 +750,29 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("div", { onMouseover: _ctx.fn }, null, 40 /* PROPS, NEED_HYDRATION */, ["onMouseover"]))
 }
+===
+name: inline multi-statement handler
+options: vdom
+--- INPUT ---
+<a @click="foo();bar()"></a>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("a", {
+    onClick: $event => {_ctx.foo();_ctx.bar()}
+  }, null, 8 /* PROPS */, ["onClick"]))
+}
+===
+name: inline single-statement handler
+options: vdom
+--- INPUT ---
+<a @click="foo()"></a>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("a", {
+    onClick: $event => (_ctx.foo())
+  }, null, 8 /* PROPS */, ["onClick"]))
+}

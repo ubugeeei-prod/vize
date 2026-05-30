@@ -299,3 +299,11 @@ input = '<div @click="fn"></div>'
 [[cases]]
 name = "mouseover needs hydration"
 input = '<div @mouseover="fn"></div>'
+
+[[cases]]
+name = "inline multi-statement handler"
+input = '<a @click="foo();bar()"></a>'
+
+[[cases]]
+name = "inline single-statement handler"
+input = '<a @click="foo()"></a>'

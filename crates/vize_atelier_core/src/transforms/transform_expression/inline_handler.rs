@@ -144,13 +144,14 @@ pub fn process_inline_handler<'a>(
     } else {
         content.clone()
     };
-    // Use block body { ... } for multi-statement handlers (semicolons),
-    // concise body ( ... ) for single expressions
+    // Use block body {...} for multi-statement handlers (semicolons),
+    // concise body ( ... ) for single expressions. Vue emits the block body
+    // with no surrounding spaces (`$event => {...}`).
     let new_content = if rewritten.contains(';') {
-        let mut s = String::with_capacity(14 + rewritten.len() + 2);
-        s.push_str("$event => { ");
+        let mut s = String::with_capacity(12 + rewritten.len() + 1);
+        s.push_str("$event => {");
         s.push_str(&rewritten);
-        s.push_str(" }");
+        s.push('}');
         s
     } else {
         let mut s = String::with_capacity(12 + rewritten.len() + 1);
