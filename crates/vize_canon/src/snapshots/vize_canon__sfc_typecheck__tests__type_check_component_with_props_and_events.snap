@@ -36,6 +36,11 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
+declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
+declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
+declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
+declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly [item: T, key: number, index: number][];
+declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];
 interface Props {
   title: string
   disabled?: boolean
@@ -74,7 +79,7 @@ function __setup() {
   const props = defineProps<Props>()
   const emit = defineEmits<Emits>()
   
-  // @vize-map: 4309:4388 -> 0:212
+  // @vize-map: 4929:5008 -> 0:212
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

@@ -120,6 +120,62 @@ void props
 }
 
 #[test]
+fn check_vfor_over_object_types_key_as_keyof_not_number() {
+    // Regression for vuejs/language-tools#5978 (#767): iterating an object with
+    // `v-for="(value, key) in obj"` must type `value` as `T[keyof T]` and `key`
+    // as `keyof T`. Vize used to emit `(obj).forEach((value: typeof obj[number],
+    // key: number) => ...)`, which raised a spurious "forEach does not exist on
+    // object" error and mis-typed `key` as `number`. vue-tsc reports zero
+    // diagnostics here.
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "vfor-object-key",
+        &[(
+            "src/VForObject.vue",
+            r#"<script setup lang="ts">
+const obj: { foo: number; bar: number } = { foo: 1, bar: 2 }
+function wantValue(n: number) { return n }
+function wantKey(k: 'foo' | 'bar') { return k }
+</script>
+
+<template>
+  <div v-for="(value, key) in obj">{{ wantValue(value) }} {{ wantKey(key) }}</div>
+</template>
+"#,
+        )],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/VForObject.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        json["errorCount"], 0,
+        "object v-for should type value as T[keyof T] and key as keyof T; stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_options_api_can_import_define_component_from_stubbed_vue() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

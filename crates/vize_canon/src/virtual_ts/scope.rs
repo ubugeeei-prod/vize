@@ -17,8 +17,8 @@ use vize_croquis::{
 use super::{
     expressions::{generate_component_prop_checks, generate_expression},
     helpers::{
-        generated_text_range, get_dom_event_type, strip_as_assertion, to_camel_case,
-        to_safe_identifier, to_safe_identifier_fragment,
+        generated_text_range, get_dom_event_type, to_camel_case, to_safe_identifier,
+        to_safe_identifier_fragment,
     },
     types::{VirtualTsCheckOptions, VizeMapping},
 };
@@ -248,6 +248,36 @@ fn append_v_for_comment(ts: &mut String, indent: &str, label: &str, alias: &str,
     ts.push('\n');
 }
 
+/// Emit the opening of a v-for scope as
+/// `__vForList(source).forEach(([value, key, index]) => {`.
+///
+/// The overloaded `__vForList` helper types the destructured tuple from the
+/// source kind: arrays/iterables/numbers/strings keep a numeric `key`, while an
+/// object source yields `value: T[keyof T]` and `key: keyof T` (matching
+/// vue-tsc) instead of the old array-only `(source).forEach` assumption that
+/// mis-typed objects and raised spurious TS2339/TS2537. The source expression is
+/// passed through verbatim so any `as Type` assertion flows into the helper.
+fn emit_v_for_loop_open(
+    ts: &mut String,
+    indent: &str,
+    value_alias: &str,
+    key_alias: Option<&str>,
+    index_alias: Option<&str>,
+    source: &str,
+) {
+    append!(*ts, "{indent}__vForList({source}).forEach(([{value_alias}");
+    if let Some(key) = key_alias {
+        append!(*ts, ", {key}");
+    } else if index_alias.is_some() {
+        // Keep the index in the third tuple slot even when no key alias is bound.
+        ts.push_str(", _key");
+    }
+    if let Some(index) = index_alias {
+        append!(*ts, ", {index}");
+    }
+    ts.push_str("]) => {\n");
+}
+
 /// Generate component props type checks (scope-aware).
 /// Type declarations are at template level, value checks are in their scope.
 fn generate_component_props(
@@ -402,50 +432,14 @@ fn generate_scope_node(
                 data.source.as_str(),
             );
 
-            // Strip TypeScript `as Type` assertion from v-for source expression.
-            // e.g., "(expr) as OptionSponsor[]" -> "(expr)" with type annotation
-            let (source_expr, type_annotation) = strip_as_assertion(&data.source);
-
-            // Detect numeric literal (e.g., `v-for="n in 4"`)
-            let is_numeric = source_expr.trim().parse::<u64>().is_ok();
-
-            let is_simple_identifier = source_expr.chars().all(|c| c.is_alphanumeric() || c == '_');
-            let element_type = if is_numeric {
-                "number".into()
-            } else if let Some(ref ta) = type_annotation {
-                // Use the asserted type's element type
-                cstr!("{ta}[number]")
-            } else if is_simple_identifier {
-                cstr!("typeof {source_expr}[number]")
-            } else {
-                "any".into()
-            };
-
-            if is_numeric {
-                append!(
-                    *ts,
-                    "{indent}(Array.from({{length: {source_expr}}}, (_, __i) => __i + 1)).forEach(({}: {element_type}",
-                    data.value_alias,
-                );
-            } else {
-                append!(
-                    *ts,
-                    "{indent}({source_expr}).forEach(({}: {element_type}",
-                    data.value_alias,
-                );
-            }
-
-            if let Some(ref key) = data.key_alias {
-                append!(*ts, ", {key}: number");
-            }
-            if let Some(ref index) = data.index_alias {
-                if data.key_alias.is_none() {
-                    ts.push_str(", _key: number");
-                }
-                append!(*ts, ", {index}: number");
-            }
-
-            ts.push_str(") => {\n");
+            emit_v_for_loop_open(
+                ts,
+                indent,
+                data.value_alias.as_str(),
+                data.key_alias.as_deref(),
+                data.index_alias.as_deref(),
+                data.source.as_str(),
+            );
 
             // Mark v-for variables as used to avoid TS6133
             for value in &data.value_bindings {
@@ -751,21 +745,6 @@ fn generate_closure_component_props_recursive(
 
     match scope.data() {
         ScopeData::VFor(data) => {
-            let (source_expr, type_annotation) = strip_as_assertion(&data.source);
-
-            let is_numeric = source_expr.trim().parse::<u64>().is_ok();
-
-            let is_simple_identifier = source_expr.chars().all(|c| c.is_alphanumeric() || c == '_');
-            let element_type = if is_numeric {
-                "number".into()
-            } else if let Some(ref ta) = type_annotation {
-                cstr!("{ta}[number]")
-            } else if is_simple_identifier {
-                cstr!("typeof {source_expr}[number]")
-            } else {
-                "any".into()
-            };
-
             append_v_for_comment(
                 ts,
                 indent,
@@ -773,29 +752,14 @@ fn generate_closure_component_props_recursive(
                 data.value_alias.as_str(),
                 data.source.as_str(),
             );
-            if is_numeric {
-                append!(
-                    *ts,
-                    "{indent}(Array.from({{length: {source_expr}}}, (_, __i) => __i + 1)).forEach(({}: {element_type}",
-                    data.value_alias,
-                );
-            } else {
-                append!(
-                    *ts,
-                    "{indent}({source_expr}).forEach(({}: {element_type}",
-                    data.value_alias,
-                );
-            }
-            if let Some(ref key) = data.key_alias {
-                append!(*ts, ", {key}: number");
-            }
-            if let Some(ref index) = data.index_alias {
-                if data.key_alias.is_none() {
-                    ts.push_str(", _key: number");
-                }
-                append!(*ts, ", {index}: number");
-            }
-            ts.push_str(") => {\n");
+            emit_v_for_loop_open(
+                ts,
+                indent,
+                data.value_alias.as_str(),
+                data.key_alias.as_deref(),
+                data.index_alias.as_deref(),
+                data.source.as_str(),
+            );
 
             // Mark v-for variables as used to avoid TS6133
             for value in &data.value_bindings {

@@ -40,7 +40,12 @@ type __WithDefaultValue<T> = T | __DefaultFactory<T>;
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
 type __Ref<T> = import('vue').Ref<T>;
-type __ShallowRef<T> = import('vue').ShallowRef<T>;"#;
+type __ShallowRef<T> = import('vue').ShallowRef<T>;
+declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
+declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
+declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
+declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly [item: T, key: number, index: number][];
+declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];"#;
 
 /// Vue setup-scope helpers - these are defined inside setup scope, NOT globally.
 /// Compiler macros stay setup-only, while runtime helper shims model Vue APIs.
@@ -176,43 +181,6 @@ pub(crate) fn generated_text_range(
     let relative_start = generated_segment.find(mapped_text).unwrap_or(0);
     let start = generated_start + relative_start;
     start..start + mapped_text.len()
-}
-
-/// Strip TypeScript `as Type` assertion from a v-for source expression.
-/// Returns (source_expression, Option<type_annotation>).
-/// e.g., "(expr) as OptionSponsor[]" -> ("(expr)", Some("OptionSponsor[]"))
-pub(crate) fn strip_as_assertion(source: &str) -> (&str, Option<&str>) {
-    // Look for ` as ` in the source, but be careful with nested expressions.
-    // We scan from the end to find the last top-level ` as `.
-    let trimmed = source.trim();
-
-    // Simple approach: find the last ` as ` that is not inside parentheses
-    let mut paren_depth = 0i32;
-    let bytes = trimmed.as_bytes();
-    let mut last_as_pos = None;
-
-    let mut i = 0;
-    while i < bytes.len() {
-        match bytes[i] {
-            b'(' => paren_depth += 1,
-            b')' => paren_depth -= 1,
-            b' ' if paren_depth == 0 && i + 4 <= bytes.len() && &bytes[i..i + 4] == b" as " => {
-                last_as_pos = Some(i);
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-
-    if let Some(pos) = last_as_pos {
-        let expr = trimmed[..pos].trim();
-        let type_ann = trimmed[pos + 4..].trim();
-        if !type_ann.is_empty() {
-            return (expr, Some(type_ann));
-        }
-    }
-
-    (trimmed, None)
 }
 
 /// Get the TypeScript event type for a DOM event name.
