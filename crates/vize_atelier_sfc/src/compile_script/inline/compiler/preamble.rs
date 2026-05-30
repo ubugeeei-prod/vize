@@ -27,45 +27,53 @@ pub(super) fn emit_preamble(
     is_ts: bool,
     is_async: bool,
 ) -> PreambleState {
-    // mergeDefaults import comes first if needed
+    // @vue/compiler-sfc groups the script-level Vue helper imports
+    // (`mergeDefaults`, `useSlots`, `useModel`, `useCssVars`, `defineComponent`, …)
+    // into a single `import ... from 'vue'` statement. Collect the active helpers
+    // and emit one combined import so multi-helper output matches upstream — e.g.
+    // typed `defineModel<T>()` pulls in both `useModel` and `defineComponent`.
+    let mut script_helpers: Vec<&str> = Vec::new();
+
+    // mergeDefaults comes first if needed
     if needs_merge_defaults {
-        output.extend_from_slice(b"import { mergeDefaults as _mergeDefaults } from 'vue'\n");
+        script_helpers.push("mergeDefaults as _mergeDefaults");
     }
 
-    // useSlots import if defineSlots was used
+    // useSlots if defineSlots was used
     if has_define_slots {
-        output.extend_from_slice(b"import { useSlots as _useSlots } from 'vue'\n");
+        script_helpers.push("useSlots as _useSlots");
     }
 
-    // useModel import if defineModel was used
+    // useModel if defineModel was used
     if has_define_model {
-        output.extend_from_slice(b"import { useModel as _useModel } from 'vue'\n");
+        script_helpers.push("useModel as _useModel");
     }
 
-    // useCssVars import if style has v-bind()
+    // useCssVars if style has v-bind() (pulling in unref unless already imported)
     if has_css_vars {
-        if import_block_has_local_from(template.imports, "vue", "_unref") {
-            output.extend_from_slice(b"import { useCssVars as _useCssVars } from 'vue'\n");
-        } else {
-            output.extend_from_slice(
-                b"import { useCssVars as _useCssVars, unref as _unref } from 'vue'\n",
-            );
+        script_helpers.push("useCssVars as _useCssVars");
+        if !import_block_has_local_from(template.imports, "vue", "_unref") {
+            script_helpers.push("unref as _unref");
         }
     }
 
-    // Component helper import (skip if already emitted with withAsyncContext)
+    // Component helper (skip defineComponent if it is emitted with withAsyncContext)
     if is_vapor && !is_async {
         if needs_vapor_setup_context {
-            output.extend_from_slice(
-                b"import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'\n",
-            );
+            script_helpers.push("defineVaporComponent as _defineVaporComponent");
+            script_helpers.push("getCurrentInstance as _getCurrentInstance");
+            script_helpers.push("proxyRefs as _proxyRefs");
         } else {
-            output.extend_from_slice(
-                b"import { defineVaporComponent as _defineVaporComponent } from 'vue'\n",
-            );
+            script_helpers.push("defineVaporComponent as _defineVaporComponent");
         }
     } else if is_ts && !is_async {
-        output.extend_from_slice(b"import { defineComponent as _defineComponent } from 'vue'\n");
+        script_helpers.push("defineComponent as _defineComponent");
+    }
+
+    if !script_helpers.is_empty() {
+        output.extend_from_slice(b"import { ");
+        output.extend_from_slice(script_helpers.join(", ").as_bytes());
+        output.extend_from_slice(b" } from 'vue'\n");
     }
 
     // Template imports (Vue helpers)

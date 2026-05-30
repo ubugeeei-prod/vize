@@ -1,14 +1,67 @@
-use vize_carton::{String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 use crate::script::ScriptCompileContext;
 
-use super::super::super::props::extract_emit_names_from_type;
+use super::super::super::props::{
+    extract_emit_names_from_type, resolve_prop_js_type, ts_type_to_js_type,
+};
+
+/// Resolved info for a single `defineModel` call.
+#[derive(Debug, Clone)]
+pub(super) struct ModelInfo {
+    /// Model (prop) name, e.g. `modelValue` or `title`.
+    pub name: String,
+    /// Local binding name the model is assigned to.
+    pub binding_name: String,
+    /// Runtime options object source (`{ ... }`), if provided.
+    pub options: Option<String>,
+    /// Explicit `<T>` type-argument source, if provided.
+    pub type_arg: Option<String>,
+}
+
+/// Resolve a defineModel `<T>` type argument to its runtime constructor,
+/// mirroring `@vue/compiler-sfc`'s `inferRuntimeType`: primitives map directly
+/// (`string` → `String`), and local interface / type-alias references that do
+/// not map directly resolve to `Object` via the script context.
+fn model_runtime_type(ctx: &ScriptCompileContext, type_arg: &str) -> String {
+    let js_type = ts_type_to_js_type(type_arg);
+    if js_type == "null" {
+        resolve_prop_js_type(type_arg, &ctx.interfaces, &ctx.type_aliases).unwrap_or(js_type)
+    } else {
+        js_type
+    }
+}
+
+/// Render the runtime prop-options object for a single defineModel, mirroring
+/// `@vue/compiler-sfc`'s `genModelProps`: an explicit `<T>` type argument is
+/// resolved to its runtime constructor as `{ type: <RuntimeType> }`, merged
+/// with any runtime options as `, ...{ opts }`. Without a type argument the
+/// options object (or `{}`) is emitted verbatim.
+pub(super) fn model_value_prop(ctx: &ScriptCompileContext, info: &ModelInfo) -> String {
+    let type_arg = info
+        .type_arg
+        .as_deref()
+        .map(str::trim)
+        .filter(|t| !t.is_empty());
+    match (type_arg, info.options.as_deref()) {
+        (Some(type_arg), Some(options)) => {
+            let runtime_type = model_runtime_type(ctx, type_arg);
+            cstr!("{{ type: {}, ...{} }}", runtime_type, options.trim())
+        }
+        (Some(type_arg), None) => {
+            let runtime_type = model_runtime_type(ctx, type_arg);
+            cstr!("{{ type: {} }}", runtime_type)
+        }
+        (None, Some(options)) => options.trim().to_compact_string(),
+        (None, None) => "{}".to_compact_string(),
+    }
+}
 
 /// Build model-specific props and emits when defineModel is used without defineProps,
 /// plus the emits array combining defineEmits and defineModel emits.
 pub(super) fn build_model_props_emits(
     ctx: &ScriptCompileContext,
-    model_infos: &[(String, String, Option<String>)],
+    model_infos: &[ModelInfo],
     _is_ts: bool,
     _needs_prop_type: bool,
     _needs_merge_defaults: bool,
@@ -17,23 +70,19 @@ pub(super) fn build_model_props_emits(
 
     if !model_infos.is_empty() && ctx.macros.define_props.is_none() {
         buf.extend_from_slice(b"  props: {\n");
-        for (model_name, _binding_name, options) in model_infos {
+        for info in model_infos {
             // Model value prop
             buf.extend_from_slice(b"    \"");
-            buf.extend_from_slice(model_name.as_bytes());
+            buf.extend_from_slice(info.name.as_bytes());
             buf.extend_from_slice(b"\": ");
-            if let Some(opts) = options {
-                buf.extend_from_slice(opts.as_bytes());
-            } else {
-                buf.extend_from_slice(b"{}");
-            }
+            buf.extend_from_slice(model_value_prop(ctx, info).as_bytes());
             buf.extend_from_slice(b",\n");
             // Model modifiers prop: "modelModifiers" for default, "<name>Modifiers" for named
             buf.extend_from_slice(b"    \"");
-            if model_name == "modelValue" {
+            if info.name == "modelValue" {
                 buf.extend_from_slice(b"modelModifiers");
             } else {
-                buf.extend_from_slice(model_name.as_bytes());
+                buf.extend_from_slice(info.name.as_bytes());
                 buf.extend_from_slice(b"Modifiers");
             }
             buf.extend_from_slice(b"\": {},\n");
@@ -60,10 +109,10 @@ pub(super) fn build_model_props_emits(
             all_emits.extend(emit_names);
         }
     }
-    for (model_name, _, _) in model_infos {
-        let mut name = String::with_capacity(7 + model_name.len());
+    for info in model_infos {
+        let mut name = String::with_capacity(7 + info.name.len());
         name.push_str("update:");
-        name.push_str(model_name);
+        name.push_str(&info.name);
         all_emits.push(name);
     }
     if !all_emits.is_empty() {
@@ -83,16 +132,12 @@ pub(super) fn build_model_props_emits(
 }
 
 /// Collect model info from defineModel calls.
-///
-/// Returns Vec of (model_name, binding_name, options).
-pub(super) fn collect_model_infos(
-    ctx: &ScriptCompileContext,
-) -> Vec<(String, String, Option<String>)> {
+pub(super) fn collect_model_infos(ctx: &ScriptCompileContext) -> Vec<ModelInfo> {
     ctx.macros
         .define_models
         .iter()
         .map(|m| {
-            let model_name = if m.args.trim().is_empty() {
+            let name = if m.args.trim().is_empty() {
                 "modelValue".to_compact_string()
             } else {
                 let args = m.args.trim();
@@ -111,7 +156,7 @@ pub(super) fn collect_model_infos(
                 .binding_name
                 .as_deref()
                 .map(String::from)
-                .unwrap_or_else(|| model_name.clone());
+                .unwrap_or_else(|| name.clone());
             let options = if m.args.trim().is_empty() {
                 None
             } else {
@@ -125,7 +170,12 @@ pub(super) fn collect_model_infos(
                     None
                 }
             };
-            (model_name, binding_name, options)
+            ModelInfo {
+                name,
+                binding_name,
+                options,
+                type_arg: m.type_args.clone(),
+            }
         })
         .collect()
 }

@@ -12,8 +12,8 @@ use vize_test_runner::{CompilerMode, run_fixture_tests};
 
 const MIN_VDOM_PASSED: usize = 383;
 const MIN_VAPOR_PASSED: usize = 104;
-const MIN_SFC_PASSED: usize = 138;
-const MIN_TOTAL_PASSED: usize = 625;
+const MIN_SFC_PASSED: usize = 150;
+const MIN_TOTAL_PASSED: usize = 637;
 
 // Known v1 alpha fixture debt. CI allows these exact failures so existing gaps
 // do not block unrelated work, but any new failure or pass-count regression
@@ -62,6 +62,7 @@ fn main() {
         ("sfc/basic", CompilerMode::Sfc),
         ("sfc/script-setup", CompilerMode::Sfc),
         ("sfc/patches", CompilerMode::Sfc),
+        ("sfc/define-model", CompilerMode::Sfc),
     ];
 
     println!("Vue Compiler Coverage Report");

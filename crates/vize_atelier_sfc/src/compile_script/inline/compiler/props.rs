@@ -1,12 +1,13 @@
-use vize_carton::String;
-
 use crate::script::ScriptCompileContext;
 
 use super::super::super::props::{
     add_null_to_runtime_type, extract_prop_types_from_type, extract_with_defaults_defaults,
     normalize_destructure_default_value, resolve_prop_js_type,
 };
-use super::{super::type_handling::resolve_type_args, model::collect_model_infos};
+use super::{
+    super::type_handling::resolve_type_args,
+    model::{collect_model_infos, model_value_prop},
+};
 
 /// Build props and emits definition buffer from context macros.
 pub(super) fn build_props_emits(
@@ -25,7 +26,7 @@ pub(super) fn build_props_emits(
         .map(|wd| extract_with_defaults_defaults(&wd.args));
 
     // Collect model names from defineModel calls (needed before props)
-    let model_infos: Vec<(String, String, Option<String>)> = collect_model_infos(ctx);
+    let model_infos = collect_model_infos(ctx);
 
     if let Some(ref props_macro) = ctx.macros.define_props {
         if let Some(ref type_args) = props_macro.type_args {
@@ -93,15 +94,11 @@ pub(super) fn build_props_emits(
                     }
                     props_emits_buf.push(b'\n');
                 }
-                for (model_name, _, options) in &model_infos {
+                for info in &model_infos {
                     props_emits_buf.extend_from_slice(b"    \"");
-                    props_emits_buf.extend_from_slice(model_name.as_bytes());
+                    props_emits_buf.extend_from_slice(info.name.as_bytes());
                     props_emits_buf.extend_from_slice(b"\": ");
-                    if let Some(opts) = options {
-                        props_emits_buf.extend_from_slice(opts.as_bytes());
-                    } else {
-                        props_emits_buf.extend_from_slice(b"{}");
-                    }
+                    props_emits_buf.extend_from_slice(model_value_prop(ctx, info).as_bytes());
                     props_emits_buf.extend_from_slice(b",\n");
                 }
                 // Remove trailing comma from last prop

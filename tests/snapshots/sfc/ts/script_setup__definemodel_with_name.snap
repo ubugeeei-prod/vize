@@ -2,8 +2,7 @@
 source: crates/vize_atelier_sfc/src/snapshot_tests.rs
 expression: ts_output.as_str()
 ---
-import { useModel as _useModel } from 'vue'
-import { defineComponent as _defineComponent } from 'vue'
+import { useModel as _useModel, defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock, withDirectives as _withDirectives, vModelText as _vModelText } from "vue"
 
 
