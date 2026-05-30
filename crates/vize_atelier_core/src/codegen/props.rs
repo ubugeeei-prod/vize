@@ -10,6 +10,7 @@ use crate::ast::{PropNode, RuntimeHelper};
 use super::{context::CodegenContext, expression::generate_expression};
 
 pub use directives::{generate_directive_prop_with_static, is_supported_directive};
+pub use events::von_event_key_for;
 pub use generate::generate_props;
 
 /// Check if there's a v-bind without argument (object spread)

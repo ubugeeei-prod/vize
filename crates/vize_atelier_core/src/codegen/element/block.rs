@@ -172,7 +172,9 @@ pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 ctx.push(&hoisted_index.to_compact_string());
             } else if has_renderable_props(el) {
                 ctx.push(", ");
+                ctx.props_is_plain_element = true;
                 generate_props(ctx, &el.props);
+                ctx.props_is_plain_element = false;
             } else if !el.children.is_empty() || has_patch_info {
                 ctx.push(", null");
             }

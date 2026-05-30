@@ -177,3 +177,31 @@ input = '<input :disabled="count > 0">'
 [[cases]]
 name = "boolean readonly"
 input = '<input :readonly="isReadonly">'
+
+# =============================================================================
+# .prop shorthand and modifiers on dynamic args
+# =============================================================================
+
+[[cases]]
+name = "dot-prop shorthand"
+input = '<div .foo="val"></div>'
+
+[[cases]]
+name = "dot-prop shorthand with valid identifier key"
+input = '<div .fooBar="val"></div>'
+
+[[cases]]
+name = "v-bind dynamic arg with .prop"
+input = '<div :[key].prop="val"></div>'
+
+[[cases]]
+name = "v-bind dynamic arg with .camel"
+input = '<div :[key].camel="val"></div>'
+
+[[cases]]
+name = "v-bind dynamic arg with .attr"
+input = '<div :[key].attr="val"></div>'
+
+[[cases]]
+name = "v-bind dynamic arg plain"
+input = '<div :[key]="val"></div>'
