@@ -129,11 +129,16 @@ pub fn to_valid_asset_identifier(kind: &str, name: &str) -> String {
     ident.push_str(kind);
     ident.push('_');
 
+    // Mirror Vue's `toValidAssetId` (compiler-core utils, issue #4422): word
+    // characters pass through, `-` becomes `_`, and every other character is
+    // replaced by its char code rendered as a decimal string.
     for c in name.chars() {
         if c.is_ascii_alphanumeric() || c == '_' {
             ident.push(c);
-        } else {
+        } else if c == '-' {
             ident.push('_');
+        } else {
+            ident.push_str(&(c as u32).to_string());
         }
     }
 

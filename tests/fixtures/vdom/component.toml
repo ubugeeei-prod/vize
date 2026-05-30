@@ -201,3 +201,15 @@ input = '<MyComponent @update="onUpdate" @change="onChange" />'
 [[cases]]
 name = "component event modifiers"
 input = '<MyComponent @update.once="onUpdate" />'
+
+[[cases]]
+name = "component static class before v-bind spread"
+input = '<Foo class="a" v-bind="obj" />'
+
+[[cases]]
+name = "component static and dynamic around v-bind spread"
+input = '<Foo id="x" v-bind="a" :title="t" />'
+
+[[cases]]
+name = "component handler before v-bind spread"
+input = '<Foo @click="fn" v-bind="props" />'

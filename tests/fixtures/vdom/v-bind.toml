@@ -229,3 +229,31 @@ input = '<div style="color:red" :style="s"></div>'
 [[cases]]
 name = "mixed class and style merge order"
 input = '<div class="b" :class="a" :style="s" style="x:1"></div>'
+
+# =============================================================================
+# mergeProps source-order preservation (static prop before/after v-bind spread)
+# =============================================================================
+
+[[cases]]
+name = "static class after v-bind spread"
+input = '<div v-bind="obj" class="a"></div>'
+
+[[cases]]
+name = "static class before v-bind spread"
+input = '<div class="a" v-bind="obj"></div>'
+
+[[cases]]
+name = "static and dynamic props around v-bind spread"
+input = '<div id="x" v-bind="obj" :title="t"></div>'
+
+[[cases]]
+name = "static props before and after v-bind spread"
+input = '<div id="x" :title="t" v-bind="obj"></div>'
+
+[[cases]]
+name = "v-on spread before handler"
+input = '<div v-on="handlers" @click="fn"></div>'
+
+[[cases]]
+name = "handler before v-on spread"
+input = '<div @click="fn" v-on="handlers"></div>'

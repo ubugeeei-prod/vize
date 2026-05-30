@@ -564,3 +564,72 @@ export function render(_ctx, _cache) {
     style: _normalizeStyle([_ctx.s, {"x":"1"}])
   }, null, 6 /* CLASS, STYLE */))
 }
+===
+name: static class after v-bind spread
+options: vdom
+--- INPUT ---
+<div v-bind="obj" class="a"></div>
+--- OUTPUT ---
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps(_ctx.obj, { class: "a" }), null, 16 /* FULL_PROPS */))
+}
+===
+name: static class before v-bind spread
+options: vdom
+--- INPUT ---
+<div class="a" v-bind="obj"></div>
+--- OUTPUT ---
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ class: "a" }, _ctx.obj), null, 16 /* FULL_PROPS */))
+}
+===
+name: static and dynamic props around v-bind spread
+options: vdom
+--- INPUT ---
+<div id="x" v-bind="obj" :title="t"></div>
+--- OUTPUT ---
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ id: "x" }, _ctx.obj, { title: _ctx.t }), null, 16 /* FULL_PROPS */, ["title"]))
+}
+===
+name: static props before and after v-bind spread
+options: vdom
+--- INPUT ---
+<div id="x" :title="t" v-bind="obj"></div>
+--- OUTPUT ---
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({
+    id: "x",
+    title: _ctx.t
+  }, _ctx.obj), null, 16 /* FULL_PROPS */, ["title"]))
+}
+===
+name: v-on spread before handler
+options: vdom
+--- INPUT ---
+<div v-on="handlers" @click="fn"></div>
+--- OUTPUT ---
+import { toHandlers as _toHandlers, mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps(_toHandlers(_ctx.handlers, true), { onClick: _ctx.fn }), null, 16 /* FULL_PROPS */, ["onClick"]))
+}
+===
+name: handler before v-on spread
+options: vdom
+--- INPUT ---
+<div @click="fn" v-on="handlers"></div>
+--- OUTPUT ---
+import { toHandlers as _toHandlers, mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ onClick: _ctx.fn }, _toHandlers(_ctx.handlers, true)), null, 16 /* FULL_PROPS */, ["onClick"]))
+}

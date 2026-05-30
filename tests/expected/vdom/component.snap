@@ -77,9 +77,9 @@ options: vdom
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
 
 export function render(_ctx, _cache) {
-  const _component_global_head = _resolveComponent("global:head")
+  const _component_global58head = _resolveComponent("global:head")
 
-  return (_openBlock(), _createBlock(_component_global_head, { title: "Page Title" }))
+  return (_openBlock(), _createBlock(_component_global58head, { title: "Page Title" }))
 }
 ===
 name: static prop
@@ -617,4 +617,43 @@ export function render(_ctx, _cache) {
   const _component_MyComponent = _resolveComponent("MyComponent")
 
   return (_openBlock(), _createBlock(_component_MyComponent, { onUpdateOnce: _ctx.onUpdate }, null, 8 /* PROPS */, ["onUpdateOnce"]))
+}
+===
+name: component static class before v-bind spread
+options: vdom
+--- INPUT ---
+<Foo class="a" v-bind="obj" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, mergeProps as _mergeProps, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_Foo = _resolveComponent("Foo")
+
+  return (_openBlock(), _createBlock(_component_Foo, _mergeProps({ class: "a" }, _ctx.obj), null, 16 /* FULL_PROPS */))
+}
+===
+name: component static and dynamic around v-bind spread
+options: vdom
+--- INPUT ---
+<Foo id="x" v-bind="a" :title="t" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, mergeProps as _mergeProps, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_Foo = _resolveComponent("Foo")
+
+  return (_openBlock(), _createBlock(_component_Foo, _mergeProps({ id: "x" }, _ctx.a, { title: _ctx.t }), null, 16 /* FULL_PROPS */, ["title"]))
+}
+===
+name: component handler before v-bind spread
+options: vdom
+--- INPUT ---
+<Foo @click="fn" v-bind="props" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, mergeProps as _mergeProps, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_Foo = _resolveComponent("Foo")
+
+  return (_openBlock(), _createBlock(_component_Foo, _mergeProps({ onClick: _ctx.fn }, _ctx.props), null, 16 /* FULL_PROPS */, ["onClick"]))
 }
