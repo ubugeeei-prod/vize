@@ -309,6 +309,9 @@ impl<'a> TransformContext<'a> {
                     .iter()
                     .map(|name| CompactString::new(name.as_str()))
                     .collect(),
+                // The runtime transform does not type slot props; only the
+                // editor's virtual-TS generation consumes the owning component.
+                component: None,
             },
             start,
             end,

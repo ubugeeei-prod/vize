@@ -240,6 +240,7 @@ impl Analyzer {
                             name: slot_name,
                             props_pattern,
                             prop_names: prop_names.iter().cloned().collect(),
+                            component: is_component.then(|| CompactString::new(tag)),
                         },
                         offset,
                         element_subtree_end(el),

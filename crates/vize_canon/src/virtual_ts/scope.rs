@@ -236,6 +236,24 @@ fn generate_undefined_refs(
     }
 }
 
+/// Type annotation for a `v-slot` scope's props. When the slot is on a child
+/// component (`component` is `Some`), the props are inferred from that child's
+/// `$slots[name]` parameter (its `defineSlots`), so misuse raises a real
+/// diagnostic (#764). Otherwise — and whenever the child has no typed slot —
+/// it falls back to `any` so untyped or built-in slot hosts never produce a
+/// false positive.
+fn slot_props_type(component: Option<&str>, slot_name: &str) -> String {
+    match component {
+        Some(component) => {
+            let component_ref = to_safe_identifier(component);
+            cstr!(
+                "typeof {component_ref} extends {{ new (): {{ $slots: infer __S }} }} ? (__S extends {{ \"{slot_name}\"?: (props: infer __P, ...args: any[]) => any }} ? __P : any) : any"
+            )
+        }
+        None => "any".into(),
+    }
+}
+
 fn append_v_for_comment(ts: &mut String, indent: &str, label: &str, alias: &str, source: &str) {
     append!(*ts, "\n{indent}// {label}: {alias} in ");
     for c in source.chars() {
@@ -485,9 +503,10 @@ fn generate_scope_node(
 
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
             let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
+            let props_type = slot_props_type(data.component.as_deref(), data.name.as_str());
             append!(
                 *ts,
-                "{indent}void function _slot_{safe_slot_name}({props_pattern}: any) {{\n",
+                "{indent}void function _slot_{safe_slot_name}({props_pattern}: {props_type}) {{\n",
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {
@@ -816,6 +835,7 @@ fn generate_closure_component_props_recursive(
         ScopeData::VSlot(data) => {
             let props_pattern = data.props_pattern.as_deref().unwrap_or("slotProps");
             let safe_slot_name = to_safe_identifier_fragment(data.name.as_str());
+            let props_type = slot_props_type(data.component.as_deref(), data.name.as_str());
             append!(
                 *ts,
                 "\n{indent}// Component props in v-slot scope: #{}\n",
@@ -823,7 +843,7 @@ fn generate_closure_component_props_recursive(
             );
             append!(
                 *ts,
-                "{indent}void function _slot_props_{safe_slot_name}({props_pattern}: any) {{\n",
+                "{indent}void function _slot_props_{safe_slot_name}({props_pattern}: {props_type}) {{\n",
             );
             // Mark slot prop variables as used
             if data.prop_names.is_empty() {

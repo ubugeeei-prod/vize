@@ -126,6 +126,10 @@ pub struct VSlotScopeData {
     pub props_pattern: Option<CompactString>,
     /// Extracted prop names (stack-allocated for typical cases)
     pub prop_names: ParamNames,
+    /// Owning component tag when the slot is on a child component (e.g.
+    /// `"TodoItem"`), used to type the slot props from the child's `defineSlots`.
+    /// `None` for slots on a plain element or a `<template>` host.
+    pub component: Option<CompactString>,
 }
 
 /// Data specific to event handler scope

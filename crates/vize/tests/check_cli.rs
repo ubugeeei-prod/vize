@@ -408,6 +408,81 @@ const configs: AliasConfig[] = [{ key: "a", label: "A" }];
 }
 
 #[test]
+fn check_scoped_slot_props_typed_from_child_define_slots() {
+    // #764: a scoped slot on a child component should type its props from the
+    // child's `defineSlots`, so misusing a slot prop raises a real diagnostic
+    // (here `item` is `number`, so `.toUpperCase()` is TS2339) instead of `any`.
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "scoped-slot-prop-types",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineSlots<{ default(props: { item: number }): any }>()
+</script>
+
+<template>
+  <slot :item="1" />
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child v-slot="{ item }">{{ item.toUpperCase() }}</Child>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/Parent.vue",
+            "src/Child.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    let diagnostics = json["files"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|file| file["diagnostics"].as_array().cloned().unwrap_or_default())
+        .map(|d| d.as_str().unwrap_or_default().to_string())
+        .collect::<Vec<_>>();
+
+    assert!(
+        diagnostics
+            .iter()
+            .any(|message| message.contains("toUpperCase") && message.contains("number")),
+        "expected the slot prop `item` to be typed `number` from the child's defineSlots; got {diagnostics:?}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_explicit_file_loads_ambient_declare_global_types() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
