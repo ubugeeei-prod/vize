@@ -219,8 +219,8 @@ fn calculate_element_patch_info_inner(
                                 // Build the dynamic-prop event name using the same
                                 // casing rules as v-on prop codegen so the
                                 // dynamicProps array matches the generated keys.
-                                let on_plain_element = el.tag_type == ElementType::Element
-                                    && dir.raw_name.is_some();
+                                let on_plain_element =
+                                    el.tag_type == ElementType::Element && dir.raw_name.is_some();
                                 let event_name = super::props::von_event_key_for(
                                     base_event,
                                     on_plain_element,

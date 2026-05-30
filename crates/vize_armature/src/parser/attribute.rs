@@ -241,7 +241,10 @@ impl<'a> Parser<'a> {
         // The `.foo` shorthand is equivalent to `v-bind:foo.prop`: detect it
         // before `raw_name` is moved so we can synthesize a `prop` modifier.
         let dot_shorthand_prop = dir.raw_name.starts_with('.')
-            && !dir.modifiers.iter().any(|(content, _, _)| content == "prop");
+            && !dir
+                .modifiers
+                .iter()
+                .any(|(content, _, _)| content == "prop");
 
         let mut dir_node = DirectiveNode::new(self.allocator, dir.name.clone(), loc);
         dir_node.raw_name = Some(dir.raw_name);

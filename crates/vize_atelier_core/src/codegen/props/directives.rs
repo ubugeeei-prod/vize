@@ -5,10 +5,7 @@ use crate::ast::{DirectiveNode, ExpressionNode, RuntimeHelper};
 use super::super::{
     context::CodegenContext,
     expression::{generate_event_handler, generate_expression, generate_simple_expression},
-    helpers::{
-        camelize, escape_js_string, is_constant_simple_expression,
-        is_valid_js_identifier,
-    },
+    helpers::{camelize, escape_js_string, is_constant_simple_expression, is_valid_js_identifier},
 };
 use vize_carton::String;
 use vize_carton::ToCompactString;

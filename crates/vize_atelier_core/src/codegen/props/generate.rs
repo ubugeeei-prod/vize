@@ -4,11 +4,11 @@ use crate::ast::{ExpressionNode, PropNode, RuntimeHelper};
 use vize_relief::options::BindingType;
 
 use super::{
+    super::expression::generate_expression,
     super::{
         context::CodegenContext,
         helpers::{escape_js_string, is_valid_js_identifier},
     },
-    super::expression::generate_expression,
     directives::{generate_directive_prop_with_static, is_supported_directive},
     events::{generate_merged_event_handlers, get_von_event_key},
     generate_vbind_object_exp, generate_von_object_exp,
@@ -67,9 +67,7 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                     // Does this range hold any renderable non-spread prop?
                     let segment = &props[start..end];
                     let has_renderable = segment.iter().any(|p| match p {
-                        PropNode::Attribute(attr) => {
-                            !(ctx.skip_is_prop && attr.name == "is")
-                        }
+                        PropNode::Attribute(attr) => !(ctx.skip_is_prop && attr.name == "is"),
                         PropNode::Directive(dir) => {
                             !(dir.arg.is_none() && (dir.name == "bind" || dir.name == "on"))
                                 && is_supported_directive(dir)

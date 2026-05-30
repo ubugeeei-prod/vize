@@ -12,7 +12,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::scope::ScopeFlags;
-use vize_carton::FxHashSet;
+use vize_carton::{FxHashSet, ToCompactString};
 use vize_croquis::builtins::is_global_allowed;
 
 /// Decode HTML entities (numeric character references) in a string
@@ -138,7 +138,7 @@ pub fn to_valid_asset_identifier(kind: &str, name: &str) -> String {
         } else if c == '-' {
             ident.push('_');
         } else {
-            ident.push_str(&(c as u32).to_string());
+            ident.push_str(&(c as u32).to_compact_string());
         }
     }
 

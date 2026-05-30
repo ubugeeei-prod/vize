@@ -544,9 +544,17 @@ pub(crate) fn generate_for_item_props(
     // dynamic counterpart exists; source ordering is preserved via StaticMerge.
     let full_merge = super::super::props::StaticMerge::from_props(&el.props);
     let merge_static = super::super::props::StaticMerge {
-        class: if skip_static_class { full_merge.class } else { None },
+        class: if skip_static_class {
+            full_merge.class
+        } else {
+            None
+        },
         class_before: full_merge.class_before,
-        style: if skip_static_style { full_merge.style } else { None },
+        style: if skip_static_style {
+            full_merge.style
+        } else {
+            None
+        },
         style_before: full_merge.style_before,
     };
 

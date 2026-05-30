@@ -144,13 +144,11 @@ impl<'props> PropsScan<'props> {
                         && exp.is_static
                     {
                         if exp.content == "class" && !scan.has_dynamic_class {
-                            scan.static_class_before_dynamic = scan
-                                .static_class_index
-                                .is_some_and(|i| i < index);
+                            scan.static_class_before_dynamic =
+                                scan.static_class_index.is_some_and(|i| i < index);
                         } else if exp.content == "style" && !scan.has_dynamic_style {
-                            scan.static_style_before_dynamic = scan
-                                .static_style_index
-                                .is_some_and(|i| i < index);
+                            scan.static_style_before_dynamic =
+                                scan.static_style_index.is_some_and(|i| i < index);
                         }
                     }
                     scan.observe_directive(ctx, dir);
