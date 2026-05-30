@@ -159,10 +159,7 @@ fn corsa_bridge_completion_returns_inner_members_for_chained_ref_value() {
         // Position of the caret right after the second `.` on line 2 (0-indexed):
         //   line 2: "count.value."
         //                       ^ character 12
-        let items = bridge
-            .completion(uri.as_str(), 2, 12)
-            .await
-            .ok()?;
+        let items = bridge.completion(uri.as_str(), 2, 12).await.ok()?;
         let _ = bridge.shutdown().await;
         Some(items.into_iter().map(|item| item.label).collect())
     });

@@ -330,10 +330,11 @@ mod tests {
         let vue_msg = "Cannot find module './app.vue' or its corresponding type declarations.";
         let vue_ts_msg =
             "Cannot find module './app.vue.ts' or its corresponding type declarations.";
-        let non_vue_msg =
-            "Cannot find module 'lodash-es' or its corresponding type declarations.";
-        let double_quoted = "Cannot find module \"./Sib.vue\" or its corresponding type declarations.";
-        let smart_quoted = "Cannot find module \u{2018}./Sib.vue\u{2019} or its corresponding type declarations.";
+        let non_vue_msg = "Cannot find module 'lodash-es' or its corresponding type declarations.";
+        let double_quoted =
+            "Cannot find module \"./Sib.vue\" or its corresponding type declarations.";
+        let smart_quoted =
+            "Cannot find module \u{2018}./Sib.vue\u{2019} or its corresponding type declarations.";
 
         assert!(should_skip_diagnostic(Some(2307), vue_msg));
         assert!(should_skip_diagnostic(Some(2307), vue_ts_msg));
