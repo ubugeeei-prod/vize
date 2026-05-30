@@ -36,8 +36,7 @@ pub fn process_props_destructure(
                         let local = id.name.to_compact_string();
                         let default_expr = &source
                             [assign.right.span().start as usize..assign.right.span().end as usize];
-                        let (needs_factory, skip_factory) =
-                            classify_default_value(&assign.right);
+                        let (needs_factory, skip_factory) = classify_default_value(&assign.right);
 
                         result.keys.push(key.clone());
                         result.bindings.insert(

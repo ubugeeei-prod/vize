@@ -133,16 +133,19 @@ pub(super) fn build_user_props_decl(
             decl.extend_from_slice(b", {\n");
             // Iterate in source declaration order (matches Vue's iteration order
             // over the destructured bindings).
-            let defaults: Vec<(&str, &super::super::super::super::script::PropsDestructureBinding)> =
-                destructure
-                    .keys
-                    .iter()
-                    .filter_map(|k| {
-                        destructure.bindings.get(k.as_str()).and_then(|b| {
-                            b.default.as_ref().map(|_| (k.as_str(), b))
-                        })
-                    })
-                    .collect();
+            let defaults: Vec<(
+                &str,
+                &super::super::super::super::script::PropsDestructureBinding,
+            )> = destructure
+                .keys
+                .iter()
+                .filter_map(|k| {
+                    destructure
+                        .bindings
+                        .get(k.as_str())
+                        .and_then(|b| b.default.as_ref().map(|_| (k.as_str(), b)))
+                })
+                .collect();
             for (i, (key, binding)) in defaults.iter().enumerate() {
                 let default_val = binding.default.as_deref().unwrap_or_default();
                 decl.extend_from_slice(b"  ");

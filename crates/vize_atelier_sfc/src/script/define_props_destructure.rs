@@ -24,11 +24,11 @@ pub struct PropsDestructureBinding {
     /// Whether the runtime default must be wrapped in a `() => (...)` factory
     /// (non-literal, non-function, non-identifier expression). Mirrors Vue's
     /// `needFactoryWrap`.
-    pub default_needs_factory: bool,
+    pub(crate) default_needs_factory: bool,
     /// Whether the runtime default is a function or bare identifier, in which
     /// case Vue emits `__skip_<key>: true` and does NOT factory-wrap. Mirrors
     /// Vue's `needSkipFactory`.
-    pub default_skip_factory: bool,
+    pub(crate) default_skip_factory: bool,
 }
 
 /// Props destructure bindings data
@@ -38,7 +38,7 @@ pub struct PropsDestructuredBindings {
     pub bindings: FxHashMap<String, PropsDestructureBinding>,
     /// Prop keys in source declaration order (matches the iteration order Vue
     /// uses when generating `mergeDefaults` entries).
-    pub keys: Vec<String>,
+    pub(crate) keys: Vec<String>,
     /// Rest spread identifier (if any)
     pub rest_id: Option<String>,
 }
