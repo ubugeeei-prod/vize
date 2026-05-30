@@ -441,6 +441,9 @@ pub fn patch_flag_name(flag: i32) -> String {
     if flag & 1024 != 0 {
         names.push("DYNAMIC_SLOTS");
     }
+    if flag & 2048 != 0 {
+        names.push("DEV_ROOT_FRAGMENT");
+    }
 
     if names.is_empty() {
         "UNKNOWN".to_compact_string()

@@ -492,3 +492,47 @@ export function render(_ctx, _cache) {
     _createElementVNode("span", null, "two")
   ], 64 /* STABLE_FRAGMENT */))
 }
+===
+name: single element with trailing root comment
+options: vdom
+--- INPUT ---
+<div></div><!-- trailing -->
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("div"),
+    _createCommentVNode(" trailing ")
+  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))
+}
+===
+name: single element with leading and trailing root comments
+options: vdom
+--- INPUT ---
+<!-- lead --><div>x</div><!-- trail -->
+--- OUTPUT ---
+import { createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createCommentVNode(" lead "),
+    _createElementVNode("div", null, "x"),
+    _createCommentVNode(" trail ")
+  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))
+}
+===
+name: two elements with root comment is stable fragment
+options: vdom
+--- INPUT ---
+<div>a</div><!-- c --><div>b</div>
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("div", null, "a"),
+    _createCommentVNode(" c "),
+    _createElementVNode("div", null, "b")
+  ], 64 /* STABLE_FRAGMENT */))
+}
