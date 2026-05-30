@@ -1,0 +1,101 @@
+===
+name: dynamic component with binding
+options: vdom
+--- INPUT ---
+<component :is="foo" />
+--- OUTPUT ---
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.foo)))
+}
+===
+name: dynamic component with string literal
+options: vdom
+--- INPUT ---
+<component :is="'div'" />
+--- OUTPUT ---
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent('div')))
+}
+===
+name: dynamic component with ternary
+options: vdom
+--- INPUT ---
+<component :is="ok ? A : B" />
+--- OUTPUT ---
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.ok ? _ctx.A : _ctx.B)))
+}
+===
+name: dynamic component with props
+options: vdom
+--- INPUT ---
+<component :is="foo" class="x" :id="id" />
+--- OUTPUT ---
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.foo), {
+    class: "x",
+    id: _ctx.id
+  }, null, 8 /* PROPS */, ["id"]))
+}
+===
+name: dynamic component with children
+options: vdom
+--- INPUT ---
+<component :is="foo"><span>hi</span></component>
+--- OUTPUT ---
+import { createElementVNode as _createElementVNode, resolveDynamicComponent as _resolveDynamicComponent, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.foo), null, {
+    default: _withCtx(() => [
+      _createElementVNode("span", null, "hi")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+===
+name: dynamic component with slot content
+options: vdom
+--- INPUT ---
+<component :is="tab"><template #header>H</template></component>
+--- OUTPUT ---
+import { createTextVNode as _createTextVNode, resolveDynamicComponent as _resolveDynamicComponent, withCtx as _withCtx, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.tab), null, {
+    header: _withCtx(() => [
+      _createTextVNode("H")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}
+===
+name: dynamic component with v-bind object
+options: vdom
+--- INPUT ---
+<component :is="foo" v-bind="attrs" />
+--- OUTPUT ---
+import { resolveDynamicComponent as _resolveDynamicComponent, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.foo), _normalizeProps(_guardReactiveProps(_ctx.attrs)), null, 16 /* FULL_PROPS */))
+}
+===
+name: dynamic component is shorthand kebab
+options: vdom
+--- INPUT ---
+<component :is="my-comp" />
+--- OUTPUT ---
+import { resolveDynamicComponent as _resolveDynamicComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock(_resolveDynamicComponent(_ctx.my-_ctx.comp)))
+}

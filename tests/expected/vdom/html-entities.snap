@@ -1,0 +1,99 @@
+===
+name: named entity amp
+options: vdom
+--- INPUT ---
+<div>&amp;</div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "&"))
+}
+===
+name: named entities lt gt
+options: vdom
+--- INPUT ---
+<div>&lt;tag&gt;</div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "<tag>"))
+}
+===
+name: named entity nbsp
+options: vdom
+--- INPUT ---
+<div>a&nbsp;b</div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "a b"))
+}
+===
+name: named entity copy
+options: vdom
+--- INPUT ---
+<div>&copy; 2026</div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "© 2026"))
+}
+===
+name: decimal numeric entity
+options: vdom
+--- INPUT ---
+<div>&#65;&#66;&#67;</div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "ABC"))
+}
+===
+name: hex numeric entity
+options: vdom
+--- INPUT ---
+<div>&#x41;&#x42;</div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "AB"))
+}
+===
+name: entities mixed with text
+options: vdom
+--- INPUT ---
+<div>Tom &amp; Jerry &lt;3</div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "Tom & Jerry <3"))
+}
+===
+name: entity in attribute value
+options: vdom
+--- INPUT ---
+<div title="a &amp; b &quot;q&quot;"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { title: "a & b \"q\"" }))
+}
+===
+name: entity adjacent to interpolation
+options: vdom
+--- INPUT ---
+<div>&amp;{{ x }}&amp;</div>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, "&" + _toDisplayString(_ctx.x) + "&", 1 /* TEXT */))
+}

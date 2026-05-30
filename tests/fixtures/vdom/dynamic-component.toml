@@ -1,0 +1,37 @@
+# VDom: dynamic <component :is> tests
+# Verifies parity with @vue/compiler-dom for resolveDynamicComponent / createBlock
+# code paths that the existing corpus did not exercise.
+
+mode = "vdom"
+
+[[cases]]
+name = "dynamic component with binding"
+input = '<component :is="foo" />'
+
+[[cases]]
+name = "dynamic component with string literal"
+input = """<component :is="'div'" />"""
+
+[[cases]]
+name = "dynamic component with ternary"
+input = '<component :is="ok ? A : B" />'
+
+[[cases]]
+name = "dynamic component with props"
+input = '<component :is="foo" class="x" :id="id" />'
+
+[[cases]]
+name = "dynamic component with children"
+input = '<component :is="foo"><span>hi</span></component>'
+
+[[cases]]
+name = "dynamic component with slot content"
+input = '<component :is="tab"><template #header>H</template></component>'
+
+[[cases]]
+name = "dynamic component with v-bind object"
+input = '<component :is="foo" v-bind="attrs" />'
+
+[[cases]]
+name = "dynamic component is shorthand kebab"
+input = '<component :is="my-comp" />'
