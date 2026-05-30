@@ -131,17 +131,37 @@ pub(super) fn build_user_props_decl(
             decl.extend_from_slice(b"/*@__PURE__*/_mergeDefaults(");
             decl.extend_from_slice(props_macro.args.as_bytes());
             decl.extend_from_slice(b", {\n");
-            let defaults: Vec<_> = destructure
-                .bindings
-                .iter()
-                .filter_map(|(k, b)| b.default.as_ref().map(|d| (k.as_str(), d.as_str())))
-                .collect();
-            for (i, (key, default_val)) in defaults.iter().enumerate() {
+            // Iterate in source declaration order (matches Vue's iteration order
+            // over the destructured bindings).
+            let defaults: Vec<(&str, &super::super::super::super::script::PropsDestructureBinding)> =
+                destructure
+                    .keys
+                    .iter()
+                    .filter_map(|k| {
+                        destructure.bindings.get(k.as_str()).and_then(|b| {
+                            b.default.as_ref().map(|_| (k.as_str(), b))
+                        })
+                    })
+                    .collect();
+            for (i, (key, binding)) in defaults.iter().enumerate() {
+                let default_val = binding.default.as_deref().unwrap_or_default();
                 decl.extend_from_slice(b"  ");
                 decl.extend_from_slice(key.as_bytes());
                 decl.extend_from_slice(b": ");
-                let default_val = normalize_destructure_default_value(default_val);
-                decl.extend_from_slice(default_val.as_bytes());
+                if binding.default_needs_factory {
+                    // Wrap non-literal expressions in a factory: `() => (expr)`.
+                    decl.extend_from_slice(b"() => (");
+                    decl.extend_from_slice(default_val.trim().as_bytes());
+                    decl.push(b')');
+                } else {
+                    // Literals, bare identifiers and functions are emitted as-is.
+                    decl.extend_from_slice(default_val.trim().as_bytes());
+                }
+                if binding.default_skip_factory {
+                    decl.extend_from_slice(b", __skip_");
+                    decl.extend_from_slice(key.as_bytes());
+                    decl.extend_from_slice(b": true");
+                }
                 if i < defaults.len() - 1 {
                     decl.push(b',');
                 }

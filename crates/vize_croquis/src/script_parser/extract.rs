@@ -953,6 +953,9 @@ pub fn detect_reactivity_call(
         "toRef" => Some((ReactiveKind::ToRef, BindingType::SetupRef)),
         "toRefs" => Some((ReactiveKind::ToRefs, BindingType::SetupRef)),
         "customRef" => Some((ReactiveKind::Ref, BindingType::SetupRef)),
+        // useTemplateRef returns a ShallowRef; the template accesses it via
+        // `.value`, so the binding is a setup ref (matches @vue/compiler-sfc).
+        "useTemplateRef" => Some((ReactiveKind::ShallowRef, BindingType::SetupRef)),
         "readonly" => Some((ReactiveKind::Readonly, BindingType::SetupReactiveConst)),
         "shallowReadonly" => Some((
             ReactiveKind::ShallowReadonly,
