@@ -87,15 +87,15 @@ function __setup() {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  if (status === 'loading') {
+  if ((status === 'loading')) {
     void (status === 'loading'); // VIf
     // @vize-map: expr -> 19:39
   }
-  if (status === 'error') {
+  if (!(status === 'loading') && (status === 'error')) {
     void (status === 'error'); // VIf
     // @vize-map: expr -> 73:91
   }
-  if (status === 'error') {
+  if (!(status === 'loading') && (status === 'error')) {
     void (message); // Interpolation
     // @vize-map: expr -> 96:103
   }

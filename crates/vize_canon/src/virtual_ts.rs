@@ -413,8 +413,8 @@ const user: User | null = null as any
         // The narrowing wrapper must appear in the generated TS so TS can
         // narrow `user` for the inner property access.
         assert!(
-            output.code.contains("if (user)"),
-            "expected `if (user)` narrowing wrapper in virtual TS, got:\n{}",
+            output.code.contains("if ((user))"),
+            "expected `if ((user))` narrowing wrapper in virtual TS, got:\n{}",
             output.code
         );
     }

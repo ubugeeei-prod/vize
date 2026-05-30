@@ -5,43 +5,11 @@
 
 use crate::ScopeBinding;
 use crate::analyzer::Analyzer;
+use crate::analyzer::helpers::build_branch_guard;
 use crate::scope::VForScopeData;
-use vize_carton::{CompactString, SmallVec, String, profile, smallvec};
+use vize_carton::{CompactString, SmallVec, profile, smallvec};
 use vize_relief::BindingType;
 use vize_relief::ast::{ExpressionNode, ForNode, IfNode, PropNode};
-
-fn build_if_branch_guard(
-    previous_conditions: &[CompactString],
-    current_condition: Option<&str>,
-) -> Option<CompactString> {
-    if previous_conditions.is_empty() && current_condition.is_none() {
-        return None;
-    }
-
-    let mut guard = String::default();
-    let mut has_part = false;
-
-    for previous in previous_conditions {
-        if has_part {
-            guard.push_str(" && ");
-        }
-        guard.push_str("!(");
-        guard.push_str(previous.as_str());
-        guard.push(')');
-        has_part = true;
-    }
-
-    if let Some(condition) = current_condition {
-        if has_part {
-            guard.push_str(" && ");
-        }
-        guard.push('(');
-        guard.push_str(condition);
-        guard.push(')');
-    }
-
-    Some(CompactString::new(guard.as_str()))
-}
 
 impl Analyzer {
     /// Visit if node.
@@ -80,7 +48,7 @@ impl Analyzer {
             });
 
             let branch_guard =
-                build_if_branch_guard(previous_conditions.as_slice(), current_condition);
+                build_branch_guard(previous_conditions.as_slice(), current_condition);
             let guard_pushed = if let Some(ref guard) = branch_guard {
                 self.vif_guard_stack.push(guard.clone());
                 true
@@ -88,9 +56,12 @@ impl Analyzer {
                 false
             };
 
+            // Branch children are a fresh sibling group for flat v-if chains.
+            let saved_branch_conditions = std::mem::take(&mut self.vif_branch_conditions);
             for child in branch.children.iter() {
                 self.visit_template_child(child, scope_vars);
             }
+            self.vif_branch_conditions = saved_branch_conditions;
 
             // Pop v-if guard
             if guard_pushed {
@@ -156,9 +127,12 @@ impl Analyzer {
             );
         }
 
+        // v-for children are a fresh sibling group for flat v-if chains.
+        let saved_branch_conditions = std::mem::take(&mut self.vif_branch_conditions);
         for child in for_node.children.iter() {
             self.visit_template_child(child, scope_vars);
         }
+        self.vif_branch_conditions = saved_branch_conditions;
 
         for _ in 0..vars_count {
             scope_vars.pop();

@@ -8,8 +8,8 @@ use crate::ScopeBinding;
 use crate::analysis::ComponentUsage;
 use crate::analyzer::Analyzer;
 use crate::analyzer::helpers::{
-    VForScopeAliases, extract_slot_props, is_builtin_directive, is_component_tag,
-    parse_v_for_scope_expression,
+    ConditionalKind, VForScopeAliases, build_branch_guard, extract_slot_props,
+    is_builtin_directive, is_component_tag, parse_v_for_scope_expression,
 };
 use crate::scope::{ParamNames, VForScopeData, VSlotScopeData};
 use vize_carton::{CompactString, SmallVec, profile, smallvec};
@@ -90,8 +90,14 @@ impl Analyzer {
 
         let mut key_expression: Option<CompactString> = None;
 
-        // Collect v-if condition for type narrowing
+        // Collect v-if condition for type narrowing. The guard pushed onto the
+        // stack is sibling-aware: a flat `v-else` / `v-else-if` element negates
+        // the conditions of its preceding `v-if` / `v-else-if` siblings so that
+        // discriminated-union narrowing flows into the else branch.
         let mut vif_condition: Option<CompactString> = None;
+        // Which conditional directive this element carries, if any: the kind
+        // (`if` / `else-if` / `else`) and the directive's own condition text.
+        let mut conditional: Option<(ConditionalKind, Option<CompactString>)> = None;
 
         // First pass: collect v-for, v-slot scope info, and :key
         // (need to enter scope before processing other directives)
@@ -143,15 +149,22 @@ impl Analyzer {
                             }
                         }
                     }
-                    // Handle v-if (extract condition for type narrowing)
-                    else if dir.name == "if" || dir.name == "else-if" {
-                        if let Some(ref exp) = dir.exp {
+                    // Handle v-if / v-else-if / v-else (extract condition for
+                    // sibling-aware type narrowing).
+                    else if dir.name == "if" || dir.name == "else-if" || dir.name == "else" {
+                        let condition = dir.exp.as_ref().map(|exp| {
                             let content = match exp {
                                 ExpressionNode::Simple(s) => s.content.as_str(),
                                 ExpressionNode::Compound(c) => c.loc.source.as_str(),
                             };
-                            vif_condition = Some(CompactString::new(content));
-                        }
+                            CompactString::new(content)
+                        });
+                        let kind = match dir.name.as_str() {
+                            "if" => ConditionalKind::If,
+                            "else-if" => ConditionalKind::ElseIf,
+                            _ => ConditionalKind::Else,
+                        };
+                        conditional = Some((kind, condition));
                     }
                     // Handle v-slot
                     else if dir.name == "slot" && self.options.analyze_template_scopes {
@@ -188,6 +201,33 @@ impl Analyzer {
                 }
             }
         });
+
+        // Build the sibling-aware v-if guard and advance the running branch
+        // chain. `v-if` opens a fresh chain; `v-else-if` / `v-else` negate the
+        // preceding conditions; any other element resets the chain.
+        match conditional {
+            Some((ConditionalKind::If, cond)) => {
+                self.vif_branch_conditions.clear();
+                vif_condition = build_branch_guard(&self.vif_branch_conditions, cond.as_deref());
+                if let Some(cond) = cond {
+                    self.vif_branch_conditions.push(cond);
+                }
+            }
+            Some((ConditionalKind::ElseIf, cond)) => {
+                vif_condition = build_branch_guard(&self.vif_branch_conditions, cond.as_deref());
+                if let Some(cond) = cond {
+                    self.vif_branch_conditions.push(cond);
+                }
+            }
+            Some((ConditionalKind::Else, _)) => {
+                vif_condition = build_branch_guard(&self.vif_branch_conditions, None);
+                self.vif_branch_conditions.clear();
+            }
+            None => {
+                // A non-conditional element breaks any open v-if chain.
+                self.vif_branch_conditions.clear();
+            }
+        }
 
         // Enter v-slot scope if present
         let slot_vars_count =
@@ -381,10 +421,14 @@ impl Analyzer {
             }
         });
 
-        // Visit children
+        // Visit children. They form a fresh sibling group, so the running
+        // `v-if` branch chain is saved and reset here and restored afterwards
+        // (a nested `v-if` must not leak into the parent's chain).
+        let saved_branch_conditions = std::mem::take(&mut self.vif_branch_conditions);
         for child in el.children.iter() {
             self.visit_template_child(child, scope_vars);
         }
+        self.vif_branch_conditions = saved_branch_conditions;
 
         // Pop v-if guard after visiting children
         if vif_guard_pushed {
