@@ -176,6 +176,84 @@ function wantKey(k: 'foo' | 'bar') { return k }
 }
 
 #[test]
+fn check_subset_resolves_relative_sibling_types() {
+    // `vize check src/App.vue` only registers App.vue, but its relative import
+    // `./types` must still resolve precisely (issue #766) — the sibling's types
+    // should be pulled into the virtual project rather than degrading to `any`
+    // or surfacing a false TS2307.
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "subset-sibling-types",
+        &[
+            (
+                "src/types.ts",
+                "export interface Sibling {\n  count: number\n}\n",
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import type { Sibling } from './types'
+const value: Sibling = { count: 'not a number' }
+</script>
+
+<template>
+  <div>{{ value.count }}</div>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/App.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    // The cross-file type resolved, so the real assignability error surfaces
+    // (`'not a number'` is not assignable to `count: number`) — and crucially
+    // NOT a `TS2307 Cannot find module './types'`.
+    let diagnostics = json["files"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|file| file["diagnostics"].as_array().cloned().unwrap_or_default())
+        .map(|d| d.as_str().unwrap_or_default().to_string())
+        .collect::<Vec<_>>();
+
+    assert!(
+        diagnostics
+            .iter()
+            .any(|message| message.contains("not assignable")),
+        "expected a cross-file assignability error proving the sibling resolved; got {diagnostics:?}\nstderr:\n{stderr}"
+    );
+    assert!(
+        !diagnostics
+            .iter()
+            .any(|message| message.contains("Cannot find module")),
+        "import './types' should resolve, not degrade to TS2307; got {diagnostics:?}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_options_api_can_import_define_component_from_stubbed_vue() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

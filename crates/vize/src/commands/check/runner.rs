@@ -125,6 +125,21 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         files.dedup();
     }
 
+    // An explicit subset only registers the requested files, so a relative
+    // import (`import { Foo } from './types'`) cannot see its sibling's real
+    // types and degrades to `any`. Register the transitive closure of relative
+    // source imports — analogous to the ambient pull-in above — so cross-file
+    // types resolve precisely, the way tsc/vue-tsc load the reachable program.
+    if !args.patterns.is_empty() {
+        for path in super::imports::collect_transitive_local_imports(&files, &cwd) {
+            if !files.contains(&path) {
+                files.push(path);
+            }
+        }
+        files.sort();
+        files.dedup();
+    }
+
     let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
     nuxt::detect_nuxt_auto_imports(&mut virtual_ts_options, &project_root);
 
