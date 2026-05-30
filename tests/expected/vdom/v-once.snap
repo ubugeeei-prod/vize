@@ -198,7 +198,7 @@ import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlo
 export function render(_ctx, _cache) {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item, __, ___, _cached) => {
     const _memo = ([item.selected])
-    if (_cached && _cached.key === item.id && _isMemoSame(_cached, _memo)) return _cached
+    if (_cached && _cached.el && _cached.key === item.id && _isMemoSame(_cached, _memo)) return _cached
     const _item = (_openBlock(), _createElementBlock("div", {
       key: item.id
     }, [
@@ -219,7 +219,7 @@ import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlo
 export function render(_ctx, _cache) {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item, __, ___, _cached) => {
     const _memo = ([item.id === _ctx.selected])
-    if (_cached && _cached.key === item.id && _isMemoSame(_cached, _memo)) return _cached
+    if (_cached && _cached.el && _cached.key === item.id && _isMemoSame(_cached, _memo)) return _cached
     const _item = (_openBlock(), _createElementBlock("div", {
       key: item.id
     }, [
@@ -255,4 +255,23 @@ export function render(_ctx, _cache) {
     _createElementVNode("div", null, "A"),
     _createElementVNode("div", null, "B")
   ])), _cache, 0)
+}
+===
+name: v-memo in v-for without key
+options: vdom
+--- INPUT ---
+<li v-for="item in items" v-memo="[item.id]">{{ item }}</li>
+--- OUTPUT ---
+import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createTextVNode as _createTextVNode, isMemoSame as _isMemoSame, withMemo as _withMemo } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item, __, ___, _cached) => {
+    const _memo = ([item.id])
+    if (_cached && _cached.el && _isMemoSame(_cached, _memo)) return _cached
+    const _item = (_openBlock(), _createElementBlock("li", null, [
+      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)
+    ]))
+    _item.memo = _memo
+    return _item
+  }, _cache, 0), 256 /* UNKEYED_FRAGMENT */))
 }

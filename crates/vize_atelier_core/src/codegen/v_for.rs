@@ -155,20 +155,20 @@ fn generate_for_inner(
         ctx.push(")");
         ctx.newline();
 
-        // if (_cached && _cached.key === key && _isMemoSame(_cached, _memo)) return _cached
+        // if (_cached && _cached.el && [_cached.key === key &&] _isMemoSame(_cached, _memo)) return _cached
         ctx.use_helper(RuntimeHelper::IsMemoSame);
         let key_exp = if let TemplateChildNode::Element(el) = &for_node.children[0] {
             get_element_key(el)
         } else {
             None
         };
-        ctx.push("if (_cached && _cached.key === ");
+        ctx.push("if (_cached && _cached.el && ");
+        // The key comparison is only emitted when the item has an explicit key.
         if let Some(key) = key_exp {
+            ctx.push("_cached.key === ");
             generate_expression(ctx, key);
-        } else {
-            ctx.push("undefined");
+            ctx.push(" && ");
         }
-        ctx.push(" && ");
         ctx.push(ctx.helper(RuntimeHelper::IsMemoSame));
         ctx.push("(_cached, _memo)) return _cached");
         ctx.newline();
