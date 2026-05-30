@@ -8,7 +8,7 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'test',
-  emits: ["update", "change"],
+  emits: ['update', 'change'],
   setup(__props, { emit: __emit }) {
 
 const emit = __emit

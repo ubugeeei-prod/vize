@@ -2,11 +2,11 @@
 source: crates/vize_atelier_sfc/src/compile/tests.rs
 expression: result.code.as_str()
 ---
-import { useModel as _useModel } from "vue";
+import { useModel as _useModel, mergeModels as _mergeModels } from "vue";
 import { Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, withDirectives as _withDirectives, renderList as _renderList, toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, vModelSelect as _vModelSelect } from "vue";
 export default {
   __name: "ImportedSelectField",
-  props: {
+  props: /* @__PURE__ */ _mergeModels({
     disabled: {
       type: Boolean,
       required: false
@@ -16,9 +16,11 @@ export default {
       required: false,
       default: "md"
     },
-    items: { type: Array },
-    "modelValue": { default: undefined }
-  },
+    items: { type: Array }
+  }, {
+    "modelValue": { default: undefined },
+    "modelModifiers": {}
+  }),
   emits: ["update:modelValue"],
   setup(__props) {
     const model = _useModel(__props, "modelValue");

@@ -121,6 +121,10 @@ pub(crate) fn compile_script_setup_inline_with_context(
     validate_props_destructure_default_types(&ctx, 0, content)?;
 
     let has_define_model = !ctx.macros.define_models.is_empty();
+    // `mergeModels` is needed when defineModel coexists with a user-declared
+    // defineProps (to merge props) or defineEmits (to merge emits).
+    let needs_merge_models = has_define_model
+        && (ctx.macros.define_props.is_some() || ctx.macros.define_emits.is_some());
     let has_define_slots = ctx.macros.define_slots.is_some();
     let needs_vapor_setup_context = is_vapor && !template.render_fn.is_empty();
     let vapor_render_alias = needs_vapor_setup_context
@@ -166,6 +170,7 @@ pub(crate) fn compile_script_setup_inline_with_context(
         preserved_normal_script,
         needs_merge_defaults,
         has_define_model,
+        needs_merge_models,
         has_define_slots,
         needs_vapor_setup_context,
         vapor_render_alias,

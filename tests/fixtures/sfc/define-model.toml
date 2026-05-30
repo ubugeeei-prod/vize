@@ -1,0 +1,72 @@
+# SFC tests: defineModel + defineProps/defineEmits interaction (mergeModels)
+# and the $emit setup-context destructure gating.
+# Based on Vue.js core compiler-sfc/__tests__/compileScript/defineModel.spec.ts
+
+mode = "sfc"
+
+[[cases]]
+name = "defineModel multiple models"
+input = """
+<script setup>
+const modelValue = defineModel({ required: true })
+const c = defineModel('count')
+const toString = defineModel('toString', { type: Function })
+</script>
+
+<template>
+  <div>{{ modelValue }} {{ c }} {{ toString }}</div>
+</template>
+"""
+
+[[cases]]
+name = "defineModel with defineProps and defineEmits merges models"
+input = """
+<script setup>
+defineProps({ foo: String })
+defineEmits(['change'])
+const count = defineModel({ default: 0 })
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"""
+
+[[cases]]
+name = "defineModel with array props merges"
+input = """
+<script setup>
+defineProps(['foo', 'bar'])
+const count = defineModel('count')
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"""
+
+[[cases]]
+name = "defineEmits without emit usage drops emit param"
+input = """
+<script setup>
+defineEmits(['change'])
+const count = 1
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+"""
+
+[[cases]]
+name = "defineEmits with dollar emit usage keeps emit param"
+input = """
+<script setup>
+defineEmits(['change'])
+const count = 1
+</script>
+
+<template>
+  <div @click="$emit('change')">{{ count }}</div>
+</template>
+"""

@@ -1,0 +1,175 @@
+===
+name: defineModel multiple models
+options: sfc
+--- INPUT ---
+<script setup>
+const modelValue = defineModel({ required: true })
+const c = defineModel('count')
+const toString = defineModel('toString', { type: Function })
+</script>
+
+<template>
+  <div>{{ modelValue }} {{ c }} {{ toString }}</div>
+</template>
+--- OUTPUT ---
+import { useModel as _useModel } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default {
+  __name: 'test',
+  props: {
+    "modelValue": { required: true },
+    "modelModifiers": {},
+    "count": {},
+    "countModifiers": {},
+    "toString": { type: Function },
+    "toStringModifiers": {},
+  },
+  emits: ["update:modelValue", "update:count", "update:toString"],
+  setup(__props) {
+
+const modelValue = _useModel(__props, "modelValue")
+const c = _useModel(__props, 'count')
+const toString = _useModel(__props, 'toString')
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(modelValue.value) + " " + _toDisplayString(c.value) + " " + _toDisplayString(toString.value), 1 /* TEXT */))
+}
+}
+
+}
+===
+name: defineModel with defineProps and defineEmits merges models
+options: sfc
+--- INPUT ---
+<script setup>
+defineProps({ foo: String })
+defineEmits(['change'])
+const count = defineModel({ default: 0 })
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+--- OUTPUT ---
+import { useModel as _useModel, mergeModels as _mergeModels } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default {
+  __name: 'test',
+  props: /*@__PURE__*/_mergeModels({ foo: String }, {
+    "modelValue": { default: 0 },
+    "modelModifiers": {},
+  }),
+  emits: /*@__PURE__*/_mergeModels(['change'], ["update:modelValue"]),
+  setup(__props) {
+
+
+
+const count = _useModel(__props, "modelValue")
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(count.value), 1 /* TEXT */))
+}
+}
+
+}
+===
+name: defineModel with array props merges
+options: sfc
+--- INPUT ---
+<script setup>
+defineProps(['foo', 'bar'])
+const count = defineModel('count')
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+--- OUTPUT ---
+import { useModel as _useModel, mergeModels as _mergeModels } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default {
+  __name: 'test',
+  props: /*@__PURE__*/_mergeModels(['foo', 'bar'], {
+    "count": {},
+    "countModifiers": {},
+  }),
+  emits: ["update:count"],
+  setup(__props) {
+
+
+const count = _useModel(__props, 'count')
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(count.value), 1 /* TEXT */))
+}
+}
+
+}
+===
+name: defineEmits without emit usage drops emit param
+options: sfc
+--- INPUT ---
+<script setup>
+defineEmits(['change'])
+const count = 1
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+const count = 1
+
+export default {
+  __name: 'test',
+  emits: ['change'],
+  setup(__props) {
+
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", null, _toDisplayString(count)))
+}
+}
+
+}
+===
+name: defineEmits with dollar emit usage keeps emit param
+options: sfc
+--- INPUT ---
+<script setup>
+defineEmits(['change'])
+const count = 1
+</script>
+
+<template>
+  <div @click="$emit('change')">{{ count }}</div>
+</template>
+--- OUTPUT ---
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+const count = 1
+
+export default {
+  __name: 'test',
+  emits: ['change'],
+  setup(__props, { emit: $emit }) {
+
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock("div", {
+    onClick: _cache[0] || (_cache[0] = $event => ($emit('change')))
+  }, _toDisplayString(count)))
+}
+}
+
+}
