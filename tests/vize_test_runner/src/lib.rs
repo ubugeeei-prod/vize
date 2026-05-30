@@ -253,19 +253,45 @@ pub fn normalize_code(code: &str) -> String {
         })
         .collect();
 
-    // Sort import helpers alphabetically and normalize quotes
-    for line in &mut lines {
-        // Normalize import lines from 'vue' or "vue"
-        let is_vue_import = (line.starts_with("import {") || line.starts_with("import {"))
-            && (line.contains("} from \"vue\"") || line.contains("} from 'vue'"));
-        if is_vue_import
+    // Merge every `import { … } from "vue"` line into a single sorted import.
+    // Vize and @vue/compiler-sfc sometimes split the Vue helper imports across a
+    // different number of statements (e.g. Vize emits `useModel` and
+    // `defineComponent` on separate lines while Vue groups them); import grouping
+    // is not semantically meaningful, so collapse it to compare the helper set.
+    let is_vue_import = |line: &str| {
+        line.starts_with("import {")
+            && (line.contains("} from \"vue\"") || line.contains("} from 'vue'"))
+    };
+    let mut vue_helpers: Vec<String> = Vec::new();
+    let mut first_vue_import: Option<usize> = None;
+    for (idx, line) in lines.iter().enumerate() {
+        if is_vue_import(line)
             && let Some(start) = line.find('{')
             && let Some(end) = line.find('}')
         {
-            let helpers_str = &line[start + 1..end];
-            let mut helpers: Vec<&str> = helpers_str.split(',').map(|s| s.trim()).collect();
-            helpers.sort();
-            *line = format!("import {{ {} }} from \"vue\"", helpers.join(", ")).into();
+            for helper in line[start + 1..end].split(',') {
+                let helper = helper.trim();
+                if !helper.is_empty() {
+                    vue_helpers.push(helper.to_compact_string());
+                }
+            }
+            if first_vue_import.is_none() {
+                first_vue_import = Some(idx);
+            }
+        }
+    }
+    if let Some(first) = first_vue_import {
+        vue_helpers.sort();
+        vue_helpers.dedup();
+        let merged: String = format!("import {{ {} }} from \"vue\"", vue_helpers.join(", ")).into();
+        for (idx, line) in lines.iter_mut().enumerate() {
+            if is_vue_import(line) {
+                *line = if idx == first {
+                    merged.clone()
+                } else {
+                    String::default()
+                };
+            }
         }
     }
 

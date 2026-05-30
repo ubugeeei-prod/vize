@@ -66,7 +66,7 @@ pub(super) fn compile_script_setup_inline_body(
         build_props_emits(&ctx, is_ts, needs_prop_type, needs_merge_defaults)
     );
 
-    let model_infos: Vec<(String, String, Option<String>)> = profile!(
+    let model_infos: Vec<(String, String, Option<String>, Option<String>)> = profile!(
         "atelier.script_inline.collect_model_infos",
         collect_model_infos(&ctx)
     );

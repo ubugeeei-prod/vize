@@ -1,9 +1,49 @@
-use vize_carton::{String, ToCompactString};
+use vize_carton::{String, ToCompactString, cstr};
 
 use crate::script::ScriptCompileContext;
 
-use super::super::super::props::extract_emit_names_from_type;
+use super::super::super::props::{
+    extract_emit_names_from_type, resolve_prop_js_type, ts_type_to_js_type,
+};
 use super::props::build_user_props_decl;
+
+/// Resolve a defineModel `<T>` type argument to its runtime constructor,
+/// mirroring `@vue/compiler-sfc`'s `inferRuntimeType`: primitives map directly
+/// (`string` → `String`), and local interface / type-alias references that do
+/// not map directly resolve to `Object` via the script context.
+fn model_runtime_type(ctx: &ScriptCompileContext, type_arg: &str) -> String {
+    let js_type = ts_type_to_js_type(type_arg);
+    if js_type == "null" {
+        resolve_prop_js_type(type_arg, &ctx.interfaces, &ctx.type_aliases).unwrap_or(js_type)
+    } else {
+        js_type
+    }
+}
+
+/// Render the runtime prop-options object for a single defineModel, mirroring
+/// `@vue/compiler-sfc`'s `genModelProps`: an explicit `<T>` type argument is
+/// resolved to its runtime constructor as `{ type: <RuntimeType> }`, merged
+/// with any runtime options as `, ...{ opts }`. Without a type argument the
+/// options object (or `{}`) is emitted verbatim.
+pub(super) fn model_value_prop(
+    ctx: &ScriptCompileContext,
+    options: &Option<String>,
+    type_arg: &Option<String>,
+) -> String {
+    let type_arg = type_arg.as_deref().map(str::trim).filter(|t| !t.is_empty());
+    match (type_arg, options.as_deref()) {
+        (Some(type_arg), Some(options)) => {
+            let runtime_type = model_runtime_type(ctx, type_arg);
+            cstr!("{{ type: {}, ...{} }}", runtime_type, options.trim())
+        }
+        (Some(type_arg), None) => {
+            let runtime_type = model_runtime_type(ctx, type_arg);
+            cstr!("{{ type: {} }}", runtime_type)
+        }
+        (None, Some(options)) => options.trim().to_compact_string(),
+        (None, None) => "{}".to_compact_string(),
+    }
+}
 
 /// Find the matching `}` for the first `{` in `opts`, returning `(open, close)`
 /// byte indices.
@@ -162,7 +202,7 @@ fn strip_runtime_accessors(opts: &str) -> Option<String> {
 /// Build model props (and combine props/emits) when defineModel is used.
 pub(super) fn build_model_props_emits(
     ctx: &ScriptCompileContext,
-    model_infos: &[(String, String, Option<String>)],
+    model_infos: &[(String, String, Option<String>, Option<String>)],
     is_ts: bool,
     needs_prop_type: bool,
     needs_merge_defaults: bool,
@@ -174,15 +214,11 @@ pub(super) fn build_model_props_emits(
         // model props declaration: `{\n    "name": <opts>,\n    "nameModifiers": {},\n  }`
         let mut model_decl: Vec<u8> = Vec::new();
         model_decl.push(b'{');
-        for (model_name, _binding_name, options) in model_infos {
+        for (model_name, _binding_name, options, type_arg) in model_infos {
             model_decl.extend_from_slice(b"\n    \"");
             model_decl.extend_from_slice(model_name.as_bytes());
             model_decl.extend_from_slice(b"\": ");
-            if let Some(opts) = options {
-                model_decl.extend_from_slice(opts.as_bytes());
-            } else {
-                model_decl.extend_from_slice(b"{}");
-            }
+            model_decl.extend_from_slice(model_value_prop(ctx, options, type_arg).as_bytes());
             model_decl.extend_from_slice(b",\n    \"");
             if model_name == "modelValue" {
                 model_decl.extend_from_slice(b"modelModifiers");
@@ -240,7 +276,7 @@ pub(super) fn build_model_props_emits(
     let model_emits: Vec<u8> = {
         let mut v = Vec::new();
         v.push(b'[');
-        for (i, (name, _, _)) in model_infos.iter().enumerate() {
+        for (i, (name, _, _, _)) in model_infos.iter().enumerate() {
             if i > 0 {
                 v.extend_from_slice(b", ");
             }
@@ -283,7 +319,7 @@ pub(super) fn build_model_props_emits(
 /// Returns Vec of (model_name, binding_name, prop_options).
 pub(super) fn collect_model_infos(
     ctx: &ScriptCompileContext,
-) -> Vec<(String, String, Option<String>)> {
+) -> Vec<(String, String, Option<String>, Option<String>)> {
     ctx.macros
         .define_models
         .iter()
@@ -322,7 +358,7 @@ pub(super) fn collect_model_infos(
                     None
                 }
             });
-            (model_name, binding_name, options)
+            (model_name, binding_name, options, m.type_args.clone())
         })
         .collect()
 }

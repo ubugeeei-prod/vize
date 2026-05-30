@@ -70,3 +70,155 @@ const count = 1
   <div @click="$emit('change')">{{ count }}</div>
 </template>
 """
+
+# =============================================================================
+# Typed defineModel: `<T>` type argument resolution (#765)
+# =============================================================================
+
+[[cases]]
+name = "defineModel typed string"
+input = """
+<script setup lang="ts">
+const modelValue = defineModel<string>()
+</script>
+
+<template>
+  <input v-model="modelValue" />
+</template>
+"""
+
+[[cases]]
+name = "defineModel typed number"
+input = """
+<script setup lang="ts">
+const count = defineModel<number>()
+</script>
+
+<template>
+  <input v-model="count" />
+</template>
+"""
+
+[[cases]]
+name = "defineModel typed boolean"
+input = """
+<script setup lang="ts">
+const checked = defineModel<boolean>()
+</script>
+
+<template>
+  <input v-model="checked" />
+</template>
+"""
+
+[[cases]]
+name = "defineModel typed union"
+input = """
+<script setup lang="ts">
+const value = defineModel<string | number>()
+</script>
+
+<template>
+  <input v-model="value" />
+</template>
+"""
+
+[[cases]]
+name = "defineModel typed array"
+input = """
+<script setup lang="ts">
+const items = defineModel<string[]>()
+</script>
+
+<template>
+  <input v-model="items" />
+</template>
+"""
+
+[[cases]]
+name = "defineModel typed with options"
+input = """
+<script setup lang="ts">
+const count = defineModel<number>({ default: 0 })
+</script>
+
+<template>
+  <input v-model="count" />
+</template>
+"""
+
+[[cases]]
+name = "defineModel named typed with options"
+input = """
+<script setup lang="ts">
+const title = defineModel<string>('title', { required: true })
+</script>
+
+<template>
+  <input v-model="title" />
+</template>
+"""
+
+[[cases]]
+name = "defineModel multiple typed"
+input = """
+<script setup lang="ts">
+const first = defineModel<string>('first')
+const last = defineModel<number>('last')
+</script>
+
+<template>
+  <input v-model="first" />
+  <input v-model="last" />
+</template>
+"""
+
+[[cases]]
+name = "defineModel named typed"
+input = """
+<script setup lang="ts">
+const search = defineModel<string>('search')
+</script>
+
+<template>
+  <input v-model="search" />
+</template>
+"""
+
+[[cases]]
+name = "defineModel interface type"
+input = """
+<script setup lang="ts">
+interface Layer { fxId: string }
+const layer = defineModel<Layer>('layer', { required: true })
+</script>
+
+<template>
+  <div>{{ layer }}</div>
+</template>
+"""
+
+[[cases]]
+name = "defineModel type alias"
+input = """
+<script setup lang="ts">
+type Foo = { a: number }
+const foo = defineModel<Foo>()
+</script>
+
+<template>
+  <div>{{ foo }}</div>
+</template>
+"""
+
+[[cases]]
+name = "defineModel function type"
+input = """
+<script setup lang="ts">
+const cb = defineModel<() => void>()
+</script>
+
+<template>
+  <div />
+</template>
+"""

@@ -18,7 +18,10 @@ export default {
     },
     items: { type: Array }
   }, {
-    "modelValue": { default: undefined },
+    "modelValue": {
+      type: String,
+      ...{ default: undefined }
+    },
     "modelModifiers": {}
   }),
   emits: ["update:modelValue"],
