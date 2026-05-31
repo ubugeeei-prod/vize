@@ -4,7 +4,9 @@
 //! v-if narrowing) and component prop value type assertions.
 
 use super::{
-    helpers::{generated_text_range, is_reserved_identifier, to_safe_identifier_fragment},
+    helpers::{
+        generated_text_range, is_reserved_identifier, to_camel_case, to_safe_identifier_fragment,
+    },
     types::VizeMapping,
 };
 use vize_carton::FxHashSet;
@@ -177,5 +179,99 @@ pub(crate) fn generate_component_prop_checks(
                 append!(*ts, "{indent}}}\n");
             }
         }
+    }
+
+    generate_generic_props_call(
+        ts,
+        mappings,
+        usage,
+        idx,
+        template_prop_names,
+        template_offset,
+        indent,
+    );
+}
+
+/// Emit a single call into the child's generic functional prop-checker (#775),
+/// assembling the dynamic props into one object literal so TypeScript can infer
+/// the child's generic parameter(s) across the boundary. For a non-generic /
+/// built-in / library / `any` component the checker resolves to a
+/// `(props: any) => void` no-op (see `__VizePropChecker` in scope.rs), so this
+/// call reports nothing and the well-tested per-prop extraction above is the
+/// sole check. Each property value is mapped back to its source attribute so a
+/// `TS2322` from a wrongly-typed prop points at the offending binding.
+fn generate_generic_props_call(
+    ts: &mut String,
+    mappings: &mut Vec<VizeMapping>,
+    usage: &ComponentUsage,
+    idx: usize,
+    template_prop_names: &FxHashSet<String>,
+    template_offset: u32,
+    indent: &str,
+) {
+    let has_dynamic_props = usage.props.iter().any(|p| {
+        p.name.as_str() != "key" && p.name.as_str() != "ref" && p.value.is_some() && p.is_dynamic
+    });
+    if !has_dynamic_props {
+        return;
+    }
+
+    let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
+    let expr_indent = if usage.vif_guard.is_some() {
+        cstr!("{indent}  ")
+    } else {
+        indent.into()
+    };
+
+    if let Some(ref guard) = usage.vif_guard {
+        append!(*ts, "{indent}if ({guard}) {{\n");
+    }
+
+    append!(
+        *ts,
+        "{expr_indent}(undefined as unknown as __{component_type_name}_Check_{idx})({{\n",
+    );
+
+    for prop in &usage.props {
+        if prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
+            continue;
+        }
+        let Some(ref value) = prop.value else {
+            continue;
+        };
+        if !prop.is_dynamic {
+            continue;
+        }
+
+        let prop_src_start = (template_offset + prop.start) as usize;
+        let prop_src_end = (template_offset + prop.end) as usize;
+        let value = strip_js_comments(value.as_str());
+        let trimmed_value = value.as_ref().trim();
+        let rewritten_value = rewrite_reserved_template_prop(trimmed_value, template_prop_names);
+        let generated_value = rewritten_value
+            .as_ref()
+            .map_or_else(|| value.as_ref(), |s| s.as_str());
+        let camel_prop_name = to_camel_case(prop.name.as_str());
+
+        append!(*ts, "{expr_indent}  ");
+        // Map the whole `"prop": value` entry (key through value) back to the
+        // source attribute. TypeScript reports an assignability error for an
+        // object-literal property at the property key, not the value, so a
+        // value-only mapping would miss it and the diagnostic would be dropped.
+        let entry_gen_start = ts.len();
+        append!(*ts, "\"{camel_prop_name}\": {generated_value}");
+        let entry_gen_end = ts.len();
+        ts.push_str(",\n");
+        mappings.push(VizeMapping {
+            gen_range: entry_gen_start..entry_gen_end,
+            src_range: prop_src_start..prop_src_end,
+            sub_spans: Vec::new(),
+        });
+    }
+
+    append!(*ts, "{expr_indent}}});\n");
+
+    if usage.vif_guard.is_some() {
+        append!(*ts, "{indent}}}\n");
     }
 }

@@ -102,14 +102,20 @@ function __setup() {
   })({} as __my_widget_7_update_model_value_event);
 
   // Component props type declarations
+  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
+  type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;
   // @vize-map: component -> 0:63
   type __my_widget_Props_0 = typeof my_widget extends { new (): { $props: infer __P } } ? __P : (typeof my_widget extends (props: infer __P) => any ? __P : {});
   type __my_widget_0_prop_label = __my_widget_Props_0 extends { 'label'?: infer T } ? T : __my_widget_Props_0 extends { 'label': infer T } ? T : unknown;
+  type __my_widget_Check_0 = __VizePropChecker<typeof my_widget>;
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 11:25
   const __vize_prop_check_0_label: __my_widget_0_prop_label = value;
   void __vize_prop_check_0_label;
+  (undefined as unknown as __my_widget_Check_0)({
+    "label": value,
+  });
 
   // Auto-imported/built-in components (not in script bindings)
   const my_widget: any = undefined as any;

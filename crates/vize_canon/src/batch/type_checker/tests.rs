@@ -492,6 +492,112 @@ import Child from './Child.vue'
 }
 
 #[test]
+fn batch_type_checker_snapshots_generic_component_prop_error() {
+    // #775: a wrongly-typed prop passed to a `<script setup generic="T">` child
+    // must raise TS2322. The child's construct-signature `$props` collapses
+    // `T` to its constraint, so the parent infers `T` across the boundary by
+    // calling the child's `__vizeCheck<T>(props)` from its default export.
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-component-props",
+        &[
+            (
+                "src/GenericList.vue",
+                r#"<script setup lang="ts" generic="T">
+defineProps<{
+  items: T[]
+  selected: T
+}>()
+</script>
+
+<template>
+  <div>{{ selected }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import GenericList from './GenericList.vue'
+</script>
+
+<template>
+  <GenericList :items="['a', 'b']" :selected="42" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    insta::with_settings!({
+        snapshot_path => "../../snapshots"
+    }, {
+        insta::assert_debug_snapshot!("batch_type_checker_generic_component_prop_error", snapshot);
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn batch_type_checker_accepts_well_typed_generic_component_props() {
+    // The dual of the test above: a correctly-typed generic prop must NOT
+    // report, and the new functional check must not introduce spurious
+    // diagnostics for the non-error case.
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let project_root = create_project_case(
+        "generic-component-props-ok",
+        &[
+            (
+                "src/GenericList.vue",
+                r#"<script setup lang="ts" generic="T">
+defineProps<{
+  items: T[]
+  selected: T
+}>()
+</script>
+
+<template>
+  <div>{{ selected }}</div>
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import GenericList from './GenericList.vue'
+</script>
+
+<template>
+  <GenericList :items="['a', 'b']" :selected="'a'" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let Some(snapshot) = snapshot_project_diagnostics(&project_root) else {
+        let _ = std::fs::remove_dir_all(&project_root);
+        return;
+    };
+
+    assert!(
+        snapshot.is_empty(),
+        "well-typed generic component props should not report diagnostics, got: {snapshot:?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn batch_type_checker_snapshots_ts_imports_vue_component() {
     if resolve_test_tsgo_binary().is_none() {
         return;

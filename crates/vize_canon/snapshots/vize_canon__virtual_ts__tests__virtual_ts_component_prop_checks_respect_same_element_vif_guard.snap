@@ -101,15 +101,23 @@ function __setup() {
   }
 
   // Component props type declarations
+  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
+  type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;
   // @vize-map: component -> 0:40
   type __LinkComp_Props_0 = typeof LinkComp extends { new (): { $props: infer __P } } ? __P : (typeof LinkComp extends (props: infer __P) => any ? __P : {});
   type __LinkComp_0_prop_to = __LinkComp_Props_0 extends { 'to'?: infer T } ? T : __LinkComp_Props_0 extends { 'to': infer T } ? T : unknown;
+  type __LinkComp_Check_0 = __VizePropChecker<typeof LinkComp>;
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 22:37
   if ((item)) {
     const __vize_prop_check_0_to: __LinkComp_0_prop_to = item.name;
     void __vize_prop_check_0_to;
+  }
+  if ((item)) {
+    (undefined as unknown as __LinkComp_Check_0)({
+      "to": item.name,
+    });
   }
 
   // Mark used components as referenced

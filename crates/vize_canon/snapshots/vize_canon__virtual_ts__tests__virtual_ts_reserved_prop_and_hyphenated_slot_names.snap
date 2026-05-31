@@ -106,14 +106,20 @@ function __setup() {
   };
 
   // Component props type declarations
+  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;
+  type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;
   // @vize-map: component -> 0:27
   type __TrendChart_Props_0 = typeof TrendChart extends { new (): { $props: infer __P } } ? __P : (typeof TrendChart extends (props: infer __P) => any ? __P : {});
   type __TrendChart_0_prop_class = __TrendChart_Props_0 extends { 'class'?: infer T } ? T : __TrendChart_Props_0 extends { 'class': infer T } ? T : unknown;
+  type __TrendChart_Check_0 = __VizePropChecker<typeof TrendChart>;
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 12:26
   const __vize_prop_check_0_class: __TrendChart_0_prop_class = props["class"];
   void __vize_prop_check_0_class;
+  (undefined as unknown as __TrendChart_Check_0)({
+    "class": props["class"],
+  });
 
   // Component props in v-slot scope: #area-gradient
   void function _slot_props_area_gradient({ id }: any) {

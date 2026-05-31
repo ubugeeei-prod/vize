@@ -1,0 +1,13 @@
+---
+source: crates/vize_canon/src/batch/type_checker/tests.rs
+expression: snapshot
+---
+[
+    (
+        "src/Parent.vue",
+        Some(
+            2322,
+        ),
+        "6:36:error Type 'number' is not assignable to type 'string'.",
+    ),
+]

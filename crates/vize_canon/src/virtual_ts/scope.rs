@@ -323,6 +323,30 @@ fn generate_component_props(
     // Emit type declarations only for components with dynamic props
     // (TypeScript type aliases cannot be inside function bodies)
     ts.push_str("\n  // Component props type declarations\n");
+
+    // Helper types for the generic functional prop-check path (#775). A
+    // `<script setup generic="T">` child exposes `__vizeCheck<T>(props)` on its
+    // default export; `__VizePropChecker<C>` extracts that generic signature so
+    // the parent can call it and let TS infer `T` from the passed props. When
+    // the child is non-generic (plain construct signature), a built-in / library
+    // component, or `any`, it falls back to `(props: any) => void`, a no-op that
+    // never reports, so only generic components take the new path and the
+    // well-tested `typeof Comp extends { $props }` extraction below is preserved.
+    let any_dynamic_props = summary.component_usages.iter().any(|usage| {
+        usage.props.iter().any(|p| {
+            p.name.as_str() != "key"
+                && p.name.as_str() != "ref"
+                && p.value.is_some()
+                && p.is_dynamic
+        })
+    });
+    if any_dynamic_props {
+        ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
+        ts.push_str(
+            "  type __VizePropChecker<C> = __VizeIsAny<C> extends true ? (props: any) => void : C extends { __vizeCheck: infer __F } ? (__F extends (...args: any[]) => any ? __F : (props: any) => void) : (props: any) => void;\n",
+        );
+    }
+
     for (idx, usage) in summary.component_usages.iter().enumerate() {
         let component_ref = to_safe_identifier(usage.name.as_str());
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
@@ -360,6 +384,13 @@ fn generate_component_props(
                 );
             }
         }
+
+        // Generic functional prop-checker for this component (#775). Resolves to
+        // the child's `__vizeCheck` when generic, else a `(props: any)` no-op.
+        append!(
+            *ts,
+            "  type __{component_type_name}_Check_{idx} = __VizePropChecker<typeof {component_ref}>;\n",
+        );
     }
 
     // Collect all closure scope IDs (v-for and v-slot)

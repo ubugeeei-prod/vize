@@ -139,5 +139,5 @@ type __VizeComponentInstance = {
   $emit: __EmitFn<Emits>;
   $slots: Slots;
 };
-declare const __vize_component__: new (...args: any[]) => __VizeComponentInstance;
+declare const __vize_component__: (new (...args: any[]) => __VizeComponentInstance) & { __vizeCheck: <T extends string | number = any>(props: Partial<Props<T>> & Record<string, unknown>) => void; };
 export default __vize_component__;
