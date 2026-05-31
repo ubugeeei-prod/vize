@@ -5,6 +5,7 @@ import { generationAndCliTasks } from "./tasks/generation-cli.ts";
 import { releaseTasks } from "./tasks/release.ts";
 import { setupAndDevTasks } from "./tasks/setup-dev.ts";
 import { testAndBenchmarkTasks } from "./tasks/test-benchmark.ts";
+import { testboxTasks } from "./tasks/testbox.ts";
 
 /**
  * Fully assembled root Vite+ task catalog.
@@ -22,4 +23,5 @@ export const taskCatalog = defineTasks({
   ...testAndBenchmarkTasks,
   ...checkTasks,
   ...releaseTasks,
+  ...testboxTasks,
 });

@@ -111,6 +111,62 @@
             }
           else
             null;
+        # Blacksmith CLI (Testbox). Distributed as a single prebuilt binary
+        # from a mutable `latest` channel, so — like the MoonBit block above —
+        # each platform pins the current binary's hash. The placeholder hashes
+        # below must be filled before this builds: run `nix build` once and
+        # paste the `got: sha256-…` value Nix reports for each platform, or
+        #   nix store prefetch-file --name blacksmith \
+        #     https://clireleases.blacksmith.sh/cli/latest/<os>/<arch>/blacksmith
+        #
+        # NOTE: the CLI self-updates in the background on every invocation,
+        # which cannot write into the read-only Nix store. If the pinned
+        # binary errors while trying to self-update, gate the update off (check
+        # `blacksmith --help` for the flag/env var) — the store path is the
+        # source of truth and is refreshed by bumping the hashes here.
+        blacksmithArtifacts = {
+          aarch64-darwin = {
+            url = "https://clireleases.blacksmith.sh/cli/latest/darwin/arm64/blacksmith";
+            hash = lib.fakeHash;
+          };
+          x86_64-darwin = {
+            url = "https://clireleases.blacksmith.sh/cli/latest/darwin/amd64/blacksmith";
+            hash = lib.fakeHash;
+          };
+          x86_64-linux = {
+            url = "https://clireleases.blacksmith.sh/cli/latest/linux/amd64/blacksmith";
+            hash = lib.fakeHash;
+          };
+          aarch64-linux = {
+            url = "https://clireleases.blacksmith.sh/cli/latest/linux/arm64/blacksmith";
+            hash = lib.fakeHash;
+          };
+        };
+        blacksmith =
+          if builtins.hasAttr system blacksmithArtifacts then
+            let
+              artifact = blacksmithArtifacts.${system};
+            in
+            pkgs.stdenvNoCC.mkDerivation {
+              pname = "blacksmith";
+              version = "latest";
+              src = pkgs.fetchurl { inherit (artifact) url hash; };
+              dontUnpack = true;
+              nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.autoPatchelfHook ];
+              installPhase = ''
+                runHook preInstall
+                install -Dm755 $src $out/bin/blacksmith
+                runHook postInstall
+              '';
+              meta = {
+                description = "Blacksmith CLI (Testbox)";
+                homepage = "https://docs.blacksmith.sh/blacksmith-testbox/overview";
+                license = lib.licenses.unfree;
+                platforms = builtins.attrNames blacksmithArtifacts;
+              };
+            }
+          else
+            null;
         nodejs = pkgs.nodejs_24;
         pnpm = pkgs.pnpm;
         workspaceVp = pkgs.writeShellApplication {
@@ -271,6 +327,7 @@
           ]
           ++ lib.optionals pkgs.stdenv.isDarwin [ workspaceXcrun ]
           ++ lib.optionals (moonbit != null) [ moonbit ]
+          ++ lib.optionals (blacksmith != null) [ blacksmith ]
           ++ commonNativeBuildInputs;
 
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";

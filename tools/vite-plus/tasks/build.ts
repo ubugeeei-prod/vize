@@ -10,6 +10,7 @@ import {
   runTasks,
   task,
 } from "../task-helpers.ts";
+import { inTestbox } from "./testbox.ts";
 
 /**
  * Build and packaging tasks for the repository's compiled artifacts.
@@ -21,7 +22,9 @@ import {
  * forcing unrelated test or release commands into the same module.
  */
 export const buildTasks = defineTasks({
-  build: noCacheTask(runTasks("build:rust", "build:all")),
+  // `vp build` runs inside a Blacksmith Testbox; the underlying build:* tasks
+  // stay local. See tools/vite-plus/tasks/testbox.ts.
+  build: noCacheTask(inTestbox(runTasks("build:rust", "build:all"))),
   "build:all": noCacheTask(runTasks("build:runtime", "package:editor-extensions")),
   "build:rust": task("cargo build --workspace", { input: cacheInputs.rust }),
   "build:runtime": noCacheTask(runTasks("build:native", "build:wasm", "build:packages")),

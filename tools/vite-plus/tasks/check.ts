@@ -18,6 +18,7 @@ import {
   shellCommand,
   task,
 } from "../task-helpers.ts";
+import { inTestbox } from "./testbox.ts";
 
 const ciPackageCheckCommand = runInPackages("check", ciCheckedPackages, {
   concurrencyLimit: 1,
@@ -82,7 +83,8 @@ export const checkTasks = defineTasks({
   "fmt:js": noCacheTask(runInPackages("fmt", checkedPackages)),
   "fmt:rust": task("cargo fmt --all", { input: cacheInputs.rust }),
   "fmt:all": noCacheTask(runTask("fmt")),
-  lint: noCacheTask(runTask("check")),
+  // `vp lint` runs inside a Blacksmith Testbox; `check` stays local.
+  lint: noCacheTask(inTestbox(runTask("check"))),
   "lint:fix": noCacheTask(runTask("check:fix")),
   "lint:rust": task("cargo clippy --workspace -- -D warnings", { input: cacheInputs.rust }),
   "lint:all": noCacheTask(runTasks("lint:rust", "check")),
