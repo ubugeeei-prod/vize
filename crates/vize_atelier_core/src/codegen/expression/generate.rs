@@ -118,11 +118,12 @@ pub fn generate_event_handler(
                 return;
             }
 
-            // Compound expression: wrap as arrow function
+            // Compound expression: wrap as arrow function. Vue emits the
+            // multi-statement body with no surrounding spaces (`$event => {...}`).
             if processed.contains(';') {
-                ctx.push("$event => { ");
+                ctx.push("$event => {");
                 ctx.push(&processed);
-                ctx.push(" }");
+                ctx.push("}");
             } else {
                 ctx.push("$event => (");
                 ctx.push(&processed);

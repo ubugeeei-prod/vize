@@ -85,3 +85,7 @@ input = '<div v-memo="[item?.id]">{{ item?.name }}</div>'
 [[cases]]
 name = "v-memo on template"
 input = '<template v-memo="[value]"><div>A</div><div>B</div></template>'
+
+[[cases]]
+name = "v-memo in v-for without key"
+input = '<li v-for="item in items" v-memo="[item.id]">{{ item }}</li>'

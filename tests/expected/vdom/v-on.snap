@@ -603,3 +603,176 @@ export function render(_ctx, _cache) {
     onMouseenter: _cache[1] || (_cache[1] = $event => (_ctx.hover = true))
   }, null, 32 /* NEED_HYDRATION */))
 }
+===
+name: vue: vnode lifecycle hook
+options: vdom
+--- INPUT ---
+<div @vue:mounted="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onVnodeMounted: _ctx.fn }, null, 8 /* PROPS */, ["onVnodeMounted"]))
+}
+===
+name: vue: vnode hook kebab
+options: vdom
+--- INPUT ---
+<div @vue:before-update="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onVnodeBeforeUpdate: _ctx.fn }, null, 8 /* PROPS */, ["onVnodeBeforeUpdate"]))
+}
+===
+name: vue: vnode hook on component
+options: vdom
+--- INPUT ---
+<MyComp @vue:updated="fn" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_MyComp = _resolveComponent("MyComp")
+
+  return (_openBlock(), _createBlock(_component_MyComp, { onVnodeUpdated: _ctx.fn }, null, 8 /* PROPS */, ["onVnodeUpdated"]))
+}
+===
+name: camelCase event on plain element preserves case
+options: vdom
+--- INPUT ---
+<div @fooBar="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { "on:fooBar": _ctx.fn }, null, 40 /* PROPS, NEED_HYDRATION */, ["on:fooBar"]))
+}
+===
+name: PascalCase event on plain element preserves case
+options: vdom
+--- INPUT ---
+<div @FooBar="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { "on:FooBar": _ctx.fn }, null, 40 /* PROPS, NEED_HYDRATION */, ["on:FooBar"]))
+}
+===
+name: kebab event on plain element camelizes
+options: vdom
+--- INPUT ---
+<div @foo-bar="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onFooBar: _ctx.fn }, null, 40 /* PROPS, NEED_HYDRATION */, ["onFooBar"]))
+}
+===
+name: camelCase event on component camelizes
+options: vdom
+--- INPUT ---
+<MyComp @fooBar="fn" />
+--- OUTPUT ---
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_MyComp = _resolveComponent("MyComp")
+
+  return (_openBlock(), _createBlock(_component_MyComp, { onFooBar: _ctx.fn }, null, 8 /* PROPS */, ["onFooBar"]))
+}
+===
+name: colon event with uppercase on element
+options: vdom
+--- INPUT ---
+<div @update:modelValue="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { "on:update:modelValue": _ctx.fn }, null, 40 /* PROPS, NEED_HYDRATION */, ["on:update:modelValue"]))
+}
+===
+name: colon event lowercase on element
+options: vdom
+--- INPUT ---
+<div @update:foo="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { "onUpdate:foo": _ctx.fn }, null, 40 /* PROPS, NEED_HYDRATION */, ["onUpdate:foo"]))
+}
+===
+name: camelCase event with option modifier
+options: vdom
+--- INPUT ---
+<div @fooBar.once="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { "on:fooBarOnce": _ctx.fn }, null, 40 /* PROPS, NEED_HYDRATION */, ["on:fooBarOnce"]))
+}
+===
+name: dblclick needs hydration
+options: vdom
+--- INPUT ---
+<div @dblclick="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onDblclick: _ctx.fn }, null, 40 /* PROPS, NEED_HYDRATION */, ["onDblclick"]))
+}
+===
+name: click no hydration
+options: vdom
+--- INPUT ---
+<div @click="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onClick: _ctx.fn }, null, 8 /* PROPS */, ["onClick"]))
+}
+===
+name: mouseover needs hydration
+options: vdom
+--- INPUT ---
+<div @mouseover="fn"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { onMouseover: _ctx.fn }, null, 40 /* PROPS, NEED_HYDRATION */, ["onMouseover"]))
+}
+===
+name: inline multi-statement handler
+options: vdom
+--- INPUT ---
+<a @click="foo();bar()"></a>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("a", {
+    onClick: $event => {_ctx.foo();_ctx.bar()}
+  }, null, 8 /* PROPS */, ["onClick"]))
+}
+===
+name: inline single-statement handler
+options: vdom
+--- INPUT ---
+<a @click="foo()"></a>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("a", {
+    onClick: $event => (_ctx.foo())
+  }, null, 8 /* PROPS */, ["onClick"]))
+}

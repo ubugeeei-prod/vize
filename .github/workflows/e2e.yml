@@ -1,7 +1,7 @@
 name: App E2E
 
 on:
-  # App E2E (dev/preview/build/check/lint/check-fixtures) and VRT are slow
+  # App E2E (dev/preview/build/check/lint) and VRT are slow
   # workflows that historically gated every PR. They are now run nightly and
   # on demand so PR review latency is bounded by faster gates (Check,
   # Benchmark, Native Smoke). Regressions caught by the nightly run still
@@ -23,7 +23,6 @@ on:
           - check
           - lint
           - build
-          - check-fixtures
 
 concurrency:
   group: app-e2e-${{ github.ref }}-${{ github.event.inputs.suite || github.event_name }}
@@ -46,7 +45,7 @@ jobs:
         # workflow_dispatch: pick one suite. schedule: run every suite,
         # including vrt, because nothing else exercises the visual regression
         # baselines today.
-        suite: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]', inputs.suite)) || fromJSON('["dev","vrt","preview","build","check","lint","check-fixtures"]') }}
+        suite: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]', inputs.suite)) || fromJSON('["dev","vrt","preview","build","check","lint"]') }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -119,9 +118,6 @@ jobs:
               ;;
             build)
               vp run --filter './tests' test:build
-              ;;
-            check-fixtures)
-              vp run --filter './tests' test:check:fixtures
               ;;
           esac
 

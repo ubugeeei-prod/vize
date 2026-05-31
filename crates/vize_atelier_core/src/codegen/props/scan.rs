@@ -66,6 +66,12 @@ pub(super) struct PropsScan<'props> {
     has_dynamic_vmodel: bool,
     has_dynamic_class: bool,
     has_dynamic_style: bool,
+    /// Whether the static `class` attribute appears before the dynamic `:class`
+    /// binding in source order (controls the merged array order to match Vue).
+    pub(super) static_class_before_dynamic: bool,
+    pub(super) static_style_before_dynamic: bool,
+    static_class_index: Option<usize>,
+    static_style_index: Option<usize>,
     visible_prop_count: usize,
     visible_class_attrs: usize,
     visible_style_attrs: usize,
@@ -90,6 +96,10 @@ impl<'props> PropsScan<'props> {
             has_dynamic_vmodel: false,
             has_dynamic_class: false,
             has_dynamic_style: false,
+            static_class_before_dynamic: false,
+            static_style_before_dynamic: false,
+            static_class_index: None,
+            static_style_index: None,
             visible_prop_count: 0,
             visible_class_attrs: 0,
             visible_style_attrs: 0,
@@ -98,15 +108,24 @@ impl<'props> PropsScan<'props> {
             event_counts: EventNameCounts::default(),
         };
 
-        for prop in props {
-            scan.observe_other_prop(prop);
-
+        for (index, prop) in props.iter().enumerate() {
             let visible = !skip_is || !is_is_prop(prop);
+
+            // The `is` binding of a dynamic `<component :is>` is consumed by
+            // resolveDynamicComponent, not emitted as a prop. Skipping it here
+            // keeps a lone `v-bind="obj"` on the same element on the
+            // normalizeProps(guardReactiveProps()) fast path instead of forcing
+            // mergeProps (matching @vue/compiler-dom).
+            if visible {
+                scan.observe_other_prop(prop);
+            }
+
             match prop {
                 PropNode::Attribute(attr) => {
                     if attr.name == "class" {
                         if scan.static_class.is_none() {
                             scan.static_class = attr.value.as_ref().map(|v| v.content.as_str());
+                            scan.static_class_index = Some(index);
                         }
                         if visible {
                             scan.visible_class_attrs += 1;
@@ -114,6 +133,7 @@ impl<'props> PropsScan<'props> {
                     } else if attr.name == "style" {
                         if scan.static_style.is_none() {
                             scan.static_style = attr.value.as_ref().map(|v| v.content.as_str());
+                            scan.static_style_index = Some(index);
                         }
                         if visible {
                             scan.visible_style_attrs += 1;
@@ -125,6 +145,20 @@ impl<'props> PropsScan<'props> {
                     }
                 }
                 PropNode::Directive(dir) => {
+                    // Record source ordering of the first dynamic :class/:style
+                    // relative to the static class/style attribute.
+                    if let Some(ExpressionNode::Simple(exp)) = &dir.arg
+                        && dir.name == "bind"
+                        && exp.is_static
+                    {
+                        if exp.content == "class" && !scan.has_dynamic_class {
+                            scan.static_class_before_dynamic =
+                                scan.static_class_index.is_some_and(|i| i < index);
+                        } else if exp.content == "style" && !scan.has_dynamic_style {
+                            scan.static_style_before_dynamic =
+                                scan.static_style_index.is_some_and(|i| i < index);
+                        }
+                    }
                     scan.observe_directive(ctx, dir);
                     if visible && is_supported_directive(dir) {
                         scan.visible_prop_count += 1;

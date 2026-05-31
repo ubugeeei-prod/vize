@@ -238,6 +238,14 @@ impl<'a> Parser<'a> {
             return;
         }
 
+        // The `.foo` shorthand is equivalent to `v-bind:foo.prop`: detect it
+        // before `raw_name` is moved so we can synthesize a `prop` modifier.
+        let dot_shorthand_prop = dir.raw_name.starts_with('.')
+            && !dir
+                .modifiers
+                .iter()
+                .any(|(content, _, _)| content == "prop");
+
         let mut dir_node = DirectiveNode::new(self.allocator, dir.name.clone(), loc);
         dir_node.raw_name = Some(dir.raw_name);
 
@@ -262,6 +270,15 @@ impl<'a> Parser<'a> {
             }
             let arg_boxed = Box::new_in(arg_expr, self.allocator);
             dir_node.arg = Some(ExpressionNode::Simple(arg_boxed));
+        }
+
+        // The `.foo` shorthand is equivalent to `v-bind:foo.prop`: synthesize
+        // a leading `prop` modifier so codegen treats it as a DOM property bind.
+        // (Vue's parser injects this modifier for the dot shorthand.)
+        if dot_shorthand_prop {
+            let mod_loc = self.create_loc(dir.name_start, dir.name_start + 1);
+            let mod_expr = SimpleExpressionNode::new("prop", true, mod_loc);
+            dir_node.modifiers.push(mod_expr);
         }
 
         // Add modifiers

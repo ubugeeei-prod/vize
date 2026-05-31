@@ -8,7 +8,7 @@ use crate::ast::{DirectiveNode, ElementNode, ExpressionNode, IfBranchNode, PropN
 use super::super::{
     context::CodegenContext,
     helpers::{camelize, capitalize_first, escape_js_string, is_valid_js_identifier},
-    props::{generate_directive_prop_with_static, is_supported_directive},
+    props::{StaticMerge, generate_directive_prop_with_static, is_supported_directive},
 };
 use super::generate_if_branch_key;
 use vize_carton::FxHashSet;
@@ -49,26 +49,9 @@ pub(super) fn should_skip_prop_for_if(
     }
 }
 
-/// Extract static class and style values from element props.
-pub(super) fn extract_static_class_style<'a>(
-    el: &'a ElementNode<'_>,
-) -> (Option<&'a str>, Option<&'a str>) {
-    let mut static_class = None;
-    let mut static_style = None;
-    for prop in el.props.iter() {
-        if let PropNode::Attribute(attr) = prop {
-            if attr.name == "class" {
-                if let Some(val) = &attr.value {
-                    static_class = Some(val.content.as_str());
-                }
-            } else if attr.name == "style"
-                && let Some(val) = &attr.value
-            {
-                static_style = Some(val.content.as_str());
-            }
-        }
-    }
-    (static_class, static_style)
+/// Extract static class/style values and their source ordering from props.
+pub(super) fn extract_static_class_style<'a>(el: &'a ElementNode<'_>) -> StaticMerge<'a> {
+    StaticMerge::from_props(&el.props)
 }
 
 /// Check if element has dynamic `:class` binding.
@@ -101,8 +84,7 @@ pub(super) fn has_dynamic_style(el: &ElementNode<'_>) -> bool {
 pub(super) fn generate_single_prop_for_if(
     ctx: &mut CodegenContext,
     prop: &PropNode<'_>,
-    static_class: Option<&str>,
-    static_style: Option<&str>,
+    static_merge: StaticMerge<'_>,
 ) {
     match prop {
         PropNode::Attribute(attr) => {
@@ -157,7 +139,7 @@ pub(super) fn generate_single_prop_for_if(
             }
         }
         PropNode::Directive(dir) => {
-            generate_directive_prop_with_static(ctx, dir, static_class, static_style);
+            generate_directive_prop_with_static(ctx, dir, static_merge);
         }
     }
 }
@@ -169,8 +151,7 @@ pub(super) fn generate_if_branch_props_object(
     el: &ElementNode<'_>,
     branch: &IfBranchNode<'_>,
     branch_index: usize,
-    static_class: Option<&str>,
-    static_style: Option<&str>,
+    static_merge: StaticMerge<'_>,
     has_dynamic_class: bool,
     has_dynamic_style: bool,
 ) {
@@ -236,7 +217,7 @@ pub(super) fn generate_if_branch_props_object(
         }
         ctx.push(",");
         ctx.newline();
-        generate_single_prop_for_if(ctx, prop, static_class, static_style);
+        generate_single_prop_for_if(ctx, prop, static_merge);
     }
 
     // Add scope_id for scoped CSS

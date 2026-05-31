@@ -36,6 +36,11 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
+declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
+declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
+declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
+declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly [item: T, key: number, index: number][];
+declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];
 import { ref } from 'vue'
 interface Item {
   id: number
@@ -73,7 +78,7 @@ function __setup() {
   
   const items = ref<Item[]>([])
   
-  // @vize-map: 4264:4308 -> 0:106
+  // @vize-map: 4884:4928 -> 0:106
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)
@@ -93,7 +98,7 @@ function __setup() {
 
 
   // v-for scope: { id, name } in items
-  (items).forEach(({ id, name }: typeof items[number]) => {
+  __vForList(items).forEach(([{ id, name }]) => {
     void id;
     void name;
     void (id); // VBind

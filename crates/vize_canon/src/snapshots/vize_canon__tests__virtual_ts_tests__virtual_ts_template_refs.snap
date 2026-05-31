@@ -36,6 +36,11 @@ type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D extends __WithDefaultsArgs<T>> = Omit<T, keyof D> & { [K in keyof D & keyof T]-?: T[K] };
 type __Ref<T> = import('vue').Ref<T>;
 type __ShallowRef<T> = import('vue').ShallowRef<T>;
+declare function __vForList<T>(source: readonly T[] | undefined | null): readonly [item: T, key: number, index: number][];
+declare function __vForList(source: number | undefined | null): readonly [item: number, key: number, index: number][];
+declare function __vForList(source: string | undefined | null): readonly [item: string, key: number, index: number][];
+declare function __vForList<T>(source: Iterable<T> | undefined | null): readonly [item: T, key: number, index: number][];
+declare function __vForList<T extends object>(source: T | undefined | null): readonly [item: T[keyof T], key: keyof T, index: number][];
 import { ref, useTemplateRef } from 'vue'
 // Prevent TS6133 for imports shadowed by setup-scope compiler macros
 void useTemplateRef;
@@ -71,7 +76,7 @@ function __setup() {
   const inputRef = ref<HTMLInputElement | null>(null)
   const buttonEl = useTemplateRef('btn')
   
-  // @vize-map: 4324:4428 -> 0:135
+  // @vize-map: 4944:5048 -> 0:135
 
   // ========== Template Scope (inherits from setup) ==========
   // Ref type captures (before template scope shadows them)

@@ -432,3 +432,204 @@ import { openBlock as _openBlock, createElementBlock as _createElementBlock } fr
 export function render(_ctx, _cache) {
   return (_openBlock(), _createElementBlock("input", { readonly: _ctx.isReadonly }, null, 8 /* PROPS */, ["readonly"]))
 }
+===
+name: dot-prop shorthand
+options: vdom
+--- INPUT ---
+<div .foo="val"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { ".foo": _ctx.val }, null, 40 /* PROPS, NEED_HYDRATION */, [".foo"]))
+}
+===
+name: dot-prop shorthand with valid identifier key
+options: vdom
+--- INPUT ---
+<div .fooBar="val"></div>
+--- OUTPUT ---
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", { ".fooBar": _ctx.val }, null, 40 /* PROPS, NEED_HYDRATION */, [".fooBar"]))
+}
+===
+name: v-bind dynamic arg with .prop
+options: vdom
+--- INPUT ---
+<div :[key].prop="val"></div>
+--- OUTPUT ---
+import { normalizeProps as _normalizeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _normalizeProps({ [`.${_ctx.key || ""}`]: _ctx.val }), null, 48 /* FULL_PROPS, NEED_HYDRATION */))
+}
+===
+name: v-bind dynamic arg with .camel
+options: vdom
+--- INPUT ---
+<div :[key].camel="val"></div>
+--- OUTPUT ---
+import { camelize as _camelize, normalizeProps as _normalizeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _normalizeProps({ [_camelize(_ctx.key || "")]: _ctx.val }), null, 16 /* FULL_PROPS */))
+}
+===
+name: v-bind dynamic arg with .attr
+options: vdom
+--- INPUT ---
+<div :[key].attr="val"></div>
+--- OUTPUT ---
+import { normalizeProps as _normalizeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _normalizeProps({ [`^${_ctx.key || ""}`]: _ctx.val }), null, 16 /* FULL_PROPS */))
+}
+===
+name: v-bind dynamic arg plain
+options: vdom
+--- INPUT ---
+<div :[key]="val"></div>
+--- OUTPUT ---
+import { normalizeProps as _normalizeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _normalizeProps({ [_ctx.key || ""]: _ctx.val }), null, 16 /* FULL_PROPS */))
+}
+===
+name: dynamic class before static class
+options: vdom
+--- INPUT ---
+<div :class="a" class="b"></div>
+--- OUTPUT ---
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass([_ctx.a, "b"])
+  }, null, 2 /* CLASS */))
+}
+===
+name: static class before dynamic class
+options: vdom
+--- INPUT ---
+<div class="b" :class="a"></div>
+--- OUTPUT ---
+import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass(["b", _ctx.a])
+  }, null, 2 /* CLASS */))
+}
+===
+name: dynamic style before static style
+options: vdom
+--- INPUT ---
+<div :style="s" style="color:red"></div>
+--- OUTPUT ---
+import { normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    style: _normalizeStyle([_ctx.s, {"color":"red"}])
+  }, null, 4 /* STYLE */))
+}
+===
+name: static style before dynamic style
+options: vdom
+--- INPUT ---
+<div style="color:red" :style="s"></div>
+--- OUTPUT ---
+import { normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    style: _normalizeStyle([{"color":"red"}, _ctx.s])
+  }, null, 4 /* STYLE */))
+}
+===
+name: mixed class and style merge order
+options: vdom
+--- INPUT ---
+<div class="b" :class="a" :style="s" style="x:1"></div>
+--- OUTPUT ---
+import { normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", {
+    class: _normalizeClass(["b", _ctx.a]),
+    style: _normalizeStyle([_ctx.s, {"x":"1"}])
+  }, null, 6 /* CLASS, STYLE */))
+}
+===
+name: static class after v-bind spread
+options: vdom
+--- INPUT ---
+<div v-bind="obj" class="a"></div>
+--- OUTPUT ---
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps(_ctx.obj, { class: "a" }), null, 16 /* FULL_PROPS */))
+}
+===
+name: static class before v-bind spread
+options: vdom
+--- INPUT ---
+<div class="a" v-bind="obj"></div>
+--- OUTPUT ---
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ class: "a" }, _ctx.obj), null, 16 /* FULL_PROPS */))
+}
+===
+name: static and dynamic props around v-bind spread
+options: vdom
+--- INPUT ---
+<div id="x" v-bind="obj" :title="t"></div>
+--- OUTPUT ---
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ id: "x" }, _ctx.obj, { title: _ctx.t }), null, 16 /* FULL_PROPS */, ["title"]))
+}
+===
+name: static props before and after v-bind spread
+options: vdom
+--- INPUT ---
+<div id="x" :title="t" v-bind="obj"></div>
+--- OUTPUT ---
+import { mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({
+    id: "x",
+    title: _ctx.t
+  }, _ctx.obj), null, 16 /* FULL_PROPS */, ["title"]))
+}
+===
+name: v-on spread before handler
+options: vdom
+--- INPUT ---
+<div v-on="handlers" @click="fn"></div>
+--- OUTPUT ---
+import { toHandlers as _toHandlers, mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps(_toHandlers(_ctx.handlers, true), { onClick: _ctx.fn }), null, 16 /* FULL_PROPS */, ["onClick"]))
+}
+===
+name: handler before v-on spread
+options: vdom
+--- INPUT ---
+<div @click="fn" v-on="handlers"></div>
+--- OUTPUT ---
+import { toHandlers as _toHandlers, mergeProps as _mergeProps, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", _mergeProps({ onClick: _ctx.fn }, _toHandlers(_ctx.handlers, true)), null, 16 /* FULL_PROPS */, ["onClick"]))
+}

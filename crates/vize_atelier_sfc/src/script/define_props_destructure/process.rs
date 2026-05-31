@@ -3,7 +3,7 @@
 //! Extracts destructured prop bindings from an `ObjectPattern` AST node,
 //! handling aliases, defaults, and rest spread patterns.
 
-use oxc_ast::ast::{BindingPattern, ObjectPattern};
+use oxc_ast::ast::{BindingPattern, Expression, ObjectPattern};
 use oxc_span::GetSpan;
 use vize_carton::FxHashMap;
 
@@ -36,12 +36,16 @@ pub fn process_props_destructure(
                         let local = id.name.to_compact_string();
                         let default_expr = &source
                             [assign.right.span().start as usize..assign.right.span().end as usize];
+                        let (needs_factory, skip_factory) = classify_default_value(&assign.right);
 
+                        result.keys.push(key.clone());
                         result.bindings.insert(
                             key.clone(),
                             PropsDestructureBinding {
                                 local: local.clone(),
                                 default: Some(default_expr.to_compact_string()),
+                                default_needs_factory: needs_factory,
+                                default_skip_factory: skip_factory,
                             },
                         );
 
@@ -59,11 +63,14 @@ pub fn process_props_destructure(
                 BindingPattern::BindingIdentifier(id) => {
                     let local = id.name.to_compact_string();
 
+                    result.keys.push(key.clone());
                     result.bindings.insert(
                         key.clone(),
                         PropsDestructureBinding {
                             local: local.clone(),
                             default: None,
+                            default_needs_factory: false,
+                            default_skip_factory: false,
                         },
                     );
 
@@ -93,6 +100,48 @@ pub fn process_props_destructure(
     }
 
     (result, binding_metadata, props_aliases)
+}
+
+/// Unwrap TS-only wrapper expressions (`x as T`, `x satisfies T`, `<T>x`, `x!`,
+/// `(x)`) to reach the underlying value expression.
+fn unwrap_ts_node<'a, 'b>(expr: &'b Expression<'a>) -> &'b Expression<'a> {
+    match expr {
+        Expression::TSAsExpression(e) => unwrap_ts_node(&e.expression),
+        Expression::TSSatisfiesExpression(e) => unwrap_ts_node(&e.expression),
+        Expression::TSNonNullExpression(e) => unwrap_ts_node(&e.expression),
+        Expression::TSTypeAssertion(e) => unwrap_ts_node(&e.expression),
+        Expression::ParenthesizedExpression(e) => unwrap_ts_node(&e.expression),
+        other => other,
+    }
+}
+
+/// Classify a runtime destructure default value, mirroring Vue's
+/// `genDestructuredDefaultValue` for the runtime (non-typed) declaration path.
+///
+/// Returns `(needs_factory, skip_factory)`:
+/// - `skip_factory`: default is a function or bare identifier -> emit
+///   `__skip_<key>: true`, do not factory-wrap.
+/// - `needs_factory`: default is a non-literal, non-function, non-identifier
+///   expression -> wrap as `() => (...)`.
+fn classify_default_value(expr: &Expression<'_>) -> (bool, bool) {
+    let unwrapped = unwrap_ts_node(expr);
+    let is_function = matches!(
+        unwrapped,
+        Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
+    );
+    let is_identifier = matches!(unwrapped, Expression::Identifier(_));
+    let is_literal = matches!(
+        unwrapped,
+        Expression::NumericLiteral(_)
+            | Expression::StringLiteral(_)
+            | Expression::BooleanLiteral(_)
+            | Expression::NullLiteral(_)
+            | Expression::BigIntLiteral(_)
+            | Expression::RegExpLiteral(_)
+    );
+    let skip_factory = is_function || is_identifier;
+    let needs_factory = !skip_factory && !is_literal;
+    (needs_factory, skip_factory)
 }
 
 /// Resolve object key to string

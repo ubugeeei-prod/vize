@@ -27,26 +27,40 @@ pub(super) fn emit_component_definition(
     let has_options = ctx.macros.define_options.is_some();
 
     // Setup function - include destructured args based on macros used
-    let has_emit = ctx.macros.define_emits.is_some();
     let has_emit_binding = ctx
         .macros
         .define_emits
         .as_ref()
         .is_some_and(|emits| emits.binding_name.is_some());
+    // The `emit` setup-context destructure is only injected when there is an emit
+    // binding (`const emit = defineEmits(...)`) or when `$emit` is actually
+    // referenced by the inline render fn. A bare `defineEmits([...])` whose `$emit`
+    // is never used does not add an `emit` parameter (matches @vue/compiler-sfc).
+    let has_emit = ctx.macros.define_emits.is_some()
+        && (has_emit_binding || render_uses_dollar_emit(template));
     let has_expose = ctx.macros.define_expose.is_some();
 
     if let (true, Some(define_options)) = (has_options, ctx.macros.define_options.as_ref()) {
-        // Use Object.assign for defineOptions
+        let options_args = define_options.args.trim();
         if is_vapor {
+            // Vapor wraps the merged options with Object.assign inside the helper.
             output.extend_from_slice(
                 b"export default /*@__PURE__*/_defineVaporComponent(Object.assign(",
             );
+            output.extend_from_slice(options_args.as_bytes());
+            output.extend_from_slice(b", {\n");
+        } else if is_ts {
+            // TypeScript: spread the options into the _defineComponent call,
+            // matching @vue/compiler-sfc (`_defineComponent({ ...{ … }, __name, … })`).
+            output.extend_from_slice(b"export default /*@__PURE__*/_defineComponent({\n  ...");
+            output.extend_from_slice(options_args.as_bytes());
+            output.extend_from_slice(b",\n");
         } else {
+            // JavaScript: Object.assign the options onto the setup component.
             output.extend_from_slice(b"export default /*@__PURE__*/Object.assign(");
+            output.extend_from_slice(options_args.as_bytes());
+            output.extend_from_slice(b", {\n");
         }
-        let options_args = define_options.args.trim();
-        output.extend_from_slice(options_args.as_bytes());
-        output.extend_from_slice(b", {\n");
     } else if has_default_export {
         // Normal script has export default that was rewritten to __default__
         // Use Object.assign to merge with setup component
@@ -145,4 +159,27 @@ pub(super) fn emit_component_definition(
     }
 
     ComponentState { has_options }
+}
+
+/// Returns true if the inline render code references the `$emit` identifier.
+fn render_uses_dollar_emit(template: &TemplateParts<'_>) -> bool {
+    contains_identifier(template.render_body, "$emit")
+        || contains_identifier(template.preamble, "$emit")
+        || contains_identifier(template.render_fn, "$emit")
+}
+
+/// Substring search that requires the match to be a standalone identifier
+/// (not part of a longer identifier such as `$emitFoo`). The `$` prefix already
+/// guards the left boundary, so only the right boundary needs checking.
+fn contains_identifier(haystack: &str, needle: &str) -> bool {
+    let mut start = 0;
+    while let Some(pos) = haystack[start..].find(needle) {
+        let abs = start + pos;
+        let after = haystack[abs + needle.len()..].chars().next();
+        if after.is_none_or(|c| !(c.is_alphanumeric() || c == '_' || c == '$')) {
+            return true;
+        }
+        start = abs + needle.len();
+    }
+    false
 }

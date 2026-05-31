@@ -6,10 +6,11 @@ import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
 
 
-export default /*@__PURE__*/Object.assign({
+export default /*@__PURE__*/_defineComponent({
+  ...{
   name: 'MyComponent',
   inheritAttrs: false
-}, {
+},
   __name: 'test',
   setup(__props) {
 

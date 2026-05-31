@@ -3,9 +3,78 @@
 use crate::ast::{DirectiveNode, ExpressionNode, PropNode, RuntimeHelper};
 
 use super::super::{
-    context::CodegenContext, expression::generate_event_handler, helpers::camelize,
+    context::CodegenContext,
+    expression::generate_event_handler,
+    helpers::{camelize, capitalize_first},
 };
 use vize_carton::String;
+
+/// Compute the prop key for a static v-on event, mirroring Vue's
+/// `transforms/vOn.ts` casing rules.
+///
+/// * `raw` is the static event argument (e.g. `click`, `foo-bar`, `vue:mounted`).
+/// * `is_plain_element` distinguishes native elements from components/slots.
+/// * `option_modifiers` are the `capture`/`once`/`passive` modifiers appended
+///   (capitalized) to the resulting key when `with_option_modifiers` is set.
+pub fn von_event_key_for(
+    raw: &str,
+    is_plain_element: bool,
+    modifiers: impl Iterator<Item = impl AsRef<str>>,
+) -> String {
+    // `@click.right` -> contextmenu, `@click.middle` -> mouseup. Detect first.
+    let mut has_right = false;
+    let mut has_middle = false;
+    let mut option_modifiers: Vec<&'static str> = Vec::new();
+    let collected: Vec<String> = modifiers.map(|m| m.as_ref().into()).collect();
+    for m in &collected {
+        match m.as_str() {
+            "right" => has_right = true,
+            "middle" => has_middle = true,
+            "capture" => option_modifiers.push("capture"),
+            "once" => option_modifiers.push("once"),
+            "passive" => option_modifiers.push("passive"),
+            _ => {}
+        }
+    }
+
+    let mut raw_name = raw;
+    if raw_name == "click" && has_right {
+        raw_name = "contextmenu";
+    } else if raw_name == "click" && has_middle {
+        raw_name = "mouseup";
+    }
+
+    // `vue:mounted` -> `vnode-mounted`
+    let vnode_owned: String;
+    if let Some(rest) = raw_name.strip_prefix("vue:") {
+        let mut s = String::with_capacity(rest.len() + 6);
+        s.push_str("vnode-");
+        s.push_str(rest);
+        vnode_owned = s;
+        raw_name = &vnode_owned;
+    }
+
+    let mut name = if !is_plain_element
+        || raw_name.starts_with("vnode")
+        || !raw_name.chars().any(|c| c.is_ascii_uppercase())
+    {
+        let camelized = camelize(raw_name);
+        let mut n = String::with_capacity(camelized.len() + 2);
+        n.push_str("on");
+        n.push_str(&capitalize_first(&camelized));
+        n
+    } else {
+        let mut n = String::with_capacity(raw_name.len() + 3);
+        n.push_str("on:");
+        n.push_str(raw_name);
+        n
+    };
+
+    for opt in &option_modifiers {
+        name.push_str(&capitalize_first(opt));
+    }
+    name
+}
 
 /// Get the event key for a v-on directive (e.g., "onClick", "onKeyupEnter")
 pub(super) fn get_von_event_key(dir: &DirectiveNode<'_>) -> Option<String> {

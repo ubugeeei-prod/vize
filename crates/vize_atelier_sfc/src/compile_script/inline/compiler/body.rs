@@ -35,6 +35,7 @@ pub(super) fn compile_script_setup_inline_body(
     preserved_normal_script: Option<String>,
     needs_merge_defaults: bool,
     has_define_model: bool,
+    needs_merge_models: bool,
     has_define_slots: bool,
     needs_vapor_setup_context: bool,
     vapor_render_alias: Option<String>,
@@ -50,6 +51,7 @@ pub(super) fn compile_script_setup_inline_body(
         preserved_normal_script.as_ref(),
         needs_merge_defaults,
         has_define_model,
+        needs_merge_models,
         has_define_slots,
         has_css_vars,
         needs_vapor_setup_context,
@@ -64,7 +66,7 @@ pub(super) fn compile_script_setup_inline_body(
         build_props_emits(&ctx, is_ts, needs_prop_type, needs_merge_defaults)
     );
 
-    let model_infos: Vec<(String, String, Option<String>)> = profile!(
+    let model_infos: Vec<(String, String, Option<String>, Option<String>)> = profile!(
         "atelier.script_inline.collect_model_infos",
         collect_model_infos(&ctx)
     );
@@ -162,7 +164,7 @@ pub(super) fn compile_script_setup_inline_body(
         let mut code = output_str;
         if is_ts {
             code = code.replace("$event => (", "($event: any) => (");
-            code = code.replace("$event => { ", "($event: any) => { ");
+            code = code.replace("$event => {", "($event: any) => {");
         }
         code.into()
     } else {

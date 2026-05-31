@@ -108,6 +108,11 @@ pub struct Analyzer {
     pub(crate) script_analyzed: bool,
     /// Current v-if guard stack (for type narrowing in templates)
     pub(crate) vif_guard_stack: Vec<CompactString>,
+    /// Conditions of the preceding `v-if` / `v-else-if` siblings in the current
+    /// sibling group. Used to build the negated guard for a flat `v-else` /
+    /// `v-else-if` element when the parser keeps branches as sibling elements
+    /// (rather than grouping them into an `IfNode`).
+    pub(crate) vif_branch_conditions: Vec<CompactString>,
 }
 
 impl Analyzer {
@@ -126,6 +131,7 @@ impl Analyzer {
             summary: Croquis::new(),
             script_analyzed: false,
             vif_guard_stack: Vec::new(),
+            vif_branch_conditions: Vec::new(),
         }
     }
 
@@ -141,6 +147,7 @@ impl Analyzer {
             summary,
             script_analyzed,
             vif_guard_stack: Vec::new(),
+            vif_branch_conditions: Vec::new(),
         }
     }
 

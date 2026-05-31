@@ -4,6 +4,7 @@
 //! Can connect to a running check-server via Unix socket for faster repeated checks.
 
 mod dts;
+mod imports;
 mod nuxt;
 mod reporting;
 mod runner;

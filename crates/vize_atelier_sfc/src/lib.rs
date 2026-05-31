@@ -162,8 +162,10 @@ function onClick() {
 "#;
         let descriptor = parse_sfc(source, Default::default()).unwrap();
         let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+        // `@vue/compiler-sfc` keeps the defineEmits runtime argument verbatim
+        // (single quotes from source), it does not re-serialize to double quotes.
         assert!(
-            result.code.contains(r#"emits: ["update"]"#),
+            result.code.contains(r#"emits: ['update']"#),
             "unexpected code:\n{}",
             result.code
         );

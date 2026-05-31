@@ -19,6 +19,7 @@ pub(super) fn emit_preamble(
     preserved_normal_script: Option<&String>,
     needs_merge_defaults: bool,
     has_define_model: bool,
+    needs_merge_models: bool,
     has_define_slots: bool,
     has_css_vars: bool,
     needs_vapor_setup_context: bool,
@@ -37,9 +38,16 @@ pub(super) fn emit_preamble(
         output.extend_from_slice(b"import { useSlots as _useSlots } from 'vue'\n");
     }
 
-    // useModel import if defineModel was used
+    // useModel import if defineModel was used; mergeModels is added on the same
+    // import line when defineModel coexists with defineProps/defineEmits.
     if has_define_model {
-        output.extend_from_slice(b"import { useModel as _useModel } from 'vue'\n");
+        if needs_merge_models {
+            output.extend_from_slice(
+                b"import { useModel as _useModel, mergeModels as _mergeModels } from 'vue'\n",
+            );
+        } else {
+            output.extend_from_slice(b"import { useModel as _useModel } from 'vue'\n");
+        }
     }
 
     // useCssVars import if style has v-bind()

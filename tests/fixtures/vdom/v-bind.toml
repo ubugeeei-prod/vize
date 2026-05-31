@@ -177,3 +177,83 @@ input = '<input :disabled="count > 0">'
 [[cases]]
 name = "boolean readonly"
 input = '<input :readonly="isReadonly">'
+
+# =============================================================================
+# .prop shorthand and modifiers on dynamic args
+# =============================================================================
+
+[[cases]]
+name = "dot-prop shorthand"
+input = '<div .foo="val"></div>'
+
+[[cases]]
+name = "dot-prop shorthand with valid identifier key"
+input = '<div .fooBar="val"></div>'
+
+[[cases]]
+name = "v-bind dynamic arg with .prop"
+input = '<div :[key].prop="val"></div>'
+
+[[cases]]
+name = "v-bind dynamic arg with .camel"
+input = '<div :[key].camel="val"></div>'
+
+[[cases]]
+name = "v-bind dynamic arg with .attr"
+input = '<div :[key].attr="val"></div>'
+
+[[cases]]
+name = "v-bind dynamic arg plain"
+input = '<div :[key]="val"></div>'
+
+# =============================================================================
+# Static/dynamic class & style merge order (source order preserved)
+# =============================================================================
+
+[[cases]]
+name = "dynamic class before static class"
+input = '<div :class="a" class="b"></div>'
+
+[[cases]]
+name = "static class before dynamic class"
+input = '<div class="b" :class="a"></div>'
+
+[[cases]]
+name = "dynamic style before static style"
+input = '<div :style="s" style="color:red"></div>'
+
+[[cases]]
+name = "static style before dynamic style"
+input = '<div style="color:red" :style="s"></div>'
+
+[[cases]]
+name = "mixed class and style merge order"
+input = '<div class="b" :class="a" :style="s" style="x:1"></div>'
+
+# =============================================================================
+# mergeProps source-order preservation (static prop before/after v-bind spread)
+# =============================================================================
+
+[[cases]]
+name = "static class after v-bind spread"
+input = '<div v-bind="obj" class="a"></div>'
+
+[[cases]]
+name = "static class before v-bind spread"
+input = '<div class="a" v-bind="obj"></div>'
+
+[[cases]]
+name = "static and dynamic props around v-bind spread"
+input = '<div id="x" v-bind="obj" :title="t"></div>'
+
+[[cases]]
+name = "static props before and after v-bind spread"
+input = '<div id="x" :title="t" v-bind="obj"></div>'
+
+[[cases]]
+name = "v-on spread before handler"
+input = '<div v-on="handlers" @click="fn"></div>'
+
+[[cases]]
+name = "handler before v-on spread"
+input = '<div @click="fn" v-on="handlers"></div>'

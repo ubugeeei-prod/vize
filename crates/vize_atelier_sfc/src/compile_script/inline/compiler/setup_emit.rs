@@ -96,7 +96,7 @@ fn transform_css_var_expression(
 pub(super) fn emit_setup_body(
     output: &mut vize_carton::Vec<u8>,
     ctx: &ScriptCompileContext,
-    model_infos: &[(String, String, Option<String>)],
+    model_infos: &[(String, String, Option<String>, Option<String>)],
     setup_body_lines: &[String],
     source_is_ts: bool,
     _is_ts: bool,
@@ -123,12 +123,23 @@ pub(super) fn emit_setup_body(
         output.extend_from_slice(b" = __props\n");
     }
 
-    // Model bindings: const model = _useModel(__props, 'modelValue')
+    // Model bindings: const model = _useModel<T>(__props, 'modelValue')
     if !model_infos.is_empty() {
-        for (model_name, binding_name, _) in model_infos {
+        for (model_name, binding_name, _, type_arg) in model_infos {
             output.extend_from_slice(b"const ");
             output.extend_from_slice(binding_name.as_bytes());
-            output.extend_from_slice(b" = _useModel(__props, \"");
+            output.extend_from_slice(b" = _useModel");
+            // Thread an explicit `<T>` type argument through to `useModel` so the
+            // model ref's type matches @vue/compiler-sfc in TypeScript output.
+            if source_is_ts
+                && let Some(type_arg) = type_arg.as_deref().map(str::trim)
+                && !type_arg.is_empty()
+            {
+                output.push(b'<');
+                output.extend_from_slice(type_arg.as_bytes());
+                output.push(b'>');
+            }
+            output.extend_from_slice(b"(__props, \"");
             output.extend_from_slice(model_name.as_bytes());
             output.extend_from_slice(b"\")\n");
         }

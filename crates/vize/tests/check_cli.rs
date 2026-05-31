@@ -120,6 +120,140 @@ void props
 }
 
 #[test]
+fn check_vfor_over_object_types_key_as_keyof_not_number() {
+    // Regression for vuejs/language-tools#5978 (#767): iterating an object with
+    // `v-for="(value, key) in obj"` must type `value` as `T[keyof T]` and `key`
+    // as `keyof T`. Vize used to emit `(obj).forEach((value: typeof obj[number],
+    // key: number) => ...)`, which raised a spurious "forEach does not exist on
+    // object" error and mis-typed `key` as `number`. vue-tsc reports zero
+    // diagnostics here.
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "vfor-object-key",
+        &[(
+            "src/VForObject.vue",
+            r#"<script setup lang="ts">
+const obj: { foo: number; bar: number } = { foo: 1, bar: 2 }
+function wantValue(n: number) { return n }
+function wantKey(k: 'foo' | 'bar') { return k }
+</script>
+
+<template>
+  <div v-for="(value, key) in obj">{{ wantValue(value) }} {{ wantKey(key) }}</div>
+</template>
+"#,
+        )],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/VForObject.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        json["errorCount"], 0,
+        "object v-for should type value as T[keyof T] and key as keyof T; stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_subset_resolves_relative_sibling_types() {
+    // `vize check src/App.vue` only registers App.vue, but its relative import
+    // `./types` must still resolve precisely (issue #766) — the sibling's types
+    // should be pulled into the virtual project rather than degrading to `any`
+    // or surfacing a false TS2307.
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "subset-sibling-types",
+        &[
+            (
+                "src/types.ts",
+                "export interface Sibling {\n  count: number\n}\n",
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import type { Sibling } from './types'
+const value: Sibling = { count: 'not a number' }
+</script>
+
+<template>
+  <div>{{ value.count }}</div>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/App.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    // The cross-file type resolved, so the real assignability error surfaces
+    // (`'not a number'` is not assignable to `count: number`) — and crucially
+    // NOT a `TS2307 Cannot find module './types'`.
+    let diagnostics = json["files"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|file| file["diagnostics"].as_array().cloned().unwrap_or_default())
+        .map(|d| d.as_str().unwrap_or_default().to_string())
+        .collect::<Vec<_>>();
+
+    assert!(
+        diagnostics
+            .iter()
+            .any(|message| message.contains("not assignable")),
+        "expected a cross-file assignability error proving the sibling resolved; got {diagnostics:?}\nstderr:\n{stderr}"
+    );
+    assert!(
+        !diagnostics
+            .iter()
+            .any(|message| message.contains("Cannot find module")),
+        "import './types' should resolve, not degrade to TS2307; got {diagnostics:?}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_options_api_can_import_define_component_from_stubbed_vue() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
@@ -274,6 +408,81 @@ const configs: AliasConfig[] = [{ key: "a", label: "A" }];
 }
 
 #[test]
+fn check_scoped_slot_props_typed_from_child_define_slots() {
+    // #764: a scoped slot on a child component should type its props from the
+    // child's `defineSlots`, so misusing a slot prop raises a real diagnostic
+    // (here `item` is `number`, so `.toUpperCase()` is TS2339) instead of `any`.
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "scoped-slot-prop-types",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineSlots<{ default(props: { item: number }): any }>()
+</script>
+
+<template>
+  <slot :item="1" />
+</template>
+"#,
+            ),
+            (
+                "src/Parent.vue",
+                r#"<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child v-slot="{ item }">{{ item.toUpperCase() }}</Child>
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/Parent.vue",
+            "src/Child.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    let diagnostics = json["files"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .flat_map(|file| file["diagnostics"].as_array().cloned().unwrap_or_default())
+        .map(|d| d.as_str().unwrap_or_default().to_string())
+        .collect::<Vec<_>>();
+
+    assert!(
+        diagnostics
+            .iter()
+            .any(|message| message.contains("toUpperCase") && message.contains("number")),
+        "expected the slot prop `item` to be typed `number` from the child's defineSlots; got {diagnostics:?}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_explicit_file_loads_ambient_declare_global_types() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;
@@ -373,6 +582,66 @@ defineProps<{
         .args([
             "check",
             "src/Generic.vue",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(
+        json["errorCount"], 0,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_v_else_branch_narrows_discriminated_union() {
+    // Regression: a flat `v-if` / `v-else` pair (sibling elements, not grouped
+    // into an `IfNode`) must narrow a discriminated union in the `v-else`
+    // branch. Vize previously gave the else branch no guard, so accessing the
+    // other variant's property raised a spurious TS2339. vue-tsc reports zero
+    // diagnostics for this template.
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "v-else-narrowing",
+        &[(
+            "src/VElse.vue",
+            r#"<script setup lang="ts">
+type U = { kind: 'a'; x: number } | { kind: 'b'; y: string }
+const props = defineProps<{ data: U }>()
+</script>
+
+<template>
+  <div v-if="props.data.kind === 'a'">{{ props.data.x }}</div>
+  <div v-else>{{ props.data.y }}</div>
+</template>
+"#,
+        )],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src/VElse.vue",
             "--tsconfig",
             "tsconfig.json",
             "--format",

@@ -17,7 +17,7 @@ use vize_canon::{
     batch::TypeChecker as BatchTypeCheckerTrait,
 };
 use vize_carton::{
-    String, cstr, profile,
+    FxHashSet, String, cstr, profile,
     profiler::{allocation_snapshot, global_profiler},
 };
 
@@ -99,6 +99,22 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let collect_time = collect_start.elapsed();
 
+    // For an explicit subset, only the requested files' diagnostics are
+    // reported: ambient `.d.ts` and transitively-registered relative imports are
+    // pulled into the program solely so cross-file types resolve, not to surface
+    // diagnostics for files the user did not ask about. `None` reports every
+    // registered file (the default full-project run).
+    let reported_files: Option<FxHashSet<PathBuf>> = if args.patterns.is_empty() {
+        None
+    } else {
+        Some(
+            files
+                .iter()
+                .map(|path| path.canonicalize().unwrap_or_else(|_| path.clone()))
+                .collect(),
+        )
+    };
+
     if files.is_empty() {
         eprintln!(
             "No Vue or TypeScript files found matching inputs: {:?}",
@@ -117,6 +133,21 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     // tsconfig program's `.d.ts` files back in so global types stay in scope.
     if !args.patterns.is_empty() && tsconfig_path.is_some() {
         for path in collect_ambient_declaration_files(&project_root, tsconfig_path.as_deref()) {
+            if !files.contains(&path) {
+                files.push(path);
+            }
+        }
+        files.sort();
+        files.dedup();
+    }
+
+    // An explicit subset only registers the requested files, so a relative
+    // import (`import { Foo } from './types'`) cannot see its sibling's real
+    // types and degrades to `any`. Register the transitive closure of relative
+    // source imports — analogous to the ambient pull-in above — so cross-file
+    // types resolve precisely, the way tsc/vue-tsc load the reachable program.
+    if !args.patterns.is_empty() {
+        for path in super::imports::collect_transitive_local_imports(&files, &cwd) {
             if !files.contains(&path) {
                 files.push(path);
             }
@@ -222,11 +253,36 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let emit_time = emit_start.elapsed();
     let diagnostics_render_start = Instant::now();
-    let diagnostics = render_diagnostics(&result.diagnostics);
+    // Restrict diagnostics to the requested files for an explicit subset; the
+    // ambient/transitive files were registered only to resolve cross-file types.
+    let reported_raw: std::borrow::Cow<'_, [vize_canon::BatchDiagnostic]> = match &reported_files {
+        None => std::borrow::Cow::Borrowed(result.diagnostics.as_slice()),
+        Some(set) => std::borrow::Cow::Owned(
+            result
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| {
+                    let canonical = diagnostic
+                        .file
+                        .canonicalize()
+                        .unwrap_or_else(|_| diagnostic.file.clone());
+                    set.contains(&canonical)
+                })
+                .cloned()
+                .collect(),
+        ),
+    };
+    let diagnostics = render_diagnostics(&reported_raw);
     let diagnostics_render_time = diagnostics_render_start.elapsed();
     let total_time = start.elapsed();
-    let total_errors = result.error_count();
-    let total_warnings = result.warning_count();
+    let total_errors = reported_raw
+        .iter()
+        .filter(|diagnostic| diagnostic.severity == 1)
+        .count();
+    let total_warnings = reported_raw
+        .iter()
+        .filter(|diagnostic| diagnostic.severity == 2)
+        .count();
 
     if args.profile {
         let profiler = global_profiler();
@@ -323,6 +379,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     if args.format == "json" {
         let mut files_json: Vec<JsonFileResult> = virtual_files
             .iter()
+            .filter(|file| is_reported(&reported_files, &file.original_path))
             .map(|file| {
                 let key = file.original_path.to_string_lossy().into_owned();
                 JsonFileResult {
@@ -333,6 +390,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             })
             .collect();
         files_json.sort_by(|left, right| left.file.cmp(&right.file));
+        let reported_file_count = files_json.len();
 
         let declarations = emitted_declarations.as_ref().map(|(_, result)| {
             result
@@ -346,7 +404,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             files: files_json,
             error_count: total_errors,
             warning_count: total_warnings,
-            file_count: virtual_files.len(),
+            file_count: reported_file_count,
             declarations,
         };
         match serde_json::to_string_pretty(&json_output) {
@@ -437,6 +495,19 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     {
         eprintln!("\nToo many warnings ({total_warnings} > max {max_warnings})");
         std::process::exit(1);
+    }
+}
+
+/// Whether a registered file's diagnostics should be reported. For an explicit
+/// subset (`reported` is `Some`), only the requested files are reported; ambient
+/// and transitively-registered files exist only to resolve cross-file types.
+fn is_reported(reported: &Option<FxHashSet<PathBuf>>, path: &Path) -> bool {
+    match reported {
+        None => true,
+        Some(set) => {
+            let canonical = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+            set.contains(&canonical)
+        }
     }
 }
 

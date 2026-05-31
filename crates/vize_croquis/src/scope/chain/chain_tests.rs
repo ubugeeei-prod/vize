@@ -98,6 +98,7 @@ fn test_v_slot_scope() {
                 CompactString::new("item"),
                 CompactString::new("index")
             ],
+            component: None,
         },
         0,
         100,
@@ -745,6 +746,7 @@ fn test_snapshot_complex_nested_scopes() {
                 CompactString::new("row"),
                 CompactString::new("col")
             ],
+            component: None,
         },
         250,
         350,
@@ -856,6 +858,7 @@ fn test_snapshot_scope_transitions() {
             name: CompactString::new("default"),
             props_pattern: None,
             prop_names: vize_carton::smallvec![],
+            component: None,
         },
         150,
         250,

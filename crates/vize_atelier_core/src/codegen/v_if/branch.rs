@@ -243,7 +243,7 @@ fn generate_if_branch_component(
     let has_patch_info = patch_flag.is_some() || dynamic_props.is_some();
 
     // Extract static class/style for merging with dynamic bindings
-    let (static_class, static_style) = extract_static_class_style(el);
+    let static_merge = extract_static_class_style(el);
     let has_dyn_class = has_dynamic_class(el);
     let has_dyn_style = has_dynamic_style(el);
 
@@ -299,8 +299,7 @@ fn generate_if_branch_component(
             el,
             branch,
             branch_index,
-            static_class,
-            static_style,
+            static_merge,
             has_dyn_class,
             has_dyn_style,
         );
@@ -312,8 +311,7 @@ fn generate_if_branch_component(
             el,
             branch,
             branch_index,
-            static_class,
-            static_style,
+            static_merge,
             has_dyn_class,
             has_dyn_style,
         );
@@ -420,7 +418,7 @@ fn generate_if_branch_element(
     ctx.push("\"");
 
     // Extract static class/style for merging with dynamic bindings
-    let (static_class, static_style) = extract_static_class_style(el);
+    let static_merge = extract_static_class_style(el);
     let has_dyn_class = has_dynamic_class(el);
     let has_dyn_style = has_dynamic_style(el);
 
@@ -476,8 +474,7 @@ fn generate_if_branch_element(
             el,
             branch,
             branch_index,
-            static_class,
-            static_style,
+            static_merge,
             has_dyn_class,
             has_dyn_style,
         );
@@ -489,8 +486,7 @@ fn generate_if_branch_element(
             el,
             branch,
             branch_index,
-            static_class,
-            static_style,
+            static_merge,
             has_dyn_class,
             has_dyn_style,
         );

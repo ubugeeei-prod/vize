@@ -124,6 +124,11 @@ fn calculate_element_patch_info_inner(
                             if !exp.is_static {
                                 // Dynamic key - FULL_PROPS
                                 flag |= 16;
+                                // .prop modifier requires NEED_HYDRATION even with a
+                                // dynamic argument (e.g. :[key].prop).
+                                if has_prop {
+                                    flag |= 32; // NEED_HYDRATION
+                                }
                             } else {
                                 let key = exp.content.as_str();
                                 match key {
@@ -211,36 +216,16 @@ fn calculate_element_patch_info_inner(
                                     base_event
                                 };
 
-                                // Build event name
-                                let mut event_name = String::with_capacity(2 + actual_event.len());
-                                event_name.push_str("on");
-                                // Capitalize first letter inline
-                                let mut chars = actual_event.chars();
-                                if let Some(c) = chars.next() {
-                                    for uc in c.to_uppercase() {
-                                        event_name.push(uc);
-                                    }
-                                    event_name.push_str(chars.as_str());
-                                }
-
-                                // Check for event option modifiers that affect the event name
-                                for modifier in dir.modifiers.iter() {
-                                    let mod_name = modifier.content.as_str();
-                                    if mod_name == "capture"
-                                        || mod_name == "once"
-                                        || mod_name == "passive"
-                                    {
-                                        let mut cap_mod = String::default();
-                                        let mut chars = mod_name.chars();
-                                        if let Some(c) = chars.next() {
-                                            for uc in c.to_uppercase() {
-                                                cap_mod.push(uc);
-                                            }
-                                            cap_mod.push_str(chars.as_str());
-                                        }
-                                        event_name.push_str(&cap_mod);
-                                    }
-                                }
+                                // Build the dynamic-prop event name using the same
+                                // casing rules as v-on prop codegen so the
+                                // dynamicProps array matches the generated keys.
+                                let on_plain_element =
+                                    el.tag_type == ElementType::Element && dir.raw_name.is_some();
+                                let event_name = super::props::von_event_key_for(
+                                    base_event,
+                                    on_plain_element,
+                                    dir.modifiers.iter().map(|m| m.content.as_str()),
+                                );
 
                                 // Check if the handler references a constant binding
                                 // If so, we don't need PROPS flag since the handler won't change
@@ -278,22 +263,30 @@ fn calculate_element_patch_info_inner(
 
                                 // Events that don't need NEED_HYDRATION:
                                 // - Basic click/dblclick without special modifiers
-                                // - update:* events (v-model internal events)
+                                // - the v-model `onUpdate:modelValue` handler (Vue
+                                //   excludes this exact reserved key only)
                                 // - Component events (non-DOM element events)
-                                // Note: event name can be "update:modelValue" or "Update:modelValue"
-                                let lower_event = base_event.to_lowercase();
-                                let is_vmodel_update = lower_event.starts_with("update:");
-                                let is_simple_click = matches!(actual_event, "click" | "dblclick")
+                                let is_vmodel_update = event_name == "onUpdate:modelValue";
+                                // Vue's hydration fast-path covers `onclick` only
+                                // (not dblclick or other mouse events).
+                                let is_simple_click = actual_event == "click"
                                     && !has_option_modifier
                                     && !has_key_modifier
                                     && !has_right_modifier
                                     && !has_middle_modifier;
                                 let is_component_event = el.tag_type == ElementType::Component;
+                                // onVnodeXXX lifecycle hooks are reserved props and
+                                // never trigger hydration event binding.
+                                let is_vnode_hook = event_name.starts_with("onVnode");
 
                                 // NEED_HYDRATION is needed for non-click/dblclick events
                                 // This tells Vue to properly hydrate event listeners during SSR
                                 // Note: NEED_HYDRATION is added regardless of caching status
-                                if !is_simple_click && !is_vmodel_update && !is_component_event {
+                                if !is_simple_click
+                                    && !is_vmodel_update
+                                    && !is_component_event
+                                    && !is_vnode_hook
+                                {
                                     flag |= 32; // NEED_HYDRATION
                                 }
                             }
@@ -447,6 +440,9 @@ pub fn patch_flag_name(flag: i32) -> String {
     }
     if flag & 1024 != 0 {
         names.push("DYNAMIC_SLOTS");
+    }
+    if flag & 2048 != 0 {
+        names.push("DEV_ROOT_FRAGMENT");
     }
 
     if names.is_empty() {

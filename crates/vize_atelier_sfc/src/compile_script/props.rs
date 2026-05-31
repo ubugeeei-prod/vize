@@ -325,7 +325,7 @@ fn contains_top_level_arrow(s: &str) -> bool {
 }
 
 /// Convert TypeScript type to JavaScript type constructor
-fn ts_type_to_js_type(ts_type: &str) -> String {
+pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
     let ts_type = ts_type.trim();
 
     // Strip `readonly` prefix: `readonly T[]` → `T[]`

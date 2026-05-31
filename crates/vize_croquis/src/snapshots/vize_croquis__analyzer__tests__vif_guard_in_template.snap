@@ -12,7 +12,7 @@ expression: expressions
             0,
         ),
         vif_guard: Some(
-            "todo.description",
+            "(todo.description)",
         ),
     },
     TemplateExpression {

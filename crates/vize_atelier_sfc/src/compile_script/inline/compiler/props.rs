@@ -6,16 +6,48 @@ use super::super::super::props::{
     add_null_to_runtime_type, extract_prop_types_from_type, extract_with_defaults_defaults,
     normalize_destructure_default_value, resolve_prop_js_type,
 };
-use super::{super::type_handling::resolve_type_args, model::collect_model_infos};
+use super::super::type_handling::resolve_type_args;
 
-/// Build props and emits definition buffer from context macros.
+/// Build props definition buffer from context macros.
+///
+/// This emits the full `  props: <decl>,\n` line for the case where there is no
+/// `defineModel` call. When a model is present the runtime props declaration is
+/// produced by [`build_user_props_decl`] and merged with the model props via
+/// `mergeModels` in `model::build_model_props_emits`.
 pub(super) fn build_props_emits(
     ctx: &ScriptCompileContext,
-    _is_ts: bool,
+    is_ts: bool,
     needs_prop_type: bool,
     needs_merge_defaults: bool,
 ) -> Vec<u8> {
     let mut props_emits_buf: Vec<u8> = Vec::new();
+
+    // When defineModel is present, model::build_model_props_emits owns the
+    // `props:` emission (so it can wrap with mergeModels).
+    if !ctx.macros.define_models.is_empty() {
+        return props_emits_buf;
+    }
+
+    if let Some(decl) = build_user_props_decl(ctx, is_ts, needs_prop_type, needs_merge_defaults) {
+        props_emits_buf.extend_from_slice(b"  props: ");
+        props_emits_buf.extend_from_slice(decl.as_bytes());
+        props_emits_buf.extend_from_slice(b",\n");
+    }
+
+    props_emits_buf
+}
+
+/// Build the runtime props declaration string from `defineProps` (the value that
+/// goes after `props:`), without the surrounding `props: ` / `,\n`.
+///
+/// Returns `None` when there is no `defineProps` call (or it produced nothing).
+pub(super) fn build_user_props_decl(
+    ctx: &ScriptCompileContext,
+    _is_ts: bool,
+    needs_prop_type: bool,
+    needs_merge_defaults: bool,
+) -> Option<String> {
+    let props_macro = ctx.macros.define_props.as_ref()?;
 
     // Extract defaults from withDefaults if present
     let with_defaults_args = ctx
@@ -24,125 +56,130 @@ pub(super) fn build_props_emits(
         .as_ref()
         .map(|wd| extract_with_defaults_defaults(&wd.args));
 
-    // Collect model names from defineModel calls (needed before props)
-    let model_infos: Vec<(String, String, Option<String>)> = collect_model_infos(ctx);
+    let mut decl: Vec<u8> = Vec::new();
 
-    if let Some(ref props_macro) = ctx.macros.define_props {
-        if let Some(ref type_args) = props_macro.type_args {
-            // Resolve type references (interface/type alias names) to their definitions
-            let resolved_type_args =
-                resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
-            let prop_types = extract_prop_types_from_type(&resolved_type_args);
-            if !prop_types.is_empty() || !model_infos.is_empty() {
-                props_emits_buf.extend_from_slice(b"  props: {\n");
-                let total_items = prop_types.len() + model_infos.len();
-                let mut item_idx = 0;
-                for (name, prop_type) in &prop_types {
-                    item_idx += 1;
-                    // Try to resolve type references for props that resolved to `null`
-                    let resolved_js_type = if prop_type.js_type == "null" {
-                        if let Some(ref ts_type) = prop_type.ts_type {
-                            resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases)
-                                .unwrap_or_else(|| prop_type.js_type.clone())
-                        } else {
-                            prop_type.js_type.clone()
-                        }
-                    } else {
-                        prop_type.js_type.clone()
-                    };
-                    let runtime_js_type =
-                        add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
-                    props_emits_buf.extend_from_slice(b"    ");
-                    props_emits_buf.extend_from_slice(name.as_bytes());
-                    props_emits_buf.extend_from_slice(b": { type: ");
-                    props_emits_buf.extend_from_slice(runtime_js_type.as_bytes());
-                    if needs_prop_type && let Some(ref ts_type) = prop_type.ts_type {
-                        if resolved_js_type == "null" {
-                            props_emits_buf.extend_from_slice(b" as unknown as PropType<");
-                        } else {
-                            props_emits_buf.extend_from_slice(b" as PropType<");
-                        }
-                        // Normalize multi-line types to single line
-                        let normalized = ts_type.split_whitespace().collect::<Vec<_>>().join(" ");
-                        props_emits_buf.extend_from_slice(normalized.as_bytes());
-                        props_emits_buf.push(b'>');
-                    }
-                    if prop_type.optional {
-                        props_emits_buf.extend_from_slice(b", required: false");
-                    }
-                    let mut has_default = false;
-                    if let Some(ref defaults) = with_defaults_args
-                        && let Some(default_val) = defaults.get(name.as_str())
-                    {
-                        props_emits_buf.extend_from_slice(b", default: ");
-                        props_emits_buf.extend_from_slice(default_val.as_bytes());
-                        has_default = true;
-                    }
-                    if !has_default
-                        && let Some(ref destructure) = ctx.macros.props_destructure
-                        && let Some(binding) = destructure.bindings.get(name.as_str())
-                        && let Some(ref default_val) = binding.default
-                    {
-                        props_emits_buf.extend_from_slice(b", default: ");
-                        let default_val = normalize_destructure_default_value(default_val);
-                        props_emits_buf.extend_from_slice(default_val.as_bytes());
-                    }
-                    props_emits_buf.extend_from_slice(b" }");
-                    if item_idx < total_items {
-                        props_emits_buf.push(b',');
-                    }
-                    props_emits_buf.push(b'\n');
-                }
-                for (model_name, _, options) in &model_infos {
-                    props_emits_buf.extend_from_slice(b"    \"");
-                    props_emits_buf.extend_from_slice(model_name.as_bytes());
-                    props_emits_buf.extend_from_slice(b"\": ");
-                    if let Some(opts) = options {
-                        props_emits_buf.extend_from_slice(opts.as_bytes());
-                    } else {
-                        props_emits_buf.extend_from_slice(b"{}");
-                    }
-                    props_emits_buf.extend_from_slice(b",\n");
-                }
-                // Remove trailing comma from last prop
-                if props_emits_buf.ends_with(b",\n") {
-                    let len = props_emits_buf.len();
-                    props_emits_buf[len - 2] = b'\n';
-                    props_emits_buf.truncate(len - 1);
-                }
-                props_emits_buf.extend_from_slice(b"  },\n");
-            }
-        } else if !props_macro.args.is_empty() {
-            if let (true, Some(destructure)) =
-                (needs_merge_defaults, ctx.macros.props_destructure.as_ref())
-            {
-                props_emits_buf.extend_from_slice(b"  props: /*@__PURE__*/_mergeDefaults(");
-                props_emits_buf.extend_from_slice(props_macro.args.as_bytes());
-                props_emits_buf.extend_from_slice(b", {\n");
-                let defaults: Vec<_> = destructure
-                    .bindings
-                    .iter()
-                    .filter_map(|(k, b)| b.default.as_ref().map(|d| (k.as_str(), d.as_str())))
-                    .collect();
-                for (i, (key, default_val)) in defaults.iter().enumerate() {
-                    props_emits_buf.extend_from_slice(b"  ");
-                    props_emits_buf.extend_from_slice(key.as_bytes());
-                    props_emits_buf.extend_from_slice(b": ");
-                    let default_val = normalize_destructure_default_value(default_val);
-                    props_emits_buf.extend_from_slice(default_val.as_bytes());
-                    if i < defaults.len() - 1 {
-                        props_emits_buf.push(b',');
-                    }
-                    props_emits_buf.push(b'\n');
-                }
-                props_emits_buf.extend_from_slice(b"}),\n");
-            } else {
-                props_emits_buf.extend_from_slice(b"  props: ");
-                props_emits_buf.extend_from_slice(props_macro.args.as_bytes());
-                props_emits_buf.extend_from_slice(b",\n");
-            }
+    if let Some(ref type_args) = props_macro.type_args {
+        // Resolve type references (interface/type alias names) to their definitions
+        let resolved_type_args = resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
+        let prop_types = extract_prop_types_from_type(&resolved_type_args);
+        if prop_types.is_empty() {
+            return None;
         }
+        decl.extend_from_slice(b"{\n");
+        let total_items = prop_types.len();
+        let mut item_idx = 0;
+        for (name, prop_type) in &prop_types {
+            item_idx += 1;
+            // Try to resolve type references for props that resolved to `null`
+            let resolved_js_type = if prop_type.js_type == "null" {
+                if let Some(ref ts_type) = prop_type.ts_type {
+                    resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases)
+                        .unwrap_or_else(|| prop_type.js_type.clone())
+                } else {
+                    prop_type.js_type.clone()
+                }
+            } else {
+                prop_type.js_type.clone()
+            };
+            let runtime_js_type = add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
+            decl.extend_from_slice(b"    ");
+            decl.extend_from_slice(name.as_bytes());
+            decl.extend_from_slice(b": { type: ");
+            decl.extend_from_slice(runtime_js_type.as_bytes());
+            if needs_prop_type && let Some(ref ts_type) = prop_type.ts_type {
+                if resolved_js_type == "null" {
+                    decl.extend_from_slice(b" as unknown as PropType<");
+                } else {
+                    decl.extend_from_slice(b" as PropType<");
+                }
+                // Normalize multi-line types to single line
+                let normalized = ts_type.split_whitespace().collect::<Vec<_>>().join(" ");
+                decl.extend_from_slice(normalized.as_bytes());
+                decl.push(b'>');
+            }
+            if prop_type.optional {
+                decl.extend_from_slice(b", required: false");
+            }
+            let mut has_default = false;
+            if let Some(ref defaults) = with_defaults_args
+                && let Some(default_val) = defaults.get(name.as_str())
+            {
+                decl.extend_from_slice(b", default: ");
+                decl.extend_from_slice(default_val.as_bytes());
+                has_default = true;
+            }
+            if !has_default
+                && let Some(ref destructure) = ctx.macros.props_destructure
+                && let Some(binding) = destructure.bindings.get(name.as_str())
+                && let Some(ref default_val) = binding.default
+            {
+                decl.extend_from_slice(b", default: ");
+                let default_val = normalize_destructure_default_value(default_val);
+                decl.extend_from_slice(default_val.as_bytes());
+            }
+            decl.extend_from_slice(b" }");
+            if item_idx < total_items {
+                decl.push(b',');
+            }
+            decl.push(b'\n');
+        }
+        decl.extend_from_slice(b"  }");
+    } else if !props_macro.args.is_empty() {
+        if let (true, Some(destructure)) =
+            (needs_merge_defaults, ctx.macros.props_destructure.as_ref())
+        {
+            decl.extend_from_slice(b"/*@__PURE__*/_mergeDefaults(");
+            decl.extend_from_slice(props_macro.args.as_bytes());
+            decl.extend_from_slice(b", {\n");
+            // Iterate in source declaration order (matches Vue's iteration order
+            // over the destructured bindings).
+            let defaults: Vec<(
+                &str,
+                &super::super::super::super::script::PropsDestructureBinding,
+            )> = destructure
+                .keys
+                .iter()
+                .filter_map(|k| {
+                    destructure
+                        .bindings
+                        .get(k.as_str())
+                        .and_then(|b| b.default.as_ref().map(|_| (k.as_str(), b)))
+                })
+                .collect();
+            for (i, (key, binding)) in defaults.iter().enumerate() {
+                let default_val = binding.default.as_deref().unwrap_or_default();
+                decl.extend_from_slice(b"  ");
+                decl.extend_from_slice(key.as_bytes());
+                decl.extend_from_slice(b": ");
+                if binding.default_needs_factory {
+                    // Wrap non-literal expressions in a factory: `() => (expr)`.
+                    decl.extend_from_slice(b"() => (");
+                    decl.extend_from_slice(default_val.trim().as_bytes());
+                    decl.push(b')');
+                } else {
+                    // Literals, bare identifiers and functions are emitted as-is.
+                    decl.extend_from_slice(default_val.trim().as_bytes());
+                }
+                if binding.default_skip_factory {
+                    decl.extend_from_slice(b", __skip_");
+                    decl.extend_from_slice(key.as_bytes());
+                    decl.extend_from_slice(b": true");
+                }
+                if i < defaults.len() - 1 {
+                    decl.push(b',');
+                }
+                decl.push(b'\n');
+            }
+            decl.extend_from_slice(b"})");
+        } else {
+            decl.extend_from_slice(props_macro.args.as_bytes());
+        }
+    } else {
+        return None;
     }
 
-    props_emits_buf
+    // SAFETY: assembled from UTF-8 source slices and ASCII glue only.
+    #[allow(clippy::disallowed_types)]
+    let s = unsafe { std::string::String::from_utf8_unchecked(decl) };
+    Some(s.into())
 }

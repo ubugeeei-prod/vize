@@ -540,15 +540,22 @@ pub(crate) fn generate_for_item_props(
     let skip_static_class = static_class.is_some() && has_dynamic_class;
     let skip_static_style = static_style.is_some() && has_dynamic_style;
 
-    let merge_static_class = if skip_static_class {
-        static_class
-    } else {
-        None
-    };
-    let merge_static_style = if skip_static_style {
-        static_style
-    } else {
-        None
+    // Static class/style are only merged into the dynamic binding's array when a
+    // dynamic counterpart exists; source ordering is preserved via StaticMerge.
+    let full_merge = super::super::props::StaticMerge::from_props(&el.props);
+    let merge_static = super::super::props::StaticMerge {
+        class: if skip_static_class {
+            full_merge.class
+        } else {
+            None
+        },
+        class_before: full_merge.class_before,
+        style: if skip_static_style {
+            full_merge.style
+        } else {
+            None
+        },
+        style_before: full_merge.style_before,
     };
 
     if let Some(key) = key_exp {
@@ -577,7 +584,7 @@ pub(crate) fn generate_for_item_props(
             }
             ctx.push(",");
             ctx.newline();
-            generate_single_prop(ctx, prop, merge_static_class, merge_static_style);
+            generate_single_prop(ctx, prop, merge_static);
         }
 
         if let Some(sid) = scope_id {
@@ -615,7 +622,7 @@ pub(crate) fn generate_for_item_props(
                 ctx.push(",");
             }
             ctx.push(" ");
-            generate_single_prop(ctx, prop, merge_static_class, merge_static_style);
+            generate_single_prop(ctx, prop, merge_static);
             first = false;
         }
 
@@ -705,7 +712,7 @@ fn generate_for_item_props_merged(
                 ctx.push(",");
             }
             ctx.newline();
-            generate_single_prop(ctx, prop, None, None);
+            generate_single_prop(ctx, prop, super::super::props::StaticMerge::default());
             first_prop = false;
         }
 
@@ -731,8 +738,7 @@ fn generate_for_item_props_merged(
 fn generate_single_prop(
     ctx: &mut CodegenContext,
     prop: &PropNode<'_>,
-    static_class: Option<&str>,
-    static_style: Option<&str>,
+    static_merge: super::super::props::StaticMerge<'_>,
 ) {
     match prop {
         PropNode::Attribute(attr) => {
@@ -754,12 +760,7 @@ fn generate_single_prop(
             }
         }
         PropNode::Directive(dir) => {
-            super::super::props::generate_directive_prop_with_static(
-                ctx,
-                dir,
-                static_class,
-                static_style,
-            );
+            super::super::props::generate_directive_prop_with_static(ctx, dir, static_merge);
         }
     }
 }

@@ -91,7 +91,17 @@ pub fn generate(root: &RootNode<'_>, options: CodegenOptions) -> CodegenResult {
         }
         ctx.deindent();
         ctx.newline();
-        ctx.push("], 64 /* STABLE_FRAGMENT */))");
+        // Vue tags a root fragment as DEV_ROOT_FRAGMENT when it wraps a single
+        // real node plus comment siblings, so dev tooling treats it as a root.
+        let non_comment_children = root_children
+            .iter()
+            .filter(|child| !matches!(child, TemplateChildNode::Comment(_)))
+            .count();
+        if non_comment_children == 1 {
+            ctx.push("], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))");
+        } else {
+            ctx.push("], 64 /* STABLE_FRAGMENT */))");
+        }
     }
 
     ctx.deindent();
@@ -205,10 +215,12 @@ mod tests {
         );
         let output = result_output(&super::generate(&root, crate::CodegenOptions::default()));
 
+        // Vue encodes non-word characters by char code (`:` -> 58), matching
+        // `toValidAssetId` (issue #4422).
         assert!(
-            output.contains(r#"const _component_global_head = _resolveComponent("global:head")"#)
+            output.contains(r#"const _component_global58head = _resolveComponent("global:head")"#)
         );
-        assert!(output.contains("_createBlock(_component_global_head"));
+        assert!(output.contains("_createBlock(_component_global58head"));
         assert!(!output.contains("_component_global:head"));
     }
 

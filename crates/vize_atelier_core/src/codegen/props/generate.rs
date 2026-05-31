@@ -4,6 +4,7 @@ use crate::ast::{ExpressionNode, PropNode, RuntimeHelper};
 use vize_relief::options::BindingType;
 
 use super::{
+    super::expression::generate_expression,
     super::{
         context::CodegenContext,
         helpers::{escape_js_string, is_valid_js_identifier},
@@ -46,37 +47,85 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
     // Handle cases with object spreads (v-bind="obj" or v-on="obj")
     if scan.has_vbind_obj || scan.has_von_obj {
         if scan.has_other || (scan.has_vbind_obj && scan.has_von_obj) {
-            // Multiple spreads or spread with other props: _mergeProps(...)
+            // Multiple spreads or spread with other props: _mergeProps(...).
+            // Vue walks props in source order, accumulating non-spread props into
+            // object literals and flushing them around each spread, preserving
+            // the original ordering (transforms/transformElement.ts buildProps).
             ctx.use_helper(RuntimeHelper::MergeProps);
             ctx.push(ctx.helper(RuntimeHelper::MergeProps));
             ctx.push("(");
 
             let mut first_merge_arg = true;
+            let mut seg_start = 0usize;
 
-            // Add v-bind object spread
-            if scan.has_vbind_obj {
-                generate_vbind_object_exp(ctx, props);
-                first_merge_arg = false;
-            }
+            // scope_id is emitted once as a trailing object, never per segment.
+            let prev_skip_scope_id = ctx.skip_scope_id;
+            ctx.skip_scope_id = true;
 
-            // Add v-on object spread (wrapped with toHandlers)
-            if scan.has_von_obj {
+            let flush_object =
+                |ctx: &mut CodegenContext, start: usize, end: usize, first: &mut bool| {
+                    // Does this range hold any renderable non-spread prop?
+                    let segment = &props[start..end];
+                    let has_renderable = segment.iter().any(|p| match p {
+                        PropNode::Attribute(attr) => !(ctx.skip_is_prop && attr.name == "is"),
+                        PropNode::Directive(dir) => {
+                            !(dir.arg.is_none() && (dir.name == "bind" || dir.name == "on"))
+                                && is_supported_directive(dir)
+                                && dir.name != "slot"
+                        }
+                    });
+                    if !has_renderable {
+                        return;
+                    }
+                    if !*first {
+                        ctx.push(", ");
+                    }
+                    *first = false;
+                    let seg_scan = PropsScan::new(ctx, segment, ctx.skip_is_prop);
+                    generate_props_object_inner(ctx, segment, true, true, &seg_scan);
+                };
+
+            for (index, prop) in props.iter().enumerate() {
+                let PropNode::Directive(dir) = prop else {
+                    continue;
+                };
+                let is_vbind_spread = dir.name == "bind" && dir.arg.is_none();
+                let is_von_spread = dir.name == "on" && dir.arg.is_none();
+                if !is_vbind_spread && !is_von_spread {
+                    continue;
+                }
+
+                // Flush accumulated non-spread props before this spread.
+                flush_object(ctx, seg_start, index, &mut first_merge_arg);
+                seg_start = index + 1;
+
                 if !first_merge_arg {
                     ctx.push(", ");
                 }
-                generate_von_object_exp(ctx, props);
                 first_merge_arg = false;
+                if is_vbind_spread {
+                    if let Some(exp) = &dir.exp {
+                        generate_expression(ctx, exp);
+                    }
+                } else {
+                    // v-on spread wrapped with _toHandlers(..., true)
+                    ctx.use_helper(RuntimeHelper::ToHandlers);
+                    ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
+                    ctx.push("(");
+                    if let Some(exp) = &dir.exp {
+                        generate_expression(ctx, exp);
+                    }
+                    ctx.push(", true)");
+                }
             }
 
-            // Add other props as object (includes scope_id)
-            // Inside mergeProps, skip normalizeClass/normalizeStyle - mergeProps handles it
-            if scan.has_other {
-                if !first_merge_arg {
-                    ctx.push(", ");
-                }
-                generate_props_object_inner(ctx, props, true, true, &scan);
-            } else if let Some(ref sid) = scope_id {
-                // No other props but we have scope_id, add it as separate object
+            // Flush any trailing non-spread props.
+            flush_object(ctx, seg_start, props.len(), &mut first_merge_arg);
+
+            ctx.skip_scope_id = prev_skip_scope_id;
+
+            // scope_id (if present) is appended as a trailing object.
+            if let Some(ref sid) = scope_id {
                 if !first_merge_arg {
                     ctx.push(", ");
                 }
@@ -443,8 +492,12 @@ fn generate_props_object_inner(
                     generate_directive_prop_with_static(
                         ctx,
                         dir,
-                        scan.static_class,
-                        scan.static_style,
+                        super::directives::StaticMerge {
+                            class: scan.static_class,
+                            class_before: scan.static_class_before_dynamic,
+                            style: scan.static_style,
+                            style_before: scan.static_style_before_dynamic,
+                        },
                     );
                 }
             }

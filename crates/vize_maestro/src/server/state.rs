@@ -378,6 +378,11 @@ pub struct ServerState {
     /// Flag to track if Corsa initialization has been attempted and failed
     #[cfg(feature = "native")]
     corsa_init_failed: std::sync::atomic::AtomicBool,
+    /// Human-readable reason recorded on Corsa init failure, used by
+    /// `corsa_init_failure()` to surface diagnostic context to handlers and
+    /// tests. Populated alongside `corsa_init_failed` (see #751).
+    #[cfg(feature = "native")]
+    corsa_init_failure_reason: RwLock<Option<Arc<str>>>,
     /// True once the LSP server has shown the user a one-shot
     /// `window/showMessage` explaining that type checking is unavailable.
     /// Prevents the message from firing once per file.
@@ -422,6 +427,8 @@ impl ServerState {
             corsa_init_lock: AsyncMutex::new(()),
             #[cfg(feature = "native")]
             corsa_init_failed: std::sync::atomic::AtomicBool::new(false),
+            #[cfg(feature = "native")]
+            corsa_init_failure_reason: RwLock::new(None),
             #[cfg(feature = "native")]
             typecheck_unavailable_notified: std::sync::atomic::AtomicBool::new(false),
             #[cfg(feature = "native")]
@@ -700,6 +707,8 @@ impl ServerState {
             timeout_ms: 30000, // Corsa needs time to build project state on first load.
             ..Default::default()
         };
+        let working_dir = config.working_dir.clone();
+        let corsa_path = config.corsa_path.clone();
         let bridge = CorsaBridge::with_config(config);
 
         match crate::runtime::timeout(std::time::Duration::from_secs(5), bridge.spawn()).await {
@@ -710,17 +719,38 @@ impl ServerState {
                 Some(bridge)
             }
             Ok(Err(e)) => {
-                tracing::warn!("corsa bridge spawn failed: {}", e);
-                // Mark as failed so we don't retry
-                self.corsa_init_failed.store(true, Ordering::SeqCst);
+                let reason = vize_carton::cstr!(
+                    "spawn failed: {e} (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
+                );
+                tracing::warn!("corsa bridge {}", reason);
+                self.record_corsa_init_failure(reason.as_str());
                 None
             }
             Err(_) => {
-                tracing::warn!("corsa bridge spawn timed out");
-                self.corsa_init_failed.store(true, Ordering::SeqCst);
+                let reason = vize_carton::cstr!(
+                    "spawn timed out after 5s (working_dir={working_dir:?}, corsa_path={corsa_path:?})"
+                );
+                tracing::warn!("corsa bridge {}", reason);
+                self.record_corsa_init_failure(reason.as_str());
                 None
             }
         }
+    }
+
+    /// Read the human-readable reason recorded the last time Corsa bridge
+    /// initialization failed. Returns `None` if init has not failed.
+    ///
+    /// Used by handlers and tests to diagnose why the editor session fell
+    /// back to the heuristic completion path (see #751).
+    #[cfg(feature = "native")]
+    pub fn corsa_init_failure(&self) -> Option<Arc<str>> {
+        self.corsa_init_failure_reason.read().clone()
+    }
+
+    #[cfg(feature = "native")]
+    fn record_corsa_init_failure(&self, reason: &str) {
+        *self.corsa_init_failure_reason.write() = Some(Arc::from(reason));
+        self.corsa_init_failed.store(true, Ordering::SeqCst);
     }
 
     /// Check if the Corsa bridge is available (without initializing).
@@ -1039,6 +1069,21 @@ mod tests {
     use super::ServerState;
     use crate::virtual_code::{ArtCursorPosition, BlockType, find_art_block_at_offset};
     use tower_lsp::lsp_types::Url;
+
+    #[cfg(feature = "native")]
+    #[test]
+    fn corsa_init_failure_is_recorded() {
+        let state = ServerState::new();
+        assert!(state.corsa_init_failure().is_none());
+        state.record_corsa_init_failure("spawn failed: missing tsgo");
+        let reason = state
+            .corsa_init_failure()
+            .expect("failure reason should be recorded");
+        assert!(
+            reason.contains("spawn failed"),
+            "reason should preserve the recorded message: {reason}"
+        );
+    }
 
     #[test]
     fn default_format_options() {

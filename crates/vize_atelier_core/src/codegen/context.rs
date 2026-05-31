@@ -46,6 +46,11 @@ pub struct CodegenContext {
     pub(super) in_v_for: bool,
     /// When true, skip v-memo wrapping (already handled by v-for + v-memo)
     pub(super) skip_v_memo: bool,
+    /// When true, the props currently being generated belong to a plain
+    /// (native) element rather than a component/slot/template. Affects v-on
+    /// event-name casing rules (Vue preserves case via `on:` for plain
+    /// elements that have uppercase letters in the raw event name).
+    pub(super) props_is_plain_element: bool,
 }
 
 /// Code generation result
@@ -78,6 +83,7 @@ impl CodegenContext {
             skip_normalize: false,
             in_v_for: false,
             skip_v_memo: false,
+            props_is_plain_element: false,
         }
     }
 

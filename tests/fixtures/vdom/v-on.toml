@@ -243,3 +243,67 @@ name = "multiple cached handlers"
 input = '<button @click="count++" @mouseenter="hover = true"></button>'
 [cases.options]
 cacheHandlers = true
+
+# =============================================================================
+# Event name casing rules (vue: hooks, on: case preservation)
+# =============================================================================
+
+[[cases]]
+name = "vue: vnode lifecycle hook"
+input = '<div @vue:mounted="fn"></div>'
+
+[[cases]]
+name = "vue: vnode hook kebab"
+input = '<div @vue:before-update="fn"></div>'
+
+[[cases]]
+name = "vue: vnode hook on component"
+input = '<MyComp @vue:updated="fn" />'
+
+[[cases]]
+name = "camelCase event on plain element preserves case"
+input = '<div @fooBar="fn"></div>'
+
+[[cases]]
+name = "PascalCase event on plain element preserves case"
+input = '<div @FooBar="fn"></div>'
+
+[[cases]]
+name = "kebab event on plain element camelizes"
+input = '<div @foo-bar="fn"></div>'
+
+[[cases]]
+name = "camelCase event on component camelizes"
+input = '<MyComp @fooBar="fn" />'
+
+[[cases]]
+name = "colon event with uppercase on element"
+input = '<div @update:modelValue="fn"></div>'
+
+[[cases]]
+name = "colon event lowercase on element"
+input = '<div @update:foo="fn"></div>'
+
+[[cases]]
+name = "camelCase event with option modifier"
+input = '<div @fooBar.once="fn"></div>'
+
+[[cases]]
+name = "dblclick needs hydration"
+input = '<div @dblclick="fn"></div>'
+
+[[cases]]
+name = "click no hydration"
+input = '<div @click="fn"></div>'
+
+[[cases]]
+name = "mouseover needs hydration"
+input = '<div @mouseover="fn"></div>'
+
+[[cases]]
+name = "inline multi-statement handler"
+input = '<a @click="foo();bar()"></a>'
+
+[[cases]]
+name = "inline single-statement handler"
+input = '<a @click="foo()"></a>'

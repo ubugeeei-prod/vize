@@ -111,6 +111,78 @@ const count: string = 0;
 }
 
 #[test]
+fn corsa_bridge_completion_returns_inner_members_for_chained_ref_value() {
+    // Guards the wired Corsa completion path (see #751): when the bridge is
+    // initialized, `count.value.` must surface `number`'s inner members
+    // (`toFixed`, `toString`), proving that completion is not silently
+    // collapsing to the heuristic fallback.
+    use crate::corsa_bridge::{CorsaBridge, CorsaBridgeConfig};
+
+    let Some(corsa_path) = resolve_test_tsgo_binary() else {
+        return;
+    };
+
+    let project_root = unique_case_dir("corsa-bridge-completion");
+    let _ = std::fs::remove_dir_all(&project_root);
+    let src_dir = project_root.join("src");
+    std::fs::create_dir_all(&src_dir).unwrap();
+    if link_workspace_node_modules(&project_root).is_err() {
+        return;
+    }
+    write_project_tsconfig(&project_root);
+
+    // Virtual TS shape that the maestro completion path would feed to Corsa.
+    let virtual_ts = "import { ref } from 'vue';\nconst count = ref(0);\ncount.value.\n";
+    let virtual_path = src_dir.join("App.vue.ts");
+    std::fs::write(&virtual_path, virtual_ts).unwrap();
+
+    let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+        corsa_path: Some(corsa_path),
+        working_dir: Some(project_root.clone()),
+        timeout_ms: 30_000,
+        ..Default::default()
+    });
+
+    let labels: Option<Vec<std::string::String>> = block_on(async {
+        if bridge.spawn().await.is_err() {
+            return None;
+        }
+        let uri = virtual_path.display().to_string();
+        if bridge
+            .open_or_update_virtual_document(uri.as_str(), virtual_ts)
+            .await
+            .is_err()
+        {
+            let _ = bridge.shutdown().await;
+            return None;
+        }
+        // Position of the caret right after the second `.` on line 2 (0-indexed):
+        //   line 2: "count.value."
+        //                       ^ character 12
+        let items = bridge.completion(uri.as_str(), 2, 12).await.ok()?;
+        let _ = bridge.shutdown().await;
+        Some(items.into_iter().map(|item| item.label).collect())
+    });
+
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    let Some(labels) = labels else {
+        // Bridge or session failed to start in this environment.
+        // The test already exits before this point when the runtime is missing.
+        return;
+    };
+
+    assert!(
+        labels.iter().any(|label| label == "toFixed"),
+        "expected `toFixed` in Corsa completion labels for `count.value.`, got: {labels:?}"
+    );
+    assert!(
+        labels.iter().any(|label| label == "toString"),
+        "expected `toString` in Corsa completion labels for `count.value.`, got: {labels:?}"
+    );
+}
+
+#[test]
 fn batch_type_checker_accepts_template_ref_unwrap_and_array_access() {
     let project_root = unique_case_dir("template-ref");
     let _ = std::fs::remove_dir_all(&project_root);
