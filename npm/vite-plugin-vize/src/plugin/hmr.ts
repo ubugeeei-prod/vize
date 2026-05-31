@@ -157,9 +157,7 @@ export function handleGenerateBundleHook(
 }
 
 export function resolveComponentsCssFileName(assetsDir: string | undefined): string {
-  const normalizedAssetsDir = (assetsDir || "assets")
-    .replace(/\\/g, "/")
-    .replace(/^\/+|\/+$/g, "");
+  const normalizedAssetsDir = (assetsDir || "assets").replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
 
   if (!normalizedAssetsDir || normalizedAssetsDir === ".") {
     return VIZE_COMPONENTS_CSS_BASENAME;
