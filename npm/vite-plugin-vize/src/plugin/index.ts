@@ -309,8 +309,8 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       return handleHotUpdateHook(state, ctx);
     },
 
-    generateBundle() {
-      handleGenerateBundleHook(state, this.emitFile.bind(this));
+    generateBundle(_, bundle) {
+      handleGenerateBundleHook(state, this.emitFile.bind(this), bundle);
     },
 
     closeBundle() {

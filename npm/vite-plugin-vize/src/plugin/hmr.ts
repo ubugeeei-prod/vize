@@ -10,6 +10,23 @@ import { hasDelegatedStyles } from "../utils/index.ts";
 import { toVirtualId } from "../virtual.ts";
 import { resolveCssImports } from "../utils/css.ts";
 
+export const VIZE_COMPONENTS_CSS_FILE = "assets/vize-components.css";
+
+type GenerateBundleItem =
+  | {
+      type: "chunk";
+      isEntry?: boolean;
+      isDynamicEntry?: boolean;
+      viteMetadata?: {
+        importedCss?: Set<string>;
+      };
+    }
+  | {
+      type?: string;
+    };
+
+type GenerateBundle = Record<string, GenerateBundleItem>;
+
 export async function handleHotUpdateHook(
   state: VizePluginState,
   ctx: HmrContext,
@@ -116,6 +133,7 @@ export async function handleHotUpdateHook(
 export function handleGenerateBundleHook(
   state: VizePluginState,
   emitFile: (file: { type: "asset"; fileName: string; source: string }) => void,
+  bundle: GenerateBundle,
 ): void {
   if (!state.extractCss || state.collectedCss.size === 0) {
     return;
@@ -128,11 +146,24 @@ export function handleGenerateBundleHook(
   if (allCss.trim()) {
     emitFile({
       type: "asset",
-      fileName: "assets/vize-components.css",
+      fileName: VIZE_COMPONENTS_CSS_FILE,
       source: allCss,
     });
+    attachComponentsCssToEntryChunks(bundle);
     state.logger.log(
-      `Extracted CSS to assets/vize-components.css (${state.collectedCss.size} components)`,
+      `Extracted CSS to ${VIZE_COMPONENTS_CSS_FILE} (${state.collectedCss.size} components)`,
     );
+  }
+}
+
+function attachComponentsCssToEntryChunks(bundle: GenerateBundle): void {
+  for (const item of Object.values(bundle)) {
+    if (item.type !== "chunk" || (!item.isEntry && !item.isDynamicEntry)) {
+      continue;
+    }
+
+    item.viteMetadata ??= {};
+    item.viteMetadata.importedCss ??= new Set<string>();
+    item.viteMetadata.importedCss.add(VIZE_COMPONENTS_CSS_FILE);
   }
 }
