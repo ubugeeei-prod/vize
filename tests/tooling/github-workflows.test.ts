@@ -48,7 +48,7 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// Linux runner pairs (hosted GitHub label, equivalent Blacksmith label) accepted by
+// Runner pairs (hosted GitHub label, equivalent Blacksmith label) accepted by
 // the workflow-shape tests. Letting either form match keeps the cross-platform
 // coverage assertion strict on _which_ platforms are present without pinning the
 // runner-pool vendor; switching back to GitHub-hosted shouldn't break the test
@@ -59,6 +59,12 @@ function hostedOrBlacksmith(hostedLabel: string): string {
   }
   if (hostedLabel === "ubuntu-24.04-arm") {
     return "(?:ubuntu-24\\.04-arm|blacksmith-\\d+vcpu-ubuntu-2404-arm)";
+  }
+  if (hostedLabel === "macos-15") {
+    return "(?:macos-15|blacksmith-(?:6|12)vcpu-macos-15)";
+  }
+  if (hostedLabel === "windows-2025") {
+    return "(?:windows-2025|blacksmith-\\d+vcpu-windows-2025)";
   }
   return escapeRegExp(hostedLabel);
 }
@@ -92,17 +98,17 @@ test("GitHub workflows use the current cache action", () => {
 });
 
 test("GitHub workflows declare the expected cross-platform runner matrix", () => {
-  // We use Blacksmith-hosted Linux runners for speed and intentionally let
-  // any `blacksmith-Nvcpu-ubuntu-2404[-arm]` SKU pass — bumping vCPU shouldn't
-  // need a test change. macOS and Windows continue to use GitHub-hosted
-  // runners because Blacksmith does not offer equivalent SKUs.
+  // We use Blacksmith-hosted runners where compatible and intentionally let
+  // any matching vCPU SKU pass — bumping vCPU shouldn't need a test change.
+  // macOS Intel and Windows ARM still use GitHub-hosted runners because
+  // Blacksmith does not offer equivalent SKUs.
   //
   // We only validate matrix `host:` / `runner:` values here; `runs-on:` is
   // usually templated (`${{ matrix.settings.host }}` or the conditional
   // `github.event_name == 'pull_request' && 'ubuntu-latest' || 'ubuntu-24.04'`)
   // and is asserted shape-by-shape further down.
   const allowedRunnerPattern =
-    /^(?:ubuntu-(?:latest|24\.04)(?:-arm)?|blacksmith-\d+vcpu-ubuntu-2404(?:-arm)?|macos-15(?:-intel)?|windows-(?:2025|11-arm))$/;
+    /^(?:ubuntu-(?:latest|24\.04)(?:-arm)?|blacksmith-\d+vcpu-ubuntu-2404(?:-arm)?|macos-15(?:-intel)?|blacksmith-(?:6|12)vcpu-macos-15|windows-(?:2025|11-arm)|blacksmith-\d+vcpu-windows-2025)$/;
   const matrixRunnerPattern = /(?:runner|host):\s*([A-Za-z0-9._-]+)/g;
   const violations: string[] = [];
 
@@ -126,11 +132,11 @@ test("GitHub workflows declare the expected cross-platform runner matrix", () =>
   // (or temporarily reverting to GitHub-hosted) doesn't churn this test.
   assert.match(checkWorkflow, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
   assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("ubuntu-24.04-arm")}`));
-  assert.match(nativeWorkflow, /runner:\s*macos-15/);
-  assert.match(nativeWorkflow, /runner:\s*windows-2025/);
+  assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("macos-15")}`));
+  assert.match(nativeWorkflow, new RegExp(`runner:\\s*${hostedOrBlacksmith("windows-2025")}`));
   assert.match(releaseWorkflow, new RegExp(`host:\\s*${hostedOrBlacksmith("ubuntu-24.04-arm")}`));
-  assert.match(releaseWorkflow, /host:\s*macos-15/);
-  assert.match(releaseWorkflow, /host:\s*windows-2025/);
+  assert.match(releaseWorkflow, new RegExp(`host:\\s*${hostedOrBlacksmith("macos-15")}`));
+  assert.match(releaseWorkflow, new RegExp(`host:\\s*${hostedOrBlacksmith("windows-2025")}`));
 });
 
 test("GitHub workflows use Node 24-compatible artifact downloads", () => {
@@ -279,6 +285,7 @@ test("release workflow jobs cap runtime with explicit timeouts", () => {
     ["build-editor-extensions", 30],
     ["release-vscode-extension", 15],
     ["build-release-packages", 45],
+    ["build-wasm-package", 30],
     ["build-native-all", 90],
     ["smoke-release-packages", 30],
     ["release-npm-native", 30],
@@ -598,6 +605,12 @@ test("WASM build jobs install MoonBit before invoking moon run", () => {
       moonRun:
         "run: moon run --target native - -- npm/vize-wasm playground/src/wasm < tools/moon/scripts/github/build_vitrine_wasm.mbtx",
     },
+    {
+      workflowName: "release.yml",
+      jobName: "build-wasm-package",
+      moonRun:
+        "run: moon run --target native - -- < tools/moon/scripts/build_vize_wasm_package.mbtx",
+    },
   ] as const;
 
   for (const { workflowName, jobName, moonRun } of cases) {
@@ -692,7 +705,8 @@ test("release workflow publishes npm packages through Trusted Publishing only", 
 
   for (const jobName of npmPublishJobs) {
     const job = workflowJobBody(workflow, jobName);
-    assert.match(job, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
+    assert.match(job, /runs-on:\s*ubuntu-24\.04\b/);
+    assert.doesNotMatch(job, /runs-on:\s*blacksmith-/);
     assert.match(job, /environment:\s*npm/);
     assert.match(job, /id-token:\s*write/);
     assert.match(job, /--provenance/);
@@ -716,11 +730,13 @@ test("release workflow publishes npm packages from package-specific artifacts", 
     "release-package-rspack-vize-plugin",
     "release-package-musea-nuxt",
     "release-package-nuxt",
+    "release-package-vize-wasm",
   ]) {
     assert.match(workflow, new RegExp(`name:\\s*${artifactName}`));
   }
 
   const downloadTargets = [
+    ["release-npm-wasm", "release-package-vize-wasm", "npm/vize-wasm"],
     ["release-npm-vite-plugin", "release-package-vite-plugin-vize", "npm/vite-plugin-vize"],
     ["release-npm-oxlint-plugin", "release-package-oxlint-plugin-vize", "npm/oxlint-plugin-vize"],
     ["release-npm-unplugin", "release-package-unplugin-vize", "npm/unplugin-vize"],
@@ -747,21 +763,29 @@ test("release workflow publishes npm packages from package-specific artifacts", 
 
 test("release workflow smokes the wasm package wrapper before publishing", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
-  const job = workflowJobBody(workflow, "release-npm-wasm");
+  const buildJob = workflowJobBody(workflow, "build-wasm-package");
+  const publishJob = workflowJobBody(workflow, "release-npm-wasm");
 
-  assert.match(job, /npm\/vize-wasm\/index\.js/);
-  assert.match(job, /npm\/vize-wasm\/index\.d\.ts/);
-  assert.match(job, /tools\/moon\/scripts\/build_vize_wasm_package\.mbtx/);
+  assert.match(buildJob, /runs-on:\s*blacksmith-\d+vcpu-ubuntu-2404/);
+  assert.match(buildJob, /npm\/vize-wasm\/index\.js/);
+  assert.match(buildJob, /npm\/vize-wasm\/index\.d\.ts/);
+  assert.match(buildJob, /tools\/moon\/scripts\/build_vize_wasm_package\.mbtx/);
+  assert.match(buildJob, /name:\s*release-package-vize-wasm/);
+  assert.match(publishJob, /needs:\s*build-wasm-package/);
+  assert.match(publishJob, /name:\s*release-package-vize-wasm/);
+  assert.match(publishJob, /path:\s*npm\/vize-wasm/);
 
-  const setupNode = job.indexOf("name: Setup Vite+ and Node.js");
-  const smoke = job.indexOf("name: Smoke @vizejs/wasm package");
-  const publish = job.indexOf("name: Publish @vizejs/wasm");
+  const setupNode = publishJob.indexOf("name: Setup Vite+ and Node.js");
+  const download = publishJob.indexOf("name: Download prebuilt WASM package");
+  const smoke = publishJob.indexOf("name: Smoke @vizejs/wasm package");
+  const publish = publishJob.indexOf("name: Publish @vizejs/wasm");
 
   assert.notEqual(setupNode, -1);
+  assert.notEqual(download, -1);
   assert.notEqual(smoke, -1);
   assert.notEqual(publish, -1);
-  assert.ok(setupNode < smoke && smoke < publish);
-  assert.match(job, /node tools\/npm\/smoke-wasm-package\.mjs npm\/vize-wasm/);
+  assert.ok(setupNode < download && download < smoke && smoke < publish);
+  assert.match(publishJob, /node tools\/npm\/smoke-wasm-package\.mjs npm\/vize-wasm/);
 });
 
 test("release workflow creates GitHub Releases only after registry publishing succeeds", () => {
@@ -850,8 +874,8 @@ test("native smoke workflow covers host platforms before release tags", () => {
     [hostedOrBlacksmith("ubuntu-24.04"), "linux-x64-gnu"],
     [hostedOrBlacksmith("ubuntu-24.04-arm"), "linux-arm64-gnu"],
     ["macos-15-intel", "darwin-x64"],
-    ["macos-15", "darwin-arm64"],
-    ["windows-2025", "win32-x64-msvc"],
+    [hostedOrBlacksmith("macos-15"), "darwin-arm64"],
+    [hostedOrBlacksmith("windows-2025"), "win32-x64-msvc"],
     ["windows-11-arm", "win32-arm64-msvc"],
   ] as const) {
     assert.match(job, new RegExp(`runner:\\s*${runner}[\\s\\S]*target:\\s*${target}`));
@@ -870,8 +894,8 @@ test("native smoke workflow fresh-installs runtime tarballs across supported tar
     [hostedOrBlacksmith("ubuntu-24.04"), "linux-x64-gnu"],
     [hostedOrBlacksmith("ubuntu-24.04-arm"), "linux-arm64-gnu"],
     ["macos-15-intel", "darwin-x64"],
-    ["macos-15", "darwin-arm64"],
-    ["windows-2025", "win32-x64-msvc"],
+    [hostedOrBlacksmith("macos-15"), "darwin-arm64"],
+    [hostedOrBlacksmith("windows-2025"), "win32-x64-msvc"],
     ["windows-11-arm", "win32-arm64-msvc"],
   ] as const) {
     assert.match(job, new RegExp(`runner:\\s*${runner}[\\s\\S]*target:\\s*${target}`));
@@ -898,11 +922,11 @@ test("release workflow builds native targets on MoonBit-supported runners", () =
   );
 
   for (const [host, target] of [
-    ["macos-15", "x86_64-apple-darwin"],
-    ["macos-15", "aarch64-apple-darwin"],
+    [hostedOrBlacksmith("macos-15"), "x86_64-apple-darwin"],
+    [hostedOrBlacksmith("macos-15"), "aarch64-apple-darwin"],
     [hostedOrBlacksmith("ubuntu-24.04"), "x86_64-unknown-linux-gnu"],
     [hostedOrBlacksmith("ubuntu-24.04-arm"), "aarch64-unknown-linux-gnu"],
-    ["windows-2025", "x86_64-pc-windows-msvc"],
+    [hostedOrBlacksmith("windows-2025"), "x86_64-pc-windows-msvc"],
     ["windows-11-arm", "aarch64-pc-windows-msvc"],
   ] as const) {
     assert.match(job, new RegExp(`host:\\s*${host}[\\s\\S]*target:\\s*${target}`));

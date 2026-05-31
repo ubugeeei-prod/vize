@@ -24,7 +24,12 @@
       let
         pkgs = import nixpkgs {
           inherit system overlays;
-          config.allowUnfreePredicate = pkg: (pkg.pname or null) == "moonbit";
+          config.allowUnfreePredicate =
+            pkg:
+            builtins.elem (pkg.pname or null) [
+              "blacksmith"
+              "moonbit"
+            ];
         };
 
         lib = pkgs.lib;
@@ -127,19 +132,19 @@
         blacksmithArtifacts = {
           aarch64-darwin = {
             url = "https://clireleases.blacksmith.sh/cli/latest/darwin/arm64/blacksmith";
-            hash = lib.fakeHash;
+            hash = "sha256-ozZ6tBUbEqTqdxUVwxSg1ItiKUwLZxMl1Ccx8r6XP2Y=";
           };
           x86_64-darwin = {
             url = "https://clireleases.blacksmith.sh/cli/latest/darwin/amd64/blacksmith";
-            hash = lib.fakeHash;
+            hash = "sha256-YhC5jCuLeQNHlFYnd1PdCVntNPAibp1cQAIcl6JG9OE=";
           };
           x86_64-linux = {
             url = "https://clireleases.blacksmith.sh/cli/latest/linux/amd64/blacksmith";
-            hash = lib.fakeHash;
+            hash = "sha256-OPHHrvGjbIfkC5tQvFc+zbu3hd5GsoJelcuauvo1m90=";
           };
           aarch64-linux = {
             url = "https://clireleases.blacksmith.sh/cli/latest/linux/arm64/blacksmith";
-            hash = lib.fakeHash;
+            hash = "sha256-+HBaib2jDECu1UIxkWX0jO5H6W+9XlT/leB5Uow8hy4=";
           };
         };
         blacksmith =

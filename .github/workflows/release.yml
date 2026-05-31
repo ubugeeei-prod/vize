@@ -31,16 +31,16 @@ jobs:
       fail-fast: false
       matrix:
         settings:
-          - host: macos-15
+          - host: blacksmith-12vcpu-macos-15
             target: x86_64-apple-darwin
             archive: vize-x86_64-apple-darwin.tar.gz
-          - host: macos-15
+          - host: blacksmith-12vcpu-macos-15
             target: aarch64-apple-darwin
             archive: vize-aarch64-apple-darwin.tar.gz
-          - host: windows-2025
+          - host: blacksmith-32vcpu-windows-2025
             target: x86_64-pc-windows-msvc
             archive: vize-x86_64-pc-windows-msvc.zip
-          - host: windows-2025
+          - host: blacksmith-32vcpu-windows-2025
             target: aarch64-pc-windows-msvc
             archive: vize-aarch64-pc-windows-msvc.zip
           - host: blacksmith-32vcpu-ubuntu-2404
@@ -301,6 +301,60 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
+  # Build WASM once on Blacksmith; the npm publish job only attaches provenance.
+  build-wasm-package:
+    name: Build @vizejs/wasm package
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/setup-moonbit
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: release-wasm
+          cache-workspace-crates: "true"
+
+      - name: Cache WASM package build
+        id: cache-wasm
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: npm/vize-wasm
+          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json', 'npm/vize-wasm/index.js', 'npm/vize-wasm/index.d.ts', 'tools/moon/scripts/build_vize_wasm_package.mbtx') }}
+
+      - name: Install wasm-bindgen-cli
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: wasm-bindgen-cli@0.2.121
+
+      - name: Build WASM
+        if: steps.cache-wasm.outputs.cache-hit != 'true'
+        run: moon run --target native - -- < tools/moon/scripts/build_vize_wasm_package.mbtx
+
+      - name: Setup Vite+ and Node.js
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: ".node-version"
+          run-install: false
+
+      - name: Smoke @vizejs/wasm package
+        run: node tools/npm/smoke-wasm-package.mjs npm/vize-wasm
+
+      - name: Upload WASM package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-package-vize-wasm
+          path: npm/vize-wasm
+          if-no-files-found: error
+          compression-level: 0
+
   # Build native bindings (vize-native + fresco-native) for all platforms
   build-native-all:
     name: Build Native - ${{ matrix.settings.target }}
@@ -313,13 +367,13 @@ jobs:
           # MoonBit's native installer does not publish a Darwin x64 toolchain.
           # Build the darwin-x64 native package from the macOS ARM runner,
           # matching the CLI release job.
-          - host: macos-15
+          - host: blacksmith-12vcpu-macos-15
             target: x86_64-apple-darwin
             cross_compile: false
-          - host: macos-15
+          - host: blacksmith-12vcpu-macos-15
             target: aarch64-apple-darwin
             cross_compile: false
-          - host: windows-2025
+          - host: blacksmith-32vcpu-windows-2025
             target: x86_64-pc-windows-msvc
             cross_compile: false
           - host: windows-11-arm
@@ -535,10 +589,12 @@ jobs:
             npm/musea-nuxt \
             npm/nuxt
 
+  # npm Trusted Publishing/provenance currently rejects self-hosted runners.
+  # Keep the publish edge on GitHub-hosted runners; build and smoke jobs stay on Blacksmith.
   # Publish native packages to npm (using Trusted Publishing / OIDC)
   release-npm-native:
     name: Release @vizejs/native to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: build-native-all
     timeout-minutes: 30
     environment: npm
@@ -592,7 +648,7 @@ jobs:
   # Publish fresco native packages to npm (using Trusted Publishing / OIDC)
   release-npm-fresco-native:
     name: Release @vizejs/fresco-native to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: build-native-all
     timeout-minutes: 20
     environment: npm
@@ -631,10 +687,11 @@ jobs:
       - name: Publish
         run: moon run --target native - -- npm/fresco-native --provenance < tools/moon/scripts/publish_npm_package.mbtx
 
-  # Build and publish WASM package (using Trusted Publishing / OIDC)
+  # Publish WASM package (using Trusted Publishing / OIDC)
   release-npm-wasm:
     name: Release @vizejs/wasm to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
+    needs: build-wasm-package
     timeout-minutes: 30
     environment: npm
     permissions:
@@ -644,39 +701,17 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup-moonbit
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-        with:
-          shared-key: release-wasm
-          cache-workspace-crates: "true"
-
-      - name: Cache WASM package build
-        id: cache-wasm
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-        with:
-          path: npm/vize-wasm
-          key: ${{ runner.os }}-release-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock', 'npm/vize-wasm/package.json', 'npm/vize-wasm/index.js', 'npm/vize-wasm/index.d.ts', 'tools/moon/scripts/build_vize_wasm_package.mbtx') }}
-
-      - name: Install wasm-bindgen-cli
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
-        uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
-        with:
-          tool: wasm-bindgen-cli@0.2.121
-
-      - name: Build WASM
-        if: steps.cache-wasm.outputs.cache-hit != 'true'
-        run: moon run --target native - -- < tools/moon/scripts/build_vize_wasm_package.mbtx
-
       - name: Setup Vite+ and Node.js
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: ".node-version"
           run-install: false
+
+      - name: Download prebuilt WASM package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-package-vize-wasm
+          path: npm/vize-wasm
 
       - name: Smoke @vizejs/wasm package
         run: node tools/npm/smoke-wasm-package.mjs npm/vize-wasm
@@ -690,7 +725,7 @@ jobs:
   # Build and publish Vite plugin (using Trusted Publishing / OIDC)
   release-npm-vite-plugin:
     name: Release @vizejs/vite-plugin to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: [build-release-packages, release-npm-native, release-npm-cli, smoke-release-packages]
     timeout-minutes: 15
     environment: npm
@@ -719,7 +754,7 @@ jobs:
   # Build and publish Oxlint plugin package (using Trusted Publishing / OIDC)
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
     timeout-minutes: 15
     environment: npm
@@ -751,7 +786,7 @@ jobs:
   # Build and publish unplugin package (using Trusted Publishing / OIDC)
   release-npm-unplugin:
     name: Release @vizejs/unplugin to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
     timeout-minutes: 15
     environment: npm
@@ -780,7 +815,7 @@ jobs:
   # Build and publish Fresco package (using Trusted Publishing / OIDC)
   release-npm-fresco:
     name: Release @vizejs/fresco to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: [build-release-packages, release-npm-fresco-native, smoke-release-packages]
     timeout-minutes: 15
     environment: npm
@@ -809,7 +844,7 @@ jobs:
   # Build and publish Musea MCP server (using Trusted Publishing / OIDC)
   release-npm-musea-mcp-server:
     name: Release @vizejs/musea-mcp-server to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
     timeout-minutes: 15
     environment: npm
@@ -838,7 +873,7 @@ jobs:
   # Build and publish Vite plugin for Musea (using Trusted Publishing / OIDC)
   release-npm-vite-plugin-musea:
     name: Release @vizejs/vite-plugin-musea to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
     timeout-minutes: 15
     environment: npm
@@ -867,7 +902,7 @@ jobs:
   # Build and publish Rspack plugin (using Trusted Publishing / OIDC)
   release-npm-rspack-plugin:
     name: Release @vizejs/rspack-plugin to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
     timeout-minutes: 15
     environment: npm
@@ -896,7 +931,7 @@ jobs:
   # Build and publish Musea Nuxt (using Trusted Publishing / OIDC)
   release-npm-musea-nuxt:
     name: Release @vizejs/musea-nuxt to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
     timeout-minutes: 15
     environment: npm
@@ -925,7 +960,7 @@ jobs:
   # Build and publish @vizejs/nuxt (using Trusted Publishing / OIDC)
   release-npm-nuxt:
     name: Release @vizejs/nuxt to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs:
       [
         build-release-packages,
@@ -1121,7 +1156,7 @@ jobs:
   # Native bindings are distributed via @vizejs/native-* optionalDependencies (NAPI-RS)
   release-npm-cli:
     name: Release vize CLI to npm
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     needs: [build-release-packages, release-npm-native, smoke-release-packages]
     timeout-minutes: 15
     environment: npm

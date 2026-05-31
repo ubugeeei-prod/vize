@@ -38,10 +38,10 @@ jobs:
           - runner: macos-15-intel
             target: darwin-x64
             msvc_arch: amd64
-          - runner: macos-15
+          - runner: blacksmith-12vcpu-macos-15
             target: darwin-arm64
             msvc_arch: amd64
-          - runner: windows-2025
+          - runner: blacksmith-32vcpu-windows-2025
             target: win32-x64-msvc
             msvc_arch: amd64
           - runner: windows-11-arm
@@ -95,8 +95,8 @@ jobs:
       fail-fast: false
       matrix:
         node-version: ["22", "24"]
-        # Linux musl targets are intentionally absent here: hosted Ubuntu
-        # runners provide GNU hosts, not native Alpine/musl hosts. Keep the
+        # Linux musl targets are intentionally absent here: Ubuntu runners
+        # provide GNU hosts, not native Alpine/musl hosts. Keep the
         # known-limitation policy in docs/content/stability.md in sync when
         # containerized musl tarball staging is added.
         platform:
@@ -109,10 +109,10 @@ jobs:
           - runner: macos-15-intel
             target: darwin-x64
             msvc_arch: amd64
-          - runner: macos-15
+          - runner: blacksmith-12vcpu-macos-15
             target: darwin-arm64
             msvc_arch: amd64
-          - runner: windows-2025
+          - runner: blacksmith-32vcpu-windows-2025
             target: win32-x64-msvc
             msvc_arch: amd64
           - runner: windows-11-arm
