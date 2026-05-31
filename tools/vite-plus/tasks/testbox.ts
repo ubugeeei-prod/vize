@@ -13,7 +13,7 @@ import { defineTasks, noCacheTask, shellQuote } from "../task-helpers.ts";
  * call and has no concept of a "current" box, so the id is threaded through
  * `BLACKSMITH_TESTBOX_ID`. Typical flow:
  *
- *   # once per session — warms a box from a workflow that sets up vp/Rust/etc.
+ *   # once per session — warms a box from the current Git branch.
  *   export BLACKSMITH_TESTBOX_ID="$(vp testbox:warmup | tail -n1)"
  *   vp test        # runs the suite inside the box
  *   vp testbox:stop
@@ -33,11 +33,13 @@ export const inTestbox = (command: string): string =>
   `blacksmith testbox run --id "${REQUIRE_ID}" ${shellQuote(command)}`;
 
 /**
- * Lifecycle helpers. Warmup targets the Check workflow because its setup steps
- * (Vite+/Node, Rust, MoonBit) leave `vp` and the toolchains on PATH inside the
- * box, which is what `vp test|lint|build` need there.
+ * Lifecycle helpers. Warmup targets the dedicated Testbox workflow on the
+ * current branch. GitHub fetches workflow files from a remote ref, so new
+ * Testbox workflow changes need to be pushed before warmup can see them.
  */
 export const testboxTasks = defineTasks({
-  "testbox:warmup": noCacheTask("blacksmith testbox warmup .github/workflows/check.yml"),
+  "testbox:warmup": noCacheTask(
+    'blacksmith testbox warmup .github/workflows/e2e.yml --ref "$(git branch --show-current)" --job testbox',
+  ),
   "testbox:stop": noCacheTask(`blacksmith testbox stop --id "${REQUIRE_ID}"`),
 });

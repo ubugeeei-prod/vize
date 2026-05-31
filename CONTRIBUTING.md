@@ -54,6 +54,8 @@ vp run actrun:benchmark:dry-run
 ```
 
 Prefer the Vite+ tasks when launching multiple local workflow runs in parallel; they assign separate actrun workspaces.
+For Blacksmith Testbox job changes, also validate the workflow shape with
+`node --test tests/tooling/github-workflows.test.ts`.
 
 ## Language Processor Change Discipline
 

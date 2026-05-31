@@ -170,6 +170,27 @@ test("GitHub workflow actions are pinned by full commit SHA", () => {
   assert.deepEqual(violations, []);
 });
 
+test("App E2E workflow keeps Blacksmith Testbox dispatch hydration separate", () => {
+  const workflow = readRepoFile(".github", "workflows", "e2e.yml");
+  const job = workflowJobBody(workflow, "testbox");
+  const appJob = workflowJobBody(workflow, "app-e2e");
+
+  assert.match(workflow, /\n  workflow_dispatch:\n/);
+  assert.match(workflow, /testbox_id:\n\s+description:\s*Blacksmith Testbox session ID/);
+  assert.match(
+    job,
+    /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && inputs\.testbox_id != ''\s*\}\}/,
+  );
+  assert.match(job, /uses:\s*useblacksmith\/begin-testbox@[0-9a-f]{40}\s*# v2/);
+  assert.match(job, /testbox_id:\s*\$\{\{\s*inputs\.testbox_id\s*\}\}/);
+  assert.match(job, /uses:\s*useblacksmith\/run-testbox@[0-9a-f]{40}\s*# v2/);
+  assert.doesNotMatch(job, /vp run --workspace-root test|cargo test --workspace/);
+  assert.match(
+    appJob,
+    /if:\s*\$\{\{\s*github\.event_name != 'workflow_dispatch' \|\| inputs\.testbox_id == ''\s*\}\}/,
+  );
+});
+
 test("PR CI jobs cap runtime with explicit timeouts", () => {
   const checkWorkflow = readRepoFile(".github", "workflows", "check.yml");
   const benchmarkWorkflow = readRepoFile(".github", "workflows", "benchmark.yml");
