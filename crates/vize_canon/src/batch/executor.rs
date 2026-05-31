@@ -260,7 +260,7 @@ fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
         if !path.is_file() {
             continue;
         }
-        if is_internal_virtual_project_stub(path) {
+        if is_internal_virtual_project_file(virtual_root, path) {
             continue;
         }
         if let Some("ts" | "tsx") = path.extension().and_then(|extension| extension.to_str()) {
@@ -272,10 +272,22 @@ fn collect_virtual_file_uris(virtual_root: &Path) -> CorsaResult<Vec<String>> {
     Ok(uris)
 }
 
+fn is_internal_virtual_project_file(virtual_root: &Path, path: &Path) -> bool {
+    is_internal_virtual_project_stub(path) || is_under_virtual_node_modules(virtual_root, path)
+}
+
 fn is_internal_virtual_project_stub(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| matches!(name, AUTO_IMPORT_STUBS_FILE | VUE_MODULE_STUBS_FILE))
+}
+
+fn is_under_virtual_node_modules(virtual_root: &Path, path: &Path) -> bool {
+    path.strip_prefix(virtual_root)
+        .ok()
+        .and_then(|path| path.components().next())
+        .and_then(|component| component.as_os_str().to_str())
+        .is_some_and(|name| name == "node_modules")
 }
 
 fn collect_declaration_outputs(out_dir: &Path) -> CorsaResult<Vec<DeclarationOutput>> {
@@ -398,6 +410,10 @@ mod tests {
         fs::write(root.join("component.vue.ts"), "").unwrap();
         fs::write(root.join("__vize_vue_modules.d.ts"), "").unwrap();
         fs::write(root.join("__vize_auto_imports.d.ts"), "").unwrap();
+        fs::create_dir_all(root.join("node_modules/vue")).unwrap();
+        fs::write(root.join("node_modules/vue/index.d.ts"), "").unwrap();
+        fs::create_dir_all(root.join("node_modules/vite")).unwrap();
+        fs::write(root.join("node_modules/vite/client.d.ts"), "").unwrap();
         fs::write(root.join("tsconfig.json"), "{}").unwrap();
         fs::write(root.join("ignored.js"), "").unwrap();
 

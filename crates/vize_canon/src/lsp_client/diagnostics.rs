@@ -23,6 +23,7 @@ use vize_carton::{FxHashMap, String, cstr};
 
 type DiagnosticBatch = Vec<(String, Vec<LspDiagnostic>)>;
 const LSP_DIAGNOSTICS_BATCH_CHUNK_SIZE: usize = 128;
+const LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES: usize = 1;
 
 impl CorsaProjectClient {
     /// Get cached diagnostics for a URI.
@@ -394,6 +395,25 @@ impl CorsaProjectClient {
         &mut self,
         uris: &[String],
     ) -> Result<Option<DiagnosticBatch>, String> {
+        let mut attempts = 0;
+        loop {
+            match self.request_diagnostics_batch_via_lsp_chunk_once(uris) {
+                Err(error)
+                    if attempts < LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES
+                        && lsp_diagnostics_error_is_transient(&error) =>
+                {
+                    attempts += 1;
+                    std::thread::sleep(Duration::from_millis(25));
+                }
+                result => return result,
+            }
+        }
+    }
+
+    fn request_diagnostics_batch_via_lsp_chunk_once(
+        &mut self,
+        uris: &[String],
+    ) -> Result<Option<DiagnosticBatch>, String> {
         if uris.is_empty() {
             return Ok(Some(Vec::new()));
         }
@@ -468,6 +488,14 @@ fn diagnostics_api_is_unsupported(error: &str) -> bool {
     error.contains("unknown API method")
         || error.contains("method not found")
         || error.contains("Unsupported")
+}
+
+fn lsp_diagnostics_error_is_transient(error: &str) -> bool {
+    error.contains("protocol error: EOF")
+        || error.contains("EOF while parsing")
+        || error.contains("process is closed: jsonrpc reader")
+        || error.contains("Broken pipe")
+        || error.contains("broken pipe")
 }
 
 fn diagnostics_api_error_is_unsupported(error: &impl std::fmt::Display) -> bool {
@@ -635,5 +663,24 @@ fn language_id_for_uri(uri: &str) -> &'static str {
         "typescriptreact"
     } else {
         "typescript"
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::lsp_diagnostics_error_is_transient;
+
+    #[test]
+    fn recognizes_transient_lsp_transport_errors() {
+        assert!(lsp_diagnostics_error_is_transient(
+            "protocol error: EOF while parsing a string at line 1 column 150"
+        ));
+        assert!(lsp_diagnostics_error_is_transient(
+            "Failed to request LSP diagnostics for file:///src/App.vue.ts: process is closed: jsonrpc reader"
+        ));
+        assert!(lsp_diagnostics_error_is_transient("Broken pipe"));
+        assert!(!lsp_diagnostics_error_is_transient(
+            "TypeScript semantic diagnostics are unavailable"
+        ));
     }
 }
