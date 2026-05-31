@@ -83,6 +83,31 @@ mod tests {
     }
 
     #[test]
+    fn test_empty_element_stays_inline() {
+        let source = "<div>\n</div>";
+        let options = FormatOptions::default();
+        let result = format_template_content(source, &options).unwrap();
+
+        assert_eq!(result.as_str(), "<div></div>");
+    }
+
+    #[test]
+    fn test_empty_element_with_multiline_attributes_closes_inline() {
+        let source = r#"<div class="container" id="main"></div>"#;
+        let mut options = FormatOptions::default();
+        options.single_attribute_per_line = true;
+        let result = format_template_content(source, &options).unwrap();
+
+        assert_eq!(
+            result.as_str(),
+            r#"<div
+  id="main"
+  class="container"
+></div>"#
+        );
+    }
+
+    #[test]
     fn directive_expression_double_quote_formatting_keeps_valid_attribute_quotes() {
         let source = r#"<MfCheckbox @blur="form.validateField('agreeToPolicy')" />"#;
         let mut options = FormatOptions::default();
@@ -377,7 +402,7 @@ mod tests {
 
         // 2 attrs <= 3 limit, no wrapping
         let lines: Vec<&str> = result.lines().collect();
-        assert_eq!(lines.len(), 2, "Should not wrap (div + closing)");
+        assert_eq!(lines.len(), 1, "Should keep the empty element inline");
     }
 
     #[test]

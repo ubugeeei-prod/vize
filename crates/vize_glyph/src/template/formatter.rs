@@ -148,6 +148,17 @@ impl<'a> TemplateFormatter<'a> {
 
                     if is_self_closing {
                         output.extend_from_slice(b" />");
+                    } else if !is_void_element_str(&tag_name)
+                        && let Some(closing_end_pos) =
+                            self.parse_immediate_empty_closing_tag(source, end_pos, &tag_name)
+                    {
+                        output.push(b'>');
+                        output.extend_from_slice(b"</");
+                        output.extend_from_slice(tag_name.as_bytes());
+                        output.push(b'>');
+                        output.extend_from_slice(self.newline);
+                        pos = closing_end_pos;
+                        continue;
                     } else {
                         output.push(b'>');
                         if !is_void_element_str(&tag_name) {
@@ -326,6 +337,32 @@ impl<'a> TemplateFormatter<'a> {
         }
 
         Some((tag_name, attrs, is_self_closing, pos))
+    }
+
+    /// Return the end of an immediately following matching closing tag.
+    fn parse_immediate_empty_closing_tag(
+        &self,
+        source: &[u8],
+        start: usize,
+        tag_name: &str,
+    ) -> Option<usize> {
+        let len = source.len();
+        let mut pos = start;
+
+        while pos < len && is_whitespace(source[pos]) {
+            pos += 1;
+        }
+
+        if pos + 1 >= len || source[pos] != b'<' || source[pos + 1] != b'/' {
+            return None;
+        }
+
+        let (closing_tag_name, end_pos) = parse_closing_tag(source, pos)?;
+        if closing_tag_name.as_str() == tag_name {
+            Some(end_pos)
+        } else {
+            None
+        }
     }
 
     /// Parse a single attribute: name, optional `="value"`.

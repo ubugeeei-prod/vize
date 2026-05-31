@@ -2,5 +2,4 @@
 source: crates/vize_glyph/src/template.rs
 expression: result.as_str()
 ---
-<div @click="handler">
-</div>
+<div @click="handler"></div>
