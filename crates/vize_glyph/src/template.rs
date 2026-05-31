@@ -83,6 +83,22 @@ mod tests {
     }
 
     #[test]
+    fn directive_expression_double_quote_formatting_keeps_valid_attribute_quotes() {
+        let source = r#"<MfCheckbox @blur="form.validateField('agreeToPolicy')" />"#;
+        let mut options = FormatOptions::default();
+        options.single_quote = false;
+
+        let result = format_template_content(source, &options).unwrap();
+        assert_eq!(
+            result.as_str(),
+            r#"<MfCheckbox @blur='form.validateField("agreeToPolicy")' />"#
+        );
+
+        let formatted_again = format_template_content(&result, &options).unwrap();
+        assert_eq!(formatted_again, result);
+    }
+
+    #[test]
     fn test_directive_shorthand_v_bind() {
         let source = r#"<div v-bind:class="active"></div>"#;
         let options = FormatOptions::default();
