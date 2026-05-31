@@ -1033,3 +1033,21 @@ import MyComponent from './MyComponent.vue'
   </div>
 </template>
 """
+
+[[cases]]
+name = "defineEmits binding preserves blank line before setup body"
+input = """
+<script setup lang="ts">
+const emit = defineEmits<{
+  change: [value: string]
+}>()
+
+function handleClick() {
+  emit('change', 'hello')
+}
+</script>
+
+<template>
+  <button @click="handleClick">Click</button>
+</template>
+"""

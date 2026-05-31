@@ -2131,3 +2131,42 @@ return (_ctx, _cache) => {
 }
 
 }
+===
+name: defineEmits binding preserves blank line before setup body
+options: sfc
+--- INPUT ---
+<script setup lang="ts">
+const emit = defineEmits<{
+  change: [value: string]
+}>()
+
+function handleClick() {
+  emit('change', 'hello')
+}
+</script>
+
+<template>
+  <button @click="handleClick">Click</button>
+</template>
+--- OUTPUT ---
+import { defineComponent as _defineComponent } from 'vue'
+import { openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  emits: ["change"],
+  setup(__props, { emit: __emit }) {
+
+const emit = __emit
+
+function handleClick() {
+  emit('change', 'hello')
+}
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("button", { onClick: handleClick }, "Click"))
+}
+}
+
+})

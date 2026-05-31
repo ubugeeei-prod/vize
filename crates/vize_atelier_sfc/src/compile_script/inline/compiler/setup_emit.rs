@@ -112,6 +112,9 @@ pub(super) fn emit_setup_body(
         output.extend_from_slice(b"const ");
         output.extend_from_slice(binding_name.as_bytes());
         output.extend_from_slice(b" = __emit\n");
+        if has_blank_line_after_macro(ctx.source.as_str(), emits_macro.end) {
+            output.push(b'\n');
+        }
     }
 
     // Props binding: const props = __props
@@ -196,5 +199,61 @@ pub(super) fn emit_setup_body(
             output.extend_from_slice(b"\n");
         }
         output.extend_from_slice(b"}))\n");
+    }
+}
+
+fn has_blank_line_after_macro(source: &str, macro_end: usize) -> bool {
+    let Some(mut rest) = source.get(macro_end..) else {
+        return false;
+    };
+
+    rest = rest.trim_start_matches([' ', '\t']);
+    if let Some(after_semicolon) = rest.strip_prefix(';') {
+        rest = after_semicolon.trim_start_matches([' ', '\t']);
+    }
+
+    let mut newline_count = 0usize;
+    for byte in rest.bytes() {
+        match byte {
+            b'\n' => {
+                newline_count += 1;
+                if newline_count >= 2 {
+                    return true;
+                }
+            }
+            b'\r' | b' ' | b'\t' => {}
+            _ => return false,
+        }
+    }
+
+    false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::has_blank_line_after_macro;
+
+    #[test]
+    fn detects_blank_line_after_macro_call() {
+        let source = "const emit = defineEmits<{ change: [] }>();\n\nfunction call() {}";
+        let macro_end = source.find(";\n").unwrap();
+
+        assert!(has_blank_line_after_macro(source, macro_end));
+    }
+
+    #[test]
+    fn ignores_single_newline_after_macro_call() {
+        let source = "const emit = defineEmits(['change'])\nfunction call() {}";
+        let macro_end = source.find('\n').unwrap();
+
+        assert!(!has_blank_line_after_macro(source, macro_end));
+    }
+
+    #[test]
+    fn ignores_non_whitespace_after_macro_call() {
+        let source = "const emit = defineEmits(['change']); // comment\nfunction call() {}";
+        let macro_end = source.find(';').unwrap();
+
+        assert!(!has_blank_line_after_macro(source, macro_end));
     }
 }
