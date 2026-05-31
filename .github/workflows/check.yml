@@ -73,11 +73,44 @@ jobs:
         run: vp run --workspace-root check:ci
 
   semver-checks:
-    name: cargo-semver-checks
+    name: cargo-semver-checks (${{ matrix.crate }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     permissions:
       contents: read
+    # One crate per matrix leg so the whole suite runs in parallel (was a
+    # single serial pass over all crates — the slowest non-playground gate)
+    # and so a breaking change is attributed to its crate without waiting for
+    # the rest. `fail-fast: false` keeps every crate reported even after one
+    # fails.
+    #
+    # Each entry flags accidental breaking changes to a published crate's
+    # public API by comparing against the latest baseline on crates.io. Keep
+    # this list in sync with the publishable workspace crates that have at
+    # least one version on crates.io.
+    #
+    # cargo-semver-checks fails with "not found in registry" for crates that
+    # have no baseline yet, so a newly publishable crate must land on
+    # crates.io first, then be added here in a follow-up. `vize_croquis_cf`
+    # is currently in that state and is intentionally omitted until its
+    # first publish.
+    strategy:
+      fail-fast: false
+      matrix:
+        crate:
+          - vize_armature
+          - vize_atelier_core
+          - vize_atelier_dom
+          - vize_atelier_sfc
+          - vize_atelier_ssr
+          - vize_atelier_vapor
+          - vize_canon
+          - vize_carton
+          - vize_croquis
+          - vize_fresco
+          - vize_musea
+          - vize_patina
+          - vize_relief
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -89,33 +122,8 @@ jobs:
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-semver-checks
-      # Flags accidental breaking changes to a published crate's public API by
-      # comparing against the latest baseline on crates.io. Each `--package`
-      # flag adds another crate to the comparison; keep this list in sync with
-      # the publishable workspace crates that have at least one version on
-      # crates.io.
-      #
-      # cargo-semver-checks fails the whole run with "not found in registry"
-      # for crates that have no baseline yet, so a newly publishable crate
-      # must land on crates.io first, then be added to this list in a
-      # follow-up. `vize_croquis_cf` is currently in that state and is
-      # intentionally omitted until its first publish.
       - name: Check public API SemVer compatibility
-        run: |
-          cargo semver-checks check-release \
-            --package vize_armature \
-            --package vize_atelier_core \
-            --package vize_atelier_dom \
-            --package vize_atelier_sfc \
-            --package vize_atelier_ssr \
-            --package vize_atelier_vapor \
-            --package vize_canon \
-            --package vize_carton \
-            --package vize_croquis \
-            --package vize_fresco \
-            --package vize_musea \
-            --package vize_patina \
-            --package vize_relief
+        run: cargo semver-checks check-release --package ${{ matrix.crate }}
 
   security-audit:
     runs-on: blacksmith-32vcpu-ubuntu-2404
