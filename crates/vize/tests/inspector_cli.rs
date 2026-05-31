@@ -103,6 +103,49 @@ fn inspector_url_supports_batch_payloads() {
 }
 
 #[test]
+fn inspector_default_glob_respects_gitignore() {
+    let project = tempfile::tempdir().unwrap();
+    let src = project.path().join("src");
+    let ignored = project.path().join("ignored");
+    fs::create_dir_all(&src).unwrap();
+    fs::create_dir_all(&ignored).unwrap();
+    fs::write(project.path().join(".gitignore"), "ignored/\n").unwrap();
+    fs::write(
+        src.join("App.vue"),
+        "<template><div>included</div></template>\n",
+    )
+    .unwrap();
+    fs::write(
+        ignored.join("Ignored.vue"),
+        "<template><div>ignored</div></template>\n",
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["inspector", "--format", "json"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let files = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|file| file["path"].as_str().unwrap())
+        .collect::<Vec<_>>();
+
+    assert_eq!(files, ["src/App.vue"]);
+}
+
+#[test]
 fn inspector_agent_outputs_report_with_graph() {
     let project = tempfile::tempdir().unwrap();
     let src = project.path().join("src");
