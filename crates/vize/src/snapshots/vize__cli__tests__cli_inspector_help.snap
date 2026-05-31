@@ -18,9 +18,10 @@ Options:
           Output format
 
           Possible values:
-          - url:   Print a playground URL containing the encoded inspector payload
-          - json:  Print the raw inspector JSON payload
-          - agent: Print an AI-agent friendly JSON report with payload, URL, and graph metadata
+          - url:     Print a playground URL containing the encoded inspector payload
+          - json:    Print the raw inspector JSON payload
+          - agent:   Print an AI-agent friendly JSON report with payload, URL, and graph metadata
+          - compare: Run a development-only CLI comparison against @vue/compiler-sfc
 
           [default: url]
 
