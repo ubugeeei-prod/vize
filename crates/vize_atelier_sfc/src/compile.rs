@@ -503,6 +503,12 @@ fn compile_sfc_inner(
             script_bindings.bindings.entry(name.clone()).or_insert(*bt);
         }
     }
+    for (local, key) in &ctx.bindings.props_aliases {
+        script_bindings
+            .props_aliases
+            .entry(local.clone())
+            .or_insert_with(|| key.clone());
+    }
 
     // Register $emit or __emit binding when defineEmits is used, so the template
     // compiler knows not to prefix it with _ctx.

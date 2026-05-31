@@ -1,0 +1,19 @@
+---
+source: crates/vize_atelier_sfc/src/compile_script/inline/tests.rs
+expression: output.as_str()
+---
+import { computed } from "vue";
+export default {
+  __name: "TestComponent",
+  props: {
+    type: {},
+    title: {},
+    speakers: {}
+  },
+  setup(__props) {
+    const isEvent = computed(() => __props.type === "event");
+    return (_ctx, _cache) => {
+      return null;
+    };
+  }
+};
