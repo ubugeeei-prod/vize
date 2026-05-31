@@ -8,8 +8,8 @@ use vize_carton::{Bump, FxHashSet, String, ToCompactString};
 use vize_croquis::macros::runtime_erased_macro_names;
 
 use crate::script::{
-    ScriptCompileContext, TemplateUsedIdentifiers, resolve_template_used_identifiers,
-    transform_destructured_props,
+    PropsDestructuredBindings, ScriptCompileContext, TemplateUsedIdentifiers,
+    resolve_template_used_identifiers, transform_destructured_props,
 };
 use crate::types::{BindingType, SfcError};
 
@@ -327,7 +327,11 @@ fn emit_props_definition(
                 if let Some(ref type_args) = props_macro.type_args {
                     let prop_types = extract_prop_types_from_type(type_args);
                     if prop_types.is_empty() {
-                        "{}".to_compact_string()
+                        if let Some(ref destructure) = ctx.macros.props_destructure {
+                            destructured_props_runtime_decl(destructure)
+                        } else {
+                            "{}".to_compact_string()
+                        }
                     } else {
                         let mut names: Vec<_> =
                             prop_types.iter().map(|(n, _)| n.as_str()).collect();
@@ -376,6 +380,30 @@ fn emit_props_definition(
                 output.extend_from_slice(b"  props: ");
                 output.extend_from_slice(props_macro.args.as_bytes());
                 output.extend_from_slice(b",\n");
+            } else if let Some(ref props_macro) = ctx.macros.define_props
+                && props_macro.type_args.is_some()
+            {
+                let prop_types = props_macro
+                    .type_args
+                    .as_ref()
+                    .map(|type_args| extract_prop_types_from_type(type_args))
+                    .unwrap_or_default();
+                if prop_types.is_empty() {
+                    output.extend_from_slice(b"  props: ");
+                    output
+                        .extend_from_slice(destructured_props_runtime_decl(destructure).as_bytes());
+                    output.extend_from_slice(b",\n");
+                } else {
+                    output.extend_from_slice(b"  props: {\n");
+                    let mut names: Vec<_> = prop_types.iter().map(|(n, _)| n.as_str()).collect();
+                    names.sort();
+                    for name in names {
+                        output.extend_from_slice(b"    ");
+                        output.extend_from_slice(name.as_bytes());
+                        output.extend_from_slice(b": {},\n");
+                    }
+                    output.extend_from_slice(b"  },\n");
+                }
             }
         }
     } else if let Some(ref props_macro) = ctx.macros.define_props {
@@ -419,6 +447,19 @@ fn emit_props_definition(
             output.extend_from_slice(b",\n");
         }
     }
+}
+
+fn destructured_props_runtime_decl(destructure: &PropsDestructuredBindings) -> String {
+    let mut decl = String::from("{ ");
+    for (i, key) in destructure.keys.iter().enumerate() {
+        if i > 0 {
+            decl.push_str(", ");
+        }
+        decl.push_str(key.as_str());
+        decl.push_str(": {}");
+    }
+    decl.push_str(" }");
+    decl
 }
 
 /// Collect model names from defineModel calls.

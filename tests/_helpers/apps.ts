@@ -333,6 +333,51 @@ function addPnpmOverrides(packageJsonPath: string, overrides: Record<string, str
   }
 }
 
+function patchVuefesVisualFixture(vuefesDir: string): void {
+  const configPath = path.join(vuefesDir, "nuxt.config.ts");
+  const configSource = fs.readFileSync(configPath, "utf-8");
+  const nextConfigSource = configSource.replace(
+    '  i18n: {\n    langDir: ".",',
+    '  i18n: {\n    bundle: {\n      optimizeTranslationDirective: false,\n    },\n    langDir: ".",',
+  );
+  if (nextConfigSource !== configSource) {
+    fs.writeFileSync(configPath, nextConfigSource);
+  }
+
+  const staffSectionPath = path.join(vuefesDir, "app", "pages", "_components", "SectionStaff.vue");
+  const source = fs.readFileSync(staffSectionPath, "utf-8");
+  const nextSource = source
+    .replace(
+      "onMounted(() => {\n  if (!staffList.value) return;\n  staffList.value.leaders = shuffleNonPinned(staffList.value.leaders);\n  staffList.value.cores = shuffleNonPinned(staffList.value.cores);\n});",
+      "onMounted(() => {\n  if (!staffList.value) return;\n  staffList.value.leaders = keepPinnedOrder(staffList.value.leaders);\n  staffList.value.cores = keepPinnedOrder(staffList.value.cores);\n});",
+    )
+    .replace(
+      "function shuffleNonPinned(staffArray: Staff[]): Staff[] {\n  const pinned = staffArray.filter(staff => staff.pinned);\n  const nonPinned = staffArray.filter(staff => !staff.pinned);\n  const shuffledNonPinned = shuffleArray(nonPinned);\n  return [...pinned, ...shuffledNonPinned];\n}",
+      "function keepPinnedOrder(staffArray: Staff[]): Staff[] {\n  const pinned = staffArray.filter(staff => staff.pinned);\n  const nonPinned = staffArray.filter(staff => !staff.pinned);\n  return [...pinned, ...nonPinned];\n}",
+    );
+
+  if (nextSource !== source) {
+    fs.writeFileSync(staffSectionPath, nextSource);
+  }
+
+  const staffApiPath = path.join(vuefesDir, "server", "api", "staffs", "index.get.ts");
+  const apiSource = fs.readFileSync(staffApiPath, "utf-8");
+  const nextApiSource = apiSource
+    .replace(
+      "function shuffleNonPinned(staffArray: Staff[]): Staff[] {\n  const pinned = staffArray.filter(staff => staff.pinned);\n  const nonPinned = staffArray.filter(staff => !staff.pinned);\n  const shuffledNonPinned = shuffleArray(nonPinned);\n  return [...pinned, ...shuffledNonPinned];\n}",
+      "function keepPinnedOrder(staffArray: Staff[]): Staff[] {\n  const pinned = staffArray.filter(staff => staff.pinned);\n  const nonPinned = staffArray.filter(staff => !staff.pinned);\n  return [...pinned, ...nonPinned];\n}",
+    )
+    .replace(
+      "leaders: shuffleNonPinned(staffs.leaders),",
+      "leaders: keepPinnedOrder(staffs.leaders),",
+    )
+    .replace("cores: shuffleNonPinned(staffs.cores),", "cores: keepPinnedOrder(staffs.cores),");
+
+  if (nextApiSource !== apiSource) {
+    fs.writeFileSync(staffApiPath, nextApiSource);
+  }
+}
+
 function ensureMisskeyFluentEmojiAssets(misskeyDir: string): void {
   const sourceRoot = path.join(misskeyDir, "packages", "frontend", "src");
   const distDir = path.join(misskeyDir, "fluent-emojis", "dist");
@@ -638,7 +683,47 @@ const VUEFES_WORK_DIR = getMutableGitFixtureDir("vuefes-2025");
 
 const ELK_E2E_ENV = {
   NUXT_STORAGE_DRIVER: "fs",
+  VIZE_E2E_BUILD_TIME: "1767225600000",
 } as const;
+
+function patchElkBuildEnvTime(buildEnvPath: string): void {
+  const source = fs.readFileSync(buildEnvPath, "utf-8");
+  const nextSource = source.replace(
+    "      time: +Date.now(),",
+    "      time: Number(process.env.VIZE_E2E_BUILD_TIME ?? Date.now()),",
+  );
+  if (nextSource !== source) {
+    fs.writeFileSync(buildEnvPath, nextSource);
+  }
+}
+
+function setupElkWorktree(opts?: { enableVize?: boolean; variant?: string }): string {
+  const enableVize = opts?.enableVize ?? true;
+  const elkDir = syncGitFixtureWorktree("elk", opts?.variant);
+
+  if (enableVize) {
+    ensureLocalVizePackagesBuilt();
+  }
+
+  addPnpmOverrides(path.join(elkDir, "package.json"), {
+    vite: "^8.0.0",
+  });
+  patchElkBuildEnvTime(path.join(elkDir, "modules", "build-env.ts"));
+
+  console.log(`[elk:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
+    cwd: elkDir,
+    stdio: "inherit",
+    timeout: 300_000,
+  });
+
+  if (enableVize) {
+    createVizeSymlinks(path.join(elkDir, "node_modules"));
+  }
+  patchNuxtConfig(path.join(elkDir, "nuxt.config.ts"), { enableVize });
+
+  return elkDir;
+}
 
 export const elkApp: AppConfig = {
   name: "elk",
@@ -655,23 +740,7 @@ export const elkApp: AppConfig = {
   startupTimeout: 120_000,
   env: ELK_E2E_ENV,
   setup() {
-    const elkDir = syncGitFixtureWorktree("elk");
-
-    ensureLocalVizePackagesBuilt();
-
-    addPnpmOverrides(path.join(elkDir, "package.json"), {
-      vite: "^8.0.0",
-    });
-
-    console.log("[elk:setup] pnpm install...");
-    execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
-      cwd: elkDir,
-      stdio: "inherit",
-      timeout: 300_000,
-    });
-
-    createVizeSymlinks(path.join(elkDir, "node_modules"));
-    patchNuxtConfig(path.join(elkDir, "nuxt.config.ts"));
+    setupElkWorktree();
   },
   build: {
     command: "npx",
@@ -694,6 +763,37 @@ export const elkApp: AppConfig = {
     patterns: ["app/**/*.vue"],
   },
 };
+
+function createElkVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
+  const variant = `vrt-${kind}`;
+  return {
+    name: `elk:${kind}`,
+    cwd: getMutableGitFixtureDir("elk", variant),
+    command: "npx",
+    args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"],
+    port,
+    url: `http://127.0.0.1:${port}`,
+    mountSelector: "#__nuxt",
+    readyPattern: new RegExp(
+      `Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`,
+    ),
+    allowNon200: true,
+    waitUntil: "load",
+    readyDelay: 15_000,
+    startupTimeout: 120_000,
+    env: ELK_E2E_ENV,
+    setup() {
+      setupElkWorktree({ enableVize: kind === "candidate", variant });
+    },
+  };
+}
+
+export function createElkVisualParityApps(): { candidate: AppConfig; reference: AppConfig } {
+  return {
+    reference: createElkVisualParityApp("reference", 5324),
+    candidate: createElkVisualParityApp("candidate", 5325),
+  };
+}
 
 function setupMisskeyWorktree(opts?: {
   base?: string;
@@ -1191,54 +1291,7 @@ export const vuefesApp: AppConfig = {
   readyDelay: 30_000,
   startupTimeout: 180_000,
   setup() {
-    const vuefesDir = syncGitFixtureWorktree("vuefes-2025");
-
-    ensureLocalVizePackagesBuilt();
-
-    // Ensure pnpm-workspace.yaml exists so pnpm doesn't resolve the parent workspace
-    const wsYaml = path.join(vuefesDir, "pnpm-workspace.yaml");
-    if (!fs.existsSync(wsYaml)) {
-      fs.writeFileSync(wsYaml, "packages: []\n");
-    }
-
-    // Relax packageManager and engines constraints for e2e environment
-    const vuefesPackageJson = path.join(vuefesDir, "package.json");
-    const pkg = JSON.parse(fs.readFileSync(vuefesPackageJson, "utf-8"));
-    let changed = false;
-    if (pkg.packageManager) {
-      delete pkg.packageManager;
-      changed = true;
-    }
-    if (pkg.engines?.node) {
-      pkg.engines = { pnpm: pkg.engines.pnpm ?? ">=10" };
-      changed = true;
-    }
-    if (changed) {
-      fs.writeFileSync(vuefesPackageJson, JSON.stringify(pkg, null, "\t") + "\n");
-    }
-
-    addPnpmOverrides(vuefesPackageJson, {
-      vite: "^8.0.0",
-    });
-
-    console.log("[vuefes-2025:setup] pnpm install...");
-    execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
-      cwd: vuefesDir,
-      stdio: "inherit",
-      timeout: 300_000,
-    });
-
-    createVizeSymlinks(path.join(vuefesDir, "node_modules"));
-    patchNuxtConfig(path.join(vuefesDir, "nuxt.config.ts"), {
-      removeModules: ["@nuxtjs/storybook"],
-    });
-
-    console.log("[vuefes-2025:setup] nuxt prepare...");
-    execSync("npx -y pnpm@10 exec nuxt prepare", {
-      cwd: vuefesDir,
-      stdio: "inherit",
-      timeout: 180_000,
-    });
+    setupVuefesWorktree();
   },
   build: {
     command: "npx",
@@ -1261,6 +1314,96 @@ export const vuefesApp: AppConfig = {
     patterns: ["app/**/*.vue"],
   },
 };
+
+function setupVuefesWorktree(opts?: { enableVize?: boolean; variant?: string }): string {
+  const enableVize = opts?.enableVize ?? true;
+  const vuefesDir = syncGitFixtureWorktree("vuefes-2025", opts?.variant);
+
+  if (enableVize) {
+    ensureLocalVizePackagesBuilt();
+  }
+
+  // Ensure pnpm-workspace.yaml exists so pnpm doesn't resolve the parent workspace
+  const wsYaml = path.join(vuefesDir, "pnpm-workspace.yaml");
+  if (!fs.existsSync(wsYaml)) {
+    fs.writeFileSync(wsYaml, "packages: []\n");
+  }
+
+  // Relax packageManager and engines constraints for e2e environment
+  const vuefesPackageJson = path.join(vuefesDir, "package.json");
+  const pkg = JSON.parse(fs.readFileSync(vuefesPackageJson, "utf-8"));
+  let changed = false;
+  if (pkg.packageManager) {
+    delete pkg.packageManager;
+    changed = true;
+  }
+  if (pkg.engines?.node) {
+    pkg.engines = { pnpm: pkg.engines.pnpm ?? ">=10" };
+    changed = true;
+  }
+  if (changed) {
+    fs.writeFileSync(vuefesPackageJson, JSON.stringify(pkg, null, "\t") + "\n");
+  }
+
+  addPnpmOverrides(vuefesPackageJson, {
+    vite: "^8.0.0",
+  });
+  patchVuefesVisualFixture(vuefesDir);
+
+  console.log(`[vuefes-2025:${enableVize ? "candidate" : "reference"}:setup] pnpm install...`);
+  execSync("npx -y pnpm@10 install --no-frozen-lockfile", {
+    cwd: vuefesDir,
+    stdio: "inherit",
+    timeout: 300_000,
+  });
+
+  if (enableVize) {
+    createVizeSymlinks(path.join(vuefesDir, "node_modules"));
+  }
+  patchNuxtConfig(path.join(vuefesDir, "nuxt.config.ts"), {
+    enableVize,
+    removeModules: ["@nuxtjs/storybook"],
+  });
+
+  console.log(`[vuefes-2025:${enableVize ? "candidate" : "reference"}:setup] nuxt prepare...`);
+  execSync("npx -y pnpm@10 exec nuxt prepare", {
+    cwd: vuefesDir,
+    stdio: "inherit",
+    timeout: 180_000,
+  });
+
+  return vuefesDir;
+}
+
+function createVuefesVisualParityApp(kind: "candidate" | "reference", port: number): AppConfig {
+  const variant = `vrt-${kind}`;
+  return {
+    name: `vuefes-2025:${kind}`,
+    cwd: getMutableGitFixtureDir("vuefes-2025", variant),
+    command: "npx",
+    args: ["-y", "pnpm@10", "exec", "nuxt", "dev", "--port", String(port), "--host", "0.0.0.0"],
+    port,
+    url: `http://127.0.0.1:${port}`,
+    mountSelector: "#__nuxt",
+    readyPattern: new RegExp(
+      `Local:\\s+http:\\/\\/(localhost|127\\.0\\.0\\.1|0\\.0\\.0\\.0):${port}`,
+    ),
+    allowNon200: true,
+    waitUntil: "load",
+    readyDelay: 30_000,
+    startupTimeout: 180_000,
+    setup() {
+      setupVuefesWorktree({ enableVize: kind === "candidate", variant });
+    },
+  };
+}
+
+export function createVuefesVisualParityApps(): { candidate: AppConfig; reference: AppConfig } {
+  return {
+    reference: createVuefesVisualParityApp("reference", 5326),
+    candidate: createVuefesVisualParityApp("candidate", 5327),
+  };
+}
 
 export const antDesignVueApp: AppConfig = {
   name: "ant-design-vue",
