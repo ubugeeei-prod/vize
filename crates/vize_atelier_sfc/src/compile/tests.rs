@@ -20,6 +20,19 @@ fn fixtures_path() -> PathBuf {
         .join("imported_types")
 }
 
+fn temp_compile_project_dir(test_name: &str) -> PathBuf {
+    let nonce = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    std::env::temp_dir().join(format!(
+        "vize-sfc-compile-{}-{}-{}",
+        std::process::id(),
+        test_name,
+        nonce
+    ))
+}
+
 fn sfc_compile_snapshot(
     css_vars: &[std::borrow::Cow<'_, str>],
     result: &SfcCompileResult,
@@ -1277,6 +1290,97 @@ fn test_define_props_interface_extends_imported_type_alias() {
     let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
 
     insta::assert_snapshot!(result.code.as_str());
+}
+
+#[test]
+fn test_with_defaults_resolves_imported_vue_type_from_src_alias() {
+    let project = temp_compile_project_dir("with-defaults-src-alias");
+    let components = project.join("packages/frontend/src/components");
+    fs::create_dir_all(&components).unwrap();
+
+    fs::write(
+        components.join("MkPagination.vue"),
+        r#"<script lang="ts">
+export type MkPaginationOptions = {
+  autoLoad?: boolean;
+  direction?: 'up' | 'down' | 'both';
+  pullToRefresh?: boolean;
+  withControl?: boolean;
+  forceDisableInfiniteScroll?: boolean;
+};
+</script>"#,
+    )
+    .unwrap();
+
+    let source = r#"<template>
+  <MkPagination
+    :paginator="paginator"
+    :direction="direction"
+    :autoLoad="autoLoad"
+    :pullToRefresh="pullToRefresh"
+    :withControl="withControl"
+    :forceDisableInfiniteScroll="forceDisableInfiniteScroll"
+  />
+</template>
+
+<script setup lang="ts" generic="T">
+import type { MkPaginationOptions } from '@/components/MkPagination.vue';
+import MkPagination from '@/components/MkPagination.vue';
+
+const props = withDefaults(defineProps<MkPaginationOptions & {
+  paginator: T;
+  noGap?: boolean;
+}>(), {
+  autoLoad: true,
+  direction: 'down',
+  pullToRefresh: true,
+  withControl: true,
+  forceDisableInfiniteScroll: false,
+});
+</script>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    let fixture_path = components.join("MkNotesTimeline.vue");
+    opts.script.id = Some(fixture_path.to_string_lossy().as_ref().to_compact_string());
+
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        result.code.contains(
+            "autoLoad: {\n      type: Boolean,\n      required: false,\n      default: true\n    }"
+        ),
+        "{}",
+        result.code
+    );
+    assert!(
+        result.code.contains(
+            "direction: {\n      type: String,\n      required: false,\n      default: \"down\"\n    }"
+        ),
+        "{}",
+        result.code
+    );
+    assert!(
+        result.code.contains(
+            "pullToRefresh: {\n      type: Boolean,\n      required: false,\n      default: true\n    }"
+        ),
+        "{}",
+        result.code
+    );
+    assert!(
+        result.code.contains(
+            "withControl: {\n      type: Boolean,\n      required: false,\n      default: true\n    }"
+        ),
+        "{}",
+        result.code
+    );
+    assert!(
+        result.code.contains("forceDisableInfiniteScroll: {\n      type: Boolean,\n      required: false,\n      default: false\n    }"),
+        "{}",
+        result.code
+    );
+
+    let _ = fs::remove_dir_all(project);
 }
 
 #[test]

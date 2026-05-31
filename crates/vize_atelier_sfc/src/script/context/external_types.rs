@@ -125,6 +125,10 @@ impl ScriptCompileContext {
 }
 
 fn resolve_import_path(current_file: &Path, specifier: &str) -> Option<PathBuf> {
+    if let Some(alias_path) = resolve_at_src_alias(current_file, specifier) {
+        return Some(alias_path);
+    }
+
     if !specifier.starts_with('.') && !specifier.starts_with('/') {
         return None;
     }
@@ -136,6 +140,20 @@ fn resolve_import_path(current_file: &Path, specifier: &str) -> Option<PathBuf> 
         base_dir.join(specifier)
     };
 
+    resolve_candidate_path(candidate)
+}
+
+fn resolve_at_src_alias(current_file: &Path, specifier: &str) -> Option<PathBuf> {
+    let rest = specifier.strip_prefix("@/")?;
+    let src_dir = current_file
+        .parent()?
+        .ancestors()
+        .find(|path| path.file_name().is_some_and(|name| name == "src"))?;
+
+    resolve_candidate_path(src_dir.join(rest))
+}
+
+fn resolve_candidate_path(candidate: PathBuf) -> Option<PathBuf> {
     if candidate.is_file() {
         return canonicalize_or_original(candidate);
     }
@@ -171,4 +189,54 @@ fn canonicalize_or_original(path: PathBuf) -> Option<PathBuf> {
 
 fn path_key(path: &Path) -> String {
     path.to_string_lossy().as_ref().to_compact_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{resolve_at_src_alias, resolve_import_path};
+    use std::path::{Path, PathBuf};
+
+    fn temp_project_dir(test_name: &str) -> PathBuf {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "vize-sfc-external-types-{}-{}-{}",
+            std::process::id(),
+            test_name,
+            nonce
+        ))
+    }
+
+    #[test]
+    fn resolves_at_alias_from_nearest_src_directory() {
+        let project = temp_project_dir("at-alias");
+        let components = project.join("packages/frontend/src/components");
+        std::fs::create_dir_all(&components).unwrap();
+        let target = components.join("Base.vue");
+        std::fs::write(&target, "").unwrap();
+
+        let current = components.join("Child.vue");
+        let resolved = resolve_at_src_alias(&current, "@/components/Base.vue");
+        let target = target.canonicalize().unwrap();
+
+        assert_eq!(resolved.as_deref(), Some(target.as_path()));
+
+        let _ = std::fs::remove_dir_all(project);
+    }
+
+    #[test]
+    fn ignores_at_alias_without_src_ancestor() {
+        let current = Path::new("/repo/packages/frontend/components/Child.vue");
+
+        assert!(resolve_at_src_alias(current, "@/components/Base.vue").is_none());
+    }
+
+    #[test]
+    fn leaves_non_at_alias_specifiers_to_existing_resolution() {
+        let current = Path::new("/repo/src/components/Child.vue");
+
+        assert!(resolve_import_path(current, "vue").is_none());
+    }
 }
