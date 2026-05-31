@@ -202,3 +202,89 @@ import Child from './Child'
         );
     });
 }
+
+#[test]
+fn inspector_compare_reports_missing_node_runtime() {
+    let project = tempfile::tempdir().unwrap();
+    let src = project.path().join("src");
+    fs::create_dir_all(&src).unwrap();
+    fs::write(
+        src.join("App.vue"),
+        "<template><div>hello</div></template>\n",
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .env(
+            "VIZE_INSPECTOR_NODE",
+            "vize-inspector-node-command-that-does-not-exist",
+        )
+        .args(["inspector", "src/App.vue", "--format", "compare"])
+        .output()
+        .unwrap();
+
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(!output.status.success(), "{stderr}");
+    assert!(
+        stderr.contains("--format compare requires a local Node.js runtime"),
+        "{stderr}"
+    );
+}
+
+#[test]
+fn inspector_compare_outputs_cli_diff_report_when_dev_runtime_is_available() {
+    if !dev_vue_compiler_available() {
+        return;
+    }
+
+    let project = tempfile::tempdir().unwrap();
+    let src = project.path().join("src");
+    fs::create_dir_all(&src).unwrap();
+    fs::write(
+        src.join("App.vue"),
+        r#"<script setup lang="ts">
+const msg: string = "hello";
+</script>
+
+<template>
+  <div>{{ msg }}</div>
+</template>
+"#,
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project.path())
+        .args(["inspector", "src/App.vue", "--format", "compare"])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(json["schema"], "vize.inspector.compare");
+    assert_eq!(json["target"], "dom");
+    assert_eq!(json["summary"]["fileCount"], 1);
+    assert_eq!(json["files"][0]["path"], "src/App.vue");
+    assert!(json["files"][0]["official"]["code"].as_str().is_some());
+    assert!(json["files"][0]["vize"]["code"].as_str().is_some());
+    assert!(json["files"][0]["diff"].as_array().is_some());
+}
+
+fn dev_vue_compiler_available() -> bool {
+    let manifest_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let Some(workspace_root) = manifest_dir.parent().and_then(|path| path.parent()) else {
+        return false;
+    };
+    Command::new("node")
+        .current_dir(workspace_root)
+        .args(["--input-type=module", "-e", "import('vue/compiler-sfc')"])
+        .status()
+        .is_ok_and(|status| status.success())
+}

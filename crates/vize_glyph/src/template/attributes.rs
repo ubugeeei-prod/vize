@@ -4,7 +4,7 @@
 //! according to Vue style guide order, plus rendering them back to strings.
 
 use crate::options::{AttributeSortOrder, FormatOptions};
-use vize_carton::String;
+use vize_carton::{String, ToCompactString};
 
 /// Parsed attribute with structured information for sorting and rendering.
 #[derive(Debug, Clone)]
@@ -142,7 +142,67 @@ pub(crate) fn attribute_priority(name: &str) -> u8 {
 #[allow(clippy::disallowed_macros)]
 pub(crate) fn render_attribute(attr: &ParsedAttribute) -> String {
     match &attr.value {
-        Some(value) => format!("{}=\"{}\"", attr.name, value).into(),
+        Some(value) => {
+            let quote = attribute_quote(value);
+            let value = escape_attribute_value(value, quote);
+            format!("{}={}{}{}", attr.name, quote, value, quote).into()
+        }
         None => attr.name.clone(),
+    }
+}
+
+fn attribute_quote(value: &str) -> char {
+    if value.contains('"') && !value.contains('\'') {
+        '\''
+    } else {
+        '"'
+    }
+}
+
+fn escape_attribute_value(value: &str, quote: char) -> String {
+    if !value.contains(quote) {
+        return value.to_compact_string();
+    }
+
+    let mut escaped = String::default();
+    for ch in value.chars() {
+        match (quote, ch) {
+            ('"', '"') => escaped.push_str("&quot;"),
+            ('\'', '\'') => escaped.push_str("&#39;"),
+            _ => escaped.push(ch),
+        }
+    }
+    escaped
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ParsedAttribute, render_attribute};
+
+    #[test]
+    fn render_attribute_uses_single_quotes_when_value_contains_double_quotes() {
+        let attr = ParsedAttribute {
+            name: "title".into(),
+            value: Some(r#"say "hello""#.into()),
+            priority: 0,
+            original_index: 0,
+        };
+
+        assert_eq!(render_attribute(&attr).as_str(), r#"title='say "hello"'"#);
+    }
+
+    #[test]
+    fn render_attribute_escapes_double_quotes_when_value_contains_both_quote_styles() {
+        let attr = ParsedAttribute {
+            name: "title".into(),
+            value: Some(r#"say "hello" and 'bye'"#.into()),
+            priority: 0,
+            original_index: 0,
+        };
+
+        assert_eq!(
+            render_attribute(&attr).as_str(),
+            r#"title="say &quot;hello&quot; and 'bye'""#
+        );
     }
 }
