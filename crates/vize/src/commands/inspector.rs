@@ -6,7 +6,7 @@
 //! Vize WASM output.
 
 use clap::{Args, ValueEnum};
-use ignore::Walk;
+use ignore::WalkBuilder;
 use std::{
     collections::BTreeSet,
     fs,
@@ -141,14 +141,17 @@ fn collect_files(patterns: &[String], max_files: Option<usize>) -> Vec<PathBuf> 
         }
 
         if path.is_dir() {
-            for entry in Walk::new(path).flatten() {
-                let entry_path = entry.path();
-                if entry_path.is_file() && is_vue_file(entry_path) {
-                    files.insert(entry_path.to_path_buf());
-                    if max_files.is_some_and(|limit| files.len() >= limit) {
-                        return files.into_iter().collect();
-                    }
-                }
+            if collect_walked_vue_files(path, &mut files, max_files) {
+                return files.into_iter().collect();
+            }
+            continue;
+        }
+
+        if let Some(root) = recursive_vue_glob_root(pattern)
+            && root.exists()
+        {
+            if collect_walked_vue_files(&root, &mut files, max_files) {
+                return files.into_iter().collect();
             }
             continue;
         }
@@ -178,6 +181,44 @@ fn collect_files(patterns: &[String], max_files: Option<usize>) -> Vec<PathBuf> 
     files
 }
 
+fn collect_walked_vue_files(
+    root: &Path,
+    files: &mut BTreeSet<PathBuf>,
+    max_files: Option<usize>,
+) -> bool {
+    for entry in WalkBuilder::new(root).require_git(false).build().flatten() {
+        let entry_path = entry.path();
+        if entry_path.is_file() && is_vue_file(entry_path) {
+            files.insert(entry_path.to_path_buf());
+            if max_files.is_some_and(|limit| files.len() >= limit) {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
+fn recursive_vue_glob_root(pattern: &str) -> Option<PathBuf> {
+    let normalized = pattern.replace('\\', "/");
+    if normalized == "**/*.vue" || normalized == "./**/*.vue" {
+        return Some(PathBuf::from("."));
+    }
+
+    let root = normalized.strip_suffix("/**/*.vue")?;
+    if root.is_empty() || contains_glob_meta(root) {
+        return None;
+    }
+
+    Some(PathBuf::from(root))
+}
+
+fn contains_glob_meta(value: &str) -> bool {
+    value
+        .bytes()
+        .any(|byte| matches!(byte, b'*' | b'?' | b'[' | b']' | b'{' | b'}'))
+}
+
 fn is_vue_file(path: &Path) -> bool {
     path.extension().is_some_and(|extension| extension == "vue")
 }
@@ -193,6 +234,7 @@ fn collect_source_files(files: &[PathBuf]) -> Vec<curator_inspector::InspectorSo
             });
             let display_path = path
                 .strip_prefix(&current_dir)
+                .or_else(|_| path.strip_prefix("."))
                 .unwrap_or(path)
                 .to_string_lossy()
                 .replace('\\', "/")
