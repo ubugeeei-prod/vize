@@ -120,6 +120,89 @@ void props
 }
 
 #[test]
+fn check_directory_pattern_resolves_json_modules_imported_by_ts() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "json-module-imports",
+        &[
+            (
+                "tsconfig.json",
+                r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*"]
+}"#,
+            ),
+            (
+                "src/tokens.ts",
+                r#"import colors from './tokens/source/colors.tokens.json'
+
+const primary: string = colors.primary
+void primary
+"#,
+            ),
+            (
+                "src/tokens/source/colors.tokens.json",
+                r##"{
+  "primary": "#0057ff"
+}
+"##,
+            ),
+        ],
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args([
+            "check",
+            "src",
+            "--tsconfig",
+            "tsconfig.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+
+    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
+    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
+        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
+    });
+    let diagnostics = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(|diagnostic| diagnostic.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert_eq!(json["errorCount"], 0, "diagnostics: {diagnostics:#?}");
+    assert!(
+        diagnostics
+            .iter()
+            .all(|diagnostic| !diagnostic.contains("Cannot find module")),
+        "JSON modules should resolve with resolveJsonModule enabled: {diagnostics:#?}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_vfor_over_object_types_key_as_keyof_not_number() {
     // Regression for vuejs/language-tools#5978 (#767): iterating an object with
     // `v-for="(value, key) in obj"` must type `value` as `T[keyof T]` and `key`

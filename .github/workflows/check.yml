@@ -354,10 +354,25 @@ jobs:
         with:
           node-version-file: ".node-version"
           run-install: false
-      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Mount Cargo registry sticky disk
+        uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
         with:
-          shared-key: "native"
-          cache-workspace-crates: "true"
+          key: ${{ github.repository }}-clippy-test-cargo-registry-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          path: ~/.cargo/registry
+
+      - name: Mount Cargo git sticky disk
+        uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+        with:
+          key: ${{ github.repository }}-clippy-test-cargo-git-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          path: ~/.cargo/git
+
+      - name: Mount Rust target sticky disk
+        uses: useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab # v1
+        with:
+          key: ${{ github.repository }}-clippy-test-target-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.lock') }}
+          path: target
+
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings
       - name: Install Pkl CLI

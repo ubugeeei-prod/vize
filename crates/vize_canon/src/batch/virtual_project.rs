@@ -98,6 +98,10 @@ pub struct VirtualProject {
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
 
+    /// Non-TS module files that must exist in the virtual mirror for TypeScript
+    /// module resolution, keyed by materialized path.
+    passthrough_files: FxHashMap<PathBuf, PathBuf>,
+
     /// Secondary index: original source path -> materialized (virtual) path.
     /// Keeps `find_by_original` / `map_to_virtual` O(1) instead of scanning
     /// every virtual file on each LSP position-mapping request.
@@ -138,6 +142,7 @@ impl VirtualProject {
             virtual_ts_check_options: VirtualTsCheckOptions::default(),
             legacy_vue2: false,
             virtual_files: FxHashMap::default(),
+            passthrough_files: FxHashMap::default(),
             original_index: FxHashMap::default(),
             original_contents: FxHashMap::default(),
             diagnostics: Vec::new(),
@@ -303,6 +308,9 @@ impl VirtualProject {
             registered.file.virtual_path.clone(),
             registered.original_content,
         );
+        for (virtual_path, original_path) in registered.passthrough_files {
+            self.passthrough_files.insert(virtual_path, original_path);
+        }
         self.virtual_files
             .insert(registered.file.virtual_path.clone(), registered.file);
     }
@@ -344,6 +352,17 @@ impl VirtualProject {
                     write_file_untracked(&file.virtual_path, file.content.as_bytes())?;
                     write_calls += 1;
                     written_bytes += file.content.len() as u64;
+                }
+                for (virtual_path, original_path) in &self.passthrough_files {
+                    if let Some(parent) = virtual_path.parent()
+                        && created_dirs.insert(parent)
+                    {
+                        ensure_dir(parent)?;
+                    }
+                    let content = std::fs::read(original_path)?;
+                    write_file_untracked(virtual_path, &content)?;
+                    write_calls += 1;
+                    written_bytes += content.len() as u64;
                 }
                 record_write_batch(write_calls, written_bytes);
                 Ok(())
@@ -631,6 +650,7 @@ declare module "*.vue.ts" {
         let mut files = FxHashSet::default();
         files.reserve(self.virtual_files.len() + 3);
         files.extend(self.virtual_files.keys().cloned());
+        files.extend(self.passthrough_files.keys().cloned());
         if !self.virtual_ts_options.auto_import_stubs.is_empty() {
             files.insert(self.virtual_root.join(AUTO_IMPORT_STUBS_FILE));
         }
@@ -1062,6 +1082,7 @@ struct RegisteredFile {
     /// mapping without a disk re-read. Stored on the project, not the public
     /// `VirtualFile`.
     original_content: CompactString,
+    passthrough_files: Vec<(PathBuf, PathBuf)>,
     diagnostics: Vec<Diagnostic>,
 }
 
@@ -1166,6 +1187,12 @@ fn build_vue_registered_file(
             virtual_path,
         },
         original_content: content.to_compact_string(),
+        passthrough_files: collect_passthrough_json_modules(
+            path,
+            content,
+            context.project_root,
+            context.virtual_root,
+        ),
         diagnostics,
     })
 }
@@ -1192,8 +1219,140 @@ fn build_script_registered_file(
             virtual_path,
         },
         original_content: content.to_compact_string(),
+        passthrough_files: collect_passthrough_json_modules(
+            path,
+            content,
+            project_root,
+            virtual_root,
+        ),
         diagnostics: Vec::new(),
     })
+}
+
+fn collect_passthrough_json_modules(
+    path: &Path,
+    content: &str,
+    project_root: &Path,
+    virtual_root: &Path,
+) -> Vec<(PathBuf, PathBuf)> {
+    let Some(dir) = path.parent() else {
+        return Vec::new();
+    };
+
+    let mut seen = FxHashSet::default();
+    let mut files = Vec::new();
+    for specifier in extract_relative_module_specifiers(content) {
+        let Some(original_path) = resolve_relative_json_module(dir, &specifier) else {
+            continue;
+        };
+        let Ok(virtual_path) = mirrored_virtual_path(project_root, virtual_root, &original_path)
+        else {
+            continue;
+        };
+        if seen.insert(virtual_path.clone()) {
+            files.push((virtual_path, original_path));
+        }
+    }
+    files
+}
+
+fn extract_relative_module_specifiers(source: &str) -> Vec<CompactString> {
+    let bytes = source.as_bytes();
+    let len = bytes.len();
+    let mut specifiers = Vec::new();
+    let mut i = 0;
+
+    while i < len {
+        let keyword_len = if matches_keyword(bytes, i, b"from") {
+            4
+        } else if matches_keyword(bytes, i, b"import") {
+            6
+        } else {
+            i += 1;
+            continue;
+        };
+
+        let mut j = i + keyword_len;
+        while j < len && bytes[j].is_ascii_whitespace() {
+            j += 1;
+        }
+        if j < len && bytes[j] == b'(' {
+            j += 1;
+            while j < len && bytes[j].is_ascii_whitespace() {
+                j += 1;
+            }
+        }
+
+        if j < len && (bytes[j] == b'"' || bytes[j] == b'\'') {
+            let quote = bytes[j];
+            let start = j + 1;
+            let mut k = start;
+            while k < len && bytes[k] != quote {
+                k += 1;
+            }
+            if k < len {
+                let specifier = &source[start..k];
+                if is_relative_specifier(specifier) {
+                    specifiers.push(specifier.to_compact_string());
+                }
+                i = k + 1;
+                continue;
+            }
+        }
+
+        i += keyword_len;
+    }
+
+    specifiers
+}
+
+fn matches_keyword(bytes: &[u8], at: usize, keyword: &[u8]) -> bool {
+    if at + keyword.len() > bytes.len() || &bytes[at..at + keyword.len()] != keyword {
+        return false;
+    }
+    let before_ok = at == 0 || !is_identifier_byte(bytes[at - 1]);
+    let after = at + keyword.len();
+    let after_ok = after >= bytes.len() || !is_identifier_byte(bytes[after]);
+    before_ok && after_ok
+}
+
+fn is_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+}
+
+fn is_relative_specifier(specifier: &str) -> bool {
+    specifier.starts_with("./") || specifier.starts_with("../")
+}
+
+fn resolve_relative_json_module(dir: &Path, specifier: &str) -> Option<PathBuf> {
+    let base = dir.join(specifier);
+
+    if specifier.ends_with(".json") && base.is_file() {
+        return Some(normalize_existing_path(&base));
+    }
+
+    let candidate = append_json_extension(&base);
+    if candidate.is_file() {
+        return Some(normalize_existing_path(&candidate));
+    }
+
+    let candidate = base.join("index.json");
+    if candidate.is_file() {
+        return Some(normalize_existing_path(&candidate));
+    }
+
+    None
+}
+
+fn append_json_extension(base: &Path) -> PathBuf {
+    match base.file_name().and_then(|name| name.to_str()) {
+        Some(name) => base.with_file_name(cstr!("{name}.json")),
+        None => base.to_path_buf(),
+    }
+}
+
+fn normalize_existing_path(path: &Path) -> PathBuf {
+    path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
 }
 
 fn virtual_ts_options_for_descriptor(
@@ -1687,6 +1846,36 @@ const message = 'Hello'
             fs::read_to_string(&tsconfig_path)
                 .unwrap()
                 .contains("__vize_auto_imports.d.ts")
+        );
+
+        let _ = fs::remove_dir_all(&case_dir);
+    }
+
+    #[test]
+    fn test_materialize_writes_relative_json_modules() {
+        let case_dir = unique_case_dir("materialize-json-modules");
+        let _ = fs::remove_dir_all(&case_dir);
+        let src_dir = case_dir.join("src");
+        let token_dir = src_dir.join("tokens/source");
+        fs::create_dir_all(&token_dir).unwrap();
+        let ts_path = src_dir.join("tokens.ts");
+        let json_path = token_dir.join("colors.tokens.json");
+        fs::write(
+            &ts_path,
+            "import colors from './tokens/source/colors.tokens.json'\nvoid colors\n",
+        )
+        .unwrap();
+        fs::write(&json_path, "{\"primary\":\"#0057ff\"}\n").unwrap();
+
+        let mut project = VirtualProject::new(&case_dir).unwrap();
+        project.register_path(&ts_path).unwrap();
+        project.materialize().unwrap();
+
+        let virtual_json_path =
+            case_dir.join("node_modules/.vize/canon/src/tokens/source/colors.tokens.json");
+        assert_eq!(
+            fs::read_to_string(&virtual_json_path).unwrap(),
+            "{\"primary\":\"#0057ff\"}\n"
         );
 
         let _ = fs::remove_dir_all(&case_dir);

@@ -25,6 +25,7 @@ local_skip_actions = [
   "nix-community/cache-nix-action",
   "Swatinem/rust-cache",
   "taiki-e/install-action",
+  "useblacksmith/stickydisk",
   "voidzero-dev/setup-vp",
 ]
 
