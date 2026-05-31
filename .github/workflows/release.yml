@@ -40,7 +40,11 @@ jobs:
           - host: blacksmith-32vcpu-windows-2025
             target: x86_64-pc-windows-msvc
             archive: vize-x86_64-pc-windows-msvc.zip
-          - host: blacksmith-32vcpu-windows-2025
+          # Blacksmith Windows x64 images currently expose x64 MSVC SDK libs
+          # after setup-moonbit's amd64 toolchain setup, which breaks ARM64
+          # linking with rust-lld. Keep this cross build on the known-good
+          # GitHub-hosted image until setup can select amd64_arm64 per target.
+          - host: windows-2025
             target: aarch64-pc-windows-msvc
             archive: vize-aarch64-pc-windows-msvc.zip
           - host: blacksmith-32vcpu-ubuntu-2404

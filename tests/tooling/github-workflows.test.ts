@@ -933,6 +933,21 @@ test("release workflow builds native targets on MoonBit-supported runners", () =
   }
 });
 
+test("release workflow keeps the Windows ARM64 CLI cross build on a compatible hosted runner", () => {
+  const workflow = readRepoFile(".github", "workflows", "release.yml");
+  const job = workflowJobBody(workflow, "build-cli");
+
+  assert.match(
+    job,
+    /host:\s*windows-2025\s*\n\s*target:\s*aarch64-pc-windows-msvc/,
+    "Blacksmith Windows x64 images expose x64 MSVC SDK libs after setup-moonbit, which breaks ARM64 linking",
+  );
+  assert.doesNotMatch(
+    job,
+    /host:\s*blacksmith-\d+vcpu-windows-2025\s*\n\s*target:\s*aarch64-pc-windows-msvc/,
+  );
+});
+
 test("release workflow bundles fresco-native binaries into the root package instead of publishing platform packages", () => {
   const workflow = readRepoFile(".github", "workflows", "release.yml");
   const frescoJobStart = workflow.indexOf("\n  release-npm-fresco-native:\n");
