@@ -8,6 +8,7 @@ import { transformWithOxc } from "vite";
 import {
   getCompileOptionsForRequest,
   getEnvironmentCache,
+  shouldExtractCssForRequest,
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
@@ -76,14 +77,15 @@ function findMacroArtifactModule(
   kind: string,
 ): string | null {
   const cache = getEnvironmentCache(state, ssr);
+  const extractCss = shouldExtractCssForRequest(state, ssr);
   realPath = classifyVitePluginRequest(realPath).normalizedVuePath;
   let compiled = cache.get(realPath) ?? state.cache.get(realPath) ?? state.ssrCache.get(realPath);
 
   if (!compiled && fs.existsSync(realPath)) {
     const source = fs.readFileSync(realPath, "utf-8");
     compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, ssr), source);
-    syncCollectedCssForFile(state, realPath, compiled);
   }
+  syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 
   return compiled?.macroArtifacts?.find((artifact) => artifact.kind === kind)?.moduleCode ?? null;
 }
@@ -113,14 +115,15 @@ function loadCompiledSfcModule(
   }
 
   const cache = getEnvironmentCache(state, isSsr);
+  const extractCss = shouldExtractCssForRequest(state, isSsr);
   let compiled = cache.get(realPath);
 
   // On-demand compile if not cached
   if (!compiled && fs.existsSync(realPath)) {
     state.logger.log(`load: on-demand compiling ${realPath}`);
     compiled = compileFile(realPath, cache, getCompileOptionsForRequest(state, isSsr));
-    syncCollectedCssForFile(state, realPath, compiled);
   }
+  syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
 
   if (!compiled) {
     return null;
@@ -147,7 +150,7 @@ function loadCompiledSfcModule(
     isDev: state.server !== null && !isSsr,
     ssr: isSsr,
     hmrUpdateType: pendingHmrUpdateType,
-    extractCss: state.extractCss,
+    extractCss,
     filePath: realPath,
   });
   const output = rewriteStaticAssetUrls(

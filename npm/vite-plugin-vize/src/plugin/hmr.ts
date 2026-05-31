@@ -10,7 +10,8 @@ import { hasDelegatedStyles } from "../utils/index.ts";
 import { toVirtualId } from "../virtual.ts";
 import { resolveCssImports } from "../utils/css.ts";
 
-export const VIZE_COMPONENTS_CSS_FILE = "assets/vize-components.css";
+export const VIZE_COMPONENTS_CSS_BASENAME = "vize-components.css";
+export const VIZE_COMPONENTS_CSS_FILE = `assets/${VIZE_COMPONENTS_CSS_BASENAME}`;
 
 type GenerateBundleItem =
   | {
@@ -144,19 +145,30 @@ export function handleGenerateBundleHook(
     allCss += allCss ? `\n\n${css}` : css;
   }
   if (allCss.trim()) {
+    const cssFileName = state.componentsCssFileName || VIZE_COMPONENTS_CSS_FILE;
     emitFile({
       type: "asset",
-      fileName: VIZE_COMPONENTS_CSS_FILE,
+      fileName: cssFileName,
       source: allCss,
     });
-    attachComponentsCssToEntryChunks(bundle);
-    state.logger.log(
-      `Extracted CSS to ${VIZE_COMPONENTS_CSS_FILE} (${state.collectedCss.size} components)`,
-    );
+    attachComponentsCssToEntryChunks(bundle, cssFileName);
+    state.logger.log(`Extracted CSS to ${cssFileName} (${state.collectedCss.size} components)`);
   }
 }
 
-function attachComponentsCssToEntryChunks(bundle: GenerateBundle): void {
+export function resolveComponentsCssFileName(assetsDir: string | undefined): string {
+  const normalizedAssetsDir = (assetsDir || "assets")
+    .replace(/\\/g, "/")
+    .replace(/^\/+|\/+$/g, "");
+
+  if (!normalizedAssetsDir || normalizedAssetsDir === ".") {
+    return VIZE_COMPONENTS_CSS_BASENAME;
+  }
+
+  return `${normalizedAssetsDir}/${VIZE_COMPONENTS_CSS_BASENAME}`;
+}
+
+function attachComponentsCssToEntryChunks(bundle: GenerateBundle, cssFileName: string): void {
   for (const item of Object.values(bundle)) {
     if (item.type !== "chunk" || (!item.isEntry && !item.isDynamicEntry)) {
       continue;
@@ -164,6 +176,6 @@ function attachComponentsCssToEntryChunks(bundle: GenerateBundle): void {
 
     item.viteMetadata ??= {};
     item.viteMetadata.importedCss ??= new Set<string>();
-    item.viteMetadata.importedCss.add(VIZE_COMPONENTS_CSS_FILE);
+    item.viteMetadata.importedCss.add(cssFileName);
   }
 }

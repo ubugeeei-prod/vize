@@ -25,6 +25,7 @@ function createState(overrides: Partial<VizePluginState> = {}): VizePluginState 
     dynamicImportAliasRules: [],
     cssAliasRules: [],
     extractCss: false,
+    componentsCssFileName: "assets/vize-components.css",
     clientViteDefine: {},
     serverViteDefine: {},
     logger: {

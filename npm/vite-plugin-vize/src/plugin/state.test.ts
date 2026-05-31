@@ -117,6 +117,7 @@ const brokenPrecompileState: VizePluginState = {
   dynamicImportAliasRules: [],
   cssAliasRules: [],
   extractCss: false,
+  componentsCssFileName: "assets/vize-components.css",
   clientViteDefine: {},
   serverViteDefine: {},
   logger: {
@@ -180,7 +181,7 @@ assert.deepEqual(
 );
 
 const cssState = {
-  isProduction: true,
+  extractCss: true,
   collectedCss: new Map<string, string>(),
   cssAliasRules: [],
 };
@@ -231,6 +232,19 @@ assert.equal(
   cssState.collectedCss.has("/src/Button.vue"),
   false,
   "Delegated CSS modules should stay out of the extracted plain CSS bundle",
+);
+
+const ssrCssState = {
+  extractCss: false,
+  collectedCss: new Map<string, string>([["/src/App.vue", ".app { color: red; }"]]),
+  cssAliasRules: [],
+};
+
+syncCollectedCssForFile(ssrCssState, "/src/App.vue", plainCssModule);
+assert.equal(
+  ssrCssState.collectedCss.get("/src/App.vue"),
+  ".app { color: red; }",
+  "SSR builds should not overwrite client CSS collection",
 );
 
 const retainedBuildState = {

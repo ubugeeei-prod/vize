@@ -54,6 +54,7 @@ function createState(root: string): VizePluginState {
     dynamicImportAliasRules: [],
     cssAliasRules: [],
     extractCss: false,
+    componentsCssFileName: "assets/vize-components.css",
     clientViteDefine: {},
     serverViteDefine: {},
     logger: {

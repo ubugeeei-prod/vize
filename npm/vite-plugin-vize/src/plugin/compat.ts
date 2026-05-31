@@ -6,6 +6,7 @@ import { classifyVitePluginRequest } from "@vizejs/native";
 import {
   getCompileOptionsForRequest,
   getEnvironmentCache,
+  shouldExtractCssForRequest,
   syncCollectedCssForFile,
   type VizePluginState,
 } from "./state.ts";
@@ -98,19 +99,20 @@ export function createPostTransformPlugin(state: VizePluginState): Plugin {
         state.logger.log(`post-transform: compiling virtual SFC content from ${id}`);
         try {
           const isSsr = !!transformOptions?.ssr;
+          const extractCss = shouldExtractCssForRequest(state, isSsr);
           const compiled = compileFile(
             id,
             getEnvironmentCache(state, isSsr),
             getCompileOptionsForRequest(state, isSsr),
             code,
           );
-          syncCollectedCssForFile(state, id, compiled);
+          syncCollectedCssForFile({ ...state, extractCss }, id, compiled);
 
           const output = generateOutput(compiled, {
             isProduction: state.isProduction,
             isDev: state.server !== null,
             ssr: isSsr,
-            extractCss: state.extractCss,
+            extractCss,
             filePath: id,
           });
 

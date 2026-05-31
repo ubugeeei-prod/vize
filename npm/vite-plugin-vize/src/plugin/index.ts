@@ -17,7 +17,11 @@ import {
 } from "./state.ts";
 import { resolveIdHook } from "./resolve.ts";
 import { loadHook, transformHook } from "./load.ts";
-import { handleHotUpdateHook, handleGenerateBundleHook } from "./hmr.ts";
+import {
+  handleHotUpdateHook,
+  handleGenerateBundleHook,
+  resolveComponentsCssFileName,
+} from "./hmr.ts";
 import {
   createPostTransformPlugin,
   createStylePostTransformPlugin,
@@ -80,6 +84,25 @@ function mergeSharedConfig(
   };
 }
 
+function shouldExtractCssForBuild(
+  state: Pick<VizePluginState, "extractCss" | "isProduction">,
+  context: { environment?: { name?: string } },
+): boolean {
+  if (!state.isProduction) {
+    return false;
+  }
+
+  const environmentName = context.environment?.name;
+  if (environmentName === "client" || environmentName === "browser") {
+    return true;
+  }
+  if (environmentName === "ssr" || environmentName === "server") {
+    return false;
+  }
+
+  return state.extractCss;
+}
+
 export function vize(options: VizeOptions = {}): Plugin[] {
   if (isLegacyVueCompatibilityMode(options)) {
     return [createLegacyVueCompatibilityPlugin(options)];
@@ -105,6 +128,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     dynamicImportAliasRules: [],
     cssAliasRules: [],
     extractCss: false,
+    componentsCssFileName: "assets/vize-components.css",
     clientViteDefine: {},
     serverViteDefine: {},
     logger: createLogger(options.debug ?? false),
@@ -145,7 +169,8 @@ export function vize(options: VizeOptions = {}): Plugin[] {
       } else {
         state.clientViteBase = currentBase;
       }
-      state.extractCss = state.isProduction;
+      state.extractCss = state.isProduction && !isSsrBuild;
+      state.componentsCssFileName = resolveComponentsCssFileName(resolvedConfig.build.assetsDir);
 
       // Capture Vite define values for applying to virtual modules. Vite's
       // built-in define plugin may not process \0-prefixed virtual modules, so
@@ -289,7 +314,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         // opted into on-demand compilation. Skip pre-compilation.
         return;
       }
-      await compileAll(state);
+      await compileAll({ ...state, extractCss: shouldExtractCssForBuild(state, this) });
       state.logger.log("Cache keys:", [...state.cache.keys()].slice(0, 3));
     },
 
@@ -310,7 +335,11 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     },
 
     generateBundle(_, bundle) {
-      handleGenerateBundleHook(state, this.emitFile.bind(this), bundle);
+      handleGenerateBundleHook(
+        { ...state, extractCss: shouldExtractCssForBuild(state, this) },
+        this.emitFile.bind(this),
+        bundle,
+      );
     },
 
     closeBundle() {

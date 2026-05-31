@@ -52,6 +52,7 @@ export interface VizePluginState {
   dynamicImportAliasRules: DynamicImportAliasRule[];
   cssAliasRules: CssAliasRule[];
   extractCss: boolean;
+  componentsCssFileName: string;
   clientViteDefine: Record<string, string>;
   serverViteDefine: Record<string, string>;
   logger: ReturnType<typeof createLogger>;
@@ -85,11 +86,11 @@ export function getCompileOptionsForRequest(
 }
 
 export function syncCollectedCssForFile(
-  state: Pick<VizePluginState, "isProduction" | "collectedCss" | "cssAliasRules">,
+  state: Pick<VizePluginState, "extractCss" | "collectedCss" | "cssAliasRules">,
   filePath: string,
   compiled: CompiledModule | undefined,
 ): void {
-  if (!compiled || !state.isProduction) {
+  if (!compiled || !state.extractCss) {
     return;
   }
 
@@ -101,6 +102,13 @@ export function syncCollectedCssForFile(
   } else {
     state.collectedCss.delete(filePath);
   }
+}
+
+export function shouldExtractCssForRequest(
+  state: Pick<VizePluginState, "isProduction">,
+  ssr: boolean,
+): boolean {
+  return state.isProduction && !ssr;
 }
 
 export function clearBuildCaches(
@@ -150,7 +158,9 @@ export async function compileAll(state: VizePluginState): Promise<void> {
   for (const file of deletedFiles) {
     state.cache.delete(file);
     state.ssrCache.delete(file);
-    state.collectedCss.delete(file);
+    if (state.extractCss) {
+      state.collectedCss.delete(file);
+    }
     state.precompileMetadata.delete(file);
     state.pendingHmrUpdateTypes.delete(file);
   }
@@ -166,7 +176,9 @@ export async function compileAll(state: VizePluginState): Promise<void> {
   }
 
   for (const file of changedFiles) {
-    state.collectedCss.delete(file);
+    if (state.extractCss) {
+      state.collectedCss.delete(file);
+    }
     state.pendingHmrUpdateTypes.delete(file);
   }
 
@@ -187,7 +199,9 @@ export async function compileAll(state: VizePluginState): Promise<void> {
       } catch (e) {
         failedCount++;
         state.cache.delete(file);
-        state.collectedCss.delete(file);
+        if (state.extractCss) {
+          state.collectedCss.delete(file);
+        }
         state.precompileMetadata.delete(file);
         precompileFailures.push(`[vize] Failed to read ${file}: ${formatUnknownError(e)}`);
         state.logger.error(`Failed to read ${file}:`, e);
@@ -220,7 +234,9 @@ export async function compileAll(state: VizePluginState): Promise<void> {
 
       if (fileResult.errors.length > 0) {
         state.cache.delete(fileResult.path);
-        state.collectedCss.delete(fileResult.path);
+        if (state.extractCss) {
+          state.collectedCss.delete(fileResult.path);
+        }
         state.precompileMetadata.delete(fileResult.path);
         precompileFailures.push(formatCompileErrorMessage(fileResult.path, fileResult.errors));
         continue;
