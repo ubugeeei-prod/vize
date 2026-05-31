@@ -26,7 +26,9 @@ interface VisualRoute {
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const OUTPUT_DIR = path.resolve(__dirname, "../results/visual-parity/npmx.dev");
+const OUTPUT_DIR =
+  process.env.VIZE_NPMX_VRT_OUTPUT_DIR ??
+  path.resolve(__dirname, "../../../__agent_only/npmx-vrt/artifacts");
 const DEFAULT_VIEWPORT = { width: 1280, height: 720 };
 const apps = createNpmxVisualParityApps();
 
