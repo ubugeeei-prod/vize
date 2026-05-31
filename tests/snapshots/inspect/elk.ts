@@ -10,7 +10,7 @@ describe("elk inspector parity with Vue compiler", () => {
       {
         target: "dom",
         changedFiles: 253,
-        additions: 10_447,
+        additions: 10_451,
         removals: 13_198,
         officialErrors: 3,
         vizeErrors: 0,
@@ -18,7 +18,7 @@ describe("elk inspector parity with Vue compiler", () => {
       {
         target: "ssr",
         changedFiles: 253,
-        additions: 9_237,
+        additions: 9_241,
         removals: 24_560,
         officialErrors: 3,
         vizeErrors: 0,

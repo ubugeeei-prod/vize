@@ -1,6 +1,6 @@
 use vize_carton::String;
 
-use crate::script::ScriptCompileContext;
+use crate::script::{PropsDestructuredBindings, ScriptCompileContext};
 
 use super::super::super::props::{
     add_null_to_runtime_type, extract_prop_types_from_type, extract_with_defaults_defaults,
@@ -67,94 +67,100 @@ pub(super) fn build_user_props_decl(
         let resolved_type_args = resolve_type_args(type_args, &ctx.interfaces, &ctx.type_aliases);
         let prop_types = extract_prop_types_from_type(&resolved_type_args);
         if prop_types.is_empty() {
-            return None;
-        }
-        decl.extend_from_slice(b"{\n");
-        let total_items = prop_types.len();
-        let mut item_idx = 0;
-        for (name, prop_type) in &prop_types {
-            item_idx += 1;
-            // Try to resolve type references for props that resolved to `null`
-            let resolved_js_type = if prop_type.js_type == "null" {
-                if let Some(ref ts_type) = prop_type.ts_type {
-                    resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases)
-                        .unwrap_or_else(|| prop_type.js_type.clone())
+            if let Some(ref destructure) = ctx.macros.props_destructure {
+                build_unknown_type_destructured_props_decl(&mut decl, destructure);
+            } else {
+                return None;
+            }
+        } else {
+            decl.extend_from_slice(b"{\n");
+            let total_items = prop_types.len();
+            let mut item_idx = 0;
+            for (name, prop_type) in &prop_types {
+                item_idx += 1;
+                // Try to resolve type references for props that resolved to `null`
+                let resolved_js_type = if prop_type.js_type == "null" {
+                    if let Some(ref ts_type) = prop_type.ts_type {
+                        resolve_prop_js_type(ts_type, &ctx.interfaces, &ctx.type_aliases)
+                            .unwrap_or_else(|| prop_type.js_type.clone())
+                    } else {
+                        prop_type.js_type.clone()
+                    }
                 } else {
                     prop_type.js_type.clone()
-                }
-            } else {
-                prop_type.js_type.clone()
-            };
-            let runtime_js_type = add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
-            decl.extend_from_slice(b"    ");
-            decl.extend_from_slice(name.as_bytes());
-            let mut has_option = false;
-            if is_prod && runtime_js_type != "Boolean" {
-                decl.extend_from_slice(b": {");
-            } else {
-                decl.extend_from_slice(b": { type: ");
-                decl.extend_from_slice(runtime_js_type.as_bytes());
-                has_option = true;
-                if needs_prop_type && let Some(ref ts_type) = prop_type.ts_type {
-                    if resolved_js_type == "null" {
-                        decl.extend_from_slice(b" as unknown as PropType<");
-                    } else {
-                        decl.extend_from_slice(b" as PropType<");
+                };
+                let runtime_js_type =
+                    add_null_to_runtime_type(&resolved_js_type, prop_type.nullable);
+                decl.extend_from_slice(b"    ");
+                decl.extend_from_slice(name.as_bytes());
+                let mut has_option = false;
+                if is_prod && runtime_js_type != "Boolean" {
+                    decl.extend_from_slice(b": {");
+                } else {
+                    decl.extend_from_slice(b": { type: ");
+                    decl.extend_from_slice(runtime_js_type.as_bytes());
+                    has_option = true;
+                    if needs_prop_type && let Some(ref ts_type) = prop_type.ts_type {
+                        if resolved_js_type == "null" {
+                            decl.extend_from_slice(b" as unknown as PropType<");
+                        } else {
+                            decl.extend_from_slice(b" as PropType<");
+                        }
+                        // Normalize multi-line types to single line
+                        let normalized = ts_type.split_whitespace().collect::<Vec<_>>().join(" ");
+                        decl.extend_from_slice(normalized.as_bytes());
+                        decl.push(b'>');
                     }
-                    // Normalize multi-line types to single line
-                    let normalized = ts_type.split_whitespace().collect::<Vec<_>>().join(" ");
-                    decl.extend_from_slice(normalized.as_bytes());
-                    decl.push(b'>');
                 }
-            }
-            if prop_type.optional && !is_prod {
+                if prop_type.optional && !is_prod {
+                    if has_option {
+                        decl.extend_from_slice(b", ");
+                    } else {
+                        decl.push(b' ');
+                    }
+                    decl.extend_from_slice(b"required: false");
+                    has_option = true;
+                }
+                let mut has_default = false;
+                if let Some(ref defaults) = with_defaults_args
+                    && let Some(default_val) = defaults.get(name.as_str())
+                {
+                    if has_option {
+                        decl.extend_from_slice(b", ");
+                    } else {
+                        decl.push(b' ');
+                    }
+                    decl.extend_from_slice(b"default: ");
+                    decl.extend_from_slice(default_val.as_bytes());
+                    has_option = true;
+                    has_default = true;
+                }
+                if !has_default
+                    && let Some(ref destructure) = ctx.macros.props_destructure
+                    && let Some(binding) = destructure.bindings.get(name.as_str())
+                    && let Some(ref default_val) = binding.default
+                {
+                    if has_option {
+                        decl.extend_from_slice(b", ");
+                    } else {
+                        decl.push(b' ');
+                    }
+                    decl.extend_from_slice(b"default: ");
+                    let default_val = normalize_destructure_default_value(default_val);
+                    decl.extend_from_slice(default_val.as_bytes());
+                }
                 if has_option {
-                    decl.extend_from_slice(b", ");
+                    decl.extend_from_slice(b" }");
                 } else {
-                    decl.push(b' ');
+                    decl.push(b'}');
                 }
-                decl.extend_from_slice(b"required: false");
-                has_option = true;
-            }
-            let mut has_default = false;
-            if let Some(ref defaults) = with_defaults_args
-                && let Some(default_val) = defaults.get(name.as_str())
-            {
-                if has_option {
-                    decl.extend_from_slice(b", ");
-                } else {
-                    decl.push(b' ');
+                if item_idx < total_items {
+                    decl.push(b',');
                 }
-                decl.extend_from_slice(b"default: ");
-                decl.extend_from_slice(default_val.as_bytes());
-                has_option = true;
-                has_default = true;
+                decl.push(b'\n');
             }
-            if !has_default
-                && let Some(ref destructure) = ctx.macros.props_destructure
-                && let Some(binding) = destructure.bindings.get(name.as_str())
-                && let Some(ref default_val) = binding.default
-            {
-                if has_option {
-                    decl.extend_from_slice(b", ");
-                } else {
-                    decl.push(b' ');
-                }
-                decl.extend_from_slice(b"default: ");
-                let default_val = normalize_destructure_default_value(default_val);
-                decl.extend_from_slice(default_val.as_bytes());
-            }
-            if has_option {
-                decl.extend_from_slice(b" }");
-            } else {
-                decl.push(b'}');
-            }
-            if item_idx < total_items {
-                decl.push(b',');
-            }
-            decl.push(b'\n');
+            decl.extend_from_slice(b"  }");
         }
-        decl.extend_from_slice(b"  }");
     } else if !props_macro.args.is_empty() {
         if let (true, Some(destructure)) =
             (needs_merge_defaults, ctx.macros.props_destructure.as_ref())
@@ -213,4 +219,30 @@ pub(super) fn build_user_props_decl(
     #[allow(clippy::disallowed_types)]
     let s = unsafe { std::string::String::from_utf8_unchecked(decl) };
     Some(s.into())
+}
+
+fn build_unknown_type_destructured_props_decl(
+    decl: &mut Vec<u8>,
+    destructure: &PropsDestructuredBindings,
+) {
+    decl.extend_from_slice(b"{\n");
+    for (i, key) in destructure.keys.iter().enumerate() {
+        decl.extend_from_slice(b"    ");
+        decl.extend_from_slice(key.as_bytes());
+        if let Some(binding) = destructure.bindings.get(key.as_str())
+            && let Some(default_val) = binding.default.as_ref()
+        {
+            decl.extend_from_slice(b": { default: ");
+            let default_val = normalize_destructure_default_value(default_val);
+            decl.extend_from_slice(default_val.as_bytes());
+            decl.extend_from_slice(b" }");
+        } else {
+            decl.extend_from_slice(b": {}");
+        }
+        if i < destructure.keys.len() - 1 {
+            decl.push(b',');
+        }
+        decl.push(b'\n');
+    }
+    decl.extend_from_slice(b"  }");
 }

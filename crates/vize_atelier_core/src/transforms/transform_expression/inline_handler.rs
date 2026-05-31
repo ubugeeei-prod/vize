@@ -14,7 +14,7 @@ use super::{
     clone_expression, is_event_handler_reference_expression, is_function_expression,
     normalize_expression,
     prefix::{get_identifier_prefix, is_simple_identifier},
-    rewrite::rewrite_expression,
+    rewrite::{rewrite_expression, rewrite_props_aliases},
     typescript::strip_typescript_from_expression,
 };
 
@@ -114,6 +114,8 @@ pub fn process_inline_handler<'a>(
         } else {
             content.clone()
         };
+
+        let new_content = rewrite_props_aliases(new_content, ctx);
 
         return ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode {

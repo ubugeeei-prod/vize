@@ -342,6 +342,19 @@ const { label, disabled, routeName } = defineProps<MenuItemProps>()
     }
 
     #[test]
+    fn test_imported_type_destructure_generates_runtime_props_fallback() {
+        let content = r#"
+import { computed } from 'vue'
+import type { TimetableCell } from '~~/i18n/timetable'
+
+const { type, title, speakers } = defineProps<TimetableCell>()
+const isEvent = computed(() => type === 'event')
+"#;
+        let output = compile_setup(content);
+        insta::assert_snapshot!(output.as_str());
+    }
+
+    #[test]
     fn test_define_props_destructure_value_on_next_line() {
         // Pattern: const { ... } =\n  defineProps<...>()
         // The destructure pattern is complete on line 1, but defineProps is on line 2.

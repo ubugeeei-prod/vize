@@ -1534,6 +1534,99 @@ import { Form, Input } from 'ant-design-vue'
 }
 
 #[test]
+fn test_script_setup_props_destructure_alias_uses_prop_key_in_inline_render() {
+    let source = r#"<script setup lang="ts">
+const { link: to } = defineProps<{ link?: string }>()
+</script>
+
+<template>
+  <a v-if="to" :href="to">{{ to }}</a>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(result.code.contains("__props.link"), "{}", result.code);
+    assert!(!result.code.contains("__props.to"), "{}", result.code);
+}
+
+#[test]
+fn test_script_setup_props_destructure_alias_uses_prop_key_in_ssr_render() {
+    let source = r#"<script setup lang="ts">
+const { link: to } = defineProps<{ link?: string }>()
+</script>
+
+<template>
+  <a v-if="to" :href="to">{{ to }}</a>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ssr: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(result.code.contains("$props.link"), "{}", result.code);
+    assert!(!result.code.contains("$props.to"), "{}", result.code);
+}
+
+#[test]
+fn test_script_setup_imported_type_props_destructure_declares_runtime_props() {
+    let source = r#"<script setup lang="ts">
+import type { TimetableCell } from "~~/i18n/timetable"
+
+const { type, title, speakers } = defineProps<TimetableCell>()
+</script>
+
+<template>
+  <div :class="type">
+    <h2>{{ title }}</h2>
+    <span v-if="speakers">{{ speakers.length }}</span>
+  </div>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(result.code.contains("type: {}"), "{}", result.code);
+    assert!(result.code.contains("title: {}"), "{}", result.code);
+    assert!(result.code.contains("speakers: {}"), "{}", result.code);
+    assert!(result.code.contains("__props.title"), "{}", result.code);
+    assert!(result.code.contains("__props.speakers"), "{}", result.code);
+}
+
+#[test]
 fn test_script_setup_sfc_ssr_uses_server_renderer_output() {
     let source = r#"<script setup lang="ts">
 const msg = 'hello'
