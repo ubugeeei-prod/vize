@@ -350,6 +350,32 @@ mod tests {
     }
 
     #[test]
+    fn test_inline_hoisted_bare_static_attrs_are_empty_strings() {
+        let allocator = Bump::new();
+        let options = DomCompilerOptions {
+            mode: CodegenMode::Module,
+            prefix_identifiers: true,
+            inline: true,
+            ..Default::default()
+        };
+
+        let (_, errors, result) = compile_template_with_options(
+            &allocator,
+            r#"<section><h2 sr-only font-bold flex="~ gap-1"><span block /></h2></section>"#,
+            options,
+        );
+
+        assert!(errors.is_empty(), "Errors: {:?}", errors);
+        let full = full_output(&result.preamble, &result.code);
+        assert!(full.contains(r#""sr-only": """#), "{full}");
+        assert!(full.contains(r#""font-bold": """#), "{full}");
+        assert!(full.contains(r#"block: """#), "{full}");
+        assert!(!full.contains(r#""sr-only": "true""#), "{full}");
+        assert!(!full.contains(r#""font-bold": "true""#), "{full}");
+        assert!(!full.contains(r#"block: "true""#), "{full}");
+    }
+
+    #[test]
     fn test_inline_component_dynamic_prop_keeps_props_patch_flag() {
         use vize_atelier_core::options::{BindingMetadata, BindingType};
         use vize_carton::FxHashMap;

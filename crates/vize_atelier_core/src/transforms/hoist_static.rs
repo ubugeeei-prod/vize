@@ -272,7 +272,7 @@ fn create_props_expression<'a>(
             let value_exp = if let Some(v) = &attr.value {
                 SimpleExpressionNode::new(v.content.clone(), true, v.loc.clone())
             } else {
-                SimpleExpressionNode::new("true", true, attr.loc.clone())
+                SimpleExpressionNode::new("", true, attr.loc.clone())
             };
             let value = JsChildNode::SimpleExpression(Box::new_in(value_exp, allocator));
 
@@ -453,7 +453,7 @@ fn hoist_element_props<'a>(
             let value_exp = if let Some(v) = &attr.value {
                 SimpleExpressionNode::new(v.content.clone(), true, v.loc.clone())
             } else {
-                SimpleExpressionNode::new("true", true, attr.loc.clone())
+                SimpleExpressionNode::new("", true, attr.loc.clone())
             };
             let value = JsChildNode::SimpleExpression(Box::new_in(value_exp, allocator));
 

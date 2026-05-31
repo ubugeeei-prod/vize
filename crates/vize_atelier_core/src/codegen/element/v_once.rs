@@ -185,7 +185,7 @@ pub fn generate_v_once_props(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                     ctx.push(&escape_js_string(&value.content));
                     ctx.push("\"");
                 } else {
-                    ctx.push("true");
+                    ctx.push("\"\"");
                 }
             }
             _ => {}
